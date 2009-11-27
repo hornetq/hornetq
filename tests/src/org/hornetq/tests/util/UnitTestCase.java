@@ -44,7 +44,8 @@ import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
-import org.hornetq.core.buffers.ChannelBuffers;
+import org.hornetq.core.buffers.HornetQBuffer;
+import org.hornetq.core.buffers.HornetQBuffers;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.exception.HornetQException;
@@ -257,11 +258,27 @@ public class UnitTestCase extends TestCase
 
    public static void assertEqualsByteArrays(byte[] expected, byte[] actual)
    {
-      assertEquals(expected.length, actual.length);
+      // assertEquals(expected.length, actual.length);
       for (int i = 0; i < expected.length; i++)
       {
          assertEquals("byte at index " + i, expected[i], actual[i]);
       }
+   }
+
+   public static void assertEqualsBuffers(int size, HornetQBuffer expected, HornetQBuffer actual)
+   {
+      // assertEquals(expected.length, actual.length);
+      expected.readerIndex(0);
+      actual.readerIndex(0);
+      
+      for (int i = 0; i < size; i++)
+      {
+         byte b1 = expected.readByte();
+         byte b2 = actual.readByte();
+         assertEquals("byte at index " + i, b1, b2);
+      }
+      expected.resetReaderIndex();
+      actual.resetReaderIndex();
    }
 
    public static void assertEqualsByteArrays(int length, byte[] expected, byte[] actual)
@@ -837,16 +854,11 @@ public class UnitTestCase extends TestCase
 
    protected ServerMessage generateMessage(long id)
    {
-      ServerMessage message = new ServerMessageImpl((byte)0,
-                                                    true,
-                                                    0,
-                                                    System.currentTimeMillis(),
-                                                    (byte)4,
-                                                    ChannelBuffers.dynamicBuffer(1024));
+      ServerMessage message = new ServerMessageImpl(id, 1000);
 
       message.setMessageID(id);
 
-      message.getBody().writeString(UUID.randomUUID().toString());
+      message.getBodyBuffer().writeString(UUID.randomUUID().toString());
       
       message.setDestination(new SimpleString("foo"));
 
@@ -877,7 +889,7 @@ public class UnitTestCase extends TestCase
                                                                 0,
                                                                 System.currentTimeMillis(),
                                                                 (byte)1);
-      message.getBody().writeString(s);
+      message.getBodyBuffer().writeString(s);
       return message;
    }
    

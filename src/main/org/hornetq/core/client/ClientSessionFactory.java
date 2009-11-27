@@ -170,6 +170,10 @@ public interface ClientSessionFactory
 
    void setDiscoveryRefreshTimeout(long discoveryRefreshTimeout);
    
+   int getInitialMessagePacketSize();
+   
+   void setInitialMessagePacketSize(int size);
+   
    void addInterceptor(Interceptor interceptor);
 
    boolean removeInterceptor(Interceptor interceptor);

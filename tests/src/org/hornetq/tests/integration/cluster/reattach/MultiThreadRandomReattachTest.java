@@ -17,6 +17,7 @@ import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
+import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQ;
 
 
@@ -30,6 +31,8 @@ import org.hornetq.core.server.HornetQ;
  */
 public class MultiThreadRandomReattachTest extends MultiThreadRandomReattachTestBase
 {
+   private static final Logger log = Logger.getLogger(MultiThreadRandomReattachTest.class);
+   
    @Override
    protected void start() throws Exception
    {      
@@ -47,6 +50,8 @@ public class MultiThreadRandomReattachTest extends MultiThreadRandomReattachTest
    @Override
    protected void setBody(final ClientMessage message) throws Exception
    {
+      //Give each msg a body
+      message.getBodyBuffer().writeBytes(new byte[250]);
    }
 
    /* (non-Javadoc)
@@ -55,7 +60,7 @@ public class MultiThreadRandomReattachTest extends MultiThreadRandomReattachTest
    @Override
    protected boolean checkSize(final ClientMessage message)
    {
-      return 0 == message.getBody().writerIndex();
+      return message.getBodyBuffer().readableBytes() == 250;
    }
 
 }

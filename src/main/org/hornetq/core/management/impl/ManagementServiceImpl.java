@@ -30,7 +30,6 @@ import javax.management.NotificationBroadcasterSupport;
 import javax.management.ObjectName;
 import javax.management.StandardMBean;
 
-import org.hornetq.core.buffers.ChannelBuffers;
 import org.hornetq.core.client.management.impl.ManagementHelper;
 import org.hornetq.core.cluster.DiscoveryGroup;
 import org.hornetq.core.config.Configuration;
@@ -147,8 +146,7 @@ public class ManagementServiceImpl implements ManagementService
 
    // Constructor ----------------------------------------------------
 
-   public ManagementServiceImpl(final MBeanServer mbeanServer,
-                                final Configuration configuration)
+   public ManagementServiceImpl(final MBeanServer mbeanServer, final Configuration configuration)
    {
       this.mbeanServer = mbeanServer;
       this.jmxManagementEnabled = configuration.isJMXManagementEnabled();
@@ -175,7 +173,7 @@ public class ManagementServiceImpl implements ManagementService
    {
       return objectNameBuilder;
    }
-   
+
    public MessageCounterManager getMessageCounterManager()
    {
       return messageCounterManager;
@@ -196,7 +194,7 @@ public class ManagementServiceImpl implements ManagementService
                                                   final HornetQServer messagingServer,
                                                   final QueueFactory queueFactory,
                                                   final ScheduledExecutorService scheduledThreadPool,
-                                                  final PagingManager pagingManager, 
+                                                  final PagingManager pagingManager,
                                                   final boolean backup) throws Exception
    {
       this.postOffice = postOffice;
@@ -420,8 +418,7 @@ public class ManagementServiceImpl implements ManagementService
    public ServerMessage handleMessage(final ServerMessage message) throws Exception
    {
       // a reply message is sent with the result stored in the message body.
-      ServerMessageImpl reply = new ServerMessageImpl(storageManager.generateUniqueID());
-      reply.setBody(ChannelBuffers.dynamicBuffer(1024));
+      ServerMessage reply = new ServerMessageImpl(storageManager.generateUniqueID(), 512);
 
       String resourceName = message.getStringProperty(ManagementHelper.HDR_RESOURCE_NAME);
       if (log.isDebugEnabled())
@@ -499,7 +496,7 @@ public class ManagementServiceImpl implements ManagementService
    {
       return registry.get(resourceName);
    }
-   
+
    public Object[] getResources(Class<?> resourceType)
    {
       List<Object> resources = new ArrayList<Object>();
@@ -632,7 +629,8 @@ public class ManagementServiceImpl implements ManagementService
             if (!unexpectedResourceNames.isEmpty())
             {
                log.warn("On ManagementService stop, there are " + unexpectedResourceNames.size() +
-                        " unexpected registered MBeans: " + unexpectedResourceNames);
+                        " unexpected registered MBeans: " +
+                        unexpectedResourceNames);
             }
 
             for (ObjectName on : this.registeredNames)
@@ -703,15 +701,15 @@ public class ManagementServiceImpl implements ManagementService
                }
 
                // start sending notification *messages* only when the *remoting service* if started
-               if (messagingServer == null || 
-                   !messagingServer.getRemotingService().isStarted())
+               if (messagingServer == null || !messagingServer.getRemotingService().isStarted())
                {
                   return;
                }
 
-               ServerMessage notificationMessage = new ServerMessageImpl(storageManager.generateUniqueID());
+               long messageID = storageManager.generateUniqueID();
+               
+               ServerMessage notificationMessage = new ServerMessageImpl(messageID, 512);
 
-               notificationMessage.setBody(ChannelBuffers.EMPTY_BUFFER);
                // Notification messages are always durable so the user can choose whether to add a durable queue to
                // consume
                // them in
@@ -729,18 +727,19 @@ public class ManagementServiceImpl implements ManagementService
                }
 
                notifProps.putSimpleStringProperty(ManagementHelper.HDR_NOTIFICATION_TYPE,
-                                            new SimpleString(notification.getType().toString()));
+                                                  new SimpleString(notification.getType().toString()));
 
                notifProps.putLongProperty(ManagementHelper.HDR_NOTIFICATION_TIMESTAMP, System.currentTimeMillis());
 
                if (notification.getUID() != null)
                {
-                  notifProps.putSimpleStringProperty(new SimpleString("foobar"), new SimpleString(notification.getUID()));
+                  notifProps.putSimpleStringProperty(new SimpleString("foobar"),
+                                                     new SimpleString(notification.getUID()));
                }
 
                notificationMessage.putTypedProperties(notifProps);
 
-               postOffice.route(notificationMessage);
+               postOffice.route(notificationMessage, null);
             }
          }
       }

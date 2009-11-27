@@ -17,6 +17,7 @@ import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.remoting.RemotingConnection;
 import org.hornetq.core.remoting.impl.wireformat.SessionReceiveContinuationMessage;
+import org.hornetq.core.remoting.impl.wireformat.SessionReceiveLargeMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionReceiveMessage;
 import org.hornetq.utils.SimpleString;
 
@@ -47,7 +48,7 @@ public interface ClientSessionInternal extends ClientSession
 
    void handleReceiveMessage(long consumerID, SessionReceiveMessage message) throws Exception;
 
-   void handleReceiveLargeMessage(long consumerID, SessionReceiveMessage message) throws Exception;
+   void handleReceiveLargeMessage(long consumerID, SessionReceiveLargeMessage message) throws Exception;
 
    void handleReceiveContinuation(long consumerID, SessionReceiveContinuationMessage continuation) throws Exception;
 

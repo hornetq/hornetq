@@ -17,10 +17,11 @@ import static org.hornetq.utils.DataConstants.SIZE_BYTE;
 import static org.hornetq.utils.DataConstants.SIZE_INT;
 import static org.hornetq.utils.DataConstants.SIZE_LONG;
 
-import org.hornetq.core.buffers.ChannelBuffers;
+import org.hornetq.core.buffers.HornetQBuffer;
+import org.hornetq.core.buffers.HornetQBuffers;
+import org.hornetq.core.logging.Logger;
 import org.hornetq.core.paging.PagedMessage;
 import org.hornetq.core.persistence.StorageManager;
-import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.core.server.LargeServerMessage;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.impl.ServerMessageImpl;
@@ -37,6 +38,9 @@ public class PagedMessageImpl implements PagedMessage
 {
    // Constants -----------------------------------------------------
 
+   private static final Logger log = Logger.getLogger(PagedMessageImpl.class);
+
+   
    // Attributes ----------------------------------------------------
 
    // Static --------------------------------------------------------
@@ -64,8 +68,7 @@ public class PagedMessageImpl implements PagedMessage
    }
 
    public PagedMessageImpl()
-   {
-      this(new ServerMessageImpl());
+   {      
    }
 
    public ServerMessage getMessage(final StorageManager storage)
@@ -73,8 +76,8 @@ public class PagedMessageImpl implements PagedMessage
       if (largeMessageLazyData != null)
       {
          message = storage.createLargeMessage();
-         HornetQBuffer buffer = ChannelBuffers.dynamicBuffer(largeMessageLazyData); 
-         message.decode(buffer);
+         HornetQBuffer buffer = HornetQBuffers.dynamicBuffer(largeMessageLazyData); 
+         message.decodeHeadersAndProperties(buffer);
          largeMessageLazyData = null;
       }
       return message;
@@ -105,11 +108,10 @@ public class PagedMessageImpl implements PagedMessage
       {
          buffer.readInt(); // This value is only used on LargeMessages for now
          
-         message = new ServerMessageImpl();
+         message = new ServerMessageImpl(-1, 50);         
          
          message.decode(buffer);
       }
-
    }
 
    public void encode(final HornetQBuffer buffer)
@@ -119,7 +121,7 @@ public class PagedMessageImpl implements PagedMessage
       buffer.writeBoolean(message instanceof LargeServerMessage);
       
       buffer.writeInt(message.getEncodeSize());
-      
+         
       message.encode(buffer);
    }
 

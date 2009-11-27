@@ -15,13 +15,13 @@ package org.hornetq.core.remoting.impl.invm;
 import java.util.concurrent.Executor;
 import java.util.concurrent.RejectedExecutionException;
 
-import org.hornetq.core.buffers.ChannelBuffers;
+import org.hornetq.core.buffers.HornetQBuffer;
+import org.hornetq.core.buffers.HornetQBuffers;
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.spi.BufferHandler;
 import org.hornetq.core.remoting.spi.Connection;
 import org.hornetq.core.remoting.spi.ConnectionLifeCycleListener;
-import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.utils.UUIDGenerator;
 
 /**
@@ -97,7 +97,7 @@ public class InVMConnection implements Connection
 
    public HornetQBuffer createBuffer(final int size)
    {
-      return ChannelBuffers.buffer(size);
+      return HornetQBuffers.dynamicBuffer(size);
    }
 
    public Object getID()
@@ -112,6 +112,10 @@ public class InVMConnection implements Connection
 
    public void write(final HornetQBuffer buffer, final boolean flush)
    {
+      final HornetQBuffer copied = buffer.copy(0, buffer.capacity());
+      
+      copied.setIndex(buffer.readerIndex(), buffer.writerIndex());
+      
       try
       {
          executor.execute(new Runnable()
@@ -122,9 +126,9 @@ public class InVMConnection implements Connection
                {
                   if (!closed)
                   {
-                     buffer.readInt(); // read and discard
+                     copied.readInt(); // read and discard
                                          
-                     handler.bufferReceived(id, buffer);
+                     handler.bufferReceived(id, copied);
                   }
                }
                catch (Exception e)

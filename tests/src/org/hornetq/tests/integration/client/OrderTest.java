@@ -85,8 +85,7 @@ public class OrderTest extends ServiceTestBase
 
          for (int i = 0; i < 100; i++)
          {
-            ClientMessage msg = session.createClientMessage(i % 2 == 0);
-            msg.setBody(session.createBuffer(new byte[1024]));
+            ClientMessage msg = session.createClientMessage(i % 2 == 0);            
             msg.putIntProperty("id", i);
             prod.send(msg);
          }

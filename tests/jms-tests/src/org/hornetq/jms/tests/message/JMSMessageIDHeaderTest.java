@@ -48,9 +48,26 @@ public class JMSMessageIDHeaderTest extends MessageHeaderTestBase
          m.setJMSMessageID("ID:something");
 
          queueProducer.send(m);
-
+         
          assertFalse("ID:something".equals(m.getJMSMessageID()));
+      }
+      finally
+      {
+         removeAllMessages(queue1.getQueueName(), true);
+      }
+   }
+   
+   public void testJMSMessageID() throws Exception
+   {
+      try
+      {
+         Message m = queueProducerSession.createMessage();;
+         assertNull(m.getJMSMessageID());
 
+         queueProducer.send(m);
+
+         assertNotNull(m.getJMSMessageID());
+         assertTrue(m.getJMSMessageID().startsWith("ID:"));
       }
       finally
       {

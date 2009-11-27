@@ -126,13 +126,13 @@ public class NettyConnector implements Connector
 
    private final int tcpReceiveBufferSize;
 
-   private ConcurrentMap<Object, Connection> connections = new ConcurrentHashMap<Object, Connection>();
+   private final ConcurrentMap<Object, Connection> connections = new ConcurrentHashMap<Object, Connection>();
 
    private final String servletPath;
 
    private final VirtualExecutorService virtualExecutor;
 
-   private ScheduledExecutorService scheduledThreadPool;
+   private final ScheduledExecutorService scheduledThreadPool;
 
    // Static --------------------------------------------------------
 
@@ -155,75 +155,75 @@ public class NettyConnector implements Connector
       {
          throw new IllegalArgumentException("Invalid argument null handler");
       }
-      
+
       this.listener = listener;
 
       this.handler = handler;
 
-      this.sslEnabled = ConfigurationHelper.getBooleanProperty(TransportConstants.SSL_ENABLED_PROP_NAME,
-                                                               TransportConstants.DEFAULT_SSL_ENABLED,
-                                                               configuration);
-      this.httpEnabled = ConfigurationHelper.getBooleanProperty(TransportConstants.HTTP_ENABLED_PROP_NAME,
-                                                                TransportConstants.DEFAULT_HTTP_ENABLED,
-                                                                configuration);
+      sslEnabled = ConfigurationHelper.getBooleanProperty(TransportConstants.SSL_ENABLED_PROP_NAME,
+                                                          TransportConstants.DEFAULT_SSL_ENABLED,
+                                                          configuration);
+      httpEnabled = ConfigurationHelper.getBooleanProperty(TransportConstants.HTTP_ENABLED_PROP_NAME,
+                                                           TransportConstants.DEFAULT_HTTP_ENABLED,
+                                                           configuration);
       servletPath = ConfigurationHelper.getStringProperty(TransportConstants.SERVLET_PATH,
                                                           TransportConstants.DEFAULT_SERVLET_PATH,
                                                           configuration);
       if (httpEnabled)
       {
-         this.httpMaxClientIdleTime = ConfigurationHelper.getLongProperty(TransportConstants.HTTP_CLIENT_IDLE_PROP_NAME,
-                                                                          TransportConstants.DEFAULT_HTTP_CLIENT_IDLE_TIME,
-                                                                          configuration);
-         this.httpClientIdleScanPeriod = ConfigurationHelper.getLongProperty(TransportConstants.HTTP_CLIENT_IDLE_SCAN_PERIOD,
-                                                                             TransportConstants.DEFAULT_HTTP_CLIENT_SCAN_PERIOD,
-                                                                             configuration);
-         this.httpRequiresSessionId = ConfigurationHelper.getBooleanProperty(TransportConstants.HTTP_REQUIRES_SESSION_ID,
-                                                                             TransportConstants.DEFAULT_HTTP_REQUIRES_SESSION_ID,
-                                                                             configuration);
+         httpMaxClientIdleTime = ConfigurationHelper.getLongProperty(TransportConstants.HTTP_CLIENT_IDLE_PROP_NAME,
+                                                                     TransportConstants.DEFAULT_HTTP_CLIENT_IDLE_TIME,
+                                                                     configuration);
+         httpClientIdleScanPeriod = ConfigurationHelper.getLongProperty(TransportConstants.HTTP_CLIENT_IDLE_SCAN_PERIOD,
+                                                                        TransportConstants.DEFAULT_HTTP_CLIENT_SCAN_PERIOD,
+                                                                        configuration);
+         httpRequiresSessionId = ConfigurationHelper.getBooleanProperty(TransportConstants.HTTP_REQUIRES_SESSION_ID,
+                                                                        TransportConstants.DEFAULT_HTTP_REQUIRES_SESSION_ID,
+                                                                        configuration);
       }
       else
       {
-         this.httpMaxClientIdleTime = 0;
-         this.httpClientIdleScanPeriod = -1;
-         this.httpRequiresSessionId = false;
+         httpMaxClientIdleTime = 0;
+         httpClientIdleScanPeriod = -1;
+         httpRequiresSessionId = false;
       }
 
-      this.useNio = ConfigurationHelper.getBooleanProperty(TransportConstants.USE_NIO_PROP_NAME,
-                                                           TransportConstants.DEFAULT_USE_NIO,
-                                                           configuration);
-      this.useServlet = ConfigurationHelper.getBooleanProperty(TransportConstants.USE_SERVLET_PROP_NAME,
-                                                               TransportConstants.DEFAULT_USE_SERVLET,
-                                                               configuration);
-      this.host = ConfigurationHelper.getStringProperty(TransportConstants.HOST_PROP_NAME,
-                                                        TransportConstants.DEFAULT_HOST,
-                                                        configuration);
-      this.port = ConfigurationHelper.getIntProperty(TransportConstants.PORT_PROP_NAME,
-                                                     TransportConstants.DEFAULT_PORT,
-                                                     configuration);
+      useNio = ConfigurationHelper.getBooleanProperty(TransportConstants.USE_NIO_PROP_NAME,
+                                                      TransportConstants.DEFAULT_USE_NIO_CLIENT,
+                                                      configuration);
+      useServlet = ConfigurationHelper.getBooleanProperty(TransportConstants.USE_SERVLET_PROP_NAME,
+                                                          TransportConstants.DEFAULT_USE_SERVLET,
+                                                          configuration);
+      host = ConfigurationHelper.getStringProperty(TransportConstants.HOST_PROP_NAME,
+                                                   TransportConstants.DEFAULT_HOST,
+                                                   configuration);
+      port = ConfigurationHelper.getIntProperty(TransportConstants.PORT_PROP_NAME,
+                                                TransportConstants.DEFAULT_PORT,
+                                                configuration);
       if (sslEnabled)
       {
-         this.keyStorePath = ConfigurationHelper.getStringProperty(TransportConstants.KEYSTORE_PATH_PROP_NAME,
-                                                                   TransportConstants.DEFAULT_KEYSTORE_PATH,
-                                                                   configuration);
-         this.keyStorePassword = ConfigurationHelper.getStringProperty(TransportConstants.KEYSTORE_PASSWORD_PROP_NAME,
-                                                                       TransportConstants.DEFAULT_KEYSTORE_PASSWORD,
-                                                                       configuration);
+         keyStorePath = ConfigurationHelper.getStringProperty(TransportConstants.KEYSTORE_PATH_PROP_NAME,
+                                                              TransportConstants.DEFAULT_KEYSTORE_PATH,
+                                                              configuration);
+         keyStorePassword = ConfigurationHelper.getStringProperty(TransportConstants.KEYSTORE_PASSWORD_PROP_NAME,
+                                                                  TransportConstants.DEFAULT_KEYSTORE_PASSWORD,
+                                                                  configuration);
       }
       else
       {
-         this.keyStorePath = null;
-         this.keyStorePassword = null;
+         keyStorePath = null;
+         keyStorePassword = null;
       }
 
-      this.tcpNoDelay = ConfigurationHelper.getBooleanProperty(TransportConstants.TCP_NODELAY_PROPNAME,
-                                                               TransportConstants.DEFAULT_TCP_NODELAY,
-                                                               configuration);
-      this.tcpSendBufferSize = ConfigurationHelper.getIntProperty(TransportConstants.TCP_SENDBUFFER_SIZE_PROPNAME,
-                                                                  TransportConstants.DEFAULT_TCP_SENDBUFFER_SIZE,
-                                                                  configuration);
-      this.tcpReceiveBufferSize = ConfigurationHelper.getIntProperty(TransportConstants.TCP_RECEIVEBUFFER_SIZE_PROPNAME,
-                                                                     TransportConstants.DEFAULT_TCP_RECEIVEBUFFER_SIZE,
-                                                                     configuration);
+      tcpNoDelay = ConfigurationHelper.getBooleanProperty(TransportConstants.TCP_NODELAY_PROPNAME,
+                                                          TransportConstants.DEFAULT_TCP_NODELAY,
+                                                          configuration);
+      tcpSendBufferSize = ConfigurationHelper.getIntProperty(TransportConstants.TCP_SENDBUFFER_SIZE_PROPNAME,
+                                                             TransportConstants.DEFAULT_TCP_SENDBUFFER_SIZE,
+                                                             configuration);
+      tcpReceiveBufferSize = ConfigurationHelper.getIntProperty(TransportConstants.TCP_RECEIVEBUFFER_SIZE_PROPNAME,
+                                                                TransportConstants.DEFAULT_TCP_RECEIVEBUFFER_SIZE,
+                                                                configuration);
 
       virtualExecutor = new VirtualExecutorService(threadPool);
 
@@ -343,7 +343,7 @@ public class NettyConnector implements Connector
 
    public boolean isStarted()
    {
-      return (channelFactory != null);
+      return channelFactory != null;
    }
 
    public Connection createConnection()
@@ -433,7 +433,9 @@ public class NettyConnector implements Connector
    @ChannelPipelineCoverage("one")
    private final class HornetQClientChannelHandler extends HornetQChannelHandler
    {
-      HornetQClientChannelHandler(ChannelGroup group, BufferHandler handler, ConnectionLifeCycleListener listener)
+      HornetQClientChannelHandler(final ChannelGroup group,
+                                  final BufferHandler handler,
+                                  final ConnectionLifeCycleListener listener)
       {
          super(group, handler, listener);
       }
@@ -450,20 +452,21 @@ public class NettyConnector implements Connector
 
       private HttpIdleTimer task;
 
-      private String url = "http://" + host + ":" + port + servletPath;
+      private final String url = "http://" + host + ":" + port + servletPath;
 
-      private Future handShakeFuture = new Future();
+      private final Future handShakeFuture = new Future();
 
       private boolean active = false;
 
       private boolean handshaking = false;
 
-      private CookieDecoder cookieDecoder = new CookieDecoder();
+      private final CookieDecoder cookieDecoder = new CookieDecoder();
 
       private String cookie;
 
-      private CookieEncoder cookieEncoder = new CookieEncoder(false);
+      private final CookieEncoder cookieEncoder = new CookieEncoder(false);
 
+      @Override
       public void channelConnected(final ChannelHandlerContext ctx, final ChannelStateEvent e) throws Exception
       {
          super.channelConnected(ctx, e);
@@ -479,6 +482,7 @@ public class NettyConnector implements Connector
          }
       }
 
+      @Override
       public void channelClosed(final ChannelHandlerContext ctx, final ChannelStateEvent e) throws Exception
       {
          if (task != null)
@@ -605,6 +609,7 @@ public class NettyConnector implements Connector
             // Execute on different thread to avoid deadlocks
             new Thread()
             {
+               @Override
                public void run()
                {
                   listener.connectionDestroyed(connectionID);
@@ -618,6 +623,7 @@ public class NettyConnector implements Connector
          // Execute on different thread to avoid deadlocks
          new Thread()
          {
+            @Override
             public void run()
             {
                listener.connectionException(connectionID, me);

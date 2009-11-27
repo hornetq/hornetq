@@ -15,6 +15,7 @@ package org.hornetq.core.client.impl;
 
 import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.EXCEPTION;
 import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.SESS_RECEIVE_CONTINUATION;
+import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.SESS_RECEIVE_LARGE_MSG;
 import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.SESS_RECEIVE_MSG;
 
 import org.hornetq.core.logging.Logger;
@@ -25,6 +26,7 @@ import org.hornetq.core.remoting.impl.wireformat.HornetQExceptionMessage;
 import org.hornetq.core.remoting.impl.wireformat.PacketImpl;
 import org.hornetq.core.remoting.impl.wireformat.SessionProducerCreditsMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionReceiveContinuationMessage;
+import org.hornetq.core.remoting.impl.wireformat.SessionReceiveLargeMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionReceiveMessage;
 
 /**
@@ -66,18 +68,19 @@ public class ClientSessionPacketHandler implements ChannelHandler
                break;
             }
             case SESS_RECEIVE_MSG:
-            {
+            {              
                SessionReceiveMessage message = (SessionReceiveMessage) packet;
                
-               if (message.isLargeMessage())
-               {
-                  clientSession.handleReceiveLargeMessage(message.getConsumerID(), message);
-               }
-               else
-               {
-                  clientSession.handleReceiveMessage(message.getConsumerID(), message);
-               }
+               clientSession.handleReceiveMessage(message.getConsumerID(), message);               
                
+               break;
+            }
+            case SESS_RECEIVE_LARGE_MSG:
+            {
+               SessionReceiveLargeMessage message = (SessionReceiveLargeMessage) packet;
+               
+               clientSession.handleReceiveLargeMessage(message.getConsumerID(), message);
+                              
                break;
             }
             case PacketImpl.SESS_PRODUCER_CREDITS:

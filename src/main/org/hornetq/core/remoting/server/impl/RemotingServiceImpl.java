@@ -24,6 +24,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 
+import org.hornetq.core.buffers.HornetQBuffer;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.TransportConfiguration;
@@ -45,7 +46,6 @@ import org.hornetq.core.remoting.spi.AcceptorFactory;
 import org.hornetq.core.remoting.spi.BufferHandler;
 import org.hornetq.core.remoting.spi.Connection;
 import org.hornetq.core.remoting.spi.ConnectionLifeCycleListener;
-import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.impl.HornetQPacketHandler;
 import org.hornetq.utils.ConfigurationHelper;

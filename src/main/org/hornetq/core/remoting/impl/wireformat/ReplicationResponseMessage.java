@@ -34,15 +34,6 @@ public class ReplicationResponseMessage extends PacketImpl
 
    // Public --------------------------------------------------------
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.remoting.Packet#getRequiredBufferSize()
-    */
-   @Override
-   public int getRequiredBufferSize()
-   {
-      return BASIC_PACKET_SIZE;
-   }
-
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

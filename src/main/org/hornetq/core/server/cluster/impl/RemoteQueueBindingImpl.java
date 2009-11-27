@@ -178,7 +178,7 @@ public class RemoteQueueBindingImpl implements RemoteQueueBinding
    }
    
    public void route(final ServerMessage message, final RoutingContext context)
-   {
+   { 
       byte[] ids = message.getBytesProperty(idsHeaderName);
       
       if (ids == null)
@@ -200,11 +200,11 @@ public class RemoteQueueBindingImpl implements RemoteQueueBinding
       
       message.putBytesProperty(idsHeaderName, ids);
       
-      if (!context.getQueues().contains(this.storeAndForwardQueue))
+      if (!context.getDurableQueues().contains(this.storeAndForwardQueue))
       {
          //There can be many remote bindings for the same node, we only want to add the message once to 
          //the s & f queue for that node
-         context.getQueues().add(storeAndForwardQueue);
+         context.addQueue(storeAndForwardQueue);
       }
    }
    

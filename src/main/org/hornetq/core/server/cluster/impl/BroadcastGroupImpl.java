@@ -20,13 +20,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ScheduledFuture;
 
-import org.hornetq.core.buffers.ChannelBuffers;
+import org.hornetq.core.buffers.HornetQBuffer;
+import org.hornetq.core.buffers.HornetQBuffers;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.management.Notification;
 import org.hornetq.core.management.NotificationService;
 import org.hornetq.core.management.NotificationType;
-import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.core.server.cluster.BroadcastGroup;
 import org.hornetq.utils.Pair;
 import org.hornetq.utils.SimpleString;
@@ -203,7 +203,7 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
          return;
       }
       
-      HornetQBuffer buff = ChannelBuffers.dynamicBuffer(4096);
+      HornetQBuffer buff = HornetQBuffers.dynamicBuffer(4096);
      
       buff.writeString(nodeID);
       
@@ -227,7 +227,7 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
          }
       }
       
-      byte[] data = buff.array();
+      byte[] data = buff.toByteBuffer().array();
             
       DatagramPacket packet = new DatagramPacket(data, data.length, groupAddress, groupPort);
 

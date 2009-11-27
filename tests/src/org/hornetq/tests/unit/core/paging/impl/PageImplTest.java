@@ -17,7 +17,7 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.hornetq.core.buffers.ChannelBuffers;
+import org.hornetq.core.buffers.HornetQBuffer;
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.journal.impl.NIOSequentialFileFactory;
@@ -25,11 +25,12 @@ import org.hornetq.core.paging.PagedMessage;
 import org.hornetq.core.paging.impl.PageImpl;
 import org.hornetq.core.paging.impl.PagedMessageImpl;
 import org.hornetq.core.persistence.impl.nullpm.NullStorageManager;
-import org.hornetq.core.remoting.spi.HornetQBuffer;
+import org.hornetq.core.remoting.impl.wireformat.PacketImpl;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.impl.ServerMessageImpl;
 import org.hornetq.tests.unit.core.journal.impl.fakes.FakeSequentialFileFactory;
 import org.hornetq.tests.util.UnitTestCase;
+import org.hornetq.utils.DataConstants;
 import org.hornetq.utils.SimpleString;
 
 /**
@@ -105,11 +106,9 @@ public class PageImplTest extends UnitTestCase
 
       for (int i = 0; i < msgs.size(); i++)
       {
-         assertEquals(i, (msgs.get(i).getMessage(null)).getMessageID());
-
          assertEquals(simpleDestination, (msgs.get(i).getMessage(null)).getDestination());
 
-         assertEqualsByteArrays(buffers.get(i).array(), (msgs.get(i).getMessage(null)).getBody().array());
+         assertEqualsByteArrays(buffers.get(i).toByteBuffer().array(), (msgs.get(i).getMessage(null)).getBodyBuffer().toByteBuffer().array());
       }
 
       impl.delete();
@@ -178,11 +177,9 @@ public class PageImplTest extends UnitTestCase
 
       for (int i = 0; i < msgs.size(); i++)
       {
-         assertEquals(i, (msgs.get(i).getMessage(null)).getMessageID());
-
          assertEquals(simpleDestination, (msgs.get(i).getMessage(null)).getDestination());
 
-         assertEqualsByteArrays(buffers.get(i).array(), (msgs.get(i).getMessage(null)).getBody().array());
+         assertEqualsByteArrays(buffers.get(i).toByteBuffer().array(), (msgs.get(i).getMessage(null)).getBodyBuffer().toByteBuffer().array());
       }
 
       impl.delete();
@@ -208,24 +205,14 @@ public class PageImplTest extends UnitTestCase
 
       for (int i = 0; i < numberOfElements; i++)
       {
-         HornetQBuffer buffer = ChannelBuffers.buffer(10); 
+         ServerMessage msg = new ServerMessageImpl(i, 100);                 
 
-         for (int j = 0; j < buffer.capacity(); j++)
-         {
-            //buffer.writeByte(RandomUtil.randomByte());
-            buffer.writeByte((byte)'b');
+         for (int j = 0; j < 10; j++)
+         {           
+            msg.getBodyBuffer().writeByte((byte)'b');
          }
 
-         buffers.add(buffer);
-
-         ServerMessage msg = new ServerMessageImpl((byte)1,
-                                                   true,
-                                                   0,
-                                                   System.currentTimeMillis(),
-                                                   (byte)0,
-                                                   buffer);
-
-         msg.setMessageID(i);
+         buffers.add(msg.getBodyBuffer());
 
          msg.setDestination(simpleDestination);
 
@@ -235,8 +222,6 @@ public class PageImplTest extends UnitTestCase
       }
       return buffers;
    }
-
-
 
    // Package protected ---------------------------------------------
 
@@ -249,5 +234,4 @@ public class PageImplTest extends UnitTestCase
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------
-
 }

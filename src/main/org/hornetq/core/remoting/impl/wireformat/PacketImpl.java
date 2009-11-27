@@ -13,9 +13,10 @@
 
 package org.hornetq.core.remoting.impl.wireformat;
 
+import org.hornetq.core.buffers.HornetQBuffer;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.Packet;
-import org.hornetq.core.remoting.spi.HornetQBuffer;
+import org.hornetq.core.remoting.RemotingConnection;
 import org.hornetq.utils.DataConstants;
 
 /**
@@ -30,14 +31,16 @@ public class PacketImpl implements Packet
    private static final Logger log = Logger.getLogger(PacketImpl.class);
 
    // The minimal size for all the packets, Common data for all the packets (look at PacketImpl.encode)
-   protected static final int BASIC_PACKET_SIZE = DataConstants.SIZE_INT + DataConstants.SIZE_BYTE +
-                                                  DataConstants.SIZE_LONG;
+   public static final int PACKET_HEADERS_SIZE = DataConstants.SIZE_INT + DataConstants.SIZE_BYTE +
+                                                 DataConstants.SIZE_LONG;
 
-   private long channelID;
+   private static final int INITIAL_PACKET_SIZE = 1500;
 
-   private final byte type;
+   protected long channelID;
 
-   private int size;
+   protected final byte type;
+
+   protected int size = -1;
 
    // The packet types
    // -----------------------------------------------------------------------------------
@@ -136,42 +139,47 @@ public class PacketImpl implements Packet
    public static final byte SESS_CONSUMER_CLOSE = 74;
 
    public static final byte SESS_RECEIVE_MSG = 75;
-
-   public static final byte SESS_RECEIVE_CONTINUATION = 76;
-
-   public static final byte SESS_FORCE_CONSUMER_DELIVERY = 77;
    
-   public static final byte SESS_PRODUCER_REQUEST_CREDITS = 78;
-   
-   public static final byte SESS_PRODUCER_CREDITS = 79;
+   public static final byte SESS_RECEIVE_LARGE_MSG = 76;
+
+   public static final byte SESS_RECEIVE_CONTINUATION = 77;
+
+   public static final byte SESS_FORCE_CONSUMER_DELIVERY = 78;
+
+   public static final byte SESS_PRODUCER_REQUEST_CREDITS = 79;
+
+   public static final byte SESS_PRODUCER_CREDITS = 80;
 
    // Replication
 
-   public static final byte REPLICATION_RESPONSE = 80;
+   public static final byte REPLICATION_RESPONSE = 90;
 
-   public static final byte REPLICATION_APPEND = 81;
+   public static final byte REPLICATION_APPEND = 91;
 
-   public static final byte REPLICATION_APPEND_TX = 82;
+   public static final byte REPLICATION_APPEND_TX = 92;
 
-   public static final byte REPLICATION_DELETE = 83;
+   public static final byte REPLICATION_DELETE = 93;
 
-   public static final byte REPLICATION_DELETE_TX = 84;
-   
-   public static final byte REPLICATION_PREPARE = 85;
-   
-   public static final byte REPLICATION_COMMIT_ROLLBACK = 86;
-   
-   public static final byte REPLICATION_PAGE_WRITE = 87;
+   public static final byte REPLICATION_DELETE_TX = 94;
 
-   public static final byte REPLICATION_PAGE_EVENT = 88;
-   
-   public static final byte REPLICATION_LARGE_MESSAGE_BEGIN = 89;
-   
-   public static final byte REPLICATION_LARGE_MESSAGE_END = 90;
-   
-   public static final byte REPLICATION_LARGE_MESSAGE_WRITE = 91;
-   
-   public static final byte REPLICATION_COMPARE_DATA = 92;
+   public static final byte REPLICATION_PREPARE = 95;
+
+   public static final byte REPLICATION_COMMIT_ROLLBACK = 96;
+
+   public static final byte REPLICATION_PAGE_WRITE = 97;
+
+   public static final byte REPLICATION_PAGE_EVENT = 98;
+
+   public static final byte REPLICATION_LARGE_MESSAGE_BEGIN = 99;
+
+   public static final byte REPLICATION_LARGE_MESSAGE_END = 100;
+
+   public static final byte REPLICATION_LARGE_MESSAGE_WRITE = 101;
+
+   public static final byte REPLICATION_COMPARE_DATA = 102;
+
+   public static final byte REPLICATION_SYNC = 103;
+
    // Static --------------------------------------------------------
 
    public PacketImpl(final byte type)
@@ -196,14 +204,17 @@ public class PacketImpl implements Packet
       this.channelID = channelID;
    }
 
-   public int encode(final HornetQBuffer buffer)
+   public HornetQBuffer encode(final RemotingConnection connection)
    {
+      HornetQBuffer buffer = connection.createBuffer(INITIAL_PACKET_SIZE);
+
       // The standard header fields
+
       buffer.writeInt(0); // The length gets filled in at the end
       buffer.writeByte(type);
       buffer.writeLong(channelID);
 
-      encodeBody(buffer);
+      encodeRest(buffer);
 
       size = buffer.writerIndex();
 
@@ -212,26 +223,26 @@ public class PacketImpl implements Packet
 
       buffer.setInt(0, len);
 
-      return size;
+      return buffer;
    }
 
    public void decode(final HornetQBuffer buffer)
    {
       channelID = buffer.readLong();
-      
-      decodeBody(buffer);
+
+      decodeRest(buffer);
 
       size = buffer.readerIndex();
    }
 
-   public final int getPacketSize()
+   public int getPacketSize()
    {
+      if (size == -1)
+      {
+         throw new IllegalStateException("Packet hasn't been encoded/decoded yet");
+      }
+      
       return size;
-   }
-
-   public int getRequiredBufferSize()
-   {
-      return BASIC_PACKET_SIZE;
    }
 
    public boolean isResponse()
@@ -239,11 +250,11 @@ public class PacketImpl implements Packet
       return false;
    }
 
-   public void encodeBody(final HornetQBuffer buffer)
+   public void encodeRest(final HornetQBuffer buffer)
    {
    }
 
-   public void decodeBody(final HornetQBuffer buffer)
+   public void decodeRest(final HornetQBuffer buffer)
    {
    }
 

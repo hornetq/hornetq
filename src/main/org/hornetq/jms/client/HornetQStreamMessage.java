@@ -11,7 +11,6 @@
  * permissions and limitations under the License.
  */
 
-
 package org.hornetq.jms.client;
 
 import javax.jms.JMSException;
@@ -19,8 +18,11 @@ import javax.jms.MessageEOFException;
 import javax.jms.MessageFormatException;
 import javax.jms.StreamMessage;
 
+import org.hornetq.core.buffers.HornetQBuffer;
+import org.hornetq.core.buffers.HornetQBuffers;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientSession;
+import org.hornetq.core.client.impl.ClientMessageImpl;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.utils.DataConstants;
 
@@ -46,61 +48,59 @@ public class HornetQStreamMessage extends HornetQMessage implements StreamMessag
    // Constants -----------------------------------------------------
 
    private static final Logger log = Logger.getLogger(HornetQStreamMessage.class);
-   
-   
+
    public static final byte TYPE = 6;
 
    // Attributes ----------------------------------------------------
- 
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   /*
-    * This constructor is used to construct messages prior to sending
-    */
-   public HornetQStreamMessage()
-   {   
-      super(HornetQStreamMessage.TYPE);
-   }
-
    public HornetQStreamMessage(final ClientSession session)
-   {   
+   {
       super(HornetQStreamMessage.TYPE, session);
    }
-   
+
    public HornetQStreamMessage(final ClientMessage message, final ClientSession session)
    {
       super(message, session);
    }
-   
+
    public HornetQStreamMessage(final StreamMessage foreign, final ClientSession session) throws JMSException
    {
       super(foreign, HornetQStreamMessage.TYPE, session);
-      
+
       foreign.reset();
-      
+
       try
       {
          while (true)
          {
             Object obj = foreign.readObject();
-            this.writeObject(obj);
+            writeObject(obj);
          }
       }
       catch (MessageEOFException e)
       {
-         //Ignore
+         // Ignore
       }
+   }
+
+   // For testing only
+   public HornetQStreamMessage()
+   {
+      this.message = new ClientMessageImpl((byte)0, false, 0, 0, (byte)4, 1500);
    }
 
    // Public --------------------------------------------------------
 
+   @Override
    public byte getType()
    {
       return HornetQStreamMessage.TYPE;
    }
-   
+
    // StreamMessage implementation ----------------------------------
 
    public boolean readBoolean() throws JMSException
@@ -108,17 +108,17 @@ public class HornetQStreamMessage extends HornetQMessage implements StreamMessag
       checkRead();
       try
       {
-         byte type = getBody().readByte();
-         
+         byte type = getBuffer().readByte();
+
          switch (type)
          {
             case DataConstants.BOOLEAN:
-               return getBody().readBoolean();
+               return getBuffer().readBoolean();
             case DataConstants.STRING:
-               String s = getBody().readNullableString();
+               String s = getBuffer().readNullableString();
                return Boolean.valueOf(s);
             default:
-               throw new MessageFormatException("Invalid conversion");           
+               throw new MessageFormatException("Invalid conversion");
          }
       }
       catch (IndexOutOfBoundsException e)
@@ -132,16 +132,16 @@ public class HornetQStreamMessage extends HornetQMessage implements StreamMessag
       checkRead();
       try
       {
-         byte type = getBody().readByte();
+         byte type = getBuffer().readByte();
          switch (type)
          {
             case DataConstants.BYTE:
-               return getBody().readByte();
+               return getBuffer().readByte();
             case DataConstants.STRING:
-               String s = getBody().readNullableString();
+               String s = getBuffer().readNullableString();
                return Byte.parseByte(s);
             default:
-               throw new MessageFormatException("Invalid conversion");           
+               throw new MessageFormatException("Invalid conversion");
          }
       }
       catch (IndexOutOfBoundsException e)
@@ -155,18 +155,18 @@ public class HornetQStreamMessage extends HornetQMessage implements StreamMessag
       checkRead();
       try
       {
-         byte type = getBody().readByte();
+         byte type = getBuffer().readByte();
          switch (type)
          {
             case DataConstants.BYTE:
-               return getBody().readByte();
+               return getBuffer().readByte();
             case DataConstants.SHORT:
-               return getBody().readShort();
+               return getBuffer().readShort();
             case DataConstants.STRING:
-               String s = getBody().readNullableString();
+               String s = getBuffer().readNullableString();
                return Short.parseShort(s);
             default:
-               throw new MessageFormatException("Invalid conversion");           
+               throw new MessageFormatException("Invalid conversion");
          }
       }
       catch (IndexOutOfBoundsException e)
@@ -180,13 +180,13 @@ public class HornetQStreamMessage extends HornetQMessage implements StreamMessag
       checkRead();
       try
       {
-         byte type = getBody().readByte();
+         byte type = getBuffer().readByte();
          switch (type)
          {
             case DataConstants.CHAR:
-               return getBody().readChar();
+               return (char)getBuffer().readShort();
             default:
-               throw new MessageFormatException("Invalid conversion");           
+               throw new MessageFormatException("Invalid conversion");
          }
       }
       catch (IndexOutOfBoundsException e)
@@ -200,20 +200,20 @@ public class HornetQStreamMessage extends HornetQMessage implements StreamMessag
       checkRead();
       try
       {
-         byte type = getBody().readByte();
+         byte type = getBuffer().readByte();
          switch (type)
          {
             case DataConstants.BYTE:
-               return getBody().readByte();
+               return getBuffer().readByte();
             case DataConstants.SHORT:
-               return getBody().readShort();
+               return getBuffer().readShort();
             case DataConstants.INT:
-               return getBody().readInt();
+               return getBuffer().readInt();
             case DataConstants.STRING:
-               String s = getBody().readNullableString();
+               String s = getBuffer().readNullableString();
                return Integer.parseInt(s);
             default:
-               throw new MessageFormatException("Invalid conversion");           
+               throw new MessageFormatException("Invalid conversion");
          }
       }
       catch (IndexOutOfBoundsException e)
@@ -227,22 +227,22 @@ public class HornetQStreamMessage extends HornetQMessage implements StreamMessag
       checkRead();
       try
       {
-         byte type = getBody().readByte();
+         byte type = getBuffer().readByte();
          switch (type)
          {
             case DataConstants.BYTE:
-               return getBody().readByte();
+               return getBuffer().readByte();
             case DataConstants.SHORT:
-               return getBody().readShort();
+               return getBuffer().readShort();
             case DataConstants.INT:
-               return getBody().readInt();
+               return getBuffer().readInt();
             case DataConstants.LONG:
-               return getBody().readLong();
+               return getBuffer().readLong();
             case DataConstants.STRING:
-               String s = getBody().readNullableString();
+               String s = getBuffer().readNullableString();
                return Long.parseLong(s);
             default:
-               throw new MessageFormatException("Invalid conversion");           
+               throw new MessageFormatException("Invalid conversion");
          }
       }
       catch (IndexOutOfBoundsException e)
@@ -256,16 +256,16 @@ public class HornetQStreamMessage extends HornetQMessage implements StreamMessag
       checkRead();
       try
       {
-         byte type = getBody().readByte();
+         byte type = getBuffer().readByte();
          switch (type)
          {
             case DataConstants.FLOAT:
-               return getBody().readFloat();
+               return Float.intBitsToFloat(getBuffer().readInt());
             case DataConstants.STRING:
-               String s = getBody().readNullableString();
+               String s = getBuffer().readNullableString();
                return Float.parseFloat(s);
             default:
-               throw new MessageFormatException("Invalid conversion");           
+               throw new MessageFormatException("Invalid conversion");
          }
       }
       catch (IndexOutOfBoundsException e)
@@ -279,18 +279,18 @@ public class HornetQStreamMessage extends HornetQMessage implements StreamMessag
       checkRead();
       try
       {
-         byte type = getBody().readByte();
+         byte type = getBuffer().readByte();
          switch (type)
          {
             case DataConstants.FLOAT:
-               return getBody().readFloat();
+               return Float.intBitsToFloat(getBuffer().readInt());
             case DataConstants.DOUBLE:
-               return getBody().readDouble();
+               return Double.longBitsToDouble(getBuffer().readLong());
             case DataConstants.STRING:
-               String s = getBody().readNullableString();
+               String s = getBuffer().readNullableString();
                return Double.parseDouble(s);
             default:
-               throw new MessageFormatException("Invalid conversion: " + type);           
+               throw new MessageFormatException("Invalid conversion: " + type);
          }
       }
       catch (IndexOutOfBoundsException e)
@@ -298,35 +298,35 @@ public class HornetQStreamMessage extends HornetQMessage implements StreamMessag
          throw new MessageEOFException("");
       }
    }
-   
+
    public String readString() throws JMSException
    {
       checkRead();
       try
       {
-         byte type = getBody().readByte();
+         byte type = getBuffer().readByte();
          switch (type)
          {
             case DataConstants.BOOLEAN:
-               return String.valueOf(getBody().readBoolean());
+               return String.valueOf(getBuffer().readBoolean());
             case DataConstants.BYTE:
-               return String.valueOf(getBody().readByte());
+               return String.valueOf(getBuffer().readByte());
             case DataConstants.SHORT:
-               return String.valueOf(getBody().readShort());
+               return String.valueOf(getBuffer().readShort());
             case DataConstants.CHAR:
-               return String.valueOf(getBody().readChar());
+               return String.valueOf((char)getBuffer().readShort());
             case DataConstants.INT:
-               return String.valueOf(getBody().readInt());
+               return String.valueOf(getBuffer().readInt());
             case DataConstants.LONG:
-               return String.valueOf(getBody().readLong());
+               return String.valueOf(getBuffer().readLong());
             case DataConstants.FLOAT:
-               return String.valueOf(getBody().readFloat());
+               return String.valueOf(Float.intBitsToFloat(getBuffer().readInt()));
             case DataConstants.DOUBLE:
-               return String.valueOf(getBody().readDouble());
+               return String.valueOf(Double.longBitsToDouble(getBuffer().readLong()));
             case DataConstants.STRING:
-               return getBody().readNullableString();
+               return getBuffer().readNullableString();
             default:
-               throw new MessageFormatException("Invalid conversion");           
+               throw new MessageFormatException("Invalid conversion");
          }
       }
       catch (IndexOutOfBoundsException e)
@@ -336,7 +336,7 @@ public class HornetQStreamMessage extends HornetQMessage implements StreamMessag
    }
 
    private int len;
-   
+
    public int readBytes(final byte[] value) throws JMSException
    {
       checkRead();
@@ -349,145 +349,144 @@ public class HornetQStreamMessage extends HornetQMessage implements StreamMessag
          }
          else if (len == 0)
          {
-            byte type = getBody().readByte();
+            byte type = getBuffer().readByte();
             if (type != DataConstants.BYTES)
             {
-               throw new MessageFormatException("Invalid conversion"); 
+               throw new MessageFormatException("Invalid conversion");
             }
-            len = getBody().readInt();       
-         }     
+            len = getBuffer().readInt();
+         }
          int read = Math.min(value.length, len);
-         getBody().readBytes(value, 0, read);
+         getBuffer().readBytes(value, 0, read);
          len -= read;
          if (len == 0)
          {
             len = -1;
          }
-         return read;      
+         return read;
       }
       catch (IndexOutOfBoundsException e)
       {
          throw new MessageEOFException("");
       }
    }
-   
+
    public Object readObject() throws JMSException
    {
       checkRead();
-      byte type = getBody().readByte();
+      byte type = getBuffer().readByte();
       switch (type)
       {
          case DataConstants.BOOLEAN:
-            return getBody().readBoolean();
+            return getBuffer().readBoolean();
          case DataConstants.BYTE:
-            return getBody().readByte();
+            return getBuffer().readByte();
          case DataConstants.SHORT:
-            return getBody().readShort();
+            return getBuffer().readShort();
          case DataConstants.CHAR:
-            return getBody().readChar();
+            return (char)getBuffer().readShort();
          case DataConstants.INT:
-            return getBody().readInt();
+            return getBuffer().readInt();
          case DataConstants.LONG:
-            return getBody().readLong();
+            return getBuffer().readLong();
          case DataConstants.FLOAT:
-            return getBody().readFloat();
+            return Float.intBitsToFloat(getBuffer().readInt());
          case DataConstants.DOUBLE:
-            return getBody().readDouble();
+            return Double.longBitsToDouble(getBuffer().readLong());
          case DataConstants.STRING:
-            return getBody().readNullableString();         
+            return getBuffer().readNullableString();
          case DataConstants.BYTES:
-            int len = getBody().readInt();
+            int len = getBuffer().readInt();
             byte[] bytes = new byte[len];
-            getBody().readBytes(bytes);
+            getBuffer().readBytes(bytes);
             return bytes;
          default:
-            throw new MessageFormatException("Invalid conversion");           
+            throw new MessageFormatException("Invalid conversion");
       }
    }
 
    public void writeBoolean(final boolean value) throws JMSException
    {
       checkWrite();
-      getBody().writeByte(DataConstants.BOOLEAN);
-      getBody().writeBoolean(value);
+      getBuffer().writeByte(DataConstants.BOOLEAN);
+      getBuffer().writeBoolean(value);
    }
 
    public void writeByte(final byte value) throws JMSException
    {
       checkWrite();
-      getBody().writeByte(DataConstants.BYTE);
-      getBody().writeByte(value);
+      getBuffer().writeByte(DataConstants.BYTE);
+      getBuffer().writeByte(value);
    }
 
    public void writeShort(final short value) throws JMSException
    {
       checkWrite();
-      getBody().writeByte(DataConstants.SHORT);
-      getBody().writeShort(value);
+      getBuffer().writeByte(DataConstants.SHORT);
+      getBuffer().writeShort(value);
    }
 
    public void writeChar(final char value) throws JMSException
    {
       checkWrite();
-      getBody().writeByte(DataConstants.CHAR);
-      getBody().writeChar(value);
+      getBuffer().writeByte(DataConstants.CHAR);
+      getBuffer().writeShort((short)value);
    }
 
    public void writeInt(final int value) throws JMSException
    {
       checkWrite();
-      getBody().writeByte(DataConstants.INT);
-      getBody().writeInt(value);
+      getBuffer().writeByte(DataConstants.INT);
+      getBuffer().writeInt(value);
    }
 
    public void writeLong(final long value) throws JMSException
    {
       checkWrite();
-      getBody().writeByte(DataConstants.LONG);
-      getBody().writeLong(value);
+      getBuffer().writeByte(DataConstants.LONG);
+      getBuffer().writeLong(value);
    }
 
    public void writeFloat(final float value) throws JMSException
    {
       checkWrite();
-      getBody().writeByte(DataConstants.FLOAT);
-      getBody().writeFloat(value);
+      getBuffer().writeByte(DataConstants.FLOAT);
+      getBuffer().writeInt(Float.floatToIntBits(value));
    }
 
    public void writeDouble(final double value) throws JMSException
    {
       checkWrite();
-      getBody().writeByte(DataConstants.DOUBLE);
-      getBody().writeDouble(value);
+      getBuffer().writeByte(DataConstants.DOUBLE);
+      getBuffer().writeLong(Double.doubleToLongBits(value));
    }
-   
+
    public void writeString(final String value) throws JMSException
    {
       checkWrite();
-      getBody().writeByte(DataConstants.STRING);
-      getBody().writeNullableString(value);
+      getBuffer().writeByte(DataConstants.STRING);
+      getBuffer().writeNullableString(value);
    }
 
    public void writeBytes(final byte[] value) throws JMSException
    {
       checkWrite();
-      getBody().writeByte(DataConstants.BYTES);
-      getBody().writeInt(value.length);
-      getBody().writeBytes(value);
+      getBuffer().writeByte(DataConstants.BYTES);
+      getBuffer().writeInt(value.length);
+      getBuffer().writeBytes(value);
    }
 
-   public void writeBytes(final byte[] value, final int offset, final int length)
-         throws JMSException
+   public void writeBytes(final byte[] value, final int offset, final int length) throws JMSException
    {
       checkWrite();
-      getBody().writeByte(DataConstants.BYTES);
-      getBody().writeInt(length);
-      getBody().writeBytes(value, offset, length);
+      getBuffer().writeByte(DataConstants.BYTES);
+      getBuffer().writeInt(length);
+      getBuffer().writeBytes(value, offset, length);
    }
 
    public void writeObject(final Object value) throws JMSException
    {
-      if (value == null) 
+      if (value == null)
       {
          throw new NullPointerException("Attempt to write a null value");
       }
@@ -529,7 +528,7 @@ public class HornetQStreamMessage extends HornetQMessage implements StreamMessag
       }
       else if (value instanceof Character)
       {
-         this.writeChar((Character)value);
+         writeChar((Character)value);
       }
       else
       {
@@ -543,27 +542,35 @@ public class HornetQStreamMessage extends HornetQMessage implements StreamMessag
       {
          readOnly = true;
       }
-      getBody().resetReaderIndex();
+      getBuffer().resetReaderIndex();
    }
 
    // HornetQRAMessage overrides ----------------------------------------
-  
+
+   @Override
    public void clearBody() throws JMSException
    {
       super.clearBody();
-      message.getBody().clear();
+
+      getBuffer().clear();
    }
-   
+
+   @Override
    public void doBeforeSend() throws Exception
    {
       reset();
    }
-   
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
 
    // Private -------------------------------------------------------
-   
+
+   private HornetQBuffer getBuffer()
+   {
+      return message.getBodyBuffer();
+   }
+
    // Inner classes -------------------------------------------------
 }

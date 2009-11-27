@@ -18,6 +18,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.hornetq.core.buffers.HornetQBuffer;
+import org.hornetq.core.buffers.HornetQBuffers;
 import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.journal.impl.TimedBuffer;
 import org.hornetq.core.journal.impl.TimedBufferObserver;
@@ -38,6 +40,7 @@ public class TimedBufferTest extends UnitTestCase
    // Attributes ----------------------------------------------------
 
    // Static --------------------------------------------------------
+   
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
@@ -96,9 +99,11 @@ public class TimedBufferTest extends UnitTestCase
          {
             bytes[j] = getSamplebyte(x++);
          }
+         
+         HornetQBuffer buff = HornetQBuffers.wrappedBuffer(bytes);
 
          timedBuffer.checkSize(10);
-         timedBuffer.addBytes(bytes, false, dummyCallback);
+         timedBuffer.addBytes(buff, false, dummyCallback);
       }
 
       assertEquals(1, flushTimes.get());

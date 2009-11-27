@@ -19,12 +19,13 @@ import java.util.List;
 import java.util.UUID;
 
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
-import org.hornetq.core.buffers.ChannelBuffers;
+import org.hornetq.core.buffers.HornetQBuffer;
+import org.hornetq.core.buffers.HornetQBuffers;
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.tests.util.UnitTestCase;
+import org.jboss.netty.buffer.ChannelBuffers;
 
 /**
  * 
@@ -398,14 +399,9 @@ public abstract class SequentialFileFactoryTestBase extends UnitTestCase
 
    // Private ---------------------------------
    
-   private HornetQBuffer wrapBuffer(ByteBuffer buffer)
-   {
-      return ChannelBuffers.wrappedBuffer(buffer);
-   }
-
    private HornetQBuffer wrapBuffer(byte[] bytes)
    {
-      return ChannelBuffers.wrappedBuffer(bytes);
+      return HornetQBuffers.wrappedBuffer(bytes);
    }
 
    protected void checkFill(final SequentialFile file, final int pos, final int size, final byte fillChar) throws Exception

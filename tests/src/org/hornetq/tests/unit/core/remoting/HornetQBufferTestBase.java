@@ -21,7 +21,7 @@ import static org.hornetq.tests.util.RandomUtil.randomInt;
 import static org.hornetq.tests.util.RandomUtil.randomLong;
 import static org.hornetq.tests.util.RandomUtil.randomString;
 
-import org.hornetq.core.remoting.spi.HornetQBuffer;
+import org.hornetq.core.buffers.HornetQBuffer;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.SimpleString;
@@ -269,9 +269,9 @@ public abstract class HornetQBufferTestBase extends UnitTestCase
       byte[] bytes = randomBytes(128);
       wrapper.writeBytes(bytes);
 
-      byte[] array = wrapper.array();
+      byte[] array = wrapper.toByteBuffer().array();
       assertEquals(wrapper.capacity(), array.length);
-      assertEqualsByteArrays(128, bytes, wrapper.array());
+      assertEqualsByteArrays(128, bytes, wrapper.toByteBuffer().array());
    }
 
    public void testRewind() throws Exception

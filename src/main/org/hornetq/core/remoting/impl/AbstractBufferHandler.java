@@ -12,8 +12,9 @@
  */
 package org.hornetq.core.remoting.impl;
 
+import org.hornetq.core.buffers.HornetQBuffer;
+import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.spi.BufferHandler;
-import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.utils.DataConstants;
 
 /**
@@ -24,6 +25,8 @@ import org.hornetq.utils.DataConstants;
  */
 public abstract class AbstractBufferHandler implements BufferHandler
 {
+   private static final Logger log = Logger.getLogger(AbstractBufferHandler.class);
+
    public int isReadyToHandle(final HornetQBuffer buffer)
    {
       if (buffer.readableBytes() < DataConstants.SIZE_INT)

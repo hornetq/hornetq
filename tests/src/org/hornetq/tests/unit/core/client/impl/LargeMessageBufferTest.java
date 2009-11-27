@@ -25,8 +25,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.hornetq.core.buffers.ChannelBuffer;
-import org.hornetq.core.buffers.ChannelBuffers;
+import org.hornetq.core.buffers.HornetQBuffer;
+import org.hornetq.core.buffers.HornetQBuffers;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.MessageHandler;
 import org.hornetq.core.client.impl.ClientConsumerInternal;
@@ -34,7 +34,7 @@ import org.hornetq.core.client.impl.ClientMessageInternal;
 import org.hornetq.core.client.impl.LargeMessageBufferImpl;
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.remoting.impl.wireformat.SessionReceiveContinuationMessage;
-import org.hornetq.core.remoting.impl.wireformat.SessionReceiveMessage;
+import org.hornetq.core.remoting.impl.wireformat.SessionReceiveLargeMessage;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.SimpleString;
@@ -114,7 +114,7 @@ public class LargeMessageBufferTest extends UnitTestCase
    {
       LargeMessageBufferImpl buffer = create15BytesSample();
 
-      ChannelBuffer dstBuffer = ChannelBuffers.buffer(20);
+      HornetQBuffer dstBuffer = HornetQBuffers.fixedBuffer(20);
 
       dstBuffer.setIndex(0, 5);
 
@@ -168,7 +168,7 @@ public class LargeMessageBufferTest extends UnitTestCase
 
    public void testReadData() throws Exception
    {
-      ChannelBuffer dynamic = ChannelBuffers.dynamicBuffer(1);
+      HornetQBuffer dynamic = HornetQBuffers.dynamicBuffer(1);
 
       String str1 = RandomUtil.randomString();
       String str2 = RandomUtil.randomString();
@@ -180,7 +180,7 @@ public class LargeMessageBufferTest extends UnitTestCase
       dynamic.writeDouble(d1);
       dynamic.writeFloat(f1);
 
-      LargeMessageBufferImpl readBuffer = splitBuffer(3, dynamic.array());
+      LargeMessageBufferImpl readBuffer = splitBuffer(3, dynamic.toByteBuffer().array());
 
       assertEquals(str1, readBuffer.readUTF());
       assertEquals(str2, readBuffer.readString());
@@ -197,7 +197,7 @@ public class LargeMessageBufferTest extends UnitTestCase
    {
       clearData();
       
-      ChannelBuffer dynamic = ChannelBuffers.dynamicBuffer(1);
+      HornetQBuffer dynamic = HornetQBuffers.dynamicBuffer(1);
 
       String str1 = RandomUtil.randomString();
       String str2 = RandomUtil.randomString();
@@ -209,7 +209,7 @@ public class LargeMessageBufferTest extends UnitTestCase
       dynamic.writeDouble(d1);
       dynamic.writeFloat(f1);
 
-      LargeMessageBufferImpl readBuffer = splitBuffer(3, dynamic.array(), getTestFile());
+      LargeMessageBufferImpl readBuffer = splitBuffer(3, dynamic.toByteBuffer().array(), getTestFile());
 
       assertEquals(str1, readBuffer.readUTF());
       assertEquals(str2, readBuffer.readString());
@@ -231,7 +231,7 @@ public class LargeMessageBufferTest extends UnitTestCase
 
       final LargeMessageBufferImpl buffer = new LargeMessageBufferImpl(new FakeConsumerInternal(), 10, 10);
 
-      buffer.addPacket(new SessionReceiveContinuationMessage(-1, new byte[] { 0, 1, 2, 3, 4 }, true, true));
+      buffer.addPacket(new FakePacket(-1, new byte[] { 0, 1, 2, 3, 4 }, true, true));
 
       byte bytes[] = new byte[30];
       buffer.readBytes(bytes, 0, 5);
@@ -355,7 +355,7 @@ public class LargeMessageBufferTest extends UnitTestCase
 
       for (int i = 0; i < 3; i++)
       {
-         outBuffer.addPacket(new SessionReceiveContinuationMessage(-1, new byte[1024], true, false));
+         outBuffer.addPacket(new FakePacket(-1, new byte[1024], true, false));
       }
 
       outBuffer.setOutputStream(output);
@@ -389,12 +389,12 @@ public class LargeMessageBufferTest extends UnitTestCase
 
       for (int i = 0; i < 8; i++)
       {
-         outBuffer.addPacket(new SessionReceiveContinuationMessage(-1, new byte[1024], true, false));
+         outBuffer.addPacket(new FakePacket(-1, new byte[1024], true, false));
       }
 
       assertEquals(1, waiting.getCount());
 
-      outBuffer.addPacket(new SessionReceiveContinuationMessage(-1, new byte[123], false, false));
+      outBuffer.addPacket(new FakePacket(-1, new byte[123], false, false));
 
       assertTrue(done2.await(10, TimeUnit.SECONDS));
 
@@ -430,7 +430,7 @@ public class LargeMessageBufferTest extends UnitTestCase
       long start = System.currentTimeMillis();
       final LargeMessageBufferImpl outBuffer = new LargeMessageBufferImpl(new FakeConsumerInternal(), 5, 30);
 
-      outBuffer.addPacket(new SessionReceiveContinuationMessage(-1, new byte[] { 0, 1, 2, 3, 4 }, true, false));
+      outBuffer.addPacket(new FakePacket(-1, new byte[] { 0, 1, 2, 3, 4 }, true, false));
 
       final CountDownLatch latchBytesWritten1 = new CountDownLatch(5);
       final CountDownLatch latchBytesWritten2 = new CountDownLatch(10);
@@ -513,22 +513,38 @@ public class LargeMessageBufferTest extends UnitTestCase
          {
             break;
          }
+         
+         SessionReceiveContinuationMessage packet = null;
 
          if (size < splitFactor)
          {
             byte[] newSplit = new byte[size];
             System.arraycopy(splitElement, 0, newSplit, 0, size);
 
-            outBuffer.addPacket(new SessionReceiveContinuationMessage(1, newSplit, input.available() > 0, false));
+            packet = new FakePacket(1, newSplit, input.available() > 0, false);
          }
          else
          {
-            outBuffer.addPacket(new SessionReceiveContinuationMessage(1, splitElement, input.available() > 0, false));
+            packet = new FakePacket(1, splitElement, input.available() > 0, false);
          }
+         
+         outBuffer.addPacket(packet);
       }
 
       return outBuffer;
 
+   }
+   
+   private class FakePacket extends SessionReceiveContinuationMessage
+   {
+      public FakePacket(final long consumerID,
+                        final byte[] body,
+                        final boolean continues,
+                        final boolean requiresResponse)
+      {
+         super(consumerID, body, continues, requiresResponse);
+         this.size = 1;
+      }
    }
 
    /**
@@ -552,217 +568,113 @@ public class LargeMessageBufferTest extends UnitTestCase
 
    static class FakeConsumerInternal implements ClientConsumerInternal
    {
+
+      public void close() throws HornetQException
+      {
+         // TODO Auto-generated method stub
+         
+      }
+
+      public Exception getLastException()
+      {
+         // TODO Auto-generated method stub
+         return null;
+      }
+
+      public MessageHandler getMessageHandler() throws HornetQException
+      {
+         // TODO Auto-generated method stub
+         return null;
+      }
+
+      public boolean isClosed()
+      {
+         // TODO Auto-generated method stub
+         return false;
+      }
+
+      public ClientMessage receive() throws HornetQException
+      {
+         // TODO Auto-generated method stub
+         return null;
+      }
+
+      public ClientMessage receive(long timeout) throws HornetQException
+      {
+         // TODO Auto-generated method stub
+         return null;
+      }
+
+      public ClientMessage receiveImmediate() throws HornetQException
+      {
+         // TODO Auto-generated method stub
+         return null;
+      }
+
+      public void setMessageHandler(MessageHandler handler) throws HornetQException
+      {
+         // TODO Auto-generated method stub
+         
+      }
+
+      public void acknowledge(ClientMessage message) throws HornetQException
+      {
+         // TODO Auto-generated method stub
+         
+      }
+
+      public void cleanUp() throws HornetQException
+      {
+         // TODO Auto-generated method stub
+         
+      }
+
+      public void clear() throws HornetQException
+      {
+         // TODO Auto-generated method stub
+         
+      }
+
       public void clearAtFailover()
       {
          // TODO Auto-generated method stub
          
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.client.impl.ClientConsumerInternal#acknowledge(org.hornetq.core.client.ClientMessage)
-       */
-      public void acknowledge(ClientMessage message) throws HornetQException
+      public void flowControl(int messageBytes, boolean discountSlowConsumer) throws HornetQException
       {
-
+         // TODO Auto-generated method stub
+         
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.client.impl.ClientConsumerInternal#cleanUp()
-       */
-      public void cleanUp() throws HornetQException
-      {
-
-      }
-
-      /* (non-Javadoc)
-       * @see org.hornetq.core.client.impl.ClientConsumerInternal#clear()
-       */
-      public void clear()
-      {
-
-      }
-
-      /* (non-Javadoc)
-       * @see org.hornetq.core.client.impl.ClientConsumerInternal#flowControl(int, boolean)
-       */
-      public void flowControl(int messageBytes, boolean isLargeMessage) throws HornetQException
-      {
-
-      }
-
-      /* (non-Javadoc)
-       * @see org.hornetq.core.client.impl.ClientConsumerInternal#flushAcks()
-       */
       public void flushAcks() throws HornetQException
       {
-
+         // TODO Auto-generated method stub
+         
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.client.impl.ClientConsumerInternal#getBufferSize()
-       */
       public int getBufferSize()
       {
-
+         // TODO Auto-generated method stub
          return 0;
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.client.impl.ClientConsumerInternal#getClientWindowSize()
-       */
       public int getClientWindowSize()
       {
-
+         // TODO Auto-generated method stub
          return 0;
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.client.impl.ClientConsumerInternal#getID()
-       */
-      public long getID()
-      {
-
-         return 0;
-      }
-
-      /* (non-Javadoc)
-       * @see org.hornetq.core.client.impl.ClientConsumerInternal#handleLargeMessage(org.hornetq.core.remoting.impl.wireformat.SessionReceiveMessage)
-       */
-      public void handleLargeMessage(SessionReceiveMessage largeMessageHeader) throws Exception
-      {
-
-      }
-
-      /* (non-Javadoc)
-       * @see org.hornetq.core.client.impl.ClientConsumerInternal#handleLargeMessageContinuation(org.hornetq.core.remoting.impl.wireformat.SessionReceiveContinuationMessage)
-       */
-      public void handleLargeMessageContinuation(SessionReceiveContinuationMessage continuation) throws Exception
-      {
-
-      }
-
-      /* (non-Javadoc)
-       * @see org.hornetq.core.client.impl.ClientConsumerInternal#handleMessage(org.hornetq.core.client.impl.ClientMessageInternal)
-       */
-      public void handleMessage(ClientMessageInternal message) throws Exception
-      {
-
-      }
-
-      /* (non-Javadoc)
-       * @see org.hornetq.core.client.impl.ClientConsumerInternal#isFileConsumer()
-       */
-      public boolean isFileConsumer()
-      {
-
-         return false;
-      }
-
-      /* (non-Javadoc)
-       * @see org.hornetq.core.client.impl.ClientConsumerInternal#start()
-       */
-      public void start()
-      {
-
-      }
-
-      /* (non-Javadoc)
-       * @see org.hornetq.core.client.impl.ClientConsumerInternal#stop()
-       */
-      public void stop() throws HornetQException
-      {
-
-      }
-
-      /* (non-Javadoc)
-       * @see org.hornetq.core.client.ClientConsumer#close()
-       */
-      public void close() throws HornetQException
-      {
-
-      }
-
-      /* (non-Javadoc)
-       * @see org.hornetq.core.client.ClientConsumer#getLastException()
-       */
-      public Exception getLastException()
-      {
-
-         return null;
-      }
-
-      /* (non-Javadoc)
-       * @see org.hornetq.core.client.ClientConsumer#getMessageHandler()
-       */
-      public MessageHandler getMessageHandler() throws HornetQException
-      {
-
-         return null;
-      }
-
-      /* (non-Javadoc)
-       * @see org.hornetq.core.client.ClientConsumer#isClosed()
-       */
-      public boolean isClosed()
-      {
-
-         return false;
-      }
-
-      /* (non-Javadoc)
-       * @see org.hornetq.core.client.ClientConsumer#receive()
-       */
-      public ClientMessage receive() throws HornetQException
-      {
-
-         return null;
-      }
-
-      /* (non-Javadoc)
-       * @see org.hornetq.core.client.ClientConsumer#receive(long)
-       */
-      public ClientMessage receive(long timeout) throws HornetQException
-      {
-
-         return null;
-      }
-
-      /* (non-Javadoc)
-       * @see org.hornetq.core.client.ClientConsumer#receiveImmediate()
-       */
-      public ClientMessage receiveImmediate() throws HornetQException
-      {
-
-         return null;
-      }
-
-      /* (non-Javadoc)
-       * @see org.hornetq.core.client.ClientConsumer#setMessageHandler(org.hornetq.core.client.MessageHandler)
-       */
-      public void setMessageHandler(MessageHandler handler) throws HornetQException
-      {
-
-      }
-
-      /* (non-Javadoc)
-       * @see org.hornetq.core.client.ClientConsumer#getLargeMessageCacheDir()
-       */
-      public File getLargeMessageCacheDir()
-      {
-          return null;
-      }
-
-      /* (non-Javadoc)
-       * @see org.hornetq.core.client.ClientConsumer#setLargeMessageCacheDir(java.io.File)
-       */
-      public void setLargeMessageCacheDir(File largeMessageCacheDir)
-      {
-      }
-      
       public SimpleString getFilterString()
       {
          // TODO Auto-generated method stub
          return null;
+      }
+
+      public long getID()
+      {
+         // TODO Auto-generated method stub
+         return 0;
       }
 
       public SimpleString getQueueName()
@@ -771,12 +683,42 @@ public class LargeMessageBufferTest extends UnitTestCase
          return null;
       }
 
+      public void handleLargeMessage(SessionReceiveLargeMessage largeMessageHeader) throws Exception
+      {
+         // TODO Auto-generated method stub
+         
+      }
+
+      public void handleLargeMessageContinuation(SessionReceiveContinuationMessage continuation) throws Exception
+      {
+         // TODO Auto-generated method stub
+         
+      }
+
+      public void handleMessage(ClientMessageInternal message) throws Exception
+      {
+         // TODO Auto-generated method stub
+         
+      }
+
       public boolean isBrowseOnly()
       {
          // TODO Auto-generated method stub
          return false;
       }
 
+      public void start()
+      {
+         // TODO Auto-generated method stub
+         
+      }
+
+      public void stop() throws HornetQException
+      {
+         // TODO Auto-generated method stub
+         
+      }
+      
 
    }
 

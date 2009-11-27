@@ -101,7 +101,7 @@ public class MeasurePagingMultiThreadTest extends ServiceTestBase
                session = factory.createSession(false, true, true);
                producer = session.createProducer(adr);
                msg = session.createClientMessage(true);
-               msg.getBody().writeBytes(new byte[SIZE_OF_MESSAGE]);
+               msg.getBodyBuffer().writeBytes(new byte[SIZE_OF_MESSAGE]);
             }
 
             // run is not going to close sessions or anything, as we don't want to measure that time
@@ -202,7 +202,7 @@ public class MeasurePagingMultiThreadTest extends ServiceTestBase
       ClientProducer producer = session.createProducer(adr);
       ClientMessage msg = session.createClientMessage(true);
 
-      msg.getBody().writeBytes(new byte[messageSize]);
+      msg.getBodyBuffer().writeBytes(new byte[messageSize]);
 
       sendMessages(nMessages, producer, msg);
    }

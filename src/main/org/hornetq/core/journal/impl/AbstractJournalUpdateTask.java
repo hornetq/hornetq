@@ -18,12 +18,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import org.hornetq.core.buffers.ChannelBuffer;
-import org.hornetq.core.buffers.ChannelBuffers;
+import org.hornetq.core.buffers.HornetQBuffer;
+import org.hornetq.core.buffers.HornetQBuffers;
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.utils.ConcurrentHashSet;
 import org.hornetq.utils.Pair;
 
@@ -57,7 +56,7 @@ public abstract class AbstractJournalUpdateTask implements JournalReaderCallback
 
    protected int nextOrderingID;
 
-   private ChannelBuffer writingChannel;
+   private HornetQBuffer writingChannel;
 
    private final Set<Long> recordsSnapshot = new ConcurrentHashSet<Long>();
 
@@ -98,12 +97,12 @@ public abstract class AbstractJournalUpdateTask implements JournalReaderCallback
       {
          controlFile.open(1);
 
-         ChannelBuffer renameBuffer = ChannelBuffers.dynamicBuffer(1);
+         HornetQBuffer renameBuffer = HornetQBuffers.dynamicBuffer(1);
 
          renameBuffer.writeInt(-1);
          renameBuffer.writeInt(-1);
 
-         HornetQBuffer filesToRename = ChannelBuffers.dynamicBuffer(1);
+         HornetQBuffer filesToRename = HornetQBuffers.dynamicBuffer(1);
 
          // DataFiles first
 
@@ -155,13 +154,13 @@ public abstract class AbstractJournalUpdateTask implements JournalReaderCallback
          JournalImpl.writeAddRecord(-1,
                                     1,
                                     (byte)0,
-                                    new JournalImpl.ByteArrayEncoding(filesToRename.array()),
-                                    JournalImpl.SIZE_ADD_RECORD + filesToRename.array().length,
+                                    new JournalImpl.ByteArrayEncoding(filesToRename.toByteBuffer().array()),
+                                    JournalImpl.SIZE_ADD_RECORD + filesToRename.toByteBuffer().array().length,
                                     renameBuffer);
 
          ByteBuffer writeBuffer = fileFactory.newBuffer(renameBuffer.writerIndex());
 
-         writeBuffer.put(renameBuffer.array(), 0, renameBuffer.writerIndex());
+         writeBuffer.put(renameBuffer.toByteBuffer().array(), 0, renameBuffer.writerIndex());
 
          writeBuffer.rewind();
 
@@ -206,8 +205,8 @@ public abstract class AbstractJournalUpdateTask implements JournalReaderCallback
       flush();
 
       ByteBuffer bufferWrite = fileFactory.newBuffer(journal.getFileSize());
-      writingChannel = ChannelBuffers.wrappedBuffer(bufferWrite);
-
+      writingChannel = HornetQBuffers.wrappedBuffer(bufferWrite);
+      
       currentFile = journal.getFile(false, false, false, true);
       sequentialFile = currentFile.getFile();
 
@@ -226,7 +225,7 @@ public abstract class AbstractJournalUpdateTask implements JournalReaderCallback
    /**
     * @return the writingChannel
     */
-   protected ChannelBuffer getWritingChannel()
+   protected HornetQBuffer getWritingChannel()
    {
       return writingChannel;
    }

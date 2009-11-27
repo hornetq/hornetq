@@ -26,6 +26,7 @@ import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.exception.HornetQException;
+import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.server.HornetQ;
 import org.hornetq.core.server.HornetQServer;
@@ -39,6 +40,8 @@ import org.hornetq.utils.SimpleString;
  */
 public class DeadLetterAddressTest extends UnitTestCase
 {
+   private static final Logger log = Logger.getLogger(DeadLetterAddressTest.class);
+
    private HornetQServer server;
 
    private ClientSession clientSession;
@@ -61,7 +64,7 @@ public class DeadLetterAddressTest extends UnitTestCase
       ClientMessage m = clientConsumer.receive(500);
       m.acknowledge();
       assertNotNull(m);
-      assertEquals(m.getBody().readString(), "heyho!");
+      assertEquals(m.getBodyBuffer().readString(), "heyho!");
       // force a cancel
       clientSession.rollback();
       m = clientConsumer.receiveImmediate();
@@ -70,7 +73,7 @@ public class DeadLetterAddressTest extends UnitTestCase
       clientConsumer = clientSession.createConsumer(dlq);
       m = clientConsumer.receive(500);
       assertNotNull(m);
-      assertEquals(m.getBody().readString(), "heyho!");
+      assertEquals(m.getBodyBuffer().readString(), "heyho!");
    }
 
    public void testBasicSendToMultipleQueues() throws Exception
@@ -93,7 +96,7 @@ public class DeadLetterAddressTest extends UnitTestCase
       ClientMessage m = clientConsumer.receive(500);
       m.acknowledge();
       assertNotNull(m);
-      assertEquals(m.getBody().readString(), "heyho!");
+      assertEquals(m.getBodyBuffer().readString(), "heyho!");
       // force a cancel
       clientSession.rollback();
       m = clientConsumer.receiveImmediate();
@@ -103,13 +106,13 @@ public class DeadLetterAddressTest extends UnitTestCase
       m = clientConsumer.receive(500);
       assertNotNull(m);
       m.acknowledge();
-      assertEquals(m.getBody().readString(), "heyho!");
+      assertEquals(m.getBodyBuffer().readString(), "heyho!");
       clientConsumer.close();
       clientConsumer = clientSession.createConsumer(dlq2);
       m = clientConsumer.receive(500);
       assertNotNull(m);
       m.acknowledge();
-      assertEquals(m.getBody().readString(), "heyho!");
+      assertEquals(m.getBodyBuffer().readString(), "heyho!");
       clientConsumer.close();
    }
 
@@ -127,7 +130,7 @@ public class DeadLetterAddressTest extends UnitTestCase
       ClientMessage m = clientConsumer.receive(500);
       m.acknowledge();
       assertNotNull(m);
-      assertEquals(m.getBody().readString(), "heyho!");
+      assertEquals(m.getBodyBuffer().readString(), "heyho!");
       // force a cancel
       clientSession.rollback();
       m = clientConsumer.receiveImmediate();
@@ -174,7 +177,7 @@ public class DeadLetterAddressTest extends UnitTestCase
             {
                origIds.put("Message:" + j, tm.getMessageID());
             }
-            assertEquals("Message:" + j, tm.getBody().readString());
+            assertEquals("Message:" + j, tm.getBodyBuffer().readString());
          }
          clientSession.rollback();
       }
@@ -200,7 +203,7 @@ public class DeadLetterAddressTest extends UnitTestCase
 
          assertNotNull(tm);
 
-         String text = tm.getBody().readString();
+         String text = tm.getBodyBuffer().readString();
          assertEquals("Message:" + i, text);
 
          // Check the headers
@@ -244,7 +247,9 @@ public class DeadLetterAddressTest extends UnitTestCase
       for (int i = 0; i < deliveryAttempt; i++)
       {
          ClientMessage m = clientConsumer.receive(500);
-         assertNotNull(m);
+         assertNotNull(m);  
+         log.info("i is " + i);
+         log.info("delivery cout is " +m.getDeliveryCount());
          assertEquals(i + 1, m.getDeliveryCount());
          m.acknowledge();
          clientSession.rollback();
@@ -256,7 +261,7 @@ public class DeadLetterAddressTest extends UnitTestCase
       clientConsumer = clientSession.createConsumer(deadLetterQueue);
       m = clientConsumer.receive(500);
       assertNotNull(m);
-      assertEquals(m.getBody().readString(), "heyho!");
+      assertEquals(m.getBodyBuffer().readString(), "heyho!");
    }
 
    public void testDeadlLetterAddressWithWildcardAddressSettings() throws Exception
@@ -296,7 +301,7 @@ public class DeadLetterAddressTest extends UnitTestCase
       clientConsumer = clientSession.createConsumer(deadLetterQueue);
       m = clientConsumer.receive(500);
       assertNotNull(m);
-      assertEquals(m.getBody().readString(), "heyho!");
+      assertEquals(m.getBodyBuffer().readString(), "heyho!");
    }
 
    public void testDeadLetterAddressWithOverridenSublevelAddressSettings() throws Exception

@@ -13,7 +13,7 @@
 
 package org.hornetq.core.remoting.impl.wireformat;
 
-import org.hornetq.core.remoting.spi.HornetQBuffer;
+import org.hornetq.core.buffers.HornetQBuffer;
 import org.hornetq.utils.DataConstants;
 
 /**
@@ -57,13 +57,7 @@ public class ReplicationCommitMessage extends PacketImpl
    // Public --------------------------------------------------------
 
    @Override
-   public int getRequiredBufferSize()
-   {
-      return BASIC_PACKET_SIZE + DataConstants.SIZE_BYTE + DataConstants.SIZE_BOOLEAN + DataConstants.SIZE_LONG;
-   }
-
-   @Override
-   public void encodeBody(final HornetQBuffer buffer)
+   public void encodeRest(final HornetQBuffer buffer)
    {
       buffer.writeByte(journalID);
       buffer.writeBoolean(rollback);
@@ -71,7 +65,7 @@ public class ReplicationCommitMessage extends PacketImpl
    }
 
    @Override
-   public void decodeBody(final HornetQBuffer buffer)
+   public void decodeRest(final HornetQBuffer buffer)
    {
       journalID = buffer.readByte();
       rollback = buffer.readBoolean();

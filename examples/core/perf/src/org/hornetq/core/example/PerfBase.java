@@ -355,7 +355,7 @@ public abstract class PerfBase
 
       byte[] payload = randomByteArray(messageSize);
 
-      message.getBody().writeBytes(payload);
+      message.getBodyBuffer().writeBytes(payload);
 
       final int modulo = 2000;
 

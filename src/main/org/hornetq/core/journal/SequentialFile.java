@@ -15,8 +15,8 @@ package org.hornetq.core.journal;
 
 import java.nio.ByteBuffer;
 
+import org.hornetq.core.buffers.HornetQBuffer;
 import org.hornetq.core.journal.impl.TimedBuffer;
-import org.hornetq.core.remoting.spi.HornetQBuffer;
 
 /**
  * 

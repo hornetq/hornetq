@@ -93,7 +93,7 @@ public class SimpleString implements CharSequence, Serializable, Comparable<Simp
 
       str = string;
    }
-
+   
    public SimpleString(final byte[] data)
    {
       this.data = data;

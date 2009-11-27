@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Executors;
 
+import org.hornetq.core.buffers.HornetQBuffer;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.remoting.impl.AbstractBufferHandler;
@@ -23,7 +24,6 @@ import org.hornetq.core.remoting.spi.Acceptor;
 import org.hornetq.core.remoting.spi.BufferHandler;
 import org.hornetq.core.remoting.spi.Connection;
 import org.hornetq.core.remoting.spi.ConnectionLifeCycleListener;
-import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.integration.transports.netty.NettyAcceptor;
 import org.hornetq.integration.transports.netty.NettyAcceptorFactory;
 import org.hornetq.tests.util.UnitTestCase;

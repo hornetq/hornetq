@@ -61,7 +61,7 @@ public class MessageDurabilityTest extends ServiceTestBase
 
       ClientProducer producer = session.createProducer(address);
       producer.send(session.createClientMessage(!durable));
-
+      
       restart();
 
       session.start();

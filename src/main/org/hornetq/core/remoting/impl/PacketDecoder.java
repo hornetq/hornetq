@@ -53,6 +53,7 @@ import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.SESS_PRODUCER
 import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.SESS_QUEUEQUERY;
 import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.SESS_QUEUEQUERY_RESP;
 import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.SESS_RECEIVE_CONTINUATION;
+import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.SESS_RECEIVE_LARGE_MSG;
 import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.SESS_RECEIVE_MSG;
 import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.SESS_ROLLBACK;
 import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.SESS_SEND;
@@ -77,6 +78,8 @@ import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.SESS_XA_SET_T
 import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.SESS_XA_START;
 import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.SESS_XA_SUSPEND;
 
+import org.hornetq.core.buffers.HornetQBuffer;
+import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.Packet;
 import org.hornetq.core.remoting.impl.wireformat.CreateQueueMessage;
 import org.hornetq.core.remoting.impl.wireformat.CreateReplicationSessionMessage;
@@ -117,6 +120,7 @@ import org.hornetq.core.remoting.impl.wireformat.SessionProducerCreditsMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionQueueQueryMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionReceiveContinuationMessage;
+import org.hornetq.core.remoting.impl.wireformat.SessionReceiveLargeMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionReceiveMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionRequestProducerCreditsMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionSendContinuationMessage;
@@ -135,7 +139,6 @@ import org.hornetq.core.remoting.impl.wireformat.SessionXARollbackMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionXASetTimeoutMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionXASetTimeoutResponseMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionXAStartMessage;
-import org.hornetq.core.remoting.spi.HornetQBuffer;
 
 /**
  * A PacketDecoder
@@ -146,10 +149,12 @@ import org.hornetq.core.remoting.spi.HornetQBuffer;
  */
 public class PacketDecoder
 {
+   private static final Logger log = Logger.getLogger(PacketDecoder.class);
+   
    public Packet decode(final HornetQBuffer in)
    {
       final byte packetType = in.readByte();
-
+      
       Packet packet;
 
       switch (packetType)
@@ -362,6 +367,11 @@ public class PacketDecoder
          case SESS_RECEIVE_MSG:
          {
             packet = new SessionReceiveMessage();
+            break;
+         }
+         case SESS_RECEIVE_LARGE_MSG:
+         {
+            packet = new SessionReceiveLargeMessage();
             break;
          }
          case SESS_CONSUMER_CLOSE:

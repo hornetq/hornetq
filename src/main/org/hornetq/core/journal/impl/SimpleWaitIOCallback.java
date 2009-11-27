@@ -28,7 +28,6 @@ import org.hornetq.core.logging.Logger;
  */
 public class SimpleWaitIOCallback extends SyncIOCompletion
 {
-
    private static final Logger log = Logger.getLogger(SimpleWaitIOCallback.class);
 
    private final CountDownLatch latch = new CountDownLatch(1);
@@ -38,8 +37,8 @@ public class SimpleWaitIOCallback extends SyncIOCompletion
    private volatile int errorCode = 0;
 
    public void done()
-   {
-      latch.countDown();
+   {     
+      latch.countDown();      
    }
 
    public void onError(final int errorCode, final String errorMessage)
@@ -56,6 +55,7 @@ public class SimpleWaitIOCallback extends SyncIOCompletion
    public void waitCompletion() throws Exception
    {
       latch.await();
+      
       if (errorMessage != null)
       {
          throw new HornetQException(errorCode, errorMessage);

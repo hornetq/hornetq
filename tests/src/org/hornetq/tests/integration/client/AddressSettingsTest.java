@@ -78,9 +78,9 @@ public class AddressSettingsTest extends ServiceTestBase
          session.createQueue(dlaB, dlqB, false);
          ClientSession sendSession = sf.createSession(false, true, true);
          ClientMessage cm = sendSession.createClientMessage(true);
-         cm.getBody().writeString("A");
+         cm.getBodyBuffer().writeString("A");
          ClientMessage cm2 = sendSession.createClientMessage(true);
-         cm2.getBody().writeString("B");
+         cm2.getBodyBuffer().writeString("B");
          ClientProducer cp1 = sendSession.createProducer(addressA);
          ClientProducer cp2 = sendSession.createProducer(addressB);
          cp1.send(cm);
@@ -102,10 +102,10 @@ public class AddressSettingsTest extends ServiceTestBase
          cc2.close();
          message = dlqARec.receive(5000);
          assertNotNull(message);
-         assertEquals("A", message.getBody().readString());
+         assertEquals("A", message.getBodyBuffer().readString());
          message = dlqBrec.receive(5000);
          assertNotNull(message);
-         assertEquals("B", message.getBody().readString());
+         assertEquals("B", message.getBodyBuffer().readString());
          sendSession.close();
          session.close();
       }
@@ -141,9 +141,9 @@ public class AddressSettingsTest extends ServiceTestBase
          session.createQueue(dlaB, dlqB, false);
          ClientSession sendSession = sf.createSession(false, true, true);
          ClientMessage cm = sendSession.createClientMessage(true);
-         cm.getBody().writeString("A");
+         cm.getBodyBuffer().writeString("A");
          ClientMessage cm2 = sendSession.createClientMessage(true);
-         cm2.getBody().writeString("B");
+         cm2.getBodyBuffer().writeString("B");
          ClientProducer cp1 = sendSession.createProducer(addressA);
          ClientProducer cp2 = sendSession.createProducer(addressB);
          cp1.send(cm);
@@ -165,10 +165,10 @@ public class AddressSettingsTest extends ServiceTestBase
          cc2.close();
          message = dlqARec.receive(5000);
          assertNotNull(message);
-         assertEquals("A", message.getBody().readString());
+         assertEquals("A", message.getBodyBuffer().readString());
          message = dlqBrec.receive(5000);
          assertNotNull(message);
-         assertEquals("B", message.getBody().readString());
+         assertEquals("B", message.getBodyBuffer().readString());
          sendSession.close();
          session.close();
       }
@@ -204,9 +204,9 @@ public class AddressSettingsTest extends ServiceTestBase
          session.createQueue(dlaB, dlqB, false);
          ClientSession sendSession = sf.createSession(false, true, true);
          ClientMessage cm = sendSession.createClientMessage(true);
-         cm.getBody().writeString("A");
+         cm.getBodyBuffer().writeString("A");
          ClientMessage cm2 = sendSession.createClientMessage(true);
-         cm2.getBody().writeString("B");
+         cm2.getBodyBuffer().writeString("B");
          ClientProducer cp1 = sendSession.createProducer(addressA);
          ClientProducer cp2 = sendSession.createProducer(addressB);
          cp1.send(cm);
@@ -228,10 +228,10 @@ public class AddressSettingsTest extends ServiceTestBase
          cc2.close();
          message = dlqARec.receive(5000);
          assertNotNull(message);
-         assertEquals("A", message.getBody().readString());
+         assertEquals("A", message.getBodyBuffer().readString());
          message = dlqBrec.receive(5000);
          assertNotNull(message);
-         assertEquals("B", message.getBody().readString());
+         assertEquals("B", message.getBodyBuffer().readString());
          sendSession.close();
          session.close();
       }
@@ -273,11 +273,11 @@ public class AddressSettingsTest extends ServiceTestBase
          session.createQueue(dlaC, dlqC, false);
          ClientSession sendSession = sf.createSession(false, true, true);
          ClientMessage cm = sendSession.createClientMessage(true);
-         cm.getBody().writeString("A");
+         cm.getBodyBuffer().writeString("A");
          ClientMessage cm2 = sendSession.createClientMessage(true);
-         cm2.getBody().writeString("B");
+         cm2.getBodyBuffer().writeString("B");
          ClientMessage cm3 = sendSession.createClientMessage(true);
-         cm3.getBody().writeString("C");
+         cm3.getBodyBuffer().writeString("C");
          ClientProducer cp1 = sendSession.createProducer(addressA2);
          ClientProducer cp2 = sendSession.createProducer(addressB2);
          ClientProducer cp3 = sendSession.createProducer(addressC);
@@ -307,13 +307,13 @@ public class AddressSettingsTest extends ServiceTestBase
          cc3.close();
          message = dlqARec.receive(5000);
          assertNotNull(message);
-         assertEquals("A", message.getBody().readString());
+         assertEquals("A", message.getBodyBuffer().readString());
          message = dlqBrec.receive(5000);
          assertNotNull(message);
-         assertEquals("B", message.getBody().readString());
+         assertEquals("B", message.getBodyBuffer().readString());
          message = dlqCrec.receive(5000);
          assertNotNull(message);
-         assertEquals("C", message.getBody().readString());
+         assertEquals("C", message.getBodyBuffer().readString());
          sendSession.close();
          session.close();
       }

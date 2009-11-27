@@ -13,8 +13,8 @@
 
 package org.hornetq.core.remoting.impl.wireformat;
 
+import org.hornetq.core.buffers.HornetQBuffer;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.utils.DataConstants;
 import org.hornetq.utils.SimpleString;
 
@@ -106,7 +106,7 @@ public class CreateQueueMessage extends PacketImpl
       return temporary;
    }
    
-   public void encodeBody(final HornetQBuffer buffer)
+   public void encodeRest(final HornetQBuffer buffer)
    {
       buffer.writeSimpleString(address);
       buffer.writeSimpleString(queueName);
@@ -115,7 +115,7 @@ public class CreateQueueMessage extends PacketImpl
       buffer.writeBoolean(temporary);
    }
 
-   public void decodeBody(final HornetQBuffer buffer)
+   public void decodeRest(final HornetQBuffer buffer)
    {
       address = buffer.readSimpleString();
       queueName = buffer.readSimpleString();
@@ -138,18 +138,6 @@ public class CreateQueueMessage extends PacketImpl
              (r.filterString == null ? this.filterString == null : r.filterString.equals(this.filterString)) &&
              r.durable == this.durable &&
              r.temporary == this.temporary;
-   }
-
-   /* (non-Javadoc)
-    * @see org.hornetq.core.remoting.Packet#getRequiredBufferSize()
-    */
-   public int getRequiredBufferSize()
-   {
-      return BASIC_PACKET_SIZE + address.sizeof() +
-             queueName.sizeof() +
-             SimpleString.sizeofNullableString(filterString) +
-             DataConstants.SIZE_BOOLEAN +
-             DataConstants.SIZE_BOOLEAN;
    }
 
    // Package protected ---------------------------------------------

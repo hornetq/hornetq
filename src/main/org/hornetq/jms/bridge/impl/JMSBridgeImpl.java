@@ -571,7 +571,10 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
    public synchronized void setFailureRetryInterval(long interval)
    {
       checkBridgeNotStarted();
-      checkValidValue(interval, "FailureRetryInterval");
+      if (interval < 1)
+      {
+         throw new IllegalArgumentException("FailureRetryInterval must be >= 1");
+      }
       
       this.failureRetryInterval = interval;
    }  
@@ -1115,7 +1118,7 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
       }
       catch (Exception e)
       {
-         log.warn("Failed to set up bridge connections", e);
+         //We shouldn't log this, as it's expected when trying to connect when target/source is not available
          
          //If this fails we should attempt to cleanup or we might end up in some weird state
          
@@ -1217,12 +1220,12 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
             break;
          }
          
-         log.warn("Failed to set up connections, will retry after a pause of " + failureRetryInterval + " ms");
+         log.info("Failed to set up JMS bridge connections. Most probably the source or target servers are unavailable. Will retry after a pause of " + failureRetryInterval + " ms");
          
          pause(failureRetryInterval);
       }
       
-      //If we get here then we exceed maxRetries
+      //If we get here then we exceeded maxRetries
       return false;      
    }
       

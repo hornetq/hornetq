@@ -56,13 +56,14 @@ class HttpAcceptorHandler extends SimpleChannelHandler
 
    private Channel channel;
 
-   public HttpAcceptorHandler(final HttpKeepAliveRunnable httpKeepAliveTask, long responseTime)
+   public HttpAcceptorHandler(final HttpKeepAliveRunnable httpKeepAliveTask, final long responseTime)
    {
       super();
       this.responseTime = responseTime;
       this.httpKeepAliveTask = httpKeepAliveTask;
    }
 
+   @Override
    public void channelConnected(final ChannelHandlerContext ctx, final ChannelStateEvent e) throws Exception
    {
       super.channelConnected(ctx, e);
@@ -70,6 +71,7 @@ class HttpAcceptorHandler extends SimpleChannelHandler
       httpKeepAliveTask.registerKeepAliveHandler(this);
    }
 
+   @Override
    public void channelDisconnected(final ChannelHandlerContext ctx, final ChannelStateEvent e) throws Exception
    {
       super.channelDisconnected(ctx, e);
@@ -85,9 +87,7 @@ class HttpAcceptorHandler extends SimpleChannelHandler
       // if we are a post then we send upstream, otherwise we are just being prompted for a response.
       if (method.equals(HttpMethod.POST))
       {
-         MessageEvent event = new UpstreamMessageEvent(e.getChannel(),
-                                                      request.getContent(),
-                                                      e.getRemoteAddress());
+         MessageEvent event = new UpstreamMessageEvent(e.getChannel(), request.getContent(), e.getRemoteAddress());
          ctx.sendUpstream(event);
       }
       // add a new response
@@ -171,7 +171,8 @@ class HttpAcceptorHandler extends SimpleChannelHandler
          {
             ChannelBuffer piggyBackBuffer = piggyBackResponses();
             responseHolder.response.setContent(piggyBackBuffer);
-            responseHolder.response.addHeader(HttpHeaders.Names.CONTENT_LENGTH, String.valueOf(piggyBackBuffer.writerIndex()));
+            responseHolder.response.addHeader(HttpHeaders.Names.CONTENT_LENGTH,
+                                              String.valueOf(piggyBackBuffer.writerIndex()));
             channel.write(responseHolder.response);
          }
          else
@@ -223,7 +224,7 @@ class HttpAcceptorHandler extends SimpleChannelHandler
 
       final long timeReceived;
 
-      public ResponseHolder(long timeReceived, HttpResponse response)
+      public ResponseHolder(final long timeReceived, final HttpResponse response)
       {
          this.timeReceived = timeReceived;
          this.response = response;

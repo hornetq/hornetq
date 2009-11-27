@@ -508,16 +508,16 @@ public class BasicXaRecoveryTest extends ServiceTestBase
       clientSession.start();
       ClientMessage m = clientConsumer.receive(1000);
       assertNotNull(m);
-      assertEquals(m.getBody().readString(), "m1");
+      assertEquals(m.getBodyBuffer().readString(), "m1");
       m = clientConsumer.receive(1000);
       assertNotNull(m);
-      assertEquals(m.getBody().readString(), "m2");
+      assertEquals(m.getBodyBuffer().readString(), "m2");
       m = clientConsumer.receive(1000);
       assertNotNull(m);
-      assertEquals(m.getBody().readString(), "m3");
+      assertEquals(m.getBodyBuffer().readString(), "m3");
       m = clientConsumer.receive(1000);
       assertNotNull(m);
-      assertEquals(m.getBody().readString(), "m4");
+      assertEquals(m.getBodyBuffer().readString(), "m4");
    }
 
    public void testBasicSendWithRollback(final boolean stopServer) throws Exception
@@ -611,16 +611,16 @@ public class BasicXaRecoveryTest extends ServiceTestBase
       clientSession.start();
       ClientMessage m = clientConsumer.receive(1000);
       assertNotNull(m);
-      assertEquals(m.getBody().readString(), "m5");
+      assertEquals(m.getBodyBuffer().readString(), "m5");
       m = clientConsumer.receive(1000);
       assertNotNull(m);
-      assertEquals(m.getBody().readString(), "m6");
+      assertEquals(m.getBodyBuffer().readString(), "m6");
       m = clientConsumer.receive(1000);
       assertNotNull(m);
-      assertEquals(m.getBody().readString(), "m7");
+      assertEquals(m.getBodyBuffer().readString(), "m7");
       m = clientConsumer.receive(1000);
       assertNotNull(m);
-      assertEquals(m.getBody().readString(), "m8");
+      assertEquals(m.getBodyBuffer().readString(), "m8");
    }
 
    public void testMultipleTxSendWithCommit(final boolean stopServer) throws Exception
@@ -673,28 +673,28 @@ public class BasicXaRecoveryTest extends ServiceTestBase
       clientSession.start();
       ClientMessage m = clientConsumer.receive(1000);
       assertNotNull(m);
-      assertEquals(m.getBody().readString(), "m5");
+      assertEquals(m.getBodyBuffer().readString(), "m5");
       m = clientConsumer.receive(1000);
       assertNotNull(m);
-      assertEquals(m.getBody().readString(), "m6");
+      assertEquals(m.getBodyBuffer().readString(), "m6");
       m = clientConsumer.receive(1000);
       assertNotNull(m);
-      assertEquals(m.getBody().readString(), "m7");
+      assertEquals(m.getBodyBuffer().readString(), "m7");
       m = clientConsumer.receive(1000);
       assertNotNull(m);
-      assertEquals(m.getBody().readString(), "m8");
+      assertEquals(m.getBodyBuffer().readString(), "m8");
       m = clientConsumer.receive(1000);
       assertNotNull(m);
-      assertEquals(m.getBody().readString(), "m1");
+      assertEquals(m.getBodyBuffer().readString(), "m1");
       m = clientConsumer.receive(1000);
       assertNotNull(m);
-      assertEquals(m.getBody().readString(), "m2");
+      assertEquals(m.getBodyBuffer().readString(), "m2");
       m = clientConsumer.receive(1000);
       assertNotNull(m);
-      assertEquals(m.getBody().readString(), "m3");
+      assertEquals(m.getBodyBuffer().readString(), "m3");
       m = clientConsumer.receive(1000);
       assertNotNull(m);
-      assertEquals(m.getBody().readString(), "m4");
+      assertEquals(m.getBodyBuffer().readString(), "m4");
    }
 
    public void testMultipleTxSendWithRollback(final boolean stopServer) throws Exception
@@ -799,16 +799,16 @@ public class BasicXaRecoveryTest extends ServiceTestBase
       clientSession.start();
       ClientMessage m = clientConsumer.receive(1000);
       assertNotNull(m);
-      assertEquals(m.getBody().readString(), "m1");
+      assertEquals(m.getBodyBuffer().readString(), "m1");
       m = clientConsumer.receive(1000);
       assertNotNull(m);
-      assertEquals(m.getBody().readString(), "m2");
+      assertEquals(m.getBodyBuffer().readString(), "m2");
       m = clientConsumer.receive(1000);
       assertNotNull(m);
-      assertEquals(m.getBody().readString(), "m3");
+      assertEquals(m.getBodyBuffer().readString(), "m3");
       m = clientConsumer.receive(1000);
       assertNotNull(m);
-      assertEquals(m.getBody().readString(), "m4");
+      assertEquals(m.getBodyBuffer().readString(), "m4");
       m = clientConsumer.receiveImmediate();
       assertNull(m);
    }
@@ -862,28 +862,28 @@ public class BasicXaRecoveryTest extends ServiceTestBase
       clientSession.start();
       ClientMessage m = clientConsumer.receive(1000);
       assertNotNull(m);
-      assertEquals(m.getBody().readString(), "m1");
+      assertEquals(m.getBodyBuffer().readString(), "m1");
       m = clientConsumer.receive(1000);
       assertNotNull(m);
-      assertEquals(m.getBody().readString(), "m2");
+      assertEquals(m.getBodyBuffer().readString(), "m2");
       m = clientConsumer.receive(1000);
       assertNotNull(m);
-      assertEquals(m.getBody().readString(), "m3");
+      assertEquals(m.getBodyBuffer().readString(), "m3");
       m = clientConsumer.receive(1000);
       assertNotNull(m);
-      assertEquals(m.getBody().readString(), "m4");
+      assertEquals(m.getBodyBuffer().readString(), "m4");
       m = clientConsumer.receive(1000);
       assertNotNull(m);
-      assertEquals(m.getBody().readString(), "m5");
+      assertEquals(m.getBodyBuffer().readString(), "m5");
       m = clientConsumer.receive(1000);
       assertNotNull(m);
-      assertEquals(m.getBody().readString(), "m6");
+      assertEquals(m.getBodyBuffer().readString(), "m6");
       m = clientConsumer.receive(1000);
       assertNotNull(m);
-      assertEquals(m.getBody().readString(), "m7");
+      assertEquals(m.getBodyBuffer().readString(), "m7");
       m = clientConsumer.receive(1000);
       assertNotNull(m);
-      assertEquals(m.getBody().readString(), "m8");
+      assertEquals(m.getBodyBuffer().readString(), "m8");
    }
 
    public void testBasicReceiveWithCommit(final boolean stopServer) throws Exception
@@ -905,19 +905,19 @@ public class BasicXaRecoveryTest extends ServiceTestBase
       ClientMessage m = clientConsumer.receive(1000);
       m.acknowledge();
       assertNotNull(m);
-      assertEquals(m.getBody().readString(), "m1");
+      assertEquals(m.getBodyBuffer().readString(), "m1");
       m = clientConsumer.receive(1000);
       assertNotNull(m);
       m.acknowledge();
-      assertEquals(m.getBody().readString(), "m2");
+      assertEquals(m.getBodyBuffer().readString(), "m2");
       m = clientConsumer.receive(1000);
       m.acknowledge();
       assertNotNull(m);
-      assertEquals(m.getBody().readString(), "m3");
+      assertEquals(m.getBodyBuffer().readString(), "m3");
       m = clientConsumer.receive(1000);
       m.acknowledge();
       assertNotNull(m);
-      assertEquals(m.getBody().readString(), "m4");
+      assertEquals(m.getBodyBuffer().readString(), "m4");
       clientSession.end(xid, XAResource.TMSUCCESS);
       assertEquals("Expected XA_OK", XAResource.XA_OK, clientSession.prepare(xid));
 
@@ -963,19 +963,19 @@ public class BasicXaRecoveryTest extends ServiceTestBase
       ClientMessage m = clientConsumer.receive(1000);
       m.acknowledge();
       assertNotNull(m);
-      assertEquals(m.getBody().readString(), "m1");
+      assertEquals(m.getBodyBuffer().readString(), "m1");
       m = clientConsumer.receive(1000);
       assertNotNull(m);
       m.acknowledge();
-      assertEquals(m.getBody().readString(), "m2");
+      assertEquals(m.getBodyBuffer().readString(), "m2");
       m = clientConsumer.receive(1000);
       m.acknowledge();
       assertNotNull(m);
-      assertEquals(m.getBody().readString(), "m3");
+      assertEquals(m.getBodyBuffer().readString(), "m3");
       m = clientConsumer.receive(1000);
       m.acknowledge();
       assertNotNull(m);
-      assertEquals(m.getBody().readString(), "m4");
+      assertEquals(m.getBodyBuffer().readString(), "m4");
       clientSession.end(xid, XAResource.TMSUCCESS);
       clientSession.prepare(xid);
 
@@ -1004,16 +1004,16 @@ public class BasicXaRecoveryTest extends ServiceTestBase
       clientSession.start();
       m = clientConsumer.receive(1000);
       assertNotNull(m);
-      assertEquals(m.getBody().readString(), "m1");
+      assertEquals(m.getBodyBuffer().readString(), "m1");
       m = clientConsumer.receive(1000);
       assertNotNull(m);
-      assertEquals(m.getBody().readString(), "m2");
+      assertEquals(m.getBodyBuffer().readString(), "m2");
       m = clientConsumer.receive(1000);
       assertNotNull(m);
-      assertEquals(m.getBody().readString(), "m3");
+      assertEquals(m.getBodyBuffer().readString(), "m3");
       m = clientConsumer.receive(1000);
       assertNotNull(m);
-      assertEquals(m.getBody().readString(), "m4");
+      assertEquals(m.getBodyBuffer().readString(), "m4");
    }
 
    public void testMultipleTxReceiveWithCommit(final boolean stopServer) throws Exception
@@ -1049,19 +1049,19 @@ public class BasicXaRecoveryTest extends ServiceTestBase
       ClientMessage m = clientConsumer2.receive(1000);
       m.acknowledge();
       assertNotNull(m);
-      assertEquals(m.getBody().readString(), "m5");
+      assertEquals(m.getBodyBuffer().readString(), "m5");
       m = clientConsumer2.receive(1000);
       assertNotNull(m);
       m.acknowledge();
-      assertEquals(m.getBody().readString(), "m6");
+      assertEquals(m.getBodyBuffer().readString(), "m6");
       m = clientConsumer2.receive(1000);
       m.acknowledge();
       assertNotNull(m);
-      assertEquals(m.getBody().readString(), "m7");
+      assertEquals(m.getBodyBuffer().readString(), "m7");
       m = clientConsumer2.receive(1000);
       m.acknowledge();
       assertNotNull(m);
-      assertEquals(m.getBody().readString(), "m8");
+      assertEquals(m.getBodyBuffer().readString(), "m8");
       clientSession2.end(xid2, XAResource.TMSUCCESS);
       clientSession2.prepare(xid2);
       clientSession2.close();
@@ -1071,19 +1071,19 @@ public class BasicXaRecoveryTest extends ServiceTestBase
       m = clientConsumer.receive(1000);
       m.acknowledge();
       assertNotNull(m);
-      assertEquals(m.getBody().readString(), "m1");
+      assertEquals(m.getBodyBuffer().readString(), "m1");
       m = clientConsumer.receive(1000);
       assertNotNull(m);
       m.acknowledge();
-      assertEquals(m.getBody().readString(), "m2");
+      assertEquals(m.getBodyBuffer().readString(), "m2");
       m = clientConsumer.receive(1000);
       m.acknowledge();
       assertNotNull(m);
-      assertEquals(m.getBody().readString(), "m3");
+      assertEquals(m.getBodyBuffer().readString(), "m3");
       m = clientConsumer.receive(1000);
       m.acknowledge();
       assertNotNull(m);
-      assertEquals(m.getBody().readString(), "m4");
+      assertEquals(m.getBodyBuffer().readString(), "m4");
       clientSession.end(xid, XAResource.TMSUCCESS);
       clientSession.prepare(xid);
 
@@ -1139,19 +1139,19 @@ public class BasicXaRecoveryTest extends ServiceTestBase
       ClientMessage m = clientConsumer2.receive(1000);
       m.acknowledge();
       assertNotNull(m);
-      assertEquals(m.getBody().readString(), "m5");
+      assertEquals(m.getBodyBuffer().readString(), "m5");
       m = clientConsumer2.receive(1000);
       assertNotNull(m);
       m.acknowledge();
-      assertEquals(m.getBody().readString(), "m6");
+      assertEquals(m.getBodyBuffer().readString(), "m6");
       m = clientConsumer2.receive(1000);
       m.acknowledge();
       assertNotNull(m);
-      assertEquals(m.getBody().readString(), "m7");
+      assertEquals(m.getBodyBuffer().readString(), "m7");
       m = clientConsumer2.receive(1000);
       m.acknowledge();
       assertNotNull(m);
-      assertEquals(m.getBody().readString(), "m8");
+      assertEquals(m.getBodyBuffer().readString(), "m8");
       clientSession2.end(xid2, XAResource.TMSUCCESS);
       clientSession2.prepare(xid2);
       clientSession2.close();
@@ -1161,19 +1161,19 @@ public class BasicXaRecoveryTest extends ServiceTestBase
       m = clientConsumer.receive(1000);
       m.acknowledge();
       assertNotNull(m);
-      assertEquals(m.getBody().readString(), "m1");
+      assertEquals(m.getBodyBuffer().readString(), "m1");
       m = clientConsumer.receive(1000);
       assertNotNull(m);
       m.acknowledge();
-      assertEquals(m.getBody().readString(), "m2");
+      assertEquals(m.getBodyBuffer().readString(), "m2");
       m = clientConsumer.receive(1000);
       m.acknowledge();
       assertNotNull(m);
-      assertEquals(m.getBody().readString(), "m3");
+      assertEquals(m.getBodyBuffer().readString(), "m3");
       m = clientConsumer.receive(1000);
       m.acknowledge();
       assertNotNull(m);
-      assertEquals(m.getBody().readString(), "m4");
+      assertEquals(m.getBodyBuffer().readString(), "m4");
       clientSession.end(xid, XAResource.TMSUCCESS);
       clientSession.prepare(xid);
 
@@ -1195,19 +1195,19 @@ public class BasicXaRecoveryTest extends ServiceTestBase
       m = clientConsumer.receive(1000);
       m.acknowledge();
       assertNotNull(m);
-      assertEquals(m.getBody().readString(), "m1");
+      assertEquals(m.getBodyBuffer().readString(), "m1");
       m = clientConsumer.receive(1000);
       assertNotNull(m);
       m.acknowledge();
-      assertEquals(m.getBody().readString(), "m2");
+      assertEquals(m.getBodyBuffer().readString(), "m2");
       m = clientConsumer.receive(1000);
       m.acknowledge();
       assertNotNull(m);
-      assertEquals(m.getBody().readString(), "m3");
+      assertEquals(m.getBodyBuffer().readString(), "m3");
       m = clientConsumer.receive(1000);
       m.acknowledge();
       assertNotNull(m);
-      assertEquals(m.getBody().readString(), "m4");
+      assertEquals(m.getBodyBuffer().readString(), "m4");
    }
 
    protected void stopAndRestartServer() throws Exception
@@ -1250,7 +1250,7 @@ public class BasicXaRecoveryTest extends ServiceTestBase
                                                                 0,
                                                                 System.currentTimeMillis(),
                                                                 (byte)1);
-      message.getBody().writeString(s);
+      message.getBodyBuffer().writeString(s);
       return message;
    }
 
@@ -1261,7 +1261,7 @@ public class BasicXaRecoveryTest extends ServiceTestBase
                                                                 0,
                                                                 System.currentTimeMillis(),
                                                                 (byte)1);
-      message.getBody().writeBytes(b);
+      message.getBodyBuffer().writeBytes(b);
       return message;
    }
 

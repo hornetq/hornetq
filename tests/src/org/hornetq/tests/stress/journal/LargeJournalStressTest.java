@@ -16,7 +16,7 @@ package org.hornetq.tests.stress.journal;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.hornetq.core.buffers.ChannelBuffers;
+import org.hornetq.core.buffers.HornetQBuffers;
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
@@ -116,8 +116,7 @@ public class LargeJournalStressTest extends ServiceTestBase
                      }
                      slowProd.send(session.createClientMessage(true));
                   }
-                  ClientMessage msg = session.createClientMessage(true);
-                  msg.setBody(ChannelBuffers.wrappedBuffer(new byte[1024]));
+                  ClientMessage msg = session.createClientMessage(true);                  
                   prod.send(msg);
                }
                sessionSlow.commit();

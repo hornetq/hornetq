@@ -14,15 +14,17 @@
 package org.hornetq.core.client.impl;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 
-import org.hornetq.core.buffers.ChannelBuffers;
+import org.hornetq.core.buffers.HornetQBuffer;
+import org.hornetq.core.buffers.HornetQBuffers;
 import org.hornetq.core.client.LargeMessageBuffer;
 import org.hornetq.core.exception.HornetQException;
+import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.BodyEncoder;
 import org.hornetq.core.message.impl.MessageImpl;
-import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.utils.SimpleString;
 
 /**
@@ -35,6 +37,8 @@ import org.hornetq.utils.SimpleString;
  */
 public class ClientMessageImpl extends MessageImpl implements ClientMessageInternal
 {
+   private static final Logger log = Logger.getLogger(ClientMessageImpl.class);
+
    // added this constant here so that the client package have no dependency on JMS
    public static final SimpleString REPLYTO_HEADER_NAME = new SimpleString("JMSReplyTo");
 
@@ -46,14 +50,14 @@ public class ClientMessageImpl extends MessageImpl implements ClientMessageInter
 
    private int flowControlSize = -1;
 
-   /*
-    * Constructor for when reading from network
-    */
-   public ClientMessageImpl(final int deliveryCount)
-   {
-      super();
+   /** Used on LargeMessages only */
+   private InputStream bodyInputStream;
 
-      this.deliveryCount = deliveryCount;
+   /*
+    * Constructor for when reading from remoting
+    */
+   public ClientMessageImpl()
+   {
    }
 
    /*
@@ -64,29 +68,9 @@ public class ClientMessageImpl extends MessageImpl implements ClientMessageInter
                             final long expiration,
                             final long timestamp,
                             final byte priority,
-                            final HornetQBuffer body)
+                            final int initialMessageBufferSize)
    {
-      super(type, durable, expiration, timestamp, priority, body);
-   }
-
-   public ClientMessageImpl(final byte type, final boolean durable, final HornetQBuffer body)
-   {
-      super(type, durable, 0, System.currentTimeMillis(), (byte)4, body);
-   }
-
-   public ClientMessageImpl(final boolean durable, final HornetQBuffer body)
-   {
-      super((byte)0, durable, 0, System.currentTimeMillis(), (byte)4, body);
-   }
-   
-   public ClientMessageImpl(final boolean durable, final byte[] bytes)
-   {
-      super((byte)0, durable, 0, System.currentTimeMillis(), (byte)4, ChannelBuffers.dynamicBuffer(bytes));
-   }
-   
-   public ClientMessageImpl(final boolean durable)
-   {
-      super((byte)0, durable, 0, System.currentTimeMillis(), (byte)4, ChannelBuffers.dynamicBuffer(1024));
+      super(type, durable, expiration, timestamp, priority, initialMessageBufferSize);
    }
 
    public void onReceipt(final ClientConsumerInternal consumer)
@@ -109,18 +93,6 @@ public class ClientMessageImpl extends MessageImpl implements ClientMessageInter
       if (consumer != null)
       {
          consumer.acknowledge(this);
-      }
-   }
-   
-   public long getLargeBodySize()
-   {
-      if (largeMessage)
-      {
-         return ((LargeMessageBuffer)getBody()).getSize();
-      }
-      else
-      {
-         return this.getBodySize();
       }
    }
 
@@ -154,71 +126,11 @@ public class ClientMessageImpl extends MessageImpl implements ClientMessageInter
       this.largeMessage = largeMessage;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.client.impl.ClientMessageInternal#discardLargeBody()
-    */
-   public void discardLargeBody()
-   {
-      if (largeMessage)
-      {
-         ((LargeMessageBuffer)getBody()).discardUnusedPackets();
-      }
+   public int getBodySize()
+   {      
+      return buffer.writerIndex() - buffer.readerIndex();
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.client.ClientMessage#saveToOutputStream(java.io.OutputStream)
-    */
-   public void saveToOutputStream(final OutputStream out) throws HornetQException
-   {
-      if (largeMessage)
-      {
-         ((LargeMessageBufferImpl)this.getBody()).saveBuffer(out);
-      }
-      else
-      {
-         try
-         {
-            out.write(this.getBody().array());
-         }
-         catch (IOException e)
-         {
-            throw new HornetQException(HornetQException.LARGE_MESSAGE_ERROR_BODY, "Error saving the message body", e);
-         }
-      }
-      
-   }
-
-   /* (non-Javadoc)
-    * @see org.hornetq.core.client.ClientMessage#setOutputStream(java.io.OutputStream)
-    */
-   public void setOutputStream(final OutputStream out) throws HornetQException
-   {
-      if (largeMessage)
-      {
-         ((LargeMessageBufferImpl)this.getBody()).setOutputStream(out);
-      }
-      else
-      {
-         saveToOutputStream(out);
-      }
-      
-   }
-
-   /* (non-Javadoc)
-    * @see org.hornetq.core.client.ClientMessage#waitOutputStreamCompletion()
-    */
-   public boolean waitOutputStreamCompletion(final long timeMilliseconds) throws HornetQException
-   {
-      if (largeMessage)
-      {
-         return ((LargeMessageBufferImpl)this.getBody()).waitCompletion(timeMilliseconds);
-      }
-      else
-      {
-         return true;
-      }
-   }
-   
    @Override
    public String toString()
    {
@@ -233,5 +145,145 @@ public class ClientMessageImpl extends MessageImpl implements ClientMessageInter
    /* (non-Javadoc)
     * @see org.hornetq.core.message.Message#getBodyEncoder()
     */
+
+   // FIXME - only used for large messages - move it!
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.client.ClientMessage#saveToOutputStream(java.io.OutputStream)
+    */
+   public void saveToOutputStream(final OutputStream out) throws HornetQException
+   {
+      if (largeMessage)
+      {
+         ((LargeMessageBufferImpl)this.getWholeBuffer()).saveBuffer(out);
+      }
+      else
+      {
+         try
+         {
+            byte readBuffer[] = new byte[getBodySize()];
+            getBodyBuffer().readBytes(readBuffer);
+            out.write(readBuffer);
+         }
+         catch (IOException e)
+         {
+            throw new HornetQException(HornetQException.LARGE_MESSAGE_ERROR_BODY, "Error saving the message body", e);
+         }
+      }
+
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.client.ClientMessage#setOutputStream(java.io.OutputStream)
+    */
+   public void setOutputStream(final OutputStream out) throws HornetQException
+   {
+      if (largeMessage)
+      {
+         ((LargeMessageBufferImpl)this.getWholeBuffer()).setOutputStream(out);
+      }
+      else
+      {
+         saveToOutputStream(out);
+      }
+
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.client.ClientMessage#waitOutputStreamCompletion()
+    */
+   public boolean waitOutputStreamCompletion(final long timeMilliseconds) throws HornetQException
+   {
+      if (largeMessage)
+      {
+         return ((LargeMessageBufferImpl)this.getWholeBuffer()).waitCompletion(timeMilliseconds);
+      }
+      else
+      {
+         return true;
+      }
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.client.impl.ClientMessageInternal#discardLargeBody()
+    */
+   public void discardLargeBody()
+   {
+      if (largeMessage)
+      {
+         ((LargeMessageBuffer)getWholeBuffer()).discardUnusedPackets();
+      }
+   }
+
+   /**
+    * @return the bodyInputStream
+    */
+   public InputStream getBodyInputStream()
+   {
+      return bodyInputStream;
+   }
+
+   /**
+    * @param bodyInputStream the bodyInputStream to set
+    */
+   public void setBodyInputStream(final InputStream bodyInputStream)
+   {
+      this.bodyInputStream = bodyInputStream;
+   }
    
+ public void setBuffer(HornetQBuffer buffer)
+ {
+    this.buffer = buffer; 
+    
+    if (bodyBuffer != null)
+    {
+       bodyBuffer.setBuffer(buffer);
+    }
+ }
+ 
+ public BodyEncoder getBodyEncoder() throws HornetQException
+ {
+    return new DecodingContext();
+ }
+
+
+
+ private final class DecodingContext implements BodyEncoder
+ {
+    private int lastPos = 0;
+
+    public DecodingContext()
+    {
+    }
+
+    public void open()
+    {
+    }
+
+    public void close()
+    {
+    }
+    
+    public long getLargeBodySize()
+    {
+       return buffer.writerIndex();
+    }
+
+    public int encode(final ByteBuffer bufferRead) throws HornetQException
+    {
+       HornetQBuffer buffer = HornetQBuffers.wrappedBuffer(bufferRead);
+       return encode(buffer, bufferRead.capacity());
+    }
+
+    public int encode(final HornetQBuffer bufferOut, final int size)
+    {
+       byte[] bytes = new byte[size];
+       getWholeBuffer().readBytes(bytes);
+       bufferOut.writeBytes(bytes, 0, size);
+       return size;
+    }
+ }
+
+ 
+
 }

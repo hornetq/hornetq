@@ -46,7 +46,8 @@ public interface FailoverManager
                                final int producerMaxRate,
                                final int consumerMaxRate,
                                final boolean blockOnNonPersistentSend,
-                               final boolean blockOnPersistentSend) throws HornetQException;
+                               final boolean blockOnPersistentSend,
+                               final int initialMessagePacketSize) throws HornetQException;
 
    void removeSession(final ClientSessionInternal session);
    

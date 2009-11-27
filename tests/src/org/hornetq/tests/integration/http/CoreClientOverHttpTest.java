@@ -65,7 +65,7 @@ public class CoreClientOverHttpTest extends UnitTestCase
       {
          ClientMessage message = session.createClientMessage(HornetQTextMessage.TYPE, false, 0,
                System.currentTimeMillis(), (byte) 1);
-         message.getBody().writeString("CoreClientOverHttpTest");
+         message.getBodyBuffer().writeString("CoreClientOverHttpTest");
          producer.send(message);
       }
 
@@ -77,7 +77,7 @@ public class CoreClientOverHttpTest extends UnitTestCase
       {
          ClientMessage message2 = consumer.receive();
 
-         assertEquals("CoreClientOverHttpTest", message2.getBody().readString());
+         assertEquals("CoreClientOverHttpTest", message2.getBodyBuffer().readString());
 
          message2.acknowledge();
       }

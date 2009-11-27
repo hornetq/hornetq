@@ -13,16 +13,21 @@
 
 package org.hornetq.core.server.impl;
 
+import java.io.InputStream;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.hornetq.core.buffers.HornetQBuffer;
+import org.hornetq.core.buffers.impl.ResetLimitWrappedHornetQBuffer;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.paging.PagingStore;
-import org.hornetq.core.remoting.spi.HornetQBuffer;
+import org.hornetq.core.remoting.impl.wireformat.PacketImpl;
 import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.ServerMessage;
+import org.hornetq.utils.DataConstants;
 import org.hornetq.utils.SimpleString;
+import org.hornetq.utils.TypedProperties;
 
 /**
  * 
@@ -42,9 +47,6 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
    /** Global reference counts for paging control */
    private final AtomicInteger refCount = new AtomicInteger(0);
 
-   // We cache this
-   private volatile int memoryEstimate = -1;
-
    private PagingStore pagingStore;
 
    /*
@@ -55,44 +57,29 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
    }
 
    /*
-    * Construct a MessageImpl from storage
+    * Construct a MessageImpl from storage, or notification
     */
-   public ServerMessageImpl(final long messageID)
+   public ServerMessageImpl(final long messageID, final int initialMessageBufferSize)
    {
-      super(messageID);
+      super(messageID, initialMessageBufferSize);
    }
 
-   public ServerMessageImpl(final ServerMessageImpl other)
+   protected ServerMessageImpl(final int initialMessageBufferSize)
+   {
+      super(initialMessageBufferSize);
+   }
+
+   /*
+    * Copy constructor
+    */
+   protected ServerMessageImpl(final ServerMessageImpl other)
    {
       super(other);
-   }
-
-   public ServerMessageImpl(final ServerMessage other)
-   {
-      super(other);
-   }
-
-   /**
-    * Only used in testing
-    */
-   public ServerMessageImpl(final byte type,
-                            final boolean durable,
-                            final long expiration,
-                            final long timestamp,
-                            final byte priority,
-                            final HornetQBuffer buffer)
-   {
-      super(type, durable, expiration, timestamp, priority, buffer);
    }
 
    public void setMessageID(final long id)
    {
       messageID = id;
-   }
-
-   public void setType(final byte type)
-   {
-      this.type = type;
    }
 
    public MessageReference createReference(final Queue queue)
@@ -119,7 +106,7 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
       return count;
    }
 
-   public int decrementRefCount(final MessageReference reference) 
+   public int decrementRefCount(final MessageReference reference) throws Exception
    {
       int count = refCount.decrementAndGet();
 
@@ -155,12 +142,33 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
    {
       return false;
    }
+   
+   private volatile int memoryEstimate = -1;
 
-   public long getLargeBodySize()
-   {
-      return getBodySize();
-   }
-
+//   public int getMemoryEstimate()
+//   {
+//      if (memoryEstimate == -1)
+//      {
+//         memoryEstimate =
+//         DataConstants.SIZE_INT + // Object overhead
+//         this.getHeadersAndPropertiesEncodeSize() +
+//         buffer.capacity() +
+//         DataConstants.SIZE_INT + // PagingStore reference
+//         DataConstants.SIZE_INT + // DurableRefCount reference
+//         DataConstants.SIZE_INT + // RefCount reference
+//         DataConstants.SIZE_INT + // Reference to buffer
+//         DataConstants.SIZE_INT + // Reference to bodyBuffer
+//         DataConstants.SIZE_BOOLEAN + // bufferValid
+//         DataConstants.SIZE_INT + // endOfBodyPosition
+//         DataConstants.SIZE_INT + // endOfMessagePosition
+//         DataConstants.SIZE_BOOLEAN + // copied
+//         DataConstants.SIZE_BOOLEAN + // bufferUsed
+//         DataConstants.SIZE_LONG; // A bit more due to alignment and fragmentation
+//      }
+//
+//      return memoryEstimate;
+//   }
+   
    public int getMemoryEstimate()
    {
       if (memoryEstimate == -1)
@@ -174,7 +182,7 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
       return memoryEstimate;
    }
 
-   public ServerMessage copy(final long newID) throws Exception
+   public ServerMessage copy(final long newID)
    {
       ServerMessage m = new ServerMessageImpl(this);
 
@@ -183,7 +191,7 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
       return m;
    }
 
-   public ServerMessage copy() throws Exception
+   public ServerMessage copy()
    {
       return new ServerMessageImpl(this);
    }
@@ -232,6 +240,8 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
 
          putLongProperty(HDR_ACTUAL_EXPIRY_TIME, actualExpiryTime);
       }
+
+      bufferValid = false;
    }
 
    public void setPagingStore(final PagingStore pagingStore)
@@ -293,6 +303,23 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
              ", destination=" +
              getDestination() +
              "]";
+   }
+
+   // FIXME - this is stuff that is only used in large messages
+
+   // This is only valid on the client side - why is it here?
+   public InputStream getBodyInputStream()
+   {
+      return null;
+   }
+
+   // Encoding stuff
+
+   public void encodeMessageIDToBuffer()
+   {
+      // We first set the message id - this needs to be set on the buffer since this buffer will be re-used
+
+      buffer.setLong(buffer.getInt(PacketImpl.PACKET_HEADERS_SIZE) + DataConstants.SIZE_INT, messageID);
    }
 
 }

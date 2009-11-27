@@ -540,6 +540,17 @@ public class HornetQConnectionFactory implements ConnectionFactory, QueueConnect
       checkWrite();
       sessionFactory.setThreadPoolMaxSize(threadPoolMaxSize);
    }
+   
+   public synchronized int getInitialMessagePacketSize()
+   {
+      return sessionFactory.getInitialMessagePacketSize();
+   }
+
+   public synchronized void setInitialMessagePacketSize(int size)
+   {
+      checkWrite();
+      sessionFactory.setInitialMessagePacketSize(size);
+   }
 
    public ClientSessionFactory getCoreFactory()
    {

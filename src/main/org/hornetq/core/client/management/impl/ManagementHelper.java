@@ -118,7 +118,7 @@ public class ManagementHelper
          paramString = null;
       }
 
-      message.getBody().writeNullableString(paramString);
+      message.getBodyBuffer().writeNullableString(paramString);
    }
 
    private static JSONArray toJSONArray(final Object[] array) throws Exception
@@ -273,7 +273,7 @@ public class ManagementHelper
 
    public static Object[] retrieveOperationParameters(final Message message) throws Exception
    {
-      String jsonString = message.getBody().readNullableString();
+      String jsonString = message.getBodyBuffer().readNullableString();
 
       if (jsonString != null)
       {
@@ -314,12 +314,12 @@ public class ManagementHelper
          resultString = null;
       }
 
-      message.getBody().writeNullableString(resultString);
+      message.getBodyBuffer().writeNullableString(resultString);
    }
 
    public static Object[] getResults(final Message message) throws Exception
    {
-      String jsonString = message.getBody().readNullableString();
+      String jsonString = message.getBodyBuffer().readNullableString();
       
       if (jsonString != null)
       {

@@ -30,7 +30,8 @@ import java.util.concurrent.Executor;
 
 import javax.transaction.xa.Xid;
 
-import org.hornetq.core.buffers.ChannelBuffers;
+import org.hornetq.core.buffers.HornetQBuffer;
+import org.hornetq.core.buffers.HornetQBuffers;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.filter.Filter;
@@ -61,7 +62,6 @@ import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.remoting.impl.wireformat.XidCodecSupport;
-import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.core.replication.ReplicationManager;
 import org.hornetq.core.replication.impl.ReplicatedJournal;
 import org.hornetq.core.server.JournalType;
@@ -256,7 +256,12 @@ public class JournalStorageManager implements StorageManager
       else if (config.getJournalType() == JournalType.NIO)
       {
          log.info("NIO Journal selected");
-         journalFF = new NIOSequentialFileFactory(journalDir);
+         journalFF = new NIOSequentialFileFactory(journalDir,
+                                                  true,
+                                                  config.getJournalBufferSize(),
+                                                  config.getJournalBufferTimeout(),
+                                                  config.isJournalFlushOnSync(),
+                                                  config.isLogJournalWriteRate());
       }
       else
       {
@@ -437,7 +442,7 @@ public class JournalStorageManager implements StorageManager
 
    public LargeServerMessage createLargeMessage()
    {
-      return new FileLargeServerMessage(this);
+      return new LargeServerMessageImpl(this);
    }
 
    public void addBytesToLargeMessage(SequentialFile file, long messageId, final byte[] bytes) throws Exception
@@ -459,9 +464,9 @@ public class JournalStorageManager implements StorageManager
          replicator.largeMessageBegin(id);
       }
 
-      FileLargeServerMessage largeMessage = (FileLargeServerMessage)createLargeMessage();
+      LargeServerMessageImpl largeMessage = (LargeServerMessageImpl)createLargeMessage();
 
-      HornetQBuffer headerBuffer = ChannelBuffers.wrappedBuffer(header);
+      HornetQBuffer headerBuffer = HornetQBuffers.wrappedBuffer(header);
 
       largeMessage.decodeHeadersAndProperties(headerBuffer);
 
@@ -474,11 +479,12 @@ public class JournalStorageManager implements StorageManager
 
    public void storeMessage(final ServerMessage message) throws Exception
    {
+      //TODO - how can this be less than zero?
       if (message.getMessageID() <= 0)
       {
          throw new HornetQException(HornetQException.ILLEGAL_STATE, "MessageId was not assigned to Message");
       }
-
+            
       // Note that we don't sync, the add reference that comes immediately after will sync if appropriate
 
       if (message.isLargeMessage())
@@ -489,28 +495,29 @@ public class JournalStorageManager implements StorageManager
                                         false, getContext());
       }
       else
-      {
+      {         
          messageJournal.appendAddRecord(message.getMessageID(), ADD_MESSAGE, message, false, getContext());
       }
    }
 
-   public void storeReference(final long queueID, final long messageID) throws Exception
-   {
-      messageJournal.appendUpdateRecord(messageID, ADD_REF, new RefEncoding(queueID), syncNonTransactional, getContext());
+
+   public void storeReference(final long queueID, final long messageID, final boolean last) throws Exception
+   {     
+      messageJournal.appendUpdateRecord(messageID, ADD_REF, new RefEncoding(queueID), last && syncNonTransactional, getContext());
    }
 
    public void storeAcknowledge(final long queueID, final long messageID) throws Exception
-   {
+   {      
       messageJournal.appendUpdateRecord(messageID, ACKNOWLEDGE_REF, new RefEncoding(queueID), syncNonTransactional, getContext());
    }
 
    public void deleteMessage(final long messageID) throws Exception
-   {
+   {     
       messageJournal.appendDeleteRecord(messageID, syncNonTransactional, getContext());
    }
 
    public void updateScheduledDeliveryTime(final MessageReference ref) throws Exception
-   {
+   {      
       ScheduledDeliveryEncoding encoding = new ScheduledDeliveryEncoding(ref.getScheduledDeliveryTime(), ref.getQueue()
                                                                                                             .getID());
 
@@ -521,14 +528,14 @@ public class JournalStorageManager implements StorageManager
    }
 
    public void storeDuplicateID(final SimpleString address, final byte[] duplID, final long recordID) throws Exception
-   {
+   {      
       DuplicateIDEncoding encoding = new DuplicateIDEncoding(address, duplID);
 
       messageJournal.appendAddRecord(recordID, DUPLICATE_ID, encoding, syncNonTransactional, getContext());
    }
 
    public void deleteDuplicateID(long recordID) throws Exception
-   {
+   {      
       messageJournal.appendDeleteRecord(recordID, syncNonTransactional, getContext());
    }
 
@@ -700,7 +707,7 @@ public class JournalStorageManager implements StorageManager
             {
                byte[] data = record.data;
 
-               HornetQBuffer buff = ChannelBuffers.wrappedBuffer(data);
+               HornetQBuffer buff = HornetQBuffers.wrappedBuffer(data);
 
                try
                {
@@ -732,7 +739,7 @@ public class JournalStorageManager implements StorageManager
       JournalLoadInformation info = messageJournal.load(records,
                                                         preparedTransactions,
                                                         new LargeMessageTXFailureCallback(messages));
-
+      
       ArrayList<LargeServerMessage> largeMessages = new ArrayList<LargeServerMessage>();
 
       Map<Long, Map<Long, AddMessageRecord>> queueMap = new HashMap<Long, Map<Long, AddMessageRecord>>();
@@ -741,7 +748,7 @@ public class JournalStorageManager implements StorageManager
       {
          byte[] data = record.data;
 
-         HornetQBuffer buff = ChannelBuffers.wrappedBuffer(data);
+         HornetQBuffer buff = HornetQBuffers.wrappedBuffer(data);
 
          byte recordType = record.getUserRecordType();
 
@@ -758,8 +765,8 @@ public class JournalStorageManager implements StorageManager
                break;
             }
             case ADD_MESSAGE:
-            {
-               ServerMessage message = new ServerMessageImpl(record.id);
+            {              
+               ServerMessage message = new ServerMessageImpl(record.id, 50);
 
                message.decode(buff);
 
@@ -1028,7 +1035,7 @@ public class JournalStorageManager implements StorageManager
          {
             byte[] data = record.data;
 
-            HornetQBuffer buff = ChannelBuffers.wrappedBuffer(data);
+            HornetQBuffer buff = HornetQBuffers.wrappedBuffer(data);
 
             byte recordType = record.getUserRecordType();
 
@@ -1042,7 +1049,7 @@ public class JournalStorageManager implements StorageManager
                }
                case ADD_MESSAGE:
                {
-                  ServerMessage message = new ServerMessageImpl(record.id);
+                  ServerMessage message = new ServerMessageImpl(record.id, 50);
 
                   message.decode(buff);
 
@@ -1160,7 +1167,7 @@ public class JournalStorageManager implements StorageManager
          {
             byte[] data = record.data;
 
-            HornetQBuffer buff = ChannelBuffers.wrappedBuffer(data);
+            HornetQBuffer buff = HornetQBuffers.wrappedBuffer(data);
 
             long messageID = record.id;
 
@@ -1244,7 +1251,7 @@ public class JournalStorageManager implements StorageManager
       {
          long id = record.id;
 
-         HornetQBuffer buffer = ChannelBuffers.wrappedBuffer(record.data);
+         HornetQBuffer buffer = HornetQBuffers.wrappedBuffer(record.data);
 
          byte rec = record.getUserRecordType();
 
@@ -1461,7 +1468,7 @@ public class JournalStorageManager implements StorageManager
 
       XidEncoding(final byte[] data)
       {
-         xid = XidCodecSupport.decodeXid(ChannelBuffers.wrappedBuffer(data));
+         xid = XidCodecSupport.decodeXid(HornetQBuffers.wrappedBuffer(data));
       }
 
       public void decode(final HornetQBuffer buffer)
@@ -1694,7 +1701,7 @@ public class JournalStorageManager implements StorageManager
        */
       public void decode(final HornetQBuffer buffer)
       {
-         message.decode(buffer);
+         message.decodeHeadersAndProperties(buffer);
       }
 
       /* (non-Javadoc)

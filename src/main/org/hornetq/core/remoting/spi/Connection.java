@@ -13,6 +13,7 @@
 
 package org.hornetq.core.remoting.spi;
 
+import org.hornetq.core.buffers.HornetQBuffer;
 import org.hornetq.core.exception.HornetQException;
 
 /**

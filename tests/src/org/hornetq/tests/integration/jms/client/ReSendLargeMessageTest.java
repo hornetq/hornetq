@@ -61,7 +61,7 @@ import org.hornetq.utils.Pair;
  *
  *
  */
-public class ResendTest extends JMSTestBase
+public class ReSendLargeMessageTest extends JMSTestBase
 {
 
    // Constants -----------------------------------------------------
@@ -123,7 +123,6 @@ public class ResendTest extends JMSTestBase
 
    public void internalTestResend(ArrayList<Message> msgs, Session sess) throws Exception
    {
-
       MessageProducer prod = sess.createProducer(queue);
 
       for (Message msg : msgs)

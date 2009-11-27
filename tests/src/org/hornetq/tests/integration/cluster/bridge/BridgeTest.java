@@ -20,7 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.hornetq.core.buffers.ChannelBuffers;
+import org.hornetq.core.buffers.HornetQBuffers;
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
@@ -185,7 +185,7 @@ public class BridgeTest extends ServiceTestBase
 
             message.putIntProperty(propKey, i);
 
-            message.getBody().writeBytes(bytes);
+            message.getBodyBuffer().writeBytes(bytes);
 
             producer0.send(message);
          }
@@ -262,7 +262,7 @@ public class BridgeTest extends ServiceTestBase
 
       for (int j = 0; j < 1024; j++)
       {
-         message.getBody().readBytes(byteRead);
+         message.getBodyBuffer().readBytes(byteRead);
       }
    }
 
@@ -543,7 +543,7 @@ public class BridgeTest extends ServiceTestBase
 
          message.putStringProperty(propKey, new SimpleString("bing"));
 
-         message.getBody().writeString("doo be doo be doo be doo");
+         message.getBodyBuffer().writeString("doo be doo be doo be doo");
 
          producer0.send(message);
       }
@@ -558,7 +558,7 @@ public class BridgeTest extends ServiceTestBase
 
          assertEquals(new SimpleString("bong"), val);
 
-         String sval = message.getBody().readString();
+         String sval = message.getBodyBuffer().readString();
 
          assertEquals("dee be dee be dee be dee", sval);
 
@@ -669,8 +669,6 @@ public class BridgeTest extends ServiceTestBase
          for (int i = 0; i < numMessages; i++)
          {
             ClientMessage message = session0.createClientMessage(false);
-
-            message.setBody(ChannelBuffers.wrappedBuffer(new byte[1024]));
 
             message.putIntProperty(propKey, i);
 

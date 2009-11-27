@@ -14,8 +14,8 @@
 
 package org.hornetq.core.message;
 
+import org.hornetq.core.buffers.HornetQBuffer;
 import org.hornetq.core.exception.HornetQException;
-import org.hornetq.core.remoting.spi.HornetQBuffer;
 
 import java.nio.ByteBuffer;
 
@@ -35,4 +35,6 @@ public interface BodyEncoder
    int encode(ByteBuffer bufferRead) throws HornetQException;
 
    int encode(HornetQBuffer bufferOut, int size) throws HornetQException;
+
+   long getLargeBodySize();
 }

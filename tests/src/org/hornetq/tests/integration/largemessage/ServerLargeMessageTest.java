@@ -13,18 +13,16 @@
 
 package org.hornetq.tests.integration.largemessage;
 
-import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
-import org.hornetq.core.config.Configuration;
+import org.hornetq.core.client.ClientConsumer;
+import org.hornetq.core.client.ClientMessage;
+import org.hornetq.core.client.ClientProducer;
+import org.hornetq.core.client.ClientSession;
+import org.hornetq.core.client.ClientSessionFactory;
+import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager;
-import org.hornetq.core.server.JournalType;
-import org.hornetq.core.server.LargeServerMessage;
-import org.hornetq.core.server.ServerMessage;
+import org.hornetq.core.persistence.impl.journal.LargeServerMessageImpl;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
-import org.hornetq.utils.ExecutorFactory;
-import org.hornetq.utils.OrderedExecutorFactory;
 
 /**
  * A ServerLargeMessageTest
@@ -40,60 +38,71 @@ public class ServerLargeMessageTest extends ServiceTestBase
 
    // Attributes ----------------------------------------------------
 
-   ExecutorService executor;
-   
-   ExecutorFactory execFactory;
-   
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
    
-   protected void setUp() throws Exception
+   // The ClientConsumer should be able to also send ServerLargeMessages as that's done by the CoreBridge
+   public void testSendServerMessage() throws Exception
    {
-      super.setUp();
+      HornetQServer server = createServer(true);
       
-      executor = Executors.newCachedThreadPool();
+      server.start();
       
-      execFactory = new OrderedExecutorFactory(executor);
-   }
-   
-   protected void tearDown() throws Exception
-   {
-      executor.shutdown();
+      ClientSessionFactory sf = createFactory(false);
       
-      super.tearDown();
-   }
-   
-   public void testLargeMessageCopy() throws Exception
-   {
-      clearData();
-
-      Configuration configuration = createDefaultConfig();
-
-      configuration.start();
-
-      configuration.setJournalType(JournalType.ASYNCIO);
-
-      final JournalStorageManager journal = new JournalStorageManager(configuration, execFactory);
-      journal.start();
-
-      LargeServerMessage msg = journal.createLargeMessage();
-      msg.setMessageID(1);
-
-      byte[] data = new byte[1024];
-
-      for (int i = 0; i < 110; i++)
+      ClientSession session = sf.createSession(false, false);
+      
+      try
       {
-         msg.addBytes(data);
+         LargeServerMessageImpl fileMessage = new LargeServerMessageImpl((JournalStorageManager)server.getStorageManager());
+         
+         fileMessage.setMessageID(1005);
+         
+         for (int i = 0 ; i < 2 * ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE; i++)
+         {
+            fileMessage.addBytes(new byte[]{getSamplebyte(i)});
+         }
+         
+         fileMessage.releaseResources();
+         
+         session.createQueue("A", "A");
+         
+         ClientProducer prod = session.createProducer("A");
+         
+         prod.send(fileMessage);
+         
+         fileMessage.deleteFile();
+         
+         session.commit();
+                  
+         session.start();
+         
+         ClientConsumer cons = session.createConsumer("A");
+         
+         ClientMessage msg = cons.receive(5000);
+         
+         assertNotNull(msg);
+         
+         assertEquals(msg.getBodySize(), 2 * ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE);
+         
+         for (int i = 0 ; i < 2 * ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE; i++)
+         {
+            assertEquals(getSamplebyte(i), msg.getBodyBuffer().readByte());
+         }
+         
+         msg.acknowledge();
+         
+         session.commit();
+         
       }
-
-      ServerMessage msg2 = msg.copy(2);
-
-      assertEquals(110 * 1024, msg.getBodySize());
-      assertEquals(110 * 1024, msg2.getBodySize());
-
+      finally
+      {
+         sf.close();
+         server.stop();
+      }
    }
 
    // Package protected ---------------------------------------------

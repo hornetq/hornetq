@@ -78,9 +78,9 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
 
    private HornetQDestination defaultDestination;
 
-   private final String messageIDPrefix;
+   private final SimpleString messageIDPrefix;
 
-   private final AtomicLong sequenceNumber = new AtomicLong(0);
+   private volatile long sequenceNumber;
 
    private ClientSession clientSession;
 
@@ -105,7 +105,7 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
       // then session, producers & messages ID could be created using simple sequences
       String uuid = UUIDGenerator.getInstance().generateSimpleStringUUID().toString();
 
-      messageIDPrefix = "ID:" + uuid + ":";
+      messageIDPrefix = new SimpleString("ID:" + uuid + ":");
    }
 
    // MessageProducer implementation --------------------------------
@@ -404,7 +404,12 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
       if (!disableMessageID)
       {
          // Generate an id
-         msg.setJMSMessageID(messageIDPrefix + sequenceNumber.incrementAndGet());
+         
+         SimpleString msgID = generateMessageID();
+
+         msg.getCoreMessage().putStringProperty(HornetQMessage.HORNETQ_MESSAGE_ID, msgID);
+         
+         msg.resetMessageID(msgID.toString());         
       }
 
       if (foreign)
@@ -443,7 +448,47 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
          throw JMSExceptionHelper.convertFromHornetQException(e);
       }
    }
+   
+   //This is faster than doing standard String concatenation and conversions from long to string
+   private SimpleString generateMessageID()
+   {
+      byte[] prefixData = messageIDPrefix.getData();
+      
+      int len = prefixData.length + 16 * 2;
 
+      byte[] bytes = new byte[len];
+
+      System.arraycopy(messageIDPrefix.getData(), 0, bytes, 0, prefixData.length);
+      
+      int j = prefixData.length;
+      
+      long l = sequenceNumber++;
+      
+      for (int i = 0; i < 16; i++)
+      {
+         int ch = (int)(l & 0xF);
+
+         l = l >> 4;
+
+         char chr = (char)(ch + 48);
+
+         bytes[j] = (byte)chr;
+
+         j += 2;
+      }
+      
+      return new SimpleString(bytes);
+   }
+   
+//   private SimpleString generateOldMessageID()
+//   {
+//      SimpleString ss = new SimpleString(messageIDPrefix.getData());
+//      
+//      ss.concat(String.valueOf(sequenceNumber++));
+//      
+//      return ss;
+//   }
+   
    private void checkClosed() throws JMSException
    {
       if (producer.isClosed())

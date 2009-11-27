@@ -77,7 +77,7 @@ public class InterceptorTest extends ServiceTestBase
          {
             SessionSendMessage p = (SessionSendMessage)packet;
             
-            ServerMessage sm = p.getServerMessage();
+            ServerMessage sm = (ServerMessage)p.getMessage();
             
             sm.putStringProperty(key, "orange");
          }
@@ -109,7 +109,7 @@ public class InterceptorTest extends ServiceTestBase
          {
             SessionReceiveMessage p = (SessionReceiveMessage)packet;
             
-            ClientMessage cm = p.getClientMessage();
+            ClientMessage cm = (ClientMessage)p.getMessage();
             
             cm.putStringProperty(key, "orange");
          }
@@ -171,7 +171,7 @@ public class InterceptorTest extends ServiceTestBase
          {
             SessionSendMessage p = (SessionSendMessage)packet;
             
-            ServerMessage sm = p.getServerMessage();
+            ServerMessage sm = (ServerMessage)p.getMessage();
             
             sm.putIntProperty(key, num);
             
@@ -224,7 +224,7 @@ public class InterceptorTest extends ServiceTestBase
          {
             SessionReceiveMessage p = (SessionReceiveMessage)packet;
             
-            Message sm = p.getClientMessage();
+            Message sm = p.getMessage();
             
             sm.putIntProperty(key, num);
             

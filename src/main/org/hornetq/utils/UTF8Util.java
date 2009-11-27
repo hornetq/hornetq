@@ -16,8 +16,8 @@ package org.hornetq.utils;
 import java.io.IOException;
 import java.lang.ref.SoftReference;
 
+import org.hornetq.core.buffers.HornetQBuffer;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.remoting.spi.HornetQBuffer;
 
 /**
  * 
@@ -41,7 +41,7 @@ public class UTF8Util
 
    private static ThreadLocal<SoftReference<StringUtilBuffer>> currenBuffer = new ThreadLocal<SoftReference<StringUtilBuffer>>();
 
-   public static void saveUTF(final HornetQBuffer out, final String str) throws IOException
+   public static void saveUTF(final HornetQBuffer out, final String str)
    {
       StringUtilBuffer buffer = getThreadLocalBuffer();
 
@@ -107,7 +107,7 @@ public class UTF8Util
       }
    }
 
-   public static String readUTF(final HornetQBuffer input) throws IOException
+   public static String readUTF(final HornetQBuffer input)
    {
       StringUtilBuffer buffer = getThreadLocalBuffer();
 

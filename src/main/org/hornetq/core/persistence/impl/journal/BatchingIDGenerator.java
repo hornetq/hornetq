@@ -15,10 +15,10 @@ package org.hornetq.core.persistence.impl.journal;
 
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.hornetq.core.buffers.HornetQBuffer;
 import org.hornetq.core.journal.EncodingSupport;
 import org.hornetq.core.journal.Journal;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.utils.DataConstants;
 import org.hornetq.utils.IDGenerator;
 

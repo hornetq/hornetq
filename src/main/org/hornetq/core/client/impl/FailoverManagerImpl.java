@@ -26,6 +26,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 
+import org.hornetq.core.buffers.HornetQBuffer;
 import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.client.ClientSessionFactory;
 import org.hornetq.core.client.SessionFailureListener;
@@ -48,7 +49,6 @@ import org.hornetq.core.remoting.spi.Connection;
 import org.hornetq.core.remoting.spi.ConnectionLifeCycleListener;
 import org.hornetq.core.remoting.spi.Connector;
 import org.hornetq.core.remoting.spi.ConnectorFactory;
-import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.core.version.Version;
 import org.hornetq.utils.ConcurrentHashSet;
 import org.hornetq.utils.ConfigurationHelper;
@@ -310,7 +310,8 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
                                       final int producerMaxRate,
                                       final int consumerMaxRate,
                                       final boolean blockOnNonPersistentSend,
-                                      final boolean blockOnPersistentSend) throws HornetQException
+                                      final boolean blockOnPersistentSend,
+                                      final int initialMessagePacketSize) throws HornetQException
    {
       synchronized (createSessionLock)
       {
@@ -421,6 +422,7 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
                                                                      blockOnPersistentSend,
                                                                      cacheLargeMessageClient,
                                                                      minLargeMessageSize,
+                                                                     initialMessagePacketSize,
                                                                      theConnection,
                                                                      response.getServerVersion(),
                                                                      sessionChannel,
@@ -1090,6 +1092,7 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
       public void bufferReceived(final Object connectionID, final HornetQBuffer buffer)
       {
          RemotingConnection theConn = connection;
+         
          if (theConn != null && connectionID == theConn.getID())
          {
             theConn.bufferReceived(connectionID, buffer);

@@ -51,7 +51,9 @@ public class HeuristicXATest extends ServiceTestBase
 
 
    final SimpleString ADDRESS = new SimpleString("ADDRESS");
-
+   
+   final String body = "this is the body";
+   
    // Attributes ----------------------------------------------------
 
    private MBeanServer mbeanServer;
@@ -120,7 +122,7 @@ public class HeuristicXATest extends ServiceTestBase
 
          ClientMessage msg = session.createClientMessage(true);
 
-         msg.getBody().writeBytes(new byte[123]);
+         msg.getBodyBuffer().writeString(body);
 
          producer.send(msg);
 
@@ -173,7 +175,7 @@ public class HeuristicXATest extends ServiceTestBase
             msg = consumer.receive(1000);
             assertNotNull(msg);
             msg.acknowledge();
-            assertEquals(123, msg.getBodySize());
+            assertEquals(body, msg.getBodyBuffer().readString());
 
             session.commit();
             session.close();
@@ -227,7 +229,7 @@ public class HeuristicXATest extends ServiceTestBase
 
          ClientMessage msg = session.createClientMessage(true);
 
-         msg.getBody().writeBytes(new byte[123]);
+         msg.getBodyBuffer().writeString(body);
 
          producer.send(msg);
 
@@ -267,8 +269,8 @@ public class HeuristicXATest extends ServiceTestBase
             msg = consumer.receive(1000);
             assertNotNull(msg);
             msg.acknowledge();
-            assertEquals(123, msg.getBodySize());
-
+            assertEquals(body, msg.getBodyBuffer().readString());
+                        
             session.commit();
             session.close();
          }
@@ -334,7 +336,7 @@ public class HeuristicXATest extends ServiceTestBase
 
          ClientMessage msg = session.createClientMessage(true);
 
-         msg.getBody().writeBytes(new byte[123]);
+         msg.getBodyBuffer().writeString(body);
 
          producer.send(msg);
 
@@ -374,7 +376,7 @@ public class HeuristicXATest extends ServiceTestBase
             msg = consumer.receive(1000);
             assertNotNull(msg);
             msg.acknowledge();
-            assertEquals(123, msg.getBodySize());
+            assertEquals(body, msg.getBodyBuffer().readString());
 
             session.commit();
             session.close();
@@ -449,7 +451,7 @@ public class HeuristicXATest extends ServiceTestBase
 
          ClientMessage msg = session.createClientMessage(true);
 
-         msg.getBody().writeBytes(new byte[123]);
+         msg.getBodyBuffer().writeBytes(new byte[123]);
 
          producer.send(msg);
 

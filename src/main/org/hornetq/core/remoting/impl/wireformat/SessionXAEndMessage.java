@@ -15,7 +15,7 @@ package org.hornetq.core.remoting.impl.wireformat;
 
 import javax.transaction.xa.Xid;
 
-import org.hornetq.core.remoting.spi.HornetQBuffer;
+import org.hornetq.core.buffers.HornetQBuffer;
 import org.hornetq.utils.DataConstants;
 
 
@@ -64,18 +64,13 @@ public class SessionXAEndMessage extends PacketImpl
       return xid;
    }
 
-   public int getRequiredBufferSize()
-   {
-      return BASIC_PACKET_SIZE + XidCodecSupport.getXidEncodeLength(xid) + DataConstants.SIZE_BOOLEAN;
-   }
-
-   public void encodeBody(final HornetQBuffer buffer)
+   public void encodeRest(final HornetQBuffer buffer)
    {
       XidCodecSupport.encodeXid(xid, buffer);
       buffer.writeBoolean(failed);
    }
    
-   public void decodeBody(final HornetQBuffer buffer)
+   public void decodeRest(final HornetQBuffer buffer)
    {
       xid = XidCodecSupport.decodeXid(buffer);
       failed = buffer.readBoolean();

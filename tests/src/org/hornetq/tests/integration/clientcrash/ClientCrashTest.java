@@ -78,7 +78,7 @@ public class ClientCrashTest extends ClientTestBase
       // send the message to the queue
       Message messageFromClient = consumer.receive(5000);
       assertNotNull("no message received", messageFromClient);
-      assertEquals(MESSAGE_TEXT_FROM_CLIENT, messageFromClient.getBody().readString());
+      assertEquals(MESSAGE_TEXT_FROM_CLIENT, messageFromClient.getBodyBuffer().readString());
 
       assertActiveConnections(1 + 1); // One local and one from the other vm
       assertActiveSession(1 + 1);
@@ -88,7 +88,7 @@ public class ClientCrashTest extends ClientTestBase
                                                           0,
                                                           System.currentTimeMillis(),
                                                           (byte)1);
-      message.getBody().writeString(ClientCrashTest.MESSAGE_TEXT_FROM_SERVER);
+      message.getBodyBuffer().writeString(ClientCrashTest.MESSAGE_TEXT_FROM_SERVER);
       producer.send(message);
 
       log.debug("waiting for the client VM to crash ...");

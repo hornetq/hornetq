@@ -15,10 +15,10 @@ package org.hornetq.core.client;
 
 import javax.transaction.xa.XAResource;
 
+import org.hornetq.core.buffers.HornetQBuffer;
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.remoting.impl.wireformat.SessionBindingQueryResponseMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
-import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.utils.SimpleString;
 
 /**
@@ -366,46 +366,6 @@ public interface ClientSession extends XAResource
     */
    ClientProducer createProducer(SimpleString address, int rate) throws HornetQException;
 
-   /**
-    * Create a produce which sends messages to the given address
-    * 
-    * @param address the address to send messages to
-    * @param rate the producer rate
-    * @return a ClientProducer
-    * @throws HornetQException if an exception occurs while creating the ClientProducer
-    */
-   ClientProducer createProducer(String address, int rate) throws HornetQException;
-
-   /**
-    * Create a produce which sends messages to the given address
-    * 
-    * @param address the address to send messages to
-    * @param rate the producer rate
-    * @param blockOnNonPersistentSend whether to block when sending <em>non-persistent</em> messages or not
-    * @param blockOnPersistentSend whether to block when sending <em>persistent</em> messages or not
-    * @return a ClientProducer
-    * @throws HornetQException if an exception occurs while creating the ClientProducer
-    */
-   ClientProducer createProducer(SimpleString address,
-                                 int maxRate,
-                                 boolean blockOnNonPersistentSend,
-                                 boolean blockOnPersistentSend) throws HornetQException;
-
-   /**
-    * Create a produce which sends messages to the given address
-    * 
-    * @param address the address to send messages to
-    * @param rate the producer rate
-    * @param blockOnNonPersistentSend whether to block when sending <em>non-persistent</em> messages or not
-    * @param blockOnPersistentSend whether to block when sending <em>persistent</em> messages or not
-    * @return a ClientProducer
-    * @throws HornetQException if an exception occurs while creating the ClientProducer
-    */
-   ClientProducer createProducer(String address,
-                                 int maxRate,
-                                 boolean blockOnNonPersistentSend,
-                                 boolean blockOnPersistentSend) throws HornetQException;
-
    // Message operations --------------------------------------------
 
    /**
@@ -425,14 +385,6 @@ public interface ClientSession extends XAResource
     */
    ClientMessage createClientMessage(byte type, boolean durable);
 
-   /**
-    * Create a ClientMessage with the given HornetQBuffer as its body.
-    * 
-    * @param durable whether the created message is durable or not
-    * @param buffer a HornetQBuffer which will be used as the messages's body
-    * @return a ClientMessage
-    */
-   ClientMessage createClientMessage(boolean durable, HornetQBuffer buffer);
 
    /**
     * Create a ClientMessage with the given HornetQBuffer as its body.
@@ -444,22 +396,6 @@ public interface ClientSession extends XAResource
     * @return a ClientMessage
     */
    ClientMessage createClientMessage(byte type, boolean durable, long expiration, long timestamp, byte priority);
-
-   /**
-    * Create a HornetQBuffer containing the given bytes.
-    * 
-    * @param bytes the buffer will be filled with these bytes
-    * @return a HornetQBuffer containing the given bytes
-    */
-   HornetQBuffer createBuffer(byte[] bytes);
-
-   /**
-    * Create a HornetQBuffer of the given size.
-    * 
-    * @param size size of the buffer to create
-    * @return a HornetQBuffer
-    */
-   HornetQBuffer createBuffer(int size);
 
    // Query operations ----------------------------------------------
 
@@ -482,7 +418,6 @@ public interface ClientSession extends XAResource
     * @return <code>true</code> if the session supports XA, <code>false</code> else.
     */
    boolean isXA();
-
 
    /**
     * Commit the current transaction.
@@ -538,5 +473,6 @@ public interface ClientSession extends XAResource
    boolean isBlockOnAcknowledge();
 
    void setSendAcknowledgementHandler(SendAcknowledgementHandler handler);
+
 
 }

@@ -17,6 +17,7 @@ import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
 import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.client.ClientSessionFactory;
+import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
 import org.hornetq.tests.util.ServiceTestBase;
@@ -27,6 +28,8 @@ import org.hornetq.utils.SimpleString;
  */
 public class AckBatchSizeTest extends ServiceTestBase
 {
+   private static final Logger log = Logger.getLogger(AckBatchSizeTest.class);
+
    public final SimpleString addressA = new SimpleString("addressA");
 
    public final SimpleString queueA = new SimpleString("queueA");
@@ -40,7 +43,7 @@ public class AckBatchSizeTest extends ServiceTestBase
    /*
    * tests that wed don't acknowledge until the correct ackBatchSize is reached
    * */
-   
+
    private int getMessageEncodeSize(final SimpleString address) throws Exception
    {
       ClientSessionFactory cf = createInVMFactory();
@@ -51,7 +54,7 @@ public class AckBatchSizeTest extends ServiceTestBase
       int encodeSize = message.getEncodeSize();
       session.close();
       cf.close();
-      return encodeSize;      
+      return encodeSize;
    }
 
    public void testAckBatchSize() throws Exception
@@ -62,11 +65,11 @@ public class AckBatchSizeTest extends ServiceTestBase
       {
          server.start();
          ClientSessionFactory cf = createInVMFactory();
-         int numMessages = 100;         
+         int numMessages = 100;
          cf.setAckBatchSize(numMessages * getMessageEncodeSize(addressA));
          cf.setBlockOnAcknowledge(true);
          ClientSession sendSession = cf.createSession(false, true, true);
-         
+
          ClientSession session = cf.createSession(false, true, true);
          session.createQueue(addressA, queueA, false);
          ClientProducer cp = sendSession.createProducer(addressA);
@@ -80,12 +83,13 @@ public class AckBatchSizeTest extends ServiceTestBase
          for (int i = 0; i < numMessages - 1; i++)
          {
             ClientMessage m = consumer.receive(5000);
+            
             m.acknowledge();
          }
 
          ClientMessage m = consumer.receive(5000);
-         Queue q = (Queue) server.getPostOffice().getBinding(queueA).getBindable();
-         assertEquals(numMessages, q.getDeliveringCount());
+         Queue q = (Queue)server.getPostOffice().getBinding(queueA).getBindable();
+         assertEquals(100, q.getDeliveringCount());
          m.acknowledge();
          assertEquals(0, q.getDeliveringCount());
          sendSession.close();
@@ -115,7 +119,7 @@ public class AckBatchSizeTest extends ServiceTestBase
          cf.setBlockOnAcknowledge(true);
          ClientSession sendSession = cf.createSession(false, true, true);
          int numMessages = 100;
-         
+
          ClientSession session = cf.createSession(false, true, true);
          session.createQueue(addressA, queueA, false);
          ClientProducer cp = sendSession.createProducer(addressA);
@@ -126,7 +130,7 @@ public class AckBatchSizeTest extends ServiceTestBase
 
          ClientConsumer consumer = session.createConsumer(queueA);
          session.start();
-         Queue q = (Queue) server.getPostOffice().getBinding(queueA).getBindable();
+         Queue q = (Queue)server.getPostOffice().getBinding(queueA).getBindable();
          ClientMessage[] messages = new ClientMessage[numMessages];
          for (int i = 0; i < numMessages; i++)
          {

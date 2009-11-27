@@ -172,6 +172,10 @@
    <!-- Classpath definition                                                                     -->
    <!-- ======================================================================================== -->
 
+   <path id="core.compilation.classpath">
+      <path refid="org.jboss.netty.classpath"/>
+   </path>
+	
    <path id="jms.compilation.classpath">
       <path location="${build.core.classes.dir}"/>
       <path refid="org.jboss.javaee.classpath"/>
@@ -401,6 +405,7 @@
          </src>
          <include name="**/hornetq/core/**/*.java"/>
          <include name="**/hornetq/utils/**/*.java"/>
+      	 <classpath refid="core.compilation.classpath"/>
       </javac>
       <javah class="org.hornetq.core.asyncio.impl.AsynchronousFileImpl"
              classpath="${build.core.classes.dir}" destdir="./native/src"/>
@@ -1218,8 +1223,7 @@
                     haltonerror="${junit.batchtest.haltonerror}"
                     failureproperty="tests.failed">
             <formatter type="plain" usefile="${junit.formatter.usefile}"/>
-            <fileset dir="${test.classes.dir}">
-               <!-- <exclude name="**/integration/http/*" /> -->
+            <fileset dir="${test.classes.dir}">            
             	<!-- cluster tests with backup are brittled and are temporarily excluded -->
                <exclude name="**/cluster/distribution/*WithBackupTest.class" />
                <!-- exlcuded because of https://jira.jboss.org/jira/browse/HORNETQ-65 -->
@@ -1231,12 +1235,12 @@
       <antcall target="tests-validate-error" inheritall="true" inheritrefs="true"/>
    </target>
 
-   <!-- ifs on ant are convoluted by definition... this will throw a BUILD FAILED if tests.validate.error was defined and if a error (tests.failed) happened -->
+   <!-- ifs on ant are convoluted... this will throw a BUILD FAILED if tests.validate.error was defined and if a error (tests.failed) happened -->
    <target name="tests-validate-error" if="tests.validate.error">
       <antcall target="tests-onerror" inheritall="true" inheritrefs="true"/>
    </target>
 
-   <!-- ifs on ant are convoluted by definition... this will throw a BUILD FAILED if tests.validate.error was defined and if a error (tests.failed) happened -->
+   <!-- ifs on ant are convoluted... this will throw a BUILD FAILED if tests.validate.error was defined and if a error (tests.failed) happened -->
    <target name="tests-onerror" if="tests.failed">
       <antcall target="compile-reports"/>
       <fail message="Test suite failed!"/>

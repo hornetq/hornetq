@@ -33,7 +33,8 @@ import javax.jms.MessageFormatException;
 import javax.jms.MessageNotReadableException;
 import javax.jms.MessageNotWriteableException;
 
-import org.hornetq.core.buffers.ChannelBuffers;
+import org.hornetq.core.buffers.HornetQBuffer;
+import org.hornetq.core.buffers.HornetQBuffers;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.client.impl.ClientMessageImpl;
@@ -41,7 +42,6 @@ import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.PropertyConversionException;
 import org.hornetq.core.message.impl.MessageImpl;
-import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.jms.HornetQDestination;
 import org.hornetq.utils.SimpleString;
 
@@ -213,7 +213,7 @@ public class HornetQMessage implements javax.jms.Message
    // Read-only?
    protected boolean readOnly;
 
-   // Read-only?
+   // Properties read-only?
    protected boolean propertiesReadOnly;
 
    // Cache it
@@ -232,31 +232,7 @@ public class HornetQMessage implements javax.jms.Message
    private String jmsType;
 
    // Constructors --------------------------------------------------
-   /**
-    * constructors for test purposes only
-    */
-   public HornetQMessage()
-   {
-      message = new ClientMessageImpl(HornetQMessage.TYPE,
-                                      true,
-                                      0,
-                                      System.currentTimeMillis(),
-                                      (byte)4,
-                                      ChannelBuffers.dynamicBuffer(1024));
-
-   }
-
-   public HornetQMessage(final byte type)
-   {
-      message = new ClientMessageImpl(type,
-                                      true,
-                                      0,
-                                      System.currentTimeMillis(),
-                                      (byte)4,
-                                      ChannelBuffers.dynamicBuffer(1024));
-
-   }
-
+   
    /*
     * Create a new message prior to sending
     */
@@ -291,6 +267,10 @@ public class HornetQMessage implements javax.jms.Message
    public HornetQMessage(final Message foreign, final ClientSession session) throws JMSException
    {
       this(foreign, HornetQMessage.TYPE, session);
+   }
+   
+   public HornetQMessage()
+   {
    }
 
    protected HornetQMessage(final Message foreign, final byte type, final ClientSession session) throws JMSException
@@ -351,6 +331,7 @@ public class HornetQMessage implements javax.jms.Message
       {
          throw new JMSException("JMSMessageID must start with ID:");
       }
+      
       if (jmsMessageID == null)
       {
          message.removeProperty(HORNETQ_MESSAGE_ID);
@@ -359,9 +340,10 @@ public class HornetQMessage implements javax.jms.Message
       {
          message.putStringProperty(HORNETQ_MESSAGE_ID, new SimpleString(jmsMessageID));
       }
+      
       msgID = jmsMessageID;
    }
-
+   
    public long getJMSTimestamp() throws JMSException
    {
       return message.getTimestamp();
@@ -755,6 +737,7 @@ public class HornetQMessage implements javax.jms.Message
    public void setBooleanProperty(final String name, final boolean value) throws JMSException
    {
       checkProperty(name, value);
+      
       message.putBooleanProperty(new SimpleString(name), value);
    }
 
@@ -871,6 +854,11 @@ public class HornetQMessage implements javax.jms.Message
 
    // Public --------------------------------------------------------
 
+   public void resetMessageID(String msgID)
+   {
+      this.msgID = msgID;
+   }
+   
    public ClientMessage getCoreMessage()
    {
       return message;
@@ -878,12 +866,13 @@ public class HornetQMessage implements javax.jms.Message
 
    public void doBeforeSend() throws Exception
    {
-      message.getBody().resetReaderIndex();
+      message.getBodyBuffer().resetReaderIndex();
    }
 
    public void doBeforeReceive() throws Exception
    {
-      HornetQBuffer body = message.getBody();
+      HornetQBuffer body = message.getBodyBuffer();
+      
       if (body != null)
       {
          body.resetReaderIndex();
@@ -983,11 +972,6 @@ public class HornetQMessage implements javax.jms.Message
       {
          throw new MessageNotReadableException("Message is write-only");
       }
-   }
-
-   protected HornetQBuffer getBody()
-   {
-      return message.getBody();
    }
 
    // Private ------------------------------------------------------------

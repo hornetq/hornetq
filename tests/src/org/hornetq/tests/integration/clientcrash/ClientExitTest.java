@@ -70,7 +70,7 @@ public class ClientExitTest extends ClientTestBase
       Message message = consumer.receive(15000);
 
       assertNotNull(message);
-      assertEquals(MESSAGE_TEXT, message.getBody().readString());
+      assertEquals(MESSAGE_TEXT, message.getBodyBuffer().readString());
 
       // the client VM should exit by itself. If it doesn't, that means we have a problem
       // and the test will timeout

@@ -15,10 +15,10 @@ package org.hornetq.core.remoting;
 
 import java.util.List;
 
+import org.hornetq.core.buffers.HornetQBuffer;
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.remoting.spi.BufferHandler;
 import org.hornetq.core.remoting.spi.Connection;
-import org.hornetq.core.remoting.spi.HornetQBuffer;
 
 /**
  * A RemotingConnection

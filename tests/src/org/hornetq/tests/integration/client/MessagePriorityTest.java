@@ -64,17 +64,11 @@ public class MessagePriorityTest extends UnitTestCase
 
       ClientProducer producer = session.createProducer(address);
 
-      ClientMessage[] messages = new ClientMessage[10];
       for (int i = 0; i < 10; i++)
       {
          ClientMessage m = createTextMessage(Integer.toString(i), session);
-         m.setPriority((byte)i);
-         messages[i] = m;
-      }
-      // send message with lower priority first
-      for (int i = 0; i < 10; i++)
-      {
-         producer.send(messages[i]);
+         m.setPriority((byte)i);         
+         producer.send(m);
       }
 
       ClientConsumer consumer = session.createConsumer(queue);
@@ -86,8 +80,7 @@ public class MessagePriorityTest extends UnitTestCase
       {
          ClientMessage m = consumer.receive(500);
          assertNotNull(m);
-         assertEquals(messages[i].getPriority(), m.getPriority());
-         assertEquals(m.getBody().readString(), messages[i].getBody().readString());
+         assertEquals(i, m.getPriority());
       }
 
       consumer.close();
@@ -112,17 +105,11 @@ public class MessagePriorityTest extends UnitTestCase
       ClientConsumer consumer = session.createConsumer(queue);
 
 
-      ClientMessage[] messages = new ClientMessage[10];
       for (int i = 0; i < 10; i++)
       {
          ClientMessage m = createTextMessage(Integer.toString(i), session);
          m.setPriority((byte)i);
-         messages[i] = m;
-      }
-      // send message with lower priority first
-      for (int i = 0; i < 10; i++)
-      {
-         producer.send(messages[i]);
+         producer.send(m);
       }
 
       // expect to consumer message with higher priority first
@@ -130,8 +117,7 @@ public class MessagePriorityTest extends UnitTestCase
       {
          ClientMessage m = consumer.receive(500);
          assertNotNull(m);
-         assertEquals(messages[i].getPriority(), m.getPriority());
-         assertEquals(m.getBody().readString(), messages[i].getBody().readString());
+         assertEquals(i, m.getPriority());         
       }
 
       consumer.close();
@@ -252,7 +238,7 @@ public class MessagePriorityTest extends UnitTestCase
       ClientMessage m = consumer.receive(500);
       assertNotNull(m);
       assertEquals(expectedPriority, m.getPriority());
-      assertEquals(expectedStringInBody, m.getBody().readString());
+      assertEquals(expectedStringInBody, m.getBodyBuffer().readString());
    }
 
    // Inner classes -------------------------------------------------

@@ -21,7 +21,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import org.hornetq.core.buffers.ChannelBuffers;
+import org.hornetq.core.buffers.HornetQBuffer;
+import org.hornetq.core.buffers.HornetQBuffers;
 import org.hornetq.core.client.impl.ClientConsumerImpl;
 import org.hornetq.core.client.management.impl.ManagementHelper;
 import org.hornetq.core.exception.HornetQException;
@@ -36,8 +37,8 @@ import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.QueueBinding;
 import org.hornetq.core.remoting.Channel;
 import org.hornetq.core.remoting.impl.wireformat.SessionReceiveContinuationMessage;
+import org.hornetq.core.remoting.impl.wireformat.SessionReceiveLargeMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionReceiveMessage;
-import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.core.server.HandleStatus;
 import org.hornetq.core.server.LargeServerMessage;
 import org.hornetq.core.server.MessageReference;
@@ -169,7 +170,7 @@ public class ServerConsumerImpl implements ServerConsumer
          browserDeliverer = new BrowserDeliverer(messageQueue.iterator());
       }
       else
-      {
+      {       
          messageQueue.addConsumer(this);
       }
    }
@@ -183,9 +184,9 @@ public class ServerConsumerImpl implements ServerConsumer
    }
 
    public HandleStatus handle(final MessageReference ref) throws Exception
-   {
+   {      
       if (availableCredits != null && availableCredits.get() <= 0)
-      {
+      {         
          return HandleStatus.BUSY;
       }
 
@@ -315,7 +316,8 @@ public class ServerConsumerImpl implements ServerConsumer
 
          props.putSimpleStringProperty(ManagementHelper.HDR_ROUTING_NAME, binding.getRoutingName());
 
-         props.putSimpleStringProperty(ManagementHelper.HDR_FILTERSTRING, filter == null ? null : filter.getFilterString());
+         props.putSimpleStringProperty(ManagementHelper.HDR_FILTERSTRING, filter == null ? null
+                                                                                        : filter.getFilterString());
 
          props.putIntProperty(ManagementHelper.HDR_DISTANCE, binding.getDistance());
 
@@ -342,16 +344,23 @@ public class ServerConsumerImpl implements ServerConsumer
       {
          public void run()
          {
-            promptDelivery(false);
+            try
+            {            
+               promptDelivery(false);
 
-            ServerMessage forcedDeliveryMessage = new ServerMessageImpl(storageManager.generateUniqueID());
-            forcedDeliveryMessage.setBody(ChannelBuffers.EMPTY_BUFFER);
-            forcedDeliveryMessage.putLongProperty(ClientConsumerImpl.FORCED_DELIVERY_MESSAGE, sequence);
-            forcedDeliveryMessage.setDestination(messageQueue.getName());
+               ServerMessage forcedDeliveryMessage = new ServerMessageImpl(storageManager.generateUniqueID(), 50);
 
-            final SessionReceiveMessage packet = new SessionReceiveMessage(id, forcedDeliveryMessage, 0);
+               forcedDeliveryMessage.putLongProperty(ClientConsumerImpl.FORCED_DELIVERY_MESSAGE, sequence);
+               forcedDeliveryMessage.setDestination(messageQueue.getName());
 
-            channel.send(packet);
+               final SessionReceiveMessage packet = new SessionReceiveMessage(id, forcedDeliveryMessage, 0);
+
+               channel.send(packet);
+            }
+            catch (Exception e)
+            {
+               log.error("Failed to send forced delivery message", e);
+            }
          }
       });
    }
@@ -426,7 +435,7 @@ public class ServerConsumerImpl implements ServerConsumer
          }
 
          if (previous <= 0 && previous + credits > 0)
-         {
+         {       
             promptDelivery(true);
          }
       }
@@ -573,15 +582,16 @@ public class ServerConsumerImpl implements ServerConsumer
     * @param message
     */
    private void deliverStandardMessage(final MessageReference ref, final ServerMessage message)
-   {
+   {     
       final SessionReceiveMessage packet = new SessionReceiveMessage(id, message, ref.getDeliveryCount());
+
+      channel.send(packet);
 
       if (availableCredits != null)
       {
-         availableCredits.addAndGet(-packet.getRequiredBufferSize());
+         availableCredits.addAndGet(-packet.getPacketSize());
       }
-
-      channel.send(packet);
+      
    }
 
    // Inner classes
@@ -622,7 +632,7 @@ public class ServerConsumerImpl implements ServerConsumer
     *  This Inner class was created to avoid a bunch of loose properties about the current LargeMessage being sent*/
    private final class LargeMessageDeliverer
    {
-      private final long sizePendingLargeMessage;
+      private long sizePendingLargeMessage;
 
       private LargeServerMessage largeMessage;
 
@@ -640,8 +650,6 @@ public class ServerConsumerImpl implements ServerConsumer
          largeMessage = message;
 
          largeMessage.incrementDelayDeletionCount();
-
-         sizePendingLargeMessage = largeMessage.getLargeBodySize();
 
          this.ref = ref;
       }
@@ -664,27 +672,30 @@ public class ServerConsumerImpl implements ServerConsumer
 
             if (!sentInitialPacket)
             {
-               HornetQBuffer headerBuffer = ChannelBuffers.buffer(largeMessage.getHeadersAndPropertiesEncodeSize());
+               HornetQBuffer headerBuffer = HornetQBuffers.fixedBuffer(largeMessage.getHeadersAndPropertiesEncodeSize());
 
                largeMessage.encodeHeadersAndProperties(headerBuffer);
 
-               SessionReceiveMessage initialPacket = new SessionReceiveMessage(id,
-                                                                               headerBuffer.array(),
-                                                                               largeMessage.getLargeBodySize(),
-                                                                               ref.getDeliveryCount());
-
                context = largeMessage.getBodyEncoder();
 
-               context.open();
+               sizePendingLargeMessage = context.getLargeBodySize();
 
-               if (availableCredits != null)
-               {
-                  availableCredits.addAndGet(-initialPacket.getRequiredBufferSize());
-               }
+               SessionReceiveLargeMessage initialPacket = new SessionReceiveLargeMessage(id,
+                                                                                         headerBuffer.toByteBuffer()
+                                                                                                     .array(),
+                                                                                         context.getLargeBodySize(),
+                                                                                         ref.getDeliveryCount());
+
+               context.open();
 
                sentInitialPacket = true;
 
                channel.send(initialPacket);
+
+               if (availableCredits != null)
+               {
+                  availableCredits.addAndGet(-initialPacket.getPacketSize());
+               }
 
                // Execute the rest of the large message on a different thread so as not to tie up the delivery thread
                // for too long
@@ -709,19 +720,19 @@ public class ServerConsumerImpl implements ServerConsumer
 
                int chunkLen = chunk.getBody().length;
 
-               if (availableCredits != null)
-               {
-                  availableCredits.addAndGet(-chunk.getRequiredBufferSize());
-               }
+               channel.send(chunk);
 
                if (trace)
                {
-                  trace("deliverLargeMessage: Sending " + chunk.getRequiredBufferSize() +
+                  trace("deliverLargeMessage: Sending " + chunk.getPacketSize() +
                         " availableCredits now is " +
                         availableCredits);
                }
 
-               channel.send(chunk);
+               if (availableCredits != null)
+               {
+                  availableCredits.addAndGet(-chunk.getPacketSize());
+               }
 
                positionPendingLargeMessage += chunkLen;
 
@@ -792,12 +803,12 @@ public class ServerConsumerImpl implements ServerConsumer
 
          localChunkLen = (int)Math.min(sizePendingLargeMessage - positionPendingLargeMessage, minLargeMessageSize);
 
-         HornetQBuffer bodyBuffer = ChannelBuffers.buffer(localChunkLen);
+         HornetQBuffer bodyBuffer = HornetQBuffers.fixedBuffer(localChunkLen);
 
          context.encode(bodyBuffer, localChunkLen);
 
          chunk = new SessionReceiveContinuationMessage(id,
-                                                       bodyBuffer.array(),
+                                                       bodyBuffer.toByteBuffer().array(),
                                                        positionPendingLargeMessage + localChunkLen < sizePendingLargeMessage,
                                                        false);
 
@@ -843,7 +854,7 @@ public class ServerConsumerImpl implements ServerConsumer
          {
             MessageReference ref = iterator.next();
             try
-            {
+            {              
                HandleStatus status = handle(ref);
                if (status == HandleStatus.BUSY)
                {

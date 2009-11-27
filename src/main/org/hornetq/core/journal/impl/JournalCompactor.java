@@ -21,8 +21,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.hornetq.core.buffers.ChannelBuffer;
-import org.hornetq.core.buffers.ChannelBuffers;
+import org.hornetq.core.buffers.HornetQBuffer;
+import org.hornetq.core.buffers.HornetQBuffers;
 import org.hornetq.core.journal.RecordInfo;
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.SequentialFileFactory;
@@ -83,7 +83,7 @@ public class JournalCompactor extends AbstractJournalUpdateTask
          }
          else
          {
-            ChannelBuffer input = ChannelBuffers.wrappedBuffer(records.get(0).data);
+            HornetQBuffer input = HornetQBuffers.wrappedBuffer(records.get(0).data);
 
             int numberDataFiles = input.readInt();
 

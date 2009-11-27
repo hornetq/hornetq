@@ -13,6 +13,7 @@
 
 package org.hornetq.core.client.impl;
 
+import org.hornetq.core.buffers.HornetQBuffer;
 import org.hornetq.core.client.ClientMessage;
 
 /**
@@ -33,11 +34,13 @@ public interface ClientMessageInternal extends ClientMessage
    void setFlowControlSize(int flowControlSize);
 
    void onReceipt(ClientConsumerInternal consumer);
-   
+
    void setLargeMessage(boolean largeMessage);
 
    /**
     * Discard unused packets (used on large-message)
     */
-   void discardLargeBody();    
+   void discardLargeBody();
+
+   void setBuffer(HornetQBuffer buffer);
 }

@@ -411,7 +411,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
 
          if (flowRecord != null)
          {
-            // We make a shallow copy of the message, then we strip out the unwanted routing id headers and leave
+            // We make a  copy of the message, then we strip out the unwanted routing id headers and leave
             // only
             // the one pertinent for the destination node - this is important since different queues on different
             // nodes could have same queue ids

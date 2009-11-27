@@ -17,7 +17,7 @@ import java.util.HashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import org.hornetq.core.buffers.ChannelBuffers;
+import org.hornetq.core.buffers.HornetQBuffers;
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
@@ -114,7 +114,6 @@ public class PagingFailoverTest extends FailoverTestBase
                session.commit();
             }
             ClientMessage msg = session.createClientMessage(true);
-            msg.setBody(ChannelBuffers.buffer(1024));
             msg.putIntProperty(new SimpleString("key"), i);
             prod.send(msg);
          }

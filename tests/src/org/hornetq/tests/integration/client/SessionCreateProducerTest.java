@@ -34,12 +34,12 @@ public class SessionCreateProducerTest extends ServiceTestBase
          cf.setProducerMaxRate(99);
          cf.setBlockOnNonPersistentSend(true);
          cf.setBlockOnNonPersistentSend(true);
-         ClientSessionInternal clientSession = (ClientSessionInternal) cf.createSession(false, true, true);
+         ClientSessionInternal clientSession = (ClientSessionInternal)cf.createSession(false, true, true);
          ClientProducer producer = clientSession.createProducer();
          assertNull(producer.getAddress());
          assertEquals(cf.getProducerMaxRate(), producer.getMaxRate());
-         assertEquals(cf.isBlockOnNonPersistentSend(),producer.isBlockOnNonPersistentSend());
-         assertEquals(cf.isBlockOnPersistentSend(),producer.isBlockOnPersistentSend());
+         assertEquals(cf.isBlockOnNonPersistentSend(), producer.isBlockOnNonPersistentSend());
+         assertEquals(cf.isBlockOnPersistentSend(), producer.isBlockOnPersistentSend());
          assertFalse(producer.isClosed());
          clientSession.close();
       }
@@ -59,66 +59,12 @@ public class SessionCreateProducerTest extends ServiceTestBase
          cf.setProducerMaxRate(99);
          cf.setBlockOnNonPersistentSend(true);
          cf.setBlockOnNonPersistentSend(true);
-         ClientSessionInternal clientSession = (ClientSessionInternal) cf.createSession(false, true, true);
+         ClientSessionInternal clientSession = (ClientSessionInternal)cf.createSession(false, true, true);
          ClientProducer producer = clientSession.createProducer("testAddress");
          assertNotNull(producer.getAddress());
          assertEquals(cf.getProducerMaxRate(), producer.getMaxRate());
-         assertEquals(cf.isBlockOnNonPersistentSend(),producer.isBlockOnNonPersistentSend());
-         assertEquals(cf.isBlockOnPersistentSend(),producer.isBlockOnPersistentSend());
-         assertFalse(producer.isClosed());
-         clientSession.close();
-      }
-      finally
-      {
-         service.stop();
-      }
-   }
-
-   public void testCreateProducer2() throws Exception
-   {
-      HornetQServer service = createServer(false);
-      try
-      {
-         service.start();
-         ClientSessionFactory cf = createInVMFactory();
-         cf.setProducerMaxRate(99);
-         cf.setBlockOnNonPersistentSend(true);
-         cf.setBlockOnNonPersistentSend(true);
-         ClientSessionInternal clientSession = (ClientSessionInternal) cf.createSession(false, true, true);
-         int rate = 9876;
-         ClientProducer producer = clientSession.createProducer("testAddress", rate);
-         assertNotNull(producer.getAddress());
-         assertEquals(rate, producer.getMaxRate());
-         assertEquals(cf.isBlockOnNonPersistentSend(),producer.isBlockOnNonPersistentSend());
-         assertEquals(cf.isBlockOnPersistentSend(),producer.isBlockOnPersistentSend());
-         assertFalse(producer.isClosed());
-         clientSession.close();
-      }
-      finally
-      {
-         service.stop();
-      }
-   }
-
-   public void testCreateProducer3() throws Exception
-   {
-      HornetQServer service = createServer(false);
-      try
-      {
-         service.start();
-         ClientSessionFactory cf = createInVMFactory();
-         cf.setProducerMaxRate(99);
-         cf.setBlockOnNonPersistentSend(true);
-         cf.setBlockOnNonPersistentSend(true);
-         ClientSessionInternal clientSession = (ClientSessionInternal) cf.createSession(false, true, true);
-         int rate = 9876;
-         boolean blockOnSend = false;
-         boolean blockOnNonSend = false;
-         ClientProducer producer = clientSession.createProducer("testAddress", 9876, blockOnSend, blockOnNonSend);
-         assertNotNull(producer.getAddress());
-         assertEquals(rate, producer.getMaxRate());
-         assertEquals(blockOnSend, producer.isBlockOnNonPersistentSend());
-         assertEquals(blockOnNonSend, producer.isBlockOnPersistentSend());
+         assertEquals(cf.isBlockOnNonPersistentSend(), producer.isBlockOnNonPersistentSend());
+         assertEquals(cf.isBlockOnPersistentSend(), producer.isBlockOnPersistentSend());
          assertFalse(producer.isClosed());
          clientSession.close();
       }
@@ -129,31 +75,31 @@ public class SessionCreateProducerTest extends ServiceTestBase
    }
 
    public void testProducerOnClosedSession() throws Exception
+   {
+      HornetQServer service = createServer(false);
+      try
       {
-         HornetQServer service = createServer(false);
+         service.start();
+         ClientSessionFactory cf = createInVMFactory();
+         cf.setProducerMaxRate(99);
+         cf.setBlockOnNonPersistentSend(true);
+         cf.setBlockOnNonPersistentSend(true);
+         ClientSessionInternal clientSession = (ClientSessionInternal)cf.createSession(false, true, true);
+         clientSession.close();
          try
          {
-            service.start();
-            ClientSessionFactory cf = createInVMFactory();
-            cf.setProducerMaxRate(99);
-            cf.setBlockOnNonPersistentSend(true);
-            cf.setBlockOnNonPersistentSend(true);
-            ClientSessionInternal clientSession = (ClientSessionInternal) cf.createSession(false, true, true);
-            clientSession.close();
-            try
-            {
-               clientSession.createProducer();
-               fail("should throw exception");
-            }
-            catch (HornetQException e)
-            {
-               assertEquals(e.getCode(), HornetQException.OBJECT_CLOSED);
-            }
+            clientSession.createProducer();
+            fail("should throw exception");
          }
-         finally
+         catch (HornetQException e)
          {
-            service.stop();
+            assertEquals(e.getCode(), HornetQException.OBJECT_CLOSED);
          }
       }
+      finally
+      {
+         service.stop();
+      }
+   }
 
 }

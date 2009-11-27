@@ -28,7 +28,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.hornetq.core.buffers.ChannelBuffers;
+import org.hornetq.core.buffers.HornetQBuffer;
+import org.hornetq.core.buffers.HornetQBuffers;
 import org.hornetq.core.client.ClientSessionFactory;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.client.impl.FailoverManager;
@@ -60,7 +61,6 @@ import org.hornetq.core.remoting.Interceptor;
 import org.hornetq.core.remoting.Packet;
 import org.hornetq.core.remoting.RemotingConnection;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
-import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.core.replication.impl.ReplicatedJournal;
 import org.hornetq.core.replication.impl.ReplicationManagerImpl;
 import org.hornetq.core.server.HornetQServer;
@@ -293,12 +293,11 @@ public class ReplicationTest extends ServiceTestBase
 
          assertEquals(0, manager.getActiveTokens().size());
 
-         ServerMessage msg = new ServerMessageImpl();
+         ServerMessage msg = new ServerMessageImpl(1, 1024);
 
          SimpleString dummy = new SimpleString("dummy");
          msg.setDestination(dummy);
-         msg.setBody(ChannelBuffers.wrappedBuffer(new byte[10]));
-
+         
          replicatedJournal.appendAddRecordTransactional(23, 24, (byte)1, new FakeData());
 
          PagedMessage pgmsg = new PagedMessageImpl(msg, -1);
@@ -332,7 +331,7 @@ public class ReplicationTest extends ServiceTestBase
          serverMsg.setMessageID(500);
          serverMsg.setDestination(new SimpleString("tttt"));
 
-         HornetQBuffer buffer = ChannelBuffers.dynamicBuffer(100);
+         HornetQBuffer buffer = HornetQBuffers.dynamicBuffer(100);
          serverMsg.encodeHeadersAndProperties(buffer);
 
          manager.largeMessageBegin(500);

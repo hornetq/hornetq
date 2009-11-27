@@ -21,8 +21,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.hornetq.core.buffers.ChannelBuffer;
-import org.hornetq.core.buffers.ChannelBuffers;
+import org.hornetq.core.buffers.HornetQBuffer;
+import org.hornetq.core.buffers.HornetQBuffers;
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.logging.Logger;
@@ -98,7 +98,7 @@ public class PageImpl implements Page
       
       buffer2.rewind();
 
-      ChannelBuffer fileBuffer = ChannelBuffers.wrappedBuffer(buffer2); 
+      HornetQBuffer fileBuffer = HornetQBuffers.wrappedBuffer(buffer2); 
       fileBuffer.writerIndex(fileBuffer.capacity());
 
       while (fileBuffer.readable())
@@ -115,15 +115,16 @@ public class PageImpl implements Page
                int oldPos = fileBuffer.readerIndex();
                if (fileBuffer.readerIndex() + messageSize < fileBuffer.capacity() && fileBuffer.getByte(oldPos + messageSize) == END_BYTE)
                {
-                  PagedMessage msg = new PagedMessageImpl();
+                  PagedMessage msg = new PagedMessageImpl();                  
                   msg.decode(fileBuffer);
-                  if (fileBuffer.readByte() != END_BYTE)
+                  byte b = fileBuffer.readByte();
+                  if (b != END_BYTE)
                   {
                      // Sanity Check: This would only happen if there is a bug on decode or any internal code, as this
                      // constraint was already checked
-                     throw new IllegalStateException("Internal error, it wasn't possible to locate END_BYTE");
+                     throw new IllegalStateException("Internal error, it wasn't possible to locate END_BYTE " + b);
                   }
-                  messages.add(msg);
+                  messages.add(msg);                  
                }
                else
                {
@@ -148,13 +149,17 @@ public class PageImpl implements Page
    {
       ByteBuffer buffer = fileFactory.newBuffer(message.getEncodeSize() + SIZE_RECORD);
       
-      ChannelBuffer wrap = ChannelBuffers.wrappedBuffer(buffer);
+      HornetQBuffer wrap = HornetQBuffers.wrappedBuffer(buffer);
+      wrap.clear();
       
       wrap.writeByte(START_BYTE);
-      wrap.writeInt(message.getEncodeSize());
+      wrap.writeInt(0);
+      int startIndex = wrap.writerIndex();
       message.encode(wrap);
+      int endIndex = wrap.writerIndex();
+      wrap.setInt(1, endIndex - startIndex); // The encoded length    
       wrap.writeByte(END_BYTE);
-
+      
       buffer.rewind();
 
       file.writeDirect(buffer, false);

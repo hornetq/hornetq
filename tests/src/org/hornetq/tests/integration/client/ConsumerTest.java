@@ -88,7 +88,7 @@ public class ConsumerTest extends ServiceTestBase
       {
          ClientMessage message2 = consumer.receive(1000);
 
-         assertEquals("m" + i, message2.getBody().readString());
+         assertEquals("m" + i, message2.getBodyBuffer().readString());
       }
       // assert that all the messages are there and none have been acked
       assertEquals(0, ((Queue)server.getPostOffice().getBinding(QUEUE).getBindable()).getDeliveringCount());
@@ -122,7 +122,7 @@ public class ConsumerTest extends ServiceTestBase
       {
          ClientMessage message2 = consumer.receive(1000);
 
-         assertEquals("m" + i, message2.getBody().readString());
+         assertEquals("m" + i, message2.getBodyBuffer().readString());
       }
       // assert that all the messages are there and none have been acked
       assertEquals(0, ((Queue)server.getPostOffice().getBinding(QUEUE).getBindable()).getDeliveringCount());
@@ -156,7 +156,7 @@ public class ConsumerTest extends ServiceTestBase
       {
          ClientMessage message2 = consumer.receive(1000);
 
-         assertEquals("m" + i, message2.getBody().readString());
+         assertEquals("m" + i, message2.getBodyBuffer().readString());
          if (i < 50)
          {
             message2.acknowledge();
@@ -194,7 +194,7 @@ public class ConsumerTest extends ServiceTestBase
       {
          ClientMessage message2 = consumer.receive(1000);
 
-         assertEquals("m" + i, message2.getBody().readString());
+         assertEquals("m" + i, message2.getBodyBuffer().readString());
          if (i < 50)
          {
             message2.acknowledge();
@@ -347,7 +347,7 @@ public class ConsumerTest extends ServiceTestBase
       {
          ClientMessage message = session.createClientMessage(false);
 
-         message.getBody().writeBytes(bytes);
+         message.getBodyBuffer().writeBytes(bytes);
 
          message.putIntProperty("count", i);
 
@@ -407,7 +407,7 @@ public class ConsumerTest extends ServiceTestBase
       {
          ClientMessage message = session.createClientMessage(false);
 
-         message.getBody().writeBytes(bytes);
+         message.getBodyBuffer().writeBytes(bytes);
 
          message.putIntProperty("count", i);
 

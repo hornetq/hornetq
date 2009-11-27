@@ -93,7 +93,7 @@ public interface StorageManager extends HornetQComponent
 
    void storeMessage(ServerMessage message) throws Exception;
    
-   void storeReference(long queueID, long messageID) throws Exception;
+   void storeReference(long queueID, long messageID, boolean last) throws Exception;
 
    void deleteMessage(long messageID) throws Exception;
 

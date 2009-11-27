@@ -13,7 +13,7 @@
 
 package org.hornetq.core.remoting.impl.wireformat;
 
-import org.hornetq.core.remoting.spi.HornetQBuffer;
+import org.hornetq.core.buffers.HornetQBuffer;
 import org.hornetq.utils.DataConstants;
 
 /**
@@ -30,7 +30,7 @@ public abstract class SessionContinuationMessage extends PacketImpl
 
    // Constants -----------------------------------------------------
 
-   public static final int SESSION_CONTINUATION_BASE_SIZE = BASIC_PACKET_SIZE + DataConstants.SIZE_INT +
+   public static final int SESSION_CONTINUATION_BASE_SIZE = PACKET_HEADERS_SIZE + DataConstants.SIZE_INT +
                                                             DataConstants.SIZE_BOOLEAN;
 
    // Attributes ----------------------------------------------------
@@ -74,13 +74,7 @@ public abstract class SessionContinuationMessage extends PacketImpl
    }
 
    @Override
-   public int getRequiredBufferSize()
-   {
-      return SESSION_CONTINUATION_BASE_SIZE + body.length; 
-   }
-
-   @Override
-   public void encodeBody(final HornetQBuffer buffer)
+   public void encodeRest(final HornetQBuffer buffer)
    {
       buffer.writeInt(body.length);
       buffer.writeBytes(body);
@@ -88,7 +82,7 @@ public abstract class SessionContinuationMessage extends PacketImpl
    }
 
    @Override
-   public void decodeBody(final HornetQBuffer buffer)
+   public void decodeRest(final HornetQBuffer buffer)
    {
       int size = buffer.readInt();
       body = new byte[size];

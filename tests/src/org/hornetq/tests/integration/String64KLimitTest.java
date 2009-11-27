@@ -90,16 +90,16 @@ public class String64KLimitTest extends UnitTestCase
       String s4 = genString(10 * 64 * 1024);
 
       ClientMessage tm1 = session.createClientMessage(false);
-      tm1.getBody().writeString(s1);
+      tm1.getBodyBuffer().writeString(s1);
 
       ClientMessage tm2 = session.createClientMessage(false);
-      tm2.getBody().writeString(s2);
+      tm2.getBodyBuffer().writeString(s2);
 
       ClientMessage tm3 = session.createClientMessage(false);
-      tm3.getBody().writeString(s3);
+      tm3.getBodyBuffer().writeString(s3);
 
       ClientMessage tm4 = session.createClientMessage(false);
-      tm4.getBody().writeString(s4);
+      tm4.getBodyBuffer().writeString(s4);
 
       producer.send(tm1);
 
@@ -113,23 +113,23 @@ public class String64KLimitTest extends UnitTestCase
 
       assertNotNull(rm1);
 
-      assertEquals(s1, rm1.getBody().readString());
+      assertEquals(s1, rm1.getBodyBuffer().readString());
 
       ClientMessage rm2 = consumer.receive(1000);
 
       assertNotNull(rm2);
 
-      assertEquals(s2, rm2.getBody().readString());
+      assertEquals(s2, rm2.getBodyBuffer().readString());
 
       ClientMessage rm3 = consumer.receive(1000);
 
-      assertEquals(s3, rm3.getBody().readString());
+      assertEquals(s3, rm3.getBodyBuffer().readString());
 
       assertNotNull(rm3);
 
       ClientMessage rm4 = consumer.receive(1000);
 
-      assertEquals(s4, rm4.getBody().readString());
+      assertEquals(s4, rm4.getBodyBuffer().readString());
 
       assertNotNull(rm4);
    }
@@ -155,15 +155,15 @@ public class String64KLimitTest extends UnitTestCase
       String s4 = genString(10 * 64 * 1024);
 
       ClientMessage tm1 = session.createClientMessage(false);
-      tm1.getBody().writeUTF(s1);
+      tm1.getBodyBuffer().writeUTF(s1);
 
       ClientMessage tm2 = session.createClientMessage(false);
-      tm2.getBody().writeUTF(s2);
+      tm2.getBodyBuffer().writeUTF(s2);
 
       try
       {
          ClientMessage tm3 = session.createClientMessage(false);
-         tm3.getBody().writeUTF(s3);
+         tm3.getBodyBuffer().writeUTF(s3);
          fail("can not write UTF string bigger than 64K");
       }
       catch (Exception e)
@@ -173,7 +173,7 @@ public class String64KLimitTest extends UnitTestCase
       try
       {
          ClientMessage tm4 = session.createClientMessage(false);
-         tm4.getBody().writeUTF(s4);
+         tm4.getBodyBuffer().writeUTF(s4);
          fail("can not write UTF string bigger than 64K");
       }
       catch (Exception e)
@@ -191,8 +191,8 @@ public class String64KLimitTest extends UnitTestCase
 
       assertNotNull(rm2);
 
-      assertEquals(s1, rm1.getBody().readUTF());
-      assertEquals(s2, rm2.getBody().readUTF());
+      assertEquals(s1, rm1.getBodyBuffer().readUTF());
+      assertEquals(s2, rm2.getBodyBuffer().readUTF());
    }
 
    // Protected -----------------------------------------------------

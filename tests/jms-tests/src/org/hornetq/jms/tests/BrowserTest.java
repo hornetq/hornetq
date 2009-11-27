@@ -158,11 +158,13 @@ public class BrowserTest extends JMSTestCase
 			browser = session.createBrowser(queue1);
 			en = browser.getEnumeration();
 
+			log.info("browsing");
+			
 			count = 0;
 			while (en.hasMoreElements())
 			{
 				Message mess = (Message)en.nextElement();
-				log.trace("message:" + mess);
+				log.info("message:" + mess);
 				count++;
 			}
 

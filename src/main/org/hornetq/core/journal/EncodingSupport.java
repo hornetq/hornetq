@@ -13,7 +13,7 @@
 
 package org.hornetq.core.journal;
 
-import org.hornetq.core.remoting.spi.HornetQBuffer;
+import org.hornetq.core.buffers.HornetQBuffer;
 
 /**
  * 

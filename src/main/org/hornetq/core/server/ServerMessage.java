@@ -33,16 +33,16 @@ public interface ServerMessage extends Message, EncodingSupport
 
    int incrementRefCount(MessageReference reference) throws Exception;
 
-   int decrementRefCount(MessageReference reference);
+   int decrementRefCount(MessageReference reference) throws Exception;
 
    int incrementDurableRefCount();
 
    int decrementDurableRefCount();
 
-   ServerMessage copy(long newID) throws Exception;
+   ServerMessage copy(long newID);
 
-   ServerMessage copy() throws Exception;
-
+   ServerMessage copy();
+   
    int getMemoryEstimate();
 
    int getRefCount();
@@ -60,4 +60,6 @@ public interface ServerMessage extends Message, EncodingSupport
    boolean page(long transactionID, boolean duplicateDetection) throws Exception;
 
    boolean storeIsPaging();
+            
+   void encodeMessageIDToBuffer();
 }

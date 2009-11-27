@@ -17,7 +17,7 @@ import java.io.File;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.hornetq.core.buffers.ChannelBuffers;
+import org.hornetq.core.buffers.HornetQBuffers;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.MessageHandler;
 import org.hornetq.core.exception.HornetQException;
@@ -28,7 +28,7 @@ import org.hornetq.core.remoting.Channel;
 import org.hornetq.core.remoting.impl.wireformat.SessionConsumerCloseMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionConsumerFlowCreditMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionReceiveContinuationMessage;
-import org.hornetq.core.remoting.impl.wireformat.SessionReceiveMessage;
+import org.hornetq.core.remoting.impl.wireformat.SessionReceiveLargeMessage;
 import org.hornetq.utils.Future;
 import org.hornetq.utils.SimpleString;
 import org.hornetq.utils.TokenBucketLimiter;
@@ -216,7 +216,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
                      
                      // we only force delivery once per call to receive
                      if (!deliveryForced)
-                     {
+                     {                   
                         session.forceDelivery(id, forceDeliveryCount.incrementAndGet());
                         
                         deliveryForced = true;
@@ -249,7 +249,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
                session.workDone();
                
                if (m.containsProperty(FORCED_DELIVERY_MESSAGE))
-               {
+               {               
                   long seq = m.getLongProperty(FORCED_DELIVERY_MESSAGE);
                   if (seq >= forceDeliveryCount.longValue())
                   {
@@ -451,7 +451,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          // This is ok - we just ignore the message
          return;
       }
-
+ 
       ClientMessageInternal messageToHandle = message;
 
       messageToHandle.onReceipt(this);
@@ -473,7 +473,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       }
    }
 
-   public synchronized void handleLargeMessage(final SessionReceiveMessage packet) throws Exception
+   public synchronized void handleLargeMessage(final SessionReceiveLargeMessage packet) throws Exception
    {
       if (closing)
       {
@@ -482,12 +482,16 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       }
 
       // Flow control for the first packet, we will have others
-      // It's using the RequiredBufferSize as the getSize() could be different between transports
-      flowControl(packet.getRequiredBufferSize(), false);
+      
+      flowControl(packet.getPacketSize(), false);
 
-      ClientMessageInternal currentChunkMessage = new ClientMessageImpl(packet.getDeliveryCount());
+      ClientMessageInternal currentChunkMessage = new ClientMessageImpl();
+      
+      currentChunkMessage.setDeliveryCount(packet.getDeliveryCount());
 
-      currentChunkMessage.decodeHeadersAndProperties(ChannelBuffers.wrappedBuffer(packet.getLargeMessageHeader()));
+      //FIXME - this is really inefficient - decoding from a buffer to a byte[] then from the byte[] to another buffer
+      //which is then decoded to form the message! Clebert, what were you thinking?
+      currentChunkMessage.decodeHeadersAndProperties(HornetQBuffers.wrappedBuffer(packet.getLargeMessageHeader()));
 
       currentChunkMessage.setLargeMessage(true);
 
@@ -502,7 +506,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
       currentLargeMessageBuffer = new LargeMessageBufferImpl(this, packet.getLargeMessageSize(), 60, largeMessageCache);
 
-      currentChunkMessage.setBody(currentLargeMessageBuffer);
+      currentChunkMessage.setBuffer(currentLargeMessageBuffer);
 
       currentChunkMessage.setFlowControlSize(0);
 
@@ -577,11 +581,11 @@ public class ClientConsumerImpl implements ClientConsumerInternal
     * @parameter discountSlowConsumer When dealing with slowConsumers, we need to discount one credit that was pre-sent when the first receive was called. For largeMessage that is only done at the latest packet
     * */
    public void flowControl(final int messageBytes, final boolean discountSlowConsumer) throws HornetQException
-   {
+   {   
       if (clientWindowSize >= 0)
       {
          creditsToSend += messageBytes;
-
+         
          if (creditsToSend >= clientWindowSize)
          {
             if (clientWindowSize == 0 && discountSlowConsumer)
@@ -667,7 +671,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
     * @param credits
     */
    private void sendCredits(final int credits)
-   {      
+   {            
       channel.send(new SessionConsumerFlowCreditMessage(id, credits));
    }
 

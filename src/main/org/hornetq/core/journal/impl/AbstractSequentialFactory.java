@@ -59,8 +59,6 @@ public abstract class AbstractSequentialFactory implements SequentialFileFactory
     *  */
    protected ExecutorService writeExecutor;
 
-   
-
    public AbstractSequentialFactory(final String journalDir,
                                     final boolean buffered,
                                     final int bufferSize,
@@ -69,6 +67,7 @@ public abstract class AbstractSequentialFactory implements SequentialFileFactory
                                     final boolean logRates)
    {
       this.journalDir = journalDir;
+ 
       if (buffered)
       {
          timedBuffer = new TimedBuffer(bufferSize, bufferTimeout, flushOnSync, logRates);

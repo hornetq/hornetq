@@ -20,7 +20,8 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import javax.transaction.xa.Xid;
 
-import org.hornetq.core.buffers.ChannelBuffers;
+import org.hornetq.core.buffers.HornetQBuffer;
+import org.hornetq.core.buffers.HornetQBuffers;
 import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.journal.JournalLoadInformation;
 import org.hornetq.core.paging.PageTransactionInfo;
@@ -32,7 +33,6 @@ import org.hornetq.core.persistence.QueueBindingInfo;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.PostOffice;
-import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.core.replication.ReplicationManager;
 import org.hornetq.core.server.LargeServerMessage;
 import org.hornetq.core.server.MessageReference;
@@ -100,7 +100,7 @@ public class NullStorageManager implements StorageManager
    {
    }
 
-   public void storeReference(final long queueID, final long messageID) throws Exception
+   public void storeReference(final long queueID, final long messageID, boolean last) throws Exception
    {
    }
 
@@ -199,7 +199,7 @@ public class NullStorageManager implements StorageManager
    {
       NullStorageLargeServerMessage largeMessage = new NullStorageLargeServerMessage();
 
-      HornetQBuffer headerBuffer = ChannelBuffers.wrappedBuffer(header);
+      HornetQBuffer headerBuffer = HornetQBuffers.wrappedBuffer(header);
 
       largeMessage.decodeHeadersAndProperties(headerBuffer);
 

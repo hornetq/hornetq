@@ -13,11 +13,14 @@
 
 package org.hornetq.integration.transports.netty;
 
+import org.hornetq.core.buffers.HornetQBuffer;
+import org.hornetq.core.buffers.impl.ChannelBufferWrapper;
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.spi.Connection;
 import org.hornetq.core.remoting.spi.ConnectionLifeCycleListener;
-import org.hornetq.core.remoting.spi.HornetQBuffer;
+import org.jboss.netty.buffer.ChannelBuffer;
+import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelFuture;
 import org.jboss.netty.handler.ssl.SslHandler;
@@ -32,16 +35,15 @@ import org.jboss.netty.handler.ssl.SslHandler;
 public class NettyConnection implements Connection
 {
    // Constants -----------------------------------------------------
-   
-   private static final Logger log = Logger.getLogger(NettyConnection.class);
 
+   private static final Logger log = Logger.getLogger(NettyConnection.class);
 
    // Attributes ----------------------------------------------------
 
    private final Channel channel;
 
    private boolean closed;
-   
+
    private final ConnectionLifeCycleListener listener;
 
    // Static --------------------------------------------------------
@@ -49,12 +51,12 @@ public class NettyConnection implements Connection
    // Constructors --------------------------------------------------
 
    public NettyConnection(final Channel channel, final ConnectionLifeCycleListener listener)
-   {      
+   {
       this.channel = channel;
-      
+
       this.listener = listener;
-      
-      listener.connectionCreated(this);           
+
+      listener.connectionCreated(this);
    }
 
    // Public --------------------------------------------------------
@@ -67,14 +69,14 @@ public class NettyConnection implements Connection
       {
          return;
       }
-                  
+
       SslHandler sslHandler = (SslHandler)channel.getPipeline().get("ssl");
       if (sslHandler != null)
       {
          try
          {
             ChannelFuture sslCloseFuture = sslHandler.close(channel);
-            
+
             if (!sslCloseFuture.awaitUninterruptibly(10000))
             {
                log.warn("Timed out waiting for ssl close future to complete");
@@ -85,38 +87,38 @@ public class NettyConnection implements Connection
             // ignore
          }
       }
-      
+
       ChannelFuture closeFuture = channel.close();
-      
+
       if (!closeFuture.awaitUninterruptibly(10000))
       {
          log.warn("Timed out waiting for channel to close");
       }
-      
+
       closed = true;
-      
+
       listener.connectionDestroyed(getID());
    }
 
    public HornetQBuffer createBuffer(final int size)
    {
-      return new ChannelBufferWrapper(org.jboss.netty.buffer.ChannelBuffers.buffer(size));
+      return new ChannelBufferWrapper(ChannelBuffers.dynamicBuffer(size));
    }
 
    public Object getID()
    {
       return channel.getId();
    }
-   
+
    public void write(final HornetQBuffer buffer)
    {
       write(buffer, false);
    }
-   
-   public void write(final HornetQBuffer buffer, final boolean flush)
+
+   public void write(HornetQBuffer buffer, final boolean flush)
    {
-      ChannelFuture future = channel.write(buffer.getUnderlyingBuffer());      
-      
+      ChannelFuture future = channel.write(buffer.channelBuffer());
+
       if (flush)
       {
          while (true)
@@ -124,16 +126,16 @@ public class NettyConnection implements Connection
             try
             {
                boolean ok = future.await(10000);
-               
+
                if (!ok)
                {
                   log.warn("Timed out waiting for packet to be flushed");
                }
-               
+
                break;
             }
             catch (InterruptedException ignore)
-            {            
+            {
             }
          }
       }
@@ -143,7 +145,7 @@ public class NettyConnection implements Connection
    {
       return channel.getRemoteAddress().toString();
    }
-   
+
    public void fail(final HornetQException me)
    {
       listener.connectionException(channel.getId(), me);

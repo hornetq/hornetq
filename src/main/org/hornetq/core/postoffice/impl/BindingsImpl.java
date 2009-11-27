@@ -236,7 +236,7 @@ public class BindingsImpl implements Bindings
       }
 
       if (!routed)
-      {
+      {                 
          if (message.containsProperty(MessageImpl.HDR_FROM_CLUSTER))
          {
             routeFromCluster(message, context);

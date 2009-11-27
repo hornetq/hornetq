@@ -13,21 +13,18 @@
 
 package org.hornetq.core.remoting.impl.wireformat;
 
+import org.hornetq.core.buffers.HornetQBuffer;
 import org.hornetq.core.client.impl.ClientMessageImpl;
-import org.hornetq.core.client.impl.ClientMessageInternal;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.remoting.spi.HornetQBuffer;
-import org.hornetq.core.server.ServerMessage;
+import org.hornetq.core.message.Message;
+import org.hornetq.core.remoting.RemotingConnection;
 import org.hornetq.utils.DataConstants;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
- * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- * 
- * @version <tt>$Revision$</tt>
+ *
  */
-public class SessionReceiveMessage extends PacketImpl
+public class SessionReceiveMessage extends MessagePacket
 {
    // Constants -----------------------------------------------------
 
@@ -37,56 +34,20 @@ public class SessionReceiveMessage extends PacketImpl
 
    private long consumerID;
 
-   private boolean largeMessage;
-
-   private byte[] largeMessageHeader;
-
-   private ClientMessageInternal clientMessage;
-
-   private ServerMessage serverMessage;
-
    private int deliveryCount;
-   
-   /** Since we receive the message before the entire message was received, */
-   private long largeMessageSize;
 
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   public SessionReceiveMessage(final long consumerID, final byte[] largeMessageHeader, final long largeMessageSize, final int deliveryCount)
+   public SessionReceiveMessage(final long consumerID, final Message message, final int deliveryCount)
    {
-      super(SESS_RECEIVE_MSG);
-
-      this.consumerID = consumerID;
-
-      this.largeMessageHeader = largeMessageHeader;
-
-      this.deliveryCount = deliveryCount;
-
-      this.largeMessage = true;
+      super(SESS_RECEIVE_MSG, message);
       
-      this.largeMessageSize = largeMessageSize;
-   }
-
-   public SessionReceiveMessage(final long consumerID, final ServerMessage message, final int deliveryCount)
-   {
-      super(SESS_RECEIVE_MSG);
-
       this.consumerID = consumerID;
 
-      this.serverMessage = message;
-
-      this.clientMessage = null;
-
       this.deliveryCount = deliveryCount;
-
-      this.largeMessage = false;
    }
 
    public SessionReceiveMessage()
    {
-      super(SESS_RECEIVE_MSG);
+      super(SESS_RECEIVE_MSG, new ClientMessageImpl());
    }
 
    // Public --------------------------------------------------------
@@ -95,120 +56,63 @@ public class SessionReceiveMessage extends PacketImpl
    {
       return consumerID;
    }
-
-   public ClientMessageInternal getClientMessage()
-   {
-      return clientMessage;
-   }
-
-   public ServerMessage getServerMessage()
-   {
-      return serverMessage;
-   }
-
-   public byte[] getLargeMessageHeader()
-   {
-      return largeMessageHeader;
-   }
-
-   /**
-    * @return the largeMessage
-    */
-   public boolean isLargeMessage()
-   {
-      return largeMessage;
-   }
-
+   
    public int getDeliveryCount()
    {
       return deliveryCount;
    }
 
-   /**
-    * @return the largeMessageSize
-    */
-   public long getLargeMessageSize()
-   {
-      return largeMessageSize;
-   }
-
-   public int getRequiredBufferSize()
-   {
-      if (largeMessage)
-      {
-         return BASIC_PACKET_SIZE + 
-                // consumerID
-                DataConstants.SIZE_LONG +
-                // deliveryCount
-                DataConstants.SIZE_INT +
-                // largeMessage (boolean)
-                DataConstants.SIZE_BOOLEAN +
-                // LargeMessageSize (Long)
-                DataConstants.SIZE_LONG +
-                // largeMessageHeader.length (int)
-                DataConstants.SIZE_INT +
-                // ByteArray size
-                largeMessageHeader.length;
-      }
-      else
-      {
-         return BASIC_PACKET_SIZE + 
-                // consumerID
-                DataConstants.SIZE_LONG +
-                // deliveryCount
-                DataConstants.SIZE_INT +
-                // isLargeMessage
-                DataConstants.SIZE_BOOLEAN +
-                // message.encoding
-                (serverMessage != null ? serverMessage.getEncodeSize() : clientMessage.getEncodeSize());
-      }
-   }
-   public void encodeBody(final HornetQBuffer buffer)
-   {
-      buffer.writeLong(consumerID);
-      buffer.writeInt(deliveryCount);
-      buffer.writeBoolean(largeMessage);
-      if (largeMessage)
-      {
-         buffer.writeLong(largeMessageSize);
-         buffer.writeInt(largeMessageHeader.length);
-         buffer.writeBytes(largeMessageHeader);
-      }
-      else
-      {
-         serverMessage.encode(buffer);
-      }
-   }
-
-   public void decodeBody(final HornetQBuffer buffer)
-   {
-      // TODO can be optimised
-
-      consumerID = buffer.readLong();
-
-      deliveryCount = buffer.readInt();
-
-      largeMessage = buffer.readBoolean();
-
-      if (largeMessage)
-      {
-         largeMessageSize = buffer.readLong();
-         int size = buffer.readInt();
-         largeMessageHeader = new byte[size];
-         buffer.readBytes(largeMessageHeader);
-      }
-      else
-      {
-         clientMessage = new ClientMessageImpl(deliveryCount);
-         clientMessage.decode(buffer);
-         clientMessage.getBody().resetReaderIndex();
-      }
-   }
-
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
+   
+   @Override
+   public HornetQBuffer encode(final RemotingConnection connection)
+   {
+      HornetQBuffer buffer = message.getEncodedBuffer();
+      
+      //Sanity check
+      if (buffer.writerIndex() != message.getEndOfMessagePosition())
+      {
+         throw new IllegalStateException("Wrong encode position");
+      }
+      
+      buffer.writeLong(consumerID);      
+      buffer.writeInt(deliveryCount);
+                 
+      size = buffer.writerIndex();
+                
+      //Write standard headers
+      
+      int len = size - DataConstants.SIZE_INT;
+      buffer.setInt(0, len);
+      buffer.setByte(DataConstants.SIZE_INT, type);
+      buffer.setLong(DataConstants.SIZE_INT + DataConstants.SIZE_BYTE, channelID);
+      
+      //Position reader for reading by Netty
+      buffer.setIndex(0, size);
+      
+      return buffer;
+   }
+   
+   @Override
+   public void decode(HornetQBuffer buffer)
+   {
+      channelID = buffer.readLong();
 
+      message.decodeFromBuffer(buffer);
+      
+      consumerID = buffer.readLong();
+      
+      deliveryCount = buffer.readInt();  
+      
+      size = buffer.readerIndex();
+
+      //Need to position buffer for reading
+      
+      buffer.setIndex(PacketImpl.PACKET_HEADERS_SIZE + DataConstants.SIZE_INT, message.getEndOfBodyPosition());    
+   }
+   
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------

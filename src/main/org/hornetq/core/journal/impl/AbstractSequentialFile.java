@@ -21,11 +21,11 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.hornetq.core.buffers.HornetQBuffer;
 import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.remoting.spi.HornetQBuffer;
 
 /**
  * A AbstractSequentialFile
@@ -196,12 +196,13 @@ public abstract class AbstractSequentialFile implements SequentialFile
    {
       if (timedBuffer != null)
       {
-         timedBuffer.addBytes(bytes.array(), sync, callback);
+         bytes.setIndex(0, bytes.capacity());
+         timedBuffer.addBytes(bytes, sync, callback);
       }
       else
       {
          ByteBuffer buffer = factory.newBuffer(bytes.capacity());
-         buffer.put(bytes.array());
+         buffer.put(bytes.toByteBuffer().array());
          buffer.rewind();
          writeDirect(buffer, sync, callback);
       }

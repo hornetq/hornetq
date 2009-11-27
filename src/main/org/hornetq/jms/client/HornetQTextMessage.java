@@ -18,9 +18,11 @@ package org.hornetq.jms.client;
 import javax.jms.JMSException;
 import javax.jms.TextMessage;
 
+import org.hornetq.core.buffers.HornetQBuffer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.logging.Logger;
+import org.hornetq.utils.SimpleString;
 
 /**
  * This class implements javax.jms.TextMessage ported from SpyTextMessage in JBossMQ.
@@ -46,23 +48,14 @@ public class HornetQTextMessage extends HornetQMessage implements TextMessage
 
    // Attributes ----------------------------------------------------
    
-   //We cache it locally
-   private String text;
+   //We cache it locally - it's more performant to cache as a SimpleString, the AbstractChannelBuffer write
+   //methods are more efficient for a SimpleString
+   private SimpleString text;
    
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
    
-   /*
-    * This constructor is used to construct messages prior to sending
-    */
-   public HornetQTextMessage()
-   {
-      super(HornetQTextMessage.TYPE);
-   }
-   /**
-    * constructors for test purposes only
-    */
    public HornetQTextMessage(final ClientSession session)
    {
       super(HornetQTextMessage.TYPE, session);
@@ -80,7 +73,7 @@ public class HornetQTextMessage extends HornetQMessage implements TextMessage
    {
       super(foreign, HornetQTextMessage.TYPE, session);
       
-      text = foreign.getText();
+      setText(foreign.getText());
    }
 
    // Public --------------------------------------------------------
@@ -96,13 +89,32 @@ public class HornetQTextMessage extends HornetQMessage implements TextMessage
    {
       checkWrite();
       
-      this.text = text;
+      HornetQBuffer buff = message.getBodyBuffer();
+      
+      buff.clear();
+      
+      if (text != null)
+      {
+         this.text = new SimpleString(text);                 
+      }
+      else
+      {
+         this.text = null;
+      }
+       
+      buff.writeNullableSimpleString(this.text);
    }
 
    public String getText() throws JMSException
    {
-      //TODO lazily get the text
-      return text;
+      if (text != null)
+      {
+         return text.toString();
+      }
+      else
+      {
+         return null;
+      }
    }
    
    public void clearBody() throws JMSException
@@ -116,17 +128,14 @@ public class HornetQTextMessage extends HornetQMessage implements TextMessage
    
    public void doBeforeSend() throws Exception
    {
-      getBody().clear();
-      getBody().writeNullableString(text);      
-      
-      super.doBeforeSend();
+      super.doBeforeSend();          
    }
    
    public void doBeforeReceive() throws Exception
    {
       super.doBeforeReceive();
       
-      text = getBody().readNullableString();                        
+      text = message.getBodyBuffer().readNullableSimpleString();                        
    }
    
    // Package protected ---------------------------------------------

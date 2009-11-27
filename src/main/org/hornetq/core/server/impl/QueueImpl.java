@@ -132,6 +132,8 @@ public class QueueImpl implements Queue
    private volatile SimpleString expiryAddress;
 
    private int pos;
+   
+   private final boolean dontAdd;
 
    public QueueImpl(final long id,
                     final SimpleString address,
@@ -176,6 +178,8 @@ public class QueueImpl implements Queue
       {
          expiryAddress = null;
       }
+      
+      this.dontAdd = System.getProperty("org.hornetq.opt.dontadd") != null;
    }
 
    // Bindable implementation -------------------------------------------------------------------------------------
@@ -245,7 +249,7 @@ public class QueueImpl implements Queue
    }
 
    public void addLast(final MessageReference ref)
-   {
+   {     
       add(ref, false);
    }
 
@@ -601,7 +605,7 @@ public class QueueImpl implements Queue
    }
 
    public synchronized void cancel(final MessageReference reference) throws Exception
-   {
+   {      
       if (checkDLQ(reference))
       {
          if (!scheduledDeliveryHandler.checkAndSchedule(reference))
@@ -1119,7 +1123,7 @@ public class QueueImpl implements Queue
     * Attempt to deliver all the messages in the queue
     */
    private synchronized void deliver()
-   {
+   {     
       if (paused || handlers.isEmpty())
       {
          return;
@@ -1223,7 +1227,7 @@ public class QueueImpl implements Queue
    }
 
    private synchronized boolean directDeliver(final MessageReference reference)
-   {
+   {    
       if (paused || handlers.isEmpty())
       {
          return false;
@@ -1300,6 +1304,11 @@ public class QueueImpl implements Queue
 
    protected synchronized void add(final MessageReference ref, final boolean first)
    {
+      if (dontAdd)
+      {
+         return;
+      }
+      
       if (!first)
       {
          messagesAdded.incrementAndGet();
@@ -1313,13 +1322,13 @@ public class QueueImpl implements Queue
       boolean add = false;
 
       if (direct && !paused)
-      {
+      {         
          // Deliver directly
 
          boolean delivered = directDeliver(ref);
 
          if (!delivered)
-         {
+         {          
             add = true;
 
             direct = false;
@@ -1399,7 +1408,7 @@ public class QueueImpl implements Queue
       }
    }
 
-   private void postAcknowledge(final MessageReference ref)
+   private void postAcknowledge(final MessageReference ref) throws Exception
    {
       final ServerMessage message = ref.getMessage();
 
@@ -1536,7 +1545,7 @@ public class QueueImpl implements Queue
          }
       }
 
-      public void afterCommit(final Transaction tx)
+      public void afterCommit(final Transaction tx) throws Exception
       {
          for (MessageReference ref : refsToAck)
          {

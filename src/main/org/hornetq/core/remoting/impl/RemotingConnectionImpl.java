@@ -19,7 +19,9 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
+import org.hornetq.core.buffers.HornetQBuffer;
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.Channel;
@@ -30,7 +32,6 @@ import org.hornetq.core.remoting.Packet;
 import org.hornetq.core.remoting.RemotingConnection;
 import org.hornetq.core.remoting.impl.wireformat.PacketImpl;
 import org.hornetq.core.remoting.spi.Connection;
-import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.utils.SimpleIDGenerator;
 
 /**
@@ -326,7 +327,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
    // ----------------------------------------------------
 
    public void bufferReceived(final Object connectionID, final HornetQBuffer buffer)
-   {
+   {                             
       final Packet packet = decoder.decode(buffer);
       
       if (executor == null || packet.getType() == PacketImpl.PING)

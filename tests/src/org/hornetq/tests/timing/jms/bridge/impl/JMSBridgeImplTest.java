@@ -17,6 +17,8 @@ import static org.hornetq.tests.util.RandomUtil.randomString;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 import javax.jms.Connection;
@@ -28,6 +30,7 @@ import javax.jms.MessageConsumer;
 import javax.jms.MessageListener;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
+import javax.jms.TextMessage;
 import javax.transaction.HeuristicMixedException;
 import javax.transaction.HeuristicRollbackException;
 import javax.transaction.InvalidTransactionException;
@@ -40,6 +43,7 @@ import javax.transaction.TransactionManager;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
+import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.server.HornetQ;
@@ -64,6 +68,9 @@ public class JMSBridgeImplTest extends UnitTestCase
 {
    // Constants -----------------------------------------------------
 
+   private static final Logger log = Logger.getLogger(JMSBridgeImplTest.class);
+
+   
    // Attributes ----------------------------------------------------
 
    private static final String SOURCE = randomString();
@@ -281,7 +288,7 @@ public class JMSBridgeImplTest extends UnitTestCase
       bridge.setSourceDestinationFactory(sourceDF);
       bridge.setTargetConnectionFactoryFactory(targetCFF);
       bridge.setTargetDestinationFactory(targetDF);
-      bridge.setFailureRetryInterval(-1);
+      bridge.setFailureRetryInterval(10);
       bridge.setMaxRetries(-1);
       bridge.setMaxBatchSize(maxBatchSize);
       bridge.setMaxBatchTime(maxBatchTime);
@@ -318,6 +325,82 @@ public class JMSBridgeImplTest extends UnitTestCase
 
       assertEquals(1, messages.size());
 
+      bridge.stop();
+      assertFalse(bridge.isStarted());
+
+      targetConn.close();
+   }
+   
+   public void testSendMessagesWithMaxBatchSize() throws Exception
+   {
+      final int numMessages = 10;
+      
+      ConnectionFactoryFactory sourceCFF = newConnectionFactoryFactory(createConnectionFactory());
+      ConnectionFactoryFactory targetCFF = newConnectionFactoryFactory(createConnectionFactory());
+      DestinationFactory sourceDF = newDestinationFactory(new HornetQQueue(SOURCE));
+      DestinationFactory targetDF = newDestinationFactory(new HornetQQueue(TARGET));
+      TransactionManager tm = newTransactionManager();
+
+      JMSBridgeImpl bridge = new JMSBridgeImpl();
+      assertNotNull(bridge);
+
+      bridge.setSourceConnectionFactoryFactory(sourceCFF);
+      bridge.setSourceDestinationFactory(sourceDF);
+      bridge.setTargetConnectionFactoryFactory(targetCFF);
+      bridge.setTargetDestinationFactory(targetDF);
+      bridge.setFailureRetryInterval(10);
+      bridge.setMaxRetries(-1);
+      bridge.setMaxBatchSize(numMessages);
+      bridge.setMaxBatchTime(-1);
+      bridge.setTransactionManager(tm);
+      bridge.setQualityOfServiceMode(QualityOfServiceMode.AT_MOST_ONCE);
+
+      assertFalse(bridge.isStarted());
+      bridge.start();
+      assertTrue(bridge.isStarted());
+
+      Connection targetConn = createConnectionFactory().createConnection();
+      Session targetSess = targetConn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      MessageConsumer consumer = targetSess.createConsumer(targetDF.createDestination());
+      final List<Message> messages = new LinkedList<Message>();
+      final CountDownLatch latch = new CountDownLatch(numMessages);
+      MessageListener listener = new MessageListener()
+      {
+         public void onMessage(Message message)
+         {
+            messages.add(message);
+            latch.countDown();
+         }
+      };
+      consumer.setMessageListener(listener);
+      targetConn.start();
+
+      Connection sourceConn = createConnectionFactory().createConnection();
+      Session sourceSess = sourceConn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      
+      MessageProducer producer = sourceSess.createProducer(sourceDF.createDestination());
+      
+      for (int i = 0; i < numMessages - 1; i++)
+      {         
+         TextMessage msg = sourceSess.createTextMessage();
+         producer.send(msg);
+         log.info("sent message " + i);
+      }
+      
+      Thread.sleep(1000);
+      
+      assertEquals(0, messages.size());
+                 
+      TextMessage msg = sourceSess.createTextMessage();
+      
+      producer.send(msg);
+      
+      assertTrue(latch.await(10000, TimeUnit.MILLISECONDS));
+      
+      sourceConn.close();
+
+      assertEquals(numMessages, messages.size());
+      
       bridge.stop();
       assertFalse(bridge.isStarted());
 

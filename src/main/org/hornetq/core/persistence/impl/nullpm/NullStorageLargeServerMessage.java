@@ -13,8 +13,8 @@
 
 package org.hornetq.core.persistence.impl.nullpm;
 
-import org.hornetq.core.buffers.ChannelBuffers;
-import org.hornetq.core.remoting.spi.HornetQBuffer;
+import org.hornetq.core.buffers.HornetQBuffer;
+import org.hornetq.core.buffers.HornetQBuffers;
 import org.hornetq.core.server.LargeServerMessage;
 import org.hornetq.core.server.impl.ServerMessageImpl;
 
@@ -57,18 +57,13 @@ public class NullStorageLargeServerMessage extends ServerMessageImpl implements 
     */
    public synchronized void addBytes(final byte[] bytes)
    {
-      HornetQBuffer buffer = getBody();
+      if (buffer == null)
+      {
+         buffer = HornetQBuffers.dynamicBuffer(bytes.length);
+      }
 
-      if (buffer != null)
-      {
-         // expand the buffer
-         buffer.writeBytes(bytes);
-      }
-      else
-      {
-         // Reuse the initial byte array on the buffer construction
-         setBody(ChannelBuffers.dynamicBuffer(bytes));
-      }
+      // expand the buffer
+      buffer.writeBytes(bytes);
    }
 
    /* (non-Javadoc)

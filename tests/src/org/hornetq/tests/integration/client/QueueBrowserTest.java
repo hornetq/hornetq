@@ -85,7 +85,7 @@ public class QueueBrowserTest extends ServiceTestBase
       {
          ClientMessage message2 = consumer.receive(1000);
 
-         assertEquals("m" + i, message2.getBody().readString());
+         assertEquals("m" + i, message2.getBodyBuffer().readString());
       }
 
       consumer.close();
@@ -96,7 +96,7 @@ public class QueueBrowserTest extends ServiceTestBase
       {
          ClientMessage message2 = consumer.receive(1000);
 
-         assertEquals("m" + i, message2.getBody().readString());
+         assertEquals("m" + i, message2.getBodyBuffer().readString());
       }
 
       consumer.close();
@@ -133,7 +133,7 @@ public class QueueBrowserTest extends ServiceTestBase
       {
          ClientMessage message2 = consumer.receive(1000);
 
-         assertEquals("m" + i, message2.getBody().readString());
+         assertEquals("m" + i, message2.getBodyBuffer().readString());
       }
 
       consumer.close();
@@ -144,7 +144,7 @@ public class QueueBrowserTest extends ServiceTestBase
       {
          ClientMessage message2 = consumer.receive(1000);
 
-         assertEquals("m" + i, message2.getBody().readString());
+         assertEquals("m" + i, message2.getBodyBuffer().readString());
       }
 
       consumer.close();
@@ -184,7 +184,7 @@ public class QueueBrowserTest extends ServiceTestBase
       {
          ClientMessage message2 = consumer.receive(1000);
 
-         assertEquals("m" + i, message2.getBody().readString());
+         assertEquals("m" + i, message2.getBodyBuffer().readString());
       }
 
       session.close();
@@ -219,11 +219,11 @@ public class QueueBrowserTest extends ServiceTestBase
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message2 = consumer.receive(1000);
-         assertEquals("m" + i, message2.getBody().readString());
+         assertEquals("m" + i, message2.getBodyBuffer().readString());
          message2 = consumer2.receive(1000);
-         assertEquals("m" + i, message2.getBody().readString());
+         assertEquals("m" + i, message2.getBodyBuffer().readString());
          message2 = consumer3.receive(1000);
-         assertEquals("m" + i, message2.getBody().readString());
+         assertEquals("m" + i, message2.getBodyBuffer().readString());
       }
 
       session.close();
@@ -258,17 +258,17 @@ public class QueueBrowserTest extends ServiceTestBase
       for (int i = 0; i < 50; i++)
       {
          ClientMessage message2 = consumer.receive(1000);
-         assertEquals("m" + i, message2.getBody().readString());
+         assertEquals("m" + i, message2.getBodyBuffer().readString());
       }
       for (int i = 50; i < numMessages; i++)
       {
          ClientMessage message2 = consumer2.receive(1000);
-         assertEquals("m" + i, message2.getBody().readString());
+         assertEquals("m" + i, message2.getBodyBuffer().readString());
       }
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message2 = consumer3.receive(1000);
-         assertEquals("m" + i, message2.getBody().readString());
+         assertEquals("m" + i, message2.getBodyBuffer().readString());
       }
 
       session.close();
@@ -312,7 +312,7 @@ public class QueueBrowserTest extends ServiceTestBase
       {
          ClientMessage message2 = consumer.receive(1000);
 
-         assertEquals("m" + i, message2.getBody().readString());
+         assertEquals("m" + i, message2.getBodyBuffer().readString());
       }
       // assert that all the messages are there and none have been acked
       assertEquals(0, ((Queue)server.getPostOffice().getBinding(QUEUE).getBindable()).getDeliveringCount());
@@ -349,7 +349,7 @@ public class QueueBrowserTest extends ServiceTestBase
 
          message2.acknowledge();
 
-         assertEquals("m" + i, message2.getBody().readString());
+         assertEquals("m" + i, message2.getBodyBuffer().readString());
       }
       // assert that all the messages are there and none have been acked
       assertEquals(0, ((Queue)server.getPostOffice().getBinding(QUEUE).getBindable()).getDeliveringCount());

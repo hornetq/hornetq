@@ -15,9 +15,9 @@ package org.hornetq.tests.integration.cluster.failover;
 
 import junit.framework.TestSuite;
 
+import org.hornetq.core.buffers.HornetQBuffer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
-import org.hornetq.core.remoting.spi.HornetQBuffer;
 
 /**
  * A LargeMessageFailoverTest
@@ -95,7 +95,7 @@ public class LargeMessageFailoverTest extends FailoverTest
     */
    protected void assertMessageBody(int i, ClientMessage message)
    {
-      HornetQBuffer buffer = message.getBody();
+      HornetQBuffer buffer = message.getBodyBuffer();
 
       for (int j = 0; j < ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE * 3; j++)
       {

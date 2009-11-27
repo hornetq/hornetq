@@ -88,14 +88,13 @@ public abstract class ClusterTestBase extends ServiceTestBase
       checkFreePort(PORTS);
 
       clearData();
-      
+
       consumers = new ConsumerHolder[MAX_CONSUMERS];
 
       servers = new HornetQServer[MAX_SERVERS];
 
       sfs = new ClientSessionFactory[MAX_SERVERS];
 
-      
    }
 
    @Override
@@ -207,15 +206,15 @@ public abstract class ClusterTestBase extends ServiceTestBase
                                   final int consumerCount,
                                   final boolean local) throws Exception
    {
-//      System.out.println("waiting for bindings on node " + node +
-//                         " address " +
-//                         address +
-//                         " count " +
-//                         count +
-//                         " consumerCount " +
-//                         consumerCount +
-//                         " local " +
-//                         local);
+      // System.out.println("waiting for bindings on node " + node +
+      // " address " +
+      // address +
+      // " count " +
+      // count +
+      // " consumerCount " +
+      // consumerCount +
+      // " local " +
+      // local);
       HornetQServer server = this.servers[node];
 
       if (server == null)
@@ -442,7 +441,8 @@ public abstract class ClusterTestBase extends ServiceTestBase
 
             producer.send(message);
          }
-      } finally
+      }
+      finally
       {
          session.close();
       }
@@ -676,7 +676,9 @@ public abstract class ClusterTestBase extends ServiceTestBase
             if (j != (Integer)(message.getObjectProperty(COUNT_PROP)))
             {
                outOfOrder = true;
-               System.out.println("Message j=" + j + " was received out of order = " + message.getObjectProperty(COUNT_PROP));
+               System.out.println("Message j=" + j +
+                                  " was received out of order = " +
+                                  message.getObjectProperty(COUNT_PROP));
             }
          }
       }
@@ -825,7 +827,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
                   message.acknowledge();
                }
 
-               // log.info("consumer " + consumerIDs[i] +" returns " + count);
+               log.info("consumer " + consumerIDs[i] + " returns " + count);
             }
             else
             {
@@ -1167,8 +1169,6 @@ public abstract class ClusterTestBase extends ServiceTestBase
 
       Map<String, Object> params = generateParams(node, netty);
 
-
-
       if (netty)
       {
          TransportConfiguration nettytc = new TransportConfiguration(NETTY_ACCEPTOR_FACTORY, params);
@@ -1177,7 +1177,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
       else
       {
          TransportConfiguration invmtc = new TransportConfiguration(INVM_ACCEPTOR_FACTORY, params);
-         configuration.getAcceptorConfigurations().add(invmtc);  
+         configuration.getAcceptorConfigurations().add(invmtc);
       }
 
       HornetQServer server;

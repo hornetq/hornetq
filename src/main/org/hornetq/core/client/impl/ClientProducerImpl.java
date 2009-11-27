@@ -18,7 +18,8 @@ import static org.hornetq.utils.SimpleString.toSimpleString;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.hornetq.core.buffers.ChannelBuffers;
+import org.hornetq.core.buffers.HornetQBuffer;
+import org.hornetq.core.buffers.HornetQBuffers;
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.BodyEncoder;
@@ -28,7 +29,6 @@ import org.hornetq.core.remoting.Channel;
 import org.hornetq.core.remoting.impl.wireformat.SessionSendContinuationMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionSendLargeMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionSendMessage;
-import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.utils.SimpleString;
 import org.hornetq.utils.TokenBucketLimiter;
 import org.hornetq.utils.UUIDGenerator;
@@ -232,13 +232,11 @@ public class ClientProducerImpl implements ClientProducerInternal
 
       boolean sendBlocking = msg.isDurable() ? blockOnPersistentSend : blockOnNonPersistentSend;
 
-      SessionSendMessage message = new SessionSendMessage(msg, sendBlocking);
-
       session.workDone();
 
       boolean isLarge;
-
-      if (msg.getBodyInputStream() != null || msg.getEncodeSize() >= minLargeMessageSize || msg.isLargeMessage())
+      
+      if (msg.getBodyInputStream() != null || msg.isLargeMessage())
       {
          isLarge = true;
       }
@@ -251,13 +249,18 @@ public class ClientProducerImpl implements ClientProducerInternal
       {
          largeMessageSend(sendBlocking, msg, theCredits);
       }
-      else if (sendBlocking)
-      {
-         channel.sendBlocking(message);
-      }
       else
       {
-         channel.send(message);
+         SessionSendMessage message = new SessionSendMessage(msg, sendBlocking);
+
+         if (sendBlocking)
+         {
+            channel.sendBlocking(message);
+         }
+         else
+         {
+            channel.send(message);
+         }
       }
 
       try
@@ -269,7 +272,7 @@ public class ClientProducerImpl implements ClientProducerInternal
          // data in *memory* and continuations go straight to the disk
 
          if (!isLarge)
-         {
+         {            
             theCredits.acquireCredits(msg.getEncodeSize());
          }
       }
@@ -303,15 +306,16 @@ public class ClientProducerImpl implements ClientProducerInternal
       }
 
       // msg.getBody() could be Null on LargeServerMessage
-      if (msg.getBodyInputStream() == null && msg.getBody() != null)
+      if (msg.getBodyInputStream() == null && msg.getWholeBuffer() != null)
       {
-         msg.getBody().readerIndex(0);
+         msg.getWholeBuffer().readerIndex(0);
       }
 
-      HornetQBuffer headerBuffer = ChannelBuffers.buffer(headerSize);
+      HornetQBuffer headerBuffer = HornetQBuffers.fixedBuffer(headerSize);
+      
       msg.encodeHeadersAndProperties(headerBuffer);
 
-      SessionSendLargeMessage initialChunk = new SessionSendLargeMessage(headerBuffer.array());
+      SessionSendLargeMessage initialChunk = new SessionSendLargeMessage(headerBuffer.toByteBuffer().array());
 
       channel.send(initialChunk);
 
@@ -344,9 +348,11 @@ public class ClientProducerImpl implements ClientProducerInternal
                                          final Message msg,
                                          final ClientProducerCredits credits) throws HornetQException
    {
-      final long bodySize = msg.getLargeBodySize();
-
       BodyEncoder context = msg.getBodyEncoder();
+      
+      final long bodySize = context.getLargeBodySize();
+
+      
 
       context.open();
       try
@@ -358,7 +364,7 @@ public class ClientProducerImpl implements ClientProducerInternal
 
             final int chunkLength = Math.min((int)(bodySize - pos), minLargeMessageSize);
 
-            final HornetQBuffer bodyBuffer = ChannelBuffers.buffer(chunkLength);
+            final HornetQBuffer bodyBuffer = HornetQBuffers.fixedBuffer(chunkLength);
 
             context.encode(bodyBuffer, chunkLength);
 
@@ -366,7 +372,7 @@ public class ClientProducerImpl implements ClientProducerInternal
 
             lastChunk = pos >= bodySize;
 
-            final SessionSendContinuationMessage chunk = new SessionSendContinuationMessage(bodyBuffer.array(),
+            final SessionSendContinuationMessage chunk = new SessionSendContinuationMessage(bodyBuffer.toByteBuffer().array(),
                                                                                             !lastChunk,
                                                                                             lastChunk && sendBlocking);
 
@@ -382,7 +388,7 @@ public class ClientProducerImpl implements ClientProducerInternal
 
             try
             {
-               credits.acquireCredits(chunk.getRequiredBufferSize());
+               credits.acquireCredits(chunk.getPacketSize());
             }
             catch (InterruptedException e)
             {
@@ -468,7 +474,7 @@ public class ClientProducerImpl implements ClientProducerInternal
 
          try
          {
-            credits.acquireCredits(chunk.getRequiredBufferSize());
+            credits.acquireCredits(chunk.getPacketSize());
          }
          catch (InterruptedException e)
          {

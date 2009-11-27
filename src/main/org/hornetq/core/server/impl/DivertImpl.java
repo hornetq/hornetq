@@ -44,7 +44,7 @@ public class DivertImpl implements Divert
    private final SimpleString uniqueName;
 
    private final SimpleString routingName;
-
+   
    private final boolean exclusive;
 
    private final Filter filter;
@@ -81,8 +81,8 @@ public class DivertImpl implements Divert
       // We must make a copy of the message, otherwise things like returning credits to the page won't work
       // properly on ack, since the original destination will be overwritten
 
-      // TODO we can optimise this so it doesn't copy if it's not routed anywhere else
-
+      // TODO we can optimise this so it doesn't copy if it's not routed anywhere else   
+      
       ServerMessage copy = message.copy();
       
       // Setting the messageID to 0. The postOffice should set a new one

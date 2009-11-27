@@ -171,14 +171,14 @@ public class NIOSequentialFile extends AbstractSequentialFile
       try
       {
          int bytesRead = channel.read(bytes);
-         
+
          if (callback != null)
          {
             callback.done();
          }
-         
+
          bytes.flip();
-         
+
          return bytesRead;
       }
       catch (Exception e)
@@ -236,7 +236,7 @@ public class NIOSequentialFile extends AbstractSequentialFile
       {
          throw new NullPointerException("callback parameter need to be set");
       }
-      
+
       try
       {
          internalWrite(bytes, sync, callback);
@@ -309,8 +309,7 @@ public class NIOSequentialFile extends AbstractSequentialFile
     * @throws Exception
     */
    private void doInternalWrite(final ByteBuffer bytes, final boolean sync, final IOAsyncTask callback) throws Exception
-   {
-      
+   {      
       position.addAndGet(bytes.limit());
 
       channel.write(bytes);

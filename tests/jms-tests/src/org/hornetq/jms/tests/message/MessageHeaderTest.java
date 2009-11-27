@@ -33,7 +33,7 @@ import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
-import org.hornetq.core.buffers.ChannelBuffers;
+import org.hornetq.core.buffers.HornetQBuffer;
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
@@ -45,7 +45,6 @@ import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.remoting.FailureListener;
 import org.hornetq.core.remoting.impl.wireformat.SessionBindingQueryResponseMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
-import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.jms.client.HornetQBytesMessage;
 import org.hornetq.jms.client.HornetQMapMessage;
 import org.hornetq.jms.client.HornetQMessage;
@@ -672,10 +671,10 @@ public class MessageHeaderTest extends MessageHeaderTestBase
 
    public void testCopyOnJBossMessage() throws JMSException
    {
-      HornetQBuffer body = ChannelBuffers.buffer(1024);
-      ClientMessage clientMessage = new ClientMessageImpl(HornetQTextMessage.TYPE, true, 0, System.currentTimeMillis(), (byte)4, body);
+      ClientMessage clientMessage = new ClientMessageImpl(HornetQTextMessage.TYPE, true, 0, System.currentTimeMillis(), (byte)4, 1000);
       ClientSession session = new FakeSession(clientMessage);
-      HornetQMessage jbossMessage = new HornetQMessage();
+      HornetQMessage jbossMessage = HornetQMessage.createMessage(clientMessage, session);
+      jbossMessage.clearProperties();
 
       configureMessage(jbossMessage);
 
@@ -687,8 +686,7 @@ public class MessageHeaderTest extends MessageHeaderTestBase
 
    public void testCopyOnForeignMessage() throws JMSException
    {
-      HornetQBuffer body = ChannelBuffers.buffer(1024);
-      ClientMessage clientMessage = new ClientMessageImpl(HornetQTextMessage.TYPE, true, 0, System.currentTimeMillis(), (byte)4, body);
+      ClientMessage clientMessage = new ClientMessageImpl(HornetQTextMessage.TYPE, true, 0, System.currentTimeMillis(), (byte)4, 1000);
       ClientSession session = new FakeSession(clientMessage);
 
       Message foreignMessage = new SimpleJMSMessage();
@@ -701,8 +699,7 @@ public class MessageHeaderTest extends MessageHeaderTestBase
    
    public void testCopyOnForeignBytesMessage() throws JMSException
    {
-     HornetQBuffer body = ChannelBuffers.buffer(1024);
-      ClientMessage clientMessage = new ClientMessageImpl(HornetQTextMessage.TYPE, true, 0, System.currentTimeMillis(), (byte)4, body);
+      ClientMessage clientMessage = new ClientMessageImpl(HornetQTextMessage.TYPE, true, 0, System.currentTimeMillis(), (byte)4, 1000);
       ClientSession session = new FakeSession(clientMessage);
 
       BytesMessage foreignBytesMessage = new SimpleJMSBytesMessage();
@@ -721,8 +718,7 @@ public class MessageHeaderTest extends MessageHeaderTestBase
   
    public void testCopyOnForeignMapMessage() throws JMSException
    {
-      HornetQBuffer body = ChannelBuffers.buffer(1024);
-      ClientMessage clientMessage = new ClientMessageImpl(HornetQTextMessage.TYPE, true, 0, System.currentTimeMillis(), (byte)4, body);
+      ClientMessage clientMessage = new ClientMessageImpl(HornetQTextMessage.TYPE, true, 0, System.currentTimeMillis(), (byte)4, 1000);
       ClientSession session = new FakeSession(clientMessage);
       MapMessage foreignMapMessage = new SimpleJMSMapMessage();
       foreignMapMessage.setInt("int", 1);
@@ -735,9 +731,8 @@ public class MessageHeaderTest extends MessageHeaderTestBase
 
 
    public void testCopyOnForeignObjectMessage() throws JMSException
-   {
-      HornetQBuffer body = ChannelBuffers.buffer(1024);
-      ClientMessage clientMessage = new ClientMessageImpl(HornetQTextMessage.TYPE, true, 0, System.currentTimeMillis(), (byte)4, body);
+   {      
+      ClientMessage clientMessage = new ClientMessageImpl(HornetQTextMessage.TYPE, true, 0, System.currentTimeMillis(), (byte)4, 1000);
       ClientSession session = new FakeSession(clientMessage);
 
       ObjectMessage foreignObjectMessage = new SimpleJMSObjectMessage();
@@ -750,8 +745,7 @@ public class MessageHeaderTest extends MessageHeaderTestBase
 
    public void testCopyOnForeignStreamMessage() throws JMSException
    {
-      HornetQBuffer body = ChannelBuffers.buffer(1024);
-      ClientMessage clientMessage = new ClientMessageImpl(HornetQTextMessage.TYPE, true, 0, System.currentTimeMillis(), (byte)4, body);
+      ClientMessage clientMessage = new ClientMessageImpl(HornetQTextMessage.TYPE, true, 0, System.currentTimeMillis(), (byte)4, 1000);
       ClientSession session = new FakeSession(clientMessage);
 
       StreamMessage foreignStreamMessage = new SimpleJMSStreamMessage();
@@ -767,8 +761,7 @@ public class MessageHeaderTest extends MessageHeaderTestBase
 
    public void testCopyOnForeignTextMessage() throws JMSException
    {
-      HornetQBuffer body = ChannelBuffers.buffer(1024);
-      ClientMessage clientMessage = new ClientMessageImpl(HornetQTextMessage.TYPE, true, 0, System.currentTimeMillis(), (byte)4, body);
+      ClientMessage clientMessage = new ClientMessageImpl(HornetQTextMessage.TYPE, true, 0, System.currentTimeMillis(), (byte)4, 1000);
       ClientSession session = new FakeSession(clientMessage);
       TextMessage foreignTextMessage = new SimpleJMSTextMessage();
 

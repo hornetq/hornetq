@@ -13,7 +13,7 @@
 
 package org.hornetq.core.remoting.impl.wireformat;
 
-import org.hornetq.core.remoting.spi.HornetQBuffer;
+import org.hornetq.core.buffers.HornetQBuffer;
 import org.hornetq.utils.DataConstants;
 
 /**
@@ -54,17 +54,12 @@ public class Ping extends PacketImpl
       return connectionTTL;
    }
 
-   public int getRequiredBufferSize()
-   {
-      return BASIC_PACKET_SIZE + DataConstants.SIZE_LONG;
-   }
-
-   public void encodeBody(final HornetQBuffer buffer)
+   public void encodeRest(final HornetQBuffer buffer)
    {
       buffer.writeLong(connectionTTL);
    }
 
-   public void decodeBody(final HornetQBuffer buffer)
+   public void decodeRest(final HornetQBuffer buffer)
    {
       connectionTTL = buffer.readLong();
    }

@@ -17,7 +17,8 @@ import java.io.InputStream;
 import java.util.Map;
 import java.util.Set;
 
-import org.hornetq.core.remoting.spi.HornetQBuffer;
+import org.hornetq.core.buffers.HornetQBuffer;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.utils.SimpleString;
 import org.hornetq.utils.TypedProperties;
 
@@ -63,35 +64,27 @@ public interface Message
 
    int getEncodeSize();
 
-   void encode(HornetQBuffer buffer);
-
-   void decode(HornetQBuffer buffer);
-
-   int getHeadersAndPropertiesEncodeSize();
-
-   void encodeHeadersAndProperties(HornetQBuffer buffer);
-
-   void decodeHeadersAndProperties(HornetQBuffer buffer);
-
-   int getBodySize();
-
    boolean isLargeMessage();
-
-   long getLargeBodySize();
    
-   /** Used to encode Body over the wire when using large messages */
-   BodyEncoder getBodyEncoder();
-
-   /** Set the InputStream used on a message that will be sent over a producer */
-   void setBodyInputStream(InputStream stream);
-
-   /** Get the InputStream used on a message that will be sent over a producer */
-   InputStream getBodyInputStream();
-
-   void encodeBody(HornetQBuffer buffer);
-
-   void decodeBody(HornetQBuffer buffer);
-
+   HornetQBuffer getBodyBuffer();
+   
+   
+   //Should the following methods really be on the public API?
+   
+   void decodeFromBuffer(HornetQBuffer buffer);
+   
+   int getEndOfMessagePosition();
+   
+   int getEndOfBodyPosition();
+   
+   void checkCopy();
+   
+   void bodyChanged();
+   
+   void resetCopied();
+   
+   HornetQBuffer getEncodedBuffer();
+   
    // Properties
    // ------------------------------------------------------------------
 
@@ -195,11 +188,22 @@ public interface Message
 
    Map<String, Object> toMap();
 
-   // Body
-   // ---------------------------------------------------------------------------------
-
-   HornetQBuffer getBody();
-
-   void setBody(HornetQBuffer body);
-
+      
+   // FIXME - All this stuff is only necessary here for large messages - it should be refactored to be put in a better place
+      
+   int getHeadersAndPropertiesEncodeSize();
+   
+   HornetQBuffer getWholeBuffer();
+   
+   void encodeHeadersAndProperties(HornetQBuffer buffer);
+   
+   void decodeHeadersAndProperties(HornetQBuffer buffer);
+   
+   BodyEncoder getBodyEncoder() throws HornetQException;
+   
+   /** Get the InputStream used on a message that will be sent over a producer */
+   InputStream getBodyInputStream();
+   
+   
+   
 }

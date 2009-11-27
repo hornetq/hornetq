@@ -120,6 +120,10 @@ public class JMSFailoverTest extends UnitTestCase
       }
 
       conn.start();
+      
+      log.info("sent messages and started connection");
+      
+      Thread.sleep(2000);
 
       HornetQException me = new HornetQException(HornetQException.NOT_CONNECTED);
 
@@ -127,6 +131,8 @@ public class JMSFailoverTest extends UnitTestCase
 
       for (int i = 0; i < numMessages; i++)
       {
+         log.info("got message " + i);
+         
          TextMessage tm = (TextMessage)consumer.receive(1000);
 
          assertNotNull(tm);

@@ -58,9 +58,6 @@ public interface TestableJournal extends Journal
    /** This method is called automatically when a new file is opened.
     * @return true if it needs to re-check due to cleanup or other factors  */
    boolean checkReclaimStatus() throws Exception;
-
    
-   JournalFile[] getDataFiles();
-   
-
+   JournalFile[] getDataFiles();   
 }

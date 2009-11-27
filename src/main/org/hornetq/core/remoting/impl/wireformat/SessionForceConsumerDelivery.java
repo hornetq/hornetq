@@ -13,7 +13,7 @@
 
 package org.hornetq.core.remoting.impl.wireformat;
 
-import org.hornetq.core.remoting.spi.HornetQBuffer;
+import org.hornetq.core.buffers.HornetQBuffer;
 import org.hornetq.utils.DataConstants;
 
 /**
@@ -61,18 +61,13 @@ public class SessionForceConsumerDelivery extends PacketImpl
       return sequence;
    }
 
-   public int getRequiredBufferSize()
-   {
-      return BASIC_PACKET_SIZE + DataConstants.SIZE_LONG + DataConstants.SIZE_LONG;
-   }
-
-   public void encodeBody(final HornetQBuffer buffer)
+   public void encodeRest(final HornetQBuffer buffer)
    {
       buffer.writeLong(consumerID);
       buffer.writeLong(sequence);
    }
 
-   public void decodeBody(final HornetQBuffer buffer)
+   public void decodeRest(final HornetQBuffer buffer)
    {
       consumerID = buffer.readLong();
       sequence = buffer.readLong();

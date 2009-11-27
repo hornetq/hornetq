@@ -13,9 +13,9 @@
 
 package org.hornetq.core.remoting.impl.wireformat;
 
+import org.hornetq.core.buffers.HornetQBuffer;
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.utils.DataConstants;
 
 /**
@@ -64,19 +64,13 @@ public class HornetQExceptionMessage extends PacketImpl
       return exception;
    }
    
-   public int getRequiredBufferSize()
-   {
-      return BASIC_PACKET_SIZE + DataConstants.SIZE_INT + nullableStringEncodeSize(exception.getMessage());
-   }
-
-
-   public void encodeBody(final HornetQBuffer buffer)
+   public void encodeRest(final HornetQBuffer buffer)
    {
       buffer.writeInt(exception.getCode());
       buffer.writeNullableString(exception.getMessage());
    }
 
-   public void decodeBody(final HornetQBuffer buffer)
+   public void decodeRest(final HornetQBuffer buffer)
    {
       int code = buffer.readInt();
       String msg = buffer.readNullableString();

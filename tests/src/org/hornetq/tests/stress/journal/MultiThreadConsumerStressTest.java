@@ -16,7 +16,7 @@ package org.hornetq.tests.stress.journal;
 import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
 
-import org.hornetq.core.buffers.ChannelBuffers;
+import org.hornetq.core.buffers.HornetQBuffers;
 import org.hornetq.core.client.*;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
@@ -248,8 +248,7 @@ public class MultiThreadConsumerStressTest extends ServiceTestBase
                {
                   System.out.println(Thread.currentThread().getName() + "::received #" + i);
                }
-               ClientMessage msg = session.createClientMessage(true);
-               msg.setBody(ChannelBuffers.wrappedBuffer(new byte[1024]));
+               ClientMessage msg = session.createClientMessage(true);               
                prod.send(msg);
             }
 

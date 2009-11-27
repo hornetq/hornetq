@@ -58,7 +58,7 @@ public class NewDeadLetterAddressTest extends UnitTestCase
       ClientMessage m = clientConsumer.receive(500);
       m.acknowledge();
       assertNotNull(m);
-      assertEquals(m.getBody().readString(), "heyho!");      
+      assertEquals(m.getBodyBuffer().readString(), "heyho!");      
    }
 
    @Override

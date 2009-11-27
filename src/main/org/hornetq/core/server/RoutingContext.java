@@ -32,11 +32,10 @@ public interface RoutingContext
    
    void addQueue(Queue queue);
    
-   List<Queue> getQueues();
+   List<Queue> getNonDurableQueues();
    
-   //void incrementDepth();
+   List<Queue> getDurableQueues();
    
-  // void decrementDepth();
-   
-   //int getDepth();
+   int getQueueCount();
+
 }

@@ -91,7 +91,10 @@ public abstract class JournalImplTestBase extends UnitTestCase
          }
       }
       
-      fileFactory.stop();
+      if (fileFactory != null)
+      {
+         fileFactory.stop();
+      }
 
       fileFactory = null;
 

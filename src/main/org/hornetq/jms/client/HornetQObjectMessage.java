@@ -11,7 +11,6 @@
  * permissions and limitations under the License.
  */
 
-
 package org.hornetq.jms.client;
 
 import java.io.ByteArrayInputStream;
@@ -48,27 +47,19 @@ public class HornetQObjectMessage extends HornetQMessage implements ObjectMessag
    public static final byte TYPE = 2;
 
    // Attributes ----------------------------------------------------
-   
+
    // keep a snapshot of the Serializable Object as a byte[] to provide Object isolation
    private byte[] data;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
-   
-   /*
-    * This constructor is used to construct messages prior to sending
-    */
-   public HornetQObjectMessage()
-   {
-      super(HornetQObjectMessage.TYPE);
-   }
 
-   public HornetQObjectMessage( final ClientSession session)
+   public HornetQObjectMessage(final ClientSession session)
    {
       super(HornetQObjectMessage.TYPE, session);
    }
-   
+
    public HornetQObjectMessage(final ClientMessage message, ClientSession session)
    {
       super(message, session);
@@ -81,7 +72,7 @@ public class HornetQObjectMessage extends HornetQMessage implements ObjectMessag
    {
       super(foreign, HornetQObjectMessage.TYPE, session);
 
-      setObject(foreign.getObject()); 
+      setObject(foreign.getObject());
    }
 
    // Public --------------------------------------------------------
@@ -90,45 +81,44 @@ public class HornetQObjectMessage extends HornetQMessage implements ObjectMessag
    {
       return HornetQObjectMessage.TYPE;
    }
-   
+
    public void doBeforeSend() throws Exception
    {
-      getBody().clear();
+      message.getBodyBuffer().clear();
       if (data != null)
       {
-         getBody().writeInt(data.length);
-         getBody().writeBytes(data);
+         message.getBodyBuffer().writeInt(data.length);
+         message.getBodyBuffer().writeBytes(data);
       }
-      
+
       super.doBeforeSend();
    }
-   
-   
+
    public void doBeforeReceive() throws Exception
    {
       super.doBeforeReceive();
       try
       {
-         int len = getBody().readInt();
+         int len = message.getBodyBuffer().readInt();
          data = new byte[len];
-         getBody().readBytes(data);
+         message.getBodyBuffer().readBytes(data);
       }
       catch (Exception e)
       {
          data = null;
       }
-      
+
    }
-      
+
    // ObjectMessage implementation ----------------------------------
 
    public void setObject(Serializable object) throws JMSException
-   {  
+   {
       checkWrite();
 
       if (object != null)
       {
-         try 
+         try
          {
             ByteArrayOutputStream baos = new ByteArrayOutputStream(1024);
 
@@ -175,16 +165,14 @@ public class HornetQObjectMessage extends HornetQMessage implements ObjectMessag
    public void clearBody() throws JMSException
    {
       super.clearBody();
-      
+
       data = null;
    }
-   
-   
 
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
-   
+
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------

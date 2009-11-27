@@ -51,7 +51,7 @@ public class SyncSpeedTest
    {
       int fileSize = 1024 * 1024 * 100;
       
-      int recordSize = 10 * 1024;
+      int recordSize = 1024;
       
       int its = 10 * 1024;
       

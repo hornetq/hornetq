@@ -123,7 +123,7 @@ public class NettyAcceptor implements Acceptor
 
    private final HttpKeepAliveRunnable httpKeepAliveRunnable;
 
-   private ConcurrentMap<Object, Connection> connections = new ConcurrentHashMap<Object, Connection>();
+   private final ConcurrentMap<Object, Connection> connections = new ConcurrentHashMap<Object, Connection>();
 
    private final Executor threadPool;
 
@@ -139,13 +139,13 @@ public class NettyAcceptor implements Acceptor
 
       this.listener = listener;
 
-      this.sslEnabled = ConfigurationHelper.getBooleanProperty(TransportConstants.SSL_ENABLED_PROP_NAME,
-                                                               TransportConstants.DEFAULT_SSL_ENABLED,
-                                                               configuration);
+      sslEnabled = ConfigurationHelper.getBooleanProperty(TransportConstants.SSL_ENABLED_PROP_NAME,
+                                                          TransportConstants.DEFAULT_SSL_ENABLED,
+                                                          configuration);
 
-      this.httpEnabled = ConfigurationHelper.getBooleanProperty(TransportConstants.HTTP_ENABLED_PROP_NAME,
-                                                                TransportConstants.DEFAULT_HTTP_ENABLED,
-                                                                configuration);
+      httpEnabled = ConfigurationHelper.getBooleanProperty(TransportConstants.HTTP_ENABLED_PROP_NAME,
+                                                           TransportConstants.DEFAULT_HTTP_ENABLED,
+                                                           configuration);
 
       if (httpEnabled)
       {
@@ -168,51 +168,51 @@ public class NettyAcceptor implements Acceptor
          httpResponseTime = 0;
          httpKeepAliveRunnable = null;
       }
-      this.useNio = ConfigurationHelper.getBooleanProperty(TransportConstants.USE_NIO_PROP_NAME,
-                                                           TransportConstants.DEFAULT_USE_NIO,
-                                                           configuration);
+      useNio = ConfigurationHelper.getBooleanProperty(TransportConstants.USE_NIO_PROP_NAME,
+                                                      TransportConstants.DEFAULT_USE_NIO_SERVER,
+                                                      configuration);
 
-      this.useInvm = ConfigurationHelper.getBooleanProperty(TransportConstants.USE_INVM_PROP_NAME,
-                                                            TransportConstants.DEFAULT_USE_INVM,
-                                                            configuration);
-      this.host = ConfigurationHelper.getStringProperty(TransportConstants.HOST_PROP_NAME,
-                                                        TransportConstants.DEFAULT_HOST,
-                                                        configuration);
-      this.port = ConfigurationHelper.getIntProperty(TransportConstants.PORT_PROP_NAME,
-                                                     TransportConstants.DEFAULT_PORT,
-                                                     configuration);
+      useInvm = ConfigurationHelper.getBooleanProperty(TransportConstants.USE_INVM_PROP_NAME,
+                                                       TransportConstants.DEFAULT_USE_INVM,
+                                                       configuration);
+      host = ConfigurationHelper.getStringProperty(TransportConstants.HOST_PROP_NAME,
+                                                   TransportConstants.DEFAULT_HOST,
+                                                   configuration);
+      port = ConfigurationHelper.getIntProperty(TransportConstants.PORT_PROP_NAME,
+                                                TransportConstants.DEFAULT_PORT,
+                                                configuration);
       if (sslEnabled)
       {
-         this.keyStorePath = ConfigurationHelper.getStringProperty(TransportConstants.KEYSTORE_PATH_PROP_NAME,
-                                                                   TransportConstants.DEFAULT_KEYSTORE_PATH,
-                                                                   configuration);
-         this.keyStorePassword = ConfigurationHelper.getStringProperty(TransportConstants.KEYSTORE_PASSWORD_PROP_NAME,
-                                                                       TransportConstants.DEFAULT_KEYSTORE_PASSWORD,
-                                                                       configuration);
-         this.trustStorePath = ConfigurationHelper.getStringProperty(TransportConstants.TRUSTSTORE_PATH_PROP_NAME,
-                                                                     TransportConstants.DEFAULT_TRUSTSTORE_PATH,
-                                                                     configuration);
-         this.trustStorePassword = ConfigurationHelper.getStringProperty(TransportConstants.TRUSTSTORE_PASSWORD_PROP_NAME,
-                                                                         TransportConstants.DEFAULT_TRUSTSTORE_PASSWORD,
-                                                                         configuration);
+         keyStorePath = ConfigurationHelper.getStringProperty(TransportConstants.KEYSTORE_PATH_PROP_NAME,
+                                                              TransportConstants.DEFAULT_KEYSTORE_PATH,
+                                                              configuration);
+         keyStorePassword = ConfigurationHelper.getStringProperty(TransportConstants.KEYSTORE_PASSWORD_PROP_NAME,
+                                                                  TransportConstants.DEFAULT_KEYSTORE_PASSWORD,
+                                                                  configuration);
+         trustStorePath = ConfigurationHelper.getStringProperty(TransportConstants.TRUSTSTORE_PATH_PROP_NAME,
+                                                                TransportConstants.DEFAULT_TRUSTSTORE_PATH,
+                                                                configuration);
+         trustStorePassword = ConfigurationHelper.getStringProperty(TransportConstants.TRUSTSTORE_PASSWORD_PROP_NAME,
+                                                                    TransportConstants.DEFAULT_TRUSTSTORE_PASSWORD,
+                                                                    configuration);
       }
       else
       {
-         this.keyStorePath = null;
-         this.keyStorePassword = null;
-         this.trustStorePath = null;
-         this.trustStorePassword = null;
+         keyStorePath = null;
+         keyStorePassword = null;
+         trustStorePath = null;
+         trustStorePassword = null;
       }
 
-      this.tcpNoDelay = ConfigurationHelper.getBooleanProperty(TransportConstants.TCP_NODELAY_PROPNAME,
-                                                               TransportConstants.DEFAULT_TCP_NODELAY,
-                                                               configuration);
-      this.tcpSendBufferSize = ConfigurationHelper.getIntProperty(TransportConstants.TCP_SENDBUFFER_SIZE_PROPNAME,
-                                                                  TransportConstants.DEFAULT_TCP_SENDBUFFER_SIZE,
-                                                                  configuration);
-      this.tcpReceiveBufferSize = ConfigurationHelper.getIntProperty(TransportConstants.TCP_RECEIVEBUFFER_SIZE_PROPNAME,
-                                                                     TransportConstants.DEFAULT_TCP_RECEIVEBUFFER_SIZE,
-                                                                     configuration);
+      tcpNoDelay = ConfigurationHelper.getBooleanProperty(TransportConstants.TCP_NODELAY_PROPNAME,
+                                                          TransportConstants.DEFAULT_TCP_NODELAY,
+                                                          configuration);
+      tcpSendBufferSize = ConfigurationHelper.getIntProperty(TransportConstants.TCP_SENDBUFFER_SIZE_PROPNAME,
+                                                             TransportConstants.DEFAULT_TCP_SENDBUFFER_SIZE,
+                                                             configuration);
+      tcpReceiveBufferSize = ConfigurationHelper.getIntProperty(TransportConstants.TCP_RECEIVEBUFFER_SIZE_PROPNAME,
+                                                                TransportConstants.DEFAULT_TCP_RECEIVEBUFFER_SIZE,
+                                                                configuration);
 
       this.threadPool = threadPool;
    }
@@ -307,21 +307,24 @@ public class NettyAcceptor implements Acceptor
 
       paused = false;
 
-      if(!Version.ID.equals(VersionLoader.getVersion().getNettyVersion()))
+      if (!Version.ID.equals(VersionLoader.getVersion().getNettyVersion()))
       {
-          log.warn("Unexpected Netty Version was expecting " + VersionLoader.getVersion().getNettyVersion() + " using " + Version.ID);
+         log.warn("Unexpected Netty Version was expecting " + VersionLoader.getVersion().getNettyVersion() +
+                  " using " +
+                  Version.ID);
       }
 
       if (notificationService != null)
       {
          TypedProperties props = new TypedProperties();
-         props.putSimpleStringProperty(new SimpleString("factory"), new SimpleString(NettyAcceptorFactory.class.getName()));
+         props.putSimpleStringProperty(new SimpleString("factory"),
+                                       new SimpleString(NettyAcceptorFactory.class.getName()));
          props.putSimpleStringProperty(new SimpleString("host"), new SimpleString(host));
          props.putIntProperty(new SimpleString("port"), port);
          Notification notification = new Notification(null, NotificationType.ACCEPTOR_STARTED, props);
          notificationService.sendNotification(notification);
       }
-      
+
       log.info("Started Netty Acceptor version " + Version.ID);
    }
 
@@ -368,7 +371,7 @@ public class NettyAcceptor implements Acceptor
          Iterator<Channel> iterator = future.getGroup().iterator();
          while (iterator.hasNext())
          {
-            Channel channel = (Channel)iterator.next();
+            Channel channel = iterator.next();
             if (channel.isBound())
             {
                log.warn(channel + " is still connected to " + channel.getRemoteAddress());
@@ -385,11 +388,12 @@ public class NettyAcceptor implements Acceptor
       }
 
       connections.clear();
-    
+
       if (notificationService != null)
       {
          TypedProperties props = new TypedProperties();
-         props.putSimpleStringProperty(new SimpleString("factory"), new SimpleString(NettyAcceptorFactory.class.getName()));
+         props.putSimpleStringProperty(new SimpleString("factory"),
+                                       new SimpleString(NettyAcceptorFactory.class.getName()));
          props.putSimpleStringProperty(new SimpleString("host"), new SimpleString(host));
          props.putIntProperty(new SimpleString("port"), port);
          Notification notification = new Notification(null, NotificationType.ACCEPTOR_STOPPED, props);
@@ -403,13 +407,13 @@ public class NettyAcceptor implements Acceptor
             e.printStackTrace();
          }
       }
-      
+
       paused = false;
    }
 
    public boolean isStarted()
    {
-      return (channelFactory != null);
+      return channelFactory != null;
    }
 
    private boolean paused;
@@ -450,19 +454,21 @@ public class NettyAcceptor implements Acceptor
    {
       this.notificationService = notificationService;
    }
-   
+
    // Inner classes -----------------------------------------------------------------------------
 
    @ChannelPipelineCoverage("one")
    private final class HornetQServerChannelHandler extends HornetQChannelHandler
    {
-      HornetQServerChannelHandler(ChannelGroup group, BufferHandler handler, ConnectionLifeCycleListener listener)
+      HornetQServerChannelHandler(final ChannelGroup group,
+                                  final BufferHandler handler,
+                                  final ConnectionLifeCycleListener listener)
       {
          super(group, handler, listener);
       }
 
       @Override
-      public void channelConnected(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception
+      public void channelConnected(final ChannelHandlerContext ctx, final ChannelStateEvent e) throws Exception
       {
          new NettyConnection(e.getChannel(), new Listener());
 
@@ -471,7 +477,7 @@ public class NettyAcceptor implements Acceptor
          {
             sslHandler.handshake(e.getChannel()).addListener(new ChannelFutureListener()
             {
-               public void operationComplete(ChannelFuture future) throws Exception
+               public void operationComplete(final ChannelFuture future) throws Exception
                {
                   if (future.isSuccess())
                   {
@@ -516,6 +522,7 @@ public class NettyAcceptor implements Acceptor
          // Execute on different thread to avoid deadlocks
          new Thread()
          {
+            @Override
             public void run()
             {
                listener.connectionException(connectionID, me);

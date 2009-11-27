@@ -16,7 +16,8 @@ package org.hornetq.tests.integration.management;
 import static org.hornetq.tests.util.RandomUtil.randomSimpleString;
 import static org.hornetq.tests.util.RandomUtil.randomString;
 
-import org.hornetq.core.buffers.ChannelBuffers;
+import org.hornetq.core.buffers.HornetQBuffer;
+import org.hornetq.core.buffers.HornetQBuffers;
 import org.hornetq.core.client.management.impl.ManagementHelper;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
@@ -25,7 +26,6 @@ import org.hornetq.core.management.AddressControl;
 import org.hornetq.core.management.QueueControl;
 import org.hornetq.core.management.ResourceNames;
 import org.hornetq.core.management.impl.ManagementServiceImpl;
-import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.core.server.HornetQ;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
@@ -67,9 +67,7 @@ public class ManagementServiceImplTest extends UnitTestCase
       server.start();
 
       // invoke attribute and operation on the server
-      ServerMessage message = new ServerMessageImpl();
-      HornetQBuffer body = ChannelBuffers.buffer(2048);
-      message.setBody(body);
+      ServerMessage message = new ServerMessageImpl(1, 100);
       ManagementHelper.putOperationInvocation(message,
                                               ResourceNames.CORE_SERVER,
                                               "createQueue",
@@ -92,9 +90,7 @@ public class ManagementServiceImplTest extends UnitTestCase
       server.start();
 
       // invoke attribute and operation on the server
-      ServerMessage message = new ServerMessageImpl();
-      HornetQBuffer body = ChannelBuffers.buffer(2048);
-      message.setBody(body);
+      ServerMessage message = new ServerMessageImpl(1, 100);
       ManagementHelper.putOperationInvocation(message,
                                               ResourceNames.CORE_SERVER,
                                               "thereIsNoSuchOperation");
@@ -116,9 +112,7 @@ public class ManagementServiceImplTest extends UnitTestCase
       server.start();
 
       // invoke attribute and operation on the server
-      ServerMessage message = new ServerMessageImpl();
-      HornetQBuffer body = ChannelBuffers.buffer(2048);
-      message.setBody(body);
+      ServerMessage message = new ServerMessageImpl(1, 100);
       ManagementHelper.putOperationInvocation(message,
                                               "Resouce.Does.Not.Exist",
                                               "toString");
@@ -140,9 +134,8 @@ public class ManagementServiceImplTest extends UnitTestCase
       server.start();
 
       // invoke attribute and operation on the server
-      ServerMessage message = new ServerMessageImpl();
-      HornetQBuffer body = ChannelBuffers.buffer(2048);
-      message.setBody(body);
+      ServerMessage message = new ServerMessageImpl(1, 100);
+
       ManagementHelper.putAttribute(message, ResourceNames.CORE_SERVER, "attribute.Does.Not.Exist");
       
       ServerMessage reply = server.getManagementService().handleMessage(message);

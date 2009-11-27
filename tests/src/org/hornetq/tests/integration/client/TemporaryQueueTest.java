@@ -76,7 +76,9 @@ public class TemporaryQueueTest extends ServiceTestBase
       session.createTemporaryQueue(address, queue);
 
       ClientProducer producer = session.createProducer(address);
-      producer.send(session.createClientMessage(false));
+      ClientMessage msg = session.createClientMessage(false); 
+ 
+      producer.send(msg);
 
       session.start();
       ClientConsumer consumer = session.createConsumer(queue);

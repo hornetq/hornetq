@@ -15,9 +15,12 @@ package org.hornetq.integration.transports.netty;
 
 import static org.hornetq.utils.DataConstants.SIZE_INT;
 
+import org.hornetq.core.buffers.impl.ChannelBufferWrapper;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.spi.BufferHandler;
+import org.hornetq.utils.DataConstants;
 import org.jboss.netty.buffer.ChannelBuffer;
+import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.handler.codec.frame.FrameDecoder;
@@ -46,19 +49,32 @@ public class HornetQFrameDecoder extends FrameDecoder
    // -------------------------------------------------------------------------------------
 
    @Override
-   protected Object decode(ChannelHandlerContext ctx, Channel channel, ChannelBuffer in) throws Exception
+   protected Object decode(final ChannelHandlerContext ctx, final Channel channel, final ChannelBuffer in) throws Exception
    {
       // TODO - we can avoid this entirely if we maintain fragmented packets in the handler
       int start = in.readerIndex();
 
       int length = handler.isReadyToHandle(new ChannelBufferWrapper(in));
+      
+      in.readerIndex(start);
+      
       if (length == -1)
-      {
-         in.readerIndex(start);
+      {                 
          return null;
       }
 
-      in.readerIndex(start + SIZE_INT);
-      return in.readBytes(length);
+      //in.readerIndex(start + SIZE_INT);
+      
+      ChannelBuffer buffer = in.readBytes(length + DataConstants.SIZE_INT);
+      
+      // FIXME - we should get Netty to give us a DynamicBuffer - seems to currently give us a non resizable buffer
+
+      ChannelBuffer newBuffer = ChannelBuffers.dynamicBuffer(buffer.writerIndex());
+      
+      newBuffer.writeBytes(buffer);
+      
+      newBuffer.readInt();
+      
+      return newBuffer;
    }
 }

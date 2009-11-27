@@ -24,7 +24,9 @@ import java.util.concurrent.Future;
 public class HttpKeepAliveRunnable implements Runnable
 {
    private final List<HttpAcceptorHandler> handlers = new ArrayList<HttpAcceptorHandler>();
+
    private boolean closed = false;
+
    private Future<?> future;
 
    public synchronized void run()
@@ -33,7 +35,7 @@ public class HttpKeepAliveRunnable implements Runnable
       {
          return;
       }
-      
+
       long time = System.currentTimeMillis();
       for (HttpAcceptorHandler handler : handlers)
       {
@@ -41,12 +43,12 @@ public class HttpKeepAliveRunnable implements Runnable
       }
    }
 
-   public synchronized void registerKeepAliveHandler(HttpAcceptorHandler httpAcceptorHandler)
+   public synchronized void registerKeepAliveHandler(final HttpAcceptorHandler httpAcceptorHandler)
    {
       handlers.add(httpAcceptorHandler);
    }
 
-   public synchronized void unregisterKeepAliveHandler(HttpAcceptorHandler httpAcceptorHandler)
+   public synchronized void unregisterKeepAliveHandler(final HttpAcceptorHandler httpAcceptorHandler)
    {
       handlers.remove(httpAcceptorHandler);
    }
@@ -54,14 +56,14 @@ public class HttpKeepAliveRunnable implements Runnable
    public void close()
    {
       if (future != null)
-      {             
+      {
          future.cancel(false);
       }
 
-      closed  = true;
+      closed = true;
    }
 
-   public synchronized void setFuture(Future<?> future)
+   public synchronized void setFuture(final Future<?> future)
    {
       this.future = future;
    }

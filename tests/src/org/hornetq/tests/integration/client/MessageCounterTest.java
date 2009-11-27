@@ -91,7 +91,7 @@ public class MessageCounterTest extends ServiceTestBase
 
          session.commit();
 
-         assertEquals("m" + i, message.getBody().readString());
+         assertEquals("m" + i, message.getBodyBuffer().readString());
       }
 
       session.close();

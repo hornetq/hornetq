@@ -13,7 +13,7 @@
 
 package org.hornetq.core.remoting;
 
-import org.hornetq.core.remoting.spi.HornetQBuffer;
+import org.hornetq.core.buffers.HornetQBuffer;
 
 /**
  * 
@@ -32,13 +32,15 @@ public interface Packet
    
    byte getType();
 
-   int encode(HornetQBuffer buffer);
+   HornetQBuffer encode(RemotingConnection connection);
       
    void decode(HornetQBuffer buffer);
    
+   /**
+    * 
+    * @return The size of the entire packet including headers, and extra data
+    */
    int getPacketSize();
-   
-   int getRequiredBufferSize();
    
    boolean isRequiresConfirmations();
 }

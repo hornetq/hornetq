@@ -12,6 +12,8 @@
  */
 package org.hornetq.core.remoting.spi;
 
+import org.hornetq.core.buffers.HornetQBuffer;
+
 /**
  * A BufferHandler
  * 

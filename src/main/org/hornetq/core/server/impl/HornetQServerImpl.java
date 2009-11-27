@@ -25,6 +25,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
@@ -51,6 +52,7 @@ import org.hornetq.core.deployers.impl.SecurityDeployer;
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.filter.impl.FilterImpl;
+import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.journal.JournalLoadInformation;
 import org.hornetq.core.journal.impl.SyncSpeedTest;
 import org.hornetq.core.logging.LogDelegateFactory;
@@ -62,7 +64,6 @@ import org.hornetq.core.paging.PagingManager;
 import org.hornetq.core.paging.impl.PagingManagerImpl;
 import org.hornetq.core.paging.impl.PagingStoreFactoryNIO;
 import org.hornetq.core.persistence.GroupingInfo;
-import org.hornetq.core.persistence.OperationContext;
 import org.hornetq.core.persistence.QueueBindingInfo;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager;
@@ -94,6 +95,7 @@ import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.MemoryManager;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.QueueFactory;
+import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.ServerSession;
 import org.hornetq.core.server.cluster.ClusterManager;
 import org.hornetq.core.server.cluster.Transformer;
@@ -353,7 +355,7 @@ public class HornetQServerImpl implements HornetQServer
 
       // we stop the remoting service outside a lock
       remotingService.stop();
-      
+
       synchronized (this)
       {
          // Stop the deployers
@@ -396,13 +398,13 @@ public class HornetQServerImpl implements HornetQServer
             replicationEndpoint.stop();
             replicationEndpoint = null;
          }
-         
+
          if (replicationManager != null)
          {
             replicationManager.stop();
             replicationManager = null;
          }
-         
+
          if (securityManager != null)
          {
             securityManager.stop();
@@ -426,7 +428,7 @@ public class HornetQServerImpl implements HornetQServer
          {
             log.debug("Waiting for " + task);
          }
-         
+
          threadPool.shutdown();
 
          scheduledPool = null;
@@ -609,7 +611,7 @@ public class HornetQServerImpl implements HornetQServer
                                                      final boolean preAcknowledge,
                                                      final boolean xa,
                                                      final int sendWindowSize) throws Exception
-   {      
+   {
       if (!started)
       {
          throw new HornetQException(HornetQException.SESSION_CREATION_REJECTED, "Server not started");
@@ -628,7 +630,7 @@ public class HornetQServerImpl implements HornetQServer
          throw new HornetQException(HornetQException.INCOMPATIBLE_CLIENT_SERVER_VERSIONS,
                                     "Server and client versions incompatible");
       }
-
+      
       if (!checkActivate())
       {
          // Backup server is not ready to accept connections
@@ -652,7 +654,7 @@ public class HornetQServerImpl implements HornetQServer
       }
 
       Channel channel = connection.getChannel(channelID, sendWindowSize);
-      
+
       Executor sessionExecutor = executorFactory.getExecutor();
 
       final ServerSessionImpl session = new ServerSessionImpl(name,
@@ -678,8 +680,11 @@ public class HornetQServerImpl implements HornetQServer
 
       sessions.put(name, session);
 
-      // The executor on the OperationContext here has to be the same as the session, or we would have ordering issues on messages
-      ServerSessionPacketHandler handler = new ServerSessionPacketHandler(session, storageManager.newContext(sessionExecutor), storageManager);
+      // The executor on the OperationContext here has to be the same as the session, or we would have ordering issues
+      // on messages
+      ServerSessionPacketHandler handler = new ServerSessionPacketHandler(session,
+                                                                          storageManager.newContext(sessionExecutor),
+                                                                          storageManager);
 
       session.setHandler(handler);
 
@@ -965,6 +970,7 @@ public class HornetQServerImpl implements HornetQServer
             if (replicationEndpoint == null)
             {
                log.warn("There is no replication endpoint, can't activate this backup server");
+               
                throw new HornetQException(HornetQException.INTERNAL_ERROR, "Can't activate the server");
             }
 
@@ -973,7 +979,7 @@ public class HornetQServerImpl implements HornetQServer
 
          // Complete the startup procedure
 
-         log.info("Activating server");
+         log.info("Activating backup server");
 
          configuration.setBackup(false);
 
@@ -1183,6 +1189,11 @@ public class HornetQServerImpl implements HornetQServer
       }
 
       initialised = true;
+
+      if (System.getProperty("org.hornetq.opt.routeblast") != null)
+      {
+         runRouteBlast();
+      }
    }
 
    /**
@@ -1467,6 +1478,121 @@ public class HornetQServerImpl implements HornetQServer
       catch (Exception e)
       {
          throw new IllegalArgumentException("Error instantiating transformer class \"" + className + "\"", e);
+      }
+   }
+
+   private LinkedBlockingQueue<RouteBlastRunner> available = new LinkedBlockingQueue<RouteBlastRunner>();
+
+   private void runRouteBlast() throws Exception
+   {
+      log.info("*** running route blast");
+      final int numThreads = 2;
+
+      final int numClients = 200;
+
+      for (int i = 0; i < numClients; i++)
+      {
+         RouteBlastRunner run = new RouteBlastRunner(new SimpleString("fooaddress" + i));
+
+         run.setup();
+
+         available.add(run);
+      }
+      
+      log.info("setup, now running");
+
+      Set<Thread> runners = new HashSet<Thread>();
+
+      for (int i = 0; i < numThreads; i++)
+      {
+         Thread t = new Thread(new Foo());
+
+         runners.add(t);
+
+         t.start();
+      }
+
+      for (Thread t : runners)
+      {
+         t.join();
+      }
+   }
+
+   class Foo implements Runnable
+   {
+      public void run()
+      {
+         for (int i = 0; i < 1000000; i++)
+         {
+            try
+            {
+               RouteBlastRunner runner = available.take();
+
+               runner.run();
+            }
+            catch (InterruptedException e)
+            {
+               log.error("Interrupted", e);
+            }
+         }
+      }
+   }
+
+   class RouteBlastRunner implements Runnable
+   {
+      private SimpleString address;
+
+      RouteBlastRunner(SimpleString address)
+      {
+         this.address = address;
+      }
+
+      public void setup() throws Exception
+      {
+         final int numQueues = 1;
+
+         for (int i = 0; i < numQueues; i++)
+         {
+            createQueue(address, new SimpleString(address + ".hq.route_blast_queue" + i), null, true, false, true);
+         }
+      }
+
+      public void run()
+      {
+         try
+         {
+            final int bodySize = 1024;
+
+            byte[] body = new byte[bodySize];
+
+            final ServerMessage msg = new ServerMessageImpl(storageManager.generateUniqueID(), 1500);
+
+            msg.getBodyBuffer().writeBytes(body);
+
+            msg.setDestination(address);
+
+            msg.setDurable(true);
+            
+            postOffice.route(msg);
+
+            storageManager.afterCompleteOperations(new IOAsyncTask()
+            {
+               public void onError(int errorCode, String errorMessage)
+               {
+                  log.error("Error processing IOCallback code = " + errorCode + " message = " + errorMessage);
+               }
+
+               public void done()
+               {                  
+                  available.add(RouteBlastRunner.this);
+               }
+            });
+         }
+         catch (Exception e)
+         {
+            log.error("Failed to run runner", e);
+         }
+
       }
    }
 

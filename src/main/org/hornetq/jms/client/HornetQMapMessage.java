@@ -55,12 +55,7 @@ public class HornetQMapMessage extends HornetQMessage implements MapMessage
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
-   public HornetQMapMessage()
-   {
-      super(HornetQMapMessage.TYPE);
 
-      map = new TypedProperties();
-   }
    /*
     * This constructor is used to construct messages prior to sending
     */
@@ -74,6 +69,10 @@ public class HornetQMapMessage extends HornetQMessage implements MapMessage
    public HornetQMapMessage(final ClientMessage message, final ClientSession session)
    {
       super(message, session);
+   }
+   
+   public HornetQMapMessage()
+   {      
    }
 
    /**
@@ -371,8 +370,7 @@ public class HornetQMapMessage extends HornetQMessage implements MapMessage
    
    public void doBeforeSend() throws Exception
    {
-      message.getBody().clear();
-      map.encode(message.getBody());
+      map.encode(message.getBodyBuffer());
       
       super.doBeforeSend();
    }
@@ -381,7 +379,7 @@ public class HornetQMapMessage extends HornetQMessage implements MapMessage
    {        
       super.doBeforeReceive();
       
-      map.decode(message.getBody());
+      map.decode(message.getBodyBuffer());
    }
    
    // Package protected ---------------------------------------------

@@ -23,12 +23,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
-import org.hornetq.core.buffers.ChannelBuffers;
 import org.hornetq.core.client.impl.ClientMessageImpl;
 import org.hornetq.core.client.management.impl.ManagementHelper;
 import org.hornetq.core.exception.HornetQException;
@@ -114,30 +115,29 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
    private static final Logger log = Logger.getLogger(ServerSessionImpl.class);
 
    // Static -------------------------------------------------------------------------------
-   
-   private static int offset;
 
-   static
-   {
-      try
-      {
-         ServerMessage msg = new ServerMessageImpl();
-         
-         msg.setBody(ChannelBuffers.dynamicBuffer(0));
-   
-         msg.setDestination(new SimpleString("foobar"));
-   
-         int es = msg.getEncodeSize();
-   
-         int me = msg.getMemoryEstimate();
-   
-         offset = MessageReferenceImpl.getMemoryEstimate() + me - es;
-      }
-      catch (Exception e)
-      {
-         log.error("Failed to initialise mult and offset", e);
-      }
-   }
+   // TODO not actually used currently
+   // private static int offset;
+   //
+   // static
+   // {
+   // try
+   // {
+   // ServerMessage msg = new ServerMessageImpl(1, ChannelBuffers.EMPTY_BUFFER);
+   //
+   // msg.setDestination(new SimpleString("foobar"));
+   //   
+   // int es = msg.getEncodeSize();
+   //   
+   // int me = msg.getMemoryEstimate();
+   //   
+   // offset = MessageReferenceImpl.getMemoryEstimate() + me - es;
+   // }
+   // catch (Exception e)
+   // {
+   // log.error("Failed to initialise mult and offset", e);
+   // }
+   // }
 
    // Attributes ----------------------------------------------------------------------------
 
@@ -1437,6 +1437,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
 
    public void handleSendLargeMessage(final SessionSendLargeMessage packet)
    {
+
       // need to create the LargeMessage before continue
       long id = storageManager.generateUniqueID();
 
@@ -1454,18 +1455,60 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
          sendResponse(packet, null, false, false);
       }
    }
+   
+  
+   
+   public void handleSend2(final ServerMessage message)
+   {
+      try
+      {
+         long id = storageManager.generateUniqueID();
+
+         message.setMessageID(id);
+         message.encodeMessageIDToBuffer();
+
+         if (message.getDestination().equals(managementAddress))
+         {
+            // It's a management message
+
+            handleManagementMessage(message);
+         }
+         else
+         {
+            send(message);
+         }
+      }
+      catch (Exception e)
+      {
+         log.error("Failed to send message", e);
+
+      }
+      finally
+      {
+         try
+         {
+            releaseOutStanding(message, message.getEncodeSize());
+         }
+         catch (Exception e)
+         {
+            log.error("Failed to release outstanding credits", e);
+         }
+      }
+      
+   }
 
    public void handleSend(final SessionSendMessage packet)
    {
       Packet response = null;
       
-      ServerMessage message = packet.getServerMessage();
+      ServerMessage message = (ServerMessage)packet.getMessage();
 
       try
       {
          long id = storageManager.generateUniqueID();
 
          message.setMessageID(id);
+         message.encodeMessageIDToBuffer();
 
          if (message.getDestination().equals(managementAddress))
          {
@@ -1511,7 +1554,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
          }
       }
 
-      sendResponse(packet, response, false, false);
+      sendResponse(packet, response, false, false);      
    }
 
    public void handleSendContinuations(final SessionSendContinuationMessage packet)
@@ -1528,7 +1571,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
          // Immediately release the credits for the continuations- these don't contrinute to the in-memory size
          // of the message
 
-         releaseOutStanding(currentLargeMessage, packet.getRequiredBufferSize());
+         releaseOutStanding(currentLargeMessage, packet.getPacketSize());
 
          currentLargeMessage.addBytes(packet.getBody());
 
@@ -1595,7 +1638,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
             }
          }
       });
-
+      
       if (gotCredits > 0)
       {
          sendProducerCredits(holder, gotCredits, address);
@@ -1720,8 +1763,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
                              final boolean closeChannel)
    {
       storageManager.afterCompleteOperations(new IOAsyncTask()
-      {
-         
+      {         
          public void onError(int errorCode, String errorMessage)
          {
             log.warn("Error processing IOCallback code = " + errorCode + " message = " + errorMessage);
@@ -1730,7 +1772,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
             
             doSendResponse(confirmPacket, exceptionMessage, flush, closeChannel);
          }
-         
+
          public void done()
          {
             doSendResponse(confirmPacket, response, flush, closeChannel);
@@ -1752,7 +1794,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       if (confirmPacket != null)
       {
          channel.confirm(confirmPacket);
-         
+
          if (flush)
          {
             channel.flushConfirmations();
@@ -1941,14 +1983,14 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
    }
 
    private void sendProducerCredits(final CreditManagerHolder holder, final int credits, final SimpleString address)
-   {      
+   {
       holder.outstandingCredits += credits;
 
-      Packet packet = new SessionProducerCreditsMessage(credits, address, offset);
+      Packet packet = new SessionProducerCreditsMessage(credits, address, -1);
 
       channel.send(packet);
    }
-   
+
    private void send(final ServerMessage msg) throws Exception
    {
       // Look up the paging store

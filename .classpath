@@ -100,7 +100,7 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="tests/tmpfiles"/>
 	<classpathentry kind="lib" path="thirdparty/net/java/dev/javacc/lib/javacc.jar"/>
-	<classpathentry kind="lib" path="thirdparty/org/jboss/netty/lib/netty.jar"/>
+	<classpathentry kind="lib" path="thirdparty/org/jboss/netty/lib/netty.jar" sourcepath="/home/tim/workspace/netty-3.1.5.GA/src/main"/>
 	<classpathentry kind="lib" path="thirdparty/log4j/lib/log4j.jar"/>
 	<classpathentry kind="lib" path="thirdparty/org/jboss/naming/lib/jnpserver.jar"/>
 	<classpathentry kind="lib" path="thirdparty/org/jboss/security/lib/jbosssx.jar"/>

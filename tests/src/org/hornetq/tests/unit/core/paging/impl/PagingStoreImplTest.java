@@ -28,7 +28,8 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import javax.transaction.xa.Xid;
 
-import org.hornetq.core.buffers.ChannelBuffers;
+import org.hornetq.core.buffers.HornetQBuffer;
+import org.hornetq.core.buffers.HornetQBuffers;
 import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.journal.JournalLoadInformation;
 import org.hornetq.core.journal.SequentialFile;
@@ -49,7 +50,7 @@ import org.hornetq.core.persistence.QueueBindingInfo;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.PostOffice;
-import org.hornetq.core.remoting.spi.HornetQBuffer;
+import org.hornetq.core.remoting.impl.wireformat.PacketImpl;
 import org.hornetq.core.replication.ReplicationManager;
 import org.hornetq.core.server.LargeServerMessage;
 import org.hornetq.core.server.MessageReference;
@@ -65,6 +66,7 @@ import org.hornetq.tests.unit.core.journal.impl.fakes.FakeSequentialFileFactory;
 import org.hornetq.tests.unit.core.server.impl.fakes.FakePostOffice;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
+import org.hornetq.utils.DataConstants;
 import org.hornetq.utils.Pair;
 import org.hornetq.utils.SimpleString;
 import org.hornetq.utils.UUID;
@@ -109,7 +111,7 @@ public class PagingStoreImplTest extends UnitTestCase
 
       assertEquals(nr1, trans.getNumberOfMessages());
 
-      HornetQBuffer buffer = ChannelBuffers.buffer(trans.getEncodeSize());
+      HornetQBuffer buffer = HornetQBuffers.fixedBuffer(trans.getEncodeSize());
 
       trans.encode(buffer);
 
@@ -207,7 +209,7 @@ public class PagingStoreImplTest extends UnitTestCase
       buffers.add(buffer);
       SimpleString destination = new SimpleString("test");
 
-      ServerMessage msg = createMessage(storeImpl, destination, buffer);
+      ServerMessage msg = createMessage(1, storeImpl, destination, buffer);
 
       assertTrue(storeImpl.isPaging());
 
@@ -262,15 +264,17 @@ public class PagingStoreImplTest extends UnitTestCase
       storeImpl.startPaging();
 
       List<HornetQBuffer> buffers = new ArrayList<HornetQBuffer>();
+      
+      int numMessages = 10;
 
-      for (int i = 0; i < 10; i++)
+      for (int i = 0; i < numMessages; i++)
       {
 
          HornetQBuffer buffer = createRandomBuffer(i + 1l, 10);
 
          buffers.add(buffer);
 
-         ServerMessage msg = createMessage(storeImpl, destination, buffer);
+         ServerMessage msg = createMessage(i, storeImpl, destination, buffer);
 
          assertTrue(storeImpl.page(msg, true));
       }
@@ -285,7 +289,7 @@ public class PagingStoreImplTest extends UnitTestCase
 
       List<PagedMessage> msg = page.read();
 
-      assertEquals(10, msg.size());
+      assertEquals(numMessages, msg.size());
       assertEquals(1, storeImpl.getNumberOfPages());
 
       page = storeImpl.depage();
@@ -294,10 +298,16 @@ public class PagingStoreImplTest extends UnitTestCase
 
       assertEquals(0, storeImpl.getNumberOfPages());
 
-      for (int i = 0; i < 10; i++)
+      for (int i = 0; i < numMessages; i++)
       {
-         assertEquals(0, msg.get(i).getMessage(null).getMessageID());
-         assertEqualsByteArrays(buffers.get(i).array(), msg.get(i).getMessage(null).getBody().array());
+         HornetQBuffer horn1 = buffers.get(i);
+         HornetQBuffer horn2 = msg.get(i).getMessage(null).getBodyBuffer();
+         horn1.resetReaderIndex();
+         horn2.resetReaderIndex();
+         for (int j = 0 ; j < horn1.writerIndex(); j++)
+         {
+            assertEquals(horn1.readByte(), horn2.readByte());
+         }
       }
 
    }
@@ -344,7 +354,7 @@ public class PagingStoreImplTest extends UnitTestCase
             storeImpl.forceAnotherPage();
          }
 
-         ServerMessage msg = createMessage(storeImpl, destination, buffer);
+         ServerMessage msg = createMessage(i, storeImpl, destination, buffer);
 
          assertTrue(storeImpl.page(msg, true));
       }
@@ -368,7 +378,7 @@ public class PagingStoreImplTest extends UnitTestCase
          for (int i = 0; i < 5; i++)
          {
             assertEquals(0, msg.get(i).getMessage(null).getMessageID());
-            assertEqualsByteArrays(buffers.get(pageNr * 5 + i).array(), msg.get(i).getMessage(null).getBody().array());
+            assertEqualsBuffers(18, buffers.get(pageNr * 5 + i), msg.get(i).getMessage(null).getBodyBuffer());
          }
       }
 
@@ -376,7 +386,7 @@ public class PagingStoreImplTest extends UnitTestCase
 
       assertTrue(storeImpl.isPaging());
 
-      ServerMessage msg = createMessage(storeImpl, destination, buffers.get(0));
+      ServerMessage msg = createMessage(1, storeImpl, destination, buffers.get(0));
 
       assertTrue(storeImpl.page(msg, true));
 
@@ -412,7 +422,7 @@ public class PagingStoreImplTest extends UnitTestCase
 
       assertEquals(0l, msgs.get(0).getMessage(null).getMessageID());
 
-      assertEqualsByteArrays(buffers.get(0).array(), msgs.get(0).getMessage(null).getBody().array());
+      assertEqualsBuffers(18, buffers.get(0), msgs.get(0).getMessage(null).getBodyBuffer());
 
       assertEquals(1, storeImpl.getNumberOfPages());
 
@@ -495,7 +505,7 @@ public class PagingStoreImplTest extends UnitTestCase
                   // Each thread will Keep paging until all the messages are depaged.
                   // This is possible because the depage thread is not actually reading the pages.
                   // Just using the internal API to remove it from the page file system
-                  ServerMessage msg = createMessage(storeImpl, destination, createRandomBuffer(id, 5));
+                  ServerMessage msg = createMessage(id, storeImpl, destination, createRandomBuffer(id, 5));
                   if (storeImpl.page(msg, false))
                   {
                      buffers.put(id, msg);
@@ -591,14 +601,14 @@ public class PagingStoreImplTest extends UnitTestCase
 
          for (PagedMessage msg : msgs)
          {
-            long id = msg.getMessage(null).getBody().readLong();
-            msg.getMessage(null).getBody().resetReaderIndex();
+            long id = msg.getMessage(null).getBodyBuffer().readLong();
+            msg.getMessage(null).getBodyBuffer().resetReaderIndex();
 
             ServerMessage msgWritten = buffers.remove(id);
             buffers2.put(id, msg.getMessage(null));
             assertNotNull(msgWritten);
             assertEquals(msg.getMessage(null).getDestination(), msgWritten.getDestination());
-            assertEqualsByteArrays(msgWritten.getBody().array(), msg.getMessage(null).getBody().array());
+            assertEqualsBuffers(10, msgWritten.getBodyBuffer(), msg.getMessage(null).getBodyBuffer());
          }
       }
 
@@ -639,7 +649,7 @@ public class PagingStoreImplTest extends UnitTestCase
       assertEquals(numberOfPages, storeImpl2.getNumberOfPages());
 
       long lastMessageId = messageIdGenerator.incrementAndGet();
-      ServerMessage lastMsg = createMessage(storeImpl, destination, createRandomBuffer(lastMessageId, 5));
+      ServerMessage lastMsg = createMessage(lastMessageId, storeImpl, destination, createRandomBuffer(lastMessageId, 5));
 
       storeImpl2.page(lastMsg, true);
       buffers2.put(lastMessageId, lastMsg);
@@ -664,11 +674,11 @@ public class PagingStoreImplTest extends UnitTestCase
          for (PagedMessage msg : msgs)
          {
 
-            long id = msg.getMessage(null).getBody().readLong();
+            long id = msg.getMessage(null).getBodyBuffer().readLong();
             ServerMessage msgWritten = buffers2.remove(id);
             assertNotNull(msgWritten);
             assertEquals(msg.getMessage(null).getDestination(), msgWritten.getDestination());
-            assertEqualsByteArrays(msgWritten.getBody().array(), msg.getMessage(null).getBody().array());
+            assertEqualsByteArrays(msgWritten.getBodyBuffer().toByteBuffer().array(), msg.getMessage(null).getBodyBuffer().toByteBuffer().array());
          }
       }
 
@@ -677,9 +687,8 @@ public class PagingStoreImplTest extends UnitTestCase
       lastPage.close();
       assertEquals(1, lastMessages.size());
 
-      lastMessages.get(0).getMessage(null).getBody().resetReaderIndex();
-      assertEquals(lastMessages.get(0).getMessage(null).getBody().readLong(), lastMessageId);
-      assertEqualsByteArrays(lastMessages.get(0).getMessage(null).getBody().array(), lastMsg.getBody().array());
+      lastMessages.get(0).getMessage(null).getBodyBuffer().resetReaderIndex();
+      assertEquals(lastMessages.get(0).getMessage(null).getBodyBuffer().readLong(), lastMessageId);
 
       assertEquals(0, buffers2.size());
 
@@ -704,29 +713,35 @@ public class PagingStoreImplTest extends UnitTestCase
       return new FakePostOffice();
    }
 
-   private ServerMessage createMessage(final PagingStore store,
+   private ServerMessage createMessage(final long id, final PagingStore store,
                                        final SimpleString destination,
                                        final HornetQBuffer buffer)
    {
-      ServerMessage msg = new ServerMessageImpl((byte)1, true, 0, System.currentTimeMillis(), (byte)0, buffer);
+      ServerMessage msg = new ServerMessageImpl(id, 50 + buffer.capacity());
 
       msg.setDestination(destination);
 
       msg.setPagingStore(store);
+      
+      msg.getBodyBuffer().resetReaderIndex();
+      msg.getBodyBuffer().resetWriterIndex();
+      
+      msg.getBodyBuffer().writeBytes(buffer, buffer.capacity());
 
       return msg;
    }
 
    private HornetQBuffer createRandomBuffer(final long id, final int size)
    {
-      HornetQBuffer buffer = ChannelBuffers.buffer(size + 8);
-
+      HornetQBuffer buffer = HornetQBuffers.fixedBuffer(size + 8);
+      
       buffer.writeLong(id);
 
       for (int j = 8; j < buffer.capacity(); j++)
       {
-         buffer.writeByte(RandomUtil.randomByte());
+         buffer.writeByte((byte)66);
       }
+      
       return buffer;
    }
 
@@ -1276,6 +1291,12 @@ public class PagingStoreImplTest extends UnitTestCase
        */
       public void setContext(OperationContext context)
       {
+      }
+
+      public void storeReference(long queueID, long messageID, boolean last) throws Exception
+      {
+         // TODO Auto-generated method stub
+         
       }
 
    }

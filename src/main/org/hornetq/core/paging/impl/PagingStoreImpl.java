@@ -280,7 +280,7 @@ public class PagingStoreImpl implements TestSupportPageStore
    }
 
    public void addSize(final ServerMessage message, final boolean add)
-   {
+   {            
       long size = message.getMemoryEstimate();
 
       if (add)
@@ -300,7 +300,7 @@ public class PagingStoreImpl implements TestSupportPageStore
    public void addSize(final MessageReference reference, final boolean add)
    {
       long size = MessageReferenceImpl.getMemoryEstimate();
-
+      
       if (add)
       {
          checkReleaseProducerFlowControlCredits(size);

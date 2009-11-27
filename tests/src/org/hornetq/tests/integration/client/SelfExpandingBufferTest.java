@@ -13,13 +13,15 @@
 
 package org.hornetq.tests.integration.client;
 
+import org.hornetq.core.buffers.HornetQBuffer;
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
 import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.client.ClientSessionFactory;
-import org.hornetq.core.remoting.spi.HornetQBuffer;
+import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.utils.SimpleString;
 
@@ -37,6 +39,9 @@ public class SelfExpandingBufferTest extends ServiceTestBase
 
    // Constants -----------------------------------------------------
 
+   private static final Logger log = Logger.getLogger(SelfExpandingBufferTest.class);
+
+   
    // Attributes ----------------------------------------------------
 
    HornetQServer service;
@@ -49,20 +54,29 @@ public class SelfExpandingBufferTest extends ServiceTestBase
 
    // Public --------------------------------------------------------
 
-   public void testSelfExpandingBufferNetty() throws Exception
+   public void testSelfExpandingBufferNettyPersistent() throws Exception
    {
-      testSelfExpandingBuffer(true);
+      testSelfExpandingBuffer(true, true);
    }
 
-   public void testSelfExpandingBufferInVM() throws Exception
+   public void testSelfExpandingBufferInVMPersistent() throws Exception
    {
-      testSelfExpandingBuffer(false);
+      testSelfExpandingBuffer(false, true);
+   }
+   
+   public void testSelfExpandingBufferNettyNonPersistent() throws Exception
+   {
+      testSelfExpandingBuffer(true, false);
    }
 
-   public void testSelfExpandingBuffer(boolean netty) throws Exception
+   public void testSelfExpandingBufferInVMNonPersistent() throws Exception
    {
+      testSelfExpandingBuffer(false, false);
+   }
 
-      setUpService(netty);
+   private void testSelfExpandingBuffer(boolean netty, boolean persistent) throws Exception
+   {
+      setUpService(netty, persistent);
 
       ClientSessionFactory factory;
 
@@ -83,15 +97,20 @@ public class SelfExpandingBufferTest extends ServiceTestBase
          session.createQueue(ADDRESS, ADDRESS, true);
 
          ClientMessage msg = session.createClientMessage(true);
+                  
+         HornetQBuffer buffer = msg.getBodyBuffer();
+         
+         log.info("buffer is " + buffer);
+         
+         byte[] bytes = RandomUtil.randomBytes(10 * buffer.capacity());
 
-         HornetQBuffer buffer = msg.getBody();
-
-         for (int i = 0; i < 10; i++)
-         {
-            buffer.writeBytes(new byte[1024]);
-         }
+         buffer.writeBytes(bytes);
          
          ClientProducer prod = session.createProducer(ADDRESS);
+         
+         prod.send(msg);
+         
+         //Send same message again
          
          prod.send(msg);
          
@@ -100,12 +119,28 @@ public class SelfExpandingBufferTest extends ServiceTestBase
          session.start();
          
          ClientMessage msg2 = cons.receive(3000);
+         
+         assertNotNull(msg2);
+                  
+         byte[] receivedBytes = new byte[bytes.length];
+         
+//         log.info("buffer start pos should be at " + PacketImpl.PACKET_HEADERS_SIZE + DataConstants.SIZE_INT);
+//         
+//         log.info("buffer pos at " + msg2.getBodyBuffer().readerIndex());
+//         
+//         log.info("buffer length should be " + msg2.getBodyBuffer().readInt(PacketImpl.PACKET_HEADERS_SIZE));
+         
+         msg2.getBodyBuffer().readBytes(receivedBytes);
+         
+         assertEqualsByteArrays(bytes, receivedBytes);  
+         
+         msg2 = cons.receive(3000);
+         
          assertNotNull(msg2);
          
+         msg2.getBodyBuffer().readBytes(receivedBytes);
          
-         assertEquals(1024 * 10, msg2.getBodySize());
-         
-         
+         assertEqualsByteArrays(bytes, receivedBytes);  
       }
       finally
       {
@@ -117,9 +152,9 @@ public class SelfExpandingBufferTest extends ServiceTestBase
 
    // Protected -----------------------------------------------------
 
-   protected void setUpService(boolean netty) throws Exception
+   protected void setUpService(boolean netty, boolean persistent) throws Exception
    {
-      service = createServer(false, createDefaultConfig(netty));
+      service = createServer(persistent, createDefaultConfig(netty));
       service.start();
    }
 

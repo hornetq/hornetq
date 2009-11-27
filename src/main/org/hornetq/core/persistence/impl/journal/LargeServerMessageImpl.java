@@ -18,18 +18,18 @@ import static org.hornetq.utils.DataConstants.SIZE_INT;
 import java.nio.ByteBuffer;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.hornetq.core.buffers.HornetQBuffer;
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.BodyEncoder;
-import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.core.server.LargeServerMessage;
 import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.impl.ServerMessageImpl;
 
 /**
- * A JournalLargeServerMessage
+ * A LargeServerMessageImpl
  *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  * 
@@ -37,11 +37,11 @@ import org.hornetq.core.server.impl.ServerMessageImpl;
  *
  *
  */
-public class FileLargeServerMessage extends ServerMessageImpl implements LargeServerMessage
+public class LargeServerMessageImpl extends ServerMessageImpl implements LargeServerMessage
 {
    // Constants -----------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(FileLargeServerMessage.class);
+   private static final Logger log = Logger.getLogger(LargeServerMessageImpl.class);
 
    private static boolean isTrace = log.isTraceEnabled();
 
@@ -62,7 +62,7 @@ public class FileLargeServerMessage extends ServerMessageImpl implements LargeSe
 
    // Constructors --------------------------------------------------
 
-   public FileLargeServerMessage(final JournalStorageManager storageManager)
+   public LargeServerMessageImpl(final JournalStorageManager storageManager)
    {
       this.storageManager = storageManager;
    }
@@ -72,7 +72,7 @@ public class FileLargeServerMessage extends ServerMessageImpl implements LargeSe
     * @param copy
     * @param fileCopy
     */
-   private FileLargeServerMessage(final FileLargeServerMessage copy, final SequentialFile fileCopy, final long newID)
+   private LargeServerMessageImpl(final LargeServerMessageImpl copy, final SequentialFile fileCopy, final long newID)
    {
       super(copy);
       this.linkMessage = copy;
@@ -125,34 +125,6 @@ public class FileLargeServerMessage extends ServerMessageImpl implements LargeSe
    }
 
    @Override
-   public synchronized int getBodySize()
-   {
-      try
-      {
-         validateFile();
-      }
-      catch (Exception e)
-      {
-         throw new RuntimeException(e.getMessage(), e);
-      }
-      return (int)Math.min(bodySize, Integer.MAX_VALUE);
-   }
-
-   @Override
-   public synchronized long getLargeBodySize()
-   {
-      try
-      {
-         validateFile();
-      }
-      catch (Exception e)
-      {
-         throw new RuntimeException(e.getMessage(), e);
-      }
-      return bodySize;
-   }
-
-   @Override
    public synchronized int getEncodeSize()
    {
       return getHeadersAndPropertiesEncodeSize();
@@ -161,14 +133,15 @@ public class FileLargeServerMessage extends ServerMessageImpl implements LargeSe
    @Override
    public void encode(final HornetQBuffer buffer)
    {
-      encodeHeadersAndProperties(buffer);
+      super.encodeHeadersAndProperties(buffer);
    }
 
    @Override
    public void decode(final HornetQBuffer buffer)
    {
       file = null;
-      decodeHeadersAndProperties(buffer);
+
+      super.decodeHeadersAndProperties(buffer);
    }
 
    public synchronized void incrementDelayDeletionCount()
@@ -176,7 +149,7 @@ public class FileLargeServerMessage extends ServerMessageImpl implements LargeSe
       this.delayDeletionCount.incrementAndGet();
    }
 
-   public synchronized void decrementDelayDeletionCount()
+   public synchronized void decrementDelayDeletionCount() throws Exception
    {
       int count = this.delayDeletionCount.decrementAndGet();
 
@@ -186,12 +159,14 @@ public class FileLargeServerMessage extends ServerMessageImpl implements LargeSe
       }
    }
 
-   public BodyEncoder getBodyEncoder()
+   @Override
+   public BodyEncoder getBodyEncoder() throws HornetQException
    {
+      validateFile();
       return new DecodingContext();
    }
 
-   private void checkDelete()
+   private void checkDelete() throws Exception
    {
       if (getRefCount() <= 0)
       {
@@ -219,8 +194,7 @@ public class FileLargeServerMessage extends ServerMessageImpl implements LargeSe
       }
    }
 
-   @Override
-   public synchronized int decrementRefCount(MessageReference reference)
+   public synchronized int decrementRefCount(MessageReference reference) throws Exception
    {
       int currentRefCount = super.decrementRefCount(reference);
 
@@ -285,7 +259,7 @@ public class FileLargeServerMessage extends ServerMessageImpl implements LargeSe
    }
 
    @Override
-   public synchronized ServerMessage copy(final long newID) throws Exception
+   public synchronized ServerMessage copy(final long newID)
    {
       incrementDelayDeletionCount();
 
@@ -298,8 +272,8 @@ public class FileLargeServerMessage extends ServerMessageImpl implements LargeSe
 
       SequentialFile newfile = storageManager.createFileForLargeMessage(idToUse, durable);
 
-      ServerMessage newMessage = new FileLargeServerMessage(linkMessage == null ? this
-                                                                               : (FileLargeServerMessage)linkMessage,
+      ServerMessage newMessage = new LargeServerMessageImpl(linkMessage == null ? this
+                                                                               : (LargeServerMessageImpl)linkMessage,
                                                             newfile,
                                                             newID);
 
@@ -324,21 +298,29 @@ public class FileLargeServerMessage extends ServerMessageImpl implements LargeSe
 
    // Private -------------------------------------------------------
 
-   private synchronized void validateFile() throws Exception
+   private synchronized void validateFile() throws HornetQException
    {
-      if (file == null)
+      try
       {
-         if (messageID <= 0)
+         if (file == null)
          {
-            throw new RuntimeException("MessageID not set on LargeMessage");
+            if (messageID <= 0)
+            {
+               throw new RuntimeException("MessageID not set on LargeMessage");
+            }
+   
+            file = storageManager.createFileForLargeMessage(getMessageID(), durable);
+   
+            file.open();
+   
+            bodySize = file.size();
+   
          }
-
-         file = storageManager.createFileForLargeMessage(getMessageID(), durable);
-
-         file.open();
-
-         bodySize = file.size();
-
+      }
+      catch (Exception e)
+      {
+         // TODO: There is an IO_ERROR on trunk now, this should be used here instead
+         throw new HornetQException(HornetQException.INTERNAL_ERROR, e.getMessage(), e);
       }
    }
 
@@ -426,6 +408,14 @@ public class FileLargeServerMessage extends ServerMessageImpl implements LargeSe
          }
 
          return bytesRead;
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.message.BodyEncoder#getLargeBodySize()
+       */
+      public long getLargeBodySize()
+      {
+         return bodySize;
       }
    }
 }

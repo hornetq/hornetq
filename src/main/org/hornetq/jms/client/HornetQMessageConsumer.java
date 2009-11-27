@@ -219,7 +219,7 @@ public class HornetQMessageConsumer implements MessageConsumer, QueueReceiver, T
             }
             catch (Exception e)
             {
-               log.error("Failed to prepare message", e);
+               log.error("Failed to prepare message for delivery", e);
 
                return null;
             }

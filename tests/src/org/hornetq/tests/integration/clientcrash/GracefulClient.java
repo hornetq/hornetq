@@ -61,7 +61,7 @@ public class GracefulClient
 
          ClientMessage message = session.createClientMessage(HornetQTextMessage.TYPE, false, 0,
                System.currentTimeMillis(), (byte) 1);
-         message.getBody().writeString(messageText);
+         message.getBodyBuffer().writeString(messageText);
          producer.send(message);
 
          session.start();

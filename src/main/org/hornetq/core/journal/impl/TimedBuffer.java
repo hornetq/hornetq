@@ -22,10 +22,10 @@ import java.util.TimerTask;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import org.hornetq.core.buffers.ChannelBuffers;
+import org.hornetq.core.buffers.HornetQBuffer;
+import org.hornetq.core.buffers.HornetQBuffers;
 import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.utils.VariableLatch;
 
 /**
@@ -81,6 +81,8 @@ public class TimedBuffer
 
    private volatile long bytesFlushed;
 
+   private volatile long flushesDone;
+
    private Timer logRatesTimer;
 
    private TimerTask logRatesTimerTask;
@@ -94,8 +96,8 @@ public class TimedBuffer
    // Public --------------------------------------------------------
 
    public TimedBuffer(final int size, final long timeout, final boolean flushOnSync, final boolean logRates)
-   {
-      bufferSize = size;
+   {     
+      this.bufferSize = size;
       this.logRates = logRates;
       if (logRates)
       {
@@ -103,7 +105,7 @@ public class TimedBuffer
       }
       // Setting the interval for nano-sleeps
 
-      buffer = ChannelBuffers.buffer(bufferSize);
+      buffer = HornetQBuffers.fixedBuffer(bufferSize);
       buffer.clear();
       bufferLimit = 0;
 
@@ -126,6 +128,7 @@ public class TimedBuffer
 
       timerThread.start();
 
+      log.info("log rates "  + logRates);
       if (logRates)
       {
          logRatesTimerTask = new LogRatesTimerTask();
@@ -226,7 +229,7 @@ public class TimedBuffer
       }
    }
 
-   public synchronized void addBytes(final byte[] bytes, final boolean sync, final IOAsyncTask callback)
+   public synchronized void addBytes(final HornetQBuffer bytes, final boolean sync, final IOAsyncTask callback)
    {
       if (buffer.writerIndex() == 0)
       {
@@ -234,7 +237,7 @@ public class TimedBuffer
          latchTimer.down();
       }
 
-      buffer.writeBytes(bytes);
+      buffer.writeBytes(bytes, bytes.capacity());
 
       callbacks.add(callback);
 
@@ -252,7 +255,7 @@ public class TimedBuffer
             flush();
          }
       }
-
+      
       if (buffer.writerIndex() == bufferLimit)
       {
          flush();
@@ -285,7 +288,7 @@ public class TimedBuffer
             // Putting a byteArray on a native buffer is much faster, since it will do in a single native call.
             // Using bufferToFlush.put(buffer) would make several append calls for each byte
    
-            bufferToFlush.put(buffer.array(), 0, pos);
+            bufferToFlush.put(buffer.toByteBuffer().array(), 0, pos);
 
             callbacksToCall = callbacks;
             
@@ -298,6 +301,8 @@ public class TimedBuffer
    
             buffer.clear();
             bufferLimit = 0;
+
+            flushesDone++;
          }
       }
       
@@ -307,7 +312,6 @@ public class TimedBuffer
       {
          bufferObserver.flushBuffer(bufferToFlush, useSync, callbacksToCall);
       }
-
    }
 
    // Package protected ---------------------------------------------
@@ -327,7 +331,7 @@ public class TimedBuffer
          {
             if (bufferObserver != null)
             {
-               flush();
+                flush();
             }
          }
          finally
@@ -357,11 +361,15 @@ public class TimedBuffer
             {
                double rate = 1000 * ((double)bytesFlushed) / (now - lastExecution);
                log.info("Write rate = " + rate + " bytes / sec or " + (long)(rate / (1024 * 1024)) + " MiB / sec");
+               double flushRate = 1000 * ((double)flushesDone) / (now - lastExecution);              
+               log.info("Flush rate = " + flushRate + " flushes / sec");
             }
 
             lastExecution = now;
 
             bytesFlushed = 0;
+
+            flushesDone = 0;           
          }
       }
 

@@ -14,6 +14,7 @@
 package org.hornetq.jms.tests.message;
 
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.jms.DeliveryMode;
 import javax.jms.Message;
@@ -231,11 +232,9 @@ public class JMSExpirationHeaderTest extends MessageHeaderTestBase
       assertEquals(m.getJMSMessageID(), result.getJMSMessageID());
    }
 
-
-
    public void testExpirationOnReceive() throws Exception
    {
-      expectedMessage = new HornetQMessage();
+      final AtomicBoolean received = new AtomicBoolean(true);
 
       queueProducer.send(queueProducerSession.createMessage(), DeliveryMode.NON_PERSISTENT, 4, 2000);
 
@@ -258,6 +257,11 @@ public class JMSExpirationHeaderTest extends MessageHeaderTestBase
                
                //NOTE on close, the receive() call will return with null
                log.trace("Receive exited without exception:" + expectedMessage);
+               
+               if (expectedMessage == null)
+               {
+                  received.set(false);
+               }
             }
             catch(Exception e)
             {
@@ -287,7 +291,7 @@ public class JMSExpirationHeaderTest extends MessageHeaderTestBase
 
       log.trace("Expected message:" + expectedMessage);
       
-      assertNull(expectedMessage);      
+      assertFalse(received.get());     
    }
 
    /*

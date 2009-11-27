@@ -1772,7 +1772,7 @@ public class FailoverTest extends FailoverTestBase
          {
             ClientMessage message = session.createClientMessage(true);
 
-            message.getBody().writeString("message");
+            message.getBodyBuffer().writeString("message");
 
             try
             {
@@ -2148,7 +2148,7 @@ public class FailoverTest extends FailoverTestBase
     */
    protected void assertMessageBody(int i, ClientMessage message)
    {
-      assertEquals("message" + i, message.getBody().readString());
+      assertEquals("message" + i, message.getBodyBuffer().readString());
    }
 
    /**
@@ -2158,7 +2158,7 @@ public class FailoverTest extends FailoverTestBase
     */
    protected void setBody(int i, ClientMessage message) throws Exception
    {
-      message.getBody().writeString("message" + i);
+      message.getBodyBuffer().writeString("message" + i);
    }
 
    // Private -------------------------------------------------------
@@ -2181,7 +2181,7 @@ public class FailoverTest extends FailoverTestBase
                                                              System.currentTimeMillis(),
                                                              (byte)1);
          message.putIntProperty(new SimpleString("count"), i);
-         message.getBody().writeString("aardvarks");
+         message.getBodyBuffer().writeString("aardvarks");
          producer.send(message);
       }
 
@@ -2193,7 +2193,7 @@ public class FailoverTest extends FailoverTestBase
       {
          ClientMessage message2 = consumer.receive();
 
-         assertEquals("aardvarks", message2.getBody().readString());
+         assertEquals("aardvarks", message2.getBodyBuffer().readString());
 
          assertEquals(i, message2.getObjectProperty(new SimpleString("count")));
 

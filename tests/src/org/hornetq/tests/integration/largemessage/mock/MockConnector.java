@@ -17,12 +17,12 @@ import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
+import org.hornetq.core.buffers.HornetQBuffer;
 import org.hornetq.core.remoting.impl.invm.InVMConnection;
 import org.hornetq.core.remoting.impl.invm.InVMConnector;
 import org.hornetq.core.remoting.spi.BufferHandler;
 import org.hornetq.core.remoting.spi.Connection;
 import org.hornetq.core.remoting.spi.ConnectionLifeCycleListener;
-import org.hornetq.core.remoting.spi.HornetQBuffer;
 
 /**
  * A MockConnector

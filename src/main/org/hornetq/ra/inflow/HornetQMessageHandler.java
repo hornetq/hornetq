@@ -13,18 +13,12 @@
 package org.hornetq.ra.inflow;
 
 import java.util.UUID;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 
 import javax.jms.InvalidClientIDException;
-import javax.jms.JMSException;
 import javax.jms.MessageListener;
+import javax.resource.ResourceException;
 import javax.resource.spi.endpoint.MessageEndpoint;
 import javax.resource.spi.endpoint.MessageEndpointFactory;
-import javax.resource.ResourceException;
-import javax.transaction.Status;
-import javax.transaction.Transaction;
-import javax.transaction.TransactionManager;
 
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
@@ -102,7 +96,7 @@ public class HornetQMessageHandler implements MessageHandler
          }
 
          SimpleString queueName = new SimpleString(HornetQTopic.createQueueNameForDurableSubscription(activation.getActivationSpec()
-               .getClientID(),
+                                                                                                                .getClientID(),
                                                                                                       subscriptionName));
 
          SessionQueueQueryResponseMessage subResponse = session.queueQuery(queueName);
@@ -222,9 +216,9 @@ public class HornetQMessageHandler implements MessageHandler
          beforeDelivery = true;
          msg.doBeforeReceive();
          message.acknowledge();
-         ((MessageListener) endpoint).onMessage(msg);
+         ((MessageListener)endpoint).onMessage(msg);
          endpoint.afterDelivery();
-         if(useLocalTx)
+         if (useLocalTx)
          {
             session.commit();
          }
@@ -232,8 +226,8 @@ public class HornetQMessageHandler implements MessageHandler
       catch (Throwable e)
       {
          log.error("Failed to deliver message", e);
-         //we need to call before/afterDelivery as a pair
-         if(beforeDelivery)
+         // we need to call before/afterDelivery as a pair
+         if (beforeDelivery)
          {
             try
             {
@@ -244,7 +238,7 @@ public class HornetQMessageHandler implements MessageHandler
                log.warn("Unable to call after delivery");
             }
          }
-         if(useLocalTx)
+         if (useLocalTx)
          {
             try
             {

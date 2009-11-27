@@ -806,7 +806,7 @@ public class MessageConsumerTest extends JMSTestCase
          TextMessage m = (TextMessage)queueConsumer.receive(1500);
 
          assertEquals("One", m.getText());
-
+                           
          queueConsumer.close();
 
          consumerSession.commit();
@@ -818,8 +818,8 @@ public class MessageConsumerTest extends JMSTestCase
          m = (TextMessage)queueConsumer2.receive(1500);
 
          assertNotNull(m);
-
-         assertEquals(m.getText(), "Two");
+         
+         assertEquals("Two", m.getText());
 
          consumerSession.commit();
       }
@@ -835,6 +835,7 @@ public class MessageConsumerTest extends JMSTestCase
          }
       }
    }
+   
 
    public void testRedel0() throws Exception
    {

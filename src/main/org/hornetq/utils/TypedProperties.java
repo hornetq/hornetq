@@ -40,9 +40,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
 
+import org.hornetq.core.buffers.HornetQBuffer;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.PropertyConversionException;
-import org.hornetq.core.remoting.spi.HornetQBuffer;
 
 /**
  * 
@@ -454,7 +454,7 @@ public class TypedProperties
 
          for (int i = 0; i < numHeaders; i++)
          {
-            int len = buffer.readInt();
+            int len = buffer.readInt();        
             byte[] data = new byte[len];
             buffer.readBytes(data);
             SimpleString key = new SimpleString(data);
@@ -896,7 +896,7 @@ public class TypedProperties
 
       public FloatValue(final HornetQBuffer buffer)
       {
-         val = buffer.readFloat();
+         val = Float.intBitsToFloat(buffer.readInt());
       }
 
       public Object getValue()
@@ -907,7 +907,7 @@ public class TypedProperties
       public void write(final HornetQBuffer buffer)
       {
          buffer.writeByte(FLOAT);
-         buffer.writeFloat(val);
+         buffer.writeInt(Float.floatToIntBits(val));
       }
 
       public int encodeSize()
@@ -928,7 +928,7 @@ public class TypedProperties
 
       public DoubleValue(final HornetQBuffer buffer)
       {
-         val = buffer.readDouble();
+         val = Double.longBitsToDouble(buffer.readLong());
       }
 
       public Object getValue()
@@ -939,7 +939,7 @@ public class TypedProperties
       public void write(final HornetQBuffer buffer)
       {
          buffer.writeByte(DOUBLE);
-         buffer.writeDouble(val);
+         buffer.writeLong(Double.doubleToLongBits(val));
       }
 
       public int encodeSize()
@@ -959,7 +959,7 @@ public class TypedProperties
 
       public CharValue(final HornetQBuffer buffer)
       {
-         val = buffer.readChar();
+         val = (char)buffer.readShort();
       }
 
       public Object getValue()
@@ -970,7 +970,7 @@ public class TypedProperties
       public void write(final HornetQBuffer buffer)
       {
          buffer.writeByte(CHAR);
-         buffer.writeChar(val);
+         buffer.writeShort((short)val);
       }
 
       public int encodeSize()

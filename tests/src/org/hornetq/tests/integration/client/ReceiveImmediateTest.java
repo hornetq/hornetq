@@ -167,7 +167,7 @@ public class ReceiveImmediateTest extends ServiceTestBase
       {
          ClientMessage message2 = consumer.receiveImmediate();
          assertNotNull("did not receive message " + i, message2);
-         assertEquals("m" + i, message2.getBody().readString());
+         assertEquals("m" + i, message2.getBodyBuffer().readString());
          if (!browser)
          {
             message2.acknowledge();

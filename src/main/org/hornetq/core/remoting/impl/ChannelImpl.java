@@ -21,6 +21,7 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.hornetq.core.buffers.HornetQBuffer;
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.Channel;
@@ -31,7 +32,6 @@ import org.hornetq.core.remoting.RemotingConnection;
 import org.hornetq.core.remoting.impl.wireformat.HornetQExceptionMessage;
 import org.hornetq.core.remoting.impl.wireformat.PacketImpl;
 import org.hornetq.core.remoting.impl.wireformat.PacketsConfirmedMessage;
-import org.hornetq.core.remoting.spi.HornetQBuffer;
 
 /**
  * A ChannelImpl
@@ -150,9 +150,7 @@ public class ChannelImpl implements Channel
       {
          packet.setChannelID(id);
 
-         final HornetQBuffer buffer = connection.getTransportConnection().createBuffer(packet.getRequiredBufferSize());
-
-         packet.encode(buffer);
+         final HornetQBuffer buffer = packet.encode(connection);
 
          lock.lock();
 
@@ -202,9 +200,7 @@ public class ChannelImpl implements Channel
       {
          packet.setChannelID(id);
 
-         final HornetQBuffer buffer = connection.getTransportConnection().createBuffer(packet.getRequiredBufferSize());
-
-         packet.encode(buffer);
+         final HornetQBuffer buffer = packet.encode(connection);
 
          lock.lock();
 
@@ -391,7 +387,7 @@ public class ChannelImpl implements Channel
       {
          lastReceivedCommandID++;
 
-         receivedBytes += packet.getPacketSize();
+         receivedBytes += packet.getPacketSize();         
 
          if (receivedBytes >= confWindowSize)
          {
@@ -464,9 +460,7 @@ public class ChannelImpl implements Channel
 
    private void doWrite(final Packet packet)
    {
-      final HornetQBuffer buffer = connection.getTransportConnection().createBuffer(packet.getRequiredBufferSize());
-
-      packet.encode(buffer);
+      final HornetQBuffer buffer = packet.encode(connection);
 
       connection.getTransportConnection().write(buffer);
    }

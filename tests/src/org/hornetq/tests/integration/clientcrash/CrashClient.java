@@ -63,7 +63,7 @@ public class CrashClient
                                                              0,
                                                              System.currentTimeMillis(),
                                                              (byte)1);
-         message.getBody().writeString(ClientCrashTest.MESSAGE_TEXT_FROM_CLIENT);
+         message.getBodyBuffer().writeString(ClientCrashTest.MESSAGE_TEXT_FROM_CLIENT);
 
          producer.send(message);
 

@@ -13,7 +13,7 @@
 
 package org.hornetq.core.remoting.impl.wireformat;
 
-import org.hornetq.core.remoting.spi.HornetQBuffer;
+import org.hornetq.core.buffers.HornetQBuffer;
 import org.hornetq.utils.DataConstants;
 
 /**
@@ -74,22 +74,16 @@ public class SessionReceiveContinuationMessage extends SessionContinuationMessag
    // Public --------------------------------------------------------
 
    @Override
-   public int getRequiredBufferSize()
+   public void encodeRest(final HornetQBuffer buffer)
    {
-      return SESSION_RECEIVE_CONTINUATION_BASE_SIZE + body.length; 
-   }
-
-   @Override
-   public void encodeBody(final HornetQBuffer buffer)
-   {
-      super.encodeBody(buffer);
+      super.encodeRest(buffer);
       buffer.writeLong(consumerID);
    }
 
    @Override
-   public void decodeBody(final HornetQBuffer buffer)
+   public void decodeRest(final HornetQBuffer buffer)
    {
-      super.decodeBody(buffer);
+      super.decodeRest(buffer);
       consumerID = buffer.readLong();
    }
 

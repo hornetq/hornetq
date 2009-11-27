@@ -69,7 +69,7 @@ public class ExpiryAddressTest extends UnitTestCase
       clientConsumer = clientSession.createConsumer(eq);
       m = clientConsumer.receive(500);
       assertNotNull(m);
-      assertEquals(m.getBody().readString(), "heyho!");
+      assertEquals(m.getBodyBuffer().readString(), "heyho!");
       m.acknowledge();
       
       // PageSize should be the same as when it started
@@ -117,7 +117,7 @@ public class ExpiryAddressTest extends UnitTestCase
       log.info("acking");
       m.acknowledge();
       
-      assertEquals(m.getBody().readString(), "heyho!");
+      assertEquals(m.getBodyBuffer().readString(), "heyho!");
       
       clientConsumer.close();
       
@@ -130,7 +130,7 @@ public class ExpiryAddressTest extends UnitTestCase
       log.info("acking");
       m.acknowledge();
       
-      assertEquals(m.getBody().readString(), "heyho!");
+      assertEquals(m.getBodyBuffer().readString(), "heyho!");
       
       clientConsumer.close();
       
@@ -197,7 +197,7 @@ public class ExpiryAddressTest extends UnitTestCase
 
          assertNotNull(tm);
 
-         String text = tm.getBody().readString();
+         String text = tm.getBodyBuffer().readString();
          assertEquals("Message:" + i, text);
 
          // Check the headers
@@ -234,7 +234,7 @@ public class ExpiryAddressTest extends UnitTestCase
       clientConsumer = clientSession.createConsumer(eq);
       m = clientConsumer.receive(500);
       assertNotNull(m);
-      assertEquals(m.getBody().readString(), "heyho!");
+      assertEquals(m.getBodyBuffer().readString(), "heyho!");
       m.acknowledge();
    }
 
@@ -264,7 +264,7 @@ public class ExpiryAddressTest extends UnitTestCase
       clientConsumer = clientSession.createConsumer(eq);
       m = clientConsumer.receive(500);
       assertNotNull(m);
-      assertEquals(m.getBody().readString(), "heyho!");
+      assertEquals(m.getBodyBuffer().readString(), "heyho!");
       m.acknowledge();
    }
    
@@ -307,7 +307,7 @@ public class ExpiryAddressTest extends UnitTestCase
       clientConsumer = clientSession.createConsumer(specificExpiryQueue);
       m = clientConsumer.receive(500);
       assertNotNull(m);
-      assertEquals(m.getBody().readString(), "heyho!");
+      assertEquals(m.getBodyBuffer().readString(), "heyho!");
       m.acknowledge();
    }
    

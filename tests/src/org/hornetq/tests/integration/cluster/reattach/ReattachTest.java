@@ -101,7 +101,7 @@ public class ReattachTest extends UnitTestCase
                                                                 System.currentTimeMillis(),
                                                                 (byte)1);
             message.putIntProperty(new SimpleString("count"), i);
-            message.getBody().writeString("aardvarks");
+            message.getBodyBuffer().writeString("aardvarks");
             producer.send(message);
          }
 
@@ -119,7 +119,7 @@ public class ReattachTest extends UnitTestCase
 
             assertNotNull(message);
 
-            assertEquals("aardvarks", message.getBody().readString());
+            assertEquals("aardvarks", message.getBodyBuffer().readString());
 
             assertEquals(i, message.getObjectProperty(new SimpleString("count")));
 
@@ -175,7 +175,7 @@ public class ReattachTest extends UnitTestCase
                                                              System.currentTimeMillis(),
                                                              (byte)1);
          message.putIntProperty(new SimpleString("count"), i);
-         message.getBody().writeString("aardvarks");
+         message.getBodyBuffer().writeString("aardvarks");
          producer.send(message);
       }
 
@@ -213,7 +213,7 @@ public class ReattachTest extends UnitTestCase
 
          assertNotNull(message);
 
-         assertEquals("aardvarks", message.getBody().readString());
+         assertEquals("aardvarks", message.getBodyBuffer().readString());
 
          assertEquals(i, message.getIntProperty("count").intValue());
 
@@ -285,7 +285,7 @@ public class ReattachTest extends UnitTestCase
                                                              System.currentTimeMillis(),
                                                              (byte)1);
          message.putIntProperty(new SimpleString("count"), i);
-         message.getBody().writeString("aardvarks");
+         message.getBodyBuffer().writeString("aardvarks");
          producer.send(message);
       }
 
@@ -328,7 +328,7 @@ public class ReattachTest extends UnitTestCase
 
          assertNotNull(message);
 
-         assertEquals("aardvarks", message.getBody().readString());
+         assertEquals("aardvarks", message.getBodyBuffer().readString());
 
          assertEquals(i, message.getIntProperty("count").intValue());
 
@@ -379,7 +379,7 @@ public class ReattachTest extends UnitTestCase
                                                              System.currentTimeMillis(),
                                                              (byte)1);
          message.putIntProperty(new SimpleString("count"), i);
-         message.getBody().writeString("aardvarks");
+         message.getBodyBuffer().writeString("aardvarks");
          producer.send(message);
       }
 
@@ -462,7 +462,7 @@ public class ReattachTest extends UnitTestCase
                                                              System.currentTimeMillis(),
                                                              (byte)1);
          message.putIntProperty(new SimpleString("count"), i);
-         message.getBody().writeString("aardvarks");
+         message.getBodyBuffer().writeString("aardvarks");
          producer.send(message);
       }
 
@@ -483,7 +483,7 @@ public class ReattachTest extends UnitTestCase
 
          assertNotNull(message);
 
-         assertEquals("aardvarks", message.getBody().readString());
+         assertEquals("aardvarks", message.getBodyBuffer().readString());
 
          assertEquals(i, message.getIntProperty("count").intValue());
 
@@ -530,7 +530,7 @@ public class ReattachTest extends UnitTestCase
                                                              System.currentTimeMillis(),
                                                              (byte)1);
          message.putIntProperty(new SimpleString("count"), i);
-         message.getBody().writeString("aardvarks");
+         message.getBodyBuffer().writeString("aardvarks");
          producer.send(message);
       }
 
@@ -569,7 +569,7 @@ public class ReattachTest extends UnitTestCase
 
          assertNotNull(message);
 
-         assertEquals("aardvarks", message.getBody().readString());
+         assertEquals("aardvarks", message.getBodyBuffer().readString());
 
          assertEquals(i, message.getIntProperty("count").intValue());
 
@@ -622,7 +622,7 @@ public class ReattachTest extends UnitTestCase
                                                              System.currentTimeMillis(),
                                                              (byte)1);
          message.putIntProperty(new SimpleString("count"), i);
-         message.getBody().writeString("aardvarks");
+         message.getBodyBuffer().writeString("aardvarks");
          producer.send(message);
       }
 
@@ -645,7 +645,7 @@ public class ReattachTest extends UnitTestCase
 
          assertNotNull(message);
 
-         assertEquals("aardvarks", message.getBody().readString());
+         assertEquals("aardvarks", message.getBodyBuffer().readString());
 
          assertEquals(i, message.getObjectProperty(new SimpleString("count")));
 
@@ -701,7 +701,7 @@ public class ReattachTest extends UnitTestCase
                                                              System.currentTimeMillis(),
                                                              (byte)1);
          message.putIntProperty(new SimpleString("count"), i);
-         message.getBody().writeString("aardvarks");
+         message.getBodyBuffer().writeString("aardvarks");
          producer.send(message);
       }
 
@@ -724,7 +724,7 @@ public class ReattachTest extends UnitTestCase
 
          assertNotNull(message);
 
-         assertEquals("aardvarks", message.getBody().readString());
+         assertEquals("aardvarks", message.getBodyBuffer().readString());
 
          assertEquals(i, message.getIntProperty("count").intValue());
 

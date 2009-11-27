@@ -13,7 +13,7 @@
 
 package org.hornetq.core.remoting.impl.wireformat;
 
-import org.hornetq.core.remoting.spi.HornetQBuffer;
+import org.hornetq.core.buffers.HornetQBuffer;
 import org.hornetq.utils.DataConstants;
 
 /**
@@ -60,22 +60,17 @@ public class CreateSessionResponseMessage extends PacketImpl
    }
 
    @Override
-   public void encodeBody(final HornetQBuffer buffer)
+   public void encodeRest(final HornetQBuffer buffer)
    {     
       buffer.writeInt(serverVersion);
    }
 
    @Override
-   public void decodeBody(final HornetQBuffer buffer)
+   public void decodeRest(final HornetQBuffer buffer)
    {      
       serverVersion = buffer.readInt();
    }
    
-   public int getRequiredBufferSize()
-   {
-      return BASIC_PACKET_SIZE + DataConstants.SIZE_INT; 
-   }
-
    @Override
    public boolean equals(final Object other)
    {

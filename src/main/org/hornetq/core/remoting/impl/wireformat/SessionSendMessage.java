@@ -13,109 +13,107 @@
 
 package org.hornetq.core.remoting.impl.wireformat;
 
+import org.hornetq.core.buffers.HornetQBuffer;
+import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.Message;
-import org.hornetq.core.remoting.spi.HornetQBuffer;
-import org.hornetq.core.server.ServerMessage;
+import org.hornetq.core.remoting.RemotingConnection;
 import org.hornetq.core.server.impl.ServerMessageImpl;
 import org.hornetq.utils.DataConstants;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- * @author <a href="mailto:csuconic@redhat.com">Clebert Suconic</a>
- * 
+ *
  * @version <tt>$Revision$</tt>
  */
-public class SessionSendMessage extends PacketImpl
+public class SessionSendMessage extends MessagePacket
 {
    // Constants -----------------------------------------------------
 
+   private static final Logger log = Logger.getLogger(SessionSendMessage.class);
+
    // Attributes ----------------------------------------------------
 
-   private Message clientMessage;
-
-   private ServerMessage serverMessage;
-
    private boolean requiresResponse;
-
+   
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
    public SessionSendMessage(final Message message, final boolean requiresResponse)
    {
-      super(SESS_SEND);
-
-      clientMessage = message;
-
+      super(SESS_SEND, message);
+      
       this.requiresResponse = requiresResponse;
+      
+      //If the message hasn't already been copied when the headers/properties/body was changed since last send
+      //(which will prompt an invalidate(), which will cause a copy if not copied already)
+      //Then the message needs to be copied before sending - the previous send may be in the Netty write queue
+      //so we can't just use the same buffer. Also we can't just duplicate, since the extra data (requiresResponse)
+      //may be different on different calls
+      message.checkCopy();
    }
-
+   
    public SessionSendMessage()
    {
-      super(SESS_SEND);
+      super(SESS_SEND, new ServerMessageImpl());
    }
 
    // Public --------------------------------------------------------
-
-   public Message getClientMessage()
-   {
-      return clientMessage;
-   }
-
-   public ServerMessage getServerMessage()
-   {
-      return serverMessage;
-   }
 
    public boolean isRequiresResponse()
    {
       return requiresResponse;
    }
 
-   @Override
-   public void encodeBody(final HornetQBuffer buffer)
-   {
-      if (clientMessage != null)
-      {
-         clientMessage.encode(buffer);
-      }
-      else
-      {
-         // If we're replicating a buffer to a backup node then we encode the serverMessage not the clientMessage
-         serverMessage.encode(buffer);
-      }
-
-      buffer.writeBoolean(requiresResponse);
-   }
-
-   @Override
-   public void decodeBody(final HornetQBuffer buffer)
-   {
-      // TODO can be optimised
-
-      serverMessage = new ServerMessageImpl();
-
-      clientMessage = serverMessage;
-
-      serverMessage.decode(buffer);
-
-      serverMessage.getBody().resetReaderIndex();
-
-      requiresResponse = buffer.readBoolean();
-   }
-
-   public int getRequiredBufferSize()
-   {
-      int size = BASIC_PACKET_SIZE + clientMessage.getEncodeSize() + DataConstants.SIZE_BOOLEAN;
-
-      return size;
-   }
-
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
+   
+   @Override
+   public HornetQBuffer encode(final RemotingConnection connection)
+   {
+      HornetQBuffer buffer = message.getEncodedBuffer();
+      
+      //Sanity check
+      if (buffer.writerIndex() != message.getEndOfMessagePosition())
+      {
+         throw new IllegalStateException("Wrong encode position");
+      }
+      
+      buffer.writeBoolean(requiresResponse);
+  
+      size = buffer.writerIndex();
+                       
+      //Write standard headers
+      
+      int len = size - DataConstants.SIZE_INT;
+      buffer.setInt(0, len);
+      buffer.setByte(DataConstants.SIZE_INT, type);
+      buffer.setLong(DataConstants.SIZE_INT + DataConstants.SIZE_BYTE, channelID);
+      
+      //Position reader for reading by Netty
+      buffer.readerIndex(0);
+      
+      message.resetCopied();
+      
+      return buffer;
+   }
+   
+   @Override
+   public void decodeRest(HornetQBuffer buffer)
+   {
+      //Buffer comes in after having read standard headers and positioned at Beginning of body part
+      
+      message.decodeFromBuffer(buffer);
 
+      int ri = buffer.readerIndex();
+
+      requiresResponse = buffer.readBoolean(); 
+            
+      buffer.readerIndex(ri);
+            
+   }
+   
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------

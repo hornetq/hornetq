@@ -37,7 +37,6 @@ public class TransactedSessionTest extends JMSTestCase
 
    // Public --------------------------------------------------------
 
-  
    public void testSimpleRollback() throws Exception
    {
       // send a message
@@ -45,44 +44,44 @@ public class TransactedSessionTest extends JMSTestCase
 
       try
       {
-	      conn = cf.createConnection();
-	      Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-	      s.createProducer(queue1).send(s.createTextMessage("one"));
+         conn = cf.createConnection();
+         Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         s.createProducer(queue1).send(s.createTextMessage("one"));
 
-	      s.close();
+         s.close();
 
-	      s = conn.createSession(true, Session.SESSION_TRANSACTED);
-	      MessageConsumer c = s.createConsumer(queue1);
-	      conn.start();
-	      Message m = c.receive(1000);
-	      assertNotNull(m);
+         s = conn.createSession(true, Session.SESSION_TRANSACTED);
+         MessageConsumer c = s.createConsumer(queue1);
+         conn.start();
+         Message m = c.receive(1000);
+         assertNotNull(m);
 
-	      assertEquals("one", ((TextMessage)m).getText());
-	      assertFalse(m.getJMSRedelivered());
-	      assertEquals(1, m.getIntProperty("JMSXDeliveryCount"));
+         assertEquals("one", ((TextMessage)m).getText());
+         assertFalse(m.getJMSRedelivered());
+         assertEquals(1, m.getIntProperty("JMSXDeliveryCount"));
 
-	      s.rollback();
+         s.rollback();
 
-	      // get the message again
-	      m = c.receive(1000);
-	      assertNotNull(m);
-	      
-	      assertTrue(m.getJMSRedelivered());
-	      assertEquals(2, m.getIntProperty("JMSXDeliveryCount"));
+         // get the message again
+         m = c.receive(1000);
+         assertNotNull(m);
 
-	      conn.close();
+         assertTrue(m.getJMSRedelivered());
+         assertEquals(2, m.getIntProperty("JMSXDeliveryCount"));
 
-	      Integer i = getMessageCountForQueue("Queue1");
+         conn.close();
+
+         Integer i = getMessageCountForQueue("Queue1");
 
          assertEquals(1, i.intValue());
       }
       finally
       {
-      	if (conn != null)
-      	{
-      		conn.close();
-      	}
-      	removeAllMessages(queue1.getQueueName(), true);
+         if (conn != null)
+         {
+            conn.close();
+         }
+         removeAllMessages(queue1.getQueueName(), true);
       }
    }
 
@@ -107,11 +106,11 @@ public class TransactedSessionTest extends JMSTestCase
 
          TextMessage mRec1 = (TextMessage)consumer1.receive(2000);
          assertNotNull(mRec1);
-         
+
          assertEquals("igloo", mRec1.getText());
          assertFalse(mRec1.getJMSRedelivered());
 
-         sess1.rollback(); //causes redelivery for session
+         sess1.rollback(); // causes redelivery for session
 
          mRec1 = (TextMessage)consumer1.receive(2000);
          assertEquals("igloo", mRec1.getText());
@@ -127,7 +126,6 @@ public class TransactedSessionTest extends JMSTestCase
          }
       }
    }
-
 
    /** Test redelivery works ok for Topic */
    public void testRedeliveredTopic() throws Exception
@@ -187,8 +185,10 @@ public class TransactedSessionTest extends JMSTestCase
          MessageConsumer consumer = sess.createConsumer(topic1);
          conn.start();
 
+         log.info("sending message first time");
          TextMessage mSent = sess.createTextMessage("igloo");
          producer.send(mSent);
+         log.info("sent message first time");
 
          sess.commit();
 
@@ -197,12 +197,15 @@ public class TransactedSessionTest extends JMSTestCase
 
          sess.commit();
 
+         log.info("sending message again");
          mSent.setText("rollback");
          producer.send(mSent);
+         log.info("sent message again");
 
          sess.commit();
 
          mRec = (TextMessage)consumer.receive(2000);
+         assertEquals("rollback", mRec.getText());
          sess.rollback();
 
          TextMessage mRec2 = (TextMessage)consumer.receive(2000);
@@ -243,7 +246,7 @@ public class TransactedSessionTest extends JMSTestCase
 
          final int NUM_MESSAGES = 10;
 
-         //Send some messages
+         // Send some messages
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
             Message m = producerSess.createMessage();
@@ -283,7 +286,7 @@ public class TransactedSessionTest extends JMSTestCase
 
          final int NUM_MESSAGES = 10;
 
-         //Send some messages
+         // Send some messages
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
             Message m = producerSess.createMessage();
@@ -296,7 +299,8 @@ public class TransactedSessionTest extends JMSTestCase
          while (true)
          {
             Message m = consumer.receive(500);
-            if (m == null) break;
+            if (m == null)
+               break;
             count++;
          }
 
@@ -335,7 +339,7 @@ public class TransactedSessionTest extends JMSTestCase
 
          final int NUM_MESSAGES = 10;
 
-         //Send some messages
+         // Send some messages
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
             Message m = producerSess.createMessage();
@@ -345,7 +349,8 @@ public class TransactedSessionTest extends JMSTestCase
          while (true)
          {
             Message m = consumer.receive(500);
-            if (m == null) break;
+            if (m == null)
+               break;
             count++;
          }
 
@@ -378,8 +383,6 @@ public class TransactedSessionTest extends JMSTestCase
 
    }
 
-
-
    /*
     * Send some messages in a transacted session.
     * Rollback the session.
@@ -402,7 +405,7 @@ public class TransactedSessionTest extends JMSTestCase
 
          final int NUM_MESSAGES = 10;
 
-         //Send some messages
+         // Send some messages
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
             Message m = producerSess.createMessage();
@@ -503,7 +506,7 @@ public class TransactedSessionTest extends JMSTestCase
          assertEquals(1, tm.getIntProperty("JMSXDeliveryCount"));
 
          sess.rollback();
-         
+
          sess.close();
 
          Session sess2 = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -537,7 +540,6 @@ public class TransactedSessionTest extends JMSTestCase
       MessageConsumer consumer = sess.createConsumer(queue1);
       conn.start();
 
-
       TextMessage mSent = sess.createTextMessage("igloo");
       producer.send(mSent);
       log.trace("sent1");
@@ -560,7 +562,7 @@ public class TransactedSessionTest extends JMSTestCase
       log.trace("Receiving 2");
       mRec = (TextMessage)consumer.receive(1000);
       assertNotNull(mRec);
-      
+
       log.trace("Received 2");
       assertNotNull(mRec);
       assertEquals("rollback", mRec.getText());
@@ -599,7 +601,7 @@ public class TransactedSessionTest extends JMSTestCase
 
          final int NUM_MESSAGES = 10;
 
-         //Send some messages
+         // Send some messages
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
             Message m = producerSess.createMessage();
@@ -616,9 +618,6 @@ public class TransactedSessionTest extends JMSTestCase
          }
       }
    }
-
-
-
 
    /**
     * Send some messages in transacted session. Commit.
@@ -641,7 +640,7 @@ public class TransactedSessionTest extends JMSTestCase
 
          final int NUM_MESSAGES = 10;
 
-         //Send some messages
+         // Send some messages
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
             Message m = producerSess.createMessage();
@@ -654,7 +653,8 @@ public class TransactedSessionTest extends JMSTestCase
          while (true)
          {
             Message m = consumer.receive(500);
-            if (m == null) break;
+            if (m == null)
+               break;
             count++;
          }
 
@@ -670,7 +670,6 @@ public class TransactedSessionTest extends JMSTestCase
       }
 
    }
-
 
    /**
     * Test IllegateStateException is thrown if commit is called on a non-transacted session
@@ -706,7 +705,6 @@ public class TransactedSessionTest extends JMSTestCase
       }
    }
 
-
    /**
     * Send some messages.
     * Receive them in a transacted session.
@@ -733,7 +731,7 @@ public class TransactedSessionTest extends JMSTestCase
 
          final int NUM_MESSAGES = 10;
 
-         //Send some messages
+         // Send some messages
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
             Message m = producerSess.createMessage();
@@ -744,7 +742,8 @@ public class TransactedSessionTest extends JMSTestCase
          while (true)
          {
             Message m = consumer.receive(500);
-            if (m == null) break;
+            if (m == null)
+               break;
             count++;
          }
 
@@ -752,9 +751,9 @@ public class TransactedSessionTest extends JMSTestCase
 
          conn.stop();
          consumer.close();
-   
+
          conn.close();
-   
+
          conn = cf.createConnection();
 
          consumerSess = conn.createSession(true, Session.CLIENT_ACKNOWLEDGE);
@@ -762,15 +761,15 @@ public class TransactedSessionTest extends JMSTestCase
          conn.start();
 
          count = 0;
-         
 
          while (true)
          {
             Message m = consumer.receive(500);
-            if (m == null) break;
+            if (m == null)
+               break;
             count++;
          }
-         
+
          assertEquals(NUM_MESSAGES, count);
       }
       finally
@@ -782,9 +781,6 @@ public class TransactedSessionTest extends JMSTestCase
          removeAllMessages(queue1.getQueueName(), true);
       }
    }
-
-
-
 
    /**
     * Send some messages.
@@ -810,7 +806,7 @@ public class TransactedSessionTest extends JMSTestCase
 
          final int NUM_MESSAGES = 10;
 
-         //Send some messages
+         // Send some messages
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
             Message m = producerSess.createMessage();
@@ -821,7 +817,8 @@ public class TransactedSessionTest extends JMSTestCase
          while (true)
          {
             Message m = consumer.receive(500);
-            if (m == null) break;
+            if (m == null)
+               break;
             count++;
          }
 
@@ -854,8 +851,6 @@ public class TransactedSessionTest extends JMSTestCase
 
    }
 
-
-
    /*
     * Send some messages in a transacted session.
     * Rollback the session.
@@ -878,7 +873,7 @@ public class TransactedSessionTest extends JMSTestCase
 
          final int NUM_MESSAGES = 10;
 
-         //Send some messages
+         // Send some messages
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
             Message m = producerSess.createMessage();
@@ -899,7 +894,6 @@ public class TransactedSessionTest extends JMSTestCase
          }
       }
    }
-
 
    /*
     * Test IllegateStateException is thrown if rollback is
@@ -938,7 +932,6 @@ public class TransactedSessionTest extends JMSTestCase
       }
    }
 
-
    /*
     * Send some messages.
     * Receive them in a transacted session.
@@ -965,7 +958,7 @@ public class TransactedSessionTest extends JMSTestCase
 
          final int NUM_MESSAGES = 10;
 
-         //Send some messages
+         // Send some messages
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
             Message m = producerSess.createMessage();
@@ -976,7 +969,8 @@ public class TransactedSessionTest extends JMSTestCase
          while (true)
          {
             Message m = consumer.receive(500);
-            if (m == null) break;
+            if (m == null)
+               break;
             count++;
          }
 
@@ -999,7 +993,8 @@ public class TransactedSessionTest extends JMSTestCase
          while (true)
          {
             Message m = consumer.receive(500);
-            if (m == null) break;
+            if (m == null)
+               break;
             count++;
          }
 
@@ -1016,7 +1011,6 @@ public class TransactedSessionTest extends JMSTestCase
       }
 
    }
-
 
    /*
     * Send multiple messages in multiple contiguous sessions
@@ -1039,7 +1033,7 @@ public class TransactedSessionTest extends JMSTestCase
          final int NUM_MESSAGES = 10;
          final int NUM_TX = 10;
 
-         //Send some messages
+         // Send some messages
 
          for (int j = 0; j < NUM_TX; j++)
          {
@@ -1056,7 +1050,8 @@ public class TransactedSessionTest extends JMSTestCase
          while (true)
          {
             Message m = consumer.receive(500);
-            if (m == null) break;
+            if (m == null)
+               break;
             count++;
             m.acknowledge();
          }
@@ -1080,5 +1075,3 @@ public class TransactedSessionTest extends JMSTestCase
 
    // Inner classes -------------------------------------------------
 }
-
-

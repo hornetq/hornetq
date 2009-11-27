@@ -53,7 +53,7 @@ public class LVQRecoveryTest extends ServiceTestBase
    public void testMultipleMessagesAfterRecovery() throws Exception
    {
       Xid xid = new XidImpl("bq1".getBytes(), 4, "gtid1".getBytes());
-      ClientProducer producer = clientSessionXa.createProducer(address, -1, true, true);
+      ClientProducer producer = clientSessionXa.createProducer(address);
       SimpleString messageId1 = new SimpleString("SMID1");
       SimpleString messageId2 = new SimpleString("SMID2");
       clientSessionXa.start(xid, XAResource.TMNOFLAGS);
@@ -82,17 +82,17 @@ public class LVQRecoveryTest extends ServiceTestBase
       ClientMessage m = consumer.receive(1000);
       assertNotNull(m);
       m.acknowledge();
-      assertEquals(m.getBody().readString(), "m3");
+      assertEquals(m.getBodyBuffer().readString(), "m3");
       m = consumer.receive(1000);
       assertNotNull(m);
       m.acknowledge();
-      assertEquals(m.getBody().readString(), "m4");
+      assertEquals(m.getBodyBuffer().readString(), "m4");
    }
 
    public void testManyMessagesReceivedWithRollback() throws Exception
    {
       Xid xid = new XidImpl("bq1".getBytes(), 4, "gtid1".getBytes());
-      ClientProducer producer = clientSession.createProducer(address, -1, true, true);
+      ClientProducer producer = clientSession.createProducer(address);
       ClientConsumer consumer = clientSessionXa.createConsumer(qName1);
 
       SimpleString rh = new SimpleString("SMID1");
@@ -119,27 +119,27 @@ public class LVQRecoveryTest extends ServiceTestBase
       producer.send(m1);
       ClientMessage m = consumer.receive(1000);
       assertNotNull(m);
-      assertEquals(m.getBody().readString(), "m1");
+      assertEquals(m.getBodyBuffer().readString(), "m1");
       producer.send(m2);
       m = consumer.receive(1000);
       assertNotNull(m);
-      assertEquals(m.getBody().readString(), "m2");
+      assertEquals(m.getBodyBuffer().readString(), "m2");
       producer.send(m3);
       m = consumer.receive(1000);
       assertNotNull(m);
-      assertEquals(m.getBody().readString(), "m3");
+      assertEquals(m.getBodyBuffer().readString(), "m3");
       producer.send(m4);
       m = consumer.receive(1000);
       assertNotNull(m);
-      assertEquals(m.getBody().readString(), "m4");
+      assertEquals(m.getBodyBuffer().readString(), "m4");
       producer.send(m5);
       m = consumer.receive(1000);
       assertNotNull(m);
-      assertEquals(m.getBody().readString(), "m5");
+      assertEquals(m.getBodyBuffer().readString(), "m5");
       producer.send(m6);
       m = consumer.receive(1000);
       assertNotNull(m);
-      assertEquals(m.getBody().readString(), "m6");
+      assertEquals(m.getBodyBuffer().readString(), "m6");
       clientSessionXa.end(xid, XAResource.TMSUCCESS);
       clientSessionXa.prepare(xid);
 
@@ -153,7 +153,7 @@ public class LVQRecoveryTest extends ServiceTestBase
       m = consumer.receive(1000);
       assertNotNull(m);
       m.acknowledge();
-      assertEquals(m.getBody().readString(), "m6");
+      assertEquals(m.getBodyBuffer().readString(), "m6");
       m = consumer.receiveImmediate();
       assertNull(m);
    }

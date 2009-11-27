@@ -19,11 +19,11 @@ import java.nio.ByteBuffer;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.hornetq.core.buffers.ChannelBuffers;
+import org.hornetq.core.buffers.HornetQBuffer;
+import org.hornetq.core.buffers.HornetQBuffers;
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.remoting.spi.Connection;
 import org.hornetq.core.remoting.spi.ConnectionLifeCycleListener;
-import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.integration.transports.netty.NettyConnection;
 import org.hornetq.tests.util.UnitTestCase;
 import org.jboss.netty.channel.Channel;
@@ -52,7 +52,7 @@ public class NettyConnectionTest extends UnitTestCase
 
     public void testWrite() throws Exception
     {
-       HornetQBuffer buff = ChannelBuffers.wrappedBuffer(ByteBuffer.allocate(128));
+       HornetQBuffer buff = HornetQBuffers.wrappedBuffer(ByteBuffer.allocate(128));
        SimpleChannel channel = new SimpleChannel(randomInt());
    
        assertEquals(0, channel.getWritten().size());
@@ -60,8 +60,7 @@ public class NettyConnectionTest extends UnitTestCase
        NettyConnection conn = new NettyConnection(channel, new MyListener());
        conn.write(buff);
 
-       assertEquals(1, channel.getWritten().size());
-       assertEquals(buff.getUnderlyingBuffer(), channel.getWritten().get(0));
+       assertEquals(1, channel.getWritten().size());       
     }
 
    public void testCreateBuffer() throws Exception

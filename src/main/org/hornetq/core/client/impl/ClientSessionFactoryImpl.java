@@ -115,6 +115,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
    public static final int DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE = 5;
 
    public static final boolean DEFAULT_CACHE_LARGE_MESSAGE_CLIENT = false;
+   
+   public static final int DEFAULT_INITIAL_MESSAGE_PACKET_SIZE = 1500;
 
    // Attributes
    // -----------------------------------------------------------------------------------
@@ -194,6 +196,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
    private long maxRetryInterval;
 
    private int reconnectAttempts;
+      
+   private int initialMessagePacketSize;
 
    private volatile boolean closed;
 
@@ -375,6 +379,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       failoverOnServerShutdown = other.isFailoverOnServerShutdown();
       
       cacheLargeMessagesClient = other.isCacheLargeMessagesClient();
+      
+      initialMessagePacketSize = other.getInitialMessagePacketSize();
    }
    
    public ClientSessionFactoryImpl()
@@ -432,6 +438,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       failoverOnServerShutdown = DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN;
       
       cacheLargeMessagesClient = DEFAULT_CACHE_LARGE_MESSAGE_CLIENT;
+      
+      initialMessagePacketSize = DEFAULT_INITIAL_MESSAGE_PACKET_SIZE;
    }
 
    public ClientSessionFactoryImpl(final String discoveryAddress, final int discoveryPort)
@@ -807,6 +815,17 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       checkWrite();
       this.discoveryRefreshTimeout = discoveryRefreshTimeout;
    }
+   
+   public synchronized int getInitialMessagePacketSize()
+   {
+      return initialMessagePacketSize;
+   }
+   
+   public synchronized void setInitialMessagePacketSize(final int size)
+   {
+      checkWrite();
+      this.initialMessagePacketSize = size;
+   }
 
    public ClientSession createSession(final String username,
                                       final String password,
@@ -1105,7 +1124,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
                                                                producerMaxRate,
                                                                consumerMaxRate,
                                                                blockOnNonPersistentSend,
-                                                               blockOnPersistentSend);
+                                                               blockOnPersistentSend,
+                                                               initialMessagePacketSize);
 
          return session;
       }
@@ -1138,5 +1158,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
 
       failoverManagerMap.values().toArray(failoverManagerArray);
    }
+
+   
 
 }

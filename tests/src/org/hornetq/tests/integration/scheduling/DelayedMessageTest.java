@@ -112,7 +112,7 @@ public class DelayedMessageTest extends ServiceTestBase
          
             assertNotNull(tm);
          
-            assertEquals("message" + i, tm.getBody().readString());
+            assertEquals("message" + i, tm.getBodyBuffer().readString());
          }
          
          //Now close the session
@@ -176,7 +176,7 @@ public class DelayedMessageTest extends ServiceTestBase
          {
             ClientMessage tm = consumer2.receive(500);
             assertNotNull(tm);
-            assertEquals("message" + i, tm.getBody().readString());
+            assertEquals("message" + i, tm.getBodyBuffer().readString());
          }
          
          //Now rollback
@@ -231,7 +231,7 @@ public class DelayedMessageTest extends ServiceTestBase
       {
          ClientMessage tm = consumer2.receive(500);
          assertNotNull(tm);
-         assertEquals("message" + i, tm.getBody().readString());
+         assertEquals("message" + i, tm.getBodyBuffer().readString());
       }
 
       //Now rollback
@@ -265,7 +265,7 @@ public class DelayedMessageTest extends ServiceTestBase
                                                           0,
                                                           System.currentTimeMillis(),
                                                           (byte)1);
-      message.getBody().writeString(body);
+      message.getBodyBuffer().writeString(body);
       return message;
    }
 }

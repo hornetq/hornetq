@@ -189,7 +189,11 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
    {
       checkClosed();
 
-      return new HornetQTextMessage(session);
+      HornetQTextMessage msg = new HornetQTextMessage(session);
+      
+      msg.setText(null);
+      
+      return msg;
    }
 
    public TextMessage createTextMessage(final String text) throws JMSException

@@ -13,12 +13,14 @@
 
 package org.hornetq.tests.integration.client;
 
+import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
 
 import junit.framework.AssertionFailedError;
 
-import org.hornetq.core.buffers.ChannelBuffers;
+import org.hornetq.core.buffers.HornetQBuffer;
+import org.hornetq.core.buffers.HornetQBuffers;
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
@@ -28,7 +30,6 @@ import org.hornetq.core.config.Configuration;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.paging.impl.TestSupportPageStore;
-import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
@@ -65,7 +66,7 @@ public class PagingTest extends ServiceTestBase
    private static final int RECEIVE_TIMEOUT = 30000;
 
    private static final int PAGE_MAX = 100 * 1024;
-
+   
    private static final int PAGE_SIZE = 10 * 1024;
 
    // Attributes ----------------------------------------------------
@@ -108,28 +109,29 @@ public class PagingTest extends ServiceTestBase
 
          ClientMessage message = null;
 
-         byte[] body = null;
+         byte[] body = new byte[numberOfIntegers * 4];
+         
+         ByteBuffer bb = ByteBuffer.wrap(body);
+         
+         for (int j = 1; j <= numberOfIntegers; j++)
+         {
+            bb.putInt(j);
+         }
 
          for (int i = 0; i < numberOfMessages; i++)
          {
             message = session.createClientMessage(true);
 
-            HornetQBuffer bodyLocal = message.getBody();
+            HornetQBuffer bodyLocal = message.getBodyBuffer();
 
-            for (int j = 1; j <= numberOfIntegers; j++)
-            {
-               bodyLocal.writeInt(j);
-            }
-
-            if (body == null)
-            {
-               body = bodyLocal.array();
-            }
-
+            bodyLocal.writeBytes(body);
+            
             message.putIntProperty(new SimpleString("id"), i);
 
             producer.send(message);
          }
+         
+         log.info("** sent messages");
 
          session.close();
 
@@ -173,12 +175,12 @@ public class PagingTest extends ServiceTestBase
 
             try
             {
-               assertEqualsByteArrays(body.length, body, message2.getBody().array());
+               this.assertBodiesEqual(body, message2.getBodyBuffer());
             }
             catch (AssertionFailedError e)
             {
                log.info("Expected buffer:" + dumbBytesHex(body, 40));
-               log.info("Arriving buffer:" + dumbBytesHex(message2.getBody().array(), 40));
+               log.info("Arriving buffer:" + dumbBytesHex(message2.getBodyBuffer().toByteBuffer().array(), 40));
                throw e;
             }
          }
@@ -201,6 +203,15 @@ public class PagingTest extends ServiceTestBase
          }
       }
 
+   }
+   
+   private void assertBodiesEqual(byte[] body, HornetQBuffer buffer)
+   {
+      byte[] other = new byte[body.length];
+      
+      buffer.readBytes(other);
+      
+      assertEqualsByteArrays(body, other);
    }
 
    /**
@@ -237,7 +248,8 @@ public class PagingTest extends ServiceTestBase
 
          ClientProducer producer = session.createProducer(ADDRESS);
 
-         HornetQBuffer bodyLocal = ChannelBuffers.buffer(DataConstants.SIZE_INT * numberOfIntegers);
+         byte[] body = new byte[DataConstants.SIZE_INT * numberOfIntegers];
+         //HornetQBuffer bodyLocal = HornetQChannelBuffers.buffer(DataConstants.SIZE_INT * numberOfIntegers);
 
          ClientMessage message = null;
 
@@ -245,7 +257,7 @@ public class PagingTest extends ServiceTestBase
          while (true)
          {
             message = session.createClientMessage(true);
-            message.setBody(bodyLocal);
+            message.getBodyBuffer().writeBytes(body);
 
             // Stop sending message as soon as we start paging
             if (server.getPostOffice().getPagingManager().getPageStore(ADDRESS).isPaging())
@@ -268,7 +280,7 @@ public class PagingTest extends ServiceTestBase
          for (int i = 0; i < 10; i++)
          {
             message = session.createClientMessage(true);
-            message.setBody(bodyLocal);
+            message.getBodyBuffer().writeBytes(body);
             message.putIntProperty(new SimpleString("id"), i);
 
             // Consume messages to force an eventual out of order delivery
@@ -389,8 +401,8 @@ public class PagingTest extends ServiceTestBase
          for (int i = 0; i < numberOfMessages; i++)
          {
             message = session.createClientMessage(true);
-
-            message.setBody(ChannelBuffers.wrappedBuffer(body));
+           
+            message.getBodyBuffer().writeBytes(body);
             message.putIntProperty(new SimpleString("id"), i);
 
             TestSupportPageStore store = (TestSupportPageStore)server.getPostOffice()
@@ -442,13 +454,13 @@ public class PagingTest extends ServiceTestBase
             }
 
             try
-            {
-               assertEqualsByteArrays(body.length, body, message2.getBody().array());
+            {               
+               this.assertBodiesEqual(body, message2.getBodyBuffer());
             }
             catch (AssertionFailedError e)
             {
                log.info("Expected buffer:" + dumbBytesHex(body, 40));
-               log.info("Arriving buffer:" + dumbBytesHex(message2.getBody().array(), 40));
+               log.info("Arriving buffer:" + dumbBytesHex(message2.getBodyBuffer().toByteBuffer().array(), 40));
                throw e;
             }
          }
@@ -509,7 +521,7 @@ public class PagingTest extends ServiceTestBase
          {
             message = session.createClientMessage(true);
 
-            HornetQBuffer bodyLocal = message.getBody();
+            HornetQBuffer bodyLocal = message.getBodyBuffer();
 
             for (int j = 1; j <= numberOfIntegers; j++)
             {
@@ -582,7 +594,7 @@ public class PagingTest extends ServiceTestBase
          {
             message = session.createClientMessage(true);
 
-            HornetQBuffer bodyLocal = message.getBody();
+            HornetQBuffer bodyLocal = message.getBodyBuffer();
 
             for (int j = 1; j <= numberOfIntegers; j++)
             {
@@ -672,10 +684,10 @@ public class PagingTest extends ServiceTestBase
 
          for (int i = 0; i < numberOfMessages; i++)
          {
-            HornetQBuffer bodyLocal = ChannelBuffers.wrappedBuffer(new byte[1024]);
+            byte[] body = new byte[1024];           
 
             message = session.createClientMessage(true);
-            message.setBody(bodyLocal);
+            message.getBodyBuffer().writeBytes(body);
 
             producer.send(message);
          }
@@ -700,10 +712,10 @@ public class PagingTest extends ServiceTestBase
 
          for (int i = 0; i < numberOfMessages; i++)
          {
-            HornetQBuffer bodyLocal = ChannelBuffers.wrappedBuffer(new byte[1024]);
+            byte[] body = new byte[1024];           
 
             message = session.createClientMessage(true);
-            message.setBody(bodyLocal);
+            message.getBodyBuffer().writeBytes(body);
 
             producer.send(message);
          }
@@ -727,10 +739,10 @@ public class PagingTest extends ServiceTestBase
 
          for (int i = 0; i < numberOfMessages; i++)
          {
-            HornetQBuffer bodyLocal = ChannelBuffers.wrappedBuffer(new byte[1024]);
+            byte[] body = new byte[1024];           
 
             message = session.createClientMessage(true);
-            message.setBody(bodyLocal);
+            message.getBodyBuffer().writeBytes(body);
 
             producer.send(message);
          }
@@ -803,11 +815,11 @@ public class PagingTest extends ServiceTestBase
          ClientProducer producer = session.createProducer(ADDRESS);
 
          ClientMessage message = null;
-
-         HornetQBuffer bodyLocal = ChannelBuffers.wrappedBuffer(new byte[1024]);
+         
+         byte[] body = new byte[1024];
 
          message = session.createClientMessage(true);
-         message.setBody(bodyLocal);
+         message.getBodyBuffer().writeBytes(body);
 
          for (int i = 0; i < NUMBER_OF_MESSAGES; i++)
          {
@@ -921,7 +933,7 @@ public class PagingTest extends ServiceTestBase
          for (int i = 0; i < NUMBER_OF_MESSAGES; i++)
          {
             ClientMessage msg = session.createClientMessage(true);
-            msg.getBody().writeBytes(new byte[512]);
+            msg.getBodyBuffer().writeBytes(new byte[512]);
 
             producerPaged.send(msg);
             producerNonPaged.send(msg);
@@ -1030,7 +1042,7 @@ public class PagingTest extends ServiceTestBase
          for (int i = 0; i < NUMBER_MESSAGES_BEFORE_PAGING; i++)
          {
             ClientMessage msg = session.createClientMessage(true);
-            msg.getBody().writeBytes(new byte[512]);
+            msg.getBodyBuffer().writeBytes(new byte[512]);
 
             producerA.send(msg);
             producerB.send(msg);
@@ -1044,7 +1056,7 @@ public class PagingTest extends ServiceTestBase
          for (int i = 0; i < NUMBER_MESSAGES_BEFORE_PAGING; i++)
          {
             ClientMessage msg = session.createClientMessage(true);
-            msg.getBody().writeBytes(new byte[512]);
+            msg.getBodyBuffer().writeBytes(new byte[512]);
 
             producerA.send(msg);
             producerB.send(msg);
@@ -1058,7 +1070,7 @@ public class PagingTest extends ServiceTestBase
          for (int i = NUMBER_MESSAGES_BEFORE_PAGING * 2; i < NUMBER_OF_MESSAGES; i++)
          {
             ClientMessage msg = session.createClientMessage(true);
-            msg.getBody().writeBytes(new byte[512]);
+            msg.getBodyBuffer().writeBytes(new byte[512]);
 
             producerA.send(msg);
             producerB.send(msg);

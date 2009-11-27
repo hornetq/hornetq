@@ -80,7 +80,7 @@ public class ProducerTest  extends ServiceTestBase
       ClientProducer producer = session.createProducer(QUEUE);
       ClientMessage message = session.createClientMessage(true);
       byte[] body = new byte[1000];
-      message.getBody().writeBytes(body);
+      message.getBodyBuffer().writeBytes(body);
       producer.send(message);
       assertTrue(latch.await(5, TimeUnit.SECONDS));
       session.close();

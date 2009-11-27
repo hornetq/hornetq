@@ -41,16 +41,6 @@ public class NullResponseMessage extends PacketImpl
       return true;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.remoting.Packet#getRequiredBufferSize()
-    */
-   public int getRequiredBufferSize()
-   {
-      return BASIC_PACKET_SIZE;
-   }
-   
-   
-
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

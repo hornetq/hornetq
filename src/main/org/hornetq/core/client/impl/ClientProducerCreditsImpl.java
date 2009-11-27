@@ -38,7 +38,7 @@ public class ClientProducerCreditsImpl implements ClientProducerCredits
    private final ClientSessionInternal session;
 
    private int arriving;
-   
+
    private int offset;
 
    public ClientProducerCreditsImpl(final ClientSessionInternal session,
@@ -62,50 +62,61 @@ public class ClientProducerCreditsImpl implements ClientProducerCredits
 
    public void acquireCredits(int credits) throws InterruptedException
    {
-     // credits += offset;
+      // credits += offset;
       
       checkCredits(credits);
-
+            
       semaphore.acquire(credits);
    }
 
-   public synchronized void receiveCredits(final int credits, final int offset)
+   public void receiveCredits(final int credits, final int offset)
    {
-      arriving -= credits;
-      
-      this.offset = offset;
+      synchronized (this)
+      {
+         arriving -= credits;
+
+         this.offset = offset;
+      }
 
       semaphore.release(credits);
    }
 
    public synchronized void reset()
    {
-      //Any arriving credits from before failover won't arrive, so we re-initialise
-      
+      // Any arriving credits from before failover won't arrive, so we re-initialise
+
       semaphore.drainPermits();
-      
+
       arriving = 0;
-      
+
       checkCredits(windowSize * 2);
    }
 
    public void close()
    {
-      //Closing a producer that is blocking should make it return
-      
+      // Closing a producer that is blocking should make it return
+
       semaphore.release(Integer.MAX_VALUE / 2);
    }
 
-   private synchronized void checkCredits(final int credits)
+   private void checkCredits(final int credits)
    {
       int needed = Math.max(credits, windowSize);
-      
-      if (semaphore.availablePermits() + arriving < needed)
+
+      int toRequest = -1;
+
+      synchronized (this)
       {
-         int toRequest = needed - arriving;
+         if (semaphore.availablePermits() + arriving < needed)
+         {
+            toRequest = needed - arriving;
 
-         arriving += toRequest;
+            arriving += toRequest;
+         }
+      }
 
+      if (toRequest != -1)
+      {        
          requestCredits(toRequest);
       }
    }

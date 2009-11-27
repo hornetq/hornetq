@@ -25,13 +25,9 @@ import static org.hornetq.tests.util.RandomUtil.randomString;
 
 import java.util.Set;
 
-import org.hornetq.core.buffers.ChannelBuffers;
 import org.hornetq.core.client.impl.ClientMessageImpl;
-import org.hornetq.core.journal.EncodingSupport;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.Message;
-import org.hornetq.core.remoting.spi.HornetQBuffer;
-import org.hornetq.core.server.impl.ServerMessageImpl;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.SimpleString;
 
@@ -43,31 +39,7 @@ import org.hornetq.utils.SimpleString;
 public class MessageImplTest extends UnitTestCase
 {
    private static final Logger log = Logger.getLogger(MessageImplTest.class);
-
-   public void testEncodeDecode()
-   {
-      for (int j = 0; j < 10; j++)
-      {
-         byte[] bytes = new byte[1000];
-         for (int i = 0; i < bytes.length; i++)
-         {
-            bytes[i] = randomByte();
-         }
-         HornetQBuffer body = ChannelBuffers.wrappedBuffer(bytes);
-         Message message1 = new ClientMessageImpl(randomByte(), randomBoolean(), randomLong(), randomLong(), randomByte(), body);      
-         Message message = message1;
-         message.setDestination(new SimpleString("oasoas"));
-         
-         message.putStringProperty(new SimpleString("prop1"), new SimpleString("blah1"));
-         message.putStringProperty(new SimpleString("prop2"), new SimpleString("blah2"));      
-         HornetQBuffer buffer = ChannelBuffers.buffer(message.getEncodeSize()); 
-         message.encode(buffer);      
-         Message message2 = new ClientMessageImpl(false);      
-         message2.decode(buffer);      
-         assertMessagesEquivalent(message, message2);
-      }
-   }
-   
+  
    public void getSetAttributes()
    {
       for (int j = 0; j < 10; j++)
@@ -77,14 +49,13 @@ public class MessageImplTest extends UnitTestCase
          {
             bytes[i] = randomByte();
          }
-         HornetQBuffer body = ChannelBuffers.wrappedBuffer(bytes);      
-         
+
          final byte type = randomByte();
          final boolean durable = randomBoolean();
          final long expiration = randomLong();
          final long timestamp = randomLong();
          final byte priority = randomByte();
-         Message message1 = new ClientMessageImpl(type, durable, expiration, timestamp, priority, body);
+         Message message1 = new ClientMessageImpl(type, durable, expiration, timestamp, priority, 100);
    
          Message message = message1;
          
@@ -114,15 +85,13 @@ public class MessageImplTest extends UnitTestCase
          
          message.setPriority(priority2);
          assertEquals(priority2, message.getPriority());
-         
-         message.setBody(body);
-         assertTrue(body == message.getBody());
+
       }      
    }
    
    public void testExpired()
    {
-      Message message = new ClientMessageImpl(false);
+      Message message = new ClientMessageImpl();
       
       assertEquals(0, message.getExpiration());
       assertFalse(message.isExpired());
@@ -141,34 +110,12 @@ public class MessageImplTest extends UnitTestCase
    }
    
 
-   public void testEncodingMessage() throws Exception
-   {
-            
-      SimpleString address = new SimpleString("Simple Destination ");
-      
-      Message msg = new ClientMessageImpl(false); 
-
-      byte[] bytes = new byte[]{(byte)1, (byte)2, (byte)3};
-      msg.setBody(ChannelBuffers.wrappedBuffer(bytes));
-         
-      msg.setDestination(address);
-      msg.putStringProperty(new SimpleString("Key"), new SimpleString("This String is worthless!"));
-      msg.putStringProperty(new SimpleString("Key"), new SimpleString("This String is worthless and bigger!"));
-      msg.putStringProperty(new SimpleString("Key2"), new SimpleString("This String is worthless and bigger and bigger!"));
-      msg.removeProperty(new SimpleString("Key2"));
-
-      checkSizes(msg, new ServerMessageImpl());
-
-      msg.removeProperty(new SimpleString("Key"));
-      
-      checkSizes(msg, new ServerMessageImpl());
-   }
    
    public void testProperties()
    {
       for (int j = 0; j < 10; j++)
       {
-         Message msg = new ClientMessageImpl(false);
+         Message msg = new ClientMessageImpl();
          
          SimpleString prop1 = new SimpleString("prop1");
          boolean val1 = randomBoolean();
@@ -300,7 +247,7 @@ public class MessageImplTest extends UnitTestCase
 
       assertEquals(msg1.getType(), msg2.getType());         
 
-      assertEqualsByteArrays(msg1.getBody().array(), msg2.getBody().array());      
+      assertEqualsByteArrays(msg1.getBodyBuffer().toByteBuffer().array(), msg2.getBodyBuffer().toByteBuffer().array());      
 
       assertEquals(msg1.getDestination(), msg2.getDestination());
       
@@ -321,23 +268,5 @@ public class MessageImplTest extends UnitTestCase
    }
    
    // Private ----------------------------------------------------------------------------------
-   
-   private void checkSizes(final Message obj, final EncodingSupport newObject)
-   {
-      HornetQBuffer buffer = ChannelBuffers.buffer(1024);
-      obj.encode(buffer);
-      assertEquals (buffer.writerIndex(), obj.getEncodeSize());
-      int originalSize = buffer.writerIndex();
 
-      buffer.resetReaderIndex();
-      newObject.decode(buffer);
-      
-
-      HornetQBuffer newBuffer = ChannelBuffers.buffer(1024);
-      
-      newObject.encode(newBuffer);
-      
-      assertEquals(newObject.getEncodeSize(), newBuffer.writerIndex());
-      assertEquals(originalSize, newBuffer.writerIndex());     
-   }  
 }

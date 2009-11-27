@@ -19,10 +19,10 @@ import javax.jms.JMSException;
 import javax.jms.MessageEOFException;
 import javax.jms.MessageFormatException;
 
+import org.hornetq.core.buffers.HornetQBuffer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.remoting.spi.HornetQBuffer;
 
 /**
  * This class implements javax.jms.BytesMessage.
@@ -46,12 +46,10 @@ public class HornetQBytesMessage extends HornetQMessage implements BytesMessage
    public static final byte TYPE = 4;
 
    // Attributes ----------------------------------------------------
-
+   
+   private int bodyLength;
+   
    // Constructor ---------------------------------------------------
-   public HornetQBytesMessage()
-   {
-      super(HornetQBytesMessage.TYPE);
-   }
 
    /*
     * This constructor is used to construct messages prior to sending
@@ -94,7 +92,7 @@ public class HornetQBytesMessage extends HornetQMessage implements BytesMessage
       checkRead();
       try
       {
-         return getBody().readBoolean();
+         return getBuffer().readBoolean();
       }
       catch (IndexOutOfBoundsException e)
       {
@@ -107,7 +105,7 @@ public class HornetQBytesMessage extends HornetQMessage implements BytesMessage
       checkRead();
       try
       {
-         return getBody().readByte();
+         return getBuffer().readByte();
       }
       catch (IndexOutOfBoundsException e)
       {
@@ -120,7 +118,7 @@ public class HornetQBytesMessage extends HornetQMessage implements BytesMessage
       checkRead();
       try
       {
-         return getBody().readUnsignedByte();
+         return getBuffer().readUnsignedByte();
       }
       catch (IndexOutOfBoundsException e)
       {
@@ -133,7 +131,7 @@ public class HornetQBytesMessage extends HornetQMessage implements BytesMessage
       checkRead();
       try
       {
-         return getBody().readShort();
+         return getBuffer().readShort();
       }
       catch (IndexOutOfBoundsException e)
       {
@@ -146,7 +144,7 @@ public class HornetQBytesMessage extends HornetQMessage implements BytesMessage
       checkRead();
       try
       {
-         return getBody().readUnsignedShort();
+         return getBuffer().readUnsignedShort();
       }
       catch (IndexOutOfBoundsException e)
       {
@@ -159,7 +157,7 @@ public class HornetQBytesMessage extends HornetQMessage implements BytesMessage
       checkRead();
       try
       {
-         return getBody().readChar();
+         return (char)getBuffer().readShort();
       }
       catch (IndexOutOfBoundsException e)
       {
@@ -172,7 +170,7 @@ public class HornetQBytesMessage extends HornetQMessage implements BytesMessage
       checkRead();
       try
       {
-         return getBody().readInt();
+         return getBuffer().readInt();
       }
       catch (IndexOutOfBoundsException e)
       {
@@ -185,7 +183,7 @@ public class HornetQBytesMessage extends HornetQMessage implements BytesMessage
       checkRead();
       try
       {
-         return getBody().readLong();
+         return getBuffer().readLong();
       }
       catch (IndexOutOfBoundsException e)
       {
@@ -198,7 +196,7 @@ public class HornetQBytesMessage extends HornetQMessage implements BytesMessage
       checkRead();
       try
       {
-         return getBody().readFloat();
+         return Float.intBitsToFloat(getBuffer().readInt());
       }
       catch (IndexOutOfBoundsException e)
       {
@@ -211,7 +209,7 @@ public class HornetQBytesMessage extends HornetQMessage implements BytesMessage
       checkRead();
       try
       {
-         return getBody().readDouble();
+         return Double.longBitsToDouble(getBuffer().readLong());
       }
       catch (IndexOutOfBoundsException e)
       {
@@ -224,7 +222,7 @@ public class HornetQBytesMessage extends HornetQMessage implements BytesMessage
       checkRead();
       try
       {
-         return getBody().readUTF();
+         return getBuffer().readUTF();
       }
       catch (IndexOutOfBoundsException e)
       {
@@ -248,13 +246,13 @@ public class HornetQBytesMessage extends HornetQMessage implements BytesMessage
    {
       checkRead();
 
-      if (!getBody().readable()) { return -1; }
+      if (!getBuffer().readable()) { return -1; }
 
-      int read = Math.min(length, getBody().readableBytes());
+      int read = Math.min(length, getBuffer().readableBytes());
 
       if (read != 0)
       {
-         getBody().readBytes(value, 0, read);
+         getBuffer().readBytes(value, 0, read);
       }
 
       return read;
@@ -263,49 +261,49 @@ public class HornetQBytesMessage extends HornetQMessage implements BytesMessage
    public void writeBoolean(final boolean value) throws JMSException
    {
       checkWrite();
-      getBody().writeBoolean(value);
+      getBuffer().writeBoolean(value);
    }
 
    public void writeByte(final byte value) throws JMSException
    {
       checkWrite();
-      getBody().writeByte(value);
+      getBuffer().writeByte(value);
    }
 
    public void writeShort(final short value) throws JMSException
    {
       checkWrite();
-      getBody().writeShort(value);
+      getBuffer().writeShort(value);
    }
 
    public void writeChar(final char value) throws JMSException
    {
       checkWrite();
-      getBody().writeChar(value);
+      getBuffer().writeShort((short)value);
    }
 
    public void writeInt(final int value) throws JMSException
    {
       checkWrite();
-      getBody().writeInt(value);
+      getBuffer().writeInt(value);
    }
 
    public void writeLong(final long value) throws JMSException
    {
       checkWrite();
-      getBody().writeLong(value);
+      getBuffer().writeLong(value);
    }
 
    public void writeFloat(final float value) throws JMSException
    {
       checkWrite();
-      getBody().writeFloat(value);
+      getBuffer().writeInt(Float.floatToIntBits(value));
    }
 
    public void writeDouble(final double value) throws JMSException
    {
       checkWrite();
-      getBody().writeDouble(value);
+      getBuffer().writeLong(Double.doubleToLongBits(value));
    }
 
    public void writeUTF(final String value) throws JMSException
@@ -313,7 +311,7 @@ public class HornetQBytesMessage extends HornetQMessage implements BytesMessage
       checkWrite();
       try
       {
-         getBody().writeUTF(value);
+         getBuffer().writeUTF(value);
       }
       catch (Exception e)
       {
@@ -326,14 +324,14 @@ public class HornetQBytesMessage extends HornetQMessage implements BytesMessage
    public void writeBytes(final byte[] value) throws JMSException
    {
       checkWrite();
-      getBody().writeBytes(value);
+      getBuffer().writeBytes(value);
    }
 
    public void writeBytes(final byte[] value, final int offset, final int length)
          throws JMSException
    {
       checkWrite();
-      getBody().writeBytes(value, offset, length);
+      getBuffer().writeBytes(value, offset, length);
    }
 
    public void writeObject(final Object value) throws JMSException
@@ -391,13 +389,22 @@ public class HornetQBytesMessage extends HornetQMessage implements BytesMessage
       if (!readOnly)
       {
          readOnly = true;
+         
+         bodyLength = message.getBodySize();
 
-         getBody().resetReaderIndex();
+         getBuffer().resetReaderIndex();
       }
       else
       {
-         getBody().resetReaderIndex();
+         getBuffer().resetReaderIndex();
       }
+   }
+   
+   public void doBeforeReceive() throws Exception
+   {
+      bodyLength = message.getBodySize();
+      
+      super.doBeforeReceive();
    }
 
    // HornetQRAMessage overrides ----------------------------------------
@@ -405,15 +412,15 @@ public class HornetQBytesMessage extends HornetQMessage implements BytesMessage
    public void clearBody() throws JMSException
    {
       super.clearBody();
-      HornetQBuffer currentBody = message.getBody();
-      currentBody.clear();
+      
+      getBuffer().clear();
    }
 
    public long getBodyLength() throws JMSException
    {
       checkRead();
       
-      return message.getLargeBodySize();
+      return bodyLength;
    }
 
    public void doBeforeSend() throws Exception
@@ -433,6 +440,11 @@ public class HornetQBytesMessage extends HornetQMessage implements BytesMessage
    // Protected -----------------------------------------------------
 
    // Private -------------------------------------------------------
-
+   
+   private HornetQBuffer getBuffer()
+   {
+      return message.getBodyBuffer();
+   }
+   
    // Inner classes -------------------------------------------------
 }

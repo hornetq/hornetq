@@ -24,7 +24,8 @@ import java.util.concurrent.atomic.AtomicLong;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
-import org.hornetq.core.buffers.ChannelBuffers;
+import org.hornetq.core.buffers.HornetQBuffer;
+import org.hornetq.core.buffers.HornetQBuffers;
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
@@ -34,7 +35,6 @@ import org.hornetq.core.client.MessageHandler;
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.impl.MessageImpl;
-import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
 import org.hornetq.tests.util.ServiceTestBase;
@@ -182,7 +182,6 @@ public abstract class LargeMessageTestBase extends ServiceTestBase
 
             if (isXA)
             {
-
                session.end(xid, XAResource.TMSUCCESS);
                session.prepare(xid);
 
@@ -349,9 +348,8 @@ public abstract class LargeMessageTestBase extends ServiceTestBase
                         else
                         {
 
-                           HornetQBuffer buffer = message.getBody();
+                           HornetQBuffer buffer = message.getBodyBuffer();
                            buffer.resetReaderIndex();
-                           assertEquals(numberOfBytes, buffer.writerIndex());
                            for (long b = 0; b < numberOfBytes; b++)
                            {
                               if (b % (1024l * 1024l) == 0)
@@ -360,6 +358,15 @@ public abstract class LargeMessageTestBase extends ServiceTestBase
                               }
 
                               assertEquals(getSamplebyte(b), buffer.readByte());
+                           }
+                           
+                           try
+                           {
+                              buffer.readByte();
+                              fail("Supposed to throw an exception");
+                           }
+                           catch (Exception e)
+                           {
                            }
                         }
                      }
@@ -397,8 +404,6 @@ public abstract class LargeMessageTestBase extends ServiceTestBase
 
                   assertNotNull(message);
 
-                  log.debug("Message: " + i);
-
                   System.currentTimeMillis();
 
                   if (delayDelivery > 0)
@@ -422,7 +427,7 @@ public abstract class LargeMessageTestBase extends ServiceTestBase
                      assertEquals(i, ((Integer)message.getObjectProperty(new SimpleString("counter-message"))).intValue());
                   }
 
-                  HornetQBuffer buffer = message.getBody();
+                  HornetQBuffer buffer = message.getBodyBuffer();
                   buffer.resetReaderIndex();
 
                   if (useStreamOnConsume)
@@ -571,7 +576,7 @@ public abstract class LargeMessageTestBase extends ServiceTestBase
             {
                bytes[j] = getSamplebyte(j);
             }
-            message.getBody().writeBytes(bytes);
+            message.getBodyBuffer().writeBytes(bytes);
          }
          message.putIntProperty(new SimpleString("counter-message"), i);
          if (delayDelivery > 0)
@@ -591,7 +596,7 @@ public abstract class LargeMessageTestBase extends ServiceTestBase
 
    protected HornetQBuffer createLargeBuffer(final int numberOfIntegers)
    {
-      HornetQBuffer body = ChannelBuffers.buffer(DataConstants.SIZE_INT * numberOfIntegers);
+      HornetQBuffer body = HornetQBuffers.fixedBuffer(DataConstants.SIZE_INT * numberOfIntegers);
 
       for (int i = 0; i < numberOfIntegers; i++)
       {
