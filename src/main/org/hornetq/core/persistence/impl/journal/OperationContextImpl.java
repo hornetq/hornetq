@@ -176,23 +176,14 @@ public class OperationContextImpl implements OperationContext
             TaskHolder holder = iter.next();
             if (stored >= holder.storeLined && replicated >= holder.replicationLined)
             {
-               if (executor != null)
-               {
-                  // If set, we use an executor to avoid the server being single threaded
-                  execute(holder.task);
-               }
-               else
-               {
-                  holder.task.done();
-               }
+               // If set, we use an executor to avoid the server being single threaded
+               execute(holder.task);
 
                iter.remove();
             }
             else
             {
-               // The actions need to be done in order...
-               // And they are added in order...
-               // As soon as we're done, we break the loop
+               // End of list here. No other task will be completed after this
                break;
             }
          }
