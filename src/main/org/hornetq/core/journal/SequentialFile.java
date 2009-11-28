@@ -60,6 +60,10 @@ public interface SequentialFile
 
    void write(HornetQBuffer bytes, boolean sync) throws Exception;
 
+   void write(EncodingSupport bytes, boolean sync, IOAsyncTask callback) throws Exception;
+
+   void write(EncodingSupport bytes, boolean sync) throws Exception;
+
    /** Write directly to the file without using any buffer */
    void writeDirect(ByteBuffer bytes, boolean sync, IOAsyncTask callback);
 

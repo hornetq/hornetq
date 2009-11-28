@@ -27,6 +27,10 @@ import org.hornetq.core.journal.RecordInfo;
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.journal.impl.JournalImpl.JournalRecord;
+import org.hornetq.core.journal.impl.dataformat.JournalAddRecord;
+import org.hornetq.core.journal.impl.dataformat.JournalAddRecordTX;
+import org.hornetq.core.journal.impl.dataformat.JournalCompleteRecordTX;
+import org.hornetq.core.journal.impl.dataformat.JournalDeleteRecordTX;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.utils.DataConstants;
 import org.hornetq.utils.Pair;
@@ -246,18 +250,16 @@ public class JournalCompactor extends AbstractJournalUpdateTask
    {
       if (lookupRecord(info.id))
       {
-         int size = JournalImpl.SIZE_ADD_RECORD + info.data.length;
+         InternalEncoder addRecord = new JournalAddRecord(true,
+                                                          info.id,
+                                                          info.getUserRecordType(),
+                                                          new JournalImpl.ByteArrayEncoding(info.data));
+         
+         checkSize(addRecord.getEncodeSize());
 
-         checkSize(size);
+         writeEncoder(addRecord);
 
-         JournalImpl.writeAddRecord(fileID,
-                                    info.id,
-                                    info.getUserRecordType(),
-                                    new JournalImpl.ByteArrayEncoding(info.data),
-                                    size,
-                                    getWritingChannel());
-
-         newRecords.put(info.id, new JournalRecord(currentFile, size));
+         newRecords.put(info.id, new JournalRecord(currentFile, addRecord.getEncodeSize()));
       }
    }
 
@@ -267,19 +269,17 @@ public class JournalCompactor extends AbstractJournalUpdateTask
       {
          JournalTransaction newTransaction = getNewJournalTransaction(transactionID);
 
-         int size = JournalImpl.SIZE_ADD_RECORD_TX + info.data.length;
+         InternalEncoder record = new JournalAddRecordTX(true,
+                                                         transactionID,
+                                                         info.id,
+                                                         info.getUserRecordType(),
+                                                         new JournalImpl.ByteArrayEncoding(info.data));
+         
+         checkSize(record.getEncodeSize());
 
-         checkSize(size);
+         newTransaction.addPositive(currentFile, info.id, record.getEncodeSize());
 
-         newTransaction.addPositive(currentFile, info.id, size);
-
-         JournalImpl.writeAddRecordTX(fileID,
-                                      transactionID,
-                                      info.id,
-                                      info.getUserRecordType(),
-                                      new JournalImpl.ByteArrayEncoding(info.data),
-                                      size,
-                                      getWritingChannel());
+         writeEncoder(record);
       }
       else
       {
@@ -315,16 +315,13 @@ public class JournalCompactor extends AbstractJournalUpdateTask
       {
          JournalTransaction newTransaction = getNewJournalTransaction(transactionID);
 
-         int size = JournalImpl.SIZE_DELETE_RECORD_TX + info.data.length;
+         InternalEncoder record = new JournalDeleteRecordTX(transactionID,
+                                                            info.id,
+                                                            new JournalImpl.ByteArrayEncoding(info.data));
 
-         checkSize(size);
-
-         JournalImpl.writeDeleteRecordTransactional(fileID,
-                                                    transactionID,
-                                                    info.id,
-                                                    new JournalImpl.ByteArrayEncoding(info.data),
-                                                    size,
-                                                    getWritingChannel());
+         checkSize(record.getEncodeSize());
+         
+         writeEncoder(record);
 
          newTransaction.addNegative(currentFile, info.id);
       }
@@ -343,17 +340,13 @@ public class JournalCompactor extends AbstractJournalUpdateTask
 
          JournalTransaction newTransaction = getNewJournalTransaction(transactionID);
 
-         int size = JournalImpl.SIZE_COMPLETE_TRANSACTION_RECORD + extraData.length + DataConstants.SIZE_INT;
+         InternalEncoder prepareRecord = new JournalCompleteRecordTX(false,
+                                                                     transactionID,
+                                                                     new JournalImpl.ByteArrayEncoding(extraData));
 
-         checkSize(size);
+         checkSize(prepareRecord.getEncodeSize());
 
-         JournalImpl.writeTransaction(fileID,
-                                      JournalImpl.PREPARE_RECORD,
-                                      transactionID,
-                                      new JournalImpl.ByteArrayEncoding(extraData),
-                                      size,
-                                      newTransaction.getCounter(currentFile),
-                                      getWritingChannel());
+         writeEncoder(prepareRecord, newTransaction.getCounter(currentFile));
 
          newTransaction.prepare(currentFile);
 
@@ -374,9 +367,12 @@ public class JournalCompactor extends AbstractJournalUpdateTask
    {
       if (lookupRecord(info.id))
       {
-         int size = JournalImpl.SIZE_UPDATE_RECORD + info.data.length;
+         InternalEncoder updateRecord = new JournalAddRecord(false,
+                                                             info.id,
+                                                             info.userRecordType,
+                                                             new JournalImpl.ByteArrayEncoding(info.data));
 
-         checkSize(size);
+         checkSize(updateRecord.getEncodeSize());
 
          JournalRecord newRecord = newRecords.get(info.id);
 
@@ -386,16 +382,10 @@ public class JournalCompactor extends AbstractJournalUpdateTask
          }
          else
          {
-            newRecord.addUpdateFile(currentFile, size);
+            newRecord.addUpdateFile(currentFile, updateRecord.getEncodeSize());
          }
-
-         JournalImpl.writeUpdateRecord(fileID,
-                                       info.id,
-                                       info.userRecordType,
-                                       new JournalImpl.ByteArrayEncoding(info.data),
-                                       size,
-                                       getWritingChannel());
-
+         
+         writeEncoder(updateRecord);
       }
    }
 
@@ -405,19 +395,18 @@ public class JournalCompactor extends AbstractJournalUpdateTask
       {
          JournalTransaction newTransaction = getNewJournalTransaction(transactionID);
 
-         int size = JournalImpl.SIZE_UPDATE_RECORD_TX + info.data.length;
+         InternalEncoder updateRecordTX = new JournalAddRecordTX(false,
+                                                                 transactionID,
+                                                                 info.id,
+                                                                 info.userRecordType,
+                                                                 new JournalImpl.ByteArrayEncoding(info.data));
 
-         checkSize(size);
+            
+         checkSize(updateRecordTX.getEncodeSize());
 
-         JournalImpl.writeUpdateRecordTX(fileID,
-                                         transactionID,
-                                         info.id,
-                                         info.userRecordType,
-                                         new JournalImpl.ByteArrayEncoding(info.data),
-                                         size,
-                                         getWritingChannel());
-
-         newTransaction.addPositive(currentFile, info.id, size);
+         writeEncoder(updateRecordTX);
+         
+         newTransaction.addPositive(currentFile, info.id, updateRecordTX.getEncodeSize());
       }
       else
       {
@@ -425,6 +414,8 @@ public class JournalCompactor extends AbstractJournalUpdateTask
       }
    }
 
+
+   
    /**
     * @param transactionID
     * @return

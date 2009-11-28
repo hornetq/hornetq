@@ -184,12 +184,9 @@ public class JournalTransaction
     * @param currentFile
     * @param bb
     */
-   public void fillNumberOfRecords(final JournalFile currentFile, final HornetQBuffer bb)
+   public void fillNumberOfRecords(final JournalFile currentFile, final InternalEncoder data)
    {
-      bb.writerIndex(DataConstants.SIZE_BYTE + DataConstants.SIZE_INT + DataConstants.SIZE_LONG);
-
-      bb.writeInt(getCounter(currentFile));
-
+      data.setNumberOfRecords(getCounter(currentFile));
    }
 
    /** 99.99 % of the times previous files will be already synced, since they are scheduled to be closed.

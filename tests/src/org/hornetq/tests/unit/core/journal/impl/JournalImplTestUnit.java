@@ -3118,7 +3118,9 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 
 
       addTx(1, 1);
+      addTx(1, 2);
       updateTx(1, 1);
+      updateTx(1, 3);
       commit(1);
       update(1);
 

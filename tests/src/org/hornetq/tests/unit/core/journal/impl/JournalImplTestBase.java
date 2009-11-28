@@ -279,7 +279,7 @@ public abstract class JournalImplTestBase extends UnitTestCase
 
       for (long element : arguments)
       {
-         byte[] updateRecord = generateRecord(recordLength - JournalImpl.SIZE_UPDATE_RECORD_TX);
+         byte[] updateRecord = generateRecord(recordLength - JournalImpl.SIZE_ADD_RECORD_TX);
 
          journal.appendUpdateRecordTransactional(txID, element, (byte)0, updateRecord);
 

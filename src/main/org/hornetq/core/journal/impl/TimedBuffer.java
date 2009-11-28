@@ -24,7 +24,9 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.hornetq.core.buffers.HornetQBuffer;
 import org.hornetq.core.buffers.HornetQBuffers;
+import org.hornetq.core.journal.EncodingSupport;
 import org.hornetq.core.journal.IOAsyncTask;
+import org.hornetq.core.journal.IOCompletion;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.utils.VariableLatch;
 
@@ -231,13 +233,18 @@ public class TimedBuffer
 
    public synchronized void addBytes(final HornetQBuffer bytes, final boolean sync, final IOAsyncTask callback)
    {
+      addBytes(new JournalImpl.ByteArrayEncoding(bytes.toByteBuffer().array()), sync, callback);
+   }
+
+   public synchronized void addBytes(final EncodingSupport bytes, final boolean sync, final IOAsyncTask callback)
+   {
       if (buffer.writerIndex() == 0)
       {
          // Resume latch
          latchTimer.down();
       }
 
-      buffer.writeBytes(bytes, bytes.capacity());
+      bytes.encode(buffer);
 
       callbacks.add(callback);
 

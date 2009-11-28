@@ -21,7 +21,9 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.hornetq.core.journal.EncodingSupport;
 import org.hornetq.core.buffers.HornetQBuffer;
+import org.hornetq.core.buffers.HornetQBuffers;
 import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.SequentialFileFactory;
@@ -223,7 +225,44 @@ public abstract class AbstractSequentialFile implements SequentialFile
          write(bytes, false, DummyCallback.getInstance());
       }
    }
+   
+   public void write(final EncodingSupport bytes, final boolean sync, final IOAsyncTask callback) throws Exception
+   {
+      if (timedBuffer != null)
+      {
+         timedBuffer.addBytes(bytes, sync, callback);
+      }
+      else
+      {
+         ByteBuffer buffer = factory.newBuffer(bytes.getEncodeSize());
+         
+         // If not using the TimedBuffer, a final copy is necessary
+         // Because AIO will need a specific Buffer
+         // And NIO will also need a whole buffer to perform the write
+         
+         HornetQBuffer outBuffer = HornetQBuffers.wrappedBuffer(buffer);
+         bytes.encode(outBuffer);
+         buffer.rewind();
+         writeDirect(buffer, sync, callback);
+      }
+   }
 
+   public void write(final EncodingSupport bytes, final boolean sync) throws Exception
+   {
+      if (sync)
+      {
+         SimpleWaitIOCallback completion = new SimpleWaitIOCallback();
+
+         write(bytes, true, completion);
+
+         completion.waitCompletion();
+      }
+      else
+      {
+         write(bytes, false, DummyCallback.getInstance());
+      }
+   }
+   
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

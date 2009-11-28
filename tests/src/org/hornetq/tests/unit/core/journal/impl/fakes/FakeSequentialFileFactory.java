@@ -20,7 +20,9 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.hornetq.core.asyncio.BufferCallback;
+import org.hornetq.core.journal.EncodingSupport;
 import org.hornetq.core.buffers.HornetQBuffer;
+import org.hornetq.core.buffers.HornetQBuffers;
 import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.SequentialFileFactory;
@@ -622,6 +624,30 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
          bytes.readerIndex(0);
          writeDirect(bytes.toByteBuffer(), sync);
       }
+      
+      /* (non-Javadoc)
+       * @see org.hornetq.core.journal.SequentialFile#write(org.hornetq.core.journal.EncodingSupport, boolean, org.hornetq.core.journal.IOCompletion)
+       */
+      public void write(EncodingSupport bytes, boolean sync, IOAsyncTask callback) throws Exception
+      {
+         ByteBuffer buffer = newBuffer(bytes.getEncodeSize());
+         HornetQBuffer outbuffer = HornetQBuffers.wrappedBuffer(buffer);
+         bytes.encode(outbuffer);
+         write(outbuffer, sync, callback);
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.journal.SequentialFile#write(org.hornetq.core.journal.EncodingSupport, boolean)
+       */
+      public void write(EncodingSupport bytes, boolean sync) throws Exception
+      {
+         ByteBuffer buffer = newBuffer(bytes.getEncodeSize());
+         HornetQBuffer outbuffer = HornetQBuffers.wrappedBuffer(buffer);
+         bytes.encode(outbuffer);
+         write(outbuffer, sync);
+      }
+
+      
 
       /* (non-Javadoc)
        * @see org.hornetq.core.journal.SequentialFile#exists()

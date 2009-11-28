@@ -719,7 +719,7 @@ public class AlignedJournalImplTest extends UnitTestCase
    {
       final int JOURNAL_SIZE = 2000;
 
-      setupAndLoadJournal(JOURNAL_SIZE, 100);
+      setupAndLoadJournal(JOURNAL_SIZE, 1);
 
       assertEquals(2, factory.listFiles("tt").size());
 
@@ -759,6 +759,7 @@ public class AlignedJournalImplTest extends UnitTestCase
       // reload will think the record came from a different journal usage)
       file.position(100);
 
+      buffer.rewind();
       file.writeDirect(buffer, true);
 
       file.close();

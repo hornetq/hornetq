@@ -54,6 +54,12 @@ import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.journal.TestableJournal;
 import org.hornetq.core.journal.TransactionFailureCallback;
+import org.hornetq.core.journal.impl.dataformat.JournalAddRecord;
+import org.hornetq.core.journal.impl.dataformat.JournalAddRecordTX;
+import org.hornetq.core.journal.impl.dataformat.JournalCompleteRecordTX;
+import org.hornetq.core.journal.impl.dataformat.JournalDeleteRecord;
+import org.hornetq.core.journal.impl.dataformat.JournalDeleteRecordTX;
+import org.hornetq.core.journal.impl.dataformat.JournalRollbackRecordTX;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.utils.DataConstants;
 import org.hornetq.utils.Pair;
@@ -114,10 +120,6 @@ public class JournalImpl implements TestableJournal
 
    public static final byte ADD_RECORD = 11;
 
-   public static final byte SIZE_UPDATE_RECORD = BASIC_SIZE + DataConstants.SIZE_LONG +
-                                                 DataConstants.SIZE_BYTE +
-                                                 DataConstants.SIZE_INT /* + record.length */;
-
    public static final byte UPDATE_RECORD = 12;
 
    public static final int SIZE_ADD_RECORD_TX = BASIC_SIZE + DataConstants.SIZE_LONG +
@@ -126,11 +128,6 @@ public class JournalImpl implements TestableJournal
                                                 DataConstants.SIZE_INT /* + record.length */;
 
    public static final byte ADD_RECORD_TX = 13;
-
-   public static final int SIZE_UPDATE_RECORD_TX = BASIC_SIZE + DataConstants.SIZE_LONG +
-                                                   DataConstants.SIZE_BYTE +
-                                                   DataConstants.SIZE_LONG +
-                                                   DataConstants.SIZE_INT /* + record.length */;
 
    public static final byte UPDATE_RECORD_TX = 14;
 
@@ -290,207 +287,6 @@ public class JournalImpl implements TestableJournal
       this.fileExtension = fileExtension;
 
       this.maxAIO = maxAIO;
-   }
-
-   // Public methods (used by package members such as JournalCompactor) (these methods are not part of the JournalImpl
-   // interface)
-
-   /**
-    * <p>A transaction record (Commit or Prepare), will hold the number of elements the transaction has on each file.</p>
-    * <p>For example, a transaction was spread along 3 journal files with 10 pendingTransactions on each file. 
-    *    (What could happen if there are too many pendingTransactions, or if an user event delayed pendingTransactions to come in time to a single file).</p>
-    * <p>The element-summary will then have</p>
-    * <p>FileID1, 10</p>
-    * <p>FileID2, 10</p>
-    * <p>FileID3, 10</p>
-    * 
-    * <br>
-    * <p> During the load, the transaction needs to have 30 pendingTransactions spread across the files as originally written.</p>
-    * <p> If for any reason there are missing pendingTransactions, that means the transaction was not completed and we should ignore the whole transaction </p>
-    * <p> We can't just use a global counter as reclaiming could delete files after the transaction was successfully committed. 
-    *     That also means not having a whole file on journal-reload doesn't mean we have to invalidate the transaction </p>
-    * 
-    * @param recordType
-    * @param txID
-    * @param tx
-    * @param transactionData
-    * @return
-    * @throws Exception
-    */
-   public static void writeTransaction(final int fileID,
-                                       final byte recordType,
-                                       final long txID,
-                                       final EncodingSupport transactionData,
-                                       final int size,
-                                       final int numberOfRecords,
-                                       final HornetQBuffer bb) throws Exception
-   {
-      bb.writeByte(recordType);
-      bb.writeInt(fileID); // skip ID part
-      bb.writeLong(txID);
-      bb.writeInt(numberOfRecords);
-
-      if (transactionData != null)
-      {
-         bb.writeInt(transactionData.getEncodeSize());
-      }
-
-      if (transactionData != null)
-      {
-         transactionData.encode(bb);
-      }
-
-      bb.writeInt(size);
-   }
-
-   /**
-    * @param txID
-    * @param id
-    * @param recordType
-    * @param record
-    * @param size
-    * @param bb
-    */
-   public static void writeUpdateRecordTX(final int fileID,
-                                          final long txID,
-                                          final long id,
-                                          final byte recordType,
-                                          final EncodingSupport record,
-                                          final int size,
-                                          final HornetQBuffer bb)
-   {
-      bb.writeByte(UPDATE_RECORD_TX);
-      bb.writeInt(fileID);
-      bb.writeLong(txID);
-      bb.writeLong(id);
-      bb.writeInt(record.getEncodeSize());
-      bb.writeByte(recordType);
-      record.encode(bb);
-      bb.writeInt(size);
-   }
-
-   /**
-    * @param txID
-    * @param bb
-    */
-   public static void writeRollback(final int fileID, final long txID, HornetQBuffer bb)
-   {
-      bb.writeByte(ROLLBACK_RECORD);
-      bb.writeInt(fileID);
-      bb.writeLong(txID);
-      bb.writeInt(SIZE_ROLLBACK_RECORD);
-   }
-
-   /**
-    * @param id
-    * @param recordType
-    * @param record
-    * @param size
-    * @param bb
-    */
-   public static void writeUpdateRecord(final int fileId,
-                                        final long id,
-                                        final byte recordType,
-                                        final EncodingSupport record,
-                                        final int size,
-                                        final HornetQBuffer bb)
-   {
-      bb.writeByte(UPDATE_RECORD);
-      bb.writeInt(fileId);
-      bb.writeLong(id);
-      bb.writeInt(record.getEncodeSize());
-      bb.writeByte(recordType);
-      record.encode(bb);
-      bb.writeInt(size);
-   }
-
-   /**
-    * @param id
-    * @param recordType
-    * @param record
-    * @param size
-    * @param bb
-    */
-   public static void writeAddRecord(final int fileId,
-                                     final long id,
-                                     final byte recordType,
-                                     final EncodingSupport record,
-                                     final int size,
-                                     final HornetQBuffer bb)
-   {     
-      bb.writeByte(ADD_RECORD);
-      bb.writeInt(fileId);
-      bb.writeLong(id);
-      bb.writeInt(record.getEncodeSize());
-      bb.writeByte(recordType);      
-      record.encode(bb);       
-      bb.writeInt(size);        
-   }
-
-   /**
-    * @param id
-    * @param size
-    * @param bb
-    */
-   public static void writeDeleteRecord(final int fileId, final long id, int size, HornetQBuffer bb)
-   {
-      bb.writeByte(DELETE_RECORD);
-      bb.writeInt(fileId);
-      bb.writeLong(id);
-      bb.writeInt(size);
-   }
-
-   /**
-    * @param txID
-    * @param id
-    * @param record
-    * @param size
-    * @param bb
-    */
-   public static void writeDeleteRecordTransactional(final int fileID,
-                                                     final long txID,
-                                                     final long id,
-                                                     final EncodingSupport record,
-                                                     final int size,
-                                                     final HornetQBuffer bb)
-   {
-      bb.writeByte(DELETE_RECORD_TX);
-      bb.writeInt(fileID);
-      bb.writeLong(txID);
-      bb.writeLong(id);
-      bb.writeInt(record != null ? record.getEncodeSize() : 0);
-      if (record != null)
-      {
-         record.encode(bb);
-      }
-      bb.writeInt(size);
-   }
-
-   /**
-    * @param txID
-    * @param id
-    * @param recordType
-    * @param record
-    * @param recordLength
-    * @param size
-    * @param bb
-    */
-   public static void writeAddRecordTX(final int fileID,
-                                       final long txID,
-                                       final long id,
-                                       final byte recordType,
-                                       final EncodingSupport record,
-                                       final int size,
-                                       final HornetQBuffer bb)
-   {
-      bb.writeByte(ADD_RECORD_TX);
-      bb.writeInt(fileID);
-      bb.writeLong(txID);
-      bb.writeLong(id);
-      bb.writeInt(record.getEncodeSize());
-      bb.writeByte(recordType);
-      record.encode(bb);
-      bb.writeInt(size);
    }
 
    public Map<Long, JournalRecord> getRecords()
@@ -843,7 +639,7 @@ public class JournalImpl implements TestableJournal
    {
       appendAddRecord(id, recordType, new ByteArrayEncoding(record), sync);
    }
-
+   
    public void appendAddRecord(final long id, final byte recordType, final byte[] record, final boolean sync, final IOCompletion callback) throws Exception
    {
       appendAddRecord(id, recordType, new ByteArrayEncoding(record), sync, callback);
@@ -876,11 +672,7 @@ public class JournalImpl implements TestableJournal
 
       try
       {  
-         int size = SIZE_ADD_RECORD + record.getEncodeSize();
-
-         HornetQBuffer bb = newBuffer(size);
-
-         writeAddRecord(-1, id, recordType, record, size, bb); // fileID will be filled later
+         InternalEncoder addRecord = new JournalAddRecord(true, id, recordType, record);
 
          if (callback != null)
          {
@@ -890,9 +682,9 @@ public class JournalImpl implements TestableJournal
          lockAppend.lock();
          try
          {
-            JournalFile usedFile = appendRecord(bb, false, sync, null, callback);
+            JournalFile usedFile = appendRecord(addRecord, false, sync, null, callback);
 
-            records.put(id, new JournalRecord(usedFile, size));
+            records.put(id, new JournalRecord(usedFile, addRecord.getEncodeSize()));
          }
          finally
          {
@@ -952,11 +744,7 @@ public class JournalImpl implements TestableJournal
             }
          }
 
-         int size = SIZE_UPDATE_RECORD + record.getEncodeSize();
-
-         HornetQBuffer bb = newBuffer(size);
-
-         writeUpdateRecord(-1, id, recordType, record, size, bb);
+         InternalEncoder updateRecord = new JournalAddRecord(false, id, recordType, record);
 
          if (callback != null)
          {
@@ -966,17 +754,17 @@ public class JournalImpl implements TestableJournal
          lockAppend.lock();
          try
          {
-            JournalFile usedFile = appendRecord(bb, false, sync, null, callback);
+            JournalFile usedFile = appendRecord(updateRecord, false, sync, null, callback);
 
             // record== null here could only mean there is a compactor, and computing the delete should be done after
             // compacting is done
             if (jrnRecord == null)
             {
-               compactor.addCommandUpdate(id, usedFile, size);
+               compactor.addCommandUpdate(id, usedFile, updateRecord.getEncodeSize());
             }
             else
             {
-               jrnRecord.addUpdateFile(usedFile, size);
+               jrnRecord.addUpdateFile(usedFile, updateRecord.getEncodeSize());
             }
          }
          finally
@@ -1029,11 +817,7 @@ public class JournalImpl implements TestableJournal
             }
          }
          
-         int size = SIZE_DELETE_RECORD;
-
-         HornetQBuffer bb = newBuffer(size);
-
-         writeDeleteRecord(-1, id, size, bb);
+         InternalEncoder deleteRecord = new JournalDeleteRecord(id);
 
          if (callback != null)
          {
@@ -1043,7 +827,7 @@ public class JournalImpl implements TestableJournal
          lockAppend.lock();
          try
          {
-            JournalFile usedFile = appendRecord(bb, false, sync, null, callback);
+            JournalFile usedFile = appendRecord(deleteRecord, false, sync, null, callback);
 
             // record== null here could only mean there is a compactor, and computing the delete should be done after
             // compacting is done
@@ -1093,20 +877,16 @@ public class JournalImpl implements TestableJournal
       try
       {
 
-         int size = SIZE_ADD_RECORD_TX + record.getEncodeSize();
-
-         HornetQBuffer bb = newBuffer(size);
-
-         writeAddRecordTX(-1, txID, id, recordType, record, size, bb);
+         InternalEncoder addRecord = new JournalAddRecordTX(true, txID, id, recordType, record);
 
          JournalTransaction tx = getTransactionInfo(txID);
 
          lockAppend.lock();
          try
          {
-            JournalFile usedFile = appendRecord(bb, false, false, tx, null);
+            JournalFile usedFile = appendRecord(addRecord, false, false, tx, null);
 
-            tx.addPositive(usedFile, id, size);
+            tx.addPositive(usedFile, id, addRecord.getEncodeSize());
          }
          finally
          {
@@ -1146,20 +926,16 @@ public class JournalImpl implements TestableJournal
       try
       {
 
-         int size = SIZE_UPDATE_RECORD_TX + record.getEncodeSize();
-
-         HornetQBuffer bb = newBuffer(size);
-
-         writeUpdateRecordTX(-1, txID, id, recordType, record, size, bb);
+         InternalEncoder updateRecordTX = new JournalAddRecordTX(false, txID, id, recordType, record);
 
          JournalTransaction tx = getTransactionInfo(txID);
 
          lockAppend.lock();
          try
          {
-            JournalFile usedFile = appendRecord(bb, false, false, tx, null);
+            JournalFile usedFile = appendRecord(updateRecordTX, false, false, tx, null);
 
-            tx.addPositive(usedFile, id, size);
+            tx.addPositive(usedFile, id, updateRecordTX.getEncodeSize());
          }
          finally
          {
@@ -1193,18 +969,14 @@ public class JournalImpl implements TestableJournal
 
       try
       {
-         int size = SIZE_DELETE_RECORD_TX + record.getEncodeSize();
-
-         HornetQBuffer bb = newBuffer(size);
-
-         writeDeleteRecordTransactional(-1, txID, id, record, size, bb);
+         InternalEncoder deleteRecordTX = new JournalDeleteRecordTX(txID, id, record);
 
          JournalTransaction tx = getTransactionInfo(txID);
 
          lockAppend.lock();
          try
          {
-            JournalFile usedFile = appendRecord(bb, false, false, tx, null);
+            JournalFile usedFile = appendRecord(deleteRecordTX, false, false, tx, null);
 
             tx.addNegative(usedFile, id);
          }
@@ -1282,10 +1054,7 @@ public class JournalImpl implements TestableJournal
       try
       {
 
-         int size = SIZE_COMPLETE_TRANSACTION_RECORD + transactionData.getEncodeSize() + DataConstants.SIZE_INT;
-         HornetQBuffer bb = newBuffer(size);
-
-         writeTransaction(-1, PREPARE_RECORD, txID, transactionData, size, -1, bb);
+         InternalEncoder prepareRecord = new JournalCompleteRecordTX(false, txID, transactionData);
 
          if (callback != null)
          {
@@ -1295,7 +1064,7 @@ public class JournalImpl implements TestableJournal
          lockAppend.lock();
          try
          {
-            JournalFile usedFile = appendRecord(bb, true, sync, tx, callback);
+            JournalFile usedFile = appendRecord(prepareRecord, true, sync, tx, callback);
 
             tx.prepare(usedFile);
          }
@@ -1365,15 +1134,7 @@ public class JournalImpl implements TestableJournal
             throw new IllegalStateException("Cannot find tx with id " + txID);
          }
 
-         HornetQBuffer bb = newBuffer(SIZE_COMPLETE_TRANSACTION_RECORD);
-
-         writeTransaction(-1,
-                          COMMIT_RECORD,
-                          txID,
-                          null,
-                          SIZE_COMPLETE_TRANSACTION_RECORD,
-                          -1 /* number of records on this transaction will be filled later inside append record */,
-                          bb);
+         InternalEncoder commitRecord = new JournalCompleteRecordTX(true, txID, null);
 
          if (callback != null)
          {
@@ -1383,7 +1144,7 @@ public class JournalImpl implements TestableJournal
          lockAppend.lock();
          try
          {
-            JournalFile usedFile = appendRecord(bb, true, sync, tx, callback);
+            JournalFile usedFile = appendRecord(commitRecord, true, sync, tx, callback);
 
             tx.commit(usedFile);
          }
@@ -1433,9 +1194,7 @@ public class JournalImpl implements TestableJournal
             throw new IllegalStateException("Cannot find tx with id " + txID);
          }
          
-         HornetQBuffer bb = newBuffer(SIZE_ROLLBACK_RECORD);
-
-         writeRollback(-1, txID, bb);
+         InternalEncoder rollbackRecord = new JournalRollbackRecordTX(txID);
 
          if (callback != null)
          {
@@ -1445,7 +1204,7 @@ public class JournalImpl implements TestableJournal
          lockAppend.lock();
          try
          {
-            JournalFile usedFile = appendRecord(bb, false, sync, tx, callback);
+            JournalFile usedFile = appendRecord(rollbackRecord, false, sync, tx, callback);
 
             tx.rollback(usedFile);
          }
@@ -1586,6 +1345,7 @@ public class JournalImpl implements TestableJournal
 
       try
       {
+         trace("Starting compacting operation on journal");
          log.debug("Starting compacting operation on journal");
 
          // We need to guarantee that the journal is frozen for this short time
@@ -1867,7 +1627,7 @@ public class JournalImpl implements TestableJournal
                   // have been deleted
                   // just leaving some updates in this file
 
-                  posFiles.addUpdateFile(file, info.data.length + SIZE_UPDATE_RECORD);
+                  posFiles.addUpdateFile(file, info.data.length + SIZE_ADD_RECORD);
                }
             }
 
@@ -2337,6 +2097,10 @@ public class JournalImpl implements TestableJournal
          try
          {
 
+            if (trace)
+            {
+               trace("Cleaning up file " + file);
+            }
             log.debug("Cleaning up file " + file);
 
             if (file.getPosCount() == 0)
@@ -2847,13 +2611,13 @@ public class JournalImpl implements TestableJournal
             recordSize = SIZE_ADD_RECORD;
             break;
          case UPDATE_RECORD:
-            recordSize = SIZE_UPDATE_RECORD;
+            recordSize = SIZE_ADD_RECORD;
             break;
          case ADD_RECORD_TX:
             recordSize = SIZE_ADD_RECORD_TX;
             break;
          case UPDATE_RECORD_TX:
-            recordSize = SIZE_UPDATE_RECORD_TX;
+            recordSize = SIZE_ADD_RECORD_TX;
             break;
          case DELETE_RECORD:
             recordSize = SIZE_DELETE_RECORD;
@@ -2933,7 +2697,7 @@ public class JournalImpl implements TestableJournal
     * 
     * @param completeTransaction If the appendRecord is for a prepare or commit, where we should update the number of pendingTransactions on the current file
     * */
-   private JournalFile appendRecord(final HornetQBuffer bb,
+   private JournalFile appendRecord(final InternalEncoder encoder,
                                     final boolean completeTransaction,
                                     final boolean sync,
                                     final JournalTransaction tx,
@@ -2948,7 +2712,7 @@ public class JournalImpl implements TestableJournal
          
          final IOAsyncTask callback;
 
-         int size = bb.capacity();
+         int size = encoder.getEncodeSize();
 
          // We take into account the fileID used on the Header
          if (size > fileSize - currentFile.getFile().calculateBlockStart(SIZE_HEADER))
@@ -3012,7 +2776,7 @@ public class JournalImpl implements TestableJournal
             if (completeTransaction)
             {
                // Filling the number of pendingTransactions at the current file
-               tx.fillNumberOfRecords(currentFile, bb);
+               tx.fillNumberOfRecords(currentFile, encoder);
             }
          }
          else
@@ -3021,16 +2785,15 @@ public class JournalImpl implements TestableJournal
          }
 
          // Adding fileID
-         bb.writerIndex(DataConstants.SIZE_BYTE);
-         bb.writeInt(currentFile.getFileID());
+         encoder.setFileID(currentFile.getFileID());
 
          if (callback != null)
          {
-            currentFile.getFile().write(bb, sync, callback);
+            currentFile.getFile().write(encoder, sync, callback);
          }
          else
          {
-            currentFile.getFile().write(bb, sync);
+            currentFile.getFile().write(encoder, sync);
          }
 
          return currentFile;
@@ -3615,7 +3378,7 @@ public class JournalImpl implements TestableJournal
          return id1 < id2 ? -1 : id1 == id2 ? 0 : 1;
       }
    }
-
+   
    private class PerfBlast extends Thread
    {
       private final int pages;
@@ -3633,12 +3396,12 @@ public class JournalImpl implements TestableJournal
          {
             lockAppend.lock();
 
-            HornetQBuffer bb = newBuffer(490 * 1024);
-
-            for (int i = 0; i < pages; i++)
-            {
-               appendRecord(bb, false, true, null, null);
-            }
+//            HornetQBuffer bb = newBuffer(128 * 1024);
+//
+//            for (int i = 0; i < pages; i++)
+//            {
+//               appendRecord(bb, false, false, null, null);
+//            }
 
             lockAppend.unlock();
          }
@@ -3648,5 +3411,11 @@ public class JournalImpl implements TestableJournal
          }
       }
    }
+   
 
+   
+   
+   
+   
+   
 }

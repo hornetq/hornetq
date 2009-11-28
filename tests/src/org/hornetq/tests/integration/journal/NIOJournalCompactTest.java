@@ -616,7 +616,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
          journal.forceMoveNextFile();
          update(id);
 
-         expectedSizes.add(recordLength + JournalImpl.SIZE_UPDATE_RECORD);
+         expectedSizes.add(recordLength + JournalImpl.SIZE_ADD_RECORD);
          journal.forceMoveNextFile();
       }
 

@@ -22,6 +22,7 @@ import org.hornetq.core.buffers.HornetQBuffer;
 import org.hornetq.core.buffers.HornetQBuffers;
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.SequentialFileFactory;
+import org.hornetq.core.journal.impl.dataformat.JournalAddRecord;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.utils.ConcurrentHashSet;
 import org.hornetq.utils.Pair;
@@ -151,12 +152,16 @@ public abstract class AbstractJournalUpdateTask implements JournalReaderCallback
             }
          }
 
-         JournalImpl.writeAddRecord(-1,
-                                    1,
-                                    (byte)0,
-                                    new JournalImpl.ByteArrayEncoding(filesToRename.toByteBuffer().array()),
-                                    JournalImpl.SIZE_ADD_RECORD + filesToRename.toByteBuffer().array().length,
-                                    renameBuffer);
+         
+         InternalEncoder controlRecord = new JournalAddRecord(true,
+                                                              1,
+                                                              (byte)0,
+                                                              new JournalImpl.ByteArrayEncoding(filesToRename.toByteBuffer()
+                                                                                                             .array()));
+         
+         controlRecord.setFileID(-1);
+         
+         controlRecord.encode(renameBuffer);
 
          ByteBuffer writeBuffer = fileFactory.newBuffer(renameBuffer.writerIndex());
 
@@ -229,6 +234,20 @@ public abstract class AbstractJournalUpdateTask implements JournalReaderCallback
    {
       return writingChannel;
    }
+   
+   protected void writeEncoder(InternalEncoder record) throws Exception
+   {
+      record.setFileID(fileID);
+      record.encode(getWritingChannel());
+   }
+
+   protected void writeEncoder(InternalEncoder record, int txcounter) throws Exception
+   {
+      record.setNumberOfRecords(txcounter);
+      writeEncoder(record);
+   }
+
+   
 
    // Private -------------------------------------------------------
 

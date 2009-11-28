@@ -20,7 +20,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.hornetq.core.journal.RecordInfo;
 import org.hornetq.core.journal.SequentialFileFactory;
-import org.hornetq.utils.DataConstants;
+import org.hornetq.core.journal.impl.dataformat.JournalAddRecord;
+import org.hornetq.core.journal.impl.dataformat.JournalAddRecordTX;
+import org.hornetq.core.journal.impl.dataformat.JournalCompleteRecordTX;
+import org.hornetq.core.journal.impl.dataformat.JournalDeleteRecord;
+import org.hornetq.core.journal.impl.dataformat.JournalDeleteRecordTX;
+import org.hornetq.core.journal.impl.dataformat.JournalRollbackRecordTX;
 
 /**
  * A JournalCleaner
@@ -72,14 +77,10 @@ public class JournalCleaner extends AbstractJournalUpdateTask
    {
       if (lookupRecord(info.id))
       {
-         int size = JournalImpl.SIZE_ADD_RECORD + info.data.length;
-
-         JournalImpl.writeAddRecord(fileID,
-                                    info.id,
-                                    info.getUserRecordType(),
-                                    new JournalImpl.ByteArrayEncoding(info.data),
-                                    size,
-                                    getWritingChannel());
+         writeEncoder(new JournalAddRecord(true,
+                                           info.id,
+                                           info.getUserRecordType(),
+                                           new JournalImpl.ByteArrayEncoding(info.data)));
       }
    }
 
@@ -92,15 +93,11 @@ public class JournalCleaner extends AbstractJournalUpdateTask
       {
          incrementTransactionCounter(transactionID);
 
-         int size = JournalImpl.SIZE_ADD_RECORD_TX + recordInfo.data.length;
-
-         JournalImpl.writeAddRecordTX(fileID,
-                                      transactionID,
-                                      recordInfo.id,
-                                      recordInfo.getUserRecordType(),
-                                      new JournalImpl.ByteArrayEncoding(recordInfo.data),
-                                      size,
-                                      getWritingChannel());
+         writeEncoder(new JournalAddRecordTX(true,
+                                             transactionID,
+                                             recordInfo.id,
+                                             recordInfo.getUserRecordType(),
+                                             new JournalImpl.ByteArrayEncoding(recordInfo.data)));
       }
    }
 
@@ -111,14 +108,7 @@ public class JournalCleaner extends AbstractJournalUpdateTask
    {
       int txcounter = getTransactionCounter(transactionID);
 
-      JournalImpl.writeTransaction(fileID,
-                                   JournalImpl.COMMIT_RECORD,
-                                   transactionID,
-                                   null,
-                                   JournalImpl.SIZE_COMPLETE_TRANSACTION_RECORD,
-                                   txcounter,
-                                   getWritingChannel());
-
+      writeEncoder(new JournalCompleteRecordTX(true, transactionID, null), txcounter);
    }
 
    /* (non-Javadoc)
@@ -126,7 +116,7 @@ public class JournalCleaner extends AbstractJournalUpdateTask
     */
    public void onReadDeleteRecord(final long recordID) throws Exception
    {
-      JournalImpl.writeDeleteRecord(fileID, recordID, JournalImpl.SIZE_DELETE_RECORD, getWritingChannel());
+      writeEncoder(new JournalDeleteRecord(recordID));
    }
 
    /* (non-Javadoc)
@@ -134,16 +124,11 @@ public class JournalCleaner extends AbstractJournalUpdateTask
     */
    public void onReadDeleteRecordTX(final long transactionID, final RecordInfo recordInfo) throws Exception
    {
-      int size = JournalImpl.SIZE_DELETE_RECORD_TX + recordInfo.data.length;
-
       incrementTransactionCounter(transactionID);
 
-      JournalImpl.writeDeleteRecordTransactional(fileID,
-                                                 transactionID,
-                                                 recordInfo.id,
-                                                 new JournalImpl.ByteArrayEncoding(recordInfo.data),
-                                                 size,
-                                                 getWritingChannel());
+      writeEncoder(new JournalDeleteRecordTX(transactionID,
+                                             recordInfo.id,
+                                             new JournalImpl.ByteArrayEncoding(recordInfo.data)));
    }
 
    /* (non-Javadoc)
@@ -153,15 +138,8 @@ public class JournalCleaner extends AbstractJournalUpdateTask
    {
       int txcounter = getTransactionCounter(transactionID);
 
-      int size = JournalImpl.SIZE_COMPLETE_TRANSACTION_RECORD + extraData.length + DataConstants.SIZE_INT;
-
-      JournalImpl.writeTransaction(fileID,
-                                   JournalImpl.PREPARE_RECORD,
-                                   transactionID,
-                                   new JournalImpl.ByteArrayEncoding(extraData),
-                                   size,
-                                   txcounter,
-                                   getWritingChannel());
+      writeEncoder(new JournalCompleteRecordTX(false, transactionID, new JournalImpl.ByteArrayEncoding(extraData)),
+                   txcounter);
    }
 
    /* (non-Javadoc)
@@ -169,7 +147,7 @@ public class JournalCleaner extends AbstractJournalUpdateTask
     */
    public void onReadRollbackRecord(final long transactionID) throws Exception
    {
-      JournalImpl.writeRollback(fileID, transactionID, getWritingChannel());
+      writeEncoder(new JournalRollbackRecordTX(transactionID));
    }
 
    /* (non-Javadoc)
@@ -179,13 +157,10 @@ public class JournalCleaner extends AbstractJournalUpdateTask
    {
       if (lookupRecord(recordInfo.id))
       {
-         int size = JournalImpl.SIZE_UPDATE_RECORD + recordInfo.data.length;
-         JournalImpl.writeUpdateRecord(fileID,
-                                       recordInfo.id,
-                                       recordInfo.userRecordType,
-                                       new JournalImpl.ByteArrayEncoding(recordInfo.data),
-                                       size,
-                                       getWritingChannel());
+         writeEncoder(new JournalAddRecord(false,
+                                           recordInfo.id,
+                                           recordInfo.userRecordType,
+                                           new JournalImpl.ByteArrayEncoding(recordInfo.data)));
       }
    }
 
@@ -197,14 +172,12 @@ public class JournalCleaner extends AbstractJournalUpdateTask
       if (lookupRecord(recordInfo.id))
       {
          incrementTransactionCounter(transactionID);
-         int size = JournalImpl.SIZE_UPDATE_RECORD_TX + recordInfo.data.length;
-         JournalImpl.writeUpdateRecordTX(fileID,
-                                         transactionID,
-                                         recordInfo.id,
-                                         recordInfo.userRecordType,
-                                         new JournalImpl.ByteArrayEncoding(recordInfo.data),
-                                         size,
-                                         getWritingChannel());
+         
+         writeEncoder(new JournalAddRecordTX(false,
+                                             transactionID,
+                                             recordInfo.id,
+                                             recordInfo.userRecordType,
+                                             new JournalImpl.ByteArrayEncoding(recordInfo.data)));
       }
    }
 
