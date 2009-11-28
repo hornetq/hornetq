@@ -12,14 +12,7 @@
  */
 package org.hornetq.jms.example;
 
-import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageProducer;
-import javax.jms.Queue;
-import javax.jms.Session;
-import javax.jms.TextMessage;
-import javax.jms.Topic;
+import javax.jms.*;
 
 import org.hornetq.common.example.HornetQExample;
 import org.hornetq.jms.HornetQQueue;
@@ -63,6 +56,12 @@ public class SymmetricClusterExample extends HornetQExample
       Connection connection1 = null;
       
       Connection connection2 = null;
+
+      Connection connection3 = null;
+
+      Connection connection4 = null;
+
+      Connection connection5 = null;
       
       try
       {
@@ -83,19 +82,31 @@ public class SymmetricClusterExample extends HornetQExample
          
          Topic topic = new HornetQTopic("exampleTopic");
 
-         // Step 3. We create three connections, they should be to different nodes of the cluster in a round-robin fashion
+         // Step 3. We create six connections, they should be to different nodes of the cluster in a round-robin fashion
          // and start them
          connection0 = cf.createConnection();
-         
+
          connection1 = cf.createConnection();
          
          connection2 = cf.createConnection();
+
+         connection3 = cf.createConnection();
+
+         connection4 = cf.createConnection();
+
+         connection5 = cf.createConnection();
          
          connection0.start();
          
          connection1.start();
          
          connection2.start();
+
+         connection3.start();
+
+         connection4.start();
+
+         connection5.start();
          
          // Step 4. We create a session on each connection
          
@@ -104,6 +115,12 @@ public class SymmetricClusterExample extends HornetQExample
          Session session1 = connection1.createSession(false, Session.AUTO_ACKNOWLEDGE);
          
          Session session2 = connection2.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+         Session session3 = connection0.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+         Session session4 = connection1.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+         Session session5 = connection2.createSession(false, Session.AUTO_ACKNOWLEDGE);
          
          // Step 5. We create a topic subscriber on each server
          
@@ -112,13 +129,16 @@ public class SymmetricClusterExample extends HornetQExample
          MessageConsumer subscriber1 = session1.createConsumer(topic);
          
          MessageConsumer subscriber2 = session2.createConsumer(topic);
+
+         MessageConsumer subscriber3 = session3.createConsumer(topic);
+
+         MessageConsumer subscriber4 = session4.createConsumer(topic);
+
+         MessageConsumer subscriber5 = session5.createConsumer(topic);
          
          // Step 6. We create a queue consumer on server 0
          
          MessageConsumer consumer0 = session0.createConsumer(queue);
-         
-         // Give a little time for consumers to propagate throughout cluster
-         Thread.sleep(2000);
          
          // Step 7. We create an anonymous message producer on just one server 2
          
@@ -130,22 +150,16 @@ public class SymmetricClusterExample extends HornetQExample
                   
          for (int i = 0; i < numMessages; i++)
          {
-            TextMessage message1 = session2.createTextMessage("Topic message 1");
+            TextMessage message1 = session2.createTextMessage("Topic message " + i);
          
             producer2.send(topic, message1);
             
-            TextMessage message2 = session2.createTextMessage("Queue message 1");
+            TextMessage message2 = session2.createTextMessage("Queue message " + i);
             
             producer2.send(queue, message2);
          }
          
-         // Step 9. We kill live server 1, this will cause connection1 to transparently fail over onto server 4 
-         
-         killServer(1);
-         
-         Thread.sleep(500);
-         
-         // Step 9. Verify all subscribers receive the messages
+         // Step 9. Verify all subscribers and the consumer receive the messages
          
          for (int i = 0; i < numMessages; i++)
          {         
@@ -169,71 +183,31 @@ public class SymmetricClusterExample extends HornetQExample
             {
                return false;
             }
-                        
-            TextMessage received3 = (TextMessage)consumer0.receive(5000);
-            
+
+            TextMessage received3 = (TextMessage)subscriber3.receive(5000);
+
             if (received3 == null)
             {
                return false;
-            }         
-         }
-         
-         // Step 10. Send 500 more messages to the queue and topic
-         
-         for (int i = 0; i < numMessages; i++)
-         {
-            // Step 11. Half way through sending we kill server 2
-            
-            if (i == numMessages / 2)
+            }
+
+            TextMessage received4 = (TextMessage)subscriber4.receive(5000);
+
+            if (received4 == null)
             {
-               killServer(2);
+               return false;
+            }
+
+            TextMessage received5 = (TextMessage)subscriber5.receive(5000);
+
+            if (received5 == null)
+            {
+               return false;
             }
                         
-            TextMessage message3 = session2.createTextMessage("Topic message 2");
+            TextMessage received6 = (TextMessage)consumer0.receive(5000);
             
-            producer2.send(topic, message3);
-                                    
-            TextMessage message4 = session2.createTextMessage("Queue message 2");
-            
-            producer2.send(queue, message4);
-         }
-                 
-         
-         //Step 11. Verify all the messages are received by the subscribers
-         
-         for (int i = 0; i < numMessages; i++)
-         {
-            // Step 12. Half way through receiving, we kill server 0
-            
-            if (i == numMessages / 2)
-            {
-               killServer(0);
-            }
-         
-            TextMessage received0 = (TextMessage)subscriber0.receive(5000);
-            
-            if (received0 == null)
-            {
-               return false;
-            }
-            
-            TextMessage received1 = (TextMessage)subscriber1.receive(5000);
-            
-            if (received1 == null)
-            {
-               return false;
-            }
-            
-            TextMessage received2 = (TextMessage)subscriber2.receive(5000);
-            
-            if (received2 == null)
-            {
-               return false;
-            }
-            
-            TextMessage received3 = (TextMessage)consumer0.receive(5000);
-            
-            if (received3 == null)
+            if (received6 == null)
             {
                return false;
             }         

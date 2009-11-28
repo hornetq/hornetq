@@ -40,16 +40,12 @@
    &lt;/cluster-connection&gt;
    </code>
      </pre>    
-     <p>In this example we create a symmetric cluster of three live nodes, and we also pair each live node
+     <p>In this example we create a symmetric cluster of six live nodes, and we also pair each live node
      with it's own backup node. (A backup node is not strictly necessary for a symmetric cluster).</p>
-     <p>By providing each node with a backup, we ensure that, in case of failure, the cluster will continue
-     without failure, with all connections on live failing over transparently onto the backup.</p>
-     <p>In this example will we will demonstrate this by deploying a JMS topic and Queue on all nodes of the cluster
+    <p>In this example will we will demonstrate this by deploying a JMS topic and Queue on all nodes of the cluster
      , sending messages to the queue and topic from different nodes, and verifying messages are received correctly
      by consumers on different nodes.</p>
-     <p>During the example will will also kill each live server in turn, at different times, and verify that the sending
-     consuming of messages carries on uninterrupted, as connections transparently fail over from live to backup.</p>
-     <p>For more information on configuring HornetQ clustering in general, please see the clustering
+    <p>For more information on configuring HornetQ clustering in general, please see the clustering
      section of the user manual.</p>      
      <h2>Example step-by-step</h2>
      <p><i>To run the example, simply type <code>./build.sh</code> (or <code>build.bat</code> on windows) from this directory</i></p>
@@ -79,43 +75,67 @@
            </code>
         </pre>
 
-        <li>We create three connections, they should be to different nodes of the cluster in a round-robin fashion
+        <li>We create six connections, they should be to different nodes of the cluster in a round-robin fashion
          and start them.</li>
         <pre class="prettyprint">
            <code>
    connection0 = cf.createConnection();
-         
-   connection1 = cf.createConnection();
-         
-   connection2 = cf.createConnection();
-         
-   connection0.start();
-         
-   connection1.start();
-         
-   connection2.start();           
+
+     connection1 = cf.createConnection();
+
+     connection2 = cf.createConnection();
+
+     connection3 = cf.createConnection();
+
+     connection4 = cf.createConnection();
+
+     connection5 = cf.createConnection();
+
+     connection0.start();
+
+     connection1.start();
+
+     connection2.start();
+
+     connection3.start();
+
+     connection4.start();
+
+     connection5.start();
            </code>
         </pre>
 
         <li>We create a session on each connection.</li>
         <pre class="prettyprint">
            <code>
-   Session session0 = connection0.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
-   Session session1 = connection1.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
-   Session session2 = connection2.createSession(false, Session.AUTO_ACKNOWLEDGE);           
+     Session session0 = connection0.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+     Session session1 = connection1.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+     Session session2 = connection2.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+     Session session3 = connection0.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+     Session session4 = connection1.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+     Session session5 = connection2.createSession(false, Session.AUTO_ACKNOWLEDGE);
            </code>
         </pre>
 
         <li>We create a topic subscriber on each server.</li>
         <pre class="prettyprint">
            <code>
-   MessageConsumer subscriber0 = session0.createConsumer(topic);
-         
-   MessageConsumer subscriber1 = session1.createConsumer(topic);
-         
-   MessageConsumer subscriber2 = session2.createConsumer(topic);                     
+         MessageConsumer subscriber0 = session0.createConsumer(topic);
+
+         MessageConsumer subscriber1 = session1.createConsumer(topic);
+
+         MessageConsumer subscriber2 = session2.createConsumer(topic);
+
+         MessageConsumer subscriber3 = session3.createConsumer(topic);
+
+         MessageConsumer subscriber4 = session4.createConsumer(topic);
+
+         MessageConsumer subscriber5 = session5.createConsumer(topic);
            </code>
         </pre>
 
@@ -149,123 +169,63 @@
       producer2.send(queue, message2);
    }
            </code>
-        </pre>
-        
-        <li>We kill live server 1, this will cause connection1 to transparently fail over onto server 4.</li>
-        <pre class="prettyprint">
-           <code>
-   killServer(1);
-            </code>
-        </pre>
-
-        <li>Verify all subscribers receive the messages.</li>
+       </pre>
+        <li>Verify all subscribers and consumer receive the messages.</li>
         <pre class="prettyprint">
            <code>
    for (int i = 0; i < numMessages; i++)
-   {         
-      TextMessage received0 = (TextMessage)subscriber0.receive(5000);
-      
-      if (received0 == null)
-      {
-         return false;
-      }
-      
-      TextMessage received1 = (TextMessage)subscriber1.receive(5000);
-      
-      if (received1 == null)
-      {
-         return false;
-      }
-      
-      TextMessage received2 = (TextMessage)subscriber2.receive(5000);
-      
-      if (received2 == null)
-      {
-         return false;
-      }
-                  
-      TextMessage received3 = (TextMessage)consumer0.receive(5000);
-      
-      if (received3 == null)
-      {
-         return false;
-      }         
-   }
-           </code>
-        </pre>
+     {
+        TextMessage received0 = (TextMessage)subscriber0.receive(5000);
 
-        <li>Send 500 more messages to the queue and topic.</li>
-        <pre class="prettyprint">
-           <code>
-   for (int i = 0; i < numMessages; i++)
-   {
-           </code>
-        </pre>
+        if (received0 == null)
+        {
+           return false;
+        }
 
-        <li>Half way through sending we kill server 2</li>
-        <pre class="prettyprint">
-           <code>
-      if (i == numMessages / 2)
-      {
-         killServer(2);
-      }
-                  
-      TextMessage message3 = session2.createTextMessage("Topic message 2");
-      
-      producer2.send(topic, message3);
-                              
-      TextMessage message4 = session2.createTextMessage("Queue message 2");
-      
-      producer2.send(queue, message4);
-   }
-        </pre>
+        TextMessage received1 = (TextMessage)subscriber1.receive(5000);
 
-        <li>Verify all the messages are received by the subscribers.</li>
-        <pre class="prettyprint">
-           <code>
-   for (int i = 0; i < numMessages; i++)
-   {
+        if (received1 == null)
+        {
+           return false;
+        }
+
+        TextMessage received2 = (TextMessage)subscriber2.receive(5000);
+
+        if (received2 == null)
+        {
+           return false;
+        }
+
+        TextMessage received3 = (TextMessage)subscriber3.receive(5000);
+
+        if (received3 == null)
+        {
+           return false;
+        }
+
+        TextMessage received4 = (TextMessage)subscriber4.receive(5000);
+
+        if (received4 == null)
+        {
+           return false;
+        }
+
+        TextMessage received5 = (TextMessage)subscriber5.receive(5000);
+
+        if (received5 == null)
+        {
+           return false;
+        }
+
+        TextMessage received6 = (TextMessage)consumer0.receive(5000);
+
+        if (received6 == null)
+        {
+           return false;
+        }
+     }
            </code>
         </pre>
-        
-        <li>Half way through receiving, we kill server 0.</li>
-        <pre class="prettyprint">
-           <code>
-      if (i == numMessages / 2)
-      {
-         killServer(0);
-      }
-   
-      TextMessage received0 = (TextMessage)subscriber0.receive(5000);
-      
-      if (received0 == null)
-      {
-         return false;
-      }
-      
-      TextMessage received1 = (TextMessage)subscriber1.receive(5000);
-      
-      if (received1 == null)
-      {
-         return false;
-      }
-      
-      TextMessage received2 = (TextMessage)subscriber2.receive(5000);
-      
-      if (received2 == null)
-      {
-         return false;
-      }
-      
-      TextMessage received3 = (TextMessage)consumer0.receive(5000);
-      
-      if (received3 == null)
-      {
-         return false;
-      }         
-   }
-           </code>
-        </pre> 
 
         <li>Be sure to close our resources!</li>
 

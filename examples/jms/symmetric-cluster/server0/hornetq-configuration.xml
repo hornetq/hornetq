@@ -3,8 +3,7 @@
             xsi:schemaLocation="urn:hornetq /schema/hornetq-configuration.xsd">
 
    <clustered>true</clustered>
-   
-   <backup-connector-ref connector-name="backup-connector"/>
+
 
    <!-- Connectors -->
 
@@ -14,10 +13,6 @@
          <param key="port" value="5445"/>
       </connector>
 
-      <connector name="backup-connector">
-         <factory-class>org.hornetq.integration.transports.netty.NettyConnectorFactory</factory-class>
-         <param key="port" value="5448"/>
-      </connector>
    </connectors>
    
    <!-- Acceptors -->
@@ -34,7 +29,7 @@
          <group-address>231.7.7.7</group-address>
          <group-port>9876</group-port>
          <broadcast-period>100</broadcast-period>
-         <connector-ref connector-name="netty-connector" backup-connector-name="backup-connector"/>
+         <connector-ref connector-name="netty-connector"/>
      </broadcast-group>
    </broadcast-groups>
    

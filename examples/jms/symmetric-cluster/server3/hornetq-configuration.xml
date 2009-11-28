@@ -3,8 +3,6 @@
             xsi:schemaLocation="urn:hornetq /schema/hornetq-configuration.xsd">
 
    <clustered>true</clustered>
-   
-   <backup>true</backup>
 
    <!-- Connectors -->
 

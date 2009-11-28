@@ -18,27 +18,22 @@
 
    <import file="../../common/build.xml"/>
    <property file="ant.properties"/>
-   <target name="run" depends="delete-files">
+   <target name="run">
       <antcall target="runExample">
          <param name="example.classname" value="org.hornetq.jms.example.SymmetricClusterExample"/>
-         <param name="hornetq.example.beans.file" value="server3 server4 server5 server0 server1 server2"/>
+         <param name="hornetq.example.beans.file" value="server0 server1 server2 server3 server4 server5"/>
          
      	   <param name="java-min-memory" value="50M"/>
      	   <param name="java-max-memory" value="100M"/>
       </antcall>
    </target>
 
-   <target name="runRemote" depends="delete-files">
+   <target name="runRemote">
       <antcall target="runExample">
          <param name="example.classname" value="org.hornetq.jms.example.SymmetricClusterExample"/>
          <param name="hornetq.example.runServer" value="false"/>
       </antcall>
    </target>
-      
-   <target name="delete-files" depends="clean">
-      <delete file="./server0/KILL_ME"/>
-      <delete file="./server1/KILL_ME"/>
-      <delete file="./server2/KILL_ME"/>
-   </target>   
+
 
 </project>
