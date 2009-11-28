@@ -144,7 +144,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       sessionExecutor = executor;
 
       this.clientWindowSize = clientWindowSize;
-
+      
       this.ackBatchSize = ackBatchSize;
    }
 
@@ -585,7 +585,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       if (clientWindowSize >= 0)
       {
          creditsToSend += messageBytes;
-         
+
          if (creditsToSend >= clientWindowSize)
          {
             if (clientWindowSize == 0 && discountSlowConsumer)

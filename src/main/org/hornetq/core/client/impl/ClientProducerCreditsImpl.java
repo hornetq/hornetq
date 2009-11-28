@@ -82,13 +82,13 @@ public class ClientProducerCreditsImpl implements ClientProducerCredits
    }
 
    public synchronized void reset()
-   {
+   {      
       // Any arriving credits from before failover won't arrive, so we re-initialise
 
       semaphore.drainPermits();
 
       arriving = 0;
-
+      
       checkCredits(windowSize * 2);
    }
 
@@ -123,6 +123,7 @@ public class ClientProducerCreditsImpl implements ClientProducerCredits
 
    private void requestCredits(final int credits)
    {
+      
       session.sendProducerCreditsMessage(credits, destination);
    }
 

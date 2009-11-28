@@ -99,7 +99,7 @@ public class TimedBuffer
    // Public --------------------------------------------------------
 
    public TimedBuffer(final int size, final long timeout, final boolean flushOnSync, final boolean logRates)
-   {     
+   {
       this.bufferSize = size;
       this.logRates = logRates;
       if (logRates)
@@ -131,7 +131,6 @@ public class TimedBuffer
 
       timerThread.start();
 
-      log.info("log rates "  + logRates);
       if (logRates)
       {
          logRatesTimerTask = new LogRatesTimerTask();
@@ -263,7 +262,7 @@ public class TimedBuffer
             flush();
          }
       }
-      
+
       if (buffer.writerIndex() == bufferLimit)
       {
          flush();
@@ -273,47 +272,47 @@ public class TimedBuffer
    public void flush()
    {
       ByteBuffer bufferToFlush = null;
-      
+
       boolean useSync = false;
-      
+
       List<IOAsyncTask> callbacksToCall = null;
-      
+
       synchronized (this)
       {
          if (buffer.writerIndex() > 0)
          {
             latchTimer.up();
-   
+
             int pos = buffer.writerIndex();
-   
+
             if (logRates)
             {
                bytesFlushed += pos;
             }
-   
+
             bufferToFlush = bufferObserver.newBuffer(bufferSize, pos);
-   
+
             // Putting a byteArray on a native buffer is much faster, since it will do in a single native call.
             // Using bufferToFlush.put(buffer) would make several append calls for each byte
-   
+
             bufferToFlush.put(buffer.toByteBuffer().array(), 0, pos);
 
             callbacksToCall = callbacks;
-            
+
             callbacks = new LinkedList<IOAsyncTask>();
-   
+
             useSync = pendingSync;
-            
+
             active = false;
             pendingSync = false;
-   
+
             buffer.clear();
             bufferLimit = 0;
 
             flushesDone++;
          }
       }
-      
+
       // Execute the flush outside of the lock
       // This is important for NIO performance while we are using NIO Callbacks
       if (bufferToFlush != null)
@@ -339,7 +338,7 @@ public class TimedBuffer
          {
             if (bufferObserver != null)
             {
-                flush();
+               flush();
             }
          }
          finally
@@ -369,7 +368,7 @@ public class TimedBuffer
             {
                double rate = 1000 * ((double)bytesFlushed) / (now - lastExecution);
                log.info("Write rate = " + rate + " bytes / sec or " + (long)(rate / (1024 * 1024)) + " MiB / sec");
-               double flushRate = 1000 * ((double)flushesDone) / (now - lastExecution);              
+               double flushRate = 1000 * ((double)flushesDone) / (now - lastExecution);
                log.info("Flush rate = " + flushRate + " flushes / sec");
             }
 
@@ -377,7 +376,7 @@ public class TimedBuffer
 
             bytesFlushed = 0;
 
-            flushesDone = 0;           
+            flushesDone = 0;
          }
       }
 

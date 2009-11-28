@@ -843,13 +843,13 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
              
                conn.write(buffer, false);
 
-               int clientWindowSize = calcWindowSize(entry.getValue().getClientWindowSize());
-
+               int clientWindowSize = entry.getValue().getClientWindowSize();
+               
                if (clientWindowSize != 0)
                {
                   SessionConsumerFlowCreditMessage packet = new SessionConsumerFlowCreditMessage(entry.getKey(),
                                                                                                  clientWindowSize);
-
+                  
                   packet.setChannelID(channel.getID());
 
                   buffer = packet.encode(channel.getConnection());
@@ -902,6 +902,9 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       if (resetCreditManager)
       {
          producerCreditManager.reset();
+         
+         //Also need to send more credits for consumers, otherwise the system could hand with the server
+         //not having any credits to send
       }
    }
 

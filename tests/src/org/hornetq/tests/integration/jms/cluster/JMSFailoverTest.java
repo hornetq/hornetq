@@ -85,6 +85,17 @@ public class JMSFailoverTest extends UnitTestCase
 
       jbcf.setBlockOnPersistentSend(true);
       jbcf.setBlockOnNonPersistentSend(true);
+      
+      //Note we set consumer window size to a value so we can verify that consumer credit re-sending
+      //works properly on failover
+      //The value is small enough that credits will have to be resent several time
+      
+      final int numMessages = 10;
+      
+      final int bodySize = 1000;
+      
+      jbcf.setConsumerWindowSize(numMessages * bodySize / 10);
+
 
       Connection conn = jbcf.createConnection();
 
@@ -104,8 +115,7 @@ public class JMSFailoverTest extends UnitTestCase
 
       Queue queue = sess.createQueue("myqueue");
 
-      final int numMessages = 1000;
-
+      
       MessageProducer producer = sess.createProducer(queue);
 
       producer.setDeliveryMode(DeliveryMode.PERSISTENT);
