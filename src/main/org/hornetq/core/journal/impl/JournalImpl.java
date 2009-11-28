@@ -3370,12 +3370,28 @@ public class JournalImpl implements TestableJournal
          {
             lockAppend.lock();
 
-//            HornetQBuffer bb = newBuffer(128 * 1024);
-//
-//            for (int i = 0; i < pages; i++)
-//            {
-//               appendRecord(bb, false, false, null, null);
-//            }
+            final ByteArrayEncoding byteEncoder = new ByteArrayEncoding(new byte[128 * 1024]);
+            
+            JournalInternalRecord blastRecord = new JournalInternalRecord()
+            {
+
+               @Override
+               public int getEncodeSize()
+               {
+                  return byteEncoder.getEncodeSize();
+               }
+
+               public void encode(HornetQBuffer buffer)
+               {
+                  byteEncoder.encode(buffer);
+               }
+            };
+            
+
+            for (int i = 0; i < pages; i++)
+            {
+               appendRecord(blastRecord, false, false, null, null);
+            }
 
             lockAppend.unlock();
          }
