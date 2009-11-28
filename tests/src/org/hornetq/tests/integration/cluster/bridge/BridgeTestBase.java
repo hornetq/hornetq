@@ -13,6 +13,7 @@
 
 package org.hornetq.tests.integration.cluster.bridge;
 
+import java.util.ArrayList;
 import java.util.Map;
 
 import org.hornetq.core.config.Configuration;
@@ -34,10 +35,43 @@ import org.hornetq.tests.util.UnitTestCase;
  */
 public abstract class BridgeTestBase extends UnitTestCase
 {
+   
+   private ArrayList<HornetQServer> servers;
+   
+   public void setUp() throws Exception
+   {
+      super.setUp();
+      servers = new ArrayList<HornetQServer>();
+   }
+   
+   public void tearDown() throws Exception
+   {
+      for (HornetQServer server: servers)
+      {
+         try
+         {
+            if (server.isStarted())
+            {
+               server.stop();
+            }
+         }
+         catch (Throwable e)
+         {
+            // System.out -> junit report
+            System.out.println("Error while stopping server:");
+            e.printStackTrace(System.out);
+         }
+      }
+      
+      super.tearDown();
+   }
+   
    protected HornetQServer createHornetQServer(final int id, final boolean netty, final Map<String, Object> params)
    {
       return createHornetQServer(id, params, netty, false);
    }
+   
+   
 
    protected HornetQServer createHornetQServer(final int id,
                                                final Map<String, Object> params,
@@ -71,6 +105,9 @@ public abstract class BridgeTestBase extends UnitTestCase
                     .add(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory", params));
       }
       HornetQServer service = HornetQ.newHornetQServer(serviceConf, true);
+      
+      servers.add(service);
+      
       return service;
    }
 
