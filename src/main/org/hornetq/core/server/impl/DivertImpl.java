@@ -13,8 +13,6 @@
 
 package org.hornetq.core.server.impl;
 
-import static org.hornetq.core.message.impl.MessageImpl.HDR_ORIGINAL_DESTINATION;
-
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.persistence.StorageManager;
