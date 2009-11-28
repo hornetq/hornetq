@@ -638,59 +638,85 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
       {
          return false;
       }
+      
+      boolean retry = false;
 
-      try
+      do
       {
-         if (discoveryAddress != null)
+         try
          {
-            csf = new ClientSessionFactoryImpl(discoveryAddress, discoveryPort);
+            if (discoveryAddress != null)
+            {
+               csf = new ClientSessionFactoryImpl(discoveryAddress, discoveryPort);
+            }
+            else
+            {
+               csf = new ClientSessionFactoryImpl(connectorPair.a, connectorPair.b);
+            }
+
+            csf.setFailoverOnServerShutdown(failoverOnServerShutdown);
+            csf.setRetryInterval(retryInterval);
+            csf.setRetryIntervalMultiplier(retryIntervalMultiplier);
+            csf.setReconnectAttempts(reconnectAttempts);
+            csf.setBlockOnPersistentSend(false);
+
+            // Must have confirmations enabled so we get send acks
+
+            csf.setConfirmationWindowSize(confirmationWindowSize);
+
+            // Session is pre-acknowledge
+            session = (ClientSessionInternal)csf.createSession(clusterUser, clusterPassword, false, true, true, true, 1);
+
+            if (session == null)
+            {
+               // This can happen if the bridge is shutdown
+               return false;
+            }
+
+            producer = session.createProducer();
+
+            session.addFailureListener(BridgeImpl.this);
+
+            session.setSendAcknowledgementHandler(BridgeImpl.this);
+
+            setupNotificationConsumer();
+
+            active = true;
+
+            queue.addConsumer(BridgeImpl.this);
+
+            queue.deliverAsync(executor);
+
+            log.info("Bridge " + name + " is connected to its destination");
+
+            return true;
          }
-         else
+         catch (HornetQException e)
          {
-            csf = new ClientSessionFactoryImpl(connectorPair.a, connectorPair.b);
-         }
+            // the session was created while its server was starting, retry it:
+            if (e.getCode() == HornetQException.SESSION_CREATION_REJECTED)
+            {
+               log.warn("Server is starting, retry to create the session for bridge " + name);
 
-         csf.setFailoverOnServerShutdown(failoverOnServerShutdown);
-         csf.setRetryInterval(retryInterval);
-         csf.setRetryIntervalMultiplier(retryIntervalMultiplier);
-         csf.setReconnectAttempts(reconnectAttempts);
-         csf.setBlockOnPersistentSend(false);
+               retry = true;
+               continue;
+            }
+            else
+            {
+               log.warn("Bridge " + name + " is unable to connect to destination. It will be disabled.", e);
 
-         // Must have confirmations enabled so we get send acks
-
-         csf.setConfirmationWindowSize(confirmationWindowSize);
-
-         // Session is pre-acknowledge
-         session = (ClientSessionInternal)csf.createSession(clusterUser, clusterPassword, false, true, true, true, 1);
-
-         if (session == null)
+               return false;
+            }
+         }      
+         catch (Exception e)
          {
-            // This can happen if the bridge is shutdown
+            log.warn("Bridge " + name + " is unable to connect to destination. It will be disabled.", e);
+
             return false;
          }
-
-         producer = session.createProducer();
-
-         session.addFailureListener(BridgeImpl.this);
-
-         session.setSendAcknowledgementHandler(BridgeImpl.this);
-
-         setupNotificationConsumer();
-
-         active = true;
-
-         queue.addConsumer(BridgeImpl.this);
-
-         queue.deliverAsync(executor);
-
-         return true;
-      }
-      catch (Exception e)
-      {
-         log.warn("Bridge " + name + " is unable to connect to destination. It will be disabled.", e);
-
-         return false;
-      }
+      } while(retry);
+      
+      return false;
    }
 
    // Inner classes -------------------------------------------------
