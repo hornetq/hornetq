@@ -17,8 +17,6 @@
      available again across the network.</p>
      <p>In the case that the server didn't actually crash, i.e. the network was temporarily unavailable, the client will
      be able to resume all its sessions and connections where it left off, 100% transparently.</p>
-     <p>This is very similar to automatic failover, the difference being with automatic failover the reconnection
-     is to a different server, but in this cases the reconnection is to the <b>same</b> server</p>
      <p>In the case that the server <b>did</b> crash and was restarted, on reconnection the server session
      clearly won't still exist, so the session will be unable to continue transparently, and any registered
      ExceptionListener will be called, to allow any application layer reconnect logic to be called.</p>
