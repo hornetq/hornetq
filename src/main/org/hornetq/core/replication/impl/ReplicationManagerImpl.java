@@ -333,7 +333,7 @@ public class ReplicationManagerImpl implements ReplicationManager
       {
          public void connectionFailed(HornetQException me)
          {
-            log.warn("Connection to the backup node failed, removing replication now");
+            log.warn("Connection to the backup node failed, removing replication now", me);
             try
             {
                stop();
