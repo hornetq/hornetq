@@ -3106,6 +3106,28 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 
       assertEquals(0, journal.getDataFilesCount());
    }
+   
+   
+   public void testAddTexThenUpdate() throws Exception
+   {
+      setup(2, 60 * 1024, true);
+
+      createJournal();
+      startJournal();
+      load();
+
+
+      addTx(1, 1);
+      updateTx(1, 1);
+      commit(1);
+      update(1);
+
+      stopJournal();
+      createJournal();
+      startJournal();
+      loadAndCheck();
+
+   }
 
    protected abstract int getAlignment();
 
