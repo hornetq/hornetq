@@ -63,6 +63,8 @@ public abstract class BridgeTestBase extends UnitTestCase
          }
       }
       
+      servers.clear();
+      
       super.tearDown();
    }
    
