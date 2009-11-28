@@ -643,6 +643,8 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
 
       do
       {
+         log.info("Connecting bridge " + name + " to its destination");
+
          try
          {
             if (discoveryAddress != null)
