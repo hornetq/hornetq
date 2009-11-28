@@ -82,8 +82,6 @@ public class DivertImpl implements Divert
 
    public void route(final ServerMessage message, final RoutingContext context) throws Exception
    {
-      SimpleString originalDestination = message.getDestination();
-
       // We must make a copy of the message, otherwise things like returning credits to the page won't work
       // properly on ack, since the original destination will be overwritten
 
