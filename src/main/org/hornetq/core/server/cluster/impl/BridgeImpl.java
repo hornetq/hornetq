@@ -687,7 +687,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
       }
       catch (Exception e)
       {
-         log.warn("Bridge " + name + " is unable to connect to destination. It will be disabled.");
+         log.warn("Bridge " + name + " is unable to connect to destination. It will be disabled.", e);
 
          return false;
       }
