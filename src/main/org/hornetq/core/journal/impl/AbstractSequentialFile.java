@@ -314,10 +314,6 @@ public abstract class AbstractSequentialFile implements SequentialFile
             }
          }
       }
-
-      public void waitCompletion() throws Exception
-      {
-      }
    }
 
    protected class LocalBufferObserver implements TimedBufferObserver
