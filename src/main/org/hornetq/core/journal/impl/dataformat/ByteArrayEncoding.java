@@ -14,48 +14,40 @@
 package org.hornetq.core.journal.impl.dataformat;
 
 import org.hornetq.core.buffers.HornetQBuffer;
-import org.hornetq.core.journal.impl.JournalImpl;
+import org.hornetq.core.journal.EncodingSupport;
 
 /**
- * A JournalDeleteRecord
+ * A ByteArrayEncoding
  *
  * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  *
  *
  */
-public class JournalDeleteRecord extends JournalInternalRecord
+public class ByteArrayEncoding implements EncodingSupport
 {
 
-   private final long id;
+   final byte[] data;
 
-   /**
-    * @param id
-    * @param recordType
-    * @param record
-    * @param size
-    */
-   public JournalDeleteRecord(final long id)
+   public ByteArrayEncoding(final byte[] data)
    {
-      this.id = id;
+      this.data = data;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.journal.EncodingSupport#encode(org.hornetq.core.buffers.HornetQBuffer)
-    */
+   // Public --------------------------------------------------------
+
+   public void decode(final HornetQBuffer buffer)
+   {
+      throw new IllegalStateException("operation not supported");
+   }
+
    public void encode(final HornetQBuffer buffer)
    {
-      buffer.writeByte(JournalImpl.DELETE_RECORD);
-
-      buffer.writeInt(fileID);
-
-      buffer.writeLong(id);
-
-      buffer.writeInt(getEncodeSize());
+      buffer.writeBytes(data);
    }
 
-   @Override
    public int getEncodeSize()
    {
-      return JournalImpl.SIZE_DELETE_RECORD;
+      return data.length;
    }
 }
+

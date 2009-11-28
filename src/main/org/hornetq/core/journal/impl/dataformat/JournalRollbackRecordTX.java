@@ -14,7 +14,6 @@
 package org.hornetq.core.journal.impl.dataformat;
 
 import org.hornetq.core.buffers.HornetQBuffer;
-import org.hornetq.core.journal.impl.InternalEncoder;
 import org.hornetq.core.journal.impl.JournalImpl;
 
 /**
@@ -24,7 +23,7 @@ import org.hornetq.core.journal.impl.JournalImpl;
  *
  *
  */
-public class JournalRollbackRecordTX extends InternalEncoder
+public class JournalRollbackRecordTX extends JournalInternalRecord
 {
    private final long txID;
 

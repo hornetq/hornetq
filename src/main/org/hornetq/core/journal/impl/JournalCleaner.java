@@ -20,6 +20,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.hornetq.core.journal.RecordInfo;
 import org.hornetq.core.journal.SequentialFileFactory;
+import org.hornetq.core.journal.impl.dataformat.ByteArrayEncoding;
 import org.hornetq.core.journal.impl.dataformat.JournalAddRecord;
 import org.hornetq.core.journal.impl.dataformat.JournalAddRecordTX;
 import org.hornetq.core.journal.impl.dataformat.JournalCompleteRecordTX;
@@ -80,7 +81,7 @@ public class JournalCleaner extends AbstractJournalUpdateTask
          writeEncoder(new JournalAddRecord(true,
                                            info.id,
                                            info.getUserRecordType(),
-                                           new JournalImpl.ByteArrayEncoding(info.data)));
+                                           new ByteArrayEncoding(info.data)));
       }
    }
 
@@ -97,7 +98,7 @@ public class JournalCleaner extends AbstractJournalUpdateTask
                                              transactionID,
                                              recordInfo.id,
                                              recordInfo.getUserRecordType(),
-                                             new JournalImpl.ByteArrayEncoding(recordInfo.data)));
+                                             new ByteArrayEncoding(recordInfo.data)));
       }
    }
 
@@ -128,7 +129,7 @@ public class JournalCleaner extends AbstractJournalUpdateTask
 
       writeEncoder(new JournalDeleteRecordTX(transactionID,
                                              recordInfo.id,
-                                             new JournalImpl.ByteArrayEncoding(recordInfo.data)));
+                                             new ByteArrayEncoding(recordInfo.data)));
    }
 
    /* (non-Javadoc)
@@ -138,7 +139,7 @@ public class JournalCleaner extends AbstractJournalUpdateTask
    {
       int txcounter = getTransactionCounter(transactionID);
 
-      writeEncoder(new JournalCompleteRecordTX(false, transactionID, new JournalImpl.ByteArrayEncoding(extraData)),
+      writeEncoder(new JournalCompleteRecordTX(false, transactionID, new ByteArrayEncoding(extraData)),
                    txcounter);
    }
 
@@ -160,7 +161,7 @@ public class JournalCleaner extends AbstractJournalUpdateTask
          writeEncoder(new JournalAddRecord(false,
                                            recordInfo.id,
                                            recordInfo.userRecordType,
-                                           new JournalImpl.ByteArrayEncoding(recordInfo.data)));
+                                           new ByteArrayEncoding(recordInfo.data)));
       }
    }
 
@@ -177,7 +178,7 @@ public class JournalCleaner extends AbstractJournalUpdateTask
                                              transactionID,
                                              recordInfo.id,
                                              recordInfo.userRecordType,
-                                             new JournalImpl.ByteArrayEncoding(recordInfo.data)));
+                                             new ByteArrayEncoding(recordInfo.data)));
       }
    }
 

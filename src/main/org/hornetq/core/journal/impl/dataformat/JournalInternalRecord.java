@@ -11,7 +11,7 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.core.journal.impl;
+package org.hornetq.core.journal.impl.dataformat;
 
 import org.hornetq.core.buffers.HornetQBuffer;
 import org.hornetq.core.journal.EncodingSupport;
@@ -23,7 +23,7 @@ import org.hornetq.core.journal.EncodingSupport;
  *
  *
  */
-public abstract class InternalEncoder implements EncodingSupport
+public abstract class JournalInternalRecord implements EncodingSupport
 {
 
    protected int fileID;

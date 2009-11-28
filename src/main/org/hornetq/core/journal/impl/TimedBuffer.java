@@ -27,6 +27,7 @@ import org.hornetq.core.buffers.HornetQBuffers;
 import org.hornetq.core.journal.EncodingSupport;
 import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.journal.IOCompletion;
+import org.hornetq.core.journal.impl.dataformat.ByteArrayEncoding;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.utils.VariableLatch;
 
@@ -233,7 +234,7 @@ public class TimedBuffer
 
    public synchronized void addBytes(final HornetQBuffer bytes, final boolean sync, final IOAsyncTask callback)
    {
-      addBytes(new JournalImpl.ByteArrayEncoding(bytes.toByteBuffer().array()), sync, callback);
+      addBytes(new ByteArrayEncoding(bytes.toByteBuffer().array()), sync, callback);
    }
 
    public synchronized void addBytes(final EncodingSupport bytes, final boolean sync, final IOAsyncTask callback)

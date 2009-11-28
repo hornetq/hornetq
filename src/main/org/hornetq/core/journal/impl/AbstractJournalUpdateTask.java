@@ -22,7 +22,9 @@ import org.hornetq.core.buffers.HornetQBuffer;
 import org.hornetq.core.buffers.HornetQBuffers;
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.SequentialFileFactory;
+import org.hornetq.core.journal.impl.dataformat.ByteArrayEncoding;
 import org.hornetq.core.journal.impl.dataformat.JournalAddRecord;
+import org.hornetq.core.journal.impl.dataformat.JournalInternalRecord;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.utils.ConcurrentHashSet;
 import org.hornetq.utils.Pair;
@@ -153,11 +155,11 @@ public abstract class AbstractJournalUpdateTask implements JournalReaderCallback
          }
 
          
-         InternalEncoder controlRecord = new JournalAddRecord(true,
-                                                              1,
-                                                              (byte)0,
-                                                              new JournalImpl.ByteArrayEncoding(filesToRename.toByteBuffer()
-                                                                                                             .array()));
+         JournalInternalRecord controlRecord = new JournalAddRecord(true,
+                                                                    1,
+                                                                    (byte)0,
+                                                                    new ByteArrayEncoding(filesToRename.toByteBuffer()
+                                                                                                       .array()));
          
          controlRecord.setFileID(-1);
          
@@ -235,13 +237,13 @@ public abstract class AbstractJournalUpdateTask implements JournalReaderCallback
       return writingChannel;
    }
    
-   protected void writeEncoder(InternalEncoder record) throws Exception
+   protected void writeEncoder(JournalInternalRecord record) throws Exception
    {
       record.setFileID(fileID);
       record.encode(getWritingChannel());
    }
 
-   protected void writeEncoder(InternalEncoder record, int txcounter) throws Exception
+   protected void writeEncoder(JournalInternalRecord record, int txcounter) throws Exception
    {
       record.setNumberOfRecords(txcounter);
       writeEncoder(record);

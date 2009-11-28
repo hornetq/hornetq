@@ -23,6 +23,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.hornetq.core.buffers.HornetQBuffer;
 import org.hornetq.core.exception.HornetQException;
+import org.hornetq.core.journal.impl.dataformat.JournalInternalRecord;
 import org.hornetq.utils.DataConstants;
 
 /**
@@ -184,7 +185,7 @@ public class JournalTransaction
     * @param currentFile
     * @param bb
     */
-   public void fillNumberOfRecords(final JournalFile currentFile, final InternalEncoder data)
+   public void fillNumberOfRecords(final JournalFile currentFile, final JournalInternalRecord data)
    {
       data.setNumberOfRecords(getCounter(currentFile));
    }

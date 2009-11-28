@@ -54,11 +54,13 @@ import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.journal.TestableJournal;
 import org.hornetq.core.journal.TransactionFailureCallback;
+import org.hornetq.core.journal.impl.dataformat.ByteArrayEncoding;
 import org.hornetq.core.journal.impl.dataformat.JournalAddRecord;
 import org.hornetq.core.journal.impl.dataformat.JournalAddRecordTX;
 import org.hornetq.core.journal.impl.dataformat.JournalCompleteRecordTX;
 import org.hornetq.core.journal.impl.dataformat.JournalDeleteRecord;
 import org.hornetq.core.journal.impl.dataformat.JournalDeleteRecordTX;
+import org.hornetq.core.journal.impl.dataformat.JournalInternalRecord;
 import org.hornetq.core.journal.impl.dataformat.JournalRollbackRecordTX;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.utils.DataConstants;
@@ -672,7 +674,7 @@ public class JournalImpl implements TestableJournal
 
       try
       {  
-         InternalEncoder addRecord = new JournalAddRecord(true, id, recordType, record);
+         JournalInternalRecord addRecord = new JournalAddRecord(true, id, recordType, record);
 
          if (callback != null)
          {
@@ -744,7 +746,7 @@ public class JournalImpl implements TestableJournal
             }
          }
 
-         InternalEncoder updateRecord = new JournalAddRecord(false, id, recordType, record);
+         JournalInternalRecord updateRecord = new JournalAddRecord(false, id, recordType, record);
 
          if (callback != null)
          {
@@ -817,7 +819,7 @@ public class JournalImpl implements TestableJournal
             }
          }
          
-         InternalEncoder deleteRecord = new JournalDeleteRecord(id);
+         JournalInternalRecord deleteRecord = new JournalDeleteRecord(id);
 
          if (callback != null)
          {
@@ -877,7 +879,7 @@ public class JournalImpl implements TestableJournal
       try
       {
 
-         InternalEncoder addRecord = new JournalAddRecordTX(true, txID, id, recordType, record);
+         JournalInternalRecord addRecord = new JournalAddRecordTX(true, txID, id, recordType, record);
 
          JournalTransaction tx = getTransactionInfo(txID);
 
@@ -926,7 +928,7 @@ public class JournalImpl implements TestableJournal
       try
       {
 
-         InternalEncoder updateRecordTX = new JournalAddRecordTX(false, txID, id, recordType, record);
+         JournalInternalRecord updateRecordTX = new JournalAddRecordTX(false, txID, id, recordType, record);
 
          JournalTransaction tx = getTransactionInfo(txID);
 
@@ -969,7 +971,7 @@ public class JournalImpl implements TestableJournal
 
       try
       {
-         InternalEncoder deleteRecordTX = new JournalDeleteRecordTX(txID, id, record);
+         JournalInternalRecord deleteRecordTX = new JournalDeleteRecordTX(txID, id, record);
 
          JournalTransaction tx = getTransactionInfo(txID);
 
@@ -1054,7 +1056,7 @@ public class JournalImpl implements TestableJournal
       try
       {
 
-         InternalEncoder prepareRecord = new JournalCompleteRecordTX(false, txID, transactionData);
+         JournalInternalRecord prepareRecord = new JournalCompleteRecordTX(false, txID, transactionData);
 
          if (callback != null)
          {
@@ -1134,7 +1136,7 @@ public class JournalImpl implements TestableJournal
             throw new IllegalStateException("Cannot find tx with id " + txID);
          }
 
-         InternalEncoder commitRecord = new JournalCompleteRecordTX(true, txID, null);
+         JournalInternalRecord commitRecord = new JournalCompleteRecordTX(true, txID, null);
 
          if (callback != null)
          {
@@ -1194,7 +1196,7 @@ public class JournalImpl implements TestableJournal
             throw new IllegalStateException("Cannot find tx with id " + txID);
          }
          
-         InternalEncoder rollbackRecord = new JournalRollbackRecordTX(txID);
+         JournalInternalRecord rollbackRecord = new JournalRollbackRecordTX(txID);
 
          if (callback != null)
          {
@@ -2697,7 +2699,7 @@ public class JournalImpl implements TestableJournal
     * 
     * @param completeTransaction If the appendRecord is for a prepare or commit, where we should update the number of pendingTransactions on the current file
     * */
-   private JournalFile appendRecord(final InternalEncoder encoder,
+   private JournalFile appendRecord(final JournalInternalRecord encoder,
                                     final boolean completeTransaction,
                                     final boolean sync,
                                     final JournalTransaction tx,
@@ -3316,34 +3318,6 @@ public class JournalImpl implements TestableJournal
          return 0;
       }
 
-   }
-
-   public static class ByteArrayEncoding implements EncodingSupport
-   {
-
-      final byte[] data;
-
-      public ByteArrayEncoding(final byte[] data)
-      {
-         this.data = data;
-      }
-
-      // Public --------------------------------------------------------
-
-      public void decode(final HornetQBuffer buffer)
-      {
-         throw new IllegalStateException("operation not supported");
-      }
-
-      public void encode(final HornetQBuffer buffer)
-      {
-         buffer.writeBytes(data);
-      }
-
-      public int getEncodeSize()
-      {
-         return data.length;
-      }
    }
 
    // Used on Load

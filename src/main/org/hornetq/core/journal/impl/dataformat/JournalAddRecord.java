@@ -15,7 +15,6 @@ package org.hornetq.core.journal.impl.dataformat;
 
 import org.hornetq.core.buffers.HornetQBuffer;
 import org.hornetq.core.journal.EncodingSupport;
-import org.hornetq.core.journal.impl.InternalEncoder;
 import org.hornetq.core.journal.impl.JournalImpl;
 
 /**
@@ -25,7 +24,7 @@ import org.hornetq.core.journal.impl.JournalImpl;
  *
  *
  */
-public class JournalAddRecord extends InternalEncoder
+public class JournalAddRecord extends JournalInternalRecord
 {
 
    private final long id;

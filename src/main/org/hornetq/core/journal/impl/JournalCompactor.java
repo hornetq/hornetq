@@ -27,10 +27,12 @@ import org.hornetq.core.journal.RecordInfo;
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.journal.impl.JournalImpl.JournalRecord;
+import org.hornetq.core.journal.impl.dataformat.ByteArrayEncoding;
 import org.hornetq.core.journal.impl.dataformat.JournalAddRecord;
 import org.hornetq.core.journal.impl.dataformat.JournalAddRecordTX;
 import org.hornetq.core.journal.impl.dataformat.JournalCompleteRecordTX;
 import org.hornetq.core.journal.impl.dataformat.JournalDeleteRecordTX;
+import org.hornetq.core.journal.impl.dataformat.JournalInternalRecord;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.utils.DataConstants;
 import org.hornetq.utils.Pair;
@@ -250,10 +252,10 @@ public class JournalCompactor extends AbstractJournalUpdateTask
    {
       if (lookupRecord(info.id))
       {
-         InternalEncoder addRecord = new JournalAddRecord(true,
+         JournalInternalRecord addRecord = new JournalAddRecord(true,
                                                           info.id,
                                                           info.getUserRecordType(),
-                                                          new JournalImpl.ByteArrayEncoding(info.data));
+                                                          new ByteArrayEncoding(info.data));
          
          checkSize(addRecord.getEncodeSize());
 
@@ -269,11 +271,11 @@ public class JournalCompactor extends AbstractJournalUpdateTask
       {
          JournalTransaction newTransaction = getNewJournalTransaction(transactionID);
 
-         InternalEncoder record = new JournalAddRecordTX(true,
+         JournalInternalRecord record = new JournalAddRecordTX(true,
                                                          transactionID,
                                                          info.id,
                                                          info.getUserRecordType(),
-                                                         new JournalImpl.ByteArrayEncoding(info.data));
+                                                         new ByteArrayEncoding(info.data));
          
          checkSize(record.getEncodeSize());
 
@@ -315,9 +317,9 @@ public class JournalCompactor extends AbstractJournalUpdateTask
       {
          JournalTransaction newTransaction = getNewJournalTransaction(transactionID);
 
-         InternalEncoder record = new JournalDeleteRecordTX(transactionID,
+         JournalInternalRecord record = new JournalDeleteRecordTX(transactionID,
                                                             info.id,
-                                                            new JournalImpl.ByteArrayEncoding(info.data));
+                                                            new ByteArrayEncoding(info.data));
 
          checkSize(record.getEncodeSize());
          
@@ -340,9 +342,9 @@ public class JournalCompactor extends AbstractJournalUpdateTask
 
          JournalTransaction newTransaction = getNewJournalTransaction(transactionID);
 
-         InternalEncoder prepareRecord = new JournalCompleteRecordTX(false,
+         JournalInternalRecord prepareRecord = new JournalCompleteRecordTX(false,
                                                                      transactionID,
-                                                                     new JournalImpl.ByteArrayEncoding(extraData));
+                                                                     new ByteArrayEncoding(extraData));
 
          checkSize(prepareRecord.getEncodeSize());
 
@@ -367,10 +369,10 @@ public class JournalCompactor extends AbstractJournalUpdateTask
    {
       if (lookupRecord(info.id))
       {
-         InternalEncoder updateRecord = new JournalAddRecord(false,
+         JournalInternalRecord updateRecord = new JournalAddRecord(false,
                                                              info.id,
                                                              info.userRecordType,
-                                                             new JournalImpl.ByteArrayEncoding(info.data));
+                                                             new ByteArrayEncoding(info.data));
 
          checkSize(updateRecord.getEncodeSize());
 
@@ -395,11 +397,11 @@ public class JournalCompactor extends AbstractJournalUpdateTask
       {
          JournalTransaction newTransaction = getNewJournalTransaction(transactionID);
 
-         InternalEncoder updateRecordTX = new JournalAddRecordTX(false,
+         JournalInternalRecord updateRecordTX = new JournalAddRecordTX(false,
                                                                  transactionID,
                                                                  info.id,
                                                                  info.userRecordType,
-                                                                 new JournalImpl.ByteArrayEncoding(info.data));
+                                                                 new ByteArrayEncoding(info.data));
 
             
          checkSize(updateRecordTX.getEncodeSize());
