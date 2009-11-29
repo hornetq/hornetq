@@ -33,11 +33,11 @@ import org.hornetq.jms.server.management.impl.JMSManagementHelper;
  *
  * @author <a href="tim.fox@jboss.com>Tim Fox</a>
  */
-public class ReconnectSameNodeExample extends HornetQExample
+public class ReattachExample extends HornetQExample
 {
    public static void main(String[] args)
    {
-      new ReconnectSameNodeExample().run(args);
+      new ReattachExample().run(args);
    }
 
    public boolean runExample() throws Exception

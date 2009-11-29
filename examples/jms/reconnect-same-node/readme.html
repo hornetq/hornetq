@@ -1,36 +1,35 @@
 <html>
   <head>
-    <title>HornetQ JMS Automatic Reconnect Same Server Example</title>
+    <title>HornetQ JMS Automatic Reattach Example</title>
     <link rel="stylesheet" type="text/css" href="../../common/common.css" />
     <link rel="stylesheet" type="text/css" href="../../common/prettify.css" />
     <script type="text/javascript" src="../../common/prettify.js"></script>
   </head>
   <body onload="prettyPrint()">
-     <h1>HornetQ JMS Reconnect Same Server Example</h1>
+     <h1>HornetQ JMS Reattach Example</h1>
      <br>
      <p>This example demonstrates how HornetQ connections can be configured to be resilient to
      temporary network failures.</p>
      <p>In the case of a network failure being detected, either as a result of a failure to read/write to the connection,
      or the failure of a pong to arrive back from the server in good time after a ping is sent, instead of
      failing the connection immediately and notifying any user ExceptionListener objects, HornetQ
-     can be configured to automatically retry the connection, and reconnect to the server when it becomes
+     can be configured to automatically retry the connection, and reattach to the server when it becomes
      available again across the network.</p>
-     <p>In the case that the server didn't actually crash, i.e. the network was temporarily unavailable, the client will
-     be able to resume all its sessions and connections where it left off, 100% transparently.</p>
-     <p>In the case that the server <b>did</b> crash and was restarted, on reconnection the server session
-     clearly won't still exist, so the session will be unable to continue transparently, and any registered
-     ExceptionListener will be called, to allow any application layer reconnect logic to be called.</p>
-     <p>This example starts a single server, connects to it and performs some JMS operations. We then
+     <p>When the client reattaches to the server it will be able to resume using its sessions and connections
+     where it left off</p>
+     <p>This is different to client reconnect as the sessions, consumers etc still exist on the server. With reconnect
+     The client recreates its sessions and consumers as needed.</p>
+    <p>This example starts a single server, connects to it and performs some JMS operations. We then
      simulate failure of the network connection by temporarily stopping the network acceptor on the server.
      (This is done by sending management messages, but that is not central to the purpose of the example).</p>
-     <p>We then wait a few seconds, then restart the acceptor. The client reconnects and the session resumes
+     <p>We then wait a few seconds, then restart the acceptor. The client reattaches and the session resumes
      as if nothing happened.</p>
-     <p>The JMS Connection Factory is configured to reconnect automatically by specifying the various reconnect
-     related attributes in the <code>hornetq-jms.xml</code> file.</p>  
-             
+     <p>The JMS Connection Factory is configured to reattach automatically by specifying the various reconnect
+     related attributes in the <code>hornetq-jms.xml</code> file.</p>
+
      <p>For more details on how to configure this and for clustering in general
      please consult the HornetQ user manual.</p>
-          
+
      <br>
      <h2>Example step-by-step</h2>
      <p><i>To run the example, simply type <code>./build.sh</code> (or <code>build.bat</code> on windows) from this directory</i></p>
@@ -91,10 +90,10 @@
         <pre class="prettyprint">
            <code>stopAcceptor(initialContext);</code>
         </pre>
-        
+
         <li>We wait 10 seconds, before restarting the acceptor. During this period the client will be retrying
         to connect. When the acceptor is restarted it will be successful in reconnecting.</li>
-        
+
         <pre class="prettyprint">
            <code>
             Thread.sleep(10000);
@@ -102,9 +101,9 @@
             startAcceptor(initialContext);
            </code>
         </pre>
-        
-        <li>We receive the message after reconnection! Note that no exceptions were received by the client.</li>
-        
+
+        <li>We receive the message after reattachment! Note that no exceptions were received by the client.</li>
+
         <pre class="prettyprint">
            <code>
            TextMessage messageReceived = (TextMessage)messageConsumer.receive(5000);
