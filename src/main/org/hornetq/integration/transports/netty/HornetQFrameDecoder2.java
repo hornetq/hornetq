@@ -82,7 +82,7 @@ public class HornetQFrameDecoder2 extends SimpleChannelUpstreamHandler
                break;
             case 4:
                length = previousData.getInt(previousData.readerIndex());
-               if (in.readableBytes() - 4 < length) {
+               if (in.readableBytes() < length) {
                   append(in, length);
                   return;
                }
@@ -112,11 +112,12 @@ public class HornetQFrameDecoder2 extends SimpleChannelUpstreamHandler
          }
 
          frame.skipBytes(4);
-         Channels.fireMessageReceived(ctx, frame);
-
          if (!in.readable()) {
             previousData = ChannelBuffers.EMPTY_BUFFER;
+            Channels.fireMessageReceived(ctx, frame);
             return;
+         } else {
+            Channels.fireMessageReceived(ctx, frame);
          }
       }
 
