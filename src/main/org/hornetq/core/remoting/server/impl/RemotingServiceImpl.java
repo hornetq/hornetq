@@ -225,21 +225,6 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
          acceptor.pause();
       }
 
-      boolean containsNettyAcceptors = false;
-      for (Acceptor acceptor : acceptors)
-      {
-         if (acceptor.getClass().toString().contains("NettyAcceptor"))
-         {
-            containsNettyAcceptors = true;
-            break;
-         }
-      }
-      if (containsNettyAcceptors)
-      {     
-         // we sleep in case there are initializing connections which are in the thread pool
-         Thread.sleep(1000);
-      }
-
       synchronized (server)
       {
          for (ConnectionEntry entry : connections.values())

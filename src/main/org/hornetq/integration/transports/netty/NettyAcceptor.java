@@ -129,6 +129,8 @@ public class NettyAcceptor implements Acceptor
 
    private NotificationService notificationService;
 
+   private VirtualExecutorService bossExecutor;
+
    public NettyAcceptor(final Map<String, Object> configuration,
                         final BufferHandler handler,
                         final ConnectionLifeCycleListener listener,
@@ -225,7 +227,8 @@ public class NettyAcceptor implements Acceptor
          return;
       }
 
-      VirtualExecutorService virtualExecutor = new VirtualExecutorService(threadPool);
+      bossExecutor =  new VirtualExecutorService(threadPool);
+      VirtualExecutorService workerExecutor = new VirtualExecutorService(threadPool);
 
       if (useInvm)
       {
@@ -233,11 +236,11 @@ public class NettyAcceptor implements Acceptor
       }
       else if (useNio)
       {
-         channelFactory = new NioServerSocketChannelFactory(virtualExecutor, virtualExecutor);
+         channelFactory = new NioServerSocketChannelFactory(bossExecutor, workerExecutor);
       }
       else
       {
-         channelFactory = new OioServerSocketChannelFactory(virtualExecutor, virtualExecutor);
+         channelFactory = new OioServerSocketChannelFactory(bossExecutor, workerExecutor);
       }
       bootstrap = new ServerBootstrap(channelFactory);
 
@@ -444,6 +447,18 @@ public class NettyAcceptor implements Acceptor
                log.warn(channel + " is still bound to " + channel.getRemoteAddress());
             }
          }
+      }
+      // TODO remove workaround when integrating Netty 3.2.x
+      // https://jira.jboss.org/jira/browse/NETTY-256
+      bossExecutor.shutdown();
+      try
+      {
+         
+         bossExecutor.awaitTermination(30, TimeUnit.SECONDS);
+      }
+      catch (InterruptedException e)
+      {
+         e.printStackTrace();
       }
 
       paused = true;
