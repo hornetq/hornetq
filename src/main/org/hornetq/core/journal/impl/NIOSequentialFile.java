@@ -102,7 +102,7 @@ public class NIOSequentialFile extends AbstractSequentialFile
 
    public void fill(final int position, final int size, final byte fillCharacter) throws Exception
    {
-      ByteBuffer bb = ByteBuffer.allocateDirect(size);
+      ByteBuffer bb = ByteBuffer.allocate(size);
 
       for (int i = 0; i < size; i++)
       {
