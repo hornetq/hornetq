@@ -50,7 +50,6 @@ import org.hornetq.core.persistence.QueueBindingInfo;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.PostOffice;
-import org.hornetq.core.remoting.impl.wireformat.PacketImpl;
 import org.hornetq.core.replication.ReplicationManager;
 import org.hornetq.core.server.LargeServerMessage;
 import org.hornetq.core.server.MessageReference;
@@ -66,7 +65,6 @@ import org.hornetq.tests.unit.core.journal.impl.fakes.FakeSequentialFileFactory;
 import org.hornetq.tests.unit.core.server.impl.fakes.FakePostOffice;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
-import org.hornetq.utils.DataConstants;
 import org.hornetq.utils.Pair;
 import org.hornetq.utils.SimpleString;
 import org.hornetq.utils.UUID;
@@ -264,7 +262,7 @@ public class PagingStoreImplTest extends UnitTestCase
       storeImpl.startPaging();
 
       List<HornetQBuffer> buffers = new ArrayList<HornetQBuffer>();
-      
+
       int numMessages = 10;
 
       for (int i = 0; i < numMessages; i++)
@@ -304,7 +302,7 @@ public class PagingStoreImplTest extends UnitTestCase
          HornetQBuffer horn2 = msg.get(i).getMessage(null).getBodyBuffer();
          horn1.resetReaderIndex();
          horn2.resetReaderIndex();
-         for (int j = 0 ; j < horn1.writerIndex(); j++)
+         for (int j = 0; j < horn1.writerIndex(); j++)
          {
             assertEquals(horn1.readByte(), horn2.readByte());
          }
@@ -362,6 +360,8 @@ public class PagingStoreImplTest extends UnitTestCase
       assertEquals(2, storeImpl.getNumberOfPages());
 
       storeImpl.sync();
+      
+      int sequence = 0;
 
       for (int pageNr = 0; pageNr < 2; pageNr++)
       {
@@ -377,7 +377,7 @@ public class PagingStoreImplTest extends UnitTestCase
 
          for (int i = 0; i < 5; i++)
          {
-            assertEquals(0, msg.get(i).getMessage(null).getMessageID());
+            assertEquals(sequence++, msg.get(i).getMessage(null).getMessageID());
             assertEqualsBuffers(18, buffers.get(pageNr * 5 + i), msg.get(i).getMessage(null).getBodyBuffer());
          }
       }
@@ -420,7 +420,7 @@ public class PagingStoreImplTest extends UnitTestCase
 
       assertEquals(1, msgs.size());
 
-      assertEquals(0l, msgs.get(0).getMessage(null).getMessageID());
+      assertEquals(1l, msgs.get(0).getMessage(null).getMessageID());
 
       assertEqualsBuffers(18, buffers.get(0), msgs.get(0).getMessage(null).getBodyBuffer());
 
@@ -678,7 +678,10 @@ public class PagingStoreImplTest extends UnitTestCase
             ServerMessage msgWritten = buffers2.remove(id);
             assertNotNull(msgWritten);
             assertEquals(msg.getMessage(null).getDestination(), msgWritten.getDestination());
-            assertEqualsByteArrays(msgWritten.getBodyBuffer().toByteBuffer().array(), msg.getMessage(null).getBodyBuffer().toByteBuffer().array());
+            assertEqualsByteArrays(msgWritten.getBodyBuffer().toByteBuffer().array(), msg.getMessage(null)
+                                                                                         .getBodyBuffer()
+                                                                                         .toByteBuffer()
+                                                                                         .array());
          }
       }
 
@@ -713,7 +716,8 @@ public class PagingStoreImplTest extends UnitTestCase
       return new FakePostOffice();
    }
 
-   private ServerMessage createMessage(final long id, final PagingStore store,
+   private ServerMessage createMessage(final long id,
+                                       final PagingStore store,
                                        final SimpleString destination,
                                        final HornetQBuffer buffer)
    {
@@ -722,10 +726,10 @@ public class PagingStoreImplTest extends UnitTestCase
       msg.setDestination(destination);
 
       msg.setPagingStore(store);
-      
+
       msg.getBodyBuffer().resetReaderIndex();
       msg.getBodyBuffer().resetWriterIndex();
-      
+
       msg.getBodyBuffer().writeBytes(buffer, buffer.capacity());
 
       return msg;
@@ -734,14 +738,14 @@ public class PagingStoreImplTest extends UnitTestCase
    private HornetQBuffer createRandomBuffer(final long id, final int size)
    {
       HornetQBuffer buffer = HornetQBuffers.fixedBuffer(size + 8);
-      
+
       buffer.writeLong(id);
 
       for (int j = 8; j < buffer.capacity(); j++)
       {
          buffer.writeByte((byte)66);
       }
-      
+
       return buffer;
    }
 
@@ -885,7 +889,7 @@ public class PagingStoreImplTest extends UnitTestCase
    class FakeStorageManager implements StorageManager
    {
 
-      public void setUniqueIDSequence(long id)
+      public void setUniqueIDSequence(final long id)
       {
       }
 
@@ -981,21 +985,21 @@ public class PagingStoreImplTest extends UnitTestCase
        * @see org.hornetq.core.persistence.StorageManager#loadBindingJournal(java.util.List)
        */
       public JournalLoadInformation loadBindingJournal(final List<QueueBindingInfo> queueBindingInfos,
-                                                       List<GroupingInfo> groupingInfos) throws Exception
+                                                       final List<GroupingInfo> groupingInfos) throws Exception
       {
          return new JournalLoadInformation();
       }
 
-      public void addGrouping(GroupBinding groupBinding) throws Exception
+      public void addGrouping(final GroupBinding groupBinding) throws Exception
       {
          // To change body of implemented methods use File | Settings | File Templates.
       }
 
-      public void deleteGrouping(GroupBinding groupBinding) throws Exception
+      public void deleteGrouping(final GroupBinding groupBinding) throws Exception
       {
          // To change body of implemented methods use File | Settings | File Templates.
       }
-      
+
       public void sync()
       {
       }
@@ -1003,11 +1007,11 @@ public class PagingStoreImplTest extends UnitTestCase
       /* (non-Javadoc)
        * @see org.hornetq.core.persistence.StorageManager#loadMessageJournal(org.hornetq.core.paging.PagingManager, java.util.Map, org.hornetq.core.transaction.ResourceManager, java.util.Map)
        */
-      public JournalLoadInformation loadMessageJournal(PostOffice postOffice,
-                                                       PagingManager pagingManager,
-                                                       ResourceManager resourceManager,
-                                                       Map<Long, Queue> queues,
-                                                       Map<SimpleString, List<Pair<byte[], Long>>> duplicateIDMap) throws Exception
+      public JournalLoadInformation loadMessageJournal(final PostOffice postOffice,
+                                                       final PagingManager pagingManager,
+                                                       final ResourceManager resourceManager,
+                                                       final Map<Long, Queue> queues,
+                                                       final Map<SimpleString, List<Pair<byte[], Long>>> duplicateIDMap) throws Exception
       {
          return new JournalLoadInformation();
       }
@@ -1099,12 +1103,12 @@ public class PagingStoreImplTest extends UnitTestCase
       {
       }
 
-      public long storeHeuristicCompletion(Xid xid, boolean isCommit) throws Exception
+      public long storeHeuristicCompletion(final Xid xid, final boolean isCommit) throws Exception
       {
          return -1;
       }
 
-      public void deleteHeuristicCompletion(long txID) throws Exception
+      public void deleteHeuristicCompletion(final long txID) throws Exception
       {
       }
 
@@ -1172,7 +1176,7 @@ public class PagingStoreImplTest extends UnitTestCase
       /* (non-Javadoc)
        * @see org.hornetq.core.persistence.StorageManager#afterReplicated(java.lang.Runnable)
        */
-      public void afterCompleteOperations(Runnable run)
+      public void afterCompleteOperations(final Runnable run)
       {
 
       }
@@ -1188,7 +1192,7 @@ public class PagingStoreImplTest extends UnitTestCase
       /* (non-Javadoc)
        * @see org.hornetq.core.persistence.StorageManager#createLargeMessage(byte[])
        */
-      public LargeServerMessage createLargeMessage(long messageId, byte[] header)
+      public LargeServerMessage createLargeMessage(final long messageId, final byte[] header)
       {
 
          return null;
@@ -1214,7 +1218,7 @@ public class PagingStoreImplTest extends UnitTestCase
       /* (non-Javadoc)
        * @see org.hornetq.core.persistence.StorageManager#pageClosed(org.hornetq.utils.SimpleString, int)
        */
-      public void pageClosed(SimpleString storeName, int pageNumber)
+      public void pageClosed(final SimpleString storeName, final int pageNumber)
       {
 
       }
@@ -1222,7 +1226,7 @@ public class PagingStoreImplTest extends UnitTestCase
       /* (non-Javadoc)
        * @see org.hornetq.core.persistence.StorageManager#pageDeleted(org.hornetq.utils.SimpleString, int)
        */
-      public void pageDeleted(SimpleString storeName, int pageNumber)
+      public void pageDeleted(final SimpleString storeName, final int pageNumber)
       {
 
       }
@@ -1230,7 +1234,7 @@ public class PagingStoreImplTest extends UnitTestCase
       /* (non-Javadoc)
        * @see org.hornetq.core.persistence.StorageManager#pageWrite(org.hornetq.core.paging.PagedMessage, int)
        */
-      public void pageWrite(PagedMessage message, int pageNumber)
+      public void pageWrite(final PagedMessage message, final int pageNumber)
       {
 
       }
@@ -1238,21 +1242,21 @@ public class PagingStoreImplTest extends UnitTestCase
       /* (non-Javadoc)
        * @see org.hornetq.core.persistence.StorageManager#blockOnReplication(long)
        */
-      public void waitOnOperations(long timeout) throws Exception
+      public void waitOnOperations(final long timeout) throws Exception
       {
       }
 
       /* (non-Javadoc)
        * @see org.hornetq.core.persistence.StorageManager#setReplicator(org.hornetq.core.replication.ReplicationManager)
        */
-      public void setReplicator(ReplicationManager replicator)
+      public void setReplicator(final ReplicationManager replicator)
       {
       }
 
       /* (non-Javadoc)
        * @see org.hornetq.core.persistence.StorageManager#afterCompleteOperations(org.hornetq.core.journal.IOCompletion)
        */
-      public void afterCompleteOperations(IOAsyncTask run)
+      public void afterCompleteOperations(final IOAsyncTask run)
       {
       }
 
@@ -1274,7 +1278,7 @@ public class PagingStoreImplTest extends UnitTestCase
       /* (non-Javadoc)
        * @see org.hornetq.core.persistence.StorageManager#newContext(java.util.concurrent.Executor)
        */
-      public OperationContext newContext(Executor executor)
+      public OperationContext newContext(final Executor executor)
       {
          return null;
       }
@@ -1289,14 +1293,14 @@ public class PagingStoreImplTest extends UnitTestCase
       /* (non-Javadoc)
        * @see org.hornetq.core.persistence.StorageManager#setContext(org.hornetq.core.persistence.OperationContext)
        */
-      public void setContext(OperationContext context)
+      public void setContext(final OperationContext context)
       {
       }
 
-      public void storeReference(long queueID, long messageID, boolean last) throws Exception
+      public void storeReference(final long queueID, final long messageID, final boolean last) throws Exception
       {
          // TODO Auto-generated method stub
-         
+
       }
 
    }
