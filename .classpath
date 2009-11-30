@@ -58,7 +58,7 @@
 	<classpathentry kind="src" path="examples/jms/queue-message-redistribution/src"/>
 	<classpathentry kind="src" path="examples/jms/queue-requestor/src"/>
 	<classpathentry kind="src" path="examples/jms/queue-selector/src"/>
-	<classpathentry kind="src" path="examples/jms/reconnect-same-node/src"/>
+	<classpathentry kind="src" path="examples/jms/reattach-node/src"/>
 	<classpathentry kind="src" path="examples/jms/request-reply/src"/>
 	<classpathentry kind="src" path="examples/jms/scheduled-message/src"/>
 	<classpathentry kind="src" path="examples/jms/security/src"/>
