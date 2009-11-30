@@ -269,6 +269,9 @@ public abstract class ClusterTestBase extends ServiceTestBase
                    totConsumers;
 
       log.error(msg);
+      
+      // Sending thread dump..  trying to get some information about the server case the binding didn't arrive
+      System.out.println(threadDump(msg));
 
       throw new IllegalStateException(msg);
    }
