@@ -25,7 +25,9 @@
  	     <include name="**/jnpserver.jar"/>	     
  	     <include name="**/jboss-logging-spi.jar"/>	     
  	     <include name="**/jboss-common-core.jar"/>	     
- 	     <include name="**/netty.jar"/>	     
+ 	     <include name="**/netty.jar"/>
+        <!--for the distro-->
+        <include name="**/jboss-mc.jar"/>
  	  </fileset>
    </path>
       
