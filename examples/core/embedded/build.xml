@@ -23,6 +23,7 @@
    <path id="local.classpath">
       <fileset dir="${hornetq.jars.dir}">
          <include name="hornetq-core.jar"/>
+         <include name="netty.jar"/>
       </fileset>
       <pathelement location="${classes.dir}"/>	   	
    </path>
