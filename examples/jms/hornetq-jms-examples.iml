@@ -41,7 +41,7 @@
       <sourceFolder url="file://$MODULE_DIR$/queue-requestor/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/queue-selector/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/queue/src" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/reconnect-same-node/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/reattach-node/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/request-reply/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/scheduled-message/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/security/src" isTestSource="false" />
