@@ -47,7 +47,7 @@ public class ChannelPipelineSupport
    public static void addCodecFilter(final ChannelPipeline pipeline, final BufferHandler handler)
    {
       assert pipeline != null;
-      pipeline.addLast("decoder", new HornetQFrameDecoder2());
+      pipeline.addLast("decoder", new HornetQFrameDecoder(handler));
    }
 
    public static void addSSLFilter(final ChannelPipeline pipeline, final SSLContext context, final boolean client) throws Exception
