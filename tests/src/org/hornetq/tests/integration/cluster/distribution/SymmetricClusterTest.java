@@ -1424,7 +1424,7 @@ public class SymmetricClusterTest extends ClusterTestBase
 
       startServers(3, 0);
        
-      Thread.sleep(2000);
+      Thread.sleep(3000);
 
       setupSessionFactory(0, isNetty());
       setupSessionFactory(3, isNetty());
