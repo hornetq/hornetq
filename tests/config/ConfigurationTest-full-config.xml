@@ -38,8 +38,7 @@
       <create-journal-dir>false</create-journal-dir>
       <journal-type>NIO</journal-type>
       <journal-compact-min-files>123</journal-compact-min-files>
-      <journal-compact-percentage>33</journal-compact-percentage>
-      <journal-flush-on-sync>true</journal-flush-on-sync>
+      <journal-compact-percentage>33</journal-compact-percentage>      
       <journal-buffer-timeout>1000</journal-buffer-timeout>
       <journal-buffer-size>10000</journal-buffer-size>
       <journal-sync-transactional>false</journal-sync-transactional>      

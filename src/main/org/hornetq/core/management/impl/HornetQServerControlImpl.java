@@ -47,6 +47,7 @@ import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.remoting.RemotingConnection;
 import org.hornetq.core.remoting.server.RemotingService;
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.core.server.JournalType;
 import org.hornetq.core.server.ServerSession;
 import org.hornetq.core.transaction.ResourceManager;
 import org.hornetq.core.transaction.Transaction;
@@ -88,12 +89,12 @@ public class HornetQServerControlImpl extends StandardMBean implements HornetQSe
    // Constructors --------------------------------------------------
 
    public HornetQServerControlImpl(final PostOffice postOffice,
-                                 final Configuration configuration,
-                                 final ResourceManager resourceManager,
-                                 final RemotingService remotingService,
-                                 final HornetQServer messagingServer,
-                                 final MessageCounterManager messageCounterManager,
-                                 final NotificationBroadcasterSupport broadcaster) throws Exception
+                                   final Configuration configuration,
+                                   final ResourceManager resourceManager,
+                                   final RemotingService remotingService,
+                                   final HornetQServer messagingServer,
+                                   final MessageCounterManager messageCounterManager,
+                                   final NotificationBroadcasterSupport broadcaster) throws Exception
    {
       super(HornetQServerControl.class);
       this.postOffice = postOffice;
@@ -128,7 +129,7 @@ public class HornetQServerControlImpl extends StandardMBean implements HornetQSe
    {
       return configuration.isBackup();
    }
-   
+
    public boolean isSharedStore()
    {
       return configuration.isSharedStore();
@@ -146,19 +147,28 @@ public class HornetQServerControlImpl extends StandardMBean implements HornetQSe
 
    public String[] getInterceptorClassNames()
    {
-      return configuration.getInterceptorClassNames().toArray(new String[configuration.getInterceptorClassNames().size()]);
+      return configuration.getInterceptorClassNames().toArray(new String[configuration.getInterceptorClassNames()
+                                                                                      .size()]);
    }
 
-   public int getAIOBufferSize()
+   public int getJournalBufferSize()
    {
-      return configuration.getJournalBufferSize();
+      return configuration.getJournalType() == JournalType.ASYNCIO ? configuration.getJournalBufferSize_AIO()
+                                                                  : configuration.getJournalBufferSize_NIO();
    }
-   
-   public int getAIOBufferTimeout()
+
+   public int getJournalBufferTimeout()
    {
-      return configuration.getJournalBufferTimeout();
+      return configuration.getJournalType() == JournalType.ASYNCIO ? configuration.getJournalBufferTimeout_AIO()
+                                                                  : configuration.getJournalBufferTimeout_NIO();
    }
-   
+
+   public int getJournalMaxIO()
+   {
+      return configuration.getJournalType() == JournalType.ASYNCIO ? configuration.getJournalMaxIO_AIO()
+                                                                  : configuration.getJournalMaxIO_NIO();
+   }
+
    public String getJournalDirectory()
    {
       return configuration.getJournalDirectory();
@@ -169,16 +179,11 @@ public class HornetQServerControlImpl extends StandardMBean implements HornetQSe
       return configuration.getJournalFileSize();
    }
 
-   public int getJournalMaxAIO()
-   {
-      return configuration.getJournalMaxAIO();
-   }
-
    public int getJournalMinFiles()
    {
       return configuration.getJournalMinFiles();
    }
-   
+
    public int getJournalCompactMinFiles()
    {
       return configuration.getJournalCompactMinFiles();
@@ -208,7 +213,7 @@ public class HornetQServerControlImpl extends StandardMBean implements HornetQSe
    {
       return configuration.getScheduledThreadPoolMaxSize();
    }
-   
+
    public int getThreadPoolMaxSize()
    {
       return configuration.getThreadPoolMaxSize();
@@ -265,7 +270,7 @@ public class HornetQServerControlImpl extends StandardMBean implements HornetQSe
    {
       server.createQueue(new SimpleString(address), new SimpleString(name), null, true, false);
    }
-   
+
    public void createQueue(final String address, final String name, final boolean durable) throws Exception
    {
       server.createQueue(new SimpleString(address), new SimpleString(name), null, durable, false);
@@ -291,7 +296,7 @@ public class HornetQServerControlImpl extends StandardMBean implements HornetQSe
          QueueControl queue = (QueueControl)queues[i];
          names[i] = queue.getName();
       }
-      
+
       return names;
    }
 
@@ -304,7 +309,7 @@ public class HornetQServerControlImpl extends StandardMBean implements HornetQSe
          AddressControl address = (AddressControl)addresses[i];
          names[i] = address.getAddress();
       }
-      
+
       return names;
    }
 
@@ -319,7 +324,7 @@ public class HornetQServerControlImpl extends StandardMBean implements HornetQSe
    {
       return server.getConnectionCount();
    }
-   
+
    public void enableMessageCounters()
    {
       setMessageCounterEnabled(true);
@@ -382,7 +387,6 @@ public class HornetQServerControlImpl extends StandardMBean implements HornetQSe
    {
       DateFormat dateFormat = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.MEDIUM);
 
-
       Map<Xid, Long> xids = resourceManager.getPreparedTransactionsWithCreationTime();
       ArrayList<Entry<Xid, Long>> xidsSortedByCreationTime = new ArrayList<Map.Entry<Xid, Long>>(xids.entrySet());
       Collections.sort(xidsSortedByCreationTime, new Comparator<Entry<Xid, Long>>()
@@ -403,7 +407,7 @@ public class HornetQServerControlImpl extends StandardMBean implements HornetQSe
       }
       return s;
    }
-   
+
    public String[] listHeuristicCommittedTransactions()
    {
       List<Xid> xids = resourceManager.getHeuristicCommittedTransactions();
@@ -415,7 +419,7 @@ public class HornetQServerControlImpl extends StandardMBean implements HornetQSe
       }
       return s;
    }
-   
+
    public String[] listHeuristicRolledBackTransactions()
    {
       List<Xid> xids = resourceManager.getHeuristicRolledbackTransactions();
@@ -505,7 +509,7 @@ public class HornetQServerControlImpl extends StandardMBean implements HornetQSe
          {
             remotingService.removeConnection(connection.getID());
             connection.fail(new HornetQException(HornetQException.INTERNAL_ERROR, "connections for " + ipAddress +
-                                                                                      " closed by management"));
+                                                                                  " closed by management"));
             closed = true;
          }
       }
@@ -540,33 +544,33 @@ public class HornetQServerControlImpl extends StandardMBean implements HornetQSe
    public Object[] getConnectors() throws Exception
    {
       Collection<TransportConfiguration> connectorConfigurations = configuration.getConnectorConfigurations().values();
-      
+
       Object[] ret = new Object[connectorConfigurations.size()];
-      
+
       int i = 0;
-      for (TransportConfiguration config: connectorConfigurations)
+      for (TransportConfiguration config : connectorConfigurations)
       {
          Object[] tc = new Object[3];
-         
+
          tc[0] = config.getName();
          tc[1] = config.getFactoryClassName();
          tc[2] = config.getParams();
-         
+
          ret[i++] = tc;
       }
-      
+
       return ret;
    }
-   
+
    public String getConnectorsAsJSON() throws Exception
    {
       JSONArray array = new JSONArray();
-      
-      for (TransportConfiguration config: configuration.getConnectorConfigurations().values())
+
+      for (TransportConfiguration config : configuration.getConnectorConfigurations().values())
       {
          array.put(new JSONObject(config));
       }
-      
+
       return array.toString();
    }
 

@@ -59,7 +59,8 @@ public class ConfigurationImplTest extends UnitTestCase
       assertEquals(ConfigurationImpl.DEFAULT_JOURNAL_SYNC_NON_TRANSACTIONAL, conf.isJournalSyncNonTransactional());
       assertEquals(ConfigurationImpl.DEFAULT_JOURNAL_FILE_SIZE, conf.getJournalFileSize());
       assertEquals(ConfigurationImpl.DEFAULT_JOURNAL_MIN_FILES, conf.getJournalMinFiles());
-      assertEquals(ConfigurationImpl.DEFAULT_JOURNAL_MAX_AIO, conf.getJournalMaxAIO());
+      assertEquals(ConfigurationImpl.DEFAULT_JOURNAL_MAX_IO_AIO, conf.getJournalMaxIO_AIO());
+      assertEquals(ConfigurationImpl.DEFAULT_JOURNAL_MAX_IO_NIO, conf.getJournalMaxIO_NIO());
       assertEquals(ConfigurationImpl.DEFAULT_WILDCARD_ROUTING_ENABLED, conf.isWildcardRoutingEnabled());
       assertEquals(ConfigurationImpl.DEFAULT_TRANSACTION_TIMEOUT, conf.getTransactionTimeout());
       assertEquals(ConfigurationImpl.DEFAULT_MESSAGE_EXPIRY_SCAN_PERIOD, conf.getMessageExpiryScanPeriod()); // OK
@@ -82,8 +83,10 @@ public class ConfigurationImplTest extends UnitTestCase
       assertEquals(ConfigurationImpl.DEFAULT_PAGING_DIR, conf.getPagingDirectory());
       assertEquals(ConfigurationImpl.DEFAULT_LARGE_MESSAGES_DIR, conf.getLargeMessagesDirectory());
       assertEquals(ConfigurationImpl.DEFAULT_JOURNAL_COMPACT_PERCENTAGE, conf.getJournalCompactPercentage());
-      assertEquals(ConfigurationImpl.DEFAULT_JOURNAL_FLUSH_SYNC, conf.isJournalFlushOnSync());
-      assertEquals(ConfigurationImpl.DEFAULT_JOURNAL_BUFFER_TIMEOUT, conf.getJournalBufferTimeout());
+      assertEquals(ConfigurationImpl.DEFAULT_JOURNAL_BUFFER_TIMEOUT_AIO, conf.getJournalBufferTimeout_AIO());
+      assertEquals(ConfigurationImpl.DEFAULT_JOURNAL_BUFFER_TIMEOUT_NIO, conf.getJournalBufferTimeout_NIO());
+      assertEquals(ConfigurationImpl.DEFAULT_JOURNAL_BUFFER_SIZE_AIO, conf.getJournalBufferSize_AIO());
+      assertEquals(ConfigurationImpl.DEFAULT_JOURNAL_BUFFER_SIZE_NIO, conf.getJournalBufferSize_NIO());
       assertEquals(ConfigurationImpl.DEFAULT_JOURNAL_LOG_WRITE_RATE, conf.isLogJournalWriteRate());
       assertEquals(ConfigurationImpl.DEFAULT_JOURNAL_PERF_BLAST_PAGES, conf.getJournalPerfBlastPages());
       assertEquals(ConfigurationImpl.DEFAULT_MESSAGE_COUNTER_ENABLED, conf.isMessageCounterEnabled());
@@ -164,8 +167,12 @@ public class ConfigurationImplTest extends UnitTestCase
          assertEquals(i, conf.getJournalMinFiles());
 
          i = randomInt();
-         conf.setJournalMaxAIO(i);
-         assertEquals(i, conf.getJournalMaxAIO());
+         conf.setJournalMaxIO_AIO(i);
+         assertEquals(i, conf.getJournalMaxIO_AIO());
+         
+         i = randomInt();
+         conf.setJournalMaxIO_NIO(i);
+         assertEquals(i, conf.getJournalMaxIO_NIO());
 
          s = randomString();
          conf.setManagementAddress(new SimpleString(s));
@@ -244,16 +251,20 @@ public class ConfigurationImplTest extends UnitTestCase
          assertEquals(i, conf.getJournalCompactPercentage());
 
          i = randomInt();
-         conf.setJournalBufferSize(i);
-         assertEquals(i, conf.getJournalBufferSize());
+         conf.setJournalBufferSize_AIO(i);
+         assertEquals(i, conf.getJournalBufferSize_AIO());
 
          i = randomInt();
-         conf.setJournalBufferTimeout(i);
-         assertEquals(i, conf.getJournalBufferTimeout());
+         conf.setJournalBufferTimeout_AIO(i);
+         assertEquals(i, conf.getJournalBufferTimeout_AIO());
+         
+         i = randomInt();
+         conf.setJournalBufferSize_NIO(i);
+         assertEquals(i, conf.getJournalBufferSize_NIO());
 
-         b = randomBoolean();
-         conf.setJournalFlushOnSync(b);
-         assertEquals(b, conf.isJournalFlushOnSync());
+         i = randomInt();
+         conf.setJournalBufferTimeout_NIO(i);
+         assertEquals(i, conf.getJournalBufferTimeout_NIO());
 
          b = randomBoolean();
          conf.setLogJournalWriteRate(b);
@@ -381,8 +392,12 @@ public class ConfigurationImplTest extends UnitTestCase
       assertEquals(i, conf.getJournalMinFiles());
 
       i = randomInt();
-      conf.setJournalMaxAIO(i);
-      assertEquals(i, conf.getJournalMaxAIO());
+      conf.setJournalMaxIO_AIO(i);
+      assertEquals(i, conf.getJournalMaxIO_AIO());
+      
+      i = randomInt();
+      conf.setJournalMaxIO_NIO(i);
+      assertEquals(i, conf.getJournalMaxIO_NIO());
 
       s = randomString();
       conf.setManagementAddress(new SimpleString(s));
@@ -461,16 +476,20 @@ public class ConfigurationImplTest extends UnitTestCase
       assertEquals(i, conf.getJournalCompactPercentage());
 
       i = randomInt();
-      conf.setJournalBufferSize(i);
-      assertEquals(i, conf.getJournalBufferSize());
+      conf.setJournalBufferSize_AIO(i);
+      assertEquals(i, conf.getJournalBufferSize_AIO());
 
       i = randomInt();
-      conf.setJournalBufferTimeout(i);
-      assertEquals(i, conf.getJournalBufferTimeout());
+      conf.setJournalBufferTimeout_AIO(i);
+      assertEquals(i, conf.getJournalBufferTimeout_AIO());
+      
+      i = randomInt();
+      conf.setJournalBufferSize_NIO(i);
+      assertEquals(i, conf.getJournalBufferSize_NIO());
 
-      b = randomBoolean();
-      conf.setJournalFlushOnSync(b);
-      assertEquals(b, conf.isJournalFlushOnSync());
+      i = randomInt();
+      conf.setJournalBufferTimeout_NIO(i);
+      assertEquals(i, conf.getJournalBufferTimeout_NIO());
 
       b = randomBoolean();
       conf.setLogJournalWriteRate(b);

@@ -63,7 +63,7 @@ public class ListJournal
                                                new NIOSequentialFileFactory(fileConf.getJournalDirectory()),
                                                "hornetq-data",
                                                "hq",
-                                               fileConf.getJournalMaxAIO());
+                                               fileConf.getJournalMaxIO_NIO());
 
          ArrayList<RecordInfo> records = new ArrayList<RecordInfo>();
          ArrayList<PreparedTransactionInfo> prepared = new ArrayList<PreparedTransactionInfo>();

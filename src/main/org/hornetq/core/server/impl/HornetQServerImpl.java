@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -52,7 +53,10 @@ import org.hornetq.core.deployers.impl.SecurityDeployer;
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.filter.impl.FilterImpl;
+import org.hornetq.core.journal.EncodingSupport;
 import org.hornetq.core.journal.IOAsyncTask;
+import org.hornetq.core.journal.IOCompletion;
+import org.hornetq.core.journal.Journal;
 import org.hornetq.core.journal.JournalLoadInformation;
 import org.hornetq.core.journal.impl.SyncSpeedTest;
 import org.hornetq.core.logging.LogDelegateFactory;
@@ -90,11 +94,16 @@ import org.hornetq.core.security.Role;
 import org.hornetq.core.security.SecurityStore;
 import org.hornetq.core.security.impl.SecurityStoreImpl;
 import org.hornetq.core.server.ActivateCallback;
+import org.hornetq.core.server.Consumer;
 import org.hornetq.core.server.Divert;
+import org.hornetq.core.server.HandleStatus;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.MemoryManager;
+import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.QueueFactory;
+import org.hornetq.core.server.RoutingContext;
+import org.hornetq.core.server.ServerConsumer;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.ServerSession;
 import org.hornetq.core.server.cluster.ClusterManager;
@@ -630,7 +639,7 @@ public class HornetQServerImpl implements HornetQServer
          throw new HornetQException(HornetQException.INCOMPATIBLE_CLIENT_SERVER_VERSIONS,
                                     "Server and client versions incompatible");
       }
-      
+
       if (!checkActivate())
       {
          // Backup server is not ready to accept connections
@@ -970,7 +979,7 @@ public class HornetQServerImpl implements HornetQServer
             if (replicationEndpoint == null)
             {
                log.warn("There is no replication endpoint, can't activate this backup server");
-               
+
                throw new HornetQException(HornetQException.INTERNAL_ERROR, "Can't activate the server");
             }
 
@@ -1189,6 +1198,8 @@ public class HornetQServerImpl implements HornetQServer
       }
 
       initialised = true;
+      
+      log.info("********** initialised");
 
       if (System.getProperty("org.hornetq.opt.routeblast") != null)
       {
@@ -1482,14 +1493,50 @@ public class HornetQServerImpl implements HornetQServer
       }
    }
 
+   
+//   private void runRouteBlastNoWait() throws Exception
+//   {
+//      SimpleString address = new SimpleString("rbnw_address");
+//      SimpleString queueName = new SimpleString("rbnw_name");
+//
+//      createQueue(address, queueName, null, true, false, true);
+//      
+//      Queue queue = (Queue)postOffice.getBinding(queueName).getBindable();
+//
+//      RBConsumer consumer = new RBConsumer(queue);
+//
+//      queue.addConsumer(consumer);
+//
+//      final int bodySize = 1024;
+//
+//      byte[] body = new byte[bodySize];
+//
+//      final int numMessages = 10000000;
+//
+//      for (int i = 0; i < numMessages; i++)
+//      {
+//         final ServerMessage msg = new ServerMessageImpl(storageManager.generateUniqueID(), 1500);
+//
+//         msg.getBodyBuffer().writeBytes(body);
+//
+//         msg.setDestination(address);
+//
+//         msg.setDurable(true);
+//
+//         postOffice.route(msg);
+//      }
+//   }
+   
    private LinkedBlockingQueue<RouteBlastRunner> available = new LinkedBlockingQueue<RouteBlastRunner>();
+
 
    private void runRouteBlast() throws Exception
    {
       log.info("*** running route blast");
-      final int numThreads = 2;
+      
+      final int numThreads = 1;
 
-      final int numClients = 200;
+      final int numClients = 1000;
 
       for (int i = 0; i < numClients; i++)
       {
@@ -1499,7 +1546,7 @@ public class HornetQServerImpl implements HornetQServer
 
          available.add(run);
       }
-      
+
       log.info("setup, now running");
 
       Set<Thread> runners = new HashSet<Thread>();
@@ -1518,7 +1565,84 @@ public class HornetQServerImpl implements HornetQServer
          t.join();
       }
    }
+   
+   class RouteBlastRunner implements Runnable
+   {
+      private SimpleString address;
 
+      private Set<Consumer> consumers = new HashSet<Consumer>();
+
+      RouteBlastRunner(SimpleString address)
+      {
+         this.address = address;
+      }
+
+      
+
+      public void setup() throws Exception
+      {
+         final int numQueues = 1;
+
+         for (int i = 0; i < numQueues; i++)
+         {
+            SimpleString queueName = new SimpleString(address + ".hq.route_blast_queue" + i);
+
+            createQueue(address, queueName, null, true, false, true);
+
+            Queue queue = (Queue)postOffice.getBinding(queueName).getBindable();
+
+            RBConsumer consumer = new RBConsumer(queue);
+
+            queue.addConsumer(consumer);
+
+            //log.info("added consumer to queue " + queue);
+
+            consumers.add(consumer);
+         }
+      }
+
+      public void run()
+      {
+         try
+         {
+            final int bodySize = 1024;
+
+            byte[] body = new byte[bodySize];
+
+            final ServerMessage msg = new ServerMessageImpl(storageManager.generateUniqueID(), 1500);
+
+            msg.getBodyBuffer().writeBytes(body);
+
+            msg.setDestination(address);
+
+            msg.setDurable(true);
+
+            postOffice.route(msg);
+
+            storageManager.afterCompleteOperations(new IOAsyncTask()
+            {
+               public void onError(int errorCode, String errorMessage)
+               {
+                  log.error("Error processing IOCallback code = " + errorCode + " message = " + errorMessage);
+               }
+
+               public void done()
+               {
+                  available.add(RouteBlastRunner.this);
+               }
+            });
+         }
+         catch (Exception e)
+         {
+            log.error("Failed to run runner", e);
+         }
+
+      }
+   }
+   
+   
+   
+  
    class Foo implements Runnable
    {
       public void run()
@@ -1538,64 +1662,35 @@ public class HornetQServerImpl implements HornetQServer
          }
       }
    }
-
-   class RouteBlastRunner implements Runnable
+   
+   private class RBConsumer implements Consumer
    {
-      private SimpleString address;
+      private Queue queue;
 
-      RouteBlastRunner(SimpleString address)
+      RBConsumer(Queue queue)
       {
-         this.address = address;
+         this.queue = queue;
       }
 
-      public void setup() throws Exception
+      public Filter getFilter()
       {
-         final int numQueues = 1;
-
-         for (int i = 0; i < numQueues; i++)
-         {
-            createQueue(address, new SimpleString(address + ".hq.route_blast_queue" + i), null, true, false, true);
-         }
+         return null;
       }
 
-      public void run()
+      public HandleStatus handle(MessageReference reference) throws Exception
       {
-         try
-         {
-            final int bodySize = 1024;
+         reference.handled();
 
-            byte[] body = new byte[bodySize];
+         queue.acknowledge(reference);
+         
+         //log.info("acking");
 
-            final ServerMessage msg = new ServerMessageImpl(storageManager.generateUniqueID(), 1500);
-
-            msg.getBodyBuffer().writeBytes(body);
-
-            msg.setDestination(address);
-
-            msg.setDurable(true);
-            
-            postOffice.route(msg);
-
-            storageManager.afterCompleteOperations(new IOAsyncTask()
-            {
-               public void onError(int errorCode, String errorMessage)
-               {
-                  log.error("Error processing IOCallback code = " + errorCode + " message = " + errorMessage);
-               }
-
-               public void done()
-               {                  
-                  available.add(RouteBlastRunner.this);
-               }
-            });
-         }
-         catch (Exception e)
-         {
-            log.error("Failed to run runner", e);
-         }
-
+         return HandleStatus.HANDLED;
       }
+
    }
+
+   
 
    // Inner classes
    // --------------------------------------------------------------------------------

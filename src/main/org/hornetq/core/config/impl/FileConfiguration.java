@@ -73,9 +73,9 @@ public class FileConfiguration extends ConfigurationImpl
    private static final String DEFAULT_CONFIGURATION_URL = "hornetq-configuration.xml";
 
    private static final String CONFIGURATION_SCHEMA_URL = "schema/hornetq-configuration.xsd";
-   
-   //For a bridge confirmations must be activated or send acknowledgements won't return
-   
+
+   // For a bridge confirmations must be activated or send acknowledgements won't return
+
    public static final int DEFAULT_CONFIRMATION_WINDOW_SIZE = 1024 * 1024;
 
    // Static --------------------------------------------------------------------------
@@ -335,19 +335,42 @@ public class FileConfiguration extends ConfigurationImpl
 
       journalFileSize = getInteger(e, "journal-file-size", journalFileSize, GT_ZERO);
 
-      journalFlushSync = getBoolean(e, "journal-flush-on-sync", DEFAULT_JOURNAL_FLUSH_SYNC);
+      int journalBufferTimeout = getInteger(e,
+                                        "journal-buffer-timeout",
+                                        journalType == JournalType.ASYNCIO ? DEFAULT_JOURNAL_BUFFER_TIMEOUT_AIO
+                                                                          : DEFAULT_JOURNAL_BUFFER_TIMEOUT_NIO,
+                                        GT_ZERO);
 
-      journalBufferTimeout = getInteger(e, "journal-buffer-timeout", DEFAULT_JOURNAL_BUFFER_TIMEOUT, GT_ZERO);
+      int journalBufferSize = getInteger(e,
+                                     "journal-buffer-size",
+                                     journalType == JournalType.ASYNCIO ? DEFAULT_JOURNAL_BUFFER_SIZE_AIO
+                                                                       : DEFAULT_JOURNAL_BUFFER_SIZE_NIO,
+                                     GT_ZERO);
 
-      journalBufferSize = getInteger(e, "journal-buffer-size", DEFAULT_JOURNAL_BUFFER_SIZE, GT_ZERO);
+      int journalMaxIO = getInteger(e,
+                                "journal-max-aio",
+                                journalType == JournalType.ASYNCIO ? DEFAULT_JOURNAL_MAX_IO_AIO
+                                                                  : DEFAULT_JOURNAL_MAX_IO_NIO,
+                                GT_ZERO);
+      
+      if (journalType == JournalType.ASYNCIO)
+      {
+         journalBufferTimeout_AIO = journalBufferTimeout;
+         journalBufferSize_AIO = journalBufferSize;
+         journalMaxIO_AIO = journalMaxIO;
+      }
+      else
+      {
+         journalBufferTimeout_NIO = journalBufferTimeout;
+         journalBufferSize_NIO = journalBufferSize;
+         journalMaxIO_NIO = journalMaxIO;  
+      }
 
       journalMinFiles = getInteger(e, "journal-min-files", journalMinFiles, GT_ZERO);
 
       journalCompactMinFiles = getInteger(e, "journal-compact-min-files", journalCompactMinFiles, GE_ZERO);
 
       journalCompactPercentage = getInteger(e, "journal-compact-percentage", journalCompactPercentage, PERCENTAGE);
-
-      journalMaxAIO = getInteger(e, "journal-max-aio", journalMaxAIO, GT_ZERO);
 
       logJournalWriteRate = getBoolean(e, "log-journal-write-rate", DEFAULT_JOURNAL_LOG_WRITE_RATE);
 
@@ -367,12 +390,12 @@ public class FileConfiguration extends ConfigurationImpl
                                                GT_ZERO);
 
       serverDumpInterval = getLong(e, "server-dump-interval", serverDumpInterval, MINUS_ONE_OR_GT_ZERO); // in
-                                                                                                         // milliseconds
+      // milliseconds
 
       memoryWarningThreshold = getInteger(e, "memory-warning-threshold", memoryWarningThreshold, PERCENTAGE);
 
       memoryMeasureInterval = getLong(e, "memory-measure-interval", memoryMeasureInterval, MINUS_ONE_OR_GT_ZERO); // in
-                                                                                                                  // milliseconds
+      // milliseconds
 
       backupWindowSize = getInteger(e, "backup-window-size", DEFAULT_BACKUP_WINDOW_SIZE, MINUS_ONE_OR_GT_ZERO);
 
@@ -523,7 +546,7 @@ public class FileConfiguration extends ConfigurationImpl
       long retryInterval = getLong(e, "retry-interval", DEFAULT_CLUSTER_RETRY_INTERVAL, GT_ZERO);
 
       int confirmationWindowSize = getInteger(e, "confirmation-window-size", DEFAULT_CONFIRMATION_WINDOW_SIZE, GT_ZERO);
-      
+
       String discoveryGroupName = null;
 
       List<Pair<String, String>> connectorPairs = new ArrayList<Pair<String, String>>();
@@ -609,10 +632,13 @@ public class FileConfiguration extends ConfigurationImpl
       String transformerClassName = getString(brNode, "transformer-class-name", null, NO_CHECK);
 
       long retryInterval = getLong(brNode, "retry-interval", DEFAULT_RETRY_INTERVAL, GT_ZERO);
-      
-      //Default bridge conf
-      int confirmationWindowSize = getInteger(brNode, "confirmation-window-size", DEFAULT_CONFIRMATION_WINDOW_SIZE, GT_ZERO);
-      
+
+      // Default bridge conf
+      int confirmationWindowSize = getInteger(brNode,
+                                              "confirmation-window-size",
+                                              DEFAULT_CONFIRMATION_WINDOW_SIZE,
+                                              GT_ZERO);
+
       double retryIntervalMultiplier = getDouble(brNode,
                                                  "retry-interval-multiplier",
                                                  DEFAULT_RETRY_INTERVAL_MULTIPLIER,

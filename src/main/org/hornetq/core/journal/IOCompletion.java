@@ -22,5 +22,5 @@ package org.hornetq.core.journal;
  */
 public interface IOCompletion extends IOAsyncTask
 {
-   void lineUp();
+   void storeLineUp();
 }

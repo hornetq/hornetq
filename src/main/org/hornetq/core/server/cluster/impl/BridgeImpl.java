@@ -695,12 +695,24 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
          }
          catch (HornetQException e)
          {
+            csf.close();
+            
             // the session was created while its server was starting, retry it:
             if (e.getCode() == HornetQException.SESSION_CREATION_REJECTED)
             {
                log.warn("Server is starting, retry to create the session for bridge " + name);
 
+               //Sleep a little to prevent spinning too much
+               try
+               {
+                  Thread.sleep(10);
+               }
+               catch (InterruptedException ignore)
+               {                  
+               }
+               
                retry = true;
+               
                continue;
             }
             else

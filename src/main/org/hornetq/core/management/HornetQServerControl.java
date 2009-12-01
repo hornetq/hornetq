@@ -59,8 +59,12 @@ public interface HornetQServerControl
 
    int getJournalMinFiles();
 
-   int getJournalMaxAIO();
+   int getJournalMaxIO();
    
+   int getJournalBufferSize();
+
+   int getJournalBufferTimeout();
+           
    int getJournalCompactMinFiles();
    
    int getJournalCompactPercentage();
@@ -86,10 +90,6 @@ public interface HornetQServerControl
    boolean isBackup();
    
    boolean isSharedStore();
-
-   int getAIOBufferSize();
-
-   int getAIOBufferTimeout();
 
    String getPagingDirectory();
 

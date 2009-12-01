@@ -519,6 +519,12 @@ public class ReplicatedJournal implements Journal
       return localJournal.getNumberOfRecords();
    }
 
+   public void runDirectJournalBlast() throws Exception
+   {
+      // TODO Auto-generated method stub
+      
+   }
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

@@ -151,9 +151,7 @@
 				<xsd:element maxOccurs="1" minOccurs="0" name="journal-buffer-timeout" type="xsd:long">
 				</xsd:element>
 				<xsd:element maxOccurs="1" minOccurs="0" name="journal-buffer-size" type="xsd:long">
-				</xsd:element>
-				<xsd:element maxOccurs="1" minOccurs="0" name="journal-flush-on-sync" type="xsd:boolean">
-				</xsd:element>
+				</xsd:element>				
 				<xsd:element maxOccurs="1" minOccurs="0" name="journal-sync-transactional" type="xsd:boolean">
 				</xsd:element>
 				<xsd:element maxOccurs="1" minOccurs="0" name="journal-sync-non-transactional" type="xsd:boolean">

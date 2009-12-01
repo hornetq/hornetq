@@ -53,16 +53,20 @@ public class TokenBucketLimiterImpl implements TokenBucketLimiter
 	{			
 		while (!check())
 		{
-			if (!spin)
+			if (spin)
 			{
-   			try
-   			{
-   				Thread.sleep(1);
-   			}
-   			catch (Exception e)
-   			{			
-   				//Ignore
-   			}
+			   Thread.yield();            
+			}
+			else
+			{			  
+			   try
+            {
+               Thread.sleep(1);
+            }
+            catch (Exception e)
+            {        
+               //Ignore
+            }
 			}
 		}
 	}

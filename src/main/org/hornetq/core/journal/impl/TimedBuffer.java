@@ -19,17 +19,15 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.hornetq.core.buffers.HornetQBuffer;
 import org.hornetq.core.buffers.HornetQBuffers;
 import org.hornetq.core.journal.EncodingSupport;
 import org.hornetq.core.journal.IOAsyncTask;
-import org.hornetq.core.journal.IOCompletion;
 import org.hornetq.core.journal.impl.dataformat.ByteArrayEncoding;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.utils.VariableLatch;
 
 /**
  * A TimedBuffer
@@ -48,9 +46,10 @@ public class TimedBuffer
 
    private TimedBufferObserver bufferObserver;
 
-   // This is used to pause and resume the timer
-   // This is a reusable Latch, that uses java.util.concurrent base classes
-   private final VariableLatch latchTimer = new VariableLatch();
+   // If the TimedBuffer is idle - i.e. no records are being added, then it's pointless the timer flush thread
+   // in spinning and checking the time - and using up CPU in the process - this semaphore is used to
+   // prevent that
+   private final Semaphore spinLimiter = new Semaphore(1);
 
    private CheckTimer timerRunnable = new CheckTimer();
 
@@ -62,12 +61,7 @@ public class TimedBuffer
 
    private List<IOAsyncTask> callbacks;
 
-   private final Lock lock = new ReentrantReadWriteLock().writeLock();
-
-   // used to measure inactivity. This buffer will be automatically flushed when more than timeout inactive
-   private volatile boolean active = false;
-
-   private final long timeout;
+   private volatile int timeout;
 
    // used to measure sync requests. When a sync is requested, it shouldn't take more than timeout to happen
    private volatile boolean pendingSync = false;
@@ -76,21 +70,24 @@ public class TimedBuffer
 
    private volatile boolean started;
 
-   private final boolean flushOnSync;
+   // We use this flag to prevent flush occuring between calling checkSize and addBytes
+   // CheckSize must always be followed by it's corresponding addBytes otherwise the buffer
+   // can get in an inconsistent state
+   private boolean delayFlush;
 
    // for logging write rates
 
    private final boolean logRates;
 
-   private volatile long bytesFlushed;
+   private final AtomicLong bytesFlushed = new AtomicLong(0);
 
-   private volatile long flushesDone;
+   private final AtomicLong flushesDone = new AtomicLong(0);
 
    private Timer logRatesTimer;
 
    private TimerTask logRatesTimerTask;
 
-   private long lastExecution;
+   private final AtomicLong lastFlushTime = new AtomicLong(0);
 
    // Static --------------------------------------------------------
 
@@ -98,23 +95,29 @@ public class TimedBuffer
 
    // Public --------------------------------------------------------
 
-   public TimedBuffer(final int size, final long timeout, final boolean flushOnSync, final boolean logRates)
+   public TimedBuffer(final int size, final int timeout, final boolean logRates)
    {
-      this.bufferSize = size;
+      log.info("timed buffer size " + size);
+      log.info("timed buffer timeout " + timeout);
+
+      bufferSize = size;
+
       this.logRates = logRates;
+
       if (logRates)
       {
-         this.logRatesTimer = new Timer(true);
+         logRatesTimer = new Timer(true);
       }
       // Setting the interval for nano-sleeps
 
       buffer = HornetQBuffers.fixedBuffer(bufferSize);
+
       buffer.clear();
+
       bufferLimit = 0;
 
       callbacks = new ArrayList<IOAsyncTask>();
-      this.flushOnSync = flushOnSync;
-      latchTimer.up();
+
       this.timeout = timeout;
    }
 
@@ -127,7 +130,7 @@ public class TimedBuffer
 
       timerRunnable = new CheckTimer();
 
-      timerThread = new Thread(timerRunnable, "hornetq-async-buffer");
+      timerThread = new Thread(timerRunnable, "hornetq-buffer-timeout");
 
       timerThread.start();
 
@@ -148,11 +151,11 @@ public class TimedBuffer
          return;
       }
 
-      this.flush();
+      flush();
 
-      this.bufferObserver = null;
+      bufferObserver = null;
 
-      latchTimer.down();
+      spinLimiter.release();
 
       timerRunnable.close();
 
@@ -175,24 +178,14 @@ public class TimedBuffer
       started = false;
    }
 
-   public synchronized void setObserver(TimedBufferObserver observer)
+   public synchronized void setObserver(final TimedBufferObserver observer)
    {
-      if (this.bufferObserver != null)
+      if (bufferObserver != null)
       {
          flush();
       }
 
-      this.bufferObserver = observer;
-   }
-
-   public void disableAutoFlush()
-   {
-      lock.lock();
-   }
-
-   public void enableAutoFlush()
-   {
-      lock.unlock();
+      bufferObserver = observer;
    }
 
    /**
@@ -210,23 +203,36 @@ public class TimedBuffer
 
       if (bufferLimit == 0 || buffer.writerIndex() + sizeChecked > bufferLimit)
       {
+         // Either there is not enough space left in the buffer for the sized record
+         // Or a flush has just been performed and we need to re-calcualate bufferLimit
+
          flush();
 
-         final int remaining = bufferObserver.getRemainingBytes();
+         delayFlush = true;
 
-         if (sizeChecked > remaining)
+         final int remainingInFile = bufferObserver.getRemainingBytes();
+
+         if (sizeChecked > remainingInFile)
          {
+            // Need to move to a new file -not enough space in file for this size
+
             return false;
          }
          else
          {
-            buffer.clear();
-            bufferLimit = Math.min(remaining, bufferSize);
+            // There is enough space in the file for this size
+
+            // Need to re-calculate buffer limit
+
+            bufferLimit = Math.min(remainingInFile, bufferSize);
+
             return true;
          }
       }
       else
       {
+         delayFlush = true;
+
          return true;
       }
    }
@@ -238,86 +244,83 @@ public class TimedBuffer
 
    public synchronized void addBytes(final EncodingSupport bytes, final boolean sync, final IOAsyncTask callback)
    {
+      delayFlush = false;
+
       if (buffer.writerIndex() == 0)
       {
-         // Resume latch
-         latchTimer.down();
+         // More bytes have been added so the timer flush thread can resume
+
+         spinLimiter.release();
       }
 
       bytes.encode(buffer);
 
       callbacks.add(callback);
 
-      active = true;
-
       if (sync)
       {
-         if (!pendingSync)
-         {
-            pendingSync = true;
-         }
+         pendingSync = true;
 
-         if (flushOnSync)
-         {
-            flush();
-         }
+//         if (System.nanoTime() - lastFlushTime.get() > timeout)
+//         {
+//            // This might happen if there is low activity in the buffer - the timer hasn't fired because no sync records
+//            // have been recently added, and suddenly a sync record is added
+//            // In this case we do a flush immediately, which can reduce latency in this case
+//
+//            flush();
+//         }
       }
 
-      if (buffer.writerIndex() == bufferLimit)
-      {
-         flush();
-      }
    }
 
    public void flush()
    {
-      ByteBuffer bufferToFlush = null;
-
-      boolean useSync = false;
-
-      List<IOAsyncTask> callbacksToCall = null;
-
       synchronized (this)
       {
-         if (buffer.writerIndex() > 0)
+         if (!delayFlush && buffer.writerIndex() > 0)
          {
-            latchTimer.up();
-
             int pos = buffer.writerIndex();
 
             if (logRates)
             {
-               bytesFlushed += pos;
+               bytesFlushed.addAndGet(pos);
             }
 
-            bufferToFlush = bufferObserver.newBuffer(bufferSize, pos);
+            ByteBuffer bufferToFlush = bufferObserver.newBuffer(bufferSize, pos);
 
             // Putting a byteArray on a native buffer is much faster, since it will do in a single native call.
             // Using bufferToFlush.put(buffer) would make several append calls for each byte
 
             bufferToFlush.put(buffer.toByteBuffer().array(), 0, pos);
 
-            callbacksToCall = callbacks;
+            if (bufferToFlush != null)
+            {
+               bufferObserver.flushBuffer(bufferToFlush, pendingSync, callbacks);
+            }
+
+            try
+            {
+               // We acquire the spinLimiter semaphore - this prevents the timer flush thread unnecessarily spinning
+               // when the buffer is inactive
+               spinLimiter.acquire();
+            }
+            catch (InterruptedException e)
+            {
+               // Ignore
+            }
+
+            lastFlushTime.set(System.nanoTime());
+
+            pendingSync = false;
 
             callbacks = new LinkedList<IOAsyncTask>();
 
-            useSync = pendingSync;
-
-            active = false;
-            pendingSync = false;
-
             buffer.clear();
+
             bufferLimit = 0;
 
-            flushesDone++;
+            flushesDone.incrementAndGet();
          }
-      }
-
-      // Execute the flush outside of the lock
-      // This is important for NIO performance while we are using NIO Callbacks
-      if (bufferToFlush != null)
-      {
-         bufferObserver.flushBuffer(bufferToFlush, useSync, callbacksToCall);
       }
    }
 
@@ -327,35 +330,17 @@ public class TimedBuffer
 
    // Private -------------------------------------------------------
 
-   private void checkTimer()
-   {
-      // if inactive for more than the timeout
-      // of if a sync happened at more than the the timeout ago
-      if (!active || pendingSync)
-      {
-         lock.lock();
-         try
-         {
-            if (bufferObserver != null)
-            {
-               flush();
-            }
-         }
-         finally
-         {
-            lock.unlock();
-         }
-      }
-
-      // Set the buffer as inactive.. we will flush the buffer next tick if nothing change this
-      active = false;
-   }
-
    // Inner classes -------------------------------------------------
 
    private class LogRatesTimerTask extends TimerTask
    {
       private boolean closed;
+
+      private long lastExecution;
+
+      private long lastBytesFlushed;
+
+      private long lastFlushesDone;
 
       @Override
       public synchronized void run()
@@ -364,22 +349,26 @@ public class TimedBuffer
          {
             long now = System.currentTimeMillis();
 
+            long bytesF = bytesFlushed.get();
+            long flushesD = flushesDone.get();
+
             if (lastExecution != 0)
             {
-               double rate = 1000 * ((double)bytesFlushed) / (now - lastExecution);
+               double rate = 1000 * (double)(bytesF - lastBytesFlushed) / (now - lastExecution);
                log.info("Write rate = " + rate + " bytes / sec or " + (long)(rate / (1024 * 1024)) + " MiB / sec");
-               double flushRate = 1000 * ((double)flushesDone) / (now - lastExecution);
+               double flushRate = 1000 * (double)(flushesD - lastFlushesDone) / (now - lastExecution);
                log.info("Flush rate = " + flushRate + " flushes / sec");
             }
 
             lastExecution = now;
 
-            bytesFlushed = 0;
+            lastBytesFlushed = bytesF;
 
-            flushesDone = 0;
+            lastFlushesDone = flushesD;
          }
       }
 
+      @Override
       public synchronized boolean cancel()
       {
          closed = true;
@@ -396,30 +385,26 @@ public class TimedBuffer
       {
          while (!closed)
          {
+            // We flush on the timer if there are pending syncs there and we've waited waited at least one
+            // timeout since the time of the last flush
+            // Effectively flushing "resets" the timer
+
+            if (pendingSync && bufferObserver != null && (System.nanoTime() > lastFlushTime.get() + timeout))
+            {
+               flush();
+            }
+
             try
             {
-               latchTimer.waitCompletion();
+               spinLimiter.acquire();
+
+               Thread.yield();
+
+               spinLimiter.release();
             }
-            catch (InterruptedException ignored)
+            catch (InterruptedException ignore)
             {
             }
-
-            sleep();
-
-            checkTimer();
-
-         }
-      }
-
-      /**
-       * 
-       */
-      private void sleep()
-      {
-         long time = System.nanoTime() + timeout;
-         while (time > System.nanoTime())
-         {
-            Thread.yield();
          }
       }
 

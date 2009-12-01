@@ -50,7 +50,7 @@ class DummyCallback extends SyncIOCompletion
    /* (non-Javadoc)
     * @see org.hornetq.core.journal.IOCompletion#linedUp()
     */
-   public void lineUp()
+   public void storeLineUp()
    {
    }
 }

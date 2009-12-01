@@ -106,9 +106,9 @@ public class HornetQServerControlTest extends ManagementTestBase
       assertEquals(conf.isJournalSyncNonTransactional(), serverControl.isJournalSyncNonTransactional());
       assertEquals(conf.getJournalFileSize(), serverControl.getJournalFileSize());
       assertEquals(conf.getJournalMinFiles(), serverControl.getJournalMinFiles());
-      assertEquals(conf.getJournalMaxAIO(), serverControl.getJournalMaxAIO());
-      assertEquals(conf.getJournalBufferSize(), serverControl.getAIOBufferSize());
-      assertEquals(conf.getJournalBufferTimeout(), serverControl.getAIOBufferTimeout());      
+      assertEquals(conf.getJournalMaxIO_AIO(), serverControl.getJournalMaxIO());
+      assertEquals(conf.getJournalBufferSize_AIO(), serverControl.getJournalBufferSize());
+      assertEquals(conf.getJournalBufferTimeout_AIO(), serverControl.getJournalBufferTimeout());      
       assertEquals(conf.isCreateBindingsDir(), serverControl.isCreateBindingsDir());
       assertEquals(conf.isCreateJournalDir(), serverControl.isCreateJournalDir());      
       assertEquals(conf.getPagingDirectory(), serverControl.getPagingDirectory());

@@ -69,17 +69,19 @@ public class FileConfigurationTest extends ConfigurationImplTest
       assertEquals(false, conf.isCreateBindingsDir());
       assertEquals("somedir2", conf.getJournalDirectory());
       assertEquals(false, conf.isCreateJournalDir());
+      
       assertEquals(JournalType.NIO, conf.getJournalType());
-      assertEquals(10000, conf.getJournalBufferSize());
-      assertEquals(true, conf.isJournalFlushOnSync());      
-      assertEquals(1000, conf.getJournalBufferTimeout());      
+      assertEquals(10000, conf.getJournalBufferSize_NIO());     
+      assertEquals(1000, conf.getJournalBufferTimeout_NIO());
+      assertEquals(56546, conf.getJournalMaxIO_NIO());
+      
       assertEquals(false, conf.isJournalSyncTransactional());
       assertEquals(true, conf.isJournalSyncNonTransactional());
       assertEquals(12345678, conf.getJournalFileSize());
       assertEquals(100, conf.getJournalMinFiles());      
       assertEquals(123, conf.getJournalCompactMinFiles());
       assertEquals(33, conf.getJournalCompactPercentage());
-      assertEquals(56546, conf.getJournalMaxAIO());
+      
       assertEquals("largemessagesdir", conf.getLargeMessagesDirectory());
       assertEquals(95, conf.getMemoryWarningThreshold());
       assertEquals(1024, conf.getBackupWindowSize());

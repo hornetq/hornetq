@@ -10,15 +10,20 @@
  * implied.  See the License for the specific language governing
  * permissions and limitations under the License.
  */
-
 package org.hornetq.core.journal.impl;
 
 import java.io.File;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
-import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
 
+import org.hornetq.core.journal.IOAsyncTask;
+import org.hornetq.core.journal.SequentialFile;
+import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.logging.Logger;
 
 /**
@@ -34,139 +39,303 @@ import org.hornetq.core.logging.Logger;
 public class SyncSpeedTest
 {
    private static final Logger log = Logger.getLogger(SyncSpeedTest.class);
-   
+
    public static void main(final String[] args)
    {
       try
       {
-         new SyncSpeedTest().run();
+         new SyncSpeedTest().testScaleAIO();
       }
       catch (Exception e)
       {
          e.printStackTrace();
       }
    }
-   
+
+   protected SequentialFileFactory fileFactory;
+
+   public boolean AIO = true;
+
+   protected void setupFactory()
+   {
+      if (AIO)
+      {
+         fileFactory = new AIOSequentialFileFactory(".", 0, 0, false);
+      }
+      else
+      {
+         fileFactory = new NIOSequentialFileFactory(".", false, 0, 0, false);
+      }
+   }
+
+   protected SequentialFile createSequentialFile(String fileName)
+   {
+      if (AIO)
+      {
+         return new AIOSequentialFile(fileFactory,
+                                      0,
+                                      0,
+                                      ".",
+                                      fileName,
+                                      100000,
+                                      null,
+                                      null,
+                                      Executors.newSingleThreadExecutor());
+      }
+      else
+      {
+         return new NIOSequentialFile(fileFactory, new File(fileName), 1000, null);
+      }
+   }
+
+   public void run2() throws Exception
+   {
+      setupFactory();
+
+      int recordSize = 128 * 1024;
+
+      while (true)
+      {
+         System.out.println("** record size is " + recordSize);
+
+         int warmup = 500;
+
+         int its = 500;
+
+         int fileSize = (its + warmup) * recordSize;
+
+         SequentialFile file = createSequentialFile("sync-speed-test.dat");
+
+         if (file.exists())
+         {
+            file.delete();
+         }
+
+         file.open();
+
+         file.fill(0, fileSize, (byte)'X');
+
+         if (!AIO)
+         {
+            file.sync();
+         }
+
+         ByteBuffer bb1 = generateBuffer(recordSize, (byte)'h');
+
+         long start = 0;
+
+         for (int i = 0; i < its + warmup; i++)
+         {
+            if (i == warmup)
+            {
+               start = System.currentTimeMillis();
+            }
+
+            bb1.rewind();
+
+            file.writeDirect(bb1, true);
+         }
+
+         long end = System.currentTimeMillis();
+
+         double rate = 1000 * ((double)its) / (end - start);
+
+         double throughput = recordSize * rate;
+
+         System.out.println("Rate of " + rate + " syncs per sec");
+         System.out.println("Throughput " + throughput + " bytes per sec");
+         System.out.println("*************");
+
+         recordSize *= 2;
+      }
+   }
+
    public void run() throws Exception
    {
-      int fileSize = 1024 * 1024 * 100;
-      
-      int recordSize = 1024;
-      
-      int its = 10 * 1024;
-      
-      File file = new File("sync-speed-test.dat");
-      
-      if (file.exists())
+      int recordSize = 256;
+
+      while (true)
       {
-         file.delete();
+         System.out.println("** record size is " + recordSize);
+
+         int warmup = 500;
+
+         int its = 500;
+
+         int fileSize = (its + warmup) * recordSize;
+
+         File file = new File("sync-speed-test.dat");
+
+         if (file.exists())
+         {
+            file.delete();
+         }
+
+         file.createNewFile();
+
+         RandomAccessFile rfile = new RandomAccessFile(file, "rw");
+
+         FileChannel channel = rfile.getChannel();
+
+         ByteBuffer bb = generateBuffer(fileSize, (byte)'x');
+
+         write(bb, channel, fileSize);
+
+         channel.force(true);
+
+         channel.position(0);
+
+         ByteBuffer bb1 = generateBuffer(recordSize, (byte)'h');
+
+         long start = 0;
+
+         for (int i = 0; i < its + warmup; i++)
+         {
+            if (i == warmup)
+            {
+               start = System.currentTimeMillis();
+            }
+
+            bb1.flip();
+            channel.write(bb1);
+            channel.force(false);
+         }
+
+         long end = System.currentTimeMillis();
+
+         double rate = 1000 * ((double)its) / (end - start);
+
+         double throughput = recordSize * rate;
+
+         System.out.println("Rate of " + rate + " syncs per sec");
+         System.out.println("Throughput " + throughput + " bytes per sec");
+
+         recordSize *= 2;
       }
-      
-      RandomAccessFile rfile = new RandomAccessFile(file, "rw");
-      
-      FileChannel channel = rfile.getChannel();
-      
-      ByteBuffer bb = generateBuffer(fileSize, (byte)'x');
-      
-      write(bb, channel, fileSize);
-            
-      channel.force(false);
-      
-      channel.position(0);
-      
-      MappedByteBuffer mappedBB = channel.map(FileChannel.MapMode.READ_WRITE, 0, fileSize);
-      
-      mappedBB.load();
-      // mappedBB.order(java.nio.ByteOrder.LITTLE_ENDIAN);
-      System.out.println("isLoaded=" + mappedBB.isLoaded() + "; isDirect=" + mappedBB.isDirect() + "; byteOrder=" + mappedBB.order());
-      
-      ByteBuffer bb1 = generateBuffer(recordSize, (byte)'h');
-            
-      System.out.println("Measuring");
-      
-      long start = System.currentTimeMillis();
-      
-      for (int i = 0; i < its; i++)
-      {
-        bb1.flip();
-        mappedBB.position(0);
-        mappedBB.put(bb1);
-        mappedBB.force();
-        
-         //write(bb1, channel, recordSize);
-         // channel.force(false);
-      }
-      
-      long end = System.currentTimeMillis();
-      
-      double rate = 1000 * ((double)its) / (end - start);
-      
-      System.out.println("Rate of " + rate + " syncs per sec");
-      file.delete();
    }
-      
-//   public void run() throws Exception
-//   {  
-//      log.info("******* Starting file sync speed test *******");
-//      
-//      int fileSize = 1024 * 1024 * 10;
-//      
-//      int recordSize = 1024;
-//      
-//      int its = 10 * 1024;
-//      
-//      File file = new File("sync-speed-test.dat");
-//      
-//      if (file.exists())
-//      {
-//         file.delete();
-//      }
-//      
-//      RandomAccessFile rfile = new RandomAccessFile(file, "rw");
-//      
-//      FileChannel channel = rfile.getChannel();
-//      
-//      ByteBuffer bb = generateBuffer(fileSize, (byte)'x');
-//      
-//      write(bb, channel, fileSize);
-//            
-//      channel.force(false);
-//      
-//      channel.position(0);
-//      
-//      ByteBuffer bb1 = generateBuffer(recordSize, (byte)'h');
-//            
-//      log.info("Measuring");
-//      
-//      long start = System.currentTimeMillis();
-//      
-//      for (int i = 0; i < its; i++)
-//      {
-//         write(bb1, channel, recordSize);
-//         
-//         channel.force(false);
-//      }
-//      
-//      long end = System.currentTimeMillis();
-//      
-//      double rate = 1000 * ((double)its) / (end - start);
-//      
-//      log.info("Rate of " + rate + " syncs per sec");
-//      
-//      rfile.close();
-//      
-//      file.delete();
-//                  
-//      log.info("****** test complete *****");
-//   }
-   
+
+   public void testScaleAIO() throws Exception
+   {
+      setupFactory();
+
+      final int recordSize = 1024;
+
+      System.out.println("** record size is " + recordSize);
+
+      final int its = 10;
+
+      for (int numThreads = 1; numThreads <= 10; numThreads++)
+      {
+
+         int fileSize = its * recordSize * numThreads;
+
+         final SequentialFile file = createSequentialFile("sync-speed-test.dat");
+
+         if (file.exists())
+         {
+            file.delete();
+         }
+
+         file.open();
+
+         file.fill(0, fileSize, (byte)'X');
+
+         if (!AIO)
+         {
+            file.sync();
+         }
+
+         final CountDownLatch latch = new CountDownLatch(its * numThreads);
+
+         class MyIOAsyncTask implements IOAsyncTask
+         {
+            public void done()
+            {
+               latch.countDown();
+            }
+
+            public void onError(int errorCode, String errorMessage)
+            {
+
+            }
+         }
+
+         final MyIOAsyncTask task = new MyIOAsyncTask();
+
+         class MyRunner implements Runnable
+         {
+            private ByteBuffer bb1;
+
+            MyRunner()
+            {
+               bb1 = generateBuffer(recordSize, (byte)'h');
+            }
+
+            public void run()
+            {
+               for (int i = 0; i < its; i++)
+               {
+                  bb1.rewind();
+
+                  file.writeDirect(bb1, true, task);
+//                  try
+//                  {
+//                     file.writeDirect(bb1, true);
+//                  }
+//                  catch (Exception e)
+//                  {
+//                     e.printStackTrace();
+//                  }
+               }
+            }
+         }
+
+         Set<Thread> threads = new HashSet<Thread>();
+
+         for (int i = 0; i < numThreads; i++)
+         {
+            MyRunner runner = new MyRunner();
+
+            Thread t = new Thread(runner);
+
+            threads.add(t);
+         }
+
+         long start = System.currentTimeMillis();
+
+         for (Thread t : threads)
+         {
+            log.info("starting thread");
+            t.start();
+         }
+
+         for (Thread t : threads)
+         {
+            t.join();
+         }
+
+         latch.await();
+
+         long end = System.currentTimeMillis();
+
+         double rate = 1000 * ((double)its * numThreads) / (end - start);
+
+         double throughput = recordSize * rate;
+
+         System.out.println("For " + numThreads + " threads:");
+         System.out.println("Rate of " + rate + " records per sec");
+         System.out.println("Throughput " + throughput + " bytes per sec");
+         System.out.println("*************");
+      }
+   }
+
    private void write(final ByteBuffer buffer, final FileChannel channel, final int size) throws Exception
    {
       buffer.flip();
-      
+
       channel.write(buffer);
    }
-   
+
    private ByteBuffer generateBuffer(final int size, final byte ch)
    {
       ByteBuffer bb = ByteBuffer.allocateDirect(size);
@@ -175,7 +344,7 @@ public class SyncSpeedTest
       {
          bb.put(ch);
       }
-      
+
       return bb;
-   }    
+   }
 }

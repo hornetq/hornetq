@@ -100,13 +100,21 @@ public class ConfigurationImpl implements Configuration
 
    public static final int DEFAULT_JOURNAL_MIN_FILES = 2;
 
-   public static final int DEFAULT_JOURNAL_MAX_AIO = 500;
+   // AIO and NIO need to have different defaults for some values
 
-   public static final boolean DEFAULT_JOURNAL_FLUSH_SYNC = false;
+   public static final int DEFAULT_JOURNAL_MAX_IO_AIO = 500;
 
-   public static final int DEFAULT_JOURNAL_BUFFER_TIMEOUT = 20000;
+   public static final int DEFAULT_JOURNAL_BUFFER_TIMEOUT_AIO = (int)(1000000000d / 2000);
 
-   public static final int DEFAULT_JOURNAL_BUFFER_SIZE = 128 * 1024;
+   public static final int DEFAULT_JOURNAL_BUFFER_SIZE_AIO = 490 * 1024;
+
+   public static final int DEFAULT_JOURNAL_MAX_IO_NIO = 1;
+
+   public static final int DEFAULT_JOURNAL_BUFFER_TIMEOUT_NIO = (int)(1000000000d / 300);
+
+   public static final int DEFAULT_JOURNAL_BUFFER_SIZE_NIO = 490 * 1024;
+   
+   
 
    public static final boolean DEFAULT_JOURNAL_LOG_WRITE_RATE = false;
 
@@ -266,13 +274,22 @@ public class ConfigurationImpl implements Configuration
 
    protected int journalMinFiles = DEFAULT_JOURNAL_MIN_FILES;
 
-   protected int journalMaxAIO = DEFAULT_JOURNAL_MAX_AIO;
+   
+   //AIO and NIO need different values for these attributes
+   
+   protected int journalMaxIO_AIO = DEFAULT_JOURNAL_MAX_IO_AIO;
 
-   protected boolean journalFlushSync = DEFAULT_JOURNAL_FLUSH_SYNC;
+   protected int journalBufferTimeout_AIO = DEFAULT_JOURNAL_BUFFER_TIMEOUT_AIO;
 
-   protected int journalBufferTimeout = DEFAULT_JOURNAL_BUFFER_TIMEOUT;
+   protected int journalBufferSize_AIO = DEFAULT_JOURNAL_BUFFER_SIZE_AIO;
+   
+   protected int journalMaxIO_NIO = DEFAULT_JOURNAL_MAX_IO_NIO;
 
-   protected int journalBufferSize = DEFAULT_JOURNAL_BUFFER_SIZE;
+   protected int journalBufferTimeout_NIO = DEFAULT_JOURNAL_BUFFER_TIMEOUT_NIO;
+
+   protected int journalBufferSize_NIO = DEFAULT_JOURNAL_BUFFER_SIZE_NIO;
+   
+   
 
    protected boolean logJournalWriteRate = DEFAULT_JOURNAL_LOG_WRITE_RATE;
 
@@ -665,16 +682,6 @@ public class ConfigurationImpl implements Configuration
       journalFileSize = size;
    }
 
-   public int getJournalMaxAIO()
-   {
-      return journalMaxAIO;
-   }
-
-   public void setJournalMaxAIO(final int maxAIO)
-   {
-      journalMaxAIO = maxAIO;
-   }
-
    public int getJournalMinFiles()
    {
       return journalMinFiles;
@@ -815,36 +822,6 @@ public class ConfigurationImpl implements Configuration
       jmxDomain = domain;
    }
 
-   public void setJournalBufferTimeout(int timeout)
-   {
-      this.journalBufferTimeout = timeout;
-   }
-
-   public int getJournalBufferTimeout()
-   {
-      return journalBufferTimeout;
-   }
-
-   public void setJournalFlushOnSync(boolean flush)
-   {
-      journalFlushSync = flush;
-   }
-
-   public boolean isJournalFlushOnSync()
-   {
-      return journalFlushSync;
-   }
-
-   public int getJournalBufferSize()
-   {
-      return journalBufferSize;
-   }
-
-   public void setJournalBufferSize(int size)
-   {
-      this.journalBufferSize = size;
-   }
-
    public String getLargeMessagesDirectory()
    {
       return largeMessagesDirectory;
@@ -930,6 +907,131 @@ public class ConfigurationImpl implements Configuration
       this.managementRequestTimeout = managementRequestTimeout;
    }
 
+   public int getJournalCompactMinFiles()
+   {
+      return journalCompactMinFiles;
+   }
+
+   public int getJournalCompactPercentage()
+   {
+      return journalCompactPercentage;
+   }
+
+   public void setJournalCompactMinFiles(int minFiles)
+   {
+      this.journalCompactMinFiles = minFiles;
+   }
+
+   public void setJournalCompactPercentage(int percentage)
+   {
+      this.journalCompactPercentage = percentage;
+   }
+
+   public long getServerDumpInterval()
+   {
+      return serverDumpInterval;
+   }
+
+   public void setServerDumpInterval(long intervalInMilliseconds)
+   {
+      this.serverDumpInterval = intervalInMilliseconds;
+   }
+
+   public int getMemoryWarningThreshold()
+   {
+      return memoryWarningThreshold;
+   }
+
+   public void setMemoryWarningThreshold(int memoryWarningThreshold)
+   {
+      this.memoryWarningThreshold = memoryWarningThreshold;
+   }
+
+   public long getMemoryMeasureInterval()
+   {
+      return memoryMeasureInterval;
+   }
+
+   public void setMemoryMeasureInterval(long memoryMeasureInterval)
+   {
+      this.memoryMeasureInterval = memoryMeasureInterval;
+   }
+
+   public String getLogDelegateFactoryClassName()
+   {
+      return logDelegateFactoryClassName;
+   }
+
+   public void setLogDelegateFactoryClassName(String className)
+   {
+      this.logDelegateFactoryClassName = className;
+   }
+   
+   
+
+   public int getJournalMaxIO_AIO()
+   {
+      return journalMaxIO_AIO;
+   }
+
+   public void setJournalMaxIO_AIO(int journalMaxIO)
+   {
+      this.journalMaxIO_AIO = journalMaxIO;
+   }
+
+   public int getJournalBufferTimeout_AIO()
+   {
+      return journalBufferTimeout_AIO;
+   }
+
+   public void setJournalBufferTimeout_AIO(int journalBufferTimeout)
+   {
+      this.journalBufferTimeout_AIO = journalBufferTimeout;
+   }
+
+   public int getJournalBufferSize_AIO()
+   {
+      return journalBufferSize_AIO;
+   }
+
+   public void setJournalBufferSize_AIO(int journalBufferSize)
+   {
+      this.journalBufferSize_AIO = journalBufferSize;
+   }
+   
+   
+   public int getJournalMaxIO_NIO()
+   {
+      return journalMaxIO_NIO;
+   }
+
+   public void setJournalMaxIO_NIO(int journalMaxIO)
+   {
+      this.journalMaxIO_NIO = journalMaxIO;
+   }
+
+   public int getJournalBufferTimeout_NIO()
+   {
+      return journalBufferTimeout_NIO;
+   }
+
+   public void setJournalBufferTimeout_NIO(int journalBufferTimeout)
+   {
+      this.journalBufferTimeout_NIO = journalBufferTimeout;
+   }
+
+   public int getJournalBufferSize_NIO()
+   {
+      return journalBufferSize_NIO;
+   }
+
+   public void setJournalBufferSize_NIO(int journalBufferSize)
+   {
+      this.journalBufferSize_NIO = journalBufferSize;
+   }
+   
+   
+
    @Override
    public boolean equals(Object obj)
    {
@@ -965,7 +1067,7 @@ public class ConfigurationImpl implements Configuration
       {
          return false;
       }
-      
+
       if (clustered != other.clustered)
          return false;
       if (connectionTTLOverride != other.connectionTTLOverride)
@@ -983,12 +1085,18 @@ public class ConfigurationImpl implements Configuration
          return false;
       if (jmxManagementEnabled != other.jmxManagementEnabled)
          return false;
-      if (journalBufferSize != other.journalBufferSize)
+      if (this.journalBufferSize_AIO != other.journalBufferSize_AIO)
          return false;
-      if (journalBufferTimeout != other.journalBufferTimeout)
+      if (journalBufferTimeout_AIO != other.journalBufferTimeout_AIO)
          return false;
-      if (journalFlushSync != other.journalFlushSync)
+      if (journalMaxIO_AIO != other.journalMaxIO_AIO)
+         return false;    
+      if (this.journalBufferSize_NIO != other.journalBufferSize_NIO)
          return false;
+      if (journalBufferTimeout_NIO != other.journalBufferTimeout_NIO)
+         return false;
+      if (journalMaxIO_NIO != other.journalMaxIO_NIO)
+         return false; 
       if (journalCompactMinFiles != other.journalCompactMinFiles)
          return false;
       if (journalCompactPercentage != other.journalCompactPercentage)
@@ -1002,8 +1110,7 @@ public class ConfigurationImpl implements Configuration
          return false;
       if (journalFileSize != other.journalFileSize)
          return false;
-      if (journalMaxAIO != other.journalMaxAIO)
-         return false;
+
       if (journalMinFiles != other.journalMinFiles)
          return false;
       if (journalPerfBlastPages != other.journalPerfBlastPages)
@@ -1098,66 +1205,6 @@ public class ConfigurationImpl implements Configuration
       if (wildcardRoutingEnabled != other.wildcardRoutingEnabled)
          return false;
       return true;
-   }
-
-   public int getJournalCompactMinFiles()
-   {
-      return journalCompactMinFiles;
-   }
-
-   public int getJournalCompactPercentage()
-   {
-      return journalCompactPercentage;
-   }
-
-   public void setJournalCompactMinFiles(int minFiles)
-   {
-      this.journalCompactMinFiles = minFiles;
-   }
-
-   public void setJournalCompactPercentage(int percentage)
-   {
-      this.journalCompactPercentage = percentage;
-   }
-
-   public long getServerDumpInterval()
-   {
-      return serverDumpInterval;
-   }
-
-   public void setServerDumpInterval(long intervalInMilliseconds)
-   {
-      this.serverDumpInterval = intervalInMilliseconds;
-   }
-
-   public int getMemoryWarningThreshold()
-   {
-      return memoryWarningThreshold;
-   }
-
-   public void setMemoryWarningThreshold(int memoryWarningThreshold)
-   {
-      this.memoryWarningThreshold = memoryWarningThreshold;
-   }
-
-   public long getMemoryMeasureInterval()
-   {
-      return memoryMeasureInterval;
-   }
-
-   public void setMemoryMeasureInterval(long memoryMeasureInterval)
-   {
-      this.memoryMeasureInterval = memoryMeasureInterval;
-   }
-
-   public String getLogDelegateFactoryClassName()
-   {
-      return logDelegateFactoryClassName;
-   }
-
-   public void setLogDelegateFactoryClassName(String className)
-   {
-      this.logDelegateFactoryClassName = className;
    }
 
 }

@@ -87,7 +87,7 @@ public class TimedBufferTest extends UnitTestCase
          }
       }
 
-      TimedBuffer timedBuffer = new TimedBuffer(100, 3600 * 1000, false, false); // Any big timeout
+      TimedBuffer timedBuffer = new TimedBuffer(100, 3600 * 1000, false); // Any big timeout
 
       timedBuffer.setObserver(new TestObserver());
 
@@ -106,8 +106,10 @@ public class TimedBufferTest extends UnitTestCase
          timedBuffer.addBytes(buff, false, dummyCallback);
       }
 
+      timedBuffer.checkSize(1);
+      
       assertEquals(1, flushTimes.get());
-
+      
       ByteBuffer flushedBuffer = buffers.get(0);
 
       assertEquals(100, flushedBuffer.limit());

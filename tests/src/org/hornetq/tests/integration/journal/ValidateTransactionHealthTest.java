@@ -388,9 +388,8 @@ public class ValidateTransactionHealthTest extends UnitTestCase
       if (factoryType.equals("aio"))
       {
          return new AIOSequentialFileFactory(directory,
-                                             ConfigurationImpl.DEFAULT_JOURNAL_BUFFER_SIZE,
-                                             ConfigurationImpl.DEFAULT_JOURNAL_BUFFER_TIMEOUT,
-                                             ConfigurationImpl.DEFAULT_JOURNAL_FLUSH_SYNC,
+                                             ConfigurationImpl.DEFAULT_JOURNAL_BUFFER_SIZE_AIO,
+                                             ConfigurationImpl.DEFAULT_JOURNAL_BUFFER_TIMEOUT_AIO,                                             
                                              false);
       }
       else

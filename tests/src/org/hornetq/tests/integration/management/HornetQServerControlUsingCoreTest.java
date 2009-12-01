@@ -203,9 +203,9 @@ public class HornetQServerControlUsingCoreTest extends HornetQServerControlTest
             return (Integer)proxy.retrieveAttributeValue("journalFileSize");
          }
 
-         public int getJournalMaxAIO()
+         public int getJournalMaxIO()
          {
-            return (Integer)proxy.retrieveAttributeValue("journalMaxAIO");
+            return (Integer)proxy.retrieveAttributeValue("journalMaxIO");
          }
 
          public int getJournalMinFiles()
@@ -423,14 +423,14 @@ public class HornetQServerControlUsingCoreTest extends HornetQServerControlTest
             proxy.invokeOperation("setMessageCounterSamplePeriod", newPeriod);
          }
 
-         public int getAIOBufferSize()
+         public int getJournalBufferSize()
          {
-            return (Integer)proxy.retrieveAttributeValue("AIOBufferSize");
+            return (Integer)proxy.retrieveAttributeValue("JournalBufferSize");
          }
 
-         public int getAIOBufferTimeout()
+         public int getJournalBufferTimeout()
          {
-            return (Integer)proxy.retrieveAttributeValue("AIOBufferTimeout");
+            return (Integer)proxy.retrieveAttributeValue("JournalBufferTimeout");
          }
 
          public int getJournalCompactMinFiles()

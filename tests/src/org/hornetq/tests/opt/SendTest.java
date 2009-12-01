@@ -74,9 +74,10 @@ public class SendTest
    {
       log.info("*** Starting server");
 
-      System.setProperty("org.hornetq.opt.dontadd", "true");
-      System.setProperty("org.hornetq.opt.routeblast", "true");
+      //System.setProperty("org.hornetq.opt.dontadd", "true");
+     // System.setProperty("org.hornetq.opt.routeblast", "true");
       //System.setProperty("org.hornetq.opt.generatemessages", "true");
+      System.setProperty("org.hornetq.opt.directblast", "true");
 
       Configuration configuration = new ConfigurationImpl();
       configuration.setSecurityEnabled(false);
@@ -91,8 +92,18 @@ public class SendTest
 
       configuration.setJournalType(JournalType.ASYNCIO);
       
+      configuration.setJournalBufferTimeout_NIO(1000000000 / 100); // this is in nanoseconds    
+      configuration.setJournalBufferSize_NIO(490 * 1024);
+      configuration.setJournalMaxIO_NIO(1);
+      
+      configuration.setJournalBufferTimeout_AIO(1000000000 / 1000); // this is in nanoseconds    
+      configuration.setJournalBufferSize_AIO(490 * 1024);
+      configuration.setJournalMaxIO_AIO(500);
+      
       configuration.setLogJournalWriteRate(true);
-      //configuration.setRunSyncSpeedTest(true);
+      
+      
+     // configuration.setRunSyncSpeedTest(true);
       
       Map<String, Object> params = new HashMap<String, Object>();
       params.put(TransportConstants.USE_NIO_PROP_NAME, Boolean.FALSE);

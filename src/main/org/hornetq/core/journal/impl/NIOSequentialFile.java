@@ -46,21 +46,28 @@ public class NIOSequentialFile extends AbstractSequentialFile
 
    /** The write semaphore here is only used when writing asynchronously */
    private Semaphore maxIOSemaphore;
-   
+
    private final int defaultMaxIO;
-   
+
    private int maxIO;
 
-   public NIOSequentialFile(final SequentialFileFactory factory, final String directory, final String fileName, final int maxIO, final Executor writerExecutor)
+   public NIOSequentialFile(final SequentialFileFactory factory,
+                            final String directory,
+                            final String fileName,
+                            final int maxIO,
+                            final Executor writerExecutor)
    {
       super(directory, new File(directory + "/" + fileName), factory, writerExecutor);
-      this.defaultMaxIO = maxIO;
+      defaultMaxIO = maxIO;
    }
 
-   public NIOSequentialFile(final SequentialFileFactory factory, final File file, final int maxIO, final Executor writerExecutor)
+   public NIOSequentialFile(final SequentialFileFactory factory,
+                            final File file,
+                            final int maxIO,
+                            final Executor writerExecutor)
    {
       super(file.getParent(), new File(file.getPath()), factory, writerExecutor);
-      this.defaultMaxIO = maxIO;
+      defaultMaxIO = maxIO;
    }
 
    public int getAlignment()
@@ -82,7 +89,7 @@ public class NIOSequentialFile extends AbstractSequentialFile
     *  Some operations while initializing files on the journal may require a different maxIO */
    public synchronized void open() throws Exception
    {
-      open(this.defaultMaxIO);
+      open(defaultMaxIO);
    }
 
    public void open(final int maxIO) throws Exception
@@ -92,10 +99,10 @@ public class NIOSequentialFile extends AbstractSequentialFile
       channel = rfile.getChannel();
 
       fileSize = channel.size();
-      
+
       if (writerExecutor != null)
       {
-         this.maxIOSemaphore = new Semaphore(maxIO);
+         maxIOSemaphore = new Semaphore(maxIO);
          this.maxIO = maxIO;
       }
    }
@@ -130,18 +137,19 @@ public class NIOSequentialFile extends AbstractSequentialFile
       }
    }
 
+   @Override
    public synchronized void close() throws Exception
    {
       super.close();
-      
+
       if (maxIOSemaphore != null)
       {
          while (!maxIOSemaphore.tryAcquire(maxIO, 60, TimeUnit.SECONDS))
          {
-            log.warn("Couldn't get lock after 60 seconds on closing AsynchronousFileImpl::" + this.getFileName());
+            log.warn("Couldn't get lock after 60 seconds on closing AsynchronousFileImpl::" + getFileName());
          }
       }
-      
+
       maxIOSemaphore = null;
 
       if (channel != null)
@@ -213,6 +221,7 @@ public class NIOSequentialFile extends AbstractSequentialFile
       }
    }
 
+   @Override
    public void position(final long pos) throws Exception
    {
       super.position(pos);
@@ -252,6 +261,16 @@ public class NIOSequentialFile extends AbstractSequentialFile
       internalWrite(bytes, sync, null);
    }
 
+   @Override
+   protected ByteBuffer newBuffer(int size, final int limit)
+   {
+      // For NIO, we don't need to allocate a buffer the entire size of the timed buffer, unlike AIO
+
+      size = limit;
+
+      return super.newBuffer(size, limit);
+   }
+
    private void internalWrite(final ByteBuffer bytes, final boolean sync, final IOAsyncTask callback) throws Exception
    {
       if (!isOpen())
@@ -266,7 +285,7 @@ public class NIOSequentialFile extends AbstractSequentialFile
          }
          return;
       }
-      
+
       if (writerExecutor == null)
       {
          doInternalWrite(bytes, sync, callback);
@@ -275,7 +294,7 @@ public class NIOSequentialFile extends AbstractSequentialFile
       {
          // This is a flow control on writing, just like maxAIO on libaio
          maxIOSemaphore.acquire();
-         
+
          writerExecutor.execute(new Runnable()
          {
             public void run()
@@ -309,7 +328,7 @@ public class NIOSequentialFile extends AbstractSequentialFile
     * @throws Exception
     */
    private void doInternalWrite(final ByteBuffer bytes, final boolean sync, final IOAsyncTask callback) throws Exception
-   {      
+   {
       position.addAndGet(bytes.limit());
 
       channel.write(bytes);

@@ -186,7 +186,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
    private final HornetQServer server;
 
    private final SimpleString managementAddress;
-   
+
    // The current currentLargeMessage being processed
    private volatile LargeServerMessage currentLargeMessage;
 
@@ -241,7 +241,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       this.resourceManager = resourceManager;
 
       this.securityStore = securityStore;
-      
+
       this.executor = executor;
 
       if (!xa)
@@ -1455,52 +1455,11 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
          sendResponse(packet, null, false, false);
       }
    }
-   
-  
-   
-   public void handleSend2(final ServerMessage message)
-   {
-      try
-      {
-         long id = storageManager.generateUniqueID();
-
-         message.setMessageID(id);
-         message.encodeMessageIDToBuffer();
-
-         if (message.getDestination().equals(managementAddress))
-         {
-            // It's a management message
-
-            handleManagementMessage(message);
-         }
-         else
-         {
-            send(message);
-         }
-      }
-      catch (Exception e)
-      {
-         log.error("Failed to send message", e);
-
-      }
-      finally
-      {
-         try
-         {
-            releaseOutStanding(message, message.getEncodeSize());
-         }
-         catch (Exception e)
-         {
-            log.error("Failed to release outstanding credits", e);
-         }
-      }
-      
-   }
 
    public void handleSend(final SessionSendMessage packet)
    {
       Packet response = null;
-      
+
       ServerMessage message = (ServerMessage)packet.getMessage();
 
       try
@@ -1553,8 +1512,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
             log.error("Failed to release outstanding credits", e);
          }
       }
-
-      sendResponse(packet, response, false, false);      
+   
+      sendResponse(packet, response, false, false);
    }
 
    public void handleSendContinuations(final SessionSendContinuationMessage packet)
@@ -1638,7 +1597,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
             }
          }
       });
-      
+
       if (gotCredits > 0)
       {
          sendProducerCredits(holder, gotCredits, address);
@@ -1752,30 +1711,26 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
    // Private
    // ----------------------------------------------------------------------------
 
-   /**
-    * Respond to client after replication
-    * @param packet
-    * @param response
-    */
    private void sendResponse(final Packet confirmPacket,
                              final Packet response,
                              final boolean flush,
                              final boolean closeChannel)
    {
       storageManager.afterCompleteOperations(new IOAsyncTask()
-      {         
+      {
          public void onError(int errorCode, String errorMessage)
          {
             log.warn("Error processing IOCallback code = " + errorCode + " message = " + errorMessage);
 
-            HornetQExceptionMessage exceptionMessage = new HornetQExceptionMessage(new HornetQException(errorCode, errorMessage));
-            
-            doSendResponse(confirmPacket, exceptionMessage, flush, closeChannel);
+            HornetQExceptionMessage exceptionMessage = new HornetQExceptionMessage(new HornetQException(errorCode,
+                                                                                                        errorMessage));
+
+            doConfirmAndResponse(confirmPacket, exceptionMessage, flush, closeChannel);
          }
 
          public void done()
          {
-            doSendResponse(confirmPacket, response, flush, closeChannel);
+            doConfirmAndResponse(confirmPacket, response, flush, closeChannel);
          }
       });
    }
@@ -1786,11 +1741,11 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
     * @param flush
     * @param closeChannel
     */
-   private void doSendResponse(final Packet confirmPacket,
-                               final Packet response,
-                               final boolean flush,
-                               final boolean closeChannel)
-   {
+   private void doConfirmAndResponse(final Packet confirmPacket,
+                                     final Packet response,
+                                     final boolean flush,
+                                     final boolean closeChannel)
+   {     
       if (confirmPacket != null)
       {
          channel.confirm(confirmPacket);
@@ -1802,7 +1757,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       }
 
       if (response != null)
-      {
+      {        
          channel.send(response);
       }
 

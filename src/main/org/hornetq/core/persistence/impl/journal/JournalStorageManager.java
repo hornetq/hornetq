@@ -93,7 +93,6 @@ import org.hornetq.utils.UUID;
  */
 public class JournalStorageManager implements StorageManager
 {
-   
    private static final Logger log = Logger.getLogger(JournalStorageManager.class);
 
    private static final long CHECKPOINT_BATCH_SIZE = Integer.MAX_VALUE;
@@ -145,7 +144,7 @@ public class JournalStorageManager implements StorageManager
    private final SequentialFileFactory largeMessagesFactory;
 
    private volatile boolean started;
-   
+
    /** Used to create Operation Contexts */
    private final ExecutorFactory executorFactory;
 
@@ -172,7 +171,9 @@ public class JournalStorageManager implements StorageManager
       this(config, executorFactory, null);
    }
 
-   public JournalStorageManager(final Configuration config, final ExecutorFactory executorFactory, final ReplicationManager replicator)
+   public JournalStorageManager(final Configuration config,
+                                final ExecutorFactory executorFactory,
+                                final ReplicationManager replicator)
    {
       this.executorFactory = executorFactory;
 
@@ -229,37 +230,32 @@ public class JournalStorageManager implements StorageManager
 
       SequentialFileFactory journalFF = null;
 
-      if (config.getJournalType() == JournalType.ASYNCIO)
+      JournalType journalTypeToUse = config.getJournalType();
+
+      if (config.getJournalType() == JournalType.ASYNCIO && !AIOSequentialFileFactory.isSupported())
+      {
+         log.warn("AIO wasn't located on this platform, it will fall back to using pure Java NIO. If your platform is Linux, install LibAIO to enable the AIO journal");
+
+         journalTypeToUse = JournalType.NIO;
+      }
+
+      if (journalTypeToUse == JournalType.ASYNCIO)
       {
          log.info("AIO journal selected");
-         if (!AIOSequentialFileFactory.isSupported())
-         {
-            log.warn("AIO wasn't located on this platform, it will fall back to using pure Java NIO. If your platform is Linux, install LibAIO to enable the AIO journal");
-            journalFF = new NIOSequentialFileFactory(journalDir,
-                                                     true,
-                                                     config.getJournalBufferSize(),
-                                                     config.getJournalBufferTimeout(),
-                                                     config.isJournalFlushOnSync(),
-                                                     config.isLogJournalWriteRate());
-         }
-         else
-         {
-            journalFF = new AIOSequentialFileFactory(journalDir,
-                                                     config.getJournalBufferSize(),
-                                                     config.getJournalBufferTimeout(),
-                                                     config.isJournalFlushOnSync(),
-                                                     config.isLogJournalWriteRate());
-            log.info("AIO loaded successfully");
-         }
+
+         journalFF = new AIOSequentialFileFactory(journalDir,
+                                                  config.getJournalBufferSize_AIO(),
+                                                  config.getJournalBufferTimeout_AIO(),
+                                                  config.isLogJournalWriteRate());
+         log.info("AIO loaded successfully");
       }
       else if (config.getJournalType() == JournalType.NIO)
       {
          log.info("NIO Journal selected");
          journalFF = new NIOSequentialFileFactory(journalDir,
                                                   true,
-                                                  config.getJournalBufferSize(),
-                                                  config.getJournalBufferTimeout(),
-                                                  config.isJournalFlushOnSync(),
+                                                  config.getJournalBufferSize_NIO(),
+                                                  config.getJournalBufferTimeout_NIO(),
                                                   config.isLogJournalWriteRate());
       }
       else
@@ -283,7 +279,8 @@ public class JournalStorageManager implements StorageManager
                                              journalFF,
                                              "hornetq-data",
                                              "hq",
-                                             config.getJournalMaxAIO());
+                                             config.getJournalType() == JournalType.ASYNCIO ? config.getJournalMaxIO_AIO()
+                                                                                           : config.getJournalMaxIO_NIO());
 
       if (replicator != null)
       {
@@ -308,7 +305,7 @@ public class JournalStorageManager implements StorageManager
    {
       getContext().complete();
    }
-   
+
    public void clearContext()
    {
       OperationContextImpl.clearContext();
@@ -318,7 +315,6 @@ public class JournalStorageManager implements StorageManager
    {
       return replicator != null;
    }
-
 
    public void waitOnOperations() throws Exception
    {
@@ -337,8 +333,7 @@ public class JournalStorageManager implements StorageManager
       {
          waitCallback.waitCompletion();
       }
-      else
-      if (!waitCallback.waitCompletion(timeout))
+      else if (!waitCallback.waitCompletion(timeout))
       {
          throw new IllegalStateException("no response received from replication");
       }
@@ -383,7 +378,6 @@ public class JournalStorageManager implements StorageManager
 
    // TODO: shouldn't those page methods be on the PageManager? ^^^^
 
-
    /* (non-Javadoc)
     * @see org.hornetq.core.persistence.StorageManager#getContext()
     */
@@ -391,7 +385,7 @@ public class JournalStorageManager implements StorageManager
    {
       return OperationContextImpl.getContext(executorFactory);
    }
-   
+
    public void setContext(OperationContext context)
    {
       OperationContextImpl.setContext(context);
@@ -478,12 +472,12 @@ public class JournalStorageManager implements StorageManager
 
    public void storeMessage(final ServerMessage message) throws Exception
    {
-      //TODO - how can this be less than zero?
+      // TODO - how can this be less than zero?
       if (message.getMessageID() <= 0)
       {
          throw new HornetQException(HornetQException.ILLEGAL_STATE, "MessageId was not assigned to Message");
       }
-            
+
       // Note that we don't sync, the add reference that comes immediately after will sync if appropriate
 
       if (message.isLargeMessage())
@@ -491,50 +485,64 @@ public class JournalStorageManager implements StorageManager
          messageJournal.appendAddRecord(message.getMessageID(),
                                         ADD_LARGE_MESSAGE,
                                         new LargeMessageEncoding((LargeServerMessage)message),
-                                        false, getContext(false));
+                                        false,
+                                        getContext(false));
       }
       else
-      {         
+      {
          messageJournal.appendAddRecord(message.getMessageID(), ADD_MESSAGE, message, false, getContext(false));
       }
    }
 
-
    public void storeReference(final long queueID, final long messageID, final boolean last) throws Exception
-   {     
-      messageJournal.appendUpdateRecord(messageID, ADD_REF, new RefEncoding(queueID), last && syncNonTransactional, getContext(syncNonTransactional));
+
+   {
+      messageJournal.appendUpdateRecord(messageID,
+                                        ADD_REF,
+                                        new RefEncoding(queueID),
+                                        last && syncNonTransactional,
+                                        getContext(last && syncNonTransactional));
    }
 
    public void storeAcknowledge(final long queueID, final long messageID) throws Exception
-   {      
-      messageJournal.appendUpdateRecord(messageID, ACKNOWLEDGE_REF, new RefEncoding(queueID), syncNonTransactional, getContext(syncNonTransactional));
+   {
+      messageJournal.appendUpdateRecord(messageID,
+                                        ACKNOWLEDGE_REF,
+                                        new RefEncoding(queueID),
+                                        syncNonTransactional,
+                                        getContext(syncNonTransactional));
    }
 
    public void deleteMessage(final long messageID) throws Exception
-   {     
+   {
       messageJournal.appendDeleteRecord(messageID, syncNonTransactional, getContext(syncNonTransactional));
    }
 
    public void updateScheduledDeliveryTime(final MessageReference ref) throws Exception
-   {      
+   {
       ScheduledDeliveryEncoding encoding = new ScheduledDeliveryEncoding(ref.getScheduledDeliveryTime(), ref.getQueue()
                                                                                                             .getID());
 
       messageJournal.appendUpdateRecord(ref.getMessage().getMessageID(),
                                         SET_SCHEDULED_DELIVERY_TIME,
                                         encoding,
-                                        syncNonTransactional, getContext(syncNonTransactional));
+                                        syncNonTransactional,
+                                        getContext(syncNonTransactional));
    }
 
    public void storeDuplicateID(final SimpleString address, final byte[] duplID, final long recordID) throws Exception
-   {      
+   {
       DuplicateIDEncoding encoding = new DuplicateIDEncoding(address, duplID);
 
-      messageJournal.appendAddRecord(recordID, DUPLICATE_ID, encoding, syncNonTransactional, getContext(syncNonTransactional));
+      messageJournal.appendAddRecord(recordID,
+                                     DUPLICATE_ID,
+                                     encoding,
+                                     syncNonTransactional,
+                                     getContext(syncNonTransactional));
    }
 
    public void deleteDuplicateID(long recordID) throws Exception
-   {      
+   {
       messageJournal.appendDeleteRecord(recordID, syncNonTransactional, getContext(syncNonTransactional));
    }
 
@@ -591,7 +599,12 @@ public class JournalStorageManager implements StorageManager
    public long storeHeuristicCompletion(Xid xid, boolean isCommit) throws Exception
    {
       long id = generateUniqueID();
-      messageJournal.appendAddRecord(id, HEURISTIC_COMPLETION, new HeuristicCompletionEncoding(xid, isCommit), true, getContext(true));
+
+      messageJournal.appendAddRecord(id,
+                                     HEURISTIC_COMPLETION,
+                                     new HeuristicCompletionEncoding(xid, isCommit),
+                                     true,
+                                     getContext(true));
       return id;
    }
 
@@ -668,10 +681,10 @@ public class JournalStorageManager implements StorageManager
       DeliveryCountUpdateEncoding updateInfo = new DeliveryCountUpdateEncoding(ref.getQueue().getID(),
                                                                                ref.getDeliveryCount());
 
-      messageJournal.appendUpdateRecord(ref.getMessage().getMessageID(),
-                                        UPDATE_DELIVERY_COUNT,
-                                        updateInfo,
-                                        syncNonTransactional, getContext(syncNonTransactional));
+      messageJournal.appendUpdateRecord(ref.getMessage().getMessageID(), UPDATE_DELIVERY_COUNT, updateInfo,
+
+      syncNonTransactional, getContext(syncNonTransactional));
+
    }
 
    private static final class AddMessageRecord
@@ -738,7 +751,7 @@ public class JournalStorageManager implements StorageManager
       JournalLoadInformation info = messageJournal.load(records,
                                                         preparedTransactions,
                                                         new LargeMessageTXFailureCallback(messages));
-      
+
       ArrayList<LargeServerMessage> largeMessages = new ArrayList<LargeServerMessage>();
 
       Map<Long, Map<Long, AddMessageRecord>> queueMap = new HashMap<Long, Map<Long, AddMessageRecord>>();
@@ -764,7 +777,7 @@ public class JournalStorageManager implements StorageManager
                break;
             }
             case ADD_MESSAGE:
-            {              
+            {
                ServerMessage message = new ServerMessageImpl(record.id, 50);
 
                message.decode(buff);
@@ -965,6 +978,11 @@ public class JournalStorageManager implements StorageManager
       if (perfBlastPages != -1)
       {
          messageJournal.perfBlast(perfBlastPages);
+      }
+
+      if (System.getProperty("org.hornetq.opt.directblast") != null)
+      {
+         messageJournal.runDirectJournalBlast();
       }
 
       return info;
@@ -1355,7 +1373,7 @@ public class JournalStorageManager implements StorageManager
 
       return info;
    }
-   
+
    // Public -----------------------------------------------------------------------------------
 
    public Journal getMessageJournal()
@@ -1416,7 +1434,7 @@ public class JournalStorageManager implements StorageManager
    }
 
    // Private ----------------------------------------------------------------------------------
-   
+
    private void checkAndCreateDir(final String dir, final boolean create)
    {
       File f = new File(dir);
@@ -1464,18 +1482,15 @@ public class JournalStorageManager implements StorageManager
          return DummyOperationContext.getInstance();
       }
    }
-   
 
-   
    // Inner Classes
    // ----------------------------------------------------------------------------
 
-   
    static class DummyOperationContext implements OperationContext
    {
-      
+
       private static DummyOperationContext instance = new DummyOperationContext();
-      
+
       public static OperationContext getInstance()
       {
          return instance;
@@ -1512,7 +1527,7 @@ public class JournalStorageManager implements StorageManager
       /* (non-Javadoc)
        * @see org.hornetq.core.journal.IOCompletion#lineUp()
        */
-      public void lineUp()
+      public void storeLineUp()
       {
       }
 
@@ -1529,9 +1544,9 @@ public class JournalStorageManager implements StorageManager
       public void onError(int errorCode, String errorMessage)
       {
       }
-      
+
    }
-   
+
    private static class XidEncoding implements EncodingSupport
    {
       final Xid xid;
@@ -2017,6 +2032,5 @@ public class JournalStorageManager implements StorageManager
       }
 
    }
-
 
 }

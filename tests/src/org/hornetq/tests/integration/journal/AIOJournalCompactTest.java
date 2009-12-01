@@ -30,15 +30,12 @@ import org.hornetq.core.journal.impl.AIOSequentialFileFactory;
  *
  */
 public class AIOJournalCompactTest extends NIOJournalCompactTest
-{
-
-   
+{   
    public static TestSuite suite()
    {
       return createAIOTestSuite(AIOJournalCompactTest.class);
    }
    
-
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
@@ -63,9 +60,8 @@ public class AIOJournalCompactTest extends NIOJournalCompactTest
       file.mkdir();
 
       return new AIOSequentialFileFactory(getTestDir(),
-                                          ConfigurationImpl.DEFAULT_JOURNAL_BUFFER_SIZE,
-                                          1000000,
-                                          true,
+                                          ConfigurationImpl.DEFAULT_JOURNAL_BUFFER_SIZE_AIO,
+                                          1000000,                                          
                                           false      
       );
    }

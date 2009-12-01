@@ -20,6 +20,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.hornetq.core.journal.IOAsyncTask;
+import org.hornetq.core.logging.Logger;
 import org.hornetq.core.persistence.OperationContext;
 import org.hornetq.utils.ExecutorFactory;
 
@@ -38,6 +39,7 @@ import org.hornetq.utils.ExecutorFactory;
  */
 public class OperationContextImpl implements OperationContext
 {
+   private static final Logger log = Logger.getLogger(OperationContextImpl.class);
    
    private static final ThreadLocal<OperationContext> threadLocalContext = new ThreadLocal<OperationContext>();
 
@@ -61,8 +63,7 @@ public class OperationContextImpl implements OperationContext
    {
       threadLocalContext.set(context);
    }
-   
-   
+      
    private List<TaskHolder> tasks;
 
    private volatile int storeLineUp = 0;
@@ -90,10 +91,9 @@ public class OperationContextImpl implements OperationContext
       super();
       this.executor = executor;
    }
-
-   /** To be called by the replication manager, when new replication is added to the queue */
-   public void lineUp()
-   {
+   
+   public void storeLineUp()
+   {     
       storeLineUp++;
    }
 
@@ -108,7 +108,6 @@ public class OperationContextImpl implements OperationContext
       checkTasks();
    }
 
-   /** You may have several actions to be done after a replication operation is completed. */
    public void executeOnCompletion(final IOAsyncTask completion)
    {
       if (errorCode != -1)
@@ -159,7 +158,6 @@ public class OperationContextImpl implements OperationContext
 
    }
 
-   /** To be called by the storage manager, when data is confirmed on the channel */
    public synchronized void done()
    {
       stored++;

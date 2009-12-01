@@ -275,7 +275,7 @@ public class QueueDeployerTest extends UnitTestCase
          return 0;
       }
 
-      public int getJournalMaxAIO()
+      public int getJournalMaxIO()
       {
 
          return 0;
@@ -526,13 +526,13 @@ public class QueueDeployerTest extends UnitTestCase
 
       }
 
-      public int getAIOBufferSize()
+      public int getJournalBufferSize()
       {
 
          return 0;
       }
 
-      public int getAIOBufferTimeout()
+      public int getJournalBufferTimeout()
       {
          return 0;
       }

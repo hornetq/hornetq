@@ -51,7 +51,7 @@ public class BlockingSendTest extends ServiceTestBase
       {
 
          server.getConfiguration().setJournalSyncNonTransactional(false);
-         server.getConfiguration().setJournalBufferTimeout(15000);
+         server.getConfiguration().setJournalBufferTimeout_AIO(15000);
 
          server.start();
 

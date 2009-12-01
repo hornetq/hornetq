@@ -12,17 +12,14 @@
  */
 package org.hornetq.tests.integration.cluster.failover;
 
-import org.hornetq.core.server.group.impl.GroupingHandlerConfiguration;
-import org.hornetq.core.server.JournalType;
-import org.hornetq.core.server.HornetQServer;
-import org.hornetq.core.server.HornetQ;
-import org.hornetq.core.message.impl.MessageImpl;
+import java.util.Map;
+
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
-import org.hornetq.utils.SimpleString;
-
-import java.util.Map;
+import org.hornetq.core.server.HornetQ;
+import org.hornetq.core.server.HornetQServer;
+import org.hornetq.core.server.JournalType;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -42,11 +39,10 @@ public class GroupingFailoverSharedServerTest extends GroupingFailoverTestBase
       configuration.setSecurityEnabled(false);
       configuration.setBindingsDirectory(getBindingsDir(backupNode, false));
       configuration.setJournalMinFiles(2);
-      configuration.setJournalMaxAIO(1000);
+      configuration.setJournalMaxIO_AIO(1000);
       configuration.setJournalDirectory(getJournalDir(backupNode, false));
       configuration.setJournalFileSize(100 * 1024);
       configuration.setJournalType(JournalType.ASYNCIO);
-      configuration.setJournalMaxAIO(1000);
       configuration.setPagingDirectory(getPageDir(backupNode, false));
       configuration.setLargeMessagesDirectory(getLargeMessagesDir(backupNode, false));
       configuration.setClustered(true);

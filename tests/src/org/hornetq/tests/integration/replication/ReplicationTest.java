@@ -418,7 +418,7 @@ public class ReplicationTest extends ServiceTestBase
    {
       OperationContext ctx = OperationContextImpl.getContext(factory);
       
-      ctx.lineUp();
+      ctx.storeLineUp();
       
       String msg = "I'm an exception";
       
@@ -1074,6 +1074,12 @@ public class ReplicationTest extends ServiceTestBase
        */
       public void sync(IOCompletion callback)
       {
+      }
+
+      public void runDirectJournalBlast() throws Exception
+      {
+         // TODO Auto-generated method stub
+         
       }
 
    }

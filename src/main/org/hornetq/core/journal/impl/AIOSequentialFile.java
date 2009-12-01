@@ -46,7 +46,6 @@ public class AIOSequentialFile extends AbstractSequentialFile
 
    /** The pool for Thread pollers */
    private final Executor pollerExecutor;
-   
 
    public AIOSequentialFile(final SequentialFileFactory factory,
                             final int bufferSize,
@@ -87,18 +86,27 @@ public class AIOSequentialFile extends AbstractSequentialFile
 
    public SequentialFile copy()
    {
-      return new AIOSequentialFile(factory, -1, -1, getFile().getParent(), getFileName(), maxIO, bufferCallback, writerExecutor, pollerExecutor);
+      return new AIOSequentialFile(factory,
+                                   -1,
+                                   -1,
+                                   getFile().getParent(),
+                                   getFileName(),
+                                   maxIO,
+                                   bufferCallback,
+                                   writerExecutor,
+                                   pollerExecutor);
    }
 
+   @Override
    public synchronized void close() throws Exception
    {
       if (!opened)
       {
          return;
       }
-      
+
       super.close();
-      
+
       opened = false;
 
       timedBuffer = null;
@@ -106,7 +114,7 @@ public class AIOSequentialFile extends AbstractSequentialFile
       aioFile.close();
       aioFile = null;
 
-      this.notifyAll();
+      notifyAll();
    }
 
    /* (non-Javadoc)
@@ -165,7 +173,7 @@ public class AIOSequentialFile extends AbstractSequentialFile
 
       aioFile.fill(filePosition, blocks, blockSize, fillCharacter);
 
-      this.fileSize = aioFile.size();
+      fileSize = aioFile.size();
    }
 
    public void open() throws Exception
@@ -176,16 +184,16 @@ public class AIOSequentialFile extends AbstractSequentialFile
    public synchronized void open(final int maxIO) throws Exception
    {
       opened = true;
-      
+
       aioFile = new AsynchronousFileImpl(writerExecutor, pollerExecutor);
-      
+
       aioFile.open(getFile().getAbsolutePath(), maxIO);
-      
+
       position.set(0);
-      
+
       aioFile.setBufferCallback(bufferCallback);
-      
-      this.fileSize = aioFile.size();
+
+      fileSize = aioFile.size();
    }
 
    public void setBufferCallback(final BufferCallback callback)
@@ -216,7 +224,6 @@ public class AIOSequentialFile extends AbstractSequentialFile
 
       return bytesRead;
    }
-   
 
    public void sync() throws Exception
    {
@@ -244,18 +251,14 @@ public class AIOSequentialFile extends AbstractSequentialFile
    // Public methods
    // -----------------------------------------------------------------------------------------------------
 
-   // Protected methods
-   // -----------------------------------------------------------------------------------------------------
-
-   
    public void writeDirect(final ByteBuffer bytes, final boolean sync) throws Exception
    {
       if (sync)
       {
          SimpleWaitIOCallback completion = new SimpleWaitIOCallback();
-  
+
          writeDirect(bytes, true, completion);
-  
+
          completion.waitCompletion();
       }
       else
@@ -264,12 +267,11 @@ public class AIOSequentialFile extends AbstractSequentialFile
       }
    }
 
-   
    /**
     * 
     * @param sync Not used on AIO
     *  */
-   public void writeDirect(final ByteBuffer bytes, final boolean sync, IOAsyncTask callback)
+   public void writeDirect(final ByteBuffer bytes, final boolean sync, final IOAsyncTask callback)
    {
       final int bytesToWrite = factory.calculateBlockSize(bytes.limit());
 
@@ -278,6 +280,19 @@ public class AIOSequentialFile extends AbstractSequentialFile
       aioFile.write(positionToWrite, bytesToWrite, bytes, callback);
    }
 
+   // Protected methods
+   // -----------------------------------------------------------------------------------------------------
+
+   @Override
+   protected ByteBuffer newBuffer(int size, int limit)
+   {
+      size = factory.calculateBlockSize(size);
+      limit = factory.calculateBlockSize(limit);
+
+      ByteBuffer buffer = factory.newBuffer(size);
+      buffer.limit(limit);
+      return buffer;
+   }
 
    // Private methods
    // -----------------------------------------------------------------------------------------------------

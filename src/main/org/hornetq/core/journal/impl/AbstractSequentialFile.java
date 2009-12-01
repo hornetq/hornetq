@@ -21,9 +21,9 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.hornetq.core.journal.EncodingSupport;
 import org.hornetq.core.buffers.HornetQBuffer;
 import org.hornetq.core.buffers.HornetQBuffers;
+import org.hornetq.core.journal.EncodingSupport;
 import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.SequentialFileFactory;
@@ -159,22 +159,6 @@ public abstract class AbstractSequentialFile implements SequentialFile
       else
       {
          return timedBuffer.checkSize(size);
-      }
-   }
-
-   public final void disableAutoFlush()
-   {
-      if (timedBuffer != null)
-      {
-         timedBuffer.disableAutoFlush();
-      }
-   }
-
-   public final void enableAutoFlush()
-   {
-      if (timedBuffer != null)
-      {
-         timedBuffer.enableAutoFlush();
       }
    }
 
@@ -315,6 +299,16 @@ public abstract class AbstractSequentialFile implements SequentialFile
          }
       }
    }
+   
+   protected ByteBuffer newBuffer(int size, int limit)
+   {
+      size = factory.calculateBlockSize(size);
+      limit = factory.calculateBlockSize(limit);
+
+      ByteBuffer buffer = factory.newBuffer(size);
+      buffer.limit(limit);
+      return buffer;
+   }
 
    protected class LocalBufferObserver implements TimedBufferObserver
    {
@@ -334,12 +328,7 @@ public abstract class AbstractSequentialFile implements SequentialFile
 
       public ByteBuffer newBuffer(int size, int limit)
       {
-         size = factory.calculateBlockSize(size);
-         limit = factory.calculateBlockSize(limit);
-
-         ByteBuffer buffer = factory.newBuffer(size);
-         buffer.limit(limit);
-         return buffer;
+         return AbstractSequentialFile.this.newBuffer(size, limit);
       }
 
       public int getRemainingBytes()

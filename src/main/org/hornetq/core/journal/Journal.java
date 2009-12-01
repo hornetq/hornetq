@@ -112,5 +112,6 @@ public interface Journal extends HornetQComponent
 
    void perfBlast(int pages) throws Exception;
 
+   void runDirectJournalBlast() throws Exception;
 
 }

@@ -33,7 +33,7 @@ import org.hornetq.utils.HornetQThreadFactory;
  * @author clebert.suconic@jboss.com
  *
  */
-public class AIOSequentialFileFactory extends AbstractSequentialFactory
+public class AIOSequentialFileFactory extends AbstractSequentialFileFactory
 {
 
    private static final Logger log = Logger.getLogger(AIOSequentialFileFactory.class);
@@ -55,19 +55,17 @@ public class AIOSequentialFileFactory extends AbstractSequentialFactory
    public AIOSequentialFileFactory(final String journalDir)
    {
       this(journalDir,
-           ConfigurationImpl.DEFAULT_JOURNAL_BUFFER_SIZE,
-           ConfigurationImpl.DEFAULT_JOURNAL_BUFFER_TIMEOUT,
-           ConfigurationImpl.DEFAULT_JOURNAL_FLUSH_SYNC,
+           ConfigurationImpl.DEFAULT_JOURNAL_BUFFER_SIZE_AIO,
+           ConfigurationImpl.DEFAULT_JOURNAL_BUFFER_TIMEOUT_AIO,          
            false);
    }
 
    public AIOSequentialFileFactory(final String journalDir,
                                    final int bufferSize,
-                                   final long bufferTimeout,
-                                   final boolean flushOnSync,
+                                   final int bufferTimeout,                                  
                                    final boolean logRates)
    {
-      super(journalDir, true, bufferSize, bufferTimeout, flushOnSync, logRates);
+      super(journalDir, true, bufferSize, bufferTimeout, logRates);
    }
 
    public SequentialFile createSequentialFile(final String fileName, final int maxIO)
@@ -154,17 +152,20 @@ public class AIOSequentialFileFactory extends AbstractSequentialFactory
    {
       buffersControl.stop();
 
-      pollerExecutor.shutdown();
+      if (pollerExecutor != null)
+      {
+         pollerExecutor.shutdown();
 
-      try
-      {
-         if (!pollerExecutor.awaitTermination(EXECUTOR_TIMEOUT, TimeUnit.SECONDS))
+         try
          {
-            log.warn("Timed out on AIO poller shutdown", new Exception("Timed out on AIO writer shutdown"));
+            if (!pollerExecutor.awaitTermination(EXECUTOR_TIMEOUT, TimeUnit.SECONDS))
+            {
+               log.warn("Timed out on AIO poller shutdown", new Exception("Timed out on AIO writer shutdown"));
+            }
          }
-      }
-      catch (InterruptedException e)
-      {
+         catch (InterruptedException e)
+         {
+         }
       }
 
       super.stop();

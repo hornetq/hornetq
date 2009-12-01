@@ -42,11 +42,10 @@ public class GroupingFailoverReplicationTest extends GroupingFailoverTestBase
       configuration.setSecurityEnabled(false);
       configuration.setBindingsDirectory(getBindingsDir(node, false));
       configuration.setJournalMinFiles(2);
-      configuration.setJournalMaxAIO(1000);
+      configuration.setJournalMaxIO_AIO(1000);
       configuration.setJournalDirectory(getJournalDir(node, false));
       configuration.setJournalFileSize(100 * 1024);
       configuration.setJournalType(JournalType.ASYNCIO);
-      configuration.setJournalMaxAIO(1000);
       configuration.setPagingDirectory(getPageDir(node, false));
       configuration.setLargeMessagesDirectory(getLargeMessagesDir(node, false));
       configuration.setClustered(true);

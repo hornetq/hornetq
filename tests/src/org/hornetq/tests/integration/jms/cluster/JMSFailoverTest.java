@@ -16,6 +16,7 @@ package org.hornetq.tests.integration.jms.cluster;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.jms.BytesMessage;
 import javax.jms.Connection;
 import javax.jms.DeliveryMode;
 import javax.jms.ExceptionListener;
@@ -41,6 +42,7 @@ import org.hornetq.core.server.HornetQServer;
 import org.hornetq.jms.HornetQQueue;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.client.HornetQSession;
+import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.SimpleString;
 
@@ -122,11 +124,15 @@ public class JMSFailoverTest extends UnitTestCase
 
       MessageConsumer consumer = sess.createConsumer(queue);
 
+      byte[] body = RandomUtil.randomBytes(bodySize);
+      
       for (int i = 0; i < numMessages; i++)
       {
-         TextMessage tm = sess.createTextMessage("message" + i);
+         BytesMessage bm = sess.createBytesMessage();
+         
+         bm.writeBytes(body);
 
-         producer.send(tm);
+         producer.send(bm);
       }
 
       conn.start();
@@ -143,11 +149,11 @@ public class JMSFailoverTest extends UnitTestCase
       {
          log.info("got message " + i);
          
-         TextMessage tm = (TextMessage)consumer.receive(1000);
+         BytesMessage bm = (BytesMessage)consumer.receive(1000);
 
-         assertNotNull(tm);
+         assertNotNull(bm);
 
-         assertEquals("message" + i, tm.getText());
+         assertEquals(body.length, bm.getBodyLength());
       }
 
       TextMessage tm = (TextMessage)consumer.receiveNoWait();

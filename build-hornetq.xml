@@ -1226,7 +1226,7 @@
             <fileset dir="${test.classes.dir}">            
                <!-- exlcuded because of https://jira.jboss.org/jira/browse/HORNETQ-65 -->
                <exclude name="**/cluster/failover/*StaticClusterWithBackupFailoverTest.class" />
-               <exclude name="**/cluster/failover/*WithBackupFailoverTest.class" />
+               <exclude name="**/cluster/failover/*WithBackupFailoverTest.class" />            	
                <include name="${tests.param}"/>
             </fileset>
          </batchtest>

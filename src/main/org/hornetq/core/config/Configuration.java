@@ -224,22 +224,34 @@ public interface Configuration extends Serializable
 
    void setJournalMinFiles(int files);
 
-   int getJournalMaxAIO();
+   //AIO and NIO need different values for these params
+   
+   int getJournalMaxIO_AIO();
 
-   void setJournalMaxAIO(int maxAIO);
+   void setJournalMaxIO_AIO(int journalMaxIO);
 
-   void setJournalBufferSize(int size);
-   
-   int getJournalBufferSize();
-   
-   void setJournalBufferTimeout(int timeout);
-   
-   int getJournalBufferTimeout();
-   
-   void setJournalFlushOnSync(boolean flush);
-   
-   boolean isJournalFlushOnSync();
+   int getJournalBufferTimeout_AIO();
 
+   void setJournalBufferTimeout_AIO(int journalBufferTimeout);
+
+   int getJournalBufferSize_AIO();
+
+   void setJournalBufferSize_AIO(int journalBufferSize);
+   
+   
+   int getJournalMaxIO_NIO();
+
+   void setJournalMaxIO_NIO(int journalMaxIO);
+
+   int getJournalBufferTimeout_NIO();
+
+   void setJournalBufferTimeout_NIO(int journalBufferTimeout);
+
+   int getJournalBufferSize_NIO();
+
+   void setJournalBufferSize_NIO(int journalBufferSize);
+   
+    
    boolean isCreateBindingsDir();
 
    void setCreateBindingsDir(boolean create);

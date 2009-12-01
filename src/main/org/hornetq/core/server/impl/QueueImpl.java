@@ -1227,7 +1227,7 @@ public class QueueImpl implements Queue
    }
 
    private synchronized boolean directDeliver(final MessageReference reference)
-   {    
+   {          
       if (paused || handlers.isEmpty())
       {
          return false;
@@ -1241,7 +1241,7 @@ public class QueueImpl implements Queue
          MessageHandler handler = getHandlerRoundRobin();
 
          Consumer consumer = handler.getConsumer();
-
+         
          if (!checkExpired(reference))
          {
             SimpleString groupID = reference.getMessage().getSimpleStringProperty(MessageImpl.HDR_GROUP_ID);
@@ -1303,7 +1303,7 @@ public class QueueImpl implements Queue
    }
 
    protected synchronized void add(final MessageReference ref, final boolean first)
-   {
+   {     
       if (dontAdd)
       {
          return;

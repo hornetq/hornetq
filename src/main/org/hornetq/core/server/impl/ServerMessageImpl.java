@@ -61,7 +61,9 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
     */
    public ServerMessageImpl(final long messageID, final int initialMessageBufferSize)
    {
-      super(messageID, initialMessageBufferSize);
+      super(initialMessageBufferSize);
+      
+      this.messageID = messageID;
    }
 
    protected ServerMessageImpl(final int initialMessageBufferSize)

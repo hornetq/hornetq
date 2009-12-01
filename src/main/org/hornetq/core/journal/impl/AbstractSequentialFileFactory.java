@@ -36,13 +36,13 @@ import org.hornetq.utils.HornetQThreadFactory;
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
  */
-public abstract class AbstractSequentialFactory implements SequentialFileFactory
+public abstract class AbstractSequentialFileFactory implements SequentialFileFactory
 {
 
    // Timeout used to wait executors to shutdown
    protected static final int EXECUTOR_TIMEOUT = 60;
 
-   private static final Logger log = Logger.getLogger(AbstractSequentialFactory.class);
+   private static final Logger log = Logger.getLogger(AbstractSequentialFileFactory.class);
 
    protected final String journalDir;
 
@@ -51,7 +51,7 @@ public abstract class AbstractSequentialFactory implements SequentialFileFactory
    protected final int bufferSize;
 
    protected final long bufferTimeout;
-   
+
    /** 
     * Asynchronous writes need to be done at another executor.
     * This needs to be done at NIO, or else we would have the callers thread blocking for the return.
@@ -59,18 +59,17 @@ public abstract class AbstractSequentialFactory implements SequentialFileFactory
     *  */
    protected ExecutorService writeExecutor;
 
-   public AbstractSequentialFactory(final String journalDir,
-                                    final boolean buffered,
-                                    final int bufferSize,
-                                    final long bufferTimeout,
-                                    final boolean flushOnSync,
-                                    final boolean logRates)
+   public AbstractSequentialFileFactory(final String journalDir,
+                                        final boolean buffered,
+                                        final int bufferSize,
+                                        final int bufferTimeout,                                        
+                                        final boolean logRates)
    {
       this.journalDir = journalDir;
- 
+
       if (buffered)
       {
-         timedBuffer = new TimedBuffer(bufferSize, bufferTimeout, flushOnSync, logRates);
+         timedBuffer = new TimedBuffer(bufferSize, bufferTimeout, logRates);
       }
       else
       {
@@ -87,10 +86,10 @@ public abstract class AbstractSequentialFactory implements SequentialFileFactory
          timedBuffer.stop();
       }
 
-      if (isSupportsCallbacks())
+      if (isSupportsCallbacks() && writeExecutor != null)
       {
          writeExecutor.shutdown();
-   
+
          try
          {
             if (!writeExecutor.awaitTermination(EXECUTOR_TIMEOUT, TimeUnit.SECONDS))
@@ -102,8 +101,6 @@ public abstract class AbstractSequentialFactory implements SequentialFileFactory
          {
          }
       }
-
-      
    }
 
    public void start()
@@ -112,13 +109,12 @@ public abstract class AbstractSequentialFactory implements SequentialFileFactory
       {
          timedBuffer.start();
       }
-      
+
       if (isSupportsCallbacks())
       {
          writeExecutor = Executors.newSingleThreadExecutor(new HornetQThreadFactory("HornetQ-Asynchronous-Persistent-Writes" + System.identityHashCode(this),
                                                                                     true));
       }
-
 
    }
 
@@ -129,15 +125,7 @@ public abstract class AbstractSequentialFactory implements SequentialFileFactory
    {
       if (timedBuffer != null)
       {
-         timedBuffer.disableAutoFlush();
-         try
-         {
-            file.setTimedBuffer(timedBuffer);
-         }
-         finally
-         {
-            file.enableAutoFlush();
-         }
+         file.setTimedBuffer(timedBuffer);
       }
    }
 
@@ -158,7 +146,7 @@ public abstract class AbstractSequentialFactory implements SequentialFileFactory
       }
    }
 
-   public void releaseBuffer(ByteBuffer buffer)
+   public void releaseBuffer(final ByteBuffer buffer)
    {
    }
 
@@ -196,5 +184,4 @@ public abstract class AbstractSequentialFactory implements SequentialFileFactory
 
       return Arrays.asList(fileNames);
    }
-
 }

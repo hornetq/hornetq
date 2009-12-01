@@ -28,7 +28,7 @@ import org.hornetq.core.logging.Logger;
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
  */
-public class NIOSequentialFileFactory extends AbstractSequentialFactory implements SequentialFileFactory
+public class NIOSequentialFileFactory extends AbstractSequentialFileFactory implements SequentialFileFactory
 {
    private static final Logger log = Logger.getLogger(NIOSequentialFileFactory.class);
 
@@ -37,9 +37,8 @@ public class NIOSequentialFileFactory extends AbstractSequentialFactory implemen
    {
       this(journalDir,
            false,
-           ConfigurationImpl.DEFAULT_JOURNAL_BUFFER_SIZE,
-           ConfigurationImpl.DEFAULT_JOURNAL_BUFFER_TIMEOUT,
-           ConfigurationImpl.DEFAULT_JOURNAL_FLUSH_SYNC,
+           ConfigurationImpl.DEFAULT_JOURNAL_BUFFER_SIZE_NIO,
+           ConfigurationImpl.DEFAULT_JOURNAL_BUFFER_TIMEOUT_NIO,           
            false);
    }
 
@@ -47,26 +46,23 @@ public class NIOSequentialFileFactory extends AbstractSequentialFactory implemen
    {
       this(journalDir,
            buffered,
-           ConfigurationImpl.DEFAULT_JOURNAL_BUFFER_SIZE,
-           ConfigurationImpl.DEFAULT_JOURNAL_BUFFER_TIMEOUT,
-           ConfigurationImpl.DEFAULT_JOURNAL_FLUSH_SYNC,
+           ConfigurationImpl.DEFAULT_JOURNAL_BUFFER_SIZE_NIO,
+           ConfigurationImpl.DEFAULT_JOURNAL_BUFFER_TIMEOUT_NIO,          
            false);
    }
 
    public NIOSequentialFileFactory(final String journalDir,
                                    final boolean buffered,
                                    final int bufferSize,
-                                   final long bufferTimeout,
-                                   final boolean flushOnSync,
+                                   final int bufferTimeout,                                   
                                    final boolean logRates)
    {
-      super(journalDir, buffered, bufferSize, bufferTimeout, flushOnSync, logRates);
+      super(journalDir, buffered, bufferSize, bufferTimeout, logRates);
    }
 
-   // maxIO is ignored on NIO
    public SequentialFile createSequentialFile(final String fileName, int maxIO)
    {
-      if (maxIO < 0)
+      if (maxIO < 1)
       {
          // A single threaded IO
          maxIO = 1;

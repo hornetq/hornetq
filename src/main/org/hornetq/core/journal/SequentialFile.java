@@ -88,10 +88,6 @@ public interface SequentialFile
    
    void renameTo(String newFileName) throws Exception;
 
-   void disableAutoFlush();
-
-   void enableAutoFlush();
-
    SequentialFile copy();
    
    void setTimedBuffer(TimedBuffer buffer);

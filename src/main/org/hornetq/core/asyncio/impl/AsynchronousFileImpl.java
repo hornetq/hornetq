@@ -290,12 +290,12 @@ public class AsynchronousFileImpl implements AsynchronousFile
 
       if (writeExecutor != null)
       {
+         maxIOSemaphore.acquireUninterruptibly();
+         
          writeExecutor.execute(new Runnable()
          {
             public void run()
             {
-               maxIOSemaphore.acquireUninterruptibly();
-
                long sequence = nextWritingSequence.getAndIncrement();
 
                try
@@ -445,7 +445,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
    private void callbackDone(final AIOCallback callback, final long sequence, final ByteBuffer buffer)
    {
       maxIOSemaphore.release();
-
+      
       pendingWrites.down();
 
       callbackLock.lock();
