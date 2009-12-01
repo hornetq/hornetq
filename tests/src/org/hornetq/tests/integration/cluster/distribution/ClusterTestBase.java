@@ -270,8 +270,25 @@ public abstract class ClusterTestBase extends ServiceTestBase
 
       log.error(msg);
       
-      // Sending thread dump..  trying to get some information about the server case the binding didn't arrive
+      // Sending thread dump into junit report..  trying to get some information about the server case the binding didn't arrive
       System.out.println(threadDump(msg));
+      
+      
+      Bindings bindings = po.getBindingsForAddress(new SimpleString(address));
+
+      System.out.println("=======================================================================");
+      System.out.println("Binding information for address = " + address + " on node " + node);
+      
+      for (Binding binding : bindings.getBindings())
+      {
+         if ((binding instanceof LocalQueueBinding && local) || (binding instanceof RemoteQueueBinding && !local))
+         {
+            QueueBinding qBinding = (QueueBinding)binding;
+            
+            System.out.println("Binding = " + qBinding + " with #consumers = " + qBinding.consumerCount()); 
+         }
+      }
+      System.out.println("=======================================================================");
 
       throw new IllegalStateException(msg);
    }

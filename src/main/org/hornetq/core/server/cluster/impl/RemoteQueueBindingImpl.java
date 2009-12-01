@@ -262,5 +262,33 @@ public class RemoteQueueBindingImpl implements RemoteQueueBinding
    {
       return consumerCount;
    }
+   
+   @Override
+   public String toString()
+   {
+      return "RemoteQueueBindingImpl [address=" + address +
+             ", consumerCount=" +
+             consumerCount +
+             ", distance=" +
+             distance +
+             ", filters=" +
+             filters +
+             ", id=" +
+             id +
+             ", idsHeaderName=" +
+             idsHeaderName +
+             ", queueFilter=" +
+             queueFilter +
+             ", remoteQueueID=" +
+             remoteQueueID +
+             ", routingName=" +
+             routingName +
+             ", storeAndForwardQueue=" +
+             storeAndForwardQueue +
+             ", uniqueName=" +
+             uniqueName +
+             "]";
+   }
+
 
 }
