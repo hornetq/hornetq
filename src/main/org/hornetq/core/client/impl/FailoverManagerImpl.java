@@ -311,7 +311,8 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
                                       final int consumerMaxRate,
                                       final boolean blockOnNonPersistentSend,
                                       final boolean blockOnPersistentSend,
-                                      final int initialMessagePacketSize) throws HornetQException
+                                      final int initialMessagePacketSize,
+                                      final String groupID) throws HornetQException
    {
       synchronized (createSessionLock)
       {
@@ -423,6 +424,7 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
                                                                      cacheLargeMessageClient,
                                                                      minLargeMessageSize,
                                                                      initialMessagePacketSize,
+                                                                     groupID,
                                                                      theConnection,
                                                                      response.getServerVersion(),
                                                                      sessionChannel,

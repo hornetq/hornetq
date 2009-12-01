@@ -159,4 +159,7 @@ public interface ConnectionFactoryConfiguration
 
    void setFailoverOnServerShutdown(boolean failoverOnServerShutdown);
 
+   String getGroupID();
+
+   void setGroupID(String groupID);
 }

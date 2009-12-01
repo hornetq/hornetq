@@ -122,6 +122,7 @@ public interface JMSServerControl
                                 long maxRetryInterval,
                                 int reconnectAttempts,
                                 boolean failoverOnServerShutdown,
+                                String groupID,
                                 Object[] jndiBindings) throws Exception;
 
    void createConnectionFactory(@Parameter(name = "name") String name,
@@ -156,6 +157,7 @@ public interface JMSServerControl
                                 @Parameter(name = "maxRetryInterval") long maxRetryInterval,
                                 @Parameter(name = "reconnectAttempts") int reconnectAttempts,
                                 @Parameter(name = "failoverOnServerShutdown") boolean failoverOnServerShutdown,
+                                @Parameter(name = "groupID") String groupID,
                                 @Parameter(name = "jndiBindings", desc = "comma-separated list of JNDI bindings") String jndiBindings) throws Exception;
 
    void createConnectionFactory(String name,
@@ -203,6 +205,7 @@ public interface JMSServerControl
                                 long maxRetryInterval,
                                 int reconnectAttempts,
                                 boolean failoverOnServerShutdown,
+                                String groupID,
                                 Object[] jndiBindings) throws Exception;
 
    @Operation(desc = "Create a JMS ConnectionFactory", impact = ACTION)
@@ -238,6 +241,7 @@ public interface JMSServerControl
                                 @Parameter(name = "maxRetryInterval") long maxRetryInterval,
                                 @Parameter(name = "reconnectAttempts") int reconnectAttempts,
                                 @Parameter(name = "failoverOnServerShutdown") boolean failoverOnServerShutdown,
+                                @Parameter(name = "groupID") String groupID,
                                 @Parameter(name = "jndiBindings", desc = "comma-separated list of JNDI bindings") String jndiBindings) throws Exception;
 
    void createConnectionFactory(String name,

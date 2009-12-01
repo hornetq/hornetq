@@ -124,6 +124,7 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
                                              long maxRetryInterval,
                                              int reconnectAttempts,
                                              boolean failoverOnServerShutdown,
+                                             String groupId,
                                              Object[] jndiBindings) throws Exception
          {
             proxy.invokeOperation("createConnectionFactory",
@@ -158,6 +159,7 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
                                   maxRetryInterval,
                                   reconnectAttempts,
                                   failoverOnServerShutdown,
+                                  groupId,
                                   jndiBindings);
          }
 
@@ -193,6 +195,7 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
                                              long maxRetryInterval,
                                              int reconnectAttempts,
                                              boolean failoverOnServerShutdown,
+                                             String groupId,
                                              String jndiBindings) throws Exception
          {
             proxy.invokeOperation("createConnectionFactory",
@@ -227,6 +230,7 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
                                   maxRetryInterval,
                                   reconnectAttempts,
                                   failoverOnServerShutdown,
+                                  groupId,
                                   jndiBindings);
          }
 
@@ -410,6 +414,7 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
                                              long maxRetryInterval,
                                              int reconnectAttempts,
                                              boolean failoverOnServerShutdown,
+                                             String groupId,
                                              Object[] jndiBindings) throws Exception
          {
             proxy.invokeOperation("createConnectionFactory",
@@ -445,6 +450,7 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
                                   maxRetryInterval,
                                   reconnectAttempts,
                                   failoverOnServerShutdown,
+                                  groupId,
                                   jndiBindings);
 
          }
@@ -481,6 +487,7 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
                                              long maxRetryInterval,
                                              int reconnectAttempts,
                                              boolean failoverOnServerShutdown,
+                                             String groupId,
                                              String jndiBindings) throws Exception
          {
             proxy.invokeOperation("createConnectionFactory",
@@ -516,6 +523,7 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
                                   maxRetryInterval,
                                   reconnectAttempts,
                                   failoverOnServerShutdown,
+                                  groupId,
                                   jndiBindings);
 
          }

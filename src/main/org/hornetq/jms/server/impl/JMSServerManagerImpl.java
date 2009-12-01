@@ -408,6 +408,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
                                                     final long maxRetryInterval,
                                                     final int reconnectAttempts,
                                                     final boolean failoverOnServerShutdown,
+                                                    final String groupId,
                                                     final List<String> jndiBindings) throws Exception
    {
       checkInitialised();
@@ -442,6 +443,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
          cf.setMaxRetryInterval(maxRetryInterval);
          cf.setReconnectAttempts(reconnectAttempts);
          cf.setFailoverOnServerShutdown(failoverOnServerShutdown);
+         cf.setGroupID(groupId);
       }
 
       bindConnectionFactory(cf, name, jndiBindings);
@@ -479,6 +481,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
                                                     final long maxRetryInterval,
                                                     final int reconnectAttempts,
                                                     final boolean failoverOnServerShutdown,
+                                                    final String groupId,
                                                     final List<String> jndiBindings) throws Exception
    {
       checkInitialised();
@@ -752,7 +755,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       if (config == null)
       {
          return;
-      }
+      }                                                                                                 
 
       if (config.getContext() != null)
       {
@@ -796,6 +799,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
                                     config.getMaxRetryInterval(),
                                     config.getReconnectAttempts(),
                                     config.isFailoverOnServerShutdown(),
+                                    config.getGroupID(),
                                     Arrays.asList(config.getBindings()));
          }
          else
@@ -829,6 +833,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
                                     config.getMaxRetryInterval(),
                                     config.getReconnectAttempts(),
                                     config.isFailoverOnServerShutdown(),
+                                    config.getGroupID(),
                                     Arrays.asList(config.getBindings()));
          }
       }

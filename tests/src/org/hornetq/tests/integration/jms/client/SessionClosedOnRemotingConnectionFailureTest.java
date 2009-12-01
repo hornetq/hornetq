@@ -118,6 +118,7 @@ public class SessionClosedOnRemotingConnectionFailureTest extends JMSTestBase
                                         DEFAULT_MAX_RETRY_INTERVAL,
                                         0,
                                         false,
+                                        null,
                                         jndiBindings);
 
 

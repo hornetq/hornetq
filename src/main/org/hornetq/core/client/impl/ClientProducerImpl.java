@@ -83,6 +83,7 @@ public class ClientProducerImpl implements ClientProducerInternal
                              final boolean blockOnNonPersistentSend,
                              final boolean blockOnPersistentSend,
                              final boolean autoGroup,
+                             final SimpleString groupID,
                              final int minLargeMessageSize,
                              final Channel channel)
    {
@@ -104,7 +105,7 @@ public class ClientProducerImpl implements ClientProducerInternal
       }
       else
       {
-         this.groupID = null;
+         this.groupID = groupID;
       }
 
       this.minLargeMessageSize = minLargeMessageSize;

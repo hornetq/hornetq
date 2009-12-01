@@ -28,6 +28,7 @@
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tests/jms-tests/src/org/hornetq/jms/tests/tools/container/LocalTestServer.java" afterPath="$PROJECT_DIR$/tests/jms-tests/src/org/hornetq/jms/tests/tools/container/LocalTestServer.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tests/src/org/hornetq/tests/integration/jms/client/SessionClosedOnRemotingConnectionFailureTest.java" afterPath="$PROJECT_DIR$/tests/src/org/hornetq/tests/integration/jms/client/SessionClosedOnRemotingConnectionFailureTest.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/org/hornetq/jms/server/impl/JMSServerDeployer.java" afterPath="$PROJECT_DIR$/src/main/org/hornetq/jms/server/impl/JMSServerDeployer.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/hornetq.iws" afterPath="$PROJECT_DIR$/hornetq.iws" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/docs/user-manual/en/message-grouping.xml" afterPath="$PROJECT_DIR$/docs/user-manual/en/message-grouping.xml" />
       <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/examples/jms/message-group2/src/org/hornetq" />
       <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/examples/jms/message-group2/src/org" />
@@ -53,10 +54,6 @@
       <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/examples/jms/message-group2/src/org/hornetq/jms/example/MessageGroup2Example.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/org/hornetq/jms/client/HornetQConnectionFactory.java" afterPath="$PROJECT_DIR$/src/main/org/hornetq/jms/client/HornetQConnectionFactory.java" />
       <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/examples/jms/message-group2/server0/hornetq-jms.xml" />
-    </list>
-    <list name="intellij" comment="https://jira.jboss.org/jira/browse/HORNETQ-229 - added the ability to control grouping at the connection factry level">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/hornetq.ipr" afterPath="$PROJECT_DIR$/hornetq.ipr" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/hornetq.iws" />
     </list>
     <ignored path="messaging.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -2188,7 +2185,7 @@
     <frame x="0" y="25" width="1920" height="1150" extended-state="0" />
     <editor active="false" />
     <layout>
-      <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.23558648" sideWeight="0.0" order="7" side_tool="false" />
+      <window_info id="Changes" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.23558648" sideWeight="0.0" order="7" side_tool="false" />
       <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.21704657" sideWeight="0.5" order="1" side_tool="false" />
@@ -2199,7 +2196,7 @@
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.24959914" sideWeight="0.7006937" order="1" side_tool="false" />
       <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" />
-      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.1769437" sideWeight="0.7574553" order="0" side_tool="false" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.1769437" sideWeight="0.7574553" order="0" side_tool="false" />
       <window_info id="Dependency Viewer" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="5" side_tool="false" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.26540756" sideWeight="0.5" order="2" side_tool="false" />

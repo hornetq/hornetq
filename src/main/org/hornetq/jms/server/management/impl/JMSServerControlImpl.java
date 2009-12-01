@@ -249,6 +249,7 @@ public class JMSServerControlImpl extends StandardMBean implements JMSServerCont
                                        final long maxRetryInterval,
                                        final int reconnectAttempts,
                                        final boolean failoverOnServerShutdown,
+                                       final String groupID,
                                        final Object[] jndiBindings) throws Exception
    {
       List<Pair<TransportConfiguration, TransportConfiguration>> pairs = convertToConnectorPairs(liveConnectorsTransportClassNames,
@@ -287,6 +288,7 @@ public class JMSServerControlImpl extends StandardMBean implements JMSServerCont
                                      maxRetryInterval,
                                      reconnectAttempts,
                                      failoverOnServerShutdown,
+                                     groupID,
                                      jndiBindingsList);
 
       sendNotification(NotificationType.CONNECTION_FACTORY_CREATED, name);
@@ -324,6 +326,7 @@ public class JMSServerControlImpl extends StandardMBean implements JMSServerCont
                                        final long maxRetryInterval,
                                        final int reconnectAttempts,
                                        final boolean failoverOnServerShutdown,
+                                       final String groupID,
                                        final String jndiBindings) throws Exception
    {
       Object[] liveClassNames = toArray(liveTransportClassNames);
@@ -364,6 +367,7 @@ public class JMSServerControlImpl extends StandardMBean implements JMSServerCont
                               maxRetryInterval,
                               reconnectAttempts,
                               failoverOnServerShutdown,
+                              groupID,
                               bindings);
    }
 
@@ -423,6 +427,7 @@ public class JMSServerControlImpl extends StandardMBean implements JMSServerCont
                                        final long maxRetryInterval,
                                        final int reconnectAttempts,
                                        final boolean failoverOnServerShutdown,
+                                       final String groupID,
                                        final Object[] jndiBindings) throws Exception
    {
       List<String> jndiBindingsList = convert(jndiBindings);
@@ -459,6 +464,7 @@ public class JMSServerControlImpl extends StandardMBean implements JMSServerCont
                                      maxRetryInterval,
                                      reconnectAttempts,
                                      failoverOnServerShutdown,
+                                     groupID,
                                      jndiBindingsList);
 
       sendNotification(NotificationType.CONNECTION_FACTORY_CREATED, name);
@@ -496,6 +502,7 @@ public class JMSServerControlImpl extends StandardMBean implements JMSServerCont
                                        final long maxRetryInterval,
                                        final int reconnectAttempts,
                                        final boolean failoverOnServerShutdown,
+                                       final String groupID,
                                        final String jndiBindings) throws Exception
    {
       Object[] bindings = toArray(jndiBindings);
@@ -532,6 +539,7 @@ public class JMSServerControlImpl extends StandardMBean implements JMSServerCont
                               maxRetryInterval,
                               reconnectAttempts,
                               failoverOnServerShutdown,
+                              groupID,
                               bindings);
    }
 

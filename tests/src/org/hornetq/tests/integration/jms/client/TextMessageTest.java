@@ -275,6 +275,7 @@ public class TextMessageTest extends JMSTestBase
                                         DEFAULT_MAX_RETRY_INTERVAL,
                                         reconnectAttempts,
                                         failoverOnServerShutdown,
+                                        null,
                                         jndiBindings);
    }
 

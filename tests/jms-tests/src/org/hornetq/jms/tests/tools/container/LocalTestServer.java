@@ -342,6 +342,7 @@ public class LocalTestServer implements Server, Runnable
                                                     DEFAULT_MAX_RETRY_INTERVAL,
                                                     DEFAULT_RECONNECT_ATTEMPTS,
                                                     DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN,
+                                                    null,
                                                     jndiBindings);
    }
 

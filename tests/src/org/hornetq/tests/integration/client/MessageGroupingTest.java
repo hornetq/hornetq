@@ -153,6 +153,39 @@ public class MessageGroupingTest extends UnitTestCase
       consumer2.close();
    }
 
+   private void doTestBasicGroupingUsingConnectionFactory(boolean directDelivery) throws Exception
+   {
+      ClientProducer clientProducer = clientSession.createProducer(qName);
+      ClientConsumer consumer = clientSession.createConsumer(qName);
+      ClientConsumer consumer2 = clientSession.createConsumer(qName);
+      if (directDelivery)
+      {
+         clientSession.start();
+      }
+      SimpleString groupId = new SimpleString("grp1");
+      int numMessages = 100;
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage message = createTextMessage("m" + i, clientSession);
+         message.putStringProperty(MessageImpl.HDR_GROUP_ID, groupId);
+         clientProducer.send(message);
+      }
+      if (!directDelivery)
+      {
+         clientSession.start();
+      }
+      CountDownLatch latch = new CountDownLatch(numMessages);
+      DummyMessageHandler dummyMessageHandler = new DummyMessageHandler(latch, true);
+      consumer.setMessageHandler(dummyMessageHandler);
+      DummyMessageHandler dummyMessageHandler2 = new DummyMessageHandler(latch, true);
+      consumer2.setMessageHandler(dummyMessageHandler2);
+      assertTrue(latch.await(10, TimeUnit.SECONDS));
+      assertEquals(100, dummyMessageHandler.list.size());
+      assertEquals(0, dummyMessageHandler2.list.size());
+      consumer.close();
+      consumer2.close();
+   }
+
    public void testMultipleGroupingConsumeHalf() throws Exception
    {
       ClientProducer clientProducer = clientSession.createProducer(qName);

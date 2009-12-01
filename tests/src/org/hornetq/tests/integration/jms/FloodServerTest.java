@@ -175,6 +175,7 @@ public class FloodServerTest extends UnitTestCase
                                             1000,
                                             reconnectAttempts,
                                             failoverOnServerShutdown,
+                                            null,
                                             jndiBindings);
    }
 

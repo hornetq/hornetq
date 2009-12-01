@@ -453,6 +453,7 @@ public class JMSServerControlTest extends ManagementTestBase
                                             ClientSessionFactoryImpl.DEFAULT_MAX_RETRY_INTERVAL,
                                             ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS,
                                             ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN,
+                                             null,
                                             bindings);
          }
       });
@@ -499,6 +500,7 @@ public class JMSServerControlTest extends ManagementTestBase
                                             ClientSessionFactoryImpl.DEFAULT_MAX_RETRY_INTERVAL,
                                             ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS,
                                             ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN,
+                                            null,
                                             jndiBindings);
          }
       });

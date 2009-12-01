@@ -226,6 +226,7 @@ public class JMSTestBase extends ServiceTestBase
                                         DEFAULT_MAX_RETRY_INTERVAL,
                                         reconnectAttempts,
                                         failoverOnServerShutdown,
+                                        null,
                                         jndiBindings);
    }
 

@@ -165,6 +165,7 @@ public interface JMSServerManager extends HornetQComponent
                                 long maxRetryInterval,
                                 int reconnectAttempts,
                                 boolean failoverOnServerShutdown,
+                                String groupId,
                                 List<String> jndiBindings) throws Exception;
 
    void createConnectionFactory(String name,
@@ -199,6 +200,7 @@ public interface JMSServerManager extends HornetQComponent
                                 long maxRetryInterval,
                                 int reconnectAttempts,
                                 boolean failoverOnServerShutdown,
+                                String groupId,
                                 List<String> jndiBindings) throws Exception;
 
    /**

@@ -209,6 +209,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
 
    private static ScheduledExecutorService globalScheduledThreadPool;
 
+   private String groupID;
+
    private static synchronized ExecutorService getGlobalThreadPool()
    {
       if (globalThreadPool == null)
@@ -381,6 +383,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       cacheLargeMessagesClient = other.isCacheLargeMessagesClient();
       
       initialMessagePacketSize = other.getInitialMessagePacketSize();
+
+      groupID = other.getGroupID();
    }
    
    public ClientSessionFactoryImpl()
@@ -980,7 +984,17 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
    {
       return new ClientSessionFactoryImpl(this);
    }
-   
+
+   public void setGroupID(final String groupID)
+   {
+      this.groupID = groupID;
+   }
+
+   public String getGroupID()
+   {
+      return groupID;
+   }
+
    // DiscoveryListener implementation --------------------------------------------------------
 
    public synchronized void connectorsChanged()
@@ -1125,7 +1139,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
                                                                consumerMaxRate,
                                                                blockOnNonPersistentSend,
                                                                blockOnPersistentSend,
-                                                               initialMessagePacketSize);
+                                                               initialMessagePacketSize,
+                                                               groupID);
 
          return session;
       }

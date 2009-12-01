@@ -102,6 +102,8 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
 
    private boolean failoverOnServerShutdown = ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN;
 
+   private String groupID = null;
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -469,6 +471,16 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
    public void setFailoverOnServerShutdown(boolean failoverOnServerShutdown)
    {
       this.failoverOnServerShutdown = failoverOnServerShutdown;
+   }
+
+   public String getGroupID()
+   {
+      return groupID;
+   }
+
+   public void setGroupID(String groupID)
+   {
+      this.groupID = groupID;
    }
 
    // Public --------------------------------------------------------

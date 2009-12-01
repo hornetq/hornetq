@@ -557,6 +557,16 @@ public class HornetQConnectionFactory implements ConnectionFactory, QueueConnect
       return sessionFactory;
    }
 
+   public void setGroupID(final String groupID)
+   {
+      sessionFactory.setGroupID(groupID);
+   }
+
+   public String getGroupID()
+   {
+      return sessionFactory.getGroupID();
+   }
+
    public void close()
    {
       sessionFactory.close();

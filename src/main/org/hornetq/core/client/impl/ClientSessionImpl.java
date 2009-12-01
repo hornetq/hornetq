@@ -177,6 +177,8 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
    private volatile boolean workDone;
 
+   private final String groupID;
+
    // Constructors ----------------------------------------------------------------------------
 
    public ClientSessionImpl(final FailoverManager connectionManager,
@@ -200,6 +202,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
                             final boolean cacheLargeMessageClient,
                             final int minLargeMessageSize,
                             final int initialMessagePacketSize,
+                            final String groupID,
                             final RemotingConnection remotingConnection,
                             final int version,
                             final Channel channel,
@@ -252,6 +255,8 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       this.minLargeMessageSize = minLargeMessageSize;
       
       this.initialMessagePacketSize = initialMessagePacketSize;
+
+      this.groupID = groupID;
 
       producerCreditManager = new ClientProducerCreditManagerImpl(this, producerWindowSize);
    }
@@ -1390,6 +1395,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
                                                                autoCommitSends && blockOnNonPersistentSend,
                                                                autoCommitSends && blockOnPersistentSend,
                                                                autoGroup,
+                                                               groupID == null?null:new SimpleString(groupID),
                                                                minLargeMessageSize,
                                                                channel);
 

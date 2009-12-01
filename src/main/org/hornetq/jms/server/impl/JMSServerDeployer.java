@@ -154,7 +154,7 @@ public class JMSServerDeployer extends XmlDeployer
          int threadPoolMaxSize = getInteger(e, "thread-pool-max-size", ClientSessionFactoryImpl.DEFAULT_THREAD_POOL_MAX_SIZE, MINUS_ONE_OR_GT_ZERO);
          String connectionLoadBalancingPolicyClassName = getString(e, "connection-load-balancing-policy-class-name", ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME, Validators.NOT_NULL_OR_EMPTY);
          long discoveryInitialWaitTimeout = getLong(e, "discovery-initial-wait-timeout", ClientSessionFactoryImpl.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT, GT_ZERO);
-
+         String groupid = getString(e, "group-id", null,  Validators.NO_CHECK);
          List<String> jndiBindings = new ArrayList<String>();
          List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs = new ArrayList<Pair<TransportConfiguration, TransportConfiguration>>();
          DiscoveryGroupConfiguration discoveryGroupConfiguration = null;
@@ -265,6 +265,7 @@ public class JMSServerDeployer extends XmlDeployer
                                                      maxRetryInterval,
                                                      reconnectAttempts,
                                                      failoverOnServerShutdown,
+                                                     groupid,
                                                      jndiBindings);
          }
          else
@@ -298,6 +299,7 @@ public class JMSServerDeployer extends XmlDeployer
                                                      maxRetryInterval,
                                                      reconnectAttempts,
                                                      failoverOnServerShutdown,
+                                                     groupid,
                                                      jndiBindings);
          }
       }

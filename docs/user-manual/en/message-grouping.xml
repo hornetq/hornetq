@@ -71,11 +71,32 @@
       &lt;/entries>
       &lt;autogroup>true&lt;/autogroup>
 &lt;/connection-factory></programlisting>
+      <para>Alternatively you can set the group id via the connection factory. All messages sent with producers created
+         via this connection factory will set the <literal>JMSXGroupID</literal> to the specified value on all messages
+         sent. To configure the group id set it on the connection factory in the <literal>hornetq-jms.xml</literal>
+      config file as follows
+      <programlisting>
+         &lt;connection-factory name="ConnectionFactory"&gt;
+      &lt;connectors&gt;
+         &lt;connector-ref connector-name="netty-connector"/&gt;
+      &lt;/connectors&gt;
+      &lt;entries&gt;
+         &lt;entry name="ConnectionFactory"/&gt;
+      &lt;/entries>
+      &lt;group-id>Group-0&lt;/group-id&gt;
+   &lt;/connection-factory&gt;
+      </programlisting>
+      </para>
    </section>
    <section>
       <title>Example</title>
       <para>See <xref linkend="examples.message-group"/> for an example which shows how message
          groups are configured and used with JMS.</para>
+   </section>
+   <section>
+      <title>Example</title>
+      <para>See <xref linkend="examples.message-group2"/> for an example which shows how message
+         groups are configured via a connection factory.</para>
    </section>
    <section>
       <title> Clustered Grouping</title>

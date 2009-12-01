@@ -32,6 +32,7 @@
       <sourceFolder url="file://$MODULE_DIR$/management/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/message-counters/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/message-group/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/message-group2/src" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/message-priority/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/no-consumer-buffering/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/paging/src" isTestSource="false" />

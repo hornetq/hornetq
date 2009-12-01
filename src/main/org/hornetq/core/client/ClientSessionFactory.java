@@ -181,4 +181,8 @@ public interface ClientSessionFactory
    void close();
    
    ClientSessionFactory copy();
+
+   void setGroupID(String groupID);
+
+   String getGroupID();
 }
