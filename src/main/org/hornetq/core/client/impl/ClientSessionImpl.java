@@ -830,19 +830,20 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
                try
                {
                   channel1.sendBlocking(createRequest);
+                  retry = false;
                } 
                catch(HornetQException e)
                {
                   // the session was created while its server was starting, retry it:
                   if (e.getCode() == HornetQException.SESSION_CREATION_REJECTED)
                   {
-                     log.warn("Server is starting, retry to create the session");
-
+                     log.warn("Server is starting, retry to create the session " + name);
                      retry = true;
-                     continue;
                   }
                }
             } while(retry);
+            
+            log.info("created session " + name);
 
             channel.clearCommands();
 
