@@ -824,8 +824,25 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
                                                             autoCommitAcks,
                                                             preAcknowledge,
                                                             confirmationWindowSize);
+            boolean retry = false;
+            do
+            {
+               try
+               {
+                  channel1.sendBlocking(createRequest);
+               } 
+               catch(HornetQException e)
+               {
+                  // the session was created while its server was starting, retry it:
+                  if (e.getCode() == HornetQException.SESSION_CREATION_REJECTED)
+                  {
+                     log.warn("Server is starting, retry to create the session");
 
-            channel1.sendBlocking(createRequest);
+                     retry = true;
+                     continue;
+                  }
+               }
+            } while(retry);
 
             channel.clearCommands();
 

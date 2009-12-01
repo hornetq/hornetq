@@ -554,7 +554,7 @@ public class HornetQServerImpl implements HornetQServer
    {
       if (!started)
       {
-         return null;
+         return new ReattachSessionResponseMessage(-1, false);
       }
 
       ServerSession session = sessions.get(name);
