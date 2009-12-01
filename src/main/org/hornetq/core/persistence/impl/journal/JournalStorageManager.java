@@ -37,7 +37,6 @@ import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.journal.EncodingSupport;
 import org.hornetq.core.journal.IOAsyncTask;
-import org.hornetq.core.journal.IOCompletion;
 import org.hornetq.core.journal.Journal;
 import org.hornetq.core.journal.JournalLoadInformation;
 import org.hornetq.core.journal.PreparedTransactionInfo;
@@ -492,28 +491,28 @@ public class JournalStorageManager implements StorageManager
          messageJournal.appendAddRecord(message.getMessageID(),
                                         ADD_LARGE_MESSAGE,
                                         new LargeMessageEncoding((LargeServerMessage)message),
-                                        false, getContext());
+                                        false, getContext(false));
       }
       else
       {         
-         messageJournal.appendAddRecord(message.getMessageID(), ADD_MESSAGE, message, false, getContext());
+         messageJournal.appendAddRecord(message.getMessageID(), ADD_MESSAGE, message, false, getContext(false));
       }
    }
 
 
    public void storeReference(final long queueID, final long messageID, final boolean last) throws Exception
    {     
-      messageJournal.appendUpdateRecord(messageID, ADD_REF, new RefEncoding(queueID), last && syncNonTransactional, getContext());
+      messageJournal.appendUpdateRecord(messageID, ADD_REF, new RefEncoding(queueID), last && syncNonTransactional, getContext(syncNonTransactional));
    }
 
    public void storeAcknowledge(final long queueID, final long messageID) throws Exception
    {      
-      messageJournal.appendUpdateRecord(messageID, ACKNOWLEDGE_REF, new RefEncoding(queueID), syncNonTransactional, getContext());
+      messageJournal.appendUpdateRecord(messageID, ACKNOWLEDGE_REF, new RefEncoding(queueID), syncNonTransactional, getContext(syncNonTransactional));
    }
 
    public void deleteMessage(final long messageID) throws Exception
    {     
-      messageJournal.appendDeleteRecord(messageID, syncNonTransactional, getContext());
+      messageJournal.appendDeleteRecord(messageID, syncNonTransactional, getContext(syncNonTransactional));
    }
 
    public void updateScheduledDeliveryTime(final MessageReference ref) throws Exception
@@ -524,19 +523,19 @@ public class JournalStorageManager implements StorageManager
       messageJournal.appendUpdateRecord(ref.getMessage().getMessageID(),
                                         SET_SCHEDULED_DELIVERY_TIME,
                                         encoding,
-                                        syncNonTransactional, getContext());
+                                        syncNonTransactional, getContext(syncNonTransactional));
    }
 
    public void storeDuplicateID(final SimpleString address, final byte[] duplID, final long recordID) throws Exception
    {      
       DuplicateIDEncoding encoding = new DuplicateIDEncoding(address, duplID);
 
-      messageJournal.appendAddRecord(recordID, DUPLICATE_ID, encoding, syncNonTransactional, getContext());
+      messageJournal.appendAddRecord(recordID, DUPLICATE_ID, encoding, syncNonTransactional, getContext(syncNonTransactional));
    }
 
    public void deleteDuplicateID(long recordID) throws Exception
    {      
-      messageJournal.appendDeleteRecord(recordID, syncNonTransactional, getContext());
+      messageJournal.appendDeleteRecord(recordID, syncNonTransactional, getContext(syncNonTransactional));
    }
 
    // Transactional operations
@@ -592,13 +591,13 @@ public class JournalStorageManager implements StorageManager
    public long storeHeuristicCompletion(Xid xid, boolean isCommit) throws Exception
    {
       long id = generateUniqueID();
-      messageJournal.appendAddRecord(id, HEURISTIC_COMPLETION, new HeuristicCompletionEncoding(xid, isCommit), true, getContext());
+      messageJournal.appendAddRecord(id, HEURISTIC_COMPLETION, new HeuristicCompletionEncoding(xid, isCommit), true, getContext(true));
       return id;
    }
 
    public void deleteHeuristicCompletion(long id) throws Exception
    {
-      messageJournal.appendDeleteRecord(id, true, getContext());
+      messageJournal.appendDeleteRecord(id, true, getContext(true));
    }
 
    public void deletePageTransactional(final long txID, final long recordID) throws Exception
@@ -624,17 +623,17 @@ public class JournalStorageManager implements StorageManager
 
    public void prepare(final long txID, final Xid xid) throws Exception
    {
-      messageJournal.appendPrepareRecord(txID, new XidEncoding(xid), syncTransactional, getContext());
+      messageJournal.appendPrepareRecord(txID, new XidEncoding(xid), syncTransactional, getContext(syncTransactional));
    }
 
    public void commit(final long txID) throws Exception
    {
-      messageJournal.appendCommitRecord(txID, syncTransactional, getContext());
+      messageJournal.appendCommitRecord(txID, syncTransactional, getContext(syncTransactional));
    }
 
    public void rollback(final long txID) throws Exception
    {
-      messageJournal.appendRollbackRecord(txID, syncTransactional, getContext());
+      messageJournal.appendRollbackRecord(txID, syncTransactional, getContext(syncTransactional));
    }
 
    public void storeDuplicateIDTransactional(final long txID,
@@ -672,7 +671,7 @@ public class JournalStorageManager implements StorageManager
       messageJournal.appendUpdateRecord(ref.getMessage().getMessageID(),
                                         UPDATE_DELIVERY_COUNT,
                                         updateInfo,
-                                        syncNonTransactional, getContext());
+                                        syncNonTransactional, getContext(syncNonTransactional));
    }
 
    private static final class AddMessageRecord
@@ -1454,9 +1453,85 @@ public class JournalStorageManager implements StorageManager
       }
    }
 
+   private OperationContext getContext(final boolean sync)
+   {
+      if (sync)
+      {
+         return getContext();
+      }
+      else
+      {
+         return DummyOperationContext.getInstance();
+      }
+   }
+   
+
+   
    // Inner Classes
    // ----------------------------------------------------------------------------
 
+   
+   static class DummyOperationContext implements OperationContext
+   {
+      
+      private static DummyOperationContext instance = new DummyOperationContext();
+      
+      public static OperationContext getInstance()
+      {
+         return instance;
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.OperationContext#complete()
+       */
+      public void complete()
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.OperationContext#executeOnCompletion(org.hornetq.core.journal.IOAsyncTask)
+       */
+      public void executeOnCompletion(IOAsyncTask runnable)
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.OperationContext#replicationDone()
+       */
+      public void replicationDone()
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.OperationContext#replicationLineUp()
+       */
+      public void replicationLineUp()
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.journal.IOCompletion#lineUp()
+       */
+      public void lineUp()
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.asyncio.AIOCallback#done()
+       */
+      public void done()
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.asyncio.AIOCallback#onError(int, java.lang.String)
+       */
+      public void onError(int errorCode, String errorMessage)
+      {
+      }
+      
+   }
+   
    private static class XidEncoding implements EncodingSupport
    {
       final Xid xid;
