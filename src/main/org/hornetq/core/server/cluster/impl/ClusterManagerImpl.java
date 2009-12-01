@@ -87,6 +87,8 @@ public class ClusterManagerImpl implements ClusterManager
 
    private boolean backup;
 
+   private final boolean clustered;
+
    public ClusterManagerImpl(final org.hornetq.utils.ExecutorFactory executorFactory,
                              final HornetQServer server,
                              final PostOffice postOffice,
@@ -94,7 +96,8 @@ public class ClusterManagerImpl implements ClusterManager
                              final ManagementService managementService,
                              final Configuration configuration,
                              final UUID nodeUUID,
-                             final boolean backup)
+                             final boolean backup,
+                             final boolean clustered)
    {
       if (nodeUUID == null)
       {
@@ -116,6 +119,8 @@ public class ClusterManagerImpl implements ClusterManager
       this.nodeUUID = nodeUUID;
 
       this.backup = backup;
+
+      this.clustered = clustered;
    }
 
    public synchronized void start() throws Exception
@@ -125,24 +130,27 @@ public class ClusterManagerImpl implements ClusterManager
          return;
       }
 
-      for (BroadcastGroupConfiguration config : configuration.getBroadcastGroupConfigurations())
+      if (clustered)
       {
-         deployBroadcastGroup(config);
-      }
+         for (BroadcastGroupConfiguration config : configuration.getBroadcastGroupConfigurations())
+         {
+            deployBroadcastGroup(config);
+         }
 
-      for (DiscoveryGroupConfiguration config : configuration.getDiscoveryGroupConfigurations().values())
-      {
-         deployDiscoveryGroup(config);
+         for (DiscoveryGroupConfiguration config : configuration.getDiscoveryGroupConfigurations().values())
+         {
+            deployDiscoveryGroup(config);
+         }
+
+         for (ClusterConnectionConfiguration config : configuration.getClusterConfigurations())
+         {
+            deployClusterConnection(config);
+         }
       }
 
       for (BridgeConfiguration config : configuration.getBridgeConfigurations())
       {
          deployBridge(config);
-      }
-
-      for (ClusterConnectionConfiguration config : configuration.getClusterConfigurations())
-      {
-         deployClusterConnection(config);
       }
 
       started = true;
@@ -155,16 +163,29 @@ public class ClusterManagerImpl implements ClusterManager
          return;
       }
 
-      for (BroadcastGroup group : broadcastGroups.values())
+      if (clustered)
       {
-         group.stop();
-         managementService.unregisterBroadcastGroup(group.getName());
-      }
+         for (BroadcastGroup group : broadcastGroups.values())
+         {
+            group.stop();
+            managementService.unregisterBroadcastGroup(group.getName());
+         }
 
-      for (DiscoveryGroup group : discoveryGroups.values())
-      {
-         group.stop();
-         managementService.unregisterDiscoveryGroup(group.getName());
+         for (DiscoveryGroup group : discoveryGroups.values())
+         {
+            group.stop();
+            managementService.unregisterDiscoveryGroup(group.getName());
+         }
+
+         for (ClusterConnection clusterConnection : clusters.values())
+         {
+            clusterConnection.stop();
+            managementService.unregisterCluster(clusterConnection.getName().toString());
+         }
+
+         broadcastGroups.clear();
+
+         discoveryGroups.clear();
       }
 
       for (Bridge bridge : bridges.values())
@@ -172,16 +193,6 @@ public class ClusterManagerImpl implements ClusterManager
          bridge.stop();
          managementService.unregisterBridge(bridge.getName().toString());
       }
-
-      for (ClusterConnection clusterConnection : clusters.values())
-      {
-         clusterConnection.stop();
-         managementService.unregisterCluster(clusterConnection.getName().toString());
-      }
-
-      broadcastGroups.clear();
-
-      discoveryGroups.clear();
 
       bridges.clear();
 

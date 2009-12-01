@@ -22,7 +22,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -53,10 +52,7 @@ import org.hornetq.core.deployers.impl.SecurityDeployer;
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.filter.impl.FilterImpl;
-import org.hornetq.core.journal.EncodingSupport;
 import org.hornetq.core.journal.IOAsyncTask;
-import org.hornetq.core.journal.IOCompletion;
-import org.hornetq.core.journal.Journal;
 import org.hornetq.core.journal.JournalLoadInformation;
 import org.hornetq.core.journal.impl.SyncSpeedTest;
 import org.hornetq.core.logging.LogDelegateFactory;
@@ -102,8 +98,6 @@ import org.hornetq.core.server.MemoryManager;
 import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.QueueFactory;
-import org.hornetq.core.server.RoutingContext;
-import org.hornetq.core.server.ServerConsumer;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.ServerSession;
 import org.hornetq.core.server.cluster.ClusterManager;
@@ -1160,20 +1154,18 @@ public class HornetQServerImpl implements HornetQServer
       // Deply any pre-defined diverts
       deployDiverts();
 
-      if (configuration.isClustered())
-      {
-         // This can't be created until node id is set
-         clusterManager = new ClusterManagerImpl(executorFactory,
-                                                 this,
-                                                 postOffice,
-                                                 scheduledPool,
-                                                 managementService,
-                                                 configuration,
-                                                 uuid,
-                                                 configuration.isBackup());
+      // This can't be created until node id is set
+      clusterManager = new ClusterManagerImpl(executorFactory,
+                                              this,
+                                              postOffice,
+                                              scheduledPool,
+                                              managementService,
+                                              configuration,
+                                              uuid,
+                                              configuration.isBackup(),
+                                              configuration.isClustered());
 
-         clusterManager.start();
-      }
+      clusterManager.start();
 
       if (deploymentManager != null)
       {
@@ -1198,7 +1190,7 @@ public class HornetQServerImpl implements HornetQServer
       }
 
       initialised = true;
-      
+
       log.info("********** initialised");
 
       if (System.getProperty("org.hornetq.opt.routeblast") != null)
@@ -1493,47 +1485,45 @@ public class HornetQServerImpl implements HornetQServer
       }
    }
 
-   
-//   private void runRouteBlastNoWait() throws Exception
-//   {
-//      SimpleString address = new SimpleString("rbnw_address");
-//      SimpleString queueName = new SimpleString("rbnw_name");
-//
-//      createQueue(address, queueName, null, true, false, true);
-//      
-//      Queue queue = (Queue)postOffice.getBinding(queueName).getBindable();
-//
-//      RBConsumer consumer = new RBConsumer(queue);
-//
-//      queue.addConsumer(consumer);
-//
-//      final int bodySize = 1024;
-//
-//      byte[] body = new byte[bodySize];
-//
-//      final int numMessages = 10000000;
-//
-//      for (int i = 0; i < numMessages; i++)
-//      {
-//         final ServerMessage msg = new ServerMessageImpl(storageManager.generateUniqueID(), 1500);
-//
-//         msg.getBodyBuffer().writeBytes(body);
-//
-//         msg.setDestination(address);
-//
-//         msg.setDurable(true);
-//
-//         postOffice.route(msg);
-//      }
-//   }
-   
-   private LinkedBlockingQueue<RouteBlastRunner> available = new LinkedBlockingQueue<RouteBlastRunner>();
+   // private void runRouteBlastNoWait() throws Exception
+   // {
+   // SimpleString address = new SimpleString("rbnw_address");
+   // SimpleString queueName = new SimpleString("rbnw_name");
+   //
+   // createQueue(address, queueName, null, true, false, true);
+   //      
+   // Queue queue = (Queue)postOffice.getBinding(queueName).getBindable();
+   //
+   // RBConsumer consumer = new RBConsumer(queue);
+   //
+   // queue.addConsumer(consumer);
+   //
+   // final int bodySize = 1024;
+   //
+   // byte[] body = new byte[bodySize];
+   //
+   // final int numMessages = 10000000;
+   //
+   // for (int i = 0; i < numMessages; i++)
+   // {
+   // final ServerMessage msg = new ServerMessageImpl(storageManager.generateUniqueID(), 1500);
+   //
+   // msg.getBodyBuffer().writeBytes(body);
+   //
+   // msg.setDestination(address);
+   //
+   // msg.setDurable(true);
+   //
+   // postOffice.route(msg);
+   // }
+   // }
 
+   private LinkedBlockingQueue<RouteBlastRunner> available = new LinkedBlockingQueue<RouteBlastRunner>();
 
    private void runRouteBlast() throws Exception
    {
       log.info("*** running route blast");
-      
+
       final int numThreads = 1;
 
       final int numClients = 1000;
@@ -1565,7 +1555,7 @@ public class HornetQServerImpl implements HornetQServer
          t.join();
       }
    }
-   
+
    class RouteBlastRunner implements Runnable
    {
       private SimpleString address;
@@ -1576,8 +1566,6 @@ public class HornetQServerImpl implements HornetQServer
       {
          this.address = address;
       }
-
-      
 
       public void setup() throws Exception
       {
@@ -1595,7 +1583,7 @@ public class HornetQServerImpl implements HornetQServer
 
             queue.addConsumer(consumer);
 
-            //log.info("added consumer to queue " + queue);
+            // log.info("added consumer to queue " + queue);
 
             consumers.add(consumer);
          }
@@ -1639,10 +1627,7 @@ public class HornetQServerImpl implements HornetQServer
 
       }
    }
-   
-   
-   
-  
+
    class Foo implements Runnable
    {
       public void run()
@@ -1662,7 +1647,7 @@ public class HornetQServerImpl implements HornetQServer
          }
       }
    }
-   
+
    private class RBConsumer implements Consumer
    {
       private Queue queue;
@@ -1682,15 +1667,13 @@ public class HornetQServerImpl implements HornetQServer
          reference.handled();
 
          queue.acknowledge(reference);
-         
-         //log.info("acking");
+
+         // log.info("acking");
 
          return HandleStatus.HANDLED;
       }
 
    }
-
-   
 
    // Inner classes
    // --------------------------------------------------------------------------------
