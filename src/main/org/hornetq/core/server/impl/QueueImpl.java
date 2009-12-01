@@ -206,23 +206,6 @@ public class QueueImpl implements Queue
 
    // Queue implementation ----------------------------------------------------------------------------------------
 
-   public void lockDelivery()
-   {
-      try
-      {
-         lock.acquire();
-      }
-      catch (InterruptedException e)
-      {
-         log.warn(e.getMessage(), e);
-      }
-   }
-
-   public void unlockDelivery()
-   {
-      lock.release();
-   }
-
    public boolean isDurable()
    {
       return durable;
@@ -1475,15 +1458,7 @@ public class QueueImpl implements Queue
          // Must be set to false *before* executing to avoid race
          waitingToDeliver.set(false);
 
-         lockDelivery();
-         try
-         {
-            deliver();
-         }
-         finally
-         {
-            unlockDelivery();
-         }
+         deliver();
       }
    }
 

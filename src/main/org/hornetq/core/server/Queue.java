@@ -126,11 +126,7 @@ public interface Queue extends Bindable
    Collection<Consumer> getConsumers();
    
    boolean checkDLQ(MessageReference ref) throws Exception;
-   
-   void lockDelivery();
-   
-   void unlockDelivery();
-
+      
    /**
     * @return an immutable iterator which does not allow to remove references
     */
