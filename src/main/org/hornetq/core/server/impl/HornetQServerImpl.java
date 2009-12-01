@@ -385,6 +385,11 @@ public class HornetQServerImpl implements HornetQServer
 
          managementService.stop();
 
+         if (pagingManager != null)
+         {
+            pagingManager.stop();
+         }
+
          if (storageManager != null)
          {
             storageManager.stop();
@@ -423,8 +428,6 @@ public class HornetQServerImpl implements HornetQServer
             postOffice.stop();
          }
 
-         // Need to shutdown pools before shutting down paging manager to make sure everything is written ok
-
          List<Runnable> tasks = scheduledPool.shutdownNow();
 
          for (Runnable task : tasks)
@@ -435,11 +438,6 @@ public class HornetQServerImpl implements HornetQServer
          threadPool.shutdown();
 
          scheduledPool = null;
-
-         if (pagingManager != null)
-         {
-            pagingManager.stop();
-         }
 
          if (memoryManager != null)
          {

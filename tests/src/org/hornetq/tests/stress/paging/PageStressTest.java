@@ -29,7 +29,7 @@ import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.utils.SimpleString;
 
 /**
- * This is an integration-tests that will take some time to run. TODO: Maybe this test belongs somewhere else?
+ * This is an integration-tests that will take some time to run.
  * 
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  */
@@ -51,6 +51,9 @@ public class PageStressTest extends ServiceTestBase
    public void testStopDuringDepage() throws Exception
    {
       Configuration config = createDefaultConfig();
+      
+      config.setJournalSyncNonTransactional(false);
+      config.setJournalSyncTransactional(false);
 
       HashMap<String, AddressSettings> settings = new HashMap<String, AddressSettings>();
 
@@ -63,6 +66,8 @@ public class PageStressTest extends ServiceTestBase
 
       ClientSessionFactory factory = createInVMFactory();
       factory.setBlockOnAcknowledge(true);
+      factory.setBlockOnPersistentSend(false);
+      factory.setBlockOnNonPersistentSend(false);
       ClientSession session = null;
 
       try
@@ -119,7 +124,8 @@ public class PageStressTest extends ServiceTestBase
 
          System.out.println("server stopped, nr msgs: " + msgs);
 
-         messagingService = createServer(true, config, 20 * 1024 * 1024, 10 * 1024 * 1024, settings);
+         messagingService = createServer(true, config, 10 * 1024 * 1024, 20 * 1024 * 1024, settings);
+
          messagingService.start();
 
          factory = createInVMFactory();
@@ -153,7 +159,13 @@ public class PageStressTest extends ServiceTestBase
       finally
       {
          session.close();
-         messagingService.stop();
+         try
+         {
+            messagingService.stop();
+         }
+         catch (Throwable ignored)
+         {
+         }
       }
 
    }

@@ -13,8 +13,6 @@
 
 package org.hornetq.tests.stress.client;
 
-import junit.framework.TestSuite;
-
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
@@ -44,11 +42,6 @@ public class SendStressTest extends ServiceTestBase
    // Public --------------------------------------------------------
 
    // Remove this method to re-enable those tests
-   public static TestSuite suite()
-   {
-      return new TestSuite();
-   }
-
    public void testStressSendNetty() throws Exception
    {
       doTestStressSend(true);

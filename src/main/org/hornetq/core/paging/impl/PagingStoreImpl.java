@@ -17,7 +17,9 @@ import java.nio.ByteBuffer;
 import java.text.DecimalFormat;
 import java.util.HashSet;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -398,6 +400,21 @@ public class PagingStoreImpl implements TestSupportPageStore
       if (running)
       {
          running = false;
+         
+         final CountDownLatch latch = new CountDownLatch(1);
+         
+         executor.execute(new Runnable()
+         {
+            public void run()
+            {
+               latch.countDown();
+            }
+         });
+         
+         if (!latch.await(60, TimeUnit.SECONDS))
+         {
+            log.warn("Timed out on waiting PagingStore "  + this.address + " to shutdown");
+         }
 
          if (currentPage != null)
          {

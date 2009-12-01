@@ -16,8 +16,11 @@ package org.hornetq.tests.stress.journal;
 import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
 
-import org.hornetq.core.buffers.HornetQBuffers;
-import org.hornetq.core.client.*;
+import org.hornetq.core.client.ClientConsumer;
+import org.hornetq.core.client.ClientMessage;
+import org.hornetq.core.client.ClientProducer;
+import org.hornetq.core.client.ClientSession;
+import org.hornetq.core.client.ClientSessionFactory;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.exception.HornetQException;
@@ -28,6 +31,8 @@ import org.hornetq.utils.SimpleString;
 
 /**
  * A MultiThreadConsumerStressTest
+ * 
+ * This test validates consuming / sending messages while compacting is working
  *
  * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  *
@@ -153,7 +158,6 @@ public class MultiThreadConsumerStressTest extends ServiceTestBase
    private void setupServer(JournalType journalType) throws Exception, HornetQException
    {
       Configuration config = createDefaultConfig(true);
-      config.setJournalFileSize(ConfigurationImpl.DEFAULT_JOURNAL_FILE_SIZE);
 
       config.setJournalType(journalType);
       config.setJMXManagementEnabled(true);
@@ -169,6 +173,12 @@ public class MultiThreadConsumerStressTest extends ServiceTestBase
       server.start();
 
       sf = createNettyFactory();
+      
+      sf.setBlockOnPersistentSend(false);
+      
+      sf.setBlockOnNonPersistentSend(false);
+      
+      sf.setBlockOnAcknowledge(false);
 
       ClientSession sess = sf.createSession();
 
