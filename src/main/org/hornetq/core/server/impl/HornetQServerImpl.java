@@ -674,8 +674,7 @@ public class HornetQServerImpl implements HornetQServer
                                                               securityStore,
                                                               sessionExecutor,
                                                               channel,
-                                                              managementService,
-                                                              // queueFactory,
+                                                              managementService,                                                          
                                                               this,
                                                               configuration.getManagementAddress());
 

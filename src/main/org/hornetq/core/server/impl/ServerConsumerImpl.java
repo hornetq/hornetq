@@ -105,7 +105,7 @@ public class ServerConsumerImpl implements ServerConsumer
 
    private Runnable browserDeliverer;
 
-   private final boolean updateDeliveries;
+   private final boolean strictUpdateDeliveryCount;
 
    private final StorageManager storageManager;
 
@@ -132,7 +132,7 @@ public class ServerConsumerImpl implements ServerConsumer
                              final StorageManager storageManager,
                              final Channel channel,
                              final boolean preAcknowledge,
-                             final boolean updateDeliveries,
+                             final boolean strictUpdateDeliveryCount,
                              final Executor executor,
                              final ManagementService managementService) throws Exception
    {
@@ -163,7 +163,7 @@ public class ServerConsumerImpl implements ServerConsumer
 
       minLargeMessageSize = session.getMinLargeMessageSize();
 
-      this.updateDeliveries = updateDeliveries;
+      this.strictUpdateDeliveryCount = strictUpdateDeliveryCount;
 
       if (browseOnly)
       {
@@ -229,7 +229,7 @@ public class ServerConsumerImpl implements ServerConsumer
 
             // If updateDeliveries = false (set by strict-update),
             // the updateDeliveryCount would still be updated after cancel
-            if (updateDeliveries)
+            if (strictUpdateDeliveryCount)
             {
                if (ref.getMessage().isDurable() && ref.getQueue().isDurable())
                {

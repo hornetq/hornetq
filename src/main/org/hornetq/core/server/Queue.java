@@ -120,7 +120,6 @@ public interface Queue extends Bindable
    
    boolean hasMatchingConsumer(ServerMessage message);
 
-   // Only used in testing
    void deliverNow();
    
    Collection<Consumer> getConsumers();

@@ -26,7 +26,6 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -106,8 +105,6 @@ public class QueueImpl implements Queue
    private boolean paused;
 
    private final Runnable deliverRunner = new DeliverRunner();
-
-   private final Semaphore lock = new Semaphore(1);
 
    private final StorageManager storageManager;
 
@@ -1342,10 +1339,7 @@ public class QueueImpl implements Queue
          {
             // We have consumers with filters which don't match, so we need
             // to prompt delivery every time
-            // a new message arrives - this is why you really shouldn't use
-            // filters with queues - in most cases
-            // it's an ant-pattern since it would cause a queue scan on each
-            // message
+            // a new message arrives
             deliver();
          }
       }

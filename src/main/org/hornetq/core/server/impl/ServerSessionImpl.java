@@ -155,7 +155,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
 
    private final boolean preAcknowledge;
 
-   private final boolean updateDeliveries;
+   private final boolean strictUpdateDeliveryCount;
 
    private RemotingConnection remotingConnection;
 
@@ -205,7 +205,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
                             final boolean autoCommitSends,
                             final boolean autoCommitAcks,
                             final boolean preAcknowledge,
-                            final boolean updateDeliveries,
+                            final boolean strictUpdateDeliveryCount,
                             final boolean xa,
                             final RemotingConnection remotingConnection,
                             final StorageManager storageManager,
@@ -249,7 +249,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
          tx = new TransactionImpl(storageManager);
       }
 
-      this.updateDeliveries = updateDeliveries;
+      this.strictUpdateDeliveryCount = strictUpdateDeliveryCount;
 
       this.channel = channel;
 
@@ -404,7 +404,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
                                                           storageManager,
                                                           channel,
                                                           preAcknowledge,
-                                                          updateDeliveries,
+                                                          strictUpdateDeliveryCount,
                                                           executor,
                                                           managementService);
 
