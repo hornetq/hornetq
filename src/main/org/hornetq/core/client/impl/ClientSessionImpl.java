@@ -839,6 +839,12 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
                   {
                      log.warn("Server is starting, retry to create the session " + name);
                      retry = true;
+                     // sleep a little bit to avoid spinning too much
+                     Thread.sleep(10);
+                  }
+                  else
+                  {
+                     throw e;
                   }
                }
             } while(retry);
