@@ -821,7 +821,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
          ClientMessage message;
          do
          {
-            message = holder.consumer.receive(500);
+            message = holder.consumer.receive(1000);
             
             if (message != null)
             {
