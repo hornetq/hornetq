@@ -554,6 +554,8 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
       SimpleString address = message.getDestination();
 
+      setPagingStore(message);
+
       Object duplicateID = message.getObjectProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID);
 
       DuplicateIDCache cache = null;
@@ -577,11 +579,11 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
          {
             if (context.getTransaction() == null)
             {
-               log.trace("Duplicate message detected - message will not be routed");
+               log.warn("Duplicate message detected - message will not be routed");
             }
             else
             {
-               log.trace("Duplicate message detected - transaction will be rejected");
+               log.warn("Duplicate message detected - transaction will be rejected");
 
                context.getTransaction().markAsRollbackOnly(null);
             }
@@ -607,8 +609,6 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
          cache.addToCache(duplicateIDBytes, context.getTransaction());
       }
-
-      setPagingStore(message);
 
       if (context.getTransaction() == null)
       {
@@ -837,18 +837,9 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
    // Private -----------------------------------------------------------------
 
-   private void generateID(final ServerMessage message)
-   {
-      // Setting the ID for the routed message
-      long id = storageManager.generateUniqueID();
-
-      message.setMessageID(id);
-   }
-
    private void setPagingStore(final ServerMessage message) throws Exception
    {
       PagingStore store = pagingManager.getPageStore(message.getDestination());
-
       message.setPagingStore(store);
    }
 
