@@ -97,9 +97,6 @@ public class TimedBuffer
 
    public TimedBuffer(final int size, final int timeout, final boolean logRates)
    {
-      log.info("timed buffer size " + size);
-      log.info("timed buffer timeout " + timeout);
-
       bufferSize = size;
 
       this.logRates = logRates;

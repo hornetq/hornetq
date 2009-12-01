@@ -241,17 +241,16 @@ public class JournalStorageManager implements StorageManager
 
       if (journalTypeToUse == JournalType.ASYNCIO)
       {
-         log.info("AIO journal selected");
+         log.info("Using AIO Journal");
 
          journalFF = new AIOSequentialFileFactory(journalDir,
                                                   config.getJournalBufferSize_AIO(),
                                                   config.getJournalBufferTimeout_AIO(),
                                                   config.isLogJournalWriteRate());
-         log.info("AIO loaded successfully");
       }
       else if (config.getJournalType() == JournalType.NIO)
       {
-         log.info("NIO Journal selected");
+         log.info("Using NIO Journal");
          journalFF = new NIOSequentialFileFactory(journalDir,
                                                   true,
                                                   config.getJournalBufferSize_NIO(),

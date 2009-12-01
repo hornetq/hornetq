@@ -335,8 +335,6 @@ public class JournalImpl implements TestableJournal
          this.compactPercentage = (float)compactPercentage / 100f;
       }        
       
-      log.info("creating journal with max io " + maxIO);
-
       this.compactMinFiles = compactMinFiles;
 
       this.fileSize = fileSize;

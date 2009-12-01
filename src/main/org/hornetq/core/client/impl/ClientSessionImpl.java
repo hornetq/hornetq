@@ -153,7 +153,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    private final boolean blockOnPersistentSend;
 
    private final int minLargeMessageSize;
-   
+
    private final int initialMessagePacketSize;
 
    private final boolean cacheLargeMessageClient;
@@ -253,7 +253,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       this.cacheLargeMessageClient = cacheLargeMessageClient;
 
       this.minLargeMessageSize = minLargeMessageSize;
-      
+
       this.initialMessagePacketSize = initialMessagePacketSize;
 
       this.groupID = groupID;
@@ -694,9 +694,9 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       if (consumer != null)
       {
          ClientMessageInternal clMessage = (ClientMessageInternal)message.getMessage();
-         
+
          clMessage.setDeliveryCount(message.getDeliveryCount());
-                      
+
          clMessage.setFlowControlSize(message.getPacketSize());
 
          consumer.handleMessage(clMessage);
@@ -779,7 +779,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       {
          return;
       }
-      
+
       boolean resetCreditManager = false;
 
       // We lock the channel to prevent any packets to be added to the resend
@@ -801,13 +801,13 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
          ReattachSessionResponseMessage response = (ReattachSessionResponseMessage)channel1.sendBlocking(request);
 
          if (response.isReattached())
-         {            
+         {
             // The session was found on the server - we reattached transparently ok
 
             channel.replayCommands(response.getLastReceivedCommandID(), channel.getID());
          }
          else
-         {            
+         {
             // The session wasn't found on the server - probably we're failing over onto a backup server where the
             // session
             // won't exist or the target server has been restarted - in this case the session will need to be recreated,
@@ -831,8 +831,8 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
                {
                   channel1.sendBlocking(createRequest);
                   retry = false;
-               } 
-               catch(HornetQException e)
+               }
+               catch (HornetQException e)
                {
                   // the session was created while its server was starting, retry it:
                   if (e.getCode() == HornetQException.SESSION_CREATION_REJECTED)
@@ -847,9 +847,8 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
                      throw e;
                   }
                }
-            } while(retry);
-            
-            log.info("created session " + name);
+            }
+            while (retry);
 
             channel.clearCommands();
 
@@ -869,16 +868,16 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
                Connection conn = channel.getConnection().getTransportConnection();
 
                HornetQBuffer buffer = createConsumerRequest.encode(channel.getConnection());
-             
+
                conn.write(buffer, false);
 
                int clientWindowSize = entry.getValue().getClientWindowSize();
-               
+
                if (clientWindowSize != 0)
                {
                   SessionConsumerFlowCreditMessage packet = new SessionConsumerFlowCreditMessage(entry.getKey(),
                                                                                                  clientWindowSize);
-                  
+
                   packet.setChannelID(channel.getID());
 
                   buffer = packet.encode(channel.getConnection());
@@ -931,9 +930,9 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       if (resetCreditManager)
       {
          producerCreditManager.reset();
-         
-         //Also need to send more credits for consumers, otherwise the system could hand with the server
-         //not having any credits to send
+
+         // Also need to send more credits for consumers, otherwise the system could hand with the server
+         // not having any credits to send
       }
    }
 
@@ -1400,15 +1399,14 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       // consumer
 
       if (windowSize != 0)
-      {         
+      {
          channel.send(new SessionConsumerFlowCreditMessage(consumerID, windowSize));
       }
 
       return consumer;
    }
 
-   private ClientProducer internalCreateProducer(final SimpleString address,
-                                                 final int maxRate) throws HornetQException
+   private ClientProducer internalCreateProducer(final SimpleString address, final int maxRate) throws HornetQException
    {
       checkClosed();
 
@@ -1419,7 +1417,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
                                                                autoCommitSends && blockOnNonPersistentSend,
                                                                autoCommitSends && blockOnPersistentSend,
                                                                autoGroup,
-                                                               groupID == null?null:new SimpleString(groupID),
+                                                               groupID == null ? null : new SimpleString(groupID),
                                                                minLargeMessageSize,
                                                                channel);
 
