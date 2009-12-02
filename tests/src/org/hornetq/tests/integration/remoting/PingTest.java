@@ -228,7 +228,7 @@ public class PingTest extends ServiceTestBase
 
       ClientSession session = csf.createSession(false, true, true);
 
-      assertEquals(1, ((ClientSessionFactoryInternal)csf).numConnections());
+      assertEquals(1, csf.numConnections());
 
       session.addFailureListener(clientListener);
 
@@ -296,7 +296,7 @@ public class PingTest extends ServiceTestBase
    {
       // server must received at least one ping from the client to pass
       // so that the server connection TTL is configured with the client value
-      final CountDownLatch pingOnServerLatch = new CountDownLatch(1);
+      final CountDownLatch pingOnServerLatch = new CountDownLatch(2);
       server.getRemotingService().addInterceptor(new Interceptor()
       {
          
@@ -363,14 +363,14 @@ public class PingTest extends ServiceTestBase
       
       
       serverConn.addCloseListener(serverListener);
-      assertTrue("server has not received any ping from the client" , pingOnServerLatch.await(2000, TimeUnit.MILLISECONDS));
+      assertTrue("server has not received any ping from the client" , pingOnServerLatch.await(4000, TimeUnit.MILLISECONDS));
 
       // we let the server receives at least 1 ping (so that it uses the client ConnectionTTL value)
       
       //Setting the handler to null will prevent server sending pings back to client
       serverConn.getChannel(0, -1).setHandler(null);
 
-      assertTrue(clientLatch.await(4 * CLIENT_FAILURE_CHECK_PERIOD, TimeUnit.MILLISECONDS));
+      assertTrue(clientLatch.await(8 * CLIENT_FAILURE_CHECK_PERIOD, TimeUnit.MILLISECONDS));
       
       //Server connection will be closed too, when client closes client side connection after failure is detected
       assertTrue(serverLatch.await(2 * RemotingServiceImpl.CONNECTION_TTL_CHECK_INTERVAL, TimeUnit.MILLISECONDS));
