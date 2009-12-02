@@ -292,6 +292,11 @@
                 </itemizedlist>
             </para>
         </section>
+       <section id="examples.message-group2">
+            <title>Message Group</title>
+            <para>The <literal>message-group2</literal> example shows you how to configure and use
+                message groups with HornetQ via a connection factory.</para>
+        </section>
         <section id="producer-rate-limiting-example">
             <title>Message Producer Rate Limiting</title>
             <para>The <literal>producer-rte-limit</literal> example demonstrates how, with HornetQ,
