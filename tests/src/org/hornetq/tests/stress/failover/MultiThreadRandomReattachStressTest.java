@@ -21,7 +21,7 @@ import org.hornetq.tests.integration.cluster.reattach.MultiThreadRandomReattachT
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  */
-public class MultiThreadRandomFailoverStressTest extends MultiThreadRandomReattachTest
+public class MultiThreadRandomReattachStressTest extends MultiThreadRandomReattachTest
 {
    protected int getNumIterations()
    {

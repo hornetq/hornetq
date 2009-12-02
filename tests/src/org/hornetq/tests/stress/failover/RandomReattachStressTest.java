@@ -25,7 +25,7 @@ import org.hornetq.tests.integration.cluster.reattach.RandomReattachTest;
  *
  *
  */
-public class RandomFailoverStressTest extends RandomReattachTest
+public class RandomReattachStressTest extends RandomReattachTest
 {
 
    // Constants -----------------------------------------------------
