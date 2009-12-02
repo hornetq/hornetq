@@ -1097,13 +1097,17 @@ public abstract class MultiThreadRandomReattachTestBase extends MultiThreadReatt
     */
    protected void doTestL(final ClientSessionFactory sf) throws Exception
    {
-      final int numSessions = 10;
+      final int numSessions = 1000;
 
       for (int i = 0; i < numSessions; i++)
       {
          ClientSession session = sf.createSession(false, false, false);
+         
+         log.info("Created session " + System.identityHashCode(session));
 
          session.close();
+         
+         log.info("closed session");
       }
    }
 
@@ -1274,7 +1278,7 @@ public abstract class MultiThreadRandomReattachTestBase extends MultiThreadReatt
 
    protected int getNumIterations()
    {
-      return 3;
+      return 1000;
    }
 
    @Override

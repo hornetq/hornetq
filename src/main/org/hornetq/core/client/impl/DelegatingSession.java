@@ -72,7 +72,8 @@ public class DelegatingSession implements ClientSessionInternal
    {
       if (!session.isClosed())
       {
-         log.warn("I'm closing a core ClientSession you left open. Please make sure you close all ClientSessions explicitly " + "before letting them go out of scope!");
+         log.warn("I'm closing a core ClientSession you left open. Please make sure you close all ClientSessions explicitly " + "before letting them go out of scope! " +
+                  System.identityHashCode(this));
 
          log.warn("The ClientSession you didn't close was created here:", creationStack);
 

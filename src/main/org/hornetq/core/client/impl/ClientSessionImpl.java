@@ -731,6 +731,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    {
       if (closed)
       {
+         log.info("Already closed so not closing");
          return;
       }
 

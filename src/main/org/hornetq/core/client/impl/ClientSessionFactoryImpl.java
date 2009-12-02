@@ -1077,7 +1077,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       }
    }
 
-   private ClientSession createSessionInternal(final String username,
+   private synchronized ClientSession createSessionInternal(final String username,
                                                final String password,
                                                final boolean xa,
                                                final boolean autoCommitSends,
