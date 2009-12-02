@@ -49,18 +49,20 @@ public class CoreClientOverSSL
          
          log.debug("args = " + Arrays.asList(args));
 
-         if (args.length != 1)
+         if (args.length != 3)
          {
-            log.fatal("unexpected number of args (should be 1)");
+            log.fatal("unexpected number of args (should be 3)");
             System.exit(1);
          }
 
-         boolean sslEnabled = Boolean.parseBoolean(args[0]); 
-         
-         System.out.println("ssl enabled is " + sslEnabled);
-        
+         boolean sslEnabled = Boolean.parseBoolean(args[0]);
+         String keyStorePath = args[1];
+         String keyStorePassword = args[2];
+
          TransportConfiguration tc = new TransportConfiguration("org.hornetq.integration.transports.netty.NettyConnectorFactory");
          tc.getParams().put(TransportConstants.SSL_ENABLED_PROP_NAME, sslEnabled);
+         tc.getParams().put(TransportConstants.KEYSTORE_PATH_PROP_NAME, keyStorePath);
+         tc.getParams().put(TransportConstants.KEYSTORE_PASSWORD_PROP_NAME, keyStorePassword);
          ClientSessionFactory sf = new ClientSessionFactoryImpl(tc);                 
          ClientSession session = sf.createSession(false, true, true);
          ClientProducer producer = session.createProducer(CoreClientOverSSLTest.QUEUE);
