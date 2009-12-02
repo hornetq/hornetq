@@ -248,7 +248,7 @@ public class JournalStorageManager implements StorageManager
                                                   config.getJournalBufferTimeout_AIO(),
                                                   config.isLogJournalWriteRate());
       }
-      else if (config.getJournalType() == JournalType.NIO)
+      else if (journalTypeToUse == JournalType.NIO)
       {
          log.info("Using NIO Journal");
          journalFF = new NIOSequentialFileFactory(journalDir,
