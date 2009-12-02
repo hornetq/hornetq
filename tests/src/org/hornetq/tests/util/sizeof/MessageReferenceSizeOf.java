@@ -11,7 +11,7 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.tests.unit.util.sizeof;
+package org.hornetq.tests.util.sizeof;
 
 import org.hornetq.core.server.impl.MessageReferenceImpl;
 

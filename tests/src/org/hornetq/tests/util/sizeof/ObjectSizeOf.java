@@ -11,12 +11,10 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.tests.unit.util.sizeof;
+package org.hornetq.tests.util.sizeof;
 
 /**
  * Calculate the size of objects on the heap
- * based on this article:
- * http://www.javaworld.com/javaworld/javatips/jw-javatip130.html
  *
  * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  *
