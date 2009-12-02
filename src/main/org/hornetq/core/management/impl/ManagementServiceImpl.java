@@ -739,7 +739,7 @@ public class ManagementServiceImpl implements ManagementService
 
                notificationMessage.putTypedProperties(notifProps);
 
-               postOffice.route(notificationMessage, null);
+               postOffice.route(notificationMessage);
             }
          }
       }

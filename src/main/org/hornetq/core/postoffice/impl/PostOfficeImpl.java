@@ -539,18 +539,21 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
    public void route(final ServerMessage message) throws Exception
    {
-      route(message, null);
+      route(message, (Transaction)null);
+   }
+   
+   public void route(final ServerMessage message, final Transaction tx) throws Exception
+   {
+      this.route(message, new RoutingContextImpl(tx));
    }
 
-   public void route(final ServerMessage message, final Transaction tx) throws Exception
+   public void route(final ServerMessage message, final RoutingContext context) throws Exception
    {
       // Sanity check
       if (message.getRefCount() > 0)
       {
          throw new IllegalStateException("Message cannot be routed more than once");
       }
-
-      RoutingContext context = new RoutingContextImpl(tx);
 
       SimpleString address = message.getDestination();
 
@@ -661,7 +664,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
                message.setDestination(dlaAddress);
 
-               route(message, tx);
+               route(message, context.getTransaction());
             }
          }
       }

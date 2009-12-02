@@ -42,6 +42,17 @@ public class RoutingContextImpl implements RoutingContext
       this.transaction = transaction;
    }
 
+   public void clear()
+   {
+      transaction = null;
+      
+      nonDurableQueues.clear();
+      
+      durableQueues.clear();
+      
+      queueCount = 0;
+   }
+   
    public void addQueue(final Queue queue)
    {
       if (queue.isDurable())

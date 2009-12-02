@@ -37,5 +37,7 @@ public interface RoutingContext
    List<Queue> getDurableQueues();
    
    int getQueueCount();
+   
+   void clear();
 
 }

@@ -91,6 +91,7 @@ import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.LargeServerMessage;
 import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.Queue;
+import org.hornetq.core.server.RoutingContext;
 import org.hornetq.core.server.ServerConsumer;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.ServerSession;
@@ -195,6 +196,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
    private boolean closed;
 
    private final Map<SimpleString, CreditManagerHolder> creditManagerHolders = new HashMap<SimpleString, CreditManagerHolder>();
+   
+   private final RoutingContext routingContext = new RoutingContextImpl(null);
 
    // Constructors ---------------------------------------------------------------------------------
 
@@ -1965,15 +1968,18 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       }
 
       if (tx == null || autoCommitSends)
-      {
-         postOffice.route(msg);
+      {         
       }
       else
       {
-         postOffice.route(msg, tx);
+         routingContext.setTransaction(tx);
       }
+      
+      postOffice.route(msg, routingContext);
+      
+      routingContext.clear();      
    }
-
+   
    private static final class CreditManagerHolder
    {
       CreditManagerHolder(final PagingStore store)
