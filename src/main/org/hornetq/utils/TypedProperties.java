@@ -65,6 +65,15 @@ public class TypedProperties
    public TypedProperties()
    {
    }
+   
+   public int getMemoryOffset()
+   {
+      //The estimate is basically the encode size + 2 object references for each entry in the map
+      //Note we don't include the attributes or anything else since they already included in the memory estimate
+      //of the ServerMessage
+       
+      return properties == null ? 0 : size + 2 * DataConstants.SIZE_INT * properties.size();
+   }
 
    public TypedProperties(final TypedProperties other)
    {

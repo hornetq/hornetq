@@ -16,8 +16,6 @@ package org.hornetq.core.server.impl;
 import java.io.InputStream;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.hornetq.core.buffers.HornetQBuffer;
-import org.hornetq.core.buffers.impl.ResetLimitWrappedHornetQBuffer;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.paging.PagingStore;
@@ -26,8 +24,8 @@ import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.utils.DataConstants;
+import org.hornetq.utils.MemorySize;
 import org.hornetq.utils.SimpleString;
-import org.hornetq.utils.TypedProperties;
 
 /**
  * 
@@ -49,6 +47,25 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
 
    private PagingStore pagingStore;
 
+   private static final int memoryOffset;
+
+   static
+   {
+      // This is an estimate of how much memory a ServerMessageImpl takes up, exclusing body and properties
+      // Note, it is only an estimate, it's not possible to be entirely sure with Java
+      // This figure is calculated using the test utilities in org.hornetq.tests.unit.util.sizeof
+      // The value is somewhat higher on 64 bit architectures, probably due to different alignment
+      
+      if (MemorySize.is64bitArch())
+      {
+         memoryOffset = 352;
+      }
+      else
+      {
+         memoryOffset = 232;
+      }
+   }
+
    /*
     * Constructor for when reading from network
     */
@@ -62,7 +79,7 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
    public ServerMessageImpl(final long messageID, final int initialMessageBufferSize)
    {
       super(initialMessageBufferSize);
-      
+
       this.messageID = messageID;
    }
 
@@ -144,44 +161,17 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
    {
       return false;
    }
-   
-   private volatile int memoryEstimate = -1;
 
-//   public int getMemoryEstimate()
-//   {
-//      if (memoryEstimate == -1)
-//      {
-//         memoryEstimate =
-//         DataConstants.SIZE_INT + // Object overhead
-//         this.getHeadersAndPropertiesEncodeSize() +
-//         buffer.capacity() +
-//         DataConstants.SIZE_INT + // PagingStore reference
-//         DataConstants.SIZE_INT + // DurableRefCount reference
-//         DataConstants.SIZE_INT + // RefCount reference
-//         DataConstants.SIZE_INT + // Reference to buffer
-//         DataConstants.SIZE_INT + // Reference to bodyBuffer
-//         DataConstants.SIZE_BOOLEAN + // bufferValid
-//         DataConstants.SIZE_INT + // endOfBodyPosition
-//         DataConstants.SIZE_INT + // endOfMessagePosition
-//         DataConstants.SIZE_BOOLEAN + // copied
-//         DataConstants.SIZE_BOOLEAN + // bufferUsed
-//         DataConstants.SIZE_LONG; // A bit more due to alignment and fragmentation
-//      }
-//
-//      return memoryEstimate;
-//   }
+   private volatile int memoryEstimate = -1;
    
    public int getMemoryEstimate()
    {
       if (memoryEstimate == -1)
       {
-         // This is just an estimate...
-         // due to memory alignments and JVM implementation this could be very
-         // different from reality
-         memoryEstimate = getEncodeSize() + (16 + 4) * 2 + 1;
+         memoryEstimate = memoryOffset + buffer.capacity() + properties.getMemoryOffset();
       }
-
-      return memoryEstimate;
+      
+      return this.memoryEstimate;
    }
 
    public ServerMessage copy(final long newID)

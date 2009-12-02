@@ -17,7 +17,7 @@ import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.ServerMessage;
-import org.hornetq.utils.DataConstants;
+import org.hornetq.utils.MemorySize;
 
 /**
  * Implementation of a MessageReference
@@ -42,6 +42,25 @@ public class MessageReferenceImpl implements MessageReference
    private final Queue queue;
 
    // Static --------------------------------------------------------
+   
+   private static final int memoryOffset;
+
+   static
+   {
+      // This is an estimate of how much memory a ServerMessageImpl takes up, exclusing body and properties
+      // Note, it is only an estimate, it's not possible to be entirely sure with Java
+      // This figure is calculated using the test utilities in org.hornetq.tests.unit.util.sizeof
+      // The value is somewhat higher on 64 bit architectures, probably due to different alignment
+      
+      if (MemorySize.is64bitArch())
+      {
+         memoryOffset = 48;
+      }
+      else
+      {
+         memoryOffset = 32;
+      }
+   }
 
    // Constructors --------------------------------------------------
 
@@ -78,13 +97,7 @@ public class MessageReferenceImpl implements MessageReference
 
    public static int getMemoryEstimate()
    {
-      // from few tests I have done, deliveryCount and scheduledDelivery will use two longs (because of alignment)
-      // and each of the references (messages and queue) will use the equivalent to two longs (because of long
-      // pointers).
-      // Anyway.. this is just an estimate
-
-      // TODO - doesn't the object itself have an overhead? - I thought was usually one Long per Object?
-      return DataConstants.SIZE_LONG * 4;
+      return memoryOffset;
    }
 
    public int getDeliveryCount()

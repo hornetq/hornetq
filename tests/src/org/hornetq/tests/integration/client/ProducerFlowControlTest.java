@@ -263,8 +263,6 @@ public class ProducerFlowControlTest extends ServiceTestBase
       {
          handlers[i] = new MyHandler();
 
-         log.info("created consumer");
-
          ClientConsumer consumer = session.createConsumer(new SimpleString(queueName + i));
 
          consumer.setMessageHandler(handlers[i]);
@@ -341,7 +339,7 @@ public class ProducerFlowControlTest extends ServiceTestBase
       HornetQServer server = createServer(false, isNetty());
 
       AddressSettings addressSettings = new AddressSettings();
-      addressSettings.setMaxSizeBytes(1024);
+      addressSettings.setMaxSizeBytes(4000);
       addressSettings.setAddressFullMessagePolicy(AddressFullMessagePolicy.BLOCK);
 
       HierarchicalRepository<AddressSettings> repos = server.getAddressSettingsRepository();
@@ -351,7 +349,8 @@ public class ProducerFlowControlTest extends ServiceTestBase
 
       ClientSessionFactory sf = createFactory(isNetty());
 
-      sf.setProducerWindowSize(1024);
+      //Make sure the producer grabs all the credits
+      sf.setProducerWindowSize(4000);
       sf.setConsumerWindowSize(1024);
       sf.setAckBatchSize(1024);
 
@@ -384,7 +383,7 @@ public class ProducerFlowControlTest extends ServiceTestBase
       while (waiting != 1 || (System.currentTimeMillis() - start) > 3000);
 
       assertEquals(1, waiting);
-
+      
       byte[] bytes = new byte[0];
 
       ClientMessage message = session.createClientMessage(false);
@@ -392,7 +391,7 @@ public class ProducerFlowControlTest extends ServiceTestBase
       message.getBodyBuffer().writeBytes(bytes);
 
       producer.send(message);
-
+      
       class SessionCloser implements Runnable
       {
          public void run()
@@ -422,9 +421,9 @@ public class ProducerFlowControlTest extends ServiceTestBase
       ClientMessage message2 = session.createClientMessage(false);
 
       message2.getBodyBuffer().writeBytes(bytes);
-
+    
       producer2.send(message2);
-
+      
       // Make sure it blocked until the first producer was closed
       assertTrue(closer.closed);
 
@@ -448,7 +447,7 @@ public class ProducerFlowControlTest extends ServiceTestBase
       HornetQServer server = createServer(false, isNetty());
 
       AddressSettings addressSettings = new AddressSettings();
-      addressSettings.setMaxSizeBytes(1024);
+      addressSettings.setMaxSizeBytes(4000);
       addressSettings.setAddressFullMessagePolicy(AddressFullMessagePolicy.BLOCK);
 
       HierarchicalRepository<AddressSettings> repos = server.getAddressSettingsRepository();
@@ -458,7 +457,8 @@ public class ProducerFlowControlTest extends ServiceTestBase
 
       ClientSessionFactory sf = createFactory(isNetty());
 
-      sf.setProducerWindowSize(1024);
+      //Make sure producer grabs all the credits
+      sf.setProducerWindowSize(4000);
       sf.setConsumerWindowSize(1024);
       sf.setAckBatchSize(1024);
 
@@ -526,7 +526,7 @@ public class ProducerFlowControlTest extends ServiceTestBase
       HornetQServer server = createServer(false, isNetty());
 
       AddressSettings addressSettings = new AddressSettings();
-      addressSettings.setMaxSizeBytes(1024);
+      addressSettings.setMaxSizeBytes(4000);
       addressSettings.setAddressFullMessagePolicy(AddressFullMessagePolicy.BLOCK);
 
       HierarchicalRepository<AddressSettings> repos = server.getAddressSettingsRepository();
@@ -536,7 +536,8 @@ public class ProducerFlowControlTest extends ServiceTestBase
 
       ClientSessionFactory sf = createFactory(isNetty());
 
-      sf.setProducerWindowSize(1024);
+      //Make sure first producer grabs all the credits
+      sf.setProducerWindowSize(4000);
       sf.setConsumerWindowSize(1024);
       sf.setAckBatchSize(1024);
 

@@ -131,9 +131,7 @@ public class PagingTest extends ServiceTestBase
             producer.send(message);
          }
          
-         log.info("** sent messages");
-
-         session.close();
+          session.close();
 
          assertTrue("TotalMemory expected to be > 0 when it was " + server.getPostOffice()
                                                                           .getPagingManager()
@@ -696,15 +694,15 @@ public class PagingTest extends ServiceTestBase
 
          session.start();
 
-         for (int i = 0; i < 9; i++)
+         for (int i = 0; i < 6; i++)
          {
             ClientMessage message2 = consumer.receive(RECEIVE_TIMEOUT);
-
+            
             assertNotNull(message2);
 
             message2.acknowledge();
          }
-
+         
          assertNull(consumer.receiveImmediate());
 
          assertEquals(0, server.getPostOffice().getPagingManager().getTotalMemory());
@@ -720,15 +718,15 @@ public class PagingTest extends ServiceTestBase
             producer.send(message);
          }
 
-         for (int i = 0; i < 9; i++)
-         {
+         for (int i = 0; i < 6; i++)
+         {            
             ClientMessage message2 = consumer.receive(RECEIVE_TIMEOUT);
-
+            
             assertNotNull(message2);
 
             message2.acknowledge();
          }
-
+         
          assertNull(consumer.receiveImmediate());
 
          session.close();
@@ -753,7 +751,7 @@ public class PagingTest extends ServiceTestBase
 
          session.start();
 
-         for (int i = 0; i < 9; i++)
+         for (int i = 0; i < 6; i++)
          {
             ClientMessage message2 = consumer.receive(RECEIVE_TIMEOUT);
 
