@@ -348,7 +348,7 @@ public class FileConfiguration extends ConfigurationImpl
                                      GT_ZERO);
 
       int journalMaxIO = getInteger(e,
-                                "journal-max-aio",
+                                "journal-max-io",
                                 journalType == JournalType.ASYNCIO ? DEFAULT_JOURNAL_MAX_IO_AIO
                                                                   : DEFAULT_JOURNAL_MAX_IO_NIO,
                                 GT_ZERO);

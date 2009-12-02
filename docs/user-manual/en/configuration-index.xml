@@ -172,8 +172,8 @@
                             <entry>128 * 1024</entry>
                         </row>
                         <row>
-                            <entry><link linkend="configuring.message.journal.journal-max-aio"
-                                    >journal-max-aio</link></entry>
+                            <entry><link linkend="configuring.message.journal.journal-max-io"
+                                    >journal-max-io</link></entry>
                             <entry>Integer</entry>
                             <entry>the maximum number of write requests that can be in the AIO queue
                                 at any one time</entry>

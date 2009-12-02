@@ -183,8 +183,8 @@
                 <para>Depending on how much data you expect your queues to contain at steady state
                     you should tune this number of files to match that total amount of data.</para>
             </listitem>
-            <listitem id="configuring.message.journal.journal-max-aio">
-                <para><literal>journal-max-aio</literal></para>
+            <listitem id="configuring.message.journal.journal-max-io">
+                <para><literal>journal-max-io</literal></para>
                 <para>When using an AIO journal, write requests are queued up before being submitted
                     to AIO for execution. Then when AIO has completed them it calls HornetQ back.
                     This parameter controls the maximum number of write requests that can be in the
