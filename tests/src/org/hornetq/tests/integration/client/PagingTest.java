@@ -1008,7 +1008,7 @@ public class PagingTest extends ServiceTestBase
       pagedDestinationA.setPageSizeBytes(1024);
       pagedDestinationA.setMaxSizeBytes(10 * 1024);
 
-      int NUMBER_MESSAGES_BEFORE_PAGING = 20;
+      int NUMBER_MESSAGES_BEFORE_PAGING = 11;
 
       addresses.put(PAGED_ADDRESS_A.toString(), pagedDestinationA);
 

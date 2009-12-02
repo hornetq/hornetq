@@ -344,7 +344,7 @@ public class AddressControlTest extends ManagementTestBase
       AddressSettings addressSettings = new AddressSettings();
       addressSettings.setPageSizeBytes(1024);
       addressSettings.setMaxSizeBytes(10 * 1024);    
-      int NUMBER_MESSAGES_BEFORE_PAGING = 14;
+      int NUMBER_MESSAGES_BEFORE_PAGING = 5;
       
       server.getAddressSettingsRepository().addMatch(address.toString(), addressSettings);
       server.start();  
