@@ -342,7 +342,14 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
          {
             public void run()
             {
-               doBufferReceived(packet);
+               try
+               {
+                  doBufferReceived(packet);
+               }
+               catch (Throwable t)
+               {
+                  log.error("Unexpected error", t);
+               }
             }
          });
       }
