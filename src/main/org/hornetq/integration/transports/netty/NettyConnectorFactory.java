@@ -33,10 +33,11 @@ public class NettyConnectorFactory implements ConnectorFactory
    public Connector createConnector(final Map<String, Object> configuration,
                                     final BufferHandler handler,
                                     final ConnectionLifeCycleListener listener,
+                                    final Executor closeExecutor,
                                     final Executor threadPool,
                                     final ScheduledExecutorService scheduledThreadPool)
    {
-      return new NettyConnector(configuration, handler, listener, threadPool, scheduledThreadPool);
+      return new NettyConnector(configuration, handler, listener, closeExecutor, threadPool, scheduledThreadPool);
    }
 
    public Set<String> getAllowableProperties()

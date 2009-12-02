@@ -41,4 +41,15 @@ public class NettySymmetricClusterWithBackupTest extends SymmetricClusterWithBac
    {
       return false;
    }
+   
+   public void _test() throws Exception
+   {
+      for (int i = 0; i < 50; i++)
+      {
+         System.out.println("\n\n" + i + "\n\n");
+         testStartStopServers();
+         tearDown();
+         setUp();
+      }  
+   }
 }

@@ -29,6 +29,7 @@ public interface ConnectorFactory
 {
    Connector createConnector(Map<String, Object> configuration, BufferHandler handler,                           
                              ConnectionLifeCycleListener listener,
+                             Executor closeExecutor,
                              Executor threadPool, 
                              ScheduledExecutorService scheduledThreadPool);
    

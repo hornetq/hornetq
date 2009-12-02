@@ -52,6 +52,7 @@ public class MockConnectorFactory implements ConnectorFactory
    public Connector createConnector(final Map<String, Object> configuration,
                                     final BufferHandler handler,
                                     final ConnectionLifeCycleListener listener,
+                                    final Executor closeExecutor,
                                     final Executor executor, ScheduledExecutorService scheduledThreadPool)
    {
       return new MockConnector(configuration, handler, listener);

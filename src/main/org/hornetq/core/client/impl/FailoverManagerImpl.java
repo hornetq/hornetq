@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
@@ -177,6 +178,8 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
 
    private final ScheduledExecutorService scheduledThreadPool;
 
+   private final Executor closeExecutor;
+   
    private RemotingConnection connection;
 
    private final long retryInterval;
@@ -271,6 +274,8 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
 
       this.orderedExecutorFactory = new OrderedExecutorFactory(threadPool);
 
+      this.closeExecutor = orderedExecutorFactory.getExecutor();
+      
       this.interceptors = interceptors;
    }
 
@@ -912,6 +917,7 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
                connector = connectorFactory.createConnector(transportParams,
                                                             handler,
                                                             this,
+                                                            closeExecutor,
                                                             threadPool,
                                                             scheduledThreadPool);
 
@@ -1075,7 +1081,7 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
 
          if (type == PacketImpl.DISCONNECT)
          {
-            threadPool.execute(new Runnable()
+            closeExecutor.execute(new Runnable()
             {
                // Must be executed on new thread since cannot block the netty thread for a long time and fail can
                // cause reconnect loop

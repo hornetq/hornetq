@@ -134,6 +134,8 @@ public class NettyConnector implements Connector
 
    private final ScheduledExecutorService scheduledThreadPool;
 
+   private final Executor closeExecutor;
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -143,6 +145,7 @@ public class NettyConnector implements Connector
    public NettyConnector(final Map<String, Object> configuration,
                          final BufferHandler handler,
                          final ConnectionLifeCycleListener listener,
+                         final Executor closeExecutor,
                          final Executor threadPool,
                          final ScheduledExecutorService scheduledThreadPool)
    {
@@ -225,6 +228,8 @@ public class NettyConnector implements Connector
                                                                 TransportConstants.DEFAULT_TCP_RECEIVEBUFFER_SIZE,
                                                                 configuration);
 
+      this.closeExecutor = closeExecutor;
+      
       virtualExecutor = new VirtualExecutorService(threadPool);
 
       this.scheduledThreadPool = scheduledThreadPool;
@@ -607,28 +612,26 @@ public class NettyConnector implements Connector
          if (connections.remove(connectionID) != null)
          {
             // Execute on different thread to avoid deadlocks
-            new Thread()
+            closeExecutor.execute(new Runnable()
             {
-               @Override
                public void run()
                {
                   listener.connectionDestroyed(connectionID);
                }
-            }.start();
+            });
          }
       }
 
       public void connectionException(final Object connectionID, final HornetQException me)
       {
          // Execute on different thread to avoid deadlocks
-         new Thread()
+         closeExecutor.execute(new Runnable()
          {
-            @Override
             public void run()
             {
                listener.connectionException(connectionID, me);
             }
-         }.start();
+         });
       }
    }
 
