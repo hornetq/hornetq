@@ -50,10 +50,17 @@ public abstract class SizeOfBase extends UnitTestCase
       long totalMemory1 = 0;
       long totalMemory2 = 0;
 
-
-      final Object obj[] = new Object[numberOfObjects];
-      // make sure we load the classes before
-
+      //First we do a dry run then throw away the results
+      
+      Object[] obj = new Object[numberOfObjects];
+      
+      for (i = 0; i < numberOfObjects; i++)
+      {
+         obj[i] = newObject();
+      }
+      
+      obj = new Object[numberOfObjects];
+      
       heap1 = getMemorySize();
 
       totalMemory1 = runtime.totalMemory();
