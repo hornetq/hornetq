@@ -79,7 +79,6 @@
          {
             groupMessages[i] = session.createTextMessage("Group-0 message " + i);
             groupMessages[i].setStringProperty(HornetQMessage.JMSXGROUPID, "Group-0");
-            groupMessages[i].setIntProperty("JMSXGroupSeq", i + 1);
             producer.send(groupMessages[i]);
             System.out.println("Sent message: " + groupMessages[i].getText());
          }

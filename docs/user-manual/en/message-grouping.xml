@@ -44,19 +44,15 @@
       <title>Using JMS</title>
       <para>The property name used to identify the message group is <literal
          >JMSXGroupID</literal>.</para>
-      <para>Within the same group, messages can also set a <literal>JMSXGroupSeq</literal>
-         <literal>int</literal> property (starting at 1).</para>
       <programlisting>
  // send 2 messages in the same group to ensure the same
  // consumer will receive both
  Message message = ...
  message.setStringProperty("JMSXGroupID", "Group-0");
- message.setIntProperty("JMSXGroupSeq", 1);
  producer.send(message);
 
  message = ...
  message.setStringProperty("JMSXGroupID", "Group-0");
- message.setIntProperty("JMSXGroupSeq", 2);
  producer.send(message);          
        </programlisting>
       <para>Alternatively, you can set <literal>autogroup</literal> to true on the <literal

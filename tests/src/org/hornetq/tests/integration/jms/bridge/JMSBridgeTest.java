@@ -772,7 +772,6 @@ public class JMSBridgeTest extends BridgeTestBase
             //We add some JMSX ones too
             
             tm.setStringProperty("JMSXGroupID", "mygroup543");
-            tm.setIntProperty("JMSXGroupSeq", 777);
             
             prod.send(tm);
             
@@ -802,7 +801,6 @@ public class JMSBridgeTest extends BridgeTestBase
             assertEquals(23, tm.getIntProperty("Sausages"));
             
             assertEquals("mygroup543", tm.getStringProperty("JMSXGroupID"));
-            assertEquals(777, tm.getIntProperty("JMSXGroupSeq"));
             
             if (on)
             {            
@@ -847,8 +845,7 @@ public class JMSBridgeTest extends BridgeTestBase
 	            assertTrue(tm.getBooleanProperty("cheese"));
 	            assertEquals(23, tm.getIntProperty("Sausages"));
 	            
-	            assertEquals("mygroup543", tm.getStringProperty("JMSXGroupID"));
-	            assertEquals(777, tm.getIntProperty("JMSXGroupSeq"));            
+	            assertEquals("mygroup543", tm.getStringProperty("JMSXGroupID")); 
 	            
 	            String header = tm.getStringProperty(HornetQMessage.JBOSS_MESSAGING_BRIDGE_MESSAGE_ID_LIST);
 	            
