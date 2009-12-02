@@ -41,6 +41,8 @@ public abstract class SizeOfBase extends UnitTestCase
 
    public void testCalculateSize()
    {
+      System.out.println("os arch" + System.getProperty("os.arch"));
+      
       getMemorySize();
       newObject();
       
@@ -50,16 +52,16 @@ public abstract class SizeOfBase extends UnitTestCase
       long totalMemory1 = 0;
       long totalMemory2 = 0;
 
-      //First we do a dry run then throw away the results
+      //First we do a dry run with twice as many then throw away the results
       
-      Object[] obj = new Object[numberOfObjects];
+      Object[] obj = new Object[numberOfObjects * 2];
       
-      for (i = 0; i < numberOfObjects; i++)
+      for (i = 0; i < numberOfObjects * 2; i++)
       {
          obj[i] = newObject();
       }
       
-      obj = new Object[numberOfObjects];
+      obj = new Object[numberOfObjects * 2];
       
       heap1 = getMemorySize();
 
@@ -78,7 +80,8 @@ public abstract class SizeOfBase extends UnitTestCase
 
       if (totalMemory1 != totalMemory2)
       {
-         System.out.println("Warning: JVM allocated more data what would make results invalid");
+         System.out.println("Warning: JVM allocated more data what would make results invalid " +
+                            totalMemory1 + ":" + totalMemory2);
       }
 
       System.out.println("heap1 = " + heap1 + ", heap2 = " + heap2 + ", size = " + size);
