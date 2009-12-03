@@ -133,7 +133,7 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
       {
          for (RemotingConnection conn : conns)
          {
-            conn.fail(new HornetQException(HornetQException.INTERNAL_ERROR, "blah"));
+            conn.fail(new HornetQException(HornetQException.INTERNAL_ERROR, "simulated connection failure"));
          }
       }
    }
