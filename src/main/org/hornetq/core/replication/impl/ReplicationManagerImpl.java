@@ -375,8 +375,8 @@ public class ReplicationManagerImpl implements ReplicationManager
       
       enabled = false;
       
-      // The same context will be replicated on the pending tokens...
-      // as the multiple operations will be replicated on the same context
+      // Complete any pending operations...
+      // Case the backup crashed, this should clean up any pending requests 
       while (!pendingTokens.isEmpty())
       {
          OperationContext ctx = pendingTokens.poll();
