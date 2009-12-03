@@ -442,7 +442,7 @@ public class HornetQServerControlImpl extends StandardMBean implements HornetQSe
          {
             Transaction transaction = resourceManager.removeTransaction(xid);
             transaction.commit(false);
-            server.getStorageManager().waitOnOperations(-1);
+            server.getStorageManager().waitOnOperations();
             long recordID = server.getStorageManager().storeHeuristicCompletion(xid, true);
             resourceManager.putHeuristicCompletion(recordID, xid, true);
             return true;
@@ -461,7 +461,7 @@ public class HornetQServerControlImpl extends StandardMBean implements HornetQSe
          {
             Transaction transaction = resourceManager.removeTransaction(xid);
             transaction.rollback();
-            server.getStorageManager().completeOperations();
+            server.getStorageManager().waitOnOperations();
             long recordID = server.getStorageManager().storeHeuristicCompletion(xid, false);
             resourceManager.putHeuristicCompletion(recordID, xid, false);
             return true;
@@ -577,6 +577,8 @@ public class HornetQServerControlImpl extends StandardMBean implements HornetQSe
    public void sendQueueInfoToQueue(final String queueName, final String address) throws Exception
    {
       postOffice.sendQueueInfoToQueue(new SimpleString(queueName), new SimpleString(address));
+      // blocking on IO. Otherwise the method would return before the operation was finished
+      server.getStorageManager().waitOnOperations();
    }
 
    // NotificationEmitter implementation ----------------------------

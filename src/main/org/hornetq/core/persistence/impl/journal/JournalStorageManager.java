@@ -317,7 +317,7 @@ public class JournalStorageManager implements StorageManager
 
    public void waitOnOperations() throws Exception
    {
-      waitOnOperations(-1);
+      waitOnOperations(0);
    }
 
    /* (non-Javadoc)
@@ -328,7 +328,7 @@ public class JournalStorageManager implements StorageManager
       SimpleWaitIOCallback waitCallback = new SimpleWaitIOCallback();
       afterCompleteOperations(waitCallback);
       completeOperations();
-      if (timeout <= 0)
+      if (timeout == 0)
       {
          waitCallback.waitCompletion();
       }

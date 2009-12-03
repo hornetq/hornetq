@@ -666,8 +666,6 @@ public class QueueImpl implements Queue
    
          tx.commit();
       }
-      
-      storageManager.waitOnOperations(-1);
 
       return count;
    }

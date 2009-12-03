@@ -259,6 +259,7 @@ public class ManagementServiceImpl implements ManagementService
       QueueControlImpl queueControl = new QueueControlImpl(queue,
                                                            address.toString(),
                                                            postOffice,
+                                                           storageManager,
                                                            addressSettingsRepository);
       if (messageCounterManager != null)
       {

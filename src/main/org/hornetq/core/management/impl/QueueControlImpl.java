@@ -27,6 +27,7 @@ import org.hornetq.core.management.QueueControl;
 import org.hornetq.core.message.Message;
 import org.hornetq.core.messagecounter.MessageCounter;
 import org.hornetq.core.messagecounter.impl.MessageCounterHelper;
+import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.server.MessageReference;
@@ -58,6 +59,8 @@ public class QueueControlImpl extends StandardMBean implements QueueControl
    private final PostOffice postOffice;
 
    private final HierarchicalRepository<AddressSettings> addressSettingsRepository;
+   
+   private final StorageManager storageManager;
 
    private MessageCounter counter;
 
@@ -79,6 +82,7 @@ public class QueueControlImpl extends StandardMBean implements QueueControl
    public QueueControlImpl(final Queue queue,
                            final String address,
                            final PostOffice postOffice,
+                           final StorageManager storageManager,
                            final HierarchicalRepository<AddressSettings> addressSettingsRepository) throws Exception
    {
       super(QueueControl.class);
@@ -86,6 +90,7 @@ public class QueueControlImpl extends StandardMBean implements QueueControl
       this.address = address;
       this.postOffice = postOffice;
       this.addressSettingsRepository = addressSettingsRepository;
+      this.storageManager = storageManager;
    }
 
    // Public --------------------------------------------------------
@@ -272,7 +277,13 @@ public class QueueControlImpl extends StandardMBean implements QueueControl
    public int removeMessages(final String filterStr) throws Exception
    {
       Filter filter = FilterImpl.createFilter(filterStr);
-      return queue.deleteMatchingReferences(filter);
+      
+      int retValue = queue.deleteMatchingReferences(filter);
+      
+      // Waiting on IO otherwise the JMX operation would return before the operation completed
+      storageManager.waitOnOperations();
+      
+      return retValue;
    }
 
    public boolean expireMessage(final long messageID) throws Exception
