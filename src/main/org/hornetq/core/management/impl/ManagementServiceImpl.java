@@ -743,12 +743,6 @@ public class ManagementServiceImpl implements ManagementService
             }
          }
       }
-      
-      if (storageManager != null)
-      {
-         storageManager.waitOnOperations(managementRequestTimeout);
-         storageManager.clearContext();
-      }
    }
 
    public void enableNotifications(boolean enabled)
