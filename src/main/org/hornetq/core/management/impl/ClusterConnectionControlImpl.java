@@ -20,6 +20,7 @@ import javax.management.StandardMBean;
 
 import org.hornetq.core.config.cluster.ClusterConnectionConfiguration;
 import org.hornetq.core.management.ClusterConnectionControl;
+import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.server.cluster.ClusterConnection;
 import org.hornetq.utils.Pair;
 import org.hornetq.utils.json.JSONArray;
@@ -30,7 +31,7 @@ import org.hornetq.utils.json.JSONObject;
  *
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
  */
-public class ClusterConnectionControlImpl extends StandardMBean implements ClusterConnectionControl
+public class ClusterConnectionControlImpl extends AbstractControl implements ClusterConnectionControl
 {
 
    // Constants -----------------------------------------------------
@@ -46,9 +47,10 @@ public class ClusterConnectionControlImpl extends StandardMBean implements Clust
    // Constructors --------------------------------------------------
 
    public ClusterConnectionControlImpl(final ClusterConnection clusterConnection,
+                                       final StorageManager storageManager,
                                        ClusterConnectionConfiguration configuration) throws Exception
    {
-      super(ClusterConnectionControl.class);
+      super(ClusterConnectionControl.class, storageManager);
       this.clusterConnection = clusterConnection;
       this.configuration = configuration;
    }
@@ -57,108 +59,225 @@ public class ClusterConnectionControlImpl extends StandardMBean implements Clust
 
    public String getAddress()
    {
-      return configuration.getAddress();
+      clearIO();
+      try
+      {
+         return configuration.getAddress();
+      }
+      finally
+      {
+         blockOnIO();
+      }
+
    }
 
    public String getDiscoveryGroupName()
    {
-      return configuration.getDiscoveryGroupName();
+      clearIO();
+      try
+      {
+         return configuration.getDiscoveryGroupName();
+      }
+      finally
+      {
+         blockOnIO();
+      }
+
    }
 
    public int getMaxHops()
    {
-      return configuration.getMaxHops();
+      clearIO();
+      try
+      {
+         return configuration.getMaxHops();
+      }
+      finally
+      {
+         blockOnIO();
+      }
+
    }
 
    public String getName()
    {
-      return configuration.getName();
+      clearIO();
+      try
+      {
+         return configuration.getName();
+      }
+      finally
+      {
+         blockOnIO();
+      }
+
    }
 
    public long getRetryInterval()
    {
-      return configuration.getRetryInterval();
+      clearIO();
+      try
+      {
+         return configuration.getRetryInterval();
+      }
+      finally
+      {
+         blockOnIO();
+      }
+
    }
-   
+
    public String getNodeID()
    {
-      return clusterConnection.getNodeID();
+      clearIO();
+      try
+      {
+         return clusterConnection.getNodeID();
+      }
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public Object[] getStaticConnectorNamePairs()
    {
-      List<Pair<String, String>> pairs = configuration.getStaticConnectorNamePairs();
-      
-      if (pairs == null)
+      clearIO();
+      try
       {
-         return null;
-      }
-         
-      Object[] ret = new Object[pairs.size()];
+         List<Pair<String, String>> pairs = configuration.getStaticConnectorNamePairs();
 
-      int i = 0;
-      for (Pair<String, String> pair : configuration.getStaticConnectorNamePairs())
+         if (pairs == null)
+         {
+            return null;
+         }
+
+         Object[] ret = new Object[pairs.size()];
+
+         int i = 0;
+         for (Pair<String, String> pair : configuration.getStaticConnectorNamePairs())
+         {
+            String[] opair = new String[2];
+
+            opair[0] = pair.a;
+            opair[1] = pair.b != null ? pair.b : null;
+
+            ret[i++] = opair;
+         }
+
+         return ret;
+      }
+      finally
       {
-         String[] opair = new String[2];
-
-         opair[0] = pair.a;
-         opair[1] = pair.b != null ? pair.b : null;
-
-         ret[i++] = opair;
+         blockOnIO();
       }
-
-      return ret;
    }
 
    public String getStaticConnectorNamePairsAsJSON() throws Exception
    {
-      List<Pair<String, String>> pairs = configuration.getStaticConnectorNamePairs();
-      
-      if (pairs == null)
+      clearIO();
+      try
       {
-         return null;
-      }
-      
-      JSONArray array = new JSONArray();
+         List<Pair<String, String>> pairs = configuration.getStaticConnectorNamePairs();
 
-      for (Pair<String, String> pair : pairs)
-      {
-         JSONObject p = new JSONObject();
-         p.put("a", pair.a);
-         p.put("b", pair.b);
-         array.put(p);
+         if (pairs == null)
+         {
+            return null;
+         }
+
+         JSONArray array = new JSONArray();
+
+         for (Pair<String, String> pair : pairs)
+         {
+            JSONObject p = new JSONObject();
+            p.put("a", pair.a);
+            p.put("b", pair.b);
+            array.put(p);
+         }
+         return array.toString();
       }
-      return array.toString();
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public boolean isDuplicateDetection()
    {
-      return configuration.isDuplicateDetection();
+      clearIO();
+      try
+      {
+         return configuration.isDuplicateDetection();
+      }
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public boolean isForwardWhenNoConsumers()
    {
-      return configuration.isForwardWhenNoConsumers();
+      clearIO();
+      try
+      {
+         return configuration.isForwardWhenNoConsumers();
+      }
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public Map<String, String> getNodes() throws Exception
    {
-      return clusterConnection.getNodes();
+      clearIO();
+      try
+      {
+         return clusterConnection.getNodes();
+      }
+      finally
+      {
+         blockOnIO();
+      }
    }
-   
+
    public boolean isStarted()
    {
-      return clusterConnection.isStarted();
+      clearIO();
+      try
+      {
+         return clusterConnection.isStarted();
+      }
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public void start() throws Exception
    {
-      clusterConnection.start();
+      clearIO();
+      try
+      {
+         clusterConnection.start();
+      }
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public void stop() throws Exception
    {
-      clusterConnection.stop();
+      clearIO();
+      try
+      {
+         clusterConnection.stop();
+      }
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    // Public --------------------------------------------------------

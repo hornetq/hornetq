@@ -19,6 +19,7 @@ import javax.management.StandardMBean;
 
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.management.AcceptorControl;
+import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.remoting.spi.Acceptor;
 
 /**
@@ -28,7 +29,7 @@ import org.hornetq.core.remoting.spi.Acceptor;
  * 
  * Created 11 dec. 2008 17:09:04
  */
-public class AcceptorControlImpl extends StandardMBean implements AcceptorControl
+public class AcceptorControlImpl extends AbstractControl implements AcceptorControl
 {
 
    // Constants -----------------------------------------------------
@@ -43,10 +44,11 @@ public class AcceptorControlImpl extends StandardMBean implements AcceptorContro
 
    // Constructors --------------------------------------------------
 
-   public AcceptorControlImpl(final Acceptor acceptor, final TransportConfiguration configuration)
-      throws Exception
+   public AcceptorControlImpl(final Acceptor acceptor,
+                              final StorageManager storageManager,
+                              final TransportConfiguration configuration) throws Exception
    {
-      super(AcceptorControl.class);
+      super(AcceptorControl.class, storageManager);
       this.acceptor = acceptor;
       this.configuration = configuration;
    }
@@ -55,32 +57,80 @@ public class AcceptorControlImpl extends StandardMBean implements AcceptorContro
 
    public String getFactoryClassName()
    {
-      return configuration.getFactoryClassName();
+      clearIO();
+      try
+      {
+         return configuration.getFactoryClassName();
+      }
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public String getName()
    {
-      return configuration.getName();
+      clearIO();
+      try
+      {
+         return configuration.getName();
+      }
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public Map<String, Object> getParameters()
    {
-      return configuration.getParams();
+      clearIO();
+      try
+      {
+         return configuration.getParams();
+      }
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public boolean isStarted()
    {
-      return acceptor.isStarted();
+      clearIO();
+      try
+      {
+         return acceptor.isStarted();
+      }
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public void start() throws Exception
    {
-      acceptor.start();
+      clearIO();
+      try
+      {
+         acceptor.start();
+      }
+      finally
+      {
+         blockOnIO();
+      }
    }
-   
+
    public void stop() throws Exception
    {
-      acceptor.stop();
+      clearIO();
+      try
+      {
+         acceptor.stop();
+      }
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    // Public --------------------------------------------------------

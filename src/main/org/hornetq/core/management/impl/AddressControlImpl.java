@@ -21,6 +21,7 @@ import javax.management.StandardMBean;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.management.AddressControl;
 import org.hornetq.core.paging.PagingManager;
+import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.Bindings;
 import org.hornetq.core.postoffice.PostOffice;
@@ -37,7 +38,7 @@ import org.hornetq.utils.json.JSONObject;
  * @version <tt>$Revision$</tt>
  * 
  */
-public class AddressControlImpl extends StandardMBean implements AddressControl
+public class AddressControlImpl extends AbstractControl implements AddressControl
 {
 
    // Constants -----------------------------------------------------
@@ -49,7 +50,7 @@ public class AddressControlImpl extends StandardMBean implements AddressControl
    private final SimpleString address;
 
    private final PostOffice postOffice;
-   
+
    private final PagingManager pagingManager;
 
    private final HierarchicalRepository<Set<Role>> securityRepository;
@@ -60,11 +61,11 @@ public class AddressControlImpl extends StandardMBean implements AddressControl
 
    public AddressControlImpl(final SimpleString address,
                              final PostOffice postOffice,
-                             final PagingManager pagingManager, 
-                             final HierarchicalRepository<Set<Role>> securityRepository)
-      throws Exception
+                             final PagingManager pagingManager,
+                             final StorageManager storageManager,
+                             final HierarchicalRepository<Set<Role>> securityRepository) throws Exception
    {
-      super(AddressControl.class);
+      super(AddressControl.class, storageManager);
       this.address = address;
       this.postOffice = postOffice;
       this.pagingManager = pagingManager;
@@ -82,6 +83,7 @@ public class AddressControlImpl extends StandardMBean implements AddressControl
 
    public String[] getQueueNames() throws Exception
    {
+      clearIO();
       try
       {
          Bindings bindings = postOffice.getBindingsForAddress(address);
@@ -97,49 +99,85 @@ public class AddressControlImpl extends StandardMBean implements AddressControl
       {
          throw new IllegalStateException(t.getMessage());
       }
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public Object[] getRoles() throws Exception
    {
-      Set<Role> roles = securityRepository.getMatch(address.toString());
-
-      Object[] objRoles = new Object[roles.size()];
-
-      int i = 0;
-      for (Role role : roles)
+      clearIO();
+      try
       {
-         objRoles[i++] = new Object[] { role.getName(),
-                                       CheckType.SEND.hasRole(role),
-                                       CheckType.CONSUME.hasRole(role),
-                                       CheckType.CREATE_DURABLE_QUEUE.hasRole(role),
-                                       CheckType.DELETE_DURABLE_QUEUE.hasRole(role),
-                                       CheckType.CREATE_NON_DURABLE_QUEUE.hasRole(role),
-                                       CheckType.DELETE_NON_DURABLE_QUEUE.hasRole(role),
-                                       CheckType.MANAGE.hasRole(role) };
+         Set<Role> roles = securityRepository.getMatch(address.toString());
+
+         Object[] objRoles = new Object[roles.size()];
+
+         int i = 0;
+         for (Role role : roles)
+         {
+            objRoles[i++] = new Object[] { role.getName(),
+                                          CheckType.SEND.hasRole(role),
+                                          CheckType.CONSUME.hasRole(role),
+                                          CheckType.CREATE_DURABLE_QUEUE.hasRole(role),
+                                          CheckType.DELETE_DURABLE_QUEUE.hasRole(role),
+                                          CheckType.CREATE_NON_DURABLE_QUEUE.hasRole(role),
+                                          CheckType.DELETE_NON_DURABLE_QUEUE.hasRole(role),
+                                          CheckType.MANAGE.hasRole(role) };
+         }
+         return objRoles;
       }
-      return objRoles;
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public String getRolesAsJSON() throws Exception
    {
-      JSONArray json = new JSONArray();
-      Set<Role> roles = securityRepository.getMatch(address.toString());
-
-      for (Role role : roles)
+      clearIO();
+      try
       {
-         json.put(new JSONObject(role));
+         JSONArray json = new JSONArray();
+         Set<Role> roles = securityRepository.getMatch(address.toString());
+
+         for (Role role : roles)
+         {
+            json.put(new JSONObject(role));
+         }
+         return json.toString();
       }
-      return json.toString();
+      finally
+      {
+         blockOnIO();
+      }
    }
-   
+
    public long getNumberOfBytesPerPage() throws Exception
    {
-      return pagingManager.getPageStore(address).getPageSizeBytes();
+      clearIO();
+      try
+      {
+         return pagingManager.getPageStore(address).getPageSizeBytes();
+      }
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public int getNumberOfPages() throws Exception
    {
-      return pagingManager.getPageStore(address).getNumberOfPages();     
+      clearIO();
+      try
+      {
+         return pagingManager.getPageStore(address).getNumberOfPages();
+      }
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public synchronized void addRole(final String name,
@@ -151,43 +189,59 @@ public class AddressControlImpl extends StandardMBean implements AddressControl
                                     final boolean deleteNonDurableQueue,
                                     final boolean manage) throws Exception
    {
-      Set<Role> roles = securityRepository.getMatch(address.toString());
-      Role newRole = new Role(name,
-                              send,
-                              consume,
-                              createDurableQueue,
-                              deleteDurableQueue,
-                              createNonDurableQueue,
-                              deleteNonDurableQueue,
-                              manage);
-      boolean added = roles.add(newRole);
-      if (!added)
+      clearIO();
+      try
       {
-         throw new IllegalArgumentException("Role " + name + " already exists");
+         Set<Role> roles = securityRepository.getMatch(address.toString());
+         Role newRole = new Role(name,
+                                 send,
+                                 consume,
+                                 createDurableQueue,
+                                 deleteDurableQueue,
+                                 createNonDurableQueue,
+                                 deleteNonDurableQueue,
+                                 manage);
+         boolean added = roles.add(newRole);
+         if (!added)
+         {
+            throw new IllegalArgumentException("Role " + name + " already exists");
+         }
+         securityRepository.addMatch(address.toString(), roles);
       }
-      securityRepository.addMatch(address.toString(), roles);
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public synchronized void removeRole(final String role) throws Exception
    {
-      Set<Role> roles = securityRepository.getMatch(address.toString());
-      Iterator<Role> it = roles.iterator();
-      boolean removed = false;
-      while (it.hasNext())
+      clearIO();
+      try
       {
-         Role r = it.next();
-         if (r.getName().equals(role))
+         Set<Role> roles = securityRepository.getMatch(address.toString());
+         Iterator<Role> it = roles.iterator();
+         boolean removed = false;
+         while (it.hasNext())
          {
-            it.remove();
-            removed = true;
-            break;
+            Role r = it.next();
+            if (r.getName().equals(role))
+            {
+               it.remove();
+               removed = true;
+               break;
+            }
          }
+         if (!removed)
+         {
+            throw new IllegalArgumentException("Role " + role + " does not exist");
+         }
+         securityRepository.addMatch(address.toString(), roles);
       }
-      if (!removed)
+      finally
       {
-         throw new IllegalArgumentException("Role " + role + " does not exist");
+         blockOnIO();
       }
-      securityRepository.addMatch(address.toString(), roles);
    }
 
    // Package protected ---------------------------------------------

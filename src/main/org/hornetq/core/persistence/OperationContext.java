@@ -38,5 +38,9 @@ public interface OperationContext extends IOCompletion
 
    /** To be called when there are no more operations pending */
    void complete();
+   
+   void waitCompletion() throws Exception;
+   
+   boolean waitCompletion(long timeout) throws Exception;
 
 }

@@ -44,7 +44,7 @@ import org.hornetq.utils.json.JSONObject;
  * @version <tt>$Revision$</tt>
  * 
  */
-public class QueueControlImpl extends StandardMBean implements QueueControl
+public class QueueControlImpl extends AbstractControl implements QueueControl
 {
    // Constants -----------------------------------------------------
 
@@ -59,8 +59,6 @@ public class QueueControlImpl extends StandardMBean implements QueueControl
    private final PostOffice postOffice;
 
    private final HierarchicalRepository<AddressSettings> addressSettingsRepository;
-
-   private final StorageManager storageManager;
 
    private MessageCounter counter;
 
@@ -84,12 +82,11 @@ public class QueueControlImpl extends StandardMBean implements QueueControl
                            final StorageManager storageManager,
                            final HierarchicalRepository<AddressSettings> addressSettingsRepository) throws Exception
    {
-      super(QueueControl.class);
+      super(QueueControl.class, storageManager);
       this.queue = queue;
       this.address = address;
       this.postOffice = postOffice;
       this.addressSettingsRepository = addressSettingsRepository;
-      this.storageManager = storageManager;
    }
 
    // Public --------------------------------------------------------
@@ -710,24 +707,6 @@ public class QueueControlImpl extends StandardMBean implements QueueControl
    // Protected -----------------------------------------------------
 
    // Private -------------------------------------------------------
-
-   private void clearIO()
-   {
-      storageManager.clearContext();
-   }
-
-   private void blockOnIO()
-   {
-      try
-      {
-         storageManager.waitOnOperations();
-         storageManager.clearContext();
-      }
-      catch (Exception e)
-      {
-         throw new RuntimeException(e.getMessage(), e);
-      }
-   }
 
    // Inner classes -------------------------------------------------
 }

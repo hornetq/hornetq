@@ -18,6 +18,7 @@ import javax.management.StandardMBean;
 import org.hornetq.core.cluster.DiscoveryGroup;
 import org.hornetq.core.config.cluster.DiscoveryGroupConfiguration;
 import org.hornetq.core.management.DiscoveryGroupControl;
+import org.hornetq.core.persistence.StorageManager;
 
 /**
  * A AcceptorControl
@@ -26,7 +27,7 @@ import org.hornetq.core.management.DiscoveryGroupControl;
  * 
  * Created 11 dec. 2008 17:09:04
  */
-public class DiscoveryGroupControlImpl extends StandardMBean implements DiscoveryGroupControl
+public class DiscoveryGroupControlImpl extends AbstractControl implements DiscoveryGroupControl
 {
 
    // Constants -----------------------------------------------------
@@ -41,10 +42,11 @@ public class DiscoveryGroupControlImpl extends StandardMBean implements Discover
 
    // Constructors --------------------------------------------------
 
-   public DiscoveryGroupControlImpl(final DiscoveryGroup acceptor, final DiscoveryGroupConfiguration configuration)
-      throws Exception
+   public DiscoveryGroupControlImpl(final DiscoveryGroup acceptor,
+                                    final StorageManager storageManager,
+                                    final DiscoveryGroupConfiguration configuration) throws Exception
    {
-      super(DiscoveryGroupControl.class);
+      super(DiscoveryGroupControl.class, storageManager);
       this.discoveryGroup = acceptor;
       this.configuration = configuration;
    }
@@ -53,37 +55,99 @@ public class DiscoveryGroupControlImpl extends StandardMBean implements Discover
 
    public String getName()
    {
-      return configuration.getName();
+      clearIO();
+      try
+      {
+         return configuration.getName();
+      }
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public String getGroupAddress()
    {
-      return configuration.getGroupAddress();
+      clearIO();
+      try
+      {
+         return configuration.getGroupAddress();
+      }
+      finally
+      {
+         blockOnIO();
+      }
+
    }
 
    public int getGroupPort()
    {
-      return configuration.getGroupPort();
+      clearIO();
+      try
+      {
+         return configuration.getGroupPort();
+      }
+      finally
+      {
+         blockOnIO();
+      }
+
    }
 
    public long getRefreshTimeout()
    {
-      return configuration.getRefreshTimeout();
+      clearIO();
+      try
+      {
+         return configuration.getRefreshTimeout();
+      }
+      finally
+      {
+         blockOnIO();
+      }
+
    }
 
    public boolean isStarted()
    {
-      return discoveryGroup.isStarted();
+      clearIO();
+      try
+      {
+         return discoveryGroup.isStarted();
+      }
+      finally
+      {
+         blockOnIO();
+      }
+
    }
 
    public void start() throws Exception
    {
-      discoveryGroup.start();
+      clearIO();
+      try
+      {
+         discoveryGroup.start();
+      }
+      finally
+      {
+         blockOnIO();
+      }
+
    }
 
    public void stop() throws Exception
    {
-      discoveryGroup.stop();
+      clearIO();
+      try
+      {
+         discoveryGroup.stop();
+      }
+      finally
+      {
+         blockOnIO();
+      }
+
    }
 
    // Public --------------------------------------------------------

@@ -214,6 +214,7 @@ public class ManagementServiceImpl implements ManagementService
                                                             remotingService,
                                                             messagingServer,
                                                             messageCounterManager,
+                                                            storageManager,
                                                             broadcaster);
       ObjectName objectName = objectNameBuilder.getHornetQServerObjectName();
       registerInJMX(objectName, messagingServerControl);
@@ -232,7 +233,7 @@ public class ManagementServiceImpl implements ManagementService
    public synchronized void registerAddress(final SimpleString address) throws Exception
    {
       ObjectName objectName = objectNameBuilder.getAddressObjectName(address);
-      AddressControlImpl addressControl = new AddressControlImpl(address, postOffice, pagingManager, securityRepository);
+      AddressControlImpl addressControl = new AddressControlImpl(address, postOffice, pagingManager, storageManager, securityRepository);
 
       registerInJMX(objectName, addressControl);
 
@@ -293,7 +294,7 @@ public class ManagementServiceImpl implements ManagementService
    public synchronized void registerDivert(Divert divert, DivertConfiguration config) throws Exception
    {
       ObjectName objectName = objectNameBuilder.getDivertObjectName(divert.getUniqueName());
-      DivertControl divertControl = new DivertControlImpl(divert, config);
+      DivertControl divertControl = new DivertControlImpl(divert, storageManager, config);
       registerInJMX(objectName, new StandardMBean(divertControl, DivertControl.class));
       registerInRegistry(ResourceNames.CORE_DIVERT + config.getName(), divertControl);
 
@@ -313,7 +314,7 @@ public class ManagementServiceImpl implements ManagementService
    public synchronized void registerAcceptor(final Acceptor acceptor, final TransportConfiguration configuration) throws Exception
    {
       ObjectName objectName = objectNameBuilder.getAcceptorObjectName(configuration.getName());
-      AcceptorControl control = new AcceptorControlImpl(acceptor, configuration);
+      AcceptorControl control = new AcceptorControlImpl(acceptor, storageManager, configuration);
       registerInJMX(objectName, new StandardMBean(control, AcceptorControl.class));
       registerInRegistry(ResourceNames.CORE_ACCEPTOR + configuration.getName(), control);
    }
@@ -355,7 +356,7 @@ public class ManagementServiceImpl implements ManagementService
    {
       broadcastGroup.setNotificationService(this);
       ObjectName objectName = objectNameBuilder.getBroadcastGroupObjectName(configuration.getName());
-      BroadcastGroupControl control = new BroadcastGroupControlImpl(broadcastGroup, configuration);
+      BroadcastGroupControl control = new BroadcastGroupControlImpl(broadcastGroup, storageManager, configuration);
       registerInJMX(objectName, new StandardMBean(control, BroadcastGroupControl.class));
       registerInRegistry(ResourceNames.CORE_BROADCAST_GROUP + configuration.getName(), control);
    }
@@ -372,7 +373,7 @@ public class ManagementServiceImpl implements ManagementService
    {
       discoveryGroup.setNotificationService(this);
       ObjectName objectName = objectNameBuilder.getDiscoveryGroupObjectName(configuration.getName());
-      DiscoveryGroupControl control = new DiscoveryGroupControlImpl(discoveryGroup, configuration);
+      DiscoveryGroupControl control = new DiscoveryGroupControlImpl(discoveryGroup, storageManager, configuration);
       registerInJMX(objectName, new StandardMBean(control, DiscoveryGroupControl.class));
       registerInRegistry(ResourceNames.CORE_DISCOVERY_GROUP + configuration.getName(), control);
    }
@@ -388,7 +389,7 @@ public class ManagementServiceImpl implements ManagementService
    {
       bridge.setNotificationService(this);
       ObjectName objectName = objectNameBuilder.getBridgeObjectName(configuration.getName());
-      BridgeControl control = new BridgeControlImpl(bridge, configuration);
+      BridgeControl control = new BridgeControlImpl(bridge, storageManager, configuration);
       registerInJMX(objectName, new StandardMBean(control, BridgeControl.class));
       registerInRegistry(ResourceNames.CORE_BRIDGE + configuration.getName(), control);
    }
@@ -404,7 +405,7 @@ public class ManagementServiceImpl implements ManagementService
                                             final ClusterConnectionConfiguration configuration) throws Exception
    {
       ObjectName objectName = objectNameBuilder.getClusterConnectionObjectName(configuration.getName());
-      ClusterConnectionControl control = new ClusterConnectionControlImpl(cluster, configuration);
+      ClusterConnectionControl control = new ClusterConnectionControlImpl(cluster, storageManager, configuration);
       registerInJMX(objectName, new StandardMBean(control, ClusterConnectionControl.class));
       registerInRegistry(ResourceNames.CORE_CLUSTER_CONNECTION + configuration.getName(), control);
    }

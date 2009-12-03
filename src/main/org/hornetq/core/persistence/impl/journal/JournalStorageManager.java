@@ -315,6 +315,11 @@ public class JournalStorageManager implements StorageManager
 
    public void waitOnOperations() throws Exception
    {
+      if (!started)
+      {
+         log.warn("Server is stopped");
+         throw new IllegalStateException("Server is stopped");
+      }
       waitOnOperations(0);
    }
 
@@ -323,16 +328,14 @@ public class JournalStorageManager implements StorageManager
     */
    public void waitOnOperations(final long timeout) throws Exception
    {
-      SimpleWaitIOCallback waitCallback = new SimpleWaitIOCallback();
-      afterCompleteOperations(waitCallback);
-      completeOperations();
-      if (timeout == 0)
+      if (!started)
       {
-         waitCallback.waitCompletion();
+         log.warn("Server is stopped");
+         throw new IllegalStateException("Server is stopped");
       }
-      else if (!waitCallback.waitCompletion(timeout))
+      if (!getContext().waitCompletion(timeout))
       {
-         throw new IllegalStateException("no response received from replication");
+         throw new HornetQException(HornetQException.IO_ERROR, "Timeout on waiting I/O completion");
       }
    }
 
@@ -1540,6 +1543,21 @@ public class JournalStorageManager implements StorageManager
        */
       public void onError(final int errorCode, final String errorMessage)
       {
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.OperationContext#waitCompletion()
+       */
+      public void waitCompletion()
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.OperationContext#waitCompletion(long)
+       */
+      public boolean waitCompletion(long timeout)
+      {
+         return true;
       }
 
    }

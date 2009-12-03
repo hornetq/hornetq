@@ -21,6 +21,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.journal.IOAsyncTask;
+import org.hornetq.core.journal.impl.SimpleWaitIOCallback;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.persistence.OperationContext;
 import org.hornetq.utils.ExecutorFactory;
@@ -210,6 +211,7 @@ public class OperationContextImpl implements OperationContext
       }
       catch (Throwable e)
       {
+         e.printStackTrace();
          log.warn("Error on executor's submit");
          executorsPending.decrementAndGet();
          task.onError(HornetQException.INTERNAL_ERROR, "It wasn't possible to complete IO operation - " + e.getMessage());
@@ -260,6 +262,29 @@ public class OperationContextImpl implements OperationContext
          this.replicationLined = replicationLineUp;
          this.task = task;
       }
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.persistence.OperationContext#waitCompletion()
+    */
+   public void waitCompletion() throws Exception
+   {
+      waitCompletion(0);
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.persistence.OperationContext#waitCompletion(long)
+    */
+   public boolean waitCompletion(long timeout) throws Exception
+   {
+      SimpleWaitIOCallback waitCallback = new SimpleWaitIOCallback();
+      executeOnCompletion(waitCallback);
+      complete();
+      if (timeout == 0)
+      {
+         waitCallback.waitCompletion();
+      }
+      return (waitCallback.waitCompletion(timeout));
    }
 
 }

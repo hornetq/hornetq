@@ -17,6 +17,7 @@ import javax.management.StandardMBean;
 
 import org.hornetq.core.config.cluster.DivertConfiguration;
 import org.hornetq.core.management.DivertControl;
+import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.server.Divert;
 
 /**
@@ -26,7 +27,7 @@ import org.hornetq.core.server.Divert;
  * 
  * Created 11 dec. 2008 17:09:04
  */
-public class DivertControlImpl extends StandardMBean implements DivertControl
+public class DivertControlImpl extends AbstractControl implements DivertControl
 {
 
    // Constants -----------------------------------------------------
@@ -43,47 +44,104 @@ public class DivertControlImpl extends StandardMBean implements DivertControl
 
    // DivertControlMBean implementation ---------------------------
 
-   public DivertControlImpl(final Divert divert, final DivertConfiguration configuration)
-      throws Exception
+   public DivertControlImpl(final Divert divert,
+                            final StorageManager storageManager,
+                            final DivertConfiguration configuration) throws Exception
    {
-      super(DivertControl.class);
+      super(DivertControl.class, storageManager);
       this.divert = divert;
       this.configuration = configuration;
    }
 
    public String getAddress()
    {
-      return configuration.getAddress();
+      clearIO();
+      try
+      {
+         return configuration.getAddress();
+      }
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public String getFilter()
    {
-      return configuration.getFilterString();
+      clearIO();
+      try
+      {
+         return configuration.getFilterString();
+      }
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public String getForwardingAddress()
    {
-      return configuration.getForwardingAddress();
+      clearIO();
+      try
+      {
+         return configuration.getForwardingAddress();
+      }
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public String getRoutingName()
    {
-      return divert.getRoutingName().toString();
+      clearIO();
+      try
+      {
+         return divert.getRoutingName().toString();
+      }
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public String getTransformerClassName()
    {
-      return configuration.getTransformerClassName();
+      clearIO();
+      try
+      {
+         return configuration.getTransformerClassName();
+      }
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public String getUniqueName()
    {
-      return divert.getUniqueName().toString();
+      clearIO();
+      try
+      {
+         return divert.getUniqueName().toString();
+      }
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public boolean isExclusive()
    {
-      return divert.isExclusive();
+      clearIO();
+      try
+      {
+         return divert.isExclusive();
+      }
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    // Public --------------------------------------------------------

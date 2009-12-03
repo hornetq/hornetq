@@ -85,7 +85,7 @@ public class OrderTest extends ServiceTestBase
 
          for (int i = 0; i < 100; i++)
          {
-            ClientMessage msg = session.createClientMessage(i % 2 == 0);            
+            ClientMessage msg = session.createClientMessage(i % 2 == 0);
             msg.putIntProperty("id", i);
             prod.send(msg);
          }
@@ -103,7 +103,7 @@ public class OrderTest extends ServiceTestBase
                server.stop();
                server.start();
             }
-            
+
             session = sf.createSession(true, true);
 
             session.start();
@@ -135,6 +135,86 @@ public class OrderTest extends ServiceTestBase
             session.close();
          }
 
+      }
+      finally
+      {
+         sf.close();
+         session.close();
+      }
+
+   }
+
+   public void testOrderOverSessionClosePersistent() throws Exception
+   {
+      doTestOverCancel(true);
+   }
+
+   public void testOrderOverSessionCloseNonPersistent() throws Exception
+   {
+      doTestOverCancel(false);
+   }
+
+   public void doTestOverCancel(final boolean persistent) throws Exception
+   {
+      server = createServer(persistent, true);
+      server.start();
+
+      ClientSessionFactory sf = createNettyFactory();
+
+      sf.setBlockOnNonPersistentSend(false);
+      sf.setBlockOnPersistentSend(false);
+      sf.setBlockOnAcknowledge(false);
+
+      ClientSession session = sf.createSession(true, true, 0);
+
+      int numberOfMessages = 500;
+
+      try
+      {
+         session.createQueue("queue", "queue", true);
+
+         ClientProducer prod = session.createProducer("queue");
+
+         for (int i = 0; i < numberOfMessages; i++)
+         {
+            ClientMessage msg = session.createClientMessage(i % 2 == 0);
+            msg.putIntProperty("id", i);
+            prod.send(msg);
+         }
+
+         session.close();
+         
+         for (int i = 0 ; i < numberOfMessages;)
+         {
+            session = sf.createSession();
+            
+            session.start();
+            
+            ClientConsumer consumer = session.createConsumer("queue");
+            
+            int max = i + 10;
+            
+            for (;i < max; i++)
+            {
+               ClientMessage msg = consumer.receive(1000);
+               
+               msg.acknowledge();
+               
+               assertEquals(i, msg.getIntProperty("id").intValue());
+            }
+            
+            // Receive a few more messages but don't consume them
+            for (int j = 0 ; j < 10 && i < numberOfMessages; j++)
+            {
+               ClientMessage msg = consumer.receiveImmediate();
+               if (msg == null)
+               {
+                  break;
+               }
+            }
+            session.close();
+            
+         }
       }
       finally
       {

@@ -306,7 +306,7 @@ public class HornetQServerImpl implements HornetQServer
       {
          initialisePart2();
       }
-
+      
       // We start the remoting service here - if the server is a backup remoting service needs to be started
       // so it can be initialised by the live node
       remotingService.start();

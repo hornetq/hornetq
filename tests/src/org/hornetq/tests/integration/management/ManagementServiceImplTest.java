@@ -26,6 +26,7 @@ import org.hornetq.core.management.AddressControl;
 import org.hornetq.core.management.QueueControl;
 import org.hornetq.core.management.ResourceNames;
 import org.hornetq.core.management.impl.ManagementServiceImpl;
+import org.hornetq.core.persistence.impl.nullpm.NullStorageManager;
 import org.hornetq.core.server.HornetQ;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
@@ -151,6 +152,7 @@ public class ManagementServiceImplTest extends UnitTestCase
       Configuration conf  = new ConfigurationImpl();
       conf.setJMXManagementEnabled(false);
       ManagementServiceImpl managementService = new ManagementServiceImpl(null, conf);
+      managementService.setStorageManager(new NullStorageManager());
       
       SimpleString address = randomSimpleString();
       managementService.registerAddress(address);

@@ -60,12 +60,20 @@ public class SimpleWaitIOCallback extends SyncIOCompletion
       {
          throw new HornetQException(errorCode, errorMessage);
       }
+
       return;
    }
    
    public boolean waitCompletion(final long timeout) throws Exception
    {
-      return latch.await(timeout, TimeUnit.MILLISECONDS);
+      boolean retValue = latch.await(timeout, TimeUnit.MILLISECONDS);
+
+      if (errorMessage != null)
+      {
+         throw new HornetQException(errorCode, errorMessage);
+      }
+      
+      return retValue;
    }
 
    /* (non-Javadoc)

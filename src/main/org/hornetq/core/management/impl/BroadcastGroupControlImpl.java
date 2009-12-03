@@ -17,6 +17,7 @@ import javax.management.StandardMBean;
 
 import org.hornetq.core.config.cluster.BroadcastGroupConfiguration;
 import org.hornetq.core.management.BroadcastGroupControl;
+import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.server.cluster.BroadcastGroup;
 import org.hornetq.utils.Pair;
 import org.hornetq.utils.json.JSONArray;
@@ -29,7 +30,7 @@ import org.hornetq.utils.json.JSONObject;
  * 
  * Created 11 dec. 2008 17:09:04
  */
-public class BroadcastGroupControlImpl extends StandardMBean implements BroadcastGroupControl
+public class BroadcastGroupControlImpl extends AbstractControl implements BroadcastGroupControl
 {
 
    // Constants -----------------------------------------------------
@@ -44,88 +45,169 @@ public class BroadcastGroupControlImpl extends StandardMBean implements Broadcas
 
    // Constructors --------------------------------------------------
 
-   public BroadcastGroupControlImpl(final BroadcastGroup broadcastGroup, final BroadcastGroupConfiguration configuration)
-      throws Exception
+   public BroadcastGroupControlImpl(final BroadcastGroup broadcastGroup,
+                                    final StorageManager storageManager,
+                                    final BroadcastGroupConfiguration configuration) throws Exception
    {
-      super(BroadcastGroupControl.class);
+      super(BroadcastGroupControl.class, storageManager);
       this.broadcastGroup = broadcastGroup;
       this.configuration = configuration;
    }
 
    // BroadcastGroupControlMBean implementation ---------------------
-   
+
    public String getName()
    {
-      return configuration.getName();
+      clearIO();
+      try
+      {
+         return configuration.getName();
+      }
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public long getBroadcastPeriod()
    {
-      return configuration.getBroadcastPeriod();
+      clearIO();
+      try
+      {
+         return configuration.getBroadcastPeriod();
+      }
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public Object[] getConnectorPairs()
    {
-      Object[] ret = new Object[configuration.getConnectorInfos().size()];
-      
-      int i = 0;
-      for (Pair<String, String> pair: configuration.getConnectorInfos())
+      clearIO();
+      try
       {
-         String[] opair = new String[2];
-         
-         opair[0] = pair.a;
-         opair[1] = pair.b != null ? pair.b : null;
-         
-         ret[i++] = opair;
+         Object[] ret = new Object[configuration.getConnectorInfos().size()];
+
+         int i = 0;
+         for (Pair<String, String> pair : configuration.getConnectorInfos())
+         {
+            String[] opair = new String[2];
+
+            opair[0] = pair.a;
+            opair[1] = pair.b != null ? pair.b : null;
+
+            ret[i++] = opair;
+         }
+
+         return ret;
       }
-      
-      return ret;      
+      finally
+      {
+         blockOnIO();
+      }
    }
-   
+
    public String getConnectorPairsAsJSON() throws Exception
    {
-      JSONArray array = new JSONArray();
-      
-      for (Pair<String, String> pair: configuration.getConnectorInfos())
+      clearIO();
+      try
       {
-         JSONObject p = new JSONObject();
-         p.put("a", pair.a);
-         p.put("b", pair.b);
-         array.put(p);
+         JSONArray array = new JSONArray();
+
+         for (Pair<String, String> pair : configuration.getConnectorInfos())
+         {
+            JSONObject p = new JSONObject();
+            p.put("a", pair.a);
+            p.put("b", pair.b);
+            array.put(p);
+         }
+         return array.toString();
       }
-      return array.toString();
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public String getGroupAddress()
    {
-      return configuration.getGroupAddress();
+      clearIO();
+      try
+      {
+         return configuration.getGroupAddress();
+      }
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public int getGroupPort()
    {
-      return configuration.getGroupPort();
+      clearIO();
+      try
+      {
+         return configuration.getGroupPort();
+      }
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public int getLocalBindPort()
    {
-      return configuration.getLocalBindPort();
+      clearIO();
+      try
+      {
+         return configuration.getLocalBindPort();
+      }
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    // MessagingComponentControlMBean implementation -----------------
 
    public boolean isStarted()
    {
-      return broadcastGroup.isStarted();
+      clearIO();
+      try
+      {
+         return broadcastGroup.isStarted();
+      }
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public void start() throws Exception
    {
-      broadcastGroup.start();
+      clearIO();
+      try
+      {
+         broadcastGroup.start();
+      }
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public void stop() throws Exception
    {
-      broadcastGroup.stop();
+      clearIO();
+      try
+      {
+         broadcastGroup.stop();
+      }
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    // Public --------------------------------------------------------

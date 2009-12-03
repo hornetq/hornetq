@@ -30,7 +30,6 @@ import javax.management.NotificationBroadcasterSupport;
 import javax.management.NotificationEmitter;
 import javax.management.NotificationFilter;
 import javax.management.NotificationListener;
-import javax.management.StandardMBean;
 import javax.transaction.xa.Xid;
 
 import org.hornetq.core.config.Configuration;
@@ -43,6 +42,7 @@ import org.hornetq.core.management.NotificationType;
 import org.hornetq.core.management.QueueControl;
 import org.hornetq.core.messagecounter.MessageCounterManager;
 import org.hornetq.core.messagecounter.impl.MessageCounterManagerImpl;
+import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.remoting.RemotingConnection;
 import org.hornetq.core.remoting.server.RemotingService;
@@ -62,7 +62,7 @@ import org.hornetq.utils.json.JSONObject;
  * @version <tt>$Revision$</tt>
  * 
  */
-public class HornetQServerControlImpl extends StandardMBean implements HornetQServerControl, NotificationEmitter
+public class HornetQServerControlImpl extends AbstractControl implements HornetQServerControl, NotificationEmitter
 {
    // Constants -----------------------------------------------------
 
@@ -94,14 +94,15 @@ public class HornetQServerControlImpl extends StandardMBean implements HornetQSe
                                    final RemotingService remotingService,
                                    final HornetQServer messagingServer,
                                    final MessageCounterManager messageCounterManager,
+                                   final StorageManager storageManager,
                                    final NotificationBroadcasterSupport broadcaster) throws Exception
    {
-      super(HornetQServerControl.class);
+      super(HornetQServerControl.class, storageManager);
       this.postOffice = postOffice;
       this.configuration = configuration;
       this.resourceManager = resourceManager;
       this.remotingService = remotingService;
-      this.server = messagingServer;
+      server = messagingServer;
       this.messageCounterManager = messageCounterManager;
       this.broadcaster = broadcaster;
    }
@@ -117,468 +118,940 @@ public class HornetQServerControlImpl extends StandardMBean implements HornetQSe
 
    public boolean isStarted()
    {
-      return server.isStarted();
+      clearIO();
+      try
+      {
+         return server.isStarted();
+      }
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public String getVersion()
    {
-      return server.getVersion().getFullVersion();
+      clearIO();
+      try
+      {
+         return server.getVersion().getFullVersion();
+      }
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public boolean isBackup()
    {
-      return configuration.isBackup();
+      clearIO();
+      try
+      {
+         return configuration.isBackup();
+      }
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public boolean isSharedStore()
    {
-      return configuration.isSharedStore();
+      clearIO();
+      try
+      {
+         return configuration.isSharedStore();
+      }
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public String getBackupConnectorName()
    {
-      return configuration.getBackupConnectorName();
+      clearIO();
+      try
+      {
+         return configuration.getBackupConnectorName();
+      }
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public String getBindingsDirectory()
    {
-      return configuration.getBindingsDirectory();
+      clearIO();
+      try
+      {
+         return configuration.getBindingsDirectory();
+      }
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public String[] getInterceptorClassNames()
    {
-      return configuration.getInterceptorClassNames().toArray(new String[configuration.getInterceptorClassNames()
-                                                                                      .size()]);
+      clearIO();
+      try
+      {
+         return configuration.getInterceptorClassNames().toArray(new String[configuration.getInterceptorClassNames()
+                                                                                         .size()]);
+      }
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public int getJournalBufferSize()
    {
-      return configuration.getJournalType() == JournalType.ASYNCIO ? configuration.getJournalBufferSize_AIO()
-                                                                  : configuration.getJournalBufferSize_NIO();
+      clearIO();
+      try
+      {
+         return configuration.getJournalType() == JournalType.ASYNCIO ? configuration.getJournalBufferSize_AIO()
+                                                                     : configuration.getJournalBufferSize_NIO();
+      }
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public int getJournalBufferTimeout()
    {
-      return configuration.getJournalType() == JournalType.ASYNCIO ? configuration.getJournalBufferTimeout_AIO()
-                                                                  : configuration.getJournalBufferTimeout_NIO();
+      clearIO();
+      try
+      {
+         return configuration.getJournalType() == JournalType.ASYNCIO ? configuration.getJournalBufferTimeout_AIO()
+                                                                     : configuration.getJournalBufferTimeout_NIO();
+      }
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public int getJournalMaxIO()
    {
-      return configuration.getJournalType() == JournalType.ASYNCIO ? configuration.getJournalMaxIO_AIO()
-                                                                  : configuration.getJournalMaxIO_NIO();
+      clearIO();
+      try
+      {
+         return configuration.getJournalType() == JournalType.ASYNCIO ? configuration.getJournalMaxIO_AIO()
+                                                                     : configuration.getJournalMaxIO_NIO();
+      }
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public String getJournalDirectory()
    {
-      return configuration.getJournalDirectory();
+      clearIO();
+      try
+      {
+         return configuration.getJournalDirectory();
+      }
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public int getJournalFileSize()
    {
-      return configuration.getJournalFileSize();
+      clearIO();
+      try
+      {
+         return configuration.getJournalFileSize();
+      }
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public int getJournalMinFiles()
    {
-      return configuration.getJournalMinFiles();
+      clearIO();
+      try
+      {
+         return configuration.getJournalMinFiles();
+      }
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public int getJournalCompactMinFiles()
    {
-      return configuration.getJournalCompactMinFiles();
+      clearIO();
+      try
+      {
+         return configuration.getJournalCompactMinFiles();
+      }
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public int getJournalCompactPercentage()
    {
-      return configuration.getJournalCompactPercentage();
+      clearIO();
+      try
+      {
+         return configuration.getJournalCompactPercentage();
+      }
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public boolean isPersistenceEnabled()
    {
-      return configuration.isPersistenceEnabled();
+      clearIO();
+      try
+      {
+         return configuration.isPersistenceEnabled();
+      }
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public String getJournalType()
    {
-      return configuration.getJournalType().toString();
+      clearIO();
+      try
+      {
+         return configuration.getJournalType().toString();
+      }
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public String getPagingDirectory()
    {
-      return configuration.getPagingDirectory();
+      clearIO();
+      try
+      {
+         return configuration.getPagingDirectory();
+      }
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public int getScheduledThreadPoolMaxSize()
    {
-      return configuration.getScheduledThreadPoolMaxSize();
+      clearIO();
+      try
+      {
+         return configuration.getScheduledThreadPoolMaxSize();
+      }
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public int getThreadPoolMaxSize()
    {
-      return configuration.getThreadPoolMaxSize();
+      clearIO();
+      try
+      {
+         return configuration.getThreadPoolMaxSize();
+      }
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public long getSecurityInvalidationInterval()
    {
-      return configuration.getSecurityInvalidationInterval();
+      clearIO();
+      try
+      {
+         return configuration.getSecurityInvalidationInterval();
+      }
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public boolean isClustered()
    {
-      return configuration.isClustered();
+      clearIO();
+      try
+      {
+         return configuration.isClustered();
+      }
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public boolean isCreateBindingsDir()
    {
-      return configuration.isCreateBindingsDir();
+      clearIO();
+      try
+      {
+         return configuration.isCreateBindingsDir();
+      }
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public boolean isCreateJournalDir()
    {
-      return configuration.isCreateJournalDir();
+      clearIO();
+      try
+      {
+         return configuration.isCreateJournalDir();
+      }
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public boolean isJournalSyncNonTransactional()
    {
-      return configuration.isJournalSyncNonTransactional();
+      clearIO();
+      try
+      {
+         return configuration.isJournalSyncNonTransactional();
+      }
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public boolean isJournalSyncTransactional()
    {
-      return configuration.isJournalSyncTransactional();
+      clearIO();
+      try
+      {
+         return configuration.isJournalSyncTransactional();
+      }
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public boolean isSecurityEnabled()
    {
-      return configuration.isSecurityEnabled();
+      clearIO();
+      try
+      {
+         return configuration.isSecurityEnabled();
+      }
+      finally
+      {
+         blockOnIO();
+      }
    }
 
-   public void deployQueue(final String address, final String name, String filterString) throws Exception
+   public void deployQueue(final String address, final String name, final String filterString) throws Exception
    {
-      server.deployQueue(new SimpleString(address), new SimpleString(name), new SimpleString(filterString), true, false);
+      clearIO();
+      try
+      {
+         server.deployQueue(new SimpleString(address),
+                            new SimpleString(name),
+                            new SimpleString(filterString),
+                            true,
+                            false);
+      }
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public void deployQueue(final String address, final String name, final String filterStr, final boolean durable) throws Exception
    {
       SimpleString filter = filterStr == null ? null : new SimpleString(filterStr);
+      clearIO();
+      try
+      {
 
-      server.deployQueue(new SimpleString(address), new SimpleString(name), filter, durable, false);
+         server.deployQueue(new SimpleString(address), new SimpleString(name), filter, durable, false);
+      }
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public void createQueue(final String address, final String name) throws Exception
    {
-      server.createQueue(new SimpleString(address), new SimpleString(name), null, true, false);
+      clearIO();
+      try
+      {
+         server.createQueue(new SimpleString(address), new SimpleString(name), null, true, false);
+      }
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public void createQueue(final String address, final String name, final boolean durable) throws Exception
    {
-      server.createQueue(new SimpleString(address), new SimpleString(name), null, durable, false);
+      clearIO();
+      try
+      {
+         server.createQueue(new SimpleString(address), new SimpleString(name), null, durable, false);
+      }
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public void createQueue(final String address, final String name, final String filterStr, final boolean durable) throws Exception
    {
-      SimpleString filter = null;
-      if (filterStr != null && !filterStr.trim().equals(""))
+      clearIO();
+      try
       {
-         filter = new SimpleString(filterStr);
-      }
+         SimpleString filter = null;
+         if (filterStr != null && !filterStr.trim().equals(""))
+         {
+            filter = new SimpleString(filterStr);
+         }
 
-      server.createQueue(new SimpleString(address), new SimpleString(name), filter, durable, false);
+         server.createQueue(new SimpleString(address), new SimpleString(name), filter, durable, false);
+      }
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public String[] getQueueNames()
    {
-      Object[] queues = server.getManagementService().getResources(QueueControl.class);
-      String[] names = new String[queues.length];
-      for (int i = 0; i < queues.length; i++)
+      clearIO();
+      try
       {
-         QueueControl queue = (QueueControl)queues[i];
-         names[i] = queue.getName();
-      }
+         Object[] queues = server.getManagementService().getResources(QueueControl.class);
+         String[] names = new String[queues.length];
+         for (int i = 0; i < queues.length; i++)
+         {
+            QueueControl queue = (QueueControl)queues[i];
+            names[i] = queue.getName();
+         }
 
-      return names;
+         return names;
+      }
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public String[] getAddressNames()
    {
-      Object[] addresses = server.getManagementService().getResources(AddressControl.class);
-      String[] names = new String[addresses.length];
-      for (int i = 0; i < addresses.length; i++)
+      clearIO();
+      try
       {
-         AddressControl address = (AddressControl)addresses[i];
-         names[i] = address.getAddress();
-      }
+         Object[] addresses = server.getManagementService().getResources(AddressControl.class);
+         String[] names = new String[addresses.length];
+         for (int i = 0; i < addresses.length; i++)
+         {
+            AddressControl address = (AddressControl)addresses[i];
+            names[i] = address.getAddress();
+         }
 
-      return names;
+         return names;
+      }
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public void destroyQueue(final String name) throws Exception
    {
-      SimpleString queueName = new SimpleString(name);
+      clearIO();
+      try
+      {
+         SimpleString queueName = new SimpleString(name);
 
-      server.destroyQueue(queueName, null);
+         server.destroyQueue(queueName, null);
+      }
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public int getConnectionCount()
    {
-      return server.getConnectionCount();
+      clearIO();
+      try
+      {
+         return server.getConnectionCount();
+      }
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public void enableMessageCounters()
    {
-      setMessageCounterEnabled(true);
+      clearIO();
+      try
+      {
+         setMessageCounterEnabled(true);
+      }
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public void disableMessageCounters()
    {
-      setMessageCounterEnabled(false);
+      clearIO();
+      try
+      {
+         setMessageCounterEnabled(false);
+      }
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public void resetAllMessageCounters()
    {
-      messageCounterManager.resetAllCounters();
+      clearIO();
+      try
+      {
+         messageCounterManager.resetAllCounters();
+      }
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public void resetAllMessageCounterHistories()
    {
-      messageCounterManager.resetAllCounterHistories();
+      clearIO();
+      try
+      {
+         messageCounterManager.resetAllCounterHistories();
+      }
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public boolean isMessageCounterEnabled()
    {
-      return configuration.isMessageCounterEnabled();
+      clearIO();
+      try
+      {
+         return configuration.isMessageCounterEnabled();
+      }
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public synchronized long getMessageCounterSamplePeriod()
    {
-      return messageCounterManager.getSamplePeriod();
+      clearIO();
+      try
+      {
+         return messageCounterManager.getSamplePeriod();
+      }
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public synchronized void setMessageCounterSamplePeriod(final long newPeriod)
    {
-      if (newPeriod < MessageCounterManagerImpl.MIN_SAMPLE_PERIOD)
+      clearIO();
+      try
       {
-         throw new IllegalArgumentException("Cannot set MessageCounterSamplePeriod < " + MessageCounterManagerImpl.MIN_SAMPLE_PERIOD +
-                                            " ms");
-      }
+         if (newPeriod < MessageCounterManagerImpl.MIN_SAMPLE_PERIOD)
+         {
+            throw new IllegalArgumentException("Cannot set MessageCounterSamplePeriod < " + MessageCounterManagerImpl.MIN_SAMPLE_PERIOD +
+                                               " ms");
+         }
 
-      if (messageCounterManager != null && newPeriod != messageCounterManager.getSamplePeriod())
+         if (messageCounterManager != null && newPeriod != messageCounterManager.getSamplePeriod())
+         {
+            messageCounterManager.reschedule(newPeriod);
+         }
+      }
+      finally
       {
-         messageCounterManager.reschedule(newPeriod);
+         blockOnIO();
       }
    }
 
    public int getMessageCounterMaxDayCount()
    {
-      return messageCounterManager.getMaxDayCount();
+      clearIO();
+      try
+      {
+         return messageCounterManager.getMaxDayCount();
+      }
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public void setMessageCounterMaxDayCount(final int count)
    {
-      if (count <= 0)
+      clearIO();
+      try
       {
-         throw new IllegalArgumentException("invalid value: count must be greater than 0");
+         if (count <= 0)
+         {
+            throw new IllegalArgumentException("invalid value: count must be greater than 0");
+         }
+         messageCounterManager.setMaxDayCount(count);
       }
-      messageCounterManager.setMaxDayCount(count);
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public String[] listPreparedTransactions()
    {
-      DateFormat dateFormat = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.MEDIUM);
+      clearIO();
+      try
+      {
+         DateFormat dateFormat = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.MEDIUM);
 
-      Map<Xid, Long> xids = resourceManager.getPreparedTransactionsWithCreationTime();
-      ArrayList<Entry<Xid, Long>> xidsSortedByCreationTime = new ArrayList<Map.Entry<Xid, Long>>(xids.entrySet());
-      Collections.sort(xidsSortedByCreationTime, new Comparator<Entry<Xid, Long>>()
-      {
-         public int compare(Entry<Xid, Long> entry1, Entry<Xid, Long> entry2)
+         Map<Xid, Long> xids = resourceManager.getPreparedTransactionsWithCreationTime();
+         ArrayList<Entry<Xid, Long>> xidsSortedByCreationTime = new ArrayList<Map.Entry<Xid, Long>>(xids.entrySet());
+         Collections.sort(xidsSortedByCreationTime, new Comparator<Entry<Xid, Long>>()
          {
-            // sort by creation time, oldest first
-            return (int)(entry1.getValue() - entry2.getValue());
+            public int compare(final Entry<Xid, Long> entry1, final Entry<Xid, Long> entry2)
+            {
+               // sort by creation time, oldest first
+               return (int)(entry1.getValue() - entry2.getValue());
+            }
+         });
+         String[] s = new String[xidsSortedByCreationTime.size()];
+         int i = 0;
+         for (Map.Entry<Xid, Long> entry : xidsSortedByCreationTime)
+         {
+            Date creation = new Date(entry.getValue());
+            Xid xid = entry.getKey();
+            s[i++] = dateFormat.format(creation) + " base64: " + XidImpl.toBase64String(xid) + " " + xid.toString();
          }
-      });
-      String[] s = new String[xidsSortedByCreationTime.size()];
-      int i = 0;
-      for (Map.Entry<Xid, Long> entry : xidsSortedByCreationTime)
-      {
-         Date creation = new Date(entry.getValue());
-         Xid xid = entry.getKey();
-         s[i++] = dateFormat.format(creation) + " base64: " + XidImpl.toBase64String(xid) + " " + xid.toString();
+         return s;
       }
-      return s;
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public String[] listHeuristicCommittedTransactions()
    {
-      List<Xid> xids = resourceManager.getHeuristicCommittedTransactions();
-      String[] s = new String[xids.size()];
-      int i = 0;
-      for (Xid xid : xids)
+      clearIO();
+      try
       {
-         s[i++] = XidImpl.toBase64String(xid);
+         List<Xid> xids = resourceManager.getHeuristicCommittedTransactions();
+         String[] s = new String[xids.size()];
+         int i = 0;
+         for (Xid xid : xids)
+         {
+            s[i++] = XidImpl.toBase64String(xid);
+         }
+         return s;
       }
-      return s;
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public String[] listHeuristicRolledBackTransactions()
    {
-      List<Xid> xids = resourceManager.getHeuristicRolledbackTransactions();
-      String[] s = new String[xids.size()];
-      int i = 0;
-      for (Xid xid : xids)
+      clearIO();
+      try
       {
-         s[i++] = XidImpl.toBase64String(xid);
+         List<Xid> xids = resourceManager.getHeuristicRolledbackTransactions();
+         String[] s = new String[xids.size()];
+         int i = 0;
+         for (Xid xid : xids)
+         {
+            s[i++] = XidImpl.toBase64String(xid);
+         }
+         return s;
       }
-      return s;
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public synchronized boolean commitPreparedTransaction(final String transactionAsBase64) throws Exception
    {
-      List<Xid> xids = resourceManager.getPreparedTransactions();
-
-      for (Xid xid : xids)
+      clearIO();
+      try
       {
-         if (XidImpl.toBase64String(xid).equals(transactionAsBase64))
+         List<Xid> xids = resourceManager.getPreparedTransactions();
+
+         for (Xid xid : xids)
          {
-            Transaction transaction = resourceManager.removeTransaction(xid);
-            transaction.commit(false);
-            server.getStorageManager().waitOnOperations();
-            long recordID = server.getStorageManager().storeHeuristicCompletion(xid, true);
-            resourceManager.putHeuristicCompletion(recordID, xid, true);
-            return true;
+            if (XidImpl.toBase64String(xid).equals(transactionAsBase64))
+            {
+               Transaction transaction = resourceManager.removeTransaction(xid);
+               transaction.commit(false);
+               long recordID = server.getStorageManager().storeHeuristicCompletion(xid, true);
+               storageManager.waitOnOperations();
+               resourceManager.putHeuristicCompletion(recordID, xid, true);
+               return true;
+            }
          }
+         return false;
       }
-      return false;
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public synchronized boolean rollbackPreparedTransaction(final String transactionAsBase64) throws Exception
    {
-      List<Xid> xids = resourceManager.getPreparedTransactions();
 
-      for (Xid xid : xids)
+      clearIO();
+      try
       {
-         if (XidImpl.toBase64String(xid).equals(transactionAsBase64))
+
+         List<Xid> xids = resourceManager.getPreparedTransactions();
+
+         for (Xid xid : xids)
          {
-            Transaction transaction = resourceManager.removeTransaction(xid);
-            transaction.rollback();
-            server.getStorageManager().waitOnOperations();
-            long recordID = server.getStorageManager().storeHeuristicCompletion(xid, false);
-            resourceManager.putHeuristicCompletion(recordID, xid, false);
-            return true;
+            if (XidImpl.toBase64String(xid).equals(transactionAsBase64))
+            {
+               Transaction transaction = resourceManager.removeTransaction(xid);
+               transaction.rollback();
+               long recordID = server.getStorageManager().storeHeuristicCompletion(xid, false);
+               server.getStorageManager().waitOnOperations();
+               resourceManager.putHeuristicCompletion(recordID, xid, false);
+               return true;
+            }
          }
+         return false;
       }
-      return false;
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public String[] listRemoteAddresses()
    {
-      Set<RemotingConnection> connections = remotingService.getConnections();
-
-      String[] remoteAddresses = new String[connections.size()];
-      int i = 0;
-      for (RemotingConnection connection : connections)
+      clearIO();
+      try
       {
-         remoteAddresses[i++] = connection.getRemoteAddress();
+         Set<RemotingConnection> connections = remotingService.getConnections();
+
+         String[] remoteAddresses = new String[connections.size()];
+         int i = 0;
+         for (RemotingConnection connection : connections)
+         {
+            remoteAddresses[i++] = connection.getRemoteAddress();
+         }
+         return remoteAddresses;
       }
-      return remoteAddresses;
+      finally
+      {
+         blockOnIO();
+      }
+
    }
 
    public String[] listRemoteAddresses(final String ipAddress)
    {
-      Set<RemotingConnection> connections = remotingService.getConnections();
-      List<String> remoteConnections = new ArrayList<String>();
-      for (RemotingConnection connection : connections)
+      clearIO();
+      try
       {
-         String remoteAddress = connection.getRemoteAddress();
-         if (remoteAddress.contains(ipAddress))
+         Set<RemotingConnection> connections = remotingService.getConnections();
+         List<String> remoteConnections = new ArrayList<String>();
+         for (RemotingConnection connection : connections)
          {
-            remoteConnections.add(connection.getRemoteAddress());
+            String remoteAddress = connection.getRemoteAddress();
+            if (remoteAddress.contains(ipAddress))
+            {
+               remoteConnections.add(connection.getRemoteAddress());
+            }
          }
+         return remoteConnections.toArray(new String[remoteConnections.size()]);
       }
-      return (String[])remoteConnections.toArray(new String[remoteConnections.size()]);
+      finally
+      {
+         blockOnIO();
+      }
+
    }
 
    public synchronized boolean closeConnectionsForAddress(final String ipAddress)
    {
-      boolean closed = false;
-      Set<RemotingConnection> connections = remotingService.getConnections();
-      for (RemotingConnection connection : connections)
+      clearIO();
+      try
       {
-         String remoteAddress = connection.getRemoteAddress();
-         if (remoteAddress.contains(ipAddress))
+         boolean closed = false;
+         Set<RemotingConnection> connections = remotingService.getConnections();
+         for (RemotingConnection connection : connections)
          {
-            remotingService.removeConnection(connection.getID());
-            connection.fail(new HornetQException(HornetQException.INTERNAL_ERROR, "connections for " + ipAddress +
-                                                                                  " closed by management"));
-            closed = true;
+            String remoteAddress = connection.getRemoteAddress();
+            if (remoteAddress.contains(ipAddress))
+            {
+               remotingService.removeConnection(connection.getID());
+               connection.fail(new HornetQException(HornetQException.INTERNAL_ERROR, "connections for " + ipAddress +
+                                                                                     " closed by management"));
+               closed = true;
+            }
          }
+
+         return closed;
+      }
+      finally
+      {
+         blockOnIO();
       }
 
-      return closed;
    }
 
    public String[] listConnectionIDs()
    {
-      Set<RemotingConnection> connections = remotingService.getConnections();
-      String[] connectionIDs = new String[connections.size()];
-      int i = 0;
-      for (RemotingConnection connection : connections)
+      clearIO();
+      try
       {
-         connectionIDs[i++] = connection.getID().toString();
+         Set<RemotingConnection> connections = remotingService.getConnections();
+         String[] connectionIDs = new String[connections.size()];
+         int i = 0;
+         for (RemotingConnection connection : connections)
+         {
+            connectionIDs[i++] = connection.getID().toString();
+         }
+         return connectionIDs;
       }
-      return connectionIDs;
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public String[] listSessions(final String connectionID)
    {
-      List<ServerSession> sessions = server.getSessions(connectionID);
-      String[] sessionIDs = new String[sessions.size()];
-      int i = 0;
-      for (ServerSession serverSession : sessions)
+      clearIO();
+      try
       {
-         sessionIDs[i++] = serverSession.getName();
+         List<ServerSession> sessions = server.getSessions(connectionID);
+         String[] sessionIDs = new String[sessions.size()];
+         int i = 0;
+         for (ServerSession serverSession : sessions)
+         {
+            sessionIDs[i++] = serverSession.getName();
+         }
+         return sessionIDs;
       }
-      return sessionIDs;
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public Object[] getConnectors() throws Exception
    {
-      Collection<TransportConfiguration> connectorConfigurations = configuration.getConnectorConfigurations().values();
-
-      Object[] ret = new Object[connectorConfigurations.size()];
-
-      int i = 0;
-      for (TransportConfiguration config : connectorConfigurations)
+      clearIO();
+      try
       {
-         Object[] tc = new Object[3];
+         Collection<TransportConfiguration> connectorConfigurations = configuration.getConnectorConfigurations()
+                                                                                   .values();
 
-         tc[0] = config.getName();
-         tc[1] = config.getFactoryClassName();
-         tc[2] = config.getParams();
+         Object[] ret = new Object[connectorConfigurations.size()];
 
-         ret[i++] = tc;
+         int i = 0;
+         for (TransportConfiguration config : connectorConfigurations)
+         {
+            Object[] tc = new Object[3];
+
+            tc[0] = config.getName();
+            tc[1] = config.getFactoryClassName();
+            tc[2] = config.getParams();
+
+            ret[i++] = tc;
+         }
+
+         return ret;
       }
-
-      return ret;
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public String getConnectorsAsJSON() throws Exception
    {
-      JSONArray array = new JSONArray();
-
-      for (TransportConfiguration config : configuration.getConnectorConfigurations().values())
+      clearIO();
+      try
       {
-         array.put(new JSONObject(config));
-      }
+         JSONArray array = new JSONArray();
 
-      return array.toString();
+         for (TransportConfiguration config : configuration.getConnectorConfigurations().values())
+         {
+            array.put(new JSONObject(config));
+         }
+
+         return array.toString();
+      }
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public void sendQueueInfoToQueue(final String queueName, final String address) throws Exception
    {
-      postOffice.sendQueueInfoToQueue(new SimpleString(queueName), new SimpleString(address));
-      // blocking on IO. Otherwise the method would return before the operation was finished
-      server.getStorageManager().waitOnOperations();
+      clearIO();
+      try
+      {
+         postOffice.sendQueueInfoToQueue(new SimpleString(queueName), new SimpleString(address));
+      }
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    // NotificationEmitter implementation ----------------------------
@@ -587,19 +1060,43 @@ public class HornetQServerControlImpl extends StandardMBean implements HornetQSe
                                           final NotificationFilter filter,
                                           final Object handback) throws ListenerNotFoundException
    {
-      broadcaster.removeNotificationListener(listener, filter, handback);
+      clearIO();
+      try
+      {
+         broadcaster.removeNotificationListener(listener, filter, handback);
+      }
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public void removeNotificationListener(final NotificationListener listener) throws ListenerNotFoundException
    {
-      broadcaster.removeNotificationListener(listener);
+      clearIO();
+      try
+      {
+         broadcaster.removeNotificationListener(listener);
+      }
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public void addNotificationListener(final NotificationListener listener,
                                        final NotificationFilter filter,
                                        final Object handback) throws IllegalArgumentException
    {
-      broadcaster.addNotificationListener(listener, filter, handback);
+      clearIO();
+      try
+      {
+         broadcaster.addNotificationListener(listener, filter, handback);
+      }
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public MBeanNotificationInfo[] getNotificationInfo()
@@ -621,7 +1118,7 @@ public class HornetQServerControlImpl extends StandardMBean implements HornetQSe
 
    // Private -------------------------------------------------------
 
-   private synchronized void setMessageCounterEnabled(boolean enable)
+   private synchronized void setMessageCounterEnabled(final boolean enable)
    {
       if (isStarted())
       {

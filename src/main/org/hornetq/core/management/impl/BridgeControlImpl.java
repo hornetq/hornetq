@@ -13,10 +13,9 @@
 
 package org.hornetq.core.management.impl;
 
-import javax.management.StandardMBean;
-
 import org.hornetq.core.config.cluster.BridgeConfiguration;
 import org.hornetq.core.management.BridgeControl;
+import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.server.cluster.Bridge;
 
 /**
@@ -26,7 +25,7 @@ import org.hornetq.core.server.cluster.Bridge;
  * 
  * Created 11 dec. 2008 17:09:04
  */
-public class BridgeControlImpl extends StandardMBean implements BridgeControl
+public class BridgeControlImpl extends AbstractControl implements BridgeControl
 {
 
    // Constants -----------------------------------------------------
@@ -41,9 +40,11 @@ public class BridgeControlImpl extends StandardMBean implements BridgeControl
 
    // Constructors --------------------------------------------------
 
-   public BridgeControlImpl(final Bridge bridge, final BridgeConfiguration configuration) throws Exception
+   public BridgeControlImpl(final Bridge bridge,
+                            final StorageManager storageManager,
+                            final BridgeConfiguration configuration) throws Exception
    {
-      super(BridgeControl.class);
+      super(BridgeControl.class, storageManager);
       this.bridge = bridge;
       this.configuration = configuration;
    }
@@ -52,82 +53,202 @@ public class BridgeControlImpl extends StandardMBean implements BridgeControl
 
    public String[] getConnectorPair() throws Exception
    {
-      String[] pair = new String[2];
+      clearIO();
+      try
+      {
+         String[] pair = new String[2];
 
-      pair[0] = configuration.getConnectorPair().a;
-      pair[1] = configuration.getConnectorPair().b != null ? configuration.getConnectorPair().b : null;
+         pair[0] = configuration.getConnectorPair().a;
+         pair[1] = configuration.getConnectorPair().b != null ? configuration.getConnectorPair().b : null;
 
-      return pair;
+         return pair;
+      }
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public String getForwardingAddress()
    {
-      return configuration.getForwardingAddress();
+      clearIO();
+      try
+      {
+         return configuration.getForwardingAddress();
+      }
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public String getQueueName()
    {
-      return configuration.getQueueName();
+      clearIO();
+      try
+      {
+         return configuration.getQueueName();
+      }
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public String getDiscoveryGroupName()
    {
-      return configuration.getDiscoveryGroupName();
+      clearIO();
+      try
+      {
+         return configuration.getDiscoveryGroupName();
+      }
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public String getFilterString()
    {
-      return configuration.getFilterString();
+      clearIO();
+      try
+      {
+         return configuration.getFilterString();
+      }
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public int getReconnectAttempts()
    {
-      return configuration.getReconnectAttempts();
+      clearIO();
+      try
+      {
+         return configuration.getReconnectAttempts();
+      }
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public boolean isFailoverOnServerShutdown()
    {
-      return configuration.isFailoverOnServerShutdown();
+      clearIO();
+      try
+      {
+         return configuration.isFailoverOnServerShutdown();
+      }
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public String getName()
    {
-      return configuration.getName();
+      clearIO();
+      try
+      {
+         return configuration.getName();
+      }
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public long getRetryInterval()
    {
-      return configuration.getRetryInterval();
+      clearIO();
+      try
+      {
+         return configuration.getRetryInterval();
+      }
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public double getRetryIntervalMultiplier()
    {
-      return configuration.getRetryIntervalMultiplier();
+      clearIO();
+      try
+      {
+         return configuration.getRetryIntervalMultiplier();
+      }
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public String getTransformerClassName()
    {
-      return configuration.getTransformerClassName();
+      clearIO();
+      try
+      {
+         return configuration.getTransformerClassName();
+      }
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public boolean isStarted()
    {
-      return bridge.isStarted();
+      clearIO();
+      try
+      {
+         return bridge.isStarted();
+      }
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public boolean isUseDuplicateDetection()
    {
-      return configuration.isUseDuplicateDetection();
+      clearIO();
+      try
+      {
+         return configuration.isUseDuplicateDetection();
+      }
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public void start() throws Exception
    {
-      bridge.start();
+      clearIO();
+      try
+      {
+         bridge.start();
+      }
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    public void stop() throws Exception
    {
-      bridge.stop();
+      clearIO();
+      try
+      {
+         bridge.stop();
+      }
+      finally
+      {
+         blockOnIO();
+      }
    }
 
    // Public --------------------------------------------------------
