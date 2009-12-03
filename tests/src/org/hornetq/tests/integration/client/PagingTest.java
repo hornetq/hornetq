@@ -1014,7 +1014,7 @@ public class PagingTest extends ServiceTestBase
 
       AddressSettings pagedDestinationB = new AddressSettings();
       pagedDestinationB.setPageSizeBytes(2024);
-      pagedDestinationB.setMaxSizeBytes(20 * 1024);
+      pagedDestinationB.setMaxSizeBytes(25 * 1024);
 
       addresses.put(PAGED_ADDRESS_B.toString(), pagedDestinationB);
 
