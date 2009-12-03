@@ -23,8 +23,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
 
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
@@ -1901,27 +1899,11 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
     */
    private void releaseOutStanding(final ServerMessage message, final int credits) throws Exception
    {
-      CreditManagerHolder holder = getCreditManagerHolder(message);
+      CreditManagerHolder holder = getCreditManagerHolder(message.getDestination());
 
       holder.outstandingCredits -= credits;
 
       holder.store.returnProducerCredits(credits);
-   }
-
-   private CreditManagerHolder getCreditManagerHolder(final ServerMessage message) throws Exception
-   {
-      SimpleString address = message.getDestination();
-
-      CreditManagerHolder holder = creditManagerHolders.get(address);
-
-      if (holder == null)
-      {
-         holder = new CreditManagerHolder(message.getPagingStore());
-
-         creditManagerHolders.put(address, holder);
-      }
-
-      return holder;
    }
 
    private CreditManagerHolder getCreditManagerHolder(final SimpleString address) throws Exception
