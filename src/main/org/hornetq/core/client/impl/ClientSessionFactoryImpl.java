@@ -264,53 +264,57 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       }
    }
 
-   private void initialise() throws Exception
+   private synchronized void initialise() throws Exception
    {
-      setThreadPools();
-
-      instantiateLoadBalancingPolicy();
-
-      if (discoveryAddress != null)
+      if (!readOnly)
       {
-         InetAddress groupAddress = InetAddress.getByName(discoveryAddress);
+         readOnly = true;
+         setThreadPools();
 
-         discoveryGroup = new DiscoveryGroupImpl(UUIDGenerator.getInstance().generateStringUUID(),
-                                                 discoveryAddress,
-                                                 groupAddress,
-                                                 discoveryPort,
-                                                 discoveryRefreshTimeout);
+         instantiateLoadBalancingPolicy();
 
-         discoveryGroup.registerListener(this);
-
-         discoveryGroup.start();
-      }
-      else if (staticConnectors != null)
-      {
-         for (Pair<TransportConfiguration, TransportConfiguration> pair : staticConnectors)
+         if (discoveryAddress != null)
          {
-            FailoverManager cm = new FailoverManagerImpl(this,
-                                                         pair.a,
-                                                         pair.b,
-                                                         failoverOnServerShutdown,
-                                                         callTimeout,
-                                                         clientFailureCheckPeriod,
-                                                         connectionTTL,
-                                                         retryInterval,
-                                                         retryIntervalMultiplier,
-                                                         maxRetryInterval,
-                                                         reconnectAttempts,
-                                                         threadPool,
-                                                         scheduledThreadPool,
-                                                         interceptors);
+            InetAddress groupAddress = InetAddress.getByName(discoveryAddress);
 
-            failoverManagerMap.put(pair, cm);
+            discoveryGroup = new DiscoveryGroupImpl(UUIDGenerator.getInstance().generateStringUUID(),
+                                                    discoveryAddress,
+                                                    groupAddress,
+                                                    discoveryPort,
+                                                    discoveryRefreshTimeout);
+
+            discoveryGroup.registerListener(this);
+
+            discoveryGroup.start();
          }
+         else if (staticConnectors != null)
+         {
+            for (Pair<TransportConfiguration, TransportConfiguration> pair : staticConnectors)
+            {
+               FailoverManager cm = new FailoverManagerImpl(this,
+                                                            pair.a,
+                                                            pair.b,
+                                                            failoverOnServerShutdown,
+                                                            callTimeout,
+                                                            clientFailureCheckPeriod,
+                                                            connectionTTL,
+                                                            retryInterval,
+                                                            retryIntervalMultiplier,
+                                                            maxRetryInterval,
+                                                            reconnectAttempts,
+                                                            threadPool,
+                                                            scheduledThreadPool,
+                                                            interceptors);
 
-         updatefailoverManagerArray();
-      }
-      else
-      {
-         throw new IllegalStateException("Before using a session factory you must either set discovery address and port or " + "provide some static transport configuration");
+               failoverManagerMap.put(pair, cm);
+            }
+
+            updatefailoverManagerArray();
+         }
+         else
+         {
+            throw new IllegalStateException("Before using a session factory you must either set discovery address and port or " + "provide some static transport configuration");
+         }
       }
    }
 
@@ -1077,7 +1081,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       }
    }
 
-   private synchronized ClientSession createSessionInternal(final String username,
+   private ClientSession createSessionInternal(final String username,
                                                final String password,
                                                final boolean xa,
                                                final boolean autoCommitSends,
@@ -1100,8 +1104,6 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
          {
             throw new HornetQException(HornetQException.INTERNAL_ERROR, "Failed to initialise session factory", e);
          }
-
-         readOnly = true;
       }
 
       if (discoveryGroup != null && !receivedBroadcast)
@@ -1115,32 +1117,35 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
          }
       }
 
-      int pos = loadBalancingPolicy.select(failoverManagerArray.length);
+      synchronized (this)
+      {
+         int pos = loadBalancingPolicy.select(failoverManagerArray.length);
 
-      FailoverManager failoverManager = failoverManagerArray[pos];
+         FailoverManager failoverManager = failoverManagerArray[pos];
 
-      ClientSession session = failoverManager.createSession(username,
-                                                            password,
-                                                            xa,
-                                                            autoCommitSends,
-                                                            autoCommitAcks,
-                                                            preAcknowledge,
-                                                            ackBatchSize,
-                                                            cacheLargeMessagesClient,
-                                                            minLargeMessageSize,
-                                                            blockOnAcknowledge,
-                                                            autoGroup,
-                                                            confirmationWindowSize,
-                                                            producerWindowSize,
-                                                            consumerWindowSize,
-                                                            producerMaxRate,
-                                                            consumerMaxRate,
-                                                            blockOnNonPersistentSend,
-                                                            blockOnPersistentSend,
-                                                            initialMessagePacketSize,
-                                                            groupID);
+         ClientSession session = failoverManager.createSession(username,
+                                                               password,
+                                                               xa,
+                                                               autoCommitSends,
+                                                               autoCommitAcks,
+                                                               preAcknowledge,
+                                                               ackBatchSize,
+                                                               cacheLargeMessagesClient,
+                                                               minLargeMessageSize,
+                                                               blockOnAcknowledge,
+                                                               autoGroup,
+                                                               confirmationWindowSize,
+                                                               producerWindowSize,
+                                                               consumerWindowSize,
+                                                               producerMaxRate,
+                                                               consumerMaxRate,
+                                                               blockOnNonPersistentSend,
+                                                               blockOnPersistentSend,
+                                                               initialMessagePacketSize,
+                                                               groupID);
 
-      return session;
+         return session;
+      }
    }
 
    private void instantiateLoadBalancingPolicy()

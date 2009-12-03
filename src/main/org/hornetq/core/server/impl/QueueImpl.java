@@ -922,7 +922,6 @@ public class QueueImpl implements Queue
       if (message.isDurable() && durable)
       {
          storageManager.updateDeliveryCount(reference);
-         storageManager.waitOnOperations();
       }
 
       AddressSettings addressSettings = addressSettingsRepository.getMatch(address.toString());
@@ -932,7 +931,6 @@ public class QueueImpl implements Queue
       if (maxDeliveries > 0 && reference.getDeliveryCount() >= maxDeliveries)
       {
          sendToDeadLetterAddress(reference);
-         storageManager.waitOnOperations();
 
          return false;
       }
