@@ -441,14 +441,13 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       }
       catch (Exception e)
       {
-         log.error("Failed to create consumer", e);
-
          if (e instanceof HornetQException)
          {
             response = new HornetQExceptionMessage((HornetQException)e);
          }
          else
          {
+            log.error("Failed to create consumer", e);
             response = new HornetQExceptionMessage(new HornetQException(HornetQException.INTERNAL_ERROR));
          }
       }
