@@ -18,9 +18,8 @@
 <!-- ============================================================================= -->
 <chapter id="client-classpath">
     <title>The Client Classpath</title>
-    <para>In this chapter we explain which jars you need on the Java classpath of a HornetQ client
-        application. This depends on various factors including whether you're using just core, JMS,
-        JNDI or Netty. We explain which jars are needed in each case.</para>
+    <para>HornetQ requires several jars on the <emphasis>Client Classpath</emphasis> depending on
+    whether the client uses HornetQ Core API, JMS, and JNDI.</para>
     <note>
         <para>All the jars mentioned here can be found in the <literal>lib</literal> directory of
             the HornetQ distribution. Be sure you only use the jars from the correct version of the
@@ -29,27 +28,26 @@
             failures to occur.</para>
     </note>
     <section>
-        <title>Pure Core Client</title>
-        <para>If you're using just a pure HornetQ core client (i.e. no JMS) then you need <literal
-                >hornetq-core-client.jar</literal> on your client classpath.</para>
-        <para>If you're using a Netty transport then you will also netty <literal
-                >netty.jar</literal> and <literal>hornetq-transports.jar</literal>.</para>
+        <title>HornetQ Core Client</title>
+        <para>If you are using just a pure HornetQ Core client (i.e. no JMS) then you need <literal
+                >hornetq-core-client.jar</literal>, <literal>hornetq-transports.jar</literal>
+                and <literal>netty.jar</literal> on your client classpath.</para>
     </section>
     <section>
         <title>JMS Client</title>
-        <para>If you're using JMS on the client side, then you will need <literal
-                >hornetq-core-client.jar</literal>, <literal>hornetq-jms-client.jar</literal> and
-                <literal>jboss-jms-api.jar</literal>. Note that <literal>jboss-jms-api.jar</literal>
+        <para>If you are using JMS on the client side, then you will also need to include 
+               <literal>hornetq-jms-client.jar</literal> and <literal>jboss-jms-api.jar</literal>.</para>
+        <note>
+           <para><literal>jboss-jms-api.jar</literal>
             just contains Java EE API interface classes needed for the <literal
-                >javax.jms.*</literal> classes, so if you already have a jar with these interface
-            classes on your classpath you won't need it.</para>
-        <para>If you're using a Netty transport then you will also netty <literal
-                >netty.jar</literal> and <literal>hornetq-transports.jar</literal>.</para>
+                >javax.jms.*</literal> classes. If you already have a jar with these interface
+            classes on your classpath, you will not need it.</para>
+         </note>
     </section>
     <section>
-        <title>JNDI</title>
-        <para>If you're looking up JNDI objects from the JNDI server co-located with the HornetQ
-            standalone server you'll also need the jar <literal>jnp-client.jar</literal> jar on your
+        <title>JMS Client with JNDI</title>
+        <para>If you are looking up JMS resources from the JNDI server co-located with the HornetQ
+            standalone server, you wil also need the jar <literal>jnp-client.jar</literal> jar on your
             client classpath as well as any other jars mentioned previously.</para>
     </section>
 </chapter>
