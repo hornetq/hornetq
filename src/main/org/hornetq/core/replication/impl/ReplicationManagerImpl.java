@@ -83,6 +83,8 @@ public class ReplicationManagerImpl implements ReplicationManager
    
    private final ExecutorFactory executorFactory;
 
+   private SessionFailureListener failureListener;
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -326,7 +328,7 @@ public class ReplicationManagerImpl implements ReplicationManager
 
       mainChannel.sendBlocking(replicationStartPackage);
 
-      failoverManager.addFailureListener(new SessionFailureListener()
+      failureListener = new SessionFailureListener()
       {
          public void connectionFailed(HornetQException me)
          {
@@ -353,7 +355,8 @@ public class ReplicationManagerImpl implements ReplicationManager
          public void beforeReconnect(HornetQException me)
          {
          }
-      });
+      };
+      failoverManager.addFailureListener(failureListener);
 
       started = true;
 
@@ -393,7 +396,7 @@ public class ReplicationManagerImpl implements ReplicationManager
       }
 
       failoverManager.causeExit();
-      
+      failoverManager.removeFailureListener(failureListener);
       if (replicatingConnection != null)
       {
          replicatingConnection.destroy();

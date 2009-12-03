@@ -45,4 +45,6 @@ public interface RemotingService extends HornetQComponent
    void freeze();
 
    RemotingConnection getServerSideReplicatingConnection();
+
+   void pause() throws Exception;
 }

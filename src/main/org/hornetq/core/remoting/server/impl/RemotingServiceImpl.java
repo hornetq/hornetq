@@ -209,8 +209,8 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
          }
       }
    }
-   
-   public void stop() throws Exception
+
+   public void pause() throws Exception
    {
       if (!started)
       {
@@ -223,6 +223,14 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       for (Acceptor acceptor : acceptors)
       {
          acceptor.pause();
+      }
+   }
+   
+   public void stop() throws Exception
+   {
+      if (!started)
+      {
+         return;
       }
 
       synchronized (server)
