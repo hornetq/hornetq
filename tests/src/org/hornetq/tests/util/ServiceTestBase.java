@@ -318,7 +318,7 @@ public abstract class ServiceTestBase extends UnitTestCase
       return configuration;
    }
 
-   protected ClientSessionFactory createFactory(boolean isNetty)
+   protected ClientSessionFactoryImpl createFactory(boolean isNetty)
    {
       if (isNetty)
       {
@@ -330,17 +330,17 @@ public abstract class ServiceTestBase extends UnitTestCase
       }
    }
 
-   protected ClientSessionFactory createInVMFactory()
+   protected ClientSessionFactoryImpl createInVMFactory()
    {
       return createFactory(INVM_CONNECTOR_FACTORY);
    }
 
-   protected ClientSessionFactory createNettyFactory()
+   protected ClientSessionFactoryImpl createNettyFactory()
    {
       return createFactory(NETTY_CONNECTOR_FACTORY);
    }
 
-   protected ClientSessionFactory createFactory(final String connectorClass)
+   protected ClientSessionFactoryImpl createFactory(final String connectorClass)
    {
       return new ClientSessionFactoryImpl(new TransportConfiguration(connectorClass), null);
 
