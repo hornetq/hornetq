@@ -209,9 +209,14 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
          }
       }
    }
-
-   public void pause() throws Exception
+   
+   public void stop() throws Exception
    {
+      if (!started)
+      {
+         return;
+      }
+      
       if (!started)
       {
          return;
@@ -224,39 +229,40 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       {
          acceptor.pause();
       }
-   }
-   
-   public void stop() throws Exception
-   {
-      if (!started)
+
+      //Now we ensure that no connections will process any more packets after this method is complete
+      //then send a disconnect packet
+      for (ConnectionEntry entry : connections.values())
       {
-         return;
+         RemotingConnection conn = entry.connection;
+
+         Channel channel0 = conn.getChannel(0, -1);
+
+         //And we remove all channels from the connection, this ensures no more packets will be processed after this method is
+         //complete
+
+         conn.removeAllChannels();
+
+         //Now we are 100% sure that no more packets will be processed we can send the disconnect
+
+         channel0.sendAndFlush(new PacketImpl(DISCONNECT));
+      }
+      
+      for (Acceptor acceptor : acceptors)
+      {
+         acceptor.stop();
       }
 
-      synchronized (server)
+      acceptors.clear();
+
+      connections.clear();
+
+      if (managementService != null)
       {
-         for (ConnectionEntry entry : connections.values())
-         {
-            entry.connection.getChannel(0, -1).sendAndFlush(new PacketImpl(DISCONNECT));
-         }
-
-         for (Acceptor acceptor : acceptors)
-         {
-            acceptor.stop();
-         }
-
-         acceptors.clear();
-
-         connections.clear();
-
-         if (managementService != null)
-         {
-            managementService.unregisterAcceptors();
-         }
-
-         started = false;
-
+         managementService.unregisterAcceptors();
       }
+
+      started = false;
 
    }
 

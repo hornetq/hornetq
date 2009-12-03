@@ -357,14 +357,6 @@ public class HornetQServerImpl implements HornetQServer
       }
 
       // we stop the remoting service outside a lock
-      remotingService.pause();
-
-      if (replicationManager != null)
-      {
-         replicationManager.stop();
-         replicationManager = null;
-      }
-      
       remotingService.stop();
 
       synchronized (this)
@@ -401,6 +393,12 @@ public class HornetQServerImpl implements HornetQServer
          if (storageManager != null)
          {
             storageManager.stop();
+         }
+         
+         if (replicationManager != null)
+         {
+            replicationManager.stop();
+            replicationManager = null;
          }
 
          if (replicationEndpoint != null)

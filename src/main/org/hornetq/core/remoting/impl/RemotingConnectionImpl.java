@@ -322,6 +322,16 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
 
       return res;
    }
+   
+   public void removeAllChannels()
+   {
+      //We get the transfer lock first - this ensures no packets are being processed AND
+      //it's guaranteed no more packets will be processed once this method is complete
+      synchronized (transferLock)
+      {
+         channels.clear();
+      }
+   }
 
    // Buffer Handler implementation
    // ----------------------------------------------------
@@ -451,5 +461,4 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
          channel.close();
       }
    }
-
 }

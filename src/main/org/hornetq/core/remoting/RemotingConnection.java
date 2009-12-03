@@ -73,4 +73,6 @@ public interface RemotingConnection extends BufferHandler
    Object getTransferLock(); 
    
    boolean checkDataReceived();
+
+   void removeAllChannels();
 }
