@@ -130,14 +130,13 @@ public class HornetQPacketHandler implements ChannelHandler
       }
       catch (Exception e)
       {
-         log.error("Failed to create session", e);
-
          if (e instanceof HornetQException)
          {
             response = new HornetQExceptionMessage((HornetQException)e);
          }
          else
          {
+            log.error("Failed to create session", e);
             response = new HornetQExceptionMessage(new HornetQException(HornetQException.INTERNAL_ERROR));
          }
       }
@@ -155,14 +154,14 @@ public class HornetQPacketHandler implements ChannelHandler
       }
       catch (Exception e)
       {
-         log.error("Failed to reattach session", e);
-
          if (e instanceof HornetQException)
          {
             response = new HornetQExceptionMessage((HornetQException)e);
          }
          else
          {
+            log.error("Failed to reattach session", e);
+
             response = new HornetQExceptionMessage(new HornetQException(HornetQException.INTERNAL_ERROR));
          }
       }
@@ -202,14 +201,13 @@ public class HornetQPacketHandler implements ChannelHandler
       }
       catch (Exception e)
       {
-         log.warn(e.getMessage(), e);
-
          if (e instanceof HornetQException)
          {
             response = new HornetQExceptionMessage((HornetQException)e);
          }
          else
          {
+            log.warn(e.getMessage(), e);
             response = new HornetQExceptionMessage(new HornetQException(HornetQException.INTERNAL_ERROR));
          }
       }
