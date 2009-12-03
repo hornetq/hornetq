@@ -374,21 +374,6 @@ public class ReplicationManagerImpl implements ReplicationManager
       }
       
       enabled = false;
-      
-      // The same context will be replicated on the pending tokens...
-      // as the multiple operations will be replicated on the same context
-      while (!pendingTokens.isEmpty())
-      {
-         OperationContext ctx = pendingTokens.poll();
-         try
-         {
-            ctx.replicationDone();
-         }
-         catch (Throwable e)
-         {
-            log.warn("Error completing callback on replication manager", e);
-         }
-      }
 
       if (replicatingChannel != null)
       {
