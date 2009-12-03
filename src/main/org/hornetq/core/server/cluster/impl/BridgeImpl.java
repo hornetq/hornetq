@@ -564,6 +564,8 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
    {
       if (flowRecord != null)
       {
+         flowRecord.reset();
+         
          if (notifConsumer != null)
          {
             try

@@ -16,6 +16,7 @@ package org.hornetq.tests.integration.cluster.distribution;
 import static org.hornetq.core.remoting.impl.invm.TransportConstants.SERVER_ID_PROP_NAME;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -122,9 +123,13 @@ public abstract class ClusterTestBase extends ServiceTestBase
       final ClientConsumer consumer;
 
       final ClientSession session;
+      
+      final int id;
 
-      ConsumerHolder(final ClientConsumer consumer, final ClientSession session)
+      ConsumerHolder(final int id, final ClientConsumer consumer, final ClientSession session)
       {
+         this.id = id;
+         
          this.consumer = consumer;
 
          this.session = session;
@@ -162,19 +167,14 @@ public abstract class ClusterTestBase extends ServiceTestBase
       {
          messageCount = getMessageCount(po, address);
 
-         // log.info(node + " messageCount " + messageCount);
-
          if (messageCount == count)
-         {
-            // log.info("Waited " + (System.currentTimeMillis() - start));
+         {          
             return;
          }
 
          Thread.sleep(10);
       }
       while (System.currentTimeMillis() - start < WAIT_TIMEOUT);
-
-      // System.out.println(threadDump(" - fired by ClusterTestBase::waitForBindings"));
 
       throw new IllegalStateException("Timed out waiting for messages (messageCount = " + messageCount +
                                       ", expecting = " +
@@ -250,11 +250,9 @@ public abstract class ClusterTestBase extends ServiceTestBase
             }
          }
 
-         // log.info(node + " binding count " + bindingCount + " consumer Count " + totConsumers);
 
          if (bindingCount == count && totConsumers == consumerCount)
-         {
-            // log.info("Waited " + (System.currentTimeMillis() - start));
+         {            
             return;
          }
 
@@ -360,7 +358,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
 
          session.start();
 
-         consumers[consumerID] = new ConsumerHolder(consumer, session);
+         consumers[consumerID] = new ConsumerHolder(consumerID, consumer, session);
       }
       catch (Exception e)
       {
@@ -799,71 +797,118 @@ public abstract class ClusterTestBase extends ServiceTestBase
     */
    protected void verifyReceiveRoundRobinInSomeOrder(int numMessages, int... consumerIDs) throws Exception
    {
+      if (numMessages < consumerIDs.length)
+      {
+         throw new IllegalStateException("You must send more messages than consumers specified or the algorithm " +
+                                         "won't work");
+      }
+       
       verifyReceiveRoundRobinInSomeOrder(true, numMessages, consumerIDs);
    }
+   
+   class OrderedConsumerHolder implements Comparable<OrderedConsumerHolder>
+   {
+      ConsumerHolder consumer;
+
+      int order;
+
+      public int compareTo(OrderedConsumerHolder o)
+      {
+         int thisOrder = this.order;
+         int otherOrder = o.order;
+         return (thisOrder < otherOrder ? -1 : (thisOrder == otherOrder ? 0 : 1));
+      }
+   }
+   
 
    protected void verifyReceiveRoundRobinInSomeOrder(boolean ack, int numMessages, int... consumerIDs) throws Exception
    {
-      Map<Integer, Integer> countMap = new HashMap<Integer, Integer>();
+      if (numMessages < consumerIDs.length)
+      {
+         throw new IllegalStateException("not enough messages");
+      }
+      
+      // First get one from each consumer to determine the order, then we sort them in this order
 
-      Set<Integer> counts = new HashSet<Integer>();
-
+      List<OrderedConsumerHolder> sorted = new ArrayList<OrderedConsumerHolder>();
+      
       for (int i = 0; i < consumerIDs.length; i++)
       {
          ConsumerHolder holder = consumers[consumerIDs[i]];
-
-         if (holder == null)
+         
+         ClientMessage msg = holder.consumer.receive(10000);
+         
+         assertNotNull(msg);
+         
+         int count = msg.getIntProperty(COUNT_PROP);
+         
+         OrderedConsumerHolder orderedHolder = new OrderedConsumerHolder();
+         
+         orderedHolder.consumer = holder;
+         orderedHolder.order = count;
+         
+         sorted.add(orderedHolder);
+         
+         if (ack)
          {
-            throw new IllegalArgumentException("No consumer at " + consumerIDs[i]);
+            msg.acknowledge();
          }
-
-         ClientMessage message;
-         do
-         {
-            message = holder.consumer.receive(1000);
-            
-            if (message != null)
-            {
-               int count = (Integer)message.getObjectProperty(COUNT_PROP);
-
-               Integer prevCount = countMap.get(i);
-
-               if (prevCount != null)
-               {
-                  assertEquals("consumer " + i + " received unround-robined message (previous was " + prevCount + ")",
-                               prevCount + consumerIDs.length,
-                               count);
-               }
-
-               assertFalse(counts.contains(count));
-
-               counts.add(count);
-
-               countMap.put(i, count);
-
-               if (ack)
-               {
-                  message.acknowledge();
-               }
-
-               // log.info("consumer " + consumerIDs[i] + " returns " + count);
-            }
-            else
-            {
-               // log.info("consumer " + consumerIDs[i] +" returns null");
-            }
-         }
-         while (message != null);
       }
-
-      for (int i = 0; i < numMessages; i++)
+      
+      //Now sort them
+      
+      Collections.sort(sorted);
+      
+      //First verify the first lot received are ok
+      
+      int count = 0;
+      
+      for (OrderedConsumerHolder holder: sorted)
       {
-         assertTrue("did not receive message " + i, counts.contains(i));
+         if (holder.order != count)
+         {
+            throw new IllegalStateException("Out of order");
+         }
+         
+         count++;
       }
-   }
+      
+      //Now check the rest are in order too
 
+      outer: while (count < numMessages)
+      {
+         for (OrderedConsumerHolder holder: sorted)
+         {
+            ClientMessage msg = holder.consumer.consumer.receive(10000);
+            
+            assertNotNull(msg);
+            
+            int p = msg.getIntProperty(COUNT_PROP);
+                        
+            if (p != count)
+            {
+               throw new IllegalStateException("Out of order 2");
+            }
+                       
+            if (ack)
+            {
+               msg.acknowledge();
+            }
+            
+            count++;
+            
+            if (count == numMessages)
+            {
+               break outer;
+            }
+            
+         }
+      }           
+   }
+   
+   
    protected void verifyReceiveRoundRobinInSomeOrderWithCounts(boolean ack, int[] messageCounts, int... consumerIDs) throws Exception
-   {
+   {      
       List<LinkedList<Integer>> receivedCounts = new ArrayList<LinkedList<Integer>>();
 
       Set<Integer> counts = new HashSet<Integer>();
@@ -940,7 +985,6 @@ public abstract class ClusterTestBase extends ServiceTestBase
 
          assertEquals(messageCounts[i], elem);
 
-         // log.info("got elem " + messageCounts[i] + " at pos " + index);
 
          index++;
 
@@ -954,6 +998,12 @@ public abstract class ClusterTestBase extends ServiceTestBase
 
    protected void verifyReceiveRoundRobinInSomeOrderNoAck(int numMessages, int... consumerIDs) throws Exception
    {
+      if (numMessages < consumerIDs.length)
+      {
+         throw new IllegalStateException("You must send more messages than consumers specified or the algorithm " +
+                                         "won't work");
+      }
+      
       verifyReceiveRoundRobinInSomeOrder(false, numMessages, consumerIDs);
    }
 

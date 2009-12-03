@@ -202,15 +202,22 @@ public class SymmetricClusterTest extends ClusterTestBase
 
    public void testRoundRobinMultipleQueues() throws Exception
    {
+      log.info("starting");
       setupCluster();
 
+      log.info("setup cluster");
+      
       startServers();
 
+      log.info("started servers");
+      
       setupSessionFactory(0, isNetty());
       setupSessionFactory(1, isNetty());
       setupSessionFactory(2, isNetty());
       setupSessionFactory(3, isNetty());
       setupSessionFactory(4, isNetty());
+      
+      log.info("Set up session factories");
 
       createQueue(0, "queues.testaddress", "queue0", null, false);
       createQueue(1, "queues.testaddress", "queue0", null, false);
@@ -229,6 +236,8 @@ public class SymmetricClusterTest extends ClusterTestBase
       createQueue(2, "queues.testaddress", "queue2", null, false);
       createQueue(3, "queues.testaddress", "queue2", null, false);
       createQueue(4, "queues.testaddress", "queue2", null, false);
+      
+      log.info("created queues");
 
       addConsumer(0, 0, "queue0", null);
       addConsumer(1, 1, "queue0", null);
@@ -247,6 +256,8 @@ public class SymmetricClusterTest extends ClusterTestBase
       addConsumer(12, 2, "queue2", null);
       addConsumer(13, 3, "queue2", null);
       addConsumer(14, 4, "queue2", null);
+      
+      log.info("added consumers");
 
       waitForBindings(0, "queues.testaddress", 3, 3, true);
       waitForBindings(1, "queues.testaddress", 3, 3, true);
@@ -259,12 +270,24 @@ public class SymmetricClusterTest extends ClusterTestBase
       waitForBindings(2, "queues.testaddress", 12, 12, false);
       waitForBindings(3, "queues.testaddress", 12, 12, false);
       waitForBindings(4, "queues.testaddress", 12, 12, false);
+      
+      log.info("waited for bindings");
 
       send(0, "queues.testaddress", 10, false, null);
+      
+      log.info("sent messages");
 
       verifyReceiveRoundRobinInSomeOrder(10, 0, 1, 2, 3, 4);
+      
+      log.info("verified 1");
+      
       verifyReceiveRoundRobinInSomeOrder(10, 5, 6, 7, 8, 9);
+      
+      log.info("verified 2");
+      
       verifyReceiveRoundRobinInSomeOrder(10, 10, 11, 12, 13, 14);
+      
+      log.info("verified 3");
    }
 
    public void testMultipleNonLoadBalancedQueues() throws Exception

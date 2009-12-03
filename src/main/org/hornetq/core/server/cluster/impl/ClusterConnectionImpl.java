@@ -492,6 +492,11 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
 
          clearBindings();
       }
+      
+      public void reset() throws Exception
+      {
+         clearBindings();
+      }
 
       public void setBridge(final Bridge bridge)
       {

@@ -1097,136 +1097,17 @@ public abstract class MultiThreadRandomReattachTestBase extends MultiThreadReatt
     */
    protected void doTestL(final ClientSessionFactory sf) throws Exception
    {
-      final int numSessions = 1000;
+      final int numSessions = 100;
 
       for (int i = 0; i < numSessions; i++)
       {
          ClientSession session = sf.createSession(false, false, false);
          
-         log.info("Created session " + System.identityHashCode(session));
-
          session.close();
-         
-         log.info("closed session");
       }
    }
 
-   // Browsers
-   // FIXME - this test won't work until we use a proper iterator for browsing a queue.
-   // Making a copy of the queue for a browser consumer doesn't work well with replication since
-   // When replicating the create consumer (browser) to the backup, when executed on the backup the
-   // backup may have different messages in its queue since been added on different threads.
-   // So when replicating deliveries they may not be found.
-   // https://jira.jboss.org/jira/browse/JBMESSAGING-1433
-   // protected void doTestM(final ClientSessionFactory sf, final int threadNum) throws Exception
-   // {
-   // long start = System.currentTimeMillis();
-   //
-   // ClientSession sessSend = sf.createSession(false, true, true, false);
-   //      
-   // ClientSession sessConsume = sf.createSession(false, true, true, false);
-   //      
-   // sessConsume.createQueue(ADDRESS, new SimpleString(threadNum + "sub"), null, false, false);
-   //
-   // final int numMessages = 100;
-   //
-   // ClientProducer producer = sessSend.createProducer(ADDRESS);
-   //
-   // sendMessages(sessSend, producer, numMessages, threadNum);
-   //      
-   // ClientConsumer browser = sessConsume.createConsumer(new SimpleString(threadNum + "sub"),
-   // null, false, true);
-   //      
-   // Map<Integer, Integer> consumerCounts = new HashMap<Integer, Integer>();
-   //      
-   // for (int i = 0; i < numMessages; i++)
-   // {
-   // ClientMessage msg = browser.receive(RECEIVE_TIMEOUT);
-   //
-   // assertNotNull(msg);
-   //
-   // int tn = (Integer)msg.getProperty(new SimpleString("threadnum"));
-   // int cnt = (Integer)msg.getProperty(new SimpleString("count"));
-   //
-   // Integer c = consumerCounts.get(tn);
-   // if (c == null)
-   // {
-   // c = new Integer(cnt);
-   // }
-   //
-   // if (cnt != c.intValue())
-   // {
-   // throw new Exception("Invalid count, expected " + c + " got " + cnt);
-   // }
-   //         
-   // c++;
-   //         
-   // //Wrap
-   // if (c == numMessages)
-   // {
-   // c = 0;
-   // }
-   //         
-   // consumerCounts.put(tn, c);
-   //
-   // msg.acknowledge();
-   // }
-   //
-   // sessConsume.close();
-   //      
-   // sessConsume = sf.createSession(false, true, true, false);
-   //      
-   // browser = sessConsume.createConsumer(new SimpleString(threadNum + "sub"),
-   // null, false, true);
-   //      
-   // //Messages should still be there
-   //      
-   // consumerCounts.clear();
-   //      
-   // for (int i = 0; i < numMessages; i++)
-   // {
-   // ClientMessage msg = browser.receive(RECEIVE_TIMEOUT);
-   //
-   // assertNotNull(msg);
-   //
-   // int tn = (Integer)msg.getProperty(new SimpleString("threadnum"));
-   // int cnt = (Integer)msg.getProperty(new SimpleString("count"));
-   //
-   // Integer c = consumerCounts.get(tn);
-   // if (c == null)
-   // {
-   // c = new Integer(cnt);
-   // }
-   //
-   // if (cnt != c.intValue())
-   // {
-   // throw new Exception("Invalid count, expected " + c + " got " + cnt);
-   // }
-   //         
-   // c++;
-   //         
-   // //Wrap
-   // if (c == numMessages)
-   // {
-   // c = 0;
-   // }
-   //         
-   // consumerCounts.put(tn, c);
-   //
-   // msg.acknowledge();
-   // }
-   //      
-   // sessConsume.close();
-   //      
-   // sessSend.deleteQueue(new SimpleString(threadNum + "sub"));
-   //      
-   // sessSend.close();
-   //
-   // long end = System.currentTimeMillis();
-   //
-   // log.info("duration " + (end - start));
-   // }
-
+  
    protected void doTestN(final ClientSessionFactory sf, final int threadNum) throws Exception
    {
       ClientSession sessCreate = sf.createSession(false, true, true);
