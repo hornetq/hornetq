@@ -113,8 +113,6 @@ public class ConfigurationImpl implements Configuration
    public static final int DEFAULT_JOURNAL_BUFFER_TIMEOUT_NIO = (int)(1000000000d / 300);
 
    public static final int DEFAULT_JOURNAL_BUFFER_SIZE_NIO = 490 * 1024;
-   
-   
 
    public static final boolean DEFAULT_JOURNAL_LOG_WRITE_RATE = false;
 
@@ -176,8 +174,6 @@ public class ConfigurationImpl implements Configuration
 
    public static final long DEFAULT_MEMORY_MEASURE_INTERVAL = -1; // in milliseconds
 
-   public static final int DEFAULT_BACKUP_WINDOW_SIZE = 1024 * 1024;
-
    public static final String DEFAULT_LOG_DELEGATE_FACTORY_CLASS_NAME = JULLogDelegateFactory.class.getCanonicalName();
 
    // Attributes -----------------------------------------------------------------------------
@@ -230,8 +226,6 @@ public class ConfigurationImpl implements Configuration
 
    protected String backupConnectorName;
 
-   protected int backupWindowSize = DEFAULT_BACKUP_WINDOW_SIZE;
-
    protected List<BridgeConfiguration> bridgeConfigurations = new ArrayList<BridgeConfiguration>();
 
    protected List<DivertConfiguration> divertConfigurations = new ArrayList<DivertConfiguration>();
@@ -274,22 +268,19 @@ public class ConfigurationImpl implements Configuration
 
    protected int journalMinFiles = DEFAULT_JOURNAL_MIN_FILES;
 
-   
-   //AIO and NIO need different values for these attributes
-   
+   // AIO and NIO need different values for these attributes
+
    protected int journalMaxIO_AIO = DEFAULT_JOURNAL_MAX_IO_AIO;
 
    protected int journalBufferTimeout_AIO = DEFAULT_JOURNAL_BUFFER_TIMEOUT_AIO;
 
    protected int journalBufferSize_AIO = DEFAULT_JOURNAL_BUFFER_SIZE_AIO;
-   
+
    protected int journalMaxIO_NIO = DEFAULT_JOURNAL_MAX_IO_NIO;
 
    protected int journalBufferTimeout_NIO = DEFAULT_JOURNAL_BUFFER_TIMEOUT_NIO;
 
    protected int journalBufferSize_NIO = DEFAULT_JOURNAL_BUFFER_SIZE_NIO;
-   
-   
 
    protected boolean logJournalWriteRate = DEFAULT_JOURNAL_LOG_WRITE_RATE;
 
@@ -507,19 +498,6 @@ public class ConfigurationImpl implements Configuration
    public void setBackupConnectorName(final String backupConnectorName)
    {
       this.backupConnectorName = backupConnectorName;
-   }
-
-   /* (non-Javadoc)
-    * @see org.hornetq.core.config.Configuration#getBackupWindowSize()
-    */
-   public int getBackupWindowSize()
-   {
-      return backupWindowSize;
-   }
-
-   public void setBackupWindowSize(int windowSize)
-   {
-      this.backupWindowSize = windowSize;
    }
 
    public GroupingHandlerConfiguration getGroupingHandlerConfiguration()
@@ -966,8 +944,6 @@ public class ConfigurationImpl implements Configuration
    {
       this.logDelegateFactoryClassName = className;
    }
-   
-   
 
    public int getJournalMaxIO_AIO()
    {
@@ -998,8 +974,7 @@ public class ConfigurationImpl implements Configuration
    {
       this.journalBufferSize_AIO = journalBufferSize;
    }
-   
-   
+
    public int getJournalMaxIO_NIO()
    {
       return journalMaxIO_NIO;
@@ -1029,8 +1004,6 @@ public class ConfigurationImpl implements Configuration
    {
       this.journalBufferSize_NIO = journalBufferSize;
    }
-   
-   
 
    @Override
    public boolean equals(Object obj)
@@ -1063,11 +1036,6 @@ public class ConfigurationImpl implements Configuration
       else if (!bindingsDirectory.equals(other.bindingsDirectory))
          return false;
 
-      if (backupWindowSize != other.backupWindowSize)
-      {
-         return false;
-      }
-
       if (clustered != other.clustered)
          return false;
       if (connectionTTLOverride != other.connectionTTLOverride)
@@ -1090,13 +1058,13 @@ public class ConfigurationImpl implements Configuration
       if (journalBufferTimeout_AIO != other.journalBufferTimeout_AIO)
          return false;
       if (journalMaxIO_AIO != other.journalMaxIO_AIO)
-         return false;    
+         return false;
       if (this.journalBufferSize_NIO != other.journalBufferSize_NIO)
          return false;
       if (journalBufferTimeout_NIO != other.journalBufferTimeout_NIO)
          return false;
       if (journalMaxIO_NIO != other.journalMaxIO_NIO)
-         return false; 
+         return false;
       if (journalCompactMinFiles != other.journalCompactMinFiles)
          return false;
       if (journalCompactPercentage != other.journalCompactPercentage)

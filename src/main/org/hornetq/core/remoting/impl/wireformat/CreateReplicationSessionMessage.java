@@ -27,19 +27,15 @@ public class CreateReplicationSessionMessage extends PacketImpl
 
    private long sessionChannelID;
 
-   private int windowSize;
-
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public CreateReplicationSessionMessage(final long sessionChannelID, final int windowSize)
+   public CreateReplicationSessionMessage(final long sessionChannelID)
    {
       super(CREATE_REPLICATION);
 
       this.sessionChannelID = sessionChannelID;
-
-      this.windowSize = windowSize;
    }
 
    public CreateReplicationSessionMessage()
@@ -53,14 +49,12 @@ public class CreateReplicationSessionMessage extends PacketImpl
    public void encodeRest(final HornetQBuffer buffer)
    {
       buffer.writeLong(sessionChannelID);
-      buffer.writeInt(windowSize);
    }
 
    @Override
    public void decodeRest(final HornetQBuffer buffer)
    {
       sessionChannelID = buffer.readLong();
-      windowSize = buffer.readInt();
    }
 
    /**
@@ -69,14 +63,6 @@ public class CreateReplicationSessionMessage extends PacketImpl
    public long getSessionChannelID()
    {
       return sessionChannelID;
-   }
-
-   /**
-    * @return the windowSize
-    */
-   public int getWindowSize()
-   {
-      return windowSize;
    }
 
    // Package protected ---------------------------------------------

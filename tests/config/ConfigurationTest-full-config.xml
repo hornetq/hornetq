@@ -55,8 +55,7 @@
          <class-name>org.hornetq.tests.unit.core.config.impl.TestInterceptor2</class-name>
       </remoting-interceptors>
       
-      <backup-connector-ref connector-name="backup-connector" />
-      <backup-window-size>1024</backup-window-size>
+      <backup-connector-ref connector-name="backup-connector" />     
       <connectors>
          <connector name="connector1">
             <factory-class>org.hornetq.tests.unit.core.config.impl.TestConnectorFactory1</factory-class>

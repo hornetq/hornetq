@@ -120,10 +120,6 @@ public interface Configuration extends Serializable
 
    String getBackupConnectorName();
    
-   int getBackupWindowSize();
-   
-   void setBackupWindowSize(int windowSize);
-
    void setBackupConnectorName(String name);
 
    List<BroadcastGroupConfiguration> getBroadcastGroupConfigurations();

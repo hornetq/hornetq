@@ -65,13 +65,11 @@ public class ReplicationManagerImpl implements ReplicationManager
 
    // Attributes ----------------------------------------------------
 
-   private final int backupWindowSize;
-
    private final ResponseHandler responseHandler = new ResponseHandler();
 
    private final FailoverManager failoverManager;
 
-   private RemotingConnection connection;
+   private RemotingConnection replicatingConnection;
 
    private Channel replicatingChannel;
 
@@ -92,11 +90,10 @@ public class ReplicationManagerImpl implements ReplicationManager
    /**
     * @param replicationConnectionManager
     */
-   public ReplicationManagerImpl(final FailoverManager failoverManager, final ExecutorFactory executorFactory, final int backupWindowSize)
+   public ReplicationManagerImpl(final FailoverManager failoverManager, final ExecutorFactory executorFactory)
    {
       super();
-      this.failoverManager = failoverManager;
-      this.backupWindowSize = backupWindowSize;
+      this.failoverManager = failoverManager;     
       this.executorFactory = executorFactory;
    }
 
@@ -307,25 +304,25 @@ public class ReplicationManagerImpl implements ReplicationManager
       {
          throw new IllegalStateException("ReplicationManager is already started");
       }
-      connection = failoverManager.getConnection();
+      
+      replicatingConnection = failoverManager.getConnection();
 
-      if (connection == null)
+      if (replicatingConnection == null)
       {
          log.warn("Backup server MUST be started before live server. Initialisation will not proceed.");
          throw new HornetQException(HornetQException.ILLEGAL_STATE,
                                     "Backup server MUST be started before live server. Initialisation will not proceed.");
       }
 
-      long channelID = connection.generateChannelID();
+      long channelID = replicatingConnection.generateChannelID();
 
-      Channel mainChannel = connection.getChannel(1, -1);
+      Channel mainChannel = replicatingConnection.getChannel(1, -1);
 
-      replicatingChannel = connection.getChannel(channelID, backupWindowSize);
+      replicatingChannel = replicatingConnection.getChannel(channelID, -1);
 
       replicatingChannel.setHandler(responseHandler);
 
-      CreateReplicationSessionMessage replicationStartPackage = new CreateReplicationSessionMessage(channelID,
-                                                                                                    backupWindowSize);
+      CreateReplicationSessionMessage replicationStartPackage = new CreateReplicationSessionMessage(channelID);
 
       mainChannel.sendBlocking(replicationStartPackage);
 
@@ -333,7 +330,16 @@ public class ReplicationManagerImpl implements ReplicationManager
       {
          public void connectionFailed(HornetQException me)
          {
-            log.warn("Connection to the backup node failed, removing replication now", me);
+            if (me.getCode() == HornetQException.DISCONNECTED)
+            {
+               //Backup has shut down - no need to log a stack trace
+               log.warn("The backup node has been shut-down, replication will now stop");
+            }
+            else
+            {
+               log.warn("Connection to the backup node failed, removing replication now", me);
+            }
+            
             try
             {
                stop();
@@ -386,17 +392,15 @@ public class ReplicationManagerImpl implements ReplicationManager
          replicatingChannel.close();
       }
 
-      started = false;
-
       failoverManager.causeExit();
       
-      if (connection != null)
+      if (replicatingConnection != null)
       {
-         connection.destroy();
+         replicatingConnection.destroy();
       }
 
-      connection = null;
-
+      replicatingConnection = null;
+      
       started = false;
    }
 
@@ -491,8 +495,6 @@ public class ReplicationManagerImpl implements ReplicationManager
          {
             replicated();
          }
-         
-         replicatingChannel.confirm(packet);
       }
 
    }

@@ -870,7 +870,7 @@ public class HornetQServerImpl implements HornetQServer
     * Protected so tests can change this behaviour
     * @param backupConnector
     */
-   protected FailoverManagerImpl createBackupConnection(final TransportConfiguration backupConnector,
+   protected FailoverManagerImpl createBackupConnectionFailoverManager(final TransportConfiguration backupConnector,
                                                         final ExecutorService threadPool,
                                                         final ScheduledExecutorService scheduledPool)
    {
@@ -939,11 +939,10 @@ public class HornetQServerImpl implements HornetQServer
          else
          {
 
-            replicationFailoverManager = createBackupConnection(backupConnector, threadPool, scheduledPool);
+            replicationFailoverManager = createBackupConnectionFailoverManager(backupConnector, threadPool, scheduledPool);
 
             replicationManager = new ReplicationManagerImpl(replicationFailoverManager,
-                                                            executorFactory,
-                                                            configuration.getBackupWindowSize());
+                                                            executorFactory);
             replicationManager.start();
          }
       }

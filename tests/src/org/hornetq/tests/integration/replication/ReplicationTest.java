@@ -119,8 +119,7 @@ public class ReplicationTest extends ServiceTestBase
       try
       {
          ReplicationManagerImpl manager = new ReplicationManagerImpl(failoverManager,
-                                                                     this.factory,
-                                                                     ConfigurationImpl.DEFAULT_BACKUP_WINDOW_SIZE);
+                                                                     this.factory);
          manager.start();
          manager.stop();
       }
@@ -146,8 +145,7 @@ public class ReplicationTest extends ServiceTestBase
       try
       {
          ReplicationManagerImpl manager = new ReplicationManagerImpl(failoverManager,
-                                                                     this.factory,
-                                                                     ConfigurationImpl.DEFAULT_BACKUP_WINDOW_SIZE);
+                                                                     this.factory);
          manager.start();
          try
          {
@@ -189,16 +187,14 @@ public class ReplicationTest extends ServiceTestBase
       try
       {
          ReplicationManagerImpl manager = new ReplicationManagerImpl(failoverManager,
-                                                                     this.factory,
-                                                                     ConfigurationImpl.DEFAULT_BACKUP_WINDOW_SIZE);
+                                                                     this.factory);
 
          manager.start();
 
          try
          {
             ReplicationManagerImpl manager2 = new ReplicationManagerImpl(failoverManager,
-                                                                         this.factory,
-                                                                         ConfigurationImpl.DEFAULT_BACKUP_WINDOW_SIZE);
+                                                                         this.factory);
 
             manager2.start();
             fail("Exception was expected");
@@ -232,8 +228,7 @@ public class ReplicationTest extends ServiceTestBase
       try
       {
          ReplicationManagerImpl manager = new ReplicationManagerImpl(failoverManager,
-                                                                     this.factory,
-                                                                     ConfigurationImpl.DEFAULT_BACKUP_WINDOW_SIZE);
+                                                                     this.factory);
 
          try
          {
@@ -270,8 +265,7 @@ public class ReplicationTest extends ServiceTestBase
          StorageManager storage = getStorage();
          
          ReplicationManagerImpl manager = new ReplicationManagerImpl(failoverManager,
-                                                                     this.factory,
-                                                                     ConfigurationImpl.DEFAULT_BACKUP_WINDOW_SIZE);
+                                                                     this.factory);
          manager.start();
 
          Journal replicatedJournal = new ReplicatedJournal((byte)1, new FakeJournal(), manager);
@@ -377,8 +371,7 @@ public class ReplicationTest extends ServiceTestBase
       {
          StorageManager storage = getStorage();
          ReplicationManagerImpl manager = new ReplicationManagerImpl(failoverManager,
-                                                                     this.factory,
-                                                                     ConfigurationImpl.DEFAULT_BACKUP_WINDOW_SIZE);
+                                                                     this.factory);
          manager.start();
 
          Journal replicatedJournal = new ReplicatedJournal((byte)1, new FakeJournal(), manager);
@@ -541,8 +534,7 @@ public class ReplicationTest extends ServiceTestBase
       try
       {
          ReplicationManagerImpl manager = new ReplicationManagerImpl(failoverManager,
-                                                                     this.factory,
-                                                                     ConfigurationImpl.DEFAULT_BACKUP_WINDOW_SIZE);
+                                                                     this.factory);
          manager.start();
          fail("Exception expected");
       }
@@ -569,8 +561,7 @@ public class ReplicationTest extends ServiceTestBase
       {
          StorageManager storage = getStorage();
          ReplicationManagerImpl manager = new ReplicationManagerImpl(failoverManager,
-                                                                     this.factory,
-                                                                     ConfigurationImpl.DEFAULT_BACKUP_WINDOW_SIZE);
+                                                                     this.factory);
          manager.start();
 
          Journal replicatedJournal = new ReplicatedJournal((byte)1, new FakeJournal(), manager);
@@ -621,8 +612,7 @@ public class ReplicationTest extends ServiceTestBase
       {
          StorageManager storage = getStorage();
          ReplicationManagerImpl manager = new ReplicationManagerImpl(failoverManager,
-                                                                     this.factory,
-                                                                     ConfigurationImpl.DEFAULT_BACKUP_WINDOW_SIZE);
+                                                                     this.factory);
          manager.start();
 
          Journal replicatedJournal = new ReplicatedJournal((byte)1, new FakeJournal(), manager);
