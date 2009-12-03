@@ -867,7 +867,7 @@ public class QueueImpl implements Queue
    @Override
    public String toString()
    {
-      return "QueueImpl(name=" + name.toString() + ")";
+      return "QueueImpl[name=" + name.toString() + "]@" + Integer.toHexString(System.identityHashCode(this));
    }
 
    // Private

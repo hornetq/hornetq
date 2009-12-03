@@ -265,8 +265,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
       // System.out.println(threadDump(" - fired by ClusterTestBase::waitForBindings"));
 
       String msg = "Timed out waiting for bindings (bindingCount = " + bindingCount +
-                   ", totConsumers = " +
-                   totConsumers;
+                   ", totConsumers = " + totConsumers + ")";
 
       log.error(msg);
       
@@ -285,7 +284,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
          {
             QueueBinding qBinding = (QueueBinding)binding;
             
-            System.out.println("Binding = " + qBinding + " with #consumers = " + qBinding.consumerCount()); 
+            System.out.println("Binding = " + qBinding + ", queue=" + qBinding.getQueue());
          }
       }
       System.out.println("=======================================================================");
