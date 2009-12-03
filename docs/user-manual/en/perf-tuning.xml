@@ -203,10 +203,10 @@ serveruser     hard    nofile  20000
                     them to the same high value.</para>
                 <para>HornetQ will regularly sample JVM memory and reports if the available memory is below
                    a configurable threshold. Use this information to properly set JVM memory and paging.
-                   The sample frequency can be configured by setting <literal>memory-measure-interval</literal>
-                   in <literal>hornetq-configuration.xml</literal> (default is 30000ms, set it to -1 to disable
-                   memory sampling). When the available memory goes below the configured threshold, a warning is logged.
-                   The threshold can be configured by setting <literal>memory-warning-threshold</literal> in 
+                   The sample is disabled by default. To enabled it, configure the sample frequency by setting <literal>memory-measure-interval</literal>
+                   in <literal>hornetq-configuration.xml</literal> (in milliseconds).
+                   When the available memory goes below the configured threshold, a warning is logged.
+                   The threshold can be also configured by setting <literal>memory-warning-threshold</literal> in 
                    <literal>hornetq-configuration.xml</literal> (default is 25%).</para>
             </listitem>
             <listitem>

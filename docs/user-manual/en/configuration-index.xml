@@ -398,7 +398,7 @@
                                 >memory-measure-interval</link></entry>
                             <entry>Long</entry>
                             <entry>frequency to sample JVM memory in ms (or -1 to disable memory sampling)</entry>
-                            <entry>30000</entry>
+                            <entry>-1</entry>
                         </row>
                         <row>
                             <entry><link linkend="perf-tuning.memory"
