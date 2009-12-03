@@ -201,7 +201,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       {
          try
          {
-            acceptor.stop();
+            acceptor.pause();
          }
          catch (Exception e)
          {
