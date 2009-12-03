@@ -267,8 +267,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
    private synchronized void initialise() throws Exception
    {
       if (!readOnly)
-      {
-         readOnly = true;
+      {                 
          setThreadPools();
 
          instantiateLoadBalancingPolicy();
@@ -315,6 +314,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
          {
             throw new IllegalStateException("Before using a session factory you must either set discovery address and port or " + "provide some static transport configuration");
          }
+         readOnly = true;
       }
    }
 
@@ -1093,19 +1093,16 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       {
          throw new IllegalStateException("Cannot create session, factory is closed (maybe it has been garbage collected)");
       }
-
-      if (!readOnly)
+      
+      try
       {
-         try
-         {
-            initialise();
-         }
-         catch (Exception e)
-         {
-            throw new HornetQException(HornetQException.INTERNAL_ERROR, "Failed to initialise session factory", e);
-         }
+         initialise();
       }
-
+      catch (Exception e)
+      {
+         throw new HornetQException(HornetQException.INTERNAL_ERROR, "Failed to initialise session factory", e);
+      }
+      
       if (discoveryGroup != null && !receivedBroadcast)
       {
          boolean ok = discoveryGroup.waitForBroadcast(discoveryInitialWaitTimeout);
