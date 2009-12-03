@@ -280,7 +280,7 @@ public class QueueControlImpl extends StandardMBean implements QueueControl
       
       int retValue = queue.deleteMatchingReferences(filter);
       
-      // Waiting on IO otherwise the JMX operation would return before the operation completed
+      // Waiting on IO otherwise the operation would return before the operation completed
       storageManager.waitOnOperations();
       
       return retValue;
@@ -288,7 +288,12 @@ public class QueueControlImpl extends StandardMBean implements QueueControl
 
    public boolean expireMessage(final long messageID) throws Exception
    {
-      return queue.expireReference(messageID);
+      boolean retValue =queue.expireReference(messageID);
+      
+      // Waiting on IO otherwise the operation would return before the operation completed
+      storageManager.waitOnOperations();
+      
+      return retValue;
    }
 
    public int expireMessages(final String filterStr) throws Exception
@@ -296,7 +301,12 @@ public class QueueControlImpl extends StandardMBean implements QueueControl
       try
       {
          Filter filter = FilterImpl.createFilter(filterStr);
-         return queue.expireReferences(filter);
+         int retValue = queue.expireReferences(filter);
+         
+         // Waiting on IO otherwise the operation would return before the operation completed
+         storageManager.waitOnOperations();
+         
+         return retValue;
       }
       catch (HornetQException e)
       {
@@ -313,7 +323,12 @@ public class QueueControlImpl extends StandardMBean implements QueueControl
          throw new IllegalArgumentException("No queue found for " + otherQueueName);
       }
 
-      return queue.moveReference(messageID, binding.getAddress());
+      boolean retValue = queue.moveReference(messageID, binding.getAddress());
+      
+      // Waiting on IO otherwise the operation would return before the operation completed
+      storageManager.waitOnOperations();
+      
+      return retValue;
    }
 
    public int moveMessages(final String filterStr, final String otherQueueName) throws Exception
@@ -327,7 +342,13 @@ public class QueueControlImpl extends StandardMBean implements QueueControl
          throw new IllegalArgumentException("No queue found for " + otherQueueName);
       }
 
-      return queue.moveReferences(filter, binding.getAddress());
+      int retValue = queue.moveReferences(filter, binding.getAddress());
+      
+      // Waiting on IO otherwise the operation would return before the operation completed
+      storageManager.waitOnOperations();
+      
+      return retValue;
+      
    }
 
    public int sendMessagesToDeadLetterAddress(final String filterStr) throws Exception
@@ -340,13 +361,21 @@ public class QueueControlImpl extends StandardMBean implements QueueControl
       {
          sendMessageToDeadLetterAddress(ref.getMessage().getMessageID());
       }
+      
+      // Waiting on IO otherwise the operation would return before the operation completed
+      storageManager.waitOnOperations();
 
       return refs.size();
    }
 
    public boolean sendMessageToDeadLetterAddress(final long messageID) throws Exception
    {
-      return queue.sendMessageToDeadLetterAddress(messageID);
+      boolean retValue = queue.sendMessageToDeadLetterAddress(messageID);
+      
+      // Waiting on IO otherwise the operation would return before the operation completed
+      storageManager.waitOnOperations();
+
+      return retValue;
    }
 
    public int changeMessagesPriority(String filterStr, int newPriority) throws Exception
