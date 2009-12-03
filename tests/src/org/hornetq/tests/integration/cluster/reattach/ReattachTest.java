@@ -186,6 +186,7 @@ public class ReattachTest extends ServiceTestBase
 
       Thread t = new Thread()
       {
+         @Override
          public void run()
          {
             try
@@ -256,12 +257,12 @@ public class ReattachTest extends ServiceTestBase
       {
          volatile boolean failed;
 
-         public void connectionFailed(HornetQException me)
+         public void connectionFailed(final HornetQException me)
          {
             failed = true;
          }
 
-         public void beforeReconnect(HornetQException exception)
+         public void beforeReconnect(final HornetQException exception)
          {
          }
       }
@@ -299,6 +300,7 @@ public class ReattachTest extends ServiceTestBase
 
       Thread t = new Thread()
       {
+         @Override
          public void run()
          {
             try
@@ -382,7 +384,7 @@ public class ReattachTest extends ServiceTestBase
          producer.send(message);
       }
 
-      ClientConsumer consumer = session.createConsumer(ADDRESS);
+      session.createConsumer(ADDRESS);
 
       InVMConnector.failOnCreateConnection = true;
 
@@ -392,6 +394,7 @@ public class ReattachTest extends ServiceTestBase
 
       Thread t = new Thread()
       {
+         @Override
          public void run()
          {
             try
@@ -435,7 +438,7 @@ public class ReattachTest extends ServiceTestBase
 
       Timer timer = new Timer();
       ClientSession session = null;
-      
+
       try
       {
 
@@ -446,20 +449,15 @@ public class ReattachTest extends ServiceTestBase
          final int reconnectAttempts = -1;
 
          final ClientSessionFactoryInternal sf = createFactory(false);
-         
-
 
          sf.setRetryInterval(retryInterval);
          sf.setRetryIntervalMultiplier(retryMultiplier);
          sf.setReconnectAttempts(reconnectAttempts);
          sf.setConfirmationWindowSize(1024 * 1024);
-         
-         
+
          session = sf.createSession();
 
          final RemotingConnection connFailure = ((ClientSessionInternal)session).getConnection();
-         
-
 
          int numberOfThreads = 100;
          final int numberOfSessionsToCreate = 10;
@@ -471,24 +469,25 @@ public class ReattachTest extends ServiceTestBase
          {
             Throwable failure;
 
+            @Override
             public void run()
             {
                try
                {
                   alignLatch.countDown();
                   startFlag.await();
-                  for (int i = 0 ; i < numberOfSessionsToCreate; i++)
+                  for (int i = 0; i < numberOfSessionsToCreate; i++)
                   {
                      Thread.yield();
                      ClientSession session = sf.createSession(false, true, true);
-   
+
                      session.close();
                   }
                }
                catch (Throwable e)
                {
                   e.printStackTrace();
-                  this.failure = e;
+                  failure = e;
                }
             }
          }
@@ -499,8 +498,6 @@ public class ReattachTest extends ServiceTestBase
             threads[i] = new CreateSessionThread();
             threads[i].start();
          }
-
-         // Sleep 3 times retryInterval, so it should at least have 3 retries
 
          alignLatch.await();
 
@@ -518,9 +515,9 @@ public class ReattachTest extends ServiceTestBase
                   log.warn("Error on the timer " + e);
                }
             }
-            
+
          }, 10, 10);
-         
+
          startFlag.countDown();
 
          Throwable failure = null;
@@ -546,7 +543,7 @@ public class ReattachTest extends ServiceTestBase
       finally
       {
          timer.cancel();
-         
+
          if (session != null)
          {
             session.close();
@@ -580,6 +577,7 @@ public class ReattachTest extends ServiceTestBase
       {
          Throwable failure;
 
+         @Override
          public void run()
          {
             try
@@ -593,7 +591,7 @@ public class ReattachTest extends ServiceTestBase
             catch (Throwable e)
             {
                e.printStackTrace();
-               this.failure = e;
+               failure = e;
             }
          }
       }
@@ -609,6 +607,7 @@ public class ReattachTest extends ServiceTestBase
 
       Thread t = new Thread()
       {
+         @Override
          public void run()
          {
             try
@@ -678,6 +677,7 @@ public class ReattachTest extends ServiceTestBase
 
       Thread t = new Thread()
       {
+         @Override
          public void run()
          {
             try
@@ -836,6 +836,7 @@ public class ReattachTest extends ServiceTestBase
 
       Thread t = new Thread()
       {
+         @Override
          public void run()
          {
             try
@@ -874,7 +875,7 @@ public class ReattachTest extends ServiceTestBase
 
       long end = System.currentTimeMillis();
 
-      assertTrue((end - start) >= retryInterval);
+      assertTrue(end - start >= retryInterval);
 
       session.close();
 
@@ -952,7 +953,7 @@ public class ReattachTest extends ServiceTestBase
 
       double wait = retryInterval + retryMultiplier * retryInterval + retryMultiplier * retryMultiplier * retryInterval;
 
-      assertTrue((end - start) >= wait);
+      assertTrue(end - start >= wait);
 
       session.close();
 
@@ -1031,9 +1032,9 @@ public class ReattachTest extends ServiceTestBase
 
       double wait = retryInterval + retryMultiplier * 2 * retryInterval + retryMultiplier;
 
-      assertTrue((end - start) >= wait);
+      assertTrue(end - start >= wait);
 
-      assertTrue((end - start) < wait + 500);
+      assertTrue(end - start < wait + 500);
 
       session.close();
 
