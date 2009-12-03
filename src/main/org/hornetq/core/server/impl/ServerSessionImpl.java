@@ -549,14 +549,13 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       }
       catch (Exception e)
       {
-         log.error("Failed to delete queue", e);
-
          if (e instanceof HornetQException)
          {
             response = new HornetQExceptionMessage((HornetQException)e);
          }
          else
          {
+            log.error("Failed to delete queue", e);
             response = new HornetQExceptionMessage(new HornetQException(HornetQException.INTERNAL_ERROR));
          }
       }
@@ -604,14 +603,14 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       }
       catch (Exception e)
       {
-         log.error("Failed to execute queue query", e);
-
          if (e instanceof HornetQException)
          {
             response = new HornetQExceptionMessage((HornetQException)e);
          }
          else
          {
+            log.error("Failed to execute queue query", e);
+
             response = new HornetQExceptionMessage(new HornetQException(HornetQException.INTERNAL_ERROR));
          }
       }
@@ -1552,8 +1551,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       }
       catch (Exception e)
       {
-         log.error("Failed to send message", e);
-
          if (packet.isRequiresResponse())
          {
             if (e instanceof HornetQException)
@@ -1562,6 +1559,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
             }
             else
             {
+               log.error("Failed to send message", e);
+
                response = new HornetQExceptionMessage(new HornetQException(HornetQException.INTERNAL_ERROR));
             }
          }
