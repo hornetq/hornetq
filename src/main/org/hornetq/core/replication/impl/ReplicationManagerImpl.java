@@ -491,6 +491,8 @@ public class ReplicationManagerImpl implements ReplicationManager
          {
             replicated();
          }
+         
+         replicatingChannel.confirm(packet);
       }
 
    }

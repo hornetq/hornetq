@@ -172,6 +172,9 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
          log.warn(e.getMessage(), e);
          response = new HornetQExceptionMessage((HornetQException)e);
       }
+      
+      channel.confirm(packet);
+      
       channel.send(response);
    }
 
