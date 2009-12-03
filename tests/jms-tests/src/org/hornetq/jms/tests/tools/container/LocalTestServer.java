@@ -52,6 +52,7 @@ import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.management.ObjectNameBuilder;
+import org.hornetq.core.management.QueueControl;
 import org.hornetq.core.management.ResourceNames;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.BindingType;
@@ -62,6 +63,7 @@ import org.hornetq.integration.bootstrap.HornetQBootstrapServer;
 import org.hornetq.jms.HornetQQueue;
 import org.hornetq.jms.HornetQTopic;
 import org.hornetq.jms.server.JMSServerManager;
+import org.hornetq.jms.server.config.TopicConfiguration;
 import org.hornetq.jms.server.management.JMSQueueControl;
 import org.hornetq.jms.server.management.TopicControl;
 import org.hornetq.utils.Pair;
@@ -101,7 +103,7 @@ public class LocalTestServer implements Server, Runnable
 
    private int serverIndex;
 
-   HornetQBootstrapServer bootstrap;
+   private HornetQBootstrapServer bootstrap;
 
    // Constructors ---------------------------------------------------------------------------------
 
@@ -168,6 +170,7 @@ public class LocalTestServer implements Server, Runnable
       bootstrap.shutDown();
       started = false;
       unbindAll();
+      bootstrap = null;
       return true;
    }
 
@@ -429,15 +432,15 @@ public class LocalTestServer implements Server, Runnable
 
    public void removeAllMessages(String destination, boolean isQueue) throws Exception
    {
-      SimpleString address = HornetQQueue.createAddressFromName(destination);
-      if (!isQueue)
+      if (isQueue)
       {
-         address = HornetQTopic.createAddressFromName(destination);
-      }
-      Binding binding = getHornetQServer().getPostOffice().getBinding(address);
-      if (binding != null && binding.getType() == BindingType.LOCAL_QUEUE)
+         JMSQueueControl queue = (JMSQueueControl)getHornetQServer().getManagementService().getResource(ResourceNames.JMS_QUEUE + destination);
+         queue.removeMessages(null);
+      } 
+      else
       {
-         ((Queue)binding.getBindable()).deleteAllReferences();
+         TopicControl topic = (TopicControl)getHornetQServer().getManagementService().getResource(ResourceNames.JMS_TOPIC + destination);
+         topic.removeMessages(null);
       }
    }
 
@@ -472,3 +475,4 @@ public class LocalTestServer implements Server, Runnable
    // Inner classes --------------------------------------------------------------------------------
 
 }
+

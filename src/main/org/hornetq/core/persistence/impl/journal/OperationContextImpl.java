@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.persistence.OperationContext;
@@ -194,16 +195,25 @@ public class OperationContextImpl implements OperationContext
    private void execute(final IOAsyncTask task)
    {
       executorsPending.incrementAndGet();
-      executor.execute(new Runnable()
+      try
       {
-         public void run()
+         executor.execute(new Runnable()
          {
-            // If any IO is done inside the callback, it needs to be done on a new context
-            clearContext();
-            task.done();
-            executorsPending.decrementAndGet();
-         }
-      });
+            public void run()
+            {
+               // If any IO is done inside the callback, it needs to be done on a new context
+               clearContext();
+               task.done();
+               executorsPending.decrementAndGet();
+            }
+         });
+      }
+      catch (Throwable e)
+      {
+         log.warn("Error on executor's submit");
+         executorsPending.decrementAndGet();
+         task.onError(HornetQException.INTERNAL_ERROR, "It wasn't possible to complete IO operation - " + e.getMessage());
+      }
    }
 
    /* (non-Javadoc)
