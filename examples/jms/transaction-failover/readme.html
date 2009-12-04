@@ -13,7 +13,8 @@
      <p>Failover behavior differs wether the JMS session is transacter or not.</p>
      <p>When a <em>transacted</em> JMS session is used, once-and-only once delivery is guaranteed.</p>
      <ul>
-        <li>if the failover occurs while there is an in-flight transaction, the transaction will be flagged as <em>rollback only</em> and the JMS client will need to retry the transaction work.</li>
+        <li>if the failover occurs while there is an in-flight transaction, the transaction will be flagged as <em>rollback only</em>. In that case, the JMS client 
+           will need to rollback the session and retry the transaction work.</li>
         <li>if the failover occurs while there is <em>no</em> in-flight transaction, the failover will be transparent to the user.</li>
      </ul>
      <p>HornetQ also provides an example for <a href="../non-transactional-failover/readme.html">non-transaction failover</a>.</p>
