@@ -85,7 +85,7 @@
       &lt;address-setting match="jms.someaddress">
          &lt;max-size-bytes>104857600&lt;/max-size-bytes>
          &lt;page-size-bytes>10485760&lt;/page-size-bytes>
-         &lt;drop-messages-when-full>false&lt;/drop-messages-when-full>
+         &lt;address-full-policy>PAGE&lt;/address-full-policy>
       &lt;/address-setting>
    &lt;/address-settings>
         </programlisting>
@@ -117,11 +117,11 @@
                                 <entry>10MiB (10 * 1024 * 1024 bytes)</entry>
                             </row>
                             <row>
-                                <entry><literal>drop-messages-when-full</literal></entry>
-                                <entry>if true, messages are dropped instead of paged when <literal
-                                        >used-memory</literal> is greater than <literal
-                                        >max-size</literal></entry>
-                                <entry>false</entry>
+                                <entry><literal>address-full-message-policy</literal></entry>
+                                <entry>This must be set to PAGE for paging to enable. If the value is PAGE then further messages will be paged to disk.
+                                    If the value is DROP then further messages will be silently dropped. 
+                                    If the value is BLOCK then client message producers will block when they try and send further messages.</entry>
+                                <entry>PAGE</entry>
                             </row>
                         </tbody>
                     </tgroup>
