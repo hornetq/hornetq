@@ -19,6 +19,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.persistence.impl.journal.OperationContextImpl;
 import org.hornetq.tests.util.UnitTestCase;
 
@@ -42,7 +43,7 @@ public class OperationContextUnitTest extends UnitTestCase
 
    // Public --------------------------------------------------------
 
-   public void testCaptureException() throws Exception
+   public void testCaptureExceptionOnExecutor() throws Exception
    {
       ExecutorService executor = Executors.newSingleThreadExecutor();
       executor.shutdown();
@@ -90,6 +91,80 @@ public class OperationContextUnitTest extends UnitTestCase
       t.join();
       
       assertEquals(1, numberOfFailures.get());
+   }
+   
+   public void testCaptureExceptionOnFailure() throws Exception
+   {
+      ExecutorService executor = Executors.newSingleThreadExecutor();
+      
+      final CountDownLatch latch = new CountDownLatch(1);
+      
+      final OperationContextImpl context = new OperationContextImpl(executor)
+      {
+         public void complete()
+         {
+            super.complete();
+            latch.countDown();
+         }
+
+      };
+      
+      context.storeLineUp();
+      
+      final AtomicInteger failures = new AtomicInteger(0);
+      
+      Thread t = new Thread()
+      {
+         public void run()
+         {
+            try
+            {
+               context.waitCompletion(5000);
+            }
+            catch (Throwable e)
+            {
+               e.printStackTrace();
+               failures.incrementAndGet();
+            }
+         }
+      };
+      
+      t.start();
+
+      // Need to wait complete to be called first or the test would be invalid.
+      // We use a latch instead of forcing a sleep here
+      assertTrue(latch.await(5, TimeUnit.SECONDS));
+      
+      context.onError(1, "Poop happens!");
+      
+      t.join();
+      
+      assertEquals(1, failures.get());
+      
+      
+      failures.set(0);
+      
+      final AtomicInteger operations = new AtomicInteger(0); 
+      
+      // We should be up to date with lineUps and executions. this should now just finish processing
+      context.executeOnCompletion(new IOAsyncTask()
+      {
+
+         public void done()
+         {
+            operations.incrementAndGet();
+         }
+
+         public void onError(int errorCode, String errorMessage)
+         {
+            failures.incrementAndGet();
+         }
+         
+      });
+      
+      
+      assertEquals(1, failures.get());
+      assertEquals(0, operations.get());
    }
    
    // Package protected ---------------------------------------------

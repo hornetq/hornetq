@@ -223,9 +223,6 @@ public class OperationContextImpl implements OperationContext
     */
    public void complete()
    {
-      // We hold errors until the complete is set, or the callbacks will never get informed
-      errorCode = -1;
-      errorMessage = null;
    }
 
    /* (non-Javadoc)

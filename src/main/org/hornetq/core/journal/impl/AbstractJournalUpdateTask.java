@@ -187,7 +187,9 @@ public abstract class AbstractJournalUpdateTask implements JournalReaderCallback
       if (writingChannel != null)
       {
          sequentialFile.position(0);
-         sequentialFile.writeDirect(writingChannel.toByteBuffer(), true);
+         SimpleWaitIOCallback completion = new SimpleWaitIOCallback();
+         sequentialFile.writeDirect(writingChannel.toByteBuffer(), true, completion);
+         completion.waitCompletion();
          sequentialFile.close();
          newDataFiles.add(currentFile);
       }
@@ -224,7 +226,7 @@ public abstract class AbstractJournalUpdateTask implements JournalReaderCallback
       writingChannel.writeInt(fileID);
    }
 
-   protected void addToRecordsSnaptsho(long id)
+   protected void addToRecordsSnaptshot(long id)
    {
       recordsSnapshot.add(id);
    }

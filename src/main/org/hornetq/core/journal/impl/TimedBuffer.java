@@ -272,9 +272,18 @@ public class TimedBuffer
 
    public void flush()
    {
+      flush(false);
+   }
+
+   /** 
+    * force means the Journal is moving to a new file. Any pending write need to be done immediately
+    * or data could be lost
+    * */
+   public void flush(final boolean force)
+   {
       synchronized (this)
       {
-         if (!delayFlush && buffer.writerIndex() > 0)
+         if ((force || !delayFlush) && buffer.writerIndex() > 0)
          {
             int pos = buffer.writerIndex();
 

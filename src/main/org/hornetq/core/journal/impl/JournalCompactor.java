@@ -176,7 +176,7 @@ public class JournalCompactor extends AbstractJournalUpdateTask
       {
          for (long id : ids)
          {
-            addToRecordsSnaptsho(id);
+            addToRecordsSnaptshot(id);
          }
       }
 
@@ -184,7 +184,7 @@ public class JournalCompactor extends AbstractJournalUpdateTask
       {
          for (long id : ids2)
          {
-            addToRecordsSnaptsho(id);
+            addToRecordsSnaptshot(id);
          }
       }
    }
