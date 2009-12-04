@@ -30,8 +30,8 @@
                 />.</para>
         </listitem>
         <listitem>
-            <para>For answers to more questions about what HornetQ is and isn't please visit
-                    the <ulink url="http://www.jboss.org/community/wiki/HornetQGeneralFAQs">FAQs wiki
+            <para>For answers to more questions about what HornetQ is and isn't please visit the
+                    <ulink url="http://www.jboss.org/community/wiki/HornetQGeneralFAQs">FAQs wiki
                     page</ulink>.</para>
         </listitem>
     </itemizedlist>
@@ -49,9 +49,9 @@
                 from Windows desktops to IBM mainframes.</para>
         </listitem>
         <listitem>
-            <para>Superb performance. Our class beating high performance journal provides persistent
-                messaging performance at rates normally seen for non persistent messaging, our non
-                persistent messaging performance rocks the boat too.</para>
+            <para>Superb performance. Our ground-breaking high performance journal provides
+                persistent messaging performance at rates normally seen for non persistent
+                messaging, our non persistent messaging performance rocks the boat too.</para>
         </listitem>
         <listitem>
             <para>Full feature set. All the features you'd expect in any serious messaging system,

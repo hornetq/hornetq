@@ -19,46 +19,61 @@
 <chapter id="ha">
     <title>High Availability and Failover</title>
     <para>We define high availability as the <emphasis>ability for the system to continue
-            functioning after failure of one or more of the servers</emphasis>. A part of high
-        availability is <emphasis>failover</emphasis> which we define as the <emphasis>ability for
-            client connections to migrate from one server to another in event of server failure so
-            client applications can continue to operate</emphasis>.</para>
-    <para>HornetQ provides high availability by replicating servers in pairs. It also provides both
-        client failover and application-level client failover.</para>
+            functioning after failure of one or more of the servers</emphasis>.</para>
+    <para>A part of high availability is <emphasis>failover</emphasis> which we define as the
+            <emphasis>ability for client connections to migrate from one server to another in event
+            of server failure so client applications can continue to operate</emphasis>.</para>
     <section>
         <title>Live - Backup Pairs</title>
         <para>HornetQ allows pairs of servers to be linked together as <emphasis>live -
                 backup</emphasis> pairs. In this release there is a single backup server for each
-            live server. Backup servers are not operational until failover occurs. In later releases
-            we will most likely support replication onto multiple backup servers.</para>
-       <para>Before failover, only the live server is serving the HornetQ clients while the backup server remains passive.
-          When clients fail over to the backup server, the backup server becomes active and start to service the HornetQ clients.</para>
-        
+            live server. A backup server is owned by only one live server. Backup servers are not
+            operational until failover occurs.</para>
+        <para>Before failover, only the live server is serving the HornetQ clients while the backup
+            server remains passive. When clients fail over to the backup server, the backup server
+            becomes active and starts to service the HornetQ clients.</para>
         <section id="ha.mode">
-          <title>HA modes</title>
-          <para>HornetQ provides two different modes for High Availability, either by <emphasis>replicating data</emphasis> from the live server journal 
-             to the backup server or using a <emphasis>shared state</emphasis> for both servers.</para>
-          <section id="ha.mode.replicated">
-             <title>Data Replication</title>
-             <para>In this mode, data stored in HornetQ journal are replicated from the live servers's journal to the
-                backuper server's journal.</para>
-             <para>Replication is performed in an asynchronous fashion between live and backup server.
-                 Data is replicated one way in a stream, and responses that the data has reached the
-                 backup is returned in another stream. Pipelining replications and responses to
-                 replications in separate streams allows replication throughput to be much higher than if
-                 we synchronously replicated data and waited for a response serially in an RPC manner
-                 before replicating the next piece of data.</para>
-             <graphic fileref="images/ha-replicated-store.png" align="center"/>
-             <section id="configuring.live.backup">
-                <title>Configuration</title>
-                <para>First, on the live server, in <literal>hornetq-configuration.xml</literal>, 
-                  configure the live server with knowledge of its backup server. This is done by
-                  specifying a <literal>backup-connector-ref</literal> element. This element
-                  references a connector, also specified on the live server which contains knowledge
-                  of how to connect to the backup server.</para>
-               <para>Here's a snippet from live server's <literal
-                      >hornetq-configuration.xml</literal> configured to connect to its backup server:</para>
-              <programlisting>
+            <title>HA modes</title>
+            <para>HornetQ provides two different modes for high availability, either by
+                    <emphasis>replicating data</emphasis> from the live server journal to the backup
+                server or using a <emphasis>shared state</emphasis> for both servers.</para>
+            <section id="ha.mode.replicated">
+                <title>Data Replication</title>
+                <para>In this mode, data stored in the HornetQ journal are replicated from the live
+                    server's journal to the backup server's journal. Note that we do not replicate
+                    the entire server state, we only replicate the journal and other persistent
+                    operations.</para>
+                <para>Replication is performed in an asynchronous fashion between live and backup
+                    server. Data is replicated one way in a stream, and responses that the data has
+                    reached the backup is returned in another stream. Pipelining replications and
+                    responses to replications in separate streams allows replication throughput to
+                    be much higher than if we synchronously replicated data and waited for a
+                    response serially in an RPC manner before replicating the next piece of
+                    data.</para>
+                <para>When the user receives confirmation that a transaction has committed, prepared
+                    or rolled back or a persistent message has been sent, we can guarantee it has
+                    reached the backup server and been persisted.</para>
+                <para>Data replication introduces some inevitable performance overhead compared to
+                    non replicated operation, but has the advantage in that it requires no expensive
+                    shared file system (e.g. a SAN) for failover, in other words it is a <emphasis
+                        role="italic">shared nothing</emphasis> approach to high
+                    availability.</para>
+                <para>Failover with data replication is also faster than failover using shared
+                    storage, since the journal does not have to be reloaded on failover at the
+                    backup node.</para>
+                <graphic fileref="images/ha-replicated-store.png" align="center"/>
+                <section id="configuring.live.backup">
+                    <title>Configuration</title>
+                    <para>First, on the live server, in <literal
+                        >hornetq-configuration.xml</literal>, configures the live server with
+                        knowledge of its backup server. This is done by specifying a <literal
+                            >backup-connector-ref</literal> element. This element references a
+                        connector, also specified on the live server which contains knowledge of how
+                        to connect to the backup server.</para>
+                    <para>Here's a snippet from live server's <literal
+                            >hornetq-configuration.xml</literal> configured to connect to its backup
+                        server:</para>
+                    <programlisting>
   &lt;backup-connector-ref connector-name="backup-connector"/>
 
   &lt;connectors>
@@ -70,10 +85,14 @@
        &lt;param key="port" value="5445"/>
      &lt;/connector>
   &lt;/connectors></programlisting>
-              <para>Secondly, on the backup server, we flag the server as a backup and make sure it has an acceptor that the live server can connect to:</para>
-              <programlisting>
+                    <para>Secondly, on the backup server, we flag the server as a backup and make
+                        sure it has an acceptor that the live server can connect to, we also make sure the shared-store paramater is
+                    set to false:</para>
+                    <programlisting>
   &lt;backup>true&lt;/backup>
-
+  
+  &lt;shared-store>false&lt;shared-store>
+  
   &lt;acceptors>
      &lt;acceptor name="acceptor">
         &lt;factory-class>org.hornetq.integration.transports.netty.NettyAcceptorFactory&lt;/factory-class>
@@ -82,120 +101,273 @@
      &lt;/acceptor>
   &lt;/acceptors>               
               </programlisting>
-              <para>For a backup server to function correctly it's also important that it has the same
-                  set of bridges, predefined queues, cluster connections, broadcast groups and
-                  discovery groups as defined on the live node. The easiest way to ensure this is just
-                  to copy the entire server side configuration from live to backup and just make the
-                  changes as specified above. </para>
-          </section>
-             <section>
-                 <title>Synchronization of live-backup pairs</title>
-                 <para>In order for live - backup pairs to operate properly, they must be identical
-                     replicas. This means you cannot just use any backup server that's previously been
-                     used for other purposes as a backup server, since it will have different data in its
-                     persistent storage. If you try to do so you will receive an exception in the logs
-                     and the server will fail to start.</para>
-                 <para>To create a backup server for a live server that's already been used for other
-                     purposes, it's necessary to copy the <literal>data</literal> directory from the live
-                     server to the backup server. This means the backup server will have an identical
-                     persistent store to the backup server.</para>
-                 <para>After failover, when the live server is restarted, the backup server will copy its
-                    journal back to the live server. When the live server has the updated journal, it will
-                    become active again and the backup server will become passive.</para>
-             </section>
-          </section>
-          <section id="ha.mode.shared">
-             <title>Shared Store</title>
-             <para>When using a shared store, both live and backup servers share the <emphasis>same</emphasis> journal
-             using a shared file system. When failover occurs and backup server takes over, it will load the journal and
-             clients can connect to it.</para>
-             <graphic fileref="images/ha-shared-store.png" align="center"/>
-             <section id="ha/mode.shared.configuration">
-                <title>Configuration</title>
-                <para>To configure the live and backup server to share their store, configure both <literal>hornetq-configuration.xml</literal>:</para>
-                <programlisting>
+                    <para>For a backup server to function correctly it's also important that it has
+                        the same set of bridges, predefined queues, cluster connections, broadcast
+                        groups and discovery groups as defined on the live node. The easiest way to
+                        ensure this is just to copy the entire server side configuration from live
+                        to backup and just make the changes as specified above. </para>
+                </section>
+                <section>
+                    <title>Synchronization a backup node to a live node</title>
+                    <para>In order for live - backup pairs to operate properly, they must be
+                        identical replicas. This means you cannot just use any backup server that's
+                        previously been used for other purposes as a backup server, since it will
+                        have different data in its persistent storage. If you try to do so you will
+                        receive an exception in the logs and the server will fail to start.</para>
+                    <para>To create a backup server for a live server that's already been used for
+                        other purposes, it's necessary to copy the <literal>data</literal> directory
+                        from the live server to the backup server. This means the backup server will
+                        have an identical persistent store to the backup server.</para>
+                    <para>One a live server has failed over onto a backup server, the old live
+                        server becomes invalid and cannot just be restarted. To resynchonize the
+                        pair as a working live backup pair again, both servers need to be stopped,
+                        the data copied from the live node to the backup node and restarted
+                        again.</para>
+                    <para>The next release of HornetQ will provide functionality for automatically
+                        synchronizing a new backup node to a live node without having to temporarily
+                        bring down the live node.</para>
+                </section>
+            </section>
+            <section id="ha.mode.shared">
+                <title>Shared Store</title>
+                <para>When using a shared store, both live and backup servers share the
+                        <emphasis>same</emphasis> journal using a shared file system. </para>
+                <para>When failover occurs and the backup server takes over, it will load the
+                    persistent storage from the shared file system and clients can connect to
+                    it.</para>
+                <para>This style of high availability differs from data replication in that it
+                    requires a shared file system which is accessible by both the live and backup
+                    nodes. Typically this will be some kind of high performance Storage Area Network
+                    (SAN). We do not recommend you use Network Attached Storage (NAS), e.g. NFS
+                    mounts to store any shared journal (NFS is slow).</para>
+                <para>The advantage of shared-store high availability is that no replication occurs
+                    between the live and backup nodes, this means it does not suffer any performance
+                    penalties due to the overhead of replication during normal operation.</para>
+                <para>The disadvantage of shared store replication is that it requires a shared file
+                    system, and when the backup server activates it needs to load the journal from
+                    the shared store which can take some time depending on the amount of data in the
+                    store.</para>
+                <para>If you require the highest performance during normal operation, have access to
+                    a fast SAN, and can live with a slightly slower failover (depending on amount of
+                    data) we recommend shared store high availability</para>
+                <graphic fileref="images/ha-shared-store.png" align="center"/>
+                <section id="ha/mode.shared.configuration">
+                    <title>Configuration</title>
+                    <para>To configure the live and backup server to share their store, configure
+                        both <literal>hornetq-configuration.xml</literal>:</para>
+                    <programlisting>
                    &lt;shared-store>true&lt;shared-store>
                 </programlisting>
-                <para>In order for live - backup pairs to operate properly with a shared store, both servers
-                   must have configured the location of journal directory to point
-                        to the <emphasis>same shared location</emphasis> (as explained in <xref linkend="configuring.message.journal" />)</para>
-               <para>If clients will use automatic failover with JMS, the live server will need to configure a connector
-                  to the backup server and reference it from its <literal>hornetq-jms.xml</literal> configuration as explained
-                  in <xref linkend="ha.automatic.failover" />.</para>
-             </section>
-             <section>
-                 <title>Synchronization of live-backup pairs</title>
-                 <para>As both live and backup servers share the same journal, they do not need to be synchronized.
-                    However until, both live and backup servers are up and running, high-availability can not be provided with a single server.
-                    After failover, at first opportunity, stop the backup server (which is active) and restart the live and backup servers.</para>
-             </section>
-          </section>
+                    <para>In order for live - backup pairs to operate properly with a shared store,
+                        both servers must have configured the location of journal directory to point
+                        to the <emphasis>same shared location</emphasis> (as explained in <xref
+                            linkend="configuring.message.journal"/>)</para>
+                    <para>If clients will use automatic failover with JMS, the live server will need
+                        to configure a connector to the backup server and reference it from its
+                            <literal>hornetq-jms.xml</literal> configuration as explained in <xref
+                            linkend="ha.automatic.failover"/>.</para>
+                </section>
+                <section>
+                    <title>Synchronizing a backup node to a live node</title>
+                    <para>As both live and backup servers share the same journal, they do not need
+                        to be synchronized. However until, both live and backup servers are up and
+                        running, high-availability can not be provided with a single server. After
+                        failover, at first opportunity, stop the backup server (which is active) and
+                        restart the live and backup servers.</para>
+                    <para>In the next release of HornetQ we will provide functionality to
+                        automatically synchronize a new backup server with a running live server
+                        without having to temporarily bring the live server down.</para>
+                </section>
+            </section>
         </section>
     </section>
-    
     <section id="failover">
-      <title>Failover Modes</title>
-      <para>HornetQ defines 3 types of failover:</para>
-      <itemizedlist>
-         <listitem><para>100% transparent re-attach to a single server as explained in <xref linkend="client-reconnection" /></para></listitem>
-         <listitem><para>automatic failover</para></listitem>
-         <listitem><para>application-level failover</para></listitem>
-      </itemizedlist>
-      
-    <section id="ha.automatic.failover">
-        <title>Automatic Client Failover</title>
-        <para>HornetQ clients can be configured with knowledge of live and backup servers, so that
-            in event of connection failure of the client - live server connection, the client will
-            detect this and reconnect to the backup server. The backup server will have recreated the sessions
-            and consumers but it will not preserve the session state from the live server.</para>
-        <para>HornetQ clients detect connection failure when it has not received packets from the
-            server within the time given by <literal>client-failure-check-period</literal> as
-            explained in section <xref linkend="connection-ttl"/>. If the client does not receive
-            data in good time, it will assume the connection has failed and attempt failover.</para>
-        <para>HornetQ clients can be configured with the list of live-backup server pairs in a
-            number of different ways. They can be configured explicitly or probably the most common
-            way of doing this is to use <emphasis>server discovery</emphasis> for the client to
-            automatically discover the list. For full details on how to configure server discovery, please see
-                <xref linkend="clusters.server-discovery"/>. Alternatively, the clients can  explicitely specifies pairs of
-                live-backup server as explained in <xref linkend="clusters.static.servers" />.</para>
-        <para>To enable automatic client failover, the client must be configured to allow non-zero reconnection attempts
-           (as explained in <xref linkend="client-reconnection" />).</para>
-        <para>Sometimes you want a client to failover onto a backup server even if the live server
-            is just cleanly shutdown rather than having crashed or the connection failed. To
-            configure this you can set the property <literal>FailoverOnServerShutdown</literal> to
-            false either on the <literal>HornetQConnectionFactory</literal> if you're using JMS or
-            in the <literal>hornetq-jms.xml</literal> file when you define the connection factory,
-            or if using core by setting the property directly on the <literal
-                >ClientSessionFactoryImpl</literal> instance after creation. The default value for
-            this property is <literal>false</literal>, this means that by default <emphasis>HornetQ
-                clients will not failover to a backup server if the live server is simply shutdown
-                cleanly.</emphasis></para>
-        <para>For examples of automatic failover with transacted and non-transacted JMS sessions, please see <xref
-                    linkend="examples.transaction-failover"/> and <xref linkend="examples.non-transaction-failover" />.</para>    </section>
-    <section>
-        <title>Application-Level Failover</title>
-        <para>In some cases you may not want automatic client failover, and prefer to handle any
-            connection failure yourself, and code your own manually reconnection logic in your own
-            failure handler. We define this as <emphasis>application-level</emphasis> failover,
-            since the failover is handled at the user application level.</para>
-        <para>If all your clients use application-level failover then you do not need data
-            replication on the server side, and should disabled this. Server replication has some
-            performance overhead and should be disabled if it is not required. To disable server
-            replication simply do not specify a <literal>backup-connector</literal> element on each
-            live server.</para>
-        <para>To implement application-level failover, if you're using JMS then you need to code an
-                <literal>ExceptionListener</literal> class on the JMS connection. The <literal
-                >ExceptionListener</literal> will be called by HornetQ in the event that connection
-            failure is detected. In your <literal>ExceptionListener</literal> you would close your
-            old JMS connections, potentially look up new connection factory instances from JNDI and
-            creating new connections. In this case you may well be using <ulink
-                url="http://www.jboss.org/community/wiki/JBossHAJNDIImpl">HA-JNDI</ulink> to ensure
-            that the new connection factory is looked up from a different server.</para>
-        <para>For a working example of application-level failover, please see <xref
-                linkend="application-level-failover"/>.</para>
-        <para>If you are using the core API, then the procedure is very similar: you would code a
-                <literal>FailureListener</literal> on your core <literal>ClientSession</literal>
-            instances.</para>
-    </section>
+        <title>Failover Modes</title>
+        <para>HornetQ defines two types of client failover:</para>
+        <itemizedlist>
+            <listitem>
+                <para>Automatic client failover</para>
+            </listitem>
+            <listitem>
+                <para>Application-level client failover</para>
+            </listitem>
+        </itemizedlist>
+        <para>HornetQ also provides 100% transparent automatic reattachment of connections to the
+            same server (e.g. in case of transient network problems). This is similar to failover,
+            except it's reconnecting to the same server and is discussed in <xref
+                linkend="client-reconnection"/></para>
+        <section id="ha.automatic.failover">
+            <title>Automatic Client Failover</title>
+            <para>HornetQ clients can be configured with knowledge of live and backup servers, so
+                that in event of connection failure at the client - live server connection, the
+                client will detect this and reconnect to the backup server. The backup server will
+                then automatically recreate any sessions and consumers that existed on each
+                connection before failover, thus saving the user from having to hand-code manual
+                reconnection logic.</para>
+            <para>HornetQ clients detect connection failure when it has not received packets from
+                the server within the time given by <literal>client-failure-check-period</literal>
+                as explained in section <xref linkend="connection-ttl"/>. If the client does not
+                receive data in good time, it will assume the connection has failed and attempt
+                failover.</para>
+            <para>HornetQ clients can be configured with the list of live-backup server pairs in a
+                number of different ways. They can be configured explicitly or probably the most
+                common way of doing this is to use <emphasis>server discovery</emphasis> for the
+                client to automatically discover the list. For full details on how to configure
+                server discovery, please see <xref linkend="clusters.server-discovery"/>.
+                Alternatively, the clients can explicitly specifies pairs of live-backup server as
+                explained in <xref linkend="clusters.static.servers"/>.</para>
+            <para>To enable automatic client failover, the client must be configured to allow
+                non-zero reconnection attempts (as explained in <xref linkend="client-reconnection"
+                />).</para>
+            <para>Sometimes you want a client to failover onto a backup server even if the live
+                server is just cleanly shutdown rather than having crashed or the connection failed.
+                To configure this you can set the property <literal
+                    >FailoverOnServerShutdown</literal> to false either on the <literal
+                    >HornetQConnectionFactory</literal> if you're using JMS or in the <literal
+                    >hornetq-jms.xml</literal> file when you define the connection factory, or if
+                using core by setting the property directly on the <literal
+                    >ClientSessionFactoryImpl</literal> instance after creation. The default value
+                for this property is <literal>false</literal>, this means that by default
+                    <emphasis>HornetQ clients will not failover to a backup server if the live
+                    server is simply shutdown cleanly.</emphasis></para>
+            <para>
+                <note>
+                    <para>By default, cleanly shutting down the server <emphasis role="bold">will
+                            not</emphasis> trigger failover on the client.</para>
+                    <para>Using CTRL-C on a HornetQ server or JBoss AS instance causes the server to
+                            <emphasis role="bold">cleanly shut down</emphasis>, so will not trigger
+                        failover on the client. </para>
+                    <para>If you want the client to failover when it's server is cleanly shutdown
+                        then you must set the property <literal>FailoverOnServerShutdown</literal>
+                        to true</para>
+                </note>
+            </para>
+            <para>For examples of automatic failover with transacted and non-transacted JMS
+                sessions, please see <xref linkend="examples.transaction-failover"/> and <xref
+                    linkend="examples.non-transaction-failover"/>.</para>
+            <section id="ha.automatic.failover.noteonreplication">
+                <title>A note on server replication</title>
+                <para>HornetQ does not replicate full server state betwen live and backup servers,
+                    so when the new session is automatically recreated on the backup it won't have
+                    any knowledge of messages already sent or acknowledged in that session. Any
+                    inflight sends or acknowledgements at the time of failover might also be
+                    lost.</para>
+                <para>By replicating full server state, theoretically we could provide a 100%
+                    transparent seamless failover, which would avoid any lost messages or
+                    acknowledgements, however this comes at a great cost - replicating the full
+                    server state - that's all the queues, sessions etc, would require replication of
+                    the entire server state machine - every operation on the live server would have
+                    to replicated on the replica server(s) in the exact same global order to ensure
+                    a consistent replica state. This is extremely hard to do in a performant and
+                    scalable way, especially when one considers that multiple threads are changing
+                    the live server state concurrently.</para>
+                <para>Some solutions which do provide full state machine replication do so by using
+                    techniques such as <emphasis role="italic">virtual synchrony</emphasis>, but
+                    this does not scale well and effectively serializes all operations to a single
+                    thread, dramatically reducing concurrency.</para>
+                <para>Other techniques for multi-threaded active replication exist such as
+                    replicating lock states or replicating thread scheduling but this is very hard
+                    to achieve at a Java level.</para>
+                <para>Consequently it as decided it was not worth massively reducing performance and
+                    concurrency for the sake of 100% transparent failover. Even without 100%
+                    transparent failover it is simple to guarantee <emphasis role="italic">once and
+                        only once</emphasis> delivery guarantees, even in the case of failure, by
+                    using a combination of duplicate detection and retrying of transactions, however
+                    this is not 100% transparent to the client code.</para>
+            </section>
+            <section id="ha.automatic.failover.blockingcalls">
+                <title>Handling blocking calls during failover</title>
+                <para>If the client code is in a blocking call to the server when failover occurs,
+                    expecting a response before it can continue, then on failover the new session
+                    won't have any knowledge of the call that was in progress, and the call might
+                    otherwise hang for ever, waiting for a response that will never come.</para>
+                <para>To remedy this, HornetQ will unblock any unblocking calls that were in
+                    progress at the time of failover by making them throw a <literal
+                        >javax.jms.JMSException</literal> (if using JMS), or a <literal
+                        >HornetQException</literal> with error code <literal
+                        >HornetQException.UNBLOCKED</literal>. It is up to the user code to catch
+                    this exception and retry any operations if desired.</para>
+            </section>
+            <section id="ha.automatic.failover.transactions">
+                <title>Handling failover with transactions</title>
+                <para>If the session is transactional and messages have already been sent or
+                    acknowledged in the current transaction, then the server cannot be sure that
+                    messages sent or acknowledgements haven't been lost during the failover.</para>
+                <para>Consequently the transaction will be marked as rollback-only, and any
+                    subsequent attempt to commit it, will throw a <literal
+                        >javax.jms.TransactionRolledBackException</literal> (if using JMS), or a
+                        <literal>HornetQException</literal> with error code <literal
+                        >HornetQException.TRANSACTION_ROLLED_BACK</literal> if using the core
+                    API.</para>
+                <para>It is up to the user to catch the exception, and perform any client side local
+                    rollback code as necessary, the user can then just retry the transactional
+                    operations again on the same session.</para>
+                <para>HornetQ ships with a fully functioning example demonstrating how to do this
+                    see <xref linkend="examples.transaction-failover"/></para>
+                <para>If failover occurs when a commit call is being executed, the server, as
+                    previously described will unblock the call to prevent a hang, since the response
+                    will not come back from the backup node. In this case it is not easy for the
+                    client to determine whether the transaction commit was actually processed on the
+                    live server before failure occurred.</para>
+                <para>To remedy this, the client can simply enable duplicate detection (<xref
+                        linkend="duplicate-detection"/>) in the transaction, and just retry the
+                    transaction operations again after the call is unblocked. If the transaction had
+                    indeed been committed on the live server successfully before failover, then when
+                    the transaction is retried, duplicate detection will ensure that any persistent
+                    messages resent in the transaction will be ignored on the server to prevent them
+                    getting sent more than once.</para>
+                <note>
+                    <para>By catching the rollback exceptions and retrying, catching unblocked calls
+                        and enabling duplicate detection, once and only once delivery guarantees for
+                        messages can be provided in the case of failure, guaranteeing 100% no loss
+                        or duplication of messages.</para>
+                </note>
+            </section>
+            <section id="ha.automatic.failover.nontransactional">
+                <title>Handling failover with non transactional sessions</title>
+                <para>If the session is non transactional, you may get lost messages or
+                    acknowledgements in the event of failover.</para>
+                <para>If you wish to provide <emphasis role="italic">once and only once</emphasis>
+                    delivery guarantees for non transacted sessions too, then make sure you send
+                    messages blocking, enabled duplicate detection, and catch unblock exceptions as
+                    described in <xref linkend="ha.automatic.failover.blockingcalls"/></para>
+                <para>However bear in mind that sending messages and acknowledgements blocking will
+                    incur performance penalties due to the network round trip involved.</para>
+            </section>
+        </section>
+        <section>
+            <title>Getting notified of connection failure</title>
+            <para>JMS provides a standard mechanism for getting notified asynchronously of
+                connection failure: <literal>java.jms.ExceptionListener</literal>. Please consult
+                the JMS javadoc or any good JMS tutorial for more information on how to use
+                this.</para>
+            <para>The HornetQ core API also provides a similar feature in the form of the class
+                    <literal>org.hornet.core.client.SessionFailureListener</literal></para>
+            <para>Any ExceptionListener or SessionFailureListener instance will always be called by
+                HornetQ on event of connection failure, <emphasis role="bold"
+                    >irrespective</emphasis> of whether the connection was successfully failed over,
+                reconnected or reattached.</para>
+        </section>
+        <section>
+            <title>Application-Level Failover</title>
+            <para>In some cases you may not want automatic client failover, and prefer to handle any
+                connection failure yourself, and code your own manually reconnection logic in your
+                own failure handler. We define this as <emphasis>application-level</emphasis>
+                failover, since the failover is handled at the user application level.</para>
+            <para>To implement application-level failover, if you're using JMS then you need to code
+                an <literal>ExceptionListener</literal> class on the JMS connection. The <literal
+                    >ExceptionListener</literal> will be called by HornetQ in the event that
+                connection failure is detected. In your <literal>ExceptionListener</literal> you
+                would close your old JMS connections, potentially look up new connection factory
+                instances from JNDI and creating new connections. In this case you may well be using
+                    <ulink url="http://www.jboss.org/community/wiki/JBossHAJNDIImpl">HA-JNDI</ulink>
+                to ensure that the new connection factory is looked up from a different
+                server.</para>
+            <para>For a working example of application-level failover, please see <xref
+                    linkend="application-level-failover"/>.</para>
+            <para>If you are using the core API, then the procedure is very similar: you would code
+                a <literal>FailureListener</literal> on your core <literal>ClientSession</literal>
+                instances.</para>
+        </section>
     </section>
 </chapter>
