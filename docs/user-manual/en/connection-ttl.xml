@@ -163,7 +163,7 @@ at org.acme.yourproject.YourClass (YourClass.java:666)
         <para>It is possible instead to use a thread from a thread pool to handle the packents so
            that the remoting thread is not tied up for too long. However, please note that processing 
            operations asynchronously on another thread adds a little more
-            latency. To enable asynchronous connection executin, set the parameter <literal
+            latency. To enable asynchronous connection execution, set the parameter <literal
                 >async-connection-execution-enabled</literal> in <literal
                 >hornetq-configuration.xml</literal> to <literal>true</literal> (default value is
                 <literal>false</literal>).</para>
