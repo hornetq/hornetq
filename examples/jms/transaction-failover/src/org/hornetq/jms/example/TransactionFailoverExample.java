@@ -72,23 +72,22 @@ public class TransactionFailoverExample extends HornetQExample
          // Step 8. We send half of the messages, kill the live server and send the remaining messages
          sendMessages(session, producer, numMessages, true);
 
+         // Step 9. As failover occured during transaction, the session has been marked for rollback only
          try
          {
-            // Step 9. As failover occured during transaction, the session has been marked for rollback only
             session.commit();
          } catch (TransactionRolledBackException e)
          {
-            // Step 10. We rollback the transaction
-            session.rollback();
+            System.err.println("transaction has been rolled back: " + e.getMessage());
          }
          
-         // Step 11. We resend all the messages
+         // Step 10. We resend all the messages
          sendMessages(session, producer, numMessages, false);
-         // Step 12. We commit the session succesfully: the messages will be all delivered to the activated backup server
+         // Step 11. We commit the session succesfully: the messages will be all delivered to the activated backup server
          session.commit();
 
 
-         // Step 13. We are now transparently reconnected to server #0, the backup server.
+         // Step 12. We are now transparently reconnected to server #0, the backup server.
          // We consume the messages sent before the crash of the live server and commit the session.
          for (int i = 0; i < numMessages; i++)
          {
@@ -102,7 +101,7 @@ public class TransactionFailoverExample extends HornetQExample
       }
       finally
       {
-         // Step 14. Be sure to close our resources!
+         // Step 13. Be sure to close our resources!
 
          if (connection != null)
          {

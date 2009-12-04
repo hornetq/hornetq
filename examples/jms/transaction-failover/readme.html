@@ -14,7 +14,7 @@
      <p>When a <em>transacted</em> JMS session is used, once-and-only once delivery is guaranteed.</p>
      <ul>
         <li>if the failover occurs while there is an in-flight transaction, the transaction will be flagged as <em>rollback only</em>. In that case, the JMS client 
-           will need to rollback the session and retry the transaction work.</li>
+           will need to retry the transaction work.</li>
         <li>if the failover occurs while there is <em>no</em> in-flight transaction, the failover will be transparent to the user.</li>
      </ul>
      <p>HornetQ also provides an example for <a href="../non-transactional-failover/readme.html">non-transaction failover</a>.</p>
@@ -80,13 +80,8 @@
               session.commit();
            } catch (TransactionRolledBackException e)
            {
-              ...
+              System.err.println("transaction has been rolled back: " + e.getMessage());
            }
-        </pre>
-        
-        <li>In the <code>catch (TransactionRolledBackException e)</code> block, we rollback the session
-        <pre class="prettyprint">
-           session.rollback();
         </pre>
         
         <li>We resend all the messages</li>

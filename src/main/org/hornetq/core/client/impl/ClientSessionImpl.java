@@ -461,6 +461,8 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
       if (rollbackOnly)
       {
+         rollback(false);
+         
          throw new HornetQException(TRANSACTION_ROLLED_BACK,
                                     "The transaction was rolled back on failover to a backup server");
       }

@@ -13,6 +13,8 @@
 
 package org.hornetq.tests.integration.cluster.failover;
 
+import static org.hornetq.tests.util.RandomUtil.randomInt;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -42,6 +44,7 @@ import org.hornetq.core.remoting.RemotingConnection;
 import org.hornetq.core.remoting.impl.invm.TransportConstants;
 import org.hornetq.core.transaction.impl.XidImpl;
 import org.hornetq.jms.client.HornetQTextMessage;
+import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.utils.SimpleString;
 
 /**
@@ -328,6 +331,90 @@ public class FailoverTest extends FailoverTestBase
       assertEquals(0, sf.numConnections());
    }
 
+   /**
+    * Test that once the transacted session has throw a TRANSACTION_ROLLED_BACK exception,
+    * it can be reused again
+    */
+   public void testTransactedMessagesSentSoRollbackAndContinueWork() throws Exception
+   {
+      ClientSessionFactoryInternal sf = getSessionFactory();
+
+      sf.setBlockOnNonPersistentSend(true);
+      sf.setBlockOnPersistentSend(true);
+
+      ClientSession session = sf.createSession(false, false);
+
+      session.createQueue(ADDRESS, ADDRESS, null, true);
+
+      final CountDownLatch latch = new CountDownLatch(1);
+
+      class MyListener extends BaseListener
+      {
+         public void connectionFailed(HornetQException me)
+         {
+            latch.countDown();
+         }
+
+      }
+
+      session.addFailureListener(new MyListener());
+
+      ClientProducer producer = session.createProducer(ADDRESS);
+
+      final int numMessages = 100;
+
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage message = session.createClientMessage(i % 2 == 0);
+
+         setBody(i, message);
+
+         message.putIntProperty("counter", i);
+
+         producer.send(message);
+      }
+
+      fail(session, latch);
+
+      assertTrue(session.isRollbackOnly());
+
+      try
+      {
+         session.commit();
+
+         fail("Should throw exception");
+      }
+      catch (HornetQException e)
+      {
+         assertEquals(HornetQException.TRANSACTION_ROLLED_BACK, e.getCode());
+      }
+      
+      ClientMessage message = session.createClientMessage(false);
+      int counter = randomInt();
+      message.putIntProperty("counter", counter);
+
+      producer.send(message);
+
+      // session is working again
+      session.commit();
+      
+      session.start();
+
+      ClientConsumer consumer = session.createConsumer(ADDRESS);
+
+      session.start();
+
+      message = consumer.receiveImmediate();
+
+      assertNotNull(message);
+      assertEquals(counter, message.getIntProperty("counter").intValue());
+      
+      session.close();
+
+      assertEquals(0, sf.numSessions());
+
+      assertEquals(0, sf.numConnections());
+   }
    public void testTransactedMessagesNotSentSoNoRollback() throws Exception
    {
       ClientSessionFactoryInternal sf = getSessionFactory();
@@ -409,7 +496,7 @@ public class FailoverTest extends FailoverTestBase
       assertEquals(0, sf.numConnections());
    }
 
-   public void testTransactedMessagesWithConsumerStartedBedoreFailover() throws Exception
+   public void testTransactedMessagesWithConsumerStartedBeforeFailover() throws Exception
    {
       ClientSessionFactoryInternal sf = getSessionFactory();
 
