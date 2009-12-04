@@ -30,7 +30,6 @@
 	<address-settings>
 		<!--default for catch all-->
 		<address-setting match="#">
-			<clustered>false</clustered>
 			<dead-letter-address>jms.queue.DLQ</dead-letter-address>
 			<expiry-address>jms.queue.ExpiryQueue</expiry-address>
 			<redelivery-delay>0</redelivery-delay>
