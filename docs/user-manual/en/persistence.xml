@@ -20,11 +20,10 @@
     <title>Persistence</title>
     <para>In this chapter we will describe how persistence works with HornetQ and how to configure
         it.</para>
-    <para>HornetQ ships with a high performance journal. This journal has been implemented by the
-        HornetQ team with a view to providing high performance in a messaging system. Since HornetQ
-        handles its own persistence, rather than relying on a database or other 3rd party
-        persistence engine, we have been able to tune the journal to gain optimal performance for
-        the persistence of messages and transactions.</para>
+    <para>HornetQ ships with a high performance journal. Since HornetQ handles its own persistence,
+        rather than relying on a database or other 3rd party persistence engine, we have been able
+        to tune the journal to gain optimal performance for the persistence of messages and
+        transactions.</para>
     <para>A HornetQ journal is an <emphasis>append only</emphasis> journal. It consists of a set of
         files on disk. Each file is pre-created to a fixed size and initially filled with padding.
         As operations are performed on the server, e.g. add message, update message, delete message,
@@ -61,13 +60,13 @@
             <para>Linux Asynchronous IO</para>
             <para>The second implementation uses a thin native code wrapper to talk to the Linux
                 asynchronous IO library (AIO). In a highly concurrent environment, AIO can provide
-                better overall persistent throughput since it does not require each individual
-                transaction boundary to be synced to disk. Most disks can only support a limited
-                number of syncs per second, so a syncing approach does not scale well when the
-                number of concurrent transactions needed to be committed grows too large. With AIO,
-                HornetQ will be called back when the data has made it to disk, allowing us to avoid
-                explicit syncs altogether and simply send back confirmation of completion when AIO
-                informs us that the data has been persisted.</para>
+                better overall persistent throughput since it does not require explicit syncs to
+                flush operating system buffers to disk. Most disks can only support a limited number
+                of syncs per second, so a syncing approach does not scale well when the number of
+                concurrent transactions needed to be committed grows too large. With AIO, HornetQ
+                will be called back when the data has made it to disk, allowing us to avoid explicit
+                syncs altogether and simply send back confirmation of completion when AIO informs us
+                that the data has been persisted.</para>
             <para>The AIO journal is only available when running Linux kernel 2.6 or later and after
                 having installed libaio (if it's not already installed). For instructions on how to
                 install libaio please see <xref linkend="installing-aio"/>.</para>
@@ -156,15 +155,15 @@
             </listitem>
             <listitem id="configuring.message.journal.journal-sync-transactional">
                 <para><literal>journal-sync-transactional</literal></para>
-                <para>If this is set to true then HornetQ will wait for all transaction data to be
-                    persisted to disk on a commit before sending a commit response OK back to the
-                    client. The default value is <literal>true</literal>.</para>
+                <para>If this is set to true then HornetQ will make sure all transaction data is
+                    flushed to disk on transaction boundaries (commit, prepare and rollback). The
+                    default value is <literal>true</literal>.</para>
             </listitem>
             <listitem id="configuring.message.journal.journal-sync-non-transactional">
                 <para><literal>journal-sync-non-transactional</literal></para>
-                <para>If this is set to true then HornetQ will wait for any non transactional data
-                    to be persisted to disk on a send before sending the response back to the
-                    client. The default value for this is <literal>false</literal>.</para>
+                <para>If this is set to true then HornetQ will make sure non transactional message
+                    data (sends and acknowledgements) are flushed to disk each time. The default
+                    value for this is <literal>true</literal>.</para>
             </listitem>
             <listitem id="configuring.message.journal.journal-file-size">
                 <para><literal>journal-file-size</literal></para>
@@ -185,45 +184,38 @@
             </listitem>
             <listitem id="configuring.message.journal.journal-max-io">
                 <para><literal>journal-max-io</literal></para>
-                <para>When using an AIO journal, write requests are queued up before being submitted
-                    to AIO for execution. Then when AIO has completed them it calls HornetQ back.
+                <para>Write requests are queued up before being submitted to the system execution.
                     This parameter controls the maximum number of write requests that can be in the
-                    AIO queue at any one time. If the queue becomes full then writes will block
-                    until space is freed up. This parameter has no meaning when using the NIO
-                    journal.</para>
+                    IO queue at any one time. If the queue becomes full then writes will block until
+                    space is freed up. </para>
+                <para>When using NIO, this value should always be equal to <literal
+                    >1</literal></para>
+                <para>When using AIO, the default should be <literal>500</literal>.</para>
+                <para>The system maintains different defaults for this parameter depening on whether
+                    it's NIO or AIO (default for NIO is 1, default for AIO is 500)</para>
                 <para>There is a limit and the total max AIO can't be higher than what is configured
                     at the OS level (/proc/sys/fs/aio-max-nr) usually at 65536.</para>
-                <para>The default value for this is <literal>500</literal>. </para>
             </listitem>
             <listitem id="configuring.message.journal.journal-buffer-timeout">
                 <para><literal>journal-buffer-timeout</literal></para>
-                <para>Flush period on the internal AIO timed buffer, configured in nano seconds. For
-                    performance reasons we buffer data before submitting it to the kernel in a
-                    single batch. This parameter determines the maximum amount of time to wait
-                    before flushing the buffer, if it does not get full by itself in that
-                    time.</para>
-                <para>The default value for this paramater is <literal>20000</literal> nano seconds
-                    (i.e. 20 microseconds). </para>
-            </listitem>
-            <listitem id="configuring.message.journal.journal-flush-on-sync">
-                <para><literal>journal-flush-on-sync</literal></para>
-                <para>If this is set to true, the internal buffers are flushed right away when a
-                    sync request is performed. Sync requests are performed on transactions if
-                        <literal>journal-sync-transactional</literal> is true, or on sending regular
-                    messages if <literal>journalsync-non-transactional</literal> is true.</para>
-                <para>HornetQ was made to scale up to hundreds of producers. We try to use most of
-                    the hardware resources by scheduling multiple writes and syncs in a single OS
-                    call.</para>
-                <para>However in some use cases it may be better to not wait any data and just flush
-                    and write to the OS right away. For example if you have a single producer
-                    writing small transactions. On this case it would be better to always
-                    flush-on-sync.</para>
-                <para>The default value for this parameter is <literal>false</literal>. </para>
+                <para>Instead of flushing on every write that requires a flush, we maintain an
+                    internal buffer, and flush the entire buffer either when it is full, or when a
+                    timeout expires, whichever is sooner. This is used for both NIO and AIO and
+                    allows the system to scale better with many concurrent writes that require
+                    flushing.</para>
+                <para>This parameter controls the timeout at which the buffer will be flushed if it
+                    hasn't filled already. AIO can typically cope with a higher flush rate than NIO,
+                    so the system maintains different defaults for both NIO and AIO (default for NIO
+                    is 3333333 nanoseconds - 300 times per second, default for AIO is 500000
+                    nanoseconds - ie. 2000 times per second).</para>
+                <para>By increasing the timeout, you may be able to increase system throughput at
+                    the expense of latency, the default parameters are chosen to give a reasonable
+                    balance between throughput and latency.</para>
             </listitem>
             <listitem id="configuring.message.journal.journal-buffer-size">
                 <para><literal>journal-buffer-size</literal></para>
                 <para>The size of the timed buffer on AIO. The default value is <literal
-                        >128KiB</literal>.</para>
+                        >490KiB</literal>.</para>
             </listitem>
             <listitem id="configuring.message.journal.journal-compact-min-files">
                 <para><literal>journal-compact-min-files</literal></para>
@@ -241,6 +233,33 @@
                 <para>The default for this parameter is <literal>30</literal></para>
             </listitem>
         </itemizedlist>
+    </section>
+    <section id="disk-write-cache">
+        <title>An important note on disabling disk write cache.</title>
+        <warning>
+        <para>Most disks contain hardware write caches. A write cache can increase the apparent
+            performance of the disk because writes just go into the cache and are then lazily
+            written to the disk later. </para>
+        <para>This happens irrespective of whether you have executed a fsync() from the operating
+            system or correctly synced data from inside a Java program!</para>
+        <para>By default many systems ship with disk write cache enabled. This means that even after
+            syncing from the operating system there is no guarantee the data has actually made it to
+            disk, so if a failure occurs, critical data can be lost.</para>
+        <para>Some more expensive disks have non volatile or battery backed write caches which won't
+            necessarily lose data on event of failure, but you need to test them!</para>
+        <para>If your disk does not have an expensive non volatile or battery backed cache and it's
+            not part of some kind of redundant array, and you value your data integrity you need to
+            make sure disk write cache is disabled.</para>
+        <para>Be aware that disabling disk write cache can give you a nasty shock performance wise.
+            If you've been used to using disks with write cache enabled in their default setting,
+            unaware that your data integrity could be compromised, then disabling it will give you
+            an idea of how fast your disk can perform when acting really reliably.</para>
+        <para>On Linux you can inspect and/or change your disk's write cache settings using the
+            tools <literal>hdparm</literal> (for IDE disks) or <literal>sdparm</literal> or <literal
+                >sginfo</literal> (for SDSI/SATA disks)</para>
+        <para>On Windows you can check / change the setting by right clicking on the disk and
+        clicking properties.</para>
+        </warning>
     </section>
     <section id="installing-aio">
         <title>Installing AIO</title>

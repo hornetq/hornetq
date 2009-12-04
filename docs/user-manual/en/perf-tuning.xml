@@ -20,17 +20,17 @@
     <title>Performance Tuning</title>
     <para>In this chapter we'll discuss how to tune HornetQ for optimum performance.</para>
     <section>
-        <title>Tuning the journal</title>
+        <title>Tuning persistence</title>
         <itemizedlist>
             <listitem>
-                <para>Put the journal on its own physical volume. If the disk is shared with other
-                    processes e.g. transaction co-ordinator, database or other journals which are
-                    also reading and writing from it, then this may greatly reduce performance since
-                    the disk head may be skipping all over the place between the different files.
-                    One of the advantages of an append only journal is that disk head movement is
-                    minimised - this advantage is destroyed if the disk is shared. If you're using
-                    paging or large messages make sure they're ideally put on separate volumes
-                    too.</para>
+                <para>Put the message journal on its own physical volume. If the disk is shared with
+                    other processes e.g. transaction co-ordinator, database or other journals which
+                    are also reading and writing from it, then this may greatly reduce performance
+                    since the disk head may be skipping all over the place between the different
+                    files. One of the advantages of an append only journal is that disk head
+                    movement is minimised - this advantage is destroyed if the disk is shared. If
+                    you're using paging or large messages make sure they're ideally put on separate
+                    volumes too.</para>
             </listitem>
             <listitem>
                 <para>Minimum number of journal files. Set <literal>journal-min-files</literal> to a
@@ -49,15 +49,13 @@
                     will scale better than Java NIO.</para>
             </listitem>
             <listitem>
-                <para><literal>journal-flush-on-sync</literal>. If you don't have many producers
-                    in your system you may consider setting journal-flush-on-sync to true.
-                    HornetQ by default is optimized by the case where you have many producers. We
-                    try to combine multiple writes in a single OS operation. However if that's not
-                    your case setting this option to true will give you a performance boost.</para>
-                <para>On the other hand when you have multiple producers, keeping <literal
-                        >journal-flush-on-sync</literal> set to false. This will make your
-                    system flush multiple syncs in a single OS call making your system scale much
-                    better.</para>
+                <para>Tune <literal>journal-buffer-timeout</literal>. The timeout can be increased
+                    to increase throughput at the expense of latency.</para>
+            </listitem>
+            <listitem>
+                <para>If you're running AIO you might be able to get some better performance by
+                    increasing <literal>journal-max-io</literal>. DO NOT change this parameter if
+                    you are running NIO.</para>
             </listitem>
         </itemizedlist>
     </section>
@@ -141,6 +139,23 @@
                     information.</para>
             </listitem>
             <listitem>
+                <para>Sync non transactional lazily. Setting <literal
+                        >journal-sync-non-transactional</literal> to <literal>false</literal> in
+                        <literal>hornetq-configuration.xml</literal> can give you better
+                    non-transactional persistent performance at the expense of some possibility of
+                    loss of persistent messages on failure. See <xref linkend="send-guarantees"/>
+                    for more information.</para>
+            </listitem>
+            <listitem>
+                <para>Send messages non blocking. Setting <literal
+                        >block-on-persistent-send</literal> and <literal
+                        >block-on-non-persistent-send</literal> to <literal>false</literal> in
+                        <literal>hornetq-jms.xml</literal> (if you're using JMS and JNDI) or
+                    directly on the ClientSessionFactory. This means you don't have to wait a whole
+                    network round trip for every message sent. See <xref linkend="send-guarantees"/>
+                    for more information.</para>
+            </listitem>
+            <listitem>
                 <para>Use the core API not JMS. Using the JMS API you will have slightly lower
                     performance than using the core API, since all JMS operations need to be
                     translated into core operations before the server can handle them.</para>
@@ -154,9 +169,11 @@
                 <para>Enable <ulink url="http://en.wikipedia.org/wiki/Nagle's_algorithm">Nagle's
                         algorithm</ulink>. If you are sending many small messages, such that more
                     than one can fit in a single IP packet thus providing better performance. This
-                    is done by setting <literal>tcpnodelay</literal> to false
-                    with the Netty transports. See <xref linkend="configuring-transports"/> for more
-                    information on this. </para>
+                    is done by setting <literal>tcpnodelay</literal> to false with the Netty
+                    transports. See <xref linkend="configuring-transports"/> for more information on
+                    this. </para>
+                <para>Enabling Nagle's algorithm can make a very big difference in performance and
+                    is highly recommended if you're sending a lot of asynchronous traffice.</para>
             </listitem>
             <listitem>
                 <para>TCP buffer sizes. If you have a fast network and fast machines you may get a
@@ -201,13 +218,15 @@ serveruser     hard    nofile  20000
                     size and number of your messages. Use the JVM arguments <literal>-Xms</literal>
                     and <literal>-Xmx</literal> to set server available RAM. We recommend setting
                     them to the same high value.</para>
-                <para>HornetQ will regularly sample JVM memory and reports if the available memory is below
-                   a configurable threshold. Use this information to properly set JVM memory and paging.
-                   The sample is disabled by default. To enabled it, configure the sample frequency by setting <literal>memory-measure-interval</literal>
-                   in <literal>hornetq-configuration.xml</literal> (in milliseconds).
-                   When the available memory goes below the configured threshold, a warning is logged.
-                   The threshold can be also configured by setting <literal>memory-warning-threshold</literal> in 
-                   <literal>hornetq-configuration.xml</literal> (default is 25%).</para>
+                <para>HornetQ will regularly sample JVM memory and reports if the available memory
+                    is below a configurable threshold. Use this information to properly set JVM
+                    memory and paging. The sample is disabled by default. To enabled it, configure
+                    the sample frequency by setting <literal>memory-measure-interval</literal> in
+                        <literal>hornetq-configuration.xml</literal> (in milliseconds). When the
+                    available memory goes below the configured threshold, a warning is logged. The
+                    threshold can be also configured by setting <literal
+                        >memory-warning-threshold</literal> in <literal
+                        >hornetq-configuration.xml</literal> (default is 25%).</para>
             </listitem>
             <listitem>
                 <para>Aggressive options. Different JVMs provide different sets of JVM tuning
@@ -263,10 +282,11 @@ serveruser     hard    nofile  20000
                     Instead the temporary queue should be re-used for many requests.</para>
             </listitem>
             <listitem>
-                <para>Don't use Message-Driven Beans for the sake of it. As soon as you start using MDBs you are greatly
-                increasing the codepath for each message received compared to a straightforward message consumer, since a lot of
-                extra application server code is executed. Ask yourself
-                do you really need MDBs? Can you accomplish the same task using just a normal message consumer?</para>
+                <para>Don't use Message-Driven Beans for the sake of it. As soon as you start using
+                    MDBs you are greatly increasing the codepath for each message received compared
+                    to a straightforward message consumer, since a lot of extra application server
+                    code is executed. Ask yourself do you really need MDBs? Can you accomplish the
+                    same task using just a normal message consumer?</para>
             </listitem>
         </itemizedlist>
     </section>
