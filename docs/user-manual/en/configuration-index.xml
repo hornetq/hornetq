@@ -1013,6 +1013,13 @@
                             <entry>1d</entry>
                         </row>
                         <row>
+                            <entry><link linkend="client-reconnection"
+                                >connection-factory.max-retry-interval</link></entry>
+                            <entry>Integer</entry>
+                            <entry>The maximum retry interval in the case a retry-interval-multiplier has been specified</entry>
+                            <entry>2000</entry>
+                        </row>
+                        <row>
                             <entry><link linkend="thread-pooling.client.side"
                                     >connection-factory.scheduled-thread-pool-max-size</link></entry>
                             <entry>Integer</entry>

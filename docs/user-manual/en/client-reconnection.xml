@@ -104,5 +104,13 @@
         server, for instance if the server has been restarted or it has timed out, then the client
         won't be able to re-attach, and any <literal>ExceptionListener</literal> or <literal
             >FailureListener</literal> instances registered on the connection or session will be
-        called.</para>
+            called.</para>
+    <section id="client-reconnection.exceptionlistener">
+        <title>ExceptionListeners and SessionFailureListeners</title>
+    
+    
+    <para>Please note, that when a client reconnects or re-attaches, any registered JMS <literal
+            >ExceptionListener</literal> or core API <literal>SessionFailureListener</literal> will
+            be called.</para>
+    </section>
 </chapter>
