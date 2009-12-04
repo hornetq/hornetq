@@ -139,7 +139,8 @@
                 back an acknowledgment of the send asynchronously, and some time later you are
                 informed at the client side by HornetQ calling your handler's <literal
                     >sendAcknowledged(ClientMessage message)</literal> method, passing in a
-                reference to the message that was sent.</para>
+                    reference to the message that was sent.</para>
+            <para>To enable asynchronous send acknowledgements you must make sure <literal>confirmation-window-size</literal> is set to a positive integer value, e.g. 10MiB</para>
             <para>Please see <xref linkend="asynchronous-send-acknowledgements-example"/> for a full
                 working example.</para>
         </section>
