@@ -104,15 +104,10 @@ public class NonTransactionFailoverExample extends HornetQExample
          }
          catch (JMSException e)
          {
-            System.out.println("Got exception while acknowledging message: " + e.getMessage());
-            // Step 12. Close the JMS session and recreate the JMS objects
-            session.close();
-            session = connection.createSession(false, Session.CLIENT_ACKNOWLEDGE);
-            producer = session.createProducer(queue);
-            consumer = session.createConsumer(queue);
+            System.err.println("Got exception while acknowledging message: " + e.getMessage());
          }
 
-         // Step 13. Consume again the 2nd half of the messages again. Note that they are not considered as redelivered.
+         // Step 12. Consume again the 2nd half of the messages again. Note that they are not considered as redelivered.
          for (int i = numMessages / 2; i < numMessages; i++)
          {
             message0 = (TextMessage)consumer.receive(5000);
@@ -120,27 +115,11 @@ public class NonTransactionFailoverExample extends HornetQExample
          }
          message0.acknowledge();
 
-         // Step 14. Send some more messages
-         for (int i = numMessages; i < numMessages * 2; i++)
-         {
-            TextMessage message = session.createTextMessage("This is text message " + i);
-            producer.send(message);
-            System.out.println("Sent message: " + message.getText());
-         }
-
-         // Step 15. Consume them
-         for (int i = 0; i < numMessages; i++)
-         {
-            TextMessage message = (TextMessage)consumer.receive(5000);
-            System.out.println("Got message: " + message.getText());
-            message.acknowledge();
-         }
-
          return true;
       }
       finally
       {
-         // Step 16. Be sure to close our resources!
+         // Step 13. Be sure to close our resources!
 
          if (connection != null)
          {
