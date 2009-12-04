@@ -369,7 +369,7 @@
                             <entry>Should incoming packets on the server be handed off to a thread
                                 from the thread pool for processing or should they be handled on the
                                 remoting thread?</entry>
-                            <entry>true</entry>
+                            <entry>false</entry>
                         </row>
                         <row>
                             <entry><link linkend="transaction-config"
