@@ -125,15 +125,6 @@
                         </row>
                         <row>
                             <entry><link
-                                    linkend="configuring.message.journal.journal-flush-on-sync"
-                                    >journal-flush-on-sync</link></entry>
-                            <entry>Boolean</entry>
-                            <entry>If true, transactions will ignore timeouts and be persisted
-                                immediately</entry>
-                            <entry>False</entry>
-                        </row>
-                        <row>
-                            <entry><link
                                     linkend="configuring.message.journal.journal-compact-min-files"
                                     >journal-compact-min-files</link></entry>
                             <entry>Integer</entry>
