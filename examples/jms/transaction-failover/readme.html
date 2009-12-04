@@ -63,60 +63,54 @@
            MessageConsumer consumer = session.createConsumer(queue);
         </pre>
 
-        <li>Send some messages to server #1 and commit the session</li>
+        <li>Send half of the messages, kill the live server and send the remaining messages</li>
         <pre class="prettyprint">
-           for (int i = 0; i &lt; numMessages; i++)
-           {
-              TextMessage message = session.createTextMessage("This is text message " + i);
-              producer.send(message);
-              System.out.println("Sent message: " + message.getText());
-           }
-           session.commit();
+           sendMessages(session, producer, numMessages, true);
         </pre>
         
-        <li>Crash server #1, the live server, and wait a little while to make sure
-            it has really crashed.<br />
-            When server #1 crashes, the client automatically detects the failure and automatically
+        <p>When server #1 crashes, the client automatically detects the failure and automatically
             fails over from server #1 to server #0 (in your real program you wouldn't need to sleep).
-        </li>
-        <pre class="prettyprint">
-           killServer(1); // This causes the live server to crash
-           Thread.sleep(2000); // Just wait a little while to make sure the live server has really crashed.
-        </pre> 
+        </p>
         
-        <li>The client is transparently reconnected to server #0 - the backup server.
-           As no work has been done by the session during the failover, we can <em>transparently</em> consume messages
-           from the session.</li>
+        <li>As failover occured during transaction, the session has been marked for <em>rollback only</em> and commit will fail</li>
         <pre class="prettyprint">
-           for (int i = 0; i &lt; numMessages; i++)
+           try
            {
-              TextMessage message0 = (TextMessage)consumer.receive(5000);
-              System.out.println("Got message: " + message0.getText());
-           }         
-           session.commit();
+              session.commit();
+           } catch (TransactionRolledBackException e)
+           {
+              ...
+           }
         </pre>
         
-        <li>Send some more messages and commit the session</li>
+        <li>In the <code>catch (TransactionRolledBackException e)</code> block, we rollback the session
         <pre class="prettyprint">
-           for (int i = numMessages; i &lt; numMessages * 2; i++)
-           {
-              TextMessage message = session.createTextMessage("This is text message " + i);
-              producer.send(message);
-              System.out.println("Sent message: " + message.getText());
-           }
-           session.commit();
+           session.rollback();
         </pre>
         
-        <li>Consume them</li>
+        <li>We resend all the messages</li>
         <pre class="prettyprint">
-           for (int i = 0; i &lt; numMessages; i++)
-           {
-              TextMessage message0 = (TextMessage)consumer.receive(5000);
-              System.out.println("Got message: " + message0.getText());
-           }
-           session.commit();
+           sendMessages(session, producer, numMessages, false);
         </pre>
 
+        <li>We commit the session succesfully: the messages will be all delivered to the activated backup server</li>
+        <pre class="prettyprint">
+           session.commit();
+        </pre>
+        
+
+        <li>We are now transparently reconnected to server #0, the backup server.
+            We consume the messages sent before the crash of the live server, commit the session, and check there are no other message on the queue</li>
+        <pre class="prettyprint">
+        for (int i = 0; i &lt; numMessages; i++)
+        {
+           TextMessage message0 = (TextMessage)consumer.receive(5000);
+           System.out.println("Got message: " + message0.getText());
+        }
+        session.commit();
+        System.out.println("Other message on the server? " + consumer.receive(5000));
+        </pre>
+        
         <li>And finally, <strong>always</strong> remember to close your resources after use, in a <code>finally</code> block. Closing a JMS connection will automatically close all of its sessions, consumers, producer and browser objects</li>
 
         <pre class="prettyprint">

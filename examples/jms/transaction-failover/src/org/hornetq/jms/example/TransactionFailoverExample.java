@@ -19,6 +19,7 @@ import javax.jms.MessageProducer;
 import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
+import javax.jms.TransactionRolledBackException;
 import javax.naming.InitialContext;
 
 import org.hornetq.common.example.HornetQExample;
@@ -68,63 +69,73 @@ public class TransactionFailoverExample extends HornetQExample
          // Step 7. We create a JMS MessageConsumer
          MessageConsumer consumer = session.createConsumer(queue);
 
-         // Step 8. We send some messages to server #1, the live server
-         for (int i = 0; i < numMessages; i++)
+         // Step 8. We send half of the messages, kill the live server and send the remaining messages
+         sendMessages(session, producer, numMessages, true);
+
+         try
          {
-            TextMessage message = session.createTextMessage("This is text message " + i);
-            producer.send(message);
-            System.out.println("Sent message: " + message.getText());
-         }      
+            // Step 9. As failover occured during transaction, the session has been marked for rollback only
+            session.commit();
+         } catch (TransactionRolledBackException e)
+         {
+            // Step 10. We rollback the transaction
+            session.rollback();
+         }
+         
+         // Step 11. We resend all the messages
+         sendMessages(session, producer, numMessages, false);
+         // Step 12. We commit the session succesfully: the messages will be all delivered to the activated backup server
          session.commit();
 
-         // Step 9. We now cause server #1, the live server to crash, and wait a little while to make sure
-         // it has really crashed
-         killServer(1);
-         Thread.sleep(2000);
 
-         // Step 10. We are now transparently reconnected to server #0, the backup server.
+         // Step 13. We are now transparently reconnected to server #0, the backup server.
          // We consume the messages sent before the crash of the live server and commit the session.
          for (int i = 0; i < numMessages; i++)
          {
             TextMessage message0 = (TextMessage)consumer.receive(5000);
             System.out.println("Got message: " + message0.getText());
-         }    
-         session.commit();
-
-         // Step 11. We now send some more messages and commit the session
-         for (int i = numMessages; i < numMessages * 2; i++)
-         {
-            TextMessage message = session.createTextMessage("This is text message " + i);
-            producer.send(message);
-            System.out.println("Sent message: " + message.getText());
          }
          session.commit();
-
-         // Step 12. And consume them and commit the session
-         for (int i = 0; i < numMessages; i++)
-         {
-            TextMessage message0 = (TextMessage)consumer.receive(5000);
-            System.out.println("Got message: " + message0.getText());
-         }
-         session.commit();
+         System.out.println("Other message on the server? " + consumer.receive(5000));
 
          return true;
       }
       finally
       {
-         // Step 13. Be sure to close our resources!
+         // Step 14. Be sure to close our resources!
 
          if (connection != null)
          {
-            System.out.println("CLOSING");
             connection.close();
-            System.out.println("CLOSED");
          }
 
          if (initialContext != null)
          {
             initialContext.close();
          }
+      }
+   }
+
+   private void sendMessages(Session session, MessageProducer producer, int numMessages, boolean killServer) throws Exception
+   {
+      // We send half of messages
+      for (int i = 0; i < numMessages / 2; i++)
+      {
+         TextMessage message = session.createTextMessage("This is text message " + i);
+         producer.send(message);
+         System.out.println("Sent message: " + message.getText());
+      }
+      if (killServer)
+      {
+         killServer(1);
+         Thread.sleep(2000);
+      }
+      // We send the remaining half of messages
+      for (int i = numMessages / 2; i < numMessages; i++)
+      {
+         TextMessage message = session.createTextMessage("This is text message " + i);
+         producer.send(message);
+         System.out.println("Sent message: " + message.getText());
       }
    }
 
