@@ -65,7 +65,7 @@ public class MessageRedistributionTest extends ClusterTestBase
 
    protected boolean isFileStorage()
    {
-      return false;
+      return true;
    }
 
    public void testRedistributionWhenConsumerIsClosed() throws Exception

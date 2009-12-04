@@ -39,7 +39,7 @@ public class SymmetricClusterWithDiscoveryTest extends SymmetricClusterTest
 
    protected boolean isFileStorage()
    {
-      return false;
+      return true;
    }
 
    @Override

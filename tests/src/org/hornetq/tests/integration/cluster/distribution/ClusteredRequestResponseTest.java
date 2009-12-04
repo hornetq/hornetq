@@ -51,7 +51,7 @@ public class ClusteredRequestResponseTest extends ClusterTestBase
 
    protected boolean isFileStorage()
    {
-      return false;
+      return true;
    }
    
    

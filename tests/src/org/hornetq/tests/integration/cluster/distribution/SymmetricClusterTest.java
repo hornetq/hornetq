@@ -53,7 +53,7 @@ public class SymmetricClusterTest extends ClusterTestBase
 
    protected boolean isFileStorage()
    {
-      return false;
+      return true;
    }
 
    public void testStopAllStartAll() throws Throwable

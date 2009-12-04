@@ -57,7 +57,7 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
    
    protected boolean isFileStorage()
    {
-      return false;
+      return true;
    }
    
    /*

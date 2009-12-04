@@ -57,7 +57,7 @@ public class TwoWayTwoNodeClusterTest extends ClusterTestBase
 
    protected boolean isFileStorage()
    {
-      return false;
+      return true;
    }
 
    public void testStartStop() throws Exception

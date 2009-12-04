@@ -36,6 +36,6 @@ public class NettyOneWayChainClusterTest extends OneWayChainClusterTest
    
    protected boolean isFileStorage()
    {
-      return false;
+      return true;
    }
 }
