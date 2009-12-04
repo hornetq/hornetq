@@ -985,10 +985,17 @@
                             <entry>-1</entry>
                         </row>
                         <row>
-                            <entry><link linkend="command-buffering"
+                            <entry><link linkend="client-reconnection"
+                                >connection-factory.producer-window-size</link></entry>
+                            <entry>Integer</entry>
+                            <entry>the window size in bytes for producers sending messages</entry>
+                            <entry>1024 * 1024</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="client-reconnection"
                                     >connection-factory.confirmation-window-size</link></entry>
                             <entry>Integer</entry>
-                            <entry>the window size (in bytes) for sending messages</entry>
+                            <entry>the window size (in bytes) for reattachment confirmations</entry>
                             <entry>1024 * 1024</entry>
                         </row>
                         <row>

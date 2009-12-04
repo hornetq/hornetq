@@ -18,7 +18,6 @@
             <file name="en/client-classpath.xml"/>
             <file name="en/client-reconnection.xml"/>
             <file name="en/clusters.xml"/>
-            <file name="en/command-buffering.xml"/>
             <file name="en/configuration-index.xml"/>
             <file name="en/configuring-transports.xml"/>
             <file name="en/connection-ttl.xml"/>

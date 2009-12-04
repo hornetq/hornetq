@@ -34,8 +34,7 @@
         <!ENTITY embedding-hornetq       SYSTEM "embedding-hornetq.xml">
         <!ENTITY examples                SYSTEM "examples.xml">
         <!ENTITY filter-expressions      SYSTEM "filter-expressions.xml">
-        <!ENTITY flow-control            SYSTEM "flow-control.xml">
-        <!ENTITY command-buffering       SYSTEM "command-buffering.xml">
+        <!ENTITY flow-control            SYSTEM "flow-control.xml">       
         <!ENTITY ha                      SYSTEM "ha.xml">
         <!ENTITY transaction-config      SYSTEM "transaction-config.xml">
         <!ENTITY intercepting-operations SYSTEM "intercepting-operations.xml">
@@ -96,7 +95,6 @@
    &connection-ttl;
    &transaction-config;
    &flow-control;
-   &command-buffering;
    &send-guarantees;
    &undelivered-messages;
    &message-expiry;     
