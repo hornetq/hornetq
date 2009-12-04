@@ -32,18 +32,7 @@ public class NettySymmetricClusterWithDiscoveryTest extends SymmetricClusterWith
 
    protected boolean isFileStorage()
    {
-      return false;
-   }
-   
-   public void _test() throws Exception
-   {
-      for (int i = 0; i < 50; i++)
-      {
-         System.out.println("\n\n" + i + "\n\n");
-         testStartStopServers();
-         tearDown();
-         setUp();
-      }  
+      return true;
    }
 
 }
