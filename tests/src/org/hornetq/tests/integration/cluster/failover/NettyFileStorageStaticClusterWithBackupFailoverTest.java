@@ -36,9 +36,4 @@ public class NettyFileStorageStaticClusterWithBackupFailoverTest extends StaticC
    {
       return true;
    }
-
-   protected boolean isFileStorage()
-   {
-      return true;
-   }
 }

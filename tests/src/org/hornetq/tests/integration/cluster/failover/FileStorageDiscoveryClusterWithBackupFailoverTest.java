@@ -32,8 +32,4 @@ package org.hornetq.tests.integration.cluster.failover;
  */
 public class FileStorageDiscoveryClusterWithBackupFailoverTest extends DiscoveryClusterWithBackupFailoverTest
 {
-   protected boolean isFileStorage()
-   {
-      return true;
-   }
 }

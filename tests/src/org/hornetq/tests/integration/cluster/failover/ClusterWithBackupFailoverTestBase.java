@@ -75,11 +75,6 @@ public abstract class ClusterWithBackupFailoverTestBase extends ClusterTestBase
       return false;
    }
 
-   protected boolean isFileStorage()
-   {
-      return true;
-   }
-
    public void testFailAllNodes() throws Exception
    {
       setupCluster();

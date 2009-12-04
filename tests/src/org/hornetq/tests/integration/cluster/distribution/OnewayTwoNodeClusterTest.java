@@ -54,11 +54,7 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
    {
       return false;
    }
-   
-   protected boolean isFileStorage()
-   {
-      return true;
-   }
+
    
    /*
     * make sure source can shutdown if target is never started

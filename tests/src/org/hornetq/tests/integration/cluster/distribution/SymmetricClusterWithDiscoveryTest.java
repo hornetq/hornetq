@@ -37,11 +37,6 @@ public class SymmetricClusterWithDiscoveryTest extends SymmetricClusterTest
       return false;
    }
 
-   protected boolean isFileStorage()
-   {
-      return true;
-   }
-
    @Override
    protected void setupCluster() throws Exception
    {

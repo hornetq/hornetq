@@ -58,11 +58,6 @@ public class OneWayChainClusterTest extends ClusterTestBase
       return false;
    }
    
-   protected boolean isFileStorage()
-   {
-      return true;
-   }
-   
    public void testBasicRoundRobin() throws Exception
    {
       setupClusterConnection("cluster0-1", 0, 1, "queues", false, 4, isNetty());

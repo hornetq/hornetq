@@ -37,11 +37,6 @@ public class NettySymmetricClusterWithBackupTest extends SymmetricClusterWithBac
       return true;
    }
    
-   protected boolean isFileStorage()
-   {
-      return true;
-   }
-   
    public void _test() throws Exception
    {
       for (int i = 0; i < 50; i++)

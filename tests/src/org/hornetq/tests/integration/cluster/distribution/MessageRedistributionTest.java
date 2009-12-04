@@ -63,11 +63,6 @@ public class MessageRedistributionTest extends ClusterTestBase
       return false;
    }
 
-   protected boolean isFileStorage()
-   {
-      return true;
-   }
-
    public void testRedistributionWhenConsumerIsClosed() throws Exception
    {
       setupCluster(false);

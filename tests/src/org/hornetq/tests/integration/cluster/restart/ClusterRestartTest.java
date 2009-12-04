@@ -199,8 +199,4 @@ public class ClusterRestartTest extends ClusterTestBase
       return true;
    }
 
-   public boolean isFileStorage()
-   {
-      return true;
-   }
 }

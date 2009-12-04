@@ -36,9 +36,4 @@ public class NettyFileStorageDiscoveryClusterWithBackupFailoverTest extends Disc
    {
       return true;
    }
-
-   protected boolean isFileStorage()
-   {
-      return true;
-   }
 }

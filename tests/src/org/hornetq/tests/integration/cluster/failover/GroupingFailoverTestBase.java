@@ -234,10 +234,6 @@ public abstract class GroupingFailoverTestBase extends ClusterTestBase
 
    abstract void setupMasterServer(int i, boolean fileStorage, boolean netty);
 
-   public boolean isFileStorage()
-   {
-      return true;
-   }
 
    public boolean isNetty()
    {

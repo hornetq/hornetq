@@ -1016,11 +1016,6 @@ public class ClusteredGroupingTest extends ClusterTestBase
       return true;
    }
 
-   public boolean isFileStorage()
-   {
-      return true;
-   }
-
    class ThreadSender implements Runnable
    {
       private int msgStart;

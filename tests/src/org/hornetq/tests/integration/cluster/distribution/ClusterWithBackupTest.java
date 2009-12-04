@@ -58,11 +58,6 @@ public class ClusterWithBackupTest extends ClusterTestBase
    {
       return false;
    }
-
-   protected boolean isFileStorage()
-   {
-      return true;
-   }
    
    public void testBasicRoundRobin() throws Exception
    {

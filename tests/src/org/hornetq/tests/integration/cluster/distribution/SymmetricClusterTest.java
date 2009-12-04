@@ -51,11 +51,6 @@ public class SymmetricClusterTest extends ClusterTestBase
       return false;
    }
 
-   protected boolean isFileStorage()
-   {
-      return true;
-   }
-
    public void testStopAllStartAll() throws Throwable
    {
       try

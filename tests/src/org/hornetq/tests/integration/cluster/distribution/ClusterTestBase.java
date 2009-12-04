@@ -1677,4 +1677,9 @@ public abstract class ClusterTestBase extends ServiceTestBase
          }
       }
    }
+
+   protected boolean isFileStorage()
+   {
+      return true;
+   }
 }

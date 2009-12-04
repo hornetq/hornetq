@@ -26,10 +26,4 @@ public class NettyFileStorageSymmetricClusterTest extends SymmetricClusterTest
    {
       return true;
    }
-
-   protected boolean isFileStorage()
-   {
-      return true;
-   }
-
 }

@@ -48,11 +48,6 @@ public class ClusteredRequestResponseTest extends ClusterTestBase
    {
       return false;
    }
-
-   protected boolean isFileStorage()
-   {
-      return true;
-   }
    
    
    public void testRequestResponse() throws Exception
