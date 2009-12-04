@@ -84,34 +84,18 @@ public abstract class GroupingFailoverTestBase extends ClusterTestBase
 
          final CountDownLatch latch = new CountDownLatch(1);
 
-                  class MyListener implements FailureListener
-                  {
-                     public void connectionFailed(HornetQException me)
-                     {
-                        latch.countDown();
-                     }
-                  }
+         class MyListener implements FailureListener
+         {
+            public void connectionFailed(HornetQException me)
+            {
+               latch.countDown();
+            }
+         }
 
-                  final CountDownLatch latch2 = new CountDownLatch(1);
-
-                  class MyListener2 implements FailureListener
-                  {
-                     public void connectionFailed(HornetQException me)
-                     {
-                        latch2.countDown();
-                     }
-                  }
-
-                  Map<String, MessageFlowRecord> records = ((ClusterConnectionImpl)getServer(1).getClusterManager().getClusterConnection(new SimpleString("cluster1"))).getRecords();
-                  RemotingConnection rc = records.get("0").getBridge().getForwardingConnection() ;
-                  rc.addFailureListener(new MyListener());
-                  fail(rc, latch);
-
-                  records = ((ClusterConnectionImpl)getServer(0).getClusterManager().getClusterConnection(new SimpleString("cluster0"))).getRecords();
-                  rc = records.get("0").getBridge().getForwardingConnection() ;
-                  rc.addFailureListener(new MyListener2());
-                  fail(rc, latch);
-
+         Map<String, MessageFlowRecord> records = ((ClusterConnectionImpl)getServer(1).getClusterManager().getClusterConnection(new SimpleString("cluster1"))).getRecords();
+         RemotingConnection rc = records.get("0").getBridge().getForwardingConnection() ;
+         rc.addFailureListener(new MyListener());
+         fail(rc, latch);
 
          waitForServerRestart(2);
 
@@ -120,6 +104,10 @@ public abstract class GroupingFailoverTestBase extends ClusterTestBase
          addConsumer(2, 2, "queue0", null);
 
          waitForBindings(2, "queues.testaddress", 1, 1, true);
+
+         waitForBindings(2, "queues.testaddress", 1, 1, false);
+
+         waitForBindings(1, "queues.testaddress", 1, 1, true);
 
          waitForBindings(1, "queues.testaddress", 1, 1, false);
 
@@ -168,10 +156,11 @@ public abstract class GroupingFailoverTestBase extends ClusterTestBase
          setupSessionFactory(1, isNetty());
 
          createQueue(0, "queues.testaddress", "queue0", null, true);
-         createQueue(1, "queues.testaddress", "queue0", null, true);
-
 
          waitForBindings(0, "queues.testaddress", 1, 0, true);
+
+         createQueue(1, "queues.testaddress", "queue0", null, true);
+
          waitForBindings(1, "queues.testaddress", 1, 0, true);
 
          addConsumer(0, 0, "queue0", null);
@@ -202,25 +191,11 @@ public abstract class GroupingFailoverTestBase extends ClusterTestBase
             }
          }
 
-         final CountDownLatch latch2 = new CountDownLatch(1);
-
-         class MyListener2 implements FailureListener
-         {
-            public void connectionFailed(HornetQException me)
-            {
-               latch2.countDown();
-            }
-         }
-
          Map<String, MessageFlowRecord> records = ((ClusterConnectionImpl)getServer(1).getClusterManager().getClusterConnection(new SimpleString("cluster1"))).getRecords();
          RemotingConnection rc = records.get("0").getBridge().getForwardingConnection() ;
          rc.addFailureListener(new MyListener());
          fail(rc, latch);
 
-         records = ((ClusterConnectionImpl)getServer(0).getClusterManager().getClusterConnection(new SimpleString("cluster0"))).getRecords();
-         rc = records.get("0").getBridge().getForwardingConnection() ;
-         rc.addFailureListener(new MyListener2());
-         fail(rc, latch);
 
          waitForServerRestart(2);
 
@@ -229,6 +204,10 @@ public abstract class GroupingFailoverTestBase extends ClusterTestBase
          addConsumer(2, 2, "queue0", null);
 
          waitForBindings(2, "queues.testaddress", 1, 1, true);
+
+         waitForBindings(2, "queues.testaddress", 1, 1, false);
+
+         waitForBindings(1, "queues.testaddress", 1, 1, true);
 
          waitForBindings(1, "queues.testaddress", 1, 1, false);
 
