@@ -69,6 +69,18 @@ public class MultiThreadConsumerStressTest extends ServiceTestBase
       int consumeMessage = (int) (produceMessage * 0.9);
       int commitIntervalConsume = 100;
       
+      ClientSession session = sf.createSession(false, false);
+      session.createQueue("compact", "compact-queue", true);
+      
+      ClientProducer producer = session.createProducer("compact");
+      
+      for (int i = 0 ; i < 100; i++)
+      {
+         producer.send(session.createClientMessage(true));
+      }
+      
+      session.commit();
+      
       // Number of messages expected to be received after restart
       int numberOfMessagesExpected = (produceMessage - consumeMessage) * numberOfConsumers;
 
@@ -123,9 +135,9 @@ public class MultiThreadConsumerStressTest extends ServiceTestBase
          ClientMessage msg = consumer.receive(5000);
          assertNotNull(msg);
          
-         if (i % 100 == 0)
+         if (i % 1000 == 0)
          {
-            System.out.println("Received #" + i + "  on thread after start");
+            System.out.println("Received #" + i + "  on thread before end");
          }
          msg.acknowledge();
       }
@@ -165,7 +177,7 @@ public class MultiThreadConsumerStressTest extends ServiceTestBase
       config.setJournalFileSize(ConfigurationImpl.DEFAULT_JOURNAL_FILE_SIZE);
       config.setJournalMinFiles(ConfigurationImpl.DEFAULT_JOURNAL_MIN_FILES);
 
-      config.setJournalCompactMinFiles(0);
+      config.setJournalCompactMinFiles(2);
       config.setJournalCompactPercentage(50);
 
       server = createServer(true, config);
@@ -254,9 +266,9 @@ public class MultiThreadConsumerStressTest extends ServiceTestBase
                {
                   session.commit();
                }
-               if (i % 100 == 0)
+               if (i % 1000 == 0)
                {
-                  System.out.println(Thread.currentThread().getName() + "::received #" + i);
+                  //System.out.println(Thread.currentThread().getName() + "::received #" + i);
                }
                ClientMessage msg = session.createClientMessage(true);               
                prod.send(msg);
@@ -314,9 +326,9 @@ public class MultiThreadConsumerStressTest extends ServiceTestBase
                {
                   session.commit();
                }
-               if (i % 100 == 0)
+               if (i % 1000 == 0)
                {
-                  System.out.println(Thread.currentThread().getName() + "::sent #" + i);
+                  //System.out.println(Thread.currentThread().getName() + "::sent #" + i);
                }
             }
             
