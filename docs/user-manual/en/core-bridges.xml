@@ -59,6 +59,7 @@
     &lt;reconnect-attempts&gt;-1&lt;/reconnect-attempts&gt;
     &lt;failover-on-server-shutdown&gt;false&lt;/failover-on-server-shutdown&gt;
     &lt;use-duplicate-detection&gt;true&lt;/use-duplicate-detection&gt;
+    &lt;confirmation-window-size&gt;10000000&lt;/confirmation-window-size&gt;
     &lt;connector-ref connector-name="remote-connector" 
         backup-connector-name="backup-remote-connector"/&gt;          
 &lt;/bridge&gt;                        
@@ -165,6 +166,17 @@
                     delivery guarantee without using heavyweight methods such as XA (see <xref
                         linkend="duplicate-detection"/> for more information).</para>
                 <para>The default value for this parameter is <literal>true</literal>.</para>
+            </listitem>
+            <listitem>
+                <para><literal>confirmation-window-size</literal>. This optional parameter determines
+                the <literal>confirmation-window-size</literal> to use for the connection used to forward messages to the target node.
+                This attribute is described in section <xref linkend="client-reconnection"/></para>
+                <para>
+                <warning>When using the bridge to forward messages from a queue which has a max-size-bytes set it's important
+                that confirmation-window-size is less than or equal to <literal>max-size-bytes</literal> to prevent the flow of messages from ceasing.
+                </warning>
+                </para>
+                
             </listitem>
             <listitem>
                 <para><literal>connector-ref</literal>. This mandatory parameter determines which
