@@ -68,8 +68,6 @@ public class ChannelImpl implements Channel
 
    private final Object sendBlockingLock = new Object();
 
-   private final Object replayLock = new Object();
-
    private boolean failingOver;
 
    private final int confWindowSize;
@@ -110,7 +108,7 @@ public class ChannelImpl implements Channel
    {
       return lock;
    }
-
+   
    public int getConfirmationWindowSize()
    {
       return confWindowSize;
@@ -147,7 +145,7 @@ public class ChannelImpl implements Channel
 
    // This must never called by more than one thread concurrently
    public void send(final Packet packet, final boolean flush)
-   {
+   {      
       synchronized (sendLock)
       {
          packet.setChannelID(id);
@@ -331,20 +329,15 @@ public class ChannelImpl implements Channel
 
    public void replayCommands(final int otherLastReceivedCommandID, final long newChannelID)
    {
-      // need to make sure we won't clear any packets while replaying or we could 
-      // break order eventually
-      synchronized (replayLock)
+      if (resendCache != null)
       {
-         if (resendCache != null)
+         clearUpTo(otherLastReceivedCommandID);
+
+         for (final Packet packet : resendCache)
          {
-            clearUpTo(otherLastReceivedCommandID);
-   
-            for (final Packet packet : resendCache)
-            {
-               packet.setChannelID(newChannelID);
-   
-               doWrite(packet);
-            }
+            packet.setChannelID(newChannelID);
+
+            doWrite(packet);
          }
       }
    }
@@ -394,7 +387,7 @@ public class ChannelImpl implements Channel
       {
          lastReceivedCommandID++;
 
-         receivedBytes += packet.getPacketSize();
+         receivedBytes += packet.getPacketSize();         
 
          if (receivedBytes >= confWindowSize)
          {
@@ -474,42 +467,39 @@ public class ChannelImpl implements Channel
 
    private void clearUpTo(final int lastReceivedCommandID)
    {
-      synchronized (replayLock)
+      final int numberToClear = 1 + lastReceivedCommandID - firstStoredCommandID;
+
+      if (numberToClear == -1)
       {
-         final int numberToClear = 1 + lastReceivedCommandID - firstStoredCommandID;
-
-         if (numberToClear == -1)
-         {
-            throw new IllegalArgumentException("Invalid lastReceivedCommandID: " + lastReceivedCommandID);
-         }
-
-         int sizeToFree = 0;
-
-         for (int i = 0; i < numberToClear; i++)
-         {
-            final Packet packet = resendCache.poll();
-
-            if (packet == null)
-            {
-               log.warn("Can't find packet to clear: " + " last received command id " +
-                        lastReceivedCommandID +
-                        " first stored command id " +
-                        firstStoredCommandID);
-               return;
-            }
-
-            if (packet.getType() != PACKETS_CONFIRMED)
-            {
-               sizeToFree += packet.getPacketSize();
-            }
-
-            if (commandConfirmationHandler != null)
-            {
-               commandConfirmationHandler.commandConfirmed(packet);
-            }
-         }
-
-         firstStoredCommandID += numberToClear;
+         throw new IllegalArgumentException("Invalid lastReceivedCommandID: " + lastReceivedCommandID);
       }
+
+      int sizeToFree = 0;
+
+      for (int i = 0; i < numberToClear; i++)
+      {
+         final Packet packet = resendCache.poll();
+
+         if (packet == null)
+         {
+            log.warn("Can't find packet to clear: " + " last received command id " +
+                     lastReceivedCommandID +
+                     " first stored command id " +
+                     firstStoredCommandID);
+            return;
+         }
+
+         if (packet.getType() != PACKETS_CONFIRMED)
+         {
+            sizeToFree += packet.getPacketSize();
+         }
+
+         if (commandConfirmationHandler != null)
+         {
+            commandConfirmationHandler.commandConfirmed(packet);
+         }
+      }
+
+      firstStoredCommandID += numberToClear;
    }
 }
