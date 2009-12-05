@@ -204,7 +204,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
          performNonTransactionalDelete = false;
       }
 
-      setup(50, 60 * 1024, true);
+      setup(50, 60 * 1024, false);
 
       ArrayList<Long> liveIDs = new ArrayList<Long>();
 
