@@ -105,7 +105,8 @@
                directory where you installed JBoss AS 5</para>
          </listitem>
          <listitem>
-            <para>run <literal>ant</literal> in HornetQ's <literal>config/jboss-as</literal>
+            <para>run <literal>./build.sh</literal> (or <literal>build.bat</literal> if you
+            are on Windows) in HornetQ's <literal>config/jboss-as</literal>
                directory</para>
          </listitem>
       </orderedlist>
@@ -142,7 +143,8 @@
                directory where you installed JBoss AS 4</para>
          </listitem>
          <listitem>
-            <para>run <literal>ant as4</literal> in HornetQ's <literal>config/jboss-as</literal>
+            <para>run <literal><literal>./build.sh</literal> (or <literal>build.bat</literal> if you
+            are on Windows) as4</literal> in HornetQ's <literal>config/jboss-as</literal>
                directory</para>
          </listitem>
       </orderedlist>

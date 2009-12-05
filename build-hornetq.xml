@@ -864,6 +864,7 @@
       <chmod file="${build.distro.bin.dir}/run.sh" perm="ugo+rx"/>
       <chmod file="${build.distro.bin.dir}/stop.sh" perm="ugo+rx"/>
       <chmod file="${build.distro.bin.dir}/build.sh" perm="ugo+rx"/>
+      <chmod file="${build.distro.config.dir}/jboss-as/build.sh" perm="ugo+rx"/>
       <copy todir="${build.distro.bin.dir}">
          <fileset dir="${native.bin.dir}">
             <include name="*.so"/>
