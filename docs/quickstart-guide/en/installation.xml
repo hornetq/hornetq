@@ -105,9 +105,8 @@
                directory where you installed JBoss AS 5</para>
          </listitem>
          <listitem>
-            <para>run <literal>./build.sh</literal> (or <literal>build.bat</literal> if you
-            are on Windows) in HornetQ's <literal>config/jboss-as</literal>
-               directory</para>
+            <para>run <literal>./build.sh</literal> (or <literal>build.bat</literal> if you are on
+               Windows) in HornetQ's <literal>config/jboss-as</literal> directory</para>
          </listitem>
       </orderedlist>
       <para>This will create 2 new profiles in <literal>$JBOSS_HOME/server</literal>:</para>
@@ -131,8 +130,8 @@
       <note>
          <para>HornetQ can be deployed on AS 4 but isn't recommended</para>
       </note>
-      <para>As in AS 4, it is not shipped by default with the application server and you need to create
-         new AS 4 profiles to run AS 4 with HornetQ.</para>
+      <para>As in AS 4, it is not shipped by default with the application server and you need to
+         create new AS 4 profiles to run AS 4 with HornetQ.</para>
       <para>To create AS 4 profiles:</para>
       <orderedlist>
          <listitem>
@@ -144,7 +143,7 @@
          </listitem>
          <listitem>
             <para>run <literal><literal>./build.sh</literal> (or <literal>build.bat</literal> if you
-            are on Windows) as4</literal> in HornetQ's <literal>config/jboss-as</literal>
+                  are on Windows)</literal> in HornetQ's <literal>config/jboss-as</literal>
                directory</para>
          </listitem>
       </orderedlist>
