@@ -216,6 +216,7 @@ public class RandomReattachTest extends UnitTestCase
 
       for (int its = 0; its < numIts; its++)
       {
+         log.info("####" + this.getName() + " iteration #" + its);
          start();
 
          ClientSessionFactoryImpl sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
