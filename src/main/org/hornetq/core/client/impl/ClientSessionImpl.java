@@ -454,6 +454,14 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    {
       return this;
    }
+   
+   private void rollbackOnFailover() throws HornetQException
+   {
+      rollback(false);
+      
+      throw new HornetQException(TRANSACTION_ROLLED_BACK,
+                                 "The transaction was rolled back on failover to a backup server");
+   }
 
    public void commit() throws HornetQException
    {
@@ -461,15 +469,25 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
       if (rollbackOnly)
       {
-         rollback(false);
-         
-         throw new HornetQException(TRANSACTION_ROLLED_BACK,
-                                    "The transaction was rolled back on failover to a backup server");
+         rollbackOnFailover();
       }
 
       flushAcks();
 
-      channel.sendBlocking(new PacketImpl(PacketImpl.SESS_COMMIT));
+      try
+      {
+         channel.sendBlocking(new PacketImpl(PacketImpl.SESS_COMMIT));
+      }
+      catch (HornetQException e)
+      {
+         if (e.getCode() == HornetQException.UNBLOCKED)
+         {
+            //The call to commit was unlocked on failover, we therefore rollback the tx,
+            //and throw a transaction rolled back exception instead
+            
+            rollbackOnFailover();      
+         }
+      }
 
       workDone = false;
    }
@@ -732,8 +750,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    public void close() throws HornetQException
    {
       if (closed)
-      {
-         log.info("Already closed so not closing");
+      {        
          return;
       }
 
@@ -990,6 +1007,8 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
       if (rollbackOnly)
       {
+         rollback(xid);
+         
          throw new XAException(XAException.XA_RBOTHER);
       }
 
@@ -1012,6 +1031,23 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       catch (HornetQException e)
       {
          log.warn(e.getMessage(), e);
+         
+         if (e.getCode() == HornetQException.UNBLOCKED)
+         {
+            //Unblocked on failover
+            
+            try
+            {
+               rollback(false);
+            }
+            catch (HornetQException e2)
+            {
+               throw new XAException(XAException.XAER_RMERR);
+            }
+          
+            throw new XAException(XAException.XA_RBOTHER);
+         }
+         
          // This should never occur
          throw new XAException(XAException.XAER_RMERR);
       }
@@ -1122,7 +1158,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    public int prepare(final Xid xid) throws XAException
    {
       checkXA();
-
+      
       if (rollbackOnly)
       {
          throw new XAException(XAException.XA_RBOTHER);
@@ -1148,6 +1184,24 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       }
       catch (HornetQException e)
       {
+         log.warn(e.getMessage(), e);
+         
+         if (e.getCode() == HornetQException.UNBLOCKED)
+         {
+            //Unblocked on failover
+            
+            try
+            {
+               rollback(false);
+            }
+            catch (HornetQException e2)
+            {
+               throw new XAException(XAException.XAER_RMERR);
+            }
+          
+            throw new XAException(XAException.XA_RBOTHER);
+         }
+         
          // This should never occur
          throw new XAException(XAException.XAER_RMERR);
       }

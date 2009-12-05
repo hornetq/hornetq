@@ -1159,7 +1159,7 @@ public abstract class MultiThreadRandomReattachTestBase extends MultiThreadReatt
 
    protected int getNumIterations()
    {
-      return 5;
+      return 200000;
    }
 
    @Override
