@@ -14,6 +14,7 @@ package org.hornetq.jms.example;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
+import javax.jms.JMSException;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Queue;
@@ -23,6 +24,7 @@ import javax.jms.TransactionRolledBackException;
 import javax.naming.InitialContext;
 
 import org.hornetq.common.example.HornetQExample;
+import org.hornetq.core.message.impl.MessageImpl;
 
 /**
  * A simple example that demonstrates failover of the JMS connection from one node to another
@@ -59,7 +61,7 @@ public class TransactionFailoverExample extends HornetQExample
 
          // Step 4. We create a *transacted* JMS Session
          Session session = connection.createSession(true, 0);
-         
+
          // Step 5. We start the connection to ensure delivery occurs
          connection.start();
 
@@ -76,25 +78,37 @@ public class TransactionFailoverExample extends HornetQExample
          try
          {
             session.commit();
-         } catch (TransactionRolledBackException e)
+         }
+         catch (TransactionRolledBackException e)
          {
             System.err.println("transaction has been rolled back: " + e.getMessage());
          }
          
          // Step 10. We resend all the messages
          sendMessages(session, producer, numMessages, false);
-         // Step 11. We commit the session succesfully: the messages will be all delivered to the activated backup server
+         
+         // Step 11. We commit the session succesfully: the messages will be all delivered to the activated backup
+         // server
          session.commit();
-
 
          // Step 12. We are now transparently reconnected to server #0, the backup server.
          // We consume the messages sent before the crash of the live server and commit the session.
          for (int i = 0; i < numMessages; i++)
          {
             TextMessage message0 = (TextMessage)consumer.receive(5000);
+            
+            if (message0 == null)
+            {
+               System.err.println("Example failed - message wasn't received");
+               
+               return false;
+            }
+            
             System.out.println("Got message: " + message0.getText());
          }
+         
          session.commit();
+         
          System.out.println("Other message on the server? " + consumer.receive(5000));
 
          return true;
@@ -121,19 +135,36 @@ public class TransactionFailoverExample extends HornetQExample
       for (int i = 0; i < numMessages / 2; i++)
       {
          TextMessage message = session.createTextMessage("This is text message " + i);
+         
+         //We set the duplicate detection header - so the server will ignore the same message
+         //if sent again after failover
+         
+         message.setStringProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID.toString(), "uniqueid" + i);
+         
          producer.send(message);
+         
          System.out.println("Sent message: " + message.getText());
       }
+      
       if (killServer)
       {
          killServer(1);
+         
          Thread.sleep(2000);
       }
+      
       // We send the remaining half of messages
       for (int i = numMessages / 2; i < numMessages; i++)
       {
          TextMessage message = session.createTextMessage("This is text message " + i);
+         
+         //We set the duplicate detection header - so the server will ignore the same message
+         //if sent again after failover
+         
+         message.setStringProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID.toString(), "uniqueid" + i);
+         
          producer.send(message);
+         
          System.out.println("Sent message: " + message.getText());
       }
    }

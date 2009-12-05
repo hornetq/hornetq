@@ -178,6 +178,8 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    private volatile boolean workDone;
 
    private final String groupID;
+   
+   private volatile boolean inClose;
 
    // Constructors ----------------------------------------------------------------------------
 
@@ -454,6 +456,14 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    {
       return this;
    }
+   
+   private void rollbackOnFailover() throws HornetQException
+   {
+      rollback(false);
+      
+      throw new HornetQException(TRANSACTION_ROLLED_BACK,
+                                 "The transaction was rolled back on failover to a backup server");
+   }
 
    public void commit() throws HornetQException
    {
@@ -461,15 +471,29 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
       if (rollbackOnly)
       {
-         rollback(false);
-         
-         throw new HornetQException(TRANSACTION_ROLLED_BACK,
-                                    "The transaction was rolled back on failover to a backup server");
+         rollbackOnFailover();
       }
 
       flushAcks();
 
-      channel.sendBlocking(new PacketImpl(PacketImpl.SESS_COMMIT));
+      try
+      {
+         channel.sendBlocking(new PacketImpl(PacketImpl.SESS_COMMIT));
+      }
+      catch (HornetQException e)
+      {
+         if (e.getCode() == HornetQException.UNBLOCKED)
+         {
+            //The call to commit was unlocked on failover, we therefore rollback the tx,
+            //and throw a transaction rolled back exception instead
+            
+            rollbackOnFailover();      
+         }
+         else
+         {
+            throw e;
+         }
+      }
 
       workDone = false;
    }
@@ -732,8 +756,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    public void close() throws HornetQException
    {
       if (closed)
-      {
-         log.info("Already closed so not closing");
+      {     
          return;
       }
 
@@ -743,11 +766,16 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
          closeChildren();
 
+         inClose = true;
+         
          channel.sendBlocking(new SessionCloseMessage());
       }
-      catch (Throwable ignore)
+      catch (Throwable e)
       {
          // Session close should always return without exception
+         
+         //Note - we only log at trace
+         log.trace("Failed to close session", e);
       }
 
       doCleanup();
@@ -812,114 +840,120 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
          else
          {
             // The session wasn't found on the server - probably we're failing over onto a backup server where the
-            // session
-            // won't exist or the target server has been restarted - in this case the session will need to be recreated,
+            // session won't exist or the target server has been restarted - in this case the session will need to be recreated,
             // and we'll need to recreate any consumers
-
-            Packet createRequest = new CreateSessionMessage(name,
-                                                            channel.getID(),
-                                                            version,
-                                                            username,
-                                                            password,
-                                                            minLargeMessageSize,
-                                                            xa,
-                                                            autoCommitSends,
-                                                            autoCommitAcks,
-                                                            preAcknowledge,
-                                                            confirmationWindowSize);
-            boolean retry = false;
-            do
+            
+            // It could also be that the server hasn't been restarted, but the session is currently executing close, and that
+            // has already been executed on the server, that's why we can't find the session- in this case we *don't* want
+            // to recreate the session, we just want to unblock the blocking call
+            if (!inClose)
             {
-               try
+               Packet createRequest = new CreateSessionMessage(name,
+                                                               channel.getID(),
+                                                               version,
+                                                               username,
+                                                               password,
+                                                               minLargeMessageSize,
+                                                               xa,
+                                                               autoCommitSends,
+                                                               autoCommitAcks,
+                                                               preAcknowledge,
+                                                               confirmationWindowSize);
+               boolean retry = false;
+               do
                {
-                  channel1.sendBlocking(createRequest);
-                  retry = false;
-               }
-               catch (HornetQException e)
-               {
-                  // the session was created while its server was starting, retry it:
-                  if (e.getCode() == HornetQException.SESSION_CREATION_REJECTED)
+                  try
                   {
-                     log.warn("Server is starting, retry to create the session " + name);
-                     retry = true;
-                     // sleep a little bit to avoid spinning too much
-                     Thread.sleep(10);
+                     channel1.sendBlocking(createRequest);
+                     retry = false;
                   }
-                  else
+                  catch (HornetQException e)
                   {
-                     throw e;
+                     // the session was created while its server was starting, retry it:
+                     if (e.getCode() == HornetQException.SESSION_CREATION_REJECTED)
+                     {
+                        log.warn("Server is starting, retry to create the session " + name);
+                        retry = true;
+                        // sleep a little bit to avoid spinning too much
+                        Thread.sleep(10);
+                     }
+                     else
+                     {
+                        throw e;
+                     }
                   }
                }
-            }
-            while (retry);
-
-            channel.clearCommands();
-
-            for (Map.Entry<Long, ClientConsumerInternal> entry : consumers.entrySet())
-            {
-               SessionCreateConsumerMessage createConsumerRequest = new SessionCreateConsumerMessage(entry.getKey(),
-                                                                                                     entry.getValue()
-                                                                                                          .getQueueName(),
-                                                                                                     entry.getValue()
-                                                                                                          .getFilterString(),
-                                                                                                     entry.getValue()
-                                                                                                          .isBrowseOnly(),
-                                                                                                     false);
-
-               createConsumerRequest.setChannelID(channel.getID());
-
-               Connection conn = channel.getConnection().getTransportConnection();
-
-               HornetQBuffer buffer = createConsumerRequest.encode(channel.getConnection());
-
-               conn.write(buffer, false);
-
-               int clientWindowSize = entry.getValue().getClientWindowSize();
-
-               if (clientWindowSize != 0)
+               while (retry);
+   
+               channel.clearCommands();
+   
+               for (Map.Entry<Long, ClientConsumerInternal> entry : consumers.entrySet())
                {
-                  SessionConsumerFlowCreditMessage packet = new SessionConsumerFlowCreditMessage(entry.getKey(),
-                                                                                                 clientWindowSize);
-
+                  SessionCreateConsumerMessage createConsumerRequest = new SessionCreateConsumerMessage(entry.getKey(),
+                                                                                                        entry.getValue()
+                                                                                                             .getQueueName(),
+                                                                                                        entry.getValue()
+                                                                                                             .getFilterString(),
+                                                                                                        entry.getValue()
+                                                                                                             .isBrowseOnly(),
+                                                                                                        false);
+   
+                  createConsumerRequest.setChannelID(channel.getID());
+   
+                  Connection conn = channel.getConnection().getTransportConnection();
+   
+                  HornetQBuffer buffer = createConsumerRequest.encode(channel.getConnection());
+   
+                  conn.write(buffer, false);
+   
+                  int clientWindowSize = entry.getValue().getClientWindowSize();
+   
+                  if (clientWindowSize != 0)
+                  {
+                     SessionConsumerFlowCreditMessage packet = new SessionConsumerFlowCreditMessage(entry.getKey(),
+                                                                                                    clientWindowSize);
+   
+                     packet.setChannelID(channel.getID());
+   
+                     buffer = packet.encode(channel.getConnection());
+   
+                     conn.write(buffer, false);
+                  }
+               }
+   
+               if ((!autoCommitAcks || !autoCommitSends) && workDone)
+               {
+                  // Session is transacted - set for rollback only
+                  // FIXME - there is a race condition here - a commit could sneak in before this is set
+                  rollbackOnly = true;
+               }
+   
+               // Now start the session if it was already started
+               if (started)
+               {
+                  for (ClientConsumerInternal consumer : consumers.values())
+                  {
+                     consumer.clearAtFailover();
+                     consumer.start();
+                  }
+   
+                  Packet packet = new PacketImpl(PacketImpl.SESS_START);
+   
                   packet.setChannelID(channel.getID());
-
-                  buffer = packet.encode(channel.getConnection());
-
+   
+                  Connection conn = channel.getConnection().getTransportConnection();
+   
+                  HornetQBuffer buffer = packet.encode(channel.getConnection());
+   
                   conn.write(buffer, false);
                }
+   
+               resetCreditManager = true;
             }
-
-            if ((!autoCommitAcks || !autoCommitSends) && workDone)
-            {
-               // Session is transacted - set for rollback only
-               // FIXME - there is a race condition here - a commit could sneak in before this is set
-               rollbackOnly = true;
-            }
-
-            // Now start the session if it was already started
-            if (started)
-            {
-               for (ClientConsumerInternal consumer : consumers.values())
-               {
-                  consumer.clearAtFailover();
-                  consumer.start();
-               }
-
-               Packet packet = new PacketImpl(PacketImpl.SESS_START);
-
-               packet.setChannelID(channel.getID());
-
-               Connection conn = channel.getConnection().getTransportConnection();
-
-               HornetQBuffer buffer = packet.encode(channel.getConnection());
-
-               conn.write(buffer, false);
-            }
-
-            resetCreditManager = true;
-
+            
             channel.returnBlocking();
          }
+         
       }
       catch (Throwable t)
       {
@@ -1012,6 +1046,23 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       catch (HornetQException e)
       {
          log.warn(e.getMessage(), e);
+         
+         if (e.getCode() == HornetQException.UNBLOCKED)
+         {
+            //Unblocked on failover
+            
+            try
+            {
+               rollback(false);
+            }
+            catch (HornetQException e2)
+            {
+               throw new XAException(XAException.XAER_RMERR);
+            }
+          
+            throw new XAException(XAException.XA_RBOTHER);
+         }
+         
          // This should never occur
          throw new XAException(XAException.XAER_RMERR);
       }
@@ -1122,7 +1173,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    public int prepare(final Xid xid) throws XAException
    {
       checkXA();
-
+      
       if (rollbackOnly)
       {
          throw new XAException(XAException.XA_RBOTHER);
@@ -1148,6 +1199,24 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       }
       catch (HornetQException e)
       {
+         log.warn(e.getMessage(), e);
+         
+         if (e.getCode() == HornetQException.UNBLOCKED)
+         {
+            //Unblocked on failover
+            
+            try
+            {
+               rollback(false);
+            }
+            catch (HornetQException e2)
+            {
+               throw new XAException(XAException.XAER_RMERR);
+            }
+          
+            throw new XAException(XAException.XA_RBOTHER);
+         }
+         
          // This should never occur
          throw new XAException(XAException.XAER_RMERR);
       }

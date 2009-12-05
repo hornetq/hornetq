@@ -101,11 +101,7 @@
     </section>
     <section>
         <title>System properties</title>
-        <para>HornetQ also takes a couple of Java system properties on the command line for
-            configuring logging properties</para>
-        <para>HornetQ uses JDK logging to minimise dependencies on other logging systems. JDK
-            logging can then be configured to delegate to some other framework, e.g. log4j if that's
-            what you prefer.</para>
+        <para>HornetQ can take a system property on the command line for configuring logging.</para>
         <para>For more information on configuring logging, please see <xref linkend="logging"
             />.</para>
     </section>

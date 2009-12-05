@@ -31,11 +31,15 @@ public class DelayInterceptor2 implements Interceptor
 {
    private static final Logger log = Logger.getLogger(DelayInterceptor2.class);
 
+   private volatile boolean loseResponse = true;
+   
    public boolean intercept(Packet packet, RemotingConnection connection) throws HornetQException
    {
-      if (packet.getType() == PacketImpl.NULL_RESPONSE)
+      if (packet.getType() == PacketImpl.NULL_RESPONSE && loseResponse)
       {
-         //Lose the response from the commit
+         //Lose the response from the commit - only lose the first one
+         
+         loseResponse = false;
 
          return false;
       }

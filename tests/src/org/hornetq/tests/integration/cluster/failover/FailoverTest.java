@@ -44,7 +44,6 @@ import org.hornetq.core.remoting.RemotingConnection;
 import org.hornetq.core.remoting.impl.invm.TransportConstants;
 import org.hornetq.core.transaction.impl.XidImpl;
 import org.hornetq.jms.client.HornetQTextMessage;
-import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.utils.SimpleString;
 
 /**
@@ -1952,30 +1951,32 @@ public class FailoverTest extends FailoverTestBase
             {
                sf.addInterceptor(interceptor);
 
+               log.info("attempting commit");
                session.commit();
             }
             catch (HornetQException e)
             {
-               if (e.getCode() == HornetQException.UNBLOCKED)
+               if (e.getCode() == HornetQException.TRANSACTION_ROLLED_BACK)
                {
+                  log.info("got transaction rolled back");
+                  
                   // Ok - now we retry the commit after removing the interceptor
 
                   sf.removeInterceptor(interceptor);
 
                   try
                   {
+                     log.info("trying to commit again");
                      session.commit();
-                     fail("commit succeeded");
+                     log.info("committed again ok");
+                     
+                     failed = false;
                   }
                   catch (HornetQException e2)
                   {
-                     if (e2.getCode() == HornetQException.TRANSACTION_ROLLED_BACK)
-                     {
-                        // Ok
-
-                        failed = false;
-                     }
+                     
                   }
+                 
                }
             }
          }
@@ -1990,6 +1991,8 @@ public class FailoverTest extends FailoverTestBase
       Thread.sleep(500);
 
       fail(session, latch);
+      
+      log.info("connection has failed");
 
       committer.join();
 
@@ -2104,7 +2107,7 @@ public class FailoverTest extends FailoverTestBase
             }
             catch (HornetQException e)
             {
-               if (e.getCode() == HornetQException.UNBLOCKED)
+               if (e.getCode() == HornetQException.TRANSACTION_ROLLED_BACK)
                {
                   // Ok - now we retry the commit after removing the interceptor
 
@@ -2113,15 +2116,11 @@ public class FailoverTest extends FailoverTestBase
                   try
                   {
                      session.commit();
+                     
+                     failed = false;
                   }
                   catch (HornetQException e2)
-                  {
-                     if (e2.getCode() == HornetQException.TRANSACTION_ROLLED_BACK)
-                     {
-                        // Ok
-
-                        failed = false;
-                     }
+                  {                     
                   }
                }
             }
