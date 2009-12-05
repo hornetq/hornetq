@@ -98,7 +98,7 @@ public abstract class AbstractJournalUpdateTask implements JournalReaderCallback
 
       try
       {
-         controlFile.open(1);
+         controlFile.open(1, false);
 
          HornetQBuffer renameBuffer = HornetQBuffers.dynamicBuffer(1);
 
@@ -219,7 +219,7 @@ public abstract class AbstractJournalUpdateTask implements JournalReaderCallback
       currentFile = journal.getFile(false, false, false, true);
       sequentialFile = currentFile.getFile();
 
-      sequentialFile.open(1);
+      sequentialFile.open(1, false);
       fileID = nextOrderingID++;
       currentFile = new JournalFileImpl(sequentialFile, fileID);
 

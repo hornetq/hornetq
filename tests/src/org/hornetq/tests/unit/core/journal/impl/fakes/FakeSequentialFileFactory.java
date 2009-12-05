@@ -363,10 +363,10 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
 
       public void open() throws Exception
       {
-         open(0);
+         open(1, true);
       }
 
-      public synchronized void open(final int currentMaxIO) throws Exception
+      public synchronized void open(final int currentMaxIO, final boolean useExecutor) throws Exception
       {
          open = true;
          checkAndResize(0);

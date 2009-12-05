@@ -89,10 +89,10 @@ public class NIOSequentialFile extends AbstractSequentialFile
     *  Some operations while initializing files on the journal may require a different maxIO */
    public synchronized void open() throws Exception
    {
-      open(defaultMaxIO);
+      open(defaultMaxIO, true);
    }
 
-   public void open(final int maxIO) throws Exception
+   public void open(final int maxIO, final boolean useExecutor) throws Exception
    {
       rfile = new RandomAccessFile(getFile(), "rw");
 
@@ -100,7 +100,7 @@ public class NIOSequentialFile extends AbstractSequentialFile
 
       fileSize = channel.size();
 
-      if (writerExecutor != null)
+      if (writerExecutor != null && useExecutor)
       {
          maxIOSemaphore = new Semaphore(maxIO);
          this.maxIO = maxIO;
@@ -286,7 +286,7 @@ public class NIOSequentialFile extends AbstractSequentialFile
          return;
       }
 
-      if (writerExecutor == null)
+      if (maxIOSemaphore == null)
       {
          doInternalWrite(bytes, sync, callback);
       }

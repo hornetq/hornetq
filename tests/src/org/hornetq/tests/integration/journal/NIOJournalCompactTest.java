@@ -507,7 +507,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
 
    public void testSimpleCompacting() throws Exception
    {
-      setup(2, 60 * 1024, true);
+      setup(2, 60 * 1024, false);
 
       createJournal();
       startJournal();
@@ -756,7 +756,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
    protected void setUp() throws Exception
    {
       super.setUp();
-
+ 
       File file = new File(getTestDir());
 
       deleteDirectory(file);

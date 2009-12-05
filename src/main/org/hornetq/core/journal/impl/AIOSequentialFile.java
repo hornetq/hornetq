@@ -178,14 +178,14 @@ public class AIOSequentialFile extends AbstractSequentialFile
 
    public void open() throws Exception
    {
-      open(maxIO);
+      open(maxIO, true);
    }
 
-   public synchronized void open(final int maxIO) throws Exception
+   public synchronized void open(final int maxIO, final boolean useExecutor) throws Exception
    {
       opened = true;
 
-      aioFile = new AsynchronousFileImpl(writerExecutor, pollerExecutor);
+      aioFile = new AsynchronousFileImpl(useExecutor ? writerExecutor : null, pollerExecutor);
 
       aioFile.open(getFile().getAbsolutePath(), maxIO);
 

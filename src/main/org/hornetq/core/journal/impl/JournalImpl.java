@@ -369,7 +369,7 @@ public class JournalImpl implements TestableJournal
                                      final JournalFile file,
                                      final JournalReaderCallback reader) throws Exception
    {
-      file.getFile().open(1);
+      file.getFile().open(1, false);
       ByteBuffer wholeFileBuffer = null;
       try
       {
@@ -2616,7 +2616,7 @@ public class JournalImpl implements TestableJournal
 
       SequentialFile sf = file.getFile();
 
-      sf.open(1);
+      sf.open(1, false);
 
       sf.position(0);
 
@@ -2725,7 +2725,7 @@ public class JournalImpl implements TestableJournal
       {
          SequentialFile file = fileFactory.createSequentialFile(fileName, maxAIO);
 
-         file.open(1);
+         file.open(1, false);
 
          ByteBuffer bb = fileFactory.newBuffer(SIZE_HEADER);
 
@@ -2912,7 +2912,7 @@ public class JournalImpl implements TestableJournal
       }
       else
       {
-         sequentialFile.open(1);
+         sequentialFile.open(1, false);
       }
 
       if (fill)
@@ -2946,7 +2946,7 @@ public class JournalImpl implements TestableJournal
       }
       else
       {
-         file.getFile().open(1);
+         file.getFile().open(1, false);
       }
 
       file.getFile().position(file.getFile().calculateBlockStart(SIZE_HEADER));

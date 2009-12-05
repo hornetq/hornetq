@@ -36,13 +36,13 @@ public interface SequentialFile
    boolean isOpen();
    
    boolean exists();
-
+   
    /**
     * The maximum number of simultaneous writes accepted
     * @param maxIO
     * @throws Exception
     */
-   void open(int maxIO) throws Exception;
+   void open(int maxIO, boolean useExecutor) throws Exception;
    
    boolean fits(int size);
 
