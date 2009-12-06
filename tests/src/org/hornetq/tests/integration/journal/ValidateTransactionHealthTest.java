@@ -301,6 +301,11 @@ public class ValidateTransactionHealthTest extends UnitTestCase
       try
       {
          Journal journal = appendData(journalType, journalDir, numberOfElements, transactionSize, numberOfThreads);
+         
+         // We don't stop the journal on the case of an external process...
+         // The test is making sure that committed data can be reloaded fine...
+         // i.e.  committs are sync on disk as stated on the transaction.
+         // The journal shouldn't leave any state impeding reloading the server
       }
       catch (Exception e)
       {
