@@ -72,7 +72,7 @@ public class NonTransactionFailoverExample extends HornetQExample
          for (int i = 0; i < numMessages; i++)
          {
             TextMessage message = session.createTextMessage("This is text message " + i);
-            
+            producer.send(message);
             System.out.println("Sent message: " + message.getText());
          }
 
