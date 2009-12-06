@@ -222,7 +222,7 @@
             <para>Sometimes you want a client to failover onto a backup server even if the live
                 server is just cleanly shutdown rather than having crashed or the connection failed.
                 To configure this you can set the property <literal
-                    >FailoverOnServerShutdown</literal> to false either on the <literal
+                    >FailoverOnServerShutdown</literal> to true either on the <literal
                     >HornetQConnectionFactory</literal> if you're using JMS or in the <literal
                     >hornetq-jms.xml</literal> file when you define the connection factory, or if
                 using core by setting the property directly on the <literal
@@ -334,7 +334,7 @@
                 <para>If the session is non transactional, messages or acknowledgements can be lost
                     in the event of failover.</para>
                 <para>If you wish to provide <emphasis role="italic">once and only once</emphasis>
-                    delivery guarantees for non transacted sessions too,  enabled duplicate
+                    delivery guarantees for non transacted sessions too, enabled duplicate
                     detection, and catch unblock exceptions as described in <xref
                         linkend="ha.automatic.failover.blockingcalls"/></para>
             </section>

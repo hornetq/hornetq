@@ -69,7 +69,17 @@ public class PageCrashTest extends ServiceTestBase
 
    public void testCrashDuringDeleteFile() throws Exception
    {
-      pageAndFail();
+      doTestCrashDuringDeleteFile(false);
+   }
+
+   public void testCrashDuringDeleteFileTransacted() throws Exception
+   {
+      doTestCrashDuringDeleteFile(true);
+   }
+
+   public void doTestCrashDuringDeleteFile(final boolean transacted) throws Exception
+   {
+      pageAndFail(transacted);
 
       File pageDir = new File(getPageDir());
 
@@ -77,10 +87,13 @@ public class PageCrashTest extends ServiceTestBase
 
       assertEquals(1, directories.length);
 
-      // When depage happened, a new empty page was supposed to be opened, what will create 3 files
-      assertEquals("Missing a file, supposed to have address.txt, 1st page and 2nd page",
-                   3,
-                   directories[0].list().length);
+      if (!transacted)
+      {
+         // When depage happened, a new empty page was supposed to be opened, what will create 3 files
+         assertEquals("Missing a file, supposed to have address.txt, 1st page and 2nd page",
+                      3,
+                      directories[0].list().length);
+      }
 
       Configuration config = createDefaultConfig();
 
@@ -122,7 +135,7 @@ public class PageCrashTest extends ServiceTestBase
    /** This method will leave garbage on paging. 
     *  It will not delete page files as if the server crashed right after commit, 
     *  and before removing the file*/
-   private void pageAndFail() throws Exception
+   private void pageAndFail(final boolean transacted) throws Exception
    {
       clearData();
       Configuration config = createDefaultConfig();
@@ -142,7 +155,7 @@ public class PageCrashTest extends ServiceTestBase
          sf.setBlockOnPersistentSend(true);
          sf.setBlockOnAcknowledge(true);
 
-         ClientSession session = sf.createSession(null, null, false, true, true, false, 0);
+         ClientSession session = sf.createSession(null, null, false, !transacted, !transacted, false, 0);
 
          session.createQueue(ADDRESS, ADDRESS, null, true);
 
@@ -150,7 +163,7 @@ public class PageCrashTest extends ServiceTestBase
 
          ClientMessage message = session.createClientMessage(true);
          message.getBodyBuffer().writeBytes(new byte[1024]);
-         
+
          PagingStore store = server.getPostOffice().getPagingManager().getPageStore(ADDRESS);
 
          int messages = 0;
@@ -158,6 +171,10 @@ public class PageCrashTest extends ServiceTestBase
          {
             producer.send(message);
             messages++;
+            if (transacted && messages % 100 == 0)
+            {
+               session.commit();
+            }
          }
 
          for (int i = 0; i < 2; i++)
@@ -165,6 +182,8 @@ public class PageCrashTest extends ServiceTestBase
             messages++;
             producer.send(message);
          }
+
+         session.commit();
 
          session.close();
 

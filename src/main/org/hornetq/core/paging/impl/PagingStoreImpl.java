@@ -49,6 +49,7 @@ import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.core.transaction.Transaction;
 import org.hornetq.core.transaction.TransactionPropertyIndexes;
+import org.hornetq.core.transaction.Transaction.State;
 import org.hornetq.core.transaction.impl.TransactionImpl;
 import org.hornetq.utils.SimpleString;
 
@@ -282,7 +283,7 @@ public class PagingStoreImpl implements TestSupportPageStore
    }
 
    public void addSize(final ServerMessage message, final boolean add)
-   {            
+   {
       long size = message.getMemoryEstimate();
 
       if (add)
@@ -302,7 +303,7 @@ public class PagingStoreImpl implements TestSupportPageStore
    public void addSize(final MessageReference reference, final boolean add)
    {
       long size = MessageReferenceImpl.getMemoryEstimate();
-      
+
       if (add)
       {
          checkReleaseProducerFlowControlCredits(size);
@@ -400,9 +401,9 @@ public class PagingStoreImpl implements TestSupportPageStore
       if (running)
       {
          running = false;
-         
+
          final CountDownLatch latch = new CountDownLatch(1);
-         
+
          executor.execute(new Runnable()
          {
             public void run()
@@ -410,10 +411,10 @@ public class PagingStoreImpl implements TestSupportPageStore
                latch.countDown();
             }
          });
-         
+
          if (!latch.await(60, TimeUnit.SECONDS))
          {
-            log.warn("Timed out on waiting PagingStore "  + this.address + " to shutdown");
+            log.warn("Timed out on waiting PagingStore " + this.address + " to shutdown");
          }
 
          if (currentPage != null)
@@ -726,7 +727,7 @@ public class PagingStoreImpl implements TestSupportPageStore
       }
    }
 
-   private void addSize(final long size) 
+   private void addSize(final long size)
    {
       if (addressFullMessagePolicy != AddressFullMessagePolicy.PAGE)
       {
@@ -948,55 +949,68 @@ public class PagingStoreImpl implements TestSupportPageStore
 
          final long transactionIdDuringPaging = pagedMessage.getTransactionID();
 
+         PageTransactionInfo pageUserTransaction = null;
+
          if (transactionIdDuringPaging >= 0)
          {
-            final PageTransactionInfo pageTransactionInfo = pagingManager.getTransaction(transactionIdDuringPaging);
+            pageUserTransaction = pagingManager.getTransaction(transactionIdDuringPaging);
 
-            if (pageTransactionInfo == null)
+            if (pageUserTransaction == null)
             {
-               log.warn("Transaction " + pagedMessage.getTransactionID() +
-                        " used during paging not found, ignoring message " +
-                        message);
+               // This is not supposed to happen
+               log.warn("Transaction " + pagedMessage.getTransactionID() + " used during paging not found");
                continue;
             }
-
-            // This is to avoid a race condition where messages are depaged
-            // before the commit arrived
-
-            while (running && !pageTransactionInfo.waitCompletion(500))
+            else
             {
-               // This is just to give us a chance to interrupt the process..
-               // if we start a shutdown in the middle of transactions, the commit/rollback may never come, delaying
-               // the shutdown of the server
-               if (isTrace)
+
+               // This is to avoid a race condition where messages are depaged
+               // before the commit arrived
+
+               while (running && !pageUserTransaction.waitCompletion(500))
                {
-                  trace("Waiting pageTransaction to complete");
+                  // This is just to give us a chance to interrupt the process..
+                  // if we start a shutdown in the middle of transactions, the commit/rollback may never come, delaying
+                  // the shutdown of the server
+                  if (isTrace)
+                  {
+                     trace("Waiting pageTransaction to complete");
+                  }
+               }
+
+               if (!running)
+               {
+                  break;
+               }
+
+               if (!pageUserTransaction.isCommit())
+               {
+                  if (isTrace)
+                  {
+                     trace("Rollback was called after prepare, ignoring message " + message);
+                  }
+                  continue;
                }
             }
 
-            if (!running)
-            {
-               break;
-            }
-
-            if (!pageTransactionInfo.isCommit())
-            {
-               if (isTrace)
-               {
-                  trace("Rollback was called after prepare, ignoring message " + message);
-               }
-               continue;
-            }
-
-            // Update information about transactions
-            if (message.isDurable())
-            {
-               pageTransactionInfo.decrement();
-               pageTransactionsToUpdate.add(pageTransactionInfo);
-            }
          }
 
          postOffice.route(message, depageTransaction);
+
+         // This means the page is duplicated. So we need to ignore this
+         if (depageTransaction.getState() == State.ROLLBACK_ONLY)
+         {
+            break;
+         }
+
+
+         // Update information about transactions
+         // This needs to be done after routing because of duplication detection
+         if (pageUserTransaction != null && message.isDurable())
+         {
+            pageUserTransaction.decrement();
+            pageTransactionsToUpdate.add(pageUserTransaction);
+         }
       }
 
       if (!running)
@@ -1023,7 +1037,7 @@ public class PagingStoreImpl implements TestSupportPageStore
       }
 
       depageTransaction.commit();
-      
+
       storageManager.waitOnOperations();
 
       if (isTrace)

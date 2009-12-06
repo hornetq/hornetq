@@ -95,6 +95,9 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
    private final ConcurrentMap<SimpleString, ConcurrentMap<Integer, Page>> pageIndex = new ConcurrentHashMap<SimpleString, ConcurrentMap<Integer, Page>>();
 
    private final ConcurrentMap<Long, LargeServerMessage> largeMessages = new ConcurrentHashMap<Long, LargeServerMessage>();
+   
+   // Used on tests, to simulate failures on delete pages
+   private boolean deletePages = true;
 
    // Constructors --------------------------------------------------
    public ReplicationEndpointImpl(final HornetQServer server)
@@ -284,6 +287,12 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
          }
       }
 
+   }
+   
+   /** Used on tests only. To simulate missing page deletes*/
+   public void setDeletePages(final boolean deletePages)
+   {
+      this.deletePages = deletePages;
    }
 
    /**
@@ -504,7 +513,10 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
       {
          if (packet.isDelete())
          {
-            page.delete();
+            if (deletePages)
+            {
+               page.delete();
+            }
          }
          else
          {

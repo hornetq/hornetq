@@ -21,7 +21,7 @@
     <para>HornetQ has its own Logging Delegate that has no dependencies on any particular logging
         framework. The default Delegate delegates all its logs to the standard <ulink
             url="http://java.sun.com/j2se/1.4.2/docs/guide/util/logging/">JDK logging</ulink>,
-        (a.k.a Java-Util-Logging: JUL).  By default the server picks up its JUL configuration from a
+        (a.k.a Java-Util-Logging: JUL). By default the server picks up its JUL configuration from a
             <literal>logging.properties</literal> file found in the config directories. This is
         configured to use our own HornetQ logging formatter and will log to the console as well as a
         log file. For more information on configuring JUL visit Suns website.</para>
@@ -42,8 +42,8 @@
                     default that uses
                     JUL.</para></listitem><listitem><para>org.hornetq.integration.logging.Log4jLogDelegateFactory
                     - which uses Log4J</para></listitem></orderedlist></para>
-    <para>If you want configure your client's logging, make sure you provide a <literal
-            >logging.properties</literal> file and set the <literal
+    <para>If you configure your client's logging to use the JUL delegate, make sure you provide a
+            <literal>logging.properties</literal> file and set the <literal
             >java.util.logging.config.file</literal> property on client startup</para>
     <section>
         <title>Logging With The JBoss Application Server</title>
