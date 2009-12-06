@@ -949,14 +949,6 @@ public class PagingStoreImpl implements TestSupportPageStore
 
          final long transactionIdDuringPaging = pagedMessage.getTransactionID();
 
-         postOffice.route(message, depageTransaction);
-
-         // This means the page is duplicated. So we need to ignore this
-         if (depageTransaction.getState() == State.ROLLBACK_ONLY)
-         {
-            break;
-         }
-
          PageTransactionInfo pageUserTransaction = null;
 
          if (transactionIdDuringPaging >= 0)
@@ -1002,6 +994,15 @@ public class PagingStoreImpl implements TestSupportPageStore
             }
 
          }
+
+         postOffice.route(message, depageTransaction);
+
+         // This means the page is duplicated. So we need to ignore this
+         if (depageTransaction.getState() == State.ROLLBACK_ONLY)
+         {
+            break;
+         }
+
 
          // Update information about transactions
          // This needs to be done after routing because of duplication detection
