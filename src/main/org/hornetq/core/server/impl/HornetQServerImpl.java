@@ -854,6 +854,12 @@ public class HornetQServerImpl implements HornetQServer
    // Public
    // ---------------------------------------------------------------------------------------
 
+   /** For tests only */
+   public ReplicationEndpoint getReplicationEndpoint()
+   {
+      return this.replicationEndpoint;
+   }
+   
    // Package protected
    // ----------------------------------------------------------------------------
 
