@@ -2904,16 +2904,11 @@ public class JournalImpl implements TestableJournal
          trace("Creating file " + fileName);
       }
 
-      SequentialFile sequentialFile = fileFactory.createSequentialFile(fileName, maxAIO);
+      String tmpFileName = fileName + ".tmp";
+      
+      SequentialFile sequentialFile = fileFactory.createSequentialFile(tmpFileName, maxAIO);
 
-      if (multiAIO)
-      {
-         sequentialFile.open();
-      }
-      else
-      {
-         sequentialFile.open(1, false);
-      }
+      sequentialFile.open(1, false);
 
       if (fill)
       {
@@ -2928,14 +2923,25 @@ public class JournalImpl implements TestableJournal
          sequentialFile.writeDirect(bb, true);
       }
 
-      JournalFile info = new JournalFileImpl(sequentialFile, fileID);
 
-      if (!keepOpened)
+      sequentialFile.close();
+
+      sequentialFile.renameTo(fileName);
+
+      if (keepOpened)
       {
-         sequentialFile.close();
+
+         if (multiAIO)
+         {
+            sequentialFile.open();
+         }
+         else
+         {
+            sequentialFile.open(1, false);
+         }
       }
 
-      return info;
+      return new JournalFileImpl(sequentialFile, fileID);
    }
 
    private void openFile(final JournalFile file, final boolean multiAIO) throws Exception
@@ -3233,7 +3239,19 @@ public class JournalImpl implements TestableJournal
          controlFile.delete();
       }
 
-      List<String> leftFiles = fileFactory.listFiles(getFileExtension() + ".cmp");
+      cleanupTmpFiles(".cmp");
+
+      cleanupTmpFiles(".tmp");
+
+      return;
+   }
+
+   /**
+    * @throws Exception
+    */
+   private void cleanupTmpFiles(final String extension) throws Exception
+   {
+      List<String> leftFiles = fileFactory.listFiles(getFileExtension() + extension);
 
       if (leftFiles.size() > 0)
       {
@@ -3246,8 +3264,6 @@ public class JournalImpl implements TestableJournal
             file.delete();
          }
       }
-
-      return;
    }
 
    private static boolean isInvalidSize(final int fileSize, final int bufferPos, final int size)

@@ -301,9 +301,6 @@ public class ValidateTransactionHealthTest extends UnitTestCase
       try
       {
          Journal journal = appendData(journalType, journalDir, numberOfElements, transactionSize, numberOfThreads);
-         
-         journal.stop();
-
       }
       catch (Exception e)
       {
@@ -313,7 +310,7 @@ public class ValidateTransactionHealthTest extends UnitTestCase
 
       System.exit(OK);
    }
-
+   
    public static JournalImpl appendData(String journalType,
                                         String journalDir,
                                         long numberOfElements,
