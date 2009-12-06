@@ -2923,6 +2923,7 @@ public class JournalImpl implements TestableJournal
          sequentialFile.writeDirect(bb, true);
       }
 
+      long position = sequentialFile.position();
 
       sequentialFile.close();
 
@@ -2930,7 +2931,6 @@ public class JournalImpl implements TestableJournal
 
       if (keepOpened)
       {
-
          if (multiAIO)
          {
             sequentialFile.open();
@@ -2939,6 +2939,7 @@ public class JournalImpl implements TestableJournal
          {
             sequentialFile.open(1, false);
          }
+         sequentialFile.position(position);
       }
 
       return new JournalFileImpl(sequentialFile, fileID);
