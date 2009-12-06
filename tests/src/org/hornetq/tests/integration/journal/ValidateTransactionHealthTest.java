@@ -20,6 +20,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
 import org.hornetq.core.config.impl.ConfigurationImpl;
+import org.hornetq.core.journal.Journal;
 import org.hornetq.core.journal.LoaderCallback;
 import org.hornetq.core.journal.PreparedTransactionInfo;
 import org.hornetq.core.journal.RecordInfo;
@@ -27,6 +28,7 @@ import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.journal.impl.AIOSequentialFileFactory;
 import org.hornetq.core.journal.impl.JournalImpl;
 import org.hornetq.core.journal.impl.NIOSequentialFileFactory;
+import org.hornetq.core.logging.Logger;
 import org.hornetq.tests.util.SpawnedVMSupport;
 import org.hornetq.tests.util.UnitTestCase;
 
@@ -42,6 +44,9 @@ public class ValidateTransactionHealthTest extends UnitTestCase
 
    // Constants -----------------------------------------------------
 
+   private static final Logger log = Logger.getLogger(ValidateTransactionHealthTest.class);
+
+   
    // Attributes ----------------------------------------------------
 
    private static final int OK = 10;
@@ -113,8 +118,6 @@ public class ValidateTransactionHealthTest extends UnitTestCase
    {
       internalTest("nio2", getTestDir(), 10000, 0, true, true, 1);
    }
-
-
 
    // Package protected ---------------------------------------------
 
@@ -297,7 +300,9 @@ public class ValidateTransactionHealthTest extends UnitTestCase
 
       try
       {
-         appendData(journalType, journalDir, numberOfElements, transactionSize, numberOfThreads);
+         Journal journal = appendData(journalType, journalDir, numberOfElements, transactionSize, numberOfThreads);
+         
+         journal.stop();
 
       }
       catch (Exception e)
@@ -342,17 +347,17 @@ public class ValidateTransactionHealthTest extends UnitTestCase
          }
       });
 
-      LocalThreads threads[] = new LocalThreads[numberOfThreads];
+      LocalThread threads[] = new LocalThread[numberOfThreads];
       final AtomicLong sequenceTransaction = new AtomicLong();
 
       for (int i = 0; i < numberOfThreads; i++)
       {
-         threads[i] = new LocalThreads(journal, numberOfElements, transactionSize, sequenceTransaction);
+         threads[i] = new LocalThread(journal, numberOfElements, transactionSize, sequenceTransaction);
          threads[i].start();
       }
 
       Exception e = null;
-      for (LocalThreads t : threads)
+      for (LocalThread t : threads)
       {
          t.join();
 
@@ -403,7 +408,7 @@ public class ValidateTransactionHealthTest extends UnitTestCase
       }
    }
 
-   static class LocalThreads extends Thread
+   static class LocalThread extends Thread
    {
       final JournalImpl journal;
 
@@ -415,7 +420,7 @@ public class ValidateTransactionHealthTest extends UnitTestCase
 
       Exception e;
 
-      public LocalThreads(JournalImpl journal, long numberOfElements, int transactionSize, AtomicLong nextID)
+      public LocalThread(JournalImpl journal, long numberOfElements, int transactionSize, AtomicLong nextID)
       {
          super();
          this.journal = journal;
