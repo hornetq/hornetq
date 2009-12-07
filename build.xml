@@ -107,6 +107,10 @@ Copyright 2009 Red Hat, Inc.
       <ant antfile="build-hornetq.xml" target="userdoc"/>
    </target>
     
+   <target name="javadoc">
+      <ant antfile="build-hornetq.xml" target="javadoc"/>
+   </target>
+    
    <target name="validate-configuration">
       <ant antfile="build-hornetq.xml" target="validate-configuration"/>
    </target>
