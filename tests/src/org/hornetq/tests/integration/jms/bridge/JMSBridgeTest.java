@@ -521,7 +521,7 @@ public class JMSBridgeTest extends BridgeTestBase
                                  
          for (int i = NUM_MESSAGES / 2 ; i < NUM_MESSAGES; i++)
          {
-            TextMessage tm = (TextMessage)cons.receive(1000);
+            TextMessage tm = (TextMessage)cons.receive(10000);
             
             assertNotNull(tm);
             
