@@ -17,11 +17,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.hornetq.core.client.ClientConsumer;
+import org.hornetq.core.client.ClientMessage;
+import org.hornetq.core.client.ClientProducer;
 import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.client.ClientSessionFactory;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.Message;
 import org.hornetq.core.server.HornetQ;
@@ -29,7 +32,8 @@ import org.hornetq.core.server.HornetQServer;
 import org.hornetq.integration.transports.netty.NettyAcceptorFactory;
 import org.hornetq.integration.transports.netty.NettyConnectorFactory;
 import org.hornetq.integration.transports.netty.TransportConstants;
-import org.hornetq.tests.util.SpawnedVMSupport;
+import org.hornetq.jms.client.HornetQTextMessage;
+import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.SimpleString;
 
@@ -57,47 +61,71 @@ public class CoreClientOverSSLTest extends UnitTestCase
 
    private HornetQServer server;
 
-   private ClientSession session;
-
-   private ClientConsumer consumer;
-
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
 
    public void testSSL() throws Exception
    {
-      final Process p = SpawnedVMSupport.spawnVM(CoreClientOverSSL.class.getName(), Boolean.TRUE.toString(), TransportConstants.DEFAULT_KEYSTORE_PATH, TransportConstants.DEFAULT_KEYSTORE_PASSWORD);
+      String text = RandomUtil.randomString();
+      
+      TransportConfiguration tc = new TransportConfiguration(NettyConnectorFactory.class.getName());
+      tc.getParams().put(TransportConstants.SSL_ENABLED_PROP_NAME, true);
+      tc.getParams().put(TransportConstants.KEYSTORE_PATH_PROP_NAME, TransportConstants.DEFAULT_KEYSTORE_PATH);
+      tc.getParams().put(TransportConstants.KEYSTORE_PASSWORD_PROP_NAME, TransportConstants.DEFAULT_KEYSTORE_PASSWORD);
 
-      Message m = consumer.receive(10000);
+      ClientSessionFactory sf = new ClientSessionFactoryImpl(tc);
+      ClientSession session = sf.createSession(false, true, true);
+      session.createQueue(QUEUE, QUEUE, false);
+      ClientProducer producer = session.createProducer(QUEUE);
+
+      ClientMessage message = createTextMessage(text, session);
+      producer.send(message);
+
+      ClientConsumer consumer = session.createConsumer(QUEUE);
+      session.start();
+      
+      Message m = consumer.receive(1000);
       assertNotNull(m);
-      assertEquals(MESSAGE_TEXT_FROM_CLIENT, m.getBodyBuffer().readString());
-
-      log.debug("waiting for the client VM to exit ...");
-      SpawnedVMSupport.assertProcessExits(true, 0, p);
+      assertEquals(text, m.getBodyBuffer().readString());
    }
 
    public void testSSLWithIncorrectKeyStorePassword() throws Exception
    {
-      Process p = SpawnedVMSupport.spawnVM(CoreClientOverSSL.class.getName(), Boolean.TRUE.toString(), TransportConstants.DEFAULT_KEYSTORE_PATH, "invalid pasword");
+      TransportConfiguration tc = new TransportConfiguration(NettyConnectorFactory.class.getName());
+      tc.getParams().put(TransportConstants.SSL_ENABLED_PROP_NAME, true);
+      tc.getParams().put(TransportConstants.KEYSTORE_PATH_PROP_NAME, TransportConstants.DEFAULT_KEYSTORE_PATH);
+      tc.getParams().put(TransportConstants.KEYSTORE_PASSWORD_PROP_NAME, "invalid password");
 
-      Message m = consumer.receive(5000);
-      assertNull(m);
-
-      log.debug("waiting for the client VM to exit ...");
-      SpawnedVMSupport.assertProcessExits(false, 0, p);
+      ClientSessionFactory sf = new ClientSessionFactoryImpl(tc);
+      try
+      {
+         sf.createSession(false, true, true);
+         fail();
+      }
+      catch (HornetQException e)
+      {
+         assertEquals(HornetQException.NOT_CONNECTED, e.getCode());
+      }
    }
 
    // see https://jira.jboss.org/jira/browse/HORNETQ-234
-   public void _testPlainConnectionToSSLEndpoint() throws Exception
+   public void testPlainConnectionToSSLEndpoint() throws Exception
    {
-      Process p = SpawnedVMSupport.spawnVM(CoreClientOverSSL.class.getName(), Boolean.FALSE.toString(), TransportConstants.DEFAULT_KEYSTORE_PATH, TransportConstants.DEFAULT_KEYSTORE_PASSWORD);
-
-      Message m = consumer.receive(5000);
-      assertNull(m);
-
-      log.debug("waiting for the client VM to exit ...");
-      SpawnedVMSupport.assertProcessExits(false, 0, p);
+      TransportConfiguration tc = new TransportConfiguration(NettyConnectorFactory.class.getName());
+      tc.getParams().put(TransportConstants.SSL_ENABLED_PROP_NAME, false);
+      
+      ClientSessionFactory sf = new ClientSessionFactoryImpl(tc);
+      sf.setCallTimeout(2000);
+      try
+      {
+         sf.createSession(false, true, true);
+         fail();
+      }
+      catch (HornetQException e)
+      {
+         assertEquals(HornetQException.CONNECTION_TIMEDOUT, e.getCode());
+      }
    }
 
    // Package protected ---------------------------------------------
@@ -112,20 +140,11 @@ public class CoreClientOverSSLTest extends UnitTestCase
       config.getAcceptorConfigurations().add(new TransportConfiguration(NettyAcceptorFactory.class.getName(), params));
       server = HornetQ.newHornetQServer(config, false);
       server.start();
-      TransportConfiguration tc = new TransportConfiguration(NettyConnectorFactory.class.getName(), params);
-      ClientSessionFactory sf = new ClientSessionFactoryImpl(tc);
-      session = sf.createSession(false, true, true);
-      session.createQueue(QUEUE, QUEUE, false);
-      consumer = session.createConsumer(QUEUE);
-      session.start();
    }
 
    @Override
    protected void tearDown() throws Exception
    {
-      consumer.close();
-      session.close();
-
       server.stop();
 
       super.tearDown();
