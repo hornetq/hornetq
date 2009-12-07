@@ -3255,7 +3255,7 @@ public class JournalImpl implements TestableJournal
 
       if (leftFiles.size() > 0)
       {
-         log.warn("Compacted files were left unnatended on journal directory, deleting invalid files now");
+         log.warn("Temporary files were left unnatended after a crash on journal directory, deleting invalid files now");
 
          for (String fileToDelete : leftFiles)
          {

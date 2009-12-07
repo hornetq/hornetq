@@ -313,7 +313,8 @@ public class ValidateTransactionHealthTest extends UnitTestCase
          System.exit(-1);
       }
 
-      System.exit(OK);
+      // Simulating a crash on the system right after the data was committed.
+      Runtime.getRuntime().halt(OK);
    }
    
    public static JournalImpl appendData(String journalType,
