@@ -15,7 +15,6 @@ package org.hornetq.core.client;
 
 import javax.transaction.xa.XAResource;
 
-import org.hornetq.core.buffers.HornetQBuffer;
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.remoting.impl.wireformat.SessionBindingQueryResponseMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
@@ -26,6 +25,7 @@ import org.hornetq.utils.SimpleString;
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
+ * 
  */
 public interface ClientSession extends XAResource
 {
@@ -159,7 +159,7 @@ public interface ClientSession extends XAResource
     * 
     * @param address the queue will be bound to this address
     * @param queueName the name of the queue
-    * @param filterString only messages which match this filter will be put in the queue
+    * @param filter only messages which match this filter will be put in the queue
     * @throws HornetQException in an exception occurs while creating the queue
     */
    void createTemporaryQueue(SimpleString address, SimpleString queueName, SimpleString filter) throws HornetQException;
@@ -169,7 +169,7 @@ public interface ClientSession extends XAResource
     * 
     * @param address the queue will be bound to this address
     * @param queueName the name of the queue
-    * @param filterString only messages which match this filter will be put in the queue
+    * @param filter only messages which match this filter will be put in the queue
     * @throws HornetQException in an exception occurs while creating the queue
     */
    void createTemporaryQueue(String address, String queueName, String filter) throws HornetQException;
@@ -218,7 +218,7 @@ public interface ClientSession extends XAResource
     * @return a ClientConsumer
     * @throws HornetQException if an exception occurs while creating the ClientConsumer
     */
-   ClientConsumer createConsumer(SimpleString queueName, SimpleString filterString) throws HornetQException;
+   ClientConsumer createConsumer(SimpleString queueName, SimpleString filter) throws HornetQException;
 
    /**
     * Create a ClientConsumer to consume messages matching the filter from the queue with the given name.
@@ -228,7 +228,7 @@ public interface ClientSession extends XAResource
     * @return a ClientConsumer
     * @throws HornetQException if an exception occurs while creating the ClientConsumer
     */
-   ClientConsumer createConsumer(String queueName, String filterString) throws HornetQException;
+   ClientConsumer createConsumer(String queueName, String filter) throws HornetQException;
 
    /**
     * Create a ClientConsumer to consume or browse messages from the queue with the given name.
@@ -286,7 +286,7 @@ public interface ClientSession extends XAResource
     * @return a ClientConsumer
     * @throws HornetQException if an exception occurs while creating the ClientConsumer
     */
-   ClientConsumer createConsumer(SimpleString queueName, SimpleString filterString, boolean browseOnly) throws HornetQException;
+   ClientConsumer createConsumer(SimpleString queueName, SimpleString filter, boolean browseOnly) throws HornetQException;
 
    /**
     * Create a ClientConsumer to consume or browse messages matching the filter from the queue with the given name.

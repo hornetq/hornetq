@@ -437,7 +437,7 @@ public class ReplicatedJournal implements Journal
     * @param committedRecords
     * @param preparedTransactions
     * @param transactionFailure
-    * @return
+    *
     * @throws Exception
     * @see org.hornetq.core.journal.Journal#load(java.util.List, java.util.List, org.hornetq.core.journal.TransactionFailureCallback)
     */
@@ -450,7 +450,7 @@ public class ReplicatedJournal implements Journal
 
    /**
     * @param reloadManager
-    * @return
+    *
     * @throws Exception
     * @see org.hornetq.core.journal.Journal#load(org.hornetq.core.journal.LoaderCallback)
     */

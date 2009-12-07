@@ -39,16 +39,12 @@ public class SessionSendContinuationMessage extends SessionContinuationMessage
 
    // Constructors --------------------------------------------------
 
-   /**
-    * @param type
-    */
    public SessionSendContinuationMessage()
    {
       super(SESS_SEND_CONTINUATION);
    }
 
    /**
-    * @param type
     * @param body
     * @param continues
     * @param requiresResponse

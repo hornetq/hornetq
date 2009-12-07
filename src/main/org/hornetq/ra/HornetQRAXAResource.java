@@ -192,7 +192,7 @@ public class HornetQRAXAResource implements XAResource
 
    /**
     * Recover 
-    * @param flags One of TMSTARTRSCAN, TMENDRSCAN, TMNOFLAGS
+    * @param flag One of TMSTARTRSCAN, TMENDRSCAN, TMNOFLAGS
     * @return Zero or more XIDs
     * @exception XAException An error has occurred
     */

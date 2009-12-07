@@ -907,7 +907,6 @@ public class HornetQServerImpl implements HornetQServer
 
    /** 
     * This method is protected as it may be used as a hook for creating a custom storage manager (on tests for instance) 
-    * @return
     */
    protected StorageManager createStorageManager()
    {

@@ -28,9 +28,6 @@ import org.hornetq.utils.DataConstants;
 public class RollbackMessage extends PacketImpl
 {
 
-   /**
-    * @param type
-    */
    public RollbackMessage()
    {
       super(SESS_ROLLBACK);
@@ -58,11 +55,11 @@ public class RollbackMessage extends PacketImpl
    }
 
    /**
-    * @param considerLastMessageAsDelivered the considerLastMessageAsDelivered to set
+    * @param isLastMessageAsDelivered the considerLastMessageAsDelivered to set
     */
-   public void setConsiderLastMessageAsDelivered(final boolean isLastMessageAsDelived)
+   public void setConsiderLastMessageAsDelivered(final boolean isLastMessageAsDelivered)
    {
-      considerLastMessageAsDelivered = isLastMessageAsDelived;
+      considerLastMessageAsDelivered = isLastMessageAsDelivered;
    }
 
    @Override

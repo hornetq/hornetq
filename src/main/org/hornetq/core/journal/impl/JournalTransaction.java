@@ -183,7 +183,7 @@ public class JournalTransaction
 
    /**
     * @param currentFile
-    * @param bb
+    * @param data
     */
    public void fillNumberOfRecords(final JournalFile currentFile, final JournalInternalRecord data)
    {
@@ -222,9 +222,6 @@ public class JournalTransaction
       }
    }
 
-   /**
-    * @return
-    */
    public TransactionCallback getCallback(final JournalFile file) throws Exception
    {
       if (callbackList == null)

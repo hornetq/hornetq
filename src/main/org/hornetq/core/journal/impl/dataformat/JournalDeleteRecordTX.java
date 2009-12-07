@@ -34,10 +34,9 @@ public class JournalDeleteRecordTX extends JournalInternalRecord
    private final EncodingSupport record;
 
    /**
+    * @param txID
     * @param id
-    * @param recordType
     * @param record
-    * @param size
     */
    public JournalDeleteRecordTX(final long txID, final long id, final EncodingSupport record)
    {

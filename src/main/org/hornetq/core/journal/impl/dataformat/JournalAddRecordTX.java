@@ -41,7 +41,6 @@ public class JournalAddRecordTX extends JournalInternalRecord
     * @param id
     * @param recordType
     * @param record
-    * @param size
     */
    public JournalAddRecordTX(final boolean add,
                              final long txID,

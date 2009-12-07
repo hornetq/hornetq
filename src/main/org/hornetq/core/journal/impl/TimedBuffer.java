@@ -188,7 +188,6 @@ public class TimedBuffer
    /**
     * Verify if the size fits the buffer
     * @param sizeChecked
-    * @return
     */
    public synchronized boolean checkSize(final int sizeChecked)
    {

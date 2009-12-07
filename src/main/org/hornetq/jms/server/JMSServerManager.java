@@ -226,8 +226,5 @@ public interface JMSServerManager extends HornetQComponent
 
    void setContext(final Context context);
 
-   /**
-    * @return
-    */
    HornetQServer getHornetQServer();
 }

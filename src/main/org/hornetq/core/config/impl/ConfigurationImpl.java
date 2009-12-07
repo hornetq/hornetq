@@ -387,9 +387,6 @@ public class ConfigurationImpl implements Configuration
       return persistDeliveryCountBeforeDelivery;
    }
 
-   /**
-    * @param strictJMS the strictJMS to set
-    */
    public void setPersistDeliveryCountBeforeDelivery(final boolean persistDeliveryCountBeforeDelivery)
    {
       this.persistDeliveryCountBeforeDelivery = persistDeliveryCountBeforeDelivery;

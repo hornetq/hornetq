@@ -89,9 +89,6 @@ public class ReplicationManagerImpl implements ReplicationManager
 
    // Constructors --------------------------------------------------
 
-   /**
-    * @param replicationConnectionManager
-    */
    public ReplicationManagerImpl(final FailoverManager failoverManager, final ExecutorFactory executorFactory)
    {
       super();

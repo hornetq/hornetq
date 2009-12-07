@@ -397,9 +397,6 @@ public class AsynchronousFileImpl implements AsynchronousFile
     * This needs to be synchronized because of 
     * http://bugs.sun.com/view_bug.do?bug_id=6791815
     * http://mail.openjdk.java.net/pipermail/hotspot-runtime-dev/2009-January/000386.html
-    * 
-    * @param size
-    * @return
     */
    public synchronized static ByteBuffer newBuffer(final int size)
    {

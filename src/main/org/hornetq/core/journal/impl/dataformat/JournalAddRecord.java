@@ -39,7 +39,6 @@ public class JournalAddRecord extends JournalInternalRecord
     * @param id
     * @param recordType
     * @param record
-    * @param size
     */
    public JournalAddRecord(final boolean add, final long id, final byte recordType, final EncodingSupport record)
    {

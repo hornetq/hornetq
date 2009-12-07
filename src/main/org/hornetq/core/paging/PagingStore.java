@@ -56,42 +56,18 @@ public interface PagingStore extends HornetQComponent
    Page createPage(final int page) throws Exception;
 
    /**
-    * 
     * @return false if a thread was already started, or if not in page mode
     * @throws Exception 
     */
    boolean startDepaging();
 
-   /**
-    * 
-    * @param message
-    * @throws Exception
-    */
    void addSize(ServerMessage message, boolean add);
    
-   /**
-    * 
-    * @param reference
-    * @throws Exception
-    */
    void addSize(MessageReference reference, boolean add);
    
-   /**
-    * 
-    * @param desired
-    * @return
-    */
    int getAvailableProducerCredits(int desired);
    
-   /**
-    * 
-    * @param credits
-    */
    void returnProducerCredits(int credits);
    
-   /**
-    * 
-    * @return
-    */
    ServerProducerCreditManager getProducerCreditManager();
 }

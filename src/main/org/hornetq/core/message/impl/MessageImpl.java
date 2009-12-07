@@ -122,7 +122,7 @@ public abstract class MessageImpl implements Message
     * @param expiration
     * @param timestamp
     * @param priority
-    * @param body
+    * @param initialMessageBufferSize
     */
    protected MessageImpl(final byte type,
                          final boolean durable,

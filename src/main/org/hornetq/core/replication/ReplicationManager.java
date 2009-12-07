@@ -67,7 +67,7 @@ public interface ReplicationManager extends HornetQComponent
 
 
    /**
-    * @param storeName
+    * @param message
     * @param pageNumber
     */
    void pageWrite(PagedMessage message, int pageNumber);

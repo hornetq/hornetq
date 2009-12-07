@@ -42,10 +42,6 @@ public interface PagingStoreFactory
 
    List<PagingStore> reloadStores(HierarchicalRepository<AddressSettings> addressSettingsRepository) throws Exception;
 
-   /**
-    * @param storeName
-    * @return
-    */
    SequentialFileFactory newFileFactory(SimpleString destinationName) throws Exception;
 
 }

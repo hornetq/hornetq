@@ -83,11 +83,6 @@ public abstract class AbstractJournalUpdateTask implements JournalReaderCallback
 
    // Public --------------------------------------------------------
    
-   /**
-    * @param tmpRenameFile
-    * @param files
-    * @param newFiles
-    */
    public static SequentialFile writeControlFile(final SequentialFileFactory fileFactory,
                                                  final List<JournalFile> files,
                                                  final List<JournalFile> newFiles,

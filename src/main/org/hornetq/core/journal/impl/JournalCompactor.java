@@ -152,10 +152,6 @@ public class JournalCompactor extends AbstractJournalUpdateTask
       pendingTransactions.put(transactionID, new PendingTransaction(ids));
    }
 
-   /**
-    * @param id
-    * @param journalTransaction
-    */
    public void addCommandCommit(final JournalTransaction liveTransaction, final JournalFile currentFile)
    {
       pendingCommands.add(new CommitCompactCommand(liveTransaction, currentFile));

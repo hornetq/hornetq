@@ -68,14 +68,10 @@ public interface PagingManager extends HornetQComponent
     */
    void removeTransaction(long transactionID);
 
-   /**
-    * @return
-    */
    long getTotalMemory();
 
    /**
     * @param size
-    * @return
     */
    long addSize(long size);
 

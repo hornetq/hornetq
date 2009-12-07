@@ -1104,10 +1104,10 @@ public class JournalImpl implements TestableJournal
     * 
     * <p> transactionData allows you to store any other supporting user-data related to the transaction</p>
     * 
-    * <p> This method also uses the same logic applied on {@link JournalImpl#appendCommitRecord(long)}
+    * <p> This method also uses the same logic applied on {@link JournalImpl#appendCommitRecord(long, boolean)}
     * 
     * @param txID
-    * @param transactionData - extra user data for the prepare
+    * @param transactionData extra user data for the prepare
     * @throws Exception
     */
    public void appendPrepareRecord(final long txID,
@@ -1185,7 +1185,6 @@ public class JournalImpl implements TestableJournal
     * <p> We can't just use a global counter as reclaiming could delete files after the transaction was successfully committed. 
     *     That also means not having a whole file on journal-reload doesn't mean we have to invalidate the transaction </p>
     *
-    * @see JournalImpl#writeTransaction(byte, long, org.hornetq.core.journal.impl.JournalImpl.JournalTransaction, EncodingSupport)
     */
 
    public void appendCommitRecord(final long txID, final boolean sync, final IOCompletion callback) throws Exception

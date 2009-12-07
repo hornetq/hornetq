@@ -40,16 +40,13 @@ public class SessionReceiveContinuationMessage extends SessionContinuationMessag
 
    // Constructors --------------------------------------------------
 
-   /**
-    * @param type
-    */
    public SessionReceiveContinuationMessage()
    {
       super(SESS_RECEIVE_CONTINUATION);
    }
 
    /**
-    * @param type
+    * @param consumerID
     * @param body
     * @param continues
     * @param requiresResponse

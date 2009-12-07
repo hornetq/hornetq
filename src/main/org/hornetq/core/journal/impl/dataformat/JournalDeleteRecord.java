@@ -30,9 +30,6 @@ public class JournalDeleteRecord extends JournalInternalRecord
 
    /**
     * @param id
-    * @param recordType
-    * @param record
-    * @param size
     */
    public JournalDeleteRecord(final long id)
    {

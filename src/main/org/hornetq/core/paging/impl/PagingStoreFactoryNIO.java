@@ -101,10 +101,6 @@ public class PagingStoreFactoryNIO implements PagingStoreFactory
                                  syncNonTransactional);
    }
 
-   /**
-    * @param storeName
-    * @return
-    */
    public synchronized SequentialFileFactory newFileFactory(final SimpleString destinationName) throws Exception
    {
 

@@ -208,9 +208,6 @@ public class CreateSessionMessage extends PacketImpl
       return false;
    }
 
-   /**
-    * @return
-    */
    public int getMinLargeMessageSize()
    {
       return minLargeMessageSize;

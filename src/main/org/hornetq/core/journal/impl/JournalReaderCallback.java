@@ -61,13 +61,13 @@ public interface JournalReaderCallback
    /**
     * @param transactionID
     * @param extraData
-    * @param summaryData
+    * @param numberOfRecords
     */
    void onReadPrepareRecord(long transactionID, byte[] extraData, int numberOfRecords) throws Exception;
 
    /**
     * @param transactionID
-    * @param summaryData
+    * @param numberOfRecords
     */
    void onReadCommitRecord(long transactionID, int numberOfRecords) throws Exception;
 
