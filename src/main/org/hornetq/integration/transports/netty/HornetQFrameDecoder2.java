@@ -47,7 +47,7 @@ public class HornetQFrameDecoder2 extends SimpleChannelUpstreamHandler
       {
          if (previousData.readableBytes() + in.readableBytes() < SIZE_INT) {
             // XXX Length is unknown. Bet at 512. Tune this value.
-            append(in, 1500); 
+            append(in, 512); 
             return;
          }
          
