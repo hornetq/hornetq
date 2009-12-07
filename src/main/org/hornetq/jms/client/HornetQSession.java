@@ -54,11 +54,11 @@ import javax.transaction.xa.XAResource;
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientProducer;
 import org.hornetq.core.client.ClientSession;
+import org.hornetq.core.client.ClientSession.BindingQuery;
+import org.hornetq.core.client.ClientSession.QueueQuery;
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.filter.impl.FilterImpl;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.remoting.impl.wireformat.SessionBindingQueryResponseMessage;
-import org.hornetq.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
 import org.hornetq.jms.HornetQDestination;
 import org.hornetq.jms.HornetQQueue;
 import org.hornetq.jms.HornetQTemporaryQueue;
@@ -331,7 +331,7 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
          {
             if (jbd instanceof Queue)
             {
-               SessionQueueQueryResponseMessage response = session.queueQuery(jbd.getSimpleAddress());
+               QueueQuery response = session.queueQuery(jbd.getSimpleAddress());
 
                if (!response.isExists())
                {
@@ -340,7 +340,7 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
             }
             else
             {
-               SessionBindingQueryResponseMessage response = session.bindingQuery(jbd.getSimpleAddress());
+               BindingQuery response = session.bindingQuery(jbd.getSimpleAddress());
 
                if (!response.isExists())
                {
@@ -408,7 +408,7 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
 
       try
       {
-         SessionQueueQueryResponseMessage response = session.queueQuery(queue.getSimpleAddress());
+         QueueQuery response = session.queueQuery(queue.getSimpleAddress());
 
          if (!response.isExists())
          {
@@ -437,9 +437,9 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
 
       try
       {
-         SessionBindingQueryResponseMessage response = session.bindingQuery(topic.getSimpleAddress());
+         BindingQuery query = session.bindingQuery(topic.getSimpleAddress());
 
-         if (!response.isExists())
+         if (!query.isExists())
          {
             throw new JMSException("There is no topic with name " + topicName);
          }
@@ -527,7 +527,7 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
 
          if (dest instanceof Queue)
          {
-            SessionQueueQueryResponseMessage response = session.queueQuery(dest.getSimpleAddress());
+            QueueQuery response = session.queueQuery(dest.getSimpleAddress());
 
             if (!response.isExists())
             {
@@ -538,7 +538,7 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
          }
          else
          {
-            SessionBindingQueryResponseMessage response = session.bindingQuery(dest.getSimpleAddress());
+            BindingQuery response = session.bindingQuery(dest.getSimpleAddress());
 
             if (!response.isExists())
             {
@@ -576,7 +576,7 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
                queueName = new SimpleString(HornetQTopic.createQueueNameForDurableSubscription(connection.getClientID(),
                                                                                                subscriptionName));
 
-               SessionQueueQueryResponseMessage subResponse = session.queueQuery(queueName);
+               QueueQuery subResponse = session.queueQuery(queueName);
 
                if (!subResponse.isExists())
                {
@@ -678,7 +678,7 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
 
       try
       {
-         SessionBindingQueryResponseMessage message = session.bindingQuery(new SimpleString(jbq.getAddress()));
+         BindingQuery message = session.bindingQuery(new SimpleString(jbq.getAddress()));
          if (!message.isExists())
          {
             throw new InvalidDestinationException(jbq.getAddress() + " does not exist");
@@ -767,7 +767,7 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
 
       try
       {
-         SessionQueueQueryResponseMessage response = session.queueQuery(queueName);
+         QueueQuery response = session.queueQuery(queueName);
 
          if (!response.isExists())
          {
@@ -880,7 +880,7 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
    {
       try
       {
-         SessionBindingQueryResponseMessage response = session.bindingQuery(tempTopic.getSimpleAddress());
+         BindingQuery response = session.bindingQuery(tempTopic.getSimpleAddress());
 
          if (!response.isExists())
          {
@@ -910,7 +910,7 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
    {
       try
       {
-         SessionQueueQueryResponseMessage response = session.queueQuery(tempQueue.getSimpleAddress());
+         QueueQuery response = session.queueQuery(tempQueue.getSimpleAddress());
 
          if (!response.isExists())
          {

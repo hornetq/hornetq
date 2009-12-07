@@ -13,11 +13,12 @@
 
 package org.hornetq.core.client;
 
+
+import java.util.List;
+
 import javax.transaction.xa.XAResource;
 
 import org.hornetq.core.exception.HornetQException;
-import org.hornetq.core.remoting.impl.wireformat.SessionBindingQueryResponseMessage;
-import org.hornetq.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
 import org.hornetq.utils.SimpleString;
 
 /**
@@ -29,6 +30,28 @@ import org.hornetq.utils.SimpleString;
  */
 public interface ClientSession extends XAResource
 {
+   public interface BindingQuery
+   {
+      boolean isExists();
+
+      public List<SimpleString> getQueueNames();
+   }
+   
+   public interface QueueQuery
+   {
+      boolean isExists();
+
+      boolean isDurable();
+
+      int getConsumerCount();
+
+      int getMessageCount();
+
+      SimpleString getFilterString();
+
+      SimpleString getAddress();
+   }
+   
    // Lifecycle operations ------------------------------------------
 
    /**
@@ -399,9 +422,9 @@ public interface ClientSession extends XAResource
 
    // Query operations ----------------------------------------------
 
-   SessionQueueQueryResponseMessage queueQuery(SimpleString queueName) throws HornetQException;
+   QueueQuery queueQuery(SimpleString queueName) throws HornetQException;
 
-   SessionBindingQueryResponseMessage bindingQuery(SimpleString address) throws HornetQException;
+   BindingQuery bindingQuery(SimpleString address) throws HornetQException;
 
    // Transaction operations ----------------------------------------
 

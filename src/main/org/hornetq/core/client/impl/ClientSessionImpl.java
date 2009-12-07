@@ -15,6 +15,7 @@ package org.hornetq.core.client.impl;
 import static org.hornetq.core.exception.HornetQException.TRANSACTION_ROLLED_BACK;
 import static org.hornetq.utils.SimpleString.toSimpleString;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -104,7 +105,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    private static final Logger log = Logger.getLogger(ClientSessionImpl.class);
 
    private final boolean trace = log.isTraceEnabled();
-
+   
    // Attributes ----------------------------------------------------------------------------
 
    private final FailoverManager failoverManager;
@@ -323,7 +324,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       deleteQueue(toSimpleString(queueName));
    }
 
-   public SessionQueueQueryResponseMessage queueQuery(final SimpleString queueName) throws HornetQException
+   public QueueQuery queueQuery(final SimpleString queueName) throws HornetQException
    {
       checkClosed();
 
@@ -331,10 +332,10 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
       SessionQueueQueryResponseMessage response = (SessionQueueQueryResponseMessage)channel.sendBlocking(request);
 
-      return response;
-   }
+      return new QueueQueryImpl(response.isDurable(), response.getConsumerCount(), response.getMessageCount(), response.getFilterString(), response.getAddress(), response.isExists());
+      }
 
-   public SessionBindingQueryResponseMessage bindingQuery(final SimpleString address) throws HornetQException
+   public BindingQuery bindingQuery(final SimpleString address) throws HornetQException
    {
       checkClosed();
 
@@ -342,7 +343,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
       SessionBindingQueryResponseMessage response = (SessionBindingQueryResponseMessage)channel.sendBlocking(request);
 
-      return response;
+      return new BindingQueryImpl(response.isExists(), response.getQueueNames());
    }
 
    public void forceDelivery(long consumerID, long sequence) throws HornetQException
@@ -1587,5 +1588,85 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       {
          consumer.flushAcks();
       }
+   }
+   
+   private static class BindingQueryImpl implements BindingQuery
+   {
+
+      private final boolean exists;
+      private final ArrayList<SimpleString> queueNames;
+
+      public BindingQueryImpl(final boolean exists, List<SimpleString> queueNames)
+      {
+         this.exists = exists;
+         this.queueNames = new ArrayList<SimpleString>(queueNames);
+      }
+
+      public List<SimpleString> getQueueNames()
+      {
+         return queueNames;
+      }
+
+      public boolean isExists()
+      {
+         return exists;
+      }
+   }
+   
+   private static class QueueQueryImpl implements QueueQuery
+   {
+
+      private final boolean exists;
+      private final boolean durable;
+      private final int messageCount;
+      private final SimpleString filterString;
+      private final int consumerCount;
+      private final SimpleString address;
+
+      public QueueQueryImpl(final boolean durable,
+                            final int consumerCount,
+                            final int messageCount,
+                            final SimpleString filterString,
+                            final SimpleString address,
+                            final boolean exists)
+      {
+
+         this.durable = durable;
+         this.consumerCount = consumerCount;
+         this.messageCount = messageCount;
+         this.filterString = filterString;
+         this.address = address;
+         this.exists = exists;
+      }
+      public SimpleString getAddress()
+      {
+         return address;
+      }
+
+      public int getConsumerCount()
+      {
+         return consumerCount;
+      }
+
+      public SimpleString getFilterString()
+      {
+         return filterString;
+      }
+
+      public int getMessageCount()
+      {
+         return messageCount;
+      }
+
+      public boolean isDurable()
+      {
+         return durable;
+      }
+
+      public boolean isExists()
+      {
+         return exists;
+      }
+      
    }
 }

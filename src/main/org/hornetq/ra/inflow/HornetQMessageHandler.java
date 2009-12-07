@@ -24,9 +24,9 @@ import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.client.MessageHandler;
+import org.hornetq.core.client.ClientSession.QueueQuery;
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
 import org.hornetq.jms.HornetQTopic;
 import org.hornetq.jms.client.HornetQMessage;
 import org.hornetq.utils.SimpleString;
@@ -99,7 +99,7 @@ public class HornetQMessageHandler implements MessageHandler
                                                                                                                 .getClientID(),
                                                                                                       subscriptionName));
 
-         SessionQueueQueryResponseMessage subResponse = session.queueQuery(queueName);
+         QueueQuery subResponse = session.queueQuery(queueName);
 
          if (!subResponse.isExists())
          {

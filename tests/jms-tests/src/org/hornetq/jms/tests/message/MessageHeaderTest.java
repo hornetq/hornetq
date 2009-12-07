@@ -43,8 +43,6 @@ import org.hornetq.core.client.SessionFailureListener;
 import org.hornetq.core.client.impl.ClientMessageImpl;
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.remoting.FailureListener;
-import org.hornetq.core.remoting.impl.wireformat.SessionBindingQueryResponseMessage;
-import org.hornetq.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
 import org.hornetq.jms.client.HornetQBytesMessage;
 import org.hornetq.jms.client.HornetQMapMessage;
 import org.hornetq.jms.client.HornetQMessage;
@@ -1003,12 +1001,12 @@ public class MessageHeaderTest extends MessageHeaderTestBase
          return null;
       }
 
-      public SessionQueueQueryResponseMessage queueQuery(SimpleString queueName) throws HornetQException
+      public QueueQuery queueQuery(SimpleString queueName) throws HornetQException
       {
          return null;
       }
 
-      public SessionBindingQueryResponseMessage bindingQuery(SimpleString address) throws HornetQException
+      public BindingQuery bindingQuery(SimpleString address) throws HornetQException
       {
          return null;
       }

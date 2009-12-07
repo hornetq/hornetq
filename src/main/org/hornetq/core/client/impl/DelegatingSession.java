@@ -27,8 +27,6 @@ import org.hornetq.core.client.SessionFailureListener;
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.RemotingConnection;
-import org.hornetq.core.remoting.impl.wireformat.SessionBindingQueryResponseMessage;
-import org.hornetq.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionReceiveContinuationMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionReceiveLargeMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionReceiveMessage;
@@ -115,7 +113,7 @@ public class DelegatingSession implements ClientSessionInternal
       session.addProducer(producer);
    }
 
-   public SessionBindingQueryResponseMessage bindingQuery(SimpleString address) throws HornetQException
+   public BindingQuery bindingQuery(SimpleString address) throws HornetQException
    {
       return session.bindingQuery(address);
    }
@@ -403,7 +401,7 @@ public class DelegatingSession implements ClientSessionInternal
       return session.prepare(xid);
    }
 
-   public SessionQueueQueryResponseMessage queueQuery(SimpleString queueName) throws HornetQException
+   public QueueQuery queueQuery(SimpleString queueName) throws HornetQException
    {
       return session.queueQuery(queueName);
    }
