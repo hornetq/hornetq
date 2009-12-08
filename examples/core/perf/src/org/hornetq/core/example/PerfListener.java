@@ -14,7 +14,6 @@ package org.hornetq.core.example;
 
 import java.util.logging.Logger;
 
-
 /**
  * 
  * A PerfListener
@@ -26,14 +25,14 @@ import java.util.logging.Logger;
 public class PerfListener extends PerfBase
 {
    private static final Logger log = Logger.getLogger(PerfListener.class.getName());
-      
-   public static void main(String[] args)
+
+   public static void main(final String[] args)
    {
       try
       {
          String fileName = PerfBase.getPerfFileName(args);
-         
-         PerfParams params = getParams(fileName);
+
+         PerfParams params = PerfBase.getParams(fileName);
 
          new PerfListener(params).run();
       }

@@ -13,10 +13,9 @@
 
 package org.hornetq.jms.server.management;
 
-import static javax.management.MBeanOperationInfo.ACTION;
-import static javax.management.MBeanOperationInfo.INFO;
-
 import java.util.Map;
+
+import javax.management.MBeanOperationInfo;
 
 import org.hornetq.core.management.Operation;
 import org.hornetq.core.management.Parameter;
@@ -57,72 +56,71 @@ public interface JMSQueueControl extends DestinationControl
 
    // Operations ----------------------------------------------------
 
-   @Operation(desc = "List all messages in the queue which matches the filter", impact = INFO)
+   @Operation(desc = "List all messages in the queue which matches the filter", impact = MBeanOperationInfo.INFO)
    Map<String, Object>[] listMessages(@Parameter(name = "filter", desc = "A JMS Message filter") String filter) throws Exception;
 
-   @Operation(desc = "List all messages in the queue which matches the filter and return them using JSON", impact = INFO)
+   @Operation(desc = "List all messages in the queue which matches the filter and return them using JSON", impact = MBeanOperationInfo.INFO)
    String listMessagesAsJSON(@Parameter(name = "filter", desc = "A JMS Message filter (can be empty)") String filter) throws Exception;
 
-   @Operation(desc = "Returns the number of the messages in the queue matching the given filter", impact = INFO)
+   @Operation(desc = "Returns the number of the messages in the queue matching the given filter", impact = MBeanOperationInfo.INFO)
    int countMessages(@Parameter(name = "filter", desc = "A JMS message filter (can be empty)") String filter) throws Exception;
 
-   @Operation(desc = "Remove the message corresponding to the given messageID", impact = ACTION)
+   @Operation(desc = "Remove the message corresponding to the given messageID", impact = MBeanOperationInfo.ACTION)
    boolean removeMessage(@Parameter(name = "messageID", desc = "A message ID") String messageID) throws Exception;
 
-   @Operation(desc = "Remove the messages corresponding to the given filter (and returns the number of removed messages)", impact = ACTION)
+   @Operation(desc = "Remove the messages corresponding to the given filter (and returns the number of removed messages)", impact = MBeanOperationInfo.ACTION)
    int removeMessages(@Parameter(name = "filter", desc = "A message filter (can be empty)") String filter) throws Exception;
 
-   @Operation(desc = "Expire the messages corresponding to the given filter (and returns the number of expired messages)", impact = ACTION)
+   @Operation(desc = "Expire the messages corresponding to the given filter (and returns the number of expired messages)", impact = MBeanOperationInfo.ACTION)
    int expireMessages(@Parameter(name = "filter", desc = "A message filter (can be empty)") String filter) throws Exception;
 
-   @Operation(desc = "Expire the message corresponding to the given messageID", impact = ACTION)
+   @Operation(desc = "Expire the message corresponding to the given messageID", impact = MBeanOperationInfo.ACTION)
    boolean expireMessage(@Parameter(name = "messageID", desc = "A message ID") String messageID) throws Exception;
 
-   @Operation(desc = "Send the message corresponding to the given messageID to the queue's Dead Letter Queue", impact = ACTION)
+   @Operation(desc = "Send the message corresponding to the given messageID to the queue's Dead Letter Queue", impact = MBeanOperationInfo.ACTION)
    boolean sendMessageToDeadLetterAddress(@Parameter(name = "messageID", desc = "A message ID") String messageID) throws Exception;
 
-   @Operation(desc = "Send the messages corresponding to the given filter to this queue's Dead Letter Address", impact = ACTION)
+   @Operation(desc = "Send the messages corresponding to the given filter to this queue's Dead Letter Address", impact = MBeanOperationInfo.ACTION)
    int sendMessagesToDeadLetterAddress(@Parameter(name = "filter", desc = "A message filter (can be empty)") String filterStr) throws Exception;
 
-   @Operation(desc = "Change the priority of the message corresponding to the given messageID", impact = ACTION)
+   @Operation(desc = "Change the priority of the message corresponding to the given messageID", impact = MBeanOperationInfo.ACTION)
    boolean changeMessagePriority(@Parameter(name = "messageID", desc = "A message ID") String messageID,
                                  @Parameter(name = "newPriority", desc = "the new priority (between 0 and 9)") int newPriority) throws Exception;
 
-   @Operation(desc = "Change the priority of the messages corresponding to the given filter", impact = ACTION)
+   @Operation(desc = "Change the priority of the messages corresponding to the given filter", impact = MBeanOperationInfo.ACTION)
    int changeMessagesPriority(@Parameter(name = "filter", desc = "A message filter") String filter,
-                                 @Parameter(name = "newPriority", desc = "the new priority (between 0 and 9)") int newPriority) throws Exception;
+                              @Parameter(name = "newPriority", desc = "the new priority (between 0 and 9)") int newPriority) throws Exception;
 
-   @Operation(desc = "Move the message corresponding to the given messageID to another queue", impact = ACTION)
+   @Operation(desc = "Move the message corresponding to the given messageID to another queue", impact = MBeanOperationInfo.ACTION)
    boolean moveMessage(@Parameter(name = "messageID", desc = "A message ID") String messageID,
                        @Parameter(name = "otherQueueName", desc = "The name of the queue to move the message to") String otherQueueName) throws Exception;
 
-   @Operation(desc = "Move the messages corresponding to the given filter (and returns the number of moved messages)", impact = ACTION)
+   @Operation(desc = "Move the messages corresponding to the given filter (and returns the number of moved messages)", impact = MBeanOperationInfo.ACTION)
    int moveMessages(@Parameter(name = "filter", desc = "A message filter (can be empty)") String filter,
                     @Parameter(name = "otherQueueName", desc = "The name of the queue to move the messages to") String otherQueueName) throws Exception;
 
-   @Operation(desc = "List the message counters", impact = INFO)
+   @Operation(desc = "List the message counters", impact = MBeanOperationInfo.INFO)
    String listMessageCounter() throws Exception;
 
-   @Operation(desc = "Reset the message counters", impact = INFO)
+   @Operation(desc = "Reset the message counters", impact = MBeanOperationInfo.INFO)
    void resetMessageCounter() throws Exception;
 
-   @Operation(desc = "List the message counters as HTML", impact = INFO)
+   @Operation(desc = "List the message counters as HTML", impact = MBeanOperationInfo.INFO)
    String listMessageCounterAsHTML() throws Exception;
 
-   @Operation(desc = "List the message counters history", impact = INFO)
+   @Operation(desc = "List the message counters history", impact = MBeanOperationInfo.INFO)
    String listMessageCounterHistory() throws Exception;
 
-   @Operation(desc = "List the message counters history as HTML", impact = INFO)
+   @Operation(desc = "List the message counters history as HTML", impact = MBeanOperationInfo.INFO)
    String listMessageCounterHistoryAsHTML() throws Exception;
 
-   @Operation(desc = "Pauses the queue.", impact = INFO)
+   @Operation(desc = "Pauses the queue.", impact = MBeanOperationInfo.INFO)
    void pause() throws Exception;
-   
-   @Operation(desc = "Returns true if the queue is paused.", impact = INFO)
+
+   @Operation(desc = "Returns true if the queue is paused.", impact = MBeanOperationInfo.INFO)
    boolean isPaused() throws Exception;
-   
-   @Operation(desc = "Resumes the queue.", impact = INFO)
+
+   @Operation(desc = "Resumes the queue.", impact = MBeanOperationInfo.INFO)
    void resume() throws Exception;
-   
-   
+
 }

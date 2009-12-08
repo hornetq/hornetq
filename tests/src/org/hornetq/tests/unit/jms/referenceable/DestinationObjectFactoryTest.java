@@ -9,17 +9,18 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
  * implied.  See the License for the specific language governing
  * permissions and limitations under the License.
- */ 
+ */
 
 package org.hornetq.tests.unit.jms.referenceable;
 
-import static org.hornetq.tests.util.RandomUtil.randomString;
-
 import javax.naming.Reference;
+
+import junit.framework.Assert;
 
 import org.hornetq.jms.HornetQDestination;
 import org.hornetq.jms.HornetQQueue;
 import org.hornetq.jms.referenceable.DestinationObjectFactory;
+import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
 
 /**
@@ -42,16 +43,16 @@ public class DestinationObjectFactoryTest extends UnitTestCase
 
    public void testReference() throws Exception
    {
-      HornetQDestination queue = new HornetQQueue(randomString());
+      HornetQDestination queue = new HornetQQueue(RandomUtil.randomString());
       Reference reference = queue.getReference();
 
       DestinationObjectFactory factory = new DestinationObjectFactory();
       Object object = factory.getObjectInstance(reference, null, null, null);
-      assertNotNull(object);
-      assertTrue(object instanceof HornetQDestination);
-      assertEquals(queue, object);
+      Assert.assertNotNull(object);
+      Assert.assertTrue(object instanceof HornetQDestination);
+      Assert.assertEquals(queue, object);
    }
-   
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

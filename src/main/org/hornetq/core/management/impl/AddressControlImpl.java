@@ -16,8 +16,6 @@ package org.hornetq.core.management.impl;
 import java.util.Iterator;
 import java.util.Set;
 
-import javax.management.StandardMBean;
-
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.management.AddressControl;
 import org.hornetq.core.paging.PagingManager;

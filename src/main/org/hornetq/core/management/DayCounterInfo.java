@@ -20,7 +20,6 @@ import org.hornetq.utils.json.JSONArray;
 import org.hornetq.utils.json.JSONException;
 import org.hornetq.utils.json.JSONObject;
 
-
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * 
@@ -36,6 +35,7 @@ public class DayCounterInfo
    // Attributes ----------------------------------------------------
 
    private final String date;
+
    private final int[] counters;
 
    // Static --------------------------------------------------------
@@ -54,16 +54,16 @@ public class DayCounterInfo
       json.put("dayCounters", counters);
       return json.toString();
    }
-   
+
    public static DayCounterInfo[] fromJSON(final String jsonString) throws JSONException
    {
-      
+
       JSONObject json = new JSONObject(jsonString);
       JSONArray dayCounters = json.getJSONArray("dayCounters");
       DayCounterInfo[] infos = new DayCounterInfo[dayCounters.length()];
       for (int i = 0; i < dayCounters.length(); i++)
       {
-         
+
          JSONObject counter = (JSONObject)dayCounters.get(i);
          JSONArray hour = (JSONArray)counter.getJSONArray("counters").get(0);
          int[] hourCounters = new int[24];
@@ -76,7 +76,7 @@ public class DayCounterInfo
       }
       return infos;
    }
-   
+
    // Constructors --------------------------------------------------
 
    public DayCounterInfo(final String date, final int[] counters)
@@ -91,7 +91,7 @@ public class DayCounterInfo
    {
       return date;
    }
-   
+
    public int[] getCounters()
    {
       return counters;

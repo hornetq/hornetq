@@ -60,10 +60,17 @@ public class RecordInfo
 
       return r.id == id;
    }
-   
+
+   @Override
    public String toString()
    {
-      return ("RecordInfo (id=" + id + ", userRecordType = " + userRecordType + ", data.length = " + data.length + ", isUpdate = " + this.isUpdate);
+      return "RecordInfo (id=" + id +
+             ", userRecordType = " +
+             userRecordType +
+             ", data.length = " +
+             data.length +
+             ", isUpdate = " +
+             isUpdate;
    }
 
 }

@@ -13,12 +13,10 @@
 
 package org.hornetq.tests.integration.client;
 
-import static org.hornetq.tests.util.RandomUtil.randomBoolean;
-import static org.hornetq.tests.util.RandomUtil.randomSimpleString;
-import static org.hornetq.tests.util.RandomUtil.randomXid;
-
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
+
+import junit.framework.Assert;
 
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientProducer;
@@ -33,6 +31,7 @@ import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.server.HornetQ;
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.SimpleString;
 
@@ -67,9 +66,9 @@ public class SessionCloseTest extends UnitTestCase
 
       session.close();
 
-      assertTrue(session.isClosed());
+      Assert.assertTrue(session.isClosed());
 
-      expectHornetQException(HornetQException.OBJECT_CLOSED, new HornetQAction()
+      UnitTestCase.expectHornetQException(HornetQException.OBJECT_CLOSED, new HornetQAction()
       {
          public void run() throws HornetQException
          {
@@ -77,31 +76,33 @@ public class SessionCloseTest extends UnitTestCase
          }
       });
 
-      expectHornetQException(HornetQException.OBJECT_CLOSED, new HornetQAction()
+      UnitTestCase.expectHornetQException(HornetQException.OBJECT_CLOSED, new HornetQAction()
       {
          public void run() throws HornetQException
          {
-            session.createConsumer(randomSimpleString());
+            session.createConsumer(RandomUtil.randomSimpleString());
          }
       });
 
-      expectHornetQException(HornetQException.OBJECT_CLOSED, new HornetQAction()
+      UnitTestCase.expectHornetQException(HornetQException.OBJECT_CLOSED, new HornetQAction()
       {
          public void run() throws HornetQException
          {
-            session.createQueue(randomSimpleString(), randomSimpleString(), randomBoolean());
+            session.createQueue(RandomUtil.randomSimpleString(),
+                                RandomUtil.randomSimpleString(),
+                                RandomUtil.randomBoolean());
          }
       });
 
-      expectHornetQException(HornetQException.OBJECT_CLOSED, new HornetQAction()
+      UnitTestCase.expectHornetQException(HornetQException.OBJECT_CLOSED, new HornetQAction()
       {
          public void run() throws HornetQException
          {
-            session.createTemporaryQueue(randomSimpleString(), randomSimpleString());
+            session.createTemporaryQueue(RandomUtil.randomSimpleString(), RandomUtil.randomSimpleString());
          }
       });
 
-      expectHornetQException(HornetQException.OBJECT_CLOSED, new HornetQAction()
+      UnitTestCase.expectHornetQException(HornetQException.OBJECT_CLOSED, new HornetQAction()
       {
          public void run() throws HornetQException
          {
@@ -109,7 +110,7 @@ public class SessionCloseTest extends UnitTestCase
          }
       });
 
-      expectHornetQException(HornetQException.OBJECT_CLOSED, new HornetQAction()
+      UnitTestCase.expectHornetQException(HornetQException.OBJECT_CLOSED, new HornetQAction()
       {
          public void run() throws HornetQException
          {
@@ -117,7 +118,7 @@ public class SessionCloseTest extends UnitTestCase
          }
       });
 
-      expectHornetQException(HornetQException.OBJECT_CLOSED, new HornetQAction()
+      UnitTestCase.expectHornetQException(HornetQException.OBJECT_CLOSED, new HornetQAction()
       {
          public void run() throws HornetQException
          {
@@ -125,7 +126,7 @@ public class SessionCloseTest extends UnitTestCase
          }
       });
 
-      expectHornetQException(HornetQException.OBJECT_CLOSED, new HornetQAction()
+      UnitTestCase.expectHornetQException(HornetQException.OBJECT_CLOSED, new HornetQAction()
       {
          public void run() throws HornetQException
          {
@@ -133,19 +134,19 @@ public class SessionCloseTest extends UnitTestCase
          }
       });
 
-      expectHornetQException(HornetQException.OBJECT_CLOSED, new HornetQAction()
+      UnitTestCase.expectHornetQException(HornetQException.OBJECT_CLOSED, new HornetQAction()
       {
          public void run() throws HornetQException
          {
-            session.queueQuery(randomSimpleString());
+            session.queueQuery(RandomUtil.randomSimpleString());
          }
       });
 
-      expectHornetQException(HornetQException.OBJECT_CLOSED, new HornetQAction()
+      UnitTestCase.expectHornetQException(HornetQException.OBJECT_CLOSED, new HornetQAction()
       {
          public void run() throws HornetQException
          {
-            session.bindingQuery(randomSimpleString());
+            session.bindingQuery(RandomUtil.randomSimpleString());
          }
       });
 
@@ -158,42 +159,42 @@ public class SessionCloseTest extends UnitTestCase
 
       session.close();
 
-      assertTrue(session.isXA());
-      assertTrue(session.isClosed());
+      Assert.assertTrue(session.isXA());
+      Assert.assertTrue(session.isClosed());
 
-      expectXAException(XAException.XAER_RMERR, new HornetQAction()
+      UnitTestCase.expectXAException(XAException.XAER_RMERR, new HornetQAction()
       {
          public void run() throws XAException
          {
-            session.commit(randomXid(), randomBoolean());
+            session.commit(RandomUtil.randomXid(), RandomUtil.randomBoolean());
          }
       });
 
-      expectXAException(XAException.XAER_RMERR, new HornetQAction()
+      UnitTestCase.expectXAException(XAException.XAER_RMERR, new HornetQAction()
       {
          public void run() throws XAException
          {
-            session.end(randomXid(), XAResource.TMSUCCESS);
+            session.end(RandomUtil.randomXid(), XAResource.TMSUCCESS);
          }
       });
 
-      expectXAException(XAException.XAER_RMERR, new HornetQAction()
+      UnitTestCase.expectXAException(XAException.XAER_RMERR, new HornetQAction()
       {
          public void run() throws XAException
          {
-            session.forget(randomXid());
+            session.forget(RandomUtil.randomXid());
          }
       });
 
-      expectXAException(XAException.XAER_RMERR, new HornetQAction()
+      UnitTestCase.expectXAException(XAException.XAER_RMERR, new HornetQAction()
       {
          public void run() throws XAException
          {
-            session.prepare(randomXid());
+            session.prepare(RandomUtil.randomXid());
          }
       });
 
-      expectXAException(XAException.XAER_RMERR, new HornetQAction()
+      UnitTestCase.expectXAException(XAException.XAER_RMERR, new HornetQAction()
       {
          public void run() throws XAException
          {
@@ -201,19 +202,19 @@ public class SessionCloseTest extends UnitTestCase
          }
       });
 
-      expectXAException(XAException.XAER_RMERR, new HornetQAction()
+      UnitTestCase.expectXAException(XAException.XAER_RMERR, new HornetQAction()
       {
          public void run() throws XAException
          {
-            session.rollback(randomXid());
+            session.rollback(RandomUtil.randomXid());
          }
       });
 
-      expectXAException(XAException.XAER_RMERR, new HornetQAction()
+      UnitTestCase.expectXAException(XAException.XAER_RMERR, new HornetQAction()
       {
          public void run() throws XAException
          {
-            session.start(randomXid(), XAResource.TMNOFLAGS);
+            session.start(RandomUtil.randomXid(), XAResource.TMNOFLAGS);
          }
       });
 
@@ -221,8 +222,8 @@ public class SessionCloseTest extends UnitTestCase
 
    public void testCloseHierarchy() throws Exception
    {
-      SimpleString address = randomSimpleString();
-      SimpleString queue = randomSimpleString();
+      SimpleString address = RandomUtil.randomSimpleString();
+      SimpleString queue = RandomUtil.randomSimpleString();
 
       ClientSession session = sf.createSession(false, true, true);
 
@@ -233,9 +234,9 @@ public class SessionCloseTest extends UnitTestCase
 
       session.close();
 
-      assertTrue(session.isClosed());
-      assertTrue(producer.isClosed());
-      assertTrue(consumer.isClosed());
+      Assert.assertTrue(session.isClosed());
+      Assert.assertTrue(producer.isClosed());
+      Assert.assertTrue(consumer.isClosed());
 
    }
 

@@ -42,21 +42,21 @@ public class SimpleNotificationService implements NotificationService
 
    // NotificationService implementation ----------------------------
 
-   public void addNotificationListener(NotificationListener listener)
+   public void addNotificationListener(final NotificationListener listener)
    {
       listeners.add(listener);
    }
 
-   public void enableNotifications(boolean enable)
+   public void enableNotifications(final boolean enable)
    {
    }
 
-   public void removeNotificationListener(NotificationListener listener)
+   public void removeNotificationListener(final NotificationListener listener)
    {
       listeners.remove(listener);
    }
 
-   public void sendNotification(Notification notification) throws Exception
+   public void sendNotification(final Notification notification) throws Exception
    {
       for (NotificationListener listener : listeners)
       {
@@ -79,7 +79,7 @@ public class SimpleNotificationService implements NotificationService
 
       private final List<Notification> notifications = new ArrayList<Notification>();
 
-      public void onNotification(Notification notification)
+      public void onNotification(final Notification notification)
       {
          System.out.println(">>>>>>>>" + notification);
          notifications.add(notification);

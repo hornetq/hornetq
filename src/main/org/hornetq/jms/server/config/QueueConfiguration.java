@@ -23,7 +23,10 @@ package org.hornetq.jms.server.config;
 public interface QueueConfiguration
 {
    String getName();
+
    String getSelector();
+
    boolean isDurable();
+
    String[] getBindings();
 }

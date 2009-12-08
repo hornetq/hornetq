@@ -19,7 +19,6 @@ import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.spi.Connection;
 import org.hornetq.core.remoting.spi.ConnectionLifeCycleListener;
-import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelFuture;
@@ -79,7 +78,7 @@ public class NettyConnection implements Connection
 
             if (!sslCloseFuture.awaitUninterruptibly(10000))
             {
-               log.warn("Timed out waiting for ssl close future to complete");
+               NettyConnection.log.warn("Timed out waiting for ssl close future to complete");
             }
          }
          catch (Throwable t)
@@ -92,7 +91,7 @@ public class NettyConnection implements Connection
 
       if (!closeFuture.awaitUninterruptibly(10000))
       {
-         log.warn("Timed out waiting for channel to close");
+         NettyConnection.log.warn("Timed out waiting for channel to close");
       }
 
       closed = true;
@@ -115,7 +114,7 @@ public class NettyConnection implements Connection
       write(buffer, false);
    }
 
-   public void write(HornetQBuffer buffer, final boolean flush)
+   public void write(final HornetQBuffer buffer, final boolean flush)
    {
       ChannelFuture future = channel.write(buffer.channelBuffer());
 
@@ -129,7 +128,7 @@ public class NettyConnection implements Connection
 
                if (!ok)
                {
-                  log.warn("Timed out waiting for packet to be flushed");
+                  NettyConnection.log.warn("Timed out waiting for packet to be flushed");
                }
 
                break;

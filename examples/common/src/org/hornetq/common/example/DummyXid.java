@@ -23,11 +23,11 @@ public class DummyXid implements Xid
 {
    private static final long serialVersionUID = 407053232840068514L;
 
-   private byte[] branchQualifier;
+   private final byte[] branchQualifier;
 
-   private int formatId;
+   private final int formatId;
 
-   private byte[] globalTransactionId;
+   private final byte[] globalTransactionId;
 
    private int hash;
 
@@ -37,7 +37,7 @@ public class DummyXid implements Xid
 
    public static String toBase64String(final Xid xid)
    {
-      return Base64.encodeBytes(toByteArray(xid));
+      return Base64.encodeBytes(DummyXid.toByteArray(xid));
    }
 
    private static byte[] toByteArray(final Xid xid)
@@ -52,7 +52,7 @@ public class DummyXid implements Xid
       byte[] intBytes = new byte[4];
       for (int i = 0; i < 4; i++)
       {
-         intBytes[i] = (byte)((formatId >> (i * 8)) % 0xFF);
+         intBytes[i] = (byte)((formatId >> i * 8) % 0xFF);
       }
       System.arraycopy(intBytes, 0, hashBytes, branchQualifier.length + globalTransactionId.length, 4);
       return hashBytes;
@@ -79,9 +79,9 @@ public class DummyXid implements Xid
     */
    public DummyXid(final Xid other)
    {
-      this.branchQualifier = copyBytes(other.getBranchQualifier());
-      this.formatId = other.getFormatId();
-      this.globalTransactionId = copyBytes(other.getGlobalTransactionId());
+      branchQualifier = copyBytes(other.getBranchQualifier());
+      formatId = other.getFormatId();
+      globalTransactionId = copyBytes(other.getGlobalTransactionId());
    }
 
    // Xid implementation ------------------------------------------------------------------
@@ -103,6 +103,7 @@ public class DummyXid implements Xid
 
    // Public -------------------------------------------------------------------------------
 
+   @Override
    public int hashCode()
    {
       if (!hashCalculated)
@@ -112,7 +113,8 @@ public class DummyXid implements Xid
       return hash;
    }
 
-   public boolean equals(Object other)
+   @Override
+   public boolean equals(final Object other)
    {
       if (this == other)
       {
@@ -127,26 +129,26 @@ public class DummyXid implements Xid
       {
          return false;
       }
-      if (xother.getBranchQualifier().length != this.branchQualifier.length)
+      if (xother.getBranchQualifier().length != branchQualifier.length)
       {
          return false;
       }
-      if (xother.getGlobalTransactionId().length != this.globalTransactionId.length)
+      if (xother.getGlobalTransactionId().length != globalTransactionId.length)
       {
          return false;
       }
-      for (int i = 0; i < this.branchQualifier.length; i++)
+      for (int i = 0; i < branchQualifier.length; i++)
       {
          byte[] otherBQ = xother.getBranchQualifier();
-         if (this.branchQualifier[i] != otherBQ[i])
+         if (branchQualifier[i] != otherBQ[i])
          {
             return false;
          }
       }
-      for (int i = 0; i < this.globalTransactionId.length; i++)
+      for (int i = 0; i < globalTransactionId.length; i++)
       {
          byte[] otherGtx = xother.getGlobalTransactionId();
-         if (this.globalTransactionId[i] != otherGtx[i])
+         if (globalTransactionId[i] != otherGtx[i])
          {
             return false;
          }
@@ -154,10 +156,16 @@ public class DummyXid implements Xid
       return true;
    }
 
+   @Override
    public String toString()
    {
-     	return "XidImpl (" + System.identityHashCode(this) + " bq:" + stringRep(branchQualifier) +
-     	" formatID:" + formatId + " gtxid:" + stringRep(globalTransactionId);
+      return "XidImpl (" + System.identityHashCode(this) +
+             " bq:" +
+             stringRep(branchQualifier) +
+             " formatID:" +
+             formatId +
+             " gtxid:" +
+             stringRep(globalTransactionId);
    }
 
    // Private -------------------------------------------------------------------------------
@@ -182,13 +190,13 @@ public class DummyXid implements Xid
 
    private void calcHash()
    {
-      byte[] hashBytes = toByteArray(this);
+      byte[] hashBytes = DummyXid.toByteArray(this);
       String s = new String(hashBytes);
       hash = s.hashCode();
       hashCalculated = true;
    }
 
-   private byte[] copyBytes(byte[] other)
+   private byte[] copyBytes(final byte[] other)
    {
       byte[] bytes = new byte[other.length];
 

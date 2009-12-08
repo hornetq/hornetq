@@ -34,97 +34,98 @@ import org.hornetq.jms.HornetQTopic;
  */
 public class TopicHierarchyExample extends HornetQExample
 {
-   public static void main(String[] args)
+   public static void main(final String[] args)
    {
       new TopicHierarchyExample().run(args);
    }
 
+   @Override
    public boolean runExample() throws Exception
    {
       Connection connection = null;
       InitialContext initialContext = null;
       try
       {
-         //Step 1. Create an initial context to perform the JNDI lookup.
+         // Step 1. Create an initial context to perform the JNDI lookup.
          initialContext = getContext(0);
 
-         //Step 3. Perform a lookup on the Connection Factory
-         ConnectionFactory cf = (ConnectionFactory) initialContext.lookup("/ConnectionFactory");
+         // Step 3. Perform a lookup on the Connection Factory
+         ConnectionFactory cf = (ConnectionFactory)initialContext.lookup("/ConnectionFactory");
 
-         //Step 4. Create a JMS Connection
+         // Step 4. Create a JMS Connection
          connection = cf.createConnection();
 
-         //Step 5. Create a JMS Session
+         // Step 5. Create a JMS Session
          Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
-         //Step 6. Instantiate a topic representing the wildcard we're going to subscribe to 
+
+         // Step 6. Instantiate a topic representing the wildcard we're going to subscribe to
          Topic topicSubscribe = new HornetQTopic("news.europe.#");
-         
-         //Step 7. Create a consumer (topic subscriber) that will consume using that wildcard
+
+         // Step 7. Create a consumer (topic subscriber) that will consume using that wildcard
          // The consumer will receive any messages sent to any topic that starts with news.europe
          MessageConsumer messageConsumer = session.createConsumer(topicSubscribe);
- 
-         //Step 8. Create an anonymous producer
+
+         // Step 8. Create an anonymous producer
          MessageProducer producer = session.createProducer(null);
-         
-         //Step 9. Instantiate some more topic objects corresponding to the individual topics
-         //we're going to send messages to
+
+         // Step 9. Instantiate some more topic objects corresponding to the individual topics
+         // we're going to send messages to
          Topic topicNewsUsaWrestling = new HornetQTopic("news.usa.wrestling");
-         
+
          Topic topicNewsEuropeSport = new HornetQTopic("news.europe.sport");
-         
+
          Topic topicNewsEuropeEntertainment = new HornetQTopic("news.europe.entertainment");
-        
-         //Step 10. Send a message destined for the usa wrestling topic
+
+         // Step 10. Send a message destined for the usa wrestling topic
          TextMessage messageWrestlingNews = session.createTextMessage("Hulk Hogan starts ballet classes");
-         
+
          producer.send(topicNewsUsaWrestling, messageWrestlingNews);
-         
-         //Step 11. Send a message destined for the europe sport topic
+
+         // Step 11. Send a message destined for the europe sport topic
          TextMessage messageEuropeSport = session.createTextMessage("Lewis Hamilton joins European synchronized swimming team");
-         
+
          producer.send(topicNewsEuropeSport, messageEuropeSport);
-         
-         //Step 12. Send a message destined for the europe entertainment topic
+
+         // Step 12. Send a message destined for the europe entertainment topic
          TextMessage messageEuropeEntertainment = session.createTextMessage("John Lennon resurrected from dead");
-         
+
          producer.send(topicNewsEuropeEntertainment, messageEuropeEntertainment);
-         
-         //Step 9. Start the connection
-         
+
+         // Step 9. Start the connection
+
          connection.start();
-         
-         //Step 10. We don't receive the usa wrestling message since we subscribed to news.europe.# and
-         //that doesn't match news.usa.wrestling. However we do receive the Europe sport message, and the
-         //europe entertainment message, since these match the wildcard.
-                           
+
+         // Step 10. We don't receive the usa wrestling message since we subscribed to news.europe.# and
+         // that doesn't match news.usa.wrestling. However we do receive the Europe sport message, and the
+         // europe entertainment message, since these match the wildcard.
+
          TextMessage messageReceived1 = (TextMessage)messageConsumer.receive(5000);
-         
+
          System.out.println("Received message: " + messageReceived1.getText());
-         
+
          TextMessage messageReceived2 = (TextMessage)messageConsumer.receive(5000);
-         
+
          System.out.println("Received message: " + messageReceived2.getText());
-         
+
          Message message = messageConsumer.receive(1000);
-         
+
          if (message != null)
          {
             return false;
          }
-         
+
          System.out.println("Didn't received any more message: " + message);
 
          return true;
       }
       finally
       {
-         //Step 12. Be sure to close our resources!
+         // Step 12. Be sure to close our resources!
          if (initialContext != null)
          {
             initialContext.close();
          }
-         if(connection != null)
+         if (connection != null)
          {
             connection.close();
          }

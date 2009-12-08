@@ -13,13 +13,7 @@
 
 package org.hornetq.tests.unit.core.remoting;
 
-import static org.hornetq.tests.util.RandomUtil.randomByte;
-import static org.hornetq.tests.util.RandomUtil.randomBytes;
-import static org.hornetq.tests.util.RandomUtil.randomDouble;
-import static org.hornetq.tests.util.RandomUtil.randomFloat;
-import static org.hornetq.tests.util.RandomUtil.randomInt;
-import static org.hornetq.tests.util.RandomUtil.randomLong;
-import static org.hornetq.tests.util.RandomUtil.randomString;
+import junit.framework.Assert;
 
 import org.hornetq.core.buffers.HornetQBuffer;
 import org.hornetq.tests.util.RandomUtil;
@@ -49,7 +43,7 @@ public abstract class HornetQBufferTestBase extends UnitTestCase
    protected void setUp() throws Exception
    {
       super.setUp();
-      
+
       wrapper = createBuffer();
    }
 
@@ -57,7 +51,7 @@ public abstract class HornetQBufferTestBase extends UnitTestCase
    protected void tearDown() throws Exception
    {
       wrapper = null;
-      
+
       super.tearDown();
    }
 
@@ -65,30 +59,30 @@ public abstract class HornetQBufferTestBase extends UnitTestCase
 
    public void testNullString() throws Exception
    {
-      assertNull(putAndGetNullableString(null));
+      Assert.assertNull(putAndGetNullableString(null));
    }
 
    public void testEmptyString() throws Exception
    {
       String result = putAndGetNullableString("");
 
-      assertNotNull(result);
-      assertEquals("", result);
+      Assert.assertNotNull(result);
+      Assert.assertEquals("", result);
    }
 
    public void testNonEmptyString() throws Exception
    {
-      String junk = randomString();
+      String junk = RandomUtil.randomString();
 
       String result = putAndGetNullableString(junk);
 
-      assertNotNull(result);
-      assertEquals(junk, result);
+      Assert.assertNotNull(result);
+      Assert.assertEquals(junk, result);
    }
 
    public void testNullSimpleString() throws Exception
    {
-      assertNull(putAndGetNullableSimpleString(null));
+      Assert.assertNull(putAndGetNullableSimpleString(null));
    }
 
    public void testEmptySimpleString() throws Exception
@@ -96,8 +90,8 @@ public abstract class HornetQBufferTestBase extends UnitTestCase
       SimpleString emptySimpleString = new SimpleString("");
       SimpleString result = putAndGetNullableSimpleString(emptySimpleString);
 
-      assertNotNull(result);
-      assertEqualsByteArrays(emptySimpleString.getData(), result.getData());
+      Assert.assertNotNull(result);
+      UnitTestCase.assertEqualsByteArrays(emptySimpleString.getData(), result.getData());
    }
 
    public void testNonEmptySimpleString() throws Exception
@@ -105,103 +99,101 @@ public abstract class HornetQBufferTestBase extends UnitTestCase
       SimpleString junk = RandomUtil.randomSimpleString();
       SimpleString result = putAndGetNullableSimpleString(junk);
 
-      assertNotNull(result);
-      assertEqualsByteArrays(junk.getData(), result.getData());
+      Assert.assertNotNull(result);
+      UnitTestCase.assertEqualsByteArrays(junk.getData(), result.getData());
    }
 
    public void testByte() throws Exception
    {
-      byte b = randomByte();
+      byte b = RandomUtil.randomByte();
       wrapper.writeByte(b);
 
-      assertEquals(b, wrapper.readByte());
+      Assert.assertEquals(b, wrapper.readByte());
    }
 
    public void testUnsignedByte() throws Exception
    {
-      byte b = (byte) 0xff;
+      byte b = (byte)0xff;
       wrapper.writeByte(b);
 
-      assertEquals(255, wrapper.readUnsignedByte());
+      Assert.assertEquals(255, wrapper.readUnsignedByte());
 
-      b = (byte) 0xf;
+      b = (byte)0xf;
       wrapper.writeByte(b);
 
-      assertEquals(b, wrapper.readUnsignedByte());
+      Assert.assertEquals(b, wrapper.readUnsignedByte());
    }
-
-
 
    public void testBytes() throws Exception
    {
-      byte[] bytes = randomBytes();
+      byte[] bytes = RandomUtil.randomBytes();
       wrapper.writeBytes(bytes);
 
       byte[] b = new byte[bytes.length];
       wrapper.readBytes(b);
-      assertEqualsByteArrays(bytes, b);
+      UnitTestCase.assertEqualsByteArrays(bytes, b);
    }
 
    public void testBytesWithLength() throws Exception
    {
-      byte[] bytes = randomBytes();
+      byte[] bytes = RandomUtil.randomBytes();
       // put only half of the bytes
       wrapper.writeBytes(bytes, 0, bytes.length / 2);
 
       byte[] b = new byte[bytes.length / 2];
       wrapper.readBytes(b, 0, b.length);
-      assertEqualsByteArrays(b.length, bytes, b);
+      UnitTestCase.assertEqualsByteArrays(b.length, bytes, b);
    }
 
    public void testPutTrueBoolean() throws Exception
    {
       wrapper.writeBoolean(true);
 
-      assertTrue(wrapper.readBoolean());
+      Assert.assertTrue(wrapper.readBoolean());
    }
 
    public void testPutFalseBoolean() throws Exception
    {
       wrapper.writeBoolean(false);
 
-      assertFalse(wrapper.readBoolean());
+      Assert.assertFalse(wrapper.readBoolean());
    }
 
    public void testChar() throws Exception
    {
       wrapper.writeChar('a');
 
-      assertEquals('a', wrapper.readChar());
+      Assert.assertEquals('a', wrapper.readChar());
    }
 
    public void testInt() throws Exception
    {
-      int i = randomInt();
+      int i = RandomUtil.randomInt();
       wrapper.writeInt(i);
 
-      assertEquals(i, wrapper.readInt());
+      Assert.assertEquals(i, wrapper.readInt());
    }
 
    public void testIntAtPosition() throws Exception
    {
-      int firstInt = randomInt();
-      int secondInt = randomInt();
+      int firstInt = RandomUtil.randomInt();
+      int secondInt = RandomUtil.randomInt();
 
       wrapper.writeInt(secondInt);
       wrapper.writeInt(secondInt);
       // rewrite firstInt at the beginning
       wrapper.setInt(0, firstInt);
 
-      assertEquals(firstInt, wrapper.readInt());
-      assertEquals(secondInt, wrapper.readInt());
+      Assert.assertEquals(firstInt, wrapper.readInt());
+      Assert.assertEquals(secondInt, wrapper.readInt());
    }
 
    public void testLong() throws Exception
    {
-      long l = randomLong();
+      long l = RandomUtil.randomLong();
       wrapper.writeLong(l);
 
-      assertEquals(l, wrapper.readLong());
+      Assert.assertEquals(l, wrapper.readLong());
    }
 
    public void testUnsignedShort() throws Exception
@@ -212,7 +204,7 @@ public abstract class HornetQBufferTestBase extends UnitTestCase
 
       int s2 = wrapper.readUnsignedShort();
 
-      assertEquals(s1, s2);
+      Assert.assertEquals(s1, s2);
 
       s1 = Short.MIN_VALUE;
 
@@ -220,7 +212,7 @@ public abstract class HornetQBufferTestBase extends UnitTestCase
 
       s2 = wrapper.readUnsignedShort();
 
-      assertEquals(s1 * -1, s2);
+      Assert.assertEquals(s1 * -1, s2);
 
       s1 = -1;
 
@@ -230,60 +222,60 @@ public abstract class HornetQBufferTestBase extends UnitTestCase
 
       // / The max of an unsigned short
       // (http://en.wikipedia.org/wiki/Unsigned_short)
-      assertEquals(s2, 65535);
+      Assert.assertEquals(s2, 65535);
    }
 
    public void testShort() throws Exception
    {
-      wrapper.writeShort((short) 1);
+      wrapper.writeShort((short)1);
 
-      assertEquals((short)1, wrapper.readShort());
+      Assert.assertEquals((short)1, wrapper.readShort());
    }
 
    public void testDouble() throws Exception
    {
-      double d = randomDouble();
+      double d = RandomUtil.randomDouble();
       wrapper.writeDouble(d);
 
-      assertEquals(d, wrapper.readDouble());
+      Assert.assertEquals(d, wrapper.readDouble());
    }
 
    public void testFloat() throws Exception
    {
-      float f = randomFloat();
+      float f = RandomUtil.randomFloat();
       wrapper.writeFloat(f);
 
-      assertEquals(f, wrapper.readFloat());
+      Assert.assertEquals(f, wrapper.readFloat());
    }
 
    public void testUTF() throws Exception
    {
-      String str = randomString();
+      String str = RandomUtil.randomString();
       wrapper.writeUTF(str);
 
-      assertEquals(str, wrapper.readUTF());
+      Assert.assertEquals(str, wrapper.readUTF());
    }
 
    public void testArray() throws Exception
    {
-      byte[] bytes = randomBytes(128);
+      byte[] bytes = RandomUtil.randomBytes(128);
       wrapper.writeBytes(bytes);
 
       byte[] array = wrapper.toByteBuffer().array();
-      assertEquals(wrapper.capacity(), array.length);
-      assertEqualsByteArrays(128, bytes, wrapper.toByteBuffer().array());
+      Assert.assertEquals(wrapper.capacity(), array.length);
+      UnitTestCase.assertEqualsByteArrays(128, bytes, wrapper.toByteBuffer().array());
    }
 
    public void testRewind() throws Exception
    {
-      int i = randomInt();
+      int i = RandomUtil.randomInt();
       wrapper.writeInt(i);
 
-      assertEquals(i, wrapper.readInt());
+      Assert.assertEquals(i, wrapper.readInt());
 
       wrapper.resetReaderIndex();
-      
-      assertEquals(i, wrapper.readInt());
+
+      Assert.assertEquals(i, wrapper.readInt());
    }
 
    public void testRemaining() throws Exception
@@ -292,24 +284,24 @@ public abstract class HornetQBufferTestBase extends UnitTestCase
 
       // fill 1/3 of the buffer
       int fill = capacity / 3;
-      byte[] bytes = randomBytes(fill);
+      byte[] bytes = RandomUtil.randomBytes(fill);
       wrapper.writeBytes(bytes);
 
       // check the remaining is 2/3
-      assertEquals(capacity - fill, wrapper.writableBytes());
+      Assert.assertEquals(capacity - fill, wrapper.writableBytes());
    }
 
    public void testPosition() throws Exception
    {
-      assertEquals(0, wrapper.writerIndex());
+      Assert.assertEquals(0, wrapper.writerIndex());
 
-      byte[] bytes = randomBytes(128);
+      byte[] bytes = RandomUtil.randomBytes(128);
       wrapper.writeBytes(bytes);
 
-      assertEquals(bytes.length, wrapper.writerIndex());
+      Assert.assertEquals(bytes.length, wrapper.writerIndex());
 
       wrapper.writerIndex(0);
-      assertEquals(0, wrapper.writerIndex());
+      Assert.assertEquals(0, wrapper.writerIndex());
    }
 
    // Package protected ---------------------------------------------
@@ -318,14 +310,14 @@ public abstract class HornetQBufferTestBase extends UnitTestCase
 
    // Private -------------------------------------------------------
 
-   private String putAndGetNullableString(String nullableString) throws Exception
+   private String putAndGetNullableString(final String nullableString) throws Exception
    {
       wrapper.writeNullableString(nullableString);
 
       return wrapper.readNullableString();
    }
 
-   private SimpleString putAndGetNullableSimpleString(SimpleString nullableSimpleString) throws Exception
+   private SimpleString putAndGetNullableSimpleString(final SimpleString nullableSimpleString) throws Exception
    {
       wrapper.writeNullableSimpleString(nullableSimpleString);
 

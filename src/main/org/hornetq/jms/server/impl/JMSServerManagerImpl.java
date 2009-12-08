@@ -153,7 +153,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       }
       catch (Exception e)
       {
-         log.error("Failed to start jms deployer", e);
+         JMSServerManagerImpl.log.error("Failed to start jms deployer", e);
       }
    }
 
@@ -293,7 +293,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       // subscriptions - core has no notion of a topic
       server.getHornetQServerControl().deployQueue(jBossTopic.getAddress(),
                                                    jBossTopic.getAddress(),
-                                                   REJECT_FILTER,
+                                                   JMSServerManagerImpl.REJECT_FILTER,
                                                    true);
       boolean added = bindToJndi(jndiBinding, jBossTopic);
       if (added)
@@ -726,7 +726,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
          {
             context.lookup(jndiName);
 
-            log.warn("Binding for " + jndiName + " already exists");
+            JMSServerManagerImpl.log.warn("Binding for " + jndiName + " already exists");
             return false;
          }
          catch (Throwable e)
@@ -755,7 +755,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       if (config == null)
       {
          return;
-      }                                                                                                 
+      }
 
       if (config.getContext() != null)
       {

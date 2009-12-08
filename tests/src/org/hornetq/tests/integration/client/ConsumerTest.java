@@ -15,6 +15,8 @@ package org.hornetq.tests.integration.client;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
@@ -88,11 +90,11 @@ public class ConsumerTest extends ServiceTestBase
       {
          ClientMessage message2 = consumer.receive(1000);
 
-         assertEquals("m" + i, message2.getBodyBuffer().readString());
+         Assert.assertEquals("m" + i, message2.getBodyBuffer().readString());
       }
       // assert that all the messages are there and none have been acked
-      assertEquals(0, ((Queue)server.getPostOffice().getBinding(QUEUE).getBindable()).getDeliveringCount());
-      assertEquals(0, ((Queue)server.getPostOffice().getBinding(QUEUE).getBindable()).getMessageCount());
+      Assert.assertEquals(0, ((Queue)server.getPostOffice().getBinding(QUEUE).getBindable()).getDeliveringCount());
+      Assert.assertEquals(0, ((Queue)server.getPostOffice().getBinding(QUEUE).getBindable()).getMessageCount());
 
       session.close();
    }
@@ -122,11 +124,11 @@ public class ConsumerTest extends ServiceTestBase
       {
          ClientMessage message2 = consumer.receive(1000);
 
-         assertEquals("m" + i, message2.getBodyBuffer().readString());
+         Assert.assertEquals("m" + i, message2.getBodyBuffer().readString());
       }
       // assert that all the messages are there and none have been acked
-      assertEquals(0, ((Queue)server.getPostOffice().getBinding(QUEUE).getBindable()).getDeliveringCount());
-      assertEquals(0, ((Queue)server.getPostOffice().getBinding(QUEUE).getBindable()).getMessageCount());
+      Assert.assertEquals(0, ((Queue)server.getPostOffice().getBinding(QUEUE).getBindable()).getDeliveringCount());
+      Assert.assertEquals(0, ((Queue)server.getPostOffice().getBinding(QUEUE).getBindable()).getMessageCount());
 
       session.close();
    }
@@ -156,15 +158,15 @@ public class ConsumerTest extends ServiceTestBase
       {
          ClientMessage message2 = consumer.receive(1000);
 
-         assertEquals("m" + i, message2.getBodyBuffer().readString());
+         Assert.assertEquals("m" + i, message2.getBodyBuffer().readString());
          if (i < 50)
          {
             message2.acknowledge();
          }
       }
       // assert that all the messages are there and none have been acked
-      assertEquals(0, ((Queue)server.getPostOffice().getBinding(QUEUE).getBindable()).getDeliveringCount());
-      assertEquals(0, ((Queue)server.getPostOffice().getBinding(QUEUE).getBindable()).getMessageCount());
+      Assert.assertEquals(0, ((Queue)server.getPostOffice().getBinding(QUEUE).getBindable()).getDeliveringCount());
+      Assert.assertEquals(0, ((Queue)server.getPostOffice().getBinding(QUEUE).getBindable()).getMessageCount());
 
       session.close();
    }
@@ -194,20 +196,20 @@ public class ConsumerTest extends ServiceTestBase
       {
          ClientMessage message2 = consumer.receive(1000);
 
-         assertEquals("m" + i, message2.getBodyBuffer().readString());
+         Assert.assertEquals("m" + i, message2.getBodyBuffer().readString());
          if (i < 50)
          {
             message2.acknowledge();
          }
       }
       // assert that all the messages are there and none have been acked
-      assertEquals(0, ((Queue)server.getPostOffice().getBinding(QUEUE).getBindable()).getDeliveringCount());
-      assertEquals(0, ((Queue)server.getPostOffice().getBinding(QUEUE).getBindable()).getMessageCount());
+      Assert.assertEquals(0, ((Queue)server.getPostOffice().getBinding(QUEUE).getBindable()).getDeliveringCount());
+      Assert.assertEquals(0, ((Queue)server.getPostOffice().getBinding(QUEUE).getBindable()).getMessageCount());
 
       session.close();
 
-      assertEquals(0, ((Queue)server.getPostOffice().getBinding(QUEUE).getBindable()).getDeliveringCount());
-      assertEquals(0, ((Queue)server.getPostOffice().getBinding(QUEUE).getBindable()).getMessageCount());
+      Assert.assertEquals(0, ((Queue)server.getPostOffice().getBinding(QUEUE).getBindable()).getDeliveringCount());
+      Assert.assertEquals(0, ((Queue)server.getPostOffice().getBinding(QUEUE).getBindable()).getMessageCount());
    }
 
    public void testAcksWithSmallSendWindow() throws Exception
@@ -232,7 +234,7 @@ public class ConsumerTest extends ServiceTestBase
       final CountDownLatch latch = new CountDownLatch(numMessages);
       server.getRemotingService().addInterceptor(new Interceptor()
       {
-         public boolean intercept(Packet packet, RemotingConnection connection) throws HornetQException
+         public boolean intercept(final Packet packet, final RemotingConnection connection) throws HornetQException
          {
             if (packet.getType() == PacketImpl.SESS_ACKNOWLEDGE)
             {
@@ -248,7 +250,7 @@ public class ConsumerTest extends ServiceTestBase
       ClientConsumer consumer = sessionRec.createConsumer(QUEUE);
       consumer.setMessageHandler(new MessageHandler()
       {
-         public void onMessage(ClientMessage message)
+         public void onMessage(final ClientMessage message)
          {
             try
             {
@@ -261,7 +263,7 @@ public class ConsumerTest extends ServiceTestBase
          }
       });
       sessionRec.start();
-      assertTrue(latch.await(5, TimeUnit.SECONDS));
+      Assert.assertTrue(latch.await(5, TimeUnit.SECONDS));
       sessionRec.close();
    }
 
@@ -277,14 +279,14 @@ public class ConsumerTest extends ServiceTestBase
 
       consumer.setMessageHandler(new MessageHandler()
       {
-         public void onMessage(ClientMessage msg)
+         public void onMessage(final ClientMessage msg)
          {
          }
       });
 
       consumer.setMessageHandler(null);
       consumer.receiveImmediate();
-      
+
       session.close();
    }
 
@@ -300,7 +302,7 @@ public class ConsumerTest extends ServiceTestBase
 
       consumer.setMessageHandler(new MessageHandler()
       {
-         public void onMessage(ClientMessage msg)
+         public void onMessage(final ClientMessage msg)
          {
          }
       });
@@ -308,7 +310,7 @@ public class ConsumerTest extends ServiceTestBase
       try
       {
          consumer.receiveImmediate();
-         fail("Should throw exception");
+         Assert.fail("Should throw exception");
       }
       catch (HornetQException me)
       {
@@ -318,10 +320,10 @@ public class ConsumerTest extends ServiceTestBase
          }
          else
          {
-            fail("Wrong exception code");
+            Assert.fail("Wrong exception code");
          }
       }
-      
+
       session.close();
    }
 
@@ -363,7 +365,7 @@ public class ConsumerTest extends ServiceTestBase
       int rollbacked = 0;
       for (int i = 0; i < 110; i++)
       {
-         ClientMessage message = (ClientMessage)consumer.receive();
+         ClientMessage message = consumer.receive();
 
          int count = message.getIntProperty("count");
 
@@ -383,7 +385,7 @@ public class ConsumerTest extends ServiceTestBase
 
       session.close();
    }
-   
+
    // https://jira.jboss.org/jira/browse/HORNETQ-111
    // Test that, on rollback credits are released for messages cleared in the buffer
    public void testConsumerCreditsOnRollbackLargeMessages() throws Exception
@@ -423,7 +425,7 @@ public class ConsumerTest extends ServiceTestBase
       int rollbacked = 0;
       for (int i = 0; i < 110; i++)
       {
-         ClientMessage message = (ClientMessage)consumer.receive();
+         ClientMessage message = consumer.receive();
 
          int count = message.getIntProperty("count");
 

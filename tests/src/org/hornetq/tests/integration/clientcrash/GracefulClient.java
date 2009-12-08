@@ -9,7 +9,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
  * implied.  See the License for the specific language governing
  * permissions and limitations under the License.
- */ 
+ */
 
 package org.hornetq.tests.integration.clientcrash;
 
@@ -42,7 +42,7 @@ public class GracefulClient
 
    // Static ---------------------------------------------------------------------------------------
 
-   public static void main(String[] args) throws Exception
+   public static void main(final String[] args) throws Exception
    {
       if (args.length != 2)
       {
@@ -51,7 +51,6 @@ public class GracefulClient
       String queueName = args[0];
       String messageText = args[1];
 
-      
       try
       {
          ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(NettyConnectorFactory.class.getName()));
@@ -59,22 +58,25 @@ public class GracefulClient
          ClientProducer producer = session.createProducer(queueName);
          ClientConsumer consumer = session.createConsumer(queueName);
 
-         ClientMessage message = session.createClientMessage(HornetQTextMessage.TYPE, false, 0,
-               System.currentTimeMillis(), (byte) 1);
+         ClientMessage message = session.createClientMessage(HornetQTextMessage.TYPE,
+                                                             false,
+                                                             0,
+                                                             System.currentTimeMillis(),
+                                                             (byte)1);
          message.getBodyBuffer().writeString(messageText);
          producer.send(message);
 
          session.start();
-         
+
          // block in receiving for 5 secs, we won't receive anything
          consumer.receive(5000);
-        
+
          // this should silence any non-daemon thread and allow for graceful exit
          session.close();
       }
       catch (Throwable t)
       {
-         log.error(t.getMessage(), t);
+         GracefulClient.log.error(t.getMessage(), t);
          System.exit(1);
       }
    }

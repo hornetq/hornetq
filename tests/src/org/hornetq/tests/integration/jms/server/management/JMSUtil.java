@@ -13,8 +13,6 @@
 
 package org.hornetq.tests.integration.jms.server.management;
 
-import static org.hornetq.tests.util.RandomUtil.randomString;
-
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
@@ -31,6 +29,7 @@ import junit.framework.Assert;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.jms.client.HornetQConnectionFactory;
+import org.hornetq.tests.util.RandomUtil;
 
 /**
  * A JMSUtil
@@ -50,21 +49,23 @@ public class JMSUtil
 
    // Static --------------------------------------------------------
 
-   public static Connection createConnection(String connectorFactory) throws JMSException
+   public static Connection createConnection(final String connectorFactory) throws JMSException
    {
       HornetQConnectionFactory cf = new HornetQConnectionFactory(new TransportConfiguration(connectorFactory));
-      
+
       cf.setBlockOnNonPersistentSend(true);
       cf.setBlockOnPersistentSend(true);
       cf.setBlockOnAcknowledge(true);
 
       return cf.createConnection();
    }
-   
-   public static ConnectionFactory createFactory(String connectorFactory, long connectionTTL, long clientFailureCheckPeriod) throws JMSException
+
+   public static ConnectionFactory createFactory(final String connectorFactory,
+                                                 final long connectionTTL,
+                                                 final long clientFailureCheckPeriod) throws JMSException
    {
       HornetQConnectionFactory cf = new HornetQConnectionFactory(new TransportConfiguration(connectorFactory));
-      
+
       cf.setBlockOnNonPersistentSend(true);
       cf.setBlockOnPersistentSend(true);
       cf.setBlockOnAcknowledge(true);
@@ -73,23 +74,25 @@ public class JMSUtil
 
       return cf;
    }
-   
-   static MessageConsumer createConsumer(Connection connection, Destination destination, String connectorFactory) throws JMSException
+
+   static MessageConsumer createConsumer(final Connection connection,
+                                         final Destination destination,
+                                         final String connectorFactory) throws JMSException
    {
       Session s = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
       return s.createConsumer(destination);
    }
 
-   public static MessageConsumer createConsumer(Connection connection, Destination destination) throws JMSException
+   public static MessageConsumer createConsumer(final Connection connection, final Destination destination) throws JMSException
    {
-      return createConsumer(connection, destination, InVMConnectorFactory.class.getName());
+      return JMSUtil.createConsumer(connection, destination, InVMConnectorFactory.class.getName());
    }
 
-   static TopicSubscriber createDurableSubscriber(Connection connection,
-                                                  Topic topic,
-                                                  String clientID,
-                                                  String subscriptionName) throws JMSException
+   static TopicSubscriber createDurableSubscriber(final Connection connection,
+                                                  final Topic topic,
+                                                  final String clientID,
+                                                  final String subscriptionName) throws JMSException
    {
       connection.setClientID(clientID);
       Session s = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -97,13 +100,15 @@ public class JMSUtil
       return s.createDurableSubscriber(topic, subscriptionName);
    }
 
-   public static String[] sendMessages(Destination destination, int messagesToSend) throws Exception
+   public static String[] sendMessages(final Destination destination, final int messagesToSend) throws Exception
    {
       HornetQConnectionFactory cf = new HornetQConnectionFactory(new TransportConfiguration(InVMConnectorFactory.class.getName()));
-      return sendMessages(cf, destination, messagesToSend);
+      return JMSUtil.sendMessages(cf, destination, messagesToSend);
    }
 
-   public static String[] sendMessages(ConnectionFactory cf, Destination destination, int messagesToSend) throws Exception
+   public static String[] sendMessages(final ConnectionFactory cf,
+                                       final Destination destination,
+                                       final int messagesToSend) throws Exception
    {
       String[] messageIDs = new String[messagesToSend];
 
@@ -114,7 +119,7 @@ public class JMSUtil
 
       for (int i = 0; i < messagesToSend; i++)
       {
-         Message m = s.createTextMessage(randomString());
+         Message m = s.createTextMessage(RandomUtil.randomString());
          producer.send(m);
          messageIDs[i] = m.getJMSMessageID();
       }
@@ -124,7 +129,10 @@ public class JMSUtil
       return messageIDs;
    }
 
-   public static Message sendMessageWithProperty(Session session, Destination destination, String key, long value) throws JMSException
+   public static Message sendMessageWithProperty(final Session session,
+                                                 final Destination destination,
+                                                 final String key,
+                                                 final long value) throws JMSException
    {
       MessageProducer producer = session.createProducer(destination);
       Message message = session.createMessage();
@@ -133,9 +141,9 @@ public class JMSUtil
       return message;
    }
 
-   public static void consumeMessages(int expected, Destination dest) throws JMSException
+   public static void consumeMessages(final int expected, final Destination dest) throws JMSException
    {
-      Connection connection = createConnection(InVMConnectorFactory.class.getName());
+      Connection connection = JMSUtil.createConnection(InVMConnectorFactory.class.getName());
       try
       {
          Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);

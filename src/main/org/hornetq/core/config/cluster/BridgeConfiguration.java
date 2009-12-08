@@ -49,15 +49,15 @@ public class BridgeConfiguration implements Serializable
    private double retryIntervalMultiplier;
 
    private int reconnectAttempts;
-   
+
    private boolean failoverOnServerShutdown;
 
    private boolean useDuplicateDetection;
-   
+
    private int confirmationWindowSize;
-   
-   private long clientFailureCheckPeriod;
-    
+
+   private final long clientFailureCheckPeriod;
+
    public BridgeConfiguration(final String name,
                               final String queueName,
                               final String forwardingAddress,
@@ -85,7 +85,7 @@ public class BridgeConfiguration implements Serializable
       this.confirmationWindowSize = confirmationWindowSize;
       this.clientFailureCheckPeriod = clientFailureCheckPeriod;
       this.connectorPair = connectorPair;
-      this.discoveryGroupName = null;
+      discoveryGroupName = null;
    }
 
    public BridgeConfiguration(final String name,
@@ -114,7 +114,7 @@ public class BridgeConfiguration implements Serializable
       this.useDuplicateDetection = useDuplicateDetection;
       this.confirmationWindowSize = confirmationWindowSize;
       this.clientFailureCheckPeriod = clientFailureCheckPeriod;
-      this.connectorPair = null;
+      connectorPair = null;
       this.discoveryGroupName = discoveryGroupName;
    }
 
@@ -177,12 +177,12 @@ public class BridgeConfiguration implements Serializable
    {
       return useDuplicateDetection;
    }
-   
+
    public int getConfirmationWindowSize()
    {
       return confirmationWindowSize;
    }
-   
+
    public long getClientFailureCheckPeriod()
    {
       return clientFailureCheckPeriod;
@@ -191,7 +191,7 @@ public class BridgeConfiguration implements Serializable
    /**
     * @param name the name to set
     */
-   public void setName(String name)
+   public void setName(final String name)
    {
       this.name = name;
    }
@@ -199,7 +199,7 @@ public class BridgeConfiguration implements Serializable
    /**
     * @param queueName the queueName to set
     */
-   public void setQueueName(String queueName)
+   public void setQueueName(final String queueName)
    {
       this.queueName = queueName;
    }
@@ -207,7 +207,7 @@ public class BridgeConfiguration implements Serializable
    /**
     * @param forwardingAddress the forwardingAddress to set
     */
-   public void setForwardingAddress(String forwardingAddress)
+   public void setForwardingAddress(final String forwardingAddress)
    {
       this.forwardingAddress = forwardingAddress;
    }
@@ -215,7 +215,7 @@ public class BridgeConfiguration implements Serializable
    /**
     * @param filterString the filterString to set
     */
-   public void setFilterString(String filterString)
+   public void setFilterString(final String filterString)
    {
       this.filterString = filterString;
    }
@@ -223,7 +223,7 @@ public class BridgeConfiguration implements Serializable
    /**
     * @param connectorPair the connectorPair to set
     */
-   public void setConnectorPair(Pair<String, String> connectorPair)
+   public void setConnectorPair(final Pair<String, String> connectorPair)
    {
       this.connectorPair = connectorPair;
    }
@@ -231,7 +231,7 @@ public class BridgeConfiguration implements Serializable
    /**
     * @param discoveryGroupName the discoveryGroupName to set
     */
-   public void setDiscoveryGroupName(String discoveryGroupName)
+   public void setDiscoveryGroupName(final String discoveryGroupName)
    {
       this.discoveryGroupName = discoveryGroupName;
    }
@@ -239,7 +239,7 @@ public class BridgeConfiguration implements Serializable
    /**
     * @param transformerClassName the transformerClassName to set
     */
-   public void setTransformerClassName(String transformerClassName)
+   public void setTransformerClassName(final String transformerClassName)
    {
       this.transformerClassName = transformerClassName;
    }
@@ -247,7 +247,7 @@ public class BridgeConfiguration implements Serializable
    /**
     * @param retryInterval the retryInterval to set
     */
-   public void setRetryInterval(long retryInterval)
+   public void setRetryInterval(final long retryInterval)
    {
       this.retryInterval = retryInterval;
    }
@@ -255,7 +255,7 @@ public class BridgeConfiguration implements Serializable
    /**
     * @param retryIntervalMultiplier the retryIntervalMultiplier to set
     */
-   public void setRetryIntervalMultiplier(double retryIntervalMultiplier)
+   public void setRetryIntervalMultiplier(final double retryIntervalMultiplier)
    {
       this.retryIntervalMultiplier = retryIntervalMultiplier;
    }
@@ -263,7 +263,7 @@ public class BridgeConfiguration implements Serializable
    /**
     * @param reconnectAttempts the reconnectAttempts to set
     */
-   public void setReconnectAttempts(int reconnectAttempts)
+   public void setReconnectAttempts(final int reconnectAttempts)
    {
       this.reconnectAttempts = reconnectAttempts;
    }
@@ -271,7 +271,7 @@ public class BridgeConfiguration implements Serializable
    /**
     * @param failoverOnServerShutdown the failoverOnServerShutdown to set
     */
-   public void setFailoverOnServerShutdown(boolean failoverOnServerShutdown)
+   public void setFailoverOnServerShutdown(final boolean failoverOnServerShutdown)
    {
       this.failoverOnServerShutdown = failoverOnServerShutdown;
    }
@@ -279,15 +279,15 @@ public class BridgeConfiguration implements Serializable
    /**
     * @param useDuplicateDetection the useDuplicateDetection to set
     */
-   public void setUseDuplicateDetection(boolean useDuplicateDetection)
+   public void setUseDuplicateDetection(final boolean useDuplicateDetection)
    {
       this.useDuplicateDetection = useDuplicateDetection;
    }
-   
+
    /**
     * @param confirmationWindowSize the confirmationWindowSize to set
     */
-   public void setConfirmationWindowSize(int confirmationWindowSize)
+   public void setConfirmationWindowSize(final int confirmationWindowSize)
    {
       this.confirmationWindowSize = confirmationWindowSize;
    }

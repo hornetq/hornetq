@@ -12,6 +12,8 @@
  */
 package org.hornetq.tests.integration.client;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
@@ -53,15 +55,15 @@ public class WildCardRoutingTest extends UnitTestCase
       producer.send(createTextMessage("m1", clientSession));
       producer2.send(createTextMessage("m2", clientSession));
       ClientMessage m = clientConsumer.receive(500);
-      assertNotNull(m);
-      assertEquals("m1", m.getBodyBuffer().readString());
+      Assert.assertNotNull(m);
+      Assert.assertEquals("m1", m.getBodyBuffer().readString());
       m.acknowledge();
       m = clientConsumer.receive(500);
-      assertNotNull(m);
-      assertEquals("m2", m.getBodyBuffer().readString());
+      Assert.assertNotNull(m);
+      Assert.assertEquals("m2", m.getBodyBuffer().readString());
       m.acknowledge();
       m = clientConsumer.receiveImmediate();
-      assertNull(m);
+      Assert.assertNull(m);
    }
 
    public void testBasicWildcardRoutingQueuesDontExist() throws Exception
@@ -78,21 +80,21 @@ public class WildCardRoutingTest extends UnitTestCase
       producer.send(createTextMessage("m1", clientSession));
       producer2.send(createTextMessage("m2", clientSession));
       ClientMessage m = clientConsumer.receive(500);
-      assertNotNull(m);
-      assertEquals("m1", m.getBodyBuffer().readString());
+      Assert.assertNotNull(m);
+      Assert.assertEquals("m1", m.getBodyBuffer().readString());
       m.acknowledge();
       m = clientConsumer.receive(500);
-      assertNotNull(m);
-      assertEquals("m2", m.getBodyBuffer().readString());
+      Assert.assertNotNull(m);
+      Assert.assertEquals("m2", m.getBodyBuffer().readString());
       m.acknowledge();
       m = clientConsumer.receiveImmediate();
-      assertNull(m);
+      Assert.assertNull(m);
       clientConsumer.close();
       clientSession.deleteQueue(queueName);
 
-      assertEquals(0, server.getPostOffice().getBindingsForAddress(addressAB).getBindings().size());
-      assertEquals(0, server.getPostOffice().getBindingsForAddress(addressAC).getBindings().size());
-      assertEquals(0, server.getPostOffice().getBindingsForAddress(address).getBindings().size());
+      Assert.assertEquals(0, server.getPostOffice().getBindingsForAddress(addressAB).getBindings().size());
+      Assert.assertEquals(0, server.getPostOffice().getBindingsForAddress(addressAC).getBindings().size());
+      Assert.assertEquals(0, server.getPostOffice().getBindingsForAddress(address).getBindings().size());
    }
 
    public void testBasicWildcardRoutingQueuesDontExist2() throws Exception
@@ -111,27 +113,27 @@ public class WildCardRoutingTest extends UnitTestCase
       producer.send(createTextMessage("m1", clientSession));
       producer2.send(createTextMessage("m2", clientSession));
       ClientMessage m = clientConsumer.receive(500);
-      assertNotNull(m);
-      assertEquals("m1", m.getBodyBuffer().readString());
+      Assert.assertNotNull(m);
+      Assert.assertEquals("m1", m.getBodyBuffer().readString());
       m.acknowledge();
       m = clientConsumer.receive(500);
-      assertNotNull(m);
-      assertEquals("m2", m.getBodyBuffer().readString());
+      Assert.assertNotNull(m);
+      Assert.assertEquals("m2", m.getBodyBuffer().readString());
       m.acknowledge();
       m = clientConsumer.receiveImmediate();
-      assertNull(m);
+      Assert.assertNull(m);
       clientConsumer.close();
       clientSession.deleteQueue(queueName);
 
-      assertEquals(1, server.getPostOffice().getBindingsForAddress(addressAB).getBindings().size());
-      assertEquals(1, server.getPostOffice().getBindingsForAddress(addressAC).getBindings().size());
-      assertEquals(1, server.getPostOffice().getBindingsForAddress(address).getBindings().size());
+      Assert.assertEquals(1, server.getPostOffice().getBindingsForAddress(addressAB).getBindings().size());
+      Assert.assertEquals(1, server.getPostOffice().getBindingsForAddress(addressAC).getBindings().size());
+      Assert.assertEquals(1, server.getPostOffice().getBindingsForAddress(address).getBindings().size());
 
       clientSession.deleteQueue(queueName2);
 
-      assertEquals(0, server.getPostOffice().getBindingsForAddress(addressAB).getBindings().size());
-      assertEquals(0, server.getPostOffice().getBindingsForAddress(addressAC).getBindings().size());
-      assertEquals(0, server.getPostOffice().getBindingsForAddress(address).getBindings().size());
+      Assert.assertEquals(0, server.getPostOffice().getBindingsForAddress(addressAB).getBindings().size());
+      Assert.assertEquals(0, server.getPostOffice().getBindingsForAddress(addressAC).getBindings().size());
+      Assert.assertEquals(0, server.getPostOffice().getBindingsForAddress(address).getBindings().size());
    }
 
    public void testBasicWildcardRoutingWithHash() throws Exception
@@ -152,15 +154,15 @@ public class WildCardRoutingTest extends UnitTestCase
       producer.send(createTextMessage("m1", clientSession));
       producer2.send(createTextMessage("m2", clientSession));
       ClientMessage m = clientConsumer.receive(500);
-      assertNotNull(m);
-      assertEquals("m1", m.getBodyBuffer().readString());
+      Assert.assertNotNull(m);
+      Assert.assertEquals("m1", m.getBodyBuffer().readString());
       m.acknowledge();
       m = clientConsumer.receive(500);
-      assertNotNull(m);
-      assertEquals("m2", m.getBodyBuffer().readString());
+      Assert.assertNotNull(m);
+      Assert.assertEquals("m2", m.getBodyBuffer().readString());
       m.acknowledge();
       m = clientConsumer.receiveImmediate();
-      assertNull(m);
+      Assert.assertNull(m);
    }
 
    public void testWildcardRoutingQueuesAddedAfter() throws Exception
@@ -181,15 +183,15 @@ public class WildCardRoutingTest extends UnitTestCase
       producer.send(createTextMessage("m1", clientSession));
       producer2.send(createTextMessage("m2", clientSession));
       ClientMessage m = clientConsumer.receive(500);
-      assertNotNull(m);
-      assertEquals("m1", m.getBodyBuffer().readString());
+      Assert.assertNotNull(m);
+      Assert.assertEquals("m1", m.getBodyBuffer().readString());
       m.acknowledge();
       m = clientConsumer.receive(500);
-      assertNotNull(m);
-      assertEquals("m2", m.getBodyBuffer().readString());
+      Assert.assertNotNull(m);
+      Assert.assertEquals("m2", m.getBodyBuffer().readString());
       m.acknowledge();
       m = clientConsumer.receiveImmediate();
-      assertNull(m);
+      Assert.assertNull(m);
    }
 
    public void testWildcardRoutingQueuesAddedThenDeleted() throws Exception
@@ -208,21 +210,21 @@ public class WildCardRoutingTest extends UnitTestCase
       ClientConsumer clientConsumer = clientSession.createConsumer(queueName);
       clientSession.start();
       clientSession.deleteQueue(queueName1);
-      //the wildcard binding should still exist
-      assertEquals(server.getPostOffice().getBindingsForAddress(addressAB).getBindings().size(), 1);
+      // the wildcard binding should still exist
+      Assert.assertEquals(server.getPostOffice().getBindingsForAddress(addressAB).getBindings().size(), 1);
       producer.send(createTextMessage("m1", clientSession));
       producer2.send(createTextMessage("m2", clientSession));
       ClientMessage m = clientConsumer.receive(500);
-      assertNotNull(m);
-      assertEquals("m1", m.getBodyBuffer().readString());
+      Assert.assertNotNull(m);
+      Assert.assertEquals("m1", m.getBodyBuffer().readString());
       m.acknowledge();
       m = clientConsumer.receive(500);
-      assertNotNull(m);
-      assertEquals("m2", m.getBodyBuffer().readString());
+      Assert.assertNotNull(m);
+      Assert.assertEquals("m2", m.getBodyBuffer().readString());
       m.acknowledge();
       clientConsumer.close();
       clientSession.deleteQueue(queueName);
-      assertEquals(server.getPostOffice().getBindingsForAddress(addressAB).getBindings().size(), 0);
+      Assert.assertEquals(server.getPostOffice().getBindingsForAddress(addressAB).getBindings().size(), 0);
    }
 
    public void testWildcardRoutingLotsOfQueuesAddedThenDeleted() throws Exception
@@ -271,44 +273,44 @@ public class WildCardRoutingTest extends UnitTestCase
       producer.send(addressAK, createTextMessage("m9", clientSession));
 
       ClientMessage m = clientConsumer.receive(500);
-      assertNotNull(m);
-      assertEquals("m1", m.getBodyBuffer().readString());
+      Assert.assertNotNull(m);
+      Assert.assertEquals("m1", m.getBodyBuffer().readString());
       m.acknowledge();
       m = clientConsumer.receive(500);
-      assertNotNull(m);
-      assertEquals("m2", m.getBodyBuffer().readString());
+      Assert.assertNotNull(m);
+      Assert.assertEquals("m2", m.getBodyBuffer().readString());
       m.acknowledge();
       m = clientConsumer.receive(500);
-      assertNotNull(m);
-      assertEquals("m3", m.getBodyBuffer().readString());
+      Assert.assertNotNull(m);
+      Assert.assertEquals("m3", m.getBodyBuffer().readString());
       m.acknowledge();
       m = clientConsumer.receive(500);
-      assertNotNull(m);
-      assertEquals("m4", m.getBodyBuffer().readString());
+      Assert.assertNotNull(m);
+      Assert.assertEquals("m4", m.getBodyBuffer().readString());
       m.acknowledge();
       m = clientConsumer.receive(500);
-      assertNotNull(m);
-      assertEquals("m5", m.getBodyBuffer().readString());
+      Assert.assertNotNull(m);
+      Assert.assertEquals("m5", m.getBodyBuffer().readString());
       m.acknowledge();
       m = clientConsumer.receive(500);
-      assertNotNull(m);
-      assertEquals("m6", m.getBodyBuffer().readString());
+      Assert.assertNotNull(m);
+      Assert.assertEquals("m6", m.getBodyBuffer().readString());
       m.acknowledge();
       m = clientConsumer.receive(500);
-      assertNotNull(m);
-      assertEquals("m7", m.getBodyBuffer().readString());
+      Assert.assertNotNull(m);
+      Assert.assertEquals("m7", m.getBodyBuffer().readString());
       m.acknowledge();
       m = clientConsumer.receive(500);
-      assertNotNull(m);
-      assertEquals("m8", m.getBodyBuffer().readString());
+      Assert.assertNotNull(m);
+      Assert.assertEquals("m8", m.getBodyBuffer().readString());
       m.acknowledge();
       m = clientConsumer.receive(500);
-      assertNotNull(m);
-      assertEquals("m9", m.getBodyBuffer().readString());
+      Assert.assertNotNull(m);
+      Assert.assertEquals("m9", m.getBodyBuffer().readString());
       m.acknowledge();
       m = clientConsumer.receiveImmediate();
-      assertNull(m);
-      //now remove all the queues
+      Assert.assertNull(m);
+      // now remove all the queues
       clientSession.deleteQueue(queueName1);
       clientSession.deleteQueue(queueName2);
       clientSession.deleteQueue(queueName3);
@@ -368,44 +370,44 @@ public class WildCardRoutingTest extends UnitTestCase
       producer.send(addressAK, createTextMessage("m9", clientSession));
 
       ClientMessage m = clientConsumer.receive(500);
-      assertNotNull(m);
-      assertEquals("m1", m.getBodyBuffer().readString());
+      Assert.assertNotNull(m);
+      Assert.assertEquals("m1", m.getBodyBuffer().readString());
       m.acknowledge();
       m = clientConsumer.receive(500);
-      assertNotNull(m);
-      assertEquals("m2", m.getBodyBuffer().readString());
+      Assert.assertNotNull(m);
+      Assert.assertEquals("m2", m.getBodyBuffer().readString());
       m.acknowledge();
       m = clientConsumer.receive(500);
-      assertNotNull(m);
-      assertEquals("m3", m.getBodyBuffer().readString());
+      Assert.assertNotNull(m);
+      Assert.assertEquals("m3", m.getBodyBuffer().readString());
       m.acknowledge();
       m = clientConsumer.receive(500);
-      assertNotNull(m);
-      assertEquals("m4", m.getBodyBuffer().readString());
+      Assert.assertNotNull(m);
+      Assert.assertEquals("m4", m.getBodyBuffer().readString());
       m.acknowledge();
       m = clientConsumer.receive(500);
-      assertNotNull(m);
-      assertEquals("m5", m.getBodyBuffer().readString());
+      Assert.assertNotNull(m);
+      Assert.assertEquals("m5", m.getBodyBuffer().readString());
       m.acknowledge();
       m = clientConsumer.receive(500);
-      assertNotNull(m);
-      assertEquals("m6", m.getBodyBuffer().readString());
+      Assert.assertNotNull(m);
+      Assert.assertEquals("m6", m.getBodyBuffer().readString());
       m.acknowledge();
       m = clientConsumer.receive(500);
-      assertNotNull(m);
-      assertEquals("m7", m.getBodyBuffer().readString());
+      Assert.assertNotNull(m);
+      Assert.assertEquals("m7", m.getBodyBuffer().readString());
       m.acknowledge();
       m = clientConsumer.receive(500);
-      assertNotNull(m);
-      assertEquals("m8", m.getBodyBuffer().readString());
+      Assert.assertNotNull(m);
+      Assert.assertEquals("m8", m.getBodyBuffer().readString());
       m.acknowledge();
       m = clientConsumer.receive(500);
-      assertNotNull(m);
-      assertEquals("m9", m.getBodyBuffer().readString());
+      Assert.assertNotNull(m);
+      Assert.assertEquals("m9", m.getBodyBuffer().readString());
       m.acknowledge();
       m = clientConsumer.receiveImmediate();
-      assertNull(m);
-      //now remove all the queues
+      Assert.assertNull(m);
+      // now remove all the queues
       clientSession.deleteQueue(queueName1);
       clientSession.deleteQueue(queueName2);
       clientSession.deleteQueue(queueName3);
@@ -418,7 +420,6 @@ public class WildCardRoutingTest extends UnitTestCase
       clientConsumer.close();
       clientSession.deleteQueue(queueName);
    }
-
 
    public void testWildcardRoutingWithSingleHash() throws Exception
    {
@@ -438,15 +439,15 @@ public class WildCardRoutingTest extends UnitTestCase
       producer.send(createTextMessage("m1", clientSession));
       producer2.send(createTextMessage("m2", clientSession));
       ClientMessage m = clientConsumer.receive(500);
-      assertNotNull(m);
-      assertEquals("m1", m.getBodyBuffer().readString());
+      Assert.assertNotNull(m);
+      Assert.assertEquals("m1", m.getBodyBuffer().readString());
       m.acknowledge();
       m = clientConsumer.receive(500);
-      assertNotNull(m);
-      assertEquals("m2", m.getBodyBuffer().readString());
+      Assert.assertNotNull(m);
+      Assert.assertEquals("m2", m.getBodyBuffer().readString());
       m.acknowledge();
       m = clientConsumer.receiveImmediate();
-      assertNull(m);
+      Assert.assertNull(m);
    }
 
    public void testWildcardRoutingWithHash() throws Exception
@@ -467,15 +468,15 @@ public class WildCardRoutingTest extends UnitTestCase
       producer.send(createTextMessage("m1", clientSession));
       producer2.send(createTextMessage("m2", clientSession));
       ClientMessage m = clientConsumer.receive(500);
-      assertNotNull(m);
-      assertEquals("m1", m.getBodyBuffer().readString());
+      Assert.assertNotNull(m);
+      Assert.assertEquals("m1", m.getBodyBuffer().readString());
       m.acknowledge();
       m = clientConsumer.receive(500);
-      assertNotNull(m);
-      assertEquals("m2", m.getBodyBuffer().readString());
+      Assert.assertNotNull(m);
+      Assert.assertEquals("m2", m.getBodyBuffer().readString());
       m.acknowledge();
       m = clientConsumer.receiveImmediate();
-      assertNull(m);
+      Assert.assertNull(m);
    }
 
    public void testWildcardRoutingWithHashMultiLengthAddresses() throws Exception
@@ -497,15 +498,15 @@ public class WildCardRoutingTest extends UnitTestCase
       producer.send(createTextMessage("m1", clientSession));
       producer2.send(createTextMessage("m2", clientSession));
       ClientMessage m = clientConsumer.receive(500);
-      assertNotNull(m);
-      assertEquals("m1", m.getBodyBuffer().readString());
+      Assert.assertNotNull(m);
+      Assert.assertEquals("m1", m.getBodyBuffer().readString());
       m.acknowledge();
       m = clientConsumer.receive(500);
-      assertNotNull(m);
-      assertEquals("m2", m.getBodyBuffer().readString());
+      Assert.assertNotNull(m);
+      Assert.assertEquals("m2", m.getBodyBuffer().readString());
       m.acknowledge();
       m = clientConsumer.receiveImmediate();
-      assertNull(m);
+      Assert.assertNull(m);
    }
 
    public void testWildcardRoutingWithDoubleStar() throws Exception
@@ -526,15 +527,15 @@ public class WildCardRoutingTest extends UnitTestCase
       producer.send(createTextMessage("m1", clientSession));
       producer2.send(createTextMessage("m2", clientSession));
       ClientMessage m = clientConsumer.receive(500);
-      assertNotNull(m);
-      assertEquals("m1", m.getBodyBuffer().readString());
+      Assert.assertNotNull(m);
+      Assert.assertEquals("m1", m.getBodyBuffer().readString());
       m.acknowledge();
       m = clientConsumer.receive(500);
-      assertNotNull(m);
-      assertEquals("m2", m.getBodyBuffer().readString());
+      Assert.assertNotNull(m);
+      Assert.assertEquals("m2", m.getBodyBuffer().readString());
       m.acknowledge();
       m = clientConsumer.receiveImmediate();
-      assertNull(m);
+      Assert.assertNull(m);
    }
 
    public void testWildcardRoutingPartialMatchStar() throws Exception
@@ -555,11 +556,11 @@ public class WildCardRoutingTest extends UnitTestCase
       producer.send(createTextMessage("m1", clientSession));
       producer2.send(createTextMessage("m2", clientSession));
       ClientMessage m = clientConsumer.receive(500);
-      assertNotNull(m);
-      assertEquals("m1", m.getBodyBuffer().readString());
+      Assert.assertNotNull(m);
+      Assert.assertEquals("m1", m.getBodyBuffer().readString());
       m.acknowledge();
       m = clientConsumer.receiveImmediate();
-      assertNull(m);
+      Assert.assertNull(m);
    }
 
    public void testWildcardRoutingVariableLengths() throws Exception
@@ -580,12 +581,12 @@ public class WildCardRoutingTest extends UnitTestCase
       producer.send(createTextMessage("m1", clientSession));
       producer2.send(createTextMessage("m2", clientSession));
       ClientMessage m = clientConsumer.receive(500);
-      assertNotNull(m);
-      assertEquals("m1", m.getBodyBuffer().readString());
+      Assert.assertNotNull(m);
+      Assert.assertEquals("m1", m.getBodyBuffer().readString());
       m.acknowledge();
       m = clientConsumer.receive(500);
-      assertNotNull(m);
-      assertEquals("m2", m.getBodyBuffer().readString());
+      Assert.assertNotNull(m);
+      Assert.assertEquals("m2", m.getBodyBuffer().readString());
       m.acknowledge();
    }
 
@@ -607,11 +608,11 @@ public class WildCardRoutingTest extends UnitTestCase
       producer.send(createTextMessage("m1", clientSession));
       producer2.send(createTextMessage("m2", clientSession));
       ClientMessage m = clientConsumer.receive(500);
-      assertNotNull(m);
-      assertEquals("m2", m.getBodyBuffer().readString());
+      Assert.assertNotNull(m);
+      Assert.assertEquals("m2", m.getBodyBuffer().readString());
       m.acknowledge();
       m = clientConsumer.receiveImmediate();
-      assertNull(m);
+      Assert.assertNull(m);
    }
 
    public void testWildcardRoutingMultipleStars() throws Exception
@@ -632,11 +633,11 @@ public class WildCardRoutingTest extends UnitTestCase
       producer.send(createTextMessage("m1", clientSession));
       producer2.send(createTextMessage("m2", clientSession));
       ClientMessage m = clientConsumer.receive(500);
-      assertNotNull(m);
-      assertEquals("m2", m.getBodyBuffer().readString());
+      Assert.assertNotNull(m);
+      Assert.assertEquals("m2", m.getBodyBuffer().readString());
       m.acknowledge();
       m = clientConsumer.receiveImmediate();
-      assertNull(m);
+      Assert.assertNull(m);
    }
 
    public void testWildcardRoutingStarInMiddle() throws Exception
@@ -657,11 +658,11 @@ public class WildCardRoutingTest extends UnitTestCase
       producer.send(createTextMessage("m1", clientSession));
       producer2.send(createTextMessage("m2", clientSession));
       ClientMessage m = clientConsumer.receive(500);
-      assertNotNull(m);
-      assertEquals("m1", m.getBodyBuffer().readString());
+      Assert.assertNotNull(m);
+      Assert.assertEquals("m1", m.getBodyBuffer().readString());
       m.acknowledge();
       m = clientConsumer.receiveImmediate();
-      assertNull(m);
+      Assert.assertNull(m);
    }
 
    public void testWildcardRoutingStarAndHash() throws Exception
@@ -682,11 +683,11 @@ public class WildCardRoutingTest extends UnitTestCase
       producer.send(createTextMessage("m1", clientSession));
       producer2.send(createTextMessage("m2", clientSession));
       ClientMessage m = clientConsumer.receive(500);
-      assertNotNull(m);
-      assertEquals("m1", m.getBodyBuffer().readString());
+      Assert.assertNotNull(m);
+      Assert.assertEquals("m1", m.getBodyBuffer().readString());
       m.acknowledge();
       m = clientConsumer.receiveImmediate();
-      assertNull(m);
+      Assert.assertNull(m);
    }
 
    public void testWildcardRoutingHashAndStar() throws Exception
@@ -707,11 +708,11 @@ public class WildCardRoutingTest extends UnitTestCase
       producer.send(createTextMessage("m1", clientSession));
       producer2.send(createTextMessage("m2", clientSession));
       ClientMessage m = clientConsumer.receive(500);
-      assertNotNull(m);
-      assertEquals("m1", m.getBodyBuffer().readString());
+      Assert.assertNotNull(m);
+      Assert.assertEquals("m1", m.getBodyBuffer().readString());
       m.acknowledge();
       m = clientConsumer.receiveImmediate();
-      assertNull(m);
+      Assert.assertNull(m);
    }
 
    public void testLargeWildcardRouting() throws Exception
@@ -725,9 +726,9 @@ public class WildCardRoutingTest extends UnitTestCase
       clientSession.createQueue(addressAB, queueName1, null, false);
       clientSession.createQueue(addressAC, queueName2, null, false);
       clientSession.createQueue(address, queueName, null, false);
-      assertEquals(2, server.getPostOffice().getBindingsForAddress(addressAB).getBindings().size());
-      assertEquals(2, server.getPostOffice().getBindingsForAddress(addressAC).getBindings().size());
-      assertEquals(1, server.getPostOffice().getBindingsForAddress(address).getBindings().size());
+      Assert.assertEquals(2, server.getPostOffice().getBindingsForAddress(addressAB).getBindings().size());
+      Assert.assertEquals(2, server.getPostOffice().getBindingsForAddress(addressAC).getBindings().size());
+      Assert.assertEquals(1, server.getPostOffice().getBindingsForAddress(address).getBindings().size());
       ClientProducer producer = clientSession.createProducer(addressAB);
       ClientProducer producer2 = clientSession.createProducer(addressAC);
       ClientConsumer clientConsumer = clientSession.createConsumer(queueName);
@@ -735,39 +736,39 @@ public class WildCardRoutingTest extends UnitTestCase
       producer.send(createTextMessage("m1", clientSession));
       producer2.send(createTextMessage("m2", clientSession));
       ClientMessage m = clientConsumer.receive(500);
-      assertNotNull(m);
-      assertEquals("m1", m.getBodyBuffer().readString());
+      Assert.assertNotNull(m);
+      Assert.assertEquals("m1", m.getBodyBuffer().readString());
       m.acknowledge();
       m = clientConsumer.receive(500);
-      assertNotNull(m);
-      assertEquals("m2", m.getBodyBuffer().readString());
+      Assert.assertNotNull(m);
+      Assert.assertEquals("m2", m.getBodyBuffer().readString());
       m.acknowledge();
       m = clientConsumer.receiveImmediate();
-      assertNull(m);
+      Assert.assertNull(m);
       clientConsumer.close();
       clientSession.deleteQueue(queueName);
-      assertEquals(1, server.getPostOffice().getBindingsForAddress(addressAB).getBindings().size());
-      assertEquals(1, server.getPostOffice().getBindingsForAddress(addressAC).getBindings().size());
-      assertEquals(0, server.getPostOffice().getBindingsForAddress(address).getBindings().size());
+      Assert.assertEquals(1, server.getPostOffice().getBindingsForAddress(addressAB).getBindings().size());
+      Assert.assertEquals(1, server.getPostOffice().getBindingsForAddress(addressAC).getBindings().size());
+      Assert.assertEquals(0, server.getPostOffice().getBindingsForAddress(address).getBindings().size());
    }
 
    @Override
    protected void setUp() throws Exception
    {
       super.setUp();
-      
+
       ConfigurationImpl configuration = new ConfigurationImpl();
       configuration.setWildcardRoutingEnabled(true);
       configuration.setSecurityEnabled(false);
       configuration.setTransactionTimeoutScanPeriod(500);
-      TransportConfiguration transportConfig = new TransportConfiguration(INVM_ACCEPTOR_FACTORY);
+      TransportConfiguration transportConfig = new TransportConfiguration(UnitTestCase.INVM_ACCEPTOR_FACTORY);
       configuration.getAcceptorConfigurations().add(transportConfig);
       server = HornetQ.newHornetQServer(configuration, false);
-      //start the server
+      // start the server
       server.start();
       server.getManagementService().enableNotifications(false);
-      //then we create a client as normal
-      ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(INVM_CONNECTOR_FACTORY));
+      // then we create a client as normal
+      ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
       clientSession = sessionFactory.createSession(false, true, true);
    }
 
@@ -798,7 +799,7 @@ public class WildCardRoutingTest extends UnitTestCase
       }
       server = null;
       clientSession = null;
-      
+
       super.tearDown();
    }
 }

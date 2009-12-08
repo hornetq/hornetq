@@ -34,42 +34,42 @@ public class VersionLoader
    private static final Logger log = Logger.getLogger(VersionLoader.class);
 
    public static final String PROP_FILE_NAME = "hornetq-version.properties";
-   
+
    private static Version version;
-   
+
    static
    {
       try
       {
-         version = load();
+         VersionLoader.version = VersionLoader.load();
       }
       catch (Throwable e)
       {
-         version = null;
-         log.error(e.getMessage(), e);
+         VersionLoader.version = null;
+         VersionLoader.log.error(e.getMessage(), e);
       }
-      
+
    }
 
    public static Version getVersion()
    {
-      if (version == null)
+      if (VersionLoader.version == null)
       {
-         throw new RuntimeException(PROP_FILE_NAME + " is not available");
+         throw new RuntimeException(VersionLoader.PROP_FILE_NAME + " is not available");
       }
-      
-      return version;
+
+      return VersionLoader.version;
    }
-   
+
    private static Version load()
    {
       Properties versionProps = new Properties();
-      InputStream in = VersionImpl.class.getClassLoader().getResourceAsStream(PROP_FILE_NAME);
+      InputStream in = VersionImpl.class.getClassLoader().getResourceAsStream(VersionLoader.PROP_FILE_NAME);
       try
       {
          if (in == null)
          {
-            throw new RuntimeException(PROP_FILE_NAME + " is not available");
+            throw new RuntimeException(VersionLoader.PROP_FILE_NAME + " is not available");
          }
          try
          {
@@ -80,7 +80,7 @@ public class VersionLoader
             int microVersion = Integer.valueOf(versionProps.getProperty("hornetq.version.microVersion"));
             int incrementingVersion = Integer.valueOf(versionProps.getProperty("hornetq.version.incrementingVersion"));
             String versionSuffix = versionProps.getProperty("hornetq.version.versionSuffix");
-            String nettyVersion=versionProps.getProperty("hornetq.netty.version");
+            String nettyVersion = versionProps.getProperty("hornetq.netty.version");
             return new VersionImpl(versionName,
                                    majorVersion,
                                    minorVersion,
@@ -91,8 +91,9 @@ public class VersionLoader
          }
          catch (IOException e)
          {
-            //if we get here then the messaging hasnt been built properly and the version.properties is skewed in some way
-            throw new RuntimeException("unable to load " + PROP_FILE_NAME, e);
+            // if we get here then the messaging hasnt been built properly and the version.properties is skewed in some
+            // way
+            throw new RuntimeException("unable to load " + VersionLoader.PROP_FILE_NAME, e);
          }
       }
       finally

@@ -13,15 +13,14 @@
 
 package org.hornetq.tests.integration.jms.server.management;
 
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE;
-import static org.hornetq.tests.util.RandomUtil.randomString;
-
 import java.util.Map;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.Queue;
 import javax.jms.Topic;
+
+import junit.framework.Assert;
 
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.config.Configuration;
@@ -41,6 +40,8 @@ import org.hornetq.jms.server.management.JMSServerControl;
 import org.hornetq.tests.integration.management.ManagementControlHelper;
 import org.hornetq.tests.integration.management.ManagementTestBase;
 import org.hornetq.tests.unit.util.InVMContext;
+import org.hornetq.tests.util.RandomUtil;
+import org.hornetq.tests.util.UnitTestCase;
 
 /**
  * A JMSServerControlTest
@@ -67,7 +68,7 @@ public class JMSServerControlTest extends ManagementTestBase
 
    // Static --------------------------------------------------------
 
-   private static String toCSV(Object[] objects)
+   private static String toCSV(final Object[] objects)
    {
       String str = "";
       for (int i = 0; i < objects.length; i++)
@@ -89,129 +90,131 @@ public class JMSServerControlTest extends ManagementTestBase
    {
       JMSServerControl control = createManagementControl();
       String version = control.getVersion();
-      assertEquals(serverManager.getVersion(), version);
+      Assert.assertEquals(serverManager.getVersion(), version);
    }
 
    public void testCreateQueue() throws Exception
    {
-      String queueJNDIBinding = randomString();
-      String queueName = randomString();
+      String queueJNDIBinding = RandomUtil.randomString();
+      String queueName = RandomUtil.randomString();
 
-      checkNoBinding(context, queueJNDIBinding);
+      UnitTestCase.checkNoBinding(context, queueJNDIBinding);
       checkNoResource(ObjectNameBuilder.DEFAULT.getJMSQueueObjectName(queueName));
 
       JMSServerControl control = createManagementControl();
       control.createQueue(queueName, queueJNDIBinding);
 
-      Object o = checkBinding(context, queueJNDIBinding);
-      assertTrue(o instanceof Queue);
+      Object o = UnitTestCase.checkBinding(context, queueJNDIBinding);
+      Assert.assertTrue(o instanceof Queue);
       Queue queue = (Queue)o;
-      assertEquals(queueName, queue.getQueueName());
+      Assert.assertEquals(queueName, queue.getQueueName());
       checkResource(ObjectNameBuilder.DEFAULT.getJMSQueueObjectName(queueName));
 
    }
 
    public void testDestroyQueue() throws Exception
    {
-      String queueJNDIBinding = randomString();
-      String queueName = randomString();
+      String queueJNDIBinding = RandomUtil.randomString();
+      String queueName = RandomUtil.randomString();
 
-      checkNoBinding(context, queueJNDIBinding);
+      UnitTestCase.checkNoBinding(context, queueJNDIBinding);
       checkNoResource(ObjectNameBuilder.DEFAULT.getJMSQueueObjectName(queueName));
 
       JMSServerControl control = createManagementControl();
       control.createQueue(queueName, queueJNDIBinding);
 
-      checkBinding(context, queueJNDIBinding);
+      UnitTestCase.checkBinding(context, queueJNDIBinding);
       checkResource(ObjectNameBuilder.DEFAULT.getJMSQueueObjectName(queueName));
 
       control.destroyQueue(queueName);
 
-      checkNoBinding(context, queueJNDIBinding);
+      UnitTestCase.checkNoBinding(context, queueJNDIBinding);
       checkNoResource(ObjectNameBuilder.DEFAULT.getJMSQueueObjectName(queueName));
    }
 
    public void testGetQueueNames() throws Exception
    {
-      String queueJNDIBinding = randomString();
-      String queueName = randomString();
+      String queueJNDIBinding = RandomUtil.randomString();
+      String queueName = RandomUtil.randomString();
 
       JMSServerControl control = createManagementControl();
-      assertEquals(0, control.getQueueNames().length);
+      Assert.assertEquals(0, control.getQueueNames().length);
 
       control.createQueue(queueName, queueJNDIBinding);
 
       String[] names = control.getQueueNames();
-      assertEquals(1, names.length);
-      assertEquals(queueName, names[0]);
+      Assert.assertEquals(1, names.length);
+      Assert.assertEquals(queueName, names[0]);
 
       control.destroyQueue(queueName);
 
-      assertEquals(0, control.getQueueNames().length);
+      Assert.assertEquals(0, control.getQueueNames().length);
    }
 
    public void testCreateTopic() throws Exception
    {
-      String topicJNDIBinding = randomString();
-      String topicName = randomString();
+      String topicJNDIBinding = RandomUtil.randomString();
+      String topicName = RandomUtil.randomString();
 
-      checkNoBinding(context, topicJNDIBinding);
+      UnitTestCase.checkNoBinding(context, topicJNDIBinding);
       checkNoResource(ObjectNameBuilder.DEFAULT.getJMSTopicObjectName(topicName));
 
       JMSServerControl control = createManagementControl();
       control.createTopic(topicName, topicJNDIBinding);
 
-      Object o = checkBinding(context, topicJNDIBinding);
-      assertTrue(o instanceof Topic);
+      Object o = UnitTestCase.checkBinding(context, topicJNDIBinding);
+      Assert.assertTrue(o instanceof Topic);
       Topic topic = (Topic)o;
-      assertEquals(topicName, topic.getTopicName());
+      Assert.assertEquals(topicName, topic.getTopicName());
       checkResource(ObjectNameBuilder.DEFAULT.getJMSTopicObjectName(topicName));
    }
 
    public void testDestroyTopic() throws Exception
    {
-      String topicJNDIBinding = randomString();
-      String topicName = randomString();
+      String topicJNDIBinding = RandomUtil.randomString();
+      String topicName = RandomUtil.randomString();
 
-      checkNoBinding(context, topicJNDIBinding);
+      UnitTestCase.checkNoBinding(context, topicJNDIBinding);
       checkNoResource(ObjectNameBuilder.DEFAULT.getJMSTopicObjectName(topicName));
 
       JMSServerControl control = createManagementControl();
       control.createTopic(topicName, topicJNDIBinding);
 
-      checkBinding(context, topicJNDIBinding);
+      UnitTestCase.checkBinding(context, topicJNDIBinding);
       checkResource(ObjectNameBuilder.DEFAULT.getJMSTopicObjectName(topicName));
 
       control.destroyTopic(topicName);
 
-      checkNoBinding(context, topicJNDIBinding);
+      UnitTestCase.checkNoBinding(context, topicJNDIBinding);
       checkNoResource(ObjectNameBuilder.DEFAULT.getJMSTopicObjectName(topicName));
    }
 
    public void testGetTopicNames() throws Exception
    {
-      String topicJNDIBinding = randomString();
-      String topicName = randomString();
+      String topicJNDIBinding = RandomUtil.randomString();
+      String topicName = RandomUtil.randomString();
 
       JMSServerControl control = createManagementControl();
-      assertEquals(0, control.getTopicNames().length);
+      Assert.assertEquals(0, control.getTopicNames().length);
 
       control.createTopic(topicName, topicJNDIBinding);
 
       String[] names = control.getTopicNames();
-      assertEquals(1, names.length);
-      assertEquals(topicName, names[0]);
+      Assert.assertEquals(1, names.length);
+      Assert.assertEquals(topicName, names[0]);
 
       control.destroyTopic(topicName);
 
-      assertEquals(0, control.getTopicNames().length);
+      Assert.assertEquals(0, control.getTopicNames().length);
    }
 
    public void testCreateConnectionFactory_1() throws Exception
    {
       doCreateConnectionFactory(new ConnectionFactoryCreator()
       {
-         public void createConnectionFactory(JMSServerControl control, String cfName, Object[] bindings) throws Exception
+         public void createConnectionFactory(final JMSServerControl control,
+                                             final String cfName,
+                                             final Object[] bindings) throws Exception
          {
             TransportConfiguration tcLive = new TransportConfiguration(InVMConnectorFactory.class.getName());
 
@@ -224,9 +227,11 @@ public class JMSServerControlTest extends ManagementTestBase
    {
       doCreateConnectionFactory(new ConnectionFactoryCreator()
       {
-         public void createConnectionFactory(JMSServerControl control, String cfName, Object[] bindings) throws Exception
+         public void createConnectionFactory(final JMSServerControl control,
+                                             final String cfName,
+                                             final Object[] bindings) throws Exception
          {
-            String jndiBindings = toCSV(bindings);
+            String jndiBindings = JMSServerControlTest.toCSV(bindings);
             String params = "\"" + TransportConstants.SERVER_ID_PROP_NAME + "\"=1";
 
             control.createConnectionFactory(cfName, InVMConnectorFactory.class.getName(), params, jndiBindings);
@@ -238,9 +243,11 @@ public class JMSServerControlTest extends ManagementTestBase
    {
       doCreateConnectionFactory(new ConnectionFactoryCreator()
       {
-         public void createConnectionFactory(JMSServerControl control, String cfName, Object[] bindings) throws Exception
+         public void createConnectionFactory(final JMSServerControl control,
+                                             final String cfName,
+                                             final Object[] bindings) throws Exception
          {
-            String clientID = randomString();
+            String clientID = RandomUtil.randomString();
             TransportConfiguration tcLive = new TransportConfiguration(InVMConnectorFactory.class.getName());
 
             control.createConnectionFactory(cfName,
@@ -256,10 +263,12 @@ public class JMSServerControlTest extends ManagementTestBase
    {
       doCreateConnectionFactory(new ConnectionFactoryCreator()
       {
-         public void createConnectionFactory(JMSServerControl control, String cfName, Object[] bindings) throws Exception
+         public void createConnectionFactory(final JMSServerControl control,
+                                             final String cfName,
+                                             final Object[] bindings) throws Exception
          {
-            String clientID = randomString();
-            String jndiBindings = toCSV(bindings);           
+            String clientID = RandomUtil.randomString();
+            String jndiBindings = JMSServerControlTest.toCSV(bindings);
             String params = "\"" + TransportConstants.SERVER_ID_PROP_NAME + "\"=1";
 
             control.createConnectionFactory(cfName,
@@ -275,7 +284,9 @@ public class JMSServerControlTest extends ManagementTestBase
    {
       doCreateConnectionFactory(new ConnectionFactoryCreator()
       {
-         public void createConnectionFactory(JMSServerControl control, String cfName, Object[] bindings) throws Exception
+         public void createConnectionFactory(final JMSServerControl control,
+                                             final String cfName,
+                                             final Object[] bindings) throws Exception
          {
             TransportConfiguration tcLive = new TransportConfiguration(InVMConnectorFactory.class.getName());
             TransportConfiguration tcBackup = new TransportConfiguration(InVMConnectorFactory.class.getName());
@@ -294,9 +305,11 @@ public class JMSServerControlTest extends ManagementTestBase
    {
       doCreateConnectionFactory(new ConnectionFactoryCreator()
       {
-         public void createConnectionFactory(JMSServerControl control, String cfName, Object[] bindings) throws Exception
+         public void createConnectionFactory(final JMSServerControl control,
+                                             final String cfName,
+                                             final Object[] bindings) throws Exception
          {
-            String jndiBindings = toCSV(bindings);           
+            String jndiBindings = JMSServerControlTest.toCSV(bindings);
             String params = "\"" + TransportConstants.SERVER_ID_PROP_NAME + "\"=1";
 
             control.createConnectionFactory(cfName,
@@ -314,9 +327,11 @@ public class JMSServerControlTest extends ManagementTestBase
    {
       doCreateConnectionFactory(new ConnectionFactoryCreator()
       {
-         public void createConnectionFactory(JMSServerControl control, String cfName, Object[] bindings) throws Exception
+         public void createConnectionFactory(final JMSServerControl control,
+                                             final String cfName,
+                                             final Object[] bindings) throws Exception
          {
-            String jndiBindings = toCSV(bindings);
+            String jndiBindings = JMSServerControlTest.toCSV(bindings);
             String params = String.format("{%s=%s}, {%s=%s}",
                                           TransportConstants.SERVER_ID_PROP_NAME,
                                           0,
@@ -333,9 +348,11 @@ public class JMSServerControlTest extends ManagementTestBase
    {
       doCreateConnectionFactory(new ConnectionFactoryCreator()
       {
-         public void createConnectionFactory(JMSServerControl control, String cfName, Object[] bindings) throws Exception
+         public void createConnectionFactory(final JMSServerControl control,
+                                             final String cfName,
+                                             final Object[] bindings) throws Exception
          {
-            String clientID = randomString();
+            String clientID = RandomUtil.randomString();
             TransportConfiguration tcLive = new TransportConfiguration(InVMConnectorFactory.class.getName());
             TransportConfiguration tcBackup = new TransportConfiguration(InVMConnectorFactory.class.getName());
 
@@ -355,10 +372,12 @@ public class JMSServerControlTest extends ManagementTestBase
    {
       doCreateConnectionFactory(new ConnectionFactoryCreator()
       {
-         public void createConnectionFactory(JMSServerControl control, String cfName, Object[] bindings) throws Exception
+         public void createConnectionFactory(final JMSServerControl control,
+                                             final String cfName,
+                                             final Object[] bindings) throws Exception
          {
-            String clientID = randomString();
-            String jndiBindings = toCSV(bindings);
+            String clientID = RandomUtil.randomString();
+            String jndiBindings = JMSServerControlTest.toCSV(bindings);
 
             control.createConnectionFactory(cfName,
                                             InVMConnectorFactory.class.getName(),
@@ -375,7 +394,9 @@ public class JMSServerControlTest extends ManagementTestBase
    {
       doCreateConnectionFactory(new ConnectionFactoryCreator()
       {
-         public void createConnectionFactory(JMSServerControl control, String cfName, Object[] bindings) throws Exception
+         public void createConnectionFactory(final JMSServerControl control,
+                                             final String cfName,
+                                             final Object[] bindings) throws Exception
          {
             TransportConfiguration tcLive = new TransportConfiguration(InVMConnectorFactory.class.getName());
             TransportConfiguration tcBackup = new TransportConfiguration(InVMConnectorFactory.class.getName());
@@ -394,9 +415,11 @@ public class JMSServerControlTest extends ManagementTestBase
    {
       doCreateConnectionFactory(new ConnectionFactoryCreator()
       {
-         public void createConnectionFactory(JMSServerControl control, String cfName, Object[] bindings) throws Exception
+         public void createConnectionFactory(final JMSServerControl control,
+                                             final String cfName,
+                                             final Object[] bindings) throws Exception
          {
-            String clientID = randomString();
+            String clientID = RandomUtil.randomString();
             TransportConfiguration tcLive = new TransportConfiguration(InVMConnectorFactory.class.getName());
             TransportConfiguration tcBackup = new TransportConfiguration(InVMConnectorFactory.class.getName());
 
@@ -415,9 +438,11 @@ public class JMSServerControlTest extends ManagementTestBase
    {
       doCreateConnectionFactory(new ConnectionFactoryCreator()
       {
-         public void createConnectionFactory(JMSServerControl control, String cfName, Object[] bindings) throws Exception
+         public void createConnectionFactory(final JMSServerControl control,
+                                             final String cfName,
+                                             final Object[] bindings) throws Exception
          {
-            String clientID = randomString();
+            String clientID = RandomUtil.randomString();
             TransportConfiguration tcLive = new TransportConfiguration(InVMConnectorFactory.class.getName());
             TransportConfiguration tcBackup = new TransportConfiguration(InVMConnectorFactory.class.getName());
 
@@ -453,7 +478,7 @@ public class JMSServerControlTest extends ManagementTestBase
                                             ClientSessionFactoryImpl.DEFAULT_MAX_RETRY_INTERVAL,
                                             ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS,
                                             ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN,
-                                             null,
+                                            null,
                                             bindings);
          }
       });
@@ -463,10 +488,12 @@ public class JMSServerControlTest extends ManagementTestBase
    {
       doCreateConnectionFactory(new ConnectionFactoryCreator()
       {
-         public void createConnectionFactory(JMSServerControl control, String cfName, Object[] bindings) throws Exception
+         public void createConnectionFactory(final JMSServerControl control,
+                                             final String cfName,
+                                             final Object[] bindings) throws Exception
          {
-            String clientID = randomString();
-            String jndiBindings = toCSV(bindings);
+            String clientID = RandomUtil.randomString();
+            String jndiBindings = JMSServerControlTest.toCSV(bindings);
 
             control.createConnectionFactory(cfName,
                                             InVMConnectorFactory.class.getName(),
@@ -508,9 +535,11 @@ public class JMSServerControlTest extends ManagementTestBase
 
    public void _testCreateConnectionFactoryWithDiscoveryGroup() throws Exception
    {
-      String[] cfJNDIBindings = new String[] { randomString(), randomString(), randomString() };
-      String cfName = randomString();
-      String clientID = randomString();
+      String[] cfJNDIBindings = new String[] { RandomUtil.randomString(),
+                                              RandomUtil.randomString(),
+                                              RandomUtil.randomString() };
+      String cfName = RandomUtil.randomString();
+      String clientID = RandomUtil.randomString();
 
       // restart the server with a discovery group configuration
       serverManager.stop();
@@ -518,7 +547,7 @@ public class JMSServerControlTest extends ManagementTestBase
 
       for (String cfJNDIBinding : cfJNDIBindings)
       {
-         checkNoBinding(context, cfJNDIBinding);
+         UnitTestCase.checkNoBinding(context, cfJNDIBinding);
       }
 
       JMSServerControl control = createManagementControl();
@@ -527,8 +556,8 @@ public class JMSServerControlTest extends ManagementTestBase
 
       for (String cfJNDIBinding : cfJNDIBindings)
       {
-         Object o = checkBinding(context, cfJNDIBinding);
-         assertTrue(o instanceof ConnectionFactory);
+         Object o = UnitTestCase.checkBinding(context, cfJNDIBinding);
+         Assert.assertTrue(o instanceof ConnectionFactory);
          ConnectionFactory cf = (ConnectionFactory)o;
          Connection connection = cf.createConnection();
          connection.close();
@@ -537,12 +566,14 @@ public class JMSServerControlTest extends ManagementTestBase
 
    public void testDestroyConnectionFactory() throws Exception
    {
-      String[] cfJNDIBindings = new String[] { randomString(), randomString(), randomString() };
-      String cfName = randomString();
+      String[] cfJNDIBindings = new String[] { RandomUtil.randomString(),
+                                              RandomUtil.randomString(),
+                                              RandomUtil.randomString() };
+      String cfName = RandomUtil.randomString();
 
       for (String cfJNDIBinding : cfJNDIBindings)
       {
-         checkNoBinding(context, cfJNDIBinding);
+         UnitTestCase.checkNoBinding(context, cfJNDIBinding);
       }
 
       JMSServerControl control = createManagementControl();
@@ -553,8 +584,8 @@ public class JMSServerControlTest extends ManagementTestBase
 
       for (String cfJNDIBinding : cfJNDIBindings)
       {
-         Object o = checkBinding(context, cfJNDIBinding);
-         assertTrue(o instanceof ConnectionFactory);
+         Object o = UnitTestCase.checkBinding(context, cfJNDIBinding);
+         Assert.assertTrue(o instanceof ConnectionFactory);
          ConnectionFactory cf = (ConnectionFactory)o;
          Connection connection = cf.createConnection();
          connection.close();
@@ -564,18 +595,18 @@ public class JMSServerControlTest extends ManagementTestBase
 
       for (String cfJNDIBinding : cfJNDIBindings)
       {
-         checkNoBinding(context, cfJNDIBinding);
+         UnitTestCase.checkNoBinding(context, cfJNDIBinding);
       }
 
    }
 
    public void testGetConnectionFactoryNames() throws Exception
    {
-      String cfBinding = randomString();
-      String cfName = randomString();
+      String cfBinding = RandomUtil.randomString();
+      String cfName = RandomUtil.randomString();
 
       JMSServerControl control = createManagementControl();
-      assertEquals(0, control.getConnectionFactoryNames().length);
+      Assert.assertEquals(0, control.getConnectionFactoryNames().length);
 
       TransportConfiguration tcLive = new TransportConfiguration(InVMConnectorFactory.class.getName());
       control.createConnectionFactory(cfName,
@@ -584,11 +615,11 @@ public class JMSServerControlTest extends ManagementTestBase
                                       new String[] { cfBinding });
 
       String[] cfNames = control.getConnectionFactoryNames();
-      assertEquals(1, cfNames.length);
-      assertEquals(cfName, cfNames[0]);
+      Assert.assertEquals(1, cfNames.length);
+      Assert.assertEquals(cfName, cfNames[0]);
 
       control.destroyConnectionFactory(cfName);
-      assertEquals(0, control.getConnectionFactoryNames().length);
+      Assert.assertEquals(0, control.getConnectionFactoryNames().length);
    }
 
    // Package protected ---------------------------------------------
@@ -634,15 +665,17 @@ public class JMSServerControlTest extends ManagementTestBase
 
    // Private -------------------------------------------------------
 
-   private void doCreateConnectionFactory(ConnectionFactoryCreator creator) throws Exception
+   private void doCreateConnectionFactory(final ConnectionFactoryCreator creator) throws Exception
    {
-      Object[] cfJNDIBindings = new Object[] { randomString(), randomString(), randomString() };
+      Object[] cfJNDIBindings = new Object[] { RandomUtil.randomString(),
+                                              RandomUtil.randomString(),
+                                              RandomUtil.randomString() };
 
-      String cfName = randomString();
+      String cfName = RandomUtil.randomString();
 
       for (Object cfJNDIBinding : cfJNDIBindings)
       {
-         checkNoBinding(context, cfJNDIBinding.toString());
+         UnitTestCase.checkNoBinding(context, cfJNDIBinding.toString());
       }
       checkNoResource(ObjectNameBuilder.DEFAULT.getConnectionFactoryObjectName(cfName));
 
@@ -651,8 +684,8 @@ public class JMSServerControlTest extends ManagementTestBase
 
       for (Object cfJNDIBinding : cfJNDIBindings)
       {
-         Object o = checkBinding(context, cfJNDIBinding.toString());
-         assertTrue(o instanceof ConnectionFactory);
+         Object o = UnitTestCase.checkBinding(context, cfJNDIBinding.toString());
+         Assert.assertTrue(o instanceof ConnectionFactory);
          ConnectionFactory cf = (ConnectionFactory)o;
          Connection connection = cf.createConnection();
          connection.close();
@@ -660,7 +693,7 @@ public class JMSServerControlTest extends ManagementTestBase
       checkResource(ObjectNameBuilder.DEFAULT.getConnectionFactoryObjectName(cfName));
    }
 
-   private JMSServerManager startHornetQServer(int discoveryPort) throws Exception
+   private JMSServerManager startHornetQServer(final int discoveryPort) throws Exception
    {
       Configuration conf = new ConfigurationImpl();
       conf.setSecurityEnabled(false);

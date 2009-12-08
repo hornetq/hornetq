@@ -49,7 +49,7 @@ public interface ReplicationManager extends HornetQComponent
    void appendPrepareRecord(byte journalID, long txID, EncodingSupport transactionData) throws Exception;
 
    void appendRollbackRecord(byte journalID, long txID) throws Exception;
-   
+
    /** A list of tokens that are still waiting for replications to be completed */
    Set<OperationContext> getActiveTokens();
 
@@ -65,17 +65,16 @@ public interface ReplicationManager extends HornetQComponent
     */
    void pageDeleted(SimpleString storeName, int pageNumber);
 
-
    /**
     * @param message
     * @param pageNumber
     */
    void pageWrite(PagedMessage message, int pageNumber);
-   
+
    void largeMessageBegin(long messageId);
-   
-   void largeMessageWrite(long messageId, byte [] body);
-   
+
+   void largeMessageWrite(long messageId, byte[] body);
+
    void largeMessageDelete(long messageId);
 
    /**
@@ -83,5 +82,5 @@ public interface ReplicationManager extends HornetQComponent
     * @throws HornetQException 
     */
    void compareJournals(JournalLoadInformation[] journalInfo) throws HornetQException;
-   
+
 }

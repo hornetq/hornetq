@@ -29,6 +29,7 @@ import com.arjuna.ats.arjuna.common.Uid;
 import com.arjuna.ats.jta.xa.XidImple;
 
 import org.hornetq.core.transaction.impl.XidImpl;
+import org.hornetq.jms.tests.util.ProxyAssertSupport;
 
 /**
  * 
@@ -46,7 +47,7 @@ public class XARecoveryTest extends JMSTestCase
    // Constants -----------------------------------------------------
 
    // Static --------------------------------------------------------
-   
+
    // Attributes ----------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -54,7 +55,7 @@ public class XARecoveryTest extends JMSTestCase
    // TestCase overrides -------------------------------------------
 
    // Public --------------------------------------------------------
-   
+
    /*
     * In this test, we have two queues, each with four messages already in them.
     * 
@@ -66,21 +67,21 @@ public class XARecoveryTest extends JMSTestCase
    public void testComplexTransactionalRecoveryWithoutRestart() throws Exception
    {
       Connection conn1 = null;
-      
+
       XAConnection conn2 = null;
-      
+
       XAConnection conn3 = null;
-      
+
       try
       {
-         conn1 = cf.createConnection();
-         
+         conn1 = JMSTestCase.cf.createConnection();
+
          Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
-         MessageProducer prod1 = sess1.createProducer(queue2);
-         
-         MessageProducer prod2 = sess1.createProducer(queue3);
-         
+
+         MessageProducer prod1 = sess1.createProducer(HornetQServerTestCase.queue2);
+
+         MessageProducer prod2 = sess1.createProducer(HornetQServerTestCase.queue3);
+
          TextMessage tm1 = sess1.createTextMessage("tm1");
          TextMessage tm2 = sess1.createTextMessage("tm2");
          TextMessage tm3 = sess1.createTextMessage("tm3");
@@ -89,186 +90,186 @@ public class XARecoveryTest extends JMSTestCase
          TextMessage tm6 = sess1.createTextMessage("tm6");
          TextMessage tm7 = sess1.createTextMessage("tm7");
          TextMessage tm8 = sess1.createTextMessage("tm8");
-         
+
          prod1.send(tm1);
          prod1.send(tm2);
-         prod1.send(tm3);         
+         prod1.send(tm3);
          prod1.send(tm4);
-         
+
          prod2.send(tm5);
          prod2.send(tm6);
          prod2.send(tm7);
          prod2.send(tm8);
-         
+
          conn1.close();
-         
-         conn2 = cf.createXAConnection();
-         
+
+         conn2 = JMSTestCase.cf.createXAConnection();
+
          conn2.start();
-         
+
          XASession sess2 = conn2.createXASession();
-         
+
          XAResource res = sess2.getXAResource();
-         
+
          Xid xid1 = new XidImpl("bq1".getBytes(), 42, "eemeli".getBytes());
-         
+
          res.start(xid1, XAResource.TMNOFLAGS);
-         
-         MessageProducer prod3 = sess2.createProducer(queue2);
-         
+
+         MessageProducer prod3 = sess2.createProducer(HornetQServerTestCase.queue2);
+
          TextMessage tm9 = sess2.createTextMessage("tm9");
          TextMessage tm10 = sess2.createTextMessage("tm10");
          TextMessage tm11 = sess2.createTextMessage("tm11");
          TextMessage tm12 = sess2.createTextMessage("tm12");
-         
+
          prod3.send(tm9);
          prod3.send(tm10);
          prod3.send(tm11);
          prod3.send(tm12);
-         
-         MessageProducer prod4 = sess2.createProducer(queue3);
-         
+
+         MessageProducer prod4 = sess2.createProducer(HornetQServerTestCase.queue3);
+
          TextMessage tm13 = sess2.createTextMessage("tm13");
          TextMessage tm14 = sess2.createTextMessage("tm14");
          TextMessage tm15 = sess2.createTextMessage("tm15");
          TextMessage tm16 = sess2.createTextMessage("tm16");
-         
+
          prod4.send(tm13);
          prod4.send(tm14);
          prod4.send(tm15);
          prod4.send(tm16);
-         
-         MessageConsumer cons1 = sess2.createConsumer(queue2);
-         
+
+         MessageConsumer cons1 = sess2.createConsumer(HornetQServerTestCase.queue2);
+
          TextMessage rm1 = (TextMessage)cons1.receive(1000);
-         assertNotNull(rm1);
-         assertEquals(tm1.getText(), rm1.getText());
-         
+         ProxyAssertSupport.assertNotNull(rm1);
+         ProxyAssertSupport.assertEquals(tm1.getText(), rm1.getText());
+
          TextMessage rm2 = (TextMessage)cons1.receive(1000);
-         assertNotNull(rm2);
-         assertEquals(tm2.getText(), rm2.getText());
-         
+         ProxyAssertSupport.assertNotNull(rm2);
+         ProxyAssertSupport.assertEquals(tm2.getText(), rm2.getText());
+
          TextMessage rm3 = (TextMessage)cons1.receive(1000);
-         assertNotNull(rm3);
-         assertEquals(tm3.getText(), rm3.getText());
-         
+         ProxyAssertSupport.assertNotNull(rm3);
+         ProxyAssertSupport.assertEquals(tm3.getText(), rm3.getText());
+
          TextMessage rm4 = (TextMessage)cons1.receive(1000);
-         assertNotNull(rm4);
-         assertEquals(tm4.getText(), rm4.getText());
-         
+         ProxyAssertSupport.assertNotNull(rm4);
+         ProxyAssertSupport.assertEquals(tm4.getText(), rm4.getText());
+
          Message m = cons1.receive(1000);
-         
-         assertNull(m);
-                  
-         MessageConsumer cons2 = sess2.createConsumer(queue3);
-         
+
+         ProxyAssertSupport.assertNull(m);
+
+         MessageConsumer cons2 = sess2.createConsumer(HornetQServerTestCase.queue3);
+
          TextMessage rm5 = (TextMessage)cons2.receive(1000);
-         assertNotNull(rm5);
-         assertEquals(tm5.getText(), rm5.getText());
-         
+         ProxyAssertSupport.assertNotNull(rm5);
+         ProxyAssertSupport.assertEquals(tm5.getText(), rm5.getText());
+
          TextMessage rm6 = (TextMessage)cons2.receive(1000);
-         assertNotNull(rm6);
-         assertEquals(tm6.getText(), rm6.getText());
-         
+         ProxyAssertSupport.assertNotNull(rm6);
+         ProxyAssertSupport.assertEquals(tm6.getText(), rm6.getText());
+
          TextMessage rm7 = (TextMessage)cons2.receive(1000);
-         assertNotNull(rm7);
-         assertEquals(tm7.getText(), rm7.getText());
-         
+         ProxyAssertSupport.assertNotNull(rm7);
+         ProxyAssertSupport.assertEquals(tm7.getText(), rm7.getText());
+
          TextMessage rm8 = (TextMessage)cons2.receive(1000);
-         assertNotNull(rm8);
-         assertEquals(tm8.getText(), rm8.getText());
-         
+         ProxyAssertSupport.assertNotNull(rm8);
+         ProxyAssertSupport.assertEquals(tm8.getText(), rm8.getText());
+
          m = cons2.receive(1000);
-         
-         assertNull(m);
-         
+
+         ProxyAssertSupport.assertNull(m);
+
          res.end(xid1, XAResource.TMSUCCESS);
-         
-         //prepare it
-         
+
+         // prepare it
+
          log.trace("Preparing xid " + xid1);
          res.prepare(xid1);
          log.trace("Prepared xid " + xid1);
-            
-         conn3 = cf.createXAConnection();
-         
-         XASession sess3 = conn3.createXASession();
-         
-         XAResource res3 = sess3.getXAResource();
-         
-         Xid[] xids = res3.recover(XAResource.TMSTARTRSCAN);
-         assertEquals(1, xids.length);
-         
-         Xid[] xids2 = res3.recover(XAResource.TMENDRSCAN);
-         assertEquals(0, xids2.length);
 
-         assertEquals(xid1, xids[0]);
-         
+         conn3 = JMSTestCase.cf.createXAConnection();
+
+         XASession sess3 = conn3.createXASession();
+
+         XAResource res3 = sess3.getXAResource();
+
+         Xid[] xids = res3.recover(XAResource.TMSTARTRSCAN);
+         ProxyAssertSupport.assertEquals(1, xids.length);
+
+         Xid[] xids2 = res3.recover(XAResource.TMENDRSCAN);
+         ProxyAssertSupport.assertEquals(0, xids2.length);
+
+         ProxyAssertSupport.assertEquals(xid1, xids[0]);
+
          log.trace("Committing the tx");
-         
-         //Commit
+
+         // Commit
          res3.commit(xids[0], false);
-         
+
          log.trace("committed the tx");
-         
+
          conn1.close();
-         
+
          conn2.close();
-         
-         conn1 = cf.createConnection();
-         
+
+         conn1 = JMSTestCase.cf.createConnection();
+
          conn1.start();
-         
+
          sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
+
          log.trace("creating a consumer");
-         
-         cons1 = sess1.createConsumer(queue2);
-         
+
+         cons1 = sess1.createConsumer(HornetQServerTestCase.queue2);
+
          log.trace("created a consumer");
-         
+
          TextMessage rm9 = (TextMessage)cons1.receive(1000);
-         assertNotNull(rm9);
-         assertEquals(tm9.getText(), rm9.getText());
-         
+         ProxyAssertSupport.assertNotNull(rm9);
+         ProxyAssertSupport.assertEquals(tm9.getText(), rm9.getText());
+
          TextMessage rm10 = (TextMessage)cons1.receive(1000);
-         assertNotNull(rm10);
-         assertEquals(tm10.getText(), rm10.getText());
-         
+         ProxyAssertSupport.assertNotNull(rm10);
+         ProxyAssertSupport.assertEquals(tm10.getText(), rm10.getText());
+
          TextMessage rm11 = (TextMessage)cons1.receive(1000);
-         assertNotNull(rm11);
-         assertEquals(tm11.getText(), rm11.getText());
-         
+         ProxyAssertSupport.assertNotNull(rm11);
+         ProxyAssertSupport.assertEquals(tm11.getText(), rm11.getText());
+
          TextMessage rm12 = (TextMessage)cons1.receive(1000);
-         assertNotNull(rm12);
-         assertEquals(tm12.getText(), rm12.getText());
-         
+         ProxyAssertSupport.assertNotNull(rm12);
+         ProxyAssertSupport.assertEquals(tm12.getText(), rm12.getText());
+
          m = cons1.receive(1000);
-         
-         assertNull(m);
-                  
-         cons2 = sess1.createConsumer(queue3);
-         
+
+         ProxyAssertSupport.assertNull(m);
+
+         cons2 = sess1.createConsumer(HornetQServerTestCase.queue3);
+
          TextMessage rm13 = (TextMessage)cons2.receive(1000);
-         assertNotNull(rm13);
-         assertEquals(tm13.getText(), rm13.getText());
-         
+         ProxyAssertSupport.assertNotNull(rm13);
+         ProxyAssertSupport.assertEquals(tm13.getText(), rm13.getText());
+
          TextMessage rm14 = (TextMessage)cons2.receive(1000);
-         assertNotNull(rm14);
-         assertEquals(tm14.getText(), rm14.getText());
-         
+         ProxyAssertSupport.assertNotNull(rm14);
+         ProxyAssertSupport.assertEquals(tm14.getText(), rm14.getText());
+
          TextMessage rm15 = (TextMessage)cons2.receive(1000);
-         assertNotNull(rm15);
-         assertEquals(tm15.getText(), rm15.getText());
-         
+         ProxyAssertSupport.assertNotNull(rm15);
+         ProxyAssertSupport.assertEquals(tm15.getText(), rm15.getText());
+
          TextMessage rm16 = (TextMessage)cons2.receive(1000);
-         assertNotNull(rm16);
-         assertEquals(tm16.getText(), rm16.getText());
-         
+         ProxyAssertSupport.assertNotNull(rm16);
+         ProxyAssertSupport.assertEquals(tm16.getText(), rm16.getText());
+
          m = cons2.receive(1000);
-         
-         assertNull(m);
-           
+
+         ProxyAssertSupport.assertNull(m);
+
       }
       finally
       {
@@ -276,19 +277,19 @@ public class XARecoveryTest extends JMSTestCase
          {
             conn1.close();
          }
-         
+
          if (conn2 != null)
          {
             conn2.close();
          }
-         
+
          if (conn3 != null)
          {
             conn3.close();
-         }               
+         }
       }
    }
-   
+
    /*
     * In this test, we have two queues, each with four messages already in them.
     * 
@@ -300,21 +301,21 @@ public class XARecoveryTest extends JMSTestCase
    public void testComplexTransactionalRecoveryWithoutRestartRollback() throws Exception
    {
       Connection conn1 = null;
-      
+
       XAConnection conn2 = null;
-      
+
       XAConnection conn3 = null;
-      
+
       try
       {
-         conn1 = cf.createConnection();
-         
+         conn1 = JMSTestCase.cf.createConnection();
+
          Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
-         MessageProducer prod1 = sess1.createProducer(queue2);
-         
-         MessageProducer prod2 = sess1.createProducer(queue3);
-         
+
+         MessageProducer prod1 = sess1.createProducer(HornetQServerTestCase.queue2);
+
+         MessageProducer prod2 = sess1.createProducer(HornetQServerTestCase.queue3);
+
          TextMessage tm1 = sess1.createTextMessage("tm1");
          TextMessage tm2 = sess1.createTextMessage("tm2");
          TextMessage tm3 = sess1.createTextMessage("tm3");
@@ -323,182 +324,181 @@ public class XARecoveryTest extends JMSTestCase
          TextMessage tm6 = sess1.createTextMessage("tm6");
          TextMessage tm7 = sess1.createTextMessage("tm7");
          TextMessage tm8 = sess1.createTextMessage("tm8");
-         
+
          prod1.send(tm1);
          prod1.send(tm2);
-         prod1.send(tm3);         
+         prod1.send(tm3);
          prod1.send(tm4);
-         
+
          prod2.send(tm5);
          prod2.send(tm6);
          prod2.send(tm7);
          prod2.send(tm8);
-         
-         conn2 = cf.createXAConnection();
-         
+
+         conn2 = JMSTestCase.cf.createXAConnection();
+
          conn2.start();
-         
+
          XASession sess2 = conn2.createXASession();
-         
+
          XAResource res = sess2.getXAResource();
-         
+
          Xid xid1 = new XidImpl("bq1".getBytes(), 42, "eemeli".getBytes());
-         
+
          res.start(xid1, XAResource.TMNOFLAGS);
-         
-         MessageProducer prod3 = sess2.createProducer(queue2);
-         
+
+         MessageProducer prod3 = sess2.createProducer(HornetQServerTestCase.queue2);
+
          TextMessage tm9 = sess2.createTextMessage("tm9");
          TextMessage tm10 = sess2.createTextMessage("tm10");
          TextMessage tm11 = sess2.createTextMessage("tm11");
          TextMessage tm12 = sess2.createTextMessage("tm12");
-         
+
          prod3.send(tm9);
          prod3.send(tm10);
          prod3.send(tm11);
          prod3.send(tm12);
-         
-         MessageProducer prod4 = sess2.createProducer(queue3);
-         
+
+         MessageProducer prod4 = sess2.createProducer(HornetQServerTestCase.queue3);
+
          TextMessage tm13 = sess2.createTextMessage("tm13");
          TextMessage tm14 = sess2.createTextMessage("tm14");
          TextMessage tm15 = sess2.createTextMessage("tm15");
          TextMessage tm16 = sess2.createTextMessage("tm16");
-         
+
          prod4.send(tm13);
          prod4.send(tm14);
          prod4.send(tm15);
          prod4.send(tm16);
-         
-         MessageConsumer cons1 = sess2.createConsumer(queue2);
-         
-         TextMessage rm1 = (TextMessage)cons1.receive(1000);
-         assertNotNull(rm1);
-         assertEquals(tm1.getText(), rm1.getText());
-         
-         TextMessage rm2 = (TextMessage)cons1.receive(1000);
-         assertNotNull(rm2);
-         assertEquals(tm2.getText(), rm2.getText());
-         
-         TextMessage rm3 = (TextMessage)cons1.receive(1000);
-         assertNotNull(rm3);
-         assertEquals(tm3.getText(), rm3.getText());
-         
-         TextMessage rm4 = (TextMessage)cons1.receive(1000);
-         assertNotNull(rm4);
-         assertEquals(tm4.getText(), rm4.getText());
-         
-         Message m = cons1.receive(1000);
-         
-         assertNull(m);
-                  
-         MessageConsumer cons2 = sess2.createConsumer(queue3);
-         
-         TextMessage rm5 = (TextMessage)cons2.receive(1000);
-         assertNotNull(rm5);
-         assertEquals(tm5.getText(), rm5.getText());
-         
-         TextMessage rm6 = (TextMessage)cons2.receive(1000);
-         assertNotNull(rm6);
-         assertEquals(tm6.getText(), rm6.getText());
-         
-         TextMessage rm7 = (TextMessage)cons2.receive(1000);
-         assertNotNull(rm7);
-         assertEquals(tm7.getText(), rm7.getText());
-         
-         TextMessage rm8 = (TextMessage)cons2.receive(1000);
-         assertNotNull(rm8);
-         assertEquals(tm8.getText(), rm8.getText());
-         
-         m = cons2.receive(1000);
-         
-         assertNull(m);
-         
-         res.end(xid1, XAResource.TMSUCCESS);
-         
-         //prepare it
-         
-         res.prepare(xid1);
-                  
-         conn3 = cf.createXAConnection();
-         
-         XASession sess3 = conn3.createXASession();
-         
-         XAResource res3 = sess3.getXAResource();
-         
-         Xid[] xids = res3.recover(XAResource.TMSTARTRSCAN);
-         assertEquals(1, xids.length);
-         
-         Xid[] xids2 = res3.recover(XAResource.TMENDRSCAN);
-         assertEquals(0, xids2.length);
 
-         assertEquals(xid1, xids[0]);
-         
-         log.trace("rolling back the tx");
-         
-         //rollback
-         res3.rollback(xids[0]);
-         
-         log.trace("rolledb back the tx");
-         
-         conn1.close();
-         
-         conn2.close();
-         
-         
-         conn1 = cf.createConnection();
-         
-         conn1.start();
-         
-         sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
-         log.trace("creating a consumer");
-         
-         cons1 = sess1.createConsumer(queue2);
-         
-         log.trace("created a consumer");
-         
-         TextMessage rm9 = (TextMessage)cons1.receive(1000);
-         assertNotNull(rm9);
-         assertEquals(tm1.getText(), rm9.getText());
-         
-         TextMessage rm10 = (TextMessage)cons1.receive(1000);
-         assertNotNull(rm10);
-         assertEquals(tm2.getText(), rm10.getText());
-         
-         TextMessage rm11 = (TextMessage)cons1.receive(1000);
-         assertNotNull(rm11);
-         assertEquals(tm3.getText(), rm11.getText());
-         
-         TextMessage rm12 = (TextMessage)cons1.receive(1000);
-         assertNotNull(rm12);
-         assertEquals(tm4.getText(), rm12.getText());
-         
-         m = cons1.receive(1000);
-         
-         assertNull(m);
-                  
-         cons2 = sess1.createConsumer(queue3);
-         
-         TextMessage rm13 = (TextMessage)cons2.receive(1000);
-         assertNotNull(rm13);
-         assertEquals(tm5.getText(), rm13.getText());
-         
-         TextMessage rm14 = (TextMessage)cons2.receive(1000);
-         assertNotNull(rm14);
-         assertEquals(tm6.getText(), rm14.getText());
-         
-         TextMessage rm15 = (TextMessage)cons2.receive(1000);
-         assertNotNull(rm15);
-         assertEquals(tm7.getText(), rm15.getText());
-         
-         TextMessage rm16 = (TextMessage)cons2.receive(1000);
-         assertNotNull(rm16);
-         assertEquals(tm8.getText(), rm16.getText());
-         
+         MessageConsumer cons1 = sess2.createConsumer(HornetQServerTestCase.queue2);
+
+         TextMessage rm1 = (TextMessage)cons1.receive(1000);
+         ProxyAssertSupport.assertNotNull(rm1);
+         ProxyAssertSupport.assertEquals(tm1.getText(), rm1.getText());
+
+         TextMessage rm2 = (TextMessage)cons1.receive(1000);
+         ProxyAssertSupport.assertNotNull(rm2);
+         ProxyAssertSupport.assertEquals(tm2.getText(), rm2.getText());
+
+         TextMessage rm3 = (TextMessage)cons1.receive(1000);
+         ProxyAssertSupport.assertNotNull(rm3);
+         ProxyAssertSupport.assertEquals(tm3.getText(), rm3.getText());
+
+         TextMessage rm4 = (TextMessage)cons1.receive(1000);
+         ProxyAssertSupport.assertNotNull(rm4);
+         ProxyAssertSupport.assertEquals(tm4.getText(), rm4.getText());
+
+         Message m = cons1.receive(1000);
+
+         ProxyAssertSupport.assertNull(m);
+
+         MessageConsumer cons2 = sess2.createConsumer(HornetQServerTestCase.queue3);
+
+         TextMessage rm5 = (TextMessage)cons2.receive(1000);
+         ProxyAssertSupport.assertNotNull(rm5);
+         ProxyAssertSupport.assertEquals(tm5.getText(), rm5.getText());
+
+         TextMessage rm6 = (TextMessage)cons2.receive(1000);
+         ProxyAssertSupport.assertNotNull(rm6);
+         ProxyAssertSupport.assertEquals(tm6.getText(), rm6.getText());
+
+         TextMessage rm7 = (TextMessage)cons2.receive(1000);
+         ProxyAssertSupport.assertNotNull(rm7);
+         ProxyAssertSupport.assertEquals(tm7.getText(), rm7.getText());
+
+         TextMessage rm8 = (TextMessage)cons2.receive(1000);
+         ProxyAssertSupport.assertNotNull(rm8);
+         ProxyAssertSupport.assertEquals(tm8.getText(), rm8.getText());
+
          m = cons2.receive(1000);
-         
-         assertNull(m);         
+
+         ProxyAssertSupport.assertNull(m);
+
+         res.end(xid1, XAResource.TMSUCCESS);
+
+         // prepare it
+
+         res.prepare(xid1);
+
+         conn3 = JMSTestCase.cf.createXAConnection();
+
+         XASession sess3 = conn3.createXASession();
+
+         XAResource res3 = sess3.getXAResource();
+
+         Xid[] xids = res3.recover(XAResource.TMSTARTRSCAN);
+         ProxyAssertSupport.assertEquals(1, xids.length);
+
+         Xid[] xids2 = res3.recover(XAResource.TMENDRSCAN);
+         ProxyAssertSupport.assertEquals(0, xids2.length);
+
+         ProxyAssertSupport.assertEquals(xid1, xids[0]);
+
+         log.trace("rolling back the tx");
+
+         // rollback
+         res3.rollback(xids[0]);
+
+         log.trace("rolledb back the tx");
+
+         conn1.close();
+
+         conn2.close();
+
+         conn1 = JMSTestCase.cf.createConnection();
+
+         conn1.start();
+
+         sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+         log.trace("creating a consumer");
+
+         cons1 = sess1.createConsumer(HornetQServerTestCase.queue2);
+
+         log.trace("created a consumer");
+
+         TextMessage rm9 = (TextMessage)cons1.receive(1000);
+         ProxyAssertSupport.assertNotNull(rm9);
+         ProxyAssertSupport.assertEquals(tm1.getText(), rm9.getText());
+
+         TextMessage rm10 = (TextMessage)cons1.receive(1000);
+         ProxyAssertSupport.assertNotNull(rm10);
+         ProxyAssertSupport.assertEquals(tm2.getText(), rm10.getText());
+
+         TextMessage rm11 = (TextMessage)cons1.receive(1000);
+         ProxyAssertSupport.assertNotNull(rm11);
+         ProxyAssertSupport.assertEquals(tm3.getText(), rm11.getText());
+
+         TextMessage rm12 = (TextMessage)cons1.receive(1000);
+         ProxyAssertSupport.assertNotNull(rm12);
+         ProxyAssertSupport.assertEquals(tm4.getText(), rm12.getText());
+
+         m = cons1.receive(1000);
+
+         ProxyAssertSupport.assertNull(m);
+
+         cons2 = sess1.createConsumer(HornetQServerTestCase.queue3);
+
+         TextMessage rm13 = (TextMessage)cons2.receive(1000);
+         ProxyAssertSupport.assertNotNull(rm13);
+         ProxyAssertSupport.assertEquals(tm5.getText(), rm13.getText());
+
+         TextMessage rm14 = (TextMessage)cons2.receive(1000);
+         ProxyAssertSupport.assertNotNull(rm14);
+         ProxyAssertSupport.assertEquals(tm6.getText(), rm14.getText());
+
+         TextMessage rm15 = (TextMessage)cons2.receive(1000);
+         ProxyAssertSupport.assertNotNull(rm15);
+         ProxyAssertSupport.assertEquals(tm7.getText(), rm15.getText());
+
+         TextMessage rm16 = (TextMessage)cons2.receive(1000);
+         ProxyAssertSupport.assertNotNull(rm16);
+         ProxyAssertSupport.assertEquals(tm8.getText(), rm16.getText());
+
+         m = cons2.receive(1000);
+
+         ProxyAssertSupport.assertNull(m);
       }
       finally
       {
@@ -510,10 +510,10 @@ public class XARecoveryTest extends JMSTestCase
             }
             catch (Exception e)
             {
-               //Ignore
+               // Ignore
             }
          }
-         
+
          if (conn2 != null)
          {
             try
@@ -522,10 +522,10 @@ public class XARecoveryTest extends JMSTestCase
             }
             catch (Exception e)
             {
-               //Ignore
+               // Ignore
             }
          }
-         
+
          if (conn3 != null)
          {
             try
@@ -534,12 +534,12 @@ public class XARecoveryTest extends JMSTestCase
             }
             catch (Exception e)
             {
-               //Ignore
+               // Ignore
             }
-         }               
+         }
       }
    }
-   
+
    /*
     * In this test, we have two queues, each with four messages already in them.
     * 
@@ -551,21 +551,21 @@ public class XARecoveryTest extends JMSTestCase
    public void testComplexTransactionalRecoveryWithRestart() throws Exception
    {
       Connection conn1 = null;
-      
+
       XAConnection conn2 = null;
-      
+
       XAConnection conn3 = null;
-      
+
       try
       {
-         conn1 = cf.createConnection();
-         
+         conn1 = JMSTestCase.cf.createConnection();
+
          Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
-         MessageProducer prod1 = sess1.createProducer(queue2);
-         
-         MessageProducer prod2 = sess1.createProducer(queue3);
-         
+
+         MessageProducer prod1 = sess1.createProducer(HornetQServerTestCase.queue2);
+
+         MessageProducer prod2 = sess1.createProducer(HornetQServerTestCase.queue3);
+
          TextMessage tm1 = sess1.createTextMessage("tm1");
          TextMessage tm2 = sess1.createTextMessage("tm2");
          TextMessage tm3 = sess1.createTextMessage("tm3");
@@ -574,192 +574,192 @@ public class XARecoveryTest extends JMSTestCase
          TextMessage tm6 = sess1.createTextMessage("tm6");
          TextMessage tm7 = sess1.createTextMessage("tm7");
          TextMessage tm8 = sess1.createTextMessage("tm8");
-         
+
          prod1.send(tm1);
          prod1.send(tm2);
-         prod1.send(tm3);         
+         prod1.send(tm3);
          prod1.send(tm4);
-         
+
          prod2.send(tm5);
          prod2.send(tm6);
          prod2.send(tm7);
          prod2.send(tm8);
-         
-         conn2 = cf.createXAConnection();
-         
+
+         conn2 = JMSTestCase.cf.createXAConnection();
+
          conn2.start();
-         
+
          XASession sess2 = conn2.createXASession();
-         
+
          XAResource res = sess2.getXAResource();
-         
+
          Xid xid1 = new XidImpl("bq1".getBytes(), 42, "eemeli".getBytes());
-         
+
          res.start(xid1, XAResource.TMNOFLAGS);
-         
-         MessageProducer prod3 = sess2.createProducer(queue2);
-         
+
+         MessageProducer prod3 = sess2.createProducer(HornetQServerTestCase.queue2);
+
          TextMessage tm9 = sess2.createTextMessage("tm9");
          TextMessage tm10 = sess2.createTextMessage("tm10");
          TextMessage tm11 = sess2.createTextMessage("tm11");
          TextMessage tm12 = sess2.createTextMessage("tm12");
-         
+
          prod3.send(tm9);
          prod3.send(tm10);
          prod3.send(tm11);
          prod3.send(tm12);
-         
-         MessageProducer prod4 = sess2.createProducer(queue3);
-         
+
+         MessageProducer prod4 = sess2.createProducer(HornetQServerTestCase.queue3);
+
          TextMessage tm13 = sess2.createTextMessage("tm13");
          TextMessage tm14 = sess2.createTextMessage("tm14");
          TextMessage tm15 = sess2.createTextMessage("tm15");
          TextMessage tm16 = sess2.createTextMessage("tm16");
-         
+
          prod4.send(tm13);
          prod4.send(tm14);
          prod4.send(tm15);
          prod4.send(tm16);
-         
-         MessageConsumer cons1 = sess2.createConsumer(queue2);
-         
+
+         MessageConsumer cons1 = sess2.createConsumer(HornetQServerTestCase.queue2);
+
          TextMessage rm1 = (TextMessage)cons1.receive(1000);
-         assertNotNull(rm1);
-         assertEquals(tm1.getText(), rm1.getText());
-         
+         ProxyAssertSupport.assertNotNull(rm1);
+         ProxyAssertSupport.assertEquals(tm1.getText(), rm1.getText());
+
          TextMessage rm2 = (TextMessage)cons1.receive(1000);
-         assertNotNull(rm2);
-         assertEquals(tm2.getText(), rm2.getText());
-         
+         ProxyAssertSupport.assertNotNull(rm2);
+         ProxyAssertSupport.assertEquals(tm2.getText(), rm2.getText());
+
          TextMessage rm3 = (TextMessage)cons1.receive(1000);
-         assertNotNull(rm3);
-         assertEquals(tm3.getText(), rm3.getText());
-         
+         ProxyAssertSupport.assertNotNull(rm3);
+         ProxyAssertSupport.assertEquals(tm3.getText(), rm3.getText());
+
          TextMessage rm4 = (TextMessage)cons1.receive(1000);
-         assertNotNull(rm4);
-         assertEquals(tm4.getText(), rm4.getText());
-         
+         ProxyAssertSupport.assertNotNull(rm4);
+         ProxyAssertSupport.assertEquals(tm4.getText(), rm4.getText());
+
          Message m = cons1.receive(1000);
-         
-         assertNull(m);
-                  
-         MessageConsumer cons2 = sess2.createConsumer(queue3);
-         
+
+         ProxyAssertSupport.assertNull(m);
+
+         MessageConsumer cons2 = sess2.createConsumer(HornetQServerTestCase.queue3);
+
          TextMessage rm5 = (TextMessage)cons2.receive(1000);
-         assertNotNull(rm5);
-         assertEquals(tm5.getText(), rm5.getText());
-         
+         ProxyAssertSupport.assertNotNull(rm5);
+         ProxyAssertSupport.assertEquals(tm5.getText(), rm5.getText());
+
          TextMessage rm6 = (TextMessage)cons2.receive(1000);
-         assertNotNull(rm6);
-         assertEquals(tm6.getText(), rm6.getText());
-         
+         ProxyAssertSupport.assertNotNull(rm6);
+         ProxyAssertSupport.assertEquals(tm6.getText(), rm6.getText());
+
          TextMessage rm7 = (TextMessage)cons2.receive(1000);
-         assertNotNull(rm7);
-         assertEquals(tm7.getText(), rm7.getText());
-         
+         ProxyAssertSupport.assertNotNull(rm7);
+         ProxyAssertSupport.assertEquals(tm7.getText(), rm7.getText());
+
          TextMessage rm8 = (TextMessage)cons2.receive(1000);
-         assertNotNull(rm8);
-         assertEquals(tm8.getText(), rm8.getText());
-         
+         ProxyAssertSupport.assertNotNull(rm8);
+         ProxyAssertSupport.assertEquals(tm8.getText(), rm8.getText());
+
          m = cons2.receive(1000);
-         
-         assertNull(m);
-         
+
+         ProxyAssertSupport.assertNull(m);
+
          res.end(xid1, XAResource.TMSUCCESS);
-         
-         //prepare it
-         
+
+         // prepare it
+
          res.prepare(xid1);
-         
+
          conn1.close();
          conn2.close();
-         
+
          conn1 = null;
-         
+
          conn2 = null;
-         
+
          // Now "crash" the server
 
          stopServerPeer();
 
          startServerPeer();
-             
-         deployAndLookupAdministeredObjects();
-                  
-         conn3 = cf.createXAConnection();
-         
-         XASession sess3 = conn3.createXASession();
-         
-         XAResource res3 = sess3.getXAResource();
-         
-         Xid[] xids = res3.recover(XAResource.TMSTARTRSCAN);
-         assertEquals(1, xids.length);
-         
-         Xid[] xids2 = res3.recover(XAResource.TMENDRSCAN);
-         assertEquals(0, xids2.length);
 
-         assertEquals(xid1, xids[0]);
-         
+         deployAndLookupAdministeredObjects();
+
+         conn3 = JMSTestCase.cf.createXAConnection();
+
+         XASession sess3 = conn3.createXASession();
+
+         XAResource res3 = sess3.getXAResource();
+
+         Xid[] xids = res3.recover(XAResource.TMSTARTRSCAN);
+         ProxyAssertSupport.assertEquals(1, xids.length);
+
+         Xid[] xids2 = res3.recover(XAResource.TMENDRSCAN);
+         ProxyAssertSupport.assertEquals(0, xids2.length);
+
+         ProxyAssertSupport.assertEquals(xid1, xids[0]);
+
          log.trace("Committing the tx");
-         
-         //Commit
+
+         // Commit
          res3.commit(xids[0], false);
-         
+
          log.trace("committed the tx");
 
-         conn1 = cf.createConnection();
-         
+         conn1 = JMSTestCase.cf.createConnection();
+
          conn1.start();
-         
+
          sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
+
          log.trace("creating a consumer");
-         
-         cons1 = sess1.createConsumer(queue2);
-         
+
+         cons1 = sess1.createConsumer(HornetQServerTestCase.queue2);
+
          log.trace("created a consumer");
-         
+
          TextMessage rm9 = (TextMessage)cons1.receive(1000);
-         assertNotNull(rm9);
-         assertEquals(tm9.getText(), rm9.getText());
-         
+         ProxyAssertSupport.assertNotNull(rm9);
+         ProxyAssertSupport.assertEquals(tm9.getText(), rm9.getText());
+
          TextMessage rm10 = (TextMessage)cons1.receive(1000);
-         assertNotNull(rm10);
-         assertEquals(tm10.getText(), rm10.getText());
-         
+         ProxyAssertSupport.assertNotNull(rm10);
+         ProxyAssertSupport.assertEquals(tm10.getText(), rm10.getText());
+
          TextMessage rm11 = (TextMessage)cons1.receive(1000);
-         assertNotNull(rm11);
-         assertEquals(tm11.getText(), rm11.getText());
-         
+         ProxyAssertSupport.assertNotNull(rm11);
+         ProxyAssertSupport.assertEquals(tm11.getText(), rm11.getText());
+
          TextMessage rm12 = (TextMessage)cons1.receive(1000);
-         assertNotNull(rm12);
-         assertEquals(tm12.getText(), rm12.getText());
-         
+         ProxyAssertSupport.assertNotNull(rm12);
+         ProxyAssertSupport.assertEquals(tm12.getText(), rm12.getText());
+
          m = cons1.receive(1000);
-         
-         assertNull(m);
-                  
-         cons2 = sess1.createConsumer(queue3);
-         
+
+         ProxyAssertSupport.assertNull(m);
+
+         cons2 = sess1.createConsumer(HornetQServerTestCase.queue3);
+
          TextMessage rm13 = (TextMessage)cons2.receive(1000);
-         assertNotNull(rm13);
-         assertEquals(tm13.getText(), rm13.getText());
-         
+         ProxyAssertSupport.assertNotNull(rm13);
+         ProxyAssertSupport.assertEquals(tm13.getText(), rm13.getText());
+
          TextMessage rm14 = (TextMessage)cons2.receive(1000);
-         assertNotNull(rm14);
-         assertEquals(tm14.getText(), rm14.getText());
-         
+         ProxyAssertSupport.assertNotNull(rm14);
+         ProxyAssertSupport.assertEquals(tm14.getText(), rm14.getText());
+
          TextMessage rm15 = (TextMessage)cons2.receive(1000);
-         assertNotNull(rm15);
-         assertEquals(tm15.getText(), rm15.getText());
-         
+         ProxyAssertSupport.assertNotNull(rm15);
+         ProxyAssertSupport.assertEquals(tm15.getText(), rm15.getText());
+
          TextMessage rm16 = (TextMessage)cons2.receive(1000);
-         assertNotNull(rm16);
-         assertEquals(tm16.getText(), rm16.getText());
-         
+         ProxyAssertSupport.assertNotNull(rm16);
+         ProxyAssertSupport.assertEquals(tm16.getText(), rm16.getText());
+
          m = cons2.receive(1000);
-         
-         assertNull(m);
+
+         ProxyAssertSupport.assertNull(m);
       }
       finally
       {
@@ -771,10 +771,10 @@ public class XARecoveryTest extends JMSTestCase
             }
             catch (Exception e)
             {
-               //Ignore
+               // Ignore
             }
          }
-         
+
          if (conn2 != null)
          {
             try
@@ -783,10 +783,10 @@ public class XARecoveryTest extends JMSTestCase
             }
             catch (Exception e)
             {
-               //Ignore
+               // Ignore
             }
          }
-         
+
          if (conn3 != null)
          {
             try
@@ -795,17 +795,15 @@ public class XARecoveryTest extends JMSTestCase
             }
             catch (Exception e)
             {
-               //Ignore
+               // Ignore
             }
-         } 
+         }
          Thread.sleep(1000);
-         removeAllMessages(queue2.getQueueName(), true);
-         removeAllMessages(queue3.getQueueName(), true);
+         removeAllMessages(HornetQServerTestCase.queue2.getQueueName(), true);
+         removeAllMessages(HornetQServerTestCase.queue3.getQueueName(), true);
       }
    }
-   
-            
-   
+
    /*
     * In this test, we have two queues, each with four messages already in them.
     * 
@@ -817,21 +815,21 @@ public class XARecoveryTest extends JMSTestCase
    public void testComplexTransactionalRecoveryWithRestartRollback() throws Exception
    {
       Connection conn1 = null;
-      
+
       XAConnection conn2 = null;
-      
+
       XAConnection conn3 = null;
-      
+
       try
       {
-         conn1 = cf.createConnection();
-         
+         conn1 = JMSTestCase.cf.createConnection();
+
          Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
-         MessageProducer prod1 = sess1.createProducer(queue2);
-         
-         MessageProducer prod2 = sess1.createProducer(queue3);
-         
+
+         MessageProducer prod1 = sess1.createProducer(HornetQServerTestCase.queue2);
+
+         MessageProducer prod2 = sess1.createProducer(HornetQServerTestCase.queue3);
+
          TextMessage tm1 = sess1.createTextMessage("tm1");
          TextMessage tm2 = sess1.createTextMessage("tm2");
          TextMessage tm3 = sess1.createTextMessage("tm3");
@@ -840,194 +838,194 @@ public class XARecoveryTest extends JMSTestCase
          TextMessage tm6 = sess1.createTextMessage("tm6");
          TextMessage tm7 = sess1.createTextMessage("tm7");
          TextMessage tm8 = sess1.createTextMessage("tm8");
-         
+
          prod1.send(tm1);
          prod1.send(tm2);
-         prod1.send(tm3);         
+         prod1.send(tm3);
          prod1.send(tm4);
-         
+
          prod2.send(tm5);
          prod2.send(tm6);
          prod2.send(tm7);
          prod2.send(tm8);
-         
-         conn2 = cf.createXAConnection();
-         
+
+         conn2 = JMSTestCase.cf.createXAConnection();
+
          conn2.start();
-         
+
          XASession sess2 = conn2.createXASession();
-         
+
          XAResource res = sess2.getXAResource();
-         
+
          Xid xid1 = new XidImpl("bq1".getBytes(), 42, "eemeli".getBytes());
-         
+
          res.start(xid1, XAResource.TMNOFLAGS);
-         
-         MessageProducer prod3 = sess2.createProducer(queue2);
-         
+
+         MessageProducer prod3 = sess2.createProducer(HornetQServerTestCase.queue2);
+
          TextMessage tm9 = sess2.createTextMessage("tm9");
          TextMessage tm10 = sess2.createTextMessage("tm10");
          TextMessage tm11 = sess2.createTextMessage("tm11");
          TextMessage tm12 = sess2.createTextMessage("tm12");
-         
+
          prod3.send(tm9);
          prod3.send(tm10);
          prod3.send(tm11);
          prod3.send(tm12);
-         
-         MessageProducer prod4 = sess2.createProducer(queue3);
-         
+
+         MessageProducer prod4 = sess2.createProducer(HornetQServerTestCase.queue3);
+
          TextMessage tm13 = sess2.createTextMessage("tm13");
          TextMessage tm14 = sess2.createTextMessage("tm14");
          TextMessage tm15 = sess2.createTextMessage("tm15");
          TextMessage tm16 = sess2.createTextMessage("tm16");
-         
+
          prod4.send(tm13);
          prod4.send(tm14);
          prod4.send(tm15);
          prod4.send(tm16);
-         
-         MessageConsumer cons1 = sess2.createConsumer(queue2);
-         
+
+         MessageConsumer cons1 = sess2.createConsumer(HornetQServerTestCase.queue2);
+
          TextMessage rm1 = (TextMessage)cons1.receive(1000);
-         assertNotNull(rm1);
-         assertEquals(tm1.getText(), rm1.getText());
-         
+         ProxyAssertSupport.assertNotNull(rm1);
+         ProxyAssertSupport.assertEquals(tm1.getText(), rm1.getText());
+
          TextMessage rm2 = (TextMessage)cons1.receive(1000);
-         assertNotNull(rm2);
-         assertEquals(tm2.getText(), rm2.getText());
-         
+         ProxyAssertSupport.assertNotNull(rm2);
+         ProxyAssertSupport.assertEquals(tm2.getText(), rm2.getText());
+
          TextMessage rm3 = (TextMessage)cons1.receive(1000);
-         assertNotNull(rm3);
-         assertEquals(tm3.getText(), rm3.getText());
-         
+         ProxyAssertSupport.assertNotNull(rm3);
+         ProxyAssertSupport.assertEquals(tm3.getText(), rm3.getText());
+
          TextMessage rm4 = (TextMessage)cons1.receive(1000);
-         assertNotNull(rm4);
-         assertEquals(tm4.getText(), rm4.getText());
-         
+         ProxyAssertSupport.assertNotNull(rm4);
+         ProxyAssertSupport.assertEquals(tm4.getText(), rm4.getText());
+
          Message m = cons1.receive(1000);
-         
-         assertNull(m);
-                  
-         MessageConsumer cons2 = sess2.createConsumer(queue3);
-         
+
+         ProxyAssertSupport.assertNull(m);
+
+         MessageConsumer cons2 = sess2.createConsumer(HornetQServerTestCase.queue3);
+
          TextMessage rm5 = (TextMessage)cons2.receive(1000);
-         assertNotNull(rm5);
-         assertEquals(tm5.getText(), rm5.getText());
-         
+         ProxyAssertSupport.assertNotNull(rm5);
+         ProxyAssertSupport.assertEquals(tm5.getText(), rm5.getText());
+
          TextMessage rm6 = (TextMessage)cons2.receive(1000);
-         assertNotNull(rm6);
-         assertEquals(tm6.getText(), rm6.getText());
-         
+         ProxyAssertSupport.assertNotNull(rm6);
+         ProxyAssertSupport.assertEquals(tm6.getText(), rm6.getText());
+
          TextMessage rm7 = (TextMessage)cons2.receive(1000);
-         assertNotNull(rm7);
-         assertEquals(tm7.getText(), rm7.getText());
-         
+         ProxyAssertSupport.assertNotNull(rm7);
+         ProxyAssertSupport.assertEquals(tm7.getText(), rm7.getText());
+
          TextMessage rm8 = (TextMessage)cons2.receive(1000);
-         assertNotNull(rm8);
-         assertEquals(tm8.getText(), rm8.getText());
-         
+         ProxyAssertSupport.assertNotNull(rm8);
+         ProxyAssertSupport.assertEquals(tm8.getText(), rm8.getText());
+
          m = cons2.receive(1000);
-         
-         assertNull(m);
-         
+
+         ProxyAssertSupport.assertNull(m);
+
          res.end(xid1, XAResource.TMSUCCESS);
-         
-         //prepare it
-         
+
+         // prepare it
+
          res.prepare(xid1);
-         
+
          conn1.close();
          conn2.close();
          conn1 = null;
-         
+
          conn2 = null;
-         
+
          // Now "crash" the server
 
          stopServerPeer();
 
          startServerPeer();
-         
-         deployAndLookupAdministeredObjects();
-         
-         conn3 = cf.createXAConnection();
-         
-         XASession sess3 = conn3.createXASession();
-         
-         XAResource res3 = sess3.getXAResource();
-         
-         Xid[] xids = res3.recover(XAResource.TMSTARTRSCAN);
-         assertEquals(1, xids.length);
-         
-         Xid[] xids2 = res3.recover(XAResource.TMENDRSCAN);
-         assertEquals(0, xids2.length);
 
-         assertEquals(xid1, xids[0]);
-         
+         deployAndLookupAdministeredObjects();
+
+         conn3 = JMSTestCase.cf.createXAConnection();
+
+         XASession sess3 = conn3.createXASession();
+
+         XAResource res3 = sess3.getXAResource();
+
+         Xid[] xids = res3.recover(XAResource.TMSTARTRSCAN);
+         ProxyAssertSupport.assertEquals(1, xids.length);
+
+         Xid[] xids2 = res3.recover(XAResource.TMENDRSCAN);
+         ProxyAssertSupport.assertEquals(0, xids2.length);
+
+         ProxyAssertSupport.assertEquals(xid1, xids[0]);
+
          log.trace("rolling back the tx");
-         
-         //rollback
+
+         // rollback
          res3.rollback(xids[0]);
-         
+
          log.trace("rolled back the tx");
-         
+
          Thread.sleep(1000);
 
-         conn1 = cf.createConnection();
-         
+         conn1 = JMSTestCase.cf.createConnection();
+
          conn1.start();
-         
+
          sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
+
          log.trace("creating a consumer");
-         
-         cons1 = sess1.createConsumer(queue2);
-         
+
+         cons1 = sess1.createConsumer(HornetQServerTestCase.queue2);
+
          log.trace("created a consumer");
-         
+
          TextMessage rm9 = (TextMessage)cons1.receive(1000);
-         assertNotNull(rm9);
-         assertEquals(tm1.getText(), rm9.getText());
-         
+         ProxyAssertSupport.assertNotNull(rm9);
+         ProxyAssertSupport.assertEquals(tm1.getText(), rm9.getText());
+
          TextMessage rm10 = (TextMessage)cons1.receive(1000);
-         assertNotNull(rm10);
-         assertEquals(tm2.getText(), rm10.getText());
-         
+         ProxyAssertSupport.assertNotNull(rm10);
+         ProxyAssertSupport.assertEquals(tm2.getText(), rm10.getText());
+
          TextMessage rm11 = (TextMessage)cons1.receive(1000);
-         assertNotNull(rm11);
-         assertEquals(tm3.getText(), rm11.getText());
-         
+         ProxyAssertSupport.assertNotNull(rm11);
+         ProxyAssertSupport.assertEquals(tm3.getText(), rm11.getText());
+
          TextMessage rm12 = (TextMessage)cons1.receive(1000);
-         assertNotNull(rm12);
-         assertEquals(tm4.getText(), rm12.getText());
-         
+         ProxyAssertSupport.assertNotNull(rm12);
+         ProxyAssertSupport.assertEquals(tm4.getText(), rm12.getText());
+
          m = cons1.receive(1000);
-         
-         assertNull(m);
-                  
-         cons2 = sess1.createConsumer(queue3);
-         
+
+         ProxyAssertSupport.assertNull(m);
+
+         cons2 = sess1.createConsumer(HornetQServerTestCase.queue3);
+
          TextMessage rm13 = (TextMessage)cons2.receive(1000);
-         assertNotNull(rm13);
-         assertEquals(tm5.getText(), rm13.getText());
-         
+         ProxyAssertSupport.assertNotNull(rm13);
+         ProxyAssertSupport.assertEquals(tm5.getText(), rm13.getText());
+
          TextMessage rm14 = (TextMessage)cons2.receive(1000);
-         assertNotNull(rm14);
-         assertEquals(tm6.getText(), rm14.getText());
-         
+         ProxyAssertSupport.assertNotNull(rm14);
+         ProxyAssertSupport.assertEquals(tm6.getText(), rm14.getText());
+
          TextMessage rm15 = (TextMessage)cons2.receive(1000);
-         assertNotNull(rm15);
-         assertEquals(tm7.getText(), rm15.getText());
-         
+         ProxyAssertSupport.assertNotNull(rm15);
+         ProxyAssertSupport.assertEquals(tm7.getText(), rm15.getText());
+
          TextMessage rm16 = (TextMessage)cons2.receive(1000);
-         assertNotNull(rm16);
-         assertEquals(tm8.getText(), rm16.getText());
-         
+         ProxyAssertSupport.assertNotNull(rm16);
+         ProxyAssertSupport.assertEquals(tm8.getText(), rm16.getText());
+
          m = cons2.receive(1000);
-         
-         assertNull(m);
-         
+
+         ProxyAssertSupport.assertNull(m);
+
          cons1.close();
       }
       finally
@@ -1040,10 +1038,10 @@ public class XARecoveryTest extends JMSTestCase
             }
             catch (Exception e)
             {
-               //Ignore
+               // Ignore
             }
          }
-         
+
          if (conn2 != null)
          {
             try
@@ -1052,10 +1050,10 @@ public class XARecoveryTest extends JMSTestCase
             }
             catch (Exception e)
             {
-               //Ignore
+               // Ignore
             }
          }
-         
+
          if (conn3 != null)
          {
             try
@@ -1064,31 +1062,31 @@ public class XARecoveryTest extends JMSTestCase
             }
             catch (Exception e)
             {
-               //Ignore
+               // Ignore
             }
-         }         
+         }
       }
    }
-   
+
    /* Not really necessary - but it does no harm */
    public void testComplexTransactional() throws Exception
    {
       Connection conn1 = null;
-      
+
       XAConnection conn2 = null;
-      
+
       XAConnection conn3 = null;
-      
+
       try
       {
-         conn1 = cf.createConnection();
-         
+         conn1 = JMSTestCase.cf.createConnection();
+
          Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
-         MessageProducer prod1 = sess1.createProducer(queue2);
-         
-         MessageProducer prod2 = sess1.createProducer(queue3);
-         
+
+         MessageProducer prod1 = sess1.createProducer(HornetQServerTestCase.queue2);
+
+         MessageProducer prod2 = sess1.createProducer(HornetQServerTestCase.queue3);
+
          TextMessage tm1 = sess1.createTextMessage("tm1");
          TextMessage tm2 = sess1.createTextMessage("tm2");
          TextMessage tm3 = sess1.createTextMessage("tm3");
@@ -1097,158 +1095,158 @@ public class XARecoveryTest extends JMSTestCase
          TextMessage tm6 = sess1.createTextMessage("tm6");
          TextMessage tm7 = sess1.createTextMessage("tm7");
          TextMessage tm8 = sess1.createTextMessage("tm8");
-         
+
          prod1.send(tm1);
          prod1.send(tm2);
-         prod1.send(tm3);         
+         prod1.send(tm3);
          prod1.send(tm4);
-         
+
          prod2.send(tm5);
          prod2.send(tm6);
          prod2.send(tm7);
          prod2.send(tm8);
-         
-         conn2 = cf.createXAConnection();
-         
+
+         conn2 = JMSTestCase.cf.createXAConnection();
+
          conn2.start();
-         
+
          XASession sess2 = conn2.createXASession();
-         
+
          XAResource res = sess2.getXAResource();
-         
+
          Xid xid1 = new XidImpl("bq1".getBytes(), 42, "eemeli".getBytes());
-         
+
          res.start(xid1, XAResource.TMNOFLAGS);
-         
-         MessageProducer prod3 = sess2.createProducer(queue2);
-         
+
+         MessageProducer prod3 = sess2.createProducer(HornetQServerTestCase.queue2);
+
          TextMessage tm9 = sess2.createTextMessage("tm9");
          TextMessage tm10 = sess2.createTextMessage("tm10");
          TextMessage tm11 = sess2.createTextMessage("tm11");
          TextMessage tm12 = sess2.createTextMessage("tm12");
-         
+
          prod3.send(tm9);
          prod3.send(tm10);
          prod3.send(tm11);
          prod3.send(tm12);
-         
-         MessageProducer prod4 = sess2.createProducer(queue3);
-         
+
+         MessageProducer prod4 = sess2.createProducer(HornetQServerTestCase.queue3);
+
          TextMessage tm13 = sess2.createTextMessage("tm13");
          TextMessage tm14 = sess2.createTextMessage("tm14");
          TextMessage tm15 = sess2.createTextMessage("tm15");
          TextMessage tm16 = sess2.createTextMessage("tm16");
-         
+
          prod4.send(tm13);
          prod4.send(tm14);
          prod4.send(tm15);
          prod4.send(tm16);
-         
-         MessageConsumer cons1 = sess2.createConsumer(queue2);
-         
+
+         MessageConsumer cons1 = sess2.createConsumer(HornetQServerTestCase.queue2);
+
          TextMessage rm1 = (TextMessage)cons1.receive(1000);
-         assertNotNull(rm1);
-         assertEquals(tm1.getText(), rm1.getText());
-         
+         ProxyAssertSupport.assertNotNull(rm1);
+         ProxyAssertSupport.assertEquals(tm1.getText(), rm1.getText());
+
          TextMessage rm2 = (TextMessage)cons1.receive(1000);
-         assertNotNull(rm2);
-         assertEquals(tm2.getText(), rm2.getText());
-         
+         ProxyAssertSupport.assertNotNull(rm2);
+         ProxyAssertSupport.assertEquals(tm2.getText(), rm2.getText());
+
          TextMessage rm3 = (TextMessage)cons1.receive(1000);
-         assertNotNull(rm3);
-         assertEquals(tm3.getText(), rm3.getText());
-         
+         ProxyAssertSupport.assertNotNull(rm3);
+         ProxyAssertSupport.assertEquals(tm3.getText(), rm3.getText());
+
          TextMessage rm4 = (TextMessage)cons1.receive(1000);
-         assertNotNull(rm4);
-         assertEquals(tm4.getText(), rm4.getText());
-         
+         ProxyAssertSupport.assertNotNull(rm4);
+         ProxyAssertSupport.assertEquals(tm4.getText(), rm4.getText());
+
          Message m = cons1.receive(1000);
-         
-         assertNull(m);
-                  
-         MessageConsumer cons2 = sess2.createConsumer(queue3);
-         
+
+         ProxyAssertSupport.assertNull(m);
+
+         MessageConsumer cons2 = sess2.createConsumer(HornetQServerTestCase.queue3);
+
          TextMessage rm5 = (TextMessage)cons2.receive(1000);
-         assertNotNull(rm5);
-         assertEquals(tm5.getText(), rm5.getText());
-         
+         ProxyAssertSupport.assertNotNull(rm5);
+         ProxyAssertSupport.assertEquals(tm5.getText(), rm5.getText());
+
          TextMessage rm6 = (TextMessage)cons2.receive(1000);
-         assertNotNull(rm6);
-         assertEquals(tm6.getText(), rm6.getText());
-         
+         ProxyAssertSupport.assertNotNull(rm6);
+         ProxyAssertSupport.assertEquals(tm6.getText(), rm6.getText());
+
          TextMessage rm7 = (TextMessage)cons2.receive(1000);
-         assertNotNull(rm7);
-         assertEquals(tm7.getText(), rm7.getText());
-         
+         ProxyAssertSupport.assertNotNull(rm7);
+         ProxyAssertSupport.assertEquals(tm7.getText(), rm7.getText());
+
          TextMessage rm8 = (TextMessage)cons2.receive(1000);
-         assertNotNull(rm8);
-         assertEquals(tm8.getText(), rm8.getText());
-         
+         ProxyAssertSupport.assertNotNull(rm8);
+         ProxyAssertSupport.assertEquals(tm8.getText(), rm8.getText());
+
          m = cons2.receive(1000);
-         
-         assertNull(m);
-         
+
+         ProxyAssertSupport.assertNull(m);
+
          res.end(xid1, XAResource.TMSUCCESS);
-         
-         //prepare it
-         
+
+         // prepare it
+
          res.prepare(xid1);
-         
+
          res.commit(xid1, false);
-         
+
          conn1.close();
-         
+
          conn2.close();
-                                    
-         conn1 = cf.createConnection();
-         
+
+         conn1 = JMSTestCase.cf.createConnection();
+
          conn1.start();
-         
+
          sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
-         cons1 = sess1.createConsumer(queue2);
-         
+
+         cons1 = sess1.createConsumer(HornetQServerTestCase.queue2);
+
          TextMessage rm9 = (TextMessage)cons1.receive(1000);
-         assertNotNull(rm9);
-         assertEquals(tm9.getText(), rm9.getText());
-         
+         ProxyAssertSupport.assertNotNull(rm9);
+         ProxyAssertSupport.assertEquals(tm9.getText(), rm9.getText());
+
          TextMessage rm10 = (TextMessage)cons1.receive(1000);
-         assertNotNull(rm10);
-         assertEquals(tm10.getText(), rm10.getText());
-         
+         ProxyAssertSupport.assertNotNull(rm10);
+         ProxyAssertSupport.assertEquals(tm10.getText(), rm10.getText());
+
          TextMessage rm11 = (TextMessage)cons1.receive(1000);
-         assertNotNull(rm11);
-         assertEquals(tm11.getText(), rm11.getText());
-         
+         ProxyAssertSupport.assertNotNull(rm11);
+         ProxyAssertSupport.assertEquals(tm11.getText(), rm11.getText());
+
          TextMessage rm12 = (TextMessage)cons1.receive(1000);
-         assertNotNull(rm12);
-         assertEquals(tm12.getText(), rm12.getText());
-         
+         ProxyAssertSupport.assertNotNull(rm12);
+         ProxyAssertSupport.assertEquals(tm12.getText(), rm12.getText());
+
          m = cons1.receive(1000);
-         
-         assertNull(m);
-                  
-         cons2 = sess1.createConsumer(queue3);
-         
+
+         ProxyAssertSupport.assertNull(m);
+
+         cons2 = sess1.createConsumer(HornetQServerTestCase.queue3);
+
          TextMessage rm13 = (TextMessage)cons2.receive(1000);
-         assertNotNull(rm13);
-         assertEquals(tm13.getText(), rm13.getText());
-         
+         ProxyAssertSupport.assertNotNull(rm13);
+         ProxyAssertSupport.assertEquals(tm13.getText(), rm13.getText());
+
          TextMessage rm14 = (TextMessage)cons2.receive(1000);
-         assertNotNull(rm14);
-         assertEquals(tm14.getText(), rm14.getText());
-         
+         ProxyAssertSupport.assertNotNull(rm14);
+         ProxyAssertSupport.assertEquals(tm14.getText(), rm14.getText());
+
          TextMessage rm15 = (TextMessage)cons2.receive(1000);
-         assertNotNull(rm15);
-         assertEquals(tm15.getText(), rm15.getText());
-         
+         ProxyAssertSupport.assertNotNull(rm15);
+         ProxyAssertSupport.assertEquals(tm15.getText(), rm15.getText());
+
          TextMessage rm16 = (TextMessage)cons2.receive(1000);
-         assertNotNull(rm16);
-         assertEquals(tm16.getText(), rm16.getText());
-         
+         ProxyAssertSupport.assertNotNull(rm16);
+         ProxyAssertSupport.assertEquals(tm16.getText(), rm16.getText());
+
          m = cons2.receive(1000);
-         
-         assertNull(m);
+
+         ProxyAssertSupport.assertNull(m);
       }
       finally
       {
@@ -1260,10 +1258,10 @@ public class XARecoveryTest extends JMSTestCase
             }
             catch (Exception e)
             {
-               //Ignore
+               // Ignore
             }
          }
-         
+
          if (conn2 != null)
          {
             try
@@ -1272,10 +1270,10 @@ public class XARecoveryTest extends JMSTestCase
             }
             catch (Exception e)
             {
-               //Ignore
+               // Ignore
             }
          }
-         
+
          if (conn3 != null)
          {
             try
@@ -1284,106 +1282,104 @@ public class XARecoveryTest extends JMSTestCase
             }
             catch (Exception e)
             {
-               //Ignore
+               // Ignore
             }
-         }               
+         }
       }
    }
-   
-   
+
    /* A simple send in a transaction - recovered without restarting the server */
    public void testSimpleTransactionalSendRecoveryWithoutRestart() throws Exception
    {
       log.trace("starting testSimpleTransactionalDeliveryRecoveryWithoutRestart");
-      
+
       XAConnection conn1 = null;
-      
+
       Connection conn2 = null;
-      
+
       XAConnection conn3 = null;
-      
+
       try
       {
-         conn1 = cf.createXAConnection();
-   
-         XASession sess1 = conn1.createXASession();
-   
-         XAResource res1 = sess1.getXAResource();
-   
-         //Pretend to be a transaction manager by interacting through the XAResources
-         Xid xid1 = new XidImpl("bq1".getBytes(), 42, "eemeli".getBytes());
-   
-         log.trace("Sending message");
-         
-         //Send message in tx
-         
-         res1.start(xid1, XAResource.TMNOFLAGS);
-   
-         MessageProducer prod1 = sess1.createProducer(queue4);
-   
-         TextMessage tm1 = sess1.createTextMessage("tm1");
-   
-         prod1.send(tm1);
-         
-         res1.end(xid1, XAResource.TMSUCCESS);
-         
-         log.trace("Sent message");
-   
-         //prepare tx
-   
-         res1.prepare(xid1);
-   
-         log.trace("prepared tx");
-         
-         conn2 = cf.createConnection();
-         
-         Session sess2 = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
-         MessageConsumer cons2 = sess2.createConsumer(queue4);
-         
-         conn2.start();
-         
-         //Verify message can't be received
-         
-         Message m = cons2.receive(1000);
-         
-         assertNull(m);
-         
-         
-         //Now recover
-         
-         conn3 = cf.createXAConnection();
-         
-         XASession sess3 = conn3.createXASession();
-         
-         XAResource res3 = sess3.getXAResource();
-         
-         Xid[] xids = res3.recover(XAResource.TMSTARTRSCAN);
-         assertEquals(1, xids.length);
-         
-         Xid[] xids2 = res3.recover(XAResource.TMENDRSCAN);
-         assertEquals(0, xids2.length);
+         conn1 = JMSTestCase.cf.createXAConnection();
 
-         assertEquals(xid1, xids[0]);
-                  
+         XASession sess1 = conn1.createXASession();
+
+         XAResource res1 = sess1.getXAResource();
+
+         // Pretend to be a transaction manager by interacting through the XAResources
+         Xid xid1 = new XidImpl("bq1".getBytes(), 42, "eemeli".getBytes());
+
+         log.trace("Sending message");
+
+         // Send message in tx
+
+         res1.start(xid1, XAResource.TMNOFLAGS);
+
+         MessageProducer prod1 = sess1.createProducer(HornetQServerTestCase.queue4);
+
+         TextMessage tm1 = sess1.createTextMessage("tm1");
+
+         prod1.send(tm1);
+
+         res1.end(xid1, XAResource.TMSUCCESS);
+
+         log.trace("Sent message");
+
+         // prepare tx
+
+         res1.prepare(xid1);
+
+         log.trace("prepared tx");
+
+         conn2 = JMSTestCase.cf.createConnection();
+
+         Session sess2 = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+         MessageConsumer cons2 = sess2.createConsumer(HornetQServerTestCase.queue4);
+
+         conn2.start();
+
+         // Verify message can't be received
+
+         Message m = cons2.receive(1000);
+
+         ProxyAssertSupport.assertNull(m);
+
+         // Now recover
+
+         conn3 = JMSTestCase.cf.createXAConnection();
+
+         XASession sess3 = conn3.createXASession();
+
+         XAResource res3 = sess3.getXAResource();
+
+         Xid[] xids = res3.recover(XAResource.TMSTARTRSCAN);
+         ProxyAssertSupport.assertEquals(1, xids.length);
+
+         Xid[] xids2 = res3.recover(XAResource.TMENDRSCAN);
+         ProxyAssertSupport.assertEquals(0, xids2.length);
+
+         ProxyAssertSupport.assertEquals(xid1, xids[0]);
+
          // Verify message still can't be received
-         
+
          m = cons2.receive(1000);
-         
-         assertNull(m);
-         
-         //Commit the tx
-         
+
+         ProxyAssertSupport.assertNull(m);
+
+         // Commit the tx
+
          res1.commit(xids[0], false);
-         
-         //The message should now be available
-         
+
+         // The message should now be available
+
          TextMessage rm1 = (TextMessage)cons2.receive(1000);
-         
-         assertNotNull(rm1);
-         
-         assertEquals(tm1.getText(), rm1.getText());
-         
+
+         ProxyAssertSupport.assertNotNull(rm1);
+
+         ProxyAssertSupport.assertEquals(tm1.getText(), rm1.getText());
+
       }
       finally
       {
@@ -1395,10 +1391,10 @@ public class XARecoveryTest extends JMSTestCase
             }
             catch (Exception e)
             {
-               //Ignore
+               // Ignore
             }
          }
-         
+
          if (conn2 != null)
          {
             try
@@ -1407,10 +1403,10 @@ public class XARecoveryTest extends JMSTestCase
             }
             catch (Exception e)
             {
-               //Ignore
+               // Ignore
             }
          }
-         
+
          if (conn3 != null)
          {
             try
@@ -1419,134 +1415,134 @@ public class XARecoveryTest extends JMSTestCase
             }
             catch (Exception e)
             {
-               //Ignore
+               // Ignore
             }
-         }               
-      }       
+         }
+      }
    }
-   
+
    /* A simple send in a transaction - recovered after restarting the server */
    public void testSimpleTransactionalSendRecoveryWithRestart() throws Exception
    {
       log.trace("starting testSimpleTransactionalDeliveryRecoveryWithRestart");
-      
+
       XAConnection conn1 = null;
-      
+
       Connection conn2 = null;
-      
+
       XAConnection conn3 = null;
-      
+
       try
       {
-         conn1 = cf.createXAConnection();
-   
+         conn1 = JMSTestCase.cf.createXAConnection();
+
          XASession sess1 = conn1.createXASession();
-   
+
          XAResource res1 = sess1.getXAResource();
-   
-         //Pretend to be a transaction manager by interacting through the XAResources
+
+         // Pretend to be a transaction manager by interacting through the XAResources
          Xid xid1 = new XidImpl("bq1".getBytes(), 42, "eemeli".getBytes());
-   
+
          log.trace("Sending message");
-         
-         //Send message in tx
-         
+
+         // Send message in tx
+
          res1.start(xid1, XAResource.TMNOFLAGS);
-   
-         MessageProducer prod1 = sess1.createProducer(queue4);
-   
+
+         MessageProducer prod1 = sess1.createProducer(HornetQServerTestCase.queue4);
+
          TextMessage tm1 = sess1.createTextMessage("tm1");
-   
+
          prod1.send(tm1);
-         
+
          res1.end(xid1, XAResource.TMSUCCESS);
-         
+
          log.trace("Sent message");
-   
-         //prepare tx
-   
+
+         // prepare tx
+
          res1.prepare(xid1);
-   
+
          log.trace("prepared tx");
-         
-         conn2 = cf.createConnection();
-         
+
+         conn2 = JMSTestCase.cf.createConnection();
+
          Session sess2 = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
-         MessageConsumer cons2 = sess2.createConsumer(queue4);
-         
+
+         MessageConsumer cons2 = sess2.createConsumer(HornetQServerTestCase.queue4);
+
          conn2.start();
-         
-         //Verify message can't be received
-         
+
+         // Verify message can't be received
+
          Message m = cons2.receive(1000);
-         
-         assertNull(m);
-         
+
+         ProxyAssertSupport.assertNull(m);
+
          conn1.close();
-         
+
          conn2.close();
-         
+
          conn1 = null;
-         
+
          conn2 = null;
-         
+
          // Now "crash" the server
 
          stopServerPeer();
 
          startServerPeer();
-         
-         deployAndLookupAdministeredObjects();
-         
-         conn3 = cf.createXAConnection();
-         
-         XASession sess3 = conn3.createXASession();
-         
-         XAResource res3 = sess3.getXAResource();
-         
-         log.trace("created connection");
-         
-         Xid[] xids = res3.recover(XAResource.TMSTARTRSCAN);
-         assertEquals(1, xids.length);
-         
-         Xid[] xids2 = res3.recover(XAResource.TMENDRSCAN);
-         assertEquals(0, xids2.length);
 
-         assertEquals(xid1, xids[0]);
-         
+         deployAndLookupAdministeredObjects();
+
+         conn3 = JMSTestCase.cf.createXAConnection();
+
+         XASession sess3 = conn3.createXASession();
+
+         XAResource res3 = sess3.getXAResource();
+
+         log.trace("created connection");
+
+         Xid[] xids = res3.recover(XAResource.TMSTARTRSCAN);
+         ProxyAssertSupport.assertEquals(1, xids.length);
+
+         Xid[] xids2 = res3.recover(XAResource.TMENDRSCAN);
+         ProxyAssertSupport.assertEquals(0, xids2.length);
+
+         ProxyAssertSupport.assertEquals(xid1, xids[0]);
+
          log.trace("recovered");
-         
-         conn2 = cf.createConnection();
-         
+
+         conn2 = JMSTestCase.cf.createConnection();
+
          sess2 = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
-         cons2 = sess2.createConsumer(queue4);
-         
+
+         cons2 = sess2.createConsumer(HornetQServerTestCase.queue4);
+
          conn2.start();
-                  
+
          // Verify message still can't be received
-         
+
          m = cons2.receive(1000);
-         
-         assertNull(m);
-         
+
+         ProxyAssertSupport.assertNull(m);
+
          log.trace("still can't see message");
-         
-         //Commit the tx
-         
+
+         // Commit the tx
+
          res3.commit(xids[0], false);
-         
+
          log.trace("committed");
-         
-         //The message should now be available
-         
+
+         // The message should now be available
+
          TextMessage rm1 = (TextMessage)cons2.receive(1000);
-         
-         assertNotNull(rm1);
-         
-         assertEquals(tm1.getText(), rm1.getText());
-   
+
+         ProxyAssertSupport.assertNotNull(rm1);
+
+         ProxyAssertSupport.assertEquals(tm1.getText(), rm1.getText());
+
       }
       finally
       {
@@ -1558,10 +1554,10 @@ public class XARecoveryTest extends JMSTestCase
             }
             catch (Exception e)
             {
-               //Ignore
+               // Ignore
             }
          }
-         
+
          if (conn2 != null)
          {
             try
@@ -1570,10 +1566,10 @@ public class XARecoveryTest extends JMSTestCase
             }
             catch (Exception e)
             {
-               //Ignore
+               // Ignore
             }
          }
-         
+
          if (conn3 != null)
          {
             try
@@ -1582,110 +1578,105 @@ public class XARecoveryTest extends JMSTestCase
             }
             catch (Exception e)
             {
-               //Ignore
+               // Ignore
             }
-         }               
-      }        
+         }
+      }
    }
-   
-   
-   
-   
+
    /* A simple acknowledgement in a transaction, recovered without restart */
    public void testSimpleTransactionalAcknowledgementRecoveryWithoutRestart() throws Exception
    {
       log.trace("starting testSimpleTransactionalAcknowledgementRecovery");
-      
+
       Connection conn1 = null;
-      
+
       XAConnection conn2 = null;
-      
+
       XAConnection conn3 = null;
-      
+
       try
       {
-         //First send a message to the queue
-         conn1 = cf.createConnection();
-         
-         Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
-         MessageProducer prod = sess1.createProducer(queue4);
-         
-         TextMessage tm1 = sess1.createTextMessage("tm1");
-         
-         prod.send(tm1);
-                           
-         
-         conn2 = cf.createXAConnection();
-   
-         XASession sess2 = conn2.createXASession();
-   
-         XAResource res1 = sess2.getXAResource();
-   
-         //Pretend to be a transaction manager by interacting through the XAResources
-         Xid xid1 = new XidImpl("bq1".getBytes(), 42, "eemeli".getBytes());
-         
-         res1.start(xid1, XAResource.TMNOFLAGS);
-         
-         MessageConsumer cons = sess2.createConsumer(queue4);
-         
-         conn2.start();
-         
-         //Consume the message
-         
-         TextMessage rm1 = (TextMessage)cons.receive(1000);
-         
-         assertNotNull(rm1);
-         
-         assertEquals(tm1.getText(), rm1.getText());
-         
-         res1.end(xid1, XAResource.TMSUCCESS);
-         
-         //prepare the tx
-         
-         res1.prepare(xid1);
-         
-         
-         //Now recover
-         
-         conn3 = cf.createXAConnection();
-         
-         XASession sess3 = conn3.createXASession();
-         
-         XAResource res3 = sess3.getXAResource();
-         
-         Xid[] xids = res3.recover(XAResource.TMSTARTRSCAN);
-         assertEquals(1, xids.length);
-         
-         Xid[] xids2 = res3.recover(XAResource.TMENDRSCAN);
-         assertEquals(0, xids2.length);
+         // First send a message to the queue
+         conn1 = JMSTestCase.cf.createConnection();
 
-         assertEquals(xid1, xids[0]);
-                  
-         //Commit the tx
-         
+         Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+         MessageProducer prod = sess1.createProducer(HornetQServerTestCase.queue4);
+
+         TextMessage tm1 = sess1.createTextMessage("tm1");
+
+         prod.send(tm1);
+
+         conn2 = JMSTestCase.cf.createXAConnection();
+
+         XASession sess2 = conn2.createXASession();
+
+         XAResource res1 = sess2.getXAResource();
+
+         // Pretend to be a transaction manager by interacting through the XAResources
+         Xid xid1 = new XidImpl("bq1".getBytes(), 42, "eemeli".getBytes());
+
+         res1.start(xid1, XAResource.TMNOFLAGS);
+
+         MessageConsumer cons = sess2.createConsumer(HornetQServerTestCase.queue4);
+
+         conn2.start();
+
+         // Consume the message
+
+         TextMessage rm1 = (TextMessage)cons.receive(1000);
+
+         ProxyAssertSupport.assertNotNull(rm1);
+
+         ProxyAssertSupport.assertEquals(tm1.getText(), rm1.getText());
+
+         res1.end(xid1, XAResource.TMSUCCESS);
+
+         // prepare the tx
+
+         res1.prepare(xid1);
+
+         // Now recover
+
+         conn3 = JMSTestCase.cf.createXAConnection();
+
+         XASession sess3 = conn3.createXASession();
+
+         XAResource res3 = sess3.getXAResource();
+
+         Xid[] xids = res3.recover(XAResource.TMSTARTRSCAN);
+         ProxyAssertSupport.assertEquals(1, xids.length);
+
+         Xid[] xids2 = res3.recover(XAResource.TMENDRSCAN);
+         ProxyAssertSupport.assertEquals(0, xids2.length);
+
+         ProxyAssertSupport.assertEquals(xid1, xids[0]);
+
+         // Commit the tx
+
          res1.commit(xids[0], false);
-         
-         //The message should be acknowldged
-         
+
+         // The message should be acknowldged
+
          conn1.close();
-         
+
          conn2.close();
-         
+
          conn3.close();
-         
-         conn1 = cf.createConnection();
-         
+
+         conn1 = JMSTestCase.cf.createConnection();
+
          sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
-         MessageConsumer cons1 = sess1.createConsumer(queue4);
-         
+
+         MessageConsumer cons1 = sess1.createConsumer(HornetQServerTestCase.queue4);
+
          conn1.start();
-         
+
          Message m = cons1.receive(1000);
-         
-         assertNull(m);
-         
+
+         ProxyAssertSupport.assertNull(m);
+
       }
       finally
       {
@@ -1697,10 +1688,10 @@ public class XARecoveryTest extends JMSTestCase
             }
             catch (Exception e)
             {
-               //Ignore
+               // Ignore
             }
          }
-         
+
          if (conn2 != null)
          {
             try
@@ -1709,10 +1700,10 @@ public class XARecoveryTest extends JMSTestCase
             }
             catch (Exception e)
             {
-               //Ignore
+               // Ignore
             }
          }
-         
+
          if (conn3 != null)
          {
             try
@@ -1721,119 +1712,117 @@ public class XARecoveryTest extends JMSTestCase
             }
             catch (Exception e)
             {
-               //Ignore
+               // Ignore
             }
-         }               
-      }            
+         }
+      }
    }
-   
-   
-   
+
    /* A simple acknowledgement in a transaction, recovered with restart */
    public void testSimpleTransactionalAcknowledgementRecoveryWithRestart() throws Exception
    {
       log.trace("starting testSimpleTransactionalAcknowledgementRecoveryWithRestart");
-      
+
       Connection conn1 = null;
-      
+
       XAConnection conn2 = null;
-      
+
       XAConnection conn3 = null;
-      
+
       try
       {
-         //First send a message to the queue
-         conn1 = cf.createConnection();
-         
+         // First send a message to the queue
+         conn1 = JMSTestCase.cf.createConnection();
+
          Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
-         MessageProducer prod = sess1.createProducer(queue4);
-         
+
+         MessageProducer prod = sess1.createProducer(HornetQServerTestCase.queue4);
+
          TextMessage tm1 = sess1.createTextMessage("tm1");
-         
+
          prod.send(tm1);
-                                    
-         conn2 = cf.createXAConnection();
-   
+
+         conn2 = JMSTestCase.cf.createXAConnection();
+
          XASession sess2 = conn2.createXASession();
-   
+
          XAResource res1 = sess2.getXAResource();
-   
-         //Pretend to be a transaction manager by interacting through the XAResources
+
+         // Pretend to be a transaction manager by interacting through the XAResources
          Xid xid1 = new XidImpl("bq1".getBytes(), 42, "eemeli".getBytes());
-         
+
          res1.start(xid1, XAResource.TMNOFLAGS);
-         
-         MessageConsumer cons = sess2.createConsumer(queue4);
-         
+
+         MessageConsumer cons = sess2.createConsumer(HornetQServerTestCase.queue4);
+
          conn2.start();
-         
-         //Consume the message
-         
+
+         // Consume the message
+
          TextMessage rm1 = (TextMessage)cons.receive(1000);
-         
-         assertNotNull(rm1);
-         
-         assertEquals(tm1.getText(), rm1.getText());
-         
+
+         ProxyAssertSupport.assertNotNull(rm1);
+
+         ProxyAssertSupport.assertEquals(tm1.getText(), rm1.getText());
+
          res1.end(xid1, XAResource.TMSUCCESS);
-         
-         //prepare the tx
-         
+
+         // prepare the tx
+
          res1.prepare(xid1);
-         
+
          conn1.close();
-         
+
          conn2.close();
-         
+
          conn1 = null;
-         
+
          conn2 = null;
-         
+
          // Now "crash" the server
 
          stopServerPeer();
 
          startServerPeer();
-         
-         deployAndLookupAdministeredObjects();  
-         
-         //Now recover
-         
-         conn3 = cf.createXAConnection();
-         
-         XASession sess3 = conn3.createXASession();
-         
-         XAResource res3 = sess3.getXAResource();
-         
-         Xid[] xids = res3.recover(XAResource.TMSTARTRSCAN);
-         assertEquals(1, xids.length);
-         
-         Xid[] xids2 = res3.recover(XAResource.TMENDRSCAN);
-         assertEquals(0, xids2.length);
 
-         assertEquals(xid1, xids[0]);
-                  
-         //Commit the tx
-         
+         deployAndLookupAdministeredObjects();
+
+         // Now recover
+
+         conn3 = JMSTestCase.cf.createXAConnection();
+
+         XASession sess3 = conn3.createXASession();
+
+         XAResource res3 = sess3.getXAResource();
+
+         Xid[] xids = res3.recover(XAResource.TMSTARTRSCAN);
+         ProxyAssertSupport.assertEquals(1, xids.length);
+
+         Xid[] xids2 = res3.recover(XAResource.TMENDRSCAN);
+         ProxyAssertSupport.assertEquals(0, xids2.length);
+
+         ProxyAssertSupport.assertEquals(xid1, xids[0]);
+
+         // Commit the tx
+
          res3.commit(xids[0], false);
-         
-         //The message should be acknowldged
-         
+
+         // The message should be acknowldged
+
          conn3.close();
-         
-         conn1 = cf.createConnection();
-         
+
+         conn1 = JMSTestCase.cf.createConnection();
+
          sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
-         MessageConsumer cons1 = sess1.createConsumer(queue4);
-         
+
+         MessageConsumer cons1 = sess1.createConsumer(HornetQServerTestCase.queue4);
+
          conn1.start();
-         
+
          Message m = cons1.receive(1000);
-         
-         assertNull(m);
-                       
+
+         ProxyAssertSupport.assertNull(m);
+
       }
       finally
       {
@@ -1845,10 +1834,10 @@ public class XARecoveryTest extends JMSTestCase
             }
             catch (Exception e)
             {
-               //Ignore
+               // Ignore
             }
          }
-         
+
          if (conn2 != null)
          {
             try
@@ -1857,10 +1846,10 @@ public class XARecoveryTest extends JMSTestCase
             }
             catch (Exception e)
             {
-               //Ignore
+               // Ignore
             }
          }
-         
+
          if (conn3 != null)
          {
             try
@@ -1869,13 +1858,12 @@ public class XARecoveryTest extends JMSTestCase
             }
             catch (Exception e)
             {
-               //Ignore
+               // Ignore
             }
-         }               
-      }           
+         }
+      }
    }
-   
-           
+
    /*
     * In this test, we have 4 messages in a 2 durable subs on the same topic.
     * 
@@ -1889,209 +1877,208 @@ public class XARecoveryTest extends JMSTestCase
    public void testRecoveryWithTwoDurableSubsWithoutRestart() throws Exception
    {
       Connection conn1 = null;
-      
+
       XAConnection conn2 = null;
-      
+
       XAConnection conn3 = null;
-      
+
       try
       {
-         conn1 = cf.createConnection();
-         
+         conn1 = JMSTestCase.cf.createConnection();
+
          conn1.setClientID("wib1");
-         
+
          Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
-         MessageProducer prod1 = sess1.createProducer(topic2);
-         
-         MessageConsumer sub1 = sess1.createDurableSubscriber((Topic)topic2, "sub1");
-         
-         MessageConsumer sub2 = sess1.createDurableSubscriber((Topic)topic2, "sub2");
-         
-         //send four messages
-          
+
+         MessageProducer prod1 = sess1.createProducer(HornetQServerTestCase.topic2);
+
+         MessageConsumer sub1 = sess1.createDurableSubscriber((Topic)HornetQServerTestCase.topic2, "sub1");
+
+         MessageConsumer sub2 = sess1.createDurableSubscriber((Topic)HornetQServerTestCase.topic2, "sub2");
+
+         // send four messages
+
          TextMessage tm1 = sess1.createTextMessage("tm1");
          TextMessage tm2 = sess1.createTextMessage("tm2");
          TextMessage tm3 = sess1.createTextMessage("tm3");
          TextMessage tm4 = sess1.createTextMessage("tm4");
-         
+
          prod1.send(tm1);
          prod1.send(tm2);
-         prod1.send(tm3);         
+         prod1.send(tm3);
          prod1.send(tm4);
-         
+
          conn1.close();
-         
-         //The messages should now be in both durable subs
-         
-         conn2 = cf.createXAConnection();
-         
+
+         // The messages should now be in both durable subs
+
+         conn2 = JMSTestCase.cf.createXAConnection();
+
          conn2.setClientID("wib1");
-         
+
          conn2.start();
-         
+
          XASession sess2 = conn2.createXASession();
-         
+
          XAResource res = sess2.getXAResource();
-         
+
          Xid xid1 = new XidImpl("bq1".getBytes(), 42, "eemeli".getBytes());
-         
+
          res.start(xid1, XAResource.TMNOFLAGS);
-         
-         //Now send four more messages in a global tx
-         
-         MessageProducer prod2 = sess2.createProducer(topic2);
-         
+
+         // Now send four more messages in a global tx
+
+         MessageProducer prod2 = sess2.createProducer(HornetQServerTestCase.topic2);
+
          TextMessage tm5 = sess2.createTextMessage("tm5");
          TextMessage tm6 = sess2.createTextMessage("tm6");
          TextMessage tm7 = sess2.createTextMessage("tm7");
          TextMessage tm8 = sess2.createTextMessage("tm8");
-         
+
          prod2.send(tm5);
          prod2.send(tm6);
          prod2.send(tm7);
          prod2.send(tm8);
 
-         //And consume the first four from each in the tx
-         
-         sub1 = sess2.createDurableSubscriber((Topic)topic2, "sub1");
-         
-         sub2 = sess2.createDurableSubscriber((Topic)topic2, "sub2");
-         
-         TextMessage rm1 = (TextMessage)sub1.receive(1000);
-         assertNotNull(rm1);
-         assertEquals(tm1.getText(), rm1.getText());
-         
-         TextMessage rm2 = (TextMessage)sub1.receive(1000);
-         assertNotNull(rm2);
-         assertEquals(tm2.getText(), rm2.getText());
-         
-         TextMessage rm3 = (TextMessage)sub1.receive(1000);
-         assertNotNull(rm3);
-         assertEquals(tm3.getText(), rm3.getText());
-         
-         TextMessage rm4 = (TextMessage)sub1.receive(1000);
-         assertNotNull(rm4);
-         assertEquals(tm4.getText(), rm4.getText());
-         
-         Message m = sub1.receive(1000);
-         
-         assertNull(m);
-                       
-         rm1 = (TextMessage)sub2.receive(1000);
-         assertNotNull(rm1);
-         assertEquals(tm1.getText(), rm1.getText());
-         
-         rm2 = (TextMessage)sub2.receive(1000);
-         assertNotNull(rm2);
-         assertEquals(tm2.getText(), rm2.getText());
-         
-         rm3 = (TextMessage)sub2.receive(1000);
-         assertNotNull(rm3);
-         assertEquals(tm3.getText(), rm3.getText());
-         
-         rm4 = (TextMessage)sub2.receive(1000);
-         assertNotNull(rm4);
-         assertEquals(tm4.getText(), rm4.getText());
-         
-         m = sub2.receive(1000);
-         
-         assertNull(m);
-         
-         res.end(xid1, XAResource.TMSUCCESS);
-         
-         //prepare it
-         
-         res.prepare(xid1);
-                  
-         conn3 = cf.createXAConnection();
-         
-         XASession sess3 = conn3.createXASession();
-         
-         XAResource res3 = sess3.getXAResource();
-         
-         //recover
-         
-         Xid[] xids = res3.recover(XAResource.TMSTARTRSCAN);
-         assertEquals(1, xids.length);
-         
-         Xid[] xids2 = res3.recover(XAResource.TMENDRSCAN);
-         assertEquals(0, xids2.length);
+         // And consume the first four from each in the tx
 
-         assertEquals(xid1, xids[0]);
-         
-         log.trace("Committing the tx");
-         
-         //Commit
-         res3.commit(xids[0], false);
-         
-         log.trace("committed the tx");
-         
-         conn2.close();
-         
-         
-         conn1 = cf.createConnection();
-         
-         conn1.setClientID("wib1");
-         
-         conn1.start();
-         
-         sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
-         //Should now see the last 4 messages
-         
-         sub1 = sess1.createDurableSubscriber((Topic)topic2, "sub1");
-         
-         sub2 = sess1.createDurableSubscriber((Topic)topic2, "sub2");
-         
-         TextMessage rm5 = (TextMessage)sub1.receive(1000);
-         assertNotNull(rm5);
-         assertEquals(tm5.getText(), rm5.getText());
-         
-         TextMessage rm6 = (TextMessage)sub1.receive(1000);
-         assertNotNull(rm6);
-         assertEquals(tm6.getText(), rm6.getText());
-         
-         TextMessage rm7 = (TextMessage)sub1.receive(1000);
-         assertNotNull(rm7);
-         assertEquals(tm7.getText(), rm7.getText());
-         
-         TextMessage rm8 = (TextMessage)sub1.receive(1000);
-         assertNotNull(rm8);
-         assertEquals(tm8.getText(), rm8.getText());
-         
-         m = sub1.receive(1000);
-         
-         assertNull(m);
-                       
-         rm5 = (TextMessage)sub2.receive(1000);
-         assertNotNull(rm5);
-         assertEquals(tm5.getText(), rm5.getText());
-         
-         rm6 = (TextMessage)sub2.receive(1000);
-         assertNotNull(rm6);
-         assertEquals(tm6.getText(), rm6.getText());
-         
-         rm7 = (TextMessage)sub2.receive(1000);
-         assertNotNull(rm7);
-         assertEquals(tm7.getText(), rm7.getText());
-         
-         rm8 = (TextMessage)sub2.receive(1000);
-         assertNotNull(rm8);
-         assertEquals(tm8.getText(), rm8.getText());
-         
+         sub1 = sess2.createDurableSubscriber((Topic)HornetQServerTestCase.topic2, "sub1");
+
+         sub2 = sess2.createDurableSubscriber((Topic)HornetQServerTestCase.topic2, "sub2");
+
+         TextMessage rm1 = (TextMessage)sub1.receive(1000);
+         ProxyAssertSupport.assertNotNull(rm1);
+         ProxyAssertSupport.assertEquals(tm1.getText(), rm1.getText());
+
+         TextMessage rm2 = (TextMessage)sub1.receive(1000);
+         ProxyAssertSupport.assertNotNull(rm2);
+         ProxyAssertSupport.assertEquals(tm2.getText(), rm2.getText());
+
+         TextMessage rm3 = (TextMessage)sub1.receive(1000);
+         ProxyAssertSupport.assertNotNull(rm3);
+         ProxyAssertSupport.assertEquals(tm3.getText(), rm3.getText());
+
+         TextMessage rm4 = (TextMessage)sub1.receive(1000);
+         ProxyAssertSupport.assertNotNull(rm4);
+         ProxyAssertSupport.assertEquals(tm4.getText(), rm4.getText());
+
+         Message m = sub1.receive(1000);
+
+         ProxyAssertSupport.assertNull(m);
+
+         rm1 = (TextMessage)sub2.receive(1000);
+         ProxyAssertSupport.assertNotNull(rm1);
+         ProxyAssertSupport.assertEquals(tm1.getText(), rm1.getText());
+
+         rm2 = (TextMessage)sub2.receive(1000);
+         ProxyAssertSupport.assertNotNull(rm2);
+         ProxyAssertSupport.assertEquals(tm2.getText(), rm2.getText());
+
+         rm3 = (TextMessage)sub2.receive(1000);
+         ProxyAssertSupport.assertNotNull(rm3);
+         ProxyAssertSupport.assertEquals(tm3.getText(), rm3.getText());
+
+         rm4 = (TextMessage)sub2.receive(1000);
+         ProxyAssertSupport.assertNotNull(rm4);
+         ProxyAssertSupport.assertEquals(tm4.getText(), rm4.getText());
+
          m = sub2.receive(1000);
-         
-         assertNull(m);
-         
+
+         ProxyAssertSupport.assertNull(m);
+
+         res.end(xid1, XAResource.TMSUCCESS);
+
+         // prepare it
+
+         res.prepare(xid1);
+
+         conn3 = JMSTestCase.cf.createXAConnection();
+
+         XASession sess3 = conn3.createXASession();
+
+         XAResource res3 = sess3.getXAResource();
+
+         // recover
+
+         Xid[] xids = res3.recover(XAResource.TMSTARTRSCAN);
+         ProxyAssertSupport.assertEquals(1, xids.length);
+
+         Xid[] xids2 = res3.recover(XAResource.TMENDRSCAN);
+         ProxyAssertSupport.assertEquals(0, xids2.length);
+
+         ProxyAssertSupport.assertEquals(xid1, xids[0]);
+
+         log.trace("Committing the tx");
+
+         // Commit
+         res3.commit(xids[0], false);
+
+         log.trace("committed the tx");
+
+         conn2.close();
+
+         conn1 = JMSTestCase.cf.createConnection();
+
+         conn1.setClientID("wib1");
+
+         conn1.start();
+
+         sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+         // Should now see the last 4 messages
+
+         sub1 = sess1.createDurableSubscriber((Topic)HornetQServerTestCase.topic2, "sub1");
+
+         sub2 = sess1.createDurableSubscriber((Topic)HornetQServerTestCase.topic2, "sub2");
+
+         TextMessage rm5 = (TextMessage)sub1.receive(1000);
+         ProxyAssertSupport.assertNotNull(rm5);
+         ProxyAssertSupport.assertEquals(tm5.getText(), rm5.getText());
+
+         TextMessage rm6 = (TextMessage)sub1.receive(1000);
+         ProxyAssertSupport.assertNotNull(rm6);
+         ProxyAssertSupport.assertEquals(tm6.getText(), rm6.getText());
+
+         TextMessage rm7 = (TextMessage)sub1.receive(1000);
+         ProxyAssertSupport.assertNotNull(rm7);
+         ProxyAssertSupport.assertEquals(tm7.getText(), rm7.getText());
+
+         TextMessage rm8 = (TextMessage)sub1.receive(1000);
+         ProxyAssertSupport.assertNotNull(rm8);
+         ProxyAssertSupport.assertEquals(tm8.getText(), rm8.getText());
+
+         m = sub1.receive(1000);
+
+         ProxyAssertSupport.assertNull(m);
+
+         rm5 = (TextMessage)sub2.receive(1000);
+         ProxyAssertSupport.assertNotNull(rm5);
+         ProxyAssertSupport.assertEquals(tm5.getText(), rm5.getText());
+
+         rm6 = (TextMessage)sub2.receive(1000);
+         ProxyAssertSupport.assertNotNull(rm6);
+         ProxyAssertSupport.assertEquals(tm6.getText(), rm6.getText());
+
+         rm7 = (TextMessage)sub2.receive(1000);
+         ProxyAssertSupport.assertNotNull(rm7);
+         ProxyAssertSupport.assertEquals(tm7.getText(), rm7.getText());
+
+         rm8 = (TextMessage)sub2.receive(1000);
+         ProxyAssertSupport.assertNotNull(rm8);
+         ProxyAssertSupport.assertEquals(tm8.getText(), rm8.getText());
+
+         m = sub2.receive(1000);
+
+         ProxyAssertSupport.assertNull(m);
+
          sub1.close();
-         
+
          sub2.close();
-         
+
          sess1.unsubscribe("sub1");
-         
+
          sess1.unsubscribe("sub2");
-         
+
       }
       finally
       {
@@ -2103,10 +2090,10 @@ public class XARecoveryTest extends JMSTestCase
             }
             catch (Exception e)
             {
-               //Ignore
+               // Ignore
             }
          }
-         
+
          if (conn2 != null)
          {
             try
@@ -2115,10 +2102,10 @@ public class XARecoveryTest extends JMSTestCase
             }
             catch (Exception e)
             {
-               //Ignore
+               // Ignore
             }
          }
-         
+
          if (conn3 != null)
          {
             try
@@ -2127,14 +2114,12 @@ public class XARecoveryTest extends JMSTestCase
             }
             catch (Exception e)
             {
-               //Ignore
+               // Ignore
             }
-         }               
+         }
       }
    }
-   
-   
-   
+
    /*
     * In this test, we have 4 messages in a 2 durable subs on the same topic.
     * 
@@ -2148,219 +2133,219 @@ public class XARecoveryTest extends JMSTestCase
    public void testRecoveryWithTwoDurableSubsWithRestart() throws Exception
    {
       Connection conn1 = null;
-      
+
       XAConnection conn2 = null;
-      
+
       XAConnection conn3 = null;
-      
+
       try
       {
-         conn1 = cf.createConnection();
-         
+         conn1 = JMSTestCase.cf.createConnection();
+
          conn1.setClientID("wib1");
-         
+
          Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
-         MessageProducer prod1 = sess1.createProducer(topic2);
-         
-         MessageConsumer sub1 = sess1.createDurableSubscriber((Topic)topic2, "sub1");
-         
-         MessageConsumer sub2 = sess1.createDurableSubscriber((Topic)topic2, "sub2");
-         
-         //send four messages
-          
+
+         MessageProducer prod1 = sess1.createProducer(HornetQServerTestCase.topic2);
+
+         MessageConsumer sub1 = sess1.createDurableSubscriber((Topic)HornetQServerTestCase.topic2, "sub1");
+
+         MessageConsumer sub2 = sess1.createDurableSubscriber((Topic)HornetQServerTestCase.topic2, "sub2");
+
+         // send four messages
+
          TextMessage tm1 = sess1.createTextMessage("tm1");
          TextMessage tm2 = sess1.createTextMessage("tm2");
          TextMessage tm3 = sess1.createTextMessage("tm3");
          TextMessage tm4 = sess1.createTextMessage("tm4");
-         
+
          prod1.send(tm1);
          prod1.send(tm2);
-         prod1.send(tm3);         
+         prod1.send(tm3);
          prod1.send(tm4);
-         
+
          conn1.close();
-         
-         //The messages should now be in both durable subs
-         
-         conn2 = cf.createXAConnection();
-         
+
+         // The messages should now be in both durable subs
+
+         conn2 = JMSTestCase.cf.createXAConnection();
+
          conn2.setClientID("wib1");
-         
+
          conn2.start();
-         
+
          XASession sess2 = conn2.createXASession();
-         
+
          XAResource res = sess2.getXAResource();
-         
+
          Xid xid1 = new XidImpl("bq1".getBytes(), 42, "eemeli".getBytes());
-         
+
          res.start(xid1, XAResource.TMNOFLAGS);
-         
-         //Now send four more messages in a global tx
-         
-         MessageProducer prod2 = sess2.createProducer(topic2);
-         
+
+         // Now send four more messages in a global tx
+
+         MessageProducer prod2 = sess2.createProducer(HornetQServerTestCase.topic2);
+
          TextMessage tm5 = sess2.createTextMessage("tm5");
          TextMessage tm6 = sess2.createTextMessage("tm6");
          TextMessage tm7 = sess2.createTextMessage("tm7");
          TextMessage tm8 = sess2.createTextMessage("tm8");
-         
+
          prod2.send(tm5);
          prod2.send(tm6);
          prod2.send(tm7);
          prod2.send(tm8);
 
-         //And consume the first four from each in the tx
-         
-         sub1 = sess2.createDurableSubscriber((Topic)topic2, "sub1");
-         
-         sub2 = sess2.createDurableSubscriber((Topic)topic2, "sub2");
-         
+         // And consume the first four from each in the tx
+
+         sub1 = sess2.createDurableSubscriber((Topic)HornetQServerTestCase.topic2, "sub1");
+
+         sub2 = sess2.createDurableSubscriber((Topic)HornetQServerTestCase.topic2, "sub2");
+
          TextMessage rm1 = (TextMessage)sub1.receive(1000);
-         assertNotNull(rm1);
-         assertEquals(tm1.getText(), rm1.getText());
-         
+         ProxyAssertSupport.assertNotNull(rm1);
+         ProxyAssertSupport.assertEquals(tm1.getText(), rm1.getText());
+
          TextMessage rm2 = (TextMessage)sub1.receive(1000);
-         assertNotNull(rm2);
-         assertEquals(tm2.getText(), rm2.getText());
-         
+         ProxyAssertSupport.assertNotNull(rm2);
+         ProxyAssertSupport.assertEquals(tm2.getText(), rm2.getText());
+
          TextMessage rm3 = (TextMessage)sub1.receive(1000);
-         assertNotNull(rm3);
-         assertEquals(tm3.getText(), rm3.getText());
-         
+         ProxyAssertSupport.assertNotNull(rm3);
+         ProxyAssertSupport.assertEquals(tm3.getText(), rm3.getText());
+
          TextMessage rm4 = (TextMessage)sub1.receive(1000);
-         assertNotNull(rm4);
-         assertEquals(tm4.getText(), rm4.getText());
-         
+         ProxyAssertSupport.assertNotNull(rm4);
+         ProxyAssertSupport.assertEquals(tm4.getText(), rm4.getText());
+
          Message m = sub1.receive(1000);
-         
-         assertNull(m);
-                       
+
+         ProxyAssertSupport.assertNull(m);
+
          rm1 = (TextMessage)sub2.receive(1000);
-         assertNotNull(rm1);
-         assertEquals(tm1.getText(), rm1.getText());
-         
+         ProxyAssertSupport.assertNotNull(rm1);
+         ProxyAssertSupport.assertEquals(tm1.getText(), rm1.getText());
+
          rm2 = (TextMessage)sub2.receive(1000);
-         assertNotNull(rm2);
-         assertEquals(tm2.getText(), rm2.getText());
-         
+         ProxyAssertSupport.assertNotNull(rm2);
+         ProxyAssertSupport.assertEquals(tm2.getText(), rm2.getText());
+
          rm3 = (TextMessage)sub2.receive(1000);
-         assertNotNull(rm3);
-         assertEquals(tm3.getText(), rm3.getText());
-         
+         ProxyAssertSupport.assertNotNull(rm3);
+         ProxyAssertSupport.assertEquals(tm3.getText(), rm3.getText());
+
          rm4 = (TextMessage)sub2.receive(1000);
-         assertNotNull(rm4);
-         assertEquals(tm4.getText(), rm4.getText());
-         
+         ProxyAssertSupport.assertNotNull(rm4);
+         ProxyAssertSupport.assertEquals(tm4.getText(), rm4.getText());
+
          m = sub2.receive(1000);
-         
-         assertNull(m);
-         
+
+         ProxyAssertSupport.assertNull(m);
+
          res.end(xid1, XAResource.TMSUCCESS);
-         
-         //prepare it
-         
+
+         // prepare it
+
          res.prepare(xid1);
-         
+
          conn1.close();
          conn2.close();
          conn1 = null;
-         
+
          conn2 = null;
-         
+
          // Now "crash" the server
 
          stopServerPeer();
 
          startServerPeer();
-         
-         deployAndLookupAdministeredObjects();
-                           
-         conn3 = cf.createXAConnection();
-         
-         XASession sess3 = conn3.createXASession();
-         
-         XAResource res3 = sess3.getXAResource();
-         
-         //recover
-         
-         Xid[] xids = res3.recover(XAResource.TMSTARTRSCAN);
-         assertEquals(1, xids.length);
-         
-         Xid[] xids2 = res3.recover(XAResource.TMENDRSCAN);
-         assertEquals(0, xids2.length);
 
-         assertEquals(xid1, xids[0]);
-         
+         deployAndLookupAdministeredObjects();
+
+         conn3 = JMSTestCase.cf.createXAConnection();
+
+         XASession sess3 = conn3.createXASession();
+
+         XAResource res3 = sess3.getXAResource();
+
+         // recover
+
+         Xid[] xids = res3.recover(XAResource.TMSTARTRSCAN);
+         ProxyAssertSupport.assertEquals(1, xids.length);
+
+         Xid[] xids2 = res3.recover(XAResource.TMENDRSCAN);
+         ProxyAssertSupport.assertEquals(0, xids2.length);
+
+         ProxyAssertSupport.assertEquals(xid1, xids[0]);
+
          log.trace("Committing the tx");
-         
-         //Commit
+
+         // Commit
          res3.commit(xids[0], false);
-         
+
          log.trace("committed the tx");
-                           
-         conn1 = cf.createConnection();
-         
+
+         conn1 = JMSTestCase.cf.createConnection();
+
          conn1.setClientID("wib1");
-         
+
          conn1.start();
-         
+
          sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
-         //Should now see the last 4 messages
-         
-         sub1 = sess1.createDurableSubscriber((Topic)topic2, "sub1");
-         
-         sub2 = sess1.createDurableSubscriber((Topic)topic2, "sub2");
-         
+
+         // Should now see the last 4 messages
+
+         sub1 = sess1.createDurableSubscriber((Topic)HornetQServerTestCase.topic2, "sub1");
+
+         sub2 = sess1.createDurableSubscriber((Topic)HornetQServerTestCase.topic2, "sub2");
+
          TextMessage rm5 = (TextMessage)sub1.receive(1000);
-         assertNotNull(rm5);
-         assertEquals(tm5.getText(), rm5.getText());
-         
+         ProxyAssertSupport.assertNotNull(rm5);
+         ProxyAssertSupport.assertEquals(tm5.getText(), rm5.getText());
+
          TextMessage rm6 = (TextMessage)sub1.receive(1000);
-         assertNotNull(rm6);
-         assertEquals(tm6.getText(), rm6.getText());
-         
+         ProxyAssertSupport.assertNotNull(rm6);
+         ProxyAssertSupport.assertEquals(tm6.getText(), rm6.getText());
+
          TextMessage rm7 = (TextMessage)sub1.receive(1000);
-         assertNotNull(rm7);
-         assertEquals(tm7.getText(), rm7.getText());
-         
+         ProxyAssertSupport.assertNotNull(rm7);
+         ProxyAssertSupport.assertEquals(tm7.getText(), rm7.getText());
+
          TextMessage rm8 = (TextMessage)sub1.receive(1000);
-         assertNotNull(rm8);
-         assertEquals(tm8.getText(), rm8.getText());
-         
+         ProxyAssertSupport.assertNotNull(rm8);
+         ProxyAssertSupport.assertEquals(tm8.getText(), rm8.getText());
+
          m = sub1.receive(1000);
-         
-         assertNull(m);
-                       
+
+         ProxyAssertSupport.assertNull(m);
+
          rm5 = (TextMessage)sub2.receive(1000);
-         assertNotNull(rm5);
-         assertEquals(tm5.getText(), rm5.getText());
-         
+         ProxyAssertSupport.assertNotNull(rm5);
+         ProxyAssertSupport.assertEquals(tm5.getText(), rm5.getText());
+
          rm6 = (TextMessage)sub2.receive(1000);
-         assertNotNull(rm6);
-         assertEquals(tm6.getText(), rm6.getText());
-         
+         ProxyAssertSupport.assertNotNull(rm6);
+         ProxyAssertSupport.assertEquals(tm6.getText(), rm6.getText());
+
          rm7 = (TextMessage)sub2.receive(1000);
-         assertNotNull(rm7);
-         assertEquals(tm7.getText(), rm7.getText());
-         
+         ProxyAssertSupport.assertNotNull(rm7);
+         ProxyAssertSupport.assertEquals(tm7.getText(), rm7.getText());
+
          rm8 = (TextMessage)sub2.receive(1000);
-         assertNotNull(rm8);
-         assertEquals(tm8.getText(), rm8.getText());
-         
+         ProxyAssertSupport.assertNotNull(rm8);
+         ProxyAssertSupport.assertEquals(tm8.getText(), rm8.getText());
+
          m = sub2.receive(1000);
-         
-         assertNull(m);
-         
+
+         ProxyAssertSupport.assertNull(m);
+
          sub1.close();
-         
+
          sub2.close();
-         
+
          sess1.unsubscribe("sub1");
-         
-         sess1.unsubscribe("sub2");         
+
+         sess1.unsubscribe("sub2");
 
       }
       finally
@@ -2373,10 +2358,10 @@ public class XARecoveryTest extends JMSTestCase
             }
             catch (Exception e)
             {
-               //Ignore
+               // Ignore
             }
          }
-         
+
          if (conn2 != null)
          {
             try
@@ -2385,10 +2370,10 @@ public class XARecoveryTest extends JMSTestCase
             }
             catch (Exception e)
             {
-               //Ignore
+               // Ignore
             }
          }
-         
+
          if (conn3 != null)
          {
             try
@@ -2397,13 +2382,11 @@ public class XARecoveryTest extends JMSTestCase
             }
             catch (Exception e)
             {
-               //Ignore
+               // Ignore
             }
-         }               
+         }
       }
    }
-         
-   
 
    /*
     * Send two messages in two transactions.
@@ -2417,163 +2400,162 @@ public class XARecoveryTest extends JMSTestCase
    public void testTransactionalDeliveryRecovery() throws Exception
    {
       log.trace("starting testTransactionalDeliveryRecovery");
-      
+
       XAConnection conn1 = null;
 
       XAConnection conn2 = null;
-      
+
       Connection conn3 = null;
-      
+
       try
-      {      
-         conn1 = cf.createXAConnection();
-   
-         conn2 = cf.createXAConnection();         
-            
+      {
+         conn1 = JMSTestCase.cf.createXAConnection();
+
+         conn2 = JMSTestCase.cf.createXAConnection();
+
          XASession sess1 = conn1.createXASession();
-   
+
          XASession sess2 = conn2.createXASession();
-   
+
          XAResource res1 = sess1.getXAResource();
-   
+
          XAResource res2 = sess2.getXAResource();
-   
-         //Pretend to be a transaction manager by interacting through the XAResources
+
+         // Pretend to be a transaction manager by interacting through the XAResources
          Xid xid1 = new XidImpl("bq1".getBytes(), 42, "eemeli".getBytes());
          Xid xid2 = new XidImpl("bq2".getBytes(), 42, "frigtard".getBytes());
-   
+
          log.trace("Sending messages");
-         
-         //Send two messages in transaction 1
-         
+
+         // Send two messages in transaction 1
+
          res1.start(xid1, XAResource.TMNOFLAGS);
-   
-         MessageProducer prod1 = sess1.createProducer(queue4);
-   
+
+         MessageProducer prod1 = sess1.createProducer(HornetQServerTestCase.queue4);
+
          TextMessage tm1 = sess1.createTextMessage("tm1");
-   
+
          prod1.send(tm1);
-   
+
          TextMessage tm2 = sess1.createTextMessage("tm2");
-   
+
          prod1.send(tm2);
-   
+
          res1.end(xid1, XAResource.TMSUCCESS);
-   
-         //Send two messages in transaction 2
-         
+
+         // Send two messages in transaction 2
+
          res2.start(xid2, XAResource.TMNOFLAGS);
-   
-         MessageProducer prod2 = sess2.createProducer(queue4);
-   
+
+         MessageProducer prod2 = sess2.createProducer(HornetQServerTestCase.queue4);
+
          TextMessage tm3 = sess2.createTextMessage("tm3");
-   
+
          prod2.send(tm3);
-   
+
          TextMessage tm4 = sess2.createTextMessage("tm4");
-   
+
          prod2.send(tm4);
-   
+
          res2.end(xid2, XAResource.TMSUCCESS);
-         
+
          log.trace("Sent messages");
-   
-         //prepare both txs
-   
+
+         // prepare both txs
+
          res1.prepare(xid1);
          res2.prepare(xid2);
-         
+
          log.trace("prepared messages");
-   
-         //Now "crash" the server
-         
+
+         // Now "crash" the server
+
          conn1.close();
-         
+
          conn2.close();
-         
+
          conn1 = null;
-         
+
          conn2 = null;
-   
+
          stopServerPeer();
-   
+
          startServerPeer();
-   
-         deployAndLookupAdministeredObjects();       
-         
-         conn1 = cf.createXAConnection();
-   
+
+         deployAndLookupAdministeredObjects();
+
+         conn1 = JMSTestCase.cf.createXAConnection();
+
          XAResource res = conn1.createXASession().getXAResource();
-   
+
          log.trace("Recovering");
-         
+
          Xid[] xids = res.recover(XAResource.TMSTARTRSCAN);
-         assertEquals(2, xids.length);
-         
+         ProxyAssertSupport.assertEquals(2, xids.length);
+
          Xid[] xids2 = res.recover(XAResource.TMENDRSCAN);
-         assertEquals(0, xids2.length);
-   
-         //They may be in a different order
-         assertTrue(xids[0].equals(xid1) || xids[1].equals(xid1));
-         assertTrue(xids[0].equals(xid2) || xids[1].equals(xid2));
-         
-         //Make sure can't receive the messages
-         
+         ProxyAssertSupport.assertEquals(0, xids2.length);
+
+         // They may be in a different order
+         ProxyAssertSupport.assertTrue(xids[0].equals(xid1) || xids[1].equals(xid1));
+         ProxyAssertSupport.assertTrue(xids[0].equals(xid2) || xids[1].equals(xid2));
+
+         // Make sure can't receive the messages
+
          log.trace("Creating conn");
-         
-         conn3 = cf.createConnection();
-   
+
+         conn3 = JMSTestCase.cf.createConnection();
+
          Session sessRec = conn3.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageConsumer cons = sessRec.createConsumer(queue4);
+         MessageConsumer cons = sessRec.createConsumer(HornetQServerTestCase.queue4);
          conn3.start();
-         
+
          log.trace("Created conn3");
-   
+
          TextMessage m1 = (TextMessage)cons.receive(1000);
-         assertNull(m1);
-         
+         ProxyAssertSupport.assertNull(m1);
+
          log.trace("comitting");
-   
-         //Commit tx1
-         
+
+         // Commit tx1
+
          res.commit(xid1, false);
-         
+
          log.trace("comitted");
-         
-         
-         //Should now be able to receive tm1 and tm2
-         
-         m1 = (TextMessage)cons.receive(MAX_TIMEOUT);
-         assertNotNull(m1);
-         
-         assertEquals(tm1.getText(), m1.getText());
-         
-         TextMessage m2 = (TextMessage)cons.receive(MAX_TIMEOUT);
-         assertNotNull(m2);
-         
-         assertEquals(tm2.getText(), m2.getText());
-         
+
+         // Should now be able to receive tm1 and tm2
+
+         m1 = (TextMessage)cons.receive(HornetQServerTestCase.MAX_TIMEOUT);
+         ProxyAssertSupport.assertNotNull(m1);
+
+         ProxyAssertSupport.assertEquals(tm1.getText(), m1.getText());
+
+         TextMessage m2 = (TextMessage)cons.receive(HornetQServerTestCase.MAX_TIMEOUT);
+         ProxyAssertSupport.assertNotNull(m2);
+
+         ProxyAssertSupport.assertEquals(tm2.getText(), m2.getText());
+
          TextMessage m3 = (TextMessage)cons.receive(1000);
-         assertNull(m3);
-         
-         //Now commit tx2
-         
+         ProxyAssertSupport.assertNull(m3);
+
+         // Now commit tx2
+
          res.commit(xid2, false);
-         
-         //Should now be able to receive tm3 and tm4
-         
-         m3 = (TextMessage)cons.receive(MAX_TIMEOUT);
-         assertNotNull(m3);
-         
-         assertEquals(tm3.getText(), m3.getText());
-         
-         TextMessage m4 = (TextMessage)cons.receive(MAX_TIMEOUT);
-         assertNotNull(m4);
-         
-         assertEquals(tm4.getText(), m4.getText());
-         
+
+         // Should now be able to receive tm3 and tm4
+
+         m3 = (TextMessage)cons.receive(HornetQServerTestCase.MAX_TIMEOUT);
+         ProxyAssertSupport.assertNotNull(m3);
+
+         ProxyAssertSupport.assertEquals(tm3.getText(), m3.getText());
+
+         TextMessage m4 = (TextMessage)cons.receive(HornetQServerTestCase.MAX_TIMEOUT);
+         ProxyAssertSupport.assertNotNull(m4);
+
+         ProxyAssertSupport.assertEquals(tm4.getText(), m4.getText());
+
          TextMessage m5 = (TextMessage)cons.receive(1000);
-         assertNull(m5);
+         ProxyAssertSupport.assertNull(m5);
       }
       finally
       {
@@ -2585,10 +2567,10 @@ public class XARecoveryTest extends JMSTestCase
             }
             catch (Exception e)
             {
-               //Ignore
+               // Ignore
             }
          }
-         
+
          if (conn2 != null)
          {
             try
@@ -2597,10 +2579,10 @@ public class XARecoveryTest extends JMSTestCase
             }
             catch (Exception e)
             {
-               //Ignore
+               // Ignore
             }
          }
-         
+
          if (conn3 != null)
          {
             try
@@ -2609,12 +2591,11 @@ public class XARecoveryTest extends JMSTestCase
             }
             catch (Exception e)
             {
-               //Ignore
+               // Ignore
             }
-         }               
+         }
       }
    }
-
 
    /*
     * This test sends some messages in a couple of txs, crashes then recovers
@@ -2623,113 +2604,108 @@ public class XARecoveryTest extends JMSTestCase
    public void testMockCoordinatorRecovery() throws Exception
    {
       XAConnection conn1 = null;
-      
+
       XAConnection conn2 = null;
-      
+
       Connection conn3 = null;
-      
+
       try
       {
-      
-         conn1 = cf.createXAConnection();
-   
-         conn2 = cf.createXAConnection();
-   
+
+         conn1 = JMSTestCase.cf.createXAConnection();
+
+         conn2 = JMSTestCase.cf.createXAConnection();
+
          XASession sess1 = conn1.createXASession();
-   
+
          XASession sess2 = conn2.createXASession();
-   
+
          XAResource res1 = sess1.getXAResource();
-   
+
          XAResource res2 = sess2.getXAResource();
-   
-         //Pretend to be a transaction manager by interacting through the XAResources
+
+         // Pretend to be a transaction manager by interacting through the XAResources
          Xid xid1 = new XidImpl("bq1".getBytes(), 42, "aapeli".getBytes());
          Xid xid2 = new XidImpl("bq2".getBytes(), 42, "belsebub".getBytes());
-   
-         //    Send a message in each tx
-   
+
+         // Send a message in each tx
+
          res1.start(xid1, XAResource.TMNOFLAGS);
-   
-         MessageProducer prod1 = sess1.createProducer(queue2);
-   
+
+         MessageProducer prod1 = sess1.createProducer(HornetQServerTestCase.queue2);
+
          TextMessage tm1 = sess1.createTextMessage("alpha");
-   
+
          prod1.send(tm1);
-   
+
          res1.end(xid1, XAResource.TMSUCCESS);
-   
-   
+
          res2.start(xid2, XAResource.TMNOFLAGS);
-   
-         MessageProducer prod2 = sess2.createProducer(queue2);
-   
+
+         MessageProducer prod2 = sess2.createProducer(HornetQServerTestCase.queue2);
+
          TextMessage tm2 = sess2.createTextMessage("beta");
-   
+
          prod2.send(tm2);
-   
+
          res2.end(xid2, XAResource.TMSUCCESS);
-   
-         //prepare both txs
-   
-   
+
+         // prepare both txs
+
          res1.prepare(xid1);
          res2.prepare(xid2);
-                     
-         //Now "crash" the server
-   
+
+         // Now "crash" the server
+
          stopServerPeer();
-   
+
          startServerPeer();
-   
-         deployAndLookupAdministeredObjects();         
-         
+
+         deployAndLookupAdministeredObjects();
+
          conn1.close();
-         
+
          conn2.close();
-         
-         conn1 = cf.createXAConnection();
-   
+
+         conn1 = JMSTestCase.cf.createXAConnection();
+
          XAResource res = conn1.createXASession().getXAResource();
-   
+
          Xid[] xids = res.recover(XAResource.TMSTARTRSCAN);
-         assertEquals(2, xids.length);
-   
+         ProxyAssertSupport.assertEquals(2, xids.length);
+
          Xid[] xids2 = res.recover(XAResource.TMENDRSCAN);
-         assertEquals(0, xids2.length);
-   
-         assertTrue(xids[0].equals(xid1) || xids[1].equals(xid1));
-         assertTrue(xids[0].equals(xid2) || xids[1].equals(xid2));
-   
+         ProxyAssertSupport.assertEquals(0, xids2.length);
+
+         ProxyAssertSupport.assertTrue(xids[0].equals(xid1) || xids[1].equals(xid1));
+         ProxyAssertSupport.assertTrue(xids[0].equals(xid2) || xids[1].equals(xid2));
+
          res.commit(xid1, false);
-   
+
          res.commit(xid2, false);
-   
-   
-         conn3 = cf.createConnection();
-   
+
+         conn3 = JMSTestCase.cf.createConnection();
+
          Session sessRec = conn3.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageConsumer cons = sessRec.createConsumer(queue2);
+         MessageConsumer cons = sessRec.createConsumer(HornetQServerTestCase.queue2);
          conn3.start();
-   
-         Message msg = cons.receive(MAX_TIMEOUT);
-   
+
+         Message msg = cons.receive(HornetQServerTestCase.MAX_TIMEOUT);
+
          TextMessage m1 = (TextMessage)msg;
-         assertNotNull(m1);
-   
-         assertTrue("alpha".equals(m1.getText()) ||
-                    "beta".equals(m1.getText()));
-   
-         TextMessage m2 = (TextMessage)cons.receive(MAX_TIMEOUT);
-         assertNotNull(m2);
-   
-         assertTrue("alpha".equals(m2.getText()) ||
-                    "beta".equals(m2.getText()));
-   
-         assertTrue(!tm1.getText().equals(tm2.getText()));
-   
-         Message nullMessage = cons.receive(MIN_TIMEOUT);
-         assertTrue(nullMessage == null);
+         ProxyAssertSupport.assertNotNull(m1);
+
+         ProxyAssertSupport.assertTrue("alpha".equals(m1.getText()) || "beta".equals(m1.getText()));
+
+         TextMessage m2 = (TextMessage)cons.receive(HornetQServerTestCase.MAX_TIMEOUT);
+         ProxyAssertSupport.assertNotNull(m2);
+
+         ProxyAssertSupport.assertTrue("alpha".equals(m2.getText()) || "beta".equals(m2.getText()));
+
+         ProxyAssertSupport.assertTrue(!tm1.getText().equals(tm2.getText()));
+
+         Message nullMessage = cons.receive(HornetQServerTestCase.MIN_TIMEOUT);
+         ProxyAssertSupport.assertTrue(nullMessage == null);
 
       }
       finally
@@ -2742,10 +2718,10 @@ public class XARecoveryTest extends JMSTestCase
             }
             catch (Exception e)
             {
-               //Ignore
+               // Ignore
             }
          }
-         
+
          if (conn2 != null)
          {
             try
@@ -2754,10 +2730,10 @@ public class XARecoveryTest extends JMSTestCase
             }
             catch (Exception e)
             {
-               //Ignore
+               // Ignore
             }
          }
-         
+
          if (conn3 != null)
          {
             try
@@ -2766,14 +2742,13 @@ public class XARecoveryTest extends JMSTestCase
             }
             catch (Exception e)
             {
-               //Ignore
+               // Ignore
             }
-         }    
+         }
       }
 
    }
 
-   
    /*
     * This test sends some messages in a couple of txs, crashes then recovers
     * It uses the JBoss TS XId implementation - so we can show compatibility
@@ -2782,103 +2757,100 @@ public class XARecoveryTest extends JMSTestCase
    public void testMockCoordinatorRecoveryWithJBossTSXids() throws Exception
    {
       XAConnection conn1 = null;
-      
+
       XAConnection conn2 = null;
-      
+
       Connection conn3 = null;
-      
+
       try
       {
-      
-         conn1 = cf.createXAConnection();
-   
-         conn2 = cf.createXAConnection();
+
+         conn1 = JMSTestCase.cf.createXAConnection();
+
+         conn2 = JMSTestCase.cf.createXAConnection();
 
          XASession sess1 = conn1.createXASession();
-   
+
          XASession sess2 = conn2.createXASession();
-   
+
          XAResource res1 = sess1.getXAResource();
-   
+
          XAResource res2 = sess2.getXAResource();
-   
-         //Pretend to be a transaction manager by interacting through the XAResources
+
+         // Pretend to be a transaction manager by interacting through the XAResources
          Xid xid1 = new XidImple(new Uid("cadaver"), new Uid("bq1"), 666);
-         Xid xid2 = new XidImple(new Uid("dalidom"), new Uid("bq2"), 661);   // TODO
-   
-   
-         //    Send a message in each tx
-   
+         Xid xid2 = new XidImple(new Uid("dalidom"), new Uid("bq2"), 661); // TODO
+
+         // Send a message in each tx
+
          res1.start(xid1, XAResource.TMNOFLAGS);
-   
-         MessageProducer prod1 = sess1.createProducer(queue1);
-   
+
+         MessageProducer prod1 = sess1.createProducer(HornetQServerTestCase.queue1);
+
          TextMessage tm1 = sess1.createTextMessage("testing1");
-   
+
          prod1.send(tm1);
-   
+
          res1.end(xid1, XAResource.TMSUCCESS);
-   
-   
+
          res2.start(xid2, XAResource.TMNOFLAGS);
-   
-         MessageProducer prod2 = sess2.createProducer(queue1);
-   
+
+         MessageProducer prod2 = sess2.createProducer(HornetQServerTestCase.queue1);
+
          TextMessage tm2 = sess2.createTextMessage("testing2");
-   
+
          prod2.send(tm2);
-   
+
          res2.end(xid2, XAResource.TMSUCCESS);
-   
-         //prepare both txs
-   
-   
+
+         // prepare both txs
+
          res1.prepare(xid1);
          res2.prepare(xid2);
-   
-         //Now "crash" the server
-   
+
+         // Now "crash" the server
+
          stopServerPeer();
-   
+
          startServerPeer();
-   
-         deployAndLookupAdministeredObjects();  
-         
+
+         deployAndLookupAdministeredObjects();
+
          conn1.close();
-         
+
          conn2.close();
-         
-         conn1 = cf.createXAConnection();
-   
+
+         conn1 = JMSTestCase.cf.createXAConnection();
+
          XAResource res = conn1.createXASession().getXAResource();
-   
+
          Xid[] xids = res.recover(XAResource.TMSTARTRSCAN);
-         assertEquals(2, xids.length);
-   
+         ProxyAssertSupport.assertEquals(2, xids.length);
+
          Xid[] xids2 = res.recover(XAResource.TMENDRSCAN);
-         assertEquals(0, xids2.length);
-   
-         assertTrue(xids[0].equals(xid1) || xids[1].equals(xid1));
-         assertTrue(xids[0].equals(xid2) || xids[1].equals(xid2));
-     
+         ProxyAssertSupport.assertEquals(0, xids2.length);
+
+         ProxyAssertSupport.assertTrue(xids[0].equals(xid1) || xids[1].equals(xid1));
+         ProxyAssertSupport.assertTrue(xids[0].equals(xid2) || xids[1].equals(xid2));
+
          res.commit(xid1, false);
-   
+
          res.commit(xid2, false);
-      
-         conn3 = cf.createConnection();
-   
+
+         conn3 = JMSTestCase.cf.createConnection();
+
          Session sessRec = conn3.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageConsumer cons = sessRec.createConsumer(queue1);
+         MessageConsumer cons = sessRec.createConsumer(HornetQServerTestCase.queue1);
          conn3.start();
-   
-         TextMessage m1 = (TextMessage)cons.receive(MAX_TIMEOUT);
-         assertNotNull(m1);
-         assertEquals("testing1", m1.getText());
-   
-         TextMessage m2 = (TextMessage)cons.receive(MAX_TIMEOUT);
-         assertNotNull(m2);
-   
-         assertEquals("testing2", m2.getText());
+
+         TextMessage m1 = (TextMessage)cons.receive(HornetQServerTestCase.MAX_TIMEOUT);
+         ProxyAssertSupport.assertNotNull(m1);
+         ProxyAssertSupport.assertEquals("testing1", m1.getText());
+
+         TextMessage m2 = (TextMessage)cons.receive(HornetQServerTestCase.MAX_TIMEOUT);
+         ProxyAssertSupport.assertNotNull(m2);
+
+         ProxyAssertSupport.assertEquals("testing2", m2.getText());
 
       }
       finally
@@ -2891,10 +2863,10 @@ public class XARecoveryTest extends JMSTestCase
             }
             catch (Exception e)
             {
-               //Ignore
+               // Ignore
             }
          }
-         
+
          if (conn2 != null)
          {
             try
@@ -2903,10 +2875,10 @@ public class XARecoveryTest extends JMSTestCase
             }
             catch (Exception e)
             {
-               //Ignore
+               // Ignore
             }
          }
-         
+
          if (conn3 != null)
          {
             try
@@ -2915,112 +2887,109 @@ public class XARecoveryTest extends JMSTestCase
             }
             catch (Exception e)
             {
-               //Ignore
+               // Ignore
             }
-         }    
+         }
       }
    }
-     
 
    public void testMockCoordinatorRecovery3() throws Exception
    {
       XAConnection conn1 = null;
-      
+
       XAConnection conn2 = null;
-      
+
       Connection conn3 = null;
-      
+
       try
       {
-      
-         conn1 = cf.createXAConnection();
-   
-         conn2 = cf.createXAConnection();
+
+         conn1 = JMSTestCase.cf.createXAConnection();
+
+         conn2 = JMSTestCase.cf.createXAConnection();
 
          XASession sess1 = conn1.createXASession();
-   
+
          XASession sess2 = conn2.createXASession();
-   
+
          XAResource res1 = sess1.getXAResource();
-   
+
          XAResource res2 = sess2.getXAResource();
-   
-         //Pretend to be a transaction manager by interacting through the XAResources
+
+         // Pretend to be a transaction manager by interacting through the XAResources
          Xid xid1 = new XidImpl("bq1".getBytes(), 123, "gbtxid1".getBytes());
          Xid xid2 = new XidImpl("bq2".getBytes(), 124, "gbtxid2".getBytes());
-   
-         //    Send a message in each tx
-   
+
+         // Send a message in each tx
+
          res1.start(xid1, XAResource.TMNOFLAGS);
-   
-         MessageProducer prod1 = sess1.createProducer(queue1);
-   
+
+         MessageProducer prod1 = sess1.createProducer(HornetQServerTestCase.queue1);
+
          TextMessage tm1 = sess1.createTextMessage("testing1");
-   
+
          prod1.send(tm1);
-   
+
          res1.end(xid1, XAResource.TMSUCCESS);
-   
-   
+
          res2.start(xid2, XAResource.TMNOFLAGS);
-   
-         MessageProducer prod2 = sess2.createProducer(queue1);
-   
+
+         MessageProducer prod2 = sess2.createProducer(HornetQServerTestCase.queue1);
+
          TextMessage tm2 = sess2.createTextMessage("testing2");
-   
+
          prod2.send(tm2);
-   
+
          res2.end(xid2, XAResource.TMSUCCESS);
-   
-         //prepare both txs
-   
-   
+
+         // prepare both txs
+
          res1.prepare(xid1);
          res2.prepare(xid2);
-   
-         //Now "crash" the server
-   
+
+         // Now "crash" the server
+
          stopServerPeer();
-   
+
          startServerPeer();
-   
-         deployAndLookupAdministeredObjects();      
-         
+
+         deployAndLookupAdministeredObjects();
+
          conn1.close();
-         
+
          conn2.close();
-         
-         conn1 = cf.createXAConnection();
-   
+
+         conn1 = JMSTestCase.cf.createXAConnection();
+
          XAResource res = conn1.createXASession().getXAResource();
-   
+
          Xid[] xids = res.recover(XAResource.TMSTARTRSCAN);
-         assertEquals(2, xids.length);
-   
+         ProxyAssertSupport.assertEquals(2, xids.length);
+
          Xid[] xids2 = res.recover(XAResource.TMENDRSCAN);
-         assertEquals(0, xids2.length);
-   
-         assertTrue(xids[0].equals(xid1) || xids[1].equals(xid1));
-         assertTrue(xids[0].equals(xid2) || xids[1].equals(xid2));
-   
+         ProxyAssertSupport.assertEquals(0, xids2.length);
+
+         ProxyAssertSupport.assertTrue(xids[0].equals(xid1) || xids[1].equals(xid1));
+         ProxyAssertSupport.assertTrue(xids[0].equals(xid2) || xids[1].equals(xid2));
+
          res.commit(xids[0], false);
-   
+
          res.commit(xids[1], false);
-      
-         conn3 = cf.createConnection();
-   
+
+         conn3 = JMSTestCase.cf.createConnection();
+
          Session sessRec = conn3.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageConsumer cons = sessRec.createConsumer(queue1);
+         MessageConsumer cons = sessRec.createConsumer(HornetQServerTestCase.queue1);
          conn3.start();
-   
-         TextMessage m1 = (TextMessage)cons.receive(MAX_TIMEOUT);
-         assertNotNull(m1);
-         assertEquals("testing1", m1.getText());
-   
-         TextMessage m2 = (TextMessage)cons.receive(MAX_TIMEOUT);
-         assertNotNull(m2);
-   
-         assertEquals("testing2", m2.getText());
+
+         TextMessage m1 = (TextMessage)cons.receive(HornetQServerTestCase.MAX_TIMEOUT);
+         ProxyAssertSupport.assertNotNull(m1);
+         ProxyAssertSupport.assertEquals("testing1", m1.getText());
+
+         TextMessage m2 = (TextMessage)cons.receive(HornetQServerTestCase.MAX_TIMEOUT);
+         ProxyAssertSupport.assertNotNull(m2);
+
+         ProxyAssertSupport.assertEquals("testing2", m2.getText());
       }
       finally
       {
@@ -3032,10 +3001,10 @@ public class XARecoveryTest extends JMSTestCase
             }
             catch (Exception e)
             {
-               //Ignore
+               // Ignore
             }
          }
-         
+
          if (conn2 != null)
          {
             try
@@ -3044,10 +3013,10 @@ public class XARecoveryTest extends JMSTestCase
             }
             catch (Exception e)
             {
-               //Ignore
+               // Ignore
             }
          }
-         
+
          if (conn3 != null)
          {
             try
@@ -3056,123 +3025,120 @@ public class XARecoveryTest extends JMSTestCase
             }
             catch (Exception e)
             {
-               //Ignore
+               // Ignore
             }
-         }    
+         }
       }
    }
-
 
    public void testMultiChannelRecovery() throws Exception
    {
       XAConnection conn1 = null;
-      
+
       XAConnection conn2 = null;
-      
+
       Connection conn3 = null;
-      
+
       try
       {
-      
-         conn1 = cf.createXAConnection();
-   
-         conn2 = cf.createXAConnection();
+
+         conn1 = JMSTestCase.cf.createXAConnection();
+
+         conn2 = JMSTestCase.cf.createXAConnection();
 
          XASession sess1 = conn1.createXASession();
-   
+
          XASession sess2 = conn2.createXASession();
-   
+
          XAResource res1 = sess1.getXAResource();
-   
+
          XAResource res2 = sess2.getXAResource();
-   
-         //Pretend to be a transaction manager by interacting through the XAResources
+
+         // Pretend to be a transaction manager by interacting through the XAResources
          Xid xid1 = new XidImpl("bq1".getBytes(), 123, "gbtxid1".getBytes());
          Xid xid2 = new XidImpl("bq2".getBytes(), 124, "gbtxid2".getBytes());
-   
-         //    Send a message in each tx
-   
+
+         // Send a message in each tx
+
          res1.start(xid1, XAResource.TMNOFLAGS);
-   
-         MessageProducer prod1 = sess1.createProducer(queue2);
-         MessageProducer prod2 = sess1.createProducer(queue3);
-   
+
+         MessageProducer prod1 = sess1.createProducer(HornetQServerTestCase.queue2);
+         MessageProducer prod2 = sess1.createProducer(HornetQServerTestCase.queue3);
+
          TextMessage tm1 = sess1.createTextMessage("testing1");
          TextMessage tm2 = sess1.createTextMessage("testing2");
-   
+
          prod1.send(tm1);
          prod2.send(tm2);
-   
+
          res1.end(xid1, XAResource.TMSUCCESS);
-   
-   
+
          res2.start(xid2, XAResource.TMNOFLAGS);
-   
-         MessageProducer prod3 = sess2.createProducer(queue1);
-   
+
+         MessageProducer prod3 = sess2.createProducer(HornetQServerTestCase.queue1);
+
          TextMessage tm3 = sess2.createTextMessage("testing3");
-   
+
          prod3.send(tm3);
-   
+
          res2.end(xid2, XAResource.TMSUCCESS);
-   
-         //prepare both txs
-   
-   
+
+         // prepare both txs
+
          res1.prepare(xid1);
          res2.prepare(xid2);
-   
-         //Now "crash" the server
-   
+
+         // Now "crash" the server
+
          stopServerPeer();
-   
+
          startServerPeer();
-   
+
          deployAndLookupAdministeredObjects();
-         
+
          conn1.close();
-         
+
          conn2.close();
-          
-         conn1 = cf.createXAConnection();
-         
+
+         conn1 = JMSTestCase.cf.createXAConnection();
+
          XAResource res = conn1.createXASession().getXAResource();
-   
+
          Xid[] xids = res.recover(XAResource.TMSTARTRSCAN);
-         assertEquals(2, xids.length);
-   
+         ProxyAssertSupport.assertEquals(2, xids.length);
+
          Xid[] xids2 = res.recover(XAResource.TMENDRSCAN);
-         assertEquals(0, xids2.length);
-   
-         assertTrue(xids[0].equals(xid1) || xids[1].equals(xid1));
-         assertTrue(xids[0].equals(xid2) || xids[1].equals(xid2));
-   
+         ProxyAssertSupport.assertEquals(0, xids2.length);
+
+         ProxyAssertSupport.assertTrue(xids[0].equals(xid1) || xids[1].equals(xid1));
+         ProxyAssertSupport.assertTrue(xids[0].equals(xid2) || xids[1].equals(xid2));
+
          res.commit(xids[0], false);
-   
+
          res.commit(xids[1], false);
-   
-         conn3 = cf.createConnection();
-   
+
+         conn3 = JMSTestCase.cf.createConnection();
+
          Session sessRec = conn3.createSession(false, Session.AUTO_ACKNOWLEDGE);
-   
-         MessageConsumer cons1 = sessRec.createConsumer(queue2);
-         MessageConsumer cons2 = sessRec.createConsumer(queue3);
-         MessageConsumer cons3 = sessRec.createConsumer(queue1);
-   
+
+         MessageConsumer cons1 = sessRec.createConsumer(HornetQServerTestCase.queue2);
+         MessageConsumer cons2 = sessRec.createConsumer(HornetQServerTestCase.queue3);
+         MessageConsumer cons3 = sessRec.createConsumer(HornetQServerTestCase.queue1);
+
          conn3.start();
-   
-         TextMessage m1 = (TextMessage)cons1.receive(MAX_TIMEOUT);
-         assertNotNull(m1);
-         assertEquals("testing1", m1.getText());
-   
-         TextMessage m2 = (TextMessage)cons2.receive(MAX_TIMEOUT);
-         assertNotNull(m2);
-         assertEquals("testing2", m2.getText());
-   
-         TextMessage m3 = (TextMessage)cons3.receive(MAX_TIMEOUT);
-         assertNotNull(m3);
-         assertEquals("testing3", m3.getText());
-         
+
+         TextMessage m1 = (TextMessage)cons1.receive(HornetQServerTestCase.MAX_TIMEOUT);
+         ProxyAssertSupport.assertNotNull(m1);
+         ProxyAssertSupport.assertEquals("testing1", m1.getText());
+
+         TextMessage m2 = (TextMessage)cons2.receive(HornetQServerTestCase.MAX_TIMEOUT);
+         ProxyAssertSupport.assertNotNull(m2);
+         ProxyAssertSupport.assertEquals("testing2", m2.getText());
+
+         TextMessage m3 = (TextMessage)cons3.receive(HornetQServerTestCase.MAX_TIMEOUT);
+         ProxyAssertSupport.assertNotNull(m3);
+         ProxyAssertSupport.assertEquals("testing3", m3.getText());
+
       }
       finally
       {
@@ -3184,10 +3150,10 @@ public class XARecoveryTest extends JMSTestCase
             }
             catch (Exception e)
             {
-               //Ignore
+               // Ignore
             }
          }
-         
+
          if (conn2 != null)
          {
             try
@@ -3196,10 +3162,10 @@ public class XARecoveryTest extends JMSTestCase
             }
             catch (Exception e)
             {
-               //Ignore
+               // Ignore
             }
          }
-         
+
          if (conn3 != null)
          {
             try
@@ -3208,10 +3174,9 @@ public class XARecoveryTest extends JMSTestCase
             }
             catch (Exception e)
             {
-               //Ignore
+               // Ignore
             }
-         }    
+         }
       }
    }
 }
-

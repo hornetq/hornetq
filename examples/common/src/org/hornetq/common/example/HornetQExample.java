@@ -46,7 +46,7 @@ public abstract class HornetQExample
 
    private String[] configs;
 
-   protected void run(String[] configs)
+   protected void run(final String[] configs)
    {
       String runServerProp = System.getProperty("hornetq.example.runServer");
       String logServerOutputProp = System.getProperty("hornetq.example.logserveroutput");
@@ -59,7 +59,7 @@ public abstract class HornetQExample
          serverProps = System.getProperty("hornetq.example.server.override.args");
       }
       System.out.println("serverProps = " + serverProps);
-      log.info("hornetq.example.runServer is " + runServer);
+      HornetQExample.log.info("hornetq.example.runServer is " + runServer);
 
       this.configs = configs;
 
@@ -109,7 +109,7 @@ public abstract class HornetQExample
       reportResultAndExit();
    }
 
-   protected void killServer(int id) throws Exception
+   protected void killServer(final int id) throws Exception
    {
       System.out.println("Killing server " + id);
 
@@ -121,18 +121,18 @@ public abstract class HornetQExample
       file.createNewFile();
    }
 
-   protected void stopServer(int id) throws Exception
+   protected void stopServer(final int id) throws Exception
    {
       System.out.println("Stopping server " + id);
 
       stopServer(servers[id]);
    }
 
-   protected InitialContext getContext(int serverId) throws Exception
+   protected InitialContext getContext(final int serverId) throws Exception
    {
       String jndiFilename = "server" + serverId + "/client-jndi.properties";
       File jndiFile = new File(jndiFilename);
-      log.info("using " + jndiFile + " for jndi");
+      HornetQExample.log.info("using " + jndiFile + " for jndi");
       Properties props = new Properties();
       FileInputStream inStream = null;
       try
@@ -150,10 +150,10 @@ public abstract class HornetQExample
       return new InitialContext(props);
    }
 
-   protected void startServer(int index) throws Exception
+   protected void startServer(final int index) throws Exception
    {
       String config = configs[index];
-      log.info("starting server with config '" + config + "' " + "logServerOutput " + logServerOutput);
+      HornetQExample.log.info("starting server with config '" + config + "' " + "logServerOutput " + logServerOutput);
       servers[index] = SpawnedVMSupport.spawnVM(serverClasspath,
                                                 "HornetQServer_" + index,
                                                 SpawnedHornetQServer.class.getName(),
@@ -185,7 +185,7 @@ public abstract class HornetQExample
       }
    }
 
-   private void stopServer(Process server) throws Exception
+   private void stopServer(final Process server) throws Exception
    {
       if (!System.getProperty("os.name").contains("Windows") && !System.getProperty("os.name").contains("Mac OS X"))
       {

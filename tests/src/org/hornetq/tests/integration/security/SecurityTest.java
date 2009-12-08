@@ -29,6 +29,8 @@ import javax.security.auth.spi.LoginModule;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
@@ -58,7 +60,7 @@ public class SecurityTest extends ServiceTestBase
    private static final String addressA = "addressA";
 
    private static final String queueA = "queueA";
-   
+
    public void testCreateSessionWithNullUserPass() throws Exception
    {
       Configuration configuration = createDefaultConfig(false);
@@ -75,12 +77,12 @@ public class SecurityTest extends ServiceTestBase
          try
          {
             ClientSession session = cf.createSession(false, true, true);
-            
+
             session.close();
          }
          catch (HornetQException e)
          {
-            fail("should not throw exception");
+            Assert.fail("should not throw exception");
          }
       }
       finally
@@ -104,11 +106,11 @@ public class SecurityTest extends ServiceTestBase
          try
          {
             ClientSession session = cf.createSession(false, true, true);
-            fail("should throw exception");
+            Assert.fail("should throw exception");
          }
          catch (HornetQException e)
          {
-            assertEquals(HornetQException.SECURITY_EXCEPTION, e.getCode());
+            Assert.assertEquals(HornetQException.SECURITY_EXCEPTION, e.getCode());
          }
       }
       finally
@@ -135,11 +137,11 @@ public class SecurityTest extends ServiceTestBase
          try
          {
             ClientSession session = cf.createSession("newuser", "awrongpass", false, true, true, false, -1);
-            fail("should not throw exception");
+            Assert.fail("should not throw exception");
          }
          catch (HornetQException e)
          {
-            assertEquals(HornetQException.SECURITY_EXCEPTION, e.getCode());
+            Assert.assertEquals(HornetQException.SECURITY_EXCEPTION, e.getCode());
          }
       }
       finally
@@ -166,12 +168,12 @@ public class SecurityTest extends ServiceTestBase
          try
          {
             ClientSession session = cf.createSession("newuser", "apass", false, true, true, false, -1);
-            
+
             session.close();
          }
          catch (HornetQException e)
          {
-            fail("should not throw exception");
+            Assert.fail("should not throw exception");
          }
       }
       finally
@@ -198,11 +200,11 @@ public class SecurityTest extends ServiceTestBase
          Role role = new Role("arole", false, false, true, false, false, false, false);
          Set<Role> roles = new HashSet<Role>();
          roles.add(role);
-         securityRepository.addMatch(addressA, roles);
+         securityRepository.addMatch(SecurityTest.addressA, roles);
          securityManager.addRole("auser", "arole");
          ClientSessionFactory cf = createInVMFactory();
          ClientSession session = cf.createSession("auser", "pass", false, true, true, false, -1);
-         session.createQueue(addressA, queueA, true);
+         session.createQueue(SecurityTest.addressA, SecurityTest.queueA, true);
          session.close();
       }
       finally
@@ -229,18 +231,18 @@ public class SecurityTest extends ServiceTestBase
          Role role = new Role("arole", false, false, false, false, false, false, false);
          Set<Role> roles = new HashSet<Role>();
          roles.add(role);
-         securityRepository.addMatch(addressA, roles);
+         securityRepository.addMatch(SecurityTest.addressA, roles);
          securityManager.addRole("auser", "arole");
          ClientSessionFactory cf = createInVMFactory();
          ClientSession session = cf.createSession("auser", "pass", false, true, true, false, -1);
          try
          {
-            session.createQueue(addressA, queueA, true);
-            fail("should throw exception");
+            session.createQueue(SecurityTest.addressA, SecurityTest.queueA, true);
+            Assert.fail("should throw exception");
          }
          catch (HornetQException e)
          {
-            assertEquals(HornetQException.SECURITY_EXCEPTION, e.getCode());
+            Assert.assertEquals(HornetQException.SECURITY_EXCEPTION, e.getCode());
          }
          session.close();
       }
@@ -268,12 +270,12 @@ public class SecurityTest extends ServiceTestBase
          Role role = new Role("arole", false, false, true, true, false, false, false);
          Set<Role> roles = new HashSet<Role>();
          roles.add(role);
-         securityRepository.addMatch(addressA, roles);
+         securityRepository.addMatch(SecurityTest.addressA, roles);
          securityManager.addRole("auser", "arole");
          ClientSessionFactory cf = createInVMFactory();
          ClientSession session = cf.createSession("auser", "pass", false, true, true, false, -1);
-         session.createQueue(addressA, queueA, true);
-         session.deleteQueue(queueA);
+         session.createQueue(SecurityTest.addressA, SecurityTest.queueA, true);
+         session.deleteQueue(SecurityTest.queueA);
          session.close();
       }
       finally
@@ -300,19 +302,19 @@ public class SecurityTest extends ServiceTestBase
          Role role = new Role("arole", false, false, true, false, false, false, false);
          Set<Role> roles = new HashSet<Role>();
          roles.add(role);
-         securityRepository.addMatch(addressA, roles);
+         securityRepository.addMatch(SecurityTest.addressA, roles);
          securityManager.addRole("auser", "arole");
          ClientSessionFactory cf = createInVMFactory();
          ClientSession session = cf.createSession("auser", "pass", false, true, true, false, -1);
-         session.createQueue(addressA, queueA, true);
+         session.createQueue(SecurityTest.addressA, SecurityTest.queueA, true);
          try
          {
-            session.deleteQueue(queueA);
-            fail("should throw exception");
+            session.deleteQueue(SecurityTest.queueA);
+            Assert.fail("should throw exception");
          }
          catch (HornetQException e)
          {
-            assertEquals(HornetQException.SECURITY_EXCEPTION, e.getCode());
+            Assert.assertEquals(HornetQException.SECURITY_EXCEPTION, e.getCode());
          }
          session.close();
       }
@@ -340,11 +342,11 @@ public class SecurityTest extends ServiceTestBase
          Role role = new Role("arole", false, false, false, false, true, false, false);
          Set<Role> roles = new HashSet<Role>();
          roles.add(role);
-         securityRepository.addMatch(addressA, roles);
+         securityRepository.addMatch(SecurityTest.addressA, roles);
          securityManager.addRole("auser", "arole");
          ClientSessionFactory cf = createInVMFactory();
          ClientSession session = cf.createSession("auser", "pass", false, true, true, false, -1);
-         session.createQueue(addressA, queueA, false);
+         session.createQueue(SecurityTest.addressA, SecurityTest.queueA, false);
          session.close();
       }
       finally
@@ -371,18 +373,18 @@ public class SecurityTest extends ServiceTestBase
          Role role = new Role("arole", false, false, false, false, false, false, false);
          Set<Role> roles = new HashSet<Role>();
          roles.add(role);
-         securityRepository.addMatch(addressA, roles);
+         securityRepository.addMatch(SecurityTest.addressA, roles);
          securityManager.addRole("auser", "arole");
          ClientSessionFactory cf = createInVMFactory();
          ClientSession session = cf.createSession("auser", "pass", false, true, true, false, -1);
          try
          {
-            session.createQueue(addressA, queueA, false);
-            fail("should throw exception");
+            session.createQueue(SecurityTest.addressA, SecurityTest.queueA, false);
+            Assert.fail("should throw exception");
          }
          catch (HornetQException e)
          {
-            assertEquals(HornetQException.SECURITY_EXCEPTION, e.getCode());
+            Assert.assertEquals(HornetQException.SECURITY_EXCEPTION, e.getCode());
          }
          session.close();
       }
@@ -410,12 +412,12 @@ public class SecurityTest extends ServiceTestBase
          Role role = new Role("arole", false, false, false, false, true, true, false);
          Set<Role> roles = new HashSet<Role>();
          roles.add(role);
-         securityRepository.addMatch(addressA, roles);
+         securityRepository.addMatch(SecurityTest.addressA, roles);
          securityManager.addRole("auser", "arole");
          ClientSessionFactory cf = createInVMFactory();
          ClientSession session = cf.createSession("auser", "pass", false, true, true, false, -1);
-         session.createQueue(addressA, queueA, false);
-         session.deleteQueue(queueA);
+         session.createQueue(SecurityTest.addressA, SecurityTest.queueA, false);
+         session.deleteQueue(SecurityTest.queueA);
          session.close();
       }
       finally
@@ -442,19 +444,19 @@ public class SecurityTest extends ServiceTestBase
          Role role = new Role("arole", false, false, false, false, true, false, false);
          Set<Role> roles = new HashSet<Role>();
          roles.add(role);
-         securityRepository.addMatch(addressA, roles);
+         securityRepository.addMatch(SecurityTest.addressA, roles);
          securityManager.addRole("auser", "arole");
          ClientSessionFactory cf = createInVMFactory();
          ClientSession session = cf.createSession("auser", "pass", false, true, true, false, -1);
-         session.createQueue(addressA, queueA, false);
+         session.createQueue(SecurityTest.addressA, SecurityTest.queueA, false);
          try
          {
-            session.deleteQueue(queueA);
-            fail("should throw exception");
+            session.deleteQueue(SecurityTest.queueA);
+            Assert.fail("should throw exception");
          }
          catch (HornetQException e)
          {
-            assertEquals(HornetQException.SECURITY_EXCEPTION, e.getCode());
+            Assert.assertEquals(HornetQException.SECURITY_EXCEPTION, e.getCode());
          }
          session.close();
       }
@@ -482,13 +484,13 @@ public class SecurityTest extends ServiceTestBase
          Role role = new Role("arole", true, false, true, false, false, false, false);
          Set<Role> roles = new HashSet<Role>();
          roles.add(role);
-         securityRepository.addMatch(addressA, roles);
+         securityRepository.addMatch(SecurityTest.addressA, roles);
          securityManager.addRole("auser", "arole");
          ClientSessionFactory cf = createInVMFactory();
          cf.setBlockOnNonPersistentSend(true);
          ClientSession session = cf.createSession("auser", "pass", false, true, true, false, -1);
-         session.createQueue(addressA, queueA, true);
-         ClientProducer cp = session.createProducer(addressA);
+         session.createQueue(SecurityTest.addressA, SecurityTest.queueA, true);
+         ClientProducer cp = session.createProducer(SecurityTest.addressA);
          cp.send(session.createClientMessage(false));
          session.close();
       }
@@ -516,20 +518,20 @@ public class SecurityTest extends ServiceTestBase
          Role role = new Role("arole", false, false, true, false, false, false, false);
          Set<Role> roles = new HashSet<Role>();
          roles.add(role);
-         securityRepository.addMatch(addressA, roles);
+         securityRepository.addMatch(SecurityTest.addressA, roles);
          securityManager.addRole("auser", "arole");
          ClientSessionFactory cf = createInVMFactory();
          cf.setBlockOnNonPersistentSend(true);
          ClientSession session = cf.createSession("auser", "pass", false, true, true, false, -1);
-         session.createQueue(addressA, queueA, true);
-         ClientProducer cp = session.createProducer(addressA);
+         session.createQueue(SecurityTest.addressA, SecurityTest.queueA, true);
+         ClientProducer cp = session.createProducer(SecurityTest.addressA);
          try
          {
             cp.send(session.createClientMessage(false));
          }
          catch (HornetQException e)
          {
-            assertEquals(HornetQException.SECURITY_EXCEPTION, e.getCode());
+            Assert.assertEquals(HornetQException.SECURITY_EXCEPTION, e.getCode());
          }
          session.close();
       }
@@ -557,17 +559,17 @@ public class SecurityTest extends ServiceTestBase
          Role role = new Role("arole", false, false, true, false, false, false, false);
          Set<Role> roles = new HashSet<Role>();
          roles.add(role);
-         securityRepository.addMatch(addressA, roles);
+         securityRepository.addMatch(SecurityTest.addressA, roles);
          securityManager.addRole("auser", "arole");
          ClientSessionFactory cf = createInVMFactory();
          ClientSession session = cf.createSession("auser", "pass", false, true, true, false, -1);
-         session.createQueue(addressA, queueA, true);
-         ClientProducer cp = session.createProducer(addressA);
+         session.createQueue(SecurityTest.addressA, SecurityTest.queueA, true);
+         ClientProducer cp = session.createProducer(SecurityTest.addressA);
          cp.send(session.createClientMessage(false));
          session.close();
 
-         Queue binding = (Queue) server.getPostOffice().getBinding(new SimpleString(queueA)).getBindable();
-         assertEquals(0, binding.getMessageCount());
+         Queue binding = (Queue)server.getPostOffice().getBinding(new SimpleString(SecurityTest.queueA)).getBindable();
+         Assert.assertEquals(0, binding.getMessageCount());
       }
       finally
       {
@@ -598,15 +600,15 @@ public class SecurityTest extends ServiceTestBase
          Set<Role> roles = new HashSet<Role>();
          roles.add(sendRole);
          roles.add(role);
-         securityRepository.addMatch(addressA, roles);
+         securityRepository.addMatch(SecurityTest.addressA, roles);
          securityManager.addRole("auser", "arole");
          ClientSessionFactory cf = createInVMFactory();
          ClientSession senSession = cf.createSession(false, true, true);
          ClientSession session = cf.createSession("auser", "pass", false, true, true, false, -1);
-         senSession.createQueue(addressA, queueA, true);
-         ClientProducer cp = senSession.createProducer(addressA);
+         senSession.createQueue(SecurityTest.addressA, SecurityTest.queueA, true);
+         ClientProducer cp = senSession.createProducer(SecurityTest.addressA);
          cp.send(session.createClientMessage(false));
-         ClientConsumer cc = session.createConsumer(queueA);
+         ClientConsumer cc = session.createConsumer(SecurityTest.queueA);
          session.close();
          senSession.close();
       }
@@ -639,21 +641,21 @@ public class SecurityTest extends ServiceTestBase
          Set<Role> roles = new HashSet<Role>();
          roles.add(sendRole);
          roles.add(role);
-         securityRepository.addMatch(addressA, roles);
+         securityRepository.addMatch(SecurityTest.addressA, roles);
          securityManager.addRole("auser", "arole");
          ClientSessionFactory cf = createInVMFactory();
          ClientSession senSession = cf.createSession(false, true, true);
          ClientSession session = cf.createSession("auser", "pass", false, true, true, false, -1);
-         senSession.createQueue(addressA, queueA, true);
-         ClientProducer cp = senSession.createProducer(addressA);
+         senSession.createQueue(SecurityTest.addressA, SecurityTest.queueA, true);
+         ClientProducer cp = senSession.createProducer(SecurityTest.addressA);
          cp.send(session.createClientMessage(false));
          try
          {
-            ClientConsumer cc = session.createConsumer(queueA);
+            ClientConsumer cc = session.createConsumer(SecurityTest.queueA);
          }
          catch (HornetQException e)
          {
-            assertEquals(HornetQException.SECURITY_EXCEPTION, e.getCode());
+            Assert.assertEquals(HornetQException.SECURITY_EXCEPTION, e.getCode());
          }
          session.close();
          senSession.close();
@@ -690,31 +692,31 @@ public class SecurityTest extends ServiceTestBase
          roles.add(sendRole);
          roles.add(role);
          roles.add(receiveRole);
-         securityRepository.addMatch(addressA, roles);
+         securityRepository.addMatch(SecurityTest.addressA, roles);
          securityManager.addRole("auser", "arole");
          ClientSessionFactory cf = createInVMFactory();
          ClientSession senSession = cf.createSession(false, true, true);
          ClientSession session = cf.createSession("auser", "pass", false, true, true, false, -1);
-         senSession.createQueue(addressA, queueA, true);
-         ClientProducer cp = senSession.createProducer(addressA);
+         senSession.createQueue(SecurityTest.addressA, SecurityTest.queueA, true);
+         ClientProducer cp = senSession.createProducer(SecurityTest.addressA);
          cp.send(session.createClientMessage(false));
          try
          {
-            ClientConsumer cc = session.createConsumer(queueA);
+            ClientConsumer cc = session.createConsumer(SecurityTest.queueA);
          }
          catch (HornetQException e)
          {
-            assertEquals(HornetQException.SECURITY_EXCEPTION, e.getCode());
+            Assert.assertEquals(HornetQException.SECURITY_EXCEPTION, e.getCode());
          }
 
          securityManager.addRole("auser", "receiver");
 
-         session.createConsumer(queueA);
+         session.createConsumer(SecurityTest.queueA);
 
          // Removing the Role... the check should be cached, so the next createConsumer shouldn't fail
          securityManager.removeRole("auser", "receiver");
 
-         session.createConsumer(queueA);
+         session.createConsumer(SecurityTest.queueA);
 
          session.close();
 
@@ -752,26 +754,26 @@ public class SecurityTest extends ServiceTestBase
          roles.add(sendRole);
          roles.add(role);
          roles.add(receiveRole);
-         securityRepository.addMatch(addressA, roles);
+         securityRepository.addMatch(SecurityTest.addressA, roles);
          securityManager.addRole("auser", "arole");
          ClientSessionFactory cf = createInVMFactory();
          ClientSession senSession = cf.createSession(false, true, true);
          ClientSession session = cf.createSession("auser", "pass", false, true, true, false, -1);
-         senSession.createQueue(addressA, queueA, true);
-         ClientProducer cp = senSession.createProducer(addressA);
+         senSession.createQueue(SecurityTest.addressA, SecurityTest.queueA, true);
+         ClientProducer cp = senSession.createProducer(SecurityTest.addressA);
          cp.send(session.createClientMessage(false));
          try
          {
-            session.createConsumer(queueA);
+            session.createConsumer(SecurityTest.queueA);
          }
          catch (HornetQException e)
          {
-            assertEquals(HornetQException.SECURITY_EXCEPTION, e.getCode());
+            Assert.assertEquals(HornetQException.SECURITY_EXCEPTION, e.getCode());
          }
 
          securityManager.addRole("auser", "receiver");
 
-         session.createConsumer(queueA);
+         session.createConsumer(SecurityTest.queueA);
 
          // Removing the Role... the check should be cached... but we used setSecurityInvalidationInterval(0), so the
          // next createConsumer should fail
@@ -779,11 +781,11 @@ public class SecurityTest extends ServiceTestBase
 
          try
          {
-            session.createConsumer(queueA);
+            session.createConsumer(SecurityTest.queueA);
          }
          catch (HornetQException e)
          {
-            assertEquals(HornetQException.SECURITY_EXCEPTION, e.getCode());
+            Assert.assertEquals(HornetQException.SECURITY_EXCEPTION, e.getCode());
          }
 
          session.close();
@@ -825,40 +827,40 @@ public class SecurityTest extends ServiceTestBase
          roles.add(sendRole);
          roles.add(role);
          roles.add(receiveRole);
-         securityRepository.addMatch(addressA, roles);
+         securityRepository.addMatch(SecurityTest.addressA, roles);
          securityManager.addRole("auser", "arole");
          ClientSessionFactory cf = createInVMFactory();
 
          ClientSession senSession = cf.createSession(false, true, true);
          ClientSession session = cf.createSession("auser", "pass", false, true, true, false, -1);
-         senSession.createQueue(addressA, queueA, true);
-         ClientProducer cp = senSession.createProducer(addressA);
+         senSession.createQueue(SecurityTest.addressA, SecurityTest.queueA, true);
+         ClientProducer cp = senSession.createProducer(SecurityTest.addressA);
          cp.send(session.createClientMessage(false));
          try
          {
-            session.createConsumer(queueA);
+            session.createConsumer(SecurityTest.queueA);
          }
          catch (HornetQException e)
          {
-            assertEquals(HornetQException.SECURITY_EXCEPTION, e.getCode());
+            Assert.assertEquals(HornetQException.SECURITY_EXCEPTION, e.getCode());
          }
 
          securityManager.addRole("auser", "receiver");
 
-         ClientConsumer consumer = session.createConsumer(queueA);
+         ClientConsumer consumer = session.createConsumer(SecurityTest.queueA);
 
          // Removing the Role... the check should be cached... but we used setSecurityInvalidationInterval(0), so the
          // next createConsumer should fail
          securityManager.removeRole("auser", "guest");
 
          ClientSession sendingSession = cf.createSession("auser", "pass", false, false, false, false, 0);
-         ClientProducer prod = sendingSession.createProducer(addressA);
+         ClientProducer prod = sendingSession.createProducer(SecurityTest.addressA);
          prod.send(createTextMessage(sendingSession, "Test", true));
          prod.send(createTextMessage(sendingSession, "Test", true));
          try
          {
             sendingSession.commit();
-            fail("Expected exception");
+            Assert.fail("Expected exception");
          }
          catch (HornetQException e)
          {
@@ -872,7 +874,7 @@ public class SecurityTest extends ServiceTestBase
          sendingSession = cf.createSession("auser", "pass", true, false, false, false, 0);
          sendingSession.start(xid, XAResource.TMNOFLAGS);
 
-         prod = sendingSession.createProducer(addressA);
+         prod = sendingSession.createProducer(SecurityTest.addressA);
          prod.send(createTextMessage(sendingSession, "Test", true));
          prod.send(createTextMessage(sendingSession, "Test", true));
          sendingSession.end(xid, XAResource.TMSUCCESS);
@@ -880,7 +882,7 @@ public class SecurityTest extends ServiceTestBase
          try
          {
             sendingSession.prepare(xid);
-            fail("Exception was expected");
+            Assert.fail("Exception was expected");
          }
          catch (Exception e)
          {
@@ -889,12 +891,12 @@ public class SecurityTest extends ServiceTestBase
 
          // A prepare shouldn't mark any recoverable resources
          Xid[] xids = sendingSession.recover(XAResource.TMSTARTRSCAN);
-         assertEquals(0, xids.length);
+         Assert.assertEquals(0, xids.length);
 
          session.close();
 
          senSession.close();
-         
+
          sendingSession.close();
       }
       finally
@@ -958,7 +960,7 @@ public class SecurityTest extends ServiceTestBase
          securityManager.addRole("auser", "arole");
          ClientSessionFactory cf = createInVMFactory();
          ClientSession session = cf.createSession("auser", "pass", false, true, true, false, -1);
-         session.createQueue(configuration.getManagementAddress().toString(), queueA, true);
+         session.createQueue(configuration.getManagementAddress().toString(), SecurityTest.queueA, true);
          ClientProducer cp = session.createProducer(configuration.getManagementAddress());
          cp.send(session.createClientMessage(false));
          try
@@ -967,7 +969,7 @@ public class SecurityTest extends ServiceTestBase
          }
          catch (HornetQException e)
          {
-            assertEquals(HornetQException.SECURITY_EXCEPTION, e.getCode());
+            Assert.assertEquals(HornetQException.SECURITY_EXCEPTION, e.getCode());
          }
          session.close();
       }
@@ -999,13 +1001,13 @@ public class SecurityTest extends ServiceTestBase
          securityManager.addRole("auser", "arole");
          ClientSessionFactory cf = createInVMFactory();
          ClientSession session = cf.createSession("auser", "pass", false, true, true, false, -1);
-         session.createQueue(configuration.getManagementAddress().toString(), queueA, true);
+         session.createQueue(configuration.getManagementAddress().toString(), SecurityTest.queueA, true);
          ClientProducer cp = session.createProducer(configuration.getManagementAddress());
          cp.send(session.createClientMessage(false));
          session.close();
 
-         Queue binding = (Queue) server.getPostOffice().getBinding(new SimpleString(queueA)).getBindable();
-         assertEquals(0, binding.getMessageCount());
+         Queue binding = (Queue)server.getPostOffice().getBinding(new SimpleString(SecurityTest.queueA)).getBindable();
+         Assert.assertEquals(0, binding.getMessageCount());
       }
       finally
       {
@@ -1047,12 +1049,12 @@ public class SecurityTest extends ServiceTestBase
          try
          {
             ClientSession session = cf.createSession(false, true, true);
-            
+
             session.close();
          }
          catch (HornetQException e)
          {
-            fail("should not throw exception");
+            Assert.fail("should not throw exception");
          }
       }
       finally
@@ -1091,11 +1093,11 @@ public class SecurityTest extends ServiceTestBase
          try
          {
             ClientSession session = cf.createSession(false, true, true);
-            fail("should not throw exception");
+            Assert.fail("should not throw exception");
          }
          catch (HornetQException e)
          {
-            assertEquals(HornetQException.SECURITY_EXCEPTION, e.getCode());
+            Assert.assertEquals(HornetQException.SECURITY_EXCEPTION, e.getCode());
          }
       }
       finally
@@ -1163,38 +1165,38 @@ public class SecurityTest extends ServiceTestBase
          adminSession.createQueue(eurQueueName, eurQueueName, false);
          String usQueueName = "news.us.usQueue";
          adminSession.createQueue(usQueueName, usQueueName, false);
-         //Step 4. Try to create a JMS Connection without user/password. It will fail.
+         // Step 4. Try to create a JMS Connection without user/password. It will fail.
          try
          {
             factory.createSession(false, true, true);
-            fail("should throw exception");
+            Assert.fail("should throw exception");
          }
          catch (HornetQException e)
          {
             System.out.println("Default user cannot get a connection. Details: " + e.getMessage());
          }
 
-         //Step 5. bill tries to make a connection using wrong password
+         // Step 5. bill tries to make a connection using wrong password
          try
          {
             billConnection = factory.createSession("bill", "hornetq1", false, true, true, false, -1);
-            fail("should throw exception");
+            Assert.fail("should throw exception");
          }
          catch (HornetQException e)
          {
             System.out.println("User bill failed to connect. Details: " + e.getMessage());
          }
 
-         //Step 6. bill makes a good connection.
+         // Step 6. bill makes a good connection.
          billConnection = factory.createSession("bill", "hornetq", false, true, true, false, -1);
 
-         //Step 7. andrew makes a good connection.
+         // Step 7. andrew makes a good connection.
          andrewConnection = factory.createSession("andrew", "hornetq1", false, true, true, false, -1);
 
-         //Step 8. frank makes a good connection.
+         // Step 8. frank makes a good connection.
          frankConnection = factory.createSession("frank", "hornetq2", false, true, true, false, -1);
 
-         //Step 9. sam makes a good connection.
+         // Step 9. sam makes a good connection.
          samConnection = factory.createSession("sam", "hornetq3", false, true, true, false, -1);
 
          checkUserSendAndReceive(genericQueueName, billConnection);
@@ -1202,30 +1204,30 @@ public class SecurityTest extends ServiceTestBase
          checkUserSendAndReceive(genericQueueName, frankConnection);
          checkUserSendAndReceive(genericQueueName, samConnection);
 
-         //Step 11. Check permissions on news.europe.europeTopic for bill: can't send and can't receive
+         // Step 11. Check permissions on news.europe.europeTopic for bill: can't send and can't receive
          checkUserNoSendNoReceive(eurQueueName, billConnection, adminSession);
 
-         //Step 12. Check permissions on news.europe.europeTopic for andrew: can send but can't receive
+         // Step 12. Check permissions on news.europe.europeTopic for andrew: can send but can't receive
          checkUserSendNoReceive(eurQueueName, andrewConnection);
 
-         //Step 13. Check permissions on news.europe.europeTopic for frank: can't send but can receive
+         // Step 13. Check permissions on news.europe.europeTopic for frank: can't send but can receive
          checkUserReceiveNoSend(eurQueueName, frankConnection, adminSession);
 
-         //Step 14. Check permissions on news.europe.europeTopic for sam: can't send but can receive
+         // Step 14. Check permissions on news.europe.europeTopic for sam: can't send but can receive
          checkUserReceiveNoSend(eurQueueName, samConnection, adminSession);
 
-         //Step 15. Check permissions on news.us.usTopic for bill: can't send and can't receive
+         // Step 15. Check permissions on news.us.usTopic for bill: can't send and can't receive
          checkUserNoSendNoReceive(usQueueName, billConnection, adminSession);
 
-         //Step 16. Check permissions on news.us.usTopic for andrew: can't send and can't receive
+         // Step 16. Check permissions on news.us.usTopic for andrew: can't send and can't receive
          checkUserNoSendNoReceive(usQueueName, andrewConnection, adminSession);
 
-         //Step 17. Check permissions on news.us.usTopic for frank: can both send and receive
+         // Step 17. Check permissions on news.us.usTopic for frank: can both send and receive
          checkUserSendAndReceive(usQueueName, frankConnection);
 
-         //Step 18. Check permissions on news.us.usTopic for same: can't send but can receive
+         // Step 18. Check permissions on news.us.usTopic for same: can't send but can receive
          checkUserReceiveNoSend(usQueueName, samConnection, adminSession);
-         
+
          billConnection.close();
 
          andrewConnection.close();
@@ -1233,7 +1235,7 @@ public class SecurityTest extends ServiceTestBase
          frankConnection.close();
 
          samConnection.close();
-         
+
          adminSession.close();
       }
       finally
@@ -1301,38 +1303,38 @@ public class SecurityTest extends ServiceTestBase
          adminSession.createQueue(eurQueueName, eurQueueName, false);
          String usQueueName = "news.us.usQueue";
          adminSession.createQueue(usQueueName, usQueueName, false);
-         //Step 4. Try to create a JMS Connection without user/password. It will fail.
+         // Step 4. Try to create a JMS Connection without user/password. It will fail.
          try
          {
             factory.createSession(false, true, true);
-            fail("should throw exception");
+            Assert.fail("should throw exception");
          }
          catch (HornetQException e)
          {
             System.out.println("Default user cannot get a connection. Details: " + e.getMessage());
          }
 
-         //Step 5. bill tries to make a connection using wrong password
+         // Step 5. bill tries to make a connection using wrong password
          try
          {
             billConnection = factory.createSession("bill", "hornetq1", false, true, true, false, -1);
-            fail("should throw exception");
+            Assert.fail("should throw exception");
          }
          catch (HornetQException e)
          {
             System.out.println("User bill failed to connect. Details: " + e.getMessage());
          }
 
-         //Step 6. bill makes a good connection.
+         // Step 6. bill makes a good connection.
          billConnection = factory.createSession("bill", "hornetq", false, true, true, false, -1);
 
-         //Step 7. andrew makes a good connection.
+         // Step 7. andrew makes a good connection.
          andrewConnection = factory.createSession("andrew", "hornetq1", false, true, true, false, -1);
 
-         //Step 8. frank makes a good connection.
+         // Step 8. frank makes a good connection.
          frankConnection = factory.createSession("frank", "hornetq2", false, true, true, false, -1);
 
-         //Step 9. sam makes a good connection.
+         // Step 9. sam makes a good connection.
          samConnection = factory.createSession("sam", "hornetq3", false, true, true, false, -1);
 
          checkUserSendAndReceive(genericQueueName, billConnection);
@@ -1340,28 +1342,28 @@ public class SecurityTest extends ServiceTestBase
          checkUserSendAndReceive(genericQueueName, frankConnection);
          checkUserSendAndReceive(genericQueueName, samConnection);
 
-         //Step 11. Check permissions on news.europe.europeTopic for bill: can't send and can't receive
+         // Step 11. Check permissions on news.europe.europeTopic for bill: can't send and can't receive
          checkUserNoSendNoReceive(eurQueueName, billConnection, adminSession);
 
-         //Step 12. Check permissions on news.europe.europeTopic for andrew: can send but can't receive
+         // Step 12. Check permissions on news.europe.europeTopic for andrew: can send but can't receive
          checkUserSendNoReceive(eurQueueName, andrewConnection);
 
-         //Step 13. Check permissions on news.europe.europeTopic for frank: can't send but can receive
+         // Step 13. Check permissions on news.europe.europeTopic for frank: can't send but can receive
          checkUserReceiveNoSend(eurQueueName, frankConnection, adminSession);
 
-         //Step 14. Check permissions on news.europe.europeTopic for sam: can't send but can receive
+         // Step 14. Check permissions on news.europe.europeTopic for sam: can't send but can receive
          checkUserReceiveNoSend(eurQueueName, samConnection, adminSession);
 
-         //Step 15. Check permissions on news.us.usTopic for bill: can't send and can't receive
+         // Step 15. Check permissions on news.us.usTopic for bill: can't send and can't receive
          checkUserNoSendNoReceive(usQueueName, billConnection, adminSession);
 
-         //Step 16. Check permissions on news.us.usTopic for andrew: can't send and can't receive
+         // Step 16. Check permissions on news.us.usTopic for andrew: can't send and can't receive
          checkUserNoSendNoReceive(usQueueName, andrewConnection, adminSession);
 
-         //Step 17. Check permissions on news.us.usTopic for frank: can both send and receive
+         // Step 17. Check permissions on news.us.usTopic for frank: can both send and receive
          checkUserSendAndReceive(usQueueName, frankConnection);
 
-         //Step 18. Check permissions on news.us.usTopic for same: can't send but can receive
+         // Step 18. Check permissions on news.us.usTopic for same: can't send but can receive
          checkUserReceiveNoSend(usQueueName, samConnection, adminSession);
       }
       finally
@@ -1373,8 +1375,8 @@ public class SecurityTest extends ServiceTestBase
       }
    }
 
-   //Check the user connection has both send and receive permissions on the queue
-   private void checkUserSendAndReceive(String genericQueueName, ClientSession connection) throws Exception
+   // Check the user connection has both send and receive permissions on the queue
+   private void checkUserSendAndReceive(final String genericQueueName, final ClientSession connection) throws Exception
    {
       connection.start();
       try
@@ -1384,7 +1386,7 @@ public class SecurityTest extends ServiceTestBase
          ClientMessage m = connection.createClientMessage(false);
          prod.send(m);
          ClientMessage rec = con.receive(1000);
-         assertNotNull(rec);
+         Assert.assertNotNull(rec);
          rec.acknowledge();
       }
       finally
@@ -1393,8 +1395,10 @@ public class SecurityTest extends ServiceTestBase
       }
    }
 
-   //Check the user can receive message but cannot send message.
-   private void checkUserReceiveNoSend(String queue, ClientSession connection, ClientSession sendingConn) throws Exception
+   // Check the user can receive message but cannot send message.
+   private void checkUserReceiveNoSend(final String queue,
+                                       final ClientSession connection,
+                                       final ClientSession sendingConn) throws Exception
    {
       connection.start();
       try
@@ -1404,18 +1408,18 @@ public class SecurityTest extends ServiceTestBase
          try
          {
             prod.send(m);
-            fail("should throw exception");
+            Assert.fail("should throw exception");
          }
          catch (HornetQException e)
          {
-            //pass
+            // pass
          }
 
          prod = sendingConn.createProducer(queue);
          prod.send(m);
          ClientConsumer con = connection.createConsumer(queue);
          ClientMessage rec = con.receive(1000);
-         assertNotNull(rec);
+         Assert.assertNotNull(rec);
          rec.acknowledge();
       }
       finally
@@ -1424,7 +1428,9 @@ public class SecurityTest extends ServiceTestBase
       }
    }
 
-   private void checkUserNoSendNoReceive(String queue, ClientSession connection, ClientSession sendingConn) throws Exception
+   private void checkUserNoSendNoReceive(final String queue,
+                                         final ClientSession connection,
+                                         final ClientSession sendingConn) throws Exception
    {
       connection.start();
       try
@@ -1434,11 +1440,11 @@ public class SecurityTest extends ServiceTestBase
          try
          {
             prod.send(m);
-            fail("should throw exception");
+            Assert.fail("should throw exception");
          }
          catch (HornetQException e)
          {
-            //pass
+            // pass
          }
 
          prod = sendingConn.createProducer(queue);
@@ -1447,11 +1453,11 @@ public class SecurityTest extends ServiceTestBase
          try
          {
             ClientConsumer con = connection.createConsumer(queue);
-            fail("should throw exception");
+            Assert.fail("should throw exception");
          }
          catch (HornetQException e)
          {
-            //pass
+            // pass
          }
       }
       finally
@@ -1460,8 +1466,8 @@ public class SecurityTest extends ServiceTestBase
       }
    }
 
-   //Check the user can send message but cannot receive message
-   private void checkUserSendNoReceive(String queue, ClientSession connection) throws Exception
+   // Check the user can send message but cannot receive message
+   private void checkUserSendNoReceive(final String queue, final ClientSession connection) throws Exception
    {
       ClientProducer prod = connection.createProducer(queue);
       ClientMessage m = connection.createClientMessage(false);
@@ -1470,11 +1476,11 @@ public class SecurityTest extends ServiceTestBase
       try
       {
          ClientConsumer con = connection.createConsumer(queue);
-         fail("should throw exception");
+         Assert.fail("should throw exception");
       }
       catch (HornetQException e)
       {
-         //pass
+         // pass
       }
    }
 
@@ -1509,11 +1515,11 @@ public class SecurityTest extends ServiceTestBase
 
       public boolean login() throws LoginException
       {
-         boolean authenticated = (Boolean) options.get("authenticated");
+         boolean authenticated = (Boolean)options.get("authenticated");
          if (authenticated)
          {
             Group roles = new SimpleGroup("Roles");
-            roles.addMember(new JAASSecurityManager.SimplePrincipal((String) options.get("role")));
+            roles.addMember(new JAASSecurityManager.SimplePrincipal((String)options.get("role")));
             subject.getPrincipals().add(roles);
          }
          return authenticated;
@@ -1549,7 +1555,7 @@ public class SecurityTest extends ServiceTestBase
          AppConfigurationEntry entry = new AppConfigurationEntry(loginModuleName,
                                                                  AppConfigurationEntry.LoginModuleControlFlag.REQUIRED,
                                                                  options);
-         return new AppConfigurationEntry[]{entry};
+         return new AppConfigurationEntry[] { entry };
       }
 
       @Override

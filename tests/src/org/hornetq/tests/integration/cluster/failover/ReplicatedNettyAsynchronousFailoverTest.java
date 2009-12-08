@@ -38,7 +38,7 @@ public class ReplicatedNettyAsynchronousFailoverTest extends NettyAsynchronousFa
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
-   
+
    @Override
    protected void createConfigs() throws Exception
    {

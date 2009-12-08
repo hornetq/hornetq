@@ -14,7 +14,6 @@
 package org.hornetq.core.remoting.impl.wireformat;
 
 import org.hornetq.core.buffers.HornetQBuffer;
-import org.hornetq.utils.DataConstants;
 
 /**
  * A ReplicationLargemessageEndMessage
@@ -37,7 +36,7 @@ public class ReplicationLargemessageEndMessage extends PacketImpl
 
    public ReplicationLargemessageEndMessage()
    {
-      super(REPLICATION_LARGE_MESSAGE_END);
+      super(PacketImpl.REPLICATION_LARGE_MESSAGE_END);
    }
 
    public ReplicationLargemessageEndMessage(final long messageId)

@@ -13,27 +13,6 @@
 
 package org.hornetq.tests.integration.jms.client;
 
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CACHE_LARGE_MESSAGE_CLIENT;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONFIRMATION_WINDOW_SIZE;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MAX_RETRY_INTERVAL;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_THREAD_POOL_MAX_SIZE;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_USE_GLOBAL_POOLS;
-
 import java.util.List;
 
 import javax.jms.Connection;
@@ -43,6 +22,9 @@ import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
+import junit.framework.Assert;
+
+import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.tests.util.JMSTestBase;
 import org.hornetq.tests.util.RandomUtil;
@@ -70,39 +52,39 @@ public class TextMessageTest extends JMSTestBase
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
-   
+
    public void testSendReceiveNullBody() throws Exception
    {
       Connection conn = cf.createConnection();
-      
+
       try
       {
          Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
          MessageProducer prod = sess.createProducer(queue);
-         
+
          conn.start();
-         
+
          MessageConsumer cons = sess.createConsumer(queue);
 
          TextMessage msg1 = sess.createTextMessage(null);
-         prod.send(msg1);                 
+         prod.send(msg1);
          TextMessage received1 = (TextMessage)cons.receive(1000);
-         assertNotNull(received1);
-         assertNull(received1.getText());   
-         
+         Assert.assertNotNull(received1);
+         Assert.assertNull(received1.getText());
+
          TextMessage msg2 = sess.createTextMessage();
          msg2.setText(null);
-         prod.send(msg2);                 
+         prod.send(msg2);
          TextMessage received2 = (TextMessage)cons.receive(1000);
-         assertNotNull(received2);
-         assertNull(received2.getText());
-         
+         Assert.assertNotNull(received2);
+         Assert.assertNull(received2.getText());
+
          TextMessage msg3 = sess.createTextMessage();
-         prod.send(msg3);                 
+         prod.send(msg3);
          TextMessage received3 = (TextMessage)cons.receive(1000);
-         assertNotNull(received3);
-         assertNull(received3.getText());
+         Assert.assertNotNull(received3);
+         Assert.assertNull(received3.getText());
       }
       finally
       {
@@ -116,93 +98,93 @@ public class TextMessageTest extends JMSTestBase
       }
 
    }
-   
+
    public void testSendReceiveWithBody0() throws Exception
    {
       testSendReceiveWithBody(0);
    }
-   
+
    public void testSendReceiveWithBody1() throws Exception
    {
       testSendReceiveWithBody(1);
    }
-   
+
    public void testSendReceiveWithBody9() throws Exception
    {
       testSendReceiveWithBody(9);
    }
-   
+
    public void testSendReceiveWithBody20() throws Exception
    {
       testSendReceiveWithBody(20);
    }
-   
+
    public void testSendReceiveWithBody10000() throws Exception
    {
       testSendReceiveWithBody(10000);
    }
-   
+
    public void testSendReceiveWithBody0xffff() throws Exception
    {
       testSendReceiveWithBody(0xffff);
    }
-   
+
    public void testSendReceiveWithBody0xffffplus1() throws Exception
    {
       testSendReceiveWithBody(0xffff + 1);
    }
-   
+
    public void testSendReceiveWithBody0xfffftimes2() throws Exception
    {
       testSendReceiveWithBody(2 * 0xffff);
    }
-   
-   private void testSendReceiveWithBody(int bodyLength) throws Exception
+
+   private void testSendReceiveWithBody(final int bodyLength) throws Exception
    {
       Connection conn = cf.createConnection();
-      
+
       try
       {
          char[] chrs = new char[bodyLength];
-         
+
          for (int i = 0; i < bodyLength; i++)
          {
             chrs[i] = RandomUtil.randomChar();
          }
          String str = new String(chrs);
-         
+
          Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
          MessageProducer prod = sess.createProducer(queue);
-         
+
          conn.start();
-         
+
          MessageConsumer cons = sess.createConsumer(queue);
 
          TextMessage msg1 = sess.createTextMessage(str);
-         prod.send(msg1);                 
+         prod.send(msg1);
          TextMessage received1 = (TextMessage)cons.receive(1000);
-         assertNotNull(received1);
-         assertEquals(str, received1.getText());   
-         
+         Assert.assertNotNull(received1);
+         Assert.assertEquals(str, received1.getText());
+
          TextMessage msg2 = sess.createTextMessage();
          msg2.setText(str);
-         prod.send(msg2);                 
+         prod.send(msg2);
          TextMessage received2 = (TextMessage)cons.receive(1000);
-         assertNotNull(received2);
-         assertEquals(str, received2.getText());
-         
-         //Now resend it
+         Assert.assertNotNull(received2);
+         Assert.assertEquals(str, received2.getText());
+
+         // Now resend it
          prod.send(received2);
          TextMessage received3 = (TextMessage)cons.receive(1000);
-         assertNotNull(received3);
-         
-         //And resend again
-         
+         Assert.assertNotNull(received3);
+
+         // And resend again
+
          prod.send(received3);
          TextMessage received4 = (TextMessage)cons.receive(1000);
-         assertNotNull(received4);
-         
+         Assert.assertNotNull(received4);
+
       }
       finally
       {
@@ -216,8 +198,7 @@ public class TextMessageTest extends JMSTestBase
       }
 
    }
-   
-   
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
@@ -249,30 +230,30 @@ public class TextMessageTest extends JMSTestBase
       jmsServer.createConnectionFactory("ManualReconnectionToSingleServerTest",
                                         connectorConfigs,
                                         null,
-                                        DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
-                                        DEFAULT_CONNECTION_TTL,
-                                        callTimeout,                                        
-                                        DEFAULT_CACHE_LARGE_MESSAGE_CLIENT,
-                                        DEFAULT_MIN_LARGE_MESSAGE_SIZE,
-                                        DEFAULT_CONSUMER_WINDOW_SIZE,
-                                        DEFAULT_CONSUMER_MAX_RATE,
-                                        DEFAULT_CONFIRMATION_WINDOW_SIZE,
-                                        DEFAULT_PRODUCER_WINDOW_SIZE,
-                                        DEFAULT_PRODUCER_MAX_RATE,
-                                        DEFAULT_BLOCK_ON_ACKNOWLEDGE,
-                                        DEFAULT_BLOCK_ON_PERSISTENT_SEND,
-                                        DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND,
-                                        DEFAULT_AUTO_GROUP,
-                                        DEFAULT_PRE_ACKNOWLEDGE,
-                                        DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
-                                        DEFAULT_ACK_BATCH_SIZE,
-                                        DEFAULT_ACK_BATCH_SIZE,
-                                        DEFAULT_USE_GLOBAL_POOLS,
-                                        DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE,
-                                        DEFAULT_THREAD_POOL_MAX_SIZE,                                      
+                                        ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
+                                        ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL,
+                                        callTimeout,
+                                        ClientSessionFactoryImpl.DEFAULT_CACHE_LARGE_MESSAGE_CLIENT,
+                                        ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
+                                        ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE,
+                                        ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE,
+                                        ClientSessionFactoryImpl.DEFAULT_CONFIRMATION_WINDOW_SIZE,
+                                        ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE,
+                                        ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE,
+                                        ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE,
+                                        ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND,
+                                        ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND,
+                                        ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP,
+                                        ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE,
+                                        ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
+                                        ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE,
+                                        ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE,
+                                        ClientSessionFactoryImpl.DEFAULT_USE_GLOBAL_POOLS,
+                                        ClientSessionFactoryImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE,
+                                        ClientSessionFactoryImpl.DEFAULT_THREAD_POOL_MAX_SIZE,
                                         retryInterval,
                                         retryIntervalMultiplier,
-                                        DEFAULT_MAX_RETRY_INTERVAL,
+                                        ClientSessionFactoryImpl.DEFAULT_MAX_RETRY_INTERVAL,
                                         reconnectAttempts,
                                         failoverOnServerShutdown,
                                         null,

@@ -25,7 +25,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
@@ -52,7 +51,6 @@ import org.hornetq.core.deployers.impl.SecurityDeployer;
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.filter.impl.FilterImpl;
-import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.journal.JournalLoadInformation;
 import org.hornetq.core.journal.impl.SyncSpeedTest;
 import org.hornetq.core.logging.LogDelegateFactory;
@@ -90,15 +88,11 @@ import org.hornetq.core.security.Role;
 import org.hornetq.core.security.SecurityStore;
 import org.hornetq.core.security.impl.SecurityStoreImpl;
 import org.hornetq.core.server.ActivateCallback;
-import org.hornetq.core.server.Consumer;
 import org.hornetq.core.server.Divert;
-import org.hornetq.core.server.HandleStatus;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.MemoryManager;
-import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.QueueFactory;
-import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.ServerSession;
 import org.hornetq.core.server.cluster.ClusterManager;
 import org.hornetq.core.server.cluster.Transformer;
@@ -277,11 +271,11 @@ public class HornetQServerImpl implements HornetQServer
 
       if (started)
       {
-         log.info((configuration.isBackup() ? "backup" : "live") + " is already started, ignoring the call to start..");
+         HornetQServerImpl.log.info((configuration.isBackup() ? "backup" : "live") + " is already started, ignoring the call to start..");
          return;
       }
 
-      log.info((configuration.isBackup() ? "backup" : "live") + " server is starting..");
+      HornetQServerImpl.log.info((configuration.isBackup() ? "backup" : "live") + " server is starting..");
 
       if (configuration.isRunSyncSpeedTest())
       {
@@ -300,20 +294,20 @@ public class HornetQServerImpl implements HornetQServer
             replicationEndpoint.start();
          }
          // We defer actually initialisation until the live node has contacted the backup
-         log.info("Backup server initialised");
+         HornetQServerImpl.log.info("Backup server initialised");
       }
       else
       {
          initialisePart2();
       }
-      
+
       // We start the remoting service here - if the server is a backup remoting service needs to be started
       // so it can be initialised by the live node
       remotingService.start();
 
       started = true;
 
-      log.info("HornetQ Server version " + getVersion().getFullVersion() + " started");
+      HornetQServerImpl.log.info("HornetQ Server version " + getVersion().getFullVersion() + " started");
    }
 
    @Override
@@ -321,7 +315,7 @@ public class HornetQServerImpl implements HornetQServer
    {
       if (started)
       {
-         log.warn("HornetQServer is being finalized and has not been stopped. Please remember to stop the " + "server before letting it go out of scope");
+         HornetQServerImpl.log.warn("HornetQServer is being finalized and has not been stopped. Please remember to stop the " + "server before letting it go out of scope");
 
          stop();
       }
@@ -394,7 +388,7 @@ public class HornetQServerImpl implements HornetQServer
          {
             storageManager.stop();
          }
-         
+
          if (replicationManager != null)
          {
             replicationManager.stop();
@@ -426,7 +420,7 @@ public class HornetQServerImpl implements HornetQServer
 
          for (Runnable task : tasks)
          {
-            log.debug("Waiting for " + task);
+            HornetQServerImpl.log.debug("Waiting for " + task);
          }
 
          threadPool.shutdown();
@@ -456,7 +450,7 @@ public class HornetQServerImpl implements HornetQServer
          uuid = null;
          nodeID = null;
 
-         log.info("HornetQ Server version " + getVersion().getFullVersion() + " stopped");
+         HornetQServerImpl.log.info("HornetQ Server version " + getVersion().getFullVersion() + " stopped");
 
          Logger.reset();
       }
@@ -465,7 +459,7 @@ public class HornetQServerImpl implements HornetQServer
       {
          if (!threadPool.awaitTermination(30000, TimeUnit.MILLISECONDS))
          {
-            log.warn("Timed out waiting for pool to terminate");
+            HornetQServerImpl.log.warn("Timed out waiting for pool to terminate");
          }
       }
       catch (InterruptedException e)
@@ -577,7 +571,7 @@ public class HornetQServerImpl implements HornetQServer
             }
             catch (Exception e)
             {
-               log.error("Failed to close session", e);
+               HornetQServerImpl.log.error("Failed to close session", e);
             }
 
             sessions.remove(name);
@@ -614,22 +608,20 @@ public class HornetQServerImpl implements HornetQServer
 
       if (version.getIncrementingVersion() != incrementingVersion)
       {
-         log.warn("Client with version " + incrementingVersion +
-                  " and address " +
-                  connection.getRemoteAddress() +
-                  " is not compatible with server version " +
-                  version.getFullVersion() +
-                  ". " +
-                  "Please ensure all clients and servers are upgraded to the same version for them to " +
-                  "interoperate properly");
+         HornetQServerImpl.log.warn("Client with version " + incrementingVersion +
+                                    " and address " +
+                                    connection.getRemoteAddress() +
+                                    " is not compatible with server version " +
+                                    version.getFullVersion() +
+                                    ". " +
+                                    "Please ensure all clients and servers are upgraded to the same version for them to " +
+                                    "interoperate properly");
          throw new HornetQException(HornetQException.INCOMPATIBLE_CLIENT_SERVER_VERSIONS,
                                     "Server and client versions incompatible");
       }
 
       if (!checkActivate())
       {
-         // Backup server is not ready to accept connections
-
          throw new HornetQException(HornetQException.SESSION_CREATION_REJECTED,
                                     "Server will not accept create session requests");
       }
@@ -668,7 +660,7 @@ public class HornetQServerImpl implements HornetQServer
                                                               securityStore,
                                                               sessionExecutor,
                                                               channel,
-                                                              managementService,                                                          
+                                                              managementService,
                                                               this,
                                                               configuration.getManagementAddress());
 
@@ -857,9 +849,9 @@ public class HornetQServerImpl implements HornetQServer
    /** For tests only */
    public ReplicationEndpoint getReplicationEndpoint()
    {
-      return this.replicationEndpoint;
+      return replicationEndpoint;
    }
-   
+
    // Package protected
    // ----------------------------------------------------------------------------
 
@@ -871,8 +863,8 @@ public class HornetQServerImpl implements HornetQServer
     * @param backupConnector
     */
    protected FailoverManagerImpl createBackupConnectionFailoverManager(final TransportConfiguration backupConnector,
-                                                        final ExecutorService threadPool,
-                                                        final ScheduledExecutorService scheduledPool)
+                                                                       final ExecutorService threadPool,
+                                                                       final ScheduledExecutorService scheduledPool)
    {
       return new FailoverManagerImpl((ClientSessionFactory)null,
                                      backupConnector,
@@ -912,7 +904,7 @@ public class HornetQServerImpl implements HornetQServer
    {
       if (configuration.isPersistenceEnabled())
       {
-         return new JournalStorageManager(configuration, this.executorFactory, replicationManager);
+         return new JournalStorageManager(configuration, executorFactory, replicationManager);
       }
       else
       {
@@ -933,15 +925,17 @@ public class HornetQServerImpl implements HornetQServer
 
          if (backupConnector == null)
          {
-            log.warn("connector with name '" + backupConnectorName + "' is not defined in the configuration.");
+            HornetQServerImpl.log.warn("connector with name '" + backupConnectorName +
+                                       "' is not defined in the configuration.");
          }
          else
          {
 
-            replicationFailoverManager = createBackupConnectionFailoverManager(backupConnector, threadPool, scheduledPool);
+            replicationFailoverManager = createBackupConnectionFailoverManager(backupConnector,
+                                                                               threadPool,
+                                                                               scheduledPool);
 
-            replicationManager = new ReplicationManagerImpl(replicationFailoverManager,
-                                                            executorFactory);
+            replicationManager = new ReplicationManagerImpl(replicationFailoverManager, executorFactory);
             replicationManager.start();
          }
       }
@@ -967,7 +961,7 @@ public class HornetQServerImpl implements HornetQServer
          {
             if (replicationEndpoint == null)
             {
-               log.warn("There is no replication endpoint, can't activate this backup server");
+               HornetQServerImpl.log.warn("There is no replication endpoint, can't activate this backup server");
 
                throw new HornetQException(HornetQException.INTERNAL_ERROR, "Can't activate the server");
             }
@@ -977,7 +971,7 @@ public class HornetQServerImpl implements HornetQServer
 
          // Complete the startup procedure
 
-         log.info("Activating backup server");
+         HornetQServerImpl.log.info("Activating backup server");
 
          configuration.setBackup(false);
 
@@ -1179,7 +1173,7 @@ public class HornetQServerImpl implements HornetQServer
          {
             public void run()
             {
-               log.info(dumper.dump());
+               HornetQServerImpl.log.info(dumper.dump());
             }
          }, 0, dumpInfoInterval, TimeUnit.MILLISECONDS);
       }
@@ -1365,21 +1359,21 @@ public class HornetQServerImpl implements HornetQServer
       {
          if (config.getName() == null)
          {
-            log.warn("Must specify a name for each divert. This one will not be deployed.");
+            HornetQServerImpl.log.warn("Must specify a name for each divert. This one will not be deployed.");
 
             return;
          }
 
          if (config.getAddress() == null)
          {
-            log.warn("Must specify an address for each divert. This one will not be deployed.");
+            HornetQServerImpl.log.warn("Must specify an address for each divert. This one will not be deployed.");
 
             return;
          }
 
          if (config.getForwardingAddress() == null)
          {
-            log.warn("Must specify an forwarding address for each divert. This one will not be deployed.");
+            HornetQServerImpl.log.warn("Must specify an forwarding address for each divert. This one will not be deployed.");
 
             return;
          }
@@ -1388,7 +1382,7 @@ public class HornetQServerImpl implements HornetQServer
 
          if (postOffice.getBinding(sName) != null)
          {
-            log.warn("Binding already exists with name " + sName + ", divert will not be deployed");
+            HornetQServerImpl.log.warn("Binding already exists with name " + sName + ", divert will not be deployed");
 
             continue;
          }
@@ -1472,7 +1466,7 @@ public class HornetQServerImpl implements HornetQServer
          throw new IllegalArgumentException("Error instantiating transformer class \"" + className + "\"", e);
       }
    }
-   
+
    // Inner classes
    // --------------------------------------------------------------------------------
 }

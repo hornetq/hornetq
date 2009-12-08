@@ -11,7 +11,6 @@
  * permissions and limitations under the License.
  */
 
-
 package org.hornetq.jms.client;
 
 import javax.jms.IllegalStateException;
@@ -70,17 +69,17 @@ public class HornetQMessageConsumer implements MessageConsumer, QueueReceiver, T
    // Constructors --------------------------------------------------
 
    public HornetQMessageConsumer(final HornetQSession session,
-                               final ClientConsumer consumer,
-                               final boolean noLocal,
-                               final HornetQDestination destination,
-                               final String selector,
-                               final SimpleString autoDeleteQueueName) throws JMSException
+                                 final ClientConsumer consumer,
+                                 final boolean noLocal,
+                                 final HornetQDestination destination,
+                                 final String selector,
+                                 final SimpleString autoDeleteQueueName) throws JMSException
    {
       this.session = session;
 
       this.consumer = consumer;
 
-      this.ackMode = session.getAcknowledgeMode();
+      ackMode = session.getAcknowledgeMode();
 
       this.noLocal = noLocal;
 
@@ -107,7 +106,7 @@ public class HornetQMessageConsumer implements MessageConsumer, QueueReceiver, T
       return listener;
    }
 
-   public void setMessageListener(MessageListener listener) throws JMSException
+   public void setMessageListener(final MessageListener listener) throws JMSException
    {
       this.listener = listener;
 
@@ -128,7 +127,7 @@ public class HornetQMessageConsumer implements MessageConsumer, QueueReceiver, T
       return getMessage(0);
    }
 
-   public Message receive(long timeout) throws JMSException
+   public Message receive(final long timeout) throws JMSException
    {
       return getMessage(timeout);
    }
@@ -179,6 +178,7 @@ public class HornetQMessageConsumer implements MessageConsumer, QueueReceiver, T
 
    // Public --------------------------------------------------------
 
+   @Override
    public String toString()
    {
       return "HornetQRAMessageConsumer->" + consumer;
@@ -198,7 +198,7 @@ public class HornetQMessageConsumer implements MessageConsumer, QueueReceiver, T
       }
    }
 
-   private HornetQMessage getMessage(long timeout) throws JMSException
+   private HornetQMessage getMessage(final long timeout) throws JMSException
    {
       try
       {
@@ -210,8 +210,8 @@ public class HornetQMessageConsumer implements MessageConsumer, QueueReceiver, T
          {
             message.acknowledge();
 
-            msg = HornetQMessage.createMessage(message, ackMode == Session.CLIENT_ACKNOWLEDGE ? session.getCoreSession()
-                                                                                           : null);
+            msg = HornetQMessage.createMessage(message,
+                                               ackMode == Session.CLIENT_ACKNOWLEDGE ? session.getCoreSession() : null);
 
             try
             {
@@ -219,7 +219,7 @@ public class HornetQMessageConsumer implements MessageConsumer, QueueReceiver, T
             }
             catch (Exception e)
             {
-               log.error("Failed to prepare message for delivery", e);
+               HornetQMessageConsumer.log.error("Failed to prepare message for delivery", e);
 
                return null;
             }

@@ -20,6 +20,7 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.TextMessage;
 
+import junit.framework.Assert;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
@@ -49,13 +50,13 @@ public class JMSXPropertyTest extends PTPTestCase
          Enumeration enumeration = metaData.getJMSXPropertyNames();
          while (enumeration.hasMoreElements())
          {
-            String jmsxPropertyName = (String) enumeration.nextElement();
+            String jmsxPropertyName = (String)enumeration.nextElement();
             if (jmsxPropertyName.equals("JMSXGroupID"))
             {
                found = true;
             }
          }
-         assertTrue("JMSXGroupID property is not supported", found);
+         Assert.assertTrue("JMSXGroupID property is not supported", found);
       }
       catch (JMSException e)
       {
@@ -77,17 +78,16 @@ public class JMSXPropertyTest extends PTPTestCase
          sender.send(message);
 
          Message m = receiver.receive(TestConfig.TIMEOUT);
-         assertTrue(m instanceof TextMessage);
-         TextMessage msg = (TextMessage) m;
-         assertEquals(groupID, msg.getStringProperty("JMSXGroupID"));
-         assertEquals("testSupportsJMSXGroupID_1", msg.getText());
+         Assert.assertTrue(m instanceof TextMessage);
+         TextMessage msg = (TextMessage)m;
+         Assert.assertEquals(groupID, msg.getStringProperty("JMSXGroupID"));
+         Assert.assertEquals("testSupportsJMSXGroupID_1", msg.getText());
       }
       catch (JMSException e)
       {
          fail(e);
       }
    }
-
 
    /**
     * Test that the JMSX property <code>JMSXDeliveryCount</code> works.
@@ -98,14 +98,14 @@ public class JMSXPropertyTest extends PTPTestCase
       {
          return;
       }
-      
+
       try
       {
          senderConnection.stop();
          // senderSession has been created as non transacted
          // we create it again but as a transacted session
          senderSession = senderConnection.createQueueSession(true, 0);
-         assertEquals(true, senderSession.getTransacted());
+         Assert.assertEquals(true, senderSession.getTransacted());
          // we create again the sender
          sender = senderSession.createSender(senderQueue);
          senderConnection.start();
@@ -114,11 +114,11 @@ public class JMSXPropertyTest extends PTPTestCase
          // receiverSession has been created as non transacted
          // we create it again but as a transacted session
          receiverSession = receiverConnection.createQueueSession(true, 0);
-         assertEquals(true, receiverSession.getTransacted());
+         Assert.assertEquals(true, receiverSession.getTransacted());
          // we create again the receiver
-         if (receiver!=null)
+         if (receiver != null)
          {
-        	 receiver.close();
+            receiver.close();
          }
          receiver = receiverSession.createReceiver(receiverQueue);
          receiverConnection.start();
@@ -132,31 +132,31 @@ public class JMSXPropertyTest extends PTPTestCase
 
          // we receive a message...
          Message m = receiver.receive(TestConfig.TIMEOUT);
-         assertTrue(m != null);
-         assertTrue(m instanceof TextMessage);
-         TextMessage msg = (TextMessage) m;
+         Assert.assertTrue(m != null);
+         Assert.assertTrue(m instanceof TextMessage);
+         TextMessage msg = (TextMessage)m;
          // ... which is the one which was sent...
-         assertEquals("testJMSXDeliveryCount", msg.getText());
+         Assert.assertEquals("testJMSXDeliveryCount", msg.getText());
          // ...and has not been redelivered
-         assertEquals(false, msg.getJMSRedelivered());
+         Assert.assertEquals(false, msg.getJMSRedelivered());
          // ... so it has been delivered once
          int jmsxDeliveryCount = msg.getIntProperty("JMSXDeliveryCount");
-         assertEquals(1, jmsxDeliveryCount);
+         Assert.assertEquals(1, jmsxDeliveryCount);
          // we rollback the *consumer* transaction
          receiverSession.rollback();
 
          // we receive again a message
          m = receiver.receive(TestConfig.TIMEOUT);
-         assertTrue(m != null);
-         assertTrue(m instanceof TextMessage);
-         msg = (TextMessage) m;
+         Assert.assertTrue(m != null);
+         Assert.assertTrue(m instanceof TextMessage);
+         msg = (TextMessage)m;
          // ... which is still the one which was sent...
-         assertEquals("testJMSXDeliveryCount", msg.getText());
+         Assert.assertEquals("testJMSXDeliveryCount", msg.getText());
          // .. but this time, it has been redelivered
-         assertEquals(true, msg.getJMSRedelivered());
+         Assert.assertEquals(true, msg.getJMSRedelivered());
          // ... so it has been delivered a second time
          jmsxDeliveryCount = msg.getIntProperty("JMSXDeliveryCount");
-         assertEquals(2, jmsxDeliveryCount);
+         Assert.assertEquals(2, jmsxDeliveryCount);
       }
       catch (JMSException e)
       {
@@ -168,7 +168,6 @@ public class JMSXPropertyTest extends PTPTestCase
       }
    }
 
-
    /**
     * checks if the JMSX property <code>JMSXDeliveryCount</code> is supported.
     */
@@ -178,7 +177,7 @@ public class JMSXPropertyTest extends PTPTestCase
       Enumeration enumeration = metaData.getJMSXPropertyNames();
       while (enumeration.hasMoreElements())
       {
-         String jmsxPropertyName = (String) enumeration.nextElement();
+         String jmsxPropertyName = (String)enumeration.nextElement();
          if (jmsxPropertyName.equals("JMSXDeliveryCount"))
          {
             return true;
@@ -186,7 +185,7 @@ public class JMSXPropertyTest extends PTPTestCase
       }
       return false;
    }
-   
+
    /** 
     * Method to use this class in a Test suite
     */
@@ -195,7 +194,7 @@ public class JMSXPropertyTest extends PTPTestCase
       return new TestSuite(JMSXPropertyTest.class);
    }
 
-   public JMSXPropertyTest(String name)
+   public JMSXPropertyTest(final String name)
    {
       super(name);
    }

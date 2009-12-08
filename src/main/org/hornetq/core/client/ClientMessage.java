@@ -30,20 +30,19 @@ import org.hornetq.core.message.Message;
 public interface ClientMessage extends Message
 {
    int getDeliveryCount();
-   
-   void setDeliveryCount(int deliveryCount);
-   
-   void acknowledge() throws HornetQException;  
-   
-   int getBodySize();
-   
-   //FIXME - these are only used for large messages - they should be moved elsewhere
 
+   void setDeliveryCount(int deliveryCount);
+
+   void acknowledge() throws HornetQException;
+
+   int getBodySize();
+
+   // FIXME - these are only used for large messages - they should be moved elsewhere
 
    /** Sets the OutputStream that will receive the content of a message received in a non blocking way
     * @throws HornetQException */
    void setOutputStream(OutputStream out) throws HornetQException;
-   
+
    /** Save the content of the message to the OutputStream. It will block until the entire content is transfered to the OutputStream. */
    void saveToOutputStream(OutputStream out) throws HornetQException;
 
@@ -54,7 +53,7 @@ public interface ClientMessage extends Message
     * @throws HornetQException
     */
    boolean waitOutputStreamCompletion(long timeMilliseconds) throws HornetQException;
-            
-   void setBodyInputStream(InputStream bodyInputStream);  
+
+   void setBodyInputStream(InputStream bodyInputStream);
 
 }

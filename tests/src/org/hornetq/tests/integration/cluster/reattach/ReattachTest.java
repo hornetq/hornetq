@@ -17,6 +17,8 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.CountDownLatch;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
@@ -82,13 +84,13 @@ public class ReattachTest extends ServiceTestBase
 
       ClientSession session = sf.createSession(false, true, true);
 
-      session.createQueue(ADDRESS, ADDRESS, null, false);
+      session.createQueue(ReattachTest.ADDRESS, ReattachTest.ADDRESS, null, false);
 
       final int numIterations = 10;
 
       for (int j = 0; j < numIterations; j++)
       {
-         ClientProducer producer = session.createProducer(ADDRESS);
+         ClientProducer producer = session.createProducer(ReattachTest.ADDRESS);
 
          final int numMessages = 100;
 
@@ -104,7 +106,7 @@ public class ReattachTest extends ServiceTestBase
             producer.send(message);
          }
 
-         ClientConsumer consumer = session.createConsumer(ADDRESS);
+         ClientConsumer consumer = session.createConsumer(ReattachTest.ADDRESS);
 
          RemotingConnection conn = ((ClientSessionInternal)session).getConnection();
 
@@ -116,18 +118,18 @@ public class ReattachTest extends ServiceTestBase
          {
             ClientMessage message = consumer.receive(500);
 
-            assertNotNull(message);
+            Assert.assertNotNull(message);
 
-            assertEquals("aardvarks", message.getBodyBuffer().readString());
+            Assert.assertEquals("aardvarks", message.getBodyBuffer().readString());
 
-            assertEquals(i, message.getObjectProperty(new SimpleString("count")));
+            Assert.assertEquals(i, message.getObjectProperty(new SimpleString("count")));
 
             message.acknowledge();
          }
 
          ClientMessage message = consumer.receiveImmediate();
 
-         assertNull(message);
+         Assert.assertNull(message);
 
          producer.close();
 
@@ -160,9 +162,9 @@ public class ReattachTest extends ServiceTestBase
 
       ClientSession session = sf.createSession(false, true, true);
 
-      session.createQueue(ADDRESS, ADDRESS, null, false);
+      session.createQueue(ReattachTest.ADDRESS, ReattachTest.ADDRESS, null, false);
 
-      ClientProducer producer = session.createProducer(ADDRESS);
+      ClientProducer producer = session.createProducer(ReattachTest.ADDRESS);
 
       final int numMessages = 1000;
 
@@ -178,7 +180,7 @@ public class ReattachTest extends ServiceTestBase
          producer.send(message);
       }
 
-      ClientConsumer consumer = session.createConsumer(ADDRESS);
+      ClientConsumer consumer = session.createConsumer(ReattachTest.ADDRESS);
 
       InVMConnector.failOnCreateConnection = true;
 
@@ -211,18 +213,18 @@ public class ReattachTest extends ServiceTestBase
       {
          ClientMessage message = consumer.receive(500);
 
-         assertNotNull(message);
+         Assert.assertNotNull(message);
 
-         assertEquals("aardvarks", message.getBodyBuffer().readString());
+         Assert.assertEquals("aardvarks", message.getBodyBuffer().readString());
 
-         assertEquals(i, message.getIntProperty("count").intValue());
+         Assert.assertEquals(i, message.getIntProperty("count").intValue());
 
          message.acknowledge();
       }
 
       ClientMessage message = consumer.receiveImmediate();
 
-      assertNull(message);
+      Assert.assertNull(message);
 
       session.close();
 
@@ -271,9 +273,9 @@ public class ReattachTest extends ServiceTestBase
 
       session2.addFailureListener(listener);
 
-      session.createQueue(ADDRESS, ADDRESS, null, false);
+      session.createQueue(ReattachTest.ADDRESS, ReattachTest.ADDRESS, null, false);
 
-      ClientProducer producer = session.createProducer(ADDRESS);
+      ClientProducer producer = session.createProducer(ReattachTest.ADDRESS);
 
       final int numMessages = 1000;
 
@@ -289,7 +291,7 @@ public class ReattachTest extends ServiceTestBase
          producer.send(message);
       }
 
-      ClientConsumer consumer = session.createConsumer(ADDRESS);
+      ClientConsumer consumer = session.createConsumer(ReattachTest.ADDRESS);
 
       InVMConnector.numberOfFailures = 10;
       InVMConnector.failOnCreateConnection = true;
@@ -319,7 +321,7 @@ public class ReattachTest extends ServiceTestBase
 
       conn.fail(new HornetQException(HornetQException.NOT_CONNECTED));
 
-      assertTrue(listener.failed);
+      Assert.assertTrue(listener.failed);
 
       session.start();
 
@@ -327,18 +329,18 @@ public class ReattachTest extends ServiceTestBase
       {
          ClientMessage message = consumer.receive(500);
 
-         assertNotNull(message);
+         Assert.assertNotNull(message);
 
-         assertEquals("aardvarks", message.getBodyBuffer().readString());
+         Assert.assertEquals("aardvarks", message.getBodyBuffer().readString());
 
-         assertEquals(i, message.getIntProperty("count").intValue());
+         Assert.assertEquals(i, message.getIntProperty("count").intValue());
 
          message.acknowledge();
       }
 
       ClientMessage message = consumer.receiveImmediate();
 
-      assertNull(message);
+      Assert.assertNull(message);
 
       session.close();
 
@@ -366,9 +368,9 @@ public class ReattachTest extends ServiceTestBase
 
       ClientSession session = sf.createSession(false, true, true);
 
-      session.createQueue(ADDRESS, ADDRESS, null, false);
+      session.createQueue(ReattachTest.ADDRESS, ReattachTest.ADDRESS, null, false);
 
-      ClientProducer producer = session.createProducer(ADDRESS);
+      ClientProducer producer = session.createProducer(ReattachTest.ADDRESS);
 
       final int numMessages = 1000;
 
@@ -384,7 +386,7 @@ public class ReattachTest extends ServiceTestBase
          producer.send(message);
       }
 
-      session.createConsumer(ADDRESS);
+      session.createConsumer(ReattachTest.ADDRESS);
 
       InVMConnector.failOnCreateConnection = true;
 
@@ -419,11 +421,11 @@ public class ReattachTest extends ServiceTestBase
       {
          session.start();
 
-         fail("Should throw exception");
+         Assert.fail("Should throw exception");
       }
       catch (HornetQException e)
       {
-         assertEquals(HornetQException.OBJECT_CLOSED, e.getCode());
+         Assert.assertEquals(HornetQException.OBJECT_CLOSED, e.getCode());
       }
 
       session.close();
@@ -512,7 +514,7 @@ public class ReattachTest extends ServiceTestBase
                }
                catch (Exception e)
                {
-                  log.warn("Error on the timer " + e);
+                  ReattachTest.log.warn("Error on the timer " + e);
                }
             }
 
@@ -740,9 +742,9 @@ public class ReattachTest extends ServiceTestBase
 
       ClientSession session = sf.createSession(false, true, true);
 
-      session.createQueue(ADDRESS, ADDRESS, null, false);
+      session.createQueue(ReattachTest.ADDRESS, ReattachTest.ADDRESS, null, false);
 
-      ClientProducer producer = session.createProducer(ADDRESS);
+      ClientProducer producer = session.createProducer(ReattachTest.ADDRESS);
 
       final int numMessages = 1000;
 
@@ -758,7 +760,7 @@ public class ReattachTest extends ServiceTestBase
          producer.send(message);
       }
 
-      ClientConsumer consumer = session.createConsumer(ADDRESS);
+      ClientConsumer consumer = session.createConsumer(ReattachTest.ADDRESS);
 
       InVMConnector.failOnCreateConnection = true;
       InVMConnector.numberOfFailures = reconnectAttempts - 1;
@@ -773,18 +775,18 @@ public class ReattachTest extends ServiceTestBase
       {
          ClientMessage message = consumer.receive(500);
 
-         assertNotNull(message);
+         Assert.assertNotNull(message);
 
-         assertEquals("aardvarks", message.getBodyBuffer().readString());
+         Assert.assertEquals("aardvarks", message.getBodyBuffer().readString());
 
-         assertEquals(i, message.getIntProperty("count").intValue());
+         Assert.assertEquals(i, message.getIntProperty("count").intValue());
 
          message.acknowledge();
       }
 
       ClientMessage message = consumer.receiveImmediate();
 
-      assertNull(message);
+      Assert.assertNull(message);
 
       session.close();
 
@@ -808,9 +810,9 @@ public class ReattachTest extends ServiceTestBase
 
       ClientSession session = sf.createSession(false, true, true);
 
-      session.createQueue(ADDRESS, ADDRESS, null, false);
+      session.createQueue(ReattachTest.ADDRESS, ReattachTest.ADDRESS, null, false);
 
-      ClientProducer producer = session.createProducer(ADDRESS);
+      ClientProducer producer = session.createProducer(ReattachTest.ADDRESS);
 
       final int numMessages = 1000;
 
@@ -826,7 +828,7 @@ public class ReattachTest extends ServiceTestBase
          producer.send(message);
       }
 
-      ClientConsumer consumer = session.createConsumer(ADDRESS);
+      ClientConsumer consumer = session.createConsumer(ReattachTest.ADDRESS);
 
       InVMConnector.failOnCreateConnection = true;
 
@@ -860,22 +862,22 @@ public class ReattachTest extends ServiceTestBase
       {
          ClientMessage message = consumer.receive(500);
 
-         assertNotNull(message);
+         Assert.assertNotNull(message);
 
-         assertEquals("aardvarks", message.getBodyBuffer().readString());
+         Assert.assertEquals("aardvarks", message.getBodyBuffer().readString());
 
-         assertEquals(i, message.getIntProperty("count").intValue());
+         Assert.assertEquals(i, message.getIntProperty("count").intValue());
 
          message.acknowledge();
       }
 
       ClientMessage message = consumer.receiveImmediate();
 
-      assertNull(message);
+      Assert.assertNull(message);
 
       long end = System.currentTimeMillis();
 
-      assertTrue(end - start >= retryInterval);
+      Assert.assertTrue(end - start >= retryInterval);
 
       session.close();
 
@@ -901,9 +903,9 @@ public class ReattachTest extends ServiceTestBase
 
       ClientSession session = sf.createSession(false, true, true);
 
-      session.createQueue(ADDRESS, ADDRESS, null, false);
+      session.createQueue(ReattachTest.ADDRESS, ReattachTest.ADDRESS, null, false);
 
-      ClientProducer producer = session.createProducer(ADDRESS);
+      ClientProducer producer = session.createProducer(ReattachTest.ADDRESS);
 
       final int numMessages = 1000;
 
@@ -919,7 +921,7 @@ public class ReattachTest extends ServiceTestBase
          producer.send(message);
       }
 
-      ClientConsumer consumer = session.createConsumer(ADDRESS);
+      ClientConsumer consumer = session.createConsumer(ReattachTest.ADDRESS);
 
       InVMConnector.failOnCreateConnection = true;
       InVMConnector.numberOfFailures = 3;
@@ -936,24 +938,24 @@ public class ReattachTest extends ServiceTestBase
       {
          ClientMessage message = consumer.receive(500);
 
-         assertNotNull(message);
+         Assert.assertNotNull(message);
 
-         assertEquals("aardvarks", message.getBodyBuffer().readString());
+         Assert.assertEquals("aardvarks", message.getBodyBuffer().readString());
 
-         assertEquals(i, message.getObjectProperty(new SimpleString("count")));
+         Assert.assertEquals(i, message.getObjectProperty(new SimpleString("count")));
 
          message.acknowledge();
       }
 
       ClientMessage message = consumer.receiveImmediate();
 
-      assertNull(message);
+      Assert.assertNull(message);
 
       long end = System.currentTimeMillis();
 
       double wait = retryInterval + retryMultiplier * retryInterval + retryMultiplier * retryMultiplier * retryInterval;
 
-      assertTrue(end - start >= wait);
+      Assert.assertTrue(end - start >= wait);
 
       session.close();
 
@@ -980,9 +982,9 @@ public class ReattachTest extends ServiceTestBase
 
       ClientSession session = sf.createSession(false, true, true);
 
-      session.createQueue(ADDRESS, ADDRESS, null, false);
+      session.createQueue(ReattachTest.ADDRESS, ReattachTest.ADDRESS, null, false);
 
-      ClientProducer producer = session.createProducer(ADDRESS);
+      ClientProducer producer = session.createProducer(ReattachTest.ADDRESS);
 
       final int numMessages = 1000;
 
@@ -998,7 +1000,7 @@ public class ReattachTest extends ServiceTestBase
          producer.send(message);
       }
 
-      ClientConsumer consumer = session.createConsumer(ADDRESS);
+      ClientConsumer consumer = session.createConsumer(ReattachTest.ADDRESS);
 
       InVMConnector.failOnCreateConnection = true;
       InVMConnector.numberOfFailures = 3;
@@ -1015,26 +1017,26 @@ public class ReattachTest extends ServiceTestBase
       {
          ClientMessage message = consumer.receive(500);
 
-         assertNotNull(message);
+         Assert.assertNotNull(message);
 
-         assertEquals("aardvarks", message.getBodyBuffer().readString());
+         Assert.assertEquals("aardvarks", message.getBodyBuffer().readString());
 
-         assertEquals(i, message.getIntProperty("count").intValue());
+         Assert.assertEquals(i, message.getIntProperty("count").intValue());
 
          message.acknowledge();
       }
 
       ClientMessage message = consumer.receiveImmediate();
 
-      assertNull(message);
+      Assert.assertNull(message);
 
       long end = System.currentTimeMillis();
 
       double wait = retryInterval + retryMultiplier * 2 * retryInterval + retryMultiplier;
 
-      assertTrue(end - start >= wait);
+      Assert.assertTrue(end - start >= wait);
 
-      assertTrue(end - start < wait + 500);
+      Assert.assertTrue(end - start < wait + 500);
 
       session.close();
 
@@ -1062,7 +1064,7 @@ public class ReattachTest extends ServiceTestBase
 
       service.stop();
 
-      assertEquals(0, InVMRegistry.instance.size());
+      Assert.assertEquals(0, InVMRegistry.instance.size());
 
       service = null;
 

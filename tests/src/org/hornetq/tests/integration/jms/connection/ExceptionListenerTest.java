@@ -12,10 +12,15 @@
  */
 package org.hornetq.tests.integration.jms.connection;
 
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
 import javax.jms.Connection;
 import javax.jms.ExceptionListener;
 import javax.jms.JMSException;
 import javax.jms.Session;
+
+import junit.framework.Assert;
 
 import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.config.Configuration;
@@ -30,9 +35,6 @@ import org.hornetq.jms.client.HornetQSession;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.hornetq.tests.integration.jms.server.management.NullInitialContext;
 import org.hornetq.tests.util.UnitTestCase;
-
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 /**
  * 
@@ -56,7 +58,7 @@ public class ExceptionListenerTest extends UnitTestCase
    protected void setUp() throws Exception
    {
       super.setUp();
-      
+
       Configuration conf = new ConfigurationImpl();
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
@@ -65,9 +67,9 @@ public class ExceptionListenerTest extends UnitTestCase
       server = HornetQ.newHornetQServer(conf, false);
       jmsServer = new JMSServerManagerImpl(server);
       jmsServer.setContext(new NullInitialContext());
-      jmsServer.start();     
-      jmsServer.createQueue(Q_NAME, Q_NAME, null, true);
-      cf = new HornetQConnectionFactory(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));      
+      jmsServer.start();
+      jmsServer.createQueue(ExceptionListenerTest.Q_NAME, ExceptionListenerTest.Q_NAME, null, true);
+      cf = new HornetQConnectionFactory(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
       cf.setBlockOnPersistentSend(true);
       cf.setPreAcknowledge(true);
    }
@@ -90,30 +92,30 @@ public class ExceptionListenerTest extends UnitTestCase
          server = null;
 
       }
-      
+
       server = null;
       jmsServer = null;
       cf = null;
-      
+
       super.tearDown();
    }
-   
+
    private class MyExceptionListener implements ExceptionListener
    {
       volatile int numCalls;
 
-      private CountDownLatch latch;
+      private final CountDownLatch latch;
 
-      public MyExceptionListener(CountDownLatch latch)
+      public MyExceptionListener(final CountDownLatch latch)
       {
          this.latch = latch;
       }
 
-      public synchronized void onException(JMSException arg0)
+      public synchronized void onException(final JMSException arg0)
       {
          numCalls++;
          latch.countDown();
-      }      
+      }
    }
 
    public void testListenerCalledForOneConnection() throws Exception
@@ -121,57 +123,56 @@ public class ExceptionListenerTest extends UnitTestCase
       Connection conn = cf.createConnection();
       CountDownLatch latch = new CountDownLatch(1);
       MyExceptionListener listener = new MyExceptionListener(latch);
-      
+
       conn.setExceptionListener(listener);
-      
+
       ClientSessionInternal coreSession = (ClientSessionInternal)((HornetQConnection)conn).getInitialSession();
-      
+
       coreSession.getConnection().fail(new HornetQException(HornetQException.INTERNAL_ERROR, "blah"));
 
       latch.await(5, TimeUnit.SECONDS);
-      
-      assertEquals(1, listener.numCalls);
-      
+
+      Assert.assertEquals(1, listener.numCalls);
+
       conn.close();
    }
-   
+
    public void testListenerCalledForOneConnectionAndSessions() throws Exception
    {
       Connection conn = cf.createConnection();
 
       CountDownLatch latch = new CountDownLatch(1);
       MyExceptionListener listener = new MyExceptionListener(latch);
-      
+
       conn.setExceptionListener(listener);
-      
+
       Session sess1 = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      
+
       Session sess2 = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      
+
       Session sess3 = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      
+
       ClientSessionInternal coreSession0 = (ClientSessionInternal)((HornetQConnection)conn).getInitialSession();
-      
+
       ClientSessionInternal coreSession1 = (ClientSessionInternal)((HornetQSession)sess1).getCoreSession();
-      
+
       ClientSessionInternal coreSession2 = (ClientSessionInternal)((HornetQSession)sess2).getCoreSession();
-      
+
       ClientSessionInternal coreSession3 = (ClientSessionInternal)((HornetQSession)sess3).getCoreSession();
-      
+
       coreSession0.getConnection().fail(new HornetQException(HornetQException.INTERNAL_ERROR, "blah"));
-      
+
       coreSession1.getConnection().fail(new HornetQException(HornetQException.INTERNAL_ERROR, "blah"));
-      
+
       coreSession2.getConnection().fail(new HornetQException(HornetQException.INTERNAL_ERROR, "blah"));
-      
+
       coreSession3.getConnection().fail(new HornetQException(HornetQException.INTERNAL_ERROR, "blah"));
 
       latch.await(5, TimeUnit.SECONDS);
-      //Listener should only be called once even if all sessions connections die
-      assertEquals(1, listener.numCalls);    
-      
+      // Listener should only be called once even if all sessions connections die
+      Assert.assertEquals(1, listener.numCalls);
+
       conn.close();
    }
-   
-   
+
 }

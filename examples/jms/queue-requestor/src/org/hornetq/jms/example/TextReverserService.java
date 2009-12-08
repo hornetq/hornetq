@@ -40,20 +40,20 @@ public class TextReverserService implements MessageListener
 
    // Attributes ----------------------------------------------------
 
-   private Session session;
+   private final Session session;
 
-   private Connection connection;
+   private final Connection connection;
 
    // Static --------------------------------------------------------
 
-   private static String reverse(String text)
+   private static String reverse(final String text)
    {
       return new StringBuffer(text).reverse().toString();
    }
 
    // Constructors --------------------------------------------------
 
-   public TextReverserService(ConnectionFactory cf, Destination destination) throws JMSException
+   public TextReverserService(final ConnectionFactory cf, final Destination destination) throws JMSException
    {
       // create a JMS connection
       connection = cf.createConnection();
@@ -70,7 +70,7 @@ public class TextReverserService implements MessageListener
 
    // MessageListener implementation --------------------------------
 
-   public void onMessage(Message request)
+   public void onMessage(final Message request)
    {
       TextMessage textMessage = (TextMessage)request;
       try
@@ -78,7 +78,7 @@ public class TextReverserService implements MessageListener
          // retrieve the request's text
          String text = textMessage.getText();
          // create a reply containing the reversed text
-         TextMessage reply = session.createTextMessage(reverse(text));
+         TextMessage reply = session.createTextMessage(TextReverserService.reverse(text));
 
          // retrieve the destination to reply to
          Destination replyTo = request.getJMSReplyTo();

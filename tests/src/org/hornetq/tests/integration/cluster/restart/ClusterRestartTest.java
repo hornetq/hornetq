@@ -12,12 +12,11 @@
  */
 package org.hornetq.tests.integration.cluster.restart;
 
-import org.hornetq.utils.SimpleString;
-import org.hornetq.tests.integration.cluster.distribution.ClusterTestBase;
-import org.hornetq.core.postoffice.Binding;
-import org.hornetq.core.message.impl.MessageImpl;
-
 import java.util.Collection;
+
+import org.hornetq.core.postoffice.Binding;
+import org.hornetq.tests.integration.cluster.distribution.ClusterTestBase;
+import org.hornetq.utils.SimpleString;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -34,9 +33,7 @@ public class ClusterRestartTest extends ClusterTestBase
 
       setupClusterConnection("cluster1", "queues", false, 1, isNetty(), 1, 0);
 
-
       startServers(0, 1);
-
 
       System.out.println("server 0 = " + getServer(0).getNodeID());
       System.out.println("server 1 = " + getServer(1).getNodeID());
@@ -47,8 +44,7 @@ public class ClusterRestartTest extends ClusterTestBase
          setupSessionFactory(0, isNetty());
          setupSessionFactory(1, isNetty());
 
-
-         //create some dummy queues to ensure that the test queue has a high numbered binding
+         // create some dummy queues to ensure that the test queue has a high numbered binding
          createQueue(0, "queues.testaddress2", "queue0", null, false);
          createQueue(0, "queues.testaddress2", "queue1", null, false);
          createQueue(0, "queues.testaddress2", "queue2", null, false);
@@ -59,7 +55,7 @@ public class ClusterRestartTest extends ClusterTestBase
          createQueue(0, "queues.testaddress2", "queue7", null, false);
          createQueue(0, "queues.testaddress2", "queue8", null, false);
          createQueue(0, "queues.testaddress2", "queue9", null, false);
-         //now create the 2 queues and make sure they are durable
+         // now create the 2 queues and make sure they are durable
          createQueue(0, "queues.testaddress", "queue10", null, true);
          createQueue(1, "queues.testaddress", "queue10", null, true);
 
@@ -87,9 +83,8 @@ public class ClusterRestartTest extends ClusterTestBase
          waitForBindings(0, "queues.testaddress", 1, 0, false);
          waitForBindings(1, "queues.testaddress", 1, 1, false);
          printBindings(2);
-         
-         sendInRange(1, "queues.testaddress", 10, 20, false, null);
 
+         sendInRange(1, "queues.testaddress", 10, 20, false, null);
 
          verifyReceiveAllInRange(10, 20, 1);
          System.out.println("*****************************************************************************");
@@ -113,9 +108,7 @@ public class ClusterRestartTest extends ClusterTestBase
 
       setupClusterConnection("cluster1", "queues", false, 1, isNetty(), 1, 0);
 
-
       startServers(0, 1);
-
 
       System.out.println("server 0 = " + getServer(0).getNodeID());
       System.out.println("server 1 = " + getServer(1).getNodeID());
@@ -126,8 +119,7 @@ public class ClusterRestartTest extends ClusterTestBase
          setupSessionFactory(0, isNetty());
          setupSessionFactory(1, isNetty());
 
-
-         //create some dummy queues to ensure that the test queue has a high numbered binding
+         // create some dummy queues to ensure that the test queue has a high numbered binding
          createQueue(0, "queues.testaddress2", "queue0", null, false);
          createQueue(0, "queues.testaddress2", "queue1", null, false);
          createQueue(0, "queues.testaddress2", "queue2", null, false);
@@ -138,7 +130,7 @@ public class ClusterRestartTest extends ClusterTestBase
          createQueue(0, "queues.testaddress2", "queue7", null, false);
          createQueue(0, "queues.testaddress2", "queue8", null, false);
          createQueue(0, "queues.testaddress2", "queue9", null, false);
-         //now create the 2 queues and make sure they are durable
+         // now create the 2 queues and make sure they are durable
          createQueue(0, "queues.testaddress", "queue10", null, true);
          createQueue(1, "queues.testaddress", "queue10", null, true);
 
@@ -160,7 +152,6 @@ public class ClusterRestartTest extends ClusterTestBase
 
          waitForBindings(0, "queues.testaddress", 1, 0, true);
 
-
          waitForBindings(0, "queues.testaddress", 1, 0, false);
          waitForBindings(1, "queues.testaddress", 1, 0, false);
          printBindings(2);
@@ -180,13 +171,13 @@ public class ClusterRestartTest extends ClusterTestBase
       }
    }
 
-
-   private void printBindings(int num)
-         throws Exception
+   private void printBindings(final int num) throws Exception
    {
-      for(int i  = 0; i < num; i++)
+      for (int i = 0; i < num; i++)
       {
-         Collection<Binding> bindings0 = getServer(i).getPostOffice().getBindingsForAddress(new SimpleString("queues.testaddress")).getBindings();
+         Collection<Binding> bindings0 = getServer(i).getPostOffice()
+                                                     .getBindingsForAddress(new SimpleString("queues.testaddress"))
+                                                     .getBindings();
          for (Binding binding : bindings0)
          {
             System.out.println(binding + " on node " + i + " at " + binding.getID());

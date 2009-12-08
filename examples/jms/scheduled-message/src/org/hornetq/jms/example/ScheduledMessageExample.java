@@ -34,72 +34,73 @@ import org.hornetq.core.message.impl.MessageImpl;
  */
 public class ScheduledMessageExample extends HornetQExample
 {
-   public static void main(String[] args)
+   public static void main(final String[] args)
    {
       new ScheduledMessageExample().run(args);
    }
 
+   @Override
    public boolean runExample() throws Exception
    {
       Connection connection = null;
       InitialContext initialContext = null;
       try
       {
-         //Step 1. Create an initial context to perform the JNDI lookup.
+         // Step 1. Create an initial context to perform the JNDI lookup.
          initialContext = getContext(0);
 
-         //Step 2. Perfom a lookup on the queue
-         Queue queue = (Queue) initialContext.lookup("/queue/exampleQueue");
+         // Step 2. Perfom a lookup on the queue
+         Queue queue = (Queue)initialContext.lookup("/queue/exampleQueue");
 
-         //Step 3. Perform a lookup on the Connection Factory
-         ConnectionFactory cf = (ConnectionFactory) initialContext.lookup("/ConnectionFactory");
+         // Step 3. Perform a lookup on the Connection Factory
+         ConnectionFactory cf = (ConnectionFactory)initialContext.lookup("/ConnectionFactory");
 
-         //Step 4.Create a JMS Connection
+         // Step 4.Create a JMS Connection
          connection = cf.createConnection();
 
-         //Step 5. Create a JMS Session
+         // Step 5. Create a JMS Session
          Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         //Step 6. Create a JMS Message Producer
+         // Step 6. Create a JMS Message Producer
          MessageProducer producer = session.createProducer(queue);
 
-         //Step 7. Create a Text Message
+         // Step 7. Create a Text Message
          TextMessage message = session.createTextMessage("This is a scheduled message message which will be delivered in 5 sec.");
 
-         //Step 8. Set the delivery time to be 5 sec later.
+         // Step 8. Set the delivery time to be 5 sec later.
          long time = System.currentTimeMillis();
          time += 5000;
          message.setLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME.toString(), time);
-         
-         //Step 9. Send the Message
+
+         // Step 9. Send the Message
          producer.send(message);
-         
+
          System.out.println("Sent message: " + message.getText());
          SimpleDateFormat formatter = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss");
          System.out.println("Time of send: " + formatter.format(new Date()));
 
-         //Step 10. Create a JMS Message Consumer
+         // Step 10. Create a JMS Message Consumer
          MessageConsumer messageConsumer = session.createConsumer(queue);
 
-         //Step 11. Start the Connection
+         // Step 11. Start the Connection
          connection.start();
 
-         //Step 12. Receive the message
-         TextMessage messageReceived = (TextMessage) messageConsumer.receive();
-         
+         // Step 12. Receive the message
+         TextMessage messageReceived = (TextMessage)messageConsumer.receive();
+
          System.out.println("Received message: " + messageReceived.getText());
          System.out.println("Time of receive: " + formatter.format(new Date()));
-         
+
          return true;
       }
       finally
       {
-         //Step 13. Be sure to close our JMS resources!
+         // Step 13. Be sure to close our JMS resources!
          if (initialContext != null)
          {
             initialContext.close();
          }
-         if(connection != null)
+         if (connection != null)
          {
             connection.close();
          }

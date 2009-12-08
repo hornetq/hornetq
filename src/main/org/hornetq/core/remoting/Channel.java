@@ -26,19 +26,19 @@ public interface Channel
    long getID();
 
    void send(Packet packet);
-   
+
    void sendAndFlush(Packet packet);
-   
+
    Packet sendBlocking(Packet packet) throws HornetQException;
 
    void setHandler(ChannelHandler handler);
-   
+
    ChannelHandler getHandler();
 
    void close();
 
    void transferConnection(RemotingConnection newConnection);
-   
+
    void replayCommands(int lastReceivedCommandID, final long newID);
 
    int getLastReceivedCommandID();
@@ -48,20 +48,20 @@ public interface Channel
    void unlock();
 
    void returnBlocking();
-   
+
    Lock getLock();
-   
+
    RemotingConnection getConnection();
-   
+
    void confirm(Packet packet);
-   
+
    void setCommandConfirmationHandler(CommandConfirmationHandler handler);
-   
-   void flushConfirmations();  
-   
+
+   void flushConfirmations();
+
    void handlePacket(Packet packet);
-   
+
    void clearCommands();
-   
+
    int getConfirmationWindowSize();
 }

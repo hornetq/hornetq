@@ -15,6 +15,8 @@ package org.hornetq.tests.integration.client;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
@@ -80,22 +82,21 @@ public class SessionStopStartTest extends ServiceTestBase
 
       session.start();
 
-
       for (int i = 0; i < numMessages / 2; i++)
       {
          ClientMessage cm = consumer.receive(5000);
-         assertNotNull(cm);
+         Assert.assertNotNull(cm);
          cm.acknowledge();
       }
       session.stop();
       ClientMessage cm = consumer.receiveImmediate();
-      assertNull(cm);
+      Assert.assertNull(cm);
 
       session.start();
       for (int i = 0; i < numMessages / 2; i++)
       {
          cm = consumer.receive(5000);
-         assertNotNull(cm);
+         Assert.assertNotNull(cm);
          cm.acknowledge();
       }
 
@@ -125,31 +126,30 @@ public class SessionStopStartTest extends ServiceTestBase
 
       session.start();
 
-
       for (int i = 0; i < numMessages / 2; i++)
       {
          ClientMessage cm = consumer.receive(5000);
-         assertNotNull(cm);
+         Assert.assertNotNull(cm);
          cm.acknowledge();
       }
       session.stop();
       long time = System.currentTimeMillis();
       ClientMessage cm = consumer.receive(1000);
       long taken = System.currentTimeMillis() - time;
-      assertTrue(taken >= 1000);
-      assertNull(cm);
+      Assert.assertTrue(taken >= 1000);
+      Assert.assertNull(cm);
 
       session.start();
       for (int i = 0; i < numMessages / 2; i++)
       {
          cm = consumer.receive(5000);
-         assertNotNull(cm);
+         Assert.assertNotNull(cm);
          cm.acknowledge();
       }
 
       session.close();
    }
-   
+
    public void testStopStartConsumerAsyncSyncStoppedByHandler() throws Exception
    {
       ClientSessionFactory sf = createInVMFactory();
@@ -182,7 +182,7 @@ public class SessionStopStartTest extends ServiceTestBase
          boolean failed;
 
          boolean started = true;
-         
+
          int count = 0;
 
          public void onMessage(final ClientMessage message)
@@ -194,9 +194,9 @@ public class SessionStopStartTest extends ServiceTestBase
                {
                   failed = true;
                }
-               
+
                count++;
-               
+
                if (count == 10)
                {
                   message.acknowledge();
@@ -204,7 +204,7 @@ public class SessionStopStartTest extends ServiceTestBase
                   started = false;
                }
 
-               latch.countDown();            
+               latch.countDown();
             }
             catch (Exception e)
             {
@@ -218,10 +218,10 @@ public class SessionStopStartTest extends ServiceTestBase
 
       latch.await();
 
-      assertFalse(handler.failed);
+      Assert.assertFalse(handler.failed);
 
       // Make sure no exceptions were thrown from onMessage
-      assertNull(consumer.getLastException());
+      Assert.assertNull(consumer.getLastException());
       consumer.setMessageHandler(null);
       session.start();
       for (int i = 0; i < 90; i++)
@@ -231,11 +231,11 @@ public class SessionStopStartTest extends ServiceTestBase
          {
             System.out.println("ClientConsumerTest.testStopConsumer");
          }
-         assertNotNull("message " + i, msg);
+         Assert.assertNotNull("message " + i, msg);
          msg.acknowledge();
       }
 
-      assertNull(consumer.receiveImmediate());
+      Assert.assertNull(consumer.receiveImmediate());
 
       session.close();
    }
@@ -312,14 +312,14 @@ public class SessionStopStartTest extends ServiceTestBase
       }
       catch (Exception e)
       {
-         log.warn(e.getMessage(), e);
+         SessionStopStartTest.log.warn(e.getMessage(), e);
          throw e;
       }
 
-      assertFalse(handler.failed);
+      Assert.assertFalse(handler.failed);
 
       // Make sure no exceptions were thrown from onMessage
-      assertNull(consumer.getLastException());
+      Assert.assertNull(consumer.getLastException());
       consumer.setMessageHandler(null);
       session.start();
       for (int i = 0; i < 90; i++)
@@ -329,11 +329,11 @@ public class SessionStopStartTest extends ServiceTestBase
          {
             System.out.println("ClientConsumerTest.testStopConsumer");
          }
-         assertNotNull("message " + i, msg);
+         Assert.assertNotNull("message " + i, msg);
          msg.acknowledge();
       }
 
-      assertNull(consumer.receiveImmediate());
+      Assert.assertNull(consumer.receiveImmediate());
 
       session.close();
    }
@@ -377,12 +377,12 @@ public class SessionStopStartTest extends ServiceTestBase
 
          private boolean stop = true;
 
-         public MyHandler(CountDownLatch latch)
+         public MyHandler(final CountDownLatch latch)
          {
             this.latch = latch;
          }
 
-         public MyHandler(CountDownLatch latch, boolean stop)
+         public MyHandler(final CountDownLatch latch, final boolean stop)
          {
             this(latch);
             this.stop = stop;
@@ -423,20 +423,20 @@ public class SessionStopStartTest extends ServiceTestBase
 
       Thread.sleep(100);
 
-      assertFalse(handler.failed);
+      Assert.assertFalse(handler.failed);
 
       // Make sure no exceptions were thrown from onMessage
-      assertNull(consumer.getLastException());
+      Assert.assertNull(consumer.getLastException());
       latch = new CountDownLatch(90);
       handler = new MyHandler(latch, false);
       consumer.setMessageHandler(handler);
       session.start();
-      assertTrue("message received " + handler.messageReceived, latch.await(5, TimeUnit.SECONDS));
+      Assert.assertTrue("message received " + handler.messageReceived, latch.await(5, TimeUnit.SECONDS));
 
       Thread.sleep(100);
 
-      assertFalse(handler.failed);
-      assertNull(consumer.getLastException());
+      Assert.assertFalse(handler.failed);
+      Assert.assertNull(consumer.getLastException());
       session.close();
    }
 
@@ -479,12 +479,12 @@ public class SessionStopStartTest extends ServiceTestBase
 
          private boolean stop = true;
 
-         public MyHandler(CountDownLatch latch)
+         public MyHandler(final CountDownLatch latch)
          {
             this.latch = latch;
          }
 
-         public MyHandler(CountDownLatch latch, boolean stop)
+         public MyHandler(final CountDownLatch latch, final boolean stop)
          {
             this(latch);
             this.stop = stop;
@@ -525,23 +525,23 @@ public class SessionStopStartTest extends ServiceTestBase
 
       Thread.sleep(100);
 
-      assertFalse(handler.failed);
+      Assert.assertFalse(handler.failed);
 
       // Make sure no exceptions were thrown from onMessage
-      assertNull(consumer.getLastException());
+      Assert.assertNull(consumer.getLastException());
       latch = new CountDownLatch(90);
       handler = new MyHandler(latch, false);
       consumer.setMessageHandler(handler);
       session.start();
-      assertTrue("message received " + handler.messageReceived, latch.await(5, TimeUnit.SECONDS));
+      Assert.assertTrue("message received " + handler.messageReceived, latch.await(5, TimeUnit.SECONDS));
 
       Thread.sleep(100);
 
-      assertFalse(handler.failed);
-      assertNull(consumer.getLastException());
+      Assert.assertFalse(handler.failed);
+      Assert.assertNull(consumer.getLastException());
       session.close();
    }
-   
+
    private int getMessageEncodeSize(final SimpleString address) throws Exception
    {
       ClientSessionFactory cf = createInVMFactory();
@@ -552,13 +552,13 @@ public class SessionStopStartTest extends ServiceTestBase
       int encodeSize = message.getEncodeSize();
       session.close();
       cf.close();
-      return encodeSize;      
+      return encodeSize;
    }
 
    public void testStopStartMultipleConsumers() throws Exception
    {
       ClientSessionFactory sf = createInVMFactory();
-      sf.setConsumerWindowSize(this.getMessageEncodeSize(QUEUE) * 33);
+      sf.setConsumerWindowSize(getMessageEncodeSize(QUEUE) * 33);
 
       final ClientSession session = sf.createSession(false, true, true);
 
@@ -567,7 +567,7 @@ public class SessionStopStartTest extends ServiceTestBase
       ClientProducer producer = session.createProducer(QUEUE);
 
       final int numMessages = 100;
-      
+
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = createTextMessage("m" + i, session);
@@ -582,33 +582,32 @@ public class SessionStopStartTest extends ServiceTestBase
       session.start();
 
       ClientMessage cm = consumer.receive(5000);
-      assertNotNull(cm);
+      Assert.assertNotNull(cm);
       cm.acknowledge();
       cm = consumer2.receive(5000);
-      assertNotNull(cm);
+      Assert.assertNotNull(cm);
       cm.acknowledge();
       cm = consumer3.receive(5000);
-      assertNotNull(cm);
+      Assert.assertNotNull(cm);
       cm.acknowledge();
 
       session.stop();
       cm = consumer.receiveImmediate();
-      assertNull(cm);
+      Assert.assertNull(cm);
       cm = consumer2.receiveImmediate();
-      assertNull(cm);
+      Assert.assertNull(cm);
       cm = consumer3.receiveImmediate();
-      assertNull(cm);
+      Assert.assertNull(cm);
 
       session.start();
       cm = consumer.receive(5000);
-      assertNotNull(cm);
+      Assert.assertNotNull(cm);
       cm = consumer2.receive(5000);
-      assertNotNull(cm);
+      Assert.assertNotNull(cm);
       cm = consumer3.receive(5000);
-      assertNotNull(cm);
+      Assert.assertNotNull(cm);
       session.close();
    }
-
 
    public void testStopStartAlreadyStartedSession() throws Exception
    {
@@ -633,11 +632,10 @@ public class SessionStopStartTest extends ServiceTestBase
 
       session.start();
 
-
       for (int i = 0; i < numMessages / 2; i++)
       {
          ClientMessage cm = consumer.receive(5000);
-         assertNotNull(cm);
+         Assert.assertNotNull(cm);
          cm.acknowledge();
       }
 
@@ -645,7 +643,7 @@ public class SessionStopStartTest extends ServiceTestBase
       for (int i = 0; i < numMessages / 2; i++)
       {
          ClientMessage cm = consumer.receive(5000);
-         assertNotNull(cm);
+         Assert.assertNotNull(cm);
          cm.acknowledge();
       }
 
@@ -675,26 +673,25 @@ public class SessionStopStartTest extends ServiceTestBase
 
       session.start();
 
-
       for (int i = 0; i < numMessages / 2; i++)
       {
          ClientMessage cm = consumer.receive(5000);
-         assertNotNull(cm);
+         Assert.assertNotNull(cm);
          cm.acknowledge();
       }
       session.stop();
       ClientMessage cm = consumer.receiveImmediate();
-      assertNull(cm);
+      Assert.assertNull(cm);
 
       session.stop();
       cm = consumer.receiveImmediate();
-      assertNull(cm);
+      Assert.assertNull(cm);
 
       session.start();
       for (int i = 0; i < numMessages / 2; i++)
       {
          cm = consumer.receive(5000);
-         assertNotNull(cm);
+         Assert.assertNotNull(cm);
          cm.acknowledge();
       }
 

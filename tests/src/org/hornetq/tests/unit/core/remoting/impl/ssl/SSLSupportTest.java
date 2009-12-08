@@ -9,12 +9,14 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
  * implied.  See the License for the specific language governing
  * permissions and limitations under the License.
- */ 
+ */
 
 package org.hornetq.tests.unit.core.remoting.impl.ssl;
 
 import java.io.File;
 import java.net.URL;
+
+import junit.framework.Assert;
 
 import org.hornetq.core.remoting.impl.ssl.SSLSupport;
 import org.hornetq.tests.util.UnitTestCase;
@@ -28,8 +30,11 @@ import org.hornetq.tests.util.UnitTestCase;
 public class SSLSupportTest extends UnitTestCase
 {
    private String keyStorePath;
+
    private String keyStorePassword;
+
    private String trustStorePath;
+
    private String trustStorePassword;
 
    // Constants -----------------------------------------------------
@@ -46,7 +51,7 @@ public class SSLSupportTest extends UnitTestCase
    protected void setUp() throws Exception
    {
       super.setUp();
-      
+
       keyStorePath = "hornetq.keystore";
       keyStorePassword = "secureexample";
       trustStorePath = "hornetq.truststore";
@@ -55,34 +60,30 @@ public class SSLSupportTest extends UnitTestCase
 
    public void testServerContextWithRightParameters() throws Exception
    {
-      SSLSupport.createServerContext(keyStorePath, keyStorePassword,
-            trustStorePath, trustStorePassword);
+      SSLSupport.createServerContext(keyStorePath, keyStorePassword, trustStorePath, trustStorePassword);
    }
 
    public void testServerContextWithKeyStorePathAsURL() throws Exception
    {
       URL url = Thread.currentThread().getContextClassLoader().getResource(keyStorePath);
-      SSLSupport.createServerContext(url.toString(), keyStorePassword,
-            trustStorePath, trustStorePassword);
+      SSLSupport.createServerContext(url.toString(), keyStorePassword, trustStorePath, trustStorePassword);
    }
-
 
    public void testServerContextWithKeyStorePathAsFile() throws Exception
    {
       URL url = Thread.currentThread().getContextClassLoader().getResource(keyStorePath);
       File file = new File(url.toURI());
-      SSLSupport.createServerContext(file.getAbsolutePath(), keyStorePassword,
-            trustStorePath, trustStorePassword);
+      SSLSupport.createServerContext(file.getAbsolutePath(), keyStorePassword, trustStorePath, trustStorePassword);
    }
 
    public void testServerContextWithBadKeyStorePath() throws Exception
    {
       try
       {
-         SSLSupport.createServerContext("not a keystore", keyStorePassword,
-               trustStorePath, trustStorePassword);
-         fail();
-      } catch (Exception e)
+         SSLSupport.createServerContext("not a keystore", keyStorePassword, trustStorePath, trustStorePassword);
+         Assert.fail();
+      }
+      catch (Exception e)
       {
       }
    }
@@ -96,19 +97,18 @@ public class SSLSupportTest extends UnitTestCase
       {
          return;
       }
-      
-      SSLSupport.createServerContext("config/hornetq.keystore",
-            keyStorePassword, trustStorePath, trustStorePassword);
+
+      SSLSupport.createServerContext("config/hornetq.keystore", keyStorePassword, trustStorePath, trustStorePassword);
    }
-   
+
    public void testServerContextWithBadKeyStorePassword() throws Exception
    {
       try
       {
-         SSLSupport.createServerContext(keyStorePath, "bad password",
-               trustStorePath, trustStorePassword);
-         fail();
-      } catch (Exception e)
+         SSLSupport.createServerContext(keyStorePath, "bad password", trustStorePath, trustStorePassword);
+         Assert.fail();
+      }
+      catch (Exception e)
       {
       }
    }
@@ -117,10 +117,10 @@ public class SSLSupportTest extends UnitTestCase
    {
       try
       {
-         SSLSupport.createServerContext(keyStorePath, keyStorePassword,
-               "not a trust store", trustStorePassword);
-         fail();
-      } catch (Exception e)
+         SSLSupport.createServerContext(keyStorePath, keyStorePassword, "not a trust store", trustStorePassword);
+         Assert.fail();
+      }
+      catch (Exception e)
       {
       }
    }
@@ -129,10 +129,10 @@ public class SSLSupportTest extends UnitTestCase
    {
       try
       {
-         SSLSupport.createServerContext(keyStorePath, keyStorePassword,
-               trustStorePath, "bad passord");
-         fail();
-      } catch (Exception e)
+         SSLSupport.createServerContext(keyStorePath, keyStorePassword, trustStorePath, "bad passord");
+         Assert.fail();
+      }
+      catch (Exception e)
       {
       }
    }

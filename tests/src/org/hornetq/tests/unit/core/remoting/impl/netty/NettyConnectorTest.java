@@ -17,6 +17,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Executors;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.buffers.HornetQBuffer;
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.remoting.impl.AbstractBufferHandler;
@@ -34,93 +36,108 @@ import org.hornetq.tests.util.UnitTestCase;
  *
  */
 public class NettyConnectorTest extends UnitTestCase
-{   
+{
    // Constants -----------------------------------------------------
-   
+
    // Attributes ----------------------------------------------------
-   
+
    // Static --------------------------------------------------------
-   
+
    // Constructors --------------------------------------------------
-   
+
    // Public --------------------------------------------------------
-     
+
    public void testStartStop() throws Exception
    {
       BufferHandler handler = new AbstractBufferHandler()
       {
-         public void bufferReceived(Object connectionID, HornetQBuffer buffer)
+         public void bufferReceived(final Object connectionID, final HornetQBuffer buffer)
          {
          }
       };
       Map<String, Object> params = new HashMap<String, Object>();
       ConnectionLifeCycleListener listener = new ConnectionLifeCycleListener()
       {
-         public void connectionException(Object connectionID, HornetQException me)
+         public void connectionException(final Object connectionID, final HornetQException me)
          {
          }
-         
-         public void connectionDestroyed(Object connectionID)
+
+         public void connectionDestroyed(final Object connectionID)
          {
          }
-         
-         public void connectionCreated(Connection connection)
+
+         public void connectionCreated(final Connection connection)
          {
          }
       };
-      
-      NettyConnector connector = new NettyConnector(params, handler, listener, Executors.newCachedThreadPool(), Executors.newCachedThreadPool(), Executors.newScheduledThreadPool(5));
-      
+
+      NettyConnector connector = new NettyConnector(params,
+                                                    handler,
+                                                    listener,
+                                                    Executors.newCachedThreadPool(),
+                                                    Executors.newCachedThreadPool(),
+                                                    Executors.newScheduledThreadPool(5));
+
       connector.start();
-      assertTrue(connector.isStarted());
+      Assert.assertTrue(connector.isStarted());
       connector.close();
-      assertFalse(connector.isStarted());
+      Assert.assertFalse(connector.isStarted());
    }
-   
+
    public void testNullParams() throws Exception
    {
       BufferHandler handler = new AbstractBufferHandler()
       {
-         public void bufferReceived(Object connectionID, HornetQBuffer buffer)
+         public void bufferReceived(final Object connectionID, final HornetQBuffer buffer)
          {
          }
       };
       Map<String, Object> params = new HashMap<String, Object>();
       ConnectionLifeCycleListener listener = new ConnectionLifeCycleListener()
       {
-         public void connectionException(Object connectionID, HornetQException me)
+         public void connectionException(final Object connectionID, final HornetQException me)
          {
          }
-         
-         public void connectionDestroyed(Object connectionID)
+
+         public void connectionDestroyed(final Object connectionID)
          {
          }
-         
-         public void connectionCreated(Connection connection)
+
+         public void connectionCreated(final Connection connection)
          {
          }
       };
 
       try
       {
-         new NettyConnector(params, null, listener, Executors.newCachedThreadPool(), Executors.newCachedThreadPool(), Executors.newScheduledThreadPool(5));
-         
-         fail("Should throw Exception");
+         new NettyConnector(params,
+                            null,
+                            listener,
+                            Executors.newCachedThreadPool(),
+                            Executors.newCachedThreadPool(),
+                            Executors.newScheduledThreadPool(5));
+
+         Assert.fail("Should throw Exception");
       }
       catch (IllegalArgumentException e)
       {
-         //Ok
+         // Ok
       }
-      
+
       try
       {
-         new NettyConnector(params, handler, null, Executors.newCachedThreadPool(), Executors.newCachedThreadPool(), Executors.newScheduledThreadPool(5));
-         
-         fail("Should throw Exception");
+         new NettyConnector(params,
+                            handler,
+                            null,
+                            Executors.newCachedThreadPool(),
+                            Executors.newCachedThreadPool(),
+                            Executors.newScheduledThreadPool(5));
+
+         Assert.fail("Should throw Exception");
       }
       catch (IllegalArgumentException e)
       {
-         //Ok
+         // Ok
       }
    }
 }

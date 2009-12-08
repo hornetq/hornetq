@@ -50,16 +50,16 @@ public class MessageCounter
    // Attributes ----------------------------------------------------
 
    // destination related information
-   private String destName;
+   private final String destName;
 
-   private String destSubscription;
+   private final String destSubscription;
 
-   private boolean destTopic;
+   private final boolean destTopic;
 
-   private boolean destDurable;
+   private final boolean destDurable;
 
    // destination queue
-   private QueueControl destQueue;
+   private final QueueControl destQueue;
 
    // counter
    private long countTotal;
@@ -71,11 +71,11 @@ public class MessageCounter
    private long timeLastUpdate;
 
    private long timeLastAdd;
-   
+
    // per hour day counter history
    private int dayCounterMax;
 
-   private List<DayCounter> dayCounters;
+   private final List<DayCounter> dayCounters;
 
    private int lastMessagesAdded;
 
@@ -93,7 +93,12 @@ public class MessageCounter
     * @param durable          durable subsciption flag
     * @param daycountmax      max message history day count
     */
-   public MessageCounter(String name, String subscription, QueueControl queue, boolean topic, boolean durable, int daycountmax)
+   public MessageCounter(final String name,
+                         final String subscription,
+                         final QueueControl queue,
+                         final boolean topic,
+                         final boolean durable,
+                         final int daycountmax)
    {
       // store destination related information
       destName = name;
@@ -126,7 +131,7 @@ public class MessageCounter
 
       lastMessagesAdded = latestMessagesAdded;
 
-      if(newMessagesAdded > 0) 
+      if (newMessagesAdded > 0)
       {
          timeLastAdd = System.currentTimeMillis();
       }
@@ -221,7 +226,7 @@ public class MessageCounter
       timeLastAdd = 0;
    }
 
-   private void setHistoryLimit(int daycountmax)
+   private void setHistoryLimit(final int daycountmax)
    {
       boolean bInitialize = false;
 
@@ -319,6 +324,7 @@ public class MessageCounter
       return ret;
    }
 
+   @Override
    public String toString()
    {
       return "MessageCounter[destName" + destName +
@@ -344,7 +350,7 @@ public class MessageCounter
     * 
     * @param newMessages number of new messages to add to the latest day counter
     */
-   private void updateHistory(int newMessages)
+   private void updateHistory(final int newMessages)
    {
       // check history activation
       if (dayCounters.isEmpty())
@@ -425,7 +431,7 @@ public class MessageCounter
 
       GregorianCalendar date = null;
 
-      int[] counters = new int[HOURS];
+      int[] counters = new int[DayCounter.HOURS];
 
       /**
        *    Constructor
@@ -434,7 +440,7 @@ public class MessageCounter
        * @param isStartDay    true  first day counter
        *                      false follow up day counter
        */
-      DayCounter(GregorianCalendar date, boolean isStartDay)
+      DayCounter(final GregorianCalendar date, final boolean isStartDay)
       {
          // store internal copy of creation date
          this.date = (GregorianCalendar)date.clone();
@@ -443,14 +449,18 @@ public class MessageCounter
          // first monitored day) and the rest with default values ('-1')
          int hour = date.get(Calendar.HOUR_OF_DAY);
 
-         for (int i = 0; i < HOURS; i++)
+         for (int i = 0; i < DayCounter.HOURS; i++)
          {
             if (i < hour)
             {
                if (isStartDay)
+               {
                   counters[i] = -1;
+               }
                else
+               {
                   counters[i] = 0;
+               }
             }
             else
             {
@@ -482,7 +492,7 @@ public class MessageCounter
        *
        * @param newMessages number of new messages since the counter was last updated.
        */
-      void updateDayCounter(int newMessages)
+      void updateDayCounter(final int newMessages)
       {
          // get the current hour of the day
          GregorianCalendar cal = new GregorianCalendar();
@@ -506,7 +516,9 @@ public class MessageCounter
             if (bUpdate == true)
             {
                if (counters[i] == -1)
+               {
                   counters[i] = 0;
+               }
             }
          }
 
@@ -523,7 +535,7 @@ public class MessageCounter
          // '0' values
          boolean bFinalize = false;
 
-         for (int i = 0; i < HOURS; i++)
+         for (int i = 0; i < DayCounter.HOURS; i++)
          {
             if (counters[i] > -1)
             {
@@ -536,7 +548,9 @@ public class MessageCounter
             if (bFinalize)
             {
                if (counters[i] == -1)
+               {
                   counters[i] = 0;
+               }
             }
          }
       }
@@ -555,7 +569,7 @@ public class MessageCounter
          String strData = dateFormat.format(date.getTime());
 
          // append 24 comma separated hour counter values
-         for (int i = 0; i < HOURS; i++)
+         for (int i = 0; i < DayCounter.HOURS; i++)
          {
             strData += "," + counters[i];
          }

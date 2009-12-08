@@ -25,7 +25,7 @@ public class PropertyConversionException extends RuntimeException
 
    private static final long serialVersionUID = -3010008708334904332L;
 
-   public PropertyConversionException(String message)
+   public PropertyConversionException(final String message)
    {
       super(message);
    }

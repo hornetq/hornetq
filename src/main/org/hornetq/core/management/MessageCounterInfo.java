@@ -31,7 +31,7 @@ public class MessageCounterInfo
    // Constants -----------------------------------------------------
 
    private static final Logger log = Logger.getLogger(MessageCounterInfo.class);
-   
+
    // Attributes ----------------------------------------------------
 
    private final String name;
@@ -54,7 +54,7 @@ public class MessageCounterInfo
 
    // Static --------------------------------------------------------
 
-   public static String toJSon(MessageCounter counter) throws Exception
+   public static String toJSon(final MessageCounter counter) throws Exception
    {
       DateFormat dateFormat = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.MEDIUM);
 
@@ -63,11 +63,11 @@ public class MessageCounterInfo
       json.put("lastAddTimestamp", lastAddTimestamp);
       String updateTimestamp = dateFormat.format(new Date(counter.getLastUpdate()));
       json.put("updateTimestamp", updateTimestamp);
-      
+
       return json.toString();
    }
-   
-   public static MessageCounterInfo fromJSON(String jsonString) throws Exception
+
+   public static MessageCounterInfo fromJSON(final String jsonString) throws Exception
    {
       JSONObject data = new JSONObject(jsonString);
       String name = data.getString("destinationName");
@@ -160,7 +160,7 @@ public class MessageCounterInfo
    {
       return udpateTimestamp;
    }
-   
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

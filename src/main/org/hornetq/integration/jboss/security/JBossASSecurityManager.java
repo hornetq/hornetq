@@ -44,7 +44,7 @@ public class JBossASSecurityManager implements HornetQSecurityManager, HornetQCo
 
    // Attributes ----------------------------------------------------
 
-   private boolean trace = log.isTraceEnabled();
+   private final boolean trace = JBossASSecurityManager.log.isTraceEnabled();
 
    /**
     * the realmmapping
@@ -60,12 +60,13 @@ public class JBossASSecurityManager implements HornetQSecurityManager, HornetQCo
     * The JNDI name of the AuthenticationManager(and RealmMapping since they are the same object).
     */
    private String securityDomainName = "java:/jaas/hornetq";
-   
+
    private boolean started;
+
    private boolean isAs5 = true;
 
    public boolean validateUser(final String user, final String password)
-   {      
+   {
       SimplePrincipal principal = new SimplePrincipal(user);
 
       char[] passwordChars = null;
@@ -80,7 +81,10 @@ public class JBossASSecurityManager implements HornetQSecurityManager, HornetQCo
       return authenticationManager.isValid(principal, passwordChars, subject);
    }
 
-   public boolean validateUserAndRole(final String user, final String password, final Set<Role> roles, final CheckType checkType)
+   public boolean validateUserAndRole(final String user,
+                                      final String password,
+                                      final Set<Role> roles,
+                                      final CheckType checkType)
    {
       SimplePrincipal principal = user == null ? null : new SimplePrincipal(user);
 
@@ -107,7 +111,7 @@ public class JBossASSecurityManager implements HornetQSecurityManager, HornetQCo
 
          if (trace)
          {
-            log.trace("user " + user + (authenticated ? " is " : " is NOT ") + "authorized");
+            JBossASSecurityManager.log.trace("user " + user + (authenticated ? " is " : " is NOT ") + "authorized");
          }
          popSecurityContext();
       }
@@ -116,7 +120,7 @@ public class JBossASSecurityManager implements HornetQSecurityManager, HornetQCo
 
    private void popSecurityContext()
    {
-      if(isAs5)
+      if (isAs5)
       {
          SecurityActions.popSubjectContext();
       }
@@ -126,9 +130,9 @@ public class JBossASSecurityManager implements HornetQSecurityManager, HornetQCo
       }
    }
 
-   private void pushSecurityContext(SimplePrincipal principal, char[] passwordChars, Subject subject)
+   private void pushSecurityContext(final SimplePrincipal principal, final char[] passwordChars, final Subject subject)
    {
-      if(isAs5)
+      if (isAs5)
       {
          SecurityActions.pushSubjectContext(principal, passwordChars, subject, securityDomainName);
       }
@@ -138,27 +142,27 @@ public class JBossASSecurityManager implements HornetQSecurityManager, HornetQCo
       }
    }
 
-   public void addRole(String user, String role)
+   public void addRole(final String user, final String role)
    {
       // NO-OP
    }
 
-   public void addUser(String user, String password)
+   public void addUser(final String user, final String password)
    {
       // NO-OP
    }
 
-   public void removeRole(String user, String role)
+   public void removeRole(final String user, final String role)
    {
       // NO-OP
    }
 
-   public void removeUser(String user)
+   public void removeUser(final String user)
    {
       // NO-OP
    }
 
-   public void setDefaultUser(String username)
+   public void setDefaultUser(final String username)
    {
       // NO-OP
    }
@@ -197,14 +201,14 @@ public class JBossASSecurityManager implements HornetQSecurityManager, HornetQCo
       {
          return;
       }
-      
+
       InitialContext ic = new InitialContext();
-      authenticationManager = (AuthenticationManager) ic.lookup(securityDomainName);
-      realmMapping = (RealmMapping) authenticationManager;
-      
+      authenticationManager = (AuthenticationManager)ic.lookup(securityDomainName);
+      realmMapping = (RealmMapping)authenticationManager;
+
       started = true;
    }
-   
+
    public synchronized void stop()
    {
       if (!started)
@@ -213,18 +217,18 @@ public class JBossASSecurityManager implements HornetQSecurityManager, HornetQCo
       }
       started = false;
    }
-   
+
    public synchronized boolean isStarted()
    {
       return started;
    }
-   
-   public void setSecurityDomainName(String securityDomainName)
+
+   public void setSecurityDomainName(final String securityDomainName)
    {
       this.securityDomainName = securityDomainName;
    }
 
-   public void setAs5(boolean as5)
+   public void setAs5(final boolean as5)
    {
       isAs5 = as5;
    }

@@ -15,7 +15,6 @@ package org.hornetq.core.remoting.impl.wireformat;
 
 import org.hornetq.core.buffers.HornetQBuffer;
 import org.hornetq.core.journal.EncodingSupport;
-import org.hornetq.utils.DataConstants;
 
 /**
  * A ReplicationAddMessage
@@ -52,7 +51,7 @@ public class ReplicationAddTXMessage extends PacketImpl
 
    public ReplicationAddTXMessage()
    {
-      super(REPLICATION_APPEND_TX);
+      super(PacketImpl.REPLICATION_APPEND_TX);
    }
 
    public ReplicationAddTXMessage(final byte journalID,

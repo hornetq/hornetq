@@ -16,6 +16,8 @@ package org.hornetq.tests.integration.persistence;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
 import org.hornetq.core.client.ClientSession;
@@ -74,9 +76,9 @@ public class DeleteQueueRestartTest extends ServiceTestBase
 
       final ClientSession session = factory.createSession(false, true, true);
 
-      session.createQueue(ADDRESS, ADDRESS, true);
+      session.createQueue(DeleteQueueRestartTest.ADDRESS, DeleteQueueRestartTest.ADDRESS, true);
 
-      ClientProducer prod = session.createProducer(ADDRESS);
+      ClientProducer prod = session.createProducer(DeleteQueueRestartTest.ADDRESS);
 
       for (int i = 0; i < 100; i++)
       {
@@ -94,7 +96,7 @@ public class DeleteQueueRestartTest extends ServiceTestBase
          {
             try
             {
-               session.deleteQueue(ADDRESS);
+               session.deleteQueue(DeleteQueueRestartTest.ADDRESS);
                session.close();
                count.countDown();
             }
@@ -104,7 +106,7 @@ public class DeleteQueueRestartTest extends ServiceTestBase
          }
       }.start();
 
-      assertTrue(count.await(5, TimeUnit.SECONDS));
+      Assert.assertTrue(count.await(5, TimeUnit.SECONDS));
 
       server.stop();
 

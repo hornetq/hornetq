@@ -20,6 +20,8 @@ import javax.jms.DeliveryMode;
 import javax.jms.Message;
 
 import org.hornetq.jms.client.HornetQMessage;
+import org.hornetq.jms.tests.HornetQServerTestCase;
+import org.hornetq.jms.tests.util.ProxyAssertSupport;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -33,17 +35,20 @@ public class JMSExpirationHeaderTest extends MessageHeaderTestBase
    // Constants -----------------------------------------------------
 
    // Static --------------------------------------------------------
-   
+
    // Attributes ----------------------------------------------------
 
    private volatile boolean testFailed;
+
    private volatile long effectiveReceiveTime;
+
    private volatile Message expectedMessage;
 
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
 
+   @Override
    public void setUp() throws Exception
    {
       super.setUp();
@@ -52,6 +57,7 @@ public class JMSExpirationHeaderTest extends MessageHeaderTestBase
       effectiveReceiveTime = 0;
    }
 
+   @Override
    public void tearDown() throws Exception
    {
       super.tearDown();
@@ -63,48 +69,48 @@ public class JMSExpirationHeaderTest extends MessageHeaderTestBase
    {
       Message m = queueProducerSession.createMessage();
       queueProducer.send(m);
-      assertEquals(0, queueConsumer.receive().getJMSExpiration());
+      ProxyAssertSupport.assertEquals(0, queueConsumer.receive().getJMSExpiration());
    }
 
    public void testNoExpirationOnTimeoutReceive() throws Exception
    {
       Message m = queueProducerSession.createMessage();
       queueProducer.send(m, DeliveryMode.NON_PERSISTENT, 4, 5000);
-      
-      //DeliveryImpl is asynch - need to give enough time to get to the consumer
+
+      // DeliveryImpl is asynch - need to give enough time to get to the consumer
       Thread.sleep(2000);
-      
+
       Message result = queueConsumer.receive(10);
-      assertEquals(m.getJMSMessageID(), result.getJMSMessageID());
+      ProxyAssertSupport.assertEquals(m.getJMSMessageID(), result.getJMSMessageID());
    }
 
    public void testExpirationOnTimeoutReceive() throws Exception
    {
       Message m = queueProducerSession.createMessage();
       queueProducer.send(m, DeliveryMode.NON_PERSISTENT, 4, 1000);
-      
+
       // DeliveryImpl is asynch - need to give enough time to get to the consumer
       Thread.sleep(2000);
-      
-      assertNull(queueConsumer.receive(100));
+
+      ProxyAssertSupport.assertNull(queueConsumer.receive(100));
    }
 
    public void testExpirationOnReceiveNoWait() throws Exception
    {
       Message m = queueProducerSession.createMessage();
       queueProducer.send(m, DeliveryMode.NON_PERSISTENT, 4, 1000);
-      
+
       // DeliveryImpl is asynch - need to give enough time to get to the consumer
       Thread.sleep(2000);
-      
-      assertNull(queueConsumer.receiveNoWait());
+
+      ProxyAssertSupport.assertNull(queueConsumer.receiveNoWait());
    }
 
    public void testExpiredMessageDiscardingOnTimeoutReceive() throws Exception
    {
       Message m = queueProducerSession.createMessage();
       queueProducer.send(m, DeliveryMode.NON_PERSISTENT, 4, 1000);
-      
+
       // DeliveryImpl is asynch - need to give enough time to get to the consumer
       Thread.sleep(2000);
 
@@ -118,7 +124,7 @@ public class JMSExpirationHeaderTest extends MessageHeaderTestBase
             {
                expectedMessage = queueConsumer.receive(100);
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                log.trace("receive() exits with an exception", e);
             }
@@ -131,7 +137,7 @@ public class JMSExpirationHeaderTest extends MessageHeaderTestBase
       receiverThread.start();
 
       latch.await();
-      assertNull(expectedMessage);
+      ProxyAssertSupport.assertNull(expectedMessage);
    }
 
    public void testReceiveTimeoutPreservation() throws Exception
@@ -151,7 +157,7 @@ public class JMSExpirationHeaderTest extends MessageHeaderTestBase
                expectedMessage = queueConsumer.receive(timeToWaitForReceive);
                effectiveReceiveTime = System.currentTimeMillis() - t1;
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                log.trace("receive() exits with an exception", e);
             }
@@ -180,7 +186,7 @@ public class JMSExpirationHeaderTest extends MessageHeaderTestBase
                queueProducer.send(m, DeliveryMode.NON_PERSISTENT, 4, -1);
 
                HornetQMessage msg = (HornetQMessage)m;
-               
+
                if (!msg.getCoreMessage().isExpired())
                {
                   log.error("The message " + m + " should have expired");
@@ -188,7 +194,7 @@ public class JMSExpirationHeaderTest extends MessageHeaderTestBase
                   return;
                }
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                log.error("This exception will fail the test", e);
                testFailed = true;
@@ -201,35 +207,32 @@ public class JMSExpirationHeaderTest extends MessageHeaderTestBase
       }, "sender thread");
       senderThread.start();
 
-
       senderLatch.await();
       receiverLatch.await();
 
       if (testFailed)
       {
-         fail("Test failed by the sender thread. Watch for exception in logs");
+         ProxyAssertSupport.fail("Test failed by the sender thread. Watch for exception in logs");
       }
 
-      log.trace("planned waiting time: " + timeToWaitForReceive +
-                " effective waiting time " + effectiveReceiveTime);
-      assertTrue(effectiveReceiveTime >= timeToWaitForReceive);
-      assertTrue(effectiveReceiveTime < timeToWaitForReceive * 1.5);  // well, how exactly I did come
-                                                                      // up with this coeficient is
-                                                                      // not clear even to me, I just
-                                                                      // noticed that if I use 1.01
-                                                                      // this assertion sometimes
-                                                                      // fails;
-           
-      assertNull(expectedMessage);
-   }
+      log.trace("planned waiting time: " + timeToWaitForReceive + " effective waiting time " + effectiveReceiveTime);
+      ProxyAssertSupport.assertTrue(effectiveReceiveTime >= timeToWaitForReceive);
+      ProxyAssertSupport.assertTrue(effectiveReceiveTime < timeToWaitForReceive * 1.5); // well, how exactly I did come
+      // up with this coeficient is
+      // not clear even to me, I just
+      // noticed that if I use 1.01
+      // this assertion sometimes
+      // fails;
 
+      ProxyAssertSupport.assertNull(expectedMessage);
+   }
 
    public void testNoExpirationOnReceive() throws Exception
    {
       Message m = queueProducerSession.createMessage();
       queueProducer.send(m, DeliveryMode.NON_PERSISTENT, 4, 5000);
       Message result = queueConsumer.receive();
-      assertEquals(m.getJMSMessageID(), result.getJMSMessageID());
+      ProxyAssertSupport.assertEquals(m.getJMSMessageID(), result.getJMSMessageID());
    }
 
    public void testExpirationOnReceive() throws Exception
@@ -240,9 +243,9 @@ public class JMSExpirationHeaderTest extends MessageHeaderTestBase
 
       // allow the message to expire
       Thread.sleep(3000);
-      
-      //When a consumer is closed while a receive() is in progress it will make the
-      //receive return with null
+
+      // When a consumer is closed while a receive() is in progress it will make the
+      // receive return with null
 
       final CountDownLatch latch = new CountDownLatch(1);
       // blocking read for a while to make sure I don't get anything, not even a null
@@ -254,24 +257,24 @@ public class JMSExpirationHeaderTest extends MessageHeaderTestBase
             {
                log.trace("Attempting to receive");
                expectedMessage = queueConsumer.receive();
-               
-               //NOTE on close, the receive() call will return with null
+
+               // NOTE on close, the receive() call will return with null
                log.trace("Receive exited without exception:" + expectedMessage);
-               
+
                if (expectedMessage == null)
                {
                   received.set(false);
                }
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                log.trace("receive() exits with an exception", e);
-               fail();
+               ProxyAssertSupport.fail();
             }
-            catch(Throwable t)
+            catch (Throwable t)
             {
                log.trace("receive() exits with an throwable", t);
-               fail();
+               ProxyAssertSupport.fail();
             }
             finally
             {
@@ -282,16 +285,16 @@ public class JMSExpirationHeaderTest extends MessageHeaderTestBase
       receiverThread.start();
 
       Thread.sleep(3000);
-      //receiverThread.interrupt();
-      
+      // receiverThread.interrupt();
+
       queueConsumer.close();
 
       // wait for the reading thread to conclude
       latch.await();
 
       log.trace("Expected message:" + expectedMessage);
-      
-      assertFalse(received.get());     
+
+      ProxyAssertSupport.assertFalse(received.get());
    }
 
    /*
@@ -301,28 +304,27 @@ public class JMSExpirationHeaderTest extends MessageHeaderTestBase
    public void testExpiredMessageDoesNotGoBackOnQueue() throws Exception
    {
       Message m = queueProducerSession.createMessage();
-      
+
       m.setStringProperty("weebles", "wobble but they don't fall down");
-      
+
       queueProducer.send(m, DeliveryMode.NON_PERSISTENT, 4, 1000);
-      
-      //DeliveryImpl is asynch - need to give enough time to get to the consumer
+
+      // DeliveryImpl is asynch - need to give enough time to get to the consumer
       Thread.sleep(2000);
-      
-      assertNull(queueConsumer.receive(100));
-      
-      //Need to check message isn't still in queue
-      
-      checkEmpty(queue1);           
+
+      ProxyAssertSupport.assertNull(queueConsumer.receive(100));
+
+      // Need to check message isn't still in queue
+
+      checkEmpty(HornetQServerTestCase.queue1);
    }
 
-
    // Package protected ---------------------------------------------
-   
+
    // Protected -----------------------------------------------------
 
    // Private -------------------------------------------------------
-   
+
    // Inner classes -------------------------------------------------
 
 }

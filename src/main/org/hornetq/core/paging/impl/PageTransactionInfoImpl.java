@@ -13,15 +13,13 @@
 
 package org.hornetq.core.paging.impl;
 
-import static org.hornetq.utils.DataConstants.SIZE_INT;
-import static org.hornetq.utils.DataConstants.SIZE_LONG;
-
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.hornetq.core.buffers.HornetQBuffer;
 import org.hornetq.core.paging.PageTransactionInfo;
+import org.hornetq.utils.DataConstants;
 
 /**
  *
@@ -41,6 +39,7 @@ public class PageTransactionInfoImpl implements PageTransactionInfo
    private volatile CountDownLatch countDownCompleted;
 
    private volatile boolean committed;
+
    private volatile boolean rolledback;
 
    private final AtomicInteger numberOfMessages = new AtomicInteger(0);
@@ -118,7 +117,7 @@ public class PageTransactionInfoImpl implements PageTransactionInfo
 
    public synchronized int getEncodeSize()
    {
-      return SIZE_LONG + SIZE_INT;
+      return DataConstants.SIZE_LONG + DataConstants.SIZE_INT;
    }
 
    public void commit()
@@ -129,9 +128,8 @@ public class PageTransactionInfoImpl implements PageTransactionInfo
        */
       countDownCompleted.countDown();
    }
-   
-   
-   public boolean waitCompletion(int timeoutMilliseconds) throws InterruptedException
+
+   public boolean waitCompletion(final int timeoutMilliseconds) throws InterruptedException
    {
       if (countDownCompleted == null)
       {
@@ -142,18 +140,17 @@ public class PageTransactionInfoImpl implements PageTransactionInfo
          return countDownCompleted.await(timeoutMilliseconds, TimeUnit.MILLISECONDS);
       }
    }
-   
-   
+
    public boolean isCommit()
    {
       return committed;
    }
-   
+
    public boolean isRollback()
    {
       return rolledback;
    }
-   
+
    public void rollback()
    {
       rolledback = true;
@@ -165,7 +162,7 @@ public class PageTransactionInfoImpl implements PageTransactionInfo
    {
       committed = false;
       rolledback = false;
-      
+
       countDownCompleted = new CountDownLatch(1);
    }
 

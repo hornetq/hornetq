@@ -18,6 +18,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
@@ -71,7 +73,7 @@ public class BridgeReconnectTest extends BridgeTestBase
          return InVMConnectorFactory.class.getName();
       }
    }
-   
+
    // Fail bridge and reconnecting immediately
    public void testFailoverAndReconnectImmediately() throws Exception
    {
@@ -158,7 +160,7 @@ public class BridgeReconnectTest extends BridgeTestBase
 
       session2.start();
 
-      log.info("** failing connection");
+      BridgeReconnectTest.log.info("** failing connection");
       // Now we will simulate a failure of the bridge connection between server0 and server1
       Bridge bridge = server0.getClusterManager().getBridges().get(bridgeName);
       RemotingConnection forwardingConnection = getForwardingConnection(bridge);
@@ -179,8 +181,8 @@ public class BridgeReconnectTest extends BridgeTestBase
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage r1 = cons2.receive(1500);
-         assertNotNull(r1);
-         assertEquals(i, r1.getObjectProperty(propKey));
+         Assert.assertNotNull(r1);
+         Assert.assertEquals(i, r1.getObjectProperty(propKey));
       }
 
       session0.close();
@@ -190,9 +192,9 @@ public class BridgeReconnectTest extends BridgeTestBase
       server1.stop();
       service2.stop();
 
-      assertEquals(0, server0.getRemotingService().getConnections().size());
-      assertEquals(0, server1.getRemotingService().getConnections().size());
-      assertEquals(0, service2.getRemotingService().getConnections().size());
+      Assert.assertEquals(0, server0.getRemotingService().getConnections().size());
+      Assert.assertEquals(0, server1.getRemotingService().getConnections().size());
+      Assert.assertEquals(0, service2.getRemotingService().getConnections().size());
    }
 
    // Fail bridge and attempt failover a few times before succeeding
@@ -306,8 +308,8 @@ public class BridgeReconnectTest extends BridgeTestBase
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage r1 = cons2.receive(1500);
-         assertNotNull(r1);
-         assertEquals(i, r1.getObjectProperty(propKey));
+         Assert.assertNotNull(r1);
+         Assert.assertEquals(i, r1.getObjectProperty(propKey));
       }
 
       session0.close();
@@ -317,9 +319,9 @@ public class BridgeReconnectTest extends BridgeTestBase
       server1.stop();
       service2.stop();
 
-      assertEquals(0, server0.getRemotingService().getConnections().size());
-      assertEquals(0, server1.getRemotingService().getConnections().size());
-      assertEquals(0, service2.getRemotingService().getConnections().size());
+      Assert.assertEquals(0, server0.getRemotingService().getConnections().size());
+      Assert.assertEquals(0, server1.getRemotingService().getConnections().size());
+      Assert.assertEquals(0, service2.getRemotingService().getConnections().size());
    }
 
    // Fail bridge and reconnect same node, no backup specified
@@ -422,8 +424,8 @@ public class BridgeReconnectTest extends BridgeTestBase
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage r1 = cons1.receive(1500);
-         assertNotNull(r1);
-         assertEquals(i, r1.getObjectProperty(propKey));
+         Assert.assertNotNull(r1);
+         Assert.assertEquals(i, r1.getObjectProperty(propKey));
       }
 
       session0.close();
@@ -432,22 +434,22 @@ public class BridgeReconnectTest extends BridgeTestBase
       server0.stop();
       server1.stop();
 
-      assertEquals(0, server0.getRemotingService().getConnections().size());
-      assertEquals(0, server1.getRemotingService().getConnections().size());
+      Assert.assertEquals(0, server0.getRemotingService().getConnections().size());
+      Assert.assertEquals(0, server1.getRemotingService().getConnections().size());
    }
-   
-   //We test that we can pause more than client failure check period (to prompt the pinger to failing)
-   //before reconnecting
+
+   // We test that we can pause more than client failure check period (to prompt the pinger to failing)
+   // before reconnecting
    public void testShutdownServerCleanlyAndReconnectSameNodeWithSleep() throws Exception
    {
       testShutdownServerCleanlyAndReconnectSameNode(true);
    }
-   
+
    public void testShutdownServerCleanlyAndReconnectSameNode() throws Exception
    {
       testShutdownServerCleanlyAndReconnectSameNode(false);
    }
-   
+
    private void testShutdownServerCleanlyAndReconnectSameNode(final boolean sleep) throws Exception
    {
       Map<String, Object> server0Params = new HashMap<String, Object>();
@@ -516,17 +518,17 @@ public class BridgeReconnectTest extends BridgeTestBase
 
       ClientProducer prod0 = session0.createProducer(testAddress);
 
-      log.info("stopping server1");
+      BridgeReconnectTest.log.info("stopping server1");
       server1.stop();
-      
+
       if (sleep)
       {
          Thread.sleep(2 * clientFailureCheckPeriod);
       }
-      
-      log.info("restarting server1");
+
+      BridgeReconnectTest.log.info("restarting server1");
       server1.start();
-      log.info("server 1 restarted");
+      BridgeReconnectTest.log.info("server 1 restarted");
 
       ClientSessionFactory csf1 = new ClientSessionFactoryImpl(server1tc);
       ClientSession session1 = csf1.createSession(false, true, true);
@@ -547,17 +549,17 @@ public class BridgeReconnectTest extends BridgeTestBase
          prod0.send(message);
       }
 
-      log.info("sent messages");
+      BridgeReconnectTest.log.info("sent messages");
 
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage r1 = cons1.receive(30000);
-         assertNotNull(r1);
-         assertEquals(i, r1.getObjectProperty(propKey));
-         log.info("got message " + r1.getObjectProperty(propKey));
+         Assert.assertNotNull(r1);
+         Assert.assertEquals(i, r1.getObjectProperty(propKey));
+         BridgeReconnectTest.log.info("got message " + r1.getObjectProperty(propKey));
       }
 
-      log.info("got messages");
+      BridgeReconnectTest.log.info("got messages");
 
       session0.close();
       session1.close();
@@ -565,8 +567,8 @@ public class BridgeReconnectTest extends BridgeTestBase
       server0.stop();
       server1.stop();
 
-      assertEquals(0, server0.getRemotingService().getConnections().size());
-      assertEquals(0, server1.getRemotingService().getConnections().size());
+      Assert.assertEquals(0, server0.getRemotingService().getConnections().size());
+      Assert.assertEquals(0, server1.getRemotingService().getConnections().size());
    }
 
    public void testFailoverThenFailAgainAndReconnect() throws Exception
@@ -577,15 +579,11 @@ public class BridgeReconnectTest extends BridgeTestBase
       Map<String, Object> server1Params = new HashMap<String, Object>();
       HornetQServer server1 = createHornetQServer(1, isNetty(), server1Params);
 
-      TransportConfiguration server0tc = new TransportConfiguration(getConnector(),
-                                                                    server0Params,
-                                                                    "server0tc");
+      TransportConfiguration server0tc = new TransportConfiguration(getConnector(), server0Params, "server0tc");
 
       Map<String, TransportConfiguration> connectors = new HashMap<String, TransportConfiguration>();
 
-      TransportConfiguration server1tc = new TransportConfiguration(getConnector(),
-                                                                    server1Params,
-                                                                    "server1tc");
+      TransportConfiguration server1tc = new TransportConfiguration(getConnector(), server1Params, "server1tc");
 
       connectors.put(server1tc.getName(), server1tc);
 
@@ -667,8 +665,8 @@ public class BridgeReconnectTest extends BridgeTestBase
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage r1 = cons1.receive(1500);
-         assertNotNull(r1);
-         assertEquals(i, r1.getObjectProperty(propKey));
+         Assert.assertNotNull(r1);
+         Assert.assertEquals(i, r1.getObjectProperty(propKey));
       }
 
       // Fail again - should reconnect
@@ -688,8 +686,8 @@ public class BridgeReconnectTest extends BridgeTestBase
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage r1 = cons1.receive(1500);
-         assertNotNull(r1);
-         assertEquals(i, r1.getObjectProperty(propKey));
+         Assert.assertNotNull(r1);
+         Assert.assertEquals(i, r1.getObjectProperty(propKey));
       }
 
       session0.close();
@@ -698,8 +696,8 @@ public class BridgeReconnectTest extends BridgeTestBase
       server0.stop();
       server1.stop();
 
-      assertEquals(0, server0.getRemotingService().getConnections().size());
-      assertEquals(0, server1.getRemotingService().getConnections().size());
+      Assert.assertEquals(0, server0.getRemotingService().getConnections().size());
+      Assert.assertEquals(0, server1.getRemotingService().getConnections().size());
    }
 
    private RemotingConnection getForwardingConnection(final Bridge bridge) throws Exception

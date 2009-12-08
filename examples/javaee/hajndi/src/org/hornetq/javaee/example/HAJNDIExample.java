@@ -28,11 +28,11 @@ import javax.naming.InitialContext;
  */
 public class HAJNDIExample
 {
-   public static void main(String[] args) throws Exception
+   public static void main(final String[] args) throws Exception
    {
       Connection connection = null;
       InitialContext initialContext = null;
-      
+
       try
       {
          // Step 1. Create an initial context to perform the JNDI lookup.

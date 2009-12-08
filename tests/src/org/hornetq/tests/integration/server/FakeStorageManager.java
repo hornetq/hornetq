@@ -27,32 +27,38 @@ public class FakeStorageManager extends NullStorageManager
 
    List<Long> ackIds = new ArrayList<Long>();
 
-   public void storeMessage(ServerMessage message) throws Exception
+   @Override
+   public void storeMessage(final ServerMessage message) throws Exception
    {
       messageIds.add(message.getMessageID());
    }
 
-   public void storeMessageTransactional(long txID, ServerMessage message) throws Exception
+   @Override
+   public void storeMessageTransactional(final long txID, final ServerMessage message) throws Exception
    {
       messageIds.add(message.getMessageID());
    }
 
-   public void deleteMessageTransactional(long txID, long queueID, long messageID) throws Exception
+   @Override
+   public void deleteMessageTransactional(final long txID, final long queueID, final long messageID) throws Exception
    {
       messageIds.remove(messageID);
    }
 
-   public void deleteMessage(long messageID) throws Exception
+   @Override
+   public void deleteMessage(final long messageID) throws Exception
    {
       messageIds.remove(messageID);
    }
 
-   public void storeAcknowledge(long queueID, long messageID) throws Exception
+   @Override
+   public void storeAcknowledge(final long queueID, final long messageID) throws Exception
    {
       ackIds.add(messageID);
    }
 
-   public void storeAcknowledgeTransactional(long txID, long queueID, long messageiD) throws Exception
+   @Override
+   public void storeAcknowledgeTransactional(final long txID, final long queueID, final long messageiD) throws Exception
    {
       ackIds.add(messageiD);
    }

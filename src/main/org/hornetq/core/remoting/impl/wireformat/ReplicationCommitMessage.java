@@ -14,7 +14,6 @@
 package org.hornetq.core.remoting.impl.wireformat;
 
 import org.hornetq.core.buffers.HornetQBuffer;
-import org.hornetq.utils.DataConstants;
 
 /**
  * A ReplicationAddMessage
@@ -43,7 +42,7 @@ public class ReplicationCommitMessage extends PacketImpl
 
    public ReplicationCommitMessage()
    {
-      super(REPLICATION_COMMIT_ROLLBACK);
+      super(PacketImpl.REPLICATION_COMMIT_ROLLBACK);
    }
 
    public ReplicationCommitMessage(final byte journalID, final boolean rollback, final long txId)

@@ -37,8 +37,8 @@ public class SimpleWaitIOCallback extends SyncIOCompletion
    private volatile int errorCode = 0;
 
    public void done()
-   {     
-      latch.countDown();      
+   {
+      latch.countDown();
    }
 
    public void onError(final int errorCode, final String errorMessage)
@@ -47,15 +47,16 @@ public class SimpleWaitIOCallback extends SyncIOCompletion
 
       this.errorMessage = errorMessage;
 
-      log.warn("Error Message " + errorMessage);
+      SimpleWaitIOCallback.log.warn("Error Message " + errorMessage);
 
       latch.countDown();
    }
 
+   @Override
    public void waitCompletion() throws Exception
    {
       latch.await();
-      
+
       if (errorMessage != null)
       {
          throw new HornetQException(errorCode, errorMessage);
@@ -63,7 +64,7 @@ public class SimpleWaitIOCallback extends SyncIOCompletion
 
       return;
    }
-   
+
    public boolean waitCompletion(final long timeout) throws Exception
    {
       boolean retValue = latch.await(timeout, TimeUnit.MILLISECONDS);
@@ -72,7 +73,7 @@ public class SimpleWaitIOCallback extends SyncIOCompletion
       {
          throw new HornetQException(errorCode, errorMessage);
       }
-      
+
       return retValue;
    }
 

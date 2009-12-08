@@ -28,7 +28,7 @@ public class Log4jLogDelegateFactory implements LogDelegateFactory
    /* (non-Javadoc)
     * @see org.hornetq.core.logging.LogDelegateFactory#getLogDelegate(java.lang.Class)
     */
-   public LogDelegate createDelegate(Class<?> clazz)
+   public LogDelegate createDelegate(final Class<?> clazz)
    {
       return new Log4jLogDelegate(clazz);
    }

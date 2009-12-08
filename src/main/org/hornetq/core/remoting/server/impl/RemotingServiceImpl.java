@@ -13,8 +13,6 @@
 
 package org.hornetq.core.remoting.server.impl;
 
-import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.DISCONNECT;
-
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -82,7 +80,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
    private final HornetQServer server;
 
-   private ManagementService managementService;
+   private final ManagementService managementService;
 
    private volatile RemotingConnection serverSideReplicatingConnection;
 
@@ -116,7 +114,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
          }
          catch (Exception e)
          {
-            log.warn("Error instantiating interceptor \"" + interceptorClass + "\"", e);
+            RemotingServiceImpl.log.warn("Error instantiating interceptor \"" + interceptorClass + "\"", e);
          }
       }
 
@@ -154,8 +152,8 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
                if (!invalid.isEmpty())
                {
-                  log.warn(ConfigurationHelper.stringSetToCommaListString("The following keys are invalid for configuring the acceptor: ",
-                                                                          invalid) + " the acceptor will not be started.");
+                  RemotingServiceImpl.log.warn(ConfigurationHelper.stringSetToCommaListString("The following keys are invalid for configuring the acceptor: ",
+                                                                                              invalid) + " the acceptor will not be started.");
 
                   continue;
                }
@@ -177,7 +175,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
          }
          catch (Exception e)
          {
-            log.warn("Error instantiating acceptor \"" + info.getFactoryClassName() + "\"", e);
+            RemotingServiceImpl.log.warn("Error instantiating acceptor \"" + info.getFactoryClassName() + "\"", e);
          }
       }
 
@@ -186,7 +184,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
          a.start();
       }
 
-      failureCheckThread = new FailureCheckThread(CONNECTION_TTL_CHECK_INTERVAL);
+      failureCheckThread = new FailureCheckThread(RemotingServiceImpl.CONNECTION_TTL_CHECK_INTERVAL);
 
       failureCheckThread.start();
 
@@ -205,18 +203,18 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
          }
          catch (Exception e)
          {
-            log.error("Failed to stop acceptor", e);
+            RemotingServiceImpl.log.error("Failed to stop acceptor", e);
          }
       }
    }
-   
+
    public void stop() throws Exception
    {
       if (!started)
       {
          return;
       }
-      
+
       if (!started)
       {
          return;
@@ -230,24 +228,25 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
          acceptor.pause();
       }
 
-      //Now we ensure that no connections will process any more packets after this method is complete
-      //then send a disconnect packet
+      // Now we ensure that no connections will process any more packets after this method is complete
+      // then send a disconnect packet
       for (ConnectionEntry entry : connections.values())
       {
          RemotingConnection conn = entry.connection;
 
          Channel channel0 = conn.getChannel(0, -1);
 
-         //And we remove all channels from the connection, this ensures no more packets will be processed after this method is
-         //complete
+         // And we remove all channels from the connection, this ensures no more packets will be processed after this
+         // method is
+         // complete
 
          conn.removeAllChannels();
 
-         //Now we are 100% sure that no more packets will be processed we can send the disconnect
+         // Now we are 100% sure that no more packets will be processed we can send the disconnect
 
-         channel0.sendAndFlush(new PacketImpl(DISCONNECT));
+         channel0.sendAndFlush(new PacketImpl(PacketImpl.DISCONNECT));
       }
-      
+
       for (Acceptor acceptor : acceptors)
       {
          acceptor.stop();
@@ -273,7 +272,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
    public RemotingConnection removeConnection(final Object remotingConnectionID)
    {
-      ConnectionEntry entry = this.connections.remove(remotingConnectionID);
+      ConnectionEntry entry = connections.remove(remotingConnectionID);
 
       if (entry != null)
       {
@@ -289,7 +288,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
    {
       Set<RemotingConnection> conns = new HashSet<RemotingConnection>();
 
-      for (ConnectionEntry entry : this.connections.values())
+      for (ConnectionEntry entry : connections.values())
       {
          conns.add(entry.connection);
       }
@@ -313,21 +312,23 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
       RemotingConnection rc = new RemotingConnectionImpl(connection,
                                                          interceptors,
-                                                         config.isAsyncConnectionExecutionEnabled() ? server.getExecutorFactory().getExecutor() : null);
+                                                         config.isAsyncConnectionExecutionEnabled() ? server.getExecutorFactory()
+                                                                                                            .getExecutor()
+                                                                                                   : null);
 
       Channel channel1 = rc.getChannel(1, -1);
-      
-      ChannelHandler handler = createHandler(rc, channel1); 
+
+      ChannelHandler handler = createHandler(rc, channel1);
 
       channel1.setHandler(handler);
-     
+
       long ttl = ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL;
-      
+
       if (config.getConnectionTTLOverride() != -1)
       {
          ttl = config.getConnectionTTLOverride();
       }
-      
+
       final ConnectionEntry entry = new ConnectionEntry(rc, System.currentTimeMillis(), ttl);
 
       connections.put(connection.getID(), entry);
@@ -410,7 +411,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
    /**
     * Subclasses (on tests) may use this to create a different channel.
     */
-   protected ChannelHandler createHandler(final RemotingConnection rc, Channel channel)
+   protected ChannelHandler createHandler(final RemotingConnection rc, final Channel channel)
    {
       return new HornetQPacketHandler(server, channel, rc);
    }
@@ -452,14 +453,14 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
    private final class FailureCheckThread extends Thread
    {
-      private long pauseInterval;
+      private final long pauseInterval;
 
       private volatile boolean closed;
 
       FailureCheckThread(final long pauseInterval)
       {
          super("hornetq-failure-check-thread");
-         
+
          this.pauseInterval = pauseInterval;
       }
 
@@ -481,6 +482,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
          }
       }
 
+      @Override
       public void run()
       {
          while (!closed)

@@ -22,6 +22,7 @@ package org.hornetq.tests.integration.paging;
  */
 public class NettyPagingSendTest extends PagingSendTest
 {
+   @Override
    protected boolean isNetty()
    {
       return true;

@@ -14,7 +14,6 @@
 package org.hornetq.core.remoting.impl.wireformat;
 
 import org.hornetq.core.buffers.HornetQBuffer;
-import org.hornetq.utils.DataConstants;
 
 /**
  * 
@@ -37,14 +36,14 @@ public class Ping extends PacketImpl
 
    public Ping(final long connectionTTL)
    {
-      super(PING);
+      super(PacketImpl.PING);
 
       this.connectionTTL = connectionTTL;
    }
 
    public Ping()
    {
-      super(PING);
+      super(PacketImpl.PING);
    }
 
    // Public --------------------------------------------------------
@@ -54,11 +53,13 @@ public class Ping extends PacketImpl
       return connectionTTL;
    }
 
+   @Override
    public void encodeRest(final HornetQBuffer buffer)
    {
       buffer.writeLong(connectionTTL);
    }
 
+   @Override
    public void decodeRest(final HornetQBuffer buffer)
    {
       connectionTTL = buffer.readLong();
@@ -73,7 +74,8 @@ public class Ping extends PacketImpl
       return buf.toString();
    }
 
-   public boolean equals(Object other)
+   @Override
+   public boolean equals(final Object other)
    {
       if (other instanceof Ping == false)
       {
@@ -82,9 +84,10 @@ public class Ping extends PacketImpl
 
       Ping r = (Ping)other;
 
-      return super.equals(other) && this.connectionTTL == r.connectionTTL;
+      return super.equals(other) && connectionTTL == r.connectionTTL;
    }
 
+   @Override
    public final boolean isRequiresConfirmations()
    {
       return false;

@@ -36,7 +36,7 @@ public class NIOJournalImplTest extends JournalImplTestUnit
    {
       File file = new File(getTestDir());
 
-      log.debug("deleting directory " + getTestDir());
+      NIOJournalImplTest.log.debug("deleting directory " + getTestDir());
 
       deleteDirectory(file);
 

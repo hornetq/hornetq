@@ -13,12 +13,11 @@
 
 package org.hornetq.tests.integration.management;
 
-import static org.hornetq.core.config.impl.ConfigurationImpl.DEFAULT_MANAGEMENT_ADDRESS;
-
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientRequestor;
 import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.client.management.impl.ManagementHelper;
+import org.hornetq.core.config.impl.ConfigurationImpl;
 
 /**
  * A MBeanUsingCoreMessage
@@ -36,21 +35,21 @@ public class CoreMessagingProxy
 
    private final String resourceName;
 
-   private ClientSession session;
+   private final ClientSession session;
 
-   private ClientRequestor requestor;
+   private final ClientRequestor requestor;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public CoreMessagingProxy(ClientSession session, String resourceName) throws Exception
+   public CoreMessagingProxy(final ClientSession session, final String resourceName) throws Exception
    {
       this.session = session;
 
       this.resourceName = resourceName;
 
-      this.requestor = new ClientRequestor(session, DEFAULT_MANAGEMENT_ADDRESS);
+      requestor = new ClientRequestor(session, ConfigurationImpl.DEFAULT_MANAGEMENT_ADDRESS);
 
    }
 
@@ -60,12 +59,12 @@ public class CoreMessagingProxy
 
    // Protected -----------------------------------------------------
 
-   public Object retrieveAttributeValue(String attributeName)
+   public Object retrieveAttributeValue(final String attributeName)
    {
       return retrieveAttributeValue(attributeName, null);
    }
-   
-   public Object retrieveAttributeValue(String attributeName, Class desiredType)
+
+   public Object retrieveAttributeValue(final String attributeName, final Class desiredType)
    {
       ClientMessage m = session.createClientMessage(false);
       ManagementHelper.putAttribute(m, resourceName, attributeName);
@@ -74,18 +73,18 @@ public class CoreMessagingProxy
       {
          reply = requestor.request(m);
          Object result = ManagementHelper.getResult(reply);
-         
+
          if (desiredType != null && desiredType != result.getClass())
          {
-            //Conversions
+            // Conversions
             if (desiredType == Long.class && result.getClass() == Integer.class)
             {
                Integer in = (Integer)result;
-               
+
                result = new Long(in.intValue());
             }
          }
-         
+
          return result;
       }
       catch (Exception e)
@@ -94,7 +93,7 @@ public class CoreMessagingProxy
       }
    }
 
-   public Object invokeOperation(String operationName, Object... args) throws Exception
+   public Object invokeOperation(final String operationName, final Object... args) throws Exception
    {
       ClientMessage m = session.createClientMessage(false);
       ManagementHelper.putOperationInvocation(m, resourceName, operationName, args);

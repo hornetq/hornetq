@@ -80,7 +80,7 @@ public class ReplicationManagerImpl implements ReplicationManager
    private final Object replicationLock = new Object();
 
    private final Queue<OperationContext> pendingTokens = new ConcurrentLinkedQueue<OperationContext>();
-   
+
    private final ExecutorFactory executorFactory;
 
    private SessionFailureListener failureListener;
@@ -92,7 +92,7 @@ public class ReplicationManagerImpl implements ReplicationManager
    public ReplicationManagerImpl(final FailoverManager failoverManager, final ExecutorFactory executorFactory)
    {
       super();
-      this.failoverManager = failoverManager;     
+      this.failoverManager = failoverManager;
       this.executorFactory = executorFactory;
    }
 
@@ -256,7 +256,7 @@ public class ReplicationManagerImpl implements ReplicationManager
    /* (non-Javadoc)
     * @see org.hornetq.core.replication.ReplicationManager#largeMessageBegin(byte[])
     */
-   public void largeMessageBegin(long messageId)
+   public void largeMessageBegin(final long messageId)
    {
       if (enabled)
       {
@@ -267,7 +267,7 @@ public class ReplicationManagerImpl implements ReplicationManager
    /* (non-Javadoc)
     * @see org.hornetq.core.replication.ReplicationManager#largeMessageDelete(long)
     */
-   public void largeMessageDelete(long messageId)
+   public void largeMessageDelete(final long messageId)
    {
       if (enabled)
       {
@@ -278,7 +278,7 @@ public class ReplicationManagerImpl implements ReplicationManager
    /* (non-Javadoc)
     * @see org.hornetq.core.replication.ReplicationManager#largeMessageWrite(long, byte[])
     */
-   public void largeMessageWrite(long messageId, byte[] body)
+   public void largeMessageWrite(final long messageId, final byte[] body)
    {
       if (enabled)
       {
@@ -303,12 +303,12 @@ public class ReplicationManagerImpl implements ReplicationManager
       {
          throw new IllegalStateException("ReplicationManager is already started");
       }
-      
+
       replicatingConnection = failoverManager.getConnection();
 
       if (replicatingConnection == null)
       {
-         log.warn("Backup server MUST be started before live server. Initialisation will not proceed.");
+         ReplicationManagerImpl.log.warn("Backup server MUST be started before live server. Initialisation will not proceed.");
          throw new HornetQException(HornetQException.ILLEGAL_STATE,
                                     "Backup server MUST be started before live server. Initialisation will not proceed.");
       }
@@ -327,29 +327,29 @@ public class ReplicationManagerImpl implements ReplicationManager
 
       failureListener = new SessionFailureListener()
       {
-         public void connectionFailed(HornetQException me)
+         public void connectionFailed(final HornetQException me)
          {
             if (me.getCode() == HornetQException.DISCONNECTED)
             {
-               //Backup has shut down - no need to log a stack trace
-               log.warn("The backup node has been shut-down, replication will now stop");
+               // Backup has shut down - no need to log a stack trace
+               ReplicationManagerImpl.log.warn("The backup node has been shut-down, replication will now stop");
             }
             else
             {
-               log.warn("Connection to the backup node failed, removing replication now", me);
+               ReplicationManagerImpl.log.warn("Connection to the backup node failed, removing replication now", me);
             }
-            
+
             try
             {
                stop();
             }
             catch (Exception e)
             {
-               log.warn(e.getMessage(), e);
+               ReplicationManagerImpl.log.warn(e.getMessage(), e);
             }
          }
 
-         public void beforeReconnect(HornetQException me)
+         public void beforeReconnect(final HornetQException me)
          {
          }
       };
@@ -369,11 +369,11 @@ public class ReplicationManagerImpl implements ReplicationManager
       {
          return;
       }
-      
+
       enabled = false;
-      
+
       // Complete any pending operations...
-      // Case the backup crashed, this should clean up any pending requests 
+      // Case the backup crashed, this should clean up any pending requests
       while (!pendingTokens.isEmpty())
       {
          OperationContext ctx = pendingTokens.poll();
@@ -383,7 +383,7 @@ public class ReplicationManagerImpl implements ReplicationManager
          }
          catch (Throwable e)
          {
-            log.warn("Error completing callback on replication manager", e);
+            ReplicationManagerImpl.log.warn("Error completing callback on replication manager", e);
          }
       }
 
@@ -400,27 +400,26 @@ public class ReplicationManagerImpl implements ReplicationManager
       }
 
       replicatingConnection = null;
-      
+
       started = false;
    }
-
 
    /* method for testcases only
     * @see org.hornetq.core.replication.ReplicationManager#getPendingTokens()
     */
    public Set<OperationContext> getActiveTokens()
    {
-      
+
       LinkedHashSet<OperationContext> activeContexts = new LinkedHashSet<OperationContext>();
-      
+
       // The same context will be replicated on the pending tokens...
       // as the multiple operations will be replicated on the same context
-      
+
       for (OperationContext ctx : pendingTokens)
       {
          activeContexts.add(ctx);
       }
-      
+
       return activeContexts;
 
    }
@@ -428,7 +427,7 @@ public class ReplicationManagerImpl implements ReplicationManager
    /* (non-Javadoc)
     * @see org.hornetq.core.replication.ReplicationManager#compareJournals(org.hornetq.core.journal.JournalLoadInformation[])
     */
-   public void compareJournals(JournalLoadInformation[] journalInfo) throws HornetQException
+   public void compareJournals(final JournalLoadInformation[] journalInfo) throws HornetQException
    {
       replicatingChannel.sendBlocking(new ReplicationCompareDataMessage(journalInfo));
    }
@@ -438,7 +437,7 @@ public class ReplicationManagerImpl implements ReplicationManager
    // Protected -----------------------------------------------------
 
    // Private -------------------------------------------------------
-   
+
    private void sendReplicatePacket(final Packet packet)
    {
       boolean runItNow = false;

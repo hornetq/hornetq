@@ -12,7 +12,7 @@
  */
 package org.hornetq.tests.integration.client;
 
-import static org.hornetq.tests.util.RandomUtil.randomSimpleString;
+import junit.framework.Assert;
 
 import org.hornetq.core.client.ClientProducer;
 import org.hornetq.core.client.ClientSession;
@@ -26,7 +26,9 @@ import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.server.HornetQ;
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.ServiceTestBase;
+import org.hornetq.tests.util.UnitTestCase;
 
 /**
  * 
@@ -51,15 +53,15 @@ public class ProducerCloseTest extends ServiceTestBase
 
    public void testCanNotUseAClosedProducer() throws Exception
    {
-      final ClientProducer producer = session.createProducer(randomSimpleString());
+      final ClientProducer producer = session.createProducer(RandomUtil.randomSimpleString());
 
-      assertFalse(producer.isClosed());
+      Assert.assertFalse(producer.isClosed());
 
       producer.close();
 
-      assertTrue(producer.isClosed());
+      Assert.assertTrue(producer.isClosed());
 
-      expectHornetQException(HornetQException.OBJECT_CLOSED, new HornetQAction()
+      UnitTestCase.expectHornetQException(HornetQException.OBJECT_CLOSED, new HornetQAction()
       {
          public void run() throws HornetQException
          {
@@ -85,21 +87,21 @@ public class ProducerCloseTest extends ServiceTestBase
       sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
       session = sf.createSession(false, true, true);
    }
-   
+
    private ClientSessionFactory sf;
 
    @Override
    protected void tearDown() throws Exception
    {
       session.close();
-            
+
       sf.close();
 
       server.stop();
-      
+
       server = null;
-      
-      session = null;      
+
+      session = null;
 
       super.tearDown();
    }

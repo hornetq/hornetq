@@ -32,11 +32,11 @@ import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
 public class HttpStaticFileServer extends HornetQExample
 {
 
-   public static void main(String[] args)
+   public static void main(final String[] args)
    {
       new HttpStaticFileServer().run(args);
    }
-   
+
    @Override
    public boolean runExample() throws Exception
    {
@@ -51,12 +51,12 @@ public class HttpStaticFileServer extends HornetQExample
       System.out.println("HTTP server ready to server on 8088");
 
       System.out.println("open http://127.0.0.1:8088/applet.html to use the Applet");
-      
+
       while (true)
       {
-         Thread.sleep(100);         
+         Thread.sleep(100);
       }
-      
+
    }
 
    // Attributes ----------------------------------------------------

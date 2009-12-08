@@ -17,6 +17,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.journal.LoaderCallback;
 import org.hornetq.core.journal.PreparedTransactionInfo;
 import org.hornetq.core.journal.RecordInfo;
@@ -55,7 +57,9 @@ public class AddAndRemoveStressTest extends UnitTestCase
       {
       }
 
-      public void failedTransaction(long transactionID, List<RecordInfo> records, List<RecordInfo> recordsToDelete)
+      public void failedTransaction(final long transactionID,
+                                    final List<RecordInfo> records,
+                                    final List<RecordInfo> recordsToDelete)
       {
       }
    };
@@ -77,7 +81,7 @@ public class AddAndRemoveStressTest extends UnitTestCase
 
       SequentialFileFactory factory = new AIOSequentialFileFactory(getTestDir());
       JournalImpl impl = new JournalImpl(10 * 1024 * 1024,
-                                         NUMBER_OF_FILES_ON_JOURNAL,
+                                         AddAndRemoveStressTest.NUMBER_OF_FILES_ON_JOURNAL,
                                          0,
                                          0,
                                          factory,
@@ -87,9 +91,9 @@ public class AddAndRemoveStressTest extends UnitTestCase
 
       impl.start();
 
-      impl.load(dummyLoader);
+      impl.load(AddAndRemoveStressTest.dummyLoader);
 
-      for (long i = 1; i <= NUMBER_OF_MESSAGES; i++)
+      for (long i = 1; i <= AddAndRemoveStressTest.NUMBER_OF_MESSAGES; i++)
       {
          if (i % 10000 == 0)
          {
@@ -101,13 +105,20 @@ public class AddAndRemoveStressTest extends UnitTestCase
       impl.stop();
 
       factory = new AIOSequentialFileFactory(getTestDir());
-      impl = new JournalImpl(10 * 1024 * 1024, NUMBER_OF_FILES_ON_JOURNAL, 0, 0, factory, "hq", "hq", 1000);
+      impl = new JournalImpl(10 * 1024 * 1024,
+                             AddAndRemoveStressTest.NUMBER_OF_FILES_ON_JOURNAL,
+                             0,
+                             0,
+                             factory,
+                             "hq",
+                             "hq",
+                             1000);
 
       impl.start();
 
-      impl.load(dummyLoader);
+      impl.load(AddAndRemoveStressTest.dummyLoader);
 
-      for (long i = 1; i <= NUMBER_OF_MESSAGES; i++)
+      for (long i = 1; i <= AddAndRemoveStressTest.NUMBER_OF_MESSAGES; i++)
       {
          if (i % 10000 == 0)
          {
@@ -120,7 +131,14 @@ public class AddAndRemoveStressTest extends UnitTestCase
       impl.stop();
 
       factory = new AIOSequentialFileFactory(getTestDir());
-      impl = new JournalImpl(10 * 1024 * 1024, NUMBER_OF_FILES_ON_JOURNAL, 0, 0, factory, "hq", "hq", 1000);
+      impl = new JournalImpl(10 * 1024 * 1024,
+                             AddAndRemoveStressTest.NUMBER_OF_FILES_ON_JOURNAL,
+                             0,
+                             0,
+                             factory,
+                             "hq",
+                             "hq",
+                             1000);
 
       impl.start();
 
@@ -135,13 +153,13 @@ public class AddAndRemoveStressTest extends UnitTestCase
       {
          System.out.println("Info ID: " + info.get(0).id);
       }
-      
+
       impl.stop();
 
-      assertEquals(0, info.size());
-      assertEquals(0, trans.size());
+      Assert.assertEquals(0, info.size());
+      Assert.assertEquals(0, trans.size());
 
-      assertEquals(0, impl.getDataFilesCount());
+      Assert.assertEquals(0, impl.getDataFilesCount());
 
    }
 
@@ -150,7 +168,7 @@ public class AddAndRemoveStressTest extends UnitTestCase
 
       SequentialFileFactory factory = new AIOSequentialFileFactory(getTestDir());
       JournalImpl impl = new JournalImpl(10 * 1024 * 1024,
-                                         NUMBER_OF_FILES_ON_JOURNAL,
+                                         AddAndRemoveStressTest.NUMBER_OF_FILES_ON_JOURNAL,
                                          0,
                                          0,
                                          factory,
@@ -160,9 +178,9 @@ public class AddAndRemoveStressTest extends UnitTestCase
 
       impl.start();
 
-      impl.load(dummyLoader);
+      impl.load(AddAndRemoveStressTest.dummyLoader);
 
-      for (long i = 1; i <= NUMBER_OF_MESSAGES; i++)
+      for (long i = 1; i <= AddAndRemoveStressTest.NUMBER_OF_MESSAGES; i++)
       {
          if (i % 10000 == 0)
          {
@@ -179,9 +197,9 @@ public class AddAndRemoveStressTest extends UnitTestCase
 
       impl.start();
 
-      impl.load(dummyLoader);
+      impl.load(AddAndRemoveStressTest.dummyLoader);
 
-      for (long i = 1; i <= NUMBER_OF_MESSAGES; i++)
+      for (long i = 1; i <= AddAndRemoveStressTest.NUMBER_OF_MESSAGES; i++)
       {
          if (i % 10000 == 0)
          {
@@ -194,7 +212,14 @@ public class AddAndRemoveStressTest extends UnitTestCase
       impl.stop();
 
       factory = new AIOSequentialFileFactory(getTestDir());
-      impl = new JournalImpl(10 * 1024 * 1024, NUMBER_OF_FILES_ON_JOURNAL, 0, 0, factory, "hq", "hq", 1000);
+      impl = new JournalImpl(10 * 1024 * 1024,
+                             AddAndRemoveStressTest.NUMBER_OF_FILES_ON_JOURNAL,
+                             0,
+                             0,
+                             factory,
+                             "hq",
+                             "hq",
+                             1000);
 
       impl.start();
 
@@ -210,12 +235,12 @@ public class AddAndRemoveStressTest extends UnitTestCase
 
       impl.forceMoveNextFile();
       impl.checkReclaimStatus();
-      
+
       impl.stop();
 
-      assertEquals(0, info.size());
-      assertEquals(0, trans.size());
-      assertEquals(0, impl.getDataFilesCount());
+      Assert.assertEquals(0, info.size());
+      Assert.assertEquals(0, trans.size());
+      Assert.assertEquals(0, impl.getDataFilesCount());
 
       System.out.println("Size = " + impl.getDataFilesCount());
 

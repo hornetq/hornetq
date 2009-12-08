@@ -72,7 +72,7 @@ public enum QualityOfServiceMode
 
    private final int value;
 
-   QualityOfServiceMode(int value)
+   QualityOfServiceMode(final int value)
    {
       this.value = value;
    }
@@ -82,7 +82,7 @@ public enum QualityOfServiceMode
       return value;
    }
 
-   public static QualityOfServiceMode valueOf(int value)
+   public static QualityOfServiceMode valueOf(final int value)
    {
       if (value == AT_MOST_ONCE.value)
       {
@@ -96,8 +96,7 @@ public enum QualityOfServiceMode
       {
          return ONCE_AND_ONLY_ONCE;
       }
-      throw new IllegalArgumentException("invalid QualityOfServiceMode value: "
-            + value);
+      throw new IllegalArgumentException("invalid QualityOfServiceMode value: " + value);
    }
 
 }

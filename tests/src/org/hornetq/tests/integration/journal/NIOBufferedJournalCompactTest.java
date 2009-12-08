@@ -15,9 +15,7 @@ package org.hornetq.tests.integration.journal;
 
 import java.io.File;
 
-import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.journal.SequentialFileFactory;
-import org.hornetq.core.journal.impl.AIOSequentialFileFactory;
 import org.hornetq.core.journal.impl.NIOSequentialFileFactory;
 
 /**
@@ -54,7 +52,6 @@ public class NIOBufferedJournalCompactTest extends NIOJournalCompactTest
 
       return new NIOSequentialFileFactory(getTestDir(), true);
    }
-
 
    // Private -------------------------------------------------------
 

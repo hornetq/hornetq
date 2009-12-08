@@ -29,6 +29,8 @@ import javax.jms.Topic;
 import javax.jms.TopicConnection;
 import javax.jms.TopicConnectionFactory;
 
+import org.hornetq.jms.tests.util.ProxyAssertSupport;
+
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -41,14 +43,15 @@ public class ConnectionFactoryTest extends JMSTestCase
    // Constants -----------------------------------------------------
 
    // Static --------------------------------------------------------
-   
+
    // Attributes ----------------------------------------------------
 
    // Constructors --------------------------------------------------
 
+   @Override
    protected void setUp() throws Exception
    {
-      super.setUp();    //To change body of overridden methods use File | Settings | File Templates.
+      super.setUp(); // To change body of overridden methods use File | Settings | File Templates.
    }
 
    // Public --------------------------------------------------------
@@ -59,20 +62,18 @@ public class ConnectionFactoryTest extends JMSTestCase
     */
    public void testQueueConnectionFactory() throws Exception
    {
-      QueueConnectionFactory qcf =
-         (QueueConnectionFactory)ic.lookup("/ConnectionFactory");
+      QueueConnectionFactory qcf = (QueueConnectionFactory)JMSTestCase.ic.lookup("/ConnectionFactory");
       QueueConnection qc = qcf.createQueueConnection();
       qc.close();
    }
-   
+
    /**
     * Test that ConnectionFactory can be cast to TopicConnectionFactory and TopicConnection can be
     * created.
     */
    public void testTopicConnectionFactory() throws Exception
    {
-      TopicConnectionFactory qcf =
-         (TopicConnectionFactory)ic.lookup("/ConnectionFactory");
+      TopicConnectionFactory qcf = (TopicConnectionFactory)JMSTestCase.ic.lookup("/ConnectionFactory");
       TopicConnection tc = qcf.createTopicConnection();
       tc.close();
    }
@@ -82,36 +83,36 @@ public class ConnectionFactoryTest extends JMSTestCase
       // deploy a connection factory that has an administatively configured clientID
       ArrayList<String> bindings = new ArrayList<String>();
       bindings.add("TestConnectionFactory");
-      deployConnectionFactory("sofiavergara", "TestConnectionFactory", bindings );
+      HornetQServerTestCase.deployConnectionFactory("sofiavergara", "TestConnectionFactory", bindings);
 
-      ConnectionFactory cf = (ConnectionFactory)ic.lookup("/TestConnectionFactory");
+      ConnectionFactory cf = (ConnectionFactory)JMSTestCase.ic.lookup("/TestConnectionFactory");
       Connection c = cf.createConnection();
 
-      assertEquals("sofiavergara", c.getClientID());
+      ProxyAssertSupport.assertEquals("sofiavergara", c.getClientID());
 
       try
       {
          c.setClientID("somethingelse");
-         fail("should throw exception");
+         ProxyAssertSupport.fail("should throw exception");
 
       }
-      catch(javax.jms.IllegalStateException e)
+      catch (javax.jms.IllegalStateException e)
       {
          // OK
       }
       c.close();
-      undeployConnectionFactory("TestConnectionFactory");
+      HornetQServerTestCase.undeployConnectionFactory("TestConnectionFactory");
    }
-   
+
    public void testNoClientIDConfigured_1() throws Exception
    {
       // the ConnectionFactories that ship with HornetQ do not have their clientID
       // administratively configured.
 
-      ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
+      ConnectionFactory cf = (ConnectionFactory)JMSTestCase.ic.lookup("/ConnectionFactory");
       Connection c = cf.createConnection();
 
-      assertNull(c.getClientID());
+      ProxyAssertSupport.assertNull(c.getClientID());
 
       c.close();
    }
@@ -121,13 +122,13 @@ public class ConnectionFactoryTest extends JMSTestCase
       // the ConnectionFactories that ship with HornetQ do not have their clientID
       // administratively configured.
 
-      ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
+      ConnectionFactory cf = (ConnectionFactory)JMSTestCase.ic.lookup("/ConnectionFactory");
       Connection c = cf.createConnection();
 
       // set the client id immediately after the connection is created
 
       c.setClientID("sofiavergara2");
-      assertEquals("sofiavergara2", c.getClientID());
+      ProxyAssertSupport.assertEquals("sofiavergara2", c.getClientID());
 
       c.close();
    }
@@ -137,7 +138,7 @@ public class ConnectionFactoryTest extends JMSTestCase
    {
       ArrayList<String> bindings = new ArrayList<String>();
       bindings.add("/TestDurableCF");
-      deployConnectionFactory("TestConnectionFactory1","cfTest", bindings);
+      HornetQServerTestCase.deployConnectionFactory("TestConnectionFactory1", "cfTest", bindings);
 
       createTopic("TestSubscriber");
 
@@ -145,19 +146,18 @@ public class ConnectionFactoryTest extends JMSTestCase
 
       try
       {
-         Topic topic = (Topic) ic.lookup("/topic/TestSubscriber");
-         ConnectionFactory cf = (ConnectionFactory) ic.lookup("/TestDurableCF");
+         Topic topic = (Topic)JMSTestCase.ic.lookup("/topic/TestSubscriber");
+         ConnectionFactory cf = (ConnectionFactory)JMSTestCase.ic.lookup("/TestDurableCF");
          conn = cf.createConnection();
 
          // I have to remove this asertion, as the test would work if doing this assertion
          // as getClientID performed some operation that cleared the bug condition during
          // the creation of this testcase
-         //assertEquals("cfTest", conn.getClientID());
+         // assertEquals("cfTest", conn.getClientID());
 
          Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         session.createDurableSubscriber(topic,
-            "durableSubscriberChangeSelectorTest", "TEST = 'test'", false);
+         session.createDurableSubscriber(topic, "durableSubscriberChangeSelectorTest", "TEST = 'test'", false);
       }
       finally
       {
@@ -173,7 +173,6 @@ public class ConnectionFactoryTest extends JMSTestCase
             log.warn(e.toString(), e);
          }
 
-
          try
          {
             destroyTopic("TestSubscriber");
@@ -187,18 +186,17 @@ public class ConnectionFactoryTest extends JMSTestCase
 
    }
 
-
    public void testSlowConsumers() throws Exception
    {
       ArrayList<String> bindings = new ArrayList<String>();
       bindings.add("TestSlowConsumersCF");
-      deployConnectionFactory(0, "TestSlowConsumersCF", bindings, 1);
+      HornetQServerTestCase.deployConnectionFactory(0, "TestSlowConsumersCF", bindings, 1);
 
       Connection conn = null;
 
       try
       {
-         ConnectionFactory cf = (ConnectionFactory) ic.lookup("/TestSlowConsumersCF");
+         ConnectionFactory cf = (ConnectionFactory)JMSTestCase.ic.lookup("/TestSlowConsumersCF");
 
          conn = cf.createConnection();
 
@@ -214,10 +212,10 @@ public class ConnectionFactoryTest extends JMSTestCase
          {
             volatile int processed;
 
-            public void onMessage(Message msg)
+            public void onMessage(final Message msg)
             {
                processed++;
-               
+
                if (processed == numMessages - 2)
                {
                   synchronized (waitLock)
@@ -234,15 +232,15 @@ public class ConnectionFactoryTest extends JMSTestCase
          {
             volatile int processed;
 
-            public void onMessage(Message msg)
+            public void onMessage(final Message msg)
             {
                processed++;
-               
+
                synchronized (waitLock)
                {
-                  //Should really cope with spurious wakeups
+                  // Should really cope with spurious wakeups
                   while (fast.processed != numMessages - 2)
-                  {                
+                  {
                      try
                      {
                         waitLock.wait(20000);
@@ -251,26 +249,25 @@ public class ConnectionFactoryTest extends JMSTestCase
                      {
                      }
                   }
-                  
+
                   waitLock.notify();
                }
             }
          }
-         
+
          final SlowListener slow = new SlowListener();
 
-         MessageConsumer cons1 = session1.createConsumer(queue1);
+         MessageConsumer cons1 = session1.createConsumer(HornetQServerTestCase.queue1);
 
          cons1.setMessageListener(slow);
 
-         MessageConsumer cons2 = session2.createConsumer(queue1);
+         MessageConsumer cons2 = session2.createConsumer(HornetQServerTestCase.queue1);
 
          cons2.setMessageListener(fast);
 
-
          Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         MessageProducer prod = sessSend.createProducer(queue1);
+         MessageProducer prod = sessSend.createProducer(HornetQServerTestCase.queue1);
 
          conn.start();
 
@@ -281,24 +278,25 @@ public class ConnectionFactoryTest extends JMSTestCase
             prod.send(tm);
          }
 
-         //All the messages bar one should be consumed by the fast listener  - since the slow listener shouldn't buffer any.
+         // All the messages bar one should be consumed by the fast listener - since the slow listener shouldn't buffer
+         // any.
 
          synchronized (waitLock)
          {
-            //Should really cope with spurious wakeups
+            // Should really cope with spurious wakeups
             while (fast.processed != numMessages - 2)
             {
                waitLock.wait(20000);
             }
-            
+
             while (slow.processed != 2)
             {
                waitLock.wait(20000);
             }
          }
 
-         assertTrue(fast.processed == numMessages - 2);
-         
+         ProxyAssertSupport.assertTrue(fast.processed == numMessages - 2);
+
       }
       finally
       {
@@ -314,10 +312,9 @@ public class ConnectionFactoryTest extends JMSTestCase
             log.warn(e.toString(), e);
          }
 
-
          try
          {
-            undeployConnectionFactory("TestSlowConsumersCF");
+            HornetQServerTestCase.undeployConnectionFactory("TestSlowConsumersCF");
          }
          catch (Exception e)
          {
@@ -327,14 +324,13 @@ public class ConnectionFactoryTest extends JMSTestCase
       }
 
    }
-   
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
 
    // Private -------------------------------------------------------
 
-   
    // Inner classes -------------------------------------------------
 
 }

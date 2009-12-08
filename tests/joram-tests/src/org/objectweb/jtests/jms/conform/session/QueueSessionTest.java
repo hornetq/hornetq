@@ -20,6 +20,7 @@ import javax.jms.Message;
 import javax.jms.Queue;
 import javax.jms.TextMessage;
 
+import junit.framework.Assert;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
@@ -49,7 +50,7 @@ public class QueueSessionTest extends PTPTestCase
          // senderSession has been created as non transacted
          // we create it again but as a transacted session
          senderSession = senderConnection.createQueueSession(true, 0);
-         assertEquals(true, senderSession.getTransacted());
+         Assert.assertEquals(true, senderSession.getTransacted());
          // we create again the sender
          sender = senderSession.createSender(senderQueue);
          senderConnection.start();
@@ -58,11 +59,11 @@ public class QueueSessionTest extends PTPTestCase
          // receiverSession has been created as non transacted
          // we create it again but as a transacted session
          receiverSession = receiverConnection.createQueueSession(true, 0);
-         assertEquals(true, receiverSession.getTransacted());
-         
-         if (receiver!=null)
+         Assert.assertEquals(true, receiverSession.getTransacted());
+
+         if (receiver != null)
          {
-        	 receiver.close();
+            receiver.close();
          }
          // we create again the receiver
          receiver = receiverSession.createReceiver(receiverQueue);
@@ -77,26 +78,26 @@ public class QueueSessionTest extends PTPTestCase
 
          // we receive a message...
          Message m = receiver.receive(TestConfig.TIMEOUT);
-         assertTrue(m != null);
-         assertTrue(m instanceof TextMessage);
-         TextMessage msg = (TextMessage) m;
+         Assert.assertTrue(m != null);
+         Assert.assertTrue(m instanceof TextMessage);
+         TextMessage msg = (TextMessage)m;
          // ... which is the one which was sent...
-         assertEquals("testRollbackRececeivedMessage", msg.getText());
+         Assert.assertEquals("testRollbackRececeivedMessage", msg.getText());
          // ...and has not been redelivered
-         assertEquals(false, msg.getJMSRedelivered());
+         Assert.assertEquals(false, msg.getJMSRedelivered());
 
          // we rollback the *consumer* transaction
          receiverSession.rollback();
 
          // we receive again a message
          m = receiver.receive(TestConfig.TIMEOUT);
-         assertTrue(m != null);
-         assertTrue(m instanceof TextMessage);
-         msg = (TextMessage) m;
+         Assert.assertTrue(m != null);
+         Assert.assertTrue(m instanceof TextMessage);
+         msg = (TextMessage)m;
          // ... which is still the one which was sent...
-         assertEquals("testRollbackRececeivedMessage", msg.getText());
+         Assert.assertEquals("testRollbackRececeivedMessage", msg.getText());
          // .. but this time, it has been redelivered
-         assertEquals(true, msg.getJMSRedelivered());
+         Assert.assertEquals(true, msg.getJMSRedelivered());
 
       }
       catch (Exception e)
@@ -114,14 +115,14 @@ public class QueueSessionTest extends PTPTestCase
       try
       {
          senderSession.createBrowser(senderQueue, "definitely not a message selector!");
-         fail("Should throw a javax.jms.InvalidSelectorException.\n");
+         Assert.fail("Should throw a javax.jms.InvalidSelectorException.\n");
       }
       catch (InvalidSelectorException e)
       {
       }
       catch (JMSException e)
       {
-         fail("Should throw a javax.jms.InvalidSelectorException, not a " + e);
+         Assert.fail("Should throw a javax.jms.InvalidSelectorException, not a " + e);
       }
    }
 
@@ -133,15 +134,15 @@ public class QueueSessionTest extends PTPTestCase
    {
       try
       {
-         senderSession.createBrowser((Queue) null);
-         fail("Should throw a javax.jms.InvalidDestinationException.\n");
+         senderSession.createBrowser((Queue)null);
+         Assert.fail("Should throw a javax.jms.InvalidDestinationException.\n");
       }
       catch (InvalidDestinationException e)
       {
       }
       catch (JMSException e)
       {
-         fail("Should throw a javax.jms.InvalidDestinationException, not a " + e);
+         Assert.fail("Should throw a javax.jms.InvalidDestinationException, not a " + e);
       }
    }
 
@@ -154,14 +155,14 @@ public class QueueSessionTest extends PTPTestCase
       try
       {
          receiver = senderSession.createReceiver(senderQueue, "definitely not a message selector!");
-         fail("Should throw a javax.jms.InvalidSelectorException.\n");
+         Assert.fail("Should throw a javax.jms.InvalidSelectorException.\n");
       }
       catch (InvalidSelectorException e)
       {
       }
       catch (JMSException e)
       {
-         fail("Should throw a javax.jms.InvalidSelectorException, not a " + e);
+         Assert.fail("Should throw a javax.jms.InvalidSelectorException, not a " + e);
       }
    }
 
@@ -173,15 +174,15 @@ public class QueueSessionTest extends PTPTestCase
    {
       try
       {
-         receiver = senderSession.createReceiver((Queue) null);
-         fail("Should throw a javax.jms.InvalidDestinationException.\n");
+         receiver = senderSession.createReceiver((Queue)null);
+         Assert.fail("Should throw a javax.jms.InvalidDestinationException.\n");
       }
       catch (InvalidDestinationException e)
       {
       }
       catch (JMSException e)
       {
-         fail("Should throw a javax.jms.InvalidDestinationException, not a " + e);
+         Assert.fail("Should throw a javax.jms.InvalidDestinationException, not a " + e);
       }
    }
 
@@ -193,7 +194,7 @@ public class QueueSessionTest extends PTPTestCase
       return new TestSuite(QueueSessionTest.class);
    }
 
-   public QueueSessionTest(String name)
+   public QueueSessionTest(final String name)
    {
       super(name);
    }

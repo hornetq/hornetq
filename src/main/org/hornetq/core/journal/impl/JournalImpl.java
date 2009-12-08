@@ -92,7 +92,7 @@ public class JournalImpl implements TestableJournal
 
    private static final Logger log = Logger.getLogger(JournalImpl.class);
 
-   private static final boolean trace = log.isTraceEnabled();
+   private static final boolean trace = JournalImpl.log.isTraceEnabled();
 
    /** This is to be set to true at DEBUG & development only */
    private static final boolean LOAD_TRACE = false;
@@ -102,7 +102,7 @@ public class JournalImpl implements TestableJournal
    // Journal
    private static final void trace(final String message)
    {
-      log.trace(message);
+      JournalImpl.log.trace(message);
    }
 
    // The sizes of primitive types
@@ -113,7 +113,7 @@ public class JournalImpl implements TestableJournal
 
    public static final int BASIC_SIZE = DataConstants.SIZE_BYTE + DataConstants.SIZE_INT + DataConstants.SIZE_INT;
 
-   public static final int SIZE_ADD_RECORD = BASIC_SIZE + DataConstants.SIZE_LONG +
+   public static final int SIZE_ADD_RECORD = JournalImpl.BASIC_SIZE + DataConstants.SIZE_LONG +
                                              DataConstants.SIZE_BYTE +
                                              DataConstants.SIZE_INT /* + record.length */;
 
@@ -123,7 +123,7 @@ public class JournalImpl implements TestableJournal
 
    public static final byte UPDATE_RECORD = 12;
 
-   public static final int SIZE_ADD_RECORD_TX = BASIC_SIZE + DataConstants.SIZE_LONG +
+   public static final int SIZE_ADD_RECORD_TX = JournalImpl.BASIC_SIZE + DataConstants.SIZE_LONG +
                                                 DataConstants.SIZE_BYTE +
                                                 DataConstants.SIZE_LONG +
                                                 DataConstants.SIZE_INT /* + record.length */;
@@ -132,28 +132,28 @@ public class JournalImpl implements TestableJournal
 
    public static final byte UPDATE_RECORD_TX = 14;
 
-   public static final int SIZE_DELETE_RECORD_TX = BASIC_SIZE + DataConstants.SIZE_LONG +
+   public static final int SIZE_DELETE_RECORD_TX = JournalImpl.BASIC_SIZE + DataConstants.SIZE_LONG +
                                                    DataConstants.SIZE_LONG +
                                                    DataConstants.SIZE_INT /* + record.length */;
 
    public static final byte DELETE_RECORD_TX = 15;
 
-   public static final int SIZE_DELETE_RECORD = BASIC_SIZE + DataConstants.SIZE_LONG;
+   public static final int SIZE_DELETE_RECORD = JournalImpl.BASIC_SIZE + DataConstants.SIZE_LONG;
 
    public static final byte DELETE_RECORD = 16;
 
-   public static final int SIZE_COMPLETE_TRANSACTION_RECORD = BASIC_SIZE + DataConstants.SIZE_LONG +
+   public static final int SIZE_COMPLETE_TRANSACTION_RECORD = JournalImpl.BASIC_SIZE + DataConstants.SIZE_LONG +
                                                               DataConstants.SIZE_INT;
 
-   public static final int SIZE_PREPARE_RECORD = SIZE_COMPLETE_TRANSACTION_RECORD + DataConstants.SIZE_INT;
+   public static final int SIZE_PREPARE_RECORD = JournalImpl.SIZE_COMPLETE_TRANSACTION_RECORD + DataConstants.SIZE_INT;
 
    public static final byte PREPARE_RECORD = 17;
 
-   public static final int SIZE_COMMIT_RECORD = SIZE_COMPLETE_TRANSACTION_RECORD;
+   public static final int SIZE_COMMIT_RECORD = JournalImpl.SIZE_COMPLETE_TRANSACTION_RECORD;
 
    public static final byte COMMIT_RECORD = 18;
 
-   public static final int SIZE_ROLLBACK_RECORD = BASIC_SIZE + DataConstants.SIZE_LONG;
+   public static final int SIZE_ROLLBACK_RECORD = JournalImpl.BASIC_SIZE + DataConstants.SIZE_LONG;
 
    public static final byte ROLLBACK_RECORD = 19;
 
@@ -217,14 +217,14 @@ public class JournalImpl implements TestableJournal
    private volatile int state;
 
    private final Reclaimer reclaimer = new Reclaimer();
-   
+
    // Constructors --------------------------------------------------
 
    public void runDirectJournalBlast() throws Exception
    {
       final int numIts = 100000000;
 
-      log.info("*** running direct journal blast: " + numIts);
+      JournalImpl.log.info("*** running direct journal blast: " + numIts);
 
       final CountDownLatch latch = new CountDownLatch(numIts * 2);
 
@@ -235,7 +235,7 @@ public class JournalImpl implements TestableJournal
             latch.countDown();
          }
 
-         public void onError(int errorCode, String errorMessage)
+         public void onError(final int errorCode, final String errorMessage)
          {
 
          }
@@ -254,11 +254,11 @@ public class JournalImpl implements TestableJournal
       class MyRecord implements EncodingSupport
       {
 
-         public void decode(HornetQBuffer buffer)
+         public void decode(final HornetQBuffer buffer)
          {
          }
 
-         public void encode(HornetQBuffer buffer)
+         public void encode(final HornetQBuffer buffer)
          {
             buffer.writeBytes(bytes);
          }
@@ -294,9 +294,9 @@ public class JournalImpl implements TestableJournal
       {
          throw new NullPointerException("fileFactory is null");
       }
-      if (fileSize < MIN_FILE_SIZE)
+      if (fileSize < JournalImpl.MIN_FILE_SIZE)
       {
-         throw new IllegalArgumentException("File size cannot be less than " + MIN_FILE_SIZE + " bytes");
+         throw new IllegalArgumentException("File size cannot be less than " + JournalImpl.MIN_FILE_SIZE + " bytes");
       }
       if (fileSize % fileFactory.getAlignment() != 0)
       {
@@ -333,8 +333,8 @@ public class JournalImpl implements TestableJournal
       else
       {
          this.compactPercentage = (float)compactPercentage / 100f;
-      }        
-      
+      }
+
       this.compactMinFiles = compactMinFiles;
 
       this.fileSize = fileSize;
@@ -347,7 +347,7 @@ public class JournalImpl implements TestableJournal
 
       this.fileExtension = fileExtension;
 
-      this.maxAIO = maxIO;
+      maxAIO = maxIO;
    }
 
    public Map<Long, JournalRecord> getRecords()
@@ -385,9 +385,9 @@ public class JournalImpl implements TestableJournal
          }
 
          // First long is the ordering timestamp, we just jump its position
-         wholeFileBuffer.position(SIZE_HEADER);
+         wholeFileBuffer.position(JournalImpl.SIZE_HEADER);
 
-         int lastDataPos = SIZE_HEADER;
+         int lastDataPos = JournalImpl.SIZE_HEADER;
 
          while (wholeFileBuffer.hasRemaining())
          {
@@ -395,7 +395,7 @@ public class JournalImpl implements TestableJournal
 
             byte recordType = wholeFileBuffer.get();
 
-            if (recordType < ADD_RECORD || recordType > ROLLBACK_RECORD)
+            if (recordType < JournalImpl.ADD_RECORD || recordType > JournalImpl.ROLLBACK_RECORD)
             {
                // I - We scan for any valid record on the file. If a hole
                // happened on the middle of the file we keep looking until all
@@ -403,7 +403,7 @@ public class JournalImpl implements TestableJournal
                continue;
             }
 
-            if (isInvalidSize(journalFileSize, wholeFileBuffer.position(), DataConstants.SIZE_INT))
+            if (JournalImpl.isInvalidSize(journalFileSize, wholeFileBuffer.position(), DataConstants.SIZE_INT))
             {
                reader.markAsDataFile(file);
 
@@ -418,9 +418,9 @@ public class JournalImpl implements TestableJournal
 
             long transactionID = 0;
 
-            if (isTransaction(recordType))
+            if (JournalImpl.isTransaction(recordType))
             {
-               if (isInvalidSize(journalFileSize, wholeFileBuffer.position(), DataConstants.SIZE_LONG))
+               if (JournalImpl.isInvalidSize(journalFileSize, wholeFileBuffer.position(), DataConstants.SIZE_LONG))
                {
                   wholeFileBuffer.position(pos + 1);
                   reader.markAsDataFile(file);
@@ -433,9 +433,9 @@ public class JournalImpl implements TestableJournal
             long recordID = 0;
 
             // If prepare or commit
-            if (!isCompleteTransaction(recordType))
+            if (!JournalImpl.isCompleteTransaction(recordType))
             {
-               if (isInvalidSize(journalFileSize, wholeFileBuffer.position(), DataConstants.SIZE_LONG))
+               if (JournalImpl.isInvalidSize(journalFileSize, wholeFileBuffer.position(), DataConstants.SIZE_LONG))
                {
                   wholeFileBuffer.position(pos + 1);
                   reader.markAsDataFile(file);
@@ -459,9 +459,9 @@ public class JournalImpl implements TestableJournal
 
             byte record[] = null;
 
-            if (isContainsBody(recordType))
+            if (JournalImpl.isContainsBody(recordType))
             {
-               if (isInvalidSize(journalFileSize, wholeFileBuffer.position(), DataConstants.SIZE_INT))
+               if (JournalImpl.isInvalidSize(journalFileSize, wholeFileBuffer.position(), DataConstants.SIZE_INT))
                {
                   wholeFileBuffer.position(pos + 1);
                   reader.markAsDataFile(file);
@@ -470,13 +470,13 @@ public class JournalImpl implements TestableJournal
 
                variableSize = wholeFileBuffer.getInt();
 
-               if (isInvalidSize(journalFileSize, wholeFileBuffer.position(), variableSize))
+               if (JournalImpl.isInvalidSize(journalFileSize, wholeFileBuffer.position(), variableSize))
                {
                   wholeFileBuffer.position(pos + 1);
                   continue;
                }
 
-               if (recordType != DELETE_RECORD_TX)
+               if (recordType != JournalImpl.DELETE_RECORD_TX)
                {
                   userRecordType = wholeFileBuffer.get();
                }
@@ -490,9 +490,9 @@ public class JournalImpl implements TestableJournal
             // currentFile
             int transactionCheckNumberOfRecords = 0;
 
-            if (recordType == PREPARE_RECORD || recordType == COMMIT_RECORD)
+            if (recordType == JournalImpl.PREPARE_RECORD || recordType == JournalImpl.COMMIT_RECORD)
             {
-               if (isInvalidSize(journalFileSize, wholeFileBuffer.position(), DataConstants.SIZE_INT))
+               if (JournalImpl.isInvalidSize(journalFileSize, wholeFileBuffer.position(), DataConstants.SIZE_INT))
                {
                   wholeFileBuffer.position(pos + 1);
                   continue;
@@ -500,9 +500,9 @@ public class JournalImpl implements TestableJournal
 
                transactionCheckNumberOfRecords = wholeFileBuffer.getInt();
 
-               if (recordType == PREPARE_RECORD)
+               if (recordType == JournalImpl.PREPARE_RECORD)
                {
-                  if (isInvalidSize(journalFileSize, wholeFileBuffer.position(), DataConstants.SIZE_INT))
+                  if (JournalImpl.isInvalidSize(journalFileSize, wholeFileBuffer.position(), DataConstants.SIZE_INT))
                   {
                      wholeFileBuffer.position(pos + 1);
                      continue;
@@ -513,27 +513,28 @@ public class JournalImpl implements TestableJournal
                variableSize = 0;
             }
 
-            int recordSize = getRecordSize(recordType);
+            int recordSize = JournalImpl.getRecordSize(recordType);
 
             // VI - this is completing V, We will validate the size at the end
             // of the record,
             // But we avoid buffer overflows by damaged data
-            if (isInvalidSize(journalFileSize, pos, recordSize + variableSize + preparedTransactionExtraDataSize))
+            if (JournalImpl.isInvalidSize(journalFileSize, pos, recordSize + variableSize +
+                                                                preparedTransactionExtraDataSize))
             {
                // Avoid a buffer overflow caused by damaged data... continue
                // scanning for more pendingTransactions...
-               trace("Record at position " + pos +
-                     " recordType = " +
-                     recordType +
-                     " file:" +
-                     file.getFile().getFileName() +
-                     " recordSize: " +
-                     recordSize +
-                     " variableSize: " +
-                     variableSize +
-                     " preparedTransactionExtraDataSize: " +
-                     preparedTransactionExtraDataSize +
-                     " is corrupted and it is being ignored (II)");
+               JournalImpl.trace("Record at position " + pos +
+                                 " recordType = " +
+                                 recordType +
+                                 " file:" +
+                                 file.getFile().getFileName() +
+                                 " recordSize: " +
+                                 recordSize +
+                                 " variableSize: " +
+                                 variableSize +
+                                 " preparedTransactionExtraDataSize: " +
+                                 preparedTransactionExtraDataSize +
+                                 " is corrupted and it is being ignored (II)");
                // If a file has damaged pendingTransactions, we make it a dataFile, and the
                // next reclaiming will fix it
                reader.markAsDataFile(file);
@@ -557,12 +558,12 @@ public class JournalImpl implements TestableJournal
             // checkSize by some sort of calculated hash)
             if (checkSize != variableSize + recordSize + preparedTransactionExtraDataSize)
             {
-               trace("Record at position " + pos +
-                     " recordType = " +
-                     recordType +
-                     " file:" +
-                     file.getFile().getFileName() +
-                     " is corrupted and it is being ignored (III)");
+               JournalImpl.trace("Record at position " + pos +
+                                 " recordType = " +
+                                 recordType +
+                                 " file:" +
+                                 file.getFile().getFileName() +
+                                 " is corrupted and it is being ignored (III)");
 
                // If a file has damaged pendingTransactions, we make it a dataFile, and the
                // next reclaiming will fix it
@@ -728,11 +729,11 @@ public class JournalImpl implements TestableJournal
                                final boolean sync,
                                final IOCompletion callback) throws Exception
    {
-      if (LOAD_TRACE)
+      if (JournalImpl.LOAD_TRACE)
       {
-         trace("appendAddRecord id = " + id + ", recordType = " + recordType);
+         JournalImpl.trace("appendAddRecord id = " + id + ", recordType = " + recordType);
       }
-      if (state != STATE_LOADED)
+      if (state != JournalImpl.STATE_LOADED)
       {
          throw new IllegalStateException("Journal must be loaded first");
       }
@@ -798,11 +799,11 @@ public class JournalImpl implements TestableJournal
                                   final boolean sync,
                                   final IOCompletion callback) throws Exception
    {
-      if (LOAD_TRACE)
+      if (JournalImpl.LOAD_TRACE)
       {
-         trace("appendUpdateRecord id = " + id + ", recordType = " + recordType);
+         JournalImpl.trace("appendUpdateRecord id = " + id + ", recordType = " + recordType);
       }
-      if (state != STATE_LOADED)
+      if (state != JournalImpl.STATE_LOADED)
       {
          throw new IllegalStateException("Journal must be loaded first");
       }
@@ -822,7 +823,7 @@ public class JournalImpl implements TestableJournal
          }
 
          JournalInternalRecord updateRecord = new JournalAddRecord(false, id, recordType, record);
-         
+
          if (callback != null)
          {
             callback.storeLineUp();
@@ -869,11 +870,11 @@ public class JournalImpl implements TestableJournal
 
    public void appendDeleteRecord(final long id, final boolean sync, final IOCompletion callback) throws Exception
    {
-      if (LOAD_TRACE)
+      if (JournalImpl.LOAD_TRACE)
       {
-         trace("appendDeleteRecord id = " + id);
+         JournalImpl.trace("appendDeleteRecord id = " + id);
       }
-      if (state != STATE_LOADED)
+      if (state != JournalImpl.STATE_LOADED)
       {
          throw new IllegalStateException("Journal must be loaded first");
       }
@@ -939,11 +940,15 @@ public class JournalImpl implements TestableJournal
                                             final byte recordType,
                                             final EncodingSupport record) throws Exception
    {
-      if (LOAD_TRACE)
+      if (JournalImpl.LOAD_TRACE)
       {
-         trace("appendAddRecordTransactional txID " + txID + ", id = " + id + ", recordType = " + recordType);
+         JournalImpl.trace("appendAddRecordTransactional txID " + txID +
+                           ", id = " +
+                           id +
+                           ", recordType = " +
+                           recordType);
       }
-      if (state != STATE_LOADED)
+      if (state != JournalImpl.STATE_LOADED)
       {
          throw new IllegalStateException("Journal must be loaded first");
       }
@@ -988,11 +993,15 @@ public class JournalImpl implements TestableJournal
                                                final byte recordType,
                                                final EncodingSupport record) throws Exception
    {
-      if (LOAD_TRACE)
+      if (JournalImpl.LOAD_TRACE)
       {
-         trace("appendUpdateRecordTransactional txID " + txID + ", id = " + id + ", recordType = " + recordType);
+         JournalImpl.trace("appendUpdateRecordTransactional txID " + txID +
+                           ", id = " +
+                           id +
+                           ", recordType = " +
+                           recordType);
       }
-      if (state != STATE_LOADED)
+      if (state != JournalImpl.STATE_LOADED)
       {
          throw new IllegalStateException("Journal must be loaded first");
       }
@@ -1031,12 +1040,12 @@ public class JournalImpl implements TestableJournal
 
    public void appendDeleteRecordTransactional(final long txID, final long id, final EncodingSupport record) throws Exception
    {
-      if (LOAD_TRACE)
+      if (JournalImpl.LOAD_TRACE)
       {
-         trace("appendDeleteRecordTransactional txID " + txID + ", id = " + id);
+         JournalImpl.trace("appendDeleteRecordTransactional txID " + txID + ", id = " + id);
       }
 
-      if (state != STATE_LOADED)
+      if (state != JournalImpl.STATE_LOADED)
       {
          throw new IllegalStateException("Journal must be loaded first");
       }
@@ -1072,7 +1081,10 @@ public class JournalImpl implements TestableJournal
       appendDeleteRecordTransactional(txID, id, NullEncoding.instance);
    }
 
-   public void appendPrepareRecord(long txID, byte[] transactionData, boolean sync, IOCompletion completion) throws Exception
+   public void appendPrepareRecord(final long txID,
+                                   final byte[] transactionData,
+                                   final boolean sync,
+                                   final IOCompletion completion) throws Exception
    {
       appendPrepareRecord(txID, new ByteArrayEncoding(transactionData), sync, completion);
    }
@@ -1080,7 +1092,7 @@ public class JournalImpl implements TestableJournal
    /* (non-Javadoc)
     * @see org.hornetq.core.journal.Journal#appendPrepareRecord(long, byte[], boolean)
     */
-   public void appendPrepareRecord(long txID, byte[] transactionData, boolean sync) throws Exception
+   public void appendPrepareRecord(final long txID, final byte[] transactionData, final boolean sync) throws Exception
    {
       appendPrepareRecord(txID, new ByteArrayEncoding(transactionData), sync);
    }
@@ -1113,14 +1125,14 @@ public class JournalImpl implements TestableJournal
    public void appendPrepareRecord(final long txID,
                                    final EncodingSupport transactionData,
                                    final boolean sync,
-                                   IOCompletion callback) throws Exception
+                                   final IOCompletion callback) throws Exception
    {
-      if (LOAD_TRACE)
+      if (JournalImpl.LOAD_TRACE)
       {
-         trace("appendPrepareRecord txID " + txID);
+         JournalImpl.trace("appendPrepareRecord txID " + txID);
       }
 
-      if (state != STATE_LOADED)
+      if (state != JournalImpl.STATE_LOADED)
       {
          throw new IllegalStateException("Journal must be loaded first");
       }
@@ -1189,7 +1201,7 @@ public class JournalImpl implements TestableJournal
 
    public void appendCommitRecord(final long txID, final boolean sync, final IOCompletion callback) throws Exception
    {
-      if (state != STATE_LOADED)
+      if (state != JournalImpl.STATE_LOADED)
       {
          throw new IllegalStateException("Journal must be loaded first");
       }
@@ -1247,7 +1259,7 @@ public class JournalImpl implements TestableJournal
 
    public void appendRollbackRecord(final long txID, final boolean sync, final IOCompletion callback) throws Exception
    {
-      if (state != STATE_LOADED)
+      if (state != JournalImpl.STATE_LOADED)
       {
          throw new IllegalStateException("Journal must be loaded first");
       }
@@ -1301,23 +1313,25 @@ public class JournalImpl implements TestableJournal
       LoaderCallback dummyLoader = new LoaderCallback()
       {
 
-         public void failedTransaction(long transactionID, List<RecordInfo> records, List<RecordInfo> recordsToDelete)
+         public void failedTransaction(final long transactionID,
+                                       final List<RecordInfo> records,
+                                       final List<RecordInfo> recordsToDelete)
          {
          }
 
-         public void updateRecord(RecordInfo info)
+         public void updateRecord(final RecordInfo info)
          {
          }
 
-         public void deleteRecord(long id)
+         public void deleteRecord(final long id)
          {
          }
 
-         public void addRecord(RecordInfo info)
+         public void addRecord(final RecordInfo info)
          {
          }
 
-         public void addPreparedTransaction(PreparedTransactionInfo preparedTransaction)
+         public void addPreparedTransaction(final PreparedTransactionInfo preparedTransaction)
          {
          }
       };
@@ -1377,7 +1391,9 @@ public class JournalImpl implements TestableJournal
             }
          }
 
-         public void failedTransaction(long transactionID, List<RecordInfo> records, List<RecordInfo> recordsToDelete)
+         public void failedTransaction(final long transactionID,
+                                       final List<RecordInfo> records,
+                                       final List<RecordInfo> recordsToDelete)
          {
             if (failureCallback != null)
             {
@@ -1416,15 +1432,15 @@ public class JournalImpl implements TestableJournal
 
       try
       {
-         trace("Starting compacting operation on journal");
-         log.debug("Starting compacting operation on journal");
+         JournalImpl.trace("Starting compacting operation on journal");
+         JournalImpl.log.debug("Starting compacting operation on journal");
 
          // We need to guarantee that the journal is frozen for this short time
          // We don't freeze the journal as we compact, only for the short time where we replace records
          compactingLock.writeLock().lock();
          try
          {
-            if (state != STATE_LOADED)
+            if (state != JournalImpl.STATE_LOADED)
             {
                return;
             }
@@ -1479,7 +1495,7 @@ public class JournalImpl implements TestableJournal
          // well
          for (final JournalFile file : dataFilesToProcess)
          {
-            readJournalFile(fileFactory, file, compactor);
+            JournalImpl.readJournalFile(fileFactory, file, compactor);
          }
 
          compactor.flush();
@@ -1513,14 +1529,14 @@ public class JournalImpl implements TestableJournal
             for (int i = newDatafiles.size() - 1; i >= 0; i--)
             {
                JournalFile fileToAdd = newDatafiles.get(i);
-               if (trace)
+               if (JournalImpl.trace)
                {
-                  trace("Adding file " + fileToAdd + " back as datafile");
+                  JournalImpl.trace("Adding file " + fileToAdd + " back as datafile");
                }
                dataFiles.addFirst(fileToAdd);
             }
 
-            trace("There are " + dataFiles.size() + " datafiles Now");
+            JournalImpl.trace("There are " + dataFiles.size() + " datafiles Now");
 
             // Replay pending commands (including updates, deletes and commits)
 
@@ -1532,15 +1548,15 @@ public class JournalImpl implements TestableJournal
 
             for (JournalTransaction newTransaction : localCompactor.getNewTransactions().values())
             {
-               if (trace)
+               if (JournalImpl.trace)
                {
-                  trace("Merging pending transaction " + newTransaction + " after compacting the journal");
+                  JournalImpl.trace("Merging pending transaction " + newTransaction + " after compacting the journal");
                }
                JournalTransaction liveTransaction = transactions.get(newTransaction.getId());
                if (liveTransaction == null)
                {
-                  log.warn("Inconsistency: Can't merge transaction " + newTransaction.getId() +
-                           " back into JournalTransactions");
+                  JournalImpl.log.warn("Inconsistency: Can't merge transaction " + newTransaction.getId() +
+                                       " back into JournalTransactions");
                }
                else
                {
@@ -1557,7 +1573,7 @@ public class JournalImpl implements TestableJournal
          renameFiles(dataFilesToProcess, newDatafiles);
          deleteControlFile(controlFile);
 
-         log.debug("Finished compacting on journal");
+         JournalImpl.log.debug("Finished compacting on journal");
 
       }
       finally
@@ -1617,7 +1633,7 @@ public class JournalImpl implements TestableJournal
     * */
    public synchronized JournalLoadInformation load(final LoaderCallback loadManager) throws Exception
    {
-      if (state != STATE_STARTED)
+      if (state != JournalImpl.STATE_STARTED)
       {
          throw new IllegalStateException("Journal must be in started state");
       }
@@ -1640,17 +1656,17 @@ public class JournalImpl implements TestableJournal
 
       final List<JournalFile> orderedFiles = orderFiles();
 
-      int lastDataPos = SIZE_HEADER;
+      int lastDataPos = JournalImpl.SIZE_HEADER;
 
       final AtomicLong maxID = new AtomicLong(-1);
 
       for (final JournalFile file : orderedFiles)
       {
-         trace("Loading file " + file.getFile().getFileName());
+         JournalImpl.trace("Loading file " + file.getFile().getFileName());
 
          final AtomicBoolean hasData = new AtomicBoolean(false);
 
-         int resultLastPost = readJournalFile(fileFactory, file, new JournalReaderCallback()
+         int resultLastPost = JournalImpl.readJournalFile(fileFactory, file, new JournalReaderCallback()
          {
 
             private void checkID(final long id)
@@ -1663,9 +1679,9 @@ public class JournalImpl implements TestableJournal
 
             public void onReadAddRecord(final RecordInfo info) throws Exception
             {
-               if (trace && LOAD_TRACE)
+               if (JournalImpl.trace && JournalImpl.LOAD_TRACE)
                {
-                  trace("AddRecord: " + info);
+                  JournalImpl.trace("AddRecord: " + info);
                }
 
                checkID(info.id);
@@ -1674,14 +1690,14 @@ public class JournalImpl implements TestableJournal
 
                loadManager.addRecord(info);
 
-               records.put(info.id, new JournalRecord(file, info.data.length + SIZE_ADD_RECORD));
+               records.put(info.id, new JournalRecord(file, info.data.length + JournalImpl.SIZE_ADD_RECORD));
             }
 
             public void onReadUpdateRecord(final RecordInfo info) throws Exception
             {
-               if (trace && LOAD_TRACE)
+               if (JournalImpl.trace && JournalImpl.LOAD_TRACE)
                {
-                  trace("UpdateRecord: " + info);
+                  JournalImpl.trace("UpdateRecord: " + info);
                }
 
                checkID(info.id);
@@ -1698,15 +1714,15 @@ public class JournalImpl implements TestableJournal
                   // have been deleted
                   // just leaving some updates in this file
 
-                  posFiles.addUpdateFile(file, info.data.length + SIZE_ADD_RECORD);
+                  posFiles.addUpdateFile(file, info.data.length + JournalImpl.SIZE_ADD_RECORD);
                }
             }
 
             public void onReadDeleteRecord(final long recordID) throws Exception
             {
-               if (trace && LOAD_TRACE)
+               if (JournalImpl.trace && JournalImpl.LOAD_TRACE)
                {
-                  trace("DeleteRecord: " + recordID);
+                  JournalImpl.trace("DeleteRecord: " + recordID);
                }
                hasData.set(true);
 
@@ -1728,9 +1744,11 @@ public class JournalImpl implements TestableJournal
             public void onReadAddRecordTX(final long transactionID, final RecordInfo info) throws Exception
             {
 
-               if (trace && LOAD_TRACE)
+               if (JournalImpl.trace && JournalImpl.LOAD_TRACE)
                {
-                  trace((info.isUpdate ? "updateRecordTX: " : "addRecordTX: ") + info + ", txid = " + transactionID);
+                  JournalImpl.trace((info.isUpdate ? "updateRecordTX: " : "addRecordTX: ") + info +
+                                    ", txid = " +
+                                    transactionID);
                }
 
                checkID(info.id);
@@ -1757,14 +1775,14 @@ public class JournalImpl implements TestableJournal
                   transactions.put(transactionID, tnp);
                }
 
-               tnp.addPositive(file, info.id, info.data.length + SIZE_ADD_RECORD_TX);
+               tnp.addPositive(file, info.id, info.data.length + JournalImpl.SIZE_ADD_RECORD_TX);
             }
 
             public void onReadDeleteRecordTX(final long transactionID, final RecordInfo info) throws Exception
             {
-               if (trace && LOAD_TRACE)
+               if (JournalImpl.trace && JournalImpl.LOAD_TRACE)
                {
-                  trace("DeleteRecordTX: " + transactionID + " info = " + info);
+                  JournalImpl.trace("DeleteRecordTX: " + transactionID + " info = " + info);
                }
 
                hasData.set(true);
@@ -1795,9 +1813,9 @@ public class JournalImpl implements TestableJournal
 
             public void onReadPrepareRecord(final long transactionID, final byte[] extraData, final int numberOfRecords) throws Exception
             {
-               if (trace && LOAD_TRACE)
+               if (JournalImpl.trace && JournalImpl.LOAD_TRACE)
                {
-                  trace("prepareRecordTX: txid = " + transactionID);
+                  JournalImpl.trace("prepareRecordTX: txid = " + transactionID);
                }
 
                hasData.set(true);
@@ -1833,16 +1851,17 @@ public class JournalImpl implements TestableJournal
                }
                else
                {
-                  log.warn("Prepared transaction " + transactionID + " wasn't considered completed, it will be ignored");
+                  JournalImpl.log.warn("Prepared transaction " + transactionID +
+                                       " wasn't considered completed, it will be ignored");
                   tx.invalid = true;
                }
             }
 
             public void onReadCommitRecord(final long transactionID, final int numberOfRecords) throws Exception
             {
-               if (trace && LOAD_TRACE)
+               if (JournalImpl.trace && JournalImpl.LOAD_TRACE)
                {
-                  trace("commitRecord: txid = " + transactionID);
+                  JournalImpl.trace("commitRecord: txid = " + transactionID);
                }
 
                TransactionHolder tx = loadTransactions.remove(transactionID);
@@ -1888,8 +1907,8 @@ public class JournalImpl implements TestableJournal
                   }
                   else
                   {
-                     log.warn("Transaction " + transactionID +
-                              " is missing elements so the transaction is being ignored");
+                     JournalImpl.log.warn("Transaction " + transactionID +
+                                          " is missing elements so the transaction is being ignored");
 
                      journalTransaction.forget();
                   }
@@ -1901,9 +1920,9 @@ public class JournalImpl implements TestableJournal
 
             public void onReadRollbackRecord(final long transactionID) throws Exception
             {
-               if (trace && LOAD_TRACE)
+               if (JournalImpl.trace && JournalImpl.LOAD_TRACE)
                {
-                  trace("rollbackRecord: txid = " + transactionID);
+                  JournalImpl.trace("rollbackRecord: txid = " + transactionID);
                }
 
                TransactionHolder tx = loadTransactions.remove(transactionID);
@@ -1931,9 +1950,9 @@ public class JournalImpl implements TestableJournal
 
             public void markAsDataFile(final JournalFile file)
             {
-               if (trace && LOAD_TRACE)
+               if (JournalImpl.trace && JournalImpl.LOAD_TRACE)
                {
-                  trace("Marking " + file + " as data file");
+                  JournalImpl.trace("Marking " + file + " as data file");
                }
 
                hasData.set(true);
@@ -2002,7 +2021,8 @@ public class JournalImpl implements TestableJournal
       {
          if (!transaction.prepared || transaction.invalid)
          {
-            log.warn("Uncommitted transaction with id " + transaction.transactionID + " found and discarded");
+            JournalImpl.log.warn("Uncommitted transaction with id " + transaction.transactionID +
+                                 " found and discarded");
 
             JournalTransaction transactionInfo = transactions.get(transaction.transactionID);
 
@@ -2041,7 +2061,7 @@ public class JournalImpl implements TestableJournal
          }
       }
 
-      state = STATE_LOADED;
+      state = JournalImpl.STATE_LOADED;
 
       checkReclaimStatus();
 
@@ -2065,14 +2085,14 @@ public class JournalImpl implements TestableJournal
             {
                // File can be reclaimed or deleted
 
-               if (trace)
+               if (JournalImpl.trace)
                {
-                  trace("Reclaiming file " + file);
+                  JournalImpl.trace("Reclaiming file " + file);
                }
 
                if (!dataFiles.remove(file))
                {
-                  log.warn("Could not remove file " + file);
+                  JournalImpl.log.warn("Could not remove file " + file);
                }
 
                addFreeFile(file);
@@ -2115,7 +2135,7 @@ public class JournalImpl implements TestableJournal
                               }
                               catch (Exception e)
                               {
-                                 log.warn(e.getMessage(), e);
+                                 JournalImpl.log.warn(e.getMessage(), e);
                               }
                               finally
                               {
@@ -2147,12 +2167,12 @@ public class JournalImpl implements TestableJournal
     */
    private float getMinCompact()
    {
-      return (compactMinFiles * compactPercentage);
+      return compactMinFiles * compactPercentage;
    }
 
    private synchronized void cleanUp(final JournalFile file) throws Exception
    {
-      if (state != STATE_LOADED)
+      if (state != JournalImpl.STATE_LOADED)
       {
          return;
       }
@@ -2168,11 +2188,11 @@ public class JournalImpl implements TestableJournal
          try
          {
 
-            if (trace)
+            if (JournalImpl.trace)
             {
-               trace("Cleaning up file " + file);
+               JournalImpl.trace("Cleaning up file " + file);
             }
-            log.debug("Cleaning up file " + file);
+            JournalImpl.log.debug("Cleaning up file " + file);
 
             if (file.getPosCount() == 0)
             {
@@ -2201,7 +2221,7 @@ public class JournalImpl implements TestableJournal
             lockAppend.unlock();
          }
 
-         readJournalFile(fileFactory, file, cleaner);
+         JournalImpl.readJournalFile(fileFactory, file, cleaner);
 
          cleaner.flush();
 
@@ -2226,7 +2246,7 @@ public class JournalImpl implements TestableJournal
       finally
       {
          compactingLock.readLock().unlock();
-         log.debug("Clean up on file " + file + " done");
+         JournalImpl.log.debug("Clean up on file " + file + " done");
       }
 
    }
@@ -2272,7 +2292,7 @@ public class JournalImpl implements TestableJournal
                }
                catch (Exception e)
                {
-                  log.error(e.getMessage(), e);
+                  JournalImpl.log.error(e.getMessage(), e);
                }
                finally
                {
@@ -2460,12 +2480,12 @@ public class JournalImpl implements TestableJournal
 
    public synchronized boolean isStarted()
    {
-      return state != STATE_STOPPED;
+      return state != JournalImpl.STATE_STOPPED;
    }
 
    public synchronized void start()
    {
-      if (state != STATE_STOPPED)
+      if (state != JournalImpl.STATE_STOPPED)
       {
          throw new IllegalStateException("Journal is not stopped");
       }
@@ -2476,14 +2496,14 @@ public class JournalImpl implements TestableJournal
 
       fileFactory.start();
 
-      state = STATE_STARTED;
+      state = JournalImpl.STATE_STARTED;
    }
 
    public synchronized void stop() throws Exception
    {
-      trace("Stopping the journal");
+      JournalImpl.trace("Stopping the journal");
 
-      if (state == STATE_STOPPED)
+      if (state == JournalImpl.STATE_STOPPED)
       {
          throw new IllegalStateException("Journal is already stopped");
       }
@@ -2496,7 +2516,7 @@ public class JournalImpl implements TestableJournal
 
          if (!filesExecutor.awaitTermination(60, TimeUnit.SECONDS))
          {
-            log.warn("Couldn't stop journal executor after 60 seconds");
+            JournalImpl.log.warn("Couldn't stop journal executor after 60 seconds");
          }
 
          fileFactory.deactivateBuffer();
@@ -2521,7 +2541,7 @@ public class JournalImpl implements TestableJournal
 
          openedFiles.clear();
 
-         state = STATE_STOPPED;
+         state = JournalImpl.STATE_STOPPED;
       }
       finally
       {
@@ -2531,7 +2551,7 @@ public class JournalImpl implements TestableJournal
 
    public int getNumberOfRecords()
    {
-      return this.records.size();
+      return records.size();
    }
 
    // Public
@@ -2540,9 +2560,9 @@ public class JournalImpl implements TestableJournal
    // Protected
    // -----------------------------------------------------------------------------
 
-   protected SequentialFile createControlFile(List<JournalFile> files,
-                                              List<JournalFile> newFiles,
-                                              Pair<String, String> cleanupRename) throws Exception
+   protected SequentialFile createControlFile(final List<JournalFile> files,
+                                              final List<JournalFile> newFiles,
+                                              final Pair<String, String> cleanupRename) throws Exception
    {
       ArrayList<Pair<String, String>> cleanupList;
       if (cleanupRename == null)
@@ -2619,7 +2639,7 @@ public class JournalImpl implements TestableJournal
 
       sf.position(0);
 
-      ByteBuffer bb = fileFactory.newBuffer(SIZE_HEADER);
+      ByteBuffer bb = fileFactory.newBuffer(JournalImpl.SIZE_HEADER);
 
       bb.putInt(newFileID);
 
@@ -2657,19 +2677,20 @@ public class JournalImpl implements TestableJournal
 
    private static boolean isTransaction(final byte recordType)
    {
-      return recordType == ADD_RECORD_TX || recordType == UPDATE_RECORD_TX ||
-             recordType == DELETE_RECORD_TX ||
-             isCompleteTransaction(recordType);
+      return recordType == JournalImpl.ADD_RECORD_TX || recordType == JournalImpl.UPDATE_RECORD_TX ||
+             recordType == JournalImpl.DELETE_RECORD_TX ||
+             JournalImpl.isCompleteTransaction(recordType);
    }
 
    private static boolean isCompleteTransaction(final byte recordType)
    {
-      return recordType == COMMIT_RECORD || recordType == PREPARE_RECORD || recordType == ROLLBACK_RECORD;
+      return recordType == JournalImpl.COMMIT_RECORD || recordType == JournalImpl.PREPARE_RECORD ||
+             recordType == JournalImpl.ROLLBACK_RECORD;
    }
 
    private static boolean isContainsBody(final byte recordType)
    {
-      return recordType >= ADD_RECORD && recordType <= DELETE_RECORD_TX;
+      return recordType >= JournalImpl.ADD_RECORD && recordType <= JournalImpl.DELETE_RECORD_TX;
    }
 
    private static int getRecordSize(final byte recordType)
@@ -2679,31 +2700,31 @@ public class JournalImpl implements TestableJournal
       switch (recordType)
       {
          case ADD_RECORD:
-            recordSize = SIZE_ADD_RECORD;
+            recordSize = JournalImpl.SIZE_ADD_RECORD;
             break;
          case UPDATE_RECORD:
-            recordSize = SIZE_ADD_RECORD;
+            recordSize = JournalImpl.SIZE_ADD_RECORD;
             break;
          case ADD_RECORD_TX:
-            recordSize = SIZE_ADD_RECORD_TX;
+            recordSize = JournalImpl.SIZE_ADD_RECORD_TX;
             break;
          case UPDATE_RECORD_TX:
-            recordSize = SIZE_ADD_RECORD_TX;
+            recordSize = JournalImpl.SIZE_ADD_RECORD_TX;
             break;
          case DELETE_RECORD:
-            recordSize = SIZE_DELETE_RECORD;
+            recordSize = JournalImpl.SIZE_DELETE_RECORD;
             break;
          case DELETE_RECORD_TX:
-            recordSize = SIZE_DELETE_RECORD_TX;
+            recordSize = JournalImpl.SIZE_DELETE_RECORD_TX;
             break;
          case PREPARE_RECORD:
-            recordSize = SIZE_PREPARE_RECORD;
+            recordSize = JournalImpl.SIZE_PREPARE_RECORD;
             break;
          case COMMIT_RECORD:
-            recordSize = SIZE_COMMIT_RECORD;
+            recordSize = JournalImpl.SIZE_COMMIT_RECORD;
             break;
          case ROLLBACK_RECORD:
-            recordSize = SIZE_ROLLBACK_RECORD;
+            recordSize = JournalImpl.SIZE_ROLLBACK_RECORD;
             break;
          default:
             // Sanity check, this was previously tested, nothing different
@@ -2726,7 +2747,7 @@ public class JournalImpl implements TestableJournal
 
          file.open(1, false);
 
-         ByteBuffer bb = fileFactory.newBuffer(SIZE_HEADER);
+         ByteBuffer bb = fileFactory.newBuffer(JournalImpl.SIZE_HEADER);
 
          file.read(bb);
 
@@ -2773,7 +2794,7 @@ public class JournalImpl implements TestableJournal
                                     final JournalTransaction tx,
                                     final IOAsyncTask parameterCallback) throws Exception
    {
-      if (state != STATE_LOADED)
+      if (state != JournalImpl.STATE_LOADED)
       {
          throw new IllegalStateException("The journal is not loaded " + state);
       }
@@ -2783,7 +2804,7 @@ public class JournalImpl implements TestableJournal
       int size = encoder.getEncodeSize();
 
       // We take into account the fileID used on the Header
-      if (size > fileSize - currentFile.getFile().calculateBlockStart(SIZE_HEADER))
+      if (size > fileSize - currentFile.getFile().calculateBlockStart(JournalImpl.SIZE_HEADER))
       {
          throw new IllegalArgumentException("Record is too large to store " + size);
       }
@@ -2861,7 +2882,7 @@ public class JournalImpl implements TestableJournal
    }
 
    /** Get the ID part of the name */
-   private int getFileNameID(String fileName)
+   private int getFileNameID(final String fileName)
    {
       try
       {
@@ -2869,7 +2890,7 @@ public class JournalImpl implements TestableJournal
       }
       catch (Throwable e)
       {
-         log.warn("Impossible to get the ID part of the file name " + fileName, e);
+         JournalImpl.log.warn("Impossible to get the ID part of the file name " + fileName, e);
          return 0;
       }
    }
@@ -2898,22 +2919,22 @@ public class JournalImpl implements TestableJournal
          fileName = filePrefix + "-" + fileID + "." + fileExtension;
       }
 
-      if (trace)
+      if (JournalImpl.trace)
       {
-         trace("Creating file " + fileName);
+         JournalImpl.trace("Creating file " + fileName);
       }
 
       String tmpFileName = fileName + ".tmp";
-      
+
       SequentialFile sequentialFile = fileFactory.createSequentialFile(tmpFileName, maxAIO);
 
       sequentialFile.open(1, false);
 
       if (fill)
       {
-         sequentialFile.fill(0, fileSize, FILL_CHARACTER);
+         sequentialFile.fill(0, fileSize, JournalImpl.FILL_CHARACTER);
 
-         ByteBuffer bb = fileFactory.newBuffer(SIZE_HEADER);
+         ByteBuffer bb = fileFactory.newBuffer(JournalImpl.SIZE_HEADER);
 
          bb.putInt(fileID);
 
@@ -2955,7 +2976,7 @@ public class JournalImpl implements TestableJournal
          file.getFile().open(1, false);
       }
 
-      file.getFile().position(file.getFile().calculateBlockStart(SIZE_HEADER));
+      file.getFile().position(file.getFile().calculateBlockStart(JournalImpl.SIZE_HEADER));
    }
 
    private int generateFileID()
@@ -2970,9 +2991,9 @@ public class JournalImpl implements TestableJournal
 
       currentFile = enqueueOpenFile(synchronous);
 
-      if (trace)
+      if (JournalImpl.trace)
       {
-         trace("moveNextFile: " + currentFile.getFile().getFileName() + " sync: " + synchronous);
+         JournalImpl.trace("moveNextFile: " + currentFile.getFile().getFileName() + " sync: " + synchronous);
       }
 
       fileFactory.activateBuffer(currentFile.getFile());
@@ -2985,9 +3006,9 @@ public class JournalImpl implements TestableJournal
     * */
    private JournalFile enqueueOpenFile(final boolean synchronous) throws InterruptedException
    {
-      if (trace)
+      if (JournalImpl.trace)
       {
-         trace("enqueueOpenFile with openedFiles.size=" + openedFiles.size());
+         JournalImpl.trace("enqueueOpenFile with openedFiles.size=" + openedFiles.size());
       }
 
       Runnable run = new Runnable()
@@ -3000,7 +3021,7 @@ public class JournalImpl implements TestableJournal
             }
             catch (Exception e)
             {
-               log.error(e.getMessage(), e);
+               JournalImpl.log.error(e.getMessage(), e);
             }
          }
       };
@@ -3026,7 +3047,8 @@ public class JournalImpl implements TestableJournal
          nextFile = openedFiles.poll(60, TimeUnit.SECONDS);
          if (nextFile == null)
          {
-            log.warn("Couldn't open a file in 60 Seconds", new Exception("Warning: Couldn't open a file in 60 Seconds"));
+            JournalImpl.log.warn("Couldn't open a file in 60 Seconds",
+                                 new Exception("Warning: Couldn't open a file in 60 Seconds"));
          }
       }
 
@@ -3035,7 +3057,7 @@ public class JournalImpl implements TestableJournal
 
    private void scheduleReclaim()
    {
-      if (state != STATE_LOADED)
+      if (state != JournalImpl.STATE_LOADED)
       {
          return;
       }
@@ -3053,7 +3075,7 @@ public class JournalImpl implements TestableJournal
             }
             catch (Exception e)
             {
-               log.error(e.getMessage(), e);
+               JournalImpl.log.error(e.getMessage(), e);
             }
          }
       });
@@ -3132,7 +3154,7 @@ public class JournalImpl implements TestableJournal
             }
             catch (Exception e)
             {
-               log.warn(e.getMessage(), e);
+               JournalImpl.log.warn(e.getMessage(), e);
             }
             finally
             {
@@ -3255,11 +3277,11 @@ public class JournalImpl implements TestableJournal
 
       if (leftFiles.size() > 0)
       {
-         log.warn("Temporary files were left unnatended after a crash on journal directory, deleting invalid files now");
+         JournalImpl.log.warn("Temporary files were left unnatended after a crash on journal directory, deleting invalid files now");
 
          for (String fileToDelete : leftFiles)
          {
-            log.warn("Deleting unnatended file " + fileToDelete);
+            JournalImpl.log.warn("Deleting unnatended file " + fileToDelete);
             SequentialFile file = fileFactory.createSequentialFile(fileToDelete, 1);
             file.delete();
          }
@@ -3369,7 +3391,7 @@ public class JournalImpl implements TestableJournal
 
       public static NullEncoding getInstance()
       {
-         return instance;
+         return NullEncoding.instance;
       }
 
       public void decode(final HornetQBuffer buffer)
@@ -3448,7 +3470,7 @@ public class JournalImpl implements TestableJournal
                   return byteEncoder.getEncodeSize();
                }
 
-               public void encode(HornetQBuffer buffer)
+               public void encode(final HornetQBuffer buffer)
                {
                   byteEncoder.encode(buffer);
                }
@@ -3463,7 +3485,7 @@ public class JournalImpl implements TestableJournal
          }
          catch (Exception e)
          {
-            log.error("Failed to perf blast", e);
+            JournalImpl.log.error("Failed to perf blast", e);
          }
       }
    }

@@ -12,8 +12,6 @@
  */
 package org.hornetq.integration.transports.netty;
 
-import static org.jboss.netty.channel.Channels.write;
-
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Executor;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -26,6 +24,7 @@ import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelPipelineCoverage;
 import org.jboss.netty.channel.ChannelStateEvent;
+import org.jboss.netty.channel.Channels;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelHandler;
 import org.jboss.netty.channel.UpstreamMessageEvent;
@@ -106,7 +105,7 @@ class HttpAcceptorHandler extends SimpleChannelHandler
       }
       else
       {
-         write(ctx, e.getFuture(), e.getMessage(), e.getRemoteAddress());
+         Channels.write(ctx, e.getFuture(), e.getMessage(), e.getRemoteAddress());
       }
    }
 

@@ -12,6 +12,8 @@
  */
 package org.hornetq.tests.integration.client;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
@@ -24,6 +26,7 @@ import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.utils.SimpleString;
+
 /**
  * 
  * A TransactionDurabilityTest
@@ -56,126 +59,125 @@ public class TransactionDurabilityTest extends ServiceTestBase
    public void testRolledBackAcknowledgeWithSameMessageAckedByOtherSession() throws Exception
    {
       Configuration conf = createDefaultConfig();
-      
+
       final SimpleString testAddress = new SimpleString("testAddress");
-      
+
       final SimpleString queue1 = new SimpleString("queue1");
-      
+
       final SimpleString queue2 = new SimpleString("queue2");
-                   
-      HornetQServer server = createServer(true, conf); 
-      
+
+      HornetQServer server = createServer(true, conf);
+
       server.start();
 
       ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
 
       ClientSession session1 = sf.createSession(false, true, true);
-      
+
       ClientSession session2 = sf.createSession(false, false, false);
 
       session1.createQueue(testAddress, queue1, null, true);
-      
+
       session1.createQueue(testAddress, queue2, null, true);
 
       ClientProducer producer = session1.createProducer(testAddress);
 
       ClientMessage message = session1.createClientMessage(true);
-         
+
       producer.send(message);
-      
+
       session1.start();
-      
+
       session2.start();
-                  
+
       ClientConsumer consumer1 = session1.createConsumer(queue1);
-      
+
       ClientConsumer consumer2 = session2.createConsumer(queue2);
-      
+
       ClientMessage m1 = consumer1.receive(1000);
-      
-      assertNotNull(m1);
-      
+
+      Assert.assertNotNull(m1);
+
       ClientMessage m2 = consumer2.receive(1000);
-      
-      assertNotNull(m2);
-      
+
+      Assert.assertNotNull(m2);
+
       m2.acknowledge();
-      
-      //Don't commit session 2
-      
+
+      // Don't commit session 2
+
       m1.acknowledge();
-      
+
       session2.rollback();
-      
+
       session1.close();
-      
+
       session2.close();
-      
+
       server.stop();
-      
+
       server.start();
-      
+
       sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
-      
+
       session1 = sf.createSession(false, true, true);
-      
+
       session2 = sf.createSession(false, true, true);
-      
+
       session1.start();
-      
+
       session2.start();
-      
+
       consumer1 = session1.createConsumer(queue1);
-      
+
       consumer2 = session2.createConsumer(queue2);
-      
+
       m1 = consumer1.receiveImmediate();
-      
-      assertNull(m1);
-      
+
+      Assert.assertNull(m1);
+
       m2 = consumer2.receive(1000);
-      
-      assertNotNull(m2);
-      
+
+      Assert.assertNotNull(m2);
+
       m2.acknowledge();
-      
+
       session1.close();
-      
+
       session2.close();
-      
+
       server.stop();
-      
+
       server.start();
-      
+
       sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
-      
+
       session1 = sf.createSession(false, true, true);
-      
+
       session2 = sf.createSession(false, true, true);
-      
+
       session1.start();
-      
+
       session2.start();
-      
+
       consumer1 = session1.createConsumer(queue1);
-      
+
       consumer2 = session2.createConsumer(queue2);
-      
+
       m1 = consumer1.receiveImmediate();
-      
-      assertNull(m1);
-      
+
+      Assert.assertNull(m1);
+
       m2 = consumer2.receiveImmediate();
-      
-      assertNull(m2);
-      
+
+      Assert.assertNull(m2);
+
       session1.close();
-      
+
       session2.close();
-      
+
       server.stop();
-      
+
    }
 
 }
-

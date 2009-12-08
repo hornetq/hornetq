@@ -34,7 +34,7 @@ public class TwoWayTwoNodeClusterTest extends ClusterTestBase
       super.setUp();
 
       setupServer(0, isFileStorage(), isNetty());
-      
+
       setupServer(1, isFileStorage(), isNetty());
    }
 
@@ -54,7 +54,6 @@ public class TwoWayTwoNodeClusterTest extends ClusterTestBase
    {
       return false;
    }
-
 
    public void testStartStop() throws Exception
    {

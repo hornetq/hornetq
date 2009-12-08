@@ -33,7 +33,7 @@ public class HornetQRATopicPublisher extends HornetQRAMessageProducer implements
    private static final Logger log = Logger.getLogger(HornetQRATopicPublisher.class);
 
    /** Whether trace is enabled */
-   private static boolean trace = log.isTraceEnabled();
+   private static boolean trace = HornetQRATopicPublisher.log.isTraceEnabled();
 
    /**
     * Create a new wrapper
@@ -44,9 +44,9 @@ public class HornetQRATopicPublisher extends HornetQRAMessageProducer implements
    {
       super(producer, session);
 
-      if (trace)
+      if (HornetQRATopicPublisher.trace)
       {
-         log.trace("constructor(" + producer + ", " + session + ")");
+         HornetQRATopicPublisher.log.trace("constructor(" + producer + ", " + session + ")");
       }
    }
 
@@ -57,9 +57,9 @@ public class HornetQRATopicPublisher extends HornetQRAMessageProducer implements
     */
    public Topic getTopic() throws JMSException
    {
-      if (trace)
+      if (HornetQRATopicPublisher.trace)
       {
-         log.trace("getTopic()");
+         HornetQRATopicPublisher.log.trace("getTopic()");
       }
 
       return ((TopicPublisher)producer).getTopic();
@@ -78,26 +78,26 @@ public class HornetQRATopicPublisher extends HornetQRAMessageProducer implements
       session.lock();
       try
       {
-         if (trace)
+         if (HornetQRATopicPublisher.trace)
          {
-            log.trace("send " + this +
-                      " message=" +
-                      message +
-                      " deliveryMode=" +
-                      deliveryMode +
-                      " priority=" +
-                      priority +
-                      " ttl=" +
-                      timeToLive);
+            HornetQRATopicPublisher.log.trace("send " + this +
+                                              " message=" +
+                                              message +
+                                              " deliveryMode=" +
+                                              deliveryMode +
+                                              " priority=" +
+                                              priority +
+                                              " ttl=" +
+                                              timeToLive);
          }
 
          checkState();
 
          ((TopicPublisher)producer).publish(message, deliveryMode, priority, timeToLive);
 
-         if (trace)
+         if (HornetQRATopicPublisher.trace)
          {
-            log.trace("sent " + this + " result=" + message);
+            HornetQRATopicPublisher.log.trace("sent " + this + " result=" + message);
          }
       }
       finally
@@ -116,18 +116,18 @@ public class HornetQRATopicPublisher extends HornetQRAMessageProducer implements
       session.lock();
       try
       {
-         if (trace)
+         if (HornetQRATopicPublisher.trace)
          {
-            log.trace("send " + this + " message=" + message);
+            HornetQRATopicPublisher.log.trace("send " + this + " message=" + message);
          }
 
          checkState();
 
          ((TopicPublisher)producer).publish(message);
 
-         if (trace)
+         if (HornetQRATopicPublisher.trace)
          {
-            log.trace("sent " + this + " result=" + message);
+            HornetQRATopicPublisher.log.trace("sent " + this + " result=" + message);
          }
       }
       finally
@@ -154,28 +154,28 @@ public class HornetQRATopicPublisher extends HornetQRAMessageProducer implements
       session.lock();
       try
       {
-         if (trace)
+         if (HornetQRATopicPublisher.trace)
          {
-            log.trace("send " + this +
-                      " destination=" +
-                      destination +
-                      " message=" +
-                      message +
-                      " deliveryMode=" +
-                      deliveryMode +
-                      " priority=" +
-                      priority +
-                      " ttl=" +
-                      timeToLive);
+            HornetQRATopicPublisher.log.trace("send " + this +
+                                              " destination=" +
+                                              destination +
+                                              " message=" +
+                                              message +
+                                              " deliveryMode=" +
+                                              deliveryMode +
+                                              " priority=" +
+                                              priority +
+                                              " ttl=" +
+                                              timeToLive);
          }
 
          checkState();
 
          ((TopicPublisher)producer).publish(destination, message, deliveryMode, priority, timeToLive);
 
-         if (trace)
+         if (HornetQRATopicPublisher.trace)
          {
-            log.trace("sent " + this + " result=" + message);
+            HornetQRATopicPublisher.log.trace("sent " + this + " result=" + message);
          }
       }
       finally
@@ -195,18 +195,18 @@ public class HornetQRATopicPublisher extends HornetQRAMessageProducer implements
       session.lock();
       try
       {
-         if (trace)
+         if (HornetQRATopicPublisher.trace)
          {
-            log.trace("send " + this + " destination=" + destination + " message=" + message);
+            HornetQRATopicPublisher.log.trace("send " + this + " destination=" + destination + " message=" + message);
          }
 
          checkState();
 
          ((TopicPublisher)producer).publish(destination, message);
 
-         if (trace)
+         if (HornetQRATopicPublisher.trace)
          {
-            log.trace("sent " + this + " result=" + message);
+            HornetQRATopicPublisher.log.trace("sent " + this + " result=" + message);
          }
       }
       finally

@@ -92,21 +92,19 @@ public class FailureDeadlockTest extends UnitTestCase
       }
 
       server = null;
-      
+
       jmsServer = null;
-      
+
       cf1 = null;
-      
+
       cf2 = null;
-      
 
       super.tearDown();
    }
-    
 
    // https://jira.jboss.org/jira/browse/JBMESSAGING-1702
-   //Test that two failures concurrently executing and calling the same exception listener
-   //don't deadlock
+   // Test that two failures concurrently executing and calling the same exception listener
+   // don't deadlock
    public void testDeadlock() throws Exception
    {
       for (int i = 0; i < 100; i++)
@@ -123,7 +121,7 @@ public class FailureDeadlockTest extends UnitTestCase
 
          ExceptionListener listener1 = new ExceptionListener()
          {
-            public void onException(JMSException exception)
+            public void onException(final JMSException exception)
             {
                try
                {
@@ -131,7 +129,7 @@ public class FailureDeadlockTest extends UnitTestCase
                }
                catch (Exception e)
                {
-                  log.error("Failed to close connection2", e);
+                  FailureDeadlockTest.log.error("Failed to close connection2", e);
                }
             }
          };
@@ -150,45 +148,46 @@ public class FailureDeadlockTest extends UnitTestCase
 
          f1.join();
 
-         f2.join();  
-         
+         f2.join();
+
          conn1.close();
-         
+
          conn2.close();
-      }      
+      }
    }
-   
+
    private class Failer extends Thread
    {
       RemotingConnection conn;
 
-      Failer(RemotingConnection conn)
+      Failer(final RemotingConnection conn)
       {
          this.conn = conn;
       }
 
+      @Override
       public void run()
       {
          conn.fail(new HornetQException(HornetQException.NOT_CONNECTED, "blah"));
       }
    }
 
-      
-   //https://jira.jboss.org/jira/browse/JBMESSAGING-1703
-   //Make sure that failing a connection removes it from the connection manager and can't be returned in a subsequent call
+   // https://jira.jboss.org/jira/browse/JBMESSAGING-1703
+   // Make sure that failing a connection removes it from the connection manager and can't be returned in a subsequent
+   // call
    public void testUsingDeadConnection() throws Exception
    {
       for (int i = 0; i < 100; i++)
       {
          final Connection conn1 = cf1.createConnection();
-   
+
          Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         RemotingConnection rc1 = ((ClientSessionInternal)((HornetQSession)sess1).getCoreSession()).getConnection();      
-   
+         RemotingConnection rc1 = ((ClientSessionInternal)((HornetQSession)sess1).getCoreSession()).getConnection();
+
          rc1.fail(new HornetQException(HornetQException.NOT_CONNECTED, "blah"));
-   
+
          Session sess2 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
+
          conn1.close();
       }
    }

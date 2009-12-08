@@ -28,7 +28,6 @@ import javax.resource.ResourceException;
 import javax.resource.spi.endpoint.MessageEndpointFactory;
 import javax.resource.spi.work.Work;
 import javax.resource.spi.work.WorkManager;
-import javax.transaction.TransactionManager;
 
 import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.logging.Logger;
@@ -38,7 +37,6 @@ import org.hornetq.jms.HornetQTopic;
 import org.hornetq.ra.HornetQResourceAdapter;
 import org.hornetq.ra.Util;
 import org.hornetq.utils.SimpleString;
-import org.jboss.tm.TransactionManagerLocator;
 
 /**
  * The activation.
@@ -58,7 +56,7 @@ public class HornetQActivation
    /**
     * Trace enabled
     */
-   private static boolean trace = log.isTraceEnabled();
+   private static boolean trace = HornetQActivation.log.isTraceEnabled();
 
    /**
     * The onMessage method
@@ -122,12 +120,12 @@ public class HornetQActivation
     * @throws ResourceException Thrown if an error occurs
     */
    public HornetQActivation(final HornetQResourceAdapter ra,
-                        final MessageEndpointFactory endpointFactory,
-                        final HornetQActivationSpec spec) throws ResourceException
+                            final MessageEndpointFactory endpointFactory,
+                            final HornetQActivationSpec spec) throws ResourceException
    {
-      if (trace)
+      if (HornetQActivation.trace)
       {
-         log.trace("constructor(" + ra + ", " + endpointFactory + ", " + spec + ")");
+         HornetQActivation.log.trace("constructor(" + ra + ", " + endpointFactory + ", " + spec + ")");
       }
 
       this.ra = ra;
@@ -135,7 +133,7 @@ public class HornetQActivation
       this.spec = spec;
       try
       {
-         isDeliveryTransacted = endpointFactory.isDeliveryTransacted(ONMESSAGE);
+         isDeliveryTransacted = endpointFactory.isDeliveryTransacted(HornetQActivation.ONMESSAGE);
       }
       catch (Exception e)
       {
@@ -150,9 +148,9 @@ public class HornetQActivation
     */
    public HornetQActivationSpec getActivationSpec()
    {
-      if (trace)
+      if (HornetQActivation.trace)
       {
-         log.trace("getActivationSpec()");
+         HornetQActivation.log.trace("getActivationSpec()");
       }
 
       return spec;
@@ -165,9 +163,9 @@ public class HornetQActivation
     */
    public MessageEndpointFactory getMessageEndpointFactory()
    {
-      if (trace)
+      if (HornetQActivation.trace)
       {
-         log.trace("getMessageEndpointFactory()");
+         HornetQActivation.log.trace("getMessageEndpointFactory()");
       }
 
       return endpointFactory;
@@ -180,9 +178,9 @@ public class HornetQActivation
     */
    public boolean isDeliveryTransacted()
    {
-      if (trace)
+      if (HornetQActivation.trace)
       {
-         log.trace("isDeliveryTransacted()");
+         HornetQActivation.log.trace("isDeliveryTransacted()");
       }
 
       return isDeliveryTransacted;
@@ -195,9 +193,9 @@ public class HornetQActivation
     */
    public WorkManager getWorkManager()
    {
-      if (trace)
+      if (HornetQActivation.trace)
       {
-         log.trace("getWorkManager()");
+         HornetQActivation.log.trace("getWorkManager()");
       }
 
       return ra.getWorkManager();
@@ -210,9 +208,9 @@ public class HornetQActivation
     */
    public boolean isTopic()
    {
-      if (trace)
+      if (HornetQActivation.trace)
       {
-         log.trace("isTopic()");
+         HornetQActivation.log.trace("isTopic()");
       }
 
       return isTopic;
@@ -225,9 +223,9 @@ public class HornetQActivation
     */
    public void start() throws ResourceException
    {
-      if (trace)
+      if (HornetQActivation.trace)
       {
-         log.trace("start()");
+         HornetQActivation.log.trace("start()");
       }
       deliveryActive.set(true);
       ra.getWorkManager().scheduleWork(new SetupActivation());
@@ -238,9 +236,9 @@ public class HornetQActivation
     */
    public void stop()
    {
-      if (trace)
+      if (HornetQActivation.trace)
       {
-         log.trace("stop()");
+         HornetQActivation.log.trace("stop()");
       }
 
       deliveryActive.set(false);
@@ -254,7 +252,7 @@ public class HornetQActivation
     */
    protected void setup() throws Exception
    {
-      log.debug("Setting up " + spec);
+      HornetQActivation.log.debug("Setting up " + spec);
 
       setupCF();
 
@@ -269,7 +267,7 @@ public class HornetQActivation
          handlers.add(handler);
       }
 
-      log.debug("Setup complete " + this);
+      HornetQActivation.log.debug("Setup complete " + this);
    }
 
    /**
@@ -277,23 +275,23 @@ public class HornetQActivation
     */
    protected void teardown()
    {
-      log.debug("Tearing down " + spec);
+      HornetQActivation.log.debug("Tearing down " + spec);
 
       for (HornetQMessageHandler handler : handlers)
       {
          handler.teardown();
       }
-      if(spec.isHasBeenUpdated())
+      if (spec.isHasBeenUpdated())
       {
          factory.close();
          factory = null;
       }
-      log.debug("Tearing down complete " + this);
+      HornetQActivation.log.debug("Tearing down complete " + this);
    }
 
    protected void setupCF() throws Exception
    {
-      if(spec.isHasBeenUpdated())
+      if (spec.isHasBeenUpdated())
       {
          factory = ra.createHornetQConnectionFactory(spec);
       }
@@ -324,7 +322,7 @@ public class HornetQActivation
                                    isDeliveryTransacted,
                                    spec.isUseLocalTx());
 
-         log.debug("Using queue connection " + result);
+         HornetQActivation.log.debug("Using queue connection " + result);
 
          return result;
       }
@@ -339,7 +337,7 @@ public class HornetQActivation
          }
          catch (Exception e)
          {
-            log.trace("Ignored error closing connection", e);
+            HornetQActivation.log.trace("Ignored error closing connection", e);
          }
          if (t instanceof Exception)
          {
@@ -362,16 +360,16 @@ public class HornetQActivation
       if (spec.isUseJNDI())
       {
          Context ctx = new InitialContext();
-         log.debug("Using context " + ctx.getEnvironment() + " for " + spec);
-         if (trace)
+         HornetQActivation.log.debug("Using context " + ctx.getEnvironment() + " for " + spec);
+         if (HornetQActivation.trace)
          {
-            log.trace("setupDestination(" + ctx + ")");
+            HornetQActivation.log.trace("setupDestination(" + ctx + ")");
          }
 
          String destinationTypeString = spec.getDestinationType();
          if (destinationTypeString != null && !destinationTypeString.trim().equals(""))
          {
-            log.debug("Destination type defined as " + destinationTypeString);
+            HornetQActivation.log.debug("Destination type defined as " + destinationTypeString);
 
             Class<?> destinationType;
             if (Topic.class.getName().equals(destinationTypeString))
@@ -384,7 +382,9 @@ public class HornetQActivation
                destinationType = Queue.class;
             }
 
-            log.debug("Retrieving destination " + destinationName + " of type " + destinationType.getName());
+            HornetQActivation.log.debug("Retrieving destination " + destinationName +
+                                        " of type " +
+                                        destinationType.getName());
             try
             {
                destination = (HornetQDestination)Util.lookup(ctx, destinationName, destinationType);
@@ -392,7 +392,7 @@ public class HornetQActivation
             catch (Exception e)
             {
                if (destinationName == null)
-               {                 
+               {
                   throw e;
                }
                // If there is no binding on naming, we will just create a new instance
@@ -408,8 +408,10 @@ public class HornetQActivation
          }
          else
          {
-            log.debug("Destination type not defined");
-            log.debug("Retrieving destination " + destinationName + " of type " + Destination.class.getName());
+            HornetQActivation.log.debug("Destination type not defined");
+            HornetQActivation.log.debug("Retrieving destination " + destinationName +
+                                        " of type " +
+                                        Destination.class.getName());
 
             destination = (HornetQDestination)Util.lookup(ctx, destinationName, Destination.class);
             if (destination instanceof Topic)
@@ -430,7 +432,7 @@ public class HornetQActivation
          }
       }
 
-      log.debug("Got destination " + destination + " from " + destinationName);
+      HornetQActivation.log.debug("Got destination " + destination + " from " + destinationName);
    }
 
    /**
@@ -474,7 +476,7 @@ public class HornetQActivation
          }
          catch (Throwable t)
          {
-            log.error("Unabler to start activation ", t);
+            HornetQActivation.log.error("Unabler to start activation ", t);
          }
       }
 

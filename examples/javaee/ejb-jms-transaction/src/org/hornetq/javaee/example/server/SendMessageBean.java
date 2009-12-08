@@ -35,38 +35,41 @@ import javax.sql.DataSource;
 @Remote(SendMessageService.class)
 public class SendMessageBean implements SendMessageService
 {
-   
+
    private static final String TABLE = "hornetq_example";
-   
+
    public void createTable() throws Exception
    {
       InitialContext ic = new InitialContext();
       DataSource ds = (DataSource)ic.lookup("java:/DefaultDS");
       java.sql.Connection con = ds.getConnection();
-      
+
       // check if the table exists:
       boolean createTable = false;
-      try {
-         PreparedStatement pr = con.prepareStatement("SELECT * FROM " + TABLE + ";");
+      try
+      {
+         PreparedStatement pr = con.prepareStatement("SELECT * FROM " + SendMessageBean.TABLE + ";");
          pr.executeQuery();
          pr.close();
-      } catch (Exception e)
+      }
+      catch (Exception e)
       {
          createTable = true;
       }
-      
+
       if (createTable)
       {
-         PreparedStatement pr = con.prepareStatement("CREATE TABLE " + TABLE + "(id VARCHAR(100), text VARCHAR(100)) TYPE=innodb;");
+         PreparedStatement pr = con.prepareStatement("CREATE TABLE " + SendMessageBean.TABLE +
+                                                     "(id VARCHAR(100), text VARCHAR(100)) TYPE=innodb;");
          pr.execute();
          pr.close();
-         System.out.println("Table " + TABLE + " created");
+         System.out.println("Table " + SendMessageBean.TABLE + " created");
       }
-      
+
       con.close();
    }
 
-   public void sendAndUpdate(String text) throws Exception
+   public void sendAndUpdate(final String text) throws Exception
    {
       InitialContext ic = null;
       Connection jmsConnection = null;
@@ -78,7 +81,7 @@ public class SendMessageBean implements SendMessageService
          ic = new InitialContext();
 
          // JMS operations
-         
+
          // Step 2. Look up the XA Connection Factory
          ConnectionFactory cf = (ConnectionFactory)ic.lookup("java:/JmsXA");
 
@@ -98,22 +101,24 @@ public class SendMessageBean implements SendMessageService
          System.out.println("Sent message: " + message.getText() + "(" + message.getJMSMessageID() + ")");
 
          // DB operations
-         
+
          // Step 7. Look up the XA Data Source
          DataSource ds = (DataSource)ic.lookup("java:/XADS");
-         
+
          // Step 8. Retrieve the JDBC connection
-         jdbcConnection  = ds.getConnection();
-         
+         jdbcConnection = ds.getConnection();
+
          // Step 9. Create the prepared statement to insert the text and the message's ID in the table
-         PreparedStatement pr = jdbcConnection.prepareStatement("INSERT INTO " + TABLE + " (id, text) VALUES ('" + message.getJMSMessageID() +
-                                                     "', '" +
-                                                     text +
-                                                     "');");
-         
+         PreparedStatement pr = jdbcConnection.prepareStatement("INSERT INTO " + SendMessageBean.TABLE +
+                                                                " (id, text) VALUES ('" +
+                                                                message.getJMSMessageID() +
+                                                                "', '" +
+                                                                text +
+                                                                "');");
+
          // Step 10. execute the prepared statement
          pr.execute();
-         
+
          // Step 11. close the prepared statement
          pr.close();
       }

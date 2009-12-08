@@ -31,11 +31,12 @@ import org.hornetq.common.example.HornetQExample;
  */
 public class ConsumerRateLimitExample extends HornetQExample
 {
-   public static void main(String[] args)
+   public static void main(final String[] args)
    {
       new ConsumerRateLimitExample().run(args);
    }
 
+   @Override
    public boolean runExample() throws Exception
    {
       Connection connection = null;
@@ -59,26 +60,26 @@ public class ConsumerRateLimitExample extends HornetQExample
 
          // Step 6. Create a JMS Message Producer
          MessageProducer producer = session.createProducer(queue);
-         
+
          // Step 7. Create a JMS Message Consumer
-         
+
          MessageConsumer consumer = session.createConsumer(queue);
-         
+
          // Step 8. Start the connection
-         
+
          connection.start();
-         
+
          // Step 9. Send a bunch of messages
-         
+
          final int numMessages = 150;
-         
+
          for (int i = 0; i < numMessages; i++)
          {
             TextMessage message = session.createTextMessage("This is text message: " + i);
 
             producer.send(message);
          }
-         
+
          System.out.println("Sent messages");
 
          System.out.println("Will now try and consume as many as we can in 10 seconds ...");
@@ -99,7 +100,7 @@ public class ConsumerRateLimitExample extends HornetQExample
             {
                return false;
             }
-            
+
             i++;
          }
 
@@ -120,7 +121,7 @@ public class ConsumerRateLimitExample extends HornetQExample
          {
             initialContext.close();
          }
-         
+
          if (connection != null)
          {
             connection.close();

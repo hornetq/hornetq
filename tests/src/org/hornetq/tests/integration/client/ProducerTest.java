@@ -15,6 +15,8 @@ package org.hornetq.tests.integration.client;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
 import org.hornetq.core.client.ClientSession;
@@ -32,7 +34,7 @@ import org.hornetq.utils.SimpleString;
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  */
-public class ProducerTest  extends ServiceTestBase
+public class ProducerTest extends ServiceTestBase
 {
    private static final Logger log = Logger.getLogger(ConsumerTest.class);
 
@@ -65,9 +67,9 @@ public class ProducerTest  extends ServiceTestBase
       final CountDownLatch latch = new CountDownLatch(1);
       server.getRemotingService().addInterceptor(new Interceptor()
       {
-         public boolean intercept(Packet packet, RemotingConnection connection) throws HornetQException
+         public boolean intercept(final Packet packet, final RemotingConnection connection) throws HornetQException
          {
-            if(packet.getType() == PacketImpl.SESS_SEND)
+            if (packet.getType() == PacketImpl.SESS_SEND)
             {
                latch.countDown();
             }
@@ -82,7 +84,7 @@ public class ProducerTest  extends ServiceTestBase
       byte[] body = new byte[1000];
       message.getBodyBuffer().writeBytes(body);
       producer.send(message);
-      assertTrue(latch.await(5, TimeUnit.SECONDS));
+      Assert.assertTrue(latch.await(5, TimeUnit.SECONDS));
       session.close();
    }
 

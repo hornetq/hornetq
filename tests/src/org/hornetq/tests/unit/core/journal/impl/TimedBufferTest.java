@@ -18,6 +18,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.buffers.HornetQBuffer;
 import org.hornetq.core.buffers.HornetQBuffers;
 import org.hornetq.core.journal.IOAsyncTask;
@@ -40,7 +42,7 @@ public class TimedBufferTest extends UnitTestCase
    // Attributes ----------------------------------------------------
 
    // Static --------------------------------------------------------
-   
+
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
@@ -53,10 +55,6 @@ public class TimedBufferTest extends UnitTestCase
       }
 
       public void onError(final int errorCode, final String errorMessage)
-      {
-      }
-
-      public void waitCompletion() throws Exception
       {
       }
    };
@@ -97,9 +95,9 @@ public class TimedBufferTest extends UnitTestCase
          byte[] bytes = new byte[10];
          for (int j = 0; j < 10; j++)
          {
-            bytes[j] = getSamplebyte(x++);
+            bytes[j] = UnitTestCase.getSamplebyte(x++);
          }
-         
+
          HornetQBuffer buff = HornetQBuffers.wrappedBuffer(bytes);
 
          timedBuffer.checkSize(10);
@@ -107,20 +105,20 @@ public class TimedBufferTest extends UnitTestCase
       }
 
       timedBuffer.checkSize(1);
-      
-      assertEquals(1, flushTimes.get());
-      
+
+      Assert.assertEquals(1, flushTimes.get());
+
       ByteBuffer flushedBuffer = buffers.get(0);
 
-      assertEquals(100, flushedBuffer.limit());
+      Assert.assertEquals(100, flushedBuffer.limit());
 
-      assertEquals(100, flushedBuffer.capacity());
+      Assert.assertEquals(100, flushedBuffer.capacity());
 
       flushedBuffer.rewind();
 
       for (int i = 0; i < 100; i++)
       {
-         assertEquals(getSamplebyte(i), flushedBuffer.get());
+         Assert.assertEquals(UnitTestCase.getSamplebyte(i), flushedBuffer.get());
       }
 
    }

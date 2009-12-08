@@ -17,18 +17,19 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+
+import junit.framework.Assert;
 
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.paging.PageTransactionInfo;
 import org.hornetq.core.paging.PagingManager;
 import org.hornetq.core.paging.PagingStore;
-import org.hornetq.core.persistence.QueueBindingInfo;
 import org.hornetq.core.persistence.GroupingInfo;
+import org.hornetq.core.persistence.QueueBindingInfo;
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.postoffice.impl.DuplicateIDCacheImpl;
@@ -62,16 +63,17 @@ public class DuplicateDetectionUnitTest extends ServiceTestBase
    // Constructors --------------------------------------------------
 
    ExecutorService executor;
-   
+
    ExecutorFactory factory;
-   
+
    @Override
    protected void tearDown() throws Exception
    {
       super.tearDown();
       executor.shutdown();
    }
-   
+
+   @Override
    protected void setUp() throws Exception
    {
       super.setUp();
@@ -115,7 +117,7 @@ public class DuplicateDetectionUnitTest extends ServiceTestBase
                                     new HashMap<Long, Queue>(),
                                     mapDups);
 
-         assertEquals(0, mapDups.size());
+         Assert.assertEquals(0, mapDups.size());
 
          DuplicateIDCacheImpl cacheID = new DuplicateIDCacheImpl(ADDRESS, 10, journal, true);
 
@@ -136,11 +138,11 @@ public class DuplicateDetectionUnitTest extends ServiceTestBase
                                     new HashMap<Long, Queue>(),
                                     mapDups);
 
-         assertEquals(1, mapDups.size());
+         Assert.assertEquals(1, mapDups.size());
 
          List<Pair<byte[], Long>> values = mapDups.get(ADDRESS);
 
-         assertEquals(10, values.size());
+         Assert.assertEquals(10, values.size());
 
          cacheID = new DuplicateIDCacheImpl(ADDRESS, 10, journal, true);
          cacheID.load(values);
@@ -164,11 +166,11 @@ public class DuplicateDetectionUnitTest extends ServiceTestBase
                                     new HashMap<Long, Queue>(),
                                     mapDups);
 
-         assertEquals(1, mapDups.size());
+         Assert.assertEquals(1, mapDups.size());
 
          values = mapDups.get(ADDRESS);
 
-         assertEquals(10, values.size());
+         Assert.assertEquals(10, values.size());
       }
       finally
       {

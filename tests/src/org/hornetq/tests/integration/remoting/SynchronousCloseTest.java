@@ -13,6 +13,8 @@
 
 package org.hornetq.tests.integration.remoting;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.client.ClientSessionFactory;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
@@ -68,7 +70,7 @@ public class SynchronousCloseTest extends ServiceTestBase
    protected void tearDown() throws Exception
    {
       server.stop();
-      
+
       server = null;
 
       super.tearDown();
@@ -100,7 +102,7 @@ public class SynchronousCloseTest extends ServiceTestBase
     */
    public void testSynchronousClose() throws Exception
    {
-      assertEquals(0, server.getHornetQServerControl().listRemoteAddresses().length);
+      Assert.assertEquals(0, server.getHornetQServerControl().listRemoteAddresses().length);
 
       ClientSessionFactory sf = createSessionFactory();
 

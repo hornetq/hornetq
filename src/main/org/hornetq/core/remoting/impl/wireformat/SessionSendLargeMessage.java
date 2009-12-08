@@ -14,7 +14,6 @@
 package org.hornetq.core.remoting.impl.wireformat;
 
 import org.hornetq.core.buffers.HornetQBuffer;
-import org.hornetq.utils.DataConstants;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -38,14 +37,14 @@ public class SessionSendLargeMessage extends PacketImpl
 
    public SessionSendLargeMessage(final byte[] largeMessageHeader)
    {
-      super(SESS_SEND_LARGE);
+      super(PacketImpl.SESS_SEND_LARGE);
 
       this.largeMessageHeader = largeMessageHeader;
    }
 
    public SessionSendLargeMessage()
    {
-      super(SESS_SEND_LARGE);
+      super(PacketImpl.SESS_SEND_LARGE);
    }
 
    // Public --------------------------------------------------------

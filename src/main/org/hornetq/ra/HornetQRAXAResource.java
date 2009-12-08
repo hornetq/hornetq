@@ -32,7 +32,7 @@ public class HornetQRAXAResource implements XAResource
    private static final Logger log = Logger.getLogger(HornetQRAXAResource.class);
 
    /** Trace enabled */
-   private static boolean trace = log.isTraceEnabled();
+   private static boolean trace = HornetQRAXAResource.log.isTraceEnabled();
 
    /** The managed connection */
    private final HornetQRAManagedConnection managedConnection;
@@ -47,9 +47,9 @@ public class HornetQRAXAResource implements XAResource
     */
    public HornetQRAXAResource(final HornetQRAManagedConnection managedConnection, final XAResource xaResource)
    {
-      if (trace)
+      if (HornetQRAXAResource.trace)
       {
-         log.trace("constructor(" + managedConnection + ", " + xaResource + ")");
+         HornetQRAXAResource.log.trace("constructor(" + managedConnection + ", " + xaResource + ")");
       }
 
       this.managedConnection = managedConnection;
@@ -64,9 +64,9 @@ public class HornetQRAXAResource implements XAResource
     */
    public void start(final Xid xid, final int flags) throws XAException
    {
-      if (trace)
+      if (HornetQRAXAResource.trace)
       {
-         log.trace("start(" + xid + ", " + flags + ")");
+         HornetQRAXAResource.log.trace("start(" + xid + ", " + flags + ")");
       }
 
       managedConnection.lock();
@@ -88,9 +88,9 @@ public class HornetQRAXAResource implements XAResource
     */
    public void end(final Xid xid, final int flags) throws XAException
    {
-      if (trace)
+      if (HornetQRAXAResource.trace)
       {
-         log.trace("end(" + xid + ", " + flags + ")");
+         HornetQRAXAResource.log.trace("end(" + xid + ", " + flags + ")");
       }
 
       managedConnection.lock();
@@ -112,9 +112,9 @@ public class HornetQRAXAResource implements XAResource
     */
    public int prepare(final Xid xid) throws XAException
    {
-      if (trace)
+      if (HornetQRAXAResource.trace)
       {
-         log.trace("prepare(" + xid + ")");
+         HornetQRAXAResource.log.trace("prepare(" + xid + ")");
       }
 
       return xaResource.prepare(xid);
@@ -128,9 +128,9 @@ public class HornetQRAXAResource implements XAResource
     */
    public void commit(final Xid xid, final boolean onePhase) throws XAException
    {
-      if (trace)
+      if (HornetQRAXAResource.trace)
       {
-         log.trace("commit(" + xid + ", " + onePhase + ")");
+         HornetQRAXAResource.log.trace("commit(" + xid + ", " + onePhase + ")");
       }
 
       xaResource.commit(xid, onePhase);
@@ -143,9 +143,9 @@ public class HornetQRAXAResource implements XAResource
     */
    public void rollback(final Xid xid) throws XAException
    {
-      if (trace)
+      if (HornetQRAXAResource.trace)
       {
-         log.trace("rollback(" + xid + ")");
+         HornetQRAXAResource.log.trace("rollback(" + xid + ")");
       }
 
       xaResource.rollback(xid);
@@ -158,9 +158,9 @@ public class HornetQRAXAResource implements XAResource
     */
    public void forget(final Xid xid) throws XAException
    {
-      if (trace)
+      if (HornetQRAXAResource.trace)
       {
-         log.trace("forget(" + xid + ")");
+         HornetQRAXAResource.log.trace("forget(" + xid + ")");
       }
 
       managedConnection.lock();
@@ -182,9 +182,9 @@ public class HornetQRAXAResource implements XAResource
     */
    public boolean isSameRM(final XAResource xaRes) throws XAException
    {
-      if (trace)
+      if (HornetQRAXAResource.trace)
       {
-         log.trace("isSameRM(" + xaRes + ")");
+         HornetQRAXAResource.log.trace("isSameRM(" + xaRes + ")");
       }
 
       return xaResource.isSameRM(xaRes);
@@ -198,9 +198,9 @@ public class HornetQRAXAResource implements XAResource
     */
    public Xid[] recover(final int flag) throws XAException
    {
-      if (trace)
+      if (HornetQRAXAResource.trace)
       {
-         log.trace("recover(" + flag + ")");
+         HornetQRAXAResource.log.trace("recover(" + flag + ")");
       }
 
       return xaResource.recover(flag);
@@ -213,9 +213,9 @@ public class HornetQRAXAResource implements XAResource
     */
    public int getTransactionTimeout() throws XAException
    {
-      if (trace)
+      if (HornetQRAXAResource.trace)
       {
-         log.trace("getTransactionTimeout()");
+         HornetQRAXAResource.log.trace("getTransactionTimeout()");
       }
 
       return xaResource.getTransactionTimeout();
@@ -229,9 +229,9 @@ public class HornetQRAXAResource implements XAResource
     */
    public boolean setTransactionTimeout(final int seconds) throws XAException
    {
-      if (trace)
+      if (HornetQRAXAResource.trace)
       {
-         log.trace("setTransactionTimeout(" + seconds + ")");
+         HornetQRAXAResource.log.trace("setTransactionTimeout(" + seconds + ")");
       }
 
       return xaResource.setTransactionTimeout(seconds);

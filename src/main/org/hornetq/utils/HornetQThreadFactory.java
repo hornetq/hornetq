@@ -29,20 +29,20 @@ public class HornetQThreadFactory implements ThreadFactory
    private final AtomicInteger threadCount = new AtomicInteger(0);
 
    private final int threadPriority;
-   
+
    private final boolean daemon;
-   
+
    public HornetQThreadFactory(final String groupName, final boolean daemon)
    {
       this(groupName, Thread.NORM_PRIORITY, daemon);
    }
 
-   public HornetQThreadFactory(String groupName, int threadPriority, final boolean daemon)
+   public HornetQThreadFactory(final String groupName, final int threadPriority, final boolean daemon)
    {
-      this.group = new ThreadGroup(groupName + "-" + System.identityHashCode(this));
-            
+      group = new ThreadGroup(groupName + "-" + System.identityHashCode(this));
+
       this.threadPriority = threadPriority;
-      
+
       this.daemon = daemon;
    }
 
@@ -50,12 +50,12 @@ public class HornetQThreadFactory implements ThreadFactory
    {
       Thread t = null;
       // attach the thread to a group only if there is no security manager:
-      // when sandboxed, the code does not have the RuntimePermission modifyThreadGroup 
+      // when sandboxed, the code does not have the RuntimePermission modifyThreadGroup
       if (System.getSecurityManager() == null)
       {
-         t = new Thread(group, command, "Thread-" + threadCount.getAndIncrement() +
-                        " (group:" + group.getName() + ")");
-      } else
+         t = new Thread(group, command, "Thread-" + threadCount.getAndIncrement() + " (group:" + group.getName() + ")");
+      }
+      else
       {
          t = new Thread(command, "Thread-" + threadCount.getAndIncrement());
       }

@@ -42,7 +42,7 @@ public class MessageReferenceImpl implements MessageReference
    private final Queue queue;
 
    // Static --------------------------------------------------------
-   
+
    private static final int memoryOffset;
 
    static
@@ -51,7 +51,7 @@ public class MessageReferenceImpl implements MessageReference
       // Note, it is only an estimate, it's not possible to be entirely sure with Java
       // This figure is calculated using the test utilities in org.hornetq.tests.unit.util.sizeof
       // The value is somewhat higher on 64 bit architectures, probably due to different alignment
-      
+
       if (MemorySize.is64bitArch())
       {
          memoryOffset = 48;
@@ -67,10 +67,10 @@ public class MessageReferenceImpl implements MessageReference
    public MessageReferenceImpl()
    {
       queue = null;
-      
+
       message = null;
    }
-   
+
    public MessageReferenceImpl(final MessageReferenceImpl other, final Queue queue)
    {
       deliveryCount = other.deliveryCount;
@@ -97,7 +97,7 @@ public class MessageReferenceImpl implements MessageReference
 
    public static int getMemoryEstimate()
    {
-      return memoryOffset;
+      return MessageReferenceImpl.memoryOffset;
    }
 
    public int getDeliveryCount()

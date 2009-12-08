@@ -13,8 +13,7 @@
 
 package org.hornetq.integration.transports.netty;
 
-import static org.hornetq.utils.DataConstants.SIZE_INT;
-
+import org.hornetq.utils.DataConstants;
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.buffer.DynamicChannelBuffer;
@@ -40,83 +39,93 @@ public class HornetQFrameDecoder2 extends SimpleChannelUpstreamHandler
    // -------------------------------------------------------------------------------------
 
    @Override
-   public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) throws Exception
+   public void messageReceived(final ChannelHandlerContext ctx, final MessageEvent e) throws Exception
    {
-      ChannelBuffer in = (ChannelBuffer) e.getMessage();
+      ChannelBuffer in = (ChannelBuffer)e.getMessage();
       if (previousData.readable())
       {
-         if (previousData.readableBytes() + in.readableBytes() < SIZE_INT) {
+         if (previousData.readableBytes() + in.readableBytes() < DataConstants.SIZE_INT)
+         {
             // XXX Length is unknown. Bet at 512. Tune this value.
-            append(in, 512); 
+            append(in, 512);
             return;
          }
-         
-         // Decode the first message.  The first message requires a special
+
+         // Decode the first message. The first message requires a special
          // treatment because it is the only message that spans over the two
          // buffers.
          final int length;
-         switch (previousData.readableBytes()) {
+         switch (previousData.readableBytes())
+         {
             case 1:
-               length = (previousData.getUnsignedByte(previousData.readerIndex()) << 24) |
-                        in.getMedium(in.readerIndex());
-               if (in.readableBytes() - 3 < length) {
+               length = previousData.getUnsignedByte(previousData.readerIndex()) << 24 | in.getMedium(in.readerIndex());
+               if (in.readableBytes() - 3 < length)
+               {
                   append(in, length);
                   return;
                }
                break;
             case 2:
-               length = (previousData.getUnsignedShort(previousData.readerIndex()) << 16) |
-                        in.getUnsignedShort(in.readerIndex());
-               if (in.readableBytes() - 2 < length) {
+               length = previousData.getUnsignedShort(previousData.readerIndex()) << 16 | in.getUnsignedShort(in.readerIndex());
+               if (in.readableBytes() - 2 < length)
+               {
                   append(in, length);
                   return;
                }
                break;
             case 3:
-               length = (previousData.getUnsignedMedium(previousData.readerIndex()) << 8) |
-                        in.getUnsignedByte(in.readerIndex());
-               if (in.readableBytes() - 1 < length) {
+               length = previousData.getUnsignedMedium(previousData.readerIndex()) << 8 | in.getUnsignedByte(in.readerIndex());
+               if (in.readableBytes() - 1 < length)
+               {
                   append(in, length);
                   return;
                }
                break;
             case 4:
                length = previousData.getInt(previousData.readerIndex());
-               if (in.readableBytes() < length) {
+               if (in.readableBytes() < length)
+               {
                   append(in, length);
                   return;
                }
                break;
             default:
                length = previousData.getInt(previousData.readerIndex());
-               if (in.readableBytes() + previousData.readableBytes() - 4 < length) {
+               if (in.readableBytes() + previousData.readableBytes() - 4 < length)
+               {
                   append(in, length);
                   return;
                }
          }
-         
+
          final ChannelBuffer frame;
-         if (previousData instanceof DynamicChannelBuffer) {
+         if (previousData instanceof DynamicChannelBuffer)
+         {
             // It's safe to reuse the current dynamic buffer
             // because previousData will be reassigned to
             // EMPTY_BUFFER or 'in' later.
             previousData.writeBytes(in, length + 4 - previousData.readableBytes());
             frame = previousData;
-         } else {
+         }
+         else
+         {
             // XXX Tune this value: Increasing the initial capacity of the
-            //     dynamic buffer might reduce the chance of additional memory
-            //     copy.
+            // dynamic buffer might reduce the chance of additional memory
+            // copy.
             frame = ChannelBuffers.dynamicBuffer(length + 4);
             frame.writeBytes(previousData, previousData.readerIndex(), previousData.readableBytes());
             frame.writeBytes(in, length + 4 - frame.writerIndex());
          }
 
          frame.skipBytes(4);
-         if (!in.readable()) {
+         if (!in.readable())
+         {
             previousData = ChannelBuffers.EMPTY_BUFFER;
             Channels.fireMessageReceived(ctx, frame);
             return;
-         } else {
+         }
+         else
+         {
             Channels.fireMessageReceived(ctx, frame);
          }
       }
@@ -125,7 +134,7 @@ public class HornetQFrameDecoder2 extends SimpleChannelUpstreamHandler
       // composite buffer anymore because the second or later messages
       // always belong to the second buffer.
       decode(ctx, in);
-      
+
       // Handle the leftover.
       if (in.readable())
       {
@@ -136,31 +145,34 @@ public class HornetQFrameDecoder2 extends SimpleChannelUpstreamHandler
          previousData = ChannelBuffers.EMPTY_BUFFER;
       }
    }
-   
-   private void decode(ChannelHandlerContext ctx, ChannelBuffer in)
+
+   private void decode(final ChannelHandlerContext ctx, final ChannelBuffer in)
    {
-      for (;;) {
+      for (;;)
+      {
          final int readableBytes = in.readableBytes();
-         if (readableBytes < SIZE_INT) {
+         if (readableBytes < DataConstants.SIZE_INT)
+         {
             break;
          }
-         
+
          final int length = in.getInt(in.readerIndex());
-         if (readableBytes < length + SIZE_INT) {
+         if (readableBytes < length + DataConstants.SIZE_INT)
+         {
             break;
          }
-         
+
          // Convert to dynamic buffer (this requires copy)
          // XXX Tune this value: Increasing the initial capacity of the dynamic
-         //     buffer might reduce the chance of additional memory copy.
-         ChannelBuffer frame = ChannelBuffers.dynamicBuffer(length + SIZE_INT);
-         frame.writeBytes(in, length + SIZE_INT);
-         frame.skipBytes(SIZE_INT);
+         // buffer might reduce the chance of additional memory copy.
+         ChannelBuffer frame = ChannelBuffers.dynamicBuffer(length + DataConstants.SIZE_INT);
+         frame.writeBytes(in, length + DataConstants.SIZE_INT);
+         frame.skipBytes(DataConstants.SIZE_INT);
          Channels.fireMessageReceived(ctx, frame);
       }
    }
-   
-   private void append(ChannelBuffer in, int length)
+
+   private void append(final ChannelBuffer in, final int length)
    {
       // Need more data to decode the first message. This can happen when
       // a client is very slow. (e.g.sending each byte one by one)
@@ -171,9 +183,8 @@ public class HornetQFrameDecoder2 extends SimpleChannelUpstreamHandler
       }
       else
       {
-         ChannelBuffer newPreviousData =
-              ChannelBuffers.dynamicBuffer(
-                    Math.max(previousData.readableBytes() + in.readableBytes(), length + 4));
+         ChannelBuffer newPreviousData = ChannelBuffers.dynamicBuffer(Math.max(previousData.readableBytes() + in.readableBytes(),
+                                                                               length + 4));
          newPreviousData.writeBytes(previousData);
          newPreviousData.writeBytes(in);
          previousData = newPreviousData;

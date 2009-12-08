@@ -32,13 +32,11 @@ public interface JMSManagementService
 
    void unregisterJMSServer() throws Exception;
 
-   void registerQueue(HornetQQueue queue,
-                      String jndiBinding) throws Exception;
+   void registerQueue(HornetQQueue queue, String jndiBinding) throws Exception;
 
    void unregisterQueue(String name) throws Exception;
 
-   void registerTopic(HornetQTopic topic,
-                      String jndiBinding) throws Exception;
+   void registerTopic(HornetQTopic topic, String jndiBinding) throws Exception;
 
    void unregisterTopic(String name) throws Exception;
 

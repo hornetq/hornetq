@@ -11,7 +11,6 @@
  * permissions and limitations under the License.
  */
 
-
 package org.hornetq.jms;
 
 import java.io.BufferedReader;
@@ -90,7 +89,7 @@ public class HornetQAdmin implements Admin
       requestor.close();
    }
 
-   public void createConnectionFactory(String name)
+   public void createConnectionFactory(final String name)
    {
       try
       {
@@ -99,7 +98,7 @@ public class HornetQAdmin implements Admin
                              name,
                              NettyConnectorFactory.class.getName(),
                              new HashMap<String, Object>(),
-                             new String[] {name});
+                             new String[] { name });
       }
       catch (Exception e)
       {
@@ -113,7 +112,7 @@ public class HornetQAdmin implements Admin
       return context;
    }
 
-   public void createQueue(String name)
+   public void createQueue(final String name)
    {
       Boolean result;
       try
@@ -127,12 +126,12 @@ public class HornetQAdmin implements Admin
       }
    }
 
-   public void createQueueConnectionFactory(String name)
+   public void createQueueConnectionFactory(final String name)
    {
       createConnectionFactory(name);
    }
 
-   public void createTopic(String name)
+   public void createTopic(final String name)
    {
       Boolean result;
       try
@@ -146,12 +145,12 @@ public class HornetQAdmin implements Admin
       }
    }
 
-   public void createTopicConnectionFactory(String name)
+   public void createTopicConnectionFactory(final String name)
    {
       createConnectionFactory(name);
    }
 
-   public void deleteConnectionFactory(String name)
+   public void deleteConnectionFactory(final String name)
    {
       try
       {
@@ -163,7 +162,7 @@ public class HornetQAdmin implements Admin
       }
    }
 
-   public void deleteQueue(String name)
+   public void deleteQueue(final String name)
    {
       Boolean result;
       try
@@ -177,12 +176,12 @@ public class HornetQAdmin implements Admin
       }
    }
 
-   public void deleteQueueConnectionFactory(String name)
+   public void deleteQueueConnectionFactory(final String name)
    {
       deleteConnectionFactory(name);
    }
 
-   public void deleteTopic(String name)
+   public void deleteTopic(final String name)
    {
       Boolean result;
       try
@@ -196,7 +195,7 @@ public class HornetQAdmin implements Admin
       }
    }
 
-   public void deleteTopicConnectionFactory(String name)
+   public void deleteTopicConnectionFactory(final String name)
    {
       deleteConnectionFactory(name);
    }
@@ -208,10 +207,10 @@ public class HornetQAdmin implements Admin
 
    public void startServer() throws Exception
    {
-      String[] vmArgs = new String[] {"-Dorg.hornetq.logger-delegate-factory-class-name=org.hornetq.jms.SysoutLoggerDelegateFactory"};
+      String[] vmArgs = new String[] { "-Dorg.hornetq.logger-delegate-factory-class-name=org.hornetq.jms.SysoutLoggerDelegateFactory" };
       serverProcess = SpawnedVMSupport.spawnVM(SpawnedJMSServer.class.getName(), vmArgs, false);
       InputStreamReader isr = new InputStreamReader(serverProcess.getInputStream());
-     
+
       final BufferedReader br = new BufferedReader(isr);
       String line = null;
       while ((line = br.readLine()) != null)
@@ -222,6 +221,7 @@ public class HornetQAdmin implements Admin
          {
             new Thread()
             {
+               @Override
                public void run()
                {
                   try
@@ -277,8 +277,7 @@ public class HornetQAdmin implements Admin
 
    // Private -------------------------------------------------------
 
-   private Object invokeSyncOperation(String resourceName, String operationName, Object... parameters)
-      throws Exception
+   private Object invokeSyncOperation(final String resourceName, final String operationName, final Object... parameters) throws Exception
    {
       ClientMessage message = clientSession.createClientMessage(false);
       ManagementHelper.putOperationInvocation(message, resourceName, operationName, parameters);
@@ -302,7 +301,6 @@ public class HornetQAdmin implements Admin
                                          resourceName +
                                          ": " +
                                          ManagementHelper.getResult(reply));
-
       }
       return ManagementHelper.getResult(reply);
    }

@@ -22,11 +22,13 @@ package org.hornetq.tests.integration.client;
  */
 public class NettyPersistentMessageBufferTest extends InVMNonPersistentMessageBufferTest
 {
+   @Override
    public boolean isPersistent()
    {
       return true;
    }
-   
+
+   @Override
    public boolean isNetty()
    {
       return true;

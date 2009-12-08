@@ -16,6 +16,8 @@ package org.hornetq.tests.unit.core.deployers.impl;
 import java.util.HashSet;
 import java.util.Set;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.deployers.DeploymentManager;
 import org.hornetq.core.deployers.impl.SecurityDeployer;
 import org.hornetq.core.security.Role;
@@ -32,27 +34,24 @@ public class SecurityDeployerTest extends UnitTestCase
 {
    private SecurityDeployer deployer;
 
-   private String conf = "<security-setting match=\"jms.topic.testTopic\">\n" +
-                         "      <permission type=\"createDurableQueue\" roles=\"durpublisher\"/>\n" +
-                         "      <permission type=\"deleteDurableQueue\" roles=\"durpublisher\"/>\n" +
-                         "      <permission type=\"consume\" roles=\"guest,publisher,durpublisher\"/>\n" +
-                         "      <permission type=\"send\" roles=\"guest,publisher,durpublisher\"/>\n" +
-                         "      <permission type=\"manage\" roles=\"guest,publisher,durpublisher\"/>\n" +
-                         "   </security-setting>";
+   private final String conf = "<security-setting match=\"jms.topic.testTopic\">\n" + "      <permission type=\"createDurableQueue\" roles=\"durpublisher\"/>\n"
+                               + "      <permission type=\"deleteDurableQueue\" roles=\"durpublisher\"/>\n"
+                               + "      <permission type=\"consume\" roles=\"guest,publisher,durpublisher\"/>\n"
+                               + "      <permission type=\"send\" roles=\"guest,publisher,durpublisher\"/>\n"
+                               + "      <permission type=\"manage\" roles=\"guest,publisher,durpublisher\"/>\n"
+                               + "   </security-setting>";
 
-   private String conf2 = "<security-setting match=\"jms.topic.testQueue\">\n" +
-                          "      <permission type=\"createTempQueue\" roles=\"durpublisher\"/>\n" +
-                          "      <permission type=\"deleteTempQueue\" roles=\"durpublisher\"/>\n" +
-                          "      <permission type=\"consume\" roles=\"guest,publisher,durpublisher\"/>\n" +
-                          "      <permission type=\"send\" roles=\"guest,publisher,durpublisher\"/>\n" +
-                          "   </security-setting>";
+   private final String conf2 = "<security-setting match=\"jms.topic.testQueue\">\n" + "      <permission type=\"createTempQueue\" roles=\"durpublisher\"/>\n"
+                                + "      <permission type=\"deleteTempQueue\" roles=\"durpublisher\"/>\n"
+                                + "      <permission type=\"consume\" roles=\"guest,publisher,durpublisher\"/>\n"
+                                + "      <permission type=\"send\" roles=\"guest,publisher,durpublisher\"/>\n"
+                                + "   </security-setting>";
 
-   private String noRoles =
-         "   <securityfoo match=\"queues.testQueue\">\n" +
-         "   </securityfoo>";
+   private final String noRoles = "   <securityfoo match=\"queues.testQueue\">\n" + "   </securityfoo>";
 
    private HierarchicalRepository<Set<Role>> repository;
 
+   @Override
    protected void setUp() throws Exception
    {
       super.setUp();
@@ -66,44 +65,44 @@ public class SecurityDeployerTest extends UnitTestCase
    {
       Element e = org.hornetq.utils.XMLUtil.stringToElement(conf);
       deployer.deploy(e);
-      HashSet<Role> roles = (HashSet<Role>) repository.getMatch("jms.topic.testTopic");
-      assertNotNull(roles);
-      assertEquals(3, roles.size());
+      HashSet<Role> roles = (HashSet<Role>)repository.getMatch("jms.topic.testTopic");
+      Assert.assertNotNull(roles);
+      Assert.assertEquals(3, roles.size());
       for (Role role : roles)
       {
          if (role.getName().equals("guest"))
          {
-            assertTrue(role.isConsume());
-            assertFalse(role.isCreateDurableQueue());
-            assertFalse(role.isCreateNonDurableQueue());
-            assertFalse(role.isDeleteDurableQueue());
-            assertFalse(role.isDeleteNonDurableQueue());
-            assertTrue(role.isManage());
-            assertTrue(role.isSend());
+            Assert.assertTrue(role.isConsume());
+            Assert.assertFalse(role.isCreateDurableQueue());
+            Assert.assertFalse(role.isCreateNonDurableQueue());
+            Assert.assertFalse(role.isDeleteDurableQueue());
+            Assert.assertFalse(role.isDeleteNonDurableQueue());
+            Assert.assertTrue(role.isManage());
+            Assert.assertTrue(role.isSend());
          }
          else if (role.getName().equals("publisher"))
          {
-            assertTrue(role.isConsume());
-            assertFalse(role.isCreateDurableQueue());
-            assertFalse(role.isCreateNonDurableQueue());
-            assertFalse(role.isDeleteDurableQueue());
-            assertFalse(role.isDeleteNonDurableQueue());
-            assertTrue(role.isManage());
-            assertTrue(role.isSend());
+            Assert.assertTrue(role.isConsume());
+            Assert.assertFalse(role.isCreateDurableQueue());
+            Assert.assertFalse(role.isCreateNonDurableQueue());
+            Assert.assertFalse(role.isDeleteDurableQueue());
+            Assert.assertFalse(role.isDeleteNonDurableQueue());
+            Assert.assertTrue(role.isManage());
+            Assert.assertTrue(role.isSend());
          }
          else if (role.getName().equals("durpublisher"))
          {
-            assertTrue(role.isConsume());
-            assertTrue(role.isCreateDurableQueue());
-            assertFalse(role.isCreateNonDurableQueue());
-            assertTrue(role.isDeleteDurableQueue());
-            assertFalse(role.isDeleteNonDurableQueue());
-            assertTrue(role.isManage());
-            assertTrue(role.isSend());
+            Assert.assertTrue(role.isConsume());
+            Assert.assertTrue(role.isCreateDurableQueue());
+            Assert.assertFalse(role.isCreateNonDurableQueue());
+            Assert.assertTrue(role.isDeleteDurableQueue());
+            Assert.assertFalse(role.isDeleteNonDurableQueue());
+            Assert.assertTrue(role.isManage());
+            Assert.assertTrue(role.isSend());
          }
          else
          {
-            fail("unexpected role");
+            Assert.fail("unexpected role");
          }
       }
    }
@@ -112,84 +111,84 @@ public class SecurityDeployerTest extends UnitTestCase
    {
       deployer.deploy(org.hornetq.utils.XMLUtil.stringToElement(conf));
       deployer.deploy(org.hornetq.utils.XMLUtil.stringToElement(conf2));
-      HashSet<Role> roles = (HashSet<Role>) repository.getMatch("jms.topic.testTopic");
-      assertNotNull(roles);
-      assertEquals(3, roles.size());
+      HashSet<Role> roles = (HashSet<Role>)repository.getMatch("jms.topic.testTopic");
+      Assert.assertNotNull(roles);
+      Assert.assertEquals(3, roles.size());
       for (Role role : roles)
       {
          if (role.getName().equals("guest"))
          {
-            assertTrue(role.isConsume());
-            assertFalse(role.isCreateDurableQueue());
-            assertFalse(role.isCreateNonDurableQueue());
-            assertFalse(role.isDeleteDurableQueue());
-            assertFalse(role.isDeleteNonDurableQueue());
-            assertTrue(role.isManage());
-            assertTrue(role.isSend());
+            Assert.assertTrue(role.isConsume());
+            Assert.assertFalse(role.isCreateDurableQueue());
+            Assert.assertFalse(role.isCreateNonDurableQueue());
+            Assert.assertFalse(role.isDeleteDurableQueue());
+            Assert.assertFalse(role.isDeleteNonDurableQueue());
+            Assert.assertTrue(role.isManage());
+            Assert.assertTrue(role.isSend());
          }
          else if (role.getName().equals("publisher"))
          {
-            assertTrue(role.isConsume());
-            assertFalse(role.isCreateDurableQueue());
-            assertFalse(role.isCreateNonDurableQueue());
-            assertFalse(role.isDeleteDurableQueue());
-            assertFalse(role.isDeleteNonDurableQueue());
-            assertTrue(role.isManage());
-            assertTrue(role.isSend());
+            Assert.assertTrue(role.isConsume());
+            Assert.assertFalse(role.isCreateDurableQueue());
+            Assert.assertFalse(role.isCreateNonDurableQueue());
+            Assert.assertFalse(role.isDeleteDurableQueue());
+            Assert.assertFalse(role.isDeleteNonDurableQueue());
+            Assert.assertTrue(role.isManage());
+            Assert.assertTrue(role.isSend());
          }
          else if (role.getName().equals("durpublisher"))
          {
-            assertTrue(role.isConsume());
-            assertTrue(role.isCreateDurableQueue());
-            assertFalse(role.isCreateNonDurableQueue());
-            assertTrue(role.isDeleteDurableQueue());
-            assertFalse(role.isDeleteNonDurableQueue());
-            assertTrue(role.isManage());
-            assertTrue(role.isSend());
+            Assert.assertTrue(role.isConsume());
+            Assert.assertTrue(role.isCreateDurableQueue());
+            Assert.assertFalse(role.isCreateNonDurableQueue());
+            Assert.assertTrue(role.isDeleteDurableQueue());
+            Assert.assertFalse(role.isDeleteNonDurableQueue());
+            Assert.assertTrue(role.isManage());
+            Assert.assertTrue(role.isSend());
          }
          else
          {
-            fail("unexpected role");
+            Assert.fail("unexpected role");
          }
       }
-      roles = (HashSet<Role>) repository.getMatch("jms.topic.testQueue");
-      assertNotNull(roles);
-      assertEquals(3, roles.size());
+      roles = (HashSet<Role>)repository.getMatch("jms.topic.testQueue");
+      Assert.assertNotNull(roles);
+      Assert.assertEquals(3, roles.size());
       for (Role role : roles)
       {
          if (role.getName().equals("guest"))
          {
-            assertTrue(role.isConsume());
-            assertFalse(role.isCreateDurableQueue());
-            assertFalse(role.isCreateNonDurableQueue());
-            assertFalse(role.isDeleteDurableQueue());
-            assertFalse(role.isDeleteNonDurableQueue());
-            assertFalse(role.isManage());
-            assertTrue(role.isSend());
+            Assert.assertTrue(role.isConsume());
+            Assert.assertFalse(role.isCreateDurableQueue());
+            Assert.assertFalse(role.isCreateNonDurableQueue());
+            Assert.assertFalse(role.isDeleteDurableQueue());
+            Assert.assertFalse(role.isDeleteNonDurableQueue());
+            Assert.assertFalse(role.isManage());
+            Assert.assertTrue(role.isSend());
          }
          else if (role.getName().equals("publisher"))
          {
-            assertTrue(role.isConsume());
-            assertFalse(role.isCreateDurableQueue());
-            assertFalse(role.isCreateNonDurableQueue());
-            assertFalse(role.isDeleteDurableQueue());
-            assertFalse(role.isDeleteNonDurableQueue());
-            assertFalse(role.isManage());
-            assertTrue(role.isSend());
+            Assert.assertTrue(role.isConsume());
+            Assert.assertFalse(role.isCreateDurableQueue());
+            Assert.assertFalse(role.isCreateNonDurableQueue());
+            Assert.assertFalse(role.isDeleteDurableQueue());
+            Assert.assertFalse(role.isDeleteNonDurableQueue());
+            Assert.assertFalse(role.isManage());
+            Assert.assertTrue(role.isSend());
          }
          else if (role.getName().equals("durpublisher"))
          {
-            assertTrue(role.isConsume());
-            assertFalse(role.isCreateDurableQueue());
-            assertTrue(role.isCreateNonDurableQueue());
-            assertFalse(role.isDeleteDurableQueue());
-            assertTrue(role.isDeleteNonDurableQueue());
-            assertFalse(role.isManage());
-            assertTrue(role.isSend());
+            Assert.assertTrue(role.isConsume());
+            Assert.assertFalse(role.isCreateDurableQueue());
+            Assert.assertTrue(role.isCreateNonDurableQueue());
+            Assert.assertFalse(role.isDeleteDurableQueue());
+            Assert.assertTrue(role.isDeleteNonDurableQueue());
+            Assert.assertFalse(role.isManage());
+            Assert.assertTrue(role.isSend());
          }
          else
          {
-            fail("unexpected role");
+            Assert.fail("unexpected role");
          }
       }
    }
@@ -197,32 +196,31 @@ public class SecurityDeployerTest extends UnitTestCase
    public void testNoRolesAdded() throws Exception
    {
       deployer.deploy(org.hornetq.utils.XMLUtil.stringToElement(noRoles));
-      HashSet<Role> roles = (HashSet<Role>) repository.getMatch("jms.topic.testQueue");
-      assertNull(roles);
+      HashSet<Role> roles = (HashSet<Role>)repository.getMatch("jms.topic.testQueue");
+      Assert.assertNull(roles);
    }
-   
+
    public void testDeployFromConfigurationFile() throws Exception
    {
-      String xml = "<configuration xmlns='urn:hornetq'> " 
-                 + "<security-settings>"
-                 + "   <security-setting match=\"jms.topic.testTopic\">"
-                 + "      <permission type=\"createDurableQueue\" roles=\"durpublisher\"/>"
-                 + "      <permission type=\"deleteDurableQueue\" roles=\"durpublisher\"/>"
-                 + "      <permission type=\"consume\" roles=\"guest,publisher,durpublisher\"/>"
-                 + "      <permission type=\"send\" roles=\"guest,publisher,durpublisher\"/>"
-                 + "      <permission type=\"manage\" roles=\"guest,publisher,durpublisher\"/>"
-                 + "   </security-setting>"
-                 + "</security-settings>"
-                 + "</configuration>";
-      
+      String xml = "<configuration xmlns='urn:hornetq'> " + "<security-settings>"
+                   + "   <security-setting match=\"jms.topic.testTopic\">"
+                   + "      <permission type=\"createDurableQueue\" roles=\"durpublisher\"/>"
+                   + "      <permission type=\"deleteDurableQueue\" roles=\"durpublisher\"/>"
+                   + "      <permission type=\"consume\" roles=\"guest,publisher,durpublisher\"/>"
+                   + "      <permission type=\"send\" roles=\"guest,publisher,durpublisher\"/>"
+                   + "      <permission type=\"manage\" roles=\"guest,publisher,durpublisher\"/>"
+                   + "   </security-setting>"
+                   + "</security-settings>"
+                   + "</configuration>";
+
       Element rootNode = org.hornetq.utils.XMLUtil.stringToElement(xml);
       deployer.validate(rootNode);
       NodeList securityNodes = rootNode.getElementsByTagName("security-setting");
-      assertEquals(1, securityNodes.getLength());
+      Assert.assertEquals(1, securityNodes.getLength());
 
       deployer.deploy(securityNodes.item(0));
-      HashSet<Role> roles = (HashSet<Role>) repository.getMatch("jms.topic.testTopic");
-      assertNotNull(roles);
-      assertEquals(3, roles.size());
+      HashSet<Role> roles = (HashSet<Role>)repository.getMatch("jms.topic.testTopic");
+      Assert.assertNotNull(roles);
+      Assert.assertEquals(3, roles.size());
    }
 }

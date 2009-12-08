@@ -84,9 +84,9 @@ public class QueueImpl implements Queue
 
    private final PostOffice postOffice;
 
-   private final PriorityLinkedList<MessageReference> messageReferences = new PriorityLinkedListImpl<MessageReference>(NUM_PRIORITIES);
+   private final PriorityLinkedList<MessageReference> messageReferences = new PriorityLinkedListImpl<MessageReference>(QueueImpl.NUM_PRIORITIES);
 
-   private List<MessageHandler> handlers = new ArrayList<MessageHandler>();
+   private final List<MessageHandler> handlers = new ArrayList<MessageHandler>();
 
    private final ConcurrentSet<MessageReference> expiringMessageReferences = new ConcurrentHashSet<MessageReference>();
 
@@ -111,7 +111,7 @@ public class QueueImpl implements Queue
    private final HierarchicalRepository<AddressSettings> addressSettingsRepository;
 
    private final ScheduledExecutorService scheduledExecutor;
-   
+
    private final SimpleString address;
 
    private Redistributor redistributor;
@@ -129,7 +129,7 @@ public class QueueImpl implements Queue
    private volatile SimpleString expiryAddress;
 
    private int pos;
-   
+
    private final boolean dontAdd;
 
    public QueueImpl(final long id,
@@ -175,8 +175,8 @@ public class QueueImpl implements Queue
       {
          expiryAddress = null;
       }
-      
-      this.dontAdd = System.getProperty("org.hornetq.opt.dontadd") != null;
+
+      dontAdd = System.getProperty("org.hornetq.opt.dontadd") != null;
    }
 
    // Bindable implementation -------------------------------------------------------------------------------------
@@ -229,7 +229,7 @@ public class QueueImpl implements Queue
    }
 
    public void addLast(final MessageReference ref)
-   {     
+   {
       add(ref, false);
    }
 
@@ -275,7 +275,7 @@ public class QueueImpl implements Queue
 
    public synchronized boolean removeConsumer(final Consumer consumer) throws Exception
    {
-      boolean removed = this.removeHandlerGivenConsumer(consumer);
+      boolean removed = removeHandlerGivenConsumer(consumer);
 
       if (handlers.isEmpty())
       {
@@ -585,7 +585,7 @@ public class QueueImpl implements Queue
    }
 
    public synchronized void cancel(final MessageReference reference) throws Exception
-   {      
+   {
       if (checkDLQ(reference))
       {
          if (!scheduledDeliveryHandler.checkAndSchedule(reference))
@@ -605,7 +605,7 @@ public class QueueImpl implements Queue
       {
          acknowledge(ref);
       }
-      
+
       storageManager.completeOperations();
    }
 
@@ -632,18 +632,18 @@ public class QueueImpl implements Queue
    public int deleteMatchingReferences(final Filter filter) throws Exception
    {
       int count = 0;
-      
-      synchronized(this)
+
+      synchronized (this)
       {
-   
+
          Transaction tx = new TransactionImpl(storageManager);
-   
+
          Iterator<MessageReference> iter = messageReferences.iterator();
-   
+
          while (iter.hasNext())
          {
             MessageReference ref = iter.next();
-   
+
             if (filter == null || filter.match(ref.getMessage()))
             {
                deliveringCount.incrementAndGet();
@@ -652,7 +652,7 @@ public class QueueImpl implements Queue
                count++;
             }
          }
-   
+
          List<MessageReference> cancelled = scheduledDeliveryHandler.cancel();
          for (MessageReference messageReference : cancelled)
          {
@@ -663,7 +663,7 @@ public class QueueImpl implements Queue
                count++;
             }
          }
-   
+
          tx.commit();
       }
 
@@ -903,7 +903,11 @@ public class QueueImpl implements Queue
       // create the redistributor only once if there are no local consumers
       if (consumerSet.isEmpty() && redistributor == null)
       {
-         redistributor = new Redistributor(this, storageManager, postOffice, executor, REDISTRIBUTOR_BATCH_SIZE);
+         redistributor = new Redistributor(this,
+                                           storageManager,
+                                           postOffice,
+                                           executor,
+                                           QueueImpl.REDISTRIBUTOR_BATCH_SIZE);
 
          handlers.add(new NullFilterMessageHandler(redistributor));
 
@@ -997,7 +1001,8 @@ public class QueueImpl implements Queue
 
          if (bindingList.getBindings().isEmpty())
          {
-            log.warn("Message has expired. No bindings for Expiry Address " + expiryAddress + " so dropping it");
+            QueueImpl.log.warn("Message has expired. No bindings for Expiry Address " + expiryAddress +
+                               " so dropping it");
          }
          else
          {
@@ -1006,7 +1011,7 @@ public class QueueImpl implements Queue
       }
       else
       {
-         log.warn("Message has expired. No expiry queue configured for queue " + name + " so dropping it");
+         QueueImpl.log.warn("Message has expired. No expiry queue configured for queue " + name + " so dropping it");
 
          acknowledge(tx, ref);
       }
@@ -1022,22 +1027,22 @@ public class QueueImpl implements Queue
 
          if (bindingList.getBindings().isEmpty())
          {
-            log.warn("Message has exceeded max delivery attempts. No bindings for Dead Letter Address " + deadLetterAddress +
-                     " so dropping it");
+            QueueImpl.log.warn("Message has exceeded max delivery attempts. No bindings for Dead Letter Address " + deadLetterAddress +
+                               " so dropping it");
          }
          else
          {
 
-            log.warn("Message has reached maximum delivery attempts, sending it to Dead Letter Address " + deadLetterAddress +
-                     " from " +
-                     name);
+            QueueImpl.log.warn("Message has reached maximum delivery attempts, sending it to Dead Letter Address " + deadLetterAddress +
+                               " from " +
+                               name);
             move(deadLetterAddress, ref, false);
          }
       }
       else
       {
-         log.warn("Message has exceeded max delivery attempts. No Dead Letter Address configured for queue " + name +
-                  " so dropping it");
+         QueueImpl.log.warn("Message has exceeded max delivery attempts. No Dead Letter Address configured for queue " + name +
+                            " so dropping it");
 
          acknowledge(ref);
       }
@@ -1084,7 +1089,7 @@ public class QueueImpl implements Queue
          }
          catch (Exception e)
          {
-            log.error("Failed to expire ref", e);
+            QueueImpl.log.error("Failed to expire ref", e);
          }
 
          return true;
@@ -1099,7 +1104,7 @@ public class QueueImpl implements Queue
     * Attempt to deliver all the messages in the queue
     */
    private synchronized void deliver()
-   {     
+   {
       if (paused || handlers.isEmpty())
       {
          return;
@@ -1203,7 +1208,7 @@ public class QueueImpl implements Queue
    }
 
    private synchronized boolean directDeliver(final MessageReference reference)
-   {          
+   {
       if (paused || handlers.isEmpty())
       {
          return false;
@@ -1217,7 +1222,7 @@ public class QueueImpl implements Queue
          MessageHandler handler = getHandlerRoundRobin();
 
          Consumer consumer = handler.getConsumer();
-         
+
          if (!checkExpired(reference))
          {
             SimpleString groupID = reference.getMessage().getSimpleStringProperty(MessageImpl.HDR_GROUP_ID);
@@ -1248,8 +1253,6 @@ public class QueueImpl implements Queue
 
                   if (groupID != null)
                   {
-                     // If the group has been assigned a consumer there is no point in trying others
-
                      return false;
                   }
                }
@@ -1279,12 +1282,12 @@ public class QueueImpl implements Queue
    }
 
    protected synchronized void add(final MessageReference ref, final boolean first)
-   {     
+   {
       if (dontAdd)
       {
          return;
       }
-      
+
       if (!first)
       {
          messagesAdded.incrementAndGet();
@@ -1298,13 +1301,13 @@ public class QueueImpl implements Queue
       boolean add = false;
 
       if (direct && !paused)
-      {         
+      {
          // Deliver directly
 
          boolean delivered = directDeliver(ref);
 
          if (!delivered)
-         {          
+         {
             add = true;
 
             direct = false;
@@ -1350,8 +1353,9 @@ public class QueueImpl implements Queue
       }
       catch (Throwable t)
       {
-         log.warn("removing consumer which did not handle a message, consumer=" + consumer + ", message=" + reference,
-                  t);
+         QueueImpl.log.warn("removing consumer which did not handle a message, consumer=" + consumer +
+                            ", message=" +
+                            reference, t);
 
          // If the consumer throws an exception we remove the consumer
          try
@@ -1360,7 +1364,7 @@ public class QueueImpl implements Queue
          }
          catch (Exception e)
          {
-            log.error("Failed to remove consumer", e);
+            QueueImpl.log.error("Failed to remove consumer", e);
          }
          return HandleStatus.BUSY;
       }
@@ -1411,7 +1415,7 @@ public class QueueImpl implements Queue
             }
             catch (Exception e)
             {
-               log.warn("Unable to remove message id = " + message.getMessageID() + " please remove manually");
+               QueueImpl.log.warn("Unable to remove message id = " + message.getMessageID() + " please remove manually");
             }
          }
       }
@@ -1480,20 +1484,20 @@ public class QueueImpl implements Queue
                if (ref.getQueue().checkDLQ(ref))
                {
                   LinkedList<MessageReference> toCancel = queueMap.get(ref.getQueue());
-   
+
                   if (toCancel == null)
                   {
                      toCancel = new LinkedList<MessageReference>();
-   
+
                      queueMap.put((QueueImpl)ref.getQueue(), toCancel);
                   }
-   
+
                   toCancel.addFirst(ref);
                }
             }
             catch (Exception e)
             {
-               log.warn("Error on checkDLQ", e);
+               QueueImpl.log.warn("Error on checkDLQ", e);
             }
          }
 

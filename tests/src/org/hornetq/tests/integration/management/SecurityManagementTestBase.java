@@ -13,7 +13,7 @@
 
 package org.hornetq.tests.integration.management;
 
-import static org.hornetq.core.config.impl.ConfigurationImpl.DEFAULT_MANAGEMENT_ADDRESS;
+import junit.framework.Assert;
 
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientRequestor;
@@ -22,6 +22,7 @@ import org.hornetq.core.client.ClientSessionFactory;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.client.management.impl.ManagementHelper;
 import org.hornetq.core.config.TransportConfiguration;
+import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.management.ResourceNames;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.server.HornetQServer;
@@ -56,7 +57,7 @@ public abstract class SecurityManagementTestBase extends UnitTestCase
    protected void setUp() throws Exception
    {
       super.setUp();
-      
+
       service = setupAndStartHornetQServer();
    }
 
@@ -64,18 +65,19 @@ public abstract class SecurityManagementTestBase extends UnitTestCase
    protected void tearDown() throws Exception
    {
       service.stop();
-      
+
       service = null;
 
       super.tearDown();
    }
 
    protected abstract HornetQServer setupAndStartHornetQServer() throws Exception;
-   
-   protected void doSendManagementMessage(String user, String password, boolean expectSuccess) throws Exception
+
+   protected void doSendManagementMessage(final String user, final String password, final boolean expectSuccess) throws Exception
    {
       ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
-      try {
+      try
+      {
          ClientSession session = null;
          if (user == null)
          {
@@ -85,30 +87,31 @@ public abstract class SecurityManagementTestBase extends UnitTestCase
          {
             session = sf.createSession(user, password, false, true, true, false, 1);
          }
-      
-         session.start();         
 
-         ClientRequestor requestor = new ClientRequestor(session, DEFAULT_MANAGEMENT_ADDRESS);
+         session.start();
+
+         ClientRequestor requestor = new ClientRequestor(session, ConfigurationImpl.DEFAULT_MANAGEMENT_ADDRESS);
 
          ClientMessage mngmntMessage = session.createClientMessage(false);
          ManagementHelper.putAttribute(mngmntMessage, ResourceNames.CORE_SERVER, "started");
          ClientMessage reply = requestor.request(mngmntMessage, 500);
          if (expectSuccess)
          {
-            assertNotNull(reply);            
-            assertTrue((Boolean)ManagementHelper.getResult(reply));
+            Assert.assertNotNull(reply);
+            Assert.assertTrue((Boolean)ManagementHelper.getResult(reply));
          }
          else
          {
-            assertNull(reply);
+            Assert.assertNull(reply);
          }
 
          requestor.close();
-      } catch (Exception e)
+      }
+      catch (Exception e)
       {
          if (expectSuccess)
          {
-            fail("got unexpected exception " + e.getClass() + ": " + e.getMessage());
+            Assert.fail("got unexpected exception " + e.getClass() + ": " + e.getMessage());
             e.printStackTrace();
          }
       }

@@ -23,7 +23,7 @@ import javax.jms.TopicSession;
 import javax.jms.TopicSubscriber;
 
 import org.hornetq.jms.tests.HornetQServerTestCase;
-
+import org.hornetq.jms.tests.util.ProxyAssertSupport;
 
 /**
  * 
@@ -38,21 +38,22 @@ import org.hornetq.jms.tests.HornetQServerTestCase;
 public class ObjectMessageDeliveryTest extends HornetQServerTestCase
 {
    // Constants -----------------------------------------------------
-   
+
    // Static --------------------------------------------------------
-   
+
    // Attributes ----------------------------------------------------
 
    // Constructors --------------------------------------------------
-   
+
    // Public --------------------------------------------------------
-   
+
    static class TestObject implements Serializable
    {
-		private static final long serialVersionUID = -340663970717491155L;
-		String text;
+      private static final long serialVersionUID = -340663970717491155L;
+
+      String text;
    }
-   
+
    /**
     * 
     */
@@ -63,58 +64,59 @@ public class ObjectMessageDeliveryTest extends HornetQServerTestCase
       try
       {
          TopicSession s = conn.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
-         TopicPublisher publisher = s.createPublisher(topic1);
-         TopicSubscriber sub = s.createSubscriber(topic1);
+         TopicPublisher publisher = s.createPublisher(HornetQServerTestCase.topic1);
+         TopicSubscriber sub = s.createSubscriber(HornetQServerTestCase.topic1);
          conn.start();
-                  
-         //Create 3 object messages with different bodies
-         
+
+         // Create 3 object messages with different bodies
+
          TestObject to1 = new TestObject();
          to1.text = "hello1";
-         
+
          TestObject to2 = new TestObject();
          to1.text = "hello2";
-         
+
          TestObject to3 = new TestObject();
          to1.text = "hello3";
-         
+
          ObjectMessage om1 = s.createObjectMessage();
          om1.setObject(to1);
-         
+
          ObjectMessage om2 = s.createObjectMessage();
          om2.setObject(to2);
-         
+
          ObjectMessage om3 = s.createObjectMessage();
          om3.setObject(to3);
-         
-         //send to topic
+
+         // send to topic
          publisher.send(om1);
-         
+
          publisher.send(om2);
-         
+
          publisher.send(om3);
-         
-         ObjectMessage rm1 = (ObjectMessage)sub.receive(MAX_TIMEOUT);
-         
-         ObjectMessage rm2 = (ObjectMessage)sub.receive(MAX_TIMEOUT);
-         
-         ObjectMessage rm3 = (ObjectMessage)sub.receive(MAX_TIMEOUT);
-         
-         assertNotNull(rm1);
-         
+
+         ObjectMessage rm1 = (ObjectMessage)sub.receive(HornetQServerTestCase.MAX_TIMEOUT);
+
+         ObjectMessage rm2 = (ObjectMessage)sub.receive(HornetQServerTestCase.MAX_TIMEOUT);
+
+         ObjectMessage rm3 = (ObjectMessage)sub.receive(HornetQServerTestCase.MAX_TIMEOUT);
+
+         ProxyAssertSupport.assertNotNull(rm1);
+
          TestObject ro1 = (TestObject)rm1.getObject();
-         
-         assertEquals(to1.text, ro1.text);assertNotNull(rm1);
-         
+
+         ProxyAssertSupport.assertEquals(to1.text, ro1.text);
+         ProxyAssertSupport.assertNotNull(rm1);
+
          TestObject ro2 = (TestObject)rm2.getObject();
-         
-         assertEquals(to2.text, ro2.text);
-         
-         assertNotNull(rm2);
-         
+
+         ProxyAssertSupport.assertEquals(to2.text, ro2.text);
+
+         ProxyAssertSupport.assertNotNull(rm2);
+
          TestObject ro3 = (TestObject)rm3.getObject();
-         
-         assertEquals(to3.text, ro3.text);
+
+         ProxyAssertSupport.assertEquals(to3.text, ro3.text);
       }
       finally
       {
@@ -126,13 +128,11 @@ public class ObjectMessageDeliveryTest extends HornetQServerTestCase
    }
 
    // Package protected ---------------------------------------------
-   
+
    // Protected -----------------------------------------------------
-   
+
    // Private -------------------------------------------------------
-   
+
    // Inner classes -------------------------------------------------
-   
+
 }
-
-

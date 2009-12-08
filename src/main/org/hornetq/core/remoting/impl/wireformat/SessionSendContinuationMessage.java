@@ -14,8 +14,6 @@
 package org.hornetq.core.remoting.impl.wireformat;
 
 import org.hornetq.core.buffers.HornetQBuffer;
-import org.hornetq.utils.DataConstants;
-
 
 /**
  * A SessionSendContinuationMessage
@@ -41,7 +39,7 @@ public class SessionSendContinuationMessage extends SessionContinuationMessage
 
    public SessionSendContinuationMessage()
    {
-      super(SESS_SEND_CONTINUATION);
+      super(PacketImpl.SESS_SEND_CONTINUATION);
    }
 
    /**
@@ -49,17 +47,14 @@ public class SessionSendContinuationMessage extends SessionContinuationMessage
     * @param continues
     * @param requiresResponse
     */
-   public SessionSendContinuationMessage(final byte[] body,                                         
-                                         final boolean continues,
-                                         final boolean requiresResponse)
+   public SessionSendContinuationMessage(final byte[] body, final boolean continues, final boolean requiresResponse)
    {
-      super(SESS_SEND_CONTINUATION, body, continues);
+      super(PacketImpl.SESS_SEND_CONTINUATION, body, continues);
       this.requiresResponse = requiresResponse;
    }
 
-
    // Public --------------------------------------------------------
-   
+
    /**
     * @return the requiresResponse
     */
@@ -81,7 +76,6 @@ public class SessionSendContinuationMessage extends SessionContinuationMessage
       super.decodeRest(buffer);
       requiresResponse = buffer.readBoolean();
    }
-
 
    // Package protected ---------------------------------------------
 

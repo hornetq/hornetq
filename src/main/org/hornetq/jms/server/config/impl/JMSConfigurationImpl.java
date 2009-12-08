@@ -40,7 +40,7 @@ public class JMSConfigurationImpl implements JMSConfiguration
    private final List<TopicConfiguration> topicConfigurations = new ArrayList<TopicConfiguration>();
 
    private Context context = null;
-   
+
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
@@ -83,12 +83,12 @@ public class JMSConfigurationImpl implements JMSConfiguration
    {
       return context;
    }
-   
-   public void setContext(Context context)
+
+   public void setContext(final Context context)
    {
       this.context = context;
    }
-   
+
    // Public --------------------------------------------------------
 
    // Package protected ---------------------------------------------

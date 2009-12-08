@@ -30,11 +30,11 @@ import org.hornetq.core.transaction.Transaction;
 public class RoutingContextImpl implements RoutingContext
 {
    private final List<Queue> nonDurableQueues = new ArrayList<Queue>(1);
-   
+
    private final List<Queue> durableQueues = new ArrayList<Queue>(1);
 
    private Transaction transaction;
-   
+
    private int queueCount;
 
    public RoutingContextImpl(final Transaction transaction)
@@ -45,28 +45,28 @@ public class RoutingContextImpl implements RoutingContext
    public void clear()
    {
       transaction = null;
-      
+
       nonDurableQueues.clear();
-      
+
       durableQueues.clear();
-      
+
       queueCount = 0;
    }
-   
+
    public void addQueue(final Queue queue)
    {
       if (queue.isDurable())
       {
-         durableQueues.add(queue);  
+         durableQueues.add(queue);
       }
       else
       {
          nonDurableQueues.add(queue);
       }
-      
+
       queueCount++;
    }
-   
+
    public void addDurableQueue(final Queue queue)
    {
       durableQueues.add(queue);
@@ -86,16 +86,15 @@ public class RoutingContextImpl implements RoutingContext
    {
       return nonDurableQueues;
    }
-   
+
    public List<Queue> getDurableQueues()
    {
       return durableQueues;
    }
-   
+
    public int getQueueCount()
    {
       return queueCount;
    }
-
 
 }

@@ -30,7 +30,7 @@ public abstract class SessionContinuationMessage extends PacketImpl
 
    // Constants -----------------------------------------------------
 
-   public static final int SESSION_CONTINUATION_BASE_SIZE = PACKET_HEADERS_SIZE + DataConstants.SIZE_INT +
+   public static final int SESSION_CONTINUATION_BASE_SIZE = PacketImpl.PACKET_HEADERS_SIZE + DataConstants.SIZE_INT +
                                                             DataConstants.SIZE_BOOLEAN;
 
    // Attributes ----------------------------------------------------
@@ -43,14 +43,14 @@ public abstract class SessionContinuationMessage extends PacketImpl
 
    // Constructors --------------------------------------------------
 
-   public SessionContinuationMessage(byte type, final byte[] body, final boolean continues)
+   public SessionContinuationMessage(final byte type, final byte[] body, final boolean continues)
    {
       super(type);
       this.body = body;
       this.continues = continues;
    }
 
-   public SessionContinuationMessage(byte type)
+   public SessionContinuationMessage(final byte type)
    {
       super(type);
    }

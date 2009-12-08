@@ -42,7 +42,7 @@ public class Redistributor implements Consumer
    private static final Logger log = Logger.getLogger(Redistributor.class);
 
    private boolean active;
-   
+
    private final StorageManager storageManager;
 
    private final PostOffice postOffice;
@@ -54,7 +54,7 @@ public class Redistributor implements Consumer
    private final Queue queue;
 
    private int count;
-   
+
    public Redistributor(final Queue queue,
                         final StorageManager storageManager,
                         final PostOffice postOffice,
@@ -62,39 +62,39 @@ public class Redistributor implements Consumer
                         final int batchSize)
    {
       this.queue = queue;
-      
+
       this.storageManager = storageManager;
-     
+
       this.postOffice = postOffice;
 
       this.executor = executor;
 
       this.batchSize = batchSize;
    }
-   
+
    public Filter getFilter()
    {
       return null;
    }
-   
+
    public synchronized void start()
    {
       active = true;
    }
-   
+
    public synchronized void stop() throws Exception
    {
       active = false;
-            
+
       Future future = new Future();
-      
+
       executor.execute(future);
-      
+
       boolean ok = future.await(10000);
-      
+
       if (!ok)
       {
-         log.warn("Timed out waiting for tasks to complete");
+         Redistributor.log.warn("Timed out waiting for tasks to complete");
       }
    }
 
@@ -113,22 +113,22 @@ public class Redistributor implements Consumer
 
       active = false;
    }
-   
+
    public synchronized HandleStatus handle(final MessageReference reference) throws Exception
    {
       if (!active)
       {
          return HandleStatus.BUSY;
       }
-      
+
       final Transaction tx = new TransactionImpl(storageManager);
 
       boolean routed = postOffice.redistribute(reference.getMessage(), queue, tx);
 
       if (routed)
-      {    
+      {
          doRedistribute(reference, tx);
-         
+
          return HandleStatus.HANDLED;
       }
       else
@@ -136,7 +136,7 @@ public class Redistributor implements Consumer
          return HandleStatus.BUSY;
       }
    }
-   
+
    private void doRedistribute(final MessageReference reference, final Transaction tx) throws Exception
    {
       reference.handled();
@@ -147,37 +147,38 @@ public class Redistributor implements Consumer
 
       storageManager.afterCompleteOperations(new IOAsyncTask()
       {
-         
-         public void onError(int errorCode, String errorMessage)
+
+         public void onError(final int errorCode, final String errorMessage)
          {
-            log.warn("IO Error during redistribution, errorCode = " + errorCode + " message = " + errorMessage);
+            Redistributor.log.warn("IO Error during redistribution, errorCode = " + errorCode +
+                                   " message = " +
+                                   errorMessage);
          }
-         
+
          public void done()
          {
             execPrompter();
          }
       });
-      
+
       storageManager.completeOperations();
    }
-   
+
    private void execPrompter()
    {
       count++;
-      
+
       if (count == batchSize)
       {
          // We continue the next batch on a different thread, so as not to keep the delivery thread busy for a very
          // long time in the case there are many messages in the queue
          active = false;
 
-         
          executor.execute(new Prompter());
 
          count = 0;
       }
-      
+
    }
 
    private class Prompter implements Runnable

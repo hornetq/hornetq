@@ -11,7 +11,6 @@
  * permissions and limitations under the License.
  */
 
-
 package org.hornetq.jms;
 
 import java.io.Serializable;
@@ -25,7 +24,6 @@ import org.hornetq.jms.referenceable.DestinationObjectFactory;
 import org.hornetq.jms.referenceable.SerializableObjectRefAddr;
 import org.hornetq.utils.SimpleString;
 
-
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -38,69 +36,74 @@ public abstract class HornetQDestination implements Destination, Serializable, R
    // Constants -----------------------------------------------------
 
    // Static --------------------------------------------------------
-      
-	protected static String escape(final String input)
+
+   /**
+    * 
+    */
+   private static final long serialVersionUID = 5027962425462382883L;
+
+   protected static String escape(final String input)
    {
-	   if (input == null)
-	   {
-	      return "";
-	   }
+      if (input == null)
+      {
+         return "";
+      }
       return input.replace("\\", "\\\\").replace(".", "\\.");
    }
-	
-	public static HornetQDestination fromAddress(final String address)
-	{
-		if (address.startsWith(HornetQQueue.JMS_QUEUE_ADDRESS_PREFIX))
-		{
-			String name = address.substring(HornetQQueue.JMS_QUEUE_ADDRESS_PREFIX.length());
-			
-			return new HornetQQueue(address, name);
-		}
-		else if (address.startsWith(HornetQTopic.JMS_TOPIC_ADDRESS_PREFIX))
-		{
-			String name = address.substring(HornetQTopic.JMS_TOPIC_ADDRESS_PREFIX.length());
-			
-			return new HornetQTopic(address, name);
-		}
-		else if (address.startsWith(HornetQTemporaryQueue.JMS_TEMP_QUEUE_ADDRESS_PREFIX))
-		{
-			String name = address.substring(HornetQTemporaryQueue.JMS_TEMP_QUEUE_ADDRESS_PREFIX.length());
-			
-			return new HornetQTemporaryQueue(null, name);
-		}
-		else if (address.startsWith(HornetQTemporaryTopic.JMS_TEMP_TOPIC_ADDRESS_PREFIX))
-		{
-			String name = address.substring(HornetQTemporaryTopic.JMS_TEMP_TOPIC_ADDRESS_PREFIX.length());
-			
-			return new HornetQTemporaryTopic(null, name);
-		}
-		else
-		{
-			throw new IllegalArgumentException("Invalid address " + address);
-		}
-	}
-      
+
+   public static HornetQDestination fromAddress(final String address)
+   {
+      if (address.startsWith(HornetQQueue.JMS_QUEUE_ADDRESS_PREFIX))
+      {
+         String name = address.substring(HornetQQueue.JMS_QUEUE_ADDRESS_PREFIX.length());
+
+         return new HornetQQueue(address, name);
+      }
+      else if (address.startsWith(HornetQTopic.JMS_TOPIC_ADDRESS_PREFIX))
+      {
+         String name = address.substring(HornetQTopic.JMS_TOPIC_ADDRESS_PREFIX.length());
+
+         return new HornetQTopic(address, name);
+      }
+      else if (address.startsWith(HornetQTemporaryQueue.JMS_TEMP_QUEUE_ADDRESS_PREFIX))
+      {
+         String name = address.substring(HornetQTemporaryQueue.JMS_TEMP_QUEUE_ADDRESS_PREFIX.length());
+
+         return new HornetQTemporaryQueue(null, name);
+      }
+      else if (address.startsWith(HornetQTemporaryTopic.JMS_TEMP_TOPIC_ADDRESS_PREFIX))
+      {
+         String name = address.substring(HornetQTemporaryTopic.JMS_TEMP_TOPIC_ADDRESS_PREFIX.length());
+
+         return new HornetQTemporaryTopic(null, name);
+      }
+      else
+      {
+         throw new IllegalArgumentException("Invalid address " + address);
+      }
+   }
+
    // Attributes ----------------------------------------------------
 
    protected final String name;
-   
+
    private final String address;
-   
+
    private final SimpleString simpleAddress;
-         
+
    // Constructors --------------------------------------------------
 
    public HornetQDestination(final String address, final String name)
    {
       this.address = address;
-      
+
       this.name = name;
-      
-      this.simpleAddress = new SimpleString(address);
+
+      simpleAddress = new SimpleString(address);
    }
-   
+
    // Referenceable implementation ---------------------------------------
-   
+
    public Reference getReference() throws NamingException
    {
       return new Reference(this.getClass().getCanonicalName(),
@@ -110,51 +113,53 @@ public abstract class HornetQDestination implements Destination, Serializable, R
    }
 
    // Public --------------------------------------------------------
-   
+
    public String getAddress()
    {
       return address;
    }
-   
+
    public SimpleString getSimpleAddress()
    {
-   	return simpleAddress;
+      return simpleAddress;
    }
-   
+
    public String getName()
    {
       return name;
    }
-   
+
    public abstract boolean isTemporary();
 
-   public boolean equals(Object o)
+   @Override
+   public boolean equals(final Object o)
    {
       if (this == o)
       {
          return true;
       }
-      
+
       if (!(o instanceof HornetQDestination))
       {
          return false;
       }
-      
+
       HornetQDestination that = (HornetQDestination)o;
-      
-      return this.address.equals(that.address);      
+
+      return address.equals(that.address);
    }
 
+   @Override
    public int hashCode()
    {
-      return address.hashCode();      
+      return address.hashCode();
    }
-   
+
    // Package protected ---------------------------------------------
-   
+
    // Protected -----------------------------------------------------
-   
+
    // Private -------------------------------------------------------
-   
-   // Inner classes -------------------------------------------------   
+
+   // Inner classes -------------------------------------------------
 }

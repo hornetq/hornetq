@@ -74,11 +74,11 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
    private final InetAddress groupAddress;
 
    private final int groupPort;
-   
-   private Map<String, UniqueIDEntry> uniqueIDMap = new HashMap<String, UniqueIDEntry>();
+
+   private final Map<String, UniqueIDEntry> uniqueIDMap = new HashMap<String, UniqueIDEntry>();
 
    private NotificationService notificationService;
-   
+
    public DiscoveryGroupImpl(final String nodeID,
                              final String name,
                              final InetAddress groupAddress,
@@ -112,7 +112,7 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
 
       socket.joinGroup(groupAddress);
 
-      socket.setSoTimeout(SOCKET_TIMEOUT);
+      socket.setSoTimeout(DiscoveryGroupImpl.SOCKET_TIMEOUT);
 
       started = true;
 
@@ -121,13 +121,13 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
       thread.setDaemon(true);
 
       thread.start();
-      
+
       if (notificationService != null)
       {
          TypedProperties props = new TypedProperties();
          props.putSimpleStringProperty(new SimpleString("name"), new SimpleString(name));
          Notification notification = new Notification(nodeID, NotificationType.DISCOVERY_GROUP_STARTED, props);
-         notificationService.sendNotification(notification );
+         notificationService.sendNotification(notification);
       }
    }
 
@@ -156,19 +156,19 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
       socket = null;
 
       thread = null;
-      
+
       if (notificationService != null)
       {
          TypedProperties props = new TypedProperties();
          props.putSimpleStringProperty(new SimpleString("name"), new SimpleString(name));
-         Notification notification = new Notification(nodeID, NotificationType.DISCOVERY_GROUP_STOPPED, props );
+         Notification notification = new Notification(nodeID, NotificationType.DISCOVERY_GROUP_STOPPED, props);
          try
          {
-            notificationService.sendNotification(notification );
+            notificationService.sendNotification(notification);
          }
          catch (Exception e)
          {
-            log.warn("unable to send notification when discovery group is stopped", e);
+            DiscoveryGroupImpl.log.warn("unable to send notification when discovery group is stopped", e);
          }
       }
    }
@@ -220,39 +220,39 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
          return ret;
       }
    }
-   
+
    private static class UniqueIDEntry
    {
       String uniqueID;
-      
+
       boolean changed;
-      
+
       UniqueIDEntry(final String uniqueID)
       {
          this.uniqueID = uniqueID;
       }
-      
+
       boolean isChanged()
       {
          return changed;
       }
-      
+
       void setChanged()
       {
          changed = true;
       }
-      
+
       String getUniqueID()
       {
          return uniqueID;
       }
-      
+
       void setUniqueID(final String uniqueID)
       {
          this.uniqueID = uniqueID;
-      }      
+      }
    }
-   
+
    /*
     * This is a sanity check to catch any cases where two different nodes are broadcasting the same node id either
     * due to misconfiguration or problems in failover
@@ -260,13 +260,13 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
    private boolean uniqueIDOK(final String originatingNodeID, final String uniqueID)
    {
       UniqueIDEntry entry = uniqueIDMap.get(originatingNodeID);
-      
+
       if (entry == null)
       {
          entry = new UniqueIDEntry(uniqueID);
-         
+
          uniqueIDMap.put(originatingNodeID, entry);
-         
+
          return true;
       }
       else
@@ -277,14 +277,14 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
          }
          else
          {
-            //We allow one change - this might occur if one node fails over onto its backup which
-            //has same node id but different unique id
+            // We allow one change - this might occur if one node fails over onto its backup which
+            // has same node id but different unique id
             if (!entry.isChanged())
             {
                entry.setChanged();
-               
+
                entry.setUniqueID(uniqueID);
-               
+
                return true;
             }
             else
@@ -294,7 +294,6 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
          }
       }
    }
-   
 
    public void run()
    {
@@ -311,7 +310,7 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
             }
 
             final DatagramPacket packet = new DatagramPacket(data, data.length);
-                        
+
             try
             {
                socket.receive(packet);
@@ -331,13 +330,13 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
             HornetQBuffer buffer = HornetQBuffers.wrappedBuffer(data);
 
             String originatingNodeID = buffer.readString();
-            
+
             String uniqueID = buffer.readString();
-            
+
             if (!uniqueIDOK(originatingNodeID, uniqueID))
             {
-               log.warn("There seem to be more than one broadcasters on the network broadcasting the same node id");
-               
+               DiscoveryGroupImpl.log.warn("There seem to be more than one broadcasters on the network broadcasting the same node id");
+
                continue;
             }
 
@@ -346,7 +345,7 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
                // Ignore traffic from own node
                continue;
             }
-            
+
             int size = buffer.readInt();
 
             boolean changed = false;
@@ -386,7 +385,7 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
                long now = System.currentTimeMillis();
 
                Iterator<Map.Entry<String, DiscoveryEntry>> iter = connectors.entrySet().iterator();
-               
+
                // Weed out any expired connectors
 
                while (iter.hasNext())
@@ -394,7 +393,7 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
                   Map.Entry<String, DiscoveryEntry> entry = iter.next();
 
                   if (entry.getValue().getLastUpdate() + timeout <= now)
-                  {                
+                  {
                      iter.remove();
 
                      changed = true;
@@ -417,7 +416,7 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
       }
       catch (Exception e)
       {
-         log.error("Failed to receive datagram", e);
+         DiscoveryGroupImpl.log.error("Failed to receive datagram", e);
       }
    }
 
@@ -447,7 +446,7 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
          catch (Throwable t)
          {
             // Catch it so exception doesn't prevent other listeners from running
-            log.error("Failed to call discovery listener", t);
+            DiscoveryGroupImpl.log.error("Failed to call discovery listener", t);
          }
       }
    }

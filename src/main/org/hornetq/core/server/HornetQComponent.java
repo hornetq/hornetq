@@ -9,7 +9,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
  * implied.  See the License for the specific language governing
  * permissions and limitations under the License.
- */ 
+ */
 
 package org.hornetq.core.server;
 
@@ -25,8 +25,8 @@ package org.hornetq.core.server;
 public interface HornetQComponent
 {
    void start() throws Exception;
-   
+
    void stop() throws Exception;
-   
+
    boolean isStarted();
 }

@@ -35,8 +35,7 @@ public class SoakSender
 {
    private static final Logger log = Logger.getLogger(SoakSender.class.getName());
 
-
-   public static void main(String[] args)
+   public static void main(final String[] args)
    {
       for (int i = 0; i < args.length; i++)
       {
@@ -47,7 +46,7 @@ public class SoakSender
       {
          jndiURL = args[0];
       }
-      
+
       System.out.println("Connecting to JNDI at " + jndiURL);
       try
       {
@@ -91,7 +90,7 @@ public class SoakSender
 
    private final ExceptionListener exceptionListener = new ExceptionListener()
    {
-      public void onException(JMSException e)
+      public void onException(final JMSException e)
       {
          System.out.println("SoakReconnectableSender.exceptionListener.new ExceptionListener() {...}.onException()");
          disconnect();
@@ -110,8 +109,8 @@ public class SoakSender
    {
       connect();
 
-      boolean runInfinitely = (perfParams.getDurationInMinutes() == -1);
-      
+      boolean runInfinitely = perfParams.getDurationInMinutes() == -1;
+
       BytesMessage message = session.createBytesMessage();
 
       byte[] payload = SoakBase.randomByteArray(perfParams.getMessageSize());
@@ -148,18 +147,21 @@ public class SoakSender
 
             long totalDuration = System.currentTimeMillis() - start;
 
-            if (display && (count.longValue() % modulo == 0))
+            if (display && count.longValue() % modulo == 0)
             {
                double duration = (1.0 * System.currentTimeMillis() - moduleStart) / 1000;
                moduleStart = System.currentTimeMillis();
-               log.info(String.format("sent %s messages in %2.2fs (time: %.0fs)", modulo, duration, totalDuration / 1000.0));
+               SoakSender.log.info(String.format("sent %s messages in %2.2fs (time: %.0fs)",
+                                                 modulo,
+                                                 duration,
+                                                 totalDuration / 1000.0));
             }
 
             if (tbl != null)
             {
                tbl.limit();
             }
-            
+
             if (!runInfinitely && totalDuration > perfParams.getDurationInMinutes() * SoakBase.TO_MILLIS)
             {
                break;
@@ -170,11 +172,10 @@ public class SoakSender
             e.printStackTrace();
          }
       }
-      
-      log.info(String.format("Sent %s messages in %s minutes", count, perfParams.getDurationInMinutes()));
-      log.info("END OF RUN");
 
-      
+      SoakSender.log.info(String.format("Sent %s messages in %s minutes", count, perfParams.getDurationInMinutes()));
+      SoakSender.log.info("END OF RUN");
+
       if (connection != null)
       {
          connection.close();

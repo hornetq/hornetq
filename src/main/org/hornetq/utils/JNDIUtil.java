@@ -36,10 +36,10 @@ public class JNDIUtil
    /**
     * Create a context path recursively.
     */
-   public static Context createContext(Context c, String path) throws NamingException
+   public static Context createContext(final Context c, final String path) throws NamingException
    {
       Context crtContext = c;
-      for(StringTokenizer st = new StringTokenizer(path, "/"); st.hasMoreTokens(); )
+      for (StringTokenizer st = new StringTokenizer(path, "/"); st.hasMoreTokens();)
       {
          String tok = st.nextToken();
 
@@ -53,7 +53,7 @@ public class JNDIUtil
             crtContext = (Context)o;
             continue;
          }
-         catch(NameNotFoundException e)
+         catch (NameNotFoundException e)
          {
             // OK
          }
@@ -62,16 +62,16 @@ public class JNDIUtil
       return crtContext;
    }
 
-   public static void tearDownRecursively(Context c) throws Exception
+   public static void tearDownRecursively(final Context c) throws Exception
    {
-      for(NamingEnumeration ne = c.listBindings(""); ne.hasMore(); )
+      for (NamingEnumeration ne = c.listBindings(""); ne.hasMore();)
       {
          Binding b = (Binding)ne.next();
          String name = b.getName();
          Object object = b.getObject();
          if (object instanceof Context)
          {
-            tearDownRecursively((Context)object);
+            JNDIUtil.tearDownRecursively((Context)object);
          }
          c.unbind(name);
       }
@@ -83,7 +83,7 @@ public class JNDIUtil
     * NameNotFoundException is thrown. This method behaves similar to Context.rebind(), but creates
     * intermediate contexts, if necessary.
     */
-   public static void rebind(Context c, String jndiName, Object o) throws NamingException
+   public static void rebind(final Context c, final String jndiName, final Object o) throws NamingException
    {
       Context context = c;
       String name = jndiName;
@@ -91,17 +91,17 @@ public class JNDIUtil
       int idx = jndiName.lastIndexOf('/');
       if (idx != -1)
       {
-         context = createContext(c, jndiName.substring(0, idx));
+         context = JNDIUtil.createContext(c, jndiName.substring(0, idx));
          name = jndiName.substring(idx + 1);
       }
-      boolean failed=false;
+      boolean failed = false;
       try
       {
-         context.rebind(name,o);
+         context.rebind(name, o);
       }
       catch (Exception ignored)
       {
-         failed=true;
+         failed = true;
       }
       if (failed)
       {
@@ -110,16 +110,16 @@ public class JNDIUtil
    }
 
    // Attributes ----------------------------------------------------
-   
+
    // Constructors --------------------------------------------------
-   
+
    // Public --------------------------------------------------------
 
    // Package protected ---------------------------------------------
-   
+
    // Protected -----------------------------------------------------
-   
+
    // Private -------------------------------------------------------
-   
-   // Inner classes -------------------------------------------------   
+
+   // Inner classes -------------------------------------------------
 }

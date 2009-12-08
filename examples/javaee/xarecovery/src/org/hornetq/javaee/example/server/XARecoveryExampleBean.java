@@ -43,7 +43,7 @@ import javax.transaction.xa.Xid;
 public class XARecoveryExampleBean implements XARecoveryExampleService
 {
 
-   public void send(String text) throws Exception
+   public void send(final String text) throws Exception
    {
       InitialContext ic = null;
       XAConnection xaConnection = null;
@@ -118,7 +118,7 @@ public class XARecoveryExampleBean implements XARecoveryExampleService
    private static class FailingXAResource implements XAResource
    {
 
-      public void commit(Xid arg0, boolean arg1) throws XAException
+      public void commit(final Xid arg0, final boolean arg1) throws XAException
       {
          System.out.println("########################");
          System.out.println("# Crashing the server! #");
@@ -126,11 +126,11 @@ public class XARecoveryExampleBean implements XARecoveryExampleService
          Runtime.getRuntime().halt(1);
       }
 
-      public void end(Xid arg0, int arg1) throws XAException
+      public void end(final Xid arg0, final int arg1) throws XAException
       {
       }
 
-      public void forget(Xid arg0) throws XAException
+      public void forget(final Xid arg0) throws XAException
       {
       }
 
@@ -139,32 +139,32 @@ public class XARecoveryExampleBean implements XARecoveryExampleService
          return 0;
       }
 
-      public boolean isSameRM(XAResource arg0) throws XAException
+      public boolean isSameRM(final XAResource arg0) throws XAException
       {
          return false;
       }
 
-      public int prepare(Xid arg0) throws XAException
+      public int prepare(final Xid arg0) throws XAException
       {
 
          return XAResource.XA_OK;
       }
 
-      public Xid[] recover(int arg0) throws XAException
+      public Xid[] recover(final int arg0) throws XAException
       {
          return null;
       }
 
-      public void rollback(Xid arg0) throws XAException
+      public void rollback(final Xid arg0) throws XAException
       {
       }
 
-      public boolean setTransactionTimeout(int arg0) throws XAException
+      public boolean setTransactionTimeout(final int arg0) throws XAException
       {
          return false;
       }
 
-      public void start(Xid arg0, int arg1) throws XAException
+      public void start(final Xid arg0, final int arg1) throws XAException
       {
       }
 

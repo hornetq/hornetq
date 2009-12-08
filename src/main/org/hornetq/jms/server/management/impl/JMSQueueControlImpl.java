@@ -59,21 +59,20 @@ public class JMSQueueControlImpl extends StandardMBean implements JMSQueueContro
     */
    public static String createFilterFromJMSSelector(final String selectorStr) throws HornetQException
    {
-      return (selectorStr == null || selectorStr.trim().length() == 0) ? null
-                                                                      : SelectorTranslator.convertToHornetQFilterString(selectorStr);
+      return selectorStr == null || selectorStr.trim().length() == 0 ? null
+                                                                    : SelectorTranslator.convertToHornetQFilterString(selectorStr);
    }
 
-   private static String createFilterForJMSMessageID(String jmsMessageID) throws Exception
+   private static String createFilterForJMSMessageID(final String jmsMessageID) throws Exception
    {
       return HornetQMessage.HORNETQ_MESSAGE_ID + " = '" + jmsMessageID + "'";
    }
 
-   static String toJSON(Map<String, Object>[] messages)
+   static String toJSON(final Map<String, Object>[] messages)
    {
       JSONArray array = new JSONArray();
-      for (int i = 0; i < messages.length; i++)
+      for (Map<String, Object> message : messages)
       {
-         Map<String, Object> message = messages[i];
          array.put(new JSONObject(message));
       }
       return array.toString();
@@ -89,7 +88,7 @@ public class JMSQueueControlImpl extends StandardMBean implements JMSQueueContro
       super(JMSQueueControl.class);
       this.managedQueue = managedQueue;
       this.coreQueueControl = coreQueueControl;
-      this.binding = jndiBinding;
+      binding = jndiBinding;
       this.counter = counter;
    }
 
@@ -152,7 +151,7 @@ public class JMSQueueControlImpl extends StandardMBean implements JMSQueueContro
       return coreQueueControl.getDeadLetterAddress();
    }
 
-   public void setDeadLetterAddress(String deadLetterAddress) throws Exception
+   public void setDeadLetterAddress(final String deadLetterAddress) throws Exception
    {
       coreQueueControl.setDeadLetterAddress(deadLetterAddress);
    }
@@ -162,14 +161,14 @@ public class JMSQueueControlImpl extends StandardMBean implements JMSQueueContro
       return coreQueueControl.getExpiryAddress();
    }
 
-   public void setExpiryAddress(String expiryAddres) throws Exception
+   public void setExpiryAddress(final String expiryAddres) throws Exception
    {
       coreQueueControl.setExpiryAddress(expiryAddres);
    }
 
    public boolean removeMessage(final String messageID) throws Exception
    {
-      String filter = createFilterForJMSMessageID(messageID);
+      String filter = JMSQueueControlImpl.createFilterForJMSMessageID(messageID);
       int removed = coreQueueControl.removeMessages(filter);
       if (removed != 1)
       {
@@ -178,9 +177,9 @@ public class JMSQueueControlImpl extends StandardMBean implements JMSQueueContro
       return true;
    }
 
-   public int removeMessages(String filterStr) throws Exception
+   public int removeMessages(final String filterStr) throws Exception
    {
-      String filter = createFilterFromJMSSelector(filterStr);
+      String filter = JMSQueueControlImpl.createFilterFromJMSSelector(filterStr);
       return coreQueueControl.removeMessages(filter);
    }
 
@@ -188,7 +187,7 @@ public class JMSQueueControlImpl extends StandardMBean implements JMSQueueContro
    {
       try
       {
-         String filter = createFilterFromJMSSelector(filterStr);
+         String filter = JMSQueueControlImpl.createFilterFromJMSSelector(filterStr);
          Map<String, Object>[] coreMessages = coreQueueControl.listMessages(filter);
 
          Map<String, Object>[] jmsMessages = new Map[coreMessages.length];
@@ -208,20 +207,20 @@ public class JMSQueueControlImpl extends StandardMBean implements JMSQueueContro
       }
    }
 
-   public String listMessagesAsJSON(String filter) throws Exception
+   public String listMessagesAsJSON(final String filter) throws Exception
    {
-      return toJSON(listMessages(filter));
+      return JMSQueueControlImpl.toJSON(listMessages(filter));
    }
 
    public int countMessages(final String filterStr) throws Exception
    {
-      String filter = createFilterFromJMSSelector(filterStr);
+      String filter = JMSQueueControlImpl.createFilterFromJMSSelector(filterStr);
       return coreQueueControl.countMessages(filter);
    }
 
    public boolean expireMessage(final String messageID) throws Exception
    {
-      String filter = createFilterForJMSMessageID(messageID);
+      String filter = JMSQueueControlImpl.createFilterForJMSMessageID(messageID);
       int expired = coreQueueControl.expireMessages(filter);
       if (expired != 1)
       {
@@ -232,13 +231,13 @@ public class JMSQueueControlImpl extends StandardMBean implements JMSQueueContro
 
    public int expireMessages(final String filterStr) throws Exception
    {
-      String filter = createFilterFromJMSSelector(filterStr);
+      String filter = JMSQueueControlImpl.createFilterFromJMSSelector(filterStr);
       return coreQueueControl.expireMessages(filter);
    }
 
    public boolean sendMessageToDeadLetterAddress(final String messageID) throws Exception
    {
-      String filter = createFilterForJMSMessageID(messageID);
+      String filter = JMSQueueControlImpl.createFilterForJMSMessageID(messageID);
       int dead = coreQueueControl.sendMessagesToDeadLetterAddress(filter);
       if (dead != 1)
       {
@@ -246,16 +245,16 @@ public class JMSQueueControlImpl extends StandardMBean implements JMSQueueContro
       }
       return true;
    }
-   
-   public int sendMessagesToDeadLetterAddress(String filterStr) throws Exception
+
+   public int sendMessagesToDeadLetterAddress(final String filterStr) throws Exception
    {
-      String filter = createFilterFromJMSSelector(filterStr);
+      String filter = JMSQueueControlImpl.createFilterFromJMSSelector(filterStr);
       return coreQueueControl.sendMessagesToDeadLetterAddress(filter);
    }
 
    public boolean changeMessagePriority(final String messageID, final int newPriority) throws Exception
    {
-      String filter = createFilterForJMSMessageID(messageID);
+      String filter = JMSQueueControlImpl.createFilterForJMSMessageID(messageID);
       int changed = coreQueueControl.changeMessagesPriority(filter, newPriority);
       if (changed != 1)
       {
@@ -263,16 +262,16 @@ public class JMSQueueControlImpl extends StandardMBean implements JMSQueueContro
       }
       return true;
    }
-   
-   public int changeMessagesPriority(String filterStr, int newPriority) throws Exception
+
+   public int changeMessagesPriority(final String filterStr, final int newPriority) throws Exception
    {
-      String filter = createFilterFromJMSSelector(filterStr);
+      String filter = JMSQueueControlImpl.createFilterFromJMSSelector(filterStr);
       return coreQueueControl.changeMessagesPriority(filter, newPriority);
    }
 
-   public boolean moveMessage(String messageID, String otherQueueName) throws Exception
+   public boolean moveMessage(final String messageID, final String otherQueueName) throws Exception
    {
-      String filter = createFilterForJMSMessageID(messageID);
+      String filter = JMSQueueControlImpl.createFilterForJMSMessageID(messageID);
       HornetQQueue otherQueue = new HornetQQueue(otherQueueName);
       int moved = coreQueueControl.moveMessages(filter, otherQueue.getAddress());
       if (moved != 1)
@@ -283,9 +282,9 @@ public class JMSQueueControlImpl extends StandardMBean implements JMSQueueContro
       return true;
    }
 
-   public int moveMessages(String filterStr, String otherQueueName) throws Exception
+   public int moveMessages(final String filterStr, final String otherQueueName) throws Exception
    {
-      String filter = createFilterFromJMSSelector(filterStr);
+      String filter = JMSQueueControlImpl.createFilterFromJMSSelector(filterStr);
       HornetQQueue otherQueue = new HornetQQueue(otherQueueName);
       return coreQueueControl.moveMessages(filter, otherQueue.getAddress());
    }
@@ -301,7 +300,7 @@ public class JMSQueueControlImpl extends StandardMBean implements JMSQueueContro
          throw new IllegalStateException(e);
       }
    }
-   
+
    public void resetMessageCounter() throws Exception
    {
       coreQueueControl.resetMessageCounter();
@@ -324,7 +323,7 @@ public class JMSQueueControlImpl extends StandardMBean implements JMSQueueContro
 
    public boolean isPaused() throws Exception
    {
-     return coreQueueControl.isPaused();
+      return coreQueueControl.isPaused();
    }
 
    public void pause() throws Exception
@@ -334,7 +333,7 @@ public class JMSQueueControlImpl extends StandardMBean implements JMSQueueContro
 
    public void resume() throws Exception
    {
-      coreQueueControl.resume();      
+      coreQueueControl.resume();
    }
 
    // Package protected ---------------------------------------------

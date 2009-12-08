@@ -15,6 +15,8 @@ package org.hornetq.tests.integration.client;
 
 import java.util.ArrayList;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
@@ -57,17 +59,19 @@ public class JournalCrashTest extends ServiceTestBase
 
    private ClientSessionFactory factory;
 
-   private SimpleString QUEUE = new SimpleString("queue");
+   private final SimpleString QUEUE = new SimpleString("queue");
 
+   @Override
    protected void tearDown() throws Exception
    {
       stopServer();
-      
+
       printJournal();
 
       super.tearDown();
    }
 
+   @Override
    protected void setUp() throws Exception
    {
       super.setUp();
@@ -121,7 +125,7 @@ public class JournalCrashTest extends ServiceTestBase
    /**
     * The test needs another VM, that will be "killed" right after commit. This main will do this job.
     */
-   public static void main(String arg[])
+   public static void main(final String arg[])
    {
       try
       {
@@ -156,7 +160,7 @@ public class JournalCrashTest extends ServiceTestBase
       }
    }
 
-   public void sendMessages(int start, int end) throws Exception
+   public void sendMessages(final int start, final int end) throws Exception
    {
       ClientSession session = null;
       try
@@ -194,11 +198,11 @@ public class JournalCrashTest extends ServiceTestBase
 
    public void testRestartJournal() throws Throwable
    {
-      runExternalProcess(0, FIRST_RUN);
-      runExternalProcess(FIRST_RUN, SECOND_RUN);
-      runExternalProcess(SECOND_RUN, THIRD_RUN);
-      runExternalProcess(THIRD_RUN, FOURTH_RUN);
-      
+      runExternalProcess(0, JournalCrashTest.FIRST_RUN);
+      runExternalProcess(JournalCrashTest.FIRST_RUN, JournalCrashTest.SECOND_RUN);
+      runExternalProcess(JournalCrashTest.SECOND_RUN, JournalCrashTest.THIRD_RUN);
+      runExternalProcess(JournalCrashTest.THIRD_RUN, JournalCrashTest.FOURTH_RUN);
+
       printJournal();
 
       ClientSession session = null;
@@ -210,15 +214,15 @@ public class JournalCrashTest extends ServiceTestBase
          ClientConsumer consumer = session.createConsumer(QUEUE);
          session.start();
 
-         for (int i = 0; i < FOURTH_RUN; i++)
+         for (int i = 0; i < JournalCrashTest.FOURTH_RUN; i++)
          {
             ClientMessage msg = consumer.receive(5000);
 
-            assertNotNull("Msg at " + i, msg);
+            Assert.assertNotNull("Msg at " + i, msg);
 
             msg.acknowledge();
 
-            assertEquals(i, msg.getObjectProperty(new SimpleString("key")));
+            Assert.assertEquals(i, msg.getObjectProperty(new SimpleString("key")));
          }
          session.close();
       }
@@ -239,7 +243,7 @@ public class JournalCrashTest extends ServiceTestBase
     * @throws Exception
     * @throws InterruptedException
     */
-   private void runExternalProcess(int start, int end) throws Exception, InterruptedException
+   private void runExternalProcess(final int start, final int end) throws Exception, InterruptedException
    {
       System.err.println("running external process...");
       Process process = SpawnedVMSupport.spawnVM(this.getClass().getCanonicalName(),
@@ -250,7 +254,7 @@ public class JournalCrashTest extends ServiceTestBase
                                                  Integer.toString(start),
                                                  Integer.toString(end));
 
-      assertEquals(100, process.waitFor());
+      Assert.assertEquals(100, process.waitFor());
    }
 
    /**
@@ -273,7 +277,7 @@ public class JournalCrashTest extends ServiceTestBase
 
       journal.start();
       journal.load(records, transactions, null);
-      
+
       System.out.println("===============================================");
       System.out.println("Journal records at the end:");
 

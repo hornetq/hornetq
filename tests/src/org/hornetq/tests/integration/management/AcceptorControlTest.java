@@ -13,9 +13,9 @@
 
 package org.hornetq.tests.integration.management;
 
-import static org.hornetq.tests.util.RandomUtil.randomString;
-
 import java.util.HashMap;
+
+import junit.framework.Assert;
 
 import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.client.ClientSessionFactory;
@@ -32,6 +32,7 @@ import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.server.HornetQ;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.integration.SimpleNotificationService;
+import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.utils.SimpleString;
 
 /**
@@ -50,7 +51,6 @@ public class AcceptorControlTest extends ManagementTestBase
 
    private static final Logger log = Logger.getLogger(AcceptorControlTest.class);
 
-   
    // Attributes ----------------------------------------------------
 
    private HornetQServer service;
@@ -65,7 +65,7 @@ public class AcceptorControlTest extends ManagementTestBase
    {
       TransportConfiguration acceptorConfig = new TransportConfiguration(InVMAcceptorFactory.class.getName(),
                                                                          new HashMap<String, Object>(),
-                                                                         randomString());
+                                                                         RandomUtil.randomString());
 
       Configuration conf = new ConfigurationImpl();
       conf.setSecurityEnabled(false);
@@ -76,15 +76,15 @@ public class AcceptorControlTest extends ManagementTestBase
 
       AcceptorControl acceptorControl = createManagementControl(acceptorConfig.getName());
 
-      assertEquals(acceptorConfig.getName(), acceptorControl.getName());
-      assertEquals(acceptorConfig.getFactoryClassName(), acceptorControl.getFactoryClassName());
+      Assert.assertEquals(acceptorConfig.getName(), acceptorControl.getName());
+      Assert.assertEquals(acceptorConfig.getFactoryClassName(), acceptorControl.getFactoryClassName());
    }
 
    public void testStartStop() throws Exception
    {
       TransportConfiguration acceptorConfig = new TransportConfiguration(InVMAcceptorFactory.class.getName(),
                                                                          new HashMap<String, Object>(),
-                                                                         randomString());
+                                                                         RandomUtil.randomString());
       Configuration conf = new ConfigurationImpl();
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
@@ -95,54 +95,53 @@ public class AcceptorControlTest extends ManagementTestBase
       AcceptorControl acceptorControl = createManagementControl(acceptorConfig.getName());
 
       // started by the server
-      assertTrue(acceptorControl.isStarted());
+      Assert.assertTrue(acceptorControl.isStarted());
 
       ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
       ClientSession session = sf.createSession(false, true, true);
-      assertNotNull(session);
+      Assert.assertNotNull(session);
       session.close();
-      
-            
+
       acceptorControl.stop();
-       
-      assertFalse(acceptorControl.isStarted());
-      
+
+      Assert.assertFalse(acceptorControl.isStarted());
+
       try
       {
          sf.createSession(false, true, true);
-         fail("acceptor must not accept connections when stopped accepting");
+         Assert.fail("acceptor must not accept connections when stopped accepting");
       }
       catch (Exception e)
       {
       }
-      
+
       acceptorControl.start();
 
-      assertTrue(acceptorControl.isStarted());
+      Assert.assertTrue(acceptorControl.isStarted());
       session = sf.createSession(false, true, true);
-      assertNotNull(session);
+      Assert.assertNotNull(session);
       session.close();
-      
+
       acceptorControl.stop();
-      
-      assertFalse(acceptorControl.isStarted());
-      
+
+      Assert.assertFalse(acceptorControl.isStarted());
+
       try
       {
          sf.createSession(false, true, true);
-         fail("acceptor must not accept connections when stopped accepting");
+         Assert.fail("acceptor must not accept connections when stopped accepting");
       }
       catch (Exception e)
       {
       }
-      
+
    }
-   
+
    public void testNotifications() throws Exception
    {
       TransportConfiguration acceptorConfig = new TransportConfiguration(InVMAcceptorFactory.class.getName(),
                                                                          new HashMap<String, Object>(),
-                                                                         randomString());
+                                                                         RandomUtil.randomString());
       Configuration conf = new ConfigurationImpl();
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
@@ -152,26 +151,27 @@ public class AcceptorControlTest extends ManagementTestBase
 
       AcceptorControl acceptorControl = createManagementControl(acceptorConfig.getName());
 
-      
       SimpleNotificationService.Listener notifListener = new SimpleNotificationService.Listener();
 
       service.getManagementService().addNotificationListener(notifListener);
-      
-      assertEquals(0, notifListener.getNotifications().size());
-      
+
+      Assert.assertEquals(0, notifListener.getNotifications().size());
+
       acceptorControl.stop();
-      
-      assertEquals(1, notifListener.getNotifications().size());
+
+      Assert.assertEquals(1, notifListener.getNotifications().size());
       Notification notif = notifListener.getNotifications().get(0);
-      assertEquals(NotificationType.ACCEPTOR_STOPPED, notif.getType());
-      assertEquals(InVMAcceptorFactory.class.getName(), (notif.getProperties().getSimpleStringProperty(new SimpleString("factory")).toString()));
-      
+      Assert.assertEquals(NotificationType.ACCEPTOR_STOPPED, notif.getType());
+      Assert.assertEquals(InVMAcceptorFactory.class.getName(),
+                          notif.getProperties().getSimpleStringProperty(new SimpleString("factory")).toString());
+
       acceptorControl.start();
-      
-      assertEquals(2, notifListener.getNotifications().size());
+
+      Assert.assertEquals(2, notifListener.getNotifications().size());
       notif = notifListener.getNotifications().get(1);
-      assertEquals(NotificationType.ACCEPTOR_STARTED, notif.getType());
-      assertEquals(InVMAcceptorFactory.class.getName(), (notif.getProperties().getSimpleStringProperty(new SimpleString("factory")).toString()));      
+      Assert.assertEquals(NotificationType.ACCEPTOR_STARTED, notif.getType());
+      Assert.assertEquals(InVMAcceptorFactory.class.getName(),
+                          notif.getProperties().getSimpleStringProperty(new SimpleString("factory")).toString());
    }
 
    // Package protected ---------------------------------------------
@@ -188,12 +188,12 @@ public class AcceptorControlTest extends ManagementTestBase
 
       super.tearDown();
    }
-   
-   protected AcceptorControl createManagementControl(String name) throws Exception
+
+   protected AcceptorControl createManagementControl(final String name) throws Exception
    {
       return ManagementControlHelper.createAcceptorControl(name, mbeanServer);
    }
-   
+
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------

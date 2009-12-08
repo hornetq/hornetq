@@ -17,6 +17,8 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.URL;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.logging.Logger;
@@ -49,7 +51,6 @@ public class NettySecurityClientTest extends UnitTestCase
 
    // Public --------------------------------------------------------
 
-
    public void testProducerConsumerClientWithoutSecurityManager() throws Exception
    {
       doTestProducerConsumerClient(false);
@@ -59,7 +60,6 @@ public class NettySecurityClientTest extends UnitTestCase
    {
       doTestProducerConsumerClient(true);
    }
-   
 
    // SecurityManagerClientTestBase overrides -----------------------
 
@@ -85,18 +85,20 @@ public class NettySecurityClientTest extends UnitTestCase
       messagingService.stop();
 
       messagingService = null;
-      
+
       super.tearDown();
    }
-   
+
    // Private -------------------------------------------------------
 
-   private void doTestProducerConsumerClient(boolean withSecurityManager) throws Exception
+   private void doTestProducerConsumerClient(final boolean withSecurityManager) throws Exception
    {
       String[] vmargs = new String[0];
       if (withSecurityManager)
       {
-         URL securityPolicyURL = Thread.currentThread().getContextClassLoader().getResource("restricted-security-client.policy");
+         URL securityPolicyURL = Thread.currentThread()
+                                       .getContextClassLoader()
+                                       .getResource("restricted-security-client.policy");
          vmargs = new String[] { "-Djava.security.manager", "-Djava.security.policy=" + securityPolicyURL.getPath() };
       }
 
@@ -119,23 +121,23 @@ public class NettySecurityClientTest extends UnitTestCase
          else if ("OK".equals(line.trim()))
          {
             break;
-         } else
+         }
+         else
          {
-            fail("Exception when starting the client: " + line);
+            Assert.fail("Exception when starting the client: " + line);
          }
       }
-      
-      
+
       SpawnedVMSupport.startLogger(SimpleClient.class.getName(), p);
 
       // the client VM should exit by itself. If it doesn't, that means we have a problem
       // and the test will timeout
-      log.debug("waiting for the client VM to exit ...");
+      NettySecurityClientTest.log.debug("waiting for the client VM to exit ...");
       p.waitFor();
 
-      assertEquals("client VM did not exit cleanly", 0, p.exitValue());
+      Assert.assertEquals("client VM did not exit cleanly", 0, p.exitValue());
    }
-   
+
    // Inner classes -------------------------------------------------
 
 }

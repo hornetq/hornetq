@@ -13,9 +13,7 @@
 
 package org.hornetq.tests.integration.management;
 
-import static org.hornetq.tests.integration.management.ManagementControlHelper.createDiscoveryGroupControl;
-import static org.hornetq.tests.util.RandomUtil.randomPositiveLong;
-import static org.hornetq.tests.util.RandomUtil.randomString;
+import junit.framework.Assert;
 
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.TransportConfiguration;
@@ -25,6 +23,7 @@ import org.hornetq.core.management.DiscoveryGroupControl;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.server.HornetQ;
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.tests.util.RandomUtil;
 
 /**
  * A AcceptorControlTest
@@ -52,7 +51,10 @@ public class DiscoveryGroupControlTest extends ManagementTestBase
 
    public void testAttributes() throws Exception
    {
-      DiscoveryGroupConfiguration discoveryGroupConfig = new DiscoveryGroupConfiguration(randomString(), "231.7.7.7", 2000, randomPositiveLong());
+      DiscoveryGroupConfiguration discoveryGroupConfig = new DiscoveryGroupConfiguration(RandomUtil.randomString(),
+                                                                                         "231.7.7.7",
+                                                                                         2000,
+                                                                                         RandomUtil.randomPositiveLong());
 
       Configuration conf = new ConfigurationImpl();
       conf.setSecurityEnabled(false);
@@ -65,15 +67,18 @@ public class DiscoveryGroupControlTest extends ManagementTestBase
 
       DiscoveryGroupControl discoveryGroupControl = createManagementControl(discoveryGroupConfig.getName());
 
-      assertEquals(discoveryGroupConfig.getName(), discoveryGroupControl.getName());
-      assertEquals(discoveryGroupConfig.getGroupAddress(), discoveryGroupControl.getGroupAddress());
-      assertEquals(discoveryGroupConfig.getGroupPort(), discoveryGroupControl.getGroupPort());
-      assertEquals(discoveryGroupConfig.getRefreshTimeout(), discoveryGroupControl.getRefreshTimeout());
+      Assert.assertEquals(discoveryGroupConfig.getName(), discoveryGroupControl.getName());
+      Assert.assertEquals(discoveryGroupConfig.getGroupAddress(), discoveryGroupControl.getGroupAddress());
+      Assert.assertEquals(discoveryGroupConfig.getGroupPort(), discoveryGroupControl.getGroupPort());
+      Assert.assertEquals(discoveryGroupConfig.getRefreshTimeout(), discoveryGroupControl.getRefreshTimeout());
    }
 
    public void testStartStop() throws Exception
    {
-      DiscoveryGroupConfiguration discoveryGroupConfig = new DiscoveryGroupConfiguration(randomString(), "231.7.7.7", 2000, randomPositiveLong());
+      DiscoveryGroupConfiguration discoveryGroupConfig = new DiscoveryGroupConfiguration(RandomUtil.randomString(),
+                                                                                         "231.7.7.7",
+                                                                                         2000,
+                                                                                         RandomUtil.randomPositiveLong());
 
       Configuration conf = new ConfigurationImpl();
       conf.setSecurityEnabled(false);
@@ -87,15 +92,14 @@ public class DiscoveryGroupControlTest extends ManagementTestBase
       DiscoveryGroupControl discoveryGroupControl = createManagementControl(discoveryGroupConfig.getName());
 
       // started by the server
-      assertTrue(discoveryGroupControl.isStarted());
+      Assert.assertTrue(discoveryGroupControl.isStarted());
 
       discoveryGroupControl.stop();
-      assertFalse(discoveryGroupControl.isStarted());
-      
-      discoveryGroupControl.start();
-      assertTrue(discoveryGroupControl.isStarted());
-   }
+      Assert.assertFalse(discoveryGroupControl.isStarted());
 
+      discoveryGroupControl.start();
+      Assert.assertTrue(discoveryGroupControl.isStarted());
+   }
 
    // Package protected ---------------------------------------------
 
@@ -110,15 +114,14 @@ public class DiscoveryGroupControlTest extends ManagementTestBase
       }
 
       service = null;
-      
+
       super.tearDown();
    }
-   
-   protected DiscoveryGroupControl createManagementControl(String name) throws Exception
-   {
-      return createDiscoveryGroupControl(name, mbeanServer);
-   }
 
+   protected DiscoveryGroupControl createManagementControl(final String name) throws Exception
+   {
+      return ManagementControlHelper.createDiscoveryGroupControl(name, mbeanServer);
+   }
 
    // Private -------------------------------------------------------
 

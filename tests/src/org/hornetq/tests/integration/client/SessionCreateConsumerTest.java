@@ -12,6 +12,8 @@
  */
 package org.hornetq.tests.integration.client;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientSessionFactory;
 import org.hornetq.core.client.impl.ClientSessionInternal;
@@ -24,7 +26,7 @@ import org.hornetq.tests.util.ServiceTestBase;
  */
 public class SessionCreateConsumerTest extends ServiceTestBase
 {
-   private String queueName = "ClientSessionCreateConsumerTestQ";
+   private final String queueName = "ClientSessionCreateConsumerTestQ";
 
    public void testCreateConsumer() throws Exception
    {
@@ -39,7 +41,7 @@ public class SessionCreateConsumerTest extends ServiceTestBase
          ClientSessionInternal clientSession = (ClientSessionInternal)cf.createSession(false, true, true);
          clientSession.createQueue(queueName, queueName, false);
          ClientConsumer consumer = clientSession.createConsumer(queueName);
-         assertNotNull(consumer);
+         Assert.assertNotNull(consumer);
          clientSession.close();
       }
       finally
@@ -62,11 +64,11 @@ public class SessionCreateConsumerTest extends ServiceTestBase
          try
          {
             clientSession.createConsumer(queueName);
-            fail("should throw exception");
+            Assert.fail("should throw exception");
          }
          catch (HornetQException e)
          {
-            assertEquals(e.getCode(), HornetQException.QUEUE_DOES_NOT_EXIST);
+            Assert.assertEquals(e.getCode(), HornetQException.QUEUE_DOES_NOT_EXIST);
          }
          clientSession.close();
       }
@@ -89,7 +91,7 @@ public class SessionCreateConsumerTest extends ServiceTestBase
          ClientSessionInternal clientSession = (ClientSessionInternal)cf.createSession(false, true, true);
          clientSession.createQueue(queueName, queueName, false);
          ClientConsumer consumer = clientSession.createConsumer(queueName, "foo=bar");
-         assertNotNull(consumer);
+         Assert.assertNotNull(consumer);
          clientSession.close();
       }
       finally
@@ -113,11 +115,11 @@ public class SessionCreateConsumerTest extends ServiceTestBase
          try
          {
             clientSession.createConsumer(queueName, "foobar");
-            fail("should throw exception");
+            Assert.fail("should throw exception");
          }
          catch (HornetQException e)
          {
-            assertEquals(e.getCode(), HornetQException.INVALID_FILTER_EXPRESSION);
+            Assert.assertEquals(e.getCode(), HornetQException.INVALID_FILTER_EXPRESSION);
          }
          clientSession.close();
       }
@@ -140,7 +142,7 @@ public class SessionCreateConsumerTest extends ServiceTestBase
          ClientSessionInternal clientSession = (ClientSessionInternal)cf.createSession(false, true, true);
          clientSession.createQueue(queueName, queueName, false);
          ClientConsumer consumer = clientSession.createConsumer(queueName, null, true);
-         assertNotNull(consumer);
+         Assert.assertNotNull(consumer);
          clientSession.close();
       }
       finally
@@ -162,7 +164,7 @@ public class SessionCreateConsumerTest extends ServiceTestBase
          ClientSessionInternal clientSession = (ClientSessionInternal)cf.createSession(false, true, true);
          clientSession.createQueue(queueName, queueName, false);
          ClientConsumer consumer = clientSession.createConsumer(queueName, null, 100, 100, false);
-         assertNotNull(consumer);
+         Assert.assertNotNull(consumer);
          clientSession.close();
       }
       finally

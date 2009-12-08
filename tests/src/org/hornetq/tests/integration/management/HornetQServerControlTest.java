@@ -13,11 +13,10 @@
 
 package org.hornetq.tests.integration.management;
 
-import static org.hornetq.tests.util.RandomUtil.randomBoolean;
-import static org.hornetq.tests.util.RandomUtil.randomString;
-
 import java.util.HashMap;
 import java.util.Map;
+
+import junit.framework.Assert;
 
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.TransportConfiguration;
@@ -59,7 +58,7 @@ public class HornetQServerControlTest extends ManagementTestBase
 
    // Static --------------------------------------------------------
 
-   private static boolean contains(String name, String[] strings)
+   private static boolean contains(final String name, final String[] strings)
    {
       boolean found = false;
       for (String str : strings)
@@ -69,10 +68,10 @@ public class HornetQServerControlTest extends ManagementTestBase
             found = true;
             break;
          }
-      } 
+      }
       return found;
    }
-   
+
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
@@ -81,47 +80,49 @@ public class HornetQServerControlTest extends ManagementTestBase
    {
       HornetQServerControl serverControl = createManagementControl();
 
-      assertEquals(server.getVersion().getFullVersion(), serverControl.getVersion());
+      Assert.assertEquals(server.getVersion().getFullVersion(), serverControl.getVersion());
 
-      assertEquals(conf.isClustered(), serverControl.isClustered());     
-      assertEquals(conf.isPersistDeliveryCountBeforeDelivery(), serverControl.isPersistDeliveryCountBeforeDelivery());
-      assertEquals(conf.isBackup(), serverControl.isBackup());
-      assertEquals(conf.isSharedStore(), serverControl.isSharedStore());
-      assertEquals(conf.getScheduledThreadPoolMaxSize(), serverControl.getScheduledThreadPoolMaxSize());
-      assertEquals(conf.getThreadPoolMaxSize(), serverControl.getThreadPoolMaxSize());
-      assertEquals(conf.getSecurityInvalidationInterval(), serverControl.getSecurityInvalidationInterval());
-      assertEquals(conf.isSecurityEnabled(), serverControl.isSecurityEnabled());
-      assertEquals(conf.getInterceptorClassNames().size(), serverControl.getInterceptorClassNames().length);     
-      assertEquals(conf.getConnectionTTLOverride(), serverControl.getConnectionTTLOverride());
-      assertEquals(conf.getBackupConnectorName(), serverControl.getBackupConnectorName());
-      assertEquals(conf.getManagementAddress().toString(), serverControl.getManagementAddress());
-      assertEquals(conf.getManagementNotificationAddress().toString(), serverControl.getManagementNotificationAddress());
-      assertEquals(conf.getManagementRequestTimeout(), serverControl.getManagementRequestTimeout());
-      assertEquals(conf.getIDCacheSize(), serverControl.getIDCacheSize());
-      assertEquals(conf.isPersistIDCache(), serverControl.isPersistIDCache());
-      assertEquals(conf.getBindingsDirectory(), serverControl.getBindingsDirectory());
-      assertEquals(conf.getJournalDirectory(), serverControl.getJournalDirectory());
-      assertEquals(conf.getJournalType().toString(), serverControl.getJournalType());
-      assertEquals(conf.isJournalSyncTransactional(), serverControl.isJournalSyncTransactional());
-      assertEquals(conf.isJournalSyncNonTransactional(), serverControl.isJournalSyncNonTransactional());
-      assertEquals(conf.getJournalFileSize(), serverControl.getJournalFileSize());
-      assertEquals(conf.getJournalMinFiles(), serverControl.getJournalMinFiles());
-      assertEquals(conf.getJournalMaxIO_AIO(), serverControl.getJournalMaxIO());
-      assertEquals(conf.getJournalBufferSize_AIO(), serverControl.getJournalBufferSize());
-      assertEquals(conf.getJournalBufferTimeout_AIO(), serverControl.getJournalBufferTimeout());      
-      assertEquals(conf.isCreateBindingsDir(), serverControl.isCreateBindingsDir());
-      assertEquals(conf.isCreateJournalDir(), serverControl.isCreateJournalDir());      
-      assertEquals(conf.getPagingDirectory(), serverControl.getPagingDirectory());
-      assertEquals(conf.getLargeMessagesDirectory(), serverControl.getLargeMessagesDirectory());
-      assertEquals(conf.isWildcardRoutingEnabled(), serverControl.isWildcardRoutingEnabled());
-      assertEquals(conf.getTransactionTimeout(), serverControl.getTransactionTimeout());
-      assertEquals(conf.isMessageCounterEnabled(), serverControl.isMessageCounterEnabled());
-      assertEquals(conf.getTransactionTimeoutScanPeriod(), serverControl.getTransactionTimeoutScanPeriod());
-      assertEquals(conf.getMessageExpiryScanPeriod(), serverControl.getMessageExpiryScanPeriod());
-      assertEquals(conf.getMessageExpiryThreadPriority(), serverControl.getMessageExpiryThreadPriority());
-      assertEquals(conf.getJournalCompactMinFiles(), serverControl.getJournalCompactMinFiles());
-      assertEquals(conf.getJournalCompactPercentage(), serverControl.getJournalCompactPercentage());
-      assertEquals(conf.isPersistenceEnabled(), serverControl.isPersistenceEnabled());
+      Assert.assertEquals(conf.isClustered(), serverControl.isClustered());
+      Assert.assertEquals(conf.isPersistDeliveryCountBeforeDelivery(),
+                          serverControl.isPersistDeliveryCountBeforeDelivery());
+      Assert.assertEquals(conf.isBackup(), serverControl.isBackup());
+      Assert.assertEquals(conf.isSharedStore(), serverControl.isSharedStore());
+      Assert.assertEquals(conf.getScheduledThreadPoolMaxSize(), serverControl.getScheduledThreadPoolMaxSize());
+      Assert.assertEquals(conf.getThreadPoolMaxSize(), serverControl.getThreadPoolMaxSize());
+      Assert.assertEquals(conf.getSecurityInvalidationInterval(), serverControl.getSecurityInvalidationInterval());
+      Assert.assertEquals(conf.isSecurityEnabled(), serverControl.isSecurityEnabled());
+      Assert.assertEquals(conf.getInterceptorClassNames().size(), serverControl.getInterceptorClassNames().length);
+      Assert.assertEquals(conf.getConnectionTTLOverride(), serverControl.getConnectionTTLOverride());
+      Assert.assertEquals(conf.getBackupConnectorName(), serverControl.getBackupConnectorName());
+      Assert.assertEquals(conf.getManagementAddress().toString(), serverControl.getManagementAddress());
+      Assert.assertEquals(conf.getManagementNotificationAddress().toString(),
+                          serverControl.getManagementNotificationAddress());
+      Assert.assertEquals(conf.getManagementRequestTimeout(), serverControl.getManagementRequestTimeout());
+      Assert.assertEquals(conf.getIDCacheSize(), serverControl.getIDCacheSize());
+      Assert.assertEquals(conf.isPersistIDCache(), serverControl.isPersistIDCache());
+      Assert.assertEquals(conf.getBindingsDirectory(), serverControl.getBindingsDirectory());
+      Assert.assertEquals(conf.getJournalDirectory(), serverControl.getJournalDirectory());
+      Assert.assertEquals(conf.getJournalType().toString(), serverControl.getJournalType());
+      Assert.assertEquals(conf.isJournalSyncTransactional(), serverControl.isJournalSyncTransactional());
+      Assert.assertEquals(conf.isJournalSyncNonTransactional(), serverControl.isJournalSyncNonTransactional());
+      Assert.assertEquals(conf.getJournalFileSize(), serverControl.getJournalFileSize());
+      Assert.assertEquals(conf.getJournalMinFiles(), serverControl.getJournalMinFiles());
+      Assert.assertEquals(conf.getJournalMaxIO_AIO(), serverControl.getJournalMaxIO());
+      Assert.assertEquals(conf.getJournalBufferSize_AIO(), serverControl.getJournalBufferSize());
+      Assert.assertEquals(conf.getJournalBufferTimeout_AIO(), serverControl.getJournalBufferTimeout());
+      Assert.assertEquals(conf.isCreateBindingsDir(), serverControl.isCreateBindingsDir());
+      Assert.assertEquals(conf.isCreateJournalDir(), serverControl.isCreateJournalDir());
+      Assert.assertEquals(conf.getPagingDirectory(), serverControl.getPagingDirectory());
+      Assert.assertEquals(conf.getLargeMessagesDirectory(), serverControl.getLargeMessagesDirectory());
+      Assert.assertEquals(conf.isWildcardRoutingEnabled(), serverControl.isWildcardRoutingEnabled());
+      Assert.assertEquals(conf.getTransactionTimeout(), serverControl.getTransactionTimeout());
+      Assert.assertEquals(conf.isMessageCounterEnabled(), serverControl.isMessageCounterEnabled());
+      Assert.assertEquals(conf.getTransactionTimeoutScanPeriod(), serverControl.getTransactionTimeoutScanPeriod());
+      Assert.assertEquals(conf.getMessageExpiryScanPeriod(), serverControl.getMessageExpiryScanPeriod());
+      Assert.assertEquals(conf.getMessageExpiryThreadPriority(), serverControl.getMessageExpiryThreadPriority());
+      Assert.assertEquals(conf.getJournalCompactMinFiles(), serverControl.getJournalCompactMinFiles());
+      Assert.assertEquals(conf.getJournalCompactPercentage(), serverControl.getJournalCompactPercentage());
+      Assert.assertEquals(conf.isPersistenceEnabled(), serverControl.isPersistenceEnabled());
    }
 
    public void testGetConnectors() throws Exception
@@ -129,26 +130,26 @@ public class HornetQServerControlTest extends ManagementTestBase
       HornetQServerControl serverControl = createManagementControl();
 
       Object[] connectorData = serverControl.getConnectors();
-      assertNotNull(connectorData);
-      assertEquals(1, connectorData.length);
+      Assert.assertNotNull(connectorData);
+      Assert.assertEquals(1, connectorData.length);
 
-      Object[] config = (Object[])connectorData[0];           
+      Object[] config = (Object[])connectorData[0];
 
-      assertEquals(connectorConfig.getName(), config[0]);
+      Assert.assertEquals(connectorConfig.getName(), config[0]);
    }
-   
+
    public void testGetConnectorsAsJSON() throws Exception
    {
       HornetQServerControl serverControl = createManagementControl();
 
       String jsonString = serverControl.getConnectorsAsJSON();
-      assertNotNull(jsonString);
+      Assert.assertNotNull(jsonString);
       JSONArray array = new JSONArray(jsonString);
-      assertEquals(1, array.length());
+      Assert.assertEquals(1, array.length());
       JSONObject data = array.getJSONObject(0);
-      assertEquals(connectorConfig.getName(), data.optString("name"));
-      assertEquals(connectorConfig.getFactoryClassName(), data.optString("factoryClassName"));
-      assertEquals(connectorConfig.getParams().size(), data.getJSONObject("params").length());
+      Assert.assertEquals(connectorConfig.getName(), data.optString("name"));
+      Assert.assertEquals(connectorConfig.getFactoryClassName(), data.optString("factoryClassName"));
+      Assert.assertEquals(connectorConfig.getParams().size(), data.getJSONObject("params").length());
    }
 
    public void testCreateAndDestroyQueue() throws Exception
@@ -164,11 +165,11 @@ public class HornetQServerControlTest extends ManagementTestBase
 
       checkResource(ObjectNameBuilder.DEFAULT.getQueueObjectName(address, name));
       QueueControl queueControl = ManagementControlHelper.createQueueControl(address, name, mbeanServer);
-      assertEquals(address.toString(), queueControl.getAddress());
-      assertEquals(name.toString(), queueControl.getName());
-      assertNull(queueControl.getFilter());
-      assertEquals(true, queueControl.isDurable());
-      assertEquals(false, queueControl.isTemporary());
+      Assert.assertEquals(address.toString(), queueControl.getAddress());
+      Assert.assertEquals(name.toString(), queueControl.getName());
+      Assert.assertNull(queueControl.getFilter());
+      Assert.assertEquals(true, queueControl.isDurable());
+      Assert.assertEquals(false, queueControl.isTemporary());
 
       serverControl.destroyQueue(name.toString());
 
@@ -190,17 +191,17 @@ public class HornetQServerControlTest extends ManagementTestBase
 
       checkResource(ObjectNameBuilder.DEFAULT.getQueueObjectName(address, name));
       QueueControl queueControl = ManagementControlHelper.createQueueControl(address, name, mbeanServer);
-      assertEquals(address.toString(), queueControl.getAddress());
-      assertEquals(name.toString(), queueControl.getName());
-      assertEquals(filter, queueControl.getFilter());
-      assertEquals(durable, queueControl.isDurable());
-      assertEquals(false, queueControl.isTemporary());
+      Assert.assertEquals(address.toString(), queueControl.getAddress());
+      Assert.assertEquals(name.toString(), queueControl.getName());
+      Assert.assertEquals(filter, queueControl.getFilter());
+      Assert.assertEquals(durable, queueControl.isDurable());
+      Assert.assertEquals(false, queueControl.isTemporary());
 
       serverControl.destroyQueue(name.toString());
 
       checkNoResource(ObjectNameBuilder.DEFAULT.getQueueObjectName(address, name));
    }
-   
+
    public void testCreateAndDestroyQueue_3() throws Exception
    {
       SimpleString address = RandomUtil.randomSimpleString();
@@ -215,11 +216,11 @@ public class HornetQServerControlTest extends ManagementTestBase
 
       checkResource(ObjectNameBuilder.DEFAULT.getQueueObjectName(address, name));
       QueueControl queueControl = ManagementControlHelper.createQueueControl(address, name, mbeanServer);
-      assertEquals(address.toString(), queueControl.getAddress());
-      assertEquals(name.toString(), queueControl.getName());
-      assertNull(queueControl.getFilter());
-      assertEquals(durable, queueControl.isDurable());
-      assertEquals(false, queueControl.isTemporary());
+      Assert.assertEquals(address.toString(), queueControl.getAddress());
+      Assert.assertEquals(name.toString(), queueControl.getName());
+      Assert.assertNull(queueControl.getFilter());
+      Assert.assertEquals(durable, queueControl.isDurable());
+      Assert.assertEquals(false, queueControl.isTemporary());
 
       serverControl.destroyQueue(name.toString());
 
@@ -241,17 +242,17 @@ public class HornetQServerControlTest extends ManagementTestBase
 
       checkResource(ObjectNameBuilder.DEFAULT.getQueueObjectName(address, name));
       QueueControl queueControl = ManagementControlHelper.createQueueControl(address, name, mbeanServer);
-      assertEquals(address.toString(), queueControl.getAddress());
-      assertEquals(name.toString(), queueControl.getName());
-      assertNull(queueControl.getFilter());
-      assertEquals(durable, queueControl.isDurable());
-      assertEquals(false, queueControl.isTemporary());
+      Assert.assertEquals(address.toString(), queueControl.getAddress());
+      Assert.assertEquals(name.toString(), queueControl.getName());
+      Assert.assertNull(queueControl.getFilter());
+      Assert.assertEquals(durable, queueControl.isDurable());
+      Assert.assertEquals(false, queueControl.isTemporary());
 
       serverControl.destroyQueue(name.toString());
 
       checkNoResource(ObjectNameBuilder.DEFAULT.getQueueObjectName(address, name));
    }
-   
+
    public void testCreateAndDestroyQueueWithEmptyStringForFilter() throws Exception
    {
       SimpleString address = RandomUtil.randomSimpleString();
@@ -267,17 +268,17 @@ public class HornetQServerControlTest extends ManagementTestBase
 
       checkResource(ObjectNameBuilder.DEFAULT.getQueueObjectName(address, name));
       QueueControl queueControl = ManagementControlHelper.createQueueControl(address, name, mbeanServer);
-      assertEquals(address.toString(), queueControl.getAddress());
-      assertEquals(name.toString(), queueControl.getName());
-      assertNull(queueControl.getFilter());
-      assertEquals(durable, queueControl.isDurable());
-      assertEquals(false, queueControl.isTemporary());
+      Assert.assertEquals(address.toString(), queueControl.getAddress());
+      Assert.assertEquals(name.toString(), queueControl.getName());
+      Assert.assertNull(queueControl.getFilter());
+      Assert.assertEquals(durable, queueControl.isDurable());
+      Assert.assertEquals(false, queueControl.isTemporary());
 
       serverControl.destroyQueue(name.toString());
 
       checkNoResource(ObjectNameBuilder.DEFAULT.getQueueObjectName(address, name));
    }
-   
+
    public void testGetQueueNames() throws Exception
    {
       SimpleString address = RandomUtil.randomSimpleString();
@@ -288,13 +289,13 @@ public class HornetQServerControlTest extends ManagementTestBase
       // due to replication, there can be another queue created for replicating
       // management operations
 
-      assertFalse(contains(name.toString(), serverControl.getQueueNames()));
-      
+      Assert.assertFalse(HornetQServerControlTest.contains(name.toString(), serverControl.getQueueNames()));
+
       serverControl.createQueue(address.toString(), name.toString());
-      assertTrue(contains(name.toString(), serverControl.getQueueNames()));
+      Assert.assertTrue(HornetQServerControlTest.contains(name.toString(), serverControl.getQueueNames()));
 
       serverControl.destroyQueue(name.toString());
-      assertFalse(contains(name.toString(), serverControl.getQueueNames()));
+      Assert.assertFalse(HornetQServerControlTest.contains(name.toString(), serverControl.getQueueNames()));
    }
 
    public void testGetAddressNames() throws Exception
@@ -307,30 +308,30 @@ public class HornetQServerControlTest extends ManagementTestBase
       // due to replication, there can be another queue created for replicating
       // management operations
 
-      assertFalse(contains(address.toString(), serverControl.getAddressNames()));
-      
+      Assert.assertFalse(HornetQServerControlTest.contains(address.toString(), serverControl.getAddressNames()));
+
       serverControl.createQueue(address.toString(), name.toString());
-      assertTrue(contains(address.toString(), serverControl.getAddressNames()));
+      Assert.assertTrue(HornetQServerControlTest.contains(address.toString(), serverControl.getAddressNames()));
 
       serverControl.destroyQueue(name.toString());
-      assertFalse(contains(address.toString(), serverControl.getAddressNames()));
+      Assert.assertFalse(HornetQServerControlTest.contains(address.toString(), serverControl.getAddressNames()));
    }
 
    public void testMessageCounterMaxDayCount() throws Exception
    {
       HornetQServerControl serverControl = createManagementControl();
 
-      assertEquals(MessageCounterManagerImpl.DEFAULT_MAX_DAY_COUNT, serverControl.getMessageCounterMaxDayCount());
+      Assert.assertEquals(MessageCounterManagerImpl.DEFAULT_MAX_DAY_COUNT, serverControl.getMessageCounterMaxDayCount());
 
       int newCount = 100;
       serverControl.setMessageCounterMaxDayCount(newCount);
 
-      assertEquals(newCount, serverControl.getMessageCounterMaxDayCount());
+      Assert.assertEquals(newCount, serverControl.getMessageCounterMaxDayCount());
 
       try
       {
          serverControl.setMessageCounterMaxDayCount(-1);
-         fail();
+         Assert.fail();
       }
       catch (Exception e)
       {
@@ -339,30 +340,31 @@ public class HornetQServerControlTest extends ManagementTestBase
       try
       {
          serverControl.setMessageCounterMaxDayCount(0);
-         fail();
+         Assert.fail();
       }
       catch (Exception e)
       {
       }
 
-      assertEquals(newCount, serverControl.getMessageCounterMaxDayCount());
+      Assert.assertEquals(newCount, serverControl.getMessageCounterMaxDayCount());
    }
 
    public void testGetMessageCounterSamplePeriod() throws Exception
    {
       HornetQServerControl serverControl = createManagementControl();
 
-      assertEquals(MessageCounterManagerImpl.DEFAULT_SAMPLE_PERIOD, serverControl.getMessageCounterSamplePeriod());
+      Assert.assertEquals(MessageCounterManagerImpl.DEFAULT_SAMPLE_PERIOD,
+                          serverControl.getMessageCounterSamplePeriod());
 
       long newSample = 20000;
       serverControl.setMessageCounterSamplePeriod(newSample);
 
-      assertEquals(newSample, serverControl.getMessageCounterSamplePeriod());
+      Assert.assertEquals(newSample, serverControl.getMessageCounterSamplePeriod());
 
       try
       {
          serverControl.setMessageCounterSamplePeriod(-1);
-         fail();
+         Assert.fail();
       }
       catch (Exception e)
       {
@@ -371,7 +373,7 @@ public class HornetQServerControlTest extends ManagementTestBase
       try
       {
          serverControl.setMessageCounterSamplePeriod(0);
-         fail();
+         Assert.fail();
       }
       catch (Exception e)
       {
@@ -380,13 +382,13 @@ public class HornetQServerControlTest extends ManagementTestBase
       try
       {
          serverControl.setMessageCounterSamplePeriod(MessageCounterManagerImpl.MIN_SAMPLE_PERIOD - 1);
-         fail();
+         Assert.fail();
       }
       catch (Exception e)
       {
       }
 
-      assertEquals(newSample, serverControl.getMessageCounterSamplePeriod());
+      Assert.assertEquals(newSample, serverControl.getMessageCounterSamplePeriod());
    }
 
    // Package protected ---------------------------------------------
@@ -399,16 +401,16 @@ public class HornetQServerControlTest extends ManagementTestBase
       super.setUp();
 
       Map<String, Object> params = new HashMap<String, Object>();
-      params.put(randomString(), randomBoolean());
+      params.put(RandomUtil.randomString(), RandomUtil.randomBoolean());
       connectorConfig = new TransportConfiguration(InVMConnectorFactory.class.getName(),
-                                                                          params,
-                                                                          randomString());
+                                                   params,
+                                                   RandomUtil.randomString());
 
       conf = new ConfigurationImpl();
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
       conf.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
-      
+
       server = HornetQ.newHornetQServer(conf, mbeanServer, false);
       conf.getConnectorConfigurations().put(connectorConfig.getName(), connectorConfig);
       server.start();
@@ -421,9 +423,9 @@ public class HornetQServerControlTest extends ManagementTestBase
       {
          server.stop();
       }
-      
+
       server = null;
-      
+
       connectorConfig = null;
 
       super.tearDown();

@@ -143,9 +143,10 @@ public abstract class AbstractSequentialFile implements SequentialFile
 
          while (!donelatch.await(60, TimeUnit.SECONDS))
          {
-            log.warn("Executor on file " + getFile().getName() + " couldn't complete its tasks in 60 seconds.",
-                     new Exception("Warning: Executor on file " + getFile().getName() +
-                                   " couldn't complete its tasks in 60 seconds."));
+            AbstractSequentialFile.log.warn("Executor on file " + getFile().getName() +
+                                                     " couldn't complete its tasks in 60 seconds.",
+                                            new Exception("Warning: Executor on file " + getFile().getName() +
+                                                          " couldn't complete its tasks in 60 seconds."));
          }
       }
    }
@@ -209,7 +210,7 @@ public abstract class AbstractSequentialFile implements SequentialFile
          write(bytes, false, DummyCallback.getInstance());
       }
    }
-   
+
    public void write(final EncodingSupport bytes, final boolean sync, final IOAsyncTask callback) throws Exception
    {
       if (timedBuffer != null)
@@ -219,11 +220,11 @@ public abstract class AbstractSequentialFile implements SequentialFile
       else
       {
          ByteBuffer buffer = factory.newBuffer(bytes.getEncodeSize());
-         
+
          // If not using the TimedBuffer, a final copy is necessary
          // Because AIO will need a specific Buffer
          // And NIO will also need a whole buffer to perform the write
-         
+
          HornetQBuffer outBuffer = HornetQBuffers.wrappedBuffer(buffer);
          bytes.encode(outBuffer);
          buffer.rewind();
@@ -246,7 +247,7 @@ public abstract class AbstractSequentialFile implements SequentialFile
          write(bytes, false, DummyCallback.getInstance());
       }
    }
-   
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
@@ -279,7 +280,7 @@ public abstract class AbstractSequentialFile implements SequentialFile
             }
             catch (Throwable e)
             {
-               log.warn(e.getMessage(), e);
+               AbstractSequentialFile.log.warn(e.getMessage(), e);
             }
          }
       }
@@ -294,12 +295,12 @@ public abstract class AbstractSequentialFile implements SequentialFile
             }
             catch (Throwable e)
             {
-               log.warn(e.getMessage(), e);
+               AbstractSequentialFile.log.warn(e.getMessage(), e);
             }
          }
       }
    }
-   
+
    protected ByteBuffer newBuffer(int size, int limit)
    {
       size = factory.calculateBlockSize(size);
@@ -326,7 +327,7 @@ public abstract class AbstractSequentialFile implements SequentialFile
          }
       }
 
-      public ByteBuffer newBuffer(int size, int limit)
+      public ByteBuffer newBuffer(final int size, final int limit)
       {
          return AbstractSequentialFile.this.newBuffer(size, limit);
       }

@@ -16,6 +16,7 @@ package org.objectweb.jtests.jms.conform.message;
 import javax.jms.DeliveryMode;
 import javax.jms.Message;
 
+import junit.framework.Assert;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
@@ -36,8 +37,9 @@ public class MessageDefaultTest extends JMSTestCase
     */
    public void testDEFAULT_DELIVERY_MODE()
    {
-      assertEquals("The delivery mode is persistent by default.\n", DeliveryMode.PERSISTENT,
-            Message.DEFAULT_DELIVERY_MODE);
+      Assert.assertEquals("The delivery mode is persistent by default.\n",
+                          DeliveryMode.PERSISTENT,
+                          Message.DEFAULT_DELIVERY_MODE);
    }
 
    /**
@@ -46,7 +48,7 @@ public class MessageDefaultTest extends JMSTestCase
     */
    public void testDEFAULT_PRIORITY()
    {
-      assertEquals("The default priority is 4.\n", 4, Message.DEFAULT_PRIORITY);
+      Assert.assertEquals("The default priority is 4.\n", 4, Message.DEFAULT_PRIORITY);
    }
 
    /** 
@@ -57,7 +59,7 @@ public class MessageDefaultTest extends JMSTestCase
       return new TestSuite(MessageDefaultTest.class);
    }
 
-   public MessageDefaultTest(String name)
+   public MessageDefaultTest(final String name)
    {
       super(name);
    }

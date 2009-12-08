@@ -11,7 +11,6 @@
  * permissions and limitations under the License.
  */
 
-
 package org.hornetq.tests.integration.journal;
 
 import java.io.File;
@@ -21,6 +20,7 @@ import junit.framework.TestSuite;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.journal.impl.AIOSequentialFileFactory;
+import org.hornetq.tests.util.UnitTestCase;
 
 /**
  * A AIOJournalCompactTest
@@ -30,12 +30,12 @@ import org.hornetq.core.journal.impl.AIOSequentialFileFactory;
  *
  */
 public class AIOJournalCompactTest extends NIOJournalCompactTest
-{   
+{
    public static TestSuite suite()
    {
-      return createAIOTestSuite(AIOJournalCompactTest.class);
+      return UnitTestCase.createAIOTestSuite(AIOJournalCompactTest.class);
    }
-   
+
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
@@ -61,12 +61,9 @@ public class AIOJournalCompactTest extends NIOJournalCompactTest
 
       return new AIOSequentialFileFactory(getTestDir(),
                                           ConfigurationImpl.DEFAULT_JOURNAL_BUFFER_SIZE_AIO,
-                                          1000000,                                          
-                                          false      
-      );
+                                          1000000,
+                                          false);
    }
-
-
 
    // Private -------------------------------------------------------
 

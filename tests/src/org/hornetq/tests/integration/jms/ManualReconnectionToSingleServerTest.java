@@ -30,6 +30,8 @@ import javax.jms.Queue;
 import javax.jms.Session;
 import javax.naming.Context;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
@@ -75,9 +77,9 @@ public class ManualReconnectionToSingleServerTest extends UnitTestCase
 
    private final int num = 20;
 
-   private ExceptionListener exceptionListener = new ExceptionListener()
+   private final ExceptionListener exceptionListener = new ExceptionListener()
    {
-      public void onException(JMSException e)
+      public void onException(final JMSException e)
       {
          exceptionLatch.countDown();
          disconnect();
@@ -110,7 +112,7 @@ public class ManualReconnectionToSingleServerTest extends UnitTestCase
 
       for (int i = 0; i < num; i++)
       {
-         Message message = sess.createTextMessage((new Date()).toString());
+         Message message = sess.createTextMessage(new Date().toString());
          message.setIntProperty("counter", i + 1);
          prod.send(message);
 
@@ -131,14 +133,14 @@ public class ManualReconnectionToSingleServerTest extends UnitTestCase
       conn.close();
 
       boolean gotException = exceptionLatch.await(10, SECONDS);
-      assertTrue(gotException);
+      Assert.assertTrue(gotException);
 
       boolean clientReconnected = reconnectionLatch.await(10, SECONDS);
 
-      assertTrue("client did not reconnect after server was restarted", clientReconnected);
+      Assert.assertTrue("client did not reconnect after server was restarted", clientReconnected);
 
       boolean gotAllMessages = allMessagesReceived.await(10, SECONDS);
-      assertTrue(gotAllMessages);
+      Assert.assertTrue(gotAllMessages);
 
       connection.close();
 
@@ -174,9 +176,9 @@ public class ManualReconnectionToSingleServerTest extends UnitTestCase
       configuration.getConnectionFactoryConfigurations().add(cfConfig);
       serverManager = new JMSServerManagerImpl(server, configuration);
       serverManager.start();
-      
+
       listener = new Listener();
-      
+
       exceptionLatch = new CountDownLatch(1);
       reconnectionLatch = new CountDownLatch(1);
       allMessagesReceived = new CountDownLatch(1);
@@ -202,24 +204,24 @@ public class ManualReconnectionToSingleServerTest extends UnitTestCase
 
    protected void disconnect()
    {
-      log.info("calling disconnect");
+      ManualReconnectionToSingleServerTest.log.info("calling disconnect");
       if (connection == null)
       {
-         log.info("connection is null");
+         ManualReconnectionToSingleServerTest.log.info("connection is null");
          return;
       }
 
       try
       {
          connection.setExceptionListener(null);
-         log.info("closing the connection");
+         ManualReconnectionToSingleServerTest.log.info("closing the connection");
          connection.close();
          connection = null;
-         log.info("connection closed");
+         ManualReconnectionToSingleServerTest.log.info("connection closed");
       }
       catch (Exception e)
       {
-         log.info("** got exception");
+         ManualReconnectionToSingleServerTest.log.info("** got exception");
          e.printStackTrace();
       }
    }
@@ -276,7 +278,7 @@ public class ManualReconnectionToSingleServerTest extends UnitTestCase
    {
       private int count = 0;
 
-      public void onMessage(Message msg)
+      public void onMessage(final Message msg)
       {
          count++;
 

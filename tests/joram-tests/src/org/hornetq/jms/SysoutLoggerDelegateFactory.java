@@ -22,53 +22,53 @@ import org.hornetq.core.logging.LogDelegateFactory;
  */
 public class SysoutLoggerDelegateFactory implements LogDelegateFactory
 {
-   public LogDelegate createDelegate(Class<?> clazz)
+   public LogDelegate createDelegate(final Class<?> clazz)
    {
       return new SysoutLoggerDelegate();
-   }      
-   
+   }
+
    public class SysoutLoggerDelegate implements LogDelegate
    {
-      public void debug(Object message, Throwable t)
+      public void debug(final Object message, final Throwable t)
       {
          System.out.println(message);
          t.printStackTrace(System.out);
       }
 
-      public void debug(Object message)
-      { 
+      public void debug(final Object message)
+      {
          System.out.println(message);
       }
 
-      public void error(Object message, Throwable t)
+      public void error(final Object message, final Throwable t)
       {
          System.out.println(message);
          t.printStackTrace(System.out);
       }
 
-      public void error(Object message)
-      { 
-         System.out.println(message);
-      }
-
-      public void fatal(Object message, Throwable t)
-      { 
-         System.out.println(message);
-         t.printStackTrace(System.out);
-      }
-
-      public void fatal(Object message)
+      public void error(final Object message)
       {
          System.out.println(message);
       }
 
-      public void info(Object message, Throwable t)
+      public void fatal(final Object message, final Throwable t)
       {
          System.out.println(message);
          t.printStackTrace(System.out);
       }
 
-      public void info(Object message)
+      public void fatal(final Object message)
+      {
+         System.out.println(message);
+      }
+
+      public void info(final Object message, final Throwable t)
+      {
+         System.out.println(message);
+         t.printStackTrace(System.out);
+      }
+
+      public void info(final Object message)
       {
          System.out.println(message);
       }
@@ -88,29 +88,27 @@ public class SysoutLoggerDelegateFactory implements LogDelegateFactory
          return true;
       }
 
-      public void trace(Object message, Throwable t)
+      public void trace(final Object message, final Throwable t)
       {
          System.out.println(message);
          t.printStackTrace(System.out);
       }
 
-      public void trace(Object message)
+      public void trace(final Object message)
       {
          System.out.println(message);
       }
 
-      public void warn(Object message, Throwable t)
+      public void warn(final Object message, final Throwable t)
       {
          System.out.println(message);
          t.printStackTrace(System.out);
       }
 
-      public void warn(Object message)
-      { 
+      public void warn(final Object message)
+      {
          System.out.println(message);
       }
-      
+
    }
 }
-
-

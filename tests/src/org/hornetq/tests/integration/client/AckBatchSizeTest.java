@@ -12,6 +12,8 @@
  */
 package org.hornetq.tests.integration.client;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
@@ -83,15 +85,15 @@ public class AckBatchSizeTest extends ServiceTestBase
          for (int i = 0; i < numMessages - 1; i++)
          {
             ClientMessage m = consumer.receive(5000);
-            
+
             m.acknowledge();
          }
 
          ClientMessage m = consumer.receive(5000);
          Queue q = (Queue)server.getPostOffice().getBinding(queueA).getBindable();
-         assertEquals(100, q.getDeliveringCount());
+         Assert.assertEquals(100, q.getDeliveringCount());
          m.acknowledge();
-         assertEquals(0, q.getDeliveringCount());
+         Assert.assertEquals(0, q.getDeliveringCount());
          sendSession.close();
          session.close();
       }
@@ -135,12 +137,12 @@ public class AckBatchSizeTest extends ServiceTestBase
          for (int i = 0; i < numMessages; i++)
          {
             messages[i] = consumer.receive(5000);
-            assertNotNull(messages[i]);
+            Assert.assertNotNull(messages[i]);
          }
          for (int i = 0; i < numMessages; i++)
          {
             messages[i].acknowledge();
-            assertEquals(numMessages - i - 1, q.getDeliveringCount());
+            Assert.assertEquals(numMessages - i - 1, q.getDeliveringCount());
          }
          sendSession.close();
          session.close();

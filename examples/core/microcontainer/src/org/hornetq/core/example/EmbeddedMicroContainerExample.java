@@ -24,7 +24,6 @@ import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.integration.bootstrap.HornetQBootstrapServer;
 import org.hornetq.integration.transports.netty.NettyConnectorFactory;
 
-
 /**
  * 
  * This exammple shows how to run a HornetQ core client and server embedded in your
@@ -36,57 +35,57 @@ import org.hornetq.integration.transports.netty.NettyConnectorFactory;
 public class EmbeddedMicroContainerExample
 {
 
-   public static void main(String[] args)
+   public static void main(final String[] args)
    {
 
       HornetQBootstrapServer hornetQ = null;
       try
       {
-         
-         // Step 1. Start the server         
+
+         // Step 1. Start the server
          hornetQ = new HornetQBootstrapServer("./server0/hornetq-beans.xml");
          hornetQ.run();
-         
-         // Step 2. As we are not using a JNDI environment we instantiate the objects directly         
-         ClientSessionFactory sf = new ClientSessionFactoryImpl (new TransportConfiguration(NettyConnectorFactory.class.getName()));
-         
+
+         // Step 2. As we are not using a JNDI environment we instantiate the objects directly
+         ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(NettyConnectorFactory.class.getName()));
+
          // Step 3. Create a core queue
          ClientSession coreSession = sf.createSession(false, false, false);
-         
+
          final String queueName = "queue.exampleQueue";
-         
+
          coreSession.createQueue(queueName, queueName, true);
-         
+
          coreSession.close();
-                  
+
          ClientSession session = null;
-   
+
          try
          {
-   
+
             // Step 4. Create the session, and producer
             session = sf.createSession();
-                                   
+
             ClientProducer producer = session.createProducer(queueName);
-   
+
             // Step 5. Create and send a message
             ClientMessage message = session.createClientMessage(false);
-            
+
             final String propName = "myprop";
-            
+
             message.putStringProperty(propName, "Hello sent at " + new Date());
-            
+
             System.out.println("Sending the message.");
-            
+
             producer.send(message);
 
             // Step 6. Create the message consumer and start the connection
             ClientConsumer messageConsumer = session.createConsumer(queueName);
             session.start();
-   
-            // Step 7. Receive the message. 
+
+            // Step 7. Receive the message.
             ClientMessage messageReceived = messageConsumer.receive(1000);
-            
+
             System.out.println("Received TextMessage:" + messageReceived.getStringProperty(propName));
          }
          finally
@@ -111,5 +110,4 @@ public class EmbeddedMicroContainerExample
       }
    }
 
- 
 }

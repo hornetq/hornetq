@@ -9,16 +9,17 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
  * implied.  See the License for the specific language governing
  * permissions and limitations under the License.
- */ 
+ */
 
 package org.hornetq.tests.unit.util;
+
+import junit.framework.Assert;
 
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.XMLUtil;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -36,7 +37,7 @@ public class XMLUtilTest extends UnitTestCase
 
       Element e = org.hornetq.utils.XMLUtil.stringToElement(document);
 
-      assertEquals("foo", org.hornetq.utils.XMLUtil.getTextContent(e));
+      Assert.assertEquals("foo", org.hornetq.utils.XMLUtil.getTextContent(e));
    }
 
    public void testGetTextContext_2() throws Exception
@@ -45,7 +46,7 @@ public class XMLUtilTest extends UnitTestCase
 
       Element e = XMLUtil.stringToElement(document);
 
-      assertEquals("foo", org.hornetq.utils.XMLUtil.getTextContent(e));
+      Assert.assertEquals("foo", org.hornetq.utils.XMLUtil.getTextContent(e));
    }
 
    public void testGetTextContext_3() throws Exception
@@ -58,7 +59,7 @@ public class XMLUtilTest extends UnitTestCase
 
       Element subelement = org.hornetq.utils.XMLUtil.stringToElement(s);
 
-      assertEquals("a", subelement.getNodeName());
+      Assert.assertEquals("a", subelement.getNodeName());
    }
 
    public void testGetTextContext_4() throws Exception
@@ -71,7 +72,7 @@ public class XMLUtilTest extends UnitTestCase
 
       Element subelement = org.hornetq.utils.XMLUtil.stringToElement(s);
 
-      assertEquals("a", subelement.getNodeName());
+      Assert.assertEquals("a", subelement.getNodeName());
    }
 
    public void testGetTextContext_5() throws Exception
@@ -84,12 +85,12 @@ public class XMLUtilTest extends UnitTestCase
 
       Element subelement = org.hornetq.utils.XMLUtil.stringToElement(s);
 
-      assertEquals("a", subelement.getNodeName());
+      Assert.assertEquals("a", subelement.getNodeName());
       NodeList nl = subelement.getChildNodes();
 
       // try to find <b>
       boolean found = false;
-      for(int i = 0; i < nl.getLength(); i++)
+      for (int i = 0; i < nl.getLength(); i++)
       {
          Node n = nl.item(i);
          if ("b".equals(n.getNodeName()))
@@ -97,9 +98,8 @@ public class XMLUtilTest extends UnitTestCase
             found = true;
          }
       }
-      assertTrue(found);
+      Assert.assertTrue(found);
    }
-
 
    public void testEquivalent_1() throws Exception
    {
@@ -124,10 +124,11 @@ public class XMLUtilTest extends UnitTestCase
 
       try
       {
-         org.hornetq.utils.XMLUtil.assertEquivalent(org.hornetq.utils.XMLUtil.stringToElement(s), XMLUtil.stringToElement(s2));
-         fail("this should throw exception");
+         org.hornetq.utils.XMLUtil.assertEquivalent(org.hornetq.utils.XMLUtil.stringToElement(s),
+                                                    XMLUtil.stringToElement(s2));
+         Assert.fail("this should throw exception");
       }
-      catch(IllegalArgumentException e)
+      catch (IllegalArgumentException e)
       {
          // OK
          e.printStackTrace();
@@ -139,7 +140,8 @@ public class XMLUtilTest extends UnitTestCase
       String s = "<a attr1=\"val1\" attr2=\"val2\"/>";
       String s2 = "<a attr2=\"val2\" attr1=\"val1\"/>";
 
-      org.hornetq.utils.XMLUtil.assertEquivalent(org.hornetq.utils.XMLUtil.stringToElement(s), org.hornetq.utils.XMLUtil.stringToElement(s2));
+      org.hornetq.utils.XMLUtil.assertEquivalent(org.hornetq.utils.XMLUtil.stringToElement(s),
+                                                 org.hornetq.utils.XMLUtil.stringToElement(s2));
    }
 
    public void testEquivalent_5() throws Exception
@@ -147,7 +149,8 @@ public class XMLUtilTest extends UnitTestCase
       String s = "<a><b/></a>";
       String s2 = "<a><b/></a>";
 
-      org.hornetq.utils.XMLUtil.assertEquivalent(org.hornetq.utils.XMLUtil.stringToElement(s), org.hornetq.utils.XMLUtil.stringToElement(s2));
+      org.hornetq.utils.XMLUtil.assertEquivalent(org.hornetq.utils.XMLUtil.stringToElement(s),
+                                                 org.hornetq.utils.XMLUtil.stringToElement(s2));
    }
 
    public void testEquivalent_6() throws Exception
@@ -155,7 +158,8 @@ public class XMLUtilTest extends UnitTestCase
       String s = "<enclosing><a attr1=\"val1\" attr2=\"val2\"/></enclosing>";
       String s2 = "<enclosing><a attr2=\"val2\" attr1=\"val1\"/></enclosing>";
 
-      org.hornetq.utils.XMLUtil.assertEquivalent(XMLUtil.stringToElement(s), org.hornetq.utils.XMLUtil.stringToElement(s2));
+      org.hornetq.utils.XMLUtil.assertEquivalent(XMLUtil.stringToElement(s),
+                                                 org.hornetq.utils.XMLUtil.stringToElement(s2));
    }
 
    public void testEquivalent_7() throws Exception
@@ -165,10 +169,11 @@ public class XMLUtilTest extends UnitTestCase
 
       try
       {
-         org.hornetq.utils.XMLUtil.assertEquivalent(org.hornetq.utils.XMLUtil.stringToElement(s), org.hornetq.utils.XMLUtil.stringToElement(s2));
-         fail("this should throw exception");
+         org.hornetq.utils.XMLUtil.assertEquivalent(org.hornetq.utils.XMLUtil.stringToElement(s),
+                                                    org.hornetq.utils.XMLUtil.stringToElement(s2));
+         Assert.fail("this should throw exception");
       }
-      catch(IllegalArgumentException e)
+      catch (IllegalArgumentException e)
       {
          // OK
          e.printStackTrace();
@@ -180,7 +185,8 @@ public class XMLUtilTest extends UnitTestCase
       String s = "<a><!-- some comment --><b/><!--some other comment --><c/><!-- blah --></a>";
       String s2 = "<a><b/><!--blah blah--><c/></a>";
 
-      org.hornetq.utils.XMLUtil.assertEquivalent(XMLUtil.stringToElement(s), org.hornetq.utils.XMLUtil.stringToElement(s2));
+      org.hornetq.utils.XMLUtil.assertEquivalent(XMLUtil.stringToElement(s),
+                                                 org.hornetq.utils.XMLUtil.stringToElement(s2));
    }
 
    public void testElementToString_1() throws Exception
@@ -221,35 +227,32 @@ public class XMLUtilTest extends UnitTestCase
 
    public void testReplaceSystemProperties()
    {
-      String before = "<configuration>\n" +
-           "   <test name=\"${sysprop1}\">content1</test>\n" +
-           "   <test name=\"test2\">content2</test>\n" +
-           "   <test name=\"test3\">content3</test>\n" +
-           "   <test name=\"test4\">${sysprop2}</test>\n" +
-           "   <test name=\"test5\">content5</test>\n" +
-           "   <test name=\"test6\">content6</test>\n" +
-           "</configuration>";
-      String after = "<configuration>\n" +
-           "   <test name=\"test1\">content1</test>\n" +
-           "   <test name=\"test2\">content2</test>\n" +
-           "   <test name=\"test3\">content3</test>\n" +
-           "   <test name=\"test4\">content4</test>\n" +
-           "   <test name=\"test5\">content5</test>\n" +
-           "   <test name=\"test6\">content6</test>\n" +
-           "</configuration>";
+      String before = "<configuration>\n" + "   <test name=\"${sysprop1}\">content1</test>\n"
+                      + "   <test name=\"test2\">content2</test>\n"
+                      + "   <test name=\"test3\">content3</test>\n"
+                      + "   <test name=\"test4\">${sysprop2}</test>\n"
+                      + "   <test name=\"test5\">content5</test>\n"
+                      + "   <test name=\"test6\">content6</test>\n"
+                      + "</configuration>";
+      String after = "<configuration>\n" + "   <test name=\"test1\">content1</test>\n"
+                     + "   <test name=\"test2\">content2</test>\n"
+                     + "   <test name=\"test3\">content3</test>\n"
+                     + "   <test name=\"test4\">content4</test>\n"
+                     + "   <test name=\"test5\">content5</test>\n"
+                     + "   <test name=\"test6\">content6</test>\n"
+                     + "</configuration>";
       System.setProperty("sysprop1", "test1");
       System.setProperty("sysprop2", "content4");
       String replaced = org.hornetq.utils.XMLUtil.replaceSystemProps(before);
-      assertEquals(after, replaced);
+      Assert.assertEquals(after, replaced);
    }
-   
+
    public void testStripCDATA() throws Exception
    {
       String xml = "<![CDATA[somedata]]>";
       String stripped = XMLUtil.stripCDATA(xml);
 
-      assertEquals("somedata", stripped);
+      Assert.assertEquals("somedata", stripped);
    }
-
 
 }

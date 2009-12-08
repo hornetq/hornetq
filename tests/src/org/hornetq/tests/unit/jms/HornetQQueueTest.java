@@ -10,13 +10,13 @@
  * implied.  See the License for the specific language governing
  * permissions and limitations under the License.
  */
- 
 
 package org.hornetq.tests.unit.jms;
 
-import static org.hornetq.tests.util.RandomUtil.randomString;
+import junit.framework.Assert;
 
 import org.hornetq.jms.HornetQQueue;
+import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
 
 /**
@@ -39,17 +39,16 @@ public class HornetQQueueTest extends UnitTestCase
 
    public void testIsTemporary() throws Exception
    {
-      HornetQQueue queue = new HornetQQueue(randomString());
-      assertFalse(queue.isTemporary());
-   }
-   
-   public void testGetQueueName() throws Exception
-   {
-      String queueName = randomString();
-      HornetQQueue queue = new HornetQQueue(queueName);
-      assertEquals(queueName, queue.getQueueName());
+      HornetQQueue queue = new HornetQQueue(RandomUtil.randomString());
+      Assert.assertFalse(queue.isTemporary());
    }
 
+   public void testGetQueueName() throws Exception
+   {
+      String queueName = RandomUtil.randomString();
+      HornetQQueue queue = new HornetQQueue(queueName);
+      Assert.assertEquals(queueName, queue.getQueueName());
+   }
 
    // Package protected ---------------------------------------------
 

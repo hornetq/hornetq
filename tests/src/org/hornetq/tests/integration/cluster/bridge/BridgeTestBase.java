@@ -36,18 +36,20 @@ import org.hornetq.tests.util.UnitTestCase;
  */
 public abstract class BridgeTestBase extends UnitTestCase
 {
-   
+
    private ArrayList<HornetQServer> servers;
-   
+
+   @Override
    public void setUp() throws Exception
    {
       super.setUp();
       servers = new ArrayList<HornetQServer>();
    }
-   
+
+   @Override
    public void tearDown() throws Exception
    {
-      for (HornetQServer server: servers)
+      for (HornetQServer server : servers)
       {
          try
          {
@@ -63,20 +65,18 @@ public abstract class BridgeTestBase extends UnitTestCase
             e.printStackTrace(System.out);
          }
       }
-      
+
       servers = null;
-      
+
       InVMConnector.failOnCreateConnection = false;
 
       super.tearDown();
    }
-   
+
    protected HornetQServer createHornetQServer(final int id, final boolean netty, final Map<String, Object> params)
    {
       return createHornetQServer(id, params, netty, false);
    }
-   
-   
 
    protected HornetQServer createHornetQServer(final int id,
                                                final Map<String, Object> params,
@@ -98,9 +98,10 @@ public abstract class BridgeTestBase extends UnitTestCase
 
       if (netty)
       {
-         params.put(org.hornetq.integration.transports.netty.TransportConstants.PORT_PROP_NAME, org.hornetq.integration.transports.netty.TransportConstants.DEFAULT_PORT + id);
-         serviceConf.getAcceptorConfigurations()
-                    .add(new TransportConfiguration(NettyAcceptorFactory.class.getName(), params));
+         params.put(org.hornetq.integration.transports.netty.TransportConstants.PORT_PROP_NAME,
+                    org.hornetq.integration.transports.netty.TransportConstants.DEFAULT_PORT + id);
+         serviceConf.getAcceptorConfigurations().add(new TransportConfiguration(NettyAcceptorFactory.class.getName(),
+                                                                                params));
 
       }
       else
@@ -110,9 +111,9 @@ public abstract class BridgeTestBase extends UnitTestCase
                     .add(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory", params));
       }
       HornetQServer service = HornetQ.newHornetQServer(serviceConf, true);
-      
+
       servers.add(service);
-      
+
       return service;
    }
 

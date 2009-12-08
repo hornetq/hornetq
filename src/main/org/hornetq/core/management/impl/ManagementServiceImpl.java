@@ -21,9 +21,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 import javax.management.MBeanServer;
 import javax.management.NotificationBroadcasterSupport;
@@ -40,7 +38,6 @@ import org.hornetq.core.config.cluster.ClusterConnectionConfiguration;
 import org.hornetq.core.config.cluster.DiscoveryGroupConfiguration;
 import org.hornetq.core.config.cluster.DivertConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
-import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.management.AcceptorControl;
 import org.hornetq.core.management.BridgeControl;
@@ -125,7 +122,7 @@ public class ManagementServiceImpl implements ManagementService
 
    private boolean started = false;
 
-   private boolean messageCounterEnabled;
+   private final boolean messageCounterEnabled;
 
    private boolean notificationsEnabled;
 
@@ -135,12 +132,12 @@ public class ManagementServiceImpl implements ManagementService
 
    // Static --------------------------------------------------------
 
-   private static void checkDefaultManagementClusterCredentials(String user, String password)
+   private static void checkDefaultManagementClusterCredentials(final String user, final String password)
    {
       if (ConfigurationImpl.DEFAULT_MANAGEMENT_CLUSTER_USER.equals(user) && ConfigurationImpl.DEFAULT_MANAGEMENT_CLUSTER_PASSWORD.equals(password))
       {
-         log.warn("It has been detected that the cluster admin user and password which are used to " + "replicate management operation from one node to the other have not been changed from the installation default. "
-                  + "Please see the HornetQ user guide for instructions on how to do this.");
+         ManagementServiceImpl.log.warn("It has been detected that the cluster admin user and password which are used to " + "replicate management operation from one node to the other have not been changed from the installation default. "
+                                        + "Please see the HornetQ user guide for instructions on how to do this.");
       }
    }
 
@@ -149,15 +146,15 @@ public class ManagementServiceImpl implements ManagementService
    public ManagementServiceImpl(final MBeanServer mbeanServer, final Configuration configuration)
    {
       this.mbeanServer = mbeanServer;
-      this.jmxManagementEnabled = configuration.isJMXManagementEnabled();
-      this.messageCounterEnabled = configuration.isMessageCounterEnabled();
-      this.managementAddress = configuration.getManagementAddress();
-      this.managementNotificationAddress = configuration.getManagementNotificationAddress();
-      this.managementClusterUser = configuration.getManagementClusterUser();
-      this.managementClusterPassword = configuration.getManagementClusterPassword();
-      this.managementRequestTimeout = configuration.getManagementRequestTimeout();
+      jmxManagementEnabled = configuration.isJMXManagementEnabled();
+      messageCounterEnabled = configuration.isMessageCounterEnabled();
+      managementAddress = configuration.getManagementAddress();
+      managementNotificationAddress = configuration.getManagementNotificationAddress();
+      managementClusterUser = configuration.getManagementClusterUser();
+      managementClusterPassword = configuration.getManagementClusterPassword();
+      managementRequestTimeout = configuration.getManagementRequestTimeout();
 
-      checkDefaultManagementClusterCredentials(managementClusterUser, managementClusterPassword);
+      ManagementServiceImpl.checkDefaultManagementClusterCredentials(managementClusterUser, managementClusterPassword);
 
       registry = new HashMap<String, Object>();
       broadcaster = new NotificationBroadcasterSupport();
@@ -178,8 +175,8 @@ public class ManagementServiceImpl implements ManagementService
    {
       return messageCounterManager;
    }
-   
-   public void setStorageManager(StorageManager storageManager)
+
+   public void setStorageManager(final StorageManager storageManager)
    {
       this.storageManager = storageManager;
    }
@@ -204,7 +201,7 @@ public class ManagementServiceImpl implements ManagementService
       this.messagingServer = messagingServer;
       this.pagingManager = pagingManager;
 
-      this.messageCounterManager = new MessageCounterManagerImpl(scheduledThreadPool);
+      messageCounterManager = new MessageCounterManagerImpl(scheduledThreadPool);
       messageCounterManager.setMaxDayCount(configuration.getMessageCounterMaxDayHistory());
       messageCounterManager.reschedule(configuration.getMessageCounterSamplePeriod());
 
@@ -233,15 +230,19 @@ public class ManagementServiceImpl implements ManagementService
    public synchronized void registerAddress(final SimpleString address) throws Exception
    {
       ObjectName objectName = objectNameBuilder.getAddressObjectName(address);
-      AddressControlImpl addressControl = new AddressControlImpl(address, postOffice, pagingManager, storageManager, securityRepository);
+      AddressControlImpl addressControl = new AddressControlImpl(address,
+                                                                 postOffice,
+                                                                 pagingManager,
+                                                                 storageManager,
+                                                                 securityRepository);
 
       registerInJMX(objectName, addressControl);
 
       registerInRegistry(ResourceNames.CORE_ADDRESS + address, addressControl);
 
-      if (log.isDebugEnabled())
+      if (ManagementServiceImpl.log.isDebugEnabled())
       {
-         log.debug("registered address " + objectName);
+         ManagementServiceImpl.log.debug("registered address " + objectName);
       }
    }
 
@@ -277,9 +278,9 @@ public class ManagementServiceImpl implements ManagementService
       registerInJMX(objectName, queueControl);
       registerInRegistry(ResourceNames.CORE_QUEUE + queue.getName(), queueControl);
 
-      if (log.isDebugEnabled())
+      if (ManagementServiceImpl.log.isDebugEnabled())
       {
-         log.debug("registered queue " + objectName);
+         ManagementServiceImpl.log.debug("registered queue " + objectName);
       }
    }
 
@@ -291,16 +292,16 @@ public class ManagementServiceImpl implements ManagementService
       messageCounterManager.unregisterMessageCounter(name.toString());
    }
 
-   public synchronized void registerDivert(Divert divert, DivertConfiguration config) throws Exception
+   public synchronized void registerDivert(final Divert divert, final DivertConfiguration config) throws Exception
    {
       ObjectName objectName = objectNameBuilder.getDivertObjectName(divert.getUniqueName());
       DivertControl divertControl = new DivertControlImpl(divert, storageManager, config);
       registerInJMX(objectName, new StandardMBean(divertControl, DivertControl.class));
       registerInRegistry(ResourceNames.CORE_DIVERT + config.getName(), divertControl);
 
-      if (log.isDebugEnabled())
+      if (ManagementServiceImpl.log.isDebugEnabled())
       {
-         log.debug("registered divert " + objectName);
+         ManagementServiceImpl.log.debug("registered divert " + objectName);
       }
    }
 
@@ -351,8 +352,8 @@ public class ManagementServiceImpl implements ManagementService
       unregisterFromRegistry(ResourceNames.CORE_ACCEPTOR + name);
    }
 
-   public synchronized void registerBroadcastGroup(BroadcastGroup broadcastGroup,
-                                                   BroadcastGroupConfiguration configuration) throws Exception
+   public synchronized void registerBroadcastGroup(final BroadcastGroup broadcastGroup,
+                                                   final BroadcastGroupConfiguration configuration) throws Exception
    {
       broadcastGroup.setNotificationService(this);
       ObjectName objectName = objectNameBuilder.getBroadcastGroupObjectName(configuration.getName());
@@ -361,15 +362,15 @@ public class ManagementServiceImpl implements ManagementService
       registerInRegistry(ResourceNames.CORE_BROADCAST_GROUP + configuration.getName(), control);
    }
 
-   public synchronized void unregisterBroadcastGroup(String name) throws Exception
+   public synchronized void unregisterBroadcastGroup(final String name) throws Exception
    {
       ObjectName objectName = objectNameBuilder.getBroadcastGroupObjectName(name);
       unregisterFromJMX(objectName);
       unregisterFromRegistry(ResourceNames.CORE_BROADCAST_GROUP + name);
    }
 
-   public synchronized void registerDiscoveryGroup(DiscoveryGroup discoveryGroup,
-                                                   DiscoveryGroupConfiguration configuration) throws Exception
+   public synchronized void registerDiscoveryGroup(final DiscoveryGroup discoveryGroup,
+                                                   final DiscoveryGroupConfiguration configuration) throws Exception
    {
       discoveryGroup.setNotificationService(this);
       ObjectName objectName = objectNameBuilder.getDiscoveryGroupObjectName(configuration.getName());
@@ -378,14 +379,14 @@ public class ManagementServiceImpl implements ManagementService
       registerInRegistry(ResourceNames.CORE_DISCOVERY_GROUP + configuration.getName(), control);
    }
 
-   public synchronized void unregisterDiscoveryGroup(String name) throws Exception
+   public synchronized void unregisterDiscoveryGroup(final String name) throws Exception
    {
       ObjectName objectName = objectNameBuilder.getDiscoveryGroupObjectName(name);
       unregisterFromJMX(objectName);
       unregisterFromRegistry(ResourceNames.CORE_DISCOVERY_GROUP + name);
    }
 
-   public synchronized void registerBridge(Bridge bridge, BridgeConfiguration configuration) throws Exception
+   public synchronized void registerBridge(final Bridge bridge, final BridgeConfiguration configuration) throws Exception
    {
       bridge.setNotificationService(this);
       ObjectName objectName = objectNameBuilder.getBridgeObjectName(configuration.getName());
@@ -394,7 +395,7 @@ public class ManagementServiceImpl implements ManagementService
       registerInRegistry(ResourceNames.CORE_BRIDGE + configuration.getName(), control);
    }
 
-   public synchronized void unregisterBridge(String name) throws Exception
+   public synchronized void unregisterBridge(final String name) throws Exception
    {
       ObjectName objectName = objectNameBuilder.getBridgeObjectName(name);
       unregisterFromJMX(objectName);
@@ -423,9 +424,9 @@ public class ManagementServiceImpl implements ManagementService
       ServerMessage reply = new ServerMessageImpl(storageManager.generateUniqueID(), 512);
 
       String resourceName = message.getStringProperty(ManagementHelper.HDR_RESOURCE_NAME);
-      if (log.isDebugEnabled())
+      if (ManagementServiceImpl.log.isDebugEnabled())
       {
-         log.debug("handling management message for " + resourceName);
+         ManagementServiceImpl.log.debug("handling management message for " + resourceName);
       }
 
       String operation = message.getStringProperty(ManagementHelper.HDR_OPERATION_NAME);
@@ -449,7 +450,7 @@ public class ManagementServiceImpl implements ManagementService
          }
          catch (Exception e)
          {
-            log.warn("exception while invoking " + operation + " on " + resourceName, e);
+            ManagementServiceImpl.log.warn("exception while invoking " + operation + " on " + resourceName, e);
             reply.putBooleanProperty(ManagementHelper.HDR_OPERATION_SUCCEEDED, false);
             String exceptionMessage = e.getMessage();
             if (e instanceof InvocationTargetException)
@@ -476,7 +477,9 @@ public class ManagementServiceImpl implements ManagementService
             }
             catch (Exception e)
             {
-               log.warn("exception while retrieving attribute " + attribute + " on " + resourceName, e);
+               ManagementServiceImpl.log.warn("exception while retrieving attribute " + attribute +
+                                              " on " +
+                                              resourceName, e);
                reply.putBooleanProperty(ManagementHelper.HDR_OPERATION_SUCCEEDED, false);
                String exceptionMessage = e.getMessage();
                if (e instanceof InvocationTargetException)
@@ -499,7 +502,7 @@ public class ManagementServiceImpl implements ManagementService
       return registry.get(resourceName);
    }
 
-   public Object[] getResources(Class<?> resourceType)
+   public Object[] getResources(final Class<?> resourceType)
    {
       List<Object> resources = new ArrayList<Object>();
       for (Object entry : registry.values())
@@ -509,10 +512,10 @@ public class ManagementServiceImpl implements ManagementService
             resources.add(entry);
          }
       }
-      return (Object[])resources.toArray(new Object[resources.size()]);
+      return resources.toArray(new Object[resources.size()]);
    }
 
-   private Set<ObjectName> registeredNames = new HashSet<ObjectName>();
+   private final Set<ObjectName> registeredNames = new HashSet<ObjectName>();
 
    public void registerInJMX(final ObjectName objectName, final Object managedResource) throws Exception
    {
@@ -630,12 +633,12 @@ public class ManagementServiceImpl implements ManagementService
             }
             if (!unexpectedResourceNames.isEmpty())
             {
-               log.warn("On ManagementService stop, there are " + unexpectedResourceNames.size() +
-                        " unexpected registered MBeans: " +
-                        unexpectedResourceNames);
+               ManagementServiceImpl.log.warn("On ManagementService stop, there are " + unexpectedResourceNames.size() +
+                                              " unexpected registered MBeans: " +
+                                              unexpectedResourceNames);
             }
 
-            for (ObjectName on : this.registeredNames)
+            for (ObjectName on : registeredNames)
             {
                try
                {
@@ -698,7 +701,7 @@ public class ManagementServiceImpl implements ManagementService
                   catch (Exception e)
                   {
                      // Exception thrown from one listener should not stop execution of others
-                     log.error("Failed to call listener", e);
+                     ManagementServiceImpl.log.error("Failed to call listener", e);
                   }
                }
 
@@ -709,7 +712,7 @@ public class ManagementServiceImpl implements ManagementService
                }
 
                long messageID = storageManager.generateUniqueID();
-               
+
                ServerMessage notificationMessage = new ServerMessageImpl(messageID, 512);
 
                // Notification messages are always durable so the user can choose whether to add a durable queue to
@@ -747,7 +750,7 @@ public class ManagementServiceImpl implements ManagementService
       }
    }
 
-   public void enableNotifications(boolean enabled)
+   public void enableNotifications(final boolean enabled)
    {
       notificationsEnabled = enabled;
    }
@@ -815,12 +818,18 @@ public class ManagementServiceImpl implements ManagementService
                {
                   continue;
                }
-               if (paramTypes[i].isAssignableFrom(params[i].getClass()) || (paramTypes[i] == Long.TYPE && params[i].getClass() == Integer.class) ||
-                   (paramTypes[i] == Double.TYPE && params[i].getClass() == Integer.class) ||
-                   (paramTypes[i] == Long.TYPE && params[i].getClass() == Long.class) ||
-                   (paramTypes[i] == Double.TYPE && params[i].getClass() == Double.class) ||
-                   (paramTypes[i] == Integer.TYPE && params[i].getClass() == Integer.class) ||
-                   (paramTypes[i] == Boolean.TYPE && params[i].getClass() == Boolean.class))
+               if (paramTypes[i].isAssignableFrom(params[i].getClass()) || paramTypes[i] == Long.TYPE &&
+                   params[i].getClass() == Integer.class ||
+                   paramTypes[i] == Double.TYPE &&
+                   params[i].getClass() == Integer.class ||
+                   paramTypes[i] == Long.TYPE &&
+                   params[i].getClass() == Long.class ||
+                   paramTypes[i] == Double.TYPE &&
+                   params[i].getClass() == Double.class ||
+                   paramTypes[i] == Integer.TYPE &&
+                   params[i].getClass() == Integer.class ||
+                   paramTypes[i] == Boolean.TYPE &&
+                   params[i].getClass() == Boolean.class)
                {
                   // parameter match
                }

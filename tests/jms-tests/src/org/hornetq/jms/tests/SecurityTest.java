@@ -21,6 +21,8 @@ import javax.jms.IllegalStateException;
 import javax.jms.JMSSecurityException;
 import javax.jms.Session;
 
+import org.hornetq.jms.tests.util.ProxyAssertSupport;
+
 /**
  * Test JMS Security.
  *
@@ -39,7 +41,6 @@ import javax.jms.Session;
 public class SecurityTest extends JMSTestCase
 {
    // Constants -----------------------------------------------------
-
 
    // Static --------------------------------------------------------
 
@@ -60,15 +61,19 @@ public class SecurityTest extends JMSTestCase
       Connection conn2 = null;
       try
       {
-         conn1 = cf.createConnection();
-         conn2 = cf.createConnection(null, null);
+         conn1 = JMSTestCase.cf.createConnection();
+         conn2 = JMSTestCase.cf.createConnection(null, null);
       }
       finally
       {
          if (conn1 != null)
+         {
             conn1.close();
+         }
          if (conn2 != null)
+         {
             conn2.close();
+         }
       }
    }
 
@@ -83,15 +88,19 @@ public class SecurityTest extends JMSTestCase
       Connection conn2 = null;
       try
       {
-         conn1 = cf.createConnection();
-         conn2 = cf.createConnection(null, null);
+         conn1 = JMSTestCase.cf.createConnection();
+         conn2 = JMSTestCase.cf.createConnection(null, null);
       }
       finally
       {
          if (conn1 != null)
+         {
             conn1.close();
+         }
          if (conn2 != null)
+         {
             conn2.close();
+         }
       }
    }
 
@@ -104,12 +113,14 @@ public class SecurityTest extends JMSTestCase
       Connection conn1 = null;
       try
       {
-         conn1 = cf.createConnection("guest", "guest");
+         conn1 = JMSTestCase.cf.createConnection("guest", "guest");
       }
       finally
       {
          if (conn1 != null)
+         {
             conn1.close();
+         }
       }
    }
 
@@ -122,8 +133,8 @@ public class SecurityTest extends JMSTestCase
       Connection conn1 = null;
       try
       {
-         conn1 = cf.createConnection("guest", "not.the.valid.password");
-         fail();
+         conn1 = JMSTestCase.cf.createConnection("guest", "not.the.valid.password");
+         ProxyAssertSupport.fail();
       }
       catch (JMSSecurityException e)
       {
@@ -132,7 +143,9 @@ public class SecurityTest extends JMSTestCase
       finally
       {
          if (conn1 != null)
+         {
             conn1.close();
+         }
       }
    }
 
@@ -145,8 +158,8 @@ public class SecurityTest extends JMSTestCase
       Connection conn1 = null;
       try
       {
-         conn1 = cf.createConnection("not.the.valid.user", "not.the.valid.password");
-         fail();
+         conn1 = JMSTestCase.cf.createConnection("not.the.valid.user", "not.the.valid.password");
+         ProxyAssertSupport.fail();
       }
       catch (JMSSecurityException e)
       {
@@ -155,7 +168,9 @@ public class SecurityTest extends JMSTestCase
       finally
       {
          if (conn1 != null)
+         {
             conn1.close();
+         }
       }
    }
 
@@ -171,17 +186,19 @@ public class SecurityTest extends JMSTestCase
       {
          ArrayList<String> bindings = new ArrayList<String>();
          bindings.add("preConfcf");
-         deployConnectionFactory("dilbert-id", "preConfcf", bindings);
+         HornetQServerTestCase.deployConnectionFactory("dilbert-id", "preConfcf", bindings);
          ConnectionFactory cf = (ConnectionFactory)getInitialContext().lookup("preConfcf");
          conn = cf.createConnection("guest", "guest");
          String clientID = conn.getClientID();
-         assertEquals("Invalid ClientID", "dilbert-id", clientID);
+         ProxyAssertSupport.assertEquals("Invalid ClientID", "dilbert-id", clientID);
       }
       finally
       {
          if (conn != null)
+         {
             conn.close();
-         undeployConnectionFactory("preConfcf");
+         }
+         HornetQServerTestCase.undeployConnectionFactory("preConfcf");
       }
    }
 
@@ -193,15 +210,17 @@ public class SecurityTest extends JMSTestCase
       Connection conn = null;
       try
       {
-         conn = cf.createConnection();
+         conn = JMSTestCase.cf.createConnection();
          conn.setClientID("myID");
          String clientID = conn.getClientID();
-         assertEquals("Invalid ClientID", "myID", clientID);
+         ProxyAssertSupport.assertEquals("Invalid ClientID", "myID", clientID);
       }
       finally
       {
          if (conn != null)
+         {
             conn.close();
+         }
       }
    }
 
@@ -215,11 +234,11 @@ public class SecurityTest extends JMSTestCase
       {
          ArrayList<String> bindings = new ArrayList<String>();
          bindings.add("preConfcf");
-         deployConnectionFactory("dilbert-id", "preConfcf", bindings);
+         HornetQServerTestCase.deployConnectionFactory("dilbert-id", "preConfcf", bindings);
          ConnectionFactory cf = (ConnectionFactory)getInitialContext().lookup("preConfcf");
          conn = cf.createConnection("guest", "guest");
          conn.setClientID("myID");
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (IllegalStateException e)
       {
@@ -228,8 +247,10 @@ public class SecurityTest extends JMSTestCase
       finally
       {
          if (conn != null)
+         {
             conn.close();
-         undeployConnectionFactory("preConfcf");
+         }
+         HornetQServerTestCase.undeployConnectionFactory("preConfcf");
       }
    }
 
@@ -241,10 +262,10 @@ public class SecurityTest extends JMSTestCase
       Connection conn = null;
       try
       {
-         conn = cf.createConnection();
+         conn = JMSTestCase.cf.createConnection();
          conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          conn.setClientID("myID");
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (IllegalStateException e)
       {
@@ -253,16 +274,14 @@ public class SecurityTest extends JMSTestCase
       finally
       {
          if (conn != null)
+         {
             conn.close();
+         }
       }
    }
 
-
-
    // Private -------------------------------------------------------
 
-
-   
    // Inner classes -------------------------------------------------
 
 }

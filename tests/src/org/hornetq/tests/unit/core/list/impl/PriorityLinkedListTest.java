@@ -9,11 +9,13 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
  * implied.  See the License for the specific language governing
  * permissions and limitations under the License.
- */ 
+ */
 
 package org.hornetq.tests.unit.core.list.impl;
 
 import java.util.Iterator;
+
+import junit.framework.Assert;
 
 import org.hornetq.core.list.PriorityLinkedList;
 import org.hornetq.core.list.impl.PriorityLinkedListImpl;
@@ -27,40 +29,65 @@ import org.hornetq.tests.util.UnitTestCase;
 public class PriorityLinkedListTest extends UnitTestCase
 {
    protected PriorityLinkedList<Wibble> list;
-   
+
    protected Wibble a;
+
    protected Wibble b;
+
    protected Wibble c;
+
    protected Wibble d;
-   protected Wibble e;   
+
+   protected Wibble e;
+
    protected Wibble f;
+
    protected Wibble g;
+
    protected Wibble h;
+
    protected Wibble i;
+
    protected Wibble j;
+
    protected Wibble k;
+
    protected Wibble l;
+
    protected Wibble m;
+
    protected Wibble n;
-   protected Wibble o;   
+
+   protected Wibble o;
+
    protected Wibble p;
+
    protected Wibble q;
+
    protected Wibble r;
+
    protected Wibble s;
+
    protected Wibble t;
+
    protected Wibble u;
+
    protected Wibble v;
+
    protected Wibble w;
+
    protected Wibble x;
-   protected Wibble y;   
+
+   protected Wibble y;
+
    protected Wibble z;
-   
+
    public void setUp() throws Exception
    {
       super.setUp();
-      
+
       list = new PriorityLinkedListImpl<Wibble>(10);
-      
+
       a = new Wibble("a");
       b = new Wibble("b");
       c = new Wibble("c");
@@ -88,27 +115,26 @@ public class PriorityLinkedListTest extends UnitTestCase
       y = new Wibble("y");
       z = new Wibble("z");
    }
-   
-   
+
    public void tearDown() throws Exception
    {
-      list = null; 
+      list = null;
       super.tearDown();
    }
-  
+
    public void testEmpty() throws Exception
    {
-      assertTrue(list.isEmpty());
+      Assert.assertTrue(list.isEmpty());
 
       list.addFirst(a, 0);
 
-      assertFalse(list.isEmpty());
-      
+      Assert.assertFalse(list.isEmpty());
+
       Wibble w = list.removeFirst();
-      assertEquals(a, w);
-      assertTrue(list.isEmpty());
+      Assert.assertEquals(a, w);
+      Assert.assertTrue(list.isEmpty());
    }
-   
+
    public void testAddFirst() throws Exception
    {
       list.addFirst(a, 0);
@@ -117,15 +143,14 @@ public class PriorityLinkedListTest extends UnitTestCase
       list.addFirst(d, 0);
       list.addFirst(e, 0);
 
-
-      assertEquals(e, list.removeFirst());
-      assertEquals(d, list.removeFirst());
-      assertEquals(c, list.removeFirst());
-      assertEquals(b, list.removeFirst());
-      assertEquals(a, list.removeFirst());
-      assertNull(list.removeFirst());
+      Assert.assertEquals(e, list.removeFirst());
+      Assert.assertEquals(d, list.removeFirst());
+      Assert.assertEquals(c, list.removeFirst());
+      Assert.assertEquals(b, list.removeFirst());
+      Assert.assertEquals(a, list.removeFirst());
+      Assert.assertNull(list.removeFirst());
    }
-   
+
    public void testAddLast() throws Exception
    {
       list.addLast(a, 0);
@@ -133,16 +158,16 @@ public class PriorityLinkedListTest extends UnitTestCase
       list.addLast(c, 0);
       list.addLast(d, 0);
       list.addLast(e, 0);
-      
-      assertEquals(a, list.removeFirst());
-      assertEquals(b, list.removeFirst());
-      assertEquals(c, list.removeFirst());
-      assertEquals(d, list.removeFirst());
-      assertEquals(e, list.removeFirst());
-      assertNull(list.removeFirst());
+
+      Assert.assertEquals(a, list.removeFirst());
+      Assert.assertEquals(b, list.removeFirst());
+      Assert.assertEquals(c, list.removeFirst());
+      Assert.assertEquals(d, list.removeFirst());
+      Assert.assertEquals(e, list.removeFirst());
+      Assert.assertNull(list.removeFirst());
 
    }
-   
+
    public void testPeekFirst()
    {
       list.addLast(a, 0);
@@ -156,17 +181,17 @@ public class PriorityLinkedListTest extends UnitTestCase
       list.addLast(i, 8);
       list.addLast(j, 9);
 
-      assertEquals(j, list.peekFirst());
-      assertEquals(j, list.peekFirst());
+      Assert.assertEquals(j, list.peekFirst());
+      Assert.assertEquals(j, list.peekFirst());
 
       list.removeFirst();
-      
-      assertEquals(i, list.peekFirst());
-      assertEquals(i, list.peekFirst());
-      
+
+      Assert.assertEquals(i, list.peekFirst());
+      Assert.assertEquals(i, list.peekFirst());
+
       list.clear();
    }
-   
+
    public void testRemoveFirst() throws Exception
    {
       list.addLast(a, 0);
@@ -179,20 +204,20 @@ public class PriorityLinkedListTest extends UnitTestCase
       list.addLast(h, 7);
       list.addLast(i, 8);
       list.addLast(j, 9);
-      
-      assertEquals(j, list.removeFirst());
-      assertEquals(i, list.removeFirst());
-      assertEquals(h, list.removeFirst());
-      assertEquals(g, list.removeFirst());
-      assertEquals(f, list.removeFirst());
-      assertEquals(e, list.removeFirst());
-      assertEquals(d, list.removeFirst());
-      assertEquals(c, list.removeFirst());
-      assertEquals(b, list.removeFirst());
-      assertEquals(a, list.removeFirst());
-    
-      assertNull(list.removeFirst());
-      
+
+      Assert.assertEquals(j, list.removeFirst());
+      Assert.assertEquals(i, list.removeFirst());
+      Assert.assertEquals(h, list.removeFirst());
+      Assert.assertEquals(g, list.removeFirst());
+      Assert.assertEquals(f, list.removeFirst());
+      Assert.assertEquals(e, list.removeFirst());
+      Assert.assertEquals(d, list.removeFirst());
+      Assert.assertEquals(c, list.removeFirst());
+      Assert.assertEquals(b, list.removeFirst());
+      Assert.assertEquals(a, list.removeFirst());
+
+      Assert.assertNull(list.removeFirst());
+
       list.addLast(a, 9);
       list.addLast(b, 8);
       list.addLast(c, 7);
@@ -203,20 +228,20 @@ public class PriorityLinkedListTest extends UnitTestCase
       list.addLast(h, 2);
       list.addLast(i, 1);
       list.addLast(j, 0);
-      
-      assertEquals(a, list.removeFirst());
-      assertEquals(b, list.removeFirst());
-      assertEquals(c, list.removeFirst());
-      assertEquals(d, list.removeFirst());
-      assertEquals(e, list.removeFirst());
-      assertEquals(f, list.removeFirst());
-      assertEquals(g, list.removeFirst());
-      assertEquals(h, list.removeFirst());
-      assertEquals(i, list.removeFirst());
-      assertEquals(j, list.removeFirst());
-    
-      assertNull(list.removeFirst());
-      
+
+      Assert.assertEquals(a, list.removeFirst());
+      Assert.assertEquals(b, list.removeFirst());
+      Assert.assertEquals(c, list.removeFirst());
+      Assert.assertEquals(d, list.removeFirst());
+      Assert.assertEquals(e, list.removeFirst());
+      Assert.assertEquals(f, list.removeFirst());
+      Assert.assertEquals(g, list.removeFirst());
+      Assert.assertEquals(h, list.removeFirst());
+      Assert.assertEquals(i, list.removeFirst());
+      Assert.assertEquals(j, list.removeFirst());
+
+      Assert.assertNull(list.removeFirst());
+
       list.addLast(a, 9);
       list.addLast(b, 0);
       list.addLast(c, 8);
@@ -227,20 +252,20 @@ public class PriorityLinkedListTest extends UnitTestCase
       list.addLast(h, 3);
       list.addLast(i, 5);
       list.addLast(j, 4);
-      
-      assertEquals(a, list.removeFirst());
-      assertEquals(c, list.removeFirst());
-      assertEquals(e, list.removeFirst());
-      assertEquals(g, list.removeFirst());
-      assertEquals(i, list.removeFirst());
-      assertEquals(j, list.removeFirst());
-      assertEquals(h, list.removeFirst());
-      assertEquals(f, list.removeFirst());
-      assertEquals(d, list.removeFirst());
-      assertEquals(b, list.removeFirst());
-      
-      assertNull(list.removeFirst());
-      
+
+      Assert.assertEquals(a, list.removeFirst());
+      Assert.assertEquals(c, list.removeFirst());
+      Assert.assertEquals(e, list.removeFirst());
+      Assert.assertEquals(g, list.removeFirst());
+      Assert.assertEquals(i, list.removeFirst());
+      Assert.assertEquals(j, list.removeFirst());
+      Assert.assertEquals(h, list.removeFirst());
+      Assert.assertEquals(f, list.removeFirst());
+      Assert.assertEquals(d, list.removeFirst());
+      Assert.assertEquals(b, list.removeFirst());
+
+      Assert.assertNull(list.removeFirst());
+
       list.addLast(a, 0);
       list.addLast(b, 3);
       list.addLast(c, 3);
@@ -251,20 +276,20 @@ public class PriorityLinkedListTest extends UnitTestCase
       list.addLast(h, 9);
       list.addLast(i, 9);
       list.addLast(j, 9);
-      
-      assertEquals(h, list.removeFirst());
-      assertEquals(i, list.removeFirst());
-      assertEquals(j, list.removeFirst());
-      assertEquals(e, list.removeFirst());
-      assertEquals(f, list.removeFirst());
-      assertEquals(g, list.removeFirst());
-      assertEquals(b, list.removeFirst());
-      assertEquals(c, list.removeFirst());
-      assertEquals(d, list.removeFirst());
-      assertEquals(a, list.removeFirst());
-      
-      assertNull(list.removeFirst());
-      
+
+      Assert.assertEquals(h, list.removeFirst());
+      Assert.assertEquals(i, list.removeFirst());
+      Assert.assertEquals(j, list.removeFirst());
+      Assert.assertEquals(e, list.removeFirst());
+      Assert.assertEquals(f, list.removeFirst());
+      Assert.assertEquals(g, list.removeFirst());
+      Assert.assertEquals(b, list.removeFirst());
+      Assert.assertEquals(c, list.removeFirst());
+      Assert.assertEquals(d, list.removeFirst());
+      Assert.assertEquals(a, list.removeFirst());
+
+      Assert.assertNull(list.removeFirst());
+
       list.addLast(a, 5);
       list.addLast(b, 5);
       list.addLast(c, 5);
@@ -275,20 +300,20 @@ public class PriorityLinkedListTest extends UnitTestCase
       list.addLast(h, 5);
       list.addLast(i, 5);
       list.addLast(j, 5);
-      
-      assertEquals(a, list.removeFirst());
-      assertEquals(b, list.removeFirst());
-      assertEquals(c, list.removeFirst());
-      assertEquals(d, list.removeFirst());
-      assertEquals(e, list.removeFirst());
-      assertEquals(f, list.removeFirst());
-      assertEquals(g, list.removeFirst());
-      assertEquals(h, list.removeFirst());
-      assertEquals(i, list.removeFirst());
-      assertEquals(j, list.removeFirst());
-      
-      assertNull(list.removeFirst());
-      
+
+      Assert.assertEquals(a, list.removeFirst());
+      Assert.assertEquals(b, list.removeFirst());
+      Assert.assertEquals(c, list.removeFirst());
+      Assert.assertEquals(d, list.removeFirst());
+      Assert.assertEquals(e, list.removeFirst());
+      Assert.assertEquals(f, list.removeFirst());
+      Assert.assertEquals(g, list.removeFirst());
+      Assert.assertEquals(h, list.removeFirst());
+      Assert.assertEquals(i, list.removeFirst());
+      Assert.assertEquals(j, list.removeFirst());
+
+      Assert.assertNull(list.removeFirst());
+
       list.addLast(j, 5);
       list.addLast(i, 5);
       list.addLast(h, 5);
@@ -299,22 +324,22 @@ public class PriorityLinkedListTest extends UnitTestCase
       list.addLast(c, 5);
       list.addLast(b, 5);
       list.addLast(a, 5);
-      
-      assertEquals(j, list.removeFirst());
-      assertEquals(i, list.removeFirst());
-      assertEquals(h, list.removeFirst());
-      assertEquals(g, list.removeFirst());
-      assertEquals(f, list.removeFirst());
-      assertEquals(e, list.removeFirst());
-      assertEquals(d, list.removeFirst());
-      assertEquals(c, list.removeFirst());
-      assertEquals(b, list.removeFirst());
-      assertEquals(a, list.removeFirst());
-      
-      assertNull(list.removeFirst());
-      
+
+      Assert.assertEquals(j, list.removeFirst());
+      Assert.assertEquals(i, list.removeFirst());
+      Assert.assertEquals(h, list.removeFirst());
+      Assert.assertEquals(g, list.removeFirst());
+      Assert.assertEquals(f, list.removeFirst());
+      Assert.assertEquals(e, list.removeFirst());
+      Assert.assertEquals(d, list.removeFirst());
+      Assert.assertEquals(c, list.removeFirst());
+      Assert.assertEquals(b, list.removeFirst());
+      Assert.assertEquals(a, list.removeFirst());
+
+      Assert.assertNull(list.removeFirst());
+
    }
-   
+
    public void testGetAll() throws Exception
    {
       list.addLast(a, 0);
@@ -327,8 +352,7 @@ public class PriorityLinkedListTest extends UnitTestCase
       list.addLast(h, 9);
       list.addLast(i, 9);
       list.addLast(j, 9);
-      
-      
+
       Iterator<Wibble> iter = list.getAll().iterator();
       int count = 0;
       while (iter.hasNext())
@@ -336,49 +360,49 @@ public class PriorityLinkedListTest extends UnitTestCase
          Object o = iter.next();
          if (count == 0)
          {
-            assertEquals(h, o);
+            Assert.assertEquals(h, o);
          }
          if (count == 1)
          {
-            assertEquals(i, o);
+            Assert.assertEquals(i, o);
          }
          if (count == 2)
          {
-            assertEquals(j, o);
+            Assert.assertEquals(j, o);
          }
          if (count == 3)
          {
-            assertEquals(e, o);
+            Assert.assertEquals(e, o);
          }
          if (count == 4)
          {
-            assertEquals(f, o);
+            Assert.assertEquals(f, o);
          }
          if (count == 5)
          {
-            assertEquals(g, o);
+            Assert.assertEquals(g, o);
          }
          if (count == 6)
          {
-            assertEquals(b, o);
+            Assert.assertEquals(b, o);
          }
          if (count == 7)
          {
-            assertEquals(c, o);
+            Assert.assertEquals(c, o);
          }
          if (count == 8)
          {
-            assertEquals(d, o);
+            Assert.assertEquals(d, o);
          }
          if (count == 9)
          {
-            assertEquals(a, o);
+            Assert.assertEquals(a, o);
          }
          count++;
       }
-      assertEquals(10, count);
+      Assert.assertEquals(10, count);
    }
-   
+
    public void testIterator()
    {
       list.addLast(a, 9);
@@ -407,197 +431,196 @@ public class PriorityLinkedListTest extends UnitTestCase
       list.addLast(x, 1);
       list.addLast(y, 0);
       list.addLast(z, 0);
-      
+
       Iterator<Wibble> iter = list.iterator();
-      
+
       int c = 0;
       while (iter.hasNext())
       {
          iter.next();
          c++;
-      }      
-      assertEquals(c, 26);
-      assertEquals(26, list.size());
-      
+      }
+      Assert.assertEquals(c, 26);
+      Assert.assertEquals(26, list.size());
+
       iter = list.iterator();
-      assertTrue(iter.hasNext());
+      Assert.assertTrue(iter.hasNext());
       Wibble w = (Wibble)iter.next();
-      assertEquals("a", w.s);      
+      Assert.assertEquals("a", w.s);
       w = (Wibble)iter.next();
-      assertEquals("b", w.s);
+      Assert.assertEquals("b", w.s);
       w = (Wibble)iter.next();
-      assertEquals("c", w.s);
+      Assert.assertEquals("c", w.s);
       w = (Wibble)iter.next();
-      assertEquals("d", w.s);
+      Assert.assertEquals("d", w.s);
       w = (Wibble)iter.next();
-      assertEquals("e", w.s);
+      Assert.assertEquals("e", w.s);
       w = (Wibble)iter.next();
-      assertEquals("f", w.s);
+      Assert.assertEquals("f", w.s);
       w = (Wibble)iter.next();
-      assertEquals("g", w.s);
+      Assert.assertEquals("g", w.s);
       w = (Wibble)iter.next();
-      assertEquals("h", w.s);
+      Assert.assertEquals("h", w.s);
       w = (Wibble)iter.next();
-      assertEquals("i", w.s);
+      Assert.assertEquals("i", w.s);
       w = (Wibble)iter.next();
-      assertEquals("j", w.s);
+      Assert.assertEquals("j", w.s);
       w = (Wibble)iter.next();
-      assertEquals("k", w.s);
+      Assert.assertEquals("k", w.s);
       w = (Wibble)iter.next();
-      assertEquals("l", w.s);
+      Assert.assertEquals("l", w.s);
       w = (Wibble)iter.next();
-      assertEquals("m", w.s);
+      Assert.assertEquals("m", w.s);
       w = (Wibble)iter.next();
-      assertEquals("n", w.s);
+      Assert.assertEquals("n", w.s);
       w = (Wibble)iter.next();
-      assertEquals("o", w.s);
+      Assert.assertEquals("o", w.s);
       w = (Wibble)iter.next();
-      assertEquals("p", w.s);
+      Assert.assertEquals("p", w.s);
       w = (Wibble)iter.next();
-      assertEquals("q", w.s);
+      Assert.assertEquals("q", w.s);
       w = (Wibble)iter.next();
-      assertEquals("r", w.s);
+      Assert.assertEquals("r", w.s);
       w = (Wibble)iter.next();
-      assertEquals("s", w.s);
+      Assert.assertEquals("s", w.s);
       w = (Wibble)iter.next();
-      assertEquals("t", w.s);
+      Assert.assertEquals("t", w.s);
       w = (Wibble)iter.next();
-      assertEquals("u", w.s);
+      Assert.assertEquals("u", w.s);
       w = (Wibble)iter.next();
-      assertEquals("v", w.s);
+      Assert.assertEquals("v", w.s);
       w = (Wibble)iter.next();
-      assertEquals("w", w.s);
+      Assert.assertEquals("w", w.s);
       w = (Wibble)iter.next();
-      assertEquals("x", w.s);
+      Assert.assertEquals("x", w.s);
       w = (Wibble)iter.next();
-      assertEquals("y", w.s);
+      Assert.assertEquals("y", w.s);
       w = (Wibble)iter.next();
-      assertEquals("z", w.s);
-      assertFalse(iter.hasNext());
-      
+      Assert.assertEquals("z", w.s);
+      Assert.assertFalse(iter.hasNext());
+
       iter = list.iterator();
-      assertTrue(iter.hasNext());
+      Assert.assertTrue(iter.hasNext());
       w = (Wibble)iter.next();
-      assertEquals("a", w.s);   
-      
+      Assert.assertEquals("a", w.s);
+
       iter.remove();
-      
-      assertEquals(25, list.size());
-      
+
+      Assert.assertEquals(25, list.size());
+
       w = (Wibble)iter.next();
-      assertEquals("b", w.s);
+      Assert.assertEquals("b", w.s);
       w = (Wibble)iter.next();
-      assertEquals("c", w.s);
+      Assert.assertEquals("c", w.s);
       w = (Wibble)iter.next();
-      assertEquals("d", w.s);
-      
+      Assert.assertEquals("d", w.s);
+
       iter.remove();
-      
-      assertEquals(24, list.size());
-      
+
+      Assert.assertEquals(24, list.size());
+
       w = (Wibble)iter.next();
-      assertEquals("e", w.s);
+      Assert.assertEquals("e", w.s);
       w = (Wibble)iter.next();
-      assertEquals("f", w.s);
+      Assert.assertEquals("f", w.s);
       w = (Wibble)iter.next();
-      assertEquals("g", w.s);
+      Assert.assertEquals("g", w.s);
       w = (Wibble)iter.next();
-      assertEquals("h", w.s);
+      Assert.assertEquals("h", w.s);
       w = (Wibble)iter.next();
-      assertEquals("i", w.s);
+      Assert.assertEquals("i", w.s);
       w = (Wibble)iter.next();
-      assertEquals("j", w.s);
-      
+      Assert.assertEquals("j", w.s);
+
       iter.remove();
-      
-      assertEquals(23, list.size());
-      
+
+      Assert.assertEquals(23, list.size());
+
       w = (Wibble)iter.next();
-      assertEquals("k", w.s);
+      Assert.assertEquals("k", w.s);
       w = (Wibble)iter.next();
-      assertEquals("l", w.s);
+      Assert.assertEquals("l", w.s);
       w = (Wibble)iter.next();
-      assertEquals("m", w.s);
+      Assert.assertEquals("m", w.s);
       w = (Wibble)iter.next();
-      assertEquals("n", w.s);
+      Assert.assertEquals("n", w.s);
       w = (Wibble)iter.next();
-      assertEquals("o", w.s);
+      Assert.assertEquals("o", w.s);
       w = (Wibble)iter.next();
-      assertEquals("p", w.s);
+      Assert.assertEquals("p", w.s);
       w = (Wibble)iter.next();
-      assertEquals("q", w.s);
+      Assert.assertEquals("q", w.s);
       w = (Wibble)iter.next();
-      assertEquals("r", w.s);
+      Assert.assertEquals("r", w.s);
       w = (Wibble)iter.next();
-      assertEquals("s", w.s);
+      Assert.assertEquals("s", w.s);
       w = (Wibble)iter.next();
-      assertEquals("t", w.s);
+      Assert.assertEquals("t", w.s);
       w = (Wibble)iter.next();
-      assertEquals("u", w.s);
+      Assert.assertEquals("u", w.s);
       w = (Wibble)iter.next();
-      assertEquals("v", w.s);
+      Assert.assertEquals("v", w.s);
       w = (Wibble)iter.next();
-      assertEquals("w", w.s);
+      Assert.assertEquals("w", w.s);
       w = (Wibble)iter.next();
-      assertEquals("x", w.s);
+      Assert.assertEquals("x", w.s);
       w = (Wibble)iter.next();
-      assertEquals("y", w.s);
+      Assert.assertEquals("y", w.s);
       w = (Wibble)iter.next();
-      assertEquals("z", w.s);
+      Assert.assertEquals("z", w.s);
       iter.remove();
-      assertFalse(iter.hasNext());
-      
+      Assert.assertFalse(iter.hasNext());
+
       iter = list.iterator();
-      assertTrue(iter.hasNext());
+      Assert.assertTrue(iter.hasNext());
       w = (Wibble)iter.next();
-      assertEquals("b", w.s);   
+      Assert.assertEquals("b", w.s);
       w = (Wibble)iter.next();
-      assertEquals("c", w.s);
+      Assert.assertEquals("c", w.s);
       w = (Wibble)iter.next();
-      assertEquals("e", w.s);
+      Assert.assertEquals("e", w.s);
       w = (Wibble)iter.next();
-      assertEquals("f", w.s);
+      Assert.assertEquals("f", w.s);
       w = (Wibble)iter.next();
-      assertEquals("g", w.s);
+      Assert.assertEquals("g", w.s);
       w = (Wibble)iter.next();
-      assertEquals("h", w.s);
+      Assert.assertEquals("h", w.s);
       w = (Wibble)iter.next();
-      assertEquals("i", w.s);
+      Assert.assertEquals("i", w.s);
       w = (Wibble)iter.next();
-      assertEquals("k", w.s);
+      Assert.assertEquals("k", w.s);
       w = (Wibble)iter.next();
-      assertEquals("l", w.s);
+      Assert.assertEquals("l", w.s);
       w = (Wibble)iter.next();
-      assertEquals("m", w.s);
+      Assert.assertEquals("m", w.s);
       w = (Wibble)iter.next();
-      assertEquals("n", w.s);
+      Assert.assertEquals("n", w.s);
       w = (Wibble)iter.next();
-      assertEquals("o", w.s);
+      Assert.assertEquals("o", w.s);
       w = (Wibble)iter.next();
-      assertEquals("p", w.s);
+      Assert.assertEquals("p", w.s);
       w = (Wibble)iter.next();
-      assertEquals("q", w.s);
+      Assert.assertEquals("q", w.s);
       w = (Wibble)iter.next();
-      assertEquals("r", w.s);
+      Assert.assertEquals("r", w.s);
       w = (Wibble)iter.next();
-      assertEquals("s", w.s);
+      Assert.assertEquals("s", w.s);
       w = (Wibble)iter.next();
-      assertEquals("t", w.s);
+      Assert.assertEquals("t", w.s);
       w = (Wibble)iter.next();
-      assertEquals("u", w.s);
+      Assert.assertEquals("u", w.s);
       w = (Wibble)iter.next();
-      assertEquals("v", w.s);
+      Assert.assertEquals("v", w.s);
       w = (Wibble)iter.next();
-      assertEquals("w", w.s);
+      Assert.assertEquals("w", w.s);
       w = (Wibble)iter.next();
-      assertEquals("x", w.s);
+      Assert.assertEquals("x", w.s);
       w = (Wibble)iter.next();
-      assertEquals("y", w.s);     
-      assertFalse(iter.hasNext());
-      
+      Assert.assertEquals("y", w.s);
+      Assert.assertFalse(iter.hasNext());
+
    }
-      
-     
+
    public void testClear()
    {
       list.addLast(a, 0);
@@ -610,26 +633,27 @@ public class PriorityLinkedListTest extends UnitTestCase
       list.addLast(h, 9);
       list.addLast(i, 9);
       list.addLast(j, 9);
-      
+
       list.clear();
-      
-      assertNull(list.removeFirst());
-      
-      assertTrue(list.getAll().isEmpty());
+
+      Assert.assertNull(list.removeFirst());
+
+      Assert.assertTrue(list.getAll().isEmpty());
    }
-   
+
    class Wibble
    {
       String s;
-      Wibble(String s)
+
+      Wibble(final String s)
       {
          this.s = s;
       }
+
       public String toString()
       {
          return s;
       }
    }
-   
-}
 
+}

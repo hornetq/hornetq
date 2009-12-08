@@ -36,16 +36,16 @@ public class FakeConsumer implements Consumer
 
    private int delayCountdown = 0;
 
-   private LinkedList<MessageReference> references = new LinkedList<MessageReference>();
+   private final LinkedList<MessageReference> references = new LinkedList<MessageReference>();
 
-   private Filter filter;
+   private final Filter filter;
 
    public FakeConsumer()
    {
-      this.filter = null;
+      filter = null;
    }
 
-   public FakeConsumer(Filter filter)
+   public FakeConsumer(final Filter filter)
    {
       this.filter = filter;
    }
@@ -67,7 +67,7 @@ public class FakeConsumer implements Consumer
          catch (InterruptedException e)
          {
          }
-         timeout -= (System.currentTimeMillis() - start);
+         timeout -= System.currentTimeMillis() - start;
       }
 
       if (timeout <= 0)
@@ -78,16 +78,16 @@ public class FakeConsumer implements Consumer
       return references.removeFirst();
    }
 
-   public synchronized void setStatusImmediate(HandleStatus newStatus)
+   public synchronized void setStatusImmediate(final HandleStatus newStatus)
    {
-      this.statusToReturn = newStatus;
+      statusToReturn = newStatus;
    }
 
-   public synchronized void setStatusDelayed(HandleStatus newStatus, int numReferences)
+   public synchronized void setStatusDelayed(final HandleStatus newStatus, final int numReferences)
    {
       this.newStatus = newStatus;
 
-      this.delayCountdown = numReferences;
+      delayCountdown = numReferences;
    }
 
    public synchronized List<MessageReference> getReferences()
@@ -97,10 +97,10 @@ public class FakeConsumer implements Consumer
 
    public synchronized void clearReferences()
    {
-      this.references.clear();
+      references.clear();
    }
 
-   public synchronized HandleStatus handle(MessageReference reference)
+   public synchronized HandleStatus handle(final MessageReference reference)
    {
       if (statusToReturn == HandleStatus.BUSY)
       {

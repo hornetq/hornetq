@@ -38,17 +38,17 @@ public class JournalFileImpl implements JournalFile
    private final int fileID;
 
    private long offset;
-   
+
    private final AtomicInteger posCount = new AtomicInteger(0);
-   
+
    private final AtomicInteger liveBytes = new AtomicInteger(0);
 
    private boolean canReclaim;
-   
-   private boolean needCleanup;   
+
+   private boolean needCleanup;
 
    private final Map<JournalFile, AtomicInteger> negCounts = new ConcurrentHashMap<JournalFile, AtomicInteger>();
-   
+
    public JournalFileImpl(final SequentialFile file, final int fileID)
    {
       this.file = file;
@@ -72,17 +72,16 @@ public class JournalFileImpl implements JournalFile
    {
       return canReclaim;
    }
-   
+
    public boolean isNeedCleanup()
    {
       return needCleanup;
    }
 
-   public void setNeedCleanup(boolean needCleanup)
+   public void setNeedCleanup(final boolean needCleanup)
    {
       this.needCleanup = needCleanup;
    }
-   
 
    public void setCanReclaim(final boolean canReclaim)
    {
@@ -107,8 +106,8 @@ public class JournalFileImpl implements JournalFile
          return count.intValue();
       }
    }
-   
-   public boolean resetNegCount(JournalFile file)
+
+   public boolean resetNegCount(final JournalFile file)
    {
       return negCounts.remove(file) != null;
    }
@@ -122,7 +121,7 @@ public class JournalFileImpl implements JournalFile
    {
       posCount.decrementAndGet();
    }
-   
+
    public void extendOffset(final int delta)
    {
       offset += delta;
@@ -191,7 +190,7 @@ public class JournalFileImpl implements JournalFile
    /* (non-Javadoc)
     * @see org.hornetq.core.journal.impl.JournalFile#addSize(int)
     */
-   public void addSize(int bytes)
+   public void addSize(final int bytes)
    {
       liveBytes.addAndGet(bytes);
    }
@@ -199,7 +198,7 @@ public class JournalFileImpl implements JournalFile
    /* (non-Javadoc)
     * @see org.hornetq.core.journal.impl.JournalFile#decSize(int)
     */
-   public void decSize(int bytes)
+   public void decSize(final int bytes)
    {
       liveBytes.addAndGet(-bytes);
    }
@@ -211,6 +210,5 @@ public class JournalFileImpl implements JournalFile
    {
       return liveBytes.get();
    }
-
 
 }

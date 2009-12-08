@@ -34,8 +34,8 @@ public interface ClusterManager extends HornetQComponent
    Set<ClusterConnection> getClusterConnections();
 
    ClusterConnection getClusterConnection(SimpleString name);
-   
+
    Set<BroadcastGroup> getBroadcastGroups();
-   
+
    void activate();
 }

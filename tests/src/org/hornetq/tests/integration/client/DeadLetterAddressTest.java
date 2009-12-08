@@ -12,10 +12,10 @@
  */
 package org.hornetq.tests.integration.client;
 
-import static org.hornetq.tests.util.RandomUtil.randomSimpleString;
-
 import java.util.HashMap;
 import java.util.Map;
+
+import junit.framework.Assert;
 
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
@@ -32,6 +32,7 @@ import org.hornetq.core.server.HornetQ;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.settings.impl.AddressSettings;
+import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.SimpleString;
 
@@ -63,17 +64,17 @@ public class DeadLetterAddressTest extends UnitTestCase
       ClientConsumer clientConsumer = clientSession.createConsumer(qName);
       ClientMessage m = clientConsumer.receive(500);
       m.acknowledge();
-      assertNotNull(m);
-      assertEquals(m.getBodyBuffer().readString(), "heyho!");
+      Assert.assertNotNull(m);
+      Assert.assertEquals(m.getBodyBuffer().readString(), "heyho!");
       // force a cancel
       clientSession.rollback();
       m = clientConsumer.receiveImmediate();
-      assertNull(m);
+      Assert.assertNull(m);
       clientConsumer.close();
       clientConsumer = clientSession.createConsumer(dlq);
       m = clientConsumer.receive(500);
-      assertNotNull(m);
-      assertEquals(m.getBodyBuffer().readString(), "heyho!");
+      Assert.assertNotNull(m);
+      Assert.assertEquals(m.getBodyBuffer().readString(), "heyho!");
    }
 
    public void testBasicSendToMultipleQueues() throws Exception
@@ -95,24 +96,24 @@ public class DeadLetterAddressTest extends UnitTestCase
       ClientConsumer clientConsumer = clientSession.createConsumer(qName);
       ClientMessage m = clientConsumer.receive(500);
       m.acknowledge();
-      assertNotNull(m);
-      assertEquals(m.getBodyBuffer().readString(), "heyho!");
+      Assert.assertNotNull(m);
+      Assert.assertEquals(m.getBodyBuffer().readString(), "heyho!");
       // force a cancel
       clientSession.rollback();
       m = clientConsumer.receiveImmediate();
-      assertNull(m);
+      Assert.assertNull(m);
       clientConsumer.close();
       clientConsumer = clientSession.createConsumer(dlq);
       m = clientConsumer.receive(500);
-      assertNotNull(m);
+      Assert.assertNotNull(m);
       m.acknowledge();
-      assertEquals(m.getBodyBuffer().readString(), "heyho!");
+      Assert.assertEquals(m.getBodyBuffer().readString(), "heyho!");
       clientConsumer.close();
       clientConsumer = clientSession.createConsumer(dlq2);
       m = clientConsumer.receive(500);
-      assertNotNull(m);
+      Assert.assertNotNull(m);
       m.acknowledge();
-      assertEquals(m.getBodyBuffer().readString(), "heyho!");
+      Assert.assertEquals(m.getBodyBuffer().readString(), "heyho!");
       clientConsumer.close();
    }
 
@@ -129,12 +130,12 @@ public class DeadLetterAddressTest extends UnitTestCase
       ClientConsumer clientConsumer = clientSession.createConsumer(qName);
       ClientMessage m = clientConsumer.receive(500);
       m.acknowledge();
-      assertNotNull(m);
-      assertEquals(m.getBodyBuffer().readString(), "heyho!");
+      Assert.assertNotNull(m);
+      Assert.assertEquals(m.getBodyBuffer().readString(), "heyho!");
       // force a cancel
       clientSession.rollback();
       m = clientConsumer.receiveImmediate();
-      assertNull(m);
+      Assert.assertNull(m);
       clientConsumer.close();
    }
 
@@ -151,7 +152,7 @@ public class DeadLetterAddressTest extends UnitTestCase
       SimpleString dlq = new SimpleString("DLQ1");
       clientSession.createQueue(dla, dlq, null, false);
       clientSession.createQueue(qName, qName, null, false);
-      ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(INVM_CONNECTOR_FACTORY));
+      ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
       ClientSession sendSession = sessionFactory.createSession(false, true, true);
       ClientProducer producer = sendSession.createProducer(qName);
       Map<String, Long> origIds = new HashMap<String, Long>();
@@ -171,28 +172,28 @@ public class DeadLetterAddressTest extends UnitTestCase
          {
             ClientMessage tm = clientConsumer.receive(1000);
 
-            assertNotNull(tm);
+            Assert.assertNotNull(tm);
             tm.acknowledge();
             if (i == 0)
             {
                origIds.put("Message:" + j, tm.getMessageID());
             }
-            assertEquals("Message:" + j, tm.getBodyBuffer().readString());
+            Assert.assertEquals("Message:" + j, tm.getBodyBuffer().readString());
          }
          clientSession.rollback();
       }
 
       long timeout = System.currentTimeMillis() + 5000;
-      
+
       // DLA transfer is asynchronous fired on the rollback
       while (System.currentTimeMillis() < timeout && ((Queue)server.getPostOffice().getBinding(qName).getBindable()).getMessageCount() != 0)
       {
          Thread.sleep(1);
       }
-      
-      assertEquals(0, ((Queue)server.getPostOffice().getBinding(qName).getBindable()).getMessageCount());
+
+      Assert.assertEquals(0, ((Queue)server.getPostOffice().getBinding(qName).getBindable()).getMessageCount());
       ClientMessage m = clientConsumer.receiveImmediate();
-      assertNull(m);
+      Assert.assertNull(m);
       // All the messages should now be in the DLQ
 
       ClientConsumer cc3 = clientSession.createConsumer(dlq);
@@ -201,23 +202,23 @@ public class DeadLetterAddressTest extends UnitTestCase
       {
          ClientMessage tm = cc3.receive(1000);
 
-         assertNotNull(tm);
+         Assert.assertNotNull(tm);
 
          String text = tm.getBodyBuffer().readString();
-         assertEquals("Message:" + i, text);
+         Assert.assertEquals("Message:" + i, text);
 
          // Check the headers
          SimpleString origDest = (SimpleString)tm.getObjectProperty(MessageImpl.HDR_ORIGINAL_DESTINATION);
 
          Long origMessageId = (Long)tm.getObjectProperty(MessageImpl.HDR_ORIG_MESSAGE_ID);
 
-         assertEquals(qName, origDest);
+         Assert.assertEquals(qName, origDest);
 
          Long origId = origIds.get(text);
 
-         assertEquals(origId, origMessageId);
+         Assert.assertEquals(origId, origMessageId);
       }
-      
+
       sendSession.close();
 
    }
@@ -226,10 +227,10 @@ public class DeadLetterAddressTest extends UnitTestCase
    {
       int deliveryAttempt = 3;
 
-      SimpleString address = randomSimpleString();
-      SimpleString queue = randomSimpleString();
-      SimpleString deadLetterAdress = randomSimpleString();
-      SimpleString deadLetterQueue = randomSimpleString();
+      SimpleString address = RandomUtil.randomSimpleString();
+      SimpleString queue = RandomUtil.randomSimpleString();
+      SimpleString deadLetterAdress = RandomUtil.randomSimpleString();
+      SimpleString deadLetterQueue = RandomUtil.randomSimpleString();
       AddressSettings addressSettings = new AddressSettings();
       addressSettings.setMaxDeliveryAttempts(deliveryAttempt);
       addressSettings.setDeadLetterAddress(deadLetterAdress);
@@ -247,31 +248,31 @@ public class DeadLetterAddressTest extends UnitTestCase
       for (int i = 0; i < deliveryAttempt; i++)
       {
          ClientMessage m = clientConsumer.receive(500);
-         assertNotNull(m);  
-         log.info("i is " + i);
-         log.info("delivery cout is " +m.getDeliveryCount());
-         assertEquals(i + 1, m.getDeliveryCount());
+         Assert.assertNotNull(m);
+         DeadLetterAddressTest.log.info("i is " + i);
+         DeadLetterAddressTest.log.info("delivery cout is " + m.getDeliveryCount());
+         Assert.assertEquals(i + 1, m.getDeliveryCount());
          m.acknowledge();
          clientSession.rollback();
       }
       ClientMessage m = clientConsumer.receive(500);
-      assertNull(m);
+      Assert.assertNull(m);
       clientConsumer.close();
 
       clientConsumer = clientSession.createConsumer(deadLetterQueue);
       m = clientConsumer.receive(500);
-      assertNotNull(m);
-      assertEquals(m.getBodyBuffer().readString(), "heyho!");
+      Assert.assertNotNull(m);
+      Assert.assertEquals(m.getBodyBuffer().readString(), "heyho!");
    }
 
    public void testDeadlLetterAddressWithWildcardAddressSettings() throws Exception
    {
       int deliveryAttempt = 3;
 
-      SimpleString address = randomSimpleString();
-      SimpleString queue = randomSimpleString();
-      SimpleString deadLetterAdress = randomSimpleString();
-      SimpleString deadLetterQueue = randomSimpleString();
+      SimpleString address = RandomUtil.randomSimpleString();
+      SimpleString queue = RandomUtil.randomSimpleString();
+      SimpleString deadLetterAdress = RandomUtil.randomSimpleString();
+      SimpleString deadLetterQueue = RandomUtil.randomSimpleString();
       AddressSettings addressSettings = new AddressSettings();
       addressSettings.setMaxDeliveryAttempts(deliveryAttempt);
       addressSettings.setDeadLetterAddress(deadLetterAdress);
@@ -289,19 +290,19 @@ public class DeadLetterAddressTest extends UnitTestCase
       for (int i = 0; i < deliveryAttempt; i++)
       {
          ClientMessage m = clientConsumer.receive(500);
-         assertNotNull(m);
-         assertEquals(i + 1, m.getDeliveryCount());
+         Assert.assertNotNull(m);
+         Assert.assertEquals(i + 1, m.getDeliveryCount());
          m.acknowledge();
          clientSession.rollback();
       }
       ClientMessage m = clientConsumer.receiveImmediate();
-      assertNull(m);
+      Assert.assertNull(m);
       clientConsumer.close();
 
       clientConsumer = clientSession.createConsumer(deadLetterQueue);
       m = clientConsumer.receive(500);
-      assertNotNull(m);
-      assertEquals(m.getBodyBuffer().readString(), "heyho!");
+      Assert.assertNotNull(m);
+      Assert.assertEquals(m.getBodyBuffer().readString(), "heyho!");
    }
 
    public void testDeadLetterAddressWithOverridenSublevelAddressSettings() throws Exception
@@ -310,11 +311,11 @@ public class DeadLetterAddressTest extends UnitTestCase
       int specificeDeliveryAttempt = defaultDeliveryAttempt + 1;
 
       SimpleString address = new SimpleString("prefix.address");
-      SimpleString queue = randomSimpleString();
-      SimpleString defaultDeadLetterAddress = randomSimpleString();
-      SimpleString defaultDeadLetterQueue = randomSimpleString();
-      SimpleString specificDeadLetterAddress = randomSimpleString();
-      SimpleString specificDeadLetterQueue = randomSimpleString();
+      SimpleString queue = RandomUtil.randomSimpleString();
+      SimpleString defaultDeadLetterAddress = RandomUtil.randomSimpleString();
+      SimpleString defaultDeadLetterQueue = RandomUtil.randomSimpleString();
+      SimpleString specificDeadLetterAddress = RandomUtil.randomSimpleString();
+      SimpleString specificDeadLetterQueue = RandomUtil.randomSimpleString();
 
       AddressSettings defaultAddressSettings = new AddressSettings();
       defaultAddressSettings.setMaxDeliveryAttempts(defaultDeliveryAttempt);
@@ -341,24 +342,24 @@ public class DeadLetterAddressTest extends UnitTestCase
       for (int i = 0; i < defaultDeliveryAttempt; i++)
       {
          ClientMessage m = clientConsumer.receive(500);
-         assertNotNull(m);
-         assertEquals(i + 1, m.getDeliveryCount());
+         Assert.assertNotNull(m);
+         Assert.assertEquals(i + 1, m.getDeliveryCount());
          m.acknowledge();
          clientSession.rollback();
       }
 
-      assertNull(defaultDeadLetterConsumer.receiveImmediate());
-      assertNull(specificDeadLetterConsumer.receiveImmediate());
+      Assert.assertNull(defaultDeadLetterConsumer.receiveImmediate());
+      Assert.assertNull(specificDeadLetterConsumer.receiveImmediate());
 
       // one more redelivery attempt:
       ClientMessage m = clientConsumer.receive(500);
-      assertNotNull(m);
-      assertEquals(specificeDeliveryAttempt, m.getDeliveryCount());
+      Assert.assertNotNull(m);
+      Assert.assertEquals(specificeDeliveryAttempt, m.getDeliveryCount());
       m.acknowledge();
       clientSession.rollback();
 
-      assertNull(defaultDeadLetterConsumer.receiveImmediate());
-      assertNotNull(specificDeadLetterConsumer.receive(500));
+      Assert.assertNull(defaultDeadLetterConsumer.receiveImmediate());
+      Assert.assertNotNull(specificDeadLetterConsumer.receive(500));
    }
 
    @Override
@@ -368,13 +369,13 @@ public class DeadLetterAddressTest extends UnitTestCase
 
       ConfigurationImpl configuration = new ConfigurationImpl();
       configuration.setSecurityEnabled(false);
-      TransportConfiguration transportConfig = new TransportConfiguration(INVM_ACCEPTOR_FACTORY);
+      TransportConfiguration transportConfig = new TransportConfiguration(UnitTestCase.INVM_ACCEPTOR_FACTORY);
       configuration.getAcceptorConfigurations().add(transportConfig);
       server = HornetQ.newHornetQServer(configuration, false);
       // start the server
       server.start();
       // then we create a client as normal
-      ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(INVM_CONNECTOR_FACTORY));
+      ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
       clientSession = sessionFactory.createSession(false, true, false);
    }
 

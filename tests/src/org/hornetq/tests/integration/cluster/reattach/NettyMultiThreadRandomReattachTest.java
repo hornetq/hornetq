@@ -33,13 +33,13 @@ public class NettyMultiThreadRandomReattachTest extends MultiThreadRandomReattac
 {
    @Override
    protected void start() throws Exception
-   {      
+   {
       Configuration liveConf = new ConfigurationImpl();
       liveConf.setJMXManagementEnabled(false);
       liveConf.setSecurityEnabled(false);
       liveConf.getAcceptorConfigurations().clear();
       liveConf.getAcceptorConfigurations()
-              .add(new TransportConfiguration("org.hornetq.integration.transports.netty.NettyAcceptorFactory"));      
+              .add(new TransportConfiguration("org.hornetq.integration.transports.netty.NettyAcceptorFactory"));
       liveServer = HornetQ.newHornetQServer(liveConf, false);
       liveServer.start();
    }

@@ -9,7 +9,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
  * implied.  See the License for the specific language governing
  * permissions and limitations under the License.
- */ 
+ */
 
 package org.hornetq.tests.unit.core.version.impl;
 
@@ -17,6 +17,8 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+
+import junit.framework.Assert;
 
 import org.hornetq.core.version.impl.VersionImpl;
 import org.hornetq.tests.util.UnitTestCase;
@@ -41,7 +43,7 @@ public class VersionImplTest extends UnitTestCase
 
    public void testVersionImpl() throws Exception
    {
-      
+
       String versionName = "HORNETQ";
       int majorVersion = 2;
       int minorVersion = 0;
@@ -49,14 +51,20 @@ public class VersionImplTest extends UnitTestCase
       int incrementingVersion = 10;
       String versionSuffix = "suffix";
       String nettyVersion = "netty";
-      VersionImpl version = new VersionImpl(versionName, majorVersion, minorVersion, microVersion, incrementingVersion, versionSuffix, nettyVersion);
-     
-      assertEquals(versionName, version.getVersionName());
-      assertEquals(majorVersion, version.getMajorVersion());
-      assertEquals(minorVersion, version.getMinorVersion());
-      assertEquals(microVersion, version.getMicroVersion());
-      assertEquals(incrementingVersion, version.getIncrementingVersion());
-      assertEquals(versionSuffix, version.getVersionSuffix());
+      VersionImpl version = new VersionImpl(versionName,
+                                            majorVersion,
+                                            minorVersion,
+                                            microVersion,
+                                            incrementingVersion,
+                                            versionSuffix,
+                                            nettyVersion);
+
+      Assert.assertEquals(versionName, version.getVersionName());
+      Assert.assertEquals(majorVersion, version.getMajorVersion());
+      Assert.assertEquals(minorVersion, version.getMinorVersion());
+      Assert.assertEquals(microVersion, version.getMicroVersion());
+      Assert.assertEquals(incrementingVersion, version.getIncrementingVersion());
+      Assert.assertEquals(versionSuffix, version.getVersionSuffix());
    }
 
    public void testEquals() throws Exception
@@ -66,13 +74,13 @@ public class VersionImplTest extends UnitTestCase
       VersionImpl sameVersion = new VersionImpl("HORNETQ", 2, 0, 1, 10, "suffix", nettyVersion);
       VersionImpl differentVersion = new VersionImpl("HORNETQ", 2, 0, 1, 11, "suffix", nettyVersion);
 
-      assertFalse(version.equals(new Object()));
+      Assert.assertFalse(version.equals(new Object()));
 
-      assertTrue(version.equals(version));
-      assertTrue(version.equals(sameVersion));
-      assertFalse(version.equals(differentVersion));
+      Assert.assertTrue(version.equals(version));
+      Assert.assertTrue(version.equals(sameVersion));
+      Assert.assertFalse(version.equals(differentVersion));
    }
-   
+
    public void testSerialize() throws Exception
    {
       String nettyVersion = "netty";
@@ -81,12 +89,12 @@ public class VersionImplTest extends UnitTestCase
       ObjectOutputStream oos = new ObjectOutputStream(baos);
       oos.writeObject(version);
       oos.flush();
-      
+
       ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
       ObjectInputStream ois = new ObjectInputStream(bais);
       VersionImpl version2 = (VersionImpl)ois.readObject();
-      
-      assertTrue(version.equals(version2));  
+
+      Assert.assertTrue(version.equals(version2));
    }
 
    // Package protected ---------------------------------------------

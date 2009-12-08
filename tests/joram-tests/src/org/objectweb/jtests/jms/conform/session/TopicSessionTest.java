@@ -21,6 +21,7 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.jms.Topic;
 
+import junit.framework.Assert;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
@@ -50,7 +51,7 @@ public class TopicSessionTest extends PubSubTestCase
          // publisherSession has been declared has non transacted
          // we recreate it as a transacted session
          publisherSession = publisherConnection.createTopicSession(true, 0);
-         assertEquals(true, publisherSession.getTransacted());
+         Assert.assertEquals(true, publisherSession.getTransacted());
          // we also recreate the publisher
          publisher = publisherSession.createPublisher(publisherTopic);
          publisherConnection.start();
@@ -59,7 +60,7 @@ public class TopicSessionTest extends PubSubTestCase
          // subscriberSession has been declared has non transacted
          // we recreate it as a transacted session
          subscriberSession = subscriberConnection.createTopicSession(true, 0);
-         assertEquals(true, subscriberSession.getTransacted());
+         Assert.assertEquals(true, subscriberSession.getTransacted());
          // we also recreate the subscriber
          subscriber = subscriberSession.createSubscriber(subscriberTopic);
          subscriberConnection.start();
@@ -74,18 +75,18 @@ public class TopicSessionTest extends PubSubTestCase
 
          // we receive it
          Message msg1 = subscriber.receive(TestConfig.TIMEOUT);
-         assertTrue("no message received", msg1 != null);
-         assertTrue(msg1 instanceof TextMessage);
-         assertEquals("testRollbackReceivedMessage", ((TextMessage) msg1).getText());
+         Assert.assertTrue("no message received", msg1 != null);
+         Assert.assertTrue(msg1 instanceof TextMessage);
+         Assert.assertEquals("testRollbackReceivedMessage", ((TextMessage)msg1).getText());
 
          // we rollback the transaction of subscriberSession
          subscriberSession.rollback();
 
          // we expect to receive a second time the message
          Message msg2 = subscriber.receive(TestConfig.TIMEOUT);
-         assertTrue("no message received after rollbacking subscriber session.", msg2 != null);
-         assertTrue(msg2 instanceof TextMessage);
-         assertEquals("testRollbackReceivedMessage", ((TextMessage) msg2).getText());
+         Assert.assertTrue("no message received after rollbacking subscriber session.", msg2 != null);
+         Assert.assertTrue(msg2 instanceof TextMessage);
+         Assert.assertEquals("testRollbackReceivedMessage", ((TextMessage)msg2).getText());
 
          // finally we commit the subscriberSession transaction
          subscriberSession.commit();
@@ -118,9 +119,9 @@ public class TopicSessionTest extends PubSubTestCase
          subscriber = subscriberSession.createDurableSubscriber(subscriberTopic, "testTopic");
          subscriberConnection.start();
 
-         TextMessage m = (TextMessage) subscriber.receive(TestConfig.TIMEOUT);
-         assertTrue(m != null);
-         assertEquals("test", m.getText());
+         TextMessage m = (TextMessage)subscriber.receive(TestConfig.TIMEOUT);
+         Assert.assertTrue(m != null);
+         Assert.assertEquals("test", m.getText());
       }
       catch (JMSException e)
       {
@@ -154,16 +155,15 @@ public class TopicSessionTest extends PubSubTestCase
    {
       try
       {
-         subscriberSession
-               .createDurableSubscriber(subscriberTopic, "topic", "definitely not a message selector!", true);
-         fail("Should throw a javax.jms.InvalidSelectorException.\n");
+         subscriberSession.createDurableSubscriber(subscriberTopic, "topic", "definitely not a message selector!", true);
+         Assert.fail("Should throw a javax.jms.InvalidSelectorException.\n");
       }
       catch (InvalidSelectorException e)
       {
       }
       catch (JMSException e)
       {
-         fail("Should throw a javax.jms.InvalidSelectorException, not a " + e);
+         Assert.fail("Should throw a javax.jms.InvalidSelectorException, not a " + e);
       }
    }
 
@@ -175,15 +175,15 @@ public class TopicSessionTest extends PubSubTestCase
    {
       try
       {
-         subscriberSession.createDurableSubscriber((Topic) null, "topic");
-         fail("Should throw a javax.jms.InvalidDestinationException.\n");
+         subscriberSession.createDurableSubscriber((Topic)null, "topic");
+         Assert.fail("Should throw a javax.jms.InvalidDestinationException.\n");
       }
       catch (InvalidDestinationException e)
       {
       }
       catch (JMSException e)
       {
-         fail("Should throw a javax.jms.InvalidDestinationException, not a " + e);
+         Assert.fail("Should throw a javax.jms.InvalidDestinationException, not a " + e);
       }
    }
 
@@ -196,14 +196,14 @@ public class TopicSessionTest extends PubSubTestCase
       try
       {
          subscriberSession.createSubscriber(subscriberTopic, "definitely not a message selector!", true);
-         fail("Should throw a javax.jms.InvalidSelectorException.\n");
+         Assert.fail("Should throw a javax.jms.InvalidSelectorException.\n");
       }
       catch (InvalidSelectorException e)
       {
       }
       catch (JMSException e)
       {
-         fail("Should throw a javax.jms.InvalidSelectorException, not a " + e);
+         Assert.fail("Should throw a javax.jms.InvalidSelectorException, not a " + e);
       }
    }
 
@@ -215,15 +215,15 @@ public class TopicSessionTest extends PubSubTestCase
    {
       try
       {
-         subscriberSession.createSubscriber((Topic) null);
-         fail("Should throw a javax.jms.InvalidDestinationException.\n");
+         subscriberSession.createSubscriber((Topic)null);
+         Assert.fail("Should throw a javax.jms.InvalidDestinationException.\n");
       }
       catch (InvalidDestinationException e)
       {
       }
       catch (JMSException e)
       {
-         fail("Should throw a javax.jms.InvalidDestinationException, not a " + e);
+         Assert.fail("Should throw a javax.jms.InvalidDestinationException, not a " + e);
       }
    }
 
@@ -235,7 +235,7 @@ public class TopicSessionTest extends PubSubTestCase
       return new TestSuite(TopicSessionTest.class);
    }
 
-   public TopicSessionTest(String name)
+   public TopicSessionTest(final String name)
    {
       super(name);
    }

@@ -20,6 +20,8 @@ import javax.jms.QueueSession;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
+import org.hornetq.jms.tests.util.ProxyAssertSupport;
+
 /**
  *
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
@@ -45,10 +47,10 @@ public class QueueReceiverTest extends JMSTestCase
 
       try
       {
-         qc = cf.createQueueConnection();
+         qc = JMSTestCase.cf.createQueueConnection();
          QueueSession qs = qc.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         QueueReceiver qreceiver = qs.createReceiver(queue1, "targetMessage = TRUE");
+         QueueReceiver qreceiver = qs.createReceiver(HornetQServerTestCase.queue1, "targetMessage = TRUE");
 
          qc.start();
 
@@ -56,7 +58,7 @@ public class QueueReceiverTest extends JMSTestCase
          m.setText("one");
          m.setBooleanProperty("targetMessage", false);
 
-         QueueSender qsender = qs.createSender(queue1);
+         QueueSender qsender = qs.createSender(HornetQServerTestCase.queue1);
 
          qsender.send(m);
 
@@ -67,7 +69,7 @@ public class QueueReceiverTest extends JMSTestCase
 
          TextMessage rm = (TextMessage)qreceiver.receive(1000);
 
-         assertEquals("two", rm.getText());
+         ProxyAssertSupport.assertEquals("two", rm.getText());
       }
       finally
       {
@@ -76,8 +78,8 @@ public class QueueReceiverTest extends JMSTestCase
             qc.close();
          }
          Thread.sleep(2000);
-         removeAllMessages(queue1.getQueueName(), true);
-         checkEmpty(queue1);
+         removeAllMessages(HornetQServerTestCase.queue1.getQueueName(), true);
+         checkEmpty(HornetQServerTestCase.queue1);
       }
    }
 

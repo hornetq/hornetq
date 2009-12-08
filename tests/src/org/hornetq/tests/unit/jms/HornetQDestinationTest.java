@@ -11,21 +11,21 @@
  * permissions and limitations under the License.
  */
 
-
 package org.hornetq.tests.unit.jms;
-
-import static org.hornetq.tests.util.RandomUtil.randomString;
 
 import javax.jms.Queue;
 import javax.jms.TemporaryQueue;
 import javax.jms.TemporaryTopic;
 import javax.jms.Topic;
 
+import junit.framework.Assert;
+
 import org.hornetq.jms.HornetQDestination;
 import org.hornetq.jms.HornetQQueue;
 import org.hornetq.jms.HornetQTemporaryQueue;
 import org.hornetq.jms.HornetQTemporaryTopic;
 import org.hornetq.jms.HornetQTopic;
+import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
 
 /**
@@ -48,64 +48,65 @@ public class HornetQDestinationTest extends UnitTestCase
 
    public void testEquals() throws Exception
    {
-      String destinationName = randomString();
+      String destinationName = RandomUtil.randomString();
       String address = HornetQQueue.JMS_QUEUE_ADDRESS_PREFIX + destinationName;
       HornetQDestination destination = HornetQDestination.fromAddress(address);
       HornetQDestination sameDestination = HornetQDestination.fromAddress(address);
-      HornetQDestination differentDestination = HornetQDestination.fromAddress(address + randomString());
-      
-      assertFalse(destination.equals(null));
-      assertTrue(destination.equals(destination));
-      assertTrue(destination.equals(sameDestination));
-      assertFalse(destination.equals(differentDestination));
+      HornetQDestination differentDestination = HornetQDestination.fromAddress(address + RandomUtil.randomString());
+
+      Assert.assertFalse(destination.equals(null));
+      Assert.assertTrue(destination.equals(destination));
+      Assert.assertTrue(destination.equals(sameDestination));
+      Assert.assertFalse(destination.equals(differentDestination));
    }
-   
+
    public void testFromAddressWithQueueAddressPrefix() throws Exception
    {
-      String destinationName = randomString();
+      String destinationName = RandomUtil.randomString();
       String address = HornetQQueue.JMS_QUEUE_ADDRESS_PREFIX + destinationName;
       HornetQDestination destination = HornetQDestination.fromAddress(address);
-      assertTrue(destination instanceof Queue);
-      assertEquals(destinationName, ((Queue)destination).getQueueName());
+      Assert.assertTrue(destination instanceof Queue);
+      Assert.assertEquals(destinationName, ((Queue)destination).getQueueName());
    }
 
    public void testFromAddressWithTopicAddressPrefix() throws Exception
    {
-      String destinationName = randomString();
+      String destinationName = RandomUtil.randomString();
       String address = HornetQTopic.JMS_TOPIC_ADDRESS_PREFIX + destinationName;
       HornetQDestination destination = HornetQDestination.fromAddress(address);
-      assertTrue(destination instanceof Topic);
-      assertEquals(destinationName, ((Topic)destination).getTopicName());
+      Assert.assertTrue(destination instanceof Topic);
+      Assert.assertEquals(destinationName, ((Topic)destination).getTopicName());
    }
-   
+
    public void testFromAddressWithTemporaryQueueAddressPrefix() throws Exception
    {
-      String destinationName = randomString();
+      String destinationName = RandomUtil.randomString();
       String address = HornetQTemporaryQueue.JMS_TEMP_QUEUE_ADDRESS_PREFIX + destinationName;
       HornetQDestination destination = HornetQDestination.fromAddress(address);
-      assertTrue(destination instanceof TemporaryQueue);
-      assertEquals(destinationName, ((TemporaryQueue)destination).getQueueName());
+      Assert.assertTrue(destination instanceof TemporaryQueue);
+      Assert.assertEquals(destinationName, ((TemporaryQueue)destination).getQueueName());
    }
-   
+
    public void testFromAddressWithTemporaryTopicAddressPrefix() throws Exception
    {
-      String destinationName = randomString();
+      String destinationName = RandomUtil.randomString();
       String address = HornetQTemporaryTopic.JMS_TEMP_TOPIC_ADDRESS_PREFIX + destinationName;
       HornetQDestination destination = HornetQDestination.fromAddress(address);
-      assertTrue(destination instanceof TemporaryTopic);
-      assertEquals(destinationName, ((TemporaryTopic)destination).getTopicName());
+      Assert.assertTrue(destination instanceof TemporaryTopic);
+      Assert.assertEquals(destinationName, ((TemporaryTopic)destination).getTopicName());
    }
-   
+
    public void testFromAddressWithInvalidPrefix() throws Exception
    {
       String invalidPrefix = "junk";
-      String destinationName = randomString();
+      String destinationName = RandomUtil.randomString();
       String address = invalidPrefix + destinationName;
       try
       {
          HornetQDestination.fromAddress(address);
-         fail("IllegalArgumentException");
-      } catch (IllegalArgumentException e)
+         Assert.fail("IllegalArgumentException");
+      }
+      catch (IllegalArgumentException e)
       {
       }
    }

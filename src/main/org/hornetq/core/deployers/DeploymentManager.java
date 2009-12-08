@@ -9,12 +9,11 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
  * implied.  See the License for the specific language governing
  * permissions and limitations under the License.
- */ 
+ */
 
 package org.hornetq.core.deployers;
 
 import org.hornetq.core.server.HornetQComponent;
-
 
 /**
  * This class manages any configuration files available. It will notify any deployers registered with it on changes.

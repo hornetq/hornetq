@@ -12,6 +12,8 @@
  */
 package org.hornetq.tests.integration.client;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
@@ -59,23 +61,24 @@ public class SimpleSendMultipleQueues extends ServiceTestBase
          final String body = RandomUtil.randomString();
 
          message.getBodyBuffer().writeString(body);
-         
+
          producer.send(message);
 
          ClientMessage received1 = consumer1.receive(1000);
-         assertNotNull(received1);
-         assertEquals(body, received1.getBodyBuffer().readString());
-         
+         Assert.assertNotNull(received1);
+         Assert.assertEquals(body, received1.getBodyBuffer().readString());
+
          ClientMessage received2 = consumer2.receive(1000);
-         assertNotNull(received2);
-         assertEquals(body, received2.getBodyBuffer().readString());
-         
+         Assert.assertNotNull(received2);
+         Assert.assertEquals(body, received2.getBodyBuffer().readString());
+
          ClientMessage received3 = consumer3.receive(1000);
-         assertNotNull(received3);
-         assertEquals(body, received3.getBodyBuffer().readString());
+         Assert.assertNotNull(received3);
+         Assert.assertEquals(body, received3.getBodyBuffer().readString());
       }
    }
 
+   @Override
    protected void setUp() throws Exception
    {
       super.setUp();
@@ -88,11 +91,11 @@ public class SimpleSendMultipleQueues extends ServiceTestBase
 
       session = cf.createSession();
 
-      session.createQueue(address, "queue1");
-      session.createQueue(address, "queue2");
-      session.createQueue(address, "queue3");
+      session.createQueue(SimpleSendMultipleQueues.address, "queue1");
+      session.createQueue(SimpleSendMultipleQueues.address, "queue2");
+      session.createQueue(SimpleSendMultipleQueues.address, "queue3");
 
-      producer = session.createProducer(address);
+      producer = session.createProducer(SimpleSendMultipleQueues.address);
 
       consumer1 = session.createConsumer("queue1");
 
@@ -105,9 +108,10 @@ public class SimpleSendMultipleQueues extends ServiceTestBase
 
    protected ClientSessionFactory createFactory()
    {
-      return this.createNettyFactory();
+      return createNettyFactory();
    }
 
+   @Override
    protected void tearDown() throws Exception
    {
       if (session != null)
@@ -131,15 +135,6 @@ public class SimpleSendMultipleQueues extends ServiceTestBase
       }
 
       super.tearDown();
-   }
-
-   private ClientMessage sendAndReceive(final ClientMessage message) throws Exception
-   {
-      producer.send(message);
-
-      ClientMessage received = consumer1.receive(10000);
-
-      return received;
    }
 
 }

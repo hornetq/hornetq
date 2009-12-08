@@ -18,6 +18,7 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 
 import org.hornetq.jms.tests.message.SimpleJMSBytesMessage;
+import org.hornetq.jms.tests.util.ProxyAssertSupport;
 
 /**
  * 
@@ -31,31 +32,33 @@ import org.hornetq.jms.tests.message.SimpleJMSBytesMessage;
  */
 public class ForeignBytesMessageTest extends ForeignMessageTest
 {
-    protected Message createForeignMessage() throws Exception
-    {
-        SimpleJMSBytesMessage m = new SimpleJMSBytesMessage();
-        
-        log.debug("creating JMS Message type " + m.getClass().getName());
-        
-        String bytes = "HornetQ";
-        m.writeBytes(bytes.getBytes());
-        return m;
-    }
-    
-    protected void assertEquivalent(Message m, int mode, boolean redelivery) throws JMSException
-    {
-        super.assertEquivalent(m,mode, redelivery);
-        
-        BytesMessage byteMsg = (BytesMessage)m;
-        
-        StringBuffer sb = new StringBuffer();
-        byte[] buffer = new byte[1024];
-        int n = byteMsg.readBytes(buffer);
-        while (n != -1)
-        {
-           sb.append(new String(buffer,0,n));
-           n = byteMsg.readBytes(buffer);
-        }
-        assertEquals("HornetQ",sb.toString());     
-    }
+   @Override
+   protected Message createForeignMessage() throws Exception
+   {
+      SimpleJMSBytesMessage m = new SimpleJMSBytesMessage();
+
+      log.debug("creating JMS Message type " + m.getClass().getName());
+
+      String bytes = "HornetQ";
+      m.writeBytes(bytes.getBytes());
+      return m;
+   }
+
+   @Override
+   protected void assertEquivalent(final Message m, final int mode, final boolean redelivery) throws JMSException
+   {
+      super.assertEquivalent(m, mode, redelivery);
+
+      BytesMessage byteMsg = (BytesMessage)m;
+
+      StringBuffer sb = new StringBuffer();
+      byte[] buffer = new byte[1024];
+      int n = byteMsg.readBytes(buffer);
+      while (n != -1)
+      {
+         sb.append(new String(buffer, 0, n));
+         n = byteMsg.readBytes(buffer);
+      }
+      ProxyAssertSupport.assertEquals("HornetQ", sb.toString());
+   }
 }

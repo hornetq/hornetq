@@ -13,6 +13,8 @@
 
 package org.hornetq.tests.integration.client;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.buffers.HornetQBuffer;
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
@@ -23,6 +25,7 @@ import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.ServiceTestBase;
+import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.SimpleString;
 
 /**
@@ -41,7 +44,6 @@ public class SelfExpandingBufferTest extends ServiceTestBase
 
    private static final Logger log = Logger.getLogger(SelfExpandingBufferTest.class);
 
-   
    // Attributes ----------------------------------------------------
 
    HornetQServer service;
@@ -63,7 +65,7 @@ public class SelfExpandingBufferTest extends ServiceTestBase
    {
       testSelfExpandingBuffer(false, true);
    }
-   
+
    public void testSelfExpandingBufferNettyNonPersistent() throws Exception
    {
       testSelfExpandingBuffer(true, false);
@@ -74,7 +76,7 @@ public class SelfExpandingBufferTest extends ServiceTestBase
       testSelfExpandingBuffer(false, false);
    }
 
-   private void testSelfExpandingBuffer(boolean netty, boolean persistent) throws Exception
+   private void testSelfExpandingBuffer(final boolean netty, final boolean persistent) throws Exception
    {
       setUpService(netty, persistent);
 
@@ -97,50 +99,50 @@ public class SelfExpandingBufferTest extends ServiceTestBase
          session.createQueue(ADDRESS, ADDRESS, true);
 
          ClientMessage msg = session.createClientMessage(true);
-                  
+
          HornetQBuffer buffer = msg.getBodyBuffer();
-         
-         log.info("buffer is " + buffer);
-         
+
+         SelfExpandingBufferTest.log.info("buffer is " + buffer);
+
          byte[] bytes = RandomUtil.randomBytes(10 * buffer.capacity());
 
          buffer.writeBytes(bytes);
-         
+
          ClientProducer prod = session.createProducer(ADDRESS);
-         
+
          prod.send(msg);
-         
-         //Send same message again
-         
+
+         // Send same message again
+
          prod.send(msg);
-         
+
          ClientConsumer cons = session.createConsumer(ADDRESS);
 
          session.start();
-         
+
          ClientMessage msg2 = cons.receive(3000);
-         
-         assertNotNull(msg2);
-                  
+
+         Assert.assertNotNull(msg2);
+
          byte[] receivedBytes = new byte[bytes.length];
-         
-//         log.info("buffer start pos should be at " + PacketImpl.PACKET_HEADERS_SIZE + DataConstants.SIZE_INT);
-//         
-//         log.info("buffer pos at " + msg2.getBodyBuffer().readerIndex());
-//         
-//         log.info("buffer length should be " + msg2.getBodyBuffer().readInt(PacketImpl.PACKET_HEADERS_SIZE));
-         
+
+         // log.info("buffer start pos should be at " + PacketImpl.PACKET_HEADERS_SIZE + DataConstants.SIZE_INT);
+         //         
+         // log.info("buffer pos at " + msg2.getBodyBuffer().readerIndex());
+         //         
+         // log.info("buffer length should be " + msg2.getBodyBuffer().readInt(PacketImpl.PACKET_HEADERS_SIZE));
+
          msg2.getBodyBuffer().readBytes(receivedBytes);
-         
-         assertEqualsByteArrays(bytes, receivedBytes);  
-         
+
+         UnitTestCase.assertEqualsByteArrays(bytes, receivedBytes);
+
          msg2 = cons.receive(3000);
-         
-         assertNotNull(msg2);
-         
+
+         Assert.assertNotNull(msg2);
+
          msg2.getBodyBuffer().readBytes(receivedBytes);
-         
-         assertEqualsByteArrays(bytes, receivedBytes);  
+
+         UnitTestCase.assertEqualsByteArrays(bytes, receivedBytes);
       }
       finally
       {
@@ -152,19 +154,20 @@ public class SelfExpandingBufferTest extends ServiceTestBase
 
    // Protected -----------------------------------------------------
 
-   protected void setUpService(boolean netty, boolean persistent) throws Exception
+   protected void setUpService(final boolean netty, final boolean persistent) throws Exception
    {
       service = createServer(persistent, createDefaultConfig(netty));
       service.start();
    }
 
+   @Override
    protected void tearDown() throws Exception
    {
       if (service != null && service.isStarted())
       {
          service.stop();
       }
-      
+
       service = null;
 
       super.tearDown();

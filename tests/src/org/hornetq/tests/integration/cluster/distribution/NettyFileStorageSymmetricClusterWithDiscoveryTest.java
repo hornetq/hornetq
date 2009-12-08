@@ -11,7 +11,6 @@
  * permissions and limitations under the License.
  */
 
-
 package org.hornetq.tests.integration.cluster.distribution;
 
 /**
@@ -23,6 +22,7 @@ package org.hornetq.tests.integration.cluster.distribution;
  */
 public class NettyFileStorageSymmetricClusterWithDiscoveryTest extends SymmetricClusterWithDiscoveryTest
 {
+   @Override
    protected boolean isNetty()
    {
       return true;

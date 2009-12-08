@@ -12,6 +12,8 @@
  */
 package org.hornetq.tests.integration.client;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
@@ -46,7 +48,7 @@ public class ReceiveTest extends ServiceTestBase
          ClientConsumer cc = session.createConsumer(queueA);
          session.start();
          cp.send(sendSession.createClientMessage(false));
-         assertNotNull(cc.receive());
+         Assert.assertNotNull(cc.receive());
          session.close();
          sendSession.close();
       }
@@ -72,9 +74,8 @@ public class ReceiveTest extends ServiceTestBase
          session.start();
          long time = System.currentTimeMillis();
          cc.receive(1000);
-         assertTrue(System.currentTimeMillis() - time >= 1000);
+         Assert.assertTrue(System.currentTimeMillis() - time >= 1000);
          session.close();
-
 
       }
       finally
@@ -101,14 +102,13 @@ public class ReceiveTest extends ServiceTestBase
          try
          {
             cc.receive();
-            fail("should throw exception");
+            Assert.fail("should throw exception");
          }
          catch (HornetQException e)
          {
-            assertEquals(HornetQException.OBJECT_CLOSED, e.getCode());
+            Assert.assertEquals(HornetQException.OBJECT_CLOSED, e.getCode());
          }
          session.close();
-
 
       }
       finally
@@ -133,21 +133,20 @@ public class ReceiveTest extends ServiceTestBase
          session.start();
          cc.setMessageHandler(new MessageHandler()
          {
-            public void onMessage(ClientMessage message)
+            public void onMessage(final ClientMessage message)
             {
             }
          });
          try
          {
             cc.receive();
-            fail("should throw exception");
+            Assert.fail("should throw exception");
          }
          catch (HornetQException e)
          {
-            assertEquals(HornetQException.ILLEGAL_STATE, e.getCode());
+            Assert.assertEquals(HornetQException.ILLEGAL_STATE, e.getCode());
          }
          session.close();
-
 
       }
       finally
@@ -166,7 +165,7 @@ public class ReceiveTest extends ServiceTestBase
       {
          server.start();
          ClientSessionFactory cf = createInVMFactory();
-         //forces perfect round robin
+         // forces perfect round robin
          cf.setConsumerWindowSize(1);
          ClientSession sendSession = cf.createSession(false, true, true);
          ClientProducer cp = sendSession.createProducer(addressA);
@@ -178,10 +177,10 @@ public class ReceiveTest extends ServiceTestBase
          cp.send(sendSession.createClientMessage(false));
          cp.send(sendSession.createClientMessage(false));
          cp.send(sendSession.createClientMessage(false));
-         //at this point we know that the first consumer has a messge in ites buffer
-         assertNotNull(cc2.receive(5000));
-         assertNotNull(cc2.receive(5000));
-         assertNotNull(cc.receiveImmediate());
+         // at this point we know that the first consumer has a messge in ites buffer
+         Assert.assertNotNull(cc2.receive(5000));
+         Assert.assertNotNull(cc2.receive(5000));
+         Assert.assertNotNull(cc.receiveImmediate());
          session.close();
          sendSession.close();
       }

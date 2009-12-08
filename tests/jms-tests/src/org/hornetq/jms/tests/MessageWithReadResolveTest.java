@@ -22,6 +22,8 @@ import javax.jms.MessageProducer;
 import javax.jms.ObjectMessage;
 import javax.jms.Session;
 
+import org.hornetq.jms.tests.util.ProxyAssertSupport;
+
 /**
  * A MessageWithReadResolveTest
  * 
@@ -35,109 +37,112 @@ import javax.jms.Session;
  */
 public class MessageWithReadResolveTest extends JMSTestCase
 {
-   
-   //  Constants -----------------------------------------------------
-   
+
+   // Constants -----------------------------------------------------
+
    // Static --------------------------------------------------------
-   
+
    // Attributes ----------------------------------------------------
-   
+
    // Constructors --------------------------------------------------
-   
+
    // TestCase overrides -------------------------------------------
-      
+
    // Public --------------------------------------------------------
-   
+
    public void testSendReceiveMessage() throws Exception
    {
       Connection conn = null;
-      
+
       try
-      {	      
-	      conn = cf.createConnection();
-	      
-	      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-	      
-	      MessageProducer prod = sess.createProducer(queue1);
-	      
-	      //Make persistent to make sure message gets serialized
-	      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
-	      
-	      MessageConsumer cons = sess.createConsumer(queue1);
-	      
-	      TestMessage tm = new TestMessage(123, false);
-	      
-	      ObjectMessage om = sess.createObjectMessage();
-	      
-	      om.setObject(tm);
-	      
-	      conn.start();
-	      
-	      prod.send(om);
-	      
-	      ObjectMessage om2 = (ObjectMessage)cons.receive(1000);
-	      
-	      assertNotNull(om2);
-	      
-	      TestMessage tm2 = (TestMessage)om2.getObject();
-	      
-	      assertEquals(123, tm2.getID());
-	      
-	      conn.close();
+      {
+         conn = JMSTestCase.cf.createConnection();
+
+         Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+         MessageProducer prod = sess.createProducer(HornetQServerTestCase.queue1);
+
+         // Make persistent to make sure message gets serialized
+         prod.setDeliveryMode(DeliveryMode.PERSISTENT);
+
+         MessageConsumer cons = sess.createConsumer(HornetQServerTestCase.queue1);
+
+         TestMessage tm = new TestMessage(123, false);
+
+         ObjectMessage om = sess.createObjectMessage();
+
+         om.setObject(tm);
+
+         conn.start();
+
+         prod.send(om);
+
+         ObjectMessage om2 = (ObjectMessage)cons.receive(1000);
+
+         ProxyAssertSupport.assertNotNull(om2);
+
+         TestMessage tm2 = (TestMessage)om2.getObject();
+
+         ProxyAssertSupport.assertEquals(123, tm2.getID());
+
+         conn.close();
       }
       finally
       {
-      	if (conn != null)
-      	{
-      		conn.close();
-      	}
+         if (conn != null)
+         {
+            conn.close();
+         }
       }
-            
+
    }
-     
+
    // Package protected ---------------------------------------------
-   
+
    // Protected -----------------------------------------------------
-   
+
    // Private -------------------------------------------------------
-   
+
    /* This class would trigger the exception when serialized with jboss serialization */
    public static class TestMessage implements Serializable
    {
       private static final long serialVersionUID = -5932581134414145967L;
-      private long id;
+
+      private final long id;
+
       private Object clazz;
 
-      public TestMessage(long id, boolean useSimpleObject)
+      public TestMessage(final long id, final boolean useSimpleObject)
       {
-        this.id = id;
-        if (useSimpleObject)
-        {
-          clazz = String.class;
-        }
-        else
-        {
-          clazz = TestEnum.class;
-        }
+         this.id = id;
+         if (useSimpleObject)
+         {
+            clazz = String.class;
+         }
+         else
+         {
+            clazz = TestEnum.class;
+         }
       }
 
-      public String toString() 
+      @Override
+      public String toString()
       {
-        StringBuffer sb = new StringBuffer();
-        sb.append("TestMessage(");
-        sb.append("id=" + id);
-        sb.append(", clazz=" + clazz);
-        sb.append(")");
-        return sb.toString();
+         StringBuffer sb = new StringBuffer();
+         sb.append("TestMessage(");
+         sb.append("id=" + id);
+         sb.append(", clazz=" + clazz);
+         sb.append(")");
+         return sb.toString();
       }
-      
+
       public long getID()
       {
          return id;
       }
 
-    }
-   
+   }
+
    public static class TestEnum implements Serializable
    {
 
@@ -145,10 +150,9 @@ public class MessageWithReadResolveTest extends JMSTestCase
 
       public Object readResolve()
       {
-        return null;
+         return null;
       }
-    }
-   
+   }
+
    // Inner classes -------------------------------------------------
 }
-

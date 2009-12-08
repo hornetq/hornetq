@@ -12,7 +12,6 @@
  */
 package org.hornetq.utils;
 
-
 /**
  * A Future
  * 
@@ -22,11 +21,11 @@ package org.hornetq.utils;
 public class Future implements Runnable
 {
    private boolean done;
-   
+
    public synchronized boolean await(final long timeout)
    {
       long toWait = timeout;
-      
+
       long start = System.currentTimeMillis();
 
       while (!done && toWait > 0)
@@ -45,15 +44,15 @@ public class Future implements Runnable
 
          start = now;
       }
-      
+
       return done;
    }
-   
+
    public synchronized void run()
    {
       done = true;
-      
+
       notify();
    }
-   
+
 }

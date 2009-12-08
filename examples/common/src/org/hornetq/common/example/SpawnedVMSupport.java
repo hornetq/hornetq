@@ -38,7 +38,7 @@ public class SpawnedVMSupport
    // Attributes ----------------------------------------------------
 
    // Static --------------------------------------------------------
-   public static Process spawnVM(String classPath,
+   public static Process spawnVM(final String classPath,
                                  final String className,
                                  final String vmargs,
                                  final boolean logOutput,
@@ -47,7 +47,15 @@ public class SpawnedVMSupport
                                  final String configDir,
                                  final String... args) throws Exception
    {
-      return spawnVM(classPath, "HornetQServer", className, vmargs, logOutput, success, failure, configDir, args);
+      return SpawnedVMSupport.spawnVM(classPath,
+                                      "HornetQServer",
+                                      className,
+                                      vmargs,
+                                      logOutput,
+                                      success,
+                                      failure,
+                                      configDir,
+                                      args);
    }
 
    public static Process spawnVM(String classPath,
@@ -100,11 +108,11 @@ public class SpawnedVMSupport
 
       String commandLine = sb.toString();
 
-      log.trace("command line: " + commandLine);
+      SpawnedVMSupport.log.trace("command line: " + commandLine);
 
       Process process = Runtime.getRuntime().exec(commandLine, null, new File(configDir));
 
-      log.trace("process: " + process);
+      SpawnedVMSupport.log.trace("process: " + process);
 
       CountDownLatch latch = new CountDownLatch(1);
 
@@ -153,9 +161,9 @@ public class SpawnedVMSupport
     */
    static class ProcessLogger extends Thread
    {
-      private InputStream is;
+      private final InputStream is;
 
-      private String logName;
+      private final String logName;
 
       private final boolean print;
 
@@ -172,10 +180,10 @@ public class SpawnedVMSupport
       ProcessLogger(final boolean print,
                     final InputStream is,
                     final String logName,
-                    boolean sendToErr,
-                    String success,
-                    String failure,
-                    CountDownLatch latch) throws ClassNotFoundException
+                    final boolean sendToErr,
+                    final String success,
+                    final String failure,
+                    final CountDownLatch latch) throws ClassNotFoundException
       {
          this.is = is;
          this.print = print;

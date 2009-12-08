@@ -12,6 +12,8 @@
  */
 package org.hornetq.tests.integration.client;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
@@ -51,7 +53,7 @@ public class ConsumerRoundRobinTest extends ServiceTestBase
          consumers[3] = session.createConsumer(queueA);
          consumers[4] = session.createConsumer(queueA);
 
-         //ClientSession sendSession = cf.createSession(false, true, true);
+         // ClientSession sendSession = cf.createSession(false, true, true);
          ClientProducer cp = session.createProducer(addressA);
          int numMessage = 100;
          for (int i = 0; i < numMessage; i++)
@@ -66,11 +68,11 @@ public class ConsumerRoundRobinTest extends ServiceTestBase
             for (int j = 0; j < 5; j++)
             {
                ClientMessage cm = consumers[j].receive(5000);
-               assertNotNull(cm);
-               assertEquals(currMessage++, cm.getBodyBuffer().readInt());
+               Assert.assertNotNull(cm);
+               Assert.assertEquals(currMessage++, cm.getBodyBuffer().readInt());
             }
          }
-         //sendSession.close();
+         // sendSession.close();
          session.close();
       }
       finally

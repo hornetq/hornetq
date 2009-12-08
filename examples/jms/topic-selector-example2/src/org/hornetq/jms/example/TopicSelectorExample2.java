@@ -34,56 +34,57 @@ import org.hornetq.common.example.HornetQExample;
 public class TopicSelectorExample2 extends HornetQExample
 {
    private volatile boolean result = true;
-   
-   public static void main(String[] args)
+
+   public static void main(final String[] args)
    {
       new TopicSelectorExample2().run(args);
    }
 
+   @Override
    public boolean runExample() throws Exception
    {
       Connection connection = null;
       InitialContext initialContext = null;
       try
       {
-         ///Step 1. Create an initial context to perform the JNDI lookup.
+         // /Step 1. Create an initial context to perform the JNDI lookup.
          initialContext = getContext(0);
 
-         //Step 2. perform a lookup on the topic
-         Topic topic = (Topic) initialContext.lookup("/topic/exampleTopic");
+         // Step 2. perform a lookup on the topic
+         Topic topic = (Topic)initialContext.lookup("/topic/exampleTopic");
 
-         //Step 3. perform a lookup on the Connection Factory
-         ConnectionFactory cf = (ConnectionFactory) initialContext.lookup("/ConnectionFactory");
+         // Step 3. perform a lookup on the Connection Factory
+         ConnectionFactory cf = (ConnectionFactory)initialContext.lookup("/ConnectionFactory");
 
-         //Step 4. Create a JMS Connection
+         // Step 4. Create a JMS Connection
          connection = cf.createConnection();
-         
-         //Step 5. Start the Connection
+
+         // Step 5. Start the Connection
          connection.start();
 
-         //Step 6. Create a JMS Session
+         // Step 6. Create a JMS Session
          Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         //Step 7. Create a Message Producer
+         // Step 7. Create a Message Producer
          MessageProducer producer = session.createProducer(topic);
-         
-         //Step 8. Prepare two selectors
+
+         // Step 8. Prepare two selectors
          String redSelector = "color='red'";
          String greenSelector = "color='green'";
 
-         //Step 9. Create a JMS Message Consumer that receives 'red' messages
+         // Step 9. Create a JMS Message Consumer that receives 'red' messages
          MessageConsumer redConsumer = session.createConsumer(topic, redSelector);
          redConsumer.setMessageListener(new SimpleMessageListener("red"));
 
-         //Step 10. Create a second JMS message consumer that receives 'green' messages
+         // Step 10. Create a second JMS message consumer that receives 'green' messages
          MessageConsumer greenConsumer = session.createConsumer(topic, greenSelector);
          greenConsumer.setMessageListener(new SimpleMessageListener("green"));
-         
-         //Step 11. Create another JMS message consumer that receives all messages.
+
+         // Step 11. Create another JMS message consumer that receives all messages.
          MessageConsumer allConsumer = session.createConsumer(topic);
          allConsumer.setMessageListener(new SimpleMessageListener("all"));
-         
-         //Step 12. Create three messages, each has a color property
+
+         // Step 12. Create three messages, each has a color property
          TextMessage redMessage = session.createTextMessage("Red");
          redMessage.setStringProperty("color", "red");
          TextMessage greenMessage = session.createTextMessage("Green");
@@ -91,26 +92,26 @@ public class TopicSelectorExample2 extends HornetQExample
          TextMessage blueMessage = session.createTextMessage("Blue");
          blueMessage.setStringProperty("color", "blue");
 
-         //Step 13. Send the Messages
+         // Step 13. Send the Messages
          producer.send(redMessage);
          System.out.println("Message sent: " + redMessage.getText());
          producer.send(greenMessage);
          System.out.println("Message sent: " + greenMessage.getText());
          producer.send(blueMessage);
          System.out.println("Message sent: " + blueMessage.getText());
-         
+
          Thread.sleep(5000);
-         
+
          return result;
       }
       finally
       {
-         //Step 14. Be sure to close our JMS resources!
+         // Step 14. Be sure to close our JMS resources!
          if (connection != null)
          {
             connection.close();
          }
-         
+
          // Also the initialContext
          if (initialContext != null)
          {
@@ -118,25 +119,29 @@ public class TopicSelectorExample2 extends HornetQExample
          }
       }
    }
-   
+
    public class SimpleMessageListener implements MessageListener
    {
 
-      private String name;
-      
-      public SimpleMessageListener(String listener)
+      private final String name;
+
+      public SimpleMessageListener(final String listener)
       {
          name = listener;
       }
 
-      public void onMessage(Message msg)
+      public void onMessage(final Message msg)
       {
          TextMessage textMessage = (TextMessage)msg;
          try
          {
             String colorProp = msg.getStringProperty("color");
-            System.out.println("Receiver " + name + " receives message [" + textMessage.getText() + "] with color property: " + colorProp);
-            if ((!colorProp.equals(name)) && (!name.equals("all")))
+            System.out.println("Receiver " + name +
+                               " receives message [" +
+                               textMessage.getText() +
+                               "] with color property: " +
+                               colorProp);
+            if (!colorProp.equals(name) && !name.equals("all"))
             {
                result = false;
             }
@@ -147,6 +152,6 @@ public class TopicSelectorExample2 extends HornetQExample
             result = false;
          }
       }
-      
+
    }
 }

@@ -37,18 +37,18 @@ public class TestConfig
 
    static
    {
-      // load tests.properties	 
+      // load tests.properties
       long tempTimeOut = 0;
       try
       {
          Properties props = new Properties();
-         props.load(ClassLoader.getSystemResourceAsStream(PROP_FILE_NAME));
-         System.out.println("Found " + PROP_FILE_NAME);
-         tempTimeOut = Long.parseLong(props.getProperty(PROP_NAME, "0"));
+         props.load(ClassLoader.getSystemResourceAsStream(TestConfig.PROP_FILE_NAME));
+         System.out.println("Found " + TestConfig.PROP_FILE_NAME);
+         tempTimeOut = Long.parseLong(props.getProperty(TestConfig.PROP_NAME, "0"));
       }
       catch (Exception e)
       {
-    	 e.printStackTrace();
+         e.printStackTrace();
          tempTimeOut = 30000;
       }
       finally

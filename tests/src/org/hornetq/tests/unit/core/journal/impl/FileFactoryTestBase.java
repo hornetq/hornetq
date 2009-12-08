@@ -15,6 +15,8 @@ package org.hornetq.tests.unit.core.journal.impl;
 
 import java.nio.ByteBuffer;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.tests.util.UnitTestCase;
@@ -54,7 +56,7 @@ public abstract class FileFactoryTestBase extends UnitTestCase
 
       int bytesRead = file.read(bb);
 
-      assertEquals(size, bytesRead);
+      Assert.assertEquals(size, bytesRead);
 
       bb.rewind();
 
@@ -65,7 +67,7 @@ public abstract class FileFactoryTestBase extends UnitTestCase
       for (int i = 0; i < size; i++)
       {
          // log.debug(" i is " + i);
-         assertEquals(fillChar, bytes[i]);
+         Assert.assertEquals(fillChar, bytes[i]);
       }
 
    }

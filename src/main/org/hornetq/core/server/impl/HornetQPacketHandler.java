@@ -105,7 +105,7 @@ public class HornetQPacketHandler implements ChannelHandler
          }
          default:
          {
-            log.error("Invalid packet " + packet);
+            HornetQPacketHandler.log.error("Invalid packet " + packet);
          }
       }
    }
@@ -136,7 +136,7 @@ public class HornetQPacketHandler implements ChannelHandler
          }
          else
          {
-            log.error("Failed to create session", e);
+            HornetQPacketHandler.log.error("Failed to create session", e);
             response = new HornetQExceptionMessage(new HornetQException(HornetQException.INTERNAL_ERROR));
          }
       }
@@ -160,7 +160,7 @@ public class HornetQPacketHandler implements ChannelHandler
          }
          else
          {
-            log.error("Failed to reattach session", e);
+            HornetQPacketHandler.log.error("Failed to reattach session", e);
 
             response = new HornetQExceptionMessage(new HornetQException(HornetQException.INTERNAL_ERROR));
          }
@@ -181,7 +181,7 @@ public class HornetQPacketHandler implements ChannelHandler
       }
       catch (Exception e)
       {
-         log.error("Failed to handle create queue", e);
+         HornetQPacketHandler.log.error("Failed to handle create queue", e);
       }
    }
 
@@ -207,7 +207,7 @@ public class HornetQPacketHandler implements ChannelHandler
          }
          else
          {
-            log.warn(e.getMessage(), e);
+            HornetQPacketHandler.log.warn(e.getMessage(), e);
             response = new HornetQExceptionMessage(new HornetQException(HornetQException.INTERNAL_ERROR));
          }
       }

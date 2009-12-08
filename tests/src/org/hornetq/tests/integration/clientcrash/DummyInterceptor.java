@@ -9,7 +9,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
  * implied.  See the License for the specific language governing
  * permissions and limitations under the License.
- */ 
+ */
 
 package org.hornetq.tests.integration.clientcrash;
 
@@ -31,19 +31,21 @@ public class DummyInterceptor implements Interceptor
    protected Logger log = Logger.getLogger(DummyInterceptor.class);
 
    boolean sendException = false;
+
    boolean changeMessage = false;
+
    AtomicInteger syncCounter = new AtomicInteger(0);
-   
+
    public int getCounter()
    {
       return syncCounter.get();
    }
-   
+
    public void clearCounter()
    {
       syncCounter.set(0);
    }
-   
+
    public boolean intercept(final Packet packet, final RemotingConnection conn) throws HornetQException
    {
       log.debug("DummyFilter packet = " + packet.getClass().getName());
@@ -62,6 +64,6 @@ public class DummyInterceptor implements Interceptor
          }
       }
       return true;
-   }   
+   }
 
 }

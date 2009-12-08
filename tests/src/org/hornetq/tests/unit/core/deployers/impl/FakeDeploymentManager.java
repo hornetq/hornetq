@@ -21,14 +21,14 @@ import org.hornetq.core.deployers.DeploymentManager;
 class FakeDeploymentManager implements DeploymentManager
 {
    private boolean started;
-   
+
    public boolean isStarted()
    {
       return started;
    }
 
    public void start() throws Exception
-   {  
+   {
       started = true;
    }
 
@@ -37,11 +37,11 @@ class FakeDeploymentManager implements DeploymentManager
       started = false;
    }
 
-   public void registerDeployer(Deployer deployer) throws Exception
+   public void registerDeployer(final Deployer deployer) throws Exception
    {
    }
 
-   public void unregisterDeployer(Deployer deployer) throws Exception
+   public void unregisterDeployer(final Deployer deployer) throws Exception
    {
    }
 }

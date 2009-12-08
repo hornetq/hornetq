@@ -14,10 +14,8 @@
 package org.hornetq.jms.tests.tools;
 
 import java.io.Serializable;
-import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Hashtable;
-import java.util.Set;
 
 import org.hornetq.core.config.Configuration;
 import org.jboss.kernel.spi.dependency.KernelControllerContext;
@@ -31,19 +29,15 @@ import org.jboss.kernel.spi.dependency.KernelControllerContextAware;
 public class ConfigurationHelper implements KernelControllerContextAware
 {
    private Configuration configuration;
-   
-   private KernelControllerContext kernelControllerContext;
-   
+
    private static HashMap<Integer, HashMap<String, Object>> configs;
 
-   public void setKernelControllerContext(KernelControllerContext kernelControllerContext) throws Exception
+   public void setKernelControllerContext(final KernelControllerContext kernelControllerContext) throws Exception
    {
-      this.kernelControllerContext = kernelControllerContext;
    }
 
-   public void unsetKernelControllerContext(KernelControllerContext kernelControllerContext) throws Exception
+   public void unsetKernelControllerContext(final KernelControllerContext kernelControllerContext) throws Exception
    {
-      this.kernelControllerContext = null;
    }
 
    public Configuration getConfiguration()
@@ -51,7 +45,7 @@ public class ConfigurationHelper implements KernelControllerContextAware
       return configuration;
    }
 
-   public void setConfiguration(Configuration configuration)
+   public void setConfiguration(final Configuration configuration)
    {
       this.configuration = configuration;
    }
@@ -60,10 +54,10 @@ public class ConfigurationHelper implements KernelControllerContextAware
    {
    }
 
-   public static void addServerConfig(int serverID, HashMap<String, Object> configuration)
+   public static void addServerConfig(final int serverID, final HashMap<String, Object> configuration)
    {
-      configs = new HashMap<Integer, HashMap<String, Object>>();
-      configs.put(serverID, configuration);
+      ConfigurationHelper.configs = new HashMap<Integer, HashMap<String, Object>>();
+      ConfigurationHelper.configs.put(serverID, configuration);
    }
 
    public Hashtable<String, Serializable> getEnvironment()
@@ -72,26 +66,5 @@ public class ConfigurationHelper implements KernelControllerContextAware
       env.put("java.naming.factory.initial", "org.hornetq.jms.tests.tools.container.InVMInitialContextFactory");
       env.put("hornetq.test.server.index", "0");
       return env;
-   }
-
-   private void alterConfig(Configuration origConf, HashMap<String, Object> newConf)
-   {
-      Set<String> keys = newConf.keySet();
-      for (String key : keys)
-      {
-         try
-         {
-            Method m = null;
-
-               m = origConf.getClass().getMethod(key, newConf.get(key).getClass());
-
-
-            m.invoke(configuration, newConf.get(key));
-         }
-         catch (Exception e)
-         {
-            e.printStackTrace();
-         }
-      }
    }
 }

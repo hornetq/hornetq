@@ -30,7 +30,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 
-
 /**
  * Generates a HTML smoke test report based on raw smoke run data.
  *
@@ -42,15 +41,17 @@ public class GenerateSmokeReport
 {
    // Constants ------------------------------------------------------------------------------------
 
-   public static final String DEFAULT_OUTPUT_BASENAME="smoke-tes-report";
+   public static final String DEFAULT_OUTPUT_BASENAME = "smoke-tes-report";
 
    private static final byte INSTALLATION_TEST = 0;
+
    private static final byte CLIENT_COMPATIBILITY_TEST = 1;
+
    private static final byte SERVER_COMPATIBILITY_TEST = 2;
 
    // Static ---------------------------------------------------------------------------------------
 
-   public static void main(String[] args) throws Exception
+   public static void main(final String[] args) throws Exception
    {
       new GenerateSmokeReport(args).run();
    }
@@ -64,11 +65,11 @@ public class GenerateSmokeReport
     *
     * @return a copy of the original list.
     */
-   public static List order(List exampleNames, String orderedNameList)
+   public static List order(final List exampleNames, final String orderedNameList)
    {
       List originalList = new ArrayList(exampleNames);
       List orderedList = new ArrayList();
-      for(StringTokenizer st = new StringTokenizer(orderedNameList, ", "); st.hasMoreTokens(); )
+      for (StringTokenizer st = new StringTokenizer(orderedNameList, ", "); st.hasMoreTokens();)
       {
          String ordn = st.nextToken();
          if (originalList.contains(ordn))
@@ -85,18 +86,22 @@ public class GenerateSmokeReport
    // Attributes -----------------------------------------------------------------------------------
 
    private File inputFile;
+
    private File outputDir;
-   private String outputFileName;
+
+   private final String outputFileName;
+
    private File installerDir;
+
    private String orderedNameList;
 
    // Constructors ---------------------------------------------------------------------------------
 
-   private GenerateSmokeReport(String[] args) throws Exception
+   private GenerateSmokeReport(final String[] args) throws Exception
    {
       String baseName = null;
 
-      for(int i = 0; i < args.length; i++)
+      for (int i = 0; i < args.length; i++)
       {
          if ("-inputfile".equals(args[i]))
          {
@@ -167,7 +172,7 @@ public class GenerateSmokeReport
 
       if (baseName == null)
       {
-         baseName = DEFAULT_OUTPUT_BASENAME;
+         baseName = GenerateSmokeReport.DEFAULT_OUTPUT_BASENAME;
       }
 
       outputFileName = baseName + ".java-" + System.getProperty("java.version") + ".html";
@@ -187,7 +192,7 @@ public class GenerateSmokeReport
       generateReport(d);
    }
 
-   private ReportData parseInputFile(File f) throws Exception
+   private ReportData parseInputFile(final File f) throws Exception
    {
       BufferedReader br = new BufferedReader(new FileReader(f));
       ReportData result = new ReportData();
@@ -195,7 +200,7 @@ public class GenerateSmokeReport
       try
       {
          String line;
-         while((line = br.readLine()) != null)
+         while ((line = br.readLine()) != null)
          {
             int bi = line.indexOf("TEST_TYPE=");
             if (bi == -1)
@@ -304,12 +309,17 @@ public class GenerateSmokeReport
             }
             else
             {
-               throw new Exception(
-                  "CLUSTERED must be either 'true' or 'false' but it's " + clusteredValue);
+               throw new Exception("CLUSTERED must be either 'true' or 'false' but it's " + clusteredValue);
             }
 
-            result.addTestRun(testType, jbossHome, jbossConfiguration, clientVersion,
-                              installationType, serverArtifactName, exampleName, clustered);
+            result.addTestRun(testType,
+                              jbossHome,
+                              jbossConfiguration,
+                              clientVersion,
+                              installationType,
+                              serverArtifactName,
+                              exampleName,
+                              clustered);
          }
       }
       finally
@@ -322,7 +332,7 @@ public class GenerateSmokeReport
       return result;
    }
 
-   private void generateReport(ReportData data) throws Exception
+   private void generateReport(final ReportData data) throws Exception
    {
       PrintWriter pw = new PrintWriter(new FileWriter(new File(outputDir, outputFileName)));
 
@@ -342,10 +352,10 @@ public class GenerateSmokeReport
 
          List installations = new ArrayList(data.getInstallations());
          Collections.sort(installations);
-         List examples = new ArrayList(data.getExamples(INSTALLATION_TEST));
+         List examples = new ArrayList(data.getExamples(GenerateSmokeReport.INSTALLATION_TEST));
          if (orderedNameList != null)
          {
-            examples = order(examples, orderedNameList);
+            examples = GenerateSmokeReport.order(examples, orderedNameList);
          }
          else
          {
@@ -360,7 +370,7 @@ public class GenerateSmokeReport
 
          pw.print("<tr>");
          pw.print("<td></td>");
-         for(Iterator j = examples.iterator(); j.hasNext(); )
+         for (Iterator j = examples.iterator(); j.hasNext();)
          {
             pw.print("<td align=\"center\"><b>");
             pw.print((String)j.next());
@@ -368,8 +378,7 @@ public class GenerateSmokeReport
          }
          pw.println("</tr>");
 
-
-         for(Iterator i = installations.iterator(); i.hasNext();)
+         for (Iterator i = installations.iterator(); i.hasNext();)
          {
             JBossInstallation jbi = (JBossInstallation)i.next();
             Set thisExamples = data.getExamples(jbi);
@@ -379,7 +388,7 @@ public class GenerateSmokeReport
             pw.print(jbi.toString());
             pw.println("</td>");
 
-            for(Iterator j = examples.iterator(); j.hasNext(); )
+            for (Iterator j = examples.iterator(); j.hasNext();)
             {
                String exampleName = (String)j.next();
                if (thisExamples.contains(exampleName))
@@ -403,7 +412,7 @@ public class GenerateSmokeReport
 
          List serverVersions = new ArrayList(data.getServerVersions());
          Collections.sort(serverVersions);
-         examples = new ArrayList(data.getExamples(CLIENT_COMPATIBILITY_TEST));
+         examples = new ArrayList(data.getExamples(GenerateSmokeReport.CLIENT_COMPATIBILITY_TEST));
          Collections.sort(examples);
 
          pw.println("<h2>Client Compatibility Test Results</h2>");
@@ -414,7 +423,7 @@ public class GenerateSmokeReport
 
          pw.print("<tr>");
          pw.print("<td></td>");
-         for(Iterator j = examples.iterator(); j.hasNext(); )
+         for (Iterator j = examples.iterator(); j.hasNext();)
          {
             pw.print("<td align=\"center\"><b>");
             pw.print((String)j.next());
@@ -422,7 +431,7 @@ public class GenerateSmokeReport
          }
          pw.println("</tr>");
 
-         for(Iterator i = serverVersions.iterator(); i.hasNext();)
+         for (Iterator i = serverVersions.iterator(); i.hasNext();)
          {
             String serverVersion = (String)i.next();
             Set thisExamples = data.getExamples(true, serverVersion);
@@ -432,7 +441,7 @@ public class GenerateSmokeReport
             pw.print(serverVersion);
             pw.println("</td>");
 
-            for(Iterator j = examples.iterator(); j.hasNext(); )
+            for (Iterator j = examples.iterator(); j.hasNext();)
             {
                String exampleName = (String)j.next();
                if (thisExamples.contains(exampleName))
@@ -456,7 +465,7 @@ public class GenerateSmokeReport
 
          List clientVersions = new ArrayList(data.getClientVersions());
          Collections.sort(clientVersions);
-         examples = new ArrayList(data.getExamples(SERVER_COMPATIBILITY_TEST));
+         examples = new ArrayList(data.getExamples(GenerateSmokeReport.SERVER_COMPATIBILITY_TEST));
          Collections.sort(examples);
 
          pw.println("<h2>Server Compatibility Test Results</h2>");
@@ -467,7 +476,7 @@ public class GenerateSmokeReport
 
          pw.print("<tr>");
          pw.print("<td></td>");
-         for(Iterator j = examples.iterator(); j.hasNext(); )
+         for (Iterator j = examples.iterator(); j.hasNext();)
          {
             pw.print("<td align=\"center\"><b>");
             pw.print((String)j.next());
@@ -475,7 +484,7 @@ public class GenerateSmokeReport
          }
          pw.println("</tr>");
 
-         for(Iterator i = clientVersions.iterator(); i.hasNext();)
+         for (Iterator i = clientVersions.iterator(); i.hasNext();)
          {
             String clientVersion = (String)i.next();
             Set thisExamples = data.getExamples(false, clientVersion);
@@ -485,7 +494,7 @@ public class GenerateSmokeReport
             pw.print(clientVersion);
             pw.println("</td>");
 
-            for(Iterator j = examples.iterator(); j.hasNext(); )
+            for (Iterator j = examples.iterator(); j.hasNext();)
             {
                String exampleName = (String)j.next();
                if (thisExamples.contains(exampleName))
@@ -524,13 +533,13 @@ public class GenerateSmokeReport
    private class ReportData
    {
       // <jbossInstallation - Set<examples>>
-      private Map installationTests;
+      private final Map installationTests;
 
       // <serverVersion - Set<example>>
-      private Map clientCompatibilityTests;
+      private final Map clientCompatibilityTests;
 
       // <clientVersion - Set<example>>
-      private Map serverCompatibilityTests;
+      private final Map serverCompatibilityTests;
 
       private ReportData()
       {
@@ -539,15 +548,18 @@ public class GenerateSmokeReport
          serverCompatibilityTests = new HashMap();
       }
 
-      public void addTestRun(String testType, String jbossHome, String jbossConfiguration,
-                             String clientVersion, String installationType,
-                             String serverArtifactName, String exampleName,
-                             boolean clustered) throws Exception
+      public void addTestRun(final String testType,
+                             final String jbossHome,
+                             final String jbossConfiguration,
+                             final String clientVersion,
+                             final String installationType,
+                             final String serverArtifactName,
+                             final String exampleName,
+                             final boolean clustered) throws Exception
       {
          if ("installation".equals(testType))
          {
-            addInstallationTestRun(jbossHome, installationType,
-                                   serverArtifactName, exampleName, clustered);
+            addInstallationTestRun(jbossHome, installationType, serverArtifactName, exampleName, clustered);
          }
          else if ("client.compatibility".equals(testType))
          {
@@ -578,12 +590,12 @@ public class GenerateSmokeReport
          return serverCompatibilityTests.keySet();
       }
 
-      public Set getExamples(JBossInstallation jbi)
+      public Set getExamples(final JBossInstallation jbi)
       {
          return (Set)installationTests.get(jbi);
       }
 
-      public Set getExamples(boolean clientTest, String version)
+      public Set getExamples(final boolean clientTest, final String version)
       {
          if (clientTest)
          {
@@ -595,14 +607,13 @@ public class GenerateSmokeReport
       /**
        * @return all examples for which at least a test was recorded
        */
-      public Set getExamples(byte testType)
+      public Set getExamples(final byte testType)
       {
          Set examples = new HashSet();
-         Collection values =
-            testType == INSTALLATION_TEST ? installationTests.values() :
-               testType == CLIENT_COMPATIBILITY_TEST ? clientCompatibilityTests.values() :
-                  serverCompatibilityTests.values();
-         for(Iterator i = values.iterator(); i.hasNext();)
+         Collection values = testType == GenerateSmokeReport.INSTALLATION_TEST ? installationTests.values()
+                                                                              : testType == GenerateSmokeReport.CLIENT_COMPATIBILITY_TEST ? clientCompatibilityTests.values()
+                                                                                                                                         : serverCompatibilityTests.values();
+         for (Iterator i = values.iterator(); i.hasNext();)
          {
             Set s = (Set)i.next();
             examples.addAll(s);
@@ -610,9 +621,11 @@ public class GenerateSmokeReport
          return examples;
       }
 
-      private void addInstallationTestRun(String jbossHome, String installationType,
-                                          String serverArtifactName, String exampleName,
-                                          boolean clustered) throws Exception
+      private void addInstallationTestRun(final String jbossHome,
+                                          final String installationType,
+                                          final String serverArtifactName,
+                                          final String exampleName,
+                                          final boolean clustered) throws Exception
       {
          String jbossVersion;
          boolean installerGenerated = false;
@@ -629,7 +642,7 @@ public class GenerateSmokeReport
          // determine if it's an "installer" generated installation
 
          File parent = new File(jbossHome).getParentFile();
-         while(parent != null)
+         while (parent != null)
          {
             if (parent.equals(installerDir))
             {
@@ -650,8 +663,7 @@ public class GenerateSmokeReport
          // determine if it's scoped or not
          scoped = serverArtifactName.indexOf("-scoped") != -1;
 
-         JBossInstallation jbi =
-            new JBossInstallation(jbossVersion, installerGenerated, standalone, scoped, clustered);
+         JBossInstallation jbi = new JBossInstallation(jbossVersion, installerGenerated, standalone, scoped, clustered);
 
          Set examples = (Set)installationTests.get(jbi);
 
@@ -668,13 +680,12 @@ public class GenerateSmokeReport
          examples.add(exampleName);
       }
 
-      private void addClientCompatibilityTestRun(String jbossConfiguration, String exampleName)
-         throws Exception
+      private void addClientCompatibilityTestRun(final String jbossConfiguration, final String exampleName) throws Exception
       {
          if (!jbossConfiguration.startsWith("messaging-"))
          {
-            throw new Exception("Invalid JBoss configuration name for a " +
-                                "client compatibility test: " + jbossConfiguration);
+            throw new Exception("Invalid JBoss configuration name for a " + "client compatibility test: " +
+                                jbossConfiguration);
          }
 
          String serverVersion = jbossConfiguration.substring(10);
@@ -689,13 +700,14 @@ public class GenerateSmokeReport
          if (examples.contains(exampleName))
          {
             throw new Exception("Duplicate client compatibility run: " + exampleName +
-                                " on " + serverVersion + " server");
+                                " on " +
+                                serverVersion +
+                                " server");
          }
          examples.add(exampleName);
       }
 
-      private void addServerCompatibilityTestRun(String clientVersion, String exampleName)
-         throws Exception
+      private void addServerCompatibilityTestRun(final String clientVersion, final String exampleName) throws Exception
       {
          Set examples = (Set)serverCompatibilityTests.get(clientVersion);
          if (examples == null)
@@ -707,7 +719,9 @@ public class GenerateSmokeReport
          if (examples.contains(exampleName))
          {
             throw new Exception("Duplicate server compatibility run: " + exampleName +
-                                " with " + clientVersion + " client");
+                                " with " +
+                                clientVersion +
+                                " client");
          }
          examples.add(exampleName);
       }
@@ -716,17 +730,21 @@ public class GenerateSmokeReport
    private class JBossInstallation implements Comparable
    {
 
-      private String version;
-      private boolean installerGenerated;
-      private boolean standalone;
-      private boolean scoped;
-      private boolean clustered;
+      private final String version;
 
-      private JBossInstallation(String version,
-                                boolean installerGenerated,
-                                boolean standalone,
-                                boolean scoped,
-                                boolean clustered)
+      private final boolean installerGenerated;
+
+      private final boolean standalone;
+
+      private final boolean scoped;
+
+      private final boolean clustered;
+
+      private JBossInstallation(final String version,
+                                final boolean installerGenerated,
+                                final boolean standalone,
+                                final boolean scoped,
+                                final boolean clustered)
       {
          this.version = version;
          this.installerGenerated = installerGenerated;
@@ -735,28 +753,24 @@ public class GenerateSmokeReport
          this.clustered = clustered;
       }
 
-      public int compareTo(Object o)
+      public int compareTo(final Object o)
       {
          JBossInstallation that = (JBossInstallation)o;
 
-         int result = this.version.compareTo(that.version);
+         int result = version.compareTo(that.version);
 
          if (result != 0)
          {
             return result;
          }
 
-         int thisScore =
-            (this.isClustered() ? 1000 : 0) +
-            (this.isStandalone() ? 100 : 0) +
-            (this.isInstallerGenerated() ? 10 : 0) +
-            (this.isScoped() ? 1 : 0);
+         int thisScore = (isClustered() ? 1000 : 0) + (isStandalone() ? 100 : 0) +
+                         (isInstallerGenerated() ? 10 : 0) +
+                         (isScoped() ? 1 : 0);
 
-         int thatScore =
-            (that.isClustered() ? 1000 : 0) +
-            (that.isStandalone() ? 100 : 0) +
-            (that.isInstallerGenerated() ? 10 : 0) +
-            (that.isScoped() ? 1 : 0);
+         int thatScore = (that.isClustered() ? 1000 : 0) + (that.isStandalone() ? 100 : 0) +
+                         (that.isInstallerGenerated() ? 10 : 0) +
+                         (that.isScoped() ? 1 : 0);
 
          return thisScore - thatScore;
       }
@@ -786,7 +800,7 @@ public class GenerateSmokeReport
          return clustered;
       }
 
-      public boolean equals(Object o)
+      public boolean equals(final Object o)
       {
          if (this == o)
          {
@@ -800,22 +814,18 @@ public class GenerateSmokeReport
 
          JBossInstallation that = (JBossInstallation)o;
 
-         return
-            this.version.equals(that.version) &&
-            this.installerGenerated == that.installerGenerated &&
-            this.standalone == that.standalone &&
-            this.scoped == that.scoped &&
-            this.clustered == that.clustered;
+         return version.equals(that.version) && installerGenerated == that.installerGenerated &&
+                standalone == that.standalone &&
+                scoped == that.scoped &&
+                clustered == that.clustered;
       }
 
       public int hashCode()
       {
-         return
-            version.hashCode() +
-            (installerGenerated ? 17 : 0) +
-            (standalone ? 37 : 0) +
-            (scoped ? 57 : 0) +
-            (clustered ? 129 : 0);
+         return version.hashCode() + (installerGenerated ? 17 : 0) +
+                (standalone ? 37 : 0) +
+                (scoped ? 57 : 0) +
+                (clustered ? 129 : 0);
       }
 
       public String toString()

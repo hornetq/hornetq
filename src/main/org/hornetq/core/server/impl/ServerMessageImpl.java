@@ -55,7 +55,7 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
       // Note, it is only an estimate, it's not possible to be entirely sure with Java
       // This figure is calculated using the test utilities in org.hornetq.tests.unit.util.sizeof
       // The value is somewhat higher on 64 bit architectures, probably due to different alignment
-      
+
       if (MemorySize.is64bitArch())
       {
          memoryOffset = 352;
@@ -163,15 +163,15 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
    }
 
    private volatile int memoryEstimate = -1;
-   
+
    public int getMemoryEstimate()
    {
       if (memoryEstimate == -1)
       {
-         memoryEstimate = memoryOffset + buffer.capacity() + properties.getMemoryOffset();
+         memoryEstimate = ServerMessageImpl.memoryOffset + buffer.capacity() + properties.getMemoryOffset();
       }
-      
-      return this.memoryEstimate;
+
+      return memoryEstimate;
    }
 
    public ServerMessage copy(final long newID)
@@ -208,19 +208,20 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
 
    public void setOriginalHeaders(final ServerMessage other, final boolean expiry)
    {
-      if (other.containsProperty(HDR_ORIG_MESSAGE_ID))
+      if (other.containsProperty(MessageImpl.HDR_ORIG_MESSAGE_ID))
       {
-         putStringProperty(HDR_ORIGINAL_DESTINATION, other.getSimpleStringProperty(HDR_ORIGINAL_DESTINATION));
+         putStringProperty(MessageImpl.HDR_ORIGINAL_DESTINATION,
+                           other.getSimpleStringProperty(MessageImpl.HDR_ORIGINAL_DESTINATION));
 
-         putLongProperty(HDR_ORIG_MESSAGE_ID, other.getLongProperty(HDR_ORIG_MESSAGE_ID));
+         putLongProperty(MessageImpl.HDR_ORIG_MESSAGE_ID, other.getLongProperty(MessageImpl.HDR_ORIG_MESSAGE_ID));
       }
       else
       {
          SimpleString originalQueue = other.getDestination();
 
-         putStringProperty(HDR_ORIGINAL_DESTINATION, originalQueue);
+         putStringProperty(MessageImpl.HDR_ORIGINAL_DESTINATION, originalQueue);
 
-         putLongProperty(HDR_ORIG_MESSAGE_ID, other.getMessageID());
+         putLongProperty(MessageImpl.HDR_ORIG_MESSAGE_ID, other.getMessageID());
       }
 
       // reset expiry
@@ -230,7 +231,7 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
       {
          long actualExpiryTime = System.currentTimeMillis();
 
-         putLongProperty(HDR_ACTUAL_EXPIRY_TIME, actualExpiryTime);
+         putLongProperty(MessageImpl.HDR_ACTUAL_EXPIRY_TIME, actualExpiryTime);
       }
 
       bufferValid = false;

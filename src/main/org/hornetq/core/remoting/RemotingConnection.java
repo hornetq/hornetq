@@ -33,9 +33,9 @@ public interface RemotingConnection extends BufferHandler
    String getRemoteAddress();
 
    Channel getChannel(long channelID, int confWindowSize);
-   
+
    void putChannel(long channelID, Channel channel);
-   
+
    boolean removeChannel(long channelID);
 
    long generateChannelID();
@@ -43,9 +43,9 @@ public interface RemotingConnection extends BufferHandler
    void addFailureListener(FailureListener listener);
 
    boolean removeFailureListener(FailureListener listener);
-   
+
    void addCloseListener(CloseListener listener);
-      
+
    boolean removeCloseListener(CloseListener listener);
 
    List<FailureListener> getFailureListeners();
@@ -63,15 +63,15 @@ public interface RemotingConnection extends BufferHandler
    long getIDGeneratorSequence();
 
    Connection getTransportConnection();
-   
+
    boolean isClient();
-   
+
    boolean isDestroyed();
-   
+
    long getBlockingCallTimeout();
-   
-   Object getTransferLock(); 
-   
+
+   Object getTransferLock();
+
    boolean checkDataReceived();
 
    void removeAllChannels();

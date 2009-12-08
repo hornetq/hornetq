@@ -47,19 +47,19 @@ public class JMXDomainTest extends ManagementTestBase
 
    public void test2HornetQServersManagedFrom1MBeanServer() throws Exception
    {
-      
+
       Configuration config_0 = createDefaultConfig();
       config_0.setJMXManagementEnabled(true);
-      
+
       String jmxDomain_1 = ConfigurationImpl.DEFAULT_JMX_DOMAIN + ".1";
-      
+
       Configuration config_1 = new ConfigurationImpl();
       Map<String, Object> params = new HashMap<String, Object>();
       params.put(TransportConstants.SERVER_ID_PROP_NAME, 1);
       config_1.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName(), params));
       config_1.setJMXDomain(jmxDomain_1);
       config_1.setJMXManagementEnabled(true);
-      
+
       HornetQServer server_0 = HornetQ.newHornetQServer(config_0, mbeanServer, false);
       HornetQServer server_1 = HornetQ.newHornetQServer(config_1, mbeanServer, false);
 
@@ -68,24 +68,24 @@ public class JMXDomainTest extends ManagementTestBase
 
       checkNoResource(builder_0.getHornetQServerObjectName());
       checkNoResource(builder_1.getHornetQServerObjectName());
-      
+
       server_0.start();
-      
+
       checkResource(builder_0.getHornetQServerObjectName());
       checkNoResource(builder_1.getHornetQServerObjectName());
 
       server_1.start();
-      
+
       checkResource(builder_0.getHornetQServerObjectName());
       checkResource(builder_1.getHornetQServerObjectName());
 
       server_0.stop();
-      
+
       checkNoResource(builder_0.getHornetQServerObjectName());
       checkResource(builder_1.getHornetQServerObjectName());
 
       server_1.stop();
-      
+
       checkNoResource(builder_0.getHornetQServerObjectName());
       checkNoResource(builder_1.getHornetQServerObjectName());
 

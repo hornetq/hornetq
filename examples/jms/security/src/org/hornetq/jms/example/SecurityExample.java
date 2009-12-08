@@ -33,34 +33,35 @@ import org.hornetq.common.example.HornetQExample;
 public class SecurityExample extends HornetQExample
 {
    private boolean result = true;
-   
-   public static void main(String[] args)
+
+   public static void main(final String[] args)
    {
       new SecurityExample().run(args);
    }
 
+   @Override
    public boolean runExample() throws Exception
    {
       Connection billConnection = null;
       Connection andrewConnection = null;
       Connection frankConnection = null;
       Connection samConnection = null;
-      
+
       InitialContext initialContext = null;
       try
       {
-         ///Step 1. Create an initial context to perform the JNDI lookup.
+         // /Step 1. Create an initial context to perform the JNDI lookup.
          initialContext = getContext(0);
 
-         //Step 2. perform lookup on the topics
-         Topic genericTopic = (Topic) initialContext.lookup("/topic/genericTopic");
-         Topic europeTopic = (Topic) initialContext.lookup("/topic/europeTopic");
-         Topic usTopic = (Topic) initialContext.lookup("/topic/usTopic");
+         // Step 2. perform lookup on the topics
+         Topic genericTopic = (Topic)initialContext.lookup("/topic/genericTopic");
+         Topic europeTopic = (Topic)initialContext.lookup("/topic/europeTopic");
+         Topic usTopic = (Topic)initialContext.lookup("/topic/usTopic");
 
-         //Step 3. perform a lookup on the Connection Factory
-         ConnectionFactory cf = (ConnectionFactory) initialContext.lookup("/ConnectionFactory");
+         // Step 3. perform a lookup on the Connection Factory
+         ConnectionFactory cf = (ConnectionFactory)initialContext.lookup("/ConnectionFactory");
 
-         //Step 4. Try to create a JMS Connection without user/password. It will fail.
+         // Step 4. Try to create a JMS Connection without user/password. It will fail.
          try
          {
             cf.createConnection();
@@ -71,7 +72,7 @@ public class SecurityExample extends HornetQExample
             System.out.println("Default user cannot get a connection. Details: " + e.getMessage());
          }
 
-         //Step 5. bill tries to make a connection using wrong password
+         // Step 5. bill tries to make a connection using wrong password
          billConnection = null;
          try
          {
@@ -82,58 +83,58 @@ public class SecurityExample extends HornetQExample
          {
             System.out.println("User bill failed to connect. Details: " + e.getMessage());
          }
-         
-         //Step 6. bill makes a good connection.
+
+         // Step 6. bill makes a good connection.
          billConnection = createConnection("bill", "hornetq", cf);
          billConnection.start();
-         
-         //Step 7. andrew makes a good connection.
+
+         // Step 7. andrew makes a good connection.
          andrewConnection = createConnection("andrew", "hornetq1", cf);
          andrewConnection.start();
-         
-         //Step 8. frank makes a good connection.
+
+         // Step 8. frank makes a good connection.
          frankConnection = createConnection("frank", "hornetq2", cf);
          frankConnection.start();
-         
-         //Step 9. sam makes a good connection.
+
+         // Step 9. sam makes a good connection.
          samConnection = createConnection("sam", "hornetq3", cf);
          samConnection.start();
-         
-         //Step 10. Check every user can publish/subscribe genericTopics.
+
+         // Step 10. Check every user can publish/subscribe genericTopics.
          System.out.println("------------------------Checking permissions on " + genericTopic + "----------------");
          checkUserSendAndReceive(genericTopic, billConnection, "bill");
          checkUserSendAndReceive(genericTopic, andrewConnection, "andrew");
          checkUserSendAndReceive(genericTopic, frankConnection, "frank");
          checkUserSendAndReceive(genericTopic, samConnection, "sam");
          System.out.println("-------------------------------------------------------------------------------------");
-         
+
          System.out.println("------------------------Checking permissions on " + europeTopic + "----------------");
-         
-         //Step 11. Check permissions on news.europe.europeTopic for bill: can't send and can't receive
+
+         // Step 11. Check permissions on news.europe.europeTopic for bill: can't send and can't receive
          checkUserNoSendNoReceive(europeTopic, billConnection, "bill");
-         
-         //Step 12. Check permissions on news.europe.europeTopic for andrew: can send but can't receive
+
+         // Step 12. Check permissions on news.europe.europeTopic for andrew: can send but can't receive
          checkUserSendNoReceive(europeTopic, andrewConnection, "andrew", frankConnection);
-         
-         //Step 13. Check permissions on news.europe.europeTopic for frank: can't send but can receive
+
+         // Step 13. Check permissions on news.europe.europeTopic for frank: can't send but can receive
          checkUserReceiveNoSend(europeTopic, frankConnection, "frank", andrewConnection);
-         
-         //Step 14. Check permissions on news.europe.europeTopic for sam: can't send but can receive
+
+         // Step 14. Check permissions on news.europe.europeTopic for sam: can't send but can receive
          checkUserReceiveNoSend(europeTopic, samConnection, "sam", andrewConnection);
          System.out.println("-------------------------------------------------------------------------------------");
-         
+
          System.out.println("------------------------Checking permissions on " + usTopic + "----------------");
 
-         //Step 15. Check permissions on news.us.usTopic for bill: can't send and can't receive
+         // Step 15. Check permissions on news.us.usTopic for bill: can't send and can't receive
          checkUserNoSendNoReceive(usTopic, billConnection, "bill");
 
-         //Step 16. Check permissions on news.us.usTopic for andrew: can't send and can't receive
+         // Step 16. Check permissions on news.us.usTopic for andrew: can't send and can't receive
          checkUserNoSendNoReceive(usTopic, andrewConnection, "andrew");
 
-         //Step 17. Check permissions on news.us.usTopic for frank: can both send and receive
+         // Step 17. Check permissions on news.us.usTopic for frank: can both send and receive
          checkUserSendAndReceive(usTopic, frankConnection, "frank");
 
-         //Step 18. Check permissions on news.us.usTopic for sam: can't send but can receive
+         // Step 18. Check permissions on news.us.usTopic for sam: can't send but can receive
          checkUserReceiveNoSend(usTopic, samConnection, "sam", frankConnection);
          System.out.println("-------------------------------------------------------------------------------------");
 
@@ -141,7 +142,7 @@ public class SecurityExample extends HornetQExample
       }
       finally
       {
-         //Step 19. Be sure to close our JMS resources!
+         // Step 19. Be sure to close our JMS resources!
          if (billConnection != null)
          {
             billConnection.close();
@@ -158,7 +159,7 @@ public class SecurityExample extends HornetQExample
          {
             samConnection.close();
          }
-         
+
          // Also the initialContext
          if (initialContext != null)
          {
@@ -167,33 +168,39 @@ public class SecurityExample extends HornetQExample
       }
    }
 
-
-   //Check the user can receive message but cannot send message.
-   private void checkUserReceiveNoSend(Topic topic, Connection connection, String user, Connection sendingConn) throws JMSException
+   // Check the user can receive message but cannot send message.
+   private void checkUserReceiveNoSend(final Topic topic,
+                                       final Connection connection,
+                                       final String user,
+                                       final Connection sendingConn) throws JMSException
    {
       Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
       MessageProducer producer = session.createProducer(topic);
       MessageConsumer consumer = session.createConsumer(topic);
       TextMessage msg = session.createTextMessage("hello-world-1");
-      
+
       try
       {
          producer.send(msg);
-         System.out.println("Security setting is broken! User " + user + " can send message [" + msg.getText() + "] to topic " + topic);
+         System.out.println("Security setting is broken! User " + user +
+                            " can send message [" +
+                            msg.getText() +
+                            "] to topic " +
+                            topic);
          result = false;
       }
       catch (JMSException e)
       {
          System.out.println("User " + user + " cannot send message [" + msg.getText() + "] to topic: " + topic);
       }
-      
-      //Now send a good message
+
+      // Now send a good message
       Session session1 = sendingConn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       producer = session1.createProducer(topic);
       producer.send(msg);
-      
+
       TextMessage receivedMsg = (TextMessage)consumer.receive(2000);
-      
+
       if (receivedMsg != null)
       {
          System.out.println("User " + user + " can receive message [" + receivedMsg.getText() + "] from topic " + topic);
@@ -201,15 +208,18 @@ public class SecurityExample extends HornetQExample
       else
       {
          System.out.println("Security setting is broken! User " + user + " cannot receive message from topic " + topic);
-         result = false;         
+         result = false;
       }
-      
+
       session1.close();
       session.close();
    }
 
-   //Check the user can send message but cannot receive message
-   private void checkUserSendNoReceive(Topic topic, Connection connection, String user, Connection receivingConn) throws JMSException
+   // Check the user can send message but cannot receive message
+   private void checkUserSendNoReceive(final Topic topic,
+                                       final Connection connection,
+                                       final String user,
+                                       final Connection receivingConn) throws JMSException
    {
       Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
       MessageProducer producer = session.createProducer(topic);
@@ -224,10 +234,10 @@ public class SecurityExample extends HornetQExample
 
       Session session1 = receivingConn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       MessageConsumer goodConsumer = session1.createConsumer(topic);
-      
+
       TextMessage msg = session.createTextMessage("hello-world-2");
       producer.send(msg);
-      
+
       TextMessage receivedMsg = (TextMessage)goodConsumer.receive(2000);
       if (receivedMsg != null)
       {
@@ -235,20 +245,24 @@ public class SecurityExample extends HornetQExample
       }
       else
       {
-         System.out.println("Security setting is broken! User " + user + " cannot send message [" + msg.getText() + "] to topic " + topic);
+         System.out.println("Security setting is broken! User " + user +
+                            " cannot send message [" +
+                            msg.getText() +
+                            "] to topic " +
+                            topic);
          result = false;
       }
-      
+
       session.close();
       session1.close();
    }
 
-   //Check the user has neither send nor receive permission on topic
-   private void checkUserNoSendNoReceive(Topic topic, Connection connection, String user) throws JMSException
+   // Check the user has neither send nor receive permission on topic
+   private void checkUserNoSendNoReceive(final Topic topic, final Connection connection, final String user) throws JMSException
    {
       Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
       MessageProducer producer = session.createProducer(topic);
-      
+
       try
       {
          session.createConsumer(topic);
@@ -257,24 +271,28 @@ public class SecurityExample extends HornetQExample
       {
          System.out.println("User " + user + " cannot create consumer on topic " + topic);
       }
-      
+
       TextMessage msg = session.createTextMessage("hello-world-3");
       try
       {
          producer.send(msg);
-         System.out.println("Security setting is broken! User " + user + " can send message [" + msg.getText() + "] to topic " + topic);
+         System.out.println("Security setting is broken! User " + user +
+                            " can send message [" +
+                            msg.getText() +
+                            "] to topic " +
+                            topic);
          result = false;
       }
       catch (JMSException e)
       {
          System.out.println("User " + user + " cannot send message [" + msg.getText() + "] to topic: " + topic);
       }
-      
+
       session.close();
    }
 
-   //Check the user connection has both send and receive permissions on the topic
-   private void checkUserSendAndReceive(Topic topic, Connection connection, String user) throws JMSException
+   // Check the user connection has both send and receive permissions on the topic
+   private void checkUserSendAndReceive(final Topic topic, final Connection connection, final String user) throws JMSException
    {
       Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
       TextMessage msg = session.createTextMessage("hello-world-4");
@@ -295,7 +313,7 @@ public class SecurityExample extends HornetQExample
       session.close();
    }
 
-   private Connection createConnection(String username, String password, ConnectionFactory cf) throws JMSException
+   private Connection createConnection(final String username, final String password, final ConnectionFactory cf) throws JMSException
    {
       return cf.createConnection(username, password);
    }

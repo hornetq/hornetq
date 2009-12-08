@@ -31,21 +31,22 @@ import org.hornetq.common.example.HornetQExample;
  */
 public class ClusteredTopicExample extends HornetQExample
 {
-   public static void main(String[] args)
+   public static void main(final String[] args)
    {
       new ClusteredTopicExample().run(args);
    }
 
+   @Override
    public boolean runExample() throws Exception
    {
       Connection connection0 = null;
 
       Connection connection1 = null;
-      
+
       InitialContext ic0 = null;
 
       InitialContext ic1 = null;
-      
+
       try
       {
          // Step 1. Get an initial context for looking up JNDI from server 0
@@ -132,7 +133,7 @@ public class ClusteredTopicExample extends HornetQExample
          {
             connection1.close();
          }
-         
+
          if (ic0 != null)
          {
             ic0.close();

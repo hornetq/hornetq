@@ -13,7 +13,6 @@
 
 package org.hornetq.jms.tests.tools.ant;
 
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -34,19 +33,20 @@ public class DisplayWarningsAndErrors
 
    // Static --------------------------------------------------------
 
-   public static void main(String[] args) throws Exception
+   public static void main(final String[] args) throws Exception
    {
       new DisplayWarningsAndErrors(args).run();
    }
 
    // Attributes ----------------------------------------------------
 
-   private File file;
+   private final File file;
+
    private List ignoreList;
 
    // Constructors --------------------------------------------------
 
-   private DisplayWarningsAndErrors(String[] args) throws Exception
+   private DisplayWarningsAndErrors(final String[] args) throws Exception
    {
       if (args.length == 0)
       {
@@ -60,7 +60,7 @@ public class DisplayWarningsAndErrors
          throw new Exception("The file " + file + " does not exist or cannot be read");
       }
 
-      for(int i = 1; i < args.length; i++)
+      for (int i = 1; i < args.length; i++)
       {
          if (ignoreList == null)
          {
@@ -89,14 +89,14 @@ public class DisplayWarningsAndErrors
       {
          String line;
          boolean first = true;
-         outer: while((line = br.readLine()) != null)
+         outer: while ((line = br.readLine()) != null)
          {
             if (line.indexOf("ERROR") != -1 || line.indexOf("WARN") != -1)
             {
-               //System.out.println(">"+line+"<");
+               // System.out.println(">"+line+"<");
                if (ignoreList != null)
                {
-                  for(Iterator i = ignoreList.iterator(); i.hasNext(); )
+                  for (Iterator i = ignoreList.iterator(); i.hasNext();)
                   {
                      if (line.endsWith((String)i.next()))
                      {
@@ -132,7 +132,6 @@ public class DisplayWarningsAndErrors
          System.exit(1);
       }
    }
-
 
    private void printBanner()
    {

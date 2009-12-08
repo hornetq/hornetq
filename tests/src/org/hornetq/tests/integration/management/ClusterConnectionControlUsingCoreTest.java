@@ -56,7 +56,7 @@ public class ClusterConnectionControlUsingCoreTest extends ClusterConnectionCont
       {
          private final CoreMessagingProxy proxy = new CoreMessagingProxy(session,
                                                                          ResourceNames.CORE_CLUSTER_CONNECTION + name);
-         
+
          public String getAddress()
          {
             return (String)proxy.retrieveAttributeValue("address");
@@ -86,7 +86,7 @@ public class ClusterConnectionControlUsingCoreTest extends ClusterConnectionCont
          {
             return (String)proxy.retrieveAttributeValue("staticConnectorNamePairsAsJSON");
          }
-         
+
          public Map<String, String> getNodes() throws Exception
          {
             return (Map<String, String>)proxy.retrieveAttributeValue("nodes");
@@ -106,7 +106,7 @@ public class ClusterConnectionControlUsingCoreTest extends ClusterConnectionCont
          {
             return (String)proxy.retrieveAttributeValue("name");
          }
-         
+
          public String getNodeID()
          {
             return (String)proxy.retrieveAttributeValue("nodeID");
@@ -143,7 +143,7 @@ public class ClusterConnectionControlUsingCoreTest extends ClusterConnectionCont
       {
          session.close();
       }
-      
+
       session = null;
 
       super.tearDown();

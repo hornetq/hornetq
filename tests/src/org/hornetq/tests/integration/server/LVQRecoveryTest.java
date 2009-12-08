@@ -15,6 +15,8 @@ package org.hornetq.tests.integration.server;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
@@ -40,9 +42,9 @@ public class LVQRecoveryTest extends ServiceTestBase
 
    private ClientSession clientSession;
 
-   private SimpleString address = new SimpleString("LVQTestAddress");
+   private final SimpleString address = new SimpleString("LVQTestAddress");
 
-   private SimpleString qName1 = new SimpleString("LVQTestQ1");
+   private final SimpleString qName1 = new SimpleString("LVQTestQ1");
 
    private ClientSession clientSessionXa;
 
@@ -75,18 +77,18 @@ public class LVQRecoveryTest extends ServiceTestBase
       clientSession.close();
       clientSessionXa.close();
       restartServer();
-      
+
       clientSessionXa.commit(xid, false);
       ClientConsumer consumer = clientSession.createConsumer(qName1);
       clientSession.start();
       ClientMessage m = consumer.receive(1000);
-      assertNotNull(m);
+      Assert.assertNotNull(m);
       m.acknowledge();
-      assertEquals(m.getBodyBuffer().readString(), "m3");
+      Assert.assertEquals(m.getBodyBuffer().readString(), "m3");
       m = consumer.receive(1000);
-      assertNotNull(m);
+      Assert.assertNotNull(m);
       m.acknowledge();
-      assertEquals(m.getBodyBuffer().readString(), "m4");
+      Assert.assertEquals(m.getBodyBuffer().readString(), "m4");
    }
 
    public void testManyMessagesReceivedWithRollback() throws Exception
@@ -118,45 +120,47 @@ public class LVQRecoveryTest extends ServiceTestBase
       clientSessionXa.start();
       producer.send(m1);
       ClientMessage m = consumer.receive(1000);
-      assertNotNull(m);
-      assertEquals(m.getBodyBuffer().readString(), "m1");
+      Assert.assertNotNull(m);
+      Assert.assertEquals(m.getBodyBuffer().readString(), "m1");
       producer.send(m2);
       m = consumer.receive(1000);
-      assertNotNull(m);
-      assertEquals(m.getBodyBuffer().readString(), "m2");
+      Assert.assertNotNull(m);
+      Assert.assertEquals(m.getBodyBuffer().readString(), "m2");
       producer.send(m3);
       m = consumer.receive(1000);
-      assertNotNull(m);
-      assertEquals(m.getBodyBuffer().readString(), "m3");
+      Assert.assertNotNull(m);
+      Assert.assertEquals(m.getBodyBuffer().readString(), "m3");
       producer.send(m4);
       m = consumer.receive(1000);
-      assertNotNull(m);
-      assertEquals(m.getBodyBuffer().readString(), "m4");
+      Assert.assertNotNull(m);
+      Assert.assertEquals(m.getBodyBuffer().readString(), "m4");
       producer.send(m5);
       m = consumer.receive(1000);
-      assertNotNull(m);
-      assertEquals(m.getBodyBuffer().readString(), "m5");
+      Assert.assertNotNull(m);
+      Assert.assertEquals(m.getBodyBuffer().readString(), "m5");
       producer.send(m6);
       m = consumer.receive(1000);
-      assertNotNull(m);
-      assertEquals(m.getBodyBuffer().readString(), "m6");
+      Assert.assertNotNull(m);
+      Assert.assertEquals(m.getBodyBuffer().readString(), "m6");
       clientSessionXa.end(xid, XAResource.TMSUCCESS);
       clientSessionXa.prepare(xid);
 
       clientSession.close();
       clientSessionXa.close();
       restartServer();
-      
+
       clientSessionXa.rollback(xid);
       consumer = clientSession.createConsumer(qName1);
       clientSession.start();
       m = consumer.receive(1000);
-      assertNotNull(m);
+      Assert.assertNotNull(m);
       m.acknowledge();
-      assertEquals(m.getBodyBuffer().readString(), "m6");
+      Assert.assertEquals(m.getBodyBuffer().readString(), "m6");
       m = consumer.receiveImmediate();
-      assertNull(m);
+      Assert.assertNull(m);
    }
+
+   @Override
    protected void tearDown() throws Exception
    {
       if (clientSession != null)
@@ -194,14 +198,15 @@ public class LVQRecoveryTest extends ServiceTestBase
       }
       server = null;
       clientSession = null;
-      
+
       super.tearDown();
    }
 
+   @Override
    protected void setUp() throws Exception
    {
       super.setUp();
-      
+
       clearData();
       configuration = createDefaultConfig();
       configuration.setSecurityEnabled(false);
@@ -213,7 +218,7 @@ public class LVQRecoveryTest extends ServiceTestBase
       qs.setLastValueQueue(true);
       server.getAddressSettingsRepository().addMatch(address.toString(), qs);
       // then we create a client as normal
-      ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(INVM_CONNECTOR_FACTORY));
+      ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));
       sessionFactory.setBlockOnAcknowledge(true);
       sessionFactory.setAckBatchSize(0);
       clientSession = sessionFactory.createSession(false, true, true);
@@ -234,7 +239,7 @@ public class LVQRecoveryTest extends ServiceTestBase
       qs.setLastValueQueue(true);
       server.getAddressSettingsRepository().addMatch(address.toString(), qs);
       // then we create a client as normal
-      ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(INVM_CONNECTOR_FACTORY));
+      ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));
       sessionFactory.setBlockOnAcknowledge(true);
       sessionFactory.setAckBatchSize(0);
       clientSession = sessionFactory.createSession(false, true, true);

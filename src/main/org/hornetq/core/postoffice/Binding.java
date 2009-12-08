@@ -37,18 +37,18 @@ public interface Binding
    SimpleString getUniqueName();
 
    SimpleString getRoutingName();
-   
+
    SimpleString getClusterName();
 
    Filter getFilter();
-   
+
    boolean isHighAcceptPriority(ServerMessage message);
-   
+
    boolean isExclusive();
-   
+
    long getID();
 
    int getDistance();
-   
+
    void route(ServerMessage message, RoutingContext context) throws Exception;
 }

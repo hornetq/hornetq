@@ -29,7 +29,7 @@ public class Notification
    private final NotificationType type;
 
    private final TypedProperties properties;
-   
+
    private final String uid;
 
    public Notification(final String uid, final NotificationType type, final TypedProperties properties)
@@ -48,7 +48,7 @@ public class Notification
    {
       return properties;
    }
-   
+
    public String getUID()
    {
       return uid;

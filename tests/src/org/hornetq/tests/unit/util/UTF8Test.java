@@ -19,6 +19,8 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.nio.ByteBuffer;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.buffers.HornetQBuffer;
 import org.hornetq.core.buffers.HornetQBuffers;
 import org.hornetq.tests.util.RandomUtil;
@@ -41,7 +43,7 @@ public class UTF8Test extends UnitTestCase
 
    public void testValidateUTF() throws Exception
    {
-      HornetQBuffer buffer = HornetQBuffers.fixedBuffer(60 * 1024); 
+      HornetQBuffer buffer = HornetQBuffers.fixedBuffer(60 * 1024);
 
       byte[] bytes = new byte[20000];
 
@@ -54,7 +56,7 @@ public class UTF8Test extends UnitTestCase
 
       String newStr = UTF8Util.readUTF(buffer);
 
-      assertEquals(str, newStr);
+      Assert.assertEquals(str, newStr);
    }
 
    public void testValidateUTFOnDataInput() throws Exception
@@ -69,9 +71,11 @@ public class UTF8Test extends UnitTestCase
          random.getRandom().nextBytes(bytes);
 
          String str = new String(bytes);
-         
+
          // The maximum size the encoded UTF string would reach is str.length * 3 (look at the UTF8 implementation)
-         testValidateUTFOnDataInputStream(str, HornetQBuffers.wrappedBuffer(ByteBuffer.allocate(str.length() * 3 + DataConstants.SIZE_SHORT))); 
+         testValidateUTFOnDataInputStream(str,
+                                          HornetQBuffers.wrappedBuffer(ByteBuffer.allocate(str.length() * 3 +
+                                                                                           DataConstants.SIZE_SHORT)));
 
          testValidateUTFOnDataInputStream(str, HornetQBuffers.dynamicBuffer(100));
 
@@ -79,7 +83,7 @@ public class UTF8Test extends UnitTestCase
       }
    }
 
-   private void testValidateUTFOnDataInputStream(final String str, HornetQBuffer wrap) throws Exception
+   private void testValidateUTFOnDataInputStream(final String str, final HornetQBuffer wrap) throws Exception
    {
       UTF8Util.saveUTF(wrap, str);
 
@@ -87,7 +91,7 @@ public class UTF8Test extends UnitTestCase
 
       String newStr = data.readUTF();
 
-      assertEquals(str, newStr);
+      Assert.assertEquals(str, newStr);
 
       ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
       DataOutputStream outData = new DataOutputStream(byteOut);
@@ -98,7 +102,7 @@ public class UTF8Test extends UnitTestCase
 
       newStr = UTF8Util.readUTF(buffer);
 
-      assertEquals(str, newStr);
+      Assert.assertEquals(str, newStr);
    }
 
    public void testBigSize() throws Exception
@@ -118,13 +122,13 @@ public class UTF8Test extends UnitTestCase
       try
       {
          UTF8Util.saveUTF(buffer, str);
-         fail("String is too big, supposed to throw an exception");
+         Assert.fail("String is too big, supposed to throw an exception");
       }
       catch (Exception ignored)
       {
       }
 
-      assertEquals("A buffer was supposed to be untouched since the string was too big", 0, buffer.writerIndex());
+      Assert.assertEquals("A buffer was supposed to be untouched since the string was too big", 0, buffer.writerIndex());
 
       chars = new char[25000];
 
@@ -138,13 +142,13 @@ public class UTF8Test extends UnitTestCase
       try
       {
          UTF8Util.saveUTF(buffer, str);
-         fail("Encoded String is too big, supposed to throw an exception");
+         Assert.fail("Encoded String is too big, supposed to throw an exception");
       }
       catch (Exception ignored)
       {
       }
 
-      assertEquals("A buffer was supposed to be untouched since the string was too big", 0, buffer.writerIndex());
+      Assert.assertEquals("A buffer was supposed to be untouched since the string was too big", 0, buffer.writerIndex());
 
       // Testing a string right on the limit
       chars = new char[0xffff];
@@ -158,11 +162,11 @@ public class UTF8Test extends UnitTestCase
 
       UTF8Util.saveUTF(buffer, str);
 
-      assertEquals(0xffff + DataConstants.SIZE_SHORT, buffer.writerIndex());
+      Assert.assertEquals(0xffff + DataConstants.SIZE_SHORT, buffer.writerIndex());
 
       String newStr = UTF8Util.readUTF(buffer);
 
-      assertEquals(str, newStr);
+      Assert.assertEquals(str, newStr);
 
    }
 

@@ -38,13 +38,14 @@ import org.hornetq.core.management.ObjectNameBuilder;
  */
 public class ClientKickoffExample extends HornetQExample
 {
-   private String JMX_URL = "service:jmx:rmi:///jndi/rmi://localhost:3000/jmxrmi";
+   private final String JMX_URL = "service:jmx:rmi:///jndi/rmi://localhost:3000/jmxrmi";
 
-   public static void main(String[] args)
+   public static void main(final String[] args)
    {
       new ClientKickoffExample().run(args);
    }
 
+   @Override
    public boolean runExample() throws Exception
    {
       QueueConnection connection = null;
@@ -64,7 +65,7 @@ public class ClientKickoffExample extends HornetQExample
          final AtomicReference<JMSException> exception = new AtomicReference<JMSException>();
          connection.setExceptionListener(new ExceptionListener()
          {
-            public void onException(JMSException e)
+            public void onException(final JMSException e)
             {
                exception.set(e);
             }
@@ -77,10 +78,10 @@ public class ClientKickoffExample extends HornetQExample
          ObjectName on = ObjectNameBuilder.DEFAULT.getHornetQServerObjectName();
          JMXConnector connector = JMXConnectorFactory.connect(new JMXServiceURL(JMX_URL), new HashMap<String, String>());
          MBeanServerConnection mbsc = connector.getMBeanServerConnection();
-         HornetQServerControl serverControl = (HornetQServerControl)MBeanServerInvocationHandler.newProxyInstance(mbsc,
-                                                                                                                                on,
-                                                                                                                                HornetQServerControl.class,
-                                                                                                                                false);
+         HornetQServerControl serverControl = MBeanServerInvocationHandler.newProxyInstance(mbsc,
+                                                                                            on,
+                                                                                            HornetQServerControl.class,
+                                                                                            false);
 
          // Step 7. List the remote address connected to the server
          System.out.println("List of remote addresses connected to the server:");

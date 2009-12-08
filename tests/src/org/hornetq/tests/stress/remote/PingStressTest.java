@@ -105,10 +105,10 @@ public class PingStressTest extends ServiceTestBase
       {
          public boolean intercept(final Packet packet, final RemotingConnection conn) throws HornetQException
          {
-            log.info("In interceptor, packet is " + packet.getType());
+            PingStressTest.log.info("In interceptor, packet is " + packet.getType());
             if (packet.getType() == PacketImpl.PING)
             {
-               log.info("Ignoring Ping packet.. it will be dropped");
+               PingStressTest.log.info("Ignoring Ping packet.. it will be dropped");
                return false;
             }
             else
@@ -121,11 +121,10 @@ public class PingStressTest extends ServiceTestBase
       server.getRemotingService().addInterceptor(noPongInterceptor);
 
       final ClientSessionFactory csf1 = new ClientSessionFactoryImpl(transportConfig);
-      
-      csf1.setClientFailureCheckPeriod(PING_INTERVAL);
-      csf1.setConnectionTTL((long)(PING_INTERVAL * 1.5));
-      csf1.setCallTimeout(PING_INTERVAL * 10);
-      
+
+      csf1.setClientFailureCheckPeriod(PingStressTest.PING_INTERVAL);
+      csf1.setConnectionTTL((long)(PingStressTest.PING_INTERVAL * 1.5));
+      csf1.setCallTimeout(PingStressTest.PING_INTERVAL * 10);
 
       final int numberOfSessions = 1;
       final int numberOfThreads = 30;
@@ -152,10 +151,10 @@ public class PingStressTest extends ServiceTestBase
             {
 
                final ClientSessionFactory csf2 = new ClientSessionFactoryImpl(transportConfig);
-               
-               csf2.setClientFailureCheckPeriod(PING_INTERVAL);
-               csf2.setConnectionTTL((long)(PING_INTERVAL * 1.5));
-               csf2.setCallTimeout(PING_INTERVAL * 10);
+
+               csf2.setClientFailureCheckPeriod(PingStressTest.PING_INTERVAL);
+               csf2.setConnectionTTL((long)(PingStressTest.PING_INTERVAL * 1.5));
+               csf2.setCallTimeout(PingStressTest.PING_INTERVAL * 10);
 
                // Start all at once to make concurrency worst
                flagAligned.countDown();
@@ -180,7 +179,7 @@ public class PingStressTest extends ServiceTestBase
                   }
 
                   // We will wait to anything between 0 to PING_INTERVAL * 2
-                  Thread.sleep(PING_INTERVAL * (threadNumber % 3));
+                  Thread.sleep(PingStressTest.PING_INTERVAL * (threadNumber % 3));
 
                   session.close();
                }

@@ -109,7 +109,7 @@ public final class OrderedExecutorFactory implements ExecutorFactory
        *
        * @param command the task to run.
        */
-      public void execute(Runnable command)
+      public void execute(final Runnable command)
       {
          synchronized (tasks)
          {
@@ -123,5 +123,3 @@ public final class OrderedExecutorFactory implements ExecutorFactory
       }
    }
 }
-
-

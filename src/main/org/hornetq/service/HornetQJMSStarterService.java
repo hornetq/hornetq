@@ -26,8 +26,9 @@ public class HornetQJMSStarterService implements HornetQJMSStarterServiceMBean
 
    public void create() throws Exception
    {
-      jmsServerManager = new JMSServerManagerImpl(service.getServer());   
+      jmsServerManager = new JMSServerManagerImpl(service.getServer());
    }
+
    public void start() throws Exception
    {
       jmsServerManager.start();
@@ -38,7 +39,7 @@ public class HornetQJMSStarterService implements HornetQJMSStarterServiceMBean
       jmsServerManager.stop();
    }
 
-   public void setHornetQServer(HornetQStarterServiceMBean service)
+   public void setHornetQServer(final HornetQStarterServiceMBean service)
    {
       this.service = service;
    }

@@ -25,6 +25,8 @@ import javax.jms.QueueSession;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
+import org.hornetq.jms.tests.util.ProxyAssertSupport;
+
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
@@ -36,7 +38,7 @@ public class QueueRequestorTest extends JMSTestCase
    // Constants -----------------------------------------------------
 
    // Static --------------------------------------------------------
-   
+
    // Attributes ----------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -48,61 +50,66 @@ public class QueueRequestorTest extends JMSTestCase
    public void testQueueRequestor() throws Exception
    {
       // Set up the requestor
-      QueueConnection conn1 = null;      
+      QueueConnection conn1 = null;
       QueueConnection conn2 = null;
-      
+
       try
       {
-	      
-	      conn1 = cf.createQueueConnection();
-	      QueueSession sess1 = conn1.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
-	      QueueRequestor requestor = new QueueRequestor(sess1, queue1);
-	      conn1.start();
-	      
-	      // And the responder
-	      conn2 = cf.createQueueConnection();
-	      QueueSession sess2 = conn2.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
-	      TestMessageListener listener = new TestMessageListener(sess2);
-	      QueueReceiver receiver = sess2.createReceiver(queue1);
-	      receiver.setMessageListener(listener);
-	      conn2.start();
-	      
-	      Message m1 = sess1.createMessage();
-	      log.trace("Sending request message");
-	      TextMessage m2 = (TextMessage)requestor.request(m1);	      	      
-	      assertNotNull(m2);
-	      
-	      assertEquals("This is the response", m2.getText());
+
+         conn1 = JMSTestCase.cf.createQueueConnection();
+         QueueSession sess1 = conn1.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
+         QueueRequestor requestor = new QueueRequestor(sess1, HornetQServerTestCase.queue1);
+         conn1.start();
+
+         // And the responder
+         conn2 = JMSTestCase.cf.createQueueConnection();
+         QueueSession sess2 = conn2.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
+         TestMessageListener listener = new TestMessageListener(sess2);
+         QueueReceiver receiver = sess2.createReceiver(HornetQServerTestCase.queue1);
+         receiver.setMessageListener(listener);
+         conn2.start();
+
+         Message m1 = sess1.createMessage();
+         log.trace("Sending request message");
+         TextMessage m2 = (TextMessage)requestor.request(m1);
+         ProxyAssertSupport.assertNotNull(m2);
+
+         ProxyAssertSupport.assertEquals("This is the response", m2.getText());
       }
       finally
-      {      
-	     if (conn1 != null) conn1.close();
-	     if (conn2 != null) conn2.close();
-      }      
-   }  
-   
-   
+      {
+         if (conn1 != null)
+         {
+            conn1.close();
+         }
+         if (conn2 != null)
+         {
+            conn2.close();
+         }
+      }
+   }
+
    // Package protected ---------------------------------------------
-   
+
    // Protected -----------------------------------------------------
-   
+
    // Private -------------------------------------------------------
-   
+
    // Inner classes -------------------------------------------------
 
    class TestMessageListener implements MessageListener
    {
-      private QueueSession sess;
-      private QueueSender sender;
-      
-      public TestMessageListener(QueueSession sess)
-         throws JMSException
+      private final QueueSession sess;
+
+      private final QueueSender sender;
+
+      public TestMessageListener(final QueueSession sess) throws JMSException
       {
          this.sess = sess;
-         this.sender = sess.createSender(null);
+         sender = sess.createSender(null);
       }
-      
-      public void onMessage(Message m)
+
+      public void onMessage(final Message m)
       {
          try
          {

@@ -29,10 +29,10 @@ public class InVMRegistry
 
    public static final InVMRegistry instance = new InVMRegistry();
 
-   private ConcurrentMap<Integer, InVMAcceptor> acceptors = new ConcurrentHashMap<Integer, InVMAcceptor>();
+   private final ConcurrentMap<Integer, InVMAcceptor> acceptors = new ConcurrentHashMap<Integer, InVMAcceptor>();
 
    public void registerAcceptor(final int id, final InVMAcceptor acceptor)
-   {     
+   {
       if (acceptors.putIfAbsent(id, acceptor) != null)
       {
          throw new IllegalArgumentException("Acceptor with id " + id + " already registered");
@@ -40,7 +40,7 @@ public class InVMRegistry
    }
 
    public void unregisterAcceptor(final int id)
-   {      
+   {
       if (acceptors.remove(id) == null)
       {
          throw new IllegalArgumentException("Acceptor with id " + id + " not registered");
@@ -54,11 +54,11 @@ public class InVMRegistry
 
    public void clear()
    {
-      this.acceptors.clear();
+      acceptors.clear();
    }
 
    public int size()
    {
-      return this.acceptors.size();
+      return acceptors.size();
    }
 }

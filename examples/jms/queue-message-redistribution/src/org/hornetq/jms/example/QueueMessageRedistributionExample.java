@@ -33,11 +33,12 @@ import org.hornetq.common.example.HornetQExample;
  */
 public class QueueMessageRedistributionExample extends HornetQExample
 {
-   public static void main(String[] args)
+   public static void main(final String[] args)
    {
       new QueueMessageRedistributionExample().run(args);
    }
 
+   @Override
    public boolean runExample() throws Exception
    {
       Connection connection0 = null;
@@ -111,9 +112,9 @@ public class QueueMessageRedistributionExample extends HornetQExample
          // maximum of one consumer
 
          TextMessage message0 = null;
-         
+
          TextMessage message1 = null;
-         
+
          for (int i = 0; i < numMessages; i += 2)
          {
             message0 = (TextMessage)consumer0.receive(5000);
@@ -124,28 +125,30 @@ public class QueueMessageRedistributionExample extends HornetQExample
 
             System.out.println("Got message: " + message1.getText() + " from node 1");
          }
-         
+
          // Step 15. We acknowledge the messages consumed on node 0. The sessions are CLIENT_ACKNOWLEDGE so
          // messages will not get acknowledged until they are explicitly acknowledged.
          // Note that we *do not* acknowledge the message consumed on node 1 yet.
          message0.acknowledge();
-         
-         // Step 16. We now close the session and consumer on node 1. (Closing the session automatically closes the consumer)
+
+         // Step 16. We now close the session and consumer on node 1. (Closing the session automatically closes the
+         // consumer)
          session1.close();
-         
-         // Step 17. Since there is no more consumer on node 1, the messages on node 1 are now stranded (no local consumers)
+
+         // Step 17. Since there is no more consumer on node 1, the messages on node 1 are now stranded (no local
+         // consumers)
          // so HornetQ will redistribute them to node 0 so they can be consumed.
-         
+
          for (int i = 0; i < numMessages; i += 2)
          {
             message0 = (TextMessage)consumer0.receive(5000);
 
-            System.out.println("Got message: " + message0.getText() + " from node 0");           
+            System.out.println("Got message: " + message0.getText() + " from node 0");
          }
-         
+
          // Step 18. We ack the messages.
          message0.acknowledge();
-        
+
          return true;
       }
       finally

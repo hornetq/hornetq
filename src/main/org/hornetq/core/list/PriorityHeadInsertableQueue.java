@@ -9,7 +9,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
  * implied.  See the License for the specific language governing
  * permissions and limitations under the License.
- */ 
+ */
 
 package org.hornetq.core.list;
 
@@ -28,20 +28,20 @@ import java.util.List;
 public interface PriorityHeadInsertableQueue<T> extends Iterable<T>
 {
    void offerFirst(T t, int priority);
-   
+
    void offerLast(T t, int priority);
-   
+
    T poll();
-   
+
    T peek();
-   
+
    List<T> getAll();
-   
-   void clear();   
-   
+
+   void clear();
+
    int size();
-   
+
    Iterator<T> iterator();
-   
+
    boolean isEmpty();
 }

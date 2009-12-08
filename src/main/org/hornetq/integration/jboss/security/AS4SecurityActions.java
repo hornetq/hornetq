@@ -20,7 +20,6 @@ import javax.security.auth.Subject;
 
 import org.jboss.security.SecurityAssociation;
 
-
 /** A collection of privileged actions for this package
  * @author Scott.Stark@jboss.org
  * @author <a href="mailto:alex@jboss.org">Alexey Loubyansky</a>
@@ -39,58 +38,55 @@ public class AS4SecurityActions
    {
       PrincipalInfoAction PRIVILEGED = new PrincipalInfoAction()
       {
-         public void push(final Principal principal, final Object credential,
-            final Subject subject)
+         public void push(final Principal principal, final Object credential, final Subject subject)
          {
-            AccessController.doPrivileged(
-               new PrivilegedAction()
+            AccessController.doPrivileged(new PrivilegedAction()
+            {
+               public Object run()
                {
-                  public Object run()
-                  {
-                     SecurityAssociation.pushSubjectContext(subject, principal, credential);
-                     return null;
-                  }
+                  SecurityAssociation.pushSubjectContext(subject, principal, credential);
+                  return null;
                }
-            );
+            });
          }
+
          public void dup()
          {
-            AccessController.doPrivileged(
-               new PrivilegedAction()
+            AccessController.doPrivileged(new PrivilegedAction()
+            {
+               public Object run()
                {
-                  public Object run()
-                  {
-                     SecurityAssociation.dupSubjectContext();
-                     return null;
-                  }
+                  SecurityAssociation.dupSubjectContext();
+                  return null;
                }
-            );
+            });
          }
+
          public void pop()
          {
-            AccessController.doPrivileged(
-               new PrivilegedAction()
+            AccessController.doPrivileged(new PrivilegedAction()
+            {
+               public Object run()
                {
-                  public Object run()
-                  {
-                     SecurityAssociation.popSubjectContext();
-                     return null;
-                  }
+                  SecurityAssociation.popSubjectContext();
+                  return null;
                }
-            );
+            });
          }
       };
 
       PrincipalInfoAction NON_PRIVILEGED = new PrincipalInfoAction()
       {
-         public void push(Principal principal, Object credential, Subject subject)
+         public void push(final Principal principal, final Object credential, final Subject subject)
          {
             SecurityAssociation.pushSubjectContext(subject, principal, credential);
          }
+
          public void dup()
          {
             SecurityAssociation.dupSubjectContext();
          }
+
          public void pop()
          {
             SecurityAssociation.popSubjectContext();
@@ -98,14 +94,15 @@ public class AS4SecurityActions
       };
 
       void push(Principal principal, Object credential, Subject subject);
+
       void dup();
+
       void pop();
    }
 
-   static void pushSubjectContext(Principal principal, Object credential,
-      Subject subject)
+   static void pushSubjectContext(final Principal principal, final Object credential, final Subject subject)
    {
-      if(System.getSecurityManager() == null)
+      if (System.getSecurityManager() == null)
       {
          PrincipalInfoAction.NON_PRIVILEGED.push(principal, credential, subject);
       }
@@ -117,7 +114,7 @@ public class AS4SecurityActions
 
    static void popSubjectContext()
    {
-      if(System.getSecurityManager() == null)
+      if (System.getSecurityManager() == null)
       {
          PrincipalInfoAction.NON_PRIVILEGED.pop();
       }

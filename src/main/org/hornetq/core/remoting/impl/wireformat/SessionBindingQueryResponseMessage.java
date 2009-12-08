@@ -17,7 +17,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.hornetq.core.buffers.HornetQBuffer;
-import org.hornetq.utils.DataConstants;
 import org.hornetq.utils.SimpleString;
 
 /**
@@ -35,7 +34,7 @@ public class SessionBindingQueryResponseMessage extends PacketImpl
 
    public SessionBindingQueryResponseMessage(final boolean exists, final List<SimpleString> queueNames)
    {
-      super(SESS_BINDINGQUERY_RESP);
+      super(PacketImpl.SESS_BINDINGQUERY_RESP);
 
       this.exists = exists;
 
@@ -44,7 +43,7 @@ public class SessionBindingQueryResponseMessage extends PacketImpl
 
    public SessionBindingQueryResponseMessage()
    {
-      super(SESS_BINDINGQUERY_RESP);
+      super(PacketImpl.SESS_BINDINGQUERY_RESP);
    }
 
    @Override

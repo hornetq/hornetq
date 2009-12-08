@@ -65,7 +65,8 @@ public class MockConnector extends InVMConnector
    // Protected -----------------------------------------------------
 
    @Override
-   protected Connection internalCreateConnection(final BufferHandler handler, final ConnectionLifeCycleListener listener,
+   protected Connection internalCreateConnection(final BufferHandler handler,
+                                                 final ConnectionLifeCycleListener listener,
                                                  final Executor serverExecutor)
    {
       return new MockConnection(id, handler, listener);
@@ -94,7 +95,7 @@ public class MockConnector extends InVMConnector
       @Override
       public void write(final HornetQBuffer buffer, final boolean flush)
       {
-         log.info("calling mock connection write");
+         InVMConnector.log.info("calling mock connection write");
          if (callback != null)
          {
             callback.onWrite(buffer);

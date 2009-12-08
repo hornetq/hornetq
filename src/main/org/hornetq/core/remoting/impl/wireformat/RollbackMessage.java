@@ -14,7 +14,6 @@
 package org.hornetq.core.remoting.impl.wireformat;
 
 import org.hornetq.core.buffers.HornetQBuffer;
-import org.hornetq.utils.DataConstants;
 
 /**
  * A RollbackMessage
@@ -30,12 +29,12 @@ public class RollbackMessage extends PacketImpl
 
    public RollbackMessage()
    {
-      super(SESS_ROLLBACK);
+      super(PacketImpl.SESS_ROLLBACK);
    }
 
    public RollbackMessage(final boolean considerLastMessageAsDelivered)
    {
-      super(SESS_ROLLBACK);
+      super(PacketImpl.SESS_ROLLBACK);
 
       this.considerLastMessageAsDelivered = considerLastMessageAsDelivered;
    }

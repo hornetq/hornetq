@@ -31,7 +31,7 @@ public class HornetQRABytesMessage extends HornetQRAMessage implements BytesMess
    private static final Logger log = Logger.getLogger(HornetQRABytesMessage.class);
 
    /** Whether trace is enabled */
-   private static boolean trace = log.isTraceEnabled();
+   private static boolean trace = HornetQRABytesMessage.log.isTraceEnabled();
 
    /**
     * Create a new wrapper
@@ -42,9 +42,9 @@ public class HornetQRABytesMessage extends HornetQRAMessage implements BytesMess
    {
       super(message, session);
 
-      if (trace)
+      if (HornetQRABytesMessage.trace)
       {
-         log.trace("constructor(" + message + ", " + session + ")");
+         HornetQRABytesMessage.log.trace("constructor(" + message + ", " + session + ")");
       }
    }
 
@@ -55,9 +55,9 @@ public class HornetQRABytesMessage extends HornetQRAMessage implements BytesMess
     */
    public long getBodyLength() throws JMSException
    {
-      if (trace)
+      if (HornetQRABytesMessage.trace)
       {
-         log.trace("getBodyLength()");
+         HornetQRABytesMessage.log.trace("getBodyLength()");
       }
 
       return ((BytesMessage)message).getBodyLength();
@@ -70,9 +70,9 @@ public class HornetQRABytesMessage extends HornetQRAMessage implements BytesMess
     */
    public boolean readBoolean() throws JMSException
    {
-      if (trace)
+      if (HornetQRABytesMessage.trace)
       {
-         log.trace("readBoolean()");
+         HornetQRABytesMessage.log.trace("readBoolean()");
       }
 
       return ((BytesMessage)message).readBoolean();
@@ -85,9 +85,9 @@ public class HornetQRABytesMessage extends HornetQRAMessage implements BytesMess
     */
    public byte readByte() throws JMSException
    {
-      if (trace)
+      if (HornetQRABytesMessage.trace)
       {
-         log.trace("readByte()");
+         HornetQRABytesMessage.log.trace("readByte()");
       }
 
       return ((BytesMessage)message).readByte();
@@ -102,9 +102,9 @@ public class HornetQRABytesMessage extends HornetQRAMessage implements BytesMess
     */
    public int readBytes(final byte[] value, final int length) throws JMSException
    {
-      if (trace)
+      if (HornetQRABytesMessage.trace)
       {
-         log.trace("readBytes(" + value + ", " + length + ")");
+         HornetQRABytesMessage.log.trace("readBytes(" + value + ", " + length + ")");
       }
 
       return ((BytesMessage)message).readBytes(value, length);
@@ -118,9 +118,9 @@ public class HornetQRABytesMessage extends HornetQRAMessage implements BytesMess
     */
    public int readBytes(final byte[] value) throws JMSException
    {
-      if (trace)
+      if (HornetQRABytesMessage.trace)
       {
-         log.trace("readBytes(" + value + ")");
+         HornetQRABytesMessage.log.trace("readBytes(" + value + ")");
       }
 
       return ((BytesMessage)message).readBytes(value);
@@ -133,9 +133,9 @@ public class HornetQRABytesMessage extends HornetQRAMessage implements BytesMess
     */
    public char readChar() throws JMSException
    {
-      if (trace)
+      if (HornetQRABytesMessage.trace)
       {
-         log.trace("readChar()");
+         HornetQRABytesMessage.log.trace("readChar()");
       }
 
       return ((BytesMessage)message).readChar();
@@ -148,9 +148,9 @@ public class HornetQRABytesMessage extends HornetQRAMessage implements BytesMess
     */
    public double readDouble() throws JMSException
    {
-      if (trace)
+      if (HornetQRABytesMessage.trace)
       {
-         log.trace("readDouble()");
+         HornetQRABytesMessage.log.trace("readDouble()");
       }
 
       return ((BytesMessage)message).readDouble();
@@ -163,9 +163,9 @@ public class HornetQRABytesMessage extends HornetQRAMessage implements BytesMess
     */
    public float readFloat() throws JMSException
    {
-      if (trace)
+      if (HornetQRABytesMessage.trace)
       {
-         log.trace("readFloat()");
+         HornetQRABytesMessage.log.trace("readFloat()");
       }
 
       return ((BytesMessage)message).readFloat();
@@ -178,9 +178,9 @@ public class HornetQRABytesMessage extends HornetQRAMessage implements BytesMess
     */
    public int readInt() throws JMSException
    {
-      if (trace)
+      if (HornetQRABytesMessage.trace)
       {
-         log.trace("readInt()");
+         HornetQRABytesMessage.log.trace("readInt()");
       }
 
       return ((BytesMessage)message).readInt();
@@ -193,9 +193,9 @@ public class HornetQRABytesMessage extends HornetQRAMessage implements BytesMess
     */
    public long readLong() throws JMSException
    {
-      if (trace)
+      if (HornetQRABytesMessage.trace)
       {
-         log.trace("readLong()");
+         HornetQRABytesMessage.log.trace("readLong()");
       }
 
       return ((BytesMessage)message).readLong();
@@ -208,9 +208,9 @@ public class HornetQRABytesMessage extends HornetQRAMessage implements BytesMess
     */
    public short readShort() throws JMSException
    {
-      if (trace)
+      if (HornetQRABytesMessage.trace)
       {
-         log.trace("readShort()");
+         HornetQRABytesMessage.log.trace("readShort()");
       }
 
       return ((BytesMessage)message).readShort();
@@ -223,9 +223,9 @@ public class HornetQRABytesMessage extends HornetQRAMessage implements BytesMess
     */
    public int readUnsignedByte() throws JMSException
    {
-      if (trace)
+      if (HornetQRABytesMessage.trace)
       {
-         log.trace("readUnsignedByte()");
+         HornetQRABytesMessage.log.trace("readUnsignedByte()");
       }
 
       return ((BytesMessage)message).readUnsignedByte();
@@ -238,9 +238,9 @@ public class HornetQRABytesMessage extends HornetQRAMessage implements BytesMess
     */
    public int readUnsignedShort() throws JMSException
    {
-      if (trace)
+      if (HornetQRABytesMessage.trace)
       {
-         log.trace("readUnsignedShort()");
+         HornetQRABytesMessage.log.trace("readUnsignedShort()");
       }
 
       return ((BytesMessage)message).readUnsignedShort();
@@ -253,9 +253,9 @@ public class HornetQRABytesMessage extends HornetQRAMessage implements BytesMess
     */
    public String readUTF() throws JMSException
    {
-      if (trace)
+      if (HornetQRABytesMessage.trace)
       {
-         log.trace("readUTF()");
+         HornetQRABytesMessage.log.trace("readUTF()");
       }
 
       return ((BytesMessage)message).readUTF();
@@ -267,9 +267,9 @@ public class HornetQRABytesMessage extends HornetQRAMessage implements BytesMess
     */
    public void reset() throws JMSException
    {
-      if (trace)
+      if (HornetQRABytesMessage.trace)
       {
-         log.trace("reset()");
+         HornetQRABytesMessage.log.trace("reset()");
       }
 
       ((BytesMessage)message).reset();
@@ -282,9 +282,9 @@ public class HornetQRABytesMessage extends HornetQRAMessage implements BytesMess
     */
    public void writeBoolean(final boolean value) throws JMSException
    {
-      if (trace)
+      if (HornetQRABytesMessage.trace)
       {
-         log.trace("writeBoolean(" + value + ")");
+         HornetQRABytesMessage.log.trace("writeBoolean(" + value + ")");
       }
 
       ((BytesMessage)message).writeBoolean(value);
@@ -297,9 +297,9 @@ public class HornetQRABytesMessage extends HornetQRAMessage implements BytesMess
     */
    public void writeByte(final byte value) throws JMSException
    {
-      if (trace)
+      if (HornetQRABytesMessage.trace)
       {
-         log.trace("writeByte(" + value + ")");
+         HornetQRABytesMessage.log.trace("writeByte(" + value + ")");
       }
 
       ((BytesMessage)message).writeByte(value);
@@ -314,9 +314,9 @@ public class HornetQRABytesMessage extends HornetQRAMessage implements BytesMess
     */
    public void writeBytes(final byte[] value, final int offset, final int length) throws JMSException
    {
-      if (trace)
+      if (HornetQRABytesMessage.trace)
       {
-         log.trace("writeBytes(" + value + ", " + offset + ", " + length + ")");
+         HornetQRABytesMessage.log.trace("writeBytes(" + value + ", " + offset + ", " + length + ")");
       }
 
       ((BytesMessage)message).writeBytes(value, offset, length);
@@ -329,9 +329,9 @@ public class HornetQRABytesMessage extends HornetQRAMessage implements BytesMess
     */
    public void writeBytes(final byte[] value) throws JMSException
    {
-      if (trace)
+      if (HornetQRABytesMessage.trace)
       {
-         log.trace("writeBytes(" + value + ")");
+         HornetQRABytesMessage.log.trace("writeBytes(" + value + ")");
       }
 
       ((BytesMessage)message).writeBytes(value);
@@ -344,9 +344,9 @@ public class HornetQRABytesMessage extends HornetQRAMessage implements BytesMess
     */
    public void writeChar(final char value) throws JMSException
    {
-      if (trace)
+      if (HornetQRABytesMessage.trace)
       {
-         log.trace("writeChar(" + value + ")");
+         HornetQRABytesMessage.log.trace("writeChar(" + value + ")");
       }
 
       ((BytesMessage)message).writeChar(value);
@@ -359,9 +359,9 @@ public class HornetQRABytesMessage extends HornetQRAMessage implements BytesMess
     */
    public void writeDouble(final double value) throws JMSException
    {
-      if (trace)
+      if (HornetQRABytesMessage.trace)
       {
-         log.trace("writeDouble(" + value + ")");
+         HornetQRABytesMessage.log.trace("writeDouble(" + value + ")");
       }
 
       ((BytesMessage)message).writeDouble(value);
@@ -374,9 +374,9 @@ public class HornetQRABytesMessage extends HornetQRAMessage implements BytesMess
     */
    public void writeFloat(final float value) throws JMSException
    {
-      if (trace)
+      if (HornetQRABytesMessage.trace)
       {
-         log.trace("writeFloat(" + value + ")");
+         HornetQRABytesMessage.log.trace("writeFloat(" + value + ")");
       }
 
       ((BytesMessage)message).writeFloat(value);
@@ -389,9 +389,9 @@ public class HornetQRABytesMessage extends HornetQRAMessage implements BytesMess
     */
    public void writeInt(final int value) throws JMSException
    {
-      if (trace)
+      if (HornetQRABytesMessage.trace)
       {
-         log.trace("writeInt(" + value + ")");
+         HornetQRABytesMessage.log.trace("writeInt(" + value + ")");
       }
 
       ((BytesMessage)message).writeInt(value);
@@ -404,9 +404,9 @@ public class HornetQRABytesMessage extends HornetQRAMessage implements BytesMess
     */
    public void writeLong(final long value) throws JMSException
    {
-      if (trace)
+      if (HornetQRABytesMessage.trace)
       {
-         log.trace("writeLong(" + value + ")");
+         HornetQRABytesMessage.log.trace("writeLong(" + value + ")");
       }
 
       ((BytesMessage)message).writeLong(value);
@@ -419,9 +419,9 @@ public class HornetQRABytesMessage extends HornetQRAMessage implements BytesMess
     */
    public void writeObject(final Object value) throws JMSException
    {
-      if (trace)
+      if (HornetQRABytesMessage.trace)
       {
-         log.trace("writeObject(" + value + ")");
+         HornetQRABytesMessage.log.trace("writeObject(" + value + ")");
       }
 
       ((BytesMessage)message).writeObject(value);
@@ -434,9 +434,9 @@ public class HornetQRABytesMessage extends HornetQRAMessage implements BytesMess
     */
    public void writeShort(final short value) throws JMSException
    {
-      if (trace)
+      if (HornetQRABytesMessage.trace)
       {
-         log.trace("writeShort(" + value + ")");
+         HornetQRABytesMessage.log.trace("writeShort(" + value + ")");
       }
 
       ((BytesMessage)message).writeShort(value);
@@ -449,9 +449,9 @@ public class HornetQRABytesMessage extends HornetQRAMessage implements BytesMess
     */
    public void writeUTF(final String value) throws JMSException
    {
-      if (trace)
+      if (HornetQRABytesMessage.trace)
       {
-         log.trace("writeUTF(" + value + ")");
+         HornetQRABytesMessage.log.trace("writeUTF(" + value + ")");
       }
 
       ((BytesMessage)message).writeUTF(value);

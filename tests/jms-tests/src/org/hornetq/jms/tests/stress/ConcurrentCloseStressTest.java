@@ -18,7 +18,6 @@ import java.util.Iterator;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
-import javax.jms.Destination;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Queue;
@@ -28,6 +27,7 @@ import javax.naming.InitialContext;
 
 import org.hornetq.core.logging.Logger;
 import org.hornetq.jms.tests.HornetQServerTestCase;
+import org.hornetq.jms.tests.util.ProxyAssertSupport;
 
 /**
  * This test was added to test regression on http://jira.jboss.com/jira/browse/JBMESSAGING-660
@@ -40,15 +40,17 @@ public class ConcurrentCloseStressTest extends HornetQServerTestCase
    private static final Logger log = Logger.getLogger(ConcurrentCloseStressTest.class);
 
    InitialContext ic;
+
    ConnectionFactory cf;
+
    Queue queue;
 
+   @Override
    public void setUp() throws Exception
    {
       super.setUp();
 
-      //ServerManagement.start("all");
-
+      // ServerManagement.start("all");
 
       ic = getInitialContext();
       cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
@@ -56,20 +58,20 @@ public class ConcurrentCloseStressTest extends HornetQServerTestCase
       destroyQueue("TestQueue");
       createQueue("TestQueue");
 
-      queue = (Queue) ic.lookup("queue/TestQueue");
+      queue = (Queue)ic.lookup("queue/TestQueue");
 
-      log.debug("setup done");
+      ConcurrentCloseStressTest.log.debug("setup done");
    }
 
+   @Override
    public void tearDown() throws Exception
    {
       destroyQueue("TestQueue");
 
       super.tearDown();
 
-      log.debug("tear down done");
+      ConcurrentCloseStressTest.log.debug("tear down done");
    }
-
 
    public void testProducersAndConsumers() throws Exception
    {
@@ -83,15 +85,13 @@ public class ConcurrentCloseStressTest extends HornetQServerTestCase
       ReaderThread readerThread[] = new ReaderThread[20];
       TestThread threads[] = new TestThread[40];
 
-
       for (int i = 0; i < 20; i++)
       {
          producerThread[i] = new ProducerThread(i, connectionProducer, queue);
          readerThread[i] = new ReaderThread(i, connectionReader, queue);
          threads[i] = producerThread[i];
-         threads[i+20] = readerThread[i];
+         threads[i + 20] = readerThread[i];
       }
-
 
       for (int i = 0; i < 40; i++)
       {
@@ -103,8 +103,7 @@ public class ConcurrentCloseStressTest extends HornetQServerTestCase
          threads[i].join();
       }
 
-
-      boolean hasFailure=false;
+      boolean hasFailure = false;
 
       for (int i = 0; i < 40; i++)
       {
@@ -113,17 +112,17 @@ public class ConcurrentCloseStressTest extends HornetQServerTestCase
             hasFailure = true;
             for (Iterator failureIter = threads[i].exceptions.iterator(); failureIter.hasNext();)
             {
-               Exception ex = (Exception) failureIter.next();
-               log.error("Exception occurred in one of the threads - " + ex, ex);
+               Exception ex = (Exception)failureIter.next();
+               ConcurrentCloseStressTest.log.error("Exception occurred in one of the threads - " + ex, ex);
             }
          }
       }
 
-      int messagesProduced=0;
-      int messagesRead=0;
-      for (int i = 0; i < producerThread.length; i++)
+      int messagesProduced = 0;
+      int messagesRead = 0;
+      for (ProducerThread element : producerThread)
       {
-         messagesProduced += producerThread[i].messagesProduced;
+         messagesProduced += element.messagesProduced;
       }
 
       for (int i = 0; i < producerThread.length; i++)
@@ -133,81 +132,82 @@ public class ConcurrentCloseStressTest extends HornetQServerTestCase
 
       if (hasFailure)
       {
-         fail ("An exception has occurred in one of the threads");
+         ProxyAssertSupport.fail("An exception has occurred in one of the threads");
       }
    }
-
 
    static class TestThread extends Thread
    {
       ArrayList exceptions = new ArrayList();
+
       protected int index;
+
       public int messageCount = 0;
    }
-
 
    static class ReaderThread extends TestThread
    {
       private static final Logger log = Logger.getLogger(ReaderThread.class);
+
       Connection conn;
 
       Queue queue;
 
       int messagesRead = 0;
 
-      public ReaderThread(int index, Connection conn, Queue queue) throws Exception
+      public ReaderThread(final int index, final Connection conn, final Queue queue) throws Exception
       {
          this.index = index;
          this.conn = conn;
          this.queue = queue;
       }
 
-
+      @Override
       public void run()
       {
          int commitCounter = 0;
          try
          {
             Session session = conn.createSession(true, Session.SESSION_TRANSACTED);
-            MessageConsumer consumer = session.createConsumer((Destination)queue);
+            MessageConsumer consumer = session.createConsumer(queue);
 
             int lastCount = messageCount;
             while (true)
             {
-               TextMessage message = (TextMessage) consumer.receive(5000);
+               TextMessage message = (TextMessage)consumer.receive(5000);
                if (message == null)
                {
                   break;
                }
-               log.debug("read message " + message.getText());
+               ReaderThread.log.debug("read message " + message.getText());
 
                // alternating commits and rollbacks
-               if ( (commitCounter++) % 2 == 0)
+               if (commitCounter++ % 2 == 0)
                {
-                  messagesRead += (messageCount - lastCount);
+                  messagesRead += messageCount - lastCount;
                   lastCount = messageCount;
-                  log.debug("commit");
+                  ReaderThread.log.debug("commit");
                   session.commit();
                }
                else
                {
                   lastCount = messageCount;
-                  log.debug("rollback");
+                  ReaderThread.log.debug("rollback");
                   session.rollback();
                }
 
                messageCount++;
 
-               if (messageCount %7 == 0)
+               if (messageCount % 7 == 0)
                {
                   session.close();
 
                   session = conn.createSession(true, Session.SESSION_TRANSACTED);
-                  consumer = session.createConsumer((Destination)queue);
+                  consumer = session.createConsumer(queue);
                }
             }
 
-            messagesRead += (messageCount - lastCount);
+            messagesRead += messageCount - lastCount;
 
             session.commit();
             consumer.close();
@@ -222,23 +222,24 @@ public class ConcurrentCloseStressTest extends HornetQServerTestCase
 
    }
 
-
    static class ProducerThread extends TestThread
    {
       private static final Logger log = Logger.getLogger(ProducerThread.class);
 
       Connection conn;
-      Queue queue;
-      int messagesProduced=0;
 
-      public ProducerThread(int index, Connection conn, Queue queue) throws Exception
+      Queue queue;
+
+      int messagesProduced = 0;
+
+      public ProducerThread(final int index, final Connection conn, final Queue queue) throws Exception
       {
          this.index = index;
          this.conn = conn;
          this.queue = queue;
       }
 
-
+      @Override
       public void run()
       {
          for (int i = 0; i < 10; i++)
@@ -247,7 +248,7 @@ public class ConcurrentCloseStressTest extends HornetQServerTestCase
             {
                int lastMessage = messageCount;
                Session sess = conn.createSession(true, Session.SESSION_TRANSACTED);
-               MessageProducer producer = sess.createProducer((Destination)queue);
+               MessageProducer producer = sess.createProducer(queue);
 
                for (int j = 0; j < 20; j++)
                {
@@ -255,23 +256,23 @@ public class ConcurrentCloseStressTest extends HornetQServerTestCase
 
                   if (j % 2 == 0)
                   {
-                     log.debug("commit");
-                     messagesProduced += (messageCount - lastMessage);
+                     ProducerThread.log.debug("commit");
+                     messagesProduced += messageCount - lastMessage;
                      lastMessage = messageCount;
-                     
+
                      sess.commit();
                   }
                   else
                   {
-                     log.debug("rollback");
+                     ProducerThread.log.debug("rollback");
                      lastMessage = messageCount;
                      sess.rollback();
                   }
-                  messageCount ++;
+                  messageCount++;
 
                }
 
-               messagesProduced += ((messageCount) - lastMessage);
+               messagesProduced += messageCount - lastMessage;
                sess.commit();
                sess.close();
             }

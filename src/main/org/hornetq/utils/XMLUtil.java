@@ -52,17 +52,17 @@ public class XMLUtil
 
    // Static ---------------------------------------------------------------------------------------
 
-   public static Element stringToElement(String s) throws Exception
+   public static Element stringToElement(final String s) throws Exception
    {
-      return readerToElement(new StringReader(s));
+      return XMLUtil.readerToElement(new StringReader(s));
    }
 
-   public static Element urlToElement(URL url) throws Exception
+   public static Element urlToElement(final URL url) throws Exception
    {
-      return readerToElement(new InputStreamReader(url.openStream()));
+      return XMLUtil.readerToElement(new InputStreamReader(url.openStream()));
    }
 
-   public static String readerToString(Reader r) throws Exception
+   public static String readerToString(final Reader r) throws Exception
    {
       // Read into string
       StringBuffer buff = new StringBuffer();
@@ -74,7 +74,7 @@ public class XMLUtil
       return buff.toString();
    }
 
-   public static Element readerToElement(Reader r) throws Exception
+   public static Element readerToElement(final Reader r) throws Exception
    {
       // Read into string
       StringBuffer buff = new StringBuffer();
@@ -87,7 +87,6 @@ public class XMLUtil
       // Quick hardcoded replace, FIXME this is a kludge - use regexp to match properly
       String s = buff.toString();
 
-
       StringReader sreader = new StringReader(s);
 
       DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -98,7 +97,7 @@ public class XMLUtil
       return doc.getDocumentElement();
    }
 
-   public static String elementToString(Node n)
+   public static String elementToString(final Node n)
    {
 
       String name = n.getNodeName();
@@ -148,7 +147,7 @@ public class XMLUtil
          boolean hasValidChildren = false;
          for (int i = 0; i < children.getLength(); i++)
          {
-            String childToString = elementToString(children.item(i));
+            String childToString = XMLUtil.elementToString(children.item(i));
             if (!"".equals(childToString))
             {
                sb.append(childToString);
@@ -156,7 +155,7 @@ public class XMLUtil
             }
          }
 
-         if (!hasValidChildren && ((textContent = XMLUtil.getTextContent(n)) != null))
+         if (!hasValidChildren && (textContent = XMLUtil.getTextContent(n)) != null)
          {
             sb.append(textContent);
          }
@@ -178,7 +177,7 @@ public class XMLUtil
     *
     * TODO implementation of this method is a hack. Implement it properly.
     */
-   public static String getTextContent(Node n)
+   public static String getTextContent(final Node n)
    {
       if (n.hasChildNodes())
       {
@@ -202,18 +201,17 @@ public class XMLUtil
 
       Method[] methods = Node.class.getMethods();
 
-      for (int i = 0; i < methods.length; i++)
+      for (Method getTextContext : methods)
       {
-         if ("getTextContent".equals(methods[i].getName()))
+         if ("getTextContent".equals(getTextContext.getName()))
          {
-            Method getTextContext = methods[i];
             try
             {
-               return (String)getTextContext.invoke(n, EMPTY_ARRAY);
+               return (String)getTextContext.invoke(n, XMLUtil.EMPTY_ARRAY);
             }
             catch (Exception e)
             {
-               log.error("Failed to invoke getTextContent() on node " + n, e);
+               XMLUtil.log.error("Failed to invoke getTextContent() on node " + n, e);
                return null;
             }
          }
@@ -264,7 +262,7 @@ public class XMLUtil
       return textContent;
    }
 
-   public static void assertEquivalent(Node node, Node node2)
+   public static void assertEquivalent(final Node node, final Node node2)
    {
       if (node == null)
       {
@@ -333,8 +331,8 @@ public class XMLUtil
          NodeList nl2 = node2.getChildNodes();
 
          short[] toFilter = new short[] { Node.TEXT_NODE, Node.ATTRIBUTE_NODE, Node.COMMENT_NODE };
-         List nodes = filter(nl, toFilter);
-         List nodes2 = filter(nl2, toFilter);
+         List nodes = XMLUtil.filter(nl, toFilter);
+         List nodes2 = XMLUtil.filter(nl2, toFilter);
 
          int length = nodes.size();
 
@@ -347,7 +345,7 @@ public class XMLUtil
          {
             Node n = (Node)nodes.get(i);
             Node n2 = (Node)nodes2.get(i);
-            assertEquivalent(n, n2);
+            XMLUtil.assertEquivalent(n, n2);
          }
       }
    }
@@ -368,43 +366,43 @@ public class XMLUtil
       return s;
    }
 
-  /* public static String replaceSystemProps(String xml)
-   {
-      Properties properties = System.getProperties();
-      Enumeration e = properties.propertyNames();
-      while (e.hasMoreElements())
-      {
-         String key = (String)e.nextElement();
-         String s = "${" + key + "}";
-         if (xml.contains(s))
-         {
-            xml = xml.replace(s, properties.getProperty(key));
-         }
+   /* public static String replaceSystemProps(String xml)
+    {
+       Properties properties = System.getProperties();
+       Enumeration e = properties.propertyNames();
+       while (e.hasMoreElements())
+       {
+          String key = (String)e.nextElement();
+          String s = "${" + key + "}";
+          if (xml.contains(s))
+          {
+             xml = xml.replace(s, properties.getProperty(key));
+          }
 
-      }
-      return xml;
-   }*/
+       }
+       return xml;
+    }*/
    public static String replaceSystemProps(String xml)
    {
-      while(xml.contains("${"))
+      while (xml.contains("${"))
       {
          int start = xml.indexOf("${");
          int end = xml.indexOf("}") + 1;
-         if(end < 0)
+         if (end < 0)
          {
             break;
          }
          String subString = xml.substring(start, end);
          String prop = subString.substring(2, subString.length() - 1).trim();
          String val = "";
-         if(prop.contains(":"))
+         if (prop.contains(":"))
          {
             String[] parts = prop.split(":", 2);
             prop = parts[0].trim();
             val = parts[1].trim();
          }
          String sysProp = System.getProperty(prop, val);
-         log.debug("replacing " + subString + " with " + sysProp);
+         XMLUtil.log.debug("replacing " + subString + " with " + sysProp);
          xml = xml.replace(subString, sysProp);
 
       }
@@ -479,10 +477,10 @@ public class XMLUtil
       }
    }
 
-   public static void validate(Node node, String schemaFile) throws Exception
+   public static void validate(final Node node, final String schemaFile) throws Exception
    {
       SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-      
+
       Schema schema = factory.newSchema(Thread.currentThread().getContextClassLoader().getResource(schemaFile));
       Validator validator = schema.newValidator();
 
@@ -493,8 +491,8 @@ public class XMLUtil
       }
       catch (SAXException e)
       {
-         log.error("Invalid configuration", e);
-         
+         XMLUtil.log.error("Invalid configuration", e);
+
          throw new IllegalStateException("Invalid configuration", e);
       }
    }
@@ -511,7 +509,7 @@ public class XMLUtil
 
    // Private --------------------------------------------------------------------------------------
 
-   private static List filter(NodeList nl, short[] typesToFilter)
+   private static List filter(final NodeList nl, final short[] typesToFilter)
    {
       List nodes = new ArrayList();
 

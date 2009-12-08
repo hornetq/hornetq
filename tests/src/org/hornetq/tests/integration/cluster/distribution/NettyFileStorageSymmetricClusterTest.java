@@ -22,6 +22,7 @@ package org.hornetq.tests.integration.cluster.distribution;
  */
 public class NettyFileStorageSymmetricClusterTest extends SymmetricClusterTest
 {
+   @Override
    protected boolean isNetty()
    {
       return true;

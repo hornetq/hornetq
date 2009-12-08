@@ -11,7 +11,6 @@
  * permissions and limitations under the License.
  */
 
-
 package org.hornetq.core.client.impl;
 
 import org.hornetq.core.client.ConnectionLoadBalancingPolicy;
@@ -29,30 +28,30 @@ import org.hornetq.utils.Random;
 public class RoundRobinConnectionLoadBalancingPolicy implements ConnectionLoadBalancingPolicy
 {
    private final Random random = new Random();
-   
+
    private boolean first = true;
-   
+
    private int pos;
 
    public int select(final int max)
    {
       if (first)
       {
-         //We start on a random one
+         // We start on a random one
          pos = random.getRandom().nextInt(max);
-         
+
          first = false;
       }
       else
       {
          pos++;
-         
+
          if (pos >= max)
          {
             pos = 0;
          }
       }
-     
+
       return pos;
-   }  
+   }
 }

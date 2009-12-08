@@ -13,6 +13,8 @@
 
 package org.hornetq.tests.integration.client;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
@@ -56,7 +58,7 @@ public class BlockingSendTest extends ServiceTestBase
          server.start();
 
          System.out.println("sync = " + server.getConfiguration().isJournalSyncNonTransactional());
-         
+
          factory = createFactory(false);
          factory.setBlockOnPersistentSend(true);
 
@@ -76,7 +78,7 @@ public class BlockingSendTest extends ServiceTestBase
 
          ClientMessage msg = consumer.receive(5000);
 
-         assertNotNull(msg);
+         Assert.assertNotNull(msg);
 
          msg.acknowledge();
 

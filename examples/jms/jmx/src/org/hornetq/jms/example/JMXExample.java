@@ -43,11 +43,12 @@ public class JMXExample extends HornetQExample
 {
    private static final String JMX_URL = "service:jmx:rmi:///jndi/rmi://localhost:3000/jmxrmi";
 
-   public static void main(String[] args)
+   public static void main(final String[] args)
    {
       new JMXExample().run(args);
    }
 
+   @Override
    public boolean runExample() throws Exception
    {
       QueueConnection connection = null;
@@ -83,16 +84,16 @@ public class JMXExample extends HornetQExample
          ObjectName on = ObjectNameBuilder.DEFAULT.getJMSQueueObjectName(queue.getQueueName());
 
          // Step 10. Create JMX Connector to connect to the server's MBeanServer
-         JMXConnector connector = JMXConnectorFactory.connect(new JMXServiceURL(JMX_URL), new HashMap());
+         JMXConnector connector = JMXConnectorFactory.connect(new JMXServiceURL(JMXExample.JMX_URL), new HashMap());
 
          // Step 11. Retrieve the MBeanServerConnection
          MBeanServerConnection mbsc = connector.getMBeanServerConnection();
 
          // Step 12. Create a JMSQueueControl proxy to manage the queue on the server
-         JMSQueueControl queueControl = (JMSQueueControl)MBeanServerInvocationHandler.newProxyInstance(mbsc,
-                                                                                                       on,
-                                                                                                       JMSQueueControl.class,
-                                                                                                       false);
+         JMSQueueControl queueControl = MBeanServerInvocationHandler.newProxyInstance(mbsc,
+                                                                                      on,
+                                                                                      JMSQueueControl.class,
+                                                                                      false);
          // Step 13. Display the number of messages in the queue
          System.out.println(queueControl.getName() + " contains " + queueControl.getMessageCount() + " messages");
 

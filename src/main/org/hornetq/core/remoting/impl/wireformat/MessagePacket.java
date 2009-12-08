@@ -28,17 +28,17 @@ public abstract class MessagePacket extends PacketImpl
    private static final Logger log = Logger.getLogger(MessagePacket.class);
 
    protected Message message;
-      
+
    public MessagePacket(final byte type, final Message message)
    {
       super(type);
-      
+
       this.message = message;
    }
-   
+
    public Message getMessage()
    {
       return message;
    }
-   
+
 }

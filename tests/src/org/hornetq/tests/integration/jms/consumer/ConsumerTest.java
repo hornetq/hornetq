@@ -21,6 +21,8 @@ import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.Queue;
@@ -36,7 +38,7 @@ import org.hornetq.utils.SimpleString;
 public class ConsumerTest extends JMSTestBase
 {
    private static final Logger log = Logger.getLogger(ConsumerTest.class);
-   
+
    private static final String Q_NAME = "ConsumerTestQueue";
 
    private HornetQQueue jBossQueue;
@@ -46,7 +48,7 @@ public class ConsumerTest extends JMSTestBase
    {
       super.setUp();
 
-      jmsServer.createQueue(Q_NAME, Q_NAME, null, true);
+      jmsServer.createQueue(ConsumerTest.Q_NAME, ConsumerTest.Q_NAME, null, true);
       cf = new HornetQConnectionFactory(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
    }
 
@@ -62,7 +64,7 @@ public class ConsumerTest extends JMSTestBase
    {
       Connection conn = cf.createConnection();
       Session session = conn.createSession(false, HornetQSession.PRE_ACKNOWLEDGE);
-      jBossQueue = new HornetQQueue(Q_NAME);
+      jBossQueue = new HornetQQueue(ConsumerTest.Q_NAME);
       MessageProducer producer = session.createProducer(jBossQueue);
       MessageConsumer consumer = session.createConsumer(jBossQueue);
       int noOfMessages = 100;
@@ -75,22 +77,22 @@ public class ConsumerTest extends JMSTestBase
       for (int i = 0; i < noOfMessages; i++)
       {
          Message m = consumer.receive(500);
-         assertNotNull(m);
+         Assert.assertNotNull(m);
       }
 
-      SimpleString queueName = new SimpleString(HornetQQueue.JMS_QUEUE_ADDRESS_PREFIX + Q_NAME);
-      assertEquals(0, ((Queue)server.getPostOffice().getBinding(queueName).getBindable()).getDeliveringCount());
-      assertEquals(0, ((Queue)server.getPostOffice().getBinding(queueName).getBindable()).getMessageCount());
+      SimpleString queueName = new SimpleString(HornetQQueue.JMS_QUEUE_ADDRESS_PREFIX + ConsumerTest.Q_NAME);
+      Assert.assertEquals(0, ((Queue)server.getPostOffice().getBinding(queueName).getBindable()).getDeliveringCount());
+      Assert.assertEquals(0, ((Queue)server.getPostOffice().getBinding(queueName).getBindable()).getMessageCount());
       conn.close();
    }
-   
+
    public void testPreCommitAcksSetOnConnectionFactory() throws Exception
    {
       ((HornetQConnectionFactory)cf).setPreAcknowledge(true);
       Connection conn = cf.createConnection();
-      
+
       Session session = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
-      jBossQueue = new HornetQQueue(Q_NAME);
+      jBossQueue = new HornetQQueue(ConsumerTest.Q_NAME);
       MessageProducer producer = session.createProducer(jBossQueue);
       MessageConsumer consumer = session.createConsumer(jBossQueue);
       int noOfMessages = 100;
@@ -103,23 +105,23 @@ public class ConsumerTest extends JMSTestBase
       for (int i = 0; i < noOfMessages; i++)
       {
          Message m = consumer.receive(500);
-         assertNotNull(m);
+         Assert.assertNotNull(m);
       }
-      
-      //Messages should all have been acked since we set pre ack on the cf
-      SimpleString queueName = new SimpleString(HornetQQueue.JMS_QUEUE_ADDRESS_PREFIX + Q_NAME);
-      assertEquals(0, ((Queue)server.getPostOffice().getBinding(queueName).getBindable()).getDeliveringCount());
-      assertEquals(0, ((Queue)server.getPostOffice().getBinding(queueName).getBindable()).getMessageCount());
+
+      // Messages should all have been acked since we set pre ack on the cf
+      SimpleString queueName = new SimpleString(HornetQQueue.JMS_QUEUE_ADDRESS_PREFIX + ConsumerTest.Q_NAME);
+      Assert.assertEquals(0, ((Queue)server.getPostOffice().getBinding(queueName).getBindable()).getDeliveringCount());
+      Assert.assertEquals(0, ((Queue)server.getPostOffice().getBinding(queueName).getBindable()).getMessageCount());
       conn.close();
    }
 
    public void testPreCommitAcksWithMessageExpiry() throws Exception
    {
-      log.info("starting test");
-           
+      ConsumerTest.log.info("starting test");
+
       Connection conn = cf.createConnection();
       Session session = conn.createSession(false, HornetQSession.PRE_ACKNOWLEDGE);
-      jBossQueue = new HornetQQueue(Q_NAME);
+      jBossQueue = new HornetQQueue(ConsumerTest.Q_NAME);
       MessageProducer producer = session.createProducer(jBossQueue);
       MessageConsumer consumer = session.createConsumer(jBossQueue);
       int noOfMessages = 1000;
@@ -129,26 +131,27 @@ public class ConsumerTest extends JMSTestBase
          producer.setTimeToLive(1);
          producer.send(textMessage);
       }
-      
+
       Thread.sleep(2);
 
       conn.start();
-      
+
       Message m = consumer.receiveNoWait();
-      assertNull(m);
-      
-      //Asserting delivering count is zero is bogus since messages might still be being delivered and expired at this point
-      //which can cause delivering count to flip to 1
-      
+      Assert.assertNull(m);
+
+      // Asserting delivering count is zero is bogus since messages might still be being delivered and expired at this
+      // point
+      // which can cause delivering count to flip to 1
+
       conn.close();
    }
-   
+
    public void testPreCommitAcksWithMessageExpirySetOnConnectionFactory() throws Exception
    {
       ((HornetQConnectionFactory)cf).setPreAcknowledge(true);
       Connection conn = cf.createConnection();
       Session session = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
-      jBossQueue = new HornetQQueue(Q_NAME);
+      jBossQueue = new HornetQQueue(ConsumerTest.Q_NAME);
       MessageProducer producer = session.createProducer(jBossQueue);
       MessageConsumer consumer = session.createConsumer(jBossQueue);
       int noOfMessages = 1000;
@@ -158,16 +161,17 @@ public class ConsumerTest extends JMSTestBase
          producer.setTimeToLive(1);
          producer.send(textMessage);
       }
-      
+
       Thread.sleep(2);
 
       conn.start();
       Message m = consumer.receiveNoWait();
-      assertNull(m);
-      
-      //Asserting delivering count is zero is bogus since messages might still be being delivered and expired at this point
-      //which can cause delivering count to flip to 1 
-      
+      Assert.assertNull(m);
+
+      // Asserting delivering count is zero is bogus since messages might still be being delivered and expired at this
+      // point
+      // which can cause delivering count to flip to 1
+
       conn.close();
    }
 
@@ -175,18 +179,18 @@ public class ConsumerTest extends JMSTestBase
    {
       Connection conn = cf.createConnection();
       Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      jBossQueue = new HornetQQueue(Q_NAME);
+      jBossQueue = new HornetQQueue(ConsumerTest.Q_NAME);
       MessageConsumer consumer = session.createConsumer(jBossQueue);
       consumer.setMessageListener(new MessageListener()
       {
-         public void onMessage(Message msg)
+         public void onMessage(final Message msg)
          {
          }
       });
 
       consumer.setMessageListener(null);
       consumer.receiveNoWait();
-      
+
       conn.close();
    }
 
@@ -194,11 +198,11 @@ public class ConsumerTest extends JMSTestBase
    {
       Connection conn = cf.createConnection();
       Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      jBossQueue = new HornetQQueue(Q_NAME);
+      jBossQueue = new HornetQQueue(ConsumerTest.Q_NAME);
       MessageConsumer consumer = session.createConsumer(jBossQueue);
       consumer.setMessageListener(new MessageListener()
       {
-         public void onMessage(Message msg)
+         public void onMessage(final Message msg)
          {
          }
       });
@@ -206,13 +210,13 @@ public class ConsumerTest extends JMSTestBase
       try
       {
          consumer.receiveNoWait();
-         fail("Should throw exception");
+         Assert.fail("Should throw exception");
       }
       catch (JMSException e)
       {
          // Ok
       }
-      
+
       conn.close();
    }
 }

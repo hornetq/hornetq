@@ -16,7 +16,6 @@ package org.hornetq.core.remoting.impl.wireformat;
 import org.hornetq.core.buffers.HornetQBuffer;
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.utils.DataConstants;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -28,9 +27,8 @@ import org.hornetq.utils.DataConstants;
 public class HornetQExceptionMessage extends PacketImpl
 {
    // Constants -----------------------------------------------------
-   
-   private static final Logger log = Logger.getLogger(HornetQExceptionMessage.class);
 
+   private static final Logger log = Logger.getLogger(HornetQExceptionMessage.class);
 
    // Attributes ----------------------------------------------------
 
@@ -42,18 +40,19 @@ public class HornetQExceptionMessage extends PacketImpl
 
    public HornetQExceptionMessage(final HornetQException exception)
    {
-      super(EXCEPTION);
-      
+      super(PacketImpl.EXCEPTION);
+
       this.exception = exception;
    }
 
    public HornetQExceptionMessage()
    {
-      super(EXCEPTION);
+      super(PacketImpl.EXCEPTION);
    }
 
    // Public --------------------------------------------------------
 
+   @Override
    public boolean isResponse()
    {
       return true;
@@ -63,18 +62,20 @@ public class HornetQExceptionMessage extends PacketImpl
    {
       return exception;
    }
-   
+
+   @Override
    public void encodeRest(final HornetQBuffer buffer)
    {
       buffer.writeInt(exception.getCode());
       buffer.writeNullableString(exception.getMessage());
    }
 
+   @Override
    public void decodeRest(final HornetQBuffer buffer)
    {
       int code = buffer.readInt();
       String msg = buffer.readNullableString();
-        
+
       exception = new HornetQException(code, msg);
    }
 
@@ -84,7 +85,8 @@ public class HornetQExceptionMessage extends PacketImpl
       return getParentString() + ", exception= " + exception + "]";
    }
 
-   public boolean equals(Object other)
+   @Override
+   public boolean equals(final Object other)
    {
       if (other instanceof HornetQExceptionMessage == false)
       {
@@ -93,7 +95,7 @@ public class HornetQExceptionMessage extends PacketImpl
 
       HornetQExceptionMessage r = (HornetQExceptionMessage)other;
 
-      return super.equals(other) && this.exception.equals(r.exception);
+      return super.equals(other) && exception.equals(r.exception);
    }
 
    // Package protected ---------------------------------------------

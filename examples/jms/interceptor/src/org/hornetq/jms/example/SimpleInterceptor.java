@@ -28,8 +28,8 @@ import org.hornetq.utils.SimpleString;
  */
 public class SimpleInterceptor implements Interceptor
 {
-   
-   public boolean intercept(Packet packet, RemotingConnection connection) throws HornetQException
+
+   public boolean intercept(final Packet packet, final RemotingConnection connection) throws HornetQException
    {
       System.out.println("SimpleInterceptor gets called!");
       System.out.println("Packet: " + packet.getClass().getName());
@@ -41,12 +41,10 @@ public class SimpleInterceptor implements Interceptor
          Message msg = realPacket.getMessage();
          msg.putStringProperty(new SimpleString("newproperty"), new SimpleString("Hello from interceptor!"));
       }
-      //We return true which means "call next interceptor" (if there is one) or target.
-      //If we returned false, it means "abort call" - no more interceptors would be called and neither would
-      //the target
+      // We return true which means "call next interceptor" (if there is one) or target.
+      // If we returned false, it means "abort call" - no more interceptors would be called and neither would
+      // the target
       return true;
    }
 
 }
-
-

@@ -15,6 +15,8 @@ package org.hornetq.tests.performance.journal;
 
 import java.util.ArrayList;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
 import org.hornetq.core.journal.Journal;
 import org.hornetq.core.journal.PreparedTransactionInfo;
@@ -36,11 +38,12 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 {
    private static final Logger log = Logger.getLogger(JournalImplTestUnit.class);
 
+   @Override
    protected void tearDown() throws Exception
    {
       super.tearDown();
 
-      assertEquals(0, AsynchronousFileImpl.getTotalMaxIO());
+      Assert.assertEquals(0, AsynchronousFileImpl.getTotalMaxIO());
    }
 
    public void testAddUpdateDeleteManyLargeFileSize() throws Exception
@@ -123,7 +126,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
       update(updates);
       delete(deletes);
 
-      log.debug("Debug journal:" + debugJournal());
+      JournalImplTestUnit.log.debug("Debug journal:" + debugJournal());
       stopJournal(false);
       createJournal();
       startJournal();
@@ -155,24 +158,24 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 
          if (count % 100 == 0)
          {
-            log.debug("Done: " + count);
+            JournalImplTestUnit.log.debug("Done: " + count);
          }
       }
 
       long end = System.currentTimeMillis();
 
-      double rate = 1000 * ((double)NUMBER_OF_RECORDS) / (end - start);
+      double rate = 1000 * (double)NUMBER_OF_RECORDS / (end - start);
 
-      log.info("Rate of " + rate + " adds/removes per sec");
+      JournalImplTestUnit.log.info("Rate of " + rate + " adds/removes per sec");
 
-      log.debug("Reclaim status = " + debugJournal());
+      JournalImplTestUnit.log.debug("Reclaim status = " + debugJournal());
 
       stopJournal();
       createJournal();
       startJournal();
       journal.load(new ArrayList<RecordInfo>(), new ArrayList<PreparedTransactionInfo>(), null);
 
-      assertEquals(NUMBER_OF_RECORDS / 2, journal.getIDMapSize());
+      Assert.assertEquals(NUMBER_OF_RECORDS / 2, journal.getIDMapSize());
 
       stopJournal();
    }
@@ -181,11 +184,11 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
    {
       for (int i = 0; i < 1; i++)
       {
-         this.setUp();
+         setUp();
          System.gc();
          Thread.sleep(500);
          internaltestSpeedNonTransactional();
-         this.tearDown();
+         tearDown();
       }
    }
 
@@ -226,13 +229,13 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 
          for (double rate : rates)
          {
-            log.info("Transaction Rate = " + rate + " records/sec");
+            JournalImplTestUnit.log.info("Transaction Rate = " + rate + " records/sec");
 
          }
 
          double rate = 1000 * (double)numMessages / (end - start);
 
-         log.info("Rate " + rate + " records/sec");
+         JournalImplTestUnit.log.info("Rate " + rate + " records/sec");
       }
       finally
       {
@@ -245,12 +248,14 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
    {
       final long numMessages = 10000;
 
-      int numFiles = (int)(((numMessages * 1024 + 512) / (10 * 1024 * 1024)) * 1.3);
+      int numFiles = (int)((numMessages * 1024 + 512) / (10 * 1024 * 1024) * 1.3);
 
       if (numFiles < 2)
+      {
          numFiles = 2;
+      }
 
-      log.debug("num Files=" + numFiles);
+      JournalImplTestUnit.log.debug("num Files=" + numFiles);
 
       Journal journal = new JournalImpl(10 * 1024 * 1024, numFiles, 0, 0, getFileFactory(), "hornetq-data", "hq", 5000);
 
@@ -258,7 +263,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 
       journal.load(new ArrayList<RecordInfo>(), null, null);
 
-      log.debug("Adding data");
+      JournalImplTestUnit.log.debug("Adding data");
       SimpleEncoding data = new SimpleEncoding(700, (byte)'j');
 
       long start = System.currentTimeMillis();
@@ -272,7 +277,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 
       double rate = 1000 * (double)numMessages / (end - start);
 
-      log.info("Rate " + rate + " records/sec");
+      JournalImplTestUnit.log.info("Rate " + rate + " records/sec");
 
       journal.stop();
 

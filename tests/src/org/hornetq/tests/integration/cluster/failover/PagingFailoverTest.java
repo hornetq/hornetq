@@ -17,6 +17,8 @@ import java.util.HashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
@@ -85,18 +87,18 @@ public class PagingFailoverTest extends FailoverTestBase
       try
       {
 
-         session.createQueue(ADDRESS, ADDRESS, true);
+         session.createQueue(PagingFailoverTest.ADDRESS, PagingFailoverTest.ADDRESS, true);
 
          final CountDownLatch latch = new CountDownLatch(1);
 
          class MyListener implements SessionFailureListener
          {
-            public void connectionFailed(HornetQException me)
+            public void connectionFailed(final HornetQException me)
             {
                latch.countDown();
             }
 
-            public void beforeReconnect(HornetQException exception)
+            public void beforeReconnect(final HornetQException exception)
             {
             }
 
@@ -104,7 +106,7 @@ public class PagingFailoverTest extends FailoverTestBase
 
          session.addFailureListener(new MyListener());
 
-         ClientProducer prod = session.createProducer(ADDRESS);
+         ClientProducer prod = session.createProducer(PagingFailoverTest.ADDRESS);
 
          final int TOTAL_MESSAGES = 2000;
 
@@ -138,20 +140,20 @@ public class PagingFailoverTest extends FailoverTestBase
 
          session.start();
 
-         ClientConsumer cons = session.createConsumer(ADDRESS);
+         ClientConsumer cons = session.createConsumer(PagingFailoverTest.ADDRESS);
 
          final int MIDDLE = TOTAL_MESSAGES / 2;
 
          for (int i = 0; i < MIDDLE; i++)
          {
             ClientMessage msg = cons.receive(20000);
-            assertNotNull(msg);
+            Assert.assertNotNull(msg);
             msg.acknowledge();
             if (transacted && i % 10 == 0)
             {
                session.commit();
             }
-            assertEquals((Integer)i, (Integer)msg.getObjectProperty(new SimpleString("key")));
+            Assert.assertEquals(i, msg.getObjectProperty(new SimpleString("key")));
          }
 
          session.commit();
@@ -170,18 +172,18 @@ public class PagingFailoverTest extends FailoverTestBase
 
          session = factory.createSession(true, true, 0);
 
-         cons = session.createConsumer(ADDRESS);
+         cons = session.createConsumer(PagingFailoverTest.ADDRESS);
 
          session.start();
 
          for (int i = MIDDLE; i < TOTAL_MESSAGES; i++)
          {
             ClientMessage msg = cons.receive(5000);
-            assertNotNull(msg);
+            Assert.assertNotNull(msg);
 
             msg.acknowledge();
             int result = (Integer)msg.getObjectProperty(new SimpleString("key"));
-            assertEquals(i, result);
+            Assert.assertEquals(i, result);
          }
       }
       finally
@@ -201,7 +203,7 @@ public class PagingFailoverTest extends FailoverTestBase
     * @param latch
     * @throws InterruptedException
     */
-   private void failSession(ClientSession session, final CountDownLatch latch) throws InterruptedException
+   private void failSession(final ClientSession session, final CountDownLatch latch) throws InterruptedException
    {
       RemotingConnection conn = ((ClientSessionInternal)session).getConnection();
 
@@ -210,7 +212,7 @@ public class PagingFailoverTest extends FailoverTestBase
 
       // Wait to be informed of failure
 
-      assertTrue(latch.await(5000, TimeUnit.MILLISECONDS));
+      Assert.assertTrue(latch.await(5000, TimeUnit.MILLISECONDS));
    }
 
    // Package protected ---------------------------------------------
@@ -221,7 +223,7 @@ public class PagingFailoverTest extends FailoverTestBase
     * @see org.hornetq.tests.integration.cluster.failover.FailoverTestBase#getAcceptorTransportConfiguration(boolean)
     */
    @Override
-   protected TransportConfiguration getAcceptorTransportConfiguration(boolean live)
+   protected TransportConfiguration getAcceptorTransportConfiguration(final boolean live)
    {
       return getInVMTransportAcceptorConfiguration(live);
    }
@@ -230,19 +232,25 @@ public class PagingFailoverTest extends FailoverTestBase
     * @see org.hornetq.tests.integration.cluster.failover.FailoverTestBase#getConnectorTransportConfiguration(boolean)
     */
    @Override
-   protected TransportConfiguration getConnectorTransportConfiguration(boolean live)
+   protected TransportConfiguration getConnectorTransportConfiguration(final boolean live)
    {
       return getInVMConnectorTransportConfiguration(live);
    }
 
+   @Override
    protected HornetQServer createServer(final boolean realFiles, final Configuration configuration)
    {
-      return createServer(realFiles, configuration, PAGE_SIZE, PAGE_MAX, new HashMap<String, AddressSettings>());
+      return createServer(realFiles,
+                          configuration,
+                          PagingFailoverTest.PAGE_SIZE,
+                          PagingFailoverTest.PAGE_MAX,
+                          new HashMap<String, AddressSettings>());
    }
 
    /**
     * @throws Exception
     */
+   @Override
    protected void createConfigs() throws Exception
    {
       Configuration config1 = super.createDefaultConfig();

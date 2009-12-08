@@ -20,7 +20,6 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-
 package org.hornetq.tests.integration.cluster.failover;
 
 /**
@@ -32,6 +31,7 @@ package org.hornetq.tests.integration.cluster.failover;
  */
 public class NettyDiscoveryClusterWithBackupFailoverTest extends DiscoveryClusterWithBackupFailoverTest
 {
+   @Override
    protected boolean isNetty()
    {
       return true;

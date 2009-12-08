@@ -21,11 +21,13 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import junit.framework.Assert;
 import junit.framework.TestSuite;
 
 import org.hornetq.core.asyncio.AIOCallback;
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
 import org.hornetq.core.logging.Logger;
+import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.HornetQThreadFactory;
 
 /**
@@ -43,7 +45,7 @@ public class MultiThreadAsynchronousFileTest extends AIOTestBase
 
    public static TestSuite suite()
    {
-      return createAIOTestSuite(MultiThreadAsynchronousFileTest.class);
+      return UnitTestCase.createAIOTestSuite(MultiThreadAsynchronousFileTest.class);
    }
 
    static Logger log = Logger.getLogger(MultiThreadAsynchronousFileTest.class);
@@ -62,9 +64,10 @@ public class MultiThreadAsynchronousFileTest extends AIOTestBase
 
    private static void debug(final String msg)
    {
-      log.debug(msg);
+      MultiThreadAsynchronousFileTest.log.debug(msg);
    }
 
+   @Override
    protected void setUp() throws Exception
    {
       super.setUp();
@@ -73,6 +76,7 @@ public class MultiThreadAsynchronousFileTest extends AIOTestBase
       executor = Executors.newSingleThreadExecutor();
    }
 
+   @Override
    protected void tearDown() throws Exception
    {
       executor.shutdown();
@@ -92,20 +96,23 @@ public class MultiThreadAsynchronousFileTest extends AIOTestBase
 
    private void executeTest(final boolean sync) throws Throwable
    {
-      debug(sync ? "Sync test:" : "Async test");
+      MultiThreadAsynchronousFileTest.debug(sync ? "Sync test:" : "Async test");
       AsynchronousFileImpl jlibAIO = new AsynchronousFileImpl(executor, pollerExecutor);
       jlibAIO.open(FILE_NAME, 21000);
       try
       {
-         debug("Preallocating file");
+         MultiThreadAsynchronousFileTest.debug("Preallocating file");
 
-         jlibAIO.fill(0l, NUMBER_OF_THREADS, SIZE * NUMBER_OF_LINES, (byte)0);
-         debug("Done Preallocating file");
+         jlibAIO.fill(0l,
+                      MultiThreadAsynchronousFileTest.NUMBER_OF_THREADS,
+                      MultiThreadAsynchronousFileTest.SIZE * MultiThreadAsynchronousFileTest.NUMBER_OF_LINES,
+                      (byte)0);
+         MultiThreadAsynchronousFileTest.debug("Done Preallocating file");
 
-         CountDownLatch latchStart = new CountDownLatch(NUMBER_OF_THREADS + 1);
+         CountDownLatch latchStart = new CountDownLatch(MultiThreadAsynchronousFileTest.NUMBER_OF_THREADS + 1);
 
-         ArrayList<ThreadProducer> list = new ArrayList<ThreadProducer>(NUMBER_OF_THREADS);
-         for (int i = 0; i < NUMBER_OF_THREADS; i++)
+         ArrayList<ThreadProducer> list = new ArrayList<ThreadProducer>(MultiThreadAsynchronousFileTest.NUMBER_OF_THREADS);
+         for (int i = 0; i < MultiThreadAsynchronousFileTest.NUMBER_OF_THREADS; i++)
          {
             ThreadProducer producer = new ThreadProducer("Thread " + i, latchStart, jlibAIO, sync);
             list.add(producer);
@@ -127,16 +134,16 @@ public class MultiThreadAsynchronousFileTest extends AIOTestBase
          }
          long endTime = System.currentTimeMillis();
 
-         debug((sync ? "Sync result:" : "Async result:") + " Records/Second = " +
-               NUMBER_OF_THREADS *
-               NUMBER_OF_LINES *
-               1000 /
-               (endTime - startTime) +
-               " total time = " +
-               (endTime - startTime) +
-               " total number of records = " +
-               NUMBER_OF_THREADS *
-               NUMBER_OF_LINES);
+         MultiThreadAsynchronousFileTest.debug((sync ? "Sync result:" : "Async result:") + " Records/Second = " +
+                                               MultiThreadAsynchronousFileTest.NUMBER_OF_THREADS *
+                                               MultiThreadAsynchronousFileTest.NUMBER_OF_LINES *
+                                               1000 /
+                                               (endTime - startTime) +
+                                               " total time = " +
+                                               (endTime - startTime) +
+                                               " total number of records = " +
+                                               MultiThreadAsynchronousFileTest.NUMBER_OF_THREADS *
+                                               MultiThreadAsynchronousFileTest.NUMBER_OF_LINES);
       }
       finally
       {
@@ -180,7 +187,7 @@ public class MultiThreadAsynchronousFileTest extends AIOTestBase
 
          synchronized (MultiThreadAsynchronousFileTest.class)
          {
-            buffer = AsynchronousFileImpl.newBuffer(SIZE);
+            buffer = AsynchronousFileImpl.newBuffer(MultiThreadAsynchronousFileTest.SIZE);
          }
 
          try
@@ -189,7 +196,8 @@ public class MultiThreadAsynchronousFileTest extends AIOTestBase
             // I'm aways reusing the same buffer, as I don't want any noise from
             // malloc on the measurement
             // Encoding buffer
-            addString("Thread name=" + Thread.currentThread().getName() + ";" + "\n", buffer);
+            MultiThreadAsynchronousFileTest.addString("Thread name=" + Thread.currentThread().getName() + ";" + "\n",
+                                                      buffer);
             for (int local = buffer.position(); local < buffer.capacity() - 1; local++)
             {
                buffer.put((byte)' ');
@@ -205,12 +213,12 @@ public class MultiThreadAsynchronousFileTest extends AIOTestBase
 
             if (!sync)
             {
-               latchFinishThread = new CountDownLatch(NUMBER_OF_LINES);
+               latchFinishThread = new CountDownLatch(MultiThreadAsynchronousFileTest.NUMBER_OF_LINES);
             }
 
             LinkedList<CountDownCallback> list = new LinkedList<CountDownCallback>();
 
-            for (int i = 0; i < NUMBER_OF_LINES; i++)
+            for (int i = 0; i < MultiThreadAsynchronousFileTest.NUMBER_OF_LINES; i++)
             {
 
                if (sync)
@@ -226,8 +234,8 @@ public class MultiThreadAsynchronousFileTest extends AIOTestBase
                if (sync)
                {
                   latchFinishThread.await();
-                  assertTrue(callback.doneCalled);
-                  assertFalse(callback.errorCalled != 0);
+                  Assert.assertTrue(callback.doneCalled);
+                  Assert.assertFalse(callback.errorCalled != 0);
                }
             }
             if (!sync)
@@ -237,14 +245,14 @@ public class MultiThreadAsynchronousFileTest extends AIOTestBase
 
             for (CountDownCallback callback : list)
             {
-               assertTrue(callback.doneCalled);
-               assertFalse(callback.errorCalled != 0);
+               Assert.assertTrue(callback.doneCalled);
+               Assert.assertFalse(callback.errorCalled != 0);
             }
 
             for (CountDownCallback callback : list)
             {
-               assertTrue(callback.doneCalled);
-               assertFalse(callback.errorCalled != 0);
+               Assert.assertTrue(callback.doneCalled);
+               Assert.assertFalse(callback.errorCalled != 0);
             }
 
          }
@@ -295,7 +303,10 @@ public class MultiThreadAsynchronousFileTest extends AIOTestBase
       {
          try
          {
-            aio.write(getNewPosition() * SIZE, SIZE, buffer, callback);
+            aio.write(getNewPosition() * MultiThreadAsynchronousFileTest.SIZE,
+                      MultiThreadAsynchronousFileTest.SIZE,
+                      buffer,
+                      callback);
 
          }
          catch (Exception e)

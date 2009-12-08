@@ -42,7 +42,7 @@ public class HornetQRACredential implements Serializable
    private static final Logger log = Logger.getLogger(HornetQRACredential.class);
 
    /** Trace enabled */
-   private static boolean trace = log.isTraceEnabled();
+   private static boolean trace = HornetQRACredential.log.isTraceEnabled();
 
    /** The user name */
    private String userName;
@@ -55,9 +55,9 @@ public class HornetQRACredential implements Serializable
     */
    private HornetQRACredential()
    {
-      if (trace)
+      if (HornetQRACredential.trace)
       {
-         log.trace("constructor()");
+         HornetQRACredential.log.trace("constructor()");
       }
    }
 
@@ -67,9 +67,9 @@ public class HornetQRACredential implements Serializable
     */
    public String getUserName()
    {
-      if (trace)
+      if (HornetQRACredential.trace)
       {
-         log.trace("getUserName()");
+         HornetQRACredential.log.trace("getUserName()");
       }
 
       return userName;
@@ -81,9 +81,9 @@ public class HornetQRACredential implements Serializable
     */
    private void setUserName(final String userName)
    {
-      if (trace)
+      if (HornetQRACredential.trace)
       {
-         log.trace("setUserName(" + userName + ")");
+         HornetQRACredential.log.trace("setUserName(" + userName + ")");
       }
 
       this.userName = userName;
@@ -95,9 +95,9 @@ public class HornetQRACredential implements Serializable
     */
    public String getPassword()
    {
-      if (trace)
+      if (HornetQRACredential.trace)
       {
-         log.trace("getPassword()");
+         HornetQRACredential.log.trace("getPassword()");
       }
 
       return password;
@@ -109,9 +109,9 @@ public class HornetQRACredential implements Serializable
     */
    private void setPassword(final String password)
    {
-      if (trace)
+      if (HornetQRACredential.trace)
       {
-         log.trace("setPassword(****)");
+         HornetQRACredential.log.trace("setPassword(****)");
       }
 
       this.password = password;
@@ -126,12 +126,12 @@ public class HornetQRACredential implements Serializable
     * @exception SecurityException Thrown if the credentials cant be retrieved
     */
    public static HornetQRACredential getCredential(final ManagedConnectionFactory mcf,
-                                             final Subject subject,
-                                             final ConnectionRequestInfo info) throws SecurityException
+                                                   final Subject subject,
+                                                   final ConnectionRequestInfo info) throws SecurityException
    {
-      if (trace)
+      if (HornetQRACredential.trace)
       {
-         log.trace("getCredential(" + mcf + ", " + subject + ", " + info + ")");
+         HornetQRACredential.log.trace("getCredential(" + mcf + ", " + subject + ", " + info + ")");
       }
 
       HornetQRACredential jc = new HornetQRACredential();
@@ -167,9 +167,9 @@ public class HornetQRACredential implements Serializable
    @Override
    public String toString()
    {
-      if (trace)
+      if (HornetQRACredential.trace)
       {
-         log.trace("toString()");
+         HornetQRACredential.log.trace("toString()");
       }
 
       return super.toString() + "{ username=" + userName + ", password=**** }";
@@ -193,9 +193,9 @@ public class HornetQRACredential implements Serializable
        */
       GetCredentialAction(final Subject subject, final ManagedConnectionFactory mcf)
       {
-         if (trace)
+         if (HornetQRACredential.trace)
          {
-            log.trace("constructor(" + subject + ", " + mcf + ")");
+            HornetQRACredential.log.trace("constructor(" + subject + ", " + mcf + ")");
          }
 
          this.subject = subject;
@@ -208,9 +208,9 @@ public class HornetQRACredential implements Serializable
        */
       public PasswordCredential run()
       {
-         if (trace)
+         if (HornetQRACredential.trace)
          {
-            log.trace("run()");
+            HornetQRACredential.log.trace("run()");
          }
 
          Set<PasswordCredential> creds = subject.getPrivateCredentials(PasswordCredential.class);
@@ -235,9 +235,9 @@ public class HornetQRACredential implements Serializable
        */
       static PasswordCredential getCredential(final Subject subject, final ManagedConnectionFactory mcf)
       {
-         if (trace)
+         if (HornetQRACredential.trace)
          {
-            log.trace("getCredential(" + subject + ", " + mcf + ")");
+            HornetQRACredential.log.trace("getCredential(" + subject + ", " + mcf + ")");
          }
 
          GetCredentialAction action = new GetCredentialAction(subject, mcf);

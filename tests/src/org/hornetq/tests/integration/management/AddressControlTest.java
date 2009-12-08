@@ -13,12 +13,10 @@
 
 package org.hornetq.tests.integration.management;
 
-import static org.hornetq.tests.util.RandomUtil.randomBoolean;
-import static org.hornetq.tests.util.RandomUtil.randomSimpleString;
-import static org.hornetq.tests.util.RandomUtil.randomString;
-
 import java.util.HashSet;
 import java.util.Set;
+
+import junit.framework.Assert;
 
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
@@ -37,6 +35,7 @@ import org.hornetq.core.security.Role;
 import org.hornetq.core.server.HornetQ;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.settings.impl.AddressSettings;
+import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.utils.SimpleString;
 
 /**
@@ -64,142 +63,142 @@ public class AddressControlTest extends ManagementTestBase
 
    public void testGetAddress() throws Exception
    {
-      SimpleString address = randomSimpleString();
-      SimpleString queue = randomSimpleString();
+      SimpleString address = RandomUtil.randomSimpleString();
+      SimpleString queue = RandomUtil.randomSimpleString();
 
       session.createQueue(address, queue, false);
 
       AddressControl addressControl = createManagementControl(address);
 
-      assertEquals(address.toString(), addressControl.getAddress());
+      Assert.assertEquals(address.toString(), addressControl.getAddress());
 
       session.deleteQueue(queue);
    }
 
    public void testGetQueueNames() throws Exception
    {
-      SimpleString address = randomSimpleString();
-      SimpleString queue = randomSimpleString();
-      SimpleString anotherQueue = randomSimpleString();
+      SimpleString address = RandomUtil.randomSimpleString();
+      SimpleString queue = RandomUtil.randomSimpleString();
+      SimpleString anotherQueue = RandomUtil.randomSimpleString();
 
       session.createQueue(address, queue, true);
 
       AddressControl addressControl = createManagementControl(address);
       String[] queueNames = addressControl.getQueueNames();
-      assertEquals(1, queueNames.length);
-      assertEquals(queue.toString(), queueNames[0]);
+      Assert.assertEquals(1, queueNames.length);
+      Assert.assertEquals(queue.toString(), queueNames[0]);
 
       session.createQueue(address, anotherQueue, false);
       queueNames = addressControl.getQueueNames();
-      assertEquals(2, queueNames.length);
+      Assert.assertEquals(2, queueNames.length);
 
       session.deleteQueue(queue);
 
       queueNames = addressControl.getQueueNames();
-      assertEquals(1, queueNames.length);
-      assertEquals(anotherQueue.toString(), queueNames[0]);
+      Assert.assertEquals(1, queueNames.length);
+      Assert.assertEquals(anotherQueue.toString(), queueNames[0]);
 
       session.deleteQueue(anotherQueue);
    }
 
    public void testGetRoles() throws Exception
    {
-      SimpleString address = randomSimpleString();
-      SimpleString queue = randomSimpleString();
-      Role role = new Role(randomString(),
-                           randomBoolean(),
-                           randomBoolean(),
-                           randomBoolean(),
-                           randomBoolean(),
-                           randomBoolean(),
-                           randomBoolean(),
-                           randomBoolean());
+      SimpleString address = RandomUtil.randomSimpleString();
+      SimpleString queue = RandomUtil.randomSimpleString();
+      Role role = new Role(RandomUtil.randomString(),
+                           RandomUtil.randomBoolean(),
+                           RandomUtil.randomBoolean(),
+                           RandomUtil.randomBoolean(),
+                           RandomUtil.randomBoolean(),
+                           RandomUtil.randomBoolean(),
+                           RandomUtil.randomBoolean(),
+                           RandomUtil.randomBoolean());
 
       session.createQueue(address, queue, true);
 
       AddressControl addressControl = createManagementControl(address);
       Object[] roles = addressControl.getRoles();
-      assertEquals(0, roles.length);
+      Assert.assertEquals(0, roles.length);
 
       Set<Role> newRoles = new HashSet<Role>();
       newRoles.add(role);
       server.getSecurityRepository().addMatch(address.toString(), newRoles);
 
       roles = addressControl.getRoles();
-      assertEquals(1, roles.length);
+      Assert.assertEquals(1, roles.length);
       Object[] r = (Object[])roles[0];
-      assertEquals(role.getName(), r[0]);
-      assertEquals(CheckType.SEND.hasRole(role), r[1]);
-      assertEquals(CheckType.CONSUME.hasRole(role), r[2]);
-      assertEquals(CheckType.CREATE_DURABLE_QUEUE.hasRole(role), r[3]);
-      assertEquals(CheckType.DELETE_DURABLE_QUEUE.hasRole(role), r[4]);
-      assertEquals(CheckType.CREATE_NON_DURABLE_QUEUE.hasRole(role), r[5]);
-      assertEquals(CheckType.DELETE_NON_DURABLE_QUEUE.hasRole(role), r[6]);
-      assertEquals(CheckType.MANAGE.hasRole(role), r[7]);
+      Assert.assertEquals(role.getName(), r[0]);
+      Assert.assertEquals(CheckType.SEND.hasRole(role), r[1]);
+      Assert.assertEquals(CheckType.CONSUME.hasRole(role), r[2]);
+      Assert.assertEquals(CheckType.CREATE_DURABLE_QUEUE.hasRole(role), r[3]);
+      Assert.assertEquals(CheckType.DELETE_DURABLE_QUEUE.hasRole(role), r[4]);
+      Assert.assertEquals(CheckType.CREATE_NON_DURABLE_QUEUE.hasRole(role), r[5]);
+      Assert.assertEquals(CheckType.DELETE_NON_DURABLE_QUEUE.hasRole(role), r[6]);
+      Assert.assertEquals(CheckType.MANAGE.hasRole(role), r[7]);
 
       session.deleteQueue(queue);
    }
 
    public void testGetRolesAsJSON() throws Exception
    {
-      SimpleString address = randomSimpleString();
-      SimpleString queue = randomSimpleString();
-      Role role = new Role(randomString(),
-                           randomBoolean(),
-                           randomBoolean(),
-                           randomBoolean(),
-                           randomBoolean(),
-                           randomBoolean(),
-                           randomBoolean(),
-                           randomBoolean());
+      SimpleString address = RandomUtil.randomSimpleString();
+      SimpleString queue = RandomUtil.randomSimpleString();
+      Role role = new Role(RandomUtil.randomString(),
+                           RandomUtil.randomBoolean(),
+                           RandomUtil.randomBoolean(),
+                           RandomUtil.randomBoolean(),
+                           RandomUtil.randomBoolean(),
+                           RandomUtil.randomBoolean(),
+                           RandomUtil.randomBoolean(),
+                           RandomUtil.randomBoolean());
 
       session.createQueue(address, queue, true);
 
       AddressControl addressControl = createManagementControl(address);
       String jsonString = addressControl.getRolesAsJSON();
-      assertNotNull(jsonString);     
+      Assert.assertNotNull(jsonString);
       RoleInfo[] roles = RoleInfo.from(jsonString);
-      assertEquals(0, roles.length);
+      Assert.assertEquals(0, roles.length);
 
       Set<Role> newRoles = new HashSet<Role>();
       newRoles.add(role);
       server.getSecurityRepository().addMatch(address.toString(), newRoles);
 
       jsonString = addressControl.getRolesAsJSON();
-      assertNotNull(jsonString);     
+      Assert.assertNotNull(jsonString);
       roles = RoleInfo.from(jsonString);
-      assertEquals(1, roles.length);
+      Assert.assertEquals(1, roles.length);
       RoleInfo r = roles[0];
-      assertEquals(role.getName(), roles[0].getName());
-      assertEquals(role.isSend(), r.isSend());
-      assertEquals(role.isConsume(), r.isConsume());
-      assertEquals(role.isCreateDurableQueue(), r.isCreateDurableQueue());
-      assertEquals(role.isDeleteDurableQueue(), r.isDeleteDurableQueue());
-      assertEquals(role.isCreateNonDurableQueue(), r.isCreateNonDurableQueue());
-      assertEquals(role.isDeleteNonDurableQueue(), r.isDeleteNonDurableQueue());
-      assertEquals(role.isManage(), r.isManage());
+      Assert.assertEquals(role.getName(), roles[0].getName());
+      Assert.assertEquals(role.isSend(), r.isSend());
+      Assert.assertEquals(role.isConsume(), r.isConsume());
+      Assert.assertEquals(role.isCreateDurableQueue(), r.isCreateDurableQueue());
+      Assert.assertEquals(role.isDeleteDurableQueue(), r.isDeleteDurableQueue());
+      Assert.assertEquals(role.isCreateNonDurableQueue(), r.isCreateNonDurableQueue());
+      Assert.assertEquals(role.isDeleteNonDurableQueue(), r.isDeleteNonDurableQueue());
+      Assert.assertEquals(role.isManage(), r.isManage());
 
       session.deleteQueue(queue);
    }
-   
+
    public void testAddRole() throws Exception
    {
-      SimpleString address = randomSimpleString();
-      SimpleString queue = randomSimpleString();
-      Role role = new Role(randomString(),
-                           randomBoolean(),
-                           randomBoolean(),
-                           randomBoolean(),
-                           randomBoolean(),
-                           randomBoolean(),
-                           randomBoolean(),
-                           randomBoolean());
+      SimpleString address = RandomUtil.randomSimpleString();
+      SimpleString queue = RandomUtil.randomSimpleString();
+      Role role = new Role(RandomUtil.randomString(),
+                           RandomUtil.randomBoolean(),
+                           RandomUtil.randomBoolean(),
+                           RandomUtil.randomBoolean(),
+                           RandomUtil.randomBoolean(),
+                           RandomUtil.randomBoolean(),
+                           RandomUtil.randomBoolean(),
+                           RandomUtil.randomBoolean());
 
       session.createQueue(address, queue, true);
 
       AddressControl addressControl = createManagementControl(address);
       Object[] roles = addressControl.getRoles();
-      assertEquals(0, roles.length);
+      Assert.assertEquals(0, roles.length);
 
       addressControl.addRole(role.getName(),
                              CheckType.SEND.hasRole(role),
@@ -211,38 +210,38 @@ public class AddressControlTest extends ManagementTestBase
                              CheckType.MANAGE.hasRole(role));
 
       roles = addressControl.getRoles();
-      assertEquals(1, roles.length);
+      Assert.assertEquals(1, roles.length);
       Object[] r = (Object[])roles[0];
-      assertEquals(role.getName(), r[0]);
-      assertEquals(CheckType.SEND.hasRole(role), r[1]);
-      assertEquals(CheckType.CONSUME.hasRole(role), r[2]);
-      assertEquals(CheckType.CREATE_DURABLE_QUEUE.hasRole(role), r[3]);
-      assertEquals(CheckType.DELETE_DURABLE_QUEUE.hasRole(role), r[4]);
-      assertEquals(CheckType.CREATE_NON_DURABLE_QUEUE.hasRole(role), r[5]);
-      assertEquals(CheckType.DELETE_NON_DURABLE_QUEUE.hasRole(role), r[6]);
-      assertEquals(CheckType.MANAGE.hasRole(role), r[7]);
+      Assert.assertEquals(role.getName(), r[0]);
+      Assert.assertEquals(CheckType.SEND.hasRole(role), r[1]);
+      Assert.assertEquals(CheckType.CONSUME.hasRole(role), r[2]);
+      Assert.assertEquals(CheckType.CREATE_DURABLE_QUEUE.hasRole(role), r[3]);
+      Assert.assertEquals(CheckType.DELETE_DURABLE_QUEUE.hasRole(role), r[4]);
+      Assert.assertEquals(CheckType.CREATE_NON_DURABLE_QUEUE.hasRole(role), r[5]);
+      Assert.assertEquals(CheckType.DELETE_NON_DURABLE_QUEUE.hasRole(role), r[6]);
+      Assert.assertEquals(CheckType.MANAGE.hasRole(role), r[7]);
 
       session.deleteQueue(queue);
    }
 
    public void testAddRoleWhichAlreadyExists() throws Exception
    {
-      SimpleString address = randomSimpleString();
-      SimpleString queue = randomSimpleString();
-      Role role = new Role(randomString(),
-                           randomBoolean(),
-                           randomBoolean(),
-                           randomBoolean(),
-                           randomBoolean(),
-                           randomBoolean(),
-                           randomBoolean(),
-                           randomBoolean());
+      SimpleString address = RandomUtil.randomSimpleString();
+      SimpleString queue = RandomUtil.randomSimpleString();
+      Role role = new Role(RandomUtil.randomString(),
+                           RandomUtil.randomBoolean(),
+                           RandomUtil.randomBoolean(),
+                           RandomUtil.randomBoolean(),
+                           RandomUtil.randomBoolean(),
+                           RandomUtil.randomBoolean(),
+                           RandomUtil.randomBoolean(),
+                           RandomUtil.randomBoolean());
 
       session.createQueue(address, queue, true);
 
       AddressControl addressControl = createManagementControl(address);
       Object[] tabularData = addressControl.getRoles();
-      assertEquals(0, tabularData.length);
+      Assert.assertEquals(0, tabularData.length);
 
       addressControl.addRole(role.getName(),
                              CheckType.SEND.hasRole(role),
@@ -254,7 +253,7 @@ public class AddressControlTest extends ManagementTestBase
                              CheckType.MANAGE.hasRole(role));
 
       tabularData = addressControl.getRoles();
-      assertEquals(1, tabularData.length);
+      Assert.assertEquals(1, tabularData.length);
 
       try
       {
@@ -266,66 +265,66 @@ public class AddressControlTest extends ManagementTestBase
                                 CheckType.CREATE_NON_DURABLE_QUEUE.hasRole(role),
                                 CheckType.DELETE_NON_DURABLE_QUEUE.hasRole(role),
                                 CheckType.MANAGE.hasRole(role));
-         fail("can not add a role which already exists");
+         Assert.fail("can not add a role which already exists");
       }
       catch (Exception e)
       {
       }
 
       tabularData = addressControl.getRoles();
-      assertEquals(1, tabularData.length);
+      Assert.assertEquals(1, tabularData.length);
 
       session.deleteQueue(queue);
    }
 
    public void testRemoveRole() throws Exception
    {
-      SimpleString address = randomSimpleString();
-      SimpleString queue = randomSimpleString();
-      String roleName = randomString();
+      SimpleString address = RandomUtil.randomSimpleString();
+      SimpleString queue = RandomUtil.randomSimpleString();
+      String roleName = RandomUtil.randomString();
 
       session.createQueue(address, queue, true);
 
       AddressControl addressControl = createManagementControl(address);
       Object[] tabularData = addressControl.getRoles();
-      assertEquals(0, tabularData.length);
+      Assert.assertEquals(0, tabularData.length);
 
       addressControl.addRole(roleName,
-                             randomBoolean(),
-                             randomBoolean(),
-                             randomBoolean(),
-                             randomBoolean(),
-                             randomBoolean(),
-                             randomBoolean(),
-                             randomBoolean());
+                             RandomUtil.randomBoolean(),
+                             RandomUtil.randomBoolean(),
+                             RandomUtil.randomBoolean(),
+                             RandomUtil.randomBoolean(),
+                             RandomUtil.randomBoolean(),
+                             RandomUtil.randomBoolean(),
+                             RandomUtil.randomBoolean());
 
       tabularData = addressControl.getRoles();
-      assertEquals(1, tabularData.length);
+      Assert.assertEquals(1, tabularData.length);
 
       addressControl.removeRole(roleName);
 
       tabularData = addressControl.getRoles();
-      assertEquals(0, tabularData.length);
+      Assert.assertEquals(0, tabularData.length);
 
       session.deleteQueue(queue);
    }
 
    public void testRemoveRoleWhichDoesNotExist() throws Exception
    {
-      SimpleString address = randomSimpleString();
-      SimpleString queue = randomSimpleString();
-      String roleName = randomString();
+      SimpleString address = RandomUtil.randomSimpleString();
+      SimpleString queue = RandomUtil.randomSimpleString();
+      String roleName = RandomUtil.randomString();
 
       session.createQueue(address, queue, true);
 
       AddressControl addressControl = createManagementControl(address);
       Object[] tabularData = addressControl.getRoles();
-      assertEquals(0, tabularData.length);
+      Assert.assertEquals(0, tabularData.length);
 
       try
       {
          addressControl.removeRole(roleName);
-         fail("can not remove a role which does not exist");
+         Assert.fail("can not remove a role which does not exist");
       }
       catch (Exception e)
       {
@@ -333,29 +332,29 @@ public class AddressControlTest extends ManagementTestBase
 
       session.deleteQueue(queue);
    }
-   
+
    public void testGetNumberOfPages() throws Exception
    {
       session.close();
       server.stop();
-      
-      SimpleString address = randomSimpleString();
-      
+
+      SimpleString address = RandomUtil.randomSimpleString();
+
       AddressSettings addressSettings = new AddressSettings();
       addressSettings.setPageSizeBytes(1024);
-      addressSettings.setMaxSizeBytes(10 * 1024);    
+      addressSettings.setMaxSizeBytes(10 * 1024);
       int NUMBER_MESSAGES_BEFORE_PAGING = 5;
-      
+
       server.getAddressSettingsRepository().addMatch(address.toString(), addressSettings);
-      server.start();  
-      
-      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));      
+      server.start();
+
+      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
       session = sf.createSession(false, true, false);
-      session.start();      
+      session.start();
       session.createQueue(address, address, true);
-      
+
       ClientProducer producer = session.createProducer(address);
-      
+
       for (int i = 0; i < NUMBER_MESSAGES_BEFORE_PAGING; i++)
       {
          ClientMessage msg = session.createClientMessage(true);
@@ -363,52 +362,52 @@ public class AddressControlTest extends ManagementTestBase
          producer.send(msg);
       }
       session.commit();
-      
+
       AddressControl addressControl = createManagementControl(address);
-      assertEquals(0, addressControl.getNumberOfPages());
-      
+      Assert.assertEquals(0, addressControl.getNumberOfPages());
+
       ClientMessage msg = session.createClientMessage(true);
       msg.getBodyBuffer().writeBytes(new byte[512]);
       producer.send(msg);
 
       session.commit();
-      assertEquals(1, addressControl.getNumberOfPages());
-      
+      Assert.assertEquals(1, addressControl.getNumberOfPages());
+
       msg = session.createClientMessage(true);
       msg.getBodyBuffer().writeBytes(new byte[512]);
       producer.send(msg);
 
       session.commit();
-      assertEquals(1, addressControl.getNumberOfPages());
-      
+      Assert.assertEquals(1, addressControl.getNumberOfPages());
+
       msg = session.createClientMessage(true);
       msg.getBodyBuffer().writeBytes(new byte[512]);
       producer.send(msg);
 
       session.commit();
-      assertEquals(2, addressControl.getNumberOfPages());
+      Assert.assertEquals(2, addressControl.getNumberOfPages());
    }
-   
+
    public void testGetNumberOfBytesPerPage() throws Exception
    {
-      SimpleString address = randomSimpleString();
-      session.createQueue(address, address, true);      
-      
-      AddressControl addressControl = createManagementControl(address);      
-      assertEquals(ConfigurationImpl.DEFAULT_JOURNAL_FILE_SIZE, addressControl.getNumberOfBytesPerPage());
-      
+      SimpleString address = RandomUtil.randomSimpleString();
+      session.createQueue(address, address, true);
+
+      AddressControl addressControl = createManagementControl(address);
+      Assert.assertEquals(ConfigurationImpl.DEFAULT_JOURNAL_FILE_SIZE, addressControl.getNumberOfBytesPerPage());
+
       session.close();
-      server.stop();     
-      
+      server.stop();
+
       AddressSettings addressSettings = new AddressSettings();
       addressSettings.setPageSizeBytes(1024);
-      
+
       server.getAddressSettingsRepository().addMatch(address.toString(), addressSettings);
       server.start();
       ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
       session = sf.createSession(false, true, false);
-      session.createQueue(address, address, true);  
-      assertEquals(1024, addressControl.getNumberOfBytesPerPage());
+      session.createQueue(address, address, true);
+      Assert.assertEquals(1024, addressControl.getNumberOfBytesPerPage());
    }
 
    // Package protected ---------------------------------------------
@@ -440,16 +439,15 @@ public class AddressControlTest extends ManagementTestBase
       session.close();
 
       server.stop();
-      
+
       server = null;
-      
+
       session = null;
-      
 
       super.tearDown();
    }
 
-   protected AddressControl createManagementControl(SimpleString address) throws Exception
+   protected AddressControl createManagementControl(final SimpleString address) throws Exception
    {
       return ManagementControlHelper.createAddressControl(address, mbeanServer);
    }

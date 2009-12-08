@@ -41,7 +41,7 @@ public interface AsynchronousFile
     * */
    long size() throws HornetQException;
 
-   /** Any error will be reported on the callback interface */ 
+   /** Any error will be reported on the callback interface */
    void write(long position, long size, ByteBuffer directByteBuffer, AIOCallback aioCallback);
 
    void read(long position, long size, ByteBuffer directByteBuffer, AIOCallback aioCallback) throws HornetQException;

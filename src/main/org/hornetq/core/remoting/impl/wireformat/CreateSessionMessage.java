@@ -14,7 +14,6 @@
 package org.hornetq.core.remoting.impl.wireformat;
 
 import org.hornetq.core.buffers.HornetQBuffer;
-import org.hornetq.utils.DataConstants;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -66,7 +65,7 @@ public class CreateSessionMessage extends PacketImpl
                                final boolean preAcknowledge,
                                final int windowSize)
    {
-      super(CREATESESSION);
+      super(PacketImpl.CREATESESSION);
 
       this.name = name;
 
@@ -93,7 +92,7 @@ public class CreateSessionMessage extends PacketImpl
 
    public CreateSessionMessage()
    {
-      super(CREATESESSION);
+      super(PacketImpl.CREATESESSION);
    }
 
    // Public --------------------------------------------------------
@@ -147,7 +146,7 @@ public class CreateSessionMessage extends PacketImpl
    {
       return windowSize;
    }
-   
+
    @Override
    public void encodeRest(final HornetQBuffer buffer)
    {

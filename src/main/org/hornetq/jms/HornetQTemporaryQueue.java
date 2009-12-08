@@ -11,7 +11,6 @@
  * permissions and limitations under the License.
  */
 
-
 package org.hornetq.jms;
 
 import javax.jms.JMSException;
@@ -26,52 +25,54 @@ import org.hornetq.jms.client.HornetQSession;
  * $Id: HornetQQueue.java 3569 2008-01-15 21:14:04Z timfox $
  */
 public class HornetQTemporaryQueue extends HornetQQueue implements TemporaryQueue
-{   
+{
    // Constants -----------------------------------------------------
-   
-	private static final long serialVersionUID = -4624930377557954624L;
 
-	public static final String JMS_TEMP_QUEUE_ADDRESS_PREFIX = "jms.tempqueue.";
-   
+   private static final long serialVersionUID = -4624930377557954624L;
+
+   public static final String JMS_TEMP_QUEUE_ADDRESS_PREFIX = "jms.tempqueue.";
+
    // Static --------------------------------------------------------
-   
+
    // Attributes ----------------------------------------------------
-   
+
    private final transient HornetQSession session;
-   
+
    // Constructors --------------------------------------------------
 
    public HornetQTemporaryQueue(final HornetQSession session, final String name)
    {
-      super(JMS_TEMP_QUEUE_ADDRESS_PREFIX + name, name);
-      
+      super(HornetQTemporaryQueue.JMS_TEMP_QUEUE_ADDRESS_PREFIX + name, name);
+
       this.session = session;
    }
-   
+
    // TemporaryQueue implementation ------------------------------------------
 
    public void delete() throws JMSException
-   {      
+   {
       session.deleteTemporaryQueue(this);
    }
 
    // Public --------------------------------------------------------
-   
+
+   @Override
    public boolean isTemporary()
    {
       return true;
    }
-      
+
+   @Override
    public String toString()
    {
       return "HornetQTemporaryQueue[" + name + "]";
    }
 
    // Package protected ---------------------------------------------
-   
+
    // Protected -----------------------------------------------------
-   
+
    // Private -------------------------------------------------------
-   
-   // Inner classes -------------------------------------------------   
+
+   // Inner classes -------------------------------------------------
 }

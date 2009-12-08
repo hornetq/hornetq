@@ -49,7 +49,7 @@ public class SoakBase
       return bytes;
    }
 
-   protected static String getPerfFileName(String[] args)
+   protected static String getPerfFileName(final String[] args)
    {
       String fileName;
 
@@ -59,7 +59,7 @@ public class SoakBase
       }
       else
       {
-         fileName = DEFAULT_SOAK_PROPERTIES_FILE_NAME;
+         fileName = SoakBase.DEFAULT_SOAK_PROPERTIES_FILE_NAME;
       }
       return fileName;
    }
@@ -100,19 +100,19 @@ public class SoakBase
       boolean disableMessageID = Boolean.valueOf(props.getProperty("disable-message-id"));
       boolean disableTimestamp = Boolean.valueOf(props.getProperty("disable-message-timestamp"));
 
-      log.info("duration-in-minutes: " + durationInMinutes);
-      log.info("num-warmup-messages: " + noOfWarmupMessages);
-      log.info("message-size: " + messageSize);
-      log.info("durable: " + durable);
-      log.info("transacted: " + transacted);
-      log.info("batch-size: " + batchSize);
-      log.info("drain-queue: " + drainQueue);
-      log.info("throttle-rate: " + throttleRate);
-      log.info("connection-factory-lookup: " + connectionFactoryLookup);
-      log.info("destination-lookup: " + destinationLookup);
-      log.info("disable-message-id: " + disableMessageID);
-      log.info("disable-message-timestamp: " + disableTimestamp);
-      log.info("dups-ok-acknowledge: " + dupsOK);
+      SoakBase.log.info("duration-in-minutes: " + durationInMinutes);
+      SoakBase.log.info("num-warmup-messages: " + noOfWarmupMessages);
+      SoakBase.log.info("message-size: " + messageSize);
+      SoakBase.log.info("durable: " + durable);
+      SoakBase.log.info("transacted: " + transacted);
+      SoakBase.log.info("batch-size: " + batchSize);
+      SoakBase.log.info("drain-queue: " + drainQueue);
+      SoakBase.log.info("throttle-rate: " + throttleRate);
+      SoakBase.log.info("connection-factory-lookup: " + connectionFactoryLookup);
+      SoakBase.log.info("destination-lookup: " + destinationLookup);
+      SoakBase.log.info("disable-message-id: " + disableMessageID);
+      SoakBase.log.info("disable-message-timestamp: " + disableTimestamp);
+      SoakBase.log.info("dups-ok-acknowledge: " + dupsOK);
 
       SoakParams soakParams = new SoakParams();
       soakParams.setDurationInMinutes(durationInMinutes);

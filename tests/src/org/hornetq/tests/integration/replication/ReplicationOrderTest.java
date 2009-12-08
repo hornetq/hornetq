@@ -13,10 +13,10 @@
 
 package org.hornetq.tests.integration.replication;
 
-import static org.hornetq.tests.util.RandomUtil.randomString;
-
 import java.util.HashMap;
 import java.util.Map;
+
+import junit.framework.Assert;
 
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
@@ -29,6 +29,7 @@ import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.remoting.impl.invm.TransportConstants;
 import org.hornetq.tests.integration.cluster.failover.FailoverTestBase;
+import org.hornetq.tests.util.RandomUtil;
 
 /**
  * A ReplicationOrderTest
@@ -62,10 +63,10 @@ public class ReplicationOrderTest extends FailoverTestBase
       doTestMixedPersistentAndNonPersistentMessagesOrderWithReplicatedBackup(true);
    }
 
-   private void doTestMixedPersistentAndNonPersistentMessagesOrderWithReplicatedBackup(boolean transactional) throws Exception
+   private void doTestMixedPersistentAndNonPersistentMessagesOrderWithReplicatedBackup(final boolean transactional) throws Exception
    {
-      String address = randomString();
-      String queue = randomString();
+      String address = RandomUtil.randomString();
+      String queue = RandomUtil.randomString();
 
       ClientSessionFactory csf = new ClientSessionFactoryImpl(getConnectorTransportConfiguration(true));
       csf.setBlockOnNonPersistentSend(false);
@@ -82,7 +83,7 @@ public class ReplicationOrderTest extends FailoverTestBase
       session.createQueue(address, queue, true);
       ClientProducer producer = session.createProducer(address);
       boolean durable = false;
-      for (int i = 0; i < NUM; i++)
+      for (int i = 0; i < ReplicationOrderTest.NUM; i++)
       {
          ClientMessage msg = session.createClientMessage(durable);
          msg.putIntProperty("counter", i);
@@ -110,11 +111,11 @@ public class ReplicationOrderTest extends FailoverTestBase
       session = csf.createSession(true, true);
       session.start();
       ClientConsumer consumer = session.createConsumer(queue);
-      for (int i = 0; i < NUM; i++)
+      for (int i = 0; i < ReplicationOrderTest.NUM; i++)
       {
          ClientMessage message = consumer.receive(1000);
-         assertNotNull(message);
-         assertEquals(i, message.getIntProperty("counter").intValue());
+         Assert.assertNotNull(message);
+         Assert.assertEquals(i, message.getIntProperty("counter").intValue());
       }
 
       consumer.close();
@@ -130,7 +131,7 @@ public class ReplicationOrderTest extends FailoverTestBase
    }
 
    @Override
-   protected TransportConfiguration getAcceptorTransportConfiguration(boolean live)
+   protected TransportConfiguration getAcceptorTransportConfiguration(final boolean live)
    {
       Map<String, Object> server1Params = new HashMap<String, Object>();
       if (!live)

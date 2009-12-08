@@ -13,10 +13,6 @@
 
 package org.hornetq.core.management;
 
-import static java.lang.String.format;
-import static javax.management.ObjectName.getInstance;
-import static javax.management.ObjectName.quote;
-
 import javax.management.ObjectName;
 
 import org.hornetq.core.config.impl.ConfigurationImpl;
@@ -45,90 +41,90 @@ public class ObjectNameBuilder
 
    // Static --------------------------------------------------------
 
-   public static ObjectNameBuilder create(String domain)
+   public static ObjectNameBuilder create(final String domain)
    {
       return new ObjectNameBuilder(domain);
    }
 
    // Constructors --------------------------------------------------
 
-   private ObjectNameBuilder(String domain)
+   private ObjectNameBuilder(final String domain)
    {
       this.domain = domain;
    }
-   
+
    // Public --------------------------------------------------------
 
    public ObjectName getHornetQServerObjectName() throws Exception
    {
-      return getInstance(domain + ":module=Core,type=Server");
+      return ObjectName.getInstance(domain + ":module=Core,type=Server");
    }
 
    public ObjectName getAddressObjectName(final SimpleString address) throws Exception
    {
-      return createObjectName(CORE_MODULE, "Address", address.toString());
+      return createObjectName(ObjectNameBuilder.CORE_MODULE, "Address", address.toString());
    }
 
    public ObjectName getQueueObjectName(final SimpleString address, final SimpleString name) throws Exception
    {
-      return getInstance(format("%s:module=%s,type=%s,address=%s,name=%s",
-                                domain,
-                                CORE_MODULE,
-                                "Queue",
-                                quote(address.toString()),
-                                quote(name.toString())));
+      return ObjectName.getInstance(String.format("%s:module=%s,type=%s,address=%s,name=%s",
+                                                  domain,
+                                                  ObjectNameBuilder.CORE_MODULE,
+                                                  "Queue",
+                                                  ObjectName.quote(address.toString()),
+                                                  ObjectName.quote(name.toString())));
    }
 
    public ObjectName getDivertObjectName(final SimpleString name) throws Exception
    {
-      return createObjectName(CORE_MODULE, "Divert", name.toString());
+      return createObjectName(ObjectNameBuilder.CORE_MODULE, "Divert", name.toString());
    }
 
    public ObjectName getAcceptorObjectName(final String name) throws Exception
    {
-      return createObjectName(CORE_MODULE, "Acceptor", name);
+      return createObjectName(ObjectNameBuilder.CORE_MODULE, "Acceptor", name);
    }
 
    public ObjectName getBroadcastGroupObjectName(final String name) throws Exception
    {
-      return createObjectName(CORE_MODULE, "BroadcastGroup", name);
+      return createObjectName(ObjectNameBuilder.CORE_MODULE, "BroadcastGroup", name);
    }
 
    public ObjectName getBridgeObjectName(final String name) throws Exception
    {
-      return createObjectName(CORE_MODULE, "JMSBridge", name);
+      return createObjectName(ObjectNameBuilder.CORE_MODULE, "JMSBridge", name);
    }
-   
-   public ObjectName getClusterConnectionObjectName(String name) throws Exception
+
+   public ObjectName getClusterConnectionObjectName(final String name) throws Exception
    {
-      return createObjectName(CORE_MODULE, "ClusterConnection", name);
+      return createObjectName(ObjectNameBuilder.CORE_MODULE, "ClusterConnection", name);
    }
 
    public ObjectName getDiscoveryGroupObjectName(final String name) throws Exception
    {
-      return createObjectName(CORE_MODULE, "DiscoveryGroup", name);
+      return createObjectName(ObjectNameBuilder.CORE_MODULE, "DiscoveryGroup", name);
    }
 
    public ObjectName getJMSServerObjectName() throws Exception
    {
-      return getInstance(domain + ":module=JMS,type=Server");
+      return ObjectName.getInstance(domain + ":module=JMS,type=Server");
    }
 
    public ObjectName getJMSQueueObjectName(final String name) throws Exception
    {
-      return createObjectName(JMS_MODULE, "Queue", name);
+      return createObjectName(ObjectNameBuilder.JMS_MODULE, "Queue", name);
    }
 
    public ObjectName getJMSTopicObjectName(final String name) throws Exception
    {
-      return createObjectName(JMS_MODULE, "Topic", name);
+      return createObjectName(ObjectNameBuilder.JMS_MODULE, "Topic", name);
    }
 
    public ObjectName getConnectionFactoryObjectName(final String name) throws Exception
    {
-      return createObjectName(JMS_MODULE, "ConnectionFactory", name);
+      return createObjectName(ObjectNameBuilder.JMS_MODULE, "ConnectionFactory", name);
    }
-   
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
@@ -137,11 +133,13 @@ public class ObjectNameBuilder
 
    private ObjectName createObjectName(final String module, final String type, final String name) throws Exception
    {
-      return getInstance(format("%s:module=%s,type=%s,name=%s", domain, module, type, quote(name)));
+      return ObjectName.getInstance(String.format("%s:module=%s,type=%s,name=%s",
+                                                  domain,
+                                                  module,
+                                                  type,
+                                                  ObjectName.quote(name)));
    }
 
    // Inner classes -------------------------------------------------
 
-   
-   
 }

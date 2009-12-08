@@ -40,27 +40,31 @@ import org.hornetq.utils.UUIDGenerator;
 public class Transactional2PCSender extends Sender
 {
    private static final Logger log = Logger.getLogger(Transactional2PCSender.class);
-   
+
    protected int commitSize;
-   
+
    protected int rollbackSize;
-   
+
    protected XAResource xaResource;
-   
-   public Transactional2PCSender(String prodName, XASession sess, MessageProducer prod, int numMessages,
-         int commitSize, int rollbackSize)
+
+   public Transactional2PCSender(final String prodName,
+                                 final XASession sess,
+                                 final MessageProducer prod,
+                                 final int numMessages,
+                                 final int commitSize,
+                                 final int rollbackSize)
    {
       super(prodName, sess, prod, numMessages);
 
       this.commitSize = commitSize;
       this.rollbackSize = rollbackSize;
-      this.xaResource = sess.getXAResource();
+      xaResource = sess.getXAResource();
    }
-   
-   public void run()
-   {    
 
-      
+   @Override
+   public void run()
+   {
+
       int iterations = numMessages / commitSize;
 
       try
@@ -77,7 +81,7 @@ public class Transactional2PCSender extends Sender
             {
                Message m = sess.createMessage();
                m.setStringProperty("PROD_NAME", prodName);
-               m.setIntProperty("MSG_NUMBER", outerCount * commitSize + innerCount);   
+               m.setIntProperty("MSG_NUMBER", outerCount * commitSize + innerCount);
                prod.send(m);
             }
             if (commitSize > 0)
@@ -95,7 +99,7 @@ public class Transactional2PCSender extends Sender
             {
                Message m = sess.createMessage();
                m.setStringProperty("PROD_NAME", prodName);
-               m.setIntProperty("MSG_NUMBER", (outerCount + 1) * commitSize + innerCount);          
+               m.setIntProperty("MSG_NUMBER", (outerCount + 1) * commitSize + innerCount);
                prod.send(m);
             }
             if (rollbackSize > 0)
@@ -103,14 +107,13 @@ public class Transactional2PCSender extends Sender
                xaResource.end(xid, XAResource.TMSUCCESS);
                xaResource.prepare(xid);
                xaResource.rollback(xid);
-            }           
+            }
          }
       }
       catch (Exception e)
       {
-         log.error("Failed to send message", e);
+         Transactional2PCSender.log.error("Failed to send message", e);
          setFailed(true);
       }
    }
 }
-

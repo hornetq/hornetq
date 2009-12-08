@@ -34,8 +34,8 @@ public class TimeAndCounterIDGenerator implements IDGenerator
    private static final int BITS_TO_MOVE = 20;
 
    public static final long MASK_TIME = 0x7fffffffff0l;
-   
-   //44 bits of time and 20 bits of counter
+
+   // 44 bits of time and 20 bits of counter
 
    public static final long ID_MASK = 0xffffffl;
 
@@ -66,9 +66,9 @@ public class TimeAndCounterIDGenerator implements IDGenerator
    {
       long idReturn = counter.incrementAndGet();
 
-      if ((idReturn & ID_MASK) == 0)
+      if ((idReturn & TimeAndCounterIDGenerator.ID_MASK) == 0)
       {
-         final long timePortion = idReturn & TIME_ID_MASK;
+         final long timePortion = idReturn & TimeAndCounterIDGenerator.TIME_ID_MASK;
 
          // Wrapping ID logic
 
@@ -93,7 +93,7 @@ public class TimeAndCounterIDGenerator implements IDGenerator
          // This will only happen if a computer can generate more than ID_MASK ids (16 million IDs per 16
          // milliseconds)
          // If this wrapping code starts to happen, it needs revision
-         throw new IllegalStateException("The IDGenerator is being overlaped, and it needs revision as the system generated more than " + ID_MASK +
+         throw new IllegalStateException("The IDGenerator is being overlaped, and it needs revision as the system generated more than " + TimeAndCounterIDGenerator.ID_MASK +
                                          " ids per 16 milliseconds which exceeded the IDgenerator limit");
       }
 
@@ -105,13 +105,12 @@ public class TimeAndCounterIDGenerator implements IDGenerator
       return counter.get();
    }
 
-   
    // for use in testcases
    public long getInternalTimeMark()
    {
       return tmMark;
    }
-   
+
    // for use in testcases
    public void setInternalID(final long id)
    {
@@ -121,7 +120,7 @@ public class TimeAndCounterIDGenerator implements IDGenerator
    // for use in testcases
    public void setInternalDate(final long date)
    {
-      tmMark = (date & MASK_TIME) << BITS_TO_MOVE;
+      tmMark = (date & TimeAndCounterIDGenerator.MASK_TIME) << TimeAndCounterIDGenerator.BITS_TO_MOVE;
       counter.set(tmMark);
    }
 
@@ -158,7 +157,7 @@ public class TimeAndCounterIDGenerator implements IDGenerator
 
    private long newTM()
    {
-      return (System.currentTimeMillis() & MASK_TIME) << BITS_TO_MOVE;
+      return (System.currentTimeMillis() & TimeAndCounterIDGenerator.MASK_TIME) << TimeAndCounterIDGenerator.BITS_TO_MOVE;
    }
 
    private String hex(final long x)

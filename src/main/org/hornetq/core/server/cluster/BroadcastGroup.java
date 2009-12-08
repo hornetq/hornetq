@@ -11,7 +11,6 @@
  * permissions and limitations under the License.
  */
 
-
 package org.hornetq.core.server.cluster;
 
 import org.hornetq.core.config.TransportConfiguration;
@@ -36,12 +35,12 @@ public interface BroadcastGroup extends HornetQComponent
    String getName();
 
    void addConnectorPair(Pair<TransportConfiguration, TransportConfiguration> connectorPair);
-   
+
    void removeConnectorPair(Pair<TransportConfiguration, TransportConfiguration> connectorPair);
 
    int size();
 
    void broadcastConnectors() throws Exception;
-   
+
    void activate();
 }

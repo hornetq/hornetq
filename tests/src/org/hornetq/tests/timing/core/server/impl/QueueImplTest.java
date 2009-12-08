@@ -19,6 +19,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.Consumer;
 import org.hornetq.core.server.HandleStatus;
@@ -41,40 +43,51 @@ public class QueueImplTest extends UnitTestCase
    private static final Logger log = Logger.getLogger(QueueImplTest.class);
 
    private ScheduledExecutorService scheduledExecutor;
-   
-   //private ExecutorService executor;
 
+   // private ExecutorService executor;
+
+   @Override
    public void setUp() throws Exception
    {
-   	super.setUp();
+      super.setUp();
 
-   	scheduledExecutor = new ScheduledThreadPoolExecutor(1);
+      scheduledExecutor = new ScheduledThreadPoolExecutor(1);
    }
 
+   @Override
    public void tearDown() throws Exception
    {
-   	scheduledExecutor.shutdownNow();
+      scheduledExecutor.shutdownNow();
 
       super.tearDown();
    }
 
    // The tests ----------------------------------------------------------------
 
-   public void testScheduledDirect()  throws Exception
+   public void testScheduledDirect() throws Exception
    {
       testScheduled(true);
    }
 
-   public void testScheduledQueueing()  throws Exception
+   public void testScheduledQueueing() throws Exception
    {
       testScheduled(false);
    }
 
    public void testScheduledNoConsumer() throws Exception
    {
-      Queue queue = new QueueImpl(1, new SimpleString("address1"), new SimpleString("queue1"), null, false, true, scheduledExecutor, null, null, null);
+      Queue queue = new QueueImpl(1,
+                                  new SimpleString("address1"),
+                                  new SimpleString("queue1"),
+                                  null,
+                                  false,
+                                  true,
+                                  scheduledExecutor,
+                                  null,
+                                  null,
+                                  null);
 
-      //Send one scheduled
+      // Send one scheduled
 
       long now = System.currentTimeMillis();
 
@@ -82,7 +95,7 @@ public class QueueImplTest extends UnitTestCase
       ref1.setScheduledDeliveryTime(now + 7000);
       queue.addLast(ref1);
 
-      //Send some non scheduled messages
+      // Send some non scheduled messages
 
       MessageReference ref2 = generateReference(queue, 2);
       queue.addLast(ref2);
@@ -91,8 +104,7 @@ public class QueueImplTest extends UnitTestCase
       MessageReference ref4 = generateReference(queue, 4);
       queue.addLast(ref4);
 
-
-      //Now send some more scheduled messages
+      // Now send some more scheduled messages
 
       MessageReference ref5 = generateReference(queue, 5);
       ref5.setScheduledDeliveryTime(now + 5000);
@@ -112,8 +124,8 @@ public class QueueImplTest extends UnitTestCase
 
       List<MessageReference> refs = new ArrayList<MessageReference>();
 
-      //Scheduled refs are added back to *FRONT* of queue - otherwise if there were many messages in the queue
-      //They may get stranded behind a big backlog
+      // Scheduled refs are added back to *FRONT* of queue - otherwise if there were many messages in the queue
+      // They may get stranded behind a big backlog
 
       refs.add(ref1);
       refs.add(ref8);
@@ -136,9 +148,18 @@ public class QueueImplTest extends UnitTestCase
       assertRefListsIdenticalRefs(refs, consumer.getReferences());
    }
 
-   private void testScheduled(boolean direct) throws Exception
+   private void testScheduled(final boolean direct) throws Exception
    {
-      Queue queue = new QueueImpl(1,new SimpleString("address1"), new SimpleString("queue1"), null, false, true, scheduledExecutor, null, null, null);
+      Queue queue = new QueueImpl(1,
+                                  new SimpleString("address1"),
+                                  new SimpleString("queue1"),
+                                  null,
+                                  false,
+                                  true,
+                                  scheduledExecutor,
+                                  null,
+                                  null,
+                                  null);
 
       FakeConsumer consumer = null;
 
@@ -149,7 +170,7 @@ public class QueueImplTest extends UnitTestCase
          queue.addConsumer(consumer);
       }
 
-      //Send one scheduled
+      // Send one scheduled
 
       long now = System.currentTimeMillis();
 
@@ -157,7 +178,7 @@ public class QueueImplTest extends UnitTestCase
       ref1.setScheduledDeliveryTime(now + 7000);
       queue.addLast(ref1);
 
-      //Send some non scheduled messages
+      // Send some non scheduled messages
 
       MessageReference ref2 = generateReference(queue, 2);
       queue.addLast(ref2);
@@ -166,8 +187,7 @@ public class QueueImplTest extends UnitTestCase
       MessageReference ref4 = generateReference(queue, 4);
       queue.addLast(ref4);
 
-
-      //Now send some more scheduled messages
+      // Now send some more scheduled messages
 
       MessageReference ref5 = generateReference(queue, 5);
       ref5.setScheduledDeliveryTime(now + 5000);
@@ -205,32 +225,32 @@ public class QueueImplTest extends UnitTestCase
       refs.clear();
       consumer.getReferences().clear();
 
-      MessageReference ref = consumer.waitForNextReference(TIMEOUT);
-      assertEquals(ref7, ref);
+      MessageReference ref = consumer.waitForNextReference(QueueImplTest.TIMEOUT);
+      Assert.assertEquals(ref7, ref);
       long now2 = System.currentTimeMillis();
-      assertTrue(now2 - now >= 3000);
+      Assert.assertTrue(now2 - now >= 3000);
 
-      ref = consumer.waitForNextReference(TIMEOUT);
-      assertEquals(ref6, ref);
+      ref = consumer.waitForNextReference(QueueImplTest.TIMEOUT);
+      Assert.assertEquals(ref6, ref);
       now2 = System.currentTimeMillis();
-      assertTrue(now2 - now >= 4000);
+      Assert.assertTrue(now2 - now >= 4000);
 
-      ref = consumer.waitForNextReference(TIMEOUT);
-      assertEquals(ref5, ref);
+      ref = consumer.waitForNextReference(QueueImplTest.TIMEOUT);
+      Assert.assertEquals(ref5, ref);
       now2 = System.currentTimeMillis();
-      assertTrue(now2 - now >= 5000);
+      Assert.assertTrue(now2 - now >= 5000);
 
-      ref = consumer.waitForNextReference(TIMEOUT);
-      assertEquals(ref8, ref);
+      ref = consumer.waitForNextReference(QueueImplTest.TIMEOUT);
+      Assert.assertEquals(ref8, ref);
       now2 = System.currentTimeMillis();
-      assertTrue(now2 - now >= 6000);
+      Assert.assertTrue(now2 - now >= 6000);
 
-      ref = consumer.waitForNextReference(TIMEOUT);
-      assertEquals(ref1, ref);
+      ref = consumer.waitForNextReference(QueueImplTest.TIMEOUT);
+      Assert.assertEquals(ref1, ref);
       now2 = System.currentTimeMillis();
-      assertTrue(now2 - now >= 7000);
+      Assert.assertTrue(now2 - now >= 7000);
 
-      assertTrue(consumer.getReferences().isEmpty());
+      Assert.assertTrue(consumer.getReferences().isEmpty());
    }
 
    public void testDeliveryScheduled() throws Exception
@@ -239,20 +259,29 @@ public class QueueImplTest extends UnitTestCase
       Consumer consumer = new FakeConsumer()
       {
          @Override
-         public synchronized HandleStatus handle(MessageReference reference)
+         public synchronized HandleStatus handle(final MessageReference reference)
          {
             countDownLatch.countDown();
             return HandleStatus.HANDLED;
          }
       };
-      Queue queue = new QueueImpl(1, new SimpleString("address1"), queue1, null, false, true, scheduledExecutor, null, null, null);
+      Queue queue = new QueueImpl(1,
+                                  new SimpleString("address1"),
+                                  QueueImplTest.queue1,
+                                  null,
+                                  false,
+                                  true,
+                                  scheduledExecutor,
+                                  null,
+                                  null,
+                                  null);
       MessageReference messageReference = generateReference(queue, 1);
       queue.addConsumer(consumer);
       messageReference.setScheduledDeliveryTime(System.currentTimeMillis() + 2000);
       queue.addFirst(messageReference);
 
       boolean gotLatch = countDownLatch.await(3000, TimeUnit.MILLISECONDS);
-      assertTrue(gotLatch);
+      Assert.assertTrue(gotLatch);
    }
 
 }

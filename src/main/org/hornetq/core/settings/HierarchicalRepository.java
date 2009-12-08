@@ -9,7 +9,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
  * implied.  See the License for the specific language governing
  * permissions and limitations under the License.
- */ 
+ */
 
 package org.hornetq.core.settings;
 
@@ -25,7 +25,7 @@ public interface HierarchicalRepository<T>
     * @param match The regex to use to match against
     * @param value the value to hold agains the match
     */
-    void addMatch(String match, T value);
+   void addMatch(String match, T value);
 
    /**
     * return the value held against the nearest match
@@ -45,7 +45,6 @@ public interface HierarchicalRepository<T>
     * @param match the match to remove
     */
    void removeMatch(String match);
-
 
    /**
     * register a listener to listen for changes in the repository

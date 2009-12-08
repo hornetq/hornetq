@@ -9,10 +9,9 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
  * implied.  See the License for the specific language governing
  * permissions and limitations under the License.
- */ 
+ */
 
 package org.hornetq.core.transaction;
-
 
 /**
  * 
@@ -24,14 +23,14 @@ package org.hornetq.core.transaction;
 public interface TransactionOperation
 {
    void beforePrepare(Transaction tx) throws Exception;
-   
+
    void beforeCommit(Transaction tx) throws Exception;
-   
+
    void beforeRollback(Transaction tx) throws Exception;
-   
+
    void afterPrepare(Transaction tx) throws Exception;
-      
+
    void afterCommit(Transaction tx) throws Exception;
-   
+
    void afterRollback(Transaction tx) throws Exception;
 }

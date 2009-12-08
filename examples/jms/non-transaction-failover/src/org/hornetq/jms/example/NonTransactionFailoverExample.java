@@ -23,7 +23,6 @@ import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
 import org.hornetq.common.example.HornetQExample;
-import org.hornetq.core.message.impl.MessageImpl;
 
 /**
  * A simple example that demonstrates failover of the JMS connection from one node to another
@@ -33,11 +32,12 @@ import org.hornetq.core.message.impl.MessageImpl;
  */
 public class NonTransactionFailoverExample extends HornetQExample
 {
-   public static void main(String[] args)
+   public static void main(final String[] args)
    {
       new NonTransactionFailoverExample().run(args);
    }
 
+   @Override
    public boolean runExample() throws Exception
    {
       final int numMessages = 10;

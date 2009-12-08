@@ -9,7 +9,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
  * implied.  See the License for the specific language governing
  * permissions and limitations under the License.
- */ 
+ */
 
 package org.hornetq.core.transaction.impl;
 
@@ -33,23 +33,23 @@ public class XidImpl implements Xid, Serializable
 {
    private static final long serialVersionUID = 407053232840068514L;
 
-   private byte[] branchQualifier;
-   
-   private int formatId;
-   
-   private byte[] globalTransactionId;
-   
+   private final byte[] branchQualifier;
+
+   private final int formatId;
+
+   private final byte[] globalTransactionId;
+
    private int hash;
-   
+
    private boolean hashCalculated;
-   
+
    // Static --------------------------------------------------------
 
    public static String toBase64String(final Xid xid)
    {
-      return Base64.encodeBytes(toByteArray(xid));
+      return Base64.encodeBytes(XidImpl.toByteArray(xid));
    }
-   
+
    private static byte[] toByteArray(final Xid xid)
    {
       byte[] branchQualifier = xid.getBranchQualifier();
@@ -62,14 +62,14 @@ public class XidImpl implements Xid, Serializable
       byte[] intBytes = new byte[4];
       for (int i = 0; i < 4; i++)
       {
-         intBytes[i] = (byte)((formatId >> (i * 8)) % 0xFF);
+         intBytes[i] = (byte)((formatId >> i * 8) % 0xFF);
       }
       System.arraycopy(intBytes, 0, hashBytes, branchQualifier.length + globalTransactionId.length, 4);
       return hashBytes;
    }
-   
+
    // Constructors --------------------------------------------------
-   
+
    /**
     * Standard constructor
     * @param branchQualifier
@@ -80,22 +80,22 @@ public class XidImpl implements Xid, Serializable
    {
       this.branchQualifier = branchQualifier;
       this.formatId = formatId;
-      this.globalTransactionId = globalTransactionId;          
+      this.globalTransactionId = globalTransactionId;
    }
-   
+
    /**
     * Copy constructor
     * @param other
     */
    public XidImpl(final Xid other)
    {
-      this.branchQualifier = copyBytes(other.getBranchQualifier());
-      this.formatId = other.getFormatId();
-      this.globalTransactionId = copyBytes(other.getGlobalTransactionId());
+      branchQualifier = copyBytes(other.getBranchQualifier());
+      formatId = other.getFormatId();
+      globalTransactionId = copyBytes(other.getGlobalTransactionId());
    }
 
    // Xid implementation ------------------------------------------------------------------
-   
+
    public byte[] getBranchQualifier()
    {
       return branchQualifier;
@@ -110,9 +110,10 @@ public class XidImpl implements Xid, Serializable
    {
       return globalTransactionId;
    }
-   
+
    // Public -------------------------------------------------------------------------------
-            
+
+   @Override
    public int hashCode()
    {
       if (!hashCalculated)
@@ -121,8 +122,9 @@ public class XidImpl implements Xid, Serializable
       }
       return hash;
    }
-   
-   public boolean equals(Object other)
+
+   @Override
+   public boolean equals(final Object other)
    {
       if (this == other)
       {
@@ -137,26 +139,26 @@ public class XidImpl implements Xid, Serializable
       {
          return false;
       }
-      if (xother.getBranchQualifier().length != this.branchQualifier.length)
+      if (xother.getBranchQualifier().length != branchQualifier.length)
       {
          return false;
       }
-      if (xother.getGlobalTransactionId().length != this.globalTransactionId.length)
+      if (xother.getGlobalTransactionId().length != globalTransactionId.length)
       {
          return false;
       }
-      for (int i = 0; i < this.branchQualifier.length; i++)
+      for (int i = 0; i < branchQualifier.length; i++)
       {
          byte[] otherBQ = xother.getBranchQualifier();
-         if (this.branchQualifier[i] != otherBQ[i])
+         if (branchQualifier[i] != otherBQ[i])
          {
             return false;
-         }         
+         }
       }
-      for (int i = 0; i < this.globalTransactionId.length; i++)
+      for (int i = 0; i < globalTransactionId.length; i++)
       {
          byte[] otherGtx = xother.getGlobalTransactionId();
-         if (this.globalTransactionId[i] != otherGtx[i])
+         if (globalTransactionId[i] != otherGtx[i])
          {
             return false;
          }
@@ -164,46 +166,52 @@ public class XidImpl implements Xid, Serializable
       return true;
    }
 
+   @Override
    public String toString()
    {
-     	return "XidImpl (" + System.identityHashCode(this) + " bq:" + stringRep(branchQualifier) +
-     	" formatID:" + formatId + " gtxid:" + stringRep(globalTransactionId);
+      return "XidImpl (" + System.identityHashCode(this) +
+             " bq:" +
+             stringRep(branchQualifier) +
+             " formatID:" +
+             formatId +
+             " gtxid:" +
+             stringRep(globalTransactionId);
    }
-   
+
    // Private -------------------------------------------------------------------------------
-   
+
    private String stringRep(final byte[] bytes)
    {
       StringBuffer buff = new StringBuffer();
       for (int i = 0; i < bytes.length; i++)
       {
          byte b = bytes[i];
-         
+
          buff.append(b);
-         
+
          if (i != bytes.length - 1)
          {
             buff.append('.');
          }
       }
-      
+
       return buff.toString();
    }
-   
+
    private void calcHash()
    {
-      byte[] hashBytes = toByteArray(this);
+      byte[] hashBytes = XidImpl.toByteArray(this);
       String s = new String(hashBytes);
       hash = s.hashCode();
       hashCalculated = true;
    }
-   
-   private byte[] copyBytes(byte[] other)
+
+   private byte[] copyBytes(final byte[] other)
    {
       byte[] bytes = new byte[other.length];
-      
+
       System.arraycopy(other, 0, bytes, 0, other.length);
-      
+
       return bytes;
    }
 }

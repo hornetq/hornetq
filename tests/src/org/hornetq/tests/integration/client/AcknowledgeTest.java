@@ -15,6 +15,8 @@ package org.hornetq.tests.integration.client;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
@@ -40,7 +42,6 @@ public class AcknowledgeTest extends ServiceTestBase
 
    public final SimpleString queueC = new SimpleString("queueC");
 
-
    public void testReceiveAckLastMessageOnly() throws Exception
    {
       HornetQServer server = createServer(false);
@@ -65,12 +66,12 @@ public class AcknowledgeTest extends ServiceTestBase
          for (int i = 0; i < numMessages; i++)
          {
             cm = cc.receive(5000);
-            assertNotNull(cm);
+            Assert.assertNotNull(cm);
          }
          cm.acknowledge();
-         Queue q = (Queue) server.getPostOffice().getBinding(queueA).getBindable();
+         Queue q = (Queue)server.getPostOffice().getBinding(queueA).getBindable();
 
-         assertEquals(0, q.getDeliveringCount());
+         Assert.assertEquals(0, q.getDeliveringCount());
          session.close();
          sendSession.close();
       }
@@ -104,14 +105,14 @@ public class AcknowledgeTest extends ServiceTestBase
          session.start();
          cc.setMessageHandler(new MessageHandler()
          {
-            public void onMessage(ClientMessage message)
+            public void onMessage(final ClientMessage message)
             {
                latch.countDown();
             }
          });
-         assertTrue(latch.await(5, TimeUnit.SECONDS));
-         Queue q = (Queue) server.getPostOffice().getBinding(queueA).getBindable();
-         assertEquals(numMessages, q.getDeliveringCount());
+         Assert.assertTrue(latch.await(5, TimeUnit.SECONDS));
+         Queue q = (Queue)server.getPostOffice().getBinding(queueA).getBindable();
+         Assert.assertEquals(numMessages, q.getDeliveringCount());
          sendSession.close();
          session.close();
       }
@@ -147,7 +148,7 @@ public class AcknowledgeTest extends ServiceTestBase
          session.start();
          cc.setMessageHandler(new MessageHandler()
          {
-            public void onMessage(ClientMessage message)
+            public void onMessage(final ClientMessage message)
             {
                try
                {
@@ -167,9 +168,9 @@ public class AcknowledgeTest extends ServiceTestBase
                latch.countDown();
             }
          });
-         assertTrue(latch.await(5, TimeUnit.SECONDS));
-         Queue q = (Queue) server.getPostOffice().getBinding(queueA).getBindable();
-         assertEquals(0, q.getDeliveringCount());
+         Assert.assertTrue(latch.await(5, TimeUnit.SECONDS));
+         Queue q = (Queue)server.getPostOffice().getBinding(queueA).getBindable();
+         Assert.assertEquals(0, q.getDeliveringCount());
          sendSession.close();
          session.close();
       }
@@ -205,7 +206,7 @@ public class AcknowledgeTest extends ServiceTestBase
          session.start();
          cc.setMessageHandler(new MessageHandler()
          {
-            public void onMessage(ClientMessage message)
+            public void onMessage(final ClientMessage message)
             {
                if (latch.getCount() == 1)
                {
@@ -228,9 +229,9 @@ public class AcknowledgeTest extends ServiceTestBase
                latch.countDown();
             }
          });
-         assertTrue(latch.await(5, TimeUnit.SECONDS));
-         Queue q = (Queue) server.getPostOffice().getBinding(queueA).getBindable();
-         assertEquals(0, q.getDeliveringCount());
+         Assert.assertTrue(latch.await(5, TimeUnit.SECONDS));
+         Queue q = (Queue)server.getPostOffice().getBinding(queueA).getBindable();
+         Assert.assertEquals(0, q.getDeliveringCount());
          sendSession.close();
          session.close();
       }

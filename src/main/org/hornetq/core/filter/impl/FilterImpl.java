@@ -93,9 +93,9 @@ public class FilterImpl implements Filter
     */
    public static Filter createFilter(final String filterStr) throws HornetQException
    {
-      return createFilter(SimpleString.toSimpleString(filterStr));
+      return FilterImpl.createFilter(SimpleString.toSimpleString(filterStr));
    }
-   
+
    /**
     * @return null if <code>filterStr</code> is null or an empty String and a valid filter else
     * @throws HornetQException if the string does not correspond to a valid filter
@@ -124,8 +124,8 @@ public class FilterImpl implements Filter
       }
       catch (Throwable e)
       {
-         log.error("Invalid filter", e);
-         
+         FilterImpl.log.error("Invalid filter", e);
+
          throw new HornetQException(HornetQException.INVALID_FILTER_EXPRESSION, "Invalid filter: " + sfilterString);
       }
    }
@@ -147,35 +147,34 @@ public class FilterImpl implements Filter
          {
             Object val = null;
 
-            if (id.getName().startsWith(HORNETQ_PREFIX))
-            {               
+            if (id.getName().startsWith(FilterImpl.HORNETQ_PREFIX))
+            {
                // Look it up as header fields
                val = getHeaderFieldValue(message, id.getName());
             }
 
             if (val == null)
-            {               
-               val = message.getObjectProperty(id.getName());               
+            {
+               val = message.getObjectProperty(id.getName());
             }
 
             id.setValue(val);
 
          }
-         
+
          // Compute the result of this operator
-         
+
          boolean res = (Boolean)operator.apply();
 
          return res;
       }
       catch (Exception e)
       {
-         log.warn("Invalid filter string: " + sfilterString, e);
+         FilterImpl.log.warn("Invalid filter string: " + sfilterString, e);
 
          return false;
       }
    }
-   
 
    /* (non-Javadoc)
     * @see java.lang.Object#toString()
@@ -190,23 +189,23 @@ public class FilterImpl implements Filter
 
    private Object getHeaderFieldValue(final ServerMessage msg, final SimpleString fieldName)
    {
-      if (HORNETQ_PRIORITY.equals(fieldName))
+      if (FilterImpl.HORNETQ_PRIORITY.equals(fieldName))
       {
          return new Integer(msg.getPriority());
       }
-      else if (HORNETQ_TIMESTAMP.equals(fieldName))
+      else if (FilterImpl.HORNETQ_TIMESTAMP.equals(fieldName))
       {
          return msg.getTimestamp();
       }
-      else if (HORNETQ_DURABLE.equals(fieldName))
+      else if (FilterImpl.HORNETQ_DURABLE.equals(fieldName))
       {
-         return msg.isDurable() ? DURABLE : NON_DURABLE;
+         return msg.isDurable() ? FilterImpl.DURABLE : FilterImpl.NON_DURABLE;
       }
-      else if (HORNETQ_EXPIRATION.equals(fieldName))
+      else if (FilterImpl.HORNETQ_EXPIRATION.equals(fieldName))
       {
          return msg.getExpiration();
       }
-      else if (HORNETQ_SIZE.equals(fieldName))
+      else if (FilterImpl.HORNETQ_SIZE.equals(fieldName))
       {
          return msg.getEncodeSize();
       }

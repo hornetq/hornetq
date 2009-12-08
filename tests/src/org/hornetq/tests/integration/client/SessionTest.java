@@ -16,6 +16,8 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
@@ -39,7 +41,7 @@ import org.hornetq.utils.SimpleString;
  */
 public class SessionTest extends ServiceTestBase
 {
-   private String queueName = "ClientSessionTestQ";
+   private final String queueName = "ClientSessionTestQ";
 
    public void testFailureListener() throws Exception
    {
@@ -52,19 +54,19 @@ public class SessionTest extends ServiceTestBase
          final CountDownLatch latch = new CountDownLatch(1);
          clientSession.addFailureListener(new SessionFailureListener()
          {
-            public void connectionFailed(HornetQException me)
+            public void connectionFailed(final HornetQException me)
             {
                latch.countDown();
             }
-            
-            public void beforeReconnect(HornetQException me)
-            {            
+
+            public void beforeReconnect(final HornetQException me)
+            {
             }
          });
-         
-         //Make sure failure listener is called if server is stopped without session being closed first
+
+         // Make sure failure listener is called if server is stopped without session being closed first
          server.stop();
-         assertTrue(latch.await(5, TimeUnit.SECONDS));
+         Assert.assertTrue(latch.await(5, TimeUnit.SECONDS));
 
          // not really part of the test,
          // we still clean up resources left in the VM
@@ -91,23 +93,23 @@ public class SessionTest extends ServiceTestBase
          {
             boolean called = false;
 
-            public void connectionFailed(HornetQException me)
+            public void connectionFailed(final HornetQException me)
             {
                called = true;
             }
-            
-            public void beforeReconnect(HornetQException me)
-            {            
+
+            public void beforeReconnect(final HornetQException me)
+            {
             }
          }
 
          MyFailureListener listener = new MyFailureListener();
          clientSession.addFailureListener(listener);
 
-         assertTrue(clientSession.removeFailureListener(listener));
+         Assert.assertTrue(clientSession.removeFailureListener(listener));
          clientSession.close();
          server.stop();
-         assertFalse(listener.called);
+         Assert.assertFalse(listener.called);
       }
       finally
       {
@@ -117,15 +119,15 @@ public class SessionTest extends ServiceTestBase
          }
       }
    }
-   
-   //Closing a session if the underlying remoting connection is deaad should cleanly
-   //release all resources
+
+   // Closing a session if the underlying remoting connection is deaad should cleanly
+   // release all resources
    public void testCloseSessionOnDestroyedConnection() throws Exception
    {
       HornetQServer server = createServer(false);
       try
       {
-         //Make sure we have a short connection TTL so sessions will be quickly closed on the server
+         // Make sure we have a short connection TTL so sessions will be quickly closed on the server
          long ttl = 500;
          server.getConfiguration().setConnectionTTLOverride(ttl);
          server.start();
@@ -133,36 +135,36 @@ public class SessionTest extends ServiceTestBase
          ClientSessionInternal clientSession = (ClientSessionInternal)cf.createSession(false, true, true);
          clientSession.createQueue(queueName, queueName, false);
          ClientProducer producer = clientSession.createProducer();
-         ClientConsumer consumer = clientSession.createConsumer(queueName);   
-         
-         assertEquals(1, server.getRemotingService().getConnections().size());
-         
+         ClientConsumer consumer = clientSession.createConsumer(queueName);
+
+         Assert.assertEquals(1, server.getRemotingService().getConnections().size());
+
          RemotingConnection rc = clientSession.getConnection();
-         
+
          rc.fail(new HornetQException(HornetQException.INTERNAL_ERROR));
-         
+
          clientSession.close();
-         
+
          long start = System.currentTimeMillis();
-         
+
          while (true)
-         {           
+         {
             int cons = server.getRemotingService().getConnections().size();
-            
+
             if (cons == 0)
             {
                break;
-            }               
-            
+            }
+
             long now = System.currentTimeMillis();
-            
+
             if (now - start > 10000)
             {
                throw new Exception("Timed out waiting for connections to close");
             }
-            
+
             Thread.sleep(50);
-         }         
+         }
       }
       finally
       {
@@ -188,18 +190,18 @@ public class SessionTest extends ServiceTestBase
          clientSession.createQueue("a2", "q5", false);
          BindingQuery resp = clientSession.bindingQuery(new SimpleString("a"));
          List<SimpleString> queues = resp.getQueueNames();
-         assertTrue(queues.isEmpty());
+         Assert.assertTrue(queues.isEmpty());
          resp = clientSession.bindingQuery(new SimpleString("a1"));
          queues = resp.getQueueNames();
-         assertEquals(queues.size(), 2);
-         assertTrue(queues.contains(new SimpleString("q1")));
-         assertTrue(queues.contains(new SimpleString("q2")));
+         Assert.assertEquals(queues.size(), 2);
+         Assert.assertTrue(queues.contains(new SimpleString("q1")));
+         Assert.assertTrue(queues.contains(new SimpleString("q2")));
          resp = clientSession.bindingQuery(new SimpleString("a2"));
          queues = resp.getQueueNames();
-         assertEquals(queues.size(), 3);
-         assertTrue(queues.contains(new SimpleString("q3")));
-         assertTrue(queues.contains(new SimpleString("q4")));
-         assertTrue(queues.contains(new SimpleString("q5")));
+         Assert.assertEquals(queues.size(), 3);
+         Assert.assertTrue(queues.contains(new SimpleString("q3")));
+         Assert.assertTrue(queues.contains(new SimpleString("q4")));
+         Assert.assertTrue(queues.contains(new SimpleString("q5")));
          clientSession.close();
       }
       finally
@@ -226,10 +228,10 @@ public class SessionTest extends ServiceTestBase
          cp.send(clientSession.createClientMessage(false));
          cp.send(clientSession.createClientMessage(false));
          QueueQuery resp = clientSession.queueQuery(new SimpleString(queueName));
-         assertEquals(new SimpleString("a1"), resp.getAddress());
-         assertEquals(2, resp.getConsumerCount());
-         assertEquals(2, resp.getMessageCount());
-         assertEquals(null, resp.getFilterString());
+         Assert.assertEquals(new SimpleString("a1"), resp.getAddress());
+         Assert.assertEquals(2, resp.getConsumerCount());
+         Assert.assertEquals(2, resp.getMessageCount());
+         Assert.assertEquals(null, resp.getFilterString());
          clientSession.close();
       }
       finally
@@ -253,10 +255,10 @@ public class SessionTest extends ServiceTestBase
          clientSession.createConsumer(queueName);
          clientSession.createConsumer(queueName);
          QueueQuery resp = clientSession.queueQuery(new SimpleString(queueName));
-         assertEquals(new SimpleString("a1"), resp.getAddress());
-         assertEquals(2, resp.getConsumerCount());
-         assertEquals(0, resp.getMessageCount());
-         assertEquals(new SimpleString("foo=bar"), resp.getFilterString());
+         Assert.assertEquals(new SimpleString("a1"), resp.getAddress());
+         Assert.assertEquals(2, resp.getConsumerCount());
+         Assert.assertEquals(0, resp.getMessageCount());
+         Assert.assertEquals(new SimpleString("foo=bar"), resp.getFilterString());
          clientSession.close();
       }
       finally
@@ -268,7 +270,7 @@ public class SessionTest extends ServiceTestBase
       }
    }
 
-    public void testQueueQueryNoQ() throws Exception
+   public void testQueueQueryNoQ() throws Exception
    {
       HornetQServer server = createServer(false);
       try
@@ -277,8 +279,8 @@ public class SessionTest extends ServiceTestBase
          ClientSessionFactory cf = createInVMFactory();
          ClientSession clientSession = cf.createSession(false, true, true);
          QueueQuery resp = clientSession.queueQuery(new SimpleString(queueName));
-         assertFalse(resp.isExists());
-         assertEquals(null, resp.getAddress());
+         Assert.assertFalse(resp.isExists());
+         Assert.assertEquals(null, resp.getAddress());
          clientSession.close();
       }
       finally
@@ -304,11 +306,11 @@ public class SessionTest extends ServiceTestBase
          ClientConsumer c = clientSession.createConsumer(queueName);
          ClientConsumer c1 = clientSession.createConsumer(queueName);
          clientSession.close();
-         assertTrue(clientSession.isClosed());
-         assertTrue(p.isClosed());
-         assertTrue(p1.isClosed());
-         assertTrue(c.isClosed());
-         assertTrue(c1.isClosed());
+         Assert.assertTrue(clientSession.isClosed());
+         Assert.assertTrue(p.isClosed());
+         Assert.assertTrue(p1.isClosed());
+         Assert.assertTrue(c.isClosed());
+         Assert.assertTrue(c1.isClosed());
       }
       finally
       {
@@ -328,7 +330,7 @@ public class SessionTest extends ServiceTestBase
          ClientSessionFactory cf = createInVMFactory();
          ClientSession clientSession = cf.createSession(false, true, true);
          ClientMessage clientMessage = clientSession.createClientMessage(false);
-         assertFalse(clientMessage.isDurable());
+         Assert.assertFalse(clientMessage.isDurable());
          clientSession.close();
       }
       finally
@@ -349,7 +351,7 @@ public class SessionTest extends ServiceTestBase
          ClientSessionFactory cf = createInVMFactory();
          ClientSession clientSession = cf.createSession(false, true, true);
          ClientMessage clientMessage = clientSession.createClientMessage(true);
-         assertTrue(clientMessage.isDurable());
+         Assert.assertTrue(clientMessage.isDurable());
          clientSession.close();
       }
       finally
@@ -369,8 +371,8 @@ public class SessionTest extends ServiceTestBase
          server.start();
          ClientSessionFactory cf = createInVMFactory();
          ClientSession clientSession = cf.createSession(false, true, true);
-         ClientMessage clientMessage = clientSession.createClientMessage((byte) 99, false);
-         assertEquals((byte) 99, clientMessage.getType());
+         ClientMessage clientMessage = clientSession.createClientMessage((byte)99, false);
+         Assert.assertEquals((byte)99, clientMessage.getType());
          clientSession.close();
       }
       finally
@@ -390,11 +392,11 @@ public class SessionTest extends ServiceTestBase
          server.start();
          ClientSessionFactory cf = createInVMFactory();
          ClientSession clientSession = cf.createSession(false, true, true);
-         ClientMessage clientMessage = clientSession.createClientMessage((byte) 88, false, 100l, 300l, (byte) 33);
-         assertEquals((byte) 88, clientMessage.getType());
-         assertEquals(100l, clientMessage.getExpiration());
-         assertEquals(300l, clientMessage.getTimestamp());
-         assertEquals((byte) 33, clientMessage.getPriority());
+         ClientMessage clientMessage = clientSession.createClientMessage((byte)88, false, 100l, 300l, (byte)33);
+         Assert.assertEquals((byte)88, clientMessage.getType());
+         Assert.assertEquals(100l, clientMessage.getExpiration());
+         Assert.assertEquals(300l, clientMessage.getTimestamp());
+         Assert.assertEquals((byte)33, clientMessage.getPriority());
          clientSession.close();
       }
       finally
@@ -414,7 +416,7 @@ public class SessionTest extends ServiceTestBase
          server.start();
          ClientSessionFactory cf = createInVMFactory();
          ClientSession clientSession = cf.createSession(false, true, true);
-         assertEquals(server.getVersion().getIncrementingVersion(), clientSession.getVersion());
+         Assert.assertEquals(server.getVersion().getIncrementingVersion(), clientSession.getVersion());
          clientSession.close();
       }
       finally
@@ -489,10 +491,10 @@ public class SessionTest extends ServiceTestBase
          cp.send(clientSession.createClientMessage(false));
          cp.send(clientSession.createClientMessage(false));
          cp.send(clientSession.createClientMessage(false));
-         Queue q = (Queue) server.getPostOffice().getBinding(new SimpleString(queueName)).getBindable();
-         assertEquals(0, q.getMessageCount());
+         Queue q = (Queue)server.getPostOffice().getBinding(new SimpleString(queueName)).getBindable();
+         Assert.assertEquals(0, q.getMessageCount());
          clientSession.commit();
-         assertEquals(10, q.getMessageCount());
+         Assert.assertEquals(10, q.getMessageCount());
          clientSession.close();
       }
       finally
@@ -524,13 +526,13 @@ public class SessionTest extends ServiceTestBase
          cp.send(clientSession.createClientMessage(false));
          cp.send(clientSession.createClientMessage(false));
          cp.send(clientSession.createClientMessage(false));
-         Queue q = (Queue) server.getPostOffice().getBinding(new SimpleString(queueName)).getBindable();
-         assertEquals(0, q.getMessageCount());
+         Queue q = (Queue)server.getPostOffice().getBinding(new SimpleString(queueName)).getBindable();
+         Assert.assertEquals(0, q.getMessageCount());
          clientSession.rollback();
          cp.send(clientSession.createClientMessage(false));
          cp.send(clientSession.createClientMessage(false));
          clientSession.commit();
-         assertEquals(2, q.getMessageCount());
+         Assert.assertEquals(2, q.getMessageCount());
          clientSession.close();
       }
       finally
@@ -565,42 +567,42 @@ public class SessionTest extends ServiceTestBase
          cp.send(clientSession.createClientMessage(false));
          cp.send(clientSession.createClientMessage(false));
          cp.send(clientSession.createClientMessage(false));
-         Queue q = (Queue) server.getPostOffice().getBinding(new SimpleString(queueName)).getBindable();
-         assertEquals(10, q.getMessageCount());
+         Queue q = (Queue)server.getPostOffice().getBinding(new SimpleString(queueName)).getBindable();
+         Assert.assertEquals(10, q.getMessageCount());
          ClientConsumer cc = clientSession.createConsumer(queueName);
          clientSession.start();
          ClientMessage m = cc.receive(5000);
-         assertNotNull(m);
+         Assert.assertNotNull(m);
          m.acknowledge();
          m = cc.receive(5000);
-         assertNotNull(m);
+         Assert.assertNotNull(m);
          m.acknowledge();
          m = cc.receive(5000);
-         assertNotNull(m);
+         Assert.assertNotNull(m);
          m.acknowledge();
          m = cc.receive(5000);
-         assertNotNull(m);
+         Assert.assertNotNull(m);
          m.acknowledge();
          m = cc.receive(5000);
-         assertNotNull(m);
+         Assert.assertNotNull(m);
          m.acknowledge();
          m = cc.receive(5000);
-         assertNotNull(m);
+         Assert.assertNotNull(m);
          m.acknowledge();
          m = cc.receive(5000);
-         assertNotNull(m);
+         Assert.assertNotNull(m);
          m.acknowledge();
          m = cc.receive(5000);
-         assertNotNull(m);
+         Assert.assertNotNull(m);
          m.acknowledge();
          m = cc.receive(5000);
-         assertNotNull(m);
+         Assert.assertNotNull(m);
          m.acknowledge();
          m = cc.receive(5000);
-         assertNotNull(m);
+         Assert.assertNotNull(m);
          m.acknowledge();
          clientSession.commit();
-         assertEquals(0, q.getMessageCount());
+         Assert.assertEquals(0, q.getMessageCount());
          clientSession.close();
          sendSession.close();
       }
@@ -636,42 +638,42 @@ public class SessionTest extends ServiceTestBase
          cp.send(clientSession.createClientMessage(false));
          cp.send(clientSession.createClientMessage(false));
          cp.send(clientSession.createClientMessage(false));
-         Queue q = (Queue) server.getPostOffice().getBinding(new SimpleString(queueName)).getBindable();
-         assertEquals(10, q.getMessageCount());
+         Queue q = (Queue)server.getPostOffice().getBinding(new SimpleString(queueName)).getBindable();
+         Assert.assertEquals(10, q.getMessageCount());
          ClientConsumer cc = clientSession.createConsumer(queueName);
          clientSession.start();
          ClientMessage m = cc.receive(5000);
-         assertNotNull(m);
+         Assert.assertNotNull(m);
          m.acknowledge();
          m = cc.receive(5000);
-         assertNotNull(m);
+         Assert.assertNotNull(m);
          m.acknowledge();
          m = cc.receive(5000);
-         assertNotNull(m);
+         Assert.assertNotNull(m);
          m.acknowledge();
          m = cc.receive(5000);
-         assertNotNull(m);
+         Assert.assertNotNull(m);
          m.acknowledge();
          m = cc.receive(5000);
-         assertNotNull(m);
+         Assert.assertNotNull(m);
          m.acknowledge();
          m = cc.receive(5000);
-         assertNotNull(m);
+         Assert.assertNotNull(m);
          m.acknowledge();
          m = cc.receive(5000);
-         assertNotNull(m);
+         Assert.assertNotNull(m);
          m.acknowledge();
          m = cc.receive(5000);
-         assertNotNull(m);
+         Assert.assertNotNull(m);
          m.acknowledge();
          m = cc.receive(5000);
-         assertNotNull(m);
+         Assert.assertNotNull(m);
          m.acknowledge();
          m = cc.receive(5000);
-         assertNotNull(m);
+         Assert.assertNotNull(m);
          m.acknowledge();
          clientSession.rollback();
-         assertEquals(10, q.getMessageCount());
+         Assert.assertEquals(10, q.getMessageCount());
          clientSession.close();
          sendSession.close();
       }

@@ -173,7 +173,8 @@ public class RemoteGroupingHandler implements GroupingHandler
       // removing the groupid if the binding has been removed
       if (notification.getType() == NotificationType.BINDING_REMOVED)
       {
-         SimpleString clusterName = notification.getProperties().getSimpleStringProperty(ManagementHelper.HDR_CLUSTER_NAME);
+         SimpleString clusterName = notification.getProperties()
+                                                .getSimpleStringProperty(ManagementHelper.HDR_CLUSTER_NAME);
          List<SimpleString> list = groupMap.remove(clusterName);
          if (list != null)
          {

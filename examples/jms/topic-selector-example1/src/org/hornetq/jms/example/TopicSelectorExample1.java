@@ -30,15 +30,16 @@ import org.hornetq.common.example.HornetQExample;
  */
 public class TopicSelectorExample1 extends HornetQExample
 {
-   public static void main(String[] args)
+   public static void main(final String[] args)
    {
       new TopicSelectorExample1().run(args);
    }
 
+   @Override
    public boolean runExample() throws Exception
    {
       Connection connection = null;
-      
+
       InitialContext initialContext = null;
       try
       {
@@ -146,7 +147,7 @@ public class TopicSelectorExample1 extends HornetQExample
          messageConsumer1.close();
          messageConsumer2.close();
          messageConsumer3.close();
-         
+
          return true;
 
       }

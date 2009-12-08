@@ -13,8 +13,6 @@
 
 package org.hornetq.utils;
 
-import static org.hornetq.utils.DataConstants.SIZE_INT;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -93,7 +91,7 @@ public class SimpleString implements CharSequence, Serializable, Comparable<Simp
 
       str = string;
    }
-   
+
    public SimpleString(final byte[] data)
    {
       this.data = data;
@@ -128,7 +126,7 @@ public class SimpleString implements CharSequence, Serializable, Comparable<Simp
       }
       else
       {
-         int newlen = (end - start) << 1;
+         int newlen = end - start << 1;
          byte[] bytes = new byte[newlen];
 
          System.arraycopy(data, start << 1, bytes, 0, newlen);
@@ -139,7 +137,7 @@ public class SimpleString implements CharSequence, Serializable, Comparable<Simp
 
    // Comparable implementation -------------------------------------
 
-   public int compareTo(SimpleString o)
+   public int compareTo(final SimpleString o)
    {
       return toString().compareTo(o.toString());
    }
@@ -156,14 +154,14 @@ public class SimpleString implements CharSequence, Serializable, Comparable<Simp
    {
       byte[] otherdata = other.data;
 
-      if (otherdata.length > this.data.length)
+      if (otherdata.length > data.length)
       {
          return false;
       }
 
       for (int i = 0; i < otherdata.length; i++)
       {
-         if (this.data[i] != otherdata[i])
+         if (data[i] != otherdata[i])
          {
             return false;
          }
@@ -172,6 +170,7 @@ public class SimpleString implements CharSequence, Serializable, Comparable<Simp
       return true;
    }
 
+   @Override
    public String toString()
    {
       if (str == null)
@@ -186,7 +185,7 @@ public class SimpleString implements CharSequence, Serializable, Comparable<Simp
          {
             int low = data[j++] & 0xFF;
 
-            int high = (data[j++] << 8) & 0xFF00;
+            int high = data[j++] << 8 & 0xFF00;
 
             chars[i] = (char)(low | high);
          }
@@ -197,7 +196,8 @@ public class SimpleString implements CharSequence, Serializable, Comparable<Simp
       return str;
    }
 
-   public boolean equals(Object other)
+   @Override
+   public boolean equals(final Object other)
    {
       if (other instanceof SimpleString)
       {
@@ -224,22 +224,23 @@ public class SimpleString implements CharSequence, Serializable, Comparable<Simp
       }
    }
 
+   @Override
    public int hashCode()
    {
       if (hash == 0)
       {
          int tmphash = 0;
-         for (int i = 0; i < data.length; i++)
+         for (byte element : data)
          {
-            tmphash = (tmphash << 5) - tmphash + data[i]; // (hash << 5) - hash is same as hash * 31
+            tmphash = (tmphash << 5) - tmphash + element; // (hash << 5) - hash is same as hash * 31
          }
          hash = tmphash;
       }
 
       return hash;
    }
-   
-   public SimpleString[] split(char delim)
+
+   public SimpleString[] split(final char delim)
    {
       if (!contains(delim))
       {
@@ -269,7 +270,7 @@ public class SimpleString implements CharSequence, Serializable, Comparable<Simp
       }
    }
 
-   public boolean contains(char c)
+   public boolean contains(final char c)
    {
       for (int i = 0; i < data.length; i += 2)
       {
@@ -282,7 +283,7 @@ public class SimpleString implements CharSequence, Serializable, Comparable<Simp
       }
       return false;
    }
-   
+
    public SimpleString concat(final String toAdd)
    {
       return concat(new SimpleString(toAdd));
@@ -307,9 +308,9 @@ public class SimpleString implements CharSequence, Serializable, Comparable<Simp
 
    public int sizeof()
    {
-      return SIZE_INT + data.length;
+      return DataConstants.SIZE_INT + data.length;
    }
-   
+
    public static int sizeofString(final SimpleString str)
    {
       return str.sizeof();
@@ -327,7 +328,7 @@ public class SimpleString implements CharSequence, Serializable, Comparable<Simp
       }
    }
 
-   public void getChars(int srcBegin, int srcEnd, char dst[], int dstBegin)
+   public void getChars(final int srcBegin, final int srcEnd, final char dst[], final int dstBegin)
    {
       if (srcBegin < 0)
       {
@@ -348,7 +349,7 @@ public class SimpleString implements CharSequence, Serializable, Comparable<Simp
       {
          int low = data[j++] & 0xFF;
 
-         int high = (data[j++] << 8) & 0xFF00;
+         int high = data[j++] << 8 & 0xFF00;
 
          dst[i] = (char)(low | high);
       }

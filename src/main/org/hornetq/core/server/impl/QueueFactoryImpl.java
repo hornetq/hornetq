@@ -43,16 +43,12 @@ public class QueueFactoryImpl implements QueueFactory
    private PostOffice postOffice;
 
    private final StorageManager storageManager;
-   
-   private final ExecutorFactory executorFactory;
 
    public QueueFactoryImpl(final ExecutorFactory executorFactory,
                            final ScheduledExecutorService scheduledExecutor,
                            final HierarchicalRepository<AddressSettings> addressSettingsRepository,
                            final StorageManager storageManager)
    {
-      this.executorFactory = executorFactory;
-      
       this.addressSettingsRepository = addressSettingsRepository;
 
       this.scheduledExecutor = scheduledExecutor;

@@ -72,16 +72,6 @@ public class AcceptorControlUsingCoreTest extends AcceptorControlTest
             return (Map<String, Object>)proxy.retrieveAttributeValue("parameters");
          }
 
-         public void pause() throws Exception
-         {
-            proxy.invokeOperation("pause");
-         }
-
-         public void resume() throws Exception
-         {
-            proxy.invokeOperation("resume");
-         }
-
          public boolean isStarted()
          {
             return (Boolean)proxy.retrieveAttributeValue("started");

@@ -40,9 +40,7 @@ public interface Server extends Remote
     * @param attrOverrides - server attribute overrides that will take precedence over values
     *        read from configuration files.
     */
-   void start(String[] containerConfig,
-              HashMap<String, Object> configuration,
-              boolean clearDatabase) throws Exception;
+   void start(String[] containerConfig, HashMap<String, Object> configuration, boolean clearDatabase) throws Exception;
 
    /**
     * @return true if the server was stopped indeed, or false if the server was stopped already
@@ -74,108 +72,96 @@ public interface Server extends Remote
    /**
     * Only for in-VM use!
     */
-  // MessageStore getMessageStore() throws Exception;
-
+   // MessageStore getMessageStore() throws Exception;
    /**
     * Only for in-VM use!
     */
-  // DestinationManager getDestinationManager() throws Exception;
-
-//   StorageManager getPersistenceManager() throws Exception;
-//
-//   /**
-//    * Only for in-VM use
-//    */
+   // DestinationManager getDestinationManager() throws Exception;
+   // StorageManager getPersistenceManager() throws Exception;
+   //
+   // /**
+   // * Only for in-VM use
+   // */
    HornetQServer getServerPeer() throws Exception;
 
    void createQueue(String name, String jndiName) throws Exception;
-   
+
    void destroyQueue(String name, String jndiName) throws Exception;
-   
+
    void createTopic(String name, String jndiName) throws Exception;
-   
+
    void destroyTopic(String name, String jndiName) throws Exception;
-   
-   
-//   /**
-//    * Simulates a topic deployment (copying the topic descriptor in the deploy directory).
-//    */
-//   void deployTopic(String name, String jndiName, boolean manageConfirmations) throws Exception;
-//
-//   /**
-//    * Simulates a topic deployment (copying the topic descriptor in the deploy directory).
-//    */
-//   void deployTopic(String name, String jndiName, int fullSize, int pageSize,
-//                    int downCacheSize, boolean manageConfirmations) throws Exception;
-//
-//   /**
-//    * Creates a topic programatically.
-//    */
-//   void deployTopicProgrammatically(String name, String jndiName) throws Exception;
-//
-//   /**
-//    * Simulates a queue deployment (copying the queue descriptor in the deploy directory).
-//    */
-//   void deployQueue(String name, String jndiName, boolean manageConfirmations) throws Exception;
-//
-//   /**
-//    * Simulates a queue deployment (copying the queue descriptor in the deploy directory).
-//    */
-//   void deployQueue(String name, String jndiName, int fullSize, int pageSize,
-//                    int downCacheSize, boolean manageConfirmations) throws Exception;
-//
-//   /**
-//    * Creates a queue programatically.
-//    */
-//   void deployQueueProgrammatically(String name, String jndiName) throws Exception;
+
+   // /**
+   // * Simulates a topic deployment (copying the topic descriptor in the deploy directory).
+   // */
+   // void deployTopic(String name, String jndiName, boolean manageConfirmations) throws Exception;
+   //
+   // /**
+   // * Simulates a topic deployment (copying the topic descriptor in the deploy directory).
+   // */
+   // void deployTopic(String name, String jndiName, int fullSize, int pageSize,
+   // int downCacheSize, boolean manageConfirmations) throws Exception;
+   //
+   // /**
+   // * Creates a topic programatically.
+   // */
+   // void deployTopicProgrammatically(String name, String jndiName) throws Exception;
+   //
+   // /**
+   // * Simulates a queue deployment (copying the queue descriptor in the deploy directory).
+   // */
+   // void deployQueue(String name, String jndiName, boolean manageConfirmations) throws Exception;
+   //
+   // /**
+   // * Simulates a queue deployment (copying the queue descriptor in the deploy directory).
+   // */
+   // void deployQueue(String name, String jndiName, int fullSize, int pageSize,
+   // int downCacheSize, boolean manageConfirmations) throws Exception;
+   //
+   // /**
+   // * Creates a queue programatically.
+   // */
+   // void deployQueueProgrammatically(String name, String jndiName) throws Exception;
 
    /**
     * Simulates a destination un-deployment (deleting the destination descriptor from the deploy
     * directory).
     */
-   //void undeployDestination(boolean isQueue, String name) throws Exception;
-
+   // void undeployDestination(boolean isQueue, String name) throws Exception;
    /**
     * Destroys a programatically created destination.
     */
-   //boolean undeployDestinationProgrammatically(boolean isQueue, String name) throws Exception;
-
+   // boolean undeployDestinationProgrammatically(boolean isQueue, String name) throws Exception;
    public void deployConnectionFactory(String clientId,
-                                        String objectName,
-                                        List<String> jndiBindings,
-                                        int prefetchSize,
-                                        int defaultTempQueueFullSize,
-                                        int defaultTempQueuePageSize,
-                                        int defaultTempQueueDownCacheSize,
-                                        boolean supportsFailover,
-                                        boolean supportsLoadBalancing,                             
-                                        int dupsOkBatchSize,
-                                        boolean blockOnAcknowledge) throws Exception;
+                                       String objectName,
+                                       List<String> jndiBindings,
+                                       int prefetchSize,
+                                       int defaultTempQueueFullSize,
+                                       int defaultTempQueuePageSize,
+                                       int defaultTempQueueDownCacheSize,
+                                       boolean supportsFailover,
+                                       boolean supportsLoadBalancing,
+                                       int dupsOkBatchSize,
+                                       boolean blockOnAcknowledge) throws Exception;
 
    void deployConnectionFactory(String objectName,
                                 List<String> jndiBindings,
                                 int prefetchSize,
                                 int defaultTempQueueFullSize,
                                 int defaultTempQueuePageSize,
-                                int defaultTempQueueDownCacheSize
-                                ) throws Exception;
-   
-   void deployConnectionFactory(String objectName,
-								         List<String> jndiBindings,
-								         boolean supportsFailover,
-								         boolean supportsLoadBalancing       
-								         ) throws Exception;
-
-   void deployConnectionFactory(String clientID,
-                                String objectName,
-                                List<String> jndiBindings) throws Exception;
+                                int defaultTempQueueDownCacheSize) throws Exception;
 
    void deployConnectionFactory(String objectName,
                                 List<String> jndiBindings,
-                                int prefetchSize) throws Exception;
+                                boolean supportsFailover,
+                                boolean supportsLoadBalancing) throws Exception;
 
-   void deployConnectionFactory(String objectName,
-                                List<String> jndiBindings) throws Exception;
+   void deployConnectionFactory(String clientID, String objectName, List<String> jndiBindings) throws Exception;
+
+   void deployConnectionFactory(String objectName, List<String> jndiBindings, int prefetchSize) throws Exception;
+
+   void deployConnectionFactory(String objectName, List<String> jndiBindings) throws Exception;
 
    void undeployConnectionFactory(String objectName) throws Exception;
 
@@ -195,8 +181,8 @@ public interface Server extends Remote
 
    void setSecurityConfig(Set<Role> defConfig) throws Exception;
 
-   //void setSecurityConfigOnManager(boolean b, String s, Set<Role> lockedConf) throws Exception;
+   // void setSecurityConfigOnManager(boolean b, String s, Set<Role> lockedConf) throws Exception;
 
-   //void setDefaultRedeliveryDelay(long delay) throws Exception;
+   // void setDefaultRedeliveryDelay(long delay) throws Exception;
    JMSServerManager getJMSServerManager() throws Exception;
 }

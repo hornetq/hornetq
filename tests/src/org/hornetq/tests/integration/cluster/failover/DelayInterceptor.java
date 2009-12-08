@@ -28,12 +28,12 @@ import org.hornetq.core.remoting.impl.wireformat.PacketImpl;
  */
 public class DelayInterceptor implements Interceptor
 {
-   public boolean intercept(Packet packet, RemotingConnection connection) throws HornetQException
+   public boolean intercept(final Packet packet, final RemotingConnection connection) throws HornetQException
    {
       if (packet.getType() == PacketImpl.SESS_SEND)
       {
-         //Lose the send
-         return false;             
+         // Lose the send
+         return false;
       }
       else
       {

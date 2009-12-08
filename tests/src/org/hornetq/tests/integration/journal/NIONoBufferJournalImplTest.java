@@ -36,7 +36,7 @@ public class NIONoBufferJournalImplTest extends JournalImplTestUnit
    {
       File file = new File(getTestDir());
 
-      log.debug("deleting directory " + getTestDir());
+      NIONoBufferJournalImplTest.log.debug("deleting directory " + getTestDir());
 
       deleteDirectory(file);
 

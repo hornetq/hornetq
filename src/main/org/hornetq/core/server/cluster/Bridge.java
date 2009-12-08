@@ -11,7 +11,6 @@
  * permissions and limitations under the License.
  */
 
-
 package org.hornetq.core.server.cluster;
 
 import org.hornetq.core.management.NotificationService;
@@ -20,7 +19,6 @@ import org.hornetq.core.server.Consumer;
 import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.core.server.Queue;
 import org.hornetq.utils.SimpleString;
-
 
 /**
  * A Core Bridge
@@ -42,10 +40,10 @@ public interface Bridge extends Consumer, HornetQComponent
 
    Transformer getTransformer();
 
-   boolean isUseDuplicateDetection();  
-   
+   boolean isUseDuplicateDetection();
+
    void activate();
-   
+
    void setQueue(Queue queue);
 
    void setNotificationService(NotificationService notificationService);

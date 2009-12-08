@@ -11,7 +11,6 @@
  * permissions and limitations under the License.
  */
 
-
 package org.hornetq.jms.example;
 
 import org.hornetq.core.server.ServerMessage;
@@ -27,17 +26,17 @@ import org.hornetq.utils.SimpleString;
  */
 public class HatColourChangeTransformer implements Transformer
 {
-   public ServerMessage transform(final ServerMessage message)     
+   public ServerMessage transform(final ServerMessage message)
    {
       SimpleString propName = new SimpleString("hat");
-      
+
       SimpleString oldProp = message.getSimpleStringProperty(propName);
-      
-      //System.out.println("Old hat colour is " + oldProp);
-      
-      //Change the colour
+
+      // System.out.println("Old hat colour is " + oldProp);
+
+      // Change the colour
       message.putStringProperty(propName, new SimpleString("blue"));
-      
+
       return message;
    }
 

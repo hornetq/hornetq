@@ -17,6 +17,8 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.deployers.impl.XmlDeployer;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.XMLUtil;
@@ -55,6 +57,7 @@ public class XMLDeployerTest extends UnitTestCase
 
    private URL url;
 
+   @Override
    protected void setUp() throws Exception
    {
       super.setUp();
@@ -63,95 +66,95 @@ public class XMLDeployerTest extends UnitTestCase
 
    public void testDeploy() throws Exception
    {
-      Element e = XMLUtil.stringToElement(conf1);
+      Element e = XMLUtil.stringToElement(XMLDeployerTest.conf1);
       TestDeployer testDeployer = new TestDeployer();
       testDeployer.setElement(e);
       testDeployer.deploy(url);
-      assertEquals(testDeployer.getDeployments(), 4);
-      assertNotNull(testDeployer.getNodes().get("test1"));
-      assertNotNull(testDeployer.getNodes().get("test2"));
-      assertNotNull(testDeployer.getNodes().get("test3"));
-      assertNotNull(testDeployer.getNodes().get("test4"));
-      assertEquals(testDeployer.getNodes().get("test1").getTextContent(), "content1");
-      assertEquals(testDeployer.getNodes().get("test2").getTextContent(), "content2");
-      assertEquals(testDeployer.getNodes().get("test3").getTextContent(), "content3");
-      assertEquals(testDeployer.getNodes().get("test4").getTextContent(), "content4");
+      Assert.assertEquals(testDeployer.getDeployments(), 4);
+      Assert.assertNotNull(testDeployer.getNodes().get("test1"));
+      Assert.assertNotNull(testDeployer.getNodes().get("test2"));
+      Assert.assertNotNull(testDeployer.getNodes().get("test3"));
+      Assert.assertNotNull(testDeployer.getNodes().get("test4"));
+      Assert.assertEquals(testDeployer.getNodes().get("test1").getTextContent(), "content1");
+      Assert.assertEquals(testDeployer.getNodes().get("test2").getTextContent(), "content2");
+      Assert.assertEquals(testDeployer.getNodes().get("test3").getTextContent(), "content3");
+      Assert.assertEquals(testDeployer.getNodes().get("test4").getTextContent(), "content4");
    }
 
    public void testRedeploy() throws Exception
    {
-      Element e = XMLUtil.stringToElement(conf1);
+      Element e = XMLUtil.stringToElement(XMLDeployerTest.conf1);
       TestDeployer testDeployer = new TestDeployer();
       testDeployer.setElement(e);
       testDeployer.deploy(url);
-      e = org.hornetq.utils.XMLUtil.stringToElement(conf2);
+      e = org.hornetq.utils.XMLUtil.stringToElement(XMLDeployerTest.conf2);
       testDeployer.setElement(e);
       testDeployer.redeploy(url);
-      assertEquals(testDeployer.getDeployments(), 4);
-      assertNotNull(testDeployer.getNodes().get("test1"));
-      assertNotNull(testDeployer.getNodes().get("test2"));
-      assertNotNull(testDeployer.getNodes().get("test3"));
-      assertNotNull(testDeployer.getNodes().get("test4"));
-      assertEquals(testDeployer.getNodes().get("test1").getTextContent(), "content1");
-      assertEquals(testDeployer.getNodes().get("test2").getTextContent(), "contenthaschanged2");
-      assertEquals(testDeployer.getNodes().get("test3").getTextContent(), "contenthaschanged3");
-      assertEquals(testDeployer.getNodes().get("test4").getTextContent(), "content4");
+      Assert.assertEquals(testDeployer.getDeployments(), 4);
+      Assert.assertNotNull(testDeployer.getNodes().get("test1"));
+      Assert.assertNotNull(testDeployer.getNodes().get("test2"));
+      Assert.assertNotNull(testDeployer.getNodes().get("test3"));
+      Assert.assertNotNull(testDeployer.getNodes().get("test4"));
+      Assert.assertEquals(testDeployer.getNodes().get("test1").getTextContent(), "content1");
+      Assert.assertEquals(testDeployer.getNodes().get("test2").getTextContent(), "contenthaschanged2");
+      Assert.assertEquals(testDeployer.getNodes().get("test3").getTextContent(), "contenthaschanged3");
+      Assert.assertEquals(testDeployer.getNodes().get("test4").getTextContent(), "content4");
    }
 
    public void testRedeployRemovingNodes() throws Exception
    {
-      Element e = XMLUtil.stringToElement(conf1);
+      Element e = XMLUtil.stringToElement(XMLDeployerTest.conf1);
       TestDeployer testDeployer = new TestDeployer();
       testDeployer.setElement(e);
       testDeployer.deploy(url);
-      e = org.hornetq.utils.XMLUtil.stringToElement(conf3);
+      e = org.hornetq.utils.XMLUtil.stringToElement(XMLDeployerTest.conf3);
       testDeployer.setElement(e);
       testDeployer.redeploy(url);
-      assertEquals(testDeployer.getDeployments(), 2);
-      assertNotNull(testDeployer.getNodes().get("test1"));
-      assertNotNull(testDeployer.getNodes().get("test2"));
-      assertNull(testDeployer.getNodes().get("test3"));
-      assertNull(testDeployer.getNodes().get("test4"));
-      assertEquals(testDeployer.getNodes().get("test1").getTextContent(), "content1");
-      assertEquals(testDeployer.getNodes().get("test2").getTextContent(), "contenthaschanged2");
+      Assert.assertEquals(testDeployer.getDeployments(), 2);
+      Assert.assertNotNull(testDeployer.getNodes().get("test1"));
+      Assert.assertNotNull(testDeployer.getNodes().get("test2"));
+      Assert.assertNull(testDeployer.getNodes().get("test3"));
+      Assert.assertNull(testDeployer.getNodes().get("test4"));
+      Assert.assertEquals(testDeployer.getNodes().get("test1").getTextContent(), "content1");
+      Assert.assertEquals(testDeployer.getNodes().get("test2").getTextContent(), "contenthaschanged2");
    }
 
    public void testRedeployAddingNodes() throws Exception
    {
-      Element e = XMLUtil.stringToElement(conf1);
+      Element e = XMLUtil.stringToElement(XMLDeployerTest.conf1);
       TestDeployer testDeployer = new TestDeployer();
       testDeployer.setElement(e);
       testDeployer.deploy(url);
-      e = org.hornetq.utils.XMLUtil.stringToElement(conf4);
+      e = org.hornetq.utils.XMLUtil.stringToElement(XMLDeployerTest.conf4);
       testDeployer.setElement(e);
       testDeployer.redeploy(url);
-      assertEquals(testDeployer.getDeployments(), 6);
-      assertNotNull(testDeployer.getNodes().get("test1"));
-      assertNotNull(testDeployer.getNodes().get("test2"));
-      assertNotNull(testDeployer.getNodes().get("test3"));
-      assertNotNull(testDeployer.getNodes().get("test4"));
-      assertNotNull(testDeployer.getNodes().get("test5"));
-      assertNotNull(testDeployer.getNodes().get("test6"));
-      assertEquals(testDeployer.getNodes().get("test1").getTextContent(), "content1");
-      assertEquals(testDeployer.getNodes().get("test2").getTextContent(), "content2");
-      assertEquals(testDeployer.getNodes().get("test3").getTextContent(), "content3");
-      assertEquals(testDeployer.getNodes().get("test4").getTextContent(), "content4");
-      assertEquals(testDeployer.getNodes().get("test5").getTextContent(), "content5");
-      assertEquals(testDeployer.getNodes().get("test6").getTextContent(), "content6");
+      Assert.assertEquals(testDeployer.getDeployments(), 6);
+      Assert.assertNotNull(testDeployer.getNodes().get("test1"));
+      Assert.assertNotNull(testDeployer.getNodes().get("test2"));
+      Assert.assertNotNull(testDeployer.getNodes().get("test3"));
+      Assert.assertNotNull(testDeployer.getNodes().get("test4"));
+      Assert.assertNotNull(testDeployer.getNodes().get("test5"));
+      Assert.assertNotNull(testDeployer.getNodes().get("test6"));
+      Assert.assertEquals(testDeployer.getNodes().get("test1").getTextContent(), "content1");
+      Assert.assertEquals(testDeployer.getNodes().get("test2").getTextContent(), "content2");
+      Assert.assertEquals(testDeployer.getNodes().get("test3").getTextContent(), "content3");
+      Assert.assertEquals(testDeployer.getNodes().get("test4").getTextContent(), "content4");
+      Assert.assertEquals(testDeployer.getNodes().get("test5").getTextContent(), "content5");
+      Assert.assertEquals(testDeployer.getNodes().get("test6").getTextContent(), "content6");
    }
 
    public void testUndeploy() throws Exception
    {
-      Element e = org.hornetq.utils.XMLUtil.stringToElement(conf1);
+      Element e = org.hornetq.utils.XMLUtil.stringToElement(XMLDeployerTest.conf1);
       TestDeployer testDeployer = new TestDeployer();
       testDeployer.setElement(e);
       testDeployer.deploy(url);
       testDeployer.undeploy(url);
-      assertEquals(testDeployer.getDeployments(), 0);
-      assertNull(testDeployer.getNodes().get("test1"));
-      assertNull(testDeployer.getNodes().get("test2"));
-      assertNull(testDeployer.getNodes().get("test3"));
-      assertNull(testDeployer.getNodes().get("test4"));
+      Assert.assertEquals(testDeployer.getDeployments(), 0);
+      Assert.assertNull(testDeployer.getNodes().get("test1"));
+      Assert.assertNull(testDeployer.getNodes().get("test2"));
+      Assert.assertNull(testDeployer.getNodes().get("test3"));
+      Assert.assertNull(testDeployer.getNodes().get("test4"));
    }
 
    class TestDeployer extends XmlDeployer
@@ -191,7 +194,7 @@ public class XMLDeployerTest extends UnitTestCase
          return elementname;
       }
 
-      public void setElementname(String elementname)
+      public void setElementname(final String elementname)
       {
          this.elementname = elementname;
       }
@@ -201,45 +204,51 @@ public class XMLDeployerTest extends UnitTestCase
          return element;
       }
 
-      public void setElement(Element element)
+      public void setElement(final Element element)
       {
          this.element = element;
       }
 
+      @Override
       public String[] getElementTagName()
       {
          return new String[] { elementname };
       }
 
+      @Override
       public String[] getConfigFileNames()
       {
-         return new String[] {"test"};
+         return new String[] { "test" };
       }
 
+      @Override
       public String[] getDefaultConfigFileNames()
       {
          return new String[0];
       }
 
       @Override
-      public void validate(Node rootNode) throws Exception
+      public void validate(final Node rootNode) throws Exception
       {
       }
 
-      public void deploy(Node node) throws Exception
+      @Override
+      public void deploy(final Node node) throws Exception
       {
          deployments++;
          contents.add(node.getTextContent());
-         nodes.put(node.getAttributes().getNamedItem(NAME_ATTR).getNodeValue(), node);
+         nodes.put(node.getAttributes().getNamedItem(XmlDeployer.NAME_ATTR).getNodeValue(), node);
       }
 
-      public void undeploy(Node node) throws Exception
+      @Override
+      public void undeploy(final Node node) throws Exception
       {
          deployments--;
-         nodes.remove(node.getAttributes().getNamedItem(NAME_ATTR).getNodeValue());
+         nodes.remove(node.getAttributes().getNamedItem(XmlDeployer.NAME_ATTR).getNodeValue());
       }
 
-      protected Element getRootElement(URL url)
+      @Override
+      protected Element getRootElement(final URL url)
       {
          return element;
       }

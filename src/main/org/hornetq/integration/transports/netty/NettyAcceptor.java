@@ -13,8 +13,6 @@
 
 package org.hornetq.integration.transports.netty;
 
-import static org.jboss.netty.channel.Channels.pipeline;
-
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.Iterator;
@@ -53,6 +51,7 @@ import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelPipelineCoverage;
 import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.channel.ChannelStateEvent;
+import org.jboss.netty.channel.Channels;
 import org.jboss.netty.channel.group.ChannelGroup;
 import org.jboss.netty.channel.group.ChannelGroupFuture;
 import org.jboss.netty.channel.group.DefaultChannelGroup;
@@ -227,7 +226,7 @@ public class NettyAcceptor implements Acceptor
          return;
       }
 
-      bossExecutor =  new VirtualExecutorService(threadPool);
+      bossExecutor = new VirtualExecutorService(threadPool);
       VirtualExecutorService workerExecutor = new VirtualExecutorService(threadPool);
 
       if (useInvm)
@@ -269,7 +268,7 @@ public class NettyAcceptor implements Acceptor
       {
          public ChannelPipeline getPipeline() throws Exception
          {
-            ChannelPipeline pipeline = pipeline();
+            ChannelPipeline pipeline = Channels.pipeline();
             if (sslEnabled)
             {
                ChannelPipelineSupport.addSSLFilter(pipeline, context, false);
@@ -312,9 +311,10 @@ public class NettyAcceptor implements Acceptor
 
       if (!Version.ID.equals(VersionLoader.getVersion().getNettyVersion()))
       {
-         log.warn("Unexpected Netty Version was expecting " + VersionLoader.getVersion().getNettyVersion() +
-                  " using " +
-                  Version.ID);
+         NettyAcceptor.log.warn("Unexpected Netty Version was expecting " + VersionLoader.getVersion()
+                                                                                         .getNettyVersion() +
+                                " using " +
+                                Version.ID);
       }
 
       if (notificationService != null)
@@ -328,7 +328,7 @@ public class NettyAcceptor implements Acceptor
          notificationService.sendNotification(notification);
       }
 
-      log.info("Started Netty Acceptor version " + Version.ID);
+      NettyAcceptor.log.info("Started Netty Acceptor version " + Version.ID);
    }
 
    private void startServerChannels()
@@ -370,14 +370,14 @@ public class NettyAcceptor implements Acceptor
 
       if (!future.isCompleteSuccess())
       {
-         log.warn("channel group did not completely close");
+         NettyAcceptor.log.warn("channel group did not completely close");
          Iterator<Channel> iterator = future.getGroup().iterator();
          while (iterator.hasNext())
          {
             Channel channel = iterator.next();
             if (channel.isBound())
             {
-               log.warn(channel + " is still connected to " + channel.getRemoteAddress());
+               NettyAcceptor.log.warn(channel + " is still connected to " + channel.getRemoteAddress());
             }
          }
       }
@@ -437,14 +437,14 @@ public class NettyAcceptor implements Acceptor
       ChannelGroupFuture future = serverChannelGroup.unbind().awaitUninterruptibly();
       if (!future.isCompleteSuccess())
       {
-         log.warn("server channel group did not completely unbind");
+         NettyAcceptor.log.warn("server channel group did not completely unbind");
          Iterator<Channel> iterator = future.getGroup().iterator();
          while (iterator.hasNext())
          {
-            Channel channel = (Channel)iterator.next();
+            Channel channel = iterator.next();
             if (channel.isBound())
             {
-               log.warn(channel + " is still bound to " + channel.getRemoteAddress());
+               NettyAcceptor.log.warn(channel + " is still bound to " + channel.getRemoteAddress());
             }
          }
       }
@@ -453,7 +453,7 @@ public class NettyAcceptor implements Acceptor
       bossExecutor.shutdown();
       try
       {
-         
+
          bossExecutor.awaitTermination(30, TimeUnit.SECONDS);
       }
       catch (InterruptedException e)
@@ -464,7 +464,6 @@ public class NettyAcceptor implements Acceptor
       paused = true;
    }
 
-   
    public void setNotificationService(final NotificationService notificationService)
    {
       this.notificationService = notificationService;

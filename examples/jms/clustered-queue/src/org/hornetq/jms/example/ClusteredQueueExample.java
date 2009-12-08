@@ -31,11 +31,12 @@ import org.hornetq.common.example.HornetQExample;
  */
 public class ClusteredQueueExample extends HornetQExample
 {
-   public static void main(String[] args)
+   public static void main(final String[] args)
    {
       new ClusteredQueueExample().run(args);
    }
 
+   @Override
    public boolean runExample() throws Exception
    {
       Connection connection0 = null;
@@ -118,7 +119,7 @@ public class ClusteredQueueExample extends HornetQExample
 
             System.out.println("Got message: " + message1.getText() + " from node 1");
          }
-        
+
          return true;
       }
       finally

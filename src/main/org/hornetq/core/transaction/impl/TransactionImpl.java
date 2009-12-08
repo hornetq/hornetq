@@ -41,7 +41,7 @@ public class TransactionImpl implements Transaction
 
    private static final int INITIAL_NUM_PROPERTIES = 10;
 
-   private Object[] properties = new Object[INITIAL_NUM_PROPERTIES];
+   private Object[] properties = new Object[TransactionImpl.INITIAL_NUM_PROPERTIES];
 
    private final StorageManager storageManager;
 
@@ -97,7 +97,7 @@ public class TransactionImpl implements Transaction
 
    public void setContainsPersistent()
    {
-      this.containsPersistent = true;
+      containsPersistent = true;
    }
 
    public long getID()
@@ -153,9 +153,11 @@ public class TransactionImpl implements Transaction
          storageManager.afterCompleteOperations(new IOAsyncTask()
          {
 
-            public void onError(int errorCode, String errorMessage)
+            public void onError(final int errorCode, final String errorMessage)
             {
-               log.warn("IO Error completing the transaction, code = " + errorCode + ", message = " + errorMessage);
+               TransactionImpl.log.warn("IO Error completing the transaction, code = " + errorCode +
+                                        ", message = " +
+                                        errorMessage);
             }
 
             public void done()
@@ -172,7 +174,7 @@ public class TransactionImpl implements Transaction
                      {
                         // https://jira.jboss.org/jira/browse/HORNETQ-188
                         // After commit shouldn't throw an exception
-                        log.warn(e.getMessage(), e);
+                        TransactionImpl.log.warn(e.getMessage(), e);
                      }
                   }
                }
@@ -186,7 +188,7 @@ public class TransactionImpl implements Transaction
       commit(true);
    }
 
-   public void commit(boolean onePhase) throws Exception
+   public void commit(final boolean onePhase) throws Exception
    {
       synchronized (timeoutLock)
       {
@@ -226,7 +228,7 @@ public class TransactionImpl implements Transaction
             }
          }
 
-         if (containsPersistent || (xid != null && state == State.PREPARED))
+         if (containsPersistent || xid != null && state == State.PREPARED)
          {
             storageManager.commit(id);
 
@@ -241,9 +243,11 @@ public class TransactionImpl implements Transaction
          storageManager.afterCompleteOperations(new IOAsyncTask()
          {
 
-            public void onError(int errorCode, String errorMessage)
+            public void onError(final int errorCode, final String errorMessage)
             {
-               log.warn("IO Error completing the transaction, code = " + errorCode + ", message = " + errorMessage);
+               TransactionImpl.log.warn("IO Error completing the transaction, code = " + errorCode +
+                                        ", message = " +
+                                        errorMessage);
             }
 
             public void done()
@@ -260,7 +264,7 @@ public class TransactionImpl implements Transaction
                      {
                         // https://jira.jboss.org/jira/browse/HORNETQ-188
                         // After commit shouldn't throw an exception
-                        log.warn(e.getMessage(), e);
+                        TransactionImpl.log.warn(e.getMessage(), e);
                      }
                   }
                }
@@ -307,9 +311,11 @@ public class TransactionImpl implements Transaction
          storageManager.afterCompleteOperations(new IOAsyncTask()
          {
 
-            public void onError(int errorCode, String errorMessage)
+            public void onError(final int errorCode, final String errorMessage)
             {
-               log.warn("IO Error completing the transaction, code = " + errorCode + ", message = " + errorMessage);
+               TransactionImpl.log.warn("IO Error completing the transaction, code = " + errorCode +
+                                        ", message = " +
+                                        errorMessage);
             }
 
             public void done()
@@ -326,7 +332,7 @@ public class TransactionImpl implements Transaction
                      {
                         // https://jira.jboss.org/jira/browse/HORNETQ-188
                         // After commit shouldn't throw an exception
-                        log.warn(e.getMessage(), e);
+                        TransactionImpl.log.warn(e.getMessage(), e);
                      }
                   }
                }
@@ -408,7 +414,7 @@ public class TransactionImpl implements Transaction
       properties[index] = property;
    }
 
-   public Object getProperty(int index)
+   public Object getProperty(final int index)
    {
       return properties[index];
    }
@@ -418,7 +424,7 @@ public class TransactionImpl implements Transaction
 
    private void doRollback() throws Exception
    {
-      if (containsPersistent || (xid != null && state == State.PREPARED))
+      if (containsPersistent || xid != null && state == State.PREPARED)
       {
          storageManager.rollback(id);
       }

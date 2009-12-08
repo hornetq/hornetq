@@ -12,12 +12,12 @@
  */
 package org.hornetq.tests.unit.core.remoting.impl.netty;
 
-import static org.hornetq.tests.util.RandomUtil.randomInt;
-
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.util.LinkedList;
 import java.util.List;
+
+import junit.framework.Assert;
 
 import org.hornetq.core.buffers.HornetQBuffer;
 import org.hornetq.core.buffers.HornetQBuffers;
@@ -25,6 +25,7 @@ import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.remoting.spi.Connection;
 import org.hornetq.core.remoting.spi.ConnectionLifeCycleListener;
 import org.hornetq.integration.transports.netty.NettyConnection;
+import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelConfig;
@@ -44,35 +45,35 @@ public class NettyConnectionTest extends UnitTestCase
 
    public void testGetID() throws Exception
    {
-      Channel channel = new SimpleChannel(randomInt());
+      Channel channel = new SimpleChannel(RandomUtil.randomInt());
       NettyConnection conn = new NettyConnection(channel, new MyListener());
 
-      assertEquals(channel.getId().intValue(), conn.getID());
+      Assert.assertEquals(channel.getId().intValue(), conn.getID());
    }
 
-    public void testWrite() throws Exception
-    {
-       HornetQBuffer buff = HornetQBuffers.wrappedBuffer(ByteBuffer.allocate(128));
-       SimpleChannel channel = new SimpleChannel(randomInt());
-   
-       assertEquals(0, channel.getWritten().size());
-   
-       NettyConnection conn = new NettyConnection(channel, new MyListener());
-       conn.write(buff);
+   public void testWrite() throws Exception
+   {
+      HornetQBuffer buff = HornetQBuffers.wrappedBuffer(ByteBuffer.allocate(128));
+      SimpleChannel channel = new SimpleChannel(RandomUtil.randomInt());
 
-       assertEquals(1, channel.getWritten().size());       
-    }
+      Assert.assertEquals(0, channel.getWritten().size());
+
+      NettyConnection conn = new NettyConnection(channel, new MyListener());
+      conn.write(buff);
+
+      Assert.assertEquals(1, channel.getWritten().size());
+   }
 
    public void testCreateBuffer() throws Exception
    {
-      Channel channel = new SimpleChannel(randomInt());
+      Channel channel = new SimpleChannel(RandomUtil.randomInt());
       NettyConnection conn = new NettyConnection(channel, new MyListener());
 
       final int size = 1234;
 
       HornetQBuffer buff = conn.createBuffer(size);
       buff.writeByte((byte)0x00); // Netty buffer does lazy initialization.
-      assertEquals(size, buff.capacity());
+      Assert.assertEquals(size, buff.capacity());
 
    }
 
@@ -81,29 +82,29 @@ public class NettyConnectionTest extends UnitTestCase
       private final int id;
 
       private final List<Object> written = new LinkedList<Object>();
-      
-      private SimpleChannel(int id)
+
+      private SimpleChannel(final int id)
       {
          this.id = id;
       }
-      
+
       public List<Object> getWritten()
       {
          return written;
       }
 
-      public int compareTo(Channel arg0)
+      public int compareTo(final Channel arg0)
       {
          return 0;
       }
 
-      public ChannelFuture write(Object arg0, SocketAddress arg1)
+      public ChannelFuture write(final Object arg0, final SocketAddress arg1)
       {
          written.add(arg0);
          return null;
       }
 
-      public ChannelFuture write(Object arg0)
+      public ChannelFuture write(final Object arg0)
       {
          written.add(arg0);
          return null;
@@ -114,12 +115,12 @@ public class NettyConnectionTest extends UnitTestCase
          return null;
       }
 
-      public ChannelFuture setReadable(boolean arg0)
+      public ChannelFuture setReadable(final boolean arg0)
       {
          return null;
       }
 
-      public ChannelFuture setInterestOps(int arg0)
+      public ChannelFuture setInterestOps(final int arg0)
       {
          return null;
       }
@@ -199,7 +200,7 @@ public class NettyConnectionTest extends UnitTestCase
          return null;
       }
 
-      public ChannelFuture connect(SocketAddress arg0)
+      public ChannelFuture connect(final SocketAddress arg0)
       {
          return null;
       }
@@ -209,7 +210,7 @@ public class NettyConnectionTest extends UnitTestCase
          return null;
       }
 
-      public ChannelFuture bind(SocketAddress arg0)
+      public ChannelFuture bind(final SocketAddress arg0)
       {
          return null;
       }
@@ -218,17 +219,17 @@ public class NettyConnectionTest extends UnitTestCase
    class MyListener implements ConnectionLifeCycleListener
    {
 
-      public void connectionCreated(Connection connection)
+      public void connectionCreated(final Connection connection)
       {
 
       }
 
-      public void connectionDestroyed(Object connectionID)
+      public void connectionDestroyed(final Object connectionID)
       {
 
       }
 
-      public void connectionException(Object connectionID, HornetQException me)
+      public void connectionException(final Object connectionID, final HornetQException me)
       {
 
       }

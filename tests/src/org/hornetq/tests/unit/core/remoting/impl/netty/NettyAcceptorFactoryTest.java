@@ -16,6 +16,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Executors;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.buffers.HornetQBuffer;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.exception.HornetQException;
@@ -44,32 +46,34 @@ public class NettyAcceptorFactoryTest extends UnitTestCase
       Map<String, Object> params = new HashMap<String, Object>();
       BufferHandler handler = new AbstractBufferHandler()
       {
-         
-         public void bufferReceived(Object connectionID, HornetQBuffer buffer)
+
+         public void bufferReceived(final Object connectionID, final HornetQBuffer buffer)
          {
          }
       };
-      
+
       ConnectionLifeCycleListener listener = new ConnectionLifeCycleListener()
       {
-         
-         public void connectionException(Object connectionID, HornetQException me)
+
+         public void connectionException(final Object connectionID, final HornetQException me)
          {
          }
-         
-         public void connectionDestroyed(Object connectionID)
+
+         public void connectionDestroyed(final Object connectionID)
          {
          }
-         
-         public void connectionCreated(Connection connection)
+
+         public void connectionCreated(final Connection connection)
          {
          }
       };
-           
-      Acceptor acceptor = factory.createAcceptor(params, handler, listener, 
+
+      Acceptor acceptor = factory.createAcceptor(params,
+                                                 handler,
+                                                 listener,
                                                  Executors.newCachedThreadPool(),
                                                  Executors.newScheduledThreadPool(ConfigurationImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE));
 
-      assertTrue(acceptor instanceof NettyAcceptor);
+      Assert.assertTrue(acceptor instanceof NettyAcceptor);
    }
 }

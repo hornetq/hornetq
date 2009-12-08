@@ -56,7 +56,7 @@ public final class UUIDGenerator
     */
    public static UUIDGenerator getInstance()
    {
-      return sSingleton;
+      return UUIDGenerator.sSingleton;
    }
 
    /*
@@ -117,9 +117,9 @@ public final class UUIDGenerator
        */
       dummy[0] |= (byte)0x01;
 
-      if (log.isDebugEnabled())
+      if (UUIDGenerator.log.isDebugEnabled())
       {
-         log.debug("using dummy address " + asString(dummy));
+         UUIDGenerator.log.debug("using dummy address " + UUIDGenerator.asString(dummy));
       }
       return dummy;
    }
@@ -166,18 +166,18 @@ public final class UUIDGenerator
             if (res != null && res instanceof byte[])
             {
                byte[] address = (byte[])res;
-               byte[] paddedAddress = getZeroPaddedSixBytes(address);
+               byte[] paddedAddress = UUIDGenerator.getZeroPaddedSixBytes(address);
 
-               if (isBlackList(address))
+               if (UUIDGenerator.isBlackList(address))
                {
                   continue;
                }
 
                if (paddedAddress != null)
                {
-                  if (log.isDebugEnabled())
+                  if (UUIDGenerator.log.isDebugEnabled())
                   {
-                     log.debug("using hardware address " + asString(paddedAddress));
+                     UUIDGenerator.log.debug("using hardware address " + UUIDGenerator.asString(paddedAddress));
                   }
                   return paddedAddress;
                }
@@ -250,7 +250,7 @@ public final class UUIDGenerator
 
    private static final boolean isBlackList(final byte[] address)
    {
-      for (byte[] blackList : BLACK_LIST)
+      for (byte[] blackList : UUIDGenerator.BLACK_LIST)
       {
          if (Arrays.equals(address, blackList))
          {
@@ -264,7 +264,7 @@ public final class UUIDGenerator
    {
       if (address == null)
       {
-         address = getHardwareAddress();
+         address = UUIDGenerator.getHardwareAddress();
          if (address == null)
          {
             address = generateDummyAddress();

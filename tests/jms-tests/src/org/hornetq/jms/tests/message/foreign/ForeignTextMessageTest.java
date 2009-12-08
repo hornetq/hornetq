@@ -18,6 +18,7 @@ import javax.jms.Message;
 import javax.jms.TextMessage;
 
 import org.hornetq.jms.tests.message.SimpleJMSTextMessage;
+import org.hornetq.jms.tests.util.ProxyAssertSupport;
 
 /**
  * Tests the delivery/receipt of a foreign text message
@@ -32,18 +33,20 @@ import org.hornetq.jms.tests.message.SimpleJMSTextMessage;
 public class ForeignTextMessageTest extends ForeignMessageTest
 {
 
-    protected Message createForeignMessage() throws Exception
-    {
-        SimpleJMSTextMessage m = new SimpleJMSTextMessage();
-        m.setText("this is the payload");
-        return m;
-    }
+   @Override
+   protected Message createForeignMessage() throws Exception
+   {
+      SimpleJMSTextMessage m = new SimpleJMSTextMessage();
+      m.setText("this is the payload");
+      return m;
+   }
 
-    protected void assertEquivalent(Message m, int mode, boolean redelivery) throws JMSException
-    {
-       super.assertEquivalent(m, mode, redelivery);
+   @Override
+   protected void assertEquivalent(final Message m, final int mode, final boolean redelivery) throws JMSException
+   {
+      super.assertEquivalent(m, mode, redelivery);
 
-       TextMessage tm = (TextMessage)m;
-       assertEquals("this is the payload", tm.getText());
-    }
+      TextMessage tm = (TextMessage)m;
+      ProxyAssertSupport.assertEquals("this is the payload", tm.getText());
+   }
 }

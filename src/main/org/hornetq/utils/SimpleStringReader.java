@@ -50,11 +50,11 @@ public class SimpleStringReader extends Reader
    // Reader overrides ----------------------------------------------
 
    @Override
-   public int read(char[] cbuf, int off, int len) throws IOException
+   public int read(final char[] cbuf, final int off, final int len) throws IOException
    {
       synchronized (simpleString)
       {
-         if ((off < 0) || (off > cbuf.length) || (len < 0) || ((off + len) > cbuf.length) || ((off + len) < 0))
+         if (off < 0 || off > cbuf.length || len < 0 || off + len > cbuf.length || off + len < 0)
          {
             throw new IndexOutOfBoundsException();
          }

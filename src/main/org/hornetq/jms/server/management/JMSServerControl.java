@@ -13,10 +13,9 @@
 
 package org.hornetq.jms.server.management;
 
-import static javax.management.MBeanOperationInfo.ACTION;
-import static javax.management.MBeanOperationInfo.INFO;
-
 import java.util.Map;
+
+import javax.management.MBeanOperationInfo;
 
 import org.hornetq.core.management.Operation;
 import org.hornetq.core.management.Parameter;
@@ -44,18 +43,18 @@ public interface JMSServerControl
 
    // Operations ----------------------------------------------------
 
-   @Operation(desc = "Create a JMS Queue", impact = ACTION)
+   @Operation(desc = "Create a JMS Queue", impact = MBeanOperationInfo.ACTION)
    boolean createQueue(@Parameter(name = "name", desc = "Name of the queue to create") String name,
                        @Parameter(name = "jndiBinding", desc = "the name of the binding for JNDI") String jndiBinding) throws Exception;
 
-   @Operation(desc = "Destroy a JMS Queue", impact = ACTION)
+   @Operation(desc = "Destroy a JMS Queue", impact = MBeanOperationInfo.ACTION)
    boolean destroyQueue(@Parameter(name = "name", desc = "Name of the queue to destroy") String name) throws Exception;
 
-   @Operation(desc = "Create a JMS Topic", impact = ACTION)
+   @Operation(desc = "Create a JMS Topic", impact = MBeanOperationInfo.ACTION)
    boolean createTopic(@Parameter(name = "name", desc = "Name of the topic to create") String name,
                        @Parameter(name = "jndiBinding", desc = "the name of the binding for JNDI") String jndiBinding) throws Exception;
 
-   @Operation(desc = "Destroy a JMS Topic", impact = ACTION)
+   @Operation(desc = "Destroy a JMS Topic", impact = MBeanOperationInfo.ACTION)
    boolean destroyTopic(@Parameter(name = "name", desc = "Name of the topic to destroy") String name) throws Exception;
 
    void createConnectionFactory(String name,
@@ -65,7 +64,7 @@ public interface JMSServerControl
                                 Object[] backupConnectorTransportParams,
                                 Object[] bindings) throws Exception;
 
-   @Operation(desc = "Create a JMS ConnectionFactory", impact = ACTION)
+   @Operation(desc = "Create a JMS ConnectionFactory", impact = MBeanOperationInfo.ACTION)
    void createConnectionFactory(@Parameter(name = "name") String name,
                                 @Parameter(name = "liveTransportClassNames", desc = "comma-separated list of class names for transport to live servers") String liveTransportClassNames,
                                 @Parameter(name = "liveTransportParams", desc = "comma-separated list of key=value parameters for the live transports (enclosed between { } for each transport)") String liveTransportParams,
@@ -81,7 +80,7 @@ public interface JMSServerControl
                                 String clientID,
                                 Object[] jndiBindings) throws Exception;
 
-   @Operation(desc = "Create a JMS ConnectionFactory", impact = ACTION)
+   @Operation(desc = "Create a JMS ConnectionFactory", impact = MBeanOperationInfo.ACTION)
    void createConnectionFactory(@Parameter(name = "name") String name,
                                 @Parameter(name = "liveTransportClassNames", desc = "comma-separated list of class names for transport to live servers") String liveTransportClassNames,
                                 @Parameter(name = "liveTransportParams", desc = "comma-separated list of key=value parameters for the live transports (enclosed between { } for each transport)") String liveTransportParams,
@@ -166,7 +165,7 @@ public interface JMSServerControl
                                 String clientID,
                                 Object[] bindings) throws Exception;
 
-   @Operation(desc = "Create a JMS ConnectionFactory", impact = ACTION)
+   @Operation(desc = "Create a JMS ConnectionFactory", impact = MBeanOperationInfo.ACTION)
    void createConnectionFactory(@Parameter(name = "name") String name,
                                 @Parameter(name = "discoveryAddress") String discoveryAddress,
                                 @Parameter(name = "discoveryPort") int discoveryPort,
@@ -208,7 +207,7 @@ public interface JMSServerControl
                                 String groupID,
                                 Object[] jndiBindings) throws Exception;
 
-   @Operation(desc = "Create a JMS ConnectionFactory", impact = ACTION)
+   @Operation(desc = "Create a JMS ConnectionFactory", impact = MBeanOperationInfo.ACTION)
    void createConnectionFactory(@Parameter(name = "name") String name,
                                 @Parameter(name = "discoveryAddress") String discoveryAddress,
                                 @Parameter(name = "discoveryPort") int discoveryPort,
@@ -249,7 +248,7 @@ public interface JMSServerControl
                                 Map<String, Object> liveTransportParams,
                                 Object[] jndiBindings) throws Exception;
 
-   @Operation(desc = "Create a JMS ConnectionFactory", impact = ACTION)
+   @Operation(desc = "Create a JMS ConnectionFactory", impact = MBeanOperationInfo.ACTION)
    void createConnectionFactory(@Parameter(name = "name") String name,
                                 @Parameter(name = "liveTransportClassName") String liveTransportClassName,
                                 @Parameter(name = "liveTransportParams", desc = "comma-separated list of key=value for the transport parameters") String liveTransportParams,
@@ -261,7 +260,7 @@ public interface JMSServerControl
                                 String clientID,
                                 Object[] jndiBindings) throws Exception;
 
-   @Operation(desc = "Create a JMS ConnectionFactory", impact = ACTION)
+   @Operation(desc = "Create a JMS ConnectionFactory", impact = MBeanOperationInfo.ACTION)
    void createConnectionFactory(@Parameter(name = "name") String name,
                                 @Parameter(name = "liveTransportClassName") String liveTransportClassName,
                                 @Parameter(name = "liveTransportParams", desc = "comma-separated list of key=value for the transport parameters") String liveTransportParams,
@@ -283,21 +282,21 @@ public interface JMSServerControl
                                 String clientID,
                                 Object[] jndiBindings) throws Exception;
 
-   @Operation(desc = "Destroy a JMS ConnectionFactory", impact = ACTION)
+   @Operation(desc = "Destroy a JMS ConnectionFactory", impact = MBeanOperationInfo.ACTION)
    void destroyConnectionFactory(@Parameter(name = "name", desc = "Name of the ConnectionFactory to destroy") String name) throws Exception;
 
-   @Operation(desc = "List the client addresses", impact = INFO)
+   @Operation(desc = "List the client addresses", impact = MBeanOperationInfo.INFO)
    String[] listRemoteAddresses() throws Exception;
 
-   @Operation(desc = "List the client addresses which match the given IP Address", impact = INFO)
+   @Operation(desc = "List the client addresses which match the given IP Address", impact = MBeanOperationInfo.INFO)
    String[] listRemoteAddresses(@Parameter(desc = "an IP address", name = "ipAddress") String ipAddress) throws Exception;
 
-   @Operation(desc = "Closes all the connections for the given IP Address", impact = INFO)
+   @Operation(desc = "Closes all the connections for the given IP Address", impact = MBeanOperationInfo.INFO)
    boolean closeConnectionsForAddress(@Parameter(desc = "an IP address", name = "ipAddress") String ipAddress) throws Exception;
 
-   @Operation(desc = "List all the connection IDs", impact = INFO)
+   @Operation(desc = "List all the connection IDs", impact = MBeanOperationInfo.INFO)
    String[] listConnectionIDs() throws Exception;
 
-   @Operation(desc = "List the sessions for the given connectionID", impact = INFO)
+   @Operation(desc = "List the sessions for the given connectionID", impact = MBeanOperationInfo.INFO)
    String[] listSessions(@Parameter(desc = "a connection ID", name = "connectionID") String connectionID) throws Exception;
 }

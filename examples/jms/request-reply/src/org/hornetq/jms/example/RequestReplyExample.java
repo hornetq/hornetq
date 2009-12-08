@@ -38,143 +38,149 @@ import org.hornetq.common.example.HornetQExample;
  */
 public class RequestReplyExample extends HornetQExample
 {
-   private Map<String, TextMessage> requestMap = new HashMap<String, TextMessage>();
-   
-   public static void main(String[] args)
+   private final Map<String, TextMessage> requestMap = new HashMap<String, TextMessage>();
+
+   public static void main(final String[] args)
    {
       new RequestReplyExample().run(args);
    }
 
+   @Override
    public boolean runExample() throws Exception
    {
       Connection connection = null;
       InitialContext initialContext = null;
-      
+
       try
       {
-         //Step 1. Start the request server
+         // Step 1. Start the request server
          SimpleRequestServer server = new SimpleRequestServer();
          server.start();
 
-         //Step 2. Create an initial context to perform the JNDI lookup.
+         // Step 2. Create an initial context to perform the JNDI lookup.
          initialContext = getContext(0);
 
-         //Step 3. Lookup the queue for sending the request message
-         Queue requestQueue = (Queue) initialContext.lookup("/queue/exampleQueue");         
+         // Step 3. Lookup the queue for sending the request message
+         Queue requestQueue = (Queue)initialContext.lookup("/queue/exampleQueue");
 
-         //Step 4. Lookup for the Connection Factory
-         ConnectionFactory cf = (ConnectionFactory) initialContext.lookup("/ConnectionFactory");
+         // Step 4. Lookup for the Connection Factory
+         ConnectionFactory cf = (ConnectionFactory)initialContext.lookup("/ConnectionFactory");
 
-         //Step 5. Create a JMS Connection
+         // Step 5. Create a JMS Connection
          connection = cf.createConnection();
-         
-         //Step 6. Start the connection.
+
+         // Step 6. Start the connection.
          connection.start();
 
-         //Step 7. Create a JMS Session
+         // Step 7. Create a JMS Session
          Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         //Step 8. Create a JMS Message Producer to send request message
+         // Step 8. Create a JMS Message Producer to send request message
          MessageProducer producer = session.createProducer(requestQueue);
-         
-         //Step 9. Create a temporary queue used to send reply message
+
+         // Step 9. Create a temporary queue used to send reply message
          TemporaryQueue replyQueue = session.createTemporaryQueue();
-         
-         //Step 10. Create consumer to receive reply message
+
+         // Step 10. Create consumer to receive reply message
          MessageConsumer replyConsumer = session.createConsumer(replyQueue);
 
-         //Step 11. Create a request Text Message
+         // Step 11. Create a request Text Message
          TextMessage requestMsg = session.createTextMessage("A request message");
-         
-         //Step 12. Set the ReplyTo header so that the request receiver knows where to send the reply.
+
+         // Step 12. Set the ReplyTo header so that the request receiver knows where to send the reply.
          requestMsg.setJMSReplyTo(replyQueue);
-         
-         //Step 13. Sent the request message
+
+         // Step 13. Sent the request message
          producer.send(requestMsg);
-         
+
          System.out.println("Request message sent.");
-         
-         //Step 14. Put the request message to the map. Later we can use it to 
-         //check out which request message a reply message is for. Here we use the MessageID as the 
-         //correlation id (JMSCorrelationID). You don't have to use it though. You can use some arbitrary string for example.
+
+         // Step 14. Put the request message to the map. Later we can use it to
+         // check out which request message a reply message is for. Here we use the MessageID as the
+         // correlation id (JMSCorrelationID). You don't have to use it though. You can use some arbitrary string for
+         // example.
          requestMap.put(requestMsg.getJMSMessageID(), requestMsg);
-         
-         //Step 15. Receive the reply message.
+
+         // Step 15. Receive the reply message.
          TextMessage replyMessageReceived = (TextMessage)replyConsumer.receive();
-         
+
          System.out.println("Received reply: " + replyMessageReceived.getText());
          System.out.println("CorrelatedId: " + replyMessageReceived.getJMSCorrelationID());
-         
-         //Step 16. Check out which request message is this reply message sent for.
-         //Here we just have one request message for illustrative purpose. In real world there may be many requests and many replies.
+
+         // Step 16. Check out which request message is this reply message sent for.
+         // Here we just have one request message for illustrative purpose. In real world there may be many requests and
+         // many replies.
          TextMessage matchedMessage = requestMap.get(replyMessageReceived.getJMSCorrelationID());
-         
+
          System.out.println("We found matched request: " + matchedMessage.getText());
-         
-         //Step 17. close the consumer.
+
+         // Step 17. close the consumer.
          replyConsumer.close();
-         
-         //Step 18. Delete the temporary queue
+
+         // Step 18. Delete the temporary queue
          replyQueue.delete();
-         
-         //Step 19. Shutdown the request server
+
+         // Step 19. Shutdown the request server
          server.shutdown();
-         
+
          return true;
       }
       finally
       {
-         //Step 20. Be sure to close our JMS resources!
-         if(connection != null)
+         // Step 20. Be sure to close our JMS resources!
+         if (connection != null)
          {
             connection.close();
          }
-         //Step 21. Also close the initialContext!
+         // Step 21. Also close the initialContext!
          if (initialContext != null)
          {
             initialContext.close();
          }
       }
    }
-   
+
    private class SimpleRequestServer implements MessageListener
    {
       private Connection connection;
+
       private Session session;
+
       MessageProducer replyProducer;
+
       MessageConsumer requestConsumer;
-      
+
       public void start() throws Exception
       {
-         //Get an initial context to perform the JNDI lookup.
+         // Get an initial context to perform the JNDI lookup.
          InitialContext initialContext = getContext(0);
 
-         //Lookup the queue to receive the request message
-         Queue requestQueue = (Queue) initialContext.lookup("/queue/exampleQueue");         
+         // Lookup the queue to receive the request message
+         Queue requestQueue = (Queue)initialContext.lookup("/queue/exampleQueue");
 
-         //Lookup for the Connection Factory
-         ConnectionFactory cfact = (ConnectionFactory) initialContext.lookup("/ConnectionFactory");
-         
+         // Lookup for the Connection Factory
+         ConnectionFactory cfact = (ConnectionFactory)initialContext.lookup("/ConnectionFactory");
+
          // Create a connection
          connection = cfact.createConnection();
-         
+
          // Start the connection;
          connection.start();
-         
+
          // Create a session
          session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
+
          // Create a producer to send the reply message
          replyProducer = session.createProducer(null);
-         
-         //Create the request comsumer
+
+         // Create the request comsumer
          requestConsumer = session.createConsumer(requestQueue);
-         
-         //register the listener
+
+         // register the listener
          requestConsumer.setMessageListener(this);
       }
 
-      public void onMessage(Message request)
+      public void onMessage(final Message request)
       {
          try
          {
@@ -193,7 +199,7 @@ public class RequestReplyExample extends HornetQExample
 
             // Send out the reply message
             replyProducer.send(replyDestination, replyMessage);
-            
+
             System.out.println("Reply sent");
          }
          catch (JMSException e)
@@ -201,7 +207,7 @@ public class RequestReplyExample extends HornetQExample
             e.printStackTrace();
          }
       }
-      
+
       public void shutdown() throws JMSException
       {
          connection.close();

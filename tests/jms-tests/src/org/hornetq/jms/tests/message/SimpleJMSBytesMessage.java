@@ -40,10 +40,15 @@ public class SimpleJMSBytesMessage extends SimpleJMSMessage implements BytesMess
    // Attributes ----------------------------------------------------
 
    protected byte[] internalArray;
+
    protected boolean bodyWriteOnly = true;
+
    private transient ByteArrayOutputStream ostream;
+
    private transient DataOutputStream p;
+
    private transient ByteArrayInputStream istream;
+
    private transient DataInputStream m;
 
    // Constructor ---------------------------------------------------
@@ -243,7 +248,7 @@ public class SimpleJMSBytesMessage extends SimpleJMSMessage implements BytesMess
       }
    }
 
-   public int readBytes(byte[] value) throws JMSException
+   public int readBytes(final byte[] value) throws JMSException
    {
       checkRead();
       try
@@ -256,7 +261,7 @@ public class SimpleJMSBytesMessage extends SimpleJMSMessage implements BytesMess
       }
    }
 
-   public int readBytes(byte[] value, int length) throws JMSException
+   public int readBytes(final byte[] value, final int length) throws JMSException
    {
       checkRead();
       try
@@ -269,7 +274,7 @@ public class SimpleJMSBytesMessage extends SimpleJMSMessage implements BytesMess
       }
    }
 
-   public void writeBoolean(boolean value) throws JMSException
+   public void writeBoolean(final boolean value) throws JMSException
    {
       if (!bodyWriteOnly)
       {
@@ -285,7 +290,7 @@ public class SimpleJMSBytesMessage extends SimpleJMSMessage implements BytesMess
       }
    }
 
-   public void writeByte(byte value) throws JMSException
+   public void writeByte(final byte value) throws JMSException
    {
       if (!bodyWriteOnly)
       {
@@ -301,7 +306,7 @@ public class SimpleJMSBytesMessage extends SimpleJMSMessage implements BytesMess
       }
    }
 
-   public void writeShort(short value) throws JMSException
+   public void writeShort(final short value) throws JMSException
    {
       if (!bodyWriteOnly)
       {
@@ -317,7 +322,7 @@ public class SimpleJMSBytesMessage extends SimpleJMSMessage implements BytesMess
       }
    }
 
-   public void writeChar(char value) throws JMSException
+   public void writeChar(final char value) throws JMSException
    {
       if (!bodyWriteOnly)
       {
@@ -333,7 +338,7 @@ public class SimpleJMSBytesMessage extends SimpleJMSMessage implements BytesMess
       }
    }
 
-   public void writeInt(int value) throws JMSException
+   public void writeInt(final int value) throws JMSException
    {
       if (!bodyWriteOnly)
       {
@@ -349,7 +354,7 @@ public class SimpleJMSBytesMessage extends SimpleJMSMessage implements BytesMess
       }
    }
 
-   public void writeLong(long value) throws JMSException
+   public void writeLong(final long value) throws JMSException
    {
       if (!bodyWriteOnly)
       {
@@ -365,7 +370,7 @@ public class SimpleJMSBytesMessage extends SimpleJMSMessage implements BytesMess
       }
    }
 
-   public void writeFloat(float value) throws JMSException
+   public void writeFloat(final float value) throws JMSException
    {
       if (!bodyWriteOnly)
       {
@@ -381,7 +386,7 @@ public class SimpleJMSBytesMessage extends SimpleJMSMessage implements BytesMess
       }
    }
 
-   public void writeDouble(double value) throws JMSException
+   public void writeDouble(final double value) throws JMSException
    {
       if (!bodyWriteOnly)
       {
@@ -397,7 +402,7 @@ public class SimpleJMSBytesMessage extends SimpleJMSMessage implements BytesMess
       }
    }
 
-   public void writeUTF(String value) throws JMSException
+   public void writeUTF(final String value) throws JMSException
    {
       if (!bodyWriteOnly)
       {
@@ -413,7 +418,7 @@ public class SimpleJMSBytesMessage extends SimpleJMSMessage implements BytesMess
       }
    }
 
-   public void writeBytes(byte[] value) throws JMSException
+   public void writeBytes(final byte[] value) throws JMSException
    {
       if (!bodyWriteOnly)
       {
@@ -429,7 +434,7 @@ public class SimpleJMSBytesMessage extends SimpleJMSMessage implements BytesMess
       }
    }
 
-   public void writeBytes(byte[] value, int offset, int length) throws JMSException
+   public void writeBytes(final byte[] value, final int offset, final int length) throws JMSException
    {
       if (!bodyWriteOnly)
       {
@@ -445,7 +450,7 @@ public class SimpleJMSBytesMessage extends SimpleJMSMessage implements BytesMess
       }
    }
 
-   public void writeObject(Object value) throws JMSException
+   public void writeObject(final Object value) throws JMSException
    {
       if (!bodyWriteOnly)
       {
@@ -459,39 +464,39 @@ public class SimpleJMSBytesMessage extends SimpleJMSMessage implements BytesMess
          }
          if (value instanceof String)
          {
-            p.writeUTF((String) value);
+            p.writeUTF((String)value);
          }
          else if (value instanceof Boolean)
          {
-            p.writeBoolean(((Boolean) value).booleanValue());
+            p.writeBoolean(((Boolean)value).booleanValue());
          }
          else if (value instanceof Byte)
          {
-            p.writeByte(((Byte) value).byteValue());
+            p.writeByte(((Byte)value).byteValue());
          }
          else if (value instanceof Short)
          {
-            p.writeShort(((Short) value).shortValue());
+            p.writeShort(((Short)value).shortValue());
          }
          else if (value instanceof Integer)
          {
-            p.writeInt(((Integer) value).intValue());
+            p.writeInt(((Integer)value).intValue());
          }
          else if (value instanceof Long)
          {
-            p.writeLong(((Long) value).longValue());
+            p.writeLong(((Long)value).longValue());
          }
          else if (value instanceof Float)
          {
-            p.writeFloat(((Float) value).floatValue());
+            p.writeFloat(((Float)value).floatValue());
          }
          else if (value instanceof Double)
          {
-            p.writeDouble(((Double) value).doubleValue());
+            p.writeDouble(((Double)value).doubleValue());
          }
          else if (value instanceof byte[])
          {
-            p.write((byte[]) value, 0, ((byte[]) value).length);
+            p.write((byte[])value, 0, ((byte[])value).length);
          }
          else
          {
@@ -526,7 +531,6 @@ public class SimpleJMSBytesMessage extends SimpleJMSMessage implements BytesMess
          throw new JMSException("IOException");
       }
    }
-
 
    public long getBodyLength() throws JMSException
    {

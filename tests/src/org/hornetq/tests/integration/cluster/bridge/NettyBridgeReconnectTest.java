@@ -31,7 +31,6 @@ public class NettyBridgeReconnectTest extends BridgeReconnectTest
       return true;
    }
 
-
    // Attributes ----------------------------------------------------
 
    // Static --------------------------------------------------------

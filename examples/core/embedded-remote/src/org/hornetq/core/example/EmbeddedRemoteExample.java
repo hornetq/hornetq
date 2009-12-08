@@ -24,7 +24,6 @@ import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.integration.transports.netty.NettyConnectorFactory;
 
-
 /**
  * 
  * This exammple shows how to run a HornetQ core client and server embedded in your
@@ -36,55 +35,55 @@ import org.hornetq.integration.transports.netty.NettyConnectorFactory;
 public class EmbeddedRemoteExample
 {
 
-   public static void main(String[] args)
+   public static void main(final String[] args)
    {
 
       Process process = null;
       try
       {
-         
+
          // Step 1. start a server remotely
          // Step 2 and 3 on EmbeddedServer
-         process = startRemoteEmbedded();
-         
-         // Step 4. As we are not using a JNDI environment we instantiate the objects directly         
-         ClientSessionFactory sf = new ClientSessionFactoryImpl (new TransportConfiguration(NettyConnectorFactory.class.getName()));
-         
+         process = EmbeddedRemoteExample.startRemoteEmbedded();
+
+         // Step 4. As we are not using a JNDI environment we instantiate the objects directly
+         ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(NettyConnectorFactory.class.getName()));
+
          // Step 5. Create a core queue
          ClientSession coreSession = sf.createSession(false, false, false);
-         
+
          final String queueName = "queue.exampleQueue";
-         
+
          coreSession.createQueue(queueName, queueName, true);
-         
+
          coreSession.close();
-                  
+
          ClientSession session = null;
-   
+
          try
          {
-   
+
             // Step 6. Create the session, and producer
             session = sf.createSession();
-                                   
+
             ClientProducer producer = session.createProducer(queueName);
-   
+
             // Step 7. Create and send a message
             ClientMessage message = session.createClientMessage(false);
-            
+
             final String propName = "myprop";
-            
+
             message.putStringProperty(propName, "Hello sent at " + new Date());
-            
+
             System.out.println("Sending the message.");
-            
+
             producer.send(message);
 
             // Step 8. Create the message consumer and start the connection
             ClientConsumer messageConsumer = session.createConsumer(queueName);
             session.start();
-   
-            // Step 9. Receive the message. 
+
+            // Step 9. Receive the message.
             ClientMessage messageReceived = messageConsumer.receive(1000);
             System.out.println("Received TextMessage:" + messageReceived.getStringProperty(propName));
          }
@@ -116,19 +115,22 @@ public class EmbeddedRemoteExample
    private static Process startRemoteEmbedded() throws Exception
    {
       Process process;
-      String remoteClasspath= System.getProperty("remote-classpath");
-      
+      String remoteClasspath = System.getProperty("remote-classpath");
+
       if (remoteClasspath == null)
       {
          System.out.println("remote-classpath system property needs to be specified");
          System.exit(-1);
       }
-      
-      process = SpawnedVMSupport.spawnVM(remoteClasspath, EmbeddedServer.class.getName(), "", true, 
-                               "STARTED::",
-                               "FAILED::",
-                               ".",
-                               new String[]{});
+
+      process = SpawnedVMSupport.spawnVM(remoteClasspath,
+                                         EmbeddedServer.class.getName(),
+                                         "",
+                                         true,
+                                         "STARTED::",
+                                         "FAILED::",
+                                         ".",
+                                         new String[] {});
       return process;
    }
 

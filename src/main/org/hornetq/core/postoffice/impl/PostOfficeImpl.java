@@ -107,7 +107,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
    private final boolean persistIDCache;
 
-   private Map<SimpleString, QueueInfo> queueInfos = new HashMap<SimpleString, QueueInfo>();
+   private final Map<SimpleString, QueueInfo> queueInfos = new HashMap<SimpleString, QueueInfo>();
 
    private final Object notificationLock = new Object();
 
@@ -133,7 +133,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
    {
       this.storageManager = storageManager;
 
-      this.queueFactory = bindableFactory;
+      queueFactory = bindableFactory;
 
       this.managementService = managementService;
 
@@ -156,7 +156,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
       this.persistIDCache = persistIDCache;
 
-      this.redistributorExecutorFactory = orderedExecutorFactory;
+      redistributorExecutorFactory = orderedExecutorFactory;
 
       this.addressSettingsRepository = addressSettingsRepository;
 
@@ -541,7 +541,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
    {
       route(message, (Transaction)null);
    }
-   
+
    public void route(final ServerMessage message, final Transaction tx) throws Exception
    {
       this.route(message, new RoutingContextImpl(tx));
@@ -582,11 +582,11 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
          {
             if (context.getTransaction() == null)
             {
-               log.warn("Duplicate message detected - message will not be routed");
+               PostOfficeImpl.log.warn("Duplicate message detected - message will not be routed");
             }
             else
             {
-               log.warn("Duplicate message detected - transaction will be rejected");
+               PostOfficeImpl.log.warn("Duplicate message detected - transaction will be rejected");
 
                context.getTransaction().markAsRollbackOnly(null);
             }
@@ -654,9 +654,9 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
             if (dlaAddress == null)
             {
-               log.warn("Did not route to any bindings for address " + address +
-                        " and sendToDLAOnNoRoute is true " +
-                        "but there is no DLA configured for the address, the message will be ignored.");
+               PostOfficeImpl.log.warn("Did not route to any bindings for address " + address +
+                                       " and sendToDLAOnNoRoute is true " +
+                                       "but there is no DLA configured for the address, the message will be ignored.");
             }
             else
             {
@@ -782,10 +782,10 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
       {
          // First send a reset message
 
-         ServerMessage message = new ServerMessageImpl(storageManager.generateUniqueID(), 50);        
+         ServerMessage message = new ServerMessageImpl(storageManager.generateUniqueID(), 50);
 
          message.setDestination(queueName);
-         message.putBooleanProperty(HDR_RESET_QUEUE_DATA, true);
+         message.putBooleanProperty(PostOfficeImpl.HDR_RESET_QUEUE_DATA, true);
          routeDirect(message, queue, false);
 
          for (QueueInfo info : queueInfos.values())
@@ -881,7 +881,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
       }
 
       Iterator<Queue> iter = context.getDurableQueues().iterator();
-      
+
       while (iter.hasNext())
       {
          Queue queue = iter.next();
@@ -950,11 +950,13 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
          // avoiding a context switch on this case
          storageManager.afterCompleteOperations(new IOAsyncTask()
          {
-            public void onError(int errorCode, String errorMessage)
+            public void onError(final int errorCode, final String errorMessage)
             {
-               log.warn("It wasn't possible to add references due to an IO error code " + errorCode + " message = " + errorMessage);
+               PostOfficeImpl.log.warn("It wasn't possible to add references due to an IO error code " + errorCode +
+                                       " message = " +
+                                       errorMessage);
             }
-            
+
             public void done()
             {
                addReferences(refs);
@@ -969,7 +971,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
    private void addReferences(final List<MessageReference> refs)
    {
       for (MessageReference ref : refs)
-      {        
+      {
          ref.getQueue().addLast(ref);
       }
    }
@@ -1040,13 +1042,13 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
          if (closed)
          {
             // This shouldn't happen in a regular scenario
-            log.warn("Reaper thread being restarted");
+            PostOfficeImpl.log.warn("Reaper thread being restarted");
             closed = false;
          }
 
          // The reaper thread should be finished case the PostOffice is gone
          // This is to avoid leaks on PostOffice between stops and starts
-         while (PostOfficeImpl.this.isStarted())
+         while (isStarted())
          {
             long toWait = reaperPeriod;
 
@@ -1096,7 +1098,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
                }
                catch (Exception e)
                {
-                  log.error("failed to expire messages for queue " + queue.getName(), e);
+                  PostOfficeImpl.log.error("failed to expire messages for queue " + queue.getName(), e);
                }
             }
          }
@@ -1237,7 +1239,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
          this.refs = refs;
       }
 
-      public void afterCommit(Transaction tx)
+      public void afterCommit(final Transaction tx)
       {
          for (MessageReference ref : refs)
          {
@@ -1245,23 +1247,23 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
          }
       }
 
-      public void afterPrepare(Transaction tx)
+      public void afterPrepare(final Transaction tx)
       {
       }
 
-      public void afterRollback(Transaction tx)
+      public void afterRollback(final Transaction tx)
       {
       }
 
-      public void beforeCommit(Transaction tx) throws Exception
+      public void beforeCommit(final Transaction tx) throws Exception
       {
       }
 
-      public void beforePrepare(Transaction tx) throws Exception
+      public void beforePrepare(final Transaction tx) throws Exception
       {
       }
 
-      public void beforeRollback(Transaction tx) throws Exception
+      public void beforeRollback(final Transaction tx) throws Exception
       {
          // Reverse the ref counts, and paging sizes
 

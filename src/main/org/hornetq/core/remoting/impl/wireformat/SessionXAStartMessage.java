@@ -36,14 +36,14 @@ public class SessionXAStartMessage extends PacketImpl
 
    public SessionXAStartMessage(final Xid xid)
    {
-      super(SESS_XA_START);
+      super(PacketImpl.SESS_XA_START);
 
       this.xid = xid;
    }
 
    public SessionXAStartMessage()
    {
-      super(SESS_XA_START);
+      super(PacketImpl.SESS_XA_START);
    }
 
    // Public --------------------------------------------------------

@@ -16,6 +16,8 @@ package org.hornetq.tests.unit.core.persistence.impl;
 import java.io.File;
 import java.util.ArrayList;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.buffers.HornetQBuffer;
 import org.hornetq.core.buffers.HornetQBuffers;
 import org.hornetq.core.journal.Journal;
@@ -60,7 +62,7 @@ public class BatchIDGeneratorUnitTest extends UnitTestCase
       long id1 = batch.generateID();
       long id2 = batch.generateID();
 
-      assertTrue(id2 > id1);
+      Assert.assertTrue(id2 > id1);
 
       journal.stop();
       batch = new BatchingIDGenerator(0, 1000, journal);
@@ -68,11 +70,11 @@ public class BatchIDGeneratorUnitTest extends UnitTestCase
 
       long id3 = batch.generateID();
 
-      assertEquals(1000, id3);
+      Assert.assertEquals(1000, id3);
 
       long id4 = batch.generateID();
 
-      assertTrue(id4 > id3 && id4 < 2000);
+      Assert.assertTrue(id4 > id3 && id4 < 2000);
 
       batch.close();
 
@@ -81,13 +83,12 @@ public class BatchIDGeneratorUnitTest extends UnitTestCase
       loadIDs(journal, batch);
 
       long id5 = batch.generateID();
-      assertTrue(id5 > id4 && id5 < 2000);
-      
-      
+      Assert.assertTrue(id5 > id4 && id5 < 2000);
+
       long lastId = id5;
-      
+
       boolean close = true;
-      for (int i = 0 ; i < 100000; i++)
+      for (int i = 0; i < 100000; i++)
       {
          if (i % 1000 == 0)
          {
@@ -99,7 +100,7 @@ public class BatchIDGeneratorUnitTest extends UnitTestCase
             }
 
             close = !close;
-            
+
             journal.stop();
             batch = new BatchingIDGenerator(0, 1000, journal);
             loadIDs(journal, batch);
@@ -107,29 +108,29 @@ public class BatchIDGeneratorUnitTest extends UnitTestCase
 
          long id = batch.generateID();
 
-         assertTrue(id > lastId);
-         
+         Assert.assertTrue(id > lastId);
+
          lastId = id;
       }
 
-      
       batch.close();
       journal.stop();
       batch = new BatchingIDGenerator(0, 1000, journal);
       loadIDs(journal, batch);
-      
+
       lastId = batch.getCurrentID();
 
       journal.stop();
       batch = new BatchingIDGenerator(0, 1000, journal);
       loadIDs(journal, batch);
-      
-      assertEquals("No Ids were generated, so the currentID was supposed to stay the same", lastId, batch.getCurrentID());
-      
- 
+
+      Assert.assertEquals("No Ids were generated, so the currentID was supposed to stay the same",
+                          lastId,
+                          batch.getCurrentID());
+
    }
 
-   protected void loadIDs(Journal journal, BatchingIDGenerator batch) throws Exception
+   protected void loadIDs(final Journal journal, final BatchingIDGenerator batch) throws Exception
    {
       ArrayList<RecordInfo> records = new ArrayList<RecordInfo>();
       ArrayList<PreparedTransactionInfo> tx = new ArrayList<PreparedTransactionInfo>();
@@ -137,9 +138,9 @@ public class BatchIDGeneratorUnitTest extends UnitTestCase
       journal.start();
       journal.load(records, tx, null);
 
-      assertEquals(0, tx.size());
+      Assert.assertEquals(0, tx.size());
 
-      assertTrue(records.size() > 0);
+      Assert.assertTrue(records.size() > 0);
 
       for (RecordInfo record : records)
       {
@@ -155,10 +156,11 @@ public class BatchIDGeneratorUnitTest extends UnitTestCase
 
    // Protected -----------------------------------------------------
 
+   @Override
    protected void setUp() throws Exception
    {
       super.setUp();
-      
+
       File file = new File(getTestDir());
 
       deleteDirectory(file);
@@ -166,6 +168,7 @@ public class BatchIDGeneratorUnitTest extends UnitTestCase
       file.mkdir();
    }
 
+   @Override
    protected void tearDown() throws Exception
    {
       super.tearDown();

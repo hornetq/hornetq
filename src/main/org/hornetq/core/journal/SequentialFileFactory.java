@@ -31,13 +31,13 @@ public interface SequentialFileFactory
    List<String> listFiles(String extension) throws Exception;
 
    boolean isSupportsCallbacks();
-   
+
    ByteBuffer newBuffer(int size);
-   
+
    void releaseBuffer(ByteBuffer buffer);
-   
+
    void activateBuffer(SequentialFile file);
-   
+
    void deactivateBuffer();
 
    // To be used in tests only
@@ -48,15 +48,15 @@ public interface SequentialFileFactory
    int calculateBlockSize(int bytes);
 
    void clearBuffer(ByteBuffer buffer);
-   
+
    void start();
-   
+
    void stop();
-   
+
    /** 
     * Create the directory if it doesn't exist yet
     */
    void createDirs() throws Exception;
-   
-   void flush(); 
+
+   void flush();
 }

@@ -11,7 +11,6 @@
  * permissions and limitations under the License.
  */
 
-
 package org.hornetq.utils;
 
 /**
@@ -26,6 +25,6 @@ package org.hornetq.utils;
 public interface IDGenerator
 {
    long generateID();
-   
+
    long getCurrentID();
 }

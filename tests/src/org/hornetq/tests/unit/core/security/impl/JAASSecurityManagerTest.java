@@ -32,6 +32,8 @@ import javax.security.auth.login.LoginException;
 import javax.security.auth.login.AppConfigurationEntry.LoginModuleControlFlag;
 import javax.security.auth.spi.LoginModule;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.security.CheckType;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.security.impl.JAASSecurityManager;
@@ -48,59 +50,72 @@ public class JAASSecurityManagerTest extends UnitTestCase
    private JAASSecurityManager securityManager;
 
    private static final String USER = "user";
+
    private static final String PASSWORD = "password";
-   private static final String INVALID_PASSWORD = "invalidPassword";   
+
+   private static final String INVALID_PASSWORD = "invalidPassword";
+
    private static final String ROLE = "role";
+
    private static final String INVALID_ROLE = "invalidRole";
-   
+
+   @Override
    protected void setUp() throws Exception
    {
       super.setUp();
-      
+
       securityManager = new JAASSecurityManager();
-      
+
       final String domainName = SimpleLogingModule.class.getName();
       // pass the correct user/pass and a role as options to the login module
       final Map<String, String> options = new HashMap<String, String>();
-      options.put("user", USER);
-      options.put("pass", PASSWORD);
-      options.put("role", ROLE);
+      options.put("user", JAASSecurityManagerTest.USER);
+      options.put("pass", JAASSecurityManagerTest.PASSWORD);
+      options.put("role", JAASSecurityManagerTest.ROLE);
 
       securityManager.setConfigurationName(domainName);
       securityManager.setCallbackHandler(new CallbackHandler()
       {
-         public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException
+         public void handle(final Callback[] callbacks) throws IOException, UnsupportedCallbackException
          {
             // empty callback, auth info are directly passed as options to the login module
          }
       });
       securityManager.setConfiguration(new SimpleConfiguration(domainName, options));
-      
+
    }
 
+   @Override
    protected void tearDown() throws Exception
    {
       securityManager = null;
-      
+
       super.tearDown();
    }
 
    public void testValidatingUser()
    {
-      assertTrue(securityManager.validateUser(USER, PASSWORD));
-      assertFalse(securityManager.validateUser(USER, INVALID_PASSWORD));
+      Assert.assertTrue(securityManager.validateUser(JAASSecurityManagerTest.USER, JAASSecurityManagerTest.PASSWORD));
+      Assert.assertFalse(securityManager.validateUser(JAASSecurityManagerTest.USER,
+                                                      JAASSecurityManagerTest.INVALID_PASSWORD));
    }
 
    public void testValidatingUserAndRole()
    {
       Set<Role> roles = new HashSet<Role>();
-      roles.add(new Role(ROLE, true, true, true, true, true, true, true));
+      roles.add(new Role(JAASSecurityManagerTest.ROLE, true, true, true, true, true, true, true));
 
-      assertTrue(securityManager.validateUserAndRole(USER, PASSWORD, roles, CheckType.CREATE_DURABLE_QUEUE));
+      Assert.assertTrue(securityManager.validateUserAndRole(JAASSecurityManagerTest.USER,
+                                                            JAASSecurityManagerTest.PASSWORD,
+                                                            roles,
+                                                            CheckType.CREATE_DURABLE_QUEUE));
 
       roles.clear();
-      roles.add(new Role(INVALID_ROLE, true, true, true, true, true, true, true));
-      assertFalse(securityManager.validateUserAndRole(USER, PASSWORD, roles, CheckType.CREATE_DURABLE_QUEUE));
+      roles.add(new Role(JAASSecurityManagerTest.INVALID_ROLE, true, true, true, true, true, true, true));
+      Assert.assertFalse(securityManager.validateUserAndRole(JAASSecurityManagerTest.USER,
+                                                             JAASSecurityManagerTest.PASSWORD,
+                                                             roles,
+                                                             CheckType.CREATE_DURABLE_QUEUE));
    }
 
    public static class SimpleLogingModule implements LoginModule
@@ -124,10 +139,10 @@ public class JAASSecurityManagerTest extends UnitTestCase
          return true;
       }
 
-      public void initialize(Subject subject,
-                             CallbackHandler callbackHandler,
-                             Map<String, ?> sharedState,
-                             Map<String, ?> options)
+      public void initialize(final Subject subject,
+                             final CallbackHandler callbackHandler,
+                             final Map<String, ?> sharedState,
+                             final Map<String, ?> options)
       {
          this.subject = subject;
          this.options = options;
@@ -142,7 +157,7 @@ public class JAASSecurityManagerTest extends UnitTestCase
          String user = iterator2.next().getName();
 
          boolean authenticated = user.equals(options.get("user")) && password.equals(options.get("pass"));
-         
+
          if (authenticated)
          {
             Group roles = new SimpleGroup("Roles");
@@ -152,7 +167,7 @@ public class JAASSecurityManagerTest extends UnitTestCase
          return authenticated;
 
       }
-      
+
       public Subject getSubject()
       {
          return subject;
@@ -166,17 +181,18 @@ public class JAASSecurityManagerTest extends UnitTestCase
 
    public static class SimpleConfiguration extends Configuration
    {
-      private Map<String, ?> options;
-      private String loginModuleName;
+      private final Map<String, ?> options;
 
-      public SimpleConfiguration(String loginModuleName, Map<String, ?> options)
+      private final String loginModuleName;
+
+      public SimpleConfiguration(final String loginModuleName, final Map<String, ?> options)
       {
          this.loginModuleName = loginModuleName;
          this.options = options;
       }
 
       @Override
-      public AppConfigurationEntry[] getAppConfigurationEntry(String name)
+      public AppConfigurationEntry[] getAppConfigurationEntry(final String name)
       {
          AppConfigurationEntry entry = new AppConfigurationEntry(loginModuleName,
                                                                  LoginModuleControlFlag.REQUIRED,

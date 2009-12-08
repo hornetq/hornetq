@@ -13,29 +13,6 @@
 
 package org.hornetq.tests.integration.jms.client;
 
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CACHE_LARGE_MESSAGE_CLIENT;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONFIRMATION_WINDOW_SIZE;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MAX_RETRY_INTERVAL;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_THREAD_POOL_MAX_SIZE;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_USE_GLOBAL_POOLS;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,6 +23,8 @@ import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Queue;
 import javax.jms.Session;
+
+import junit.framework.Assert;
 
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.client.impl.ClientSessionInternal;
@@ -92,38 +71,37 @@ public class SessionClosedOnRemotingConnectionFailureTest extends JMSTestBase
       jmsServer.createConnectionFactory("cffoo",
                                         connectorConfigs,
                                         null,
-                                        DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
-                                        DEFAULT_CONNECTION_TTL,
+                                        ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
+                                        ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL,
                                         ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,
-                                        DEFAULT_CACHE_LARGE_MESSAGE_CLIENT,
-                                        DEFAULT_MIN_LARGE_MESSAGE_SIZE,
-                                        DEFAULT_CONSUMER_WINDOW_SIZE,
-                                        DEFAULT_CONSUMER_MAX_RATE,
-                                        DEFAULT_CONFIRMATION_WINDOW_SIZE,
-                                        DEFAULT_PRODUCER_WINDOW_SIZE,
-                                        DEFAULT_PRODUCER_MAX_RATE,
-                                        DEFAULT_BLOCK_ON_ACKNOWLEDGE,
-                                        DEFAULT_BLOCK_ON_PERSISTENT_SEND,
-                                        DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND,
-                                        DEFAULT_AUTO_GROUP,
-                                        DEFAULT_PRE_ACKNOWLEDGE,
-                                        DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
-                                        DEFAULT_ACK_BATCH_SIZE,
-                                        DEFAULT_ACK_BATCH_SIZE,
-                                        DEFAULT_USE_GLOBAL_POOLS,
-                                        DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE,
-                                        DEFAULT_THREAD_POOL_MAX_SIZE,
-                                        DEFAULT_RETRY_INTERVAL,
-                                        DEFAULT_RETRY_INTERVAL_MULTIPLIER,
-                                        DEFAULT_MAX_RETRY_INTERVAL,
+                                        ClientSessionFactoryImpl.DEFAULT_CACHE_LARGE_MESSAGE_CLIENT,
+                                        ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
+                                        ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE,
+                                        ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE,
+                                        ClientSessionFactoryImpl.DEFAULT_CONFIRMATION_WINDOW_SIZE,
+                                        ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE,
+                                        ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE,
+                                        ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE,
+                                        ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND,
+                                        ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND,
+                                        ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP,
+                                        ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE,
+                                        ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
+                                        ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE,
+                                        ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE,
+                                        ClientSessionFactoryImpl.DEFAULT_USE_GLOBAL_POOLS,
+                                        ClientSessionFactoryImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE,
+                                        ClientSessionFactoryImpl.DEFAULT_THREAD_POOL_MAX_SIZE,
+                                        ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL,
+                                        ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER,
+                                        ClientSessionFactoryImpl.DEFAULT_MAX_RETRY_INTERVAL,
                                         0,
                                         false,
                                         null,
                                         jndiBindings);
 
-
       cf = (ConnectionFactory)context.lookup("/cffoo");
-                  
+
       Connection conn = cf.createConnection();
 
       Queue queue = createQueue("testQueue");
@@ -140,7 +118,7 @@ public class SessionClosedOnRemotingConnectionFailureTest extends JMSTestBase
 
          prod.send(session.createMessage());
 
-         assertNotNull(cons.receive());
+         Assert.assertNotNull(cons.receive());
 
          // Now fail the underlying connection
 
@@ -154,7 +132,7 @@ public class SessionClosedOnRemotingConnectionFailureTest extends JMSTestBase
          {
             prod.send(session.createMessage());
 
-            fail("Should throw exception");
+            Assert.fail("Should throw exception");
          }
          catch (JMSException e)
          {
@@ -165,15 +143,15 @@ public class SessionClosedOnRemotingConnectionFailureTest extends JMSTestBase
          {
             cons.receive();
 
-            fail("Should throw exception");
+            Assert.fail("Should throw exception");
          }
          catch (JMSException e)
          {
             // assertEquals(HornetQException.OBJECT_CLOSED, e.getCode());
          }
-         
+
          session.close();
-         
+
          conn.close();
       }
       finally

@@ -16,6 +16,8 @@ package org.hornetq.tests.integration.client;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
 import org.hornetq.core.client.ClientSession;
@@ -42,9 +44,9 @@ public class SessionSendAcknowledgementHandlerTest extends ServiceTestBase
 
    private HornetQServer server;
 
-   private SimpleString address = new SimpleString("address");
+   private final SimpleString address = new SimpleString("address");
 
-   private SimpleString queueName = new SimpleString("queue");
+   private final SimpleString queueName = new SimpleString("queue");
 
    @Override
    protected void setUp() throws Exception
@@ -62,20 +64,20 @@ public class SessionSendAcknowledgementHandlerTest extends ServiceTestBase
       {
          server.stop();
       }
-      
+
       server = null;
-      
+
       super.tearDown();
    }
 
    public void testSendAcknowledgements() throws Exception
    {
       ClientSessionFactory csf = createInVMFactory();
-      
+
       csf.setConfirmationWindowSize(1024);
 
       ClientSession session = csf.createSession(null, null, false, true, true, false, 1);
-      
+
       session.createQueue(address, queueName, false);
 
       ClientProducer prod = session.createProducer(address);
@@ -103,6 +105,6 @@ public class SessionSendAcknowledgementHandlerTest extends ServiceTestBase
 
       boolean ok = latch.await(5000, TimeUnit.MILLISECONDS);
 
-      assertTrue(ok);
-   }  
+      Assert.assertTrue(ok);
+   }
 }

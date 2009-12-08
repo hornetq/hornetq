@@ -13,8 +13,6 @@
 
 package org.hornetq.core.remoting.impl;
 
-import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.PACKETS_CONFIRMED;
-
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
@@ -108,7 +106,7 @@ public class ChannelImpl implements Channel
    {
       return lock;
    }
-   
+
    public int getConfirmationWindowSize()
    {
       return confWindowSize;
@@ -145,7 +143,7 @@ public class ChannelImpl implements Channel
 
    // This must never called by more than one thread concurrently
    public void send(final Packet packet, final boolean flush)
-   {      
+   {
       synchronized (sendLock)
       {
          packet.setChannelID(id);
@@ -281,7 +279,7 @@ public class ChannelImpl implements Channel
 
    public void setCommandConfirmationHandler(final CommandConfirmationHandler handler)
    {
-      this.commandConfirmationHandler = handler;
+      commandConfirmationHandler = handler;
    }
 
    public void setHandler(final ChannelHandler handler)
@@ -387,7 +385,7 @@ public class ChannelImpl implements Channel
       {
          lastReceivedCommandID++;
 
-         receivedBytes += packet.getPacketSize();         
+         receivedBytes += packet.getPacketSize();
 
          if (receivedBytes >= confWindowSize)
          {
@@ -416,7 +414,7 @@ public class ChannelImpl implements Channel
 
    public void handlePacket(final Packet packet)
    {
-      if (packet.getType() == PACKETS_CONFIRMED)
+      if (packet.getType() == PacketImpl.PACKETS_CONFIRMED)
       {
          if (resendCache != null)
          {
@@ -482,14 +480,14 @@ public class ChannelImpl implements Channel
 
          if (packet == null)
          {
-            log.warn("Can't find packet to clear: " + " last received command id " +
-                     lastReceivedCommandID +
-                     " first stored command id " +
-                     firstStoredCommandID);
+            ChannelImpl.log.warn("Can't find packet to clear: " + " last received command id " +
+                                 lastReceivedCommandID +
+                                 " first stored command id " +
+                                 firstStoredCommandID);
             return;
          }
 
-         if (packet.getType() != PACKETS_CONFIRMED)
+         if (packet.getType() != PacketImpl.PACKETS_CONFIRMED)
          {
             sizeToFree += packet.getPacketSize();
          }

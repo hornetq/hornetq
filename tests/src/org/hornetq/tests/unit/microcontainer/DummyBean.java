@@ -18,13 +18,14 @@ package org.hornetq.tests.unit.microcontainer;
 public class DummyBean
 {
    public static boolean started = false;
+
    public void start()
    {
-      started = true;
+      DummyBean.started = true;
    }
 
    public void stop()
    {
-      started = false;
+      DummyBean.started = false;
    }
 }

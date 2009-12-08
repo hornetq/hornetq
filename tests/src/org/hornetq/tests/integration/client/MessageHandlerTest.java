@@ -15,6 +15,8 @@ package org.hornetq.tests.integration.client;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
@@ -113,11 +115,10 @@ public class MessageHandlerTest extends ServiceTestBase
       Thread.sleep(500);
 
       // Make sure no exceptions were thrown from onMessage
-      assertNull(consumer.getLastException());
+      Assert.assertNull(consumer.getLastException());
 
       session.close();
    }
-
 
    public void testSetResetMessageHandler() throws Exception
    {
@@ -140,7 +141,6 @@ public class MessageHandlerTest extends ServiceTestBase
 
       final ClientConsumer consumer = session.createConsumer(QUEUE);
 
-
       session.start();
 
       CountDownLatch latch = new CountDownLatch(50);
@@ -157,7 +157,7 @@ public class MessageHandlerTest extends ServiceTestBase
 
          private final CountDownLatch latch;
 
-         public MyHandler(CountDownLatch latch)
+         public MyHandler(final CountDownLatch latch)
          {
             this.latch = latch;
          }
@@ -197,20 +197,20 @@ public class MessageHandlerTest extends ServiceTestBase
 
       Thread.sleep(100);
 
-      assertFalse(handler.failed);
+      Assert.assertFalse(handler.failed);
 
       // Make sure no exceptions were thrown from onMessage
-      assertNull(consumer.getLastException());
+      Assert.assertNull(consumer.getLastException());
       latch = new CountDownLatch(50);
       handler = new MyHandler(latch);
       consumer.setMessageHandler(handler);
       session.start();
-      assertTrue("message received " + handler.messageReceived, latch.await(5, TimeUnit.SECONDS));
+      Assert.assertTrue("message received " + handler.messageReceived, latch.await(5, TimeUnit.SECONDS));
 
       Thread.sleep(100);
 
-      assertFalse(handler.failed);
-      assertNull(consumer.getLastException());
+      Assert.assertFalse(handler.failed);
+      Assert.assertNull(consumer.getLastException());
       session.close();
    }
 
@@ -235,7 +235,6 @@ public class MessageHandlerTest extends ServiceTestBase
 
       final ClientConsumer consumer = session.createConsumer(QUEUE);
 
-
       session.start();
 
       CountDownLatch latch = new CountDownLatch(50);
@@ -252,7 +251,7 @@ public class MessageHandlerTest extends ServiceTestBase
 
          private final CountDownLatch latch;
 
-         public MyHandler(CountDownLatch latch)
+         public MyHandler(final CountDownLatch latch)
          {
             this.latch = latch;
          }
@@ -292,13 +291,13 @@ public class MessageHandlerTest extends ServiceTestBase
 
       Thread.sleep(100);
 
-      assertFalse(handler.failed);
+      Assert.assertFalse(handler.failed);
 
       // Make sure no exceptions were thrown from onMessage
-      assertNull(consumer.getLastException());
+      Assert.assertNull(consumer.getLastException());
       consumer.setMessageHandler(null);
       ClientMessage cm = consumer.receiveImmediate();
-      assertNotNull(cm);
+      Assert.assertNotNull(cm);
 
       session.close();
    }
@@ -324,7 +323,6 @@ public class MessageHandlerTest extends ServiceTestBase
 
       final ClientConsumer consumer = session.createConsumer(QUEUE);
 
-
       session.start();
 
       CountDownLatch latch = new CountDownLatch(50);
@@ -341,7 +339,7 @@ public class MessageHandlerTest extends ServiceTestBase
 
          private final CountDownLatch latch;
 
-         public MyHandler(CountDownLatch latch)
+         public MyHandler(final CountDownLatch latch)
          {
             this.latch = latch;
          }
@@ -381,23 +379,23 @@ public class MessageHandlerTest extends ServiceTestBase
 
       Thread.sleep(100);
 
-      assertFalse(handler.failed);
+      Assert.assertFalse(handler.failed);
 
       // Make sure no exceptions were thrown from onMessage
-      assertNull(consumer.getLastException());
+      Assert.assertNull(consumer.getLastException());
       consumer.setMessageHandler(null);
       ClientMessage cm = consumer.receiveImmediate();
-      assertNotNull(cm);
+      Assert.assertNotNull(cm);
       latch = new CountDownLatch(49);
       handler = new MyHandler(latch);
       consumer.setMessageHandler(handler);
       session.start();
-      assertTrue("message received " + handler.messageReceived, latch.await(5, TimeUnit.SECONDS));
+      Assert.assertTrue("message received " + handler.messageReceived, latch.await(5, TimeUnit.SECONDS));
 
       Thread.sleep(100);
 
-      assertFalse(handler.failed);
-      assertNull(consumer.getLastException());
+      Assert.assertFalse(handler.failed);
+      Assert.assertNull(consumer.getLastException());
       session.close();
    }
 }

@@ -29,7 +29,7 @@ public class SessionCloseMessage extends PacketImpl
 
    public SessionCloseMessage()
    {
-      super(SESS_CLOSE);
+      super(PacketImpl.SESS_CLOSE);
    }
 
    // Public --------------------------------------------------------

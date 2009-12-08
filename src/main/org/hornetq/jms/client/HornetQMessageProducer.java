@@ -11,10 +11,7 @@
  * permissions and limitations under the License.
  */
 
-
 package org.hornetq.jms.client;
-
-import java.util.concurrent.atomic.AtomicLong;
 
 import javax.jms.BytesMessage;
 import javax.jms.DeliveryMode;
@@ -60,11 +57,11 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
 
    // Attributes ----------------------------------------------------
 
-   private HornetQConnection jbossConn;
+   private final HornetQConnection jbossConn;
 
    private final SimpleString connID;
 
-   private ClientProducer producer;
+   private final ClientProducer producer;
 
    private boolean disableMessageID = false;
 
@@ -76,24 +73,24 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
 
    private int defaultDeliveryMode = DeliveryMode.PERSISTENT;
 
-   private HornetQDestination defaultDestination;
+   private final HornetQDestination defaultDestination;
 
    private final SimpleString messageIDPrefix;
 
    private volatile long sequenceNumber;
 
-   private ClientSession clientSession;
+   private final ClientSession clientSession;
 
    // Constructors --------------------------------------------------
 
    public HornetQMessageProducer(final HornetQConnection jbossConn,
-                               final ClientProducer producer,
-                               final HornetQDestination defaultDestination,
-                               final ClientSession clientSession) throws JMSException
+                                 final ClientProducer producer,
+                                 final HornetQDestination defaultDestination,
+                                 final ClientSession clientSession) throws JMSException
    {
       this.jbossConn = jbossConn;
 
-      this.connID = jbossConn.getUID();
+      connID = jbossConn.getUID();
 
       this.producer = producer;
 
@@ -110,7 +107,7 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
 
    // MessageProducer implementation --------------------------------
 
-   public void setDisableMessageID(boolean value) throws JMSException
+   public void setDisableMessageID(final boolean value) throws JMSException
    {
       checkClosed();
 
@@ -124,7 +121,7 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
       return disableMessageID;
    }
 
-   public void setDisableMessageTimestamp(boolean value) throws JMSException
+   public void setDisableMessageTimestamp(final boolean value) throws JMSException
    {
       checkClosed();
 
@@ -138,21 +135,21 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
       return disableMessageTimestamp;
    }
 
-   public void setDeliveryMode(int deliveryMode) throws JMSException
+   public void setDeliveryMode(final int deliveryMode) throws JMSException
    {
       checkClosed();
 
-      this.defaultDeliveryMode = deliveryMode;
+      defaultDeliveryMode = deliveryMode;
    }
 
    public int getDeliveryMode() throws JMSException
    {
       checkClosed();
 
-      return this.defaultDeliveryMode;
+      return defaultDeliveryMode;
    }
 
-   public void setPriority(int defaultPriority) throws JMSException
+   public void setPriority(final int defaultPriority) throws JMSException
    {
       checkClosed();
 
@@ -166,11 +163,11 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
       return defaultPriority;
    }
 
-   public void setTimeToLive(long timeToLive) throws JMSException
+   public void setTimeToLive(final long timeToLive) throws JMSException
    {
       checkClosed();
 
-      this.defaultTimeToLive = timeToLive;
+      defaultTimeToLive = timeToLive;
    }
 
    public long getTimeToLive() throws JMSException
@@ -199,7 +196,7 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
       }
    }
 
-   public void send(Message message) throws JMSException
+   public void send(final Message message) throws JMSException
    {
       checkClosed();
 
@@ -210,7 +207,7 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
       doSend(message, defaultTimeToLive, null);
    }
 
-   public void send(Message message, int deliveryMode, int priority, long timeToLive) throws JMSException
+   public void send(final Message message, final int deliveryMode, final int priority, final long timeToLive) throws JMSException
    {
       checkClosed();
 
@@ -221,7 +218,7 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
       doSend(message, timeToLive, null);
    }
 
-   public void send(Destination destination, Message message) throws JMSException
+   public void send(final Destination destination, final Message message) throws JMSException
    {
       checkClosed();
 
@@ -237,7 +234,11 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
       doSend(message, defaultTimeToLive, (HornetQDestination)destination);
    }
 
-   public void send(Destination destination, Message message, int deliveryMode, int priority, long timeToLive) throws JMSException
+   public void send(final Destination destination,
+                    final Message message,
+                    final int deliveryMode,
+                    final int priority,
+                    final long timeToLive) throws JMSException
    {
       checkClosed();
 
@@ -260,34 +261,42 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
       return (Topic)getDestination();
    }
 
-   public void publish(Message message) throws JMSException
+   public void publish(final Message message) throws JMSException
    {
       send(message);
    }
 
-   public void publish(Topic topic, Message message) throws JMSException
+   public void publish(final Topic topic, final Message message) throws JMSException
    {
       send(topic, message);
    }
 
-   public void publish(Message message, int deliveryMode, int priority, long timeToLive) throws JMSException
+   public void publish(final Message message, final int deliveryMode, final int priority, final long timeToLive) throws JMSException
    {
       send(message, deliveryMode, priority, timeToLive);
    }
 
-   public void publish(Topic topic, Message message, int deliveryMode, int priority, long timeToLive) throws JMSException
+   public void publish(final Topic topic,
+                       final Message message,
+                       final int deliveryMode,
+                       final int priority,
+                       final long timeToLive) throws JMSException
    {
       send(topic, message, deliveryMode, priority, timeToLive);
    }
 
    // QueueSender Implementation ------------------------------------
 
-   public void send(Queue queue, Message message) throws JMSException
+   public void send(final Queue queue, final Message message) throws JMSException
    {
       send((Destination)queue, message);
    }
 
-   public void send(Queue queue, Message message, int deliveryMode, int priority, long timeToLive) throws JMSException
+   public void send(final Queue queue,
+                    final Message message,
+                    final int deliveryMode,
+                    final int priority,
+                    final long timeToLive) throws JMSException
    {
       send((Destination)queue, message, deliveryMode, priority, timeToLive);
    }
@@ -299,6 +308,7 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
 
    // Public --------------------------------------------------------
 
+   @Override
    public String toString()
    {
       return "HornetQRAMessageProducer->" + producer;
@@ -310,7 +320,7 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
 
    // Private -------------------------------------------------------
 
-   private void doSend(Message message, long timeToLive, HornetQDestination destination) throws JMSException
+   private void doSend(final Message message, final long timeToLive, HornetQDestination destination) throws JMSException
    {
       if (timeToLive == 0)
       {
@@ -404,12 +414,12 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
       if (!disableMessageID)
       {
          // Generate an id
-         
+
          SimpleString msgID = generateMessageID();
 
          msg.getCoreMessage().putStringProperty(HornetQMessage.HORNETQ_MESSAGE_ID, msgID);
-         
-         msg.resetMessageID(msgID.toString());         
+
+         msg.resetMessageID(msgID.toString());
       }
 
       if (foreign)
@@ -448,22 +458,22 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
          throw JMSExceptionHelper.convertFromHornetQException(e);
       }
    }
-   
-   //This is faster than doing standard String concatenation and conversions from long to string
+
+   // This is faster than doing standard String concatenation and conversions from long to string
    private SimpleString generateMessageID()
    {
       byte[] prefixData = messageIDPrefix.getData();
-      
+
       int len = prefixData.length + 16 * 2;
 
       byte[] bytes = new byte[len];
 
       System.arraycopy(messageIDPrefix.getData(), 0, bytes, 0, prefixData.length);
-      
+
       int j = prefixData.length;
-      
+
       long l = sequenceNumber++;
-      
+
       for (int i = 0; i < 16; i++)
       {
          int ch = (int)(l & 0xF);
@@ -476,19 +486,19 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
 
          j += 2;
       }
-      
+
       return new SimpleString(bytes);
    }
-   
-//   private SimpleString generateOldMessageID()
-//   {
-//      SimpleString ss = new SimpleString(messageIDPrefix.getData());
-//      
-//      ss.concat(String.valueOf(sequenceNumber++));
-//      
-//      return ss;
-//   }
-   
+
+   // private SimpleString generateOldMessageID()
+   // {
+   // SimpleString ss = new SimpleString(messageIDPrefix.getData());
+   //      
+   // ss.concat(String.valueOf(sequenceNumber++));
+   //      
+   // return ss;
+   // }
+
    private void checkClosed() throws JMSException
    {
       if (producer.isClosed())

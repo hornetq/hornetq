@@ -14,6 +14,7 @@
 package org.hornetq.core.deployers.impl;
 
 import java.io.File;
+import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.util.ArrayList;
@@ -25,7 +26,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
-import java.io.UnsupportedEncodingException;
 
 import org.hornetq.core.deployers.Deployer;
 import org.hornetq.core.deployers.DeploymentManager;
@@ -104,7 +104,7 @@ public class FileDeploymentManager implements Runnable, DeploymentManager
     * @throws Exception .
     */
    public synchronized void registerDeployer(final Deployer deployer) throws Exception
-   {    
+   {
       if (!deployers.contains(deployer))
       {
          deployers.add(deployer);
@@ -113,9 +113,9 @@ public class FileDeploymentManager implements Runnable, DeploymentManager
 
          for (String filename : filenames)
          {
-            log.debug("the filename is " + filename); 
+            FileDeploymentManager.log.debug("the filename is " + filename);
 
-            log.debug(System.getProperty("java.class.path"));
+            FileDeploymentManager.log.debug(System.getProperty("java.class.path"));
 
             Enumeration<URL> urls = Thread.currentThread().getContextClassLoader().getResources(filename);
 
@@ -123,23 +123,23 @@ public class FileDeploymentManager implements Runnable, DeploymentManager
             {
                URL url = urls.nextElement();
 
-               log.debug("Got url " + url);
+               FileDeploymentManager.log.debug("Got url " + url);
 
                try
                {
-                  log.debug("Deploying " + url + " for " + deployer.getClass().getSimpleName());
+                  FileDeploymentManager.log.debug("Deploying " + url + " for " + deployer.getClass().getSimpleName());
                   deployer.deploy(url);
                }
                catch (Exception e)
                {
-                  log.error("Error deploying " + url, e);
+                  FileDeploymentManager.log.error("Error deploying " + url, e);
                }
-               
+
                Pair<URL, Deployer> pair = new Pair<URL, Deployer>(url, deployer);
 
                deployed.put(pair, new DeployInfo(deployer, getFileFromURL(url).lastModified()));
             }
-         }        
+         }
       }
    }
 
@@ -155,19 +155,19 @@ public class FileDeploymentManager implements Runnable, DeploymentManager
             {
                URL url = urls.nextElement();
 
-               Pair<URL, Deployer> pair = new Pair<URL, Deployer>(url, deployer); 
-               
+               Pair<URL, Deployer> pair = new Pair<URL, Deployer>(url, deployer);
+
                deployed.remove(pair);
             }
          }
       }
    }
 
-   private File getFileFromURL(URL url) throws UnsupportedEncodingException
+   private File getFileFromURL(final URL url) throws UnsupportedEncodingException
    {
-       return new File(URLDecoder.decode(url.getFile(), "UTF-8"));
+      return new File(URLDecoder.decode(url.getFile(), "UTF-8"));
    }
-   
+
    /**
     * called by the ExecutorService every n seconds
     */
@@ -181,9 +181,9 @@ public class FileDeploymentManager implements Runnable, DeploymentManager
       try
       {
          for (Deployer deployer : deployers)
-         {   
+         {
             String[] filenames = deployer.getConfigFileNames();
-            
+
             for (String filename : filenames)
             {
                Enumeration<URL> urls = Thread.currentThread().getContextClassLoader().getResources(filename);
@@ -191,7 +191,7 @@ public class FileDeploymentManager implements Runnable, DeploymentManager
                while (urls.hasMoreElements())
                {
                   URL url = urls.nextElement();
-                  
+
                   Pair<URL, Deployer> pair = new Pair<URL, Deployer>(url, deployer);
 
                   DeployInfo info = deployed.get(pair);
@@ -208,7 +208,7 @@ public class FileDeploymentManager implements Runnable, DeploymentManager
                      }
                      catch (Exception e)
                      {
-                        log.error("Error deploying " + url, e);
+                        FileDeploymentManager.log.error("Error deploying " + url, e);
                      }
                   }
                   else if (newLastModified > info.lastModified)
@@ -221,7 +221,7 @@ public class FileDeploymentManager implements Runnable, DeploymentManager
                      }
                      catch (Exception e)
                      {
-                        log.error("Error redeploying " + url, e);
+                        FileDeploymentManager.log.error("Error redeploying " + url, e);
                      }
                   }
                }
@@ -236,24 +236,24 @@ public class FileDeploymentManager implements Runnable, DeploymentManager
                try
                {
                   Deployer deployer = entry.getValue().deployer;
-                  log.debug("Undeploying " + deployer + " with url " + pair.a);
+                  FileDeploymentManager.log.debug("Undeploying " + deployer + " with url " + pair.a);
                   deployer.undeploy(pair.a);
                   toRemove.add(pair);
                }
                catch (Exception e)
                {
-                  log.error("Error undeploying " + pair.a, e);
+                  FileDeploymentManager.log.error("Error undeploying " + pair.a, e);
                }
             }
          }
          for (Pair pair : toRemove)
          {
-            deployed.remove(pair);  
+            deployed.remove(pair);
          }
       }
       catch (Exception e)
       {
-         log.warn("error scanning for URL's " + e);
+         FileDeploymentManager.log.warn("error scanning for URL's " + e);
       }
    }
 
@@ -266,24 +266,25 @@ public class FileDeploymentManager implements Runnable, DeploymentManager
    {
       return deployed;
    }
-   
+
    // Private -------------------------------------------------------
-   
+
    /**
     * Checks if the URL is among the current thread context class loader's resources.
     * 
     * We do not check that the corresponding file exists using File.exists() directly as it would fail
     * in the case the resource is loaded from inside an EAR file (see https://jira.jboss.org/jira/browse/HORNETQ-122)
     */
-   private boolean fileExists(URL resourceURL)
+   private boolean fileExists(final URL resourceURL)
    {
       try
       {
-         File f = getFileFromURL(resourceURL); // this was the orginal line, which doesnt work for File-URLs with white spaces: File f = new File(resourceURL.getPath());
+         File f = getFileFromURL(resourceURL); // this was the orginal line, which doesnt work for File-URLs with white
+         // spaces: File f = new File(resourceURL.getPath());
          Enumeration<URL> resources = Thread.currentThread().getContextClassLoader().getResources(f.getName());
          while (resources.hasMoreElements())
          {
-            URL url = (URL)resources.nextElement();
+            URL url = resources.nextElement();
             if (url.equals(resourceURL))
             {
                return true;

@@ -15,6 +15,8 @@ package org.hornetq.tests.unit.core.journal.impl;
 
 import java.nio.ByteBuffer;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
 import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.journal.impl.AIOSequentialFileFactory;
@@ -67,36 +69,36 @@ public class CleanBufferTest extends UnitTestCase
    private void testBuffer(final SequentialFileFactory factory)
    {
       ByteBuffer buffer = factory.newBuffer(100);
-      
+
       try
       {
          for (byte b = 0; b < 100; b++)
          {
             buffer.put(b);
          }
-   
+
          buffer.rewind();
-   
+
          for (byte b = 0; b < 100; b++)
          {
-            assertEquals(b, buffer.get());
+            Assert.assertEquals(b, buffer.get());
          }
-   
+
          buffer.limit(10);
          factory.clearBuffer(buffer);
          buffer.limit(100);
-   
+
          buffer.rewind();
-   
+
          for (byte b = 0; b < 100; b++)
          {
             if (b < 10)
             {
-               assertEquals(0, buffer.get());
+               Assert.assertEquals(0, buffer.get());
             }
             else
             {
-               assertEquals(b, buffer.get());
+               Assert.assertEquals(b, buffer.get());
             }
          }
       }

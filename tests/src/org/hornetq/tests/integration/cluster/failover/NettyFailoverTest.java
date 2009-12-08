@@ -42,9 +42,9 @@ public class NettyFailoverTest extends FailoverTest
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
-   
+
    @Override
-   protected TransportConfiguration getAcceptorTransportConfiguration(boolean live)
+   protected TransportConfiguration getAcceptorTransportConfiguration(final boolean live)
    {
       if (live)
       {
@@ -52,14 +52,15 @@ public class NettyFailoverTest extends FailoverTest
       }
       else
       {
-         Map<String, Object> server1Params  = new HashMap<String, Object>();
-                  
+         Map<String, Object> server1Params = new HashMap<String, Object>();
+
          server1Params.put(TransportConstants.PORT_PROP_NAME, TransportConstants.DEFAULT_PORT + 1);
-         
-         return new TransportConfiguration("org.hornetq.integration.transports.netty.NettyAcceptorFactory", server1Params);
+
+         return new TransportConfiguration("org.hornetq.integration.transports.netty.NettyAcceptorFactory",
+                                           server1Params);
       }
    }
-   
+
    @Override
    protected TransportConfiguration getConnectorTransportConfiguration(final boolean live)
    {
@@ -69,11 +70,12 @@ public class NettyFailoverTest extends FailoverTest
       }
       else
       {
-         Map<String, Object> server1Params  = new HashMap<String, Object>();
-         
+         Map<String, Object> server1Params = new HashMap<String, Object>();
+
          server1Params.put(TransportConstants.PORT_PROP_NAME, TransportConstants.DEFAULT_PORT + 1);
-         
-         return new TransportConfiguration("org.hornetq.integration.transports.netty.NettyConnectorFactory", server1Params);
+
+         return new TransportConfiguration("org.hornetq.integration.transports.netty.NettyConnectorFactory",
+                                           server1Params);
       }
    }
 

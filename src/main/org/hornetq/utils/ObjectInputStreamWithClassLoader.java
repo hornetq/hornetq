@@ -35,8 +35,7 @@ public class ObjectInputStreamWithClassLoader extends ObjectInputStream
 
    // Constructors ---------------------------------------------------------------------------------
 
-   public ObjectInputStreamWithClassLoader(InputStream in)
-      throws IOException
+   public ObjectInputStreamWithClassLoader(final InputStream in) throws IOException
    {
       super(in);
    }
@@ -47,7 +46,8 @@ public class ObjectInputStreamWithClassLoader extends ObjectInputStream
 
    // Protected ------------------------------------------------------------------------------------
 
-   protected Class resolveClass(ObjectStreamClass desc) throws IOException, ClassNotFoundException
+   @Override
+   protected Class resolveClass(final ObjectStreamClass desc) throws IOException, ClassNotFoundException
    {
       String name = desc.getName();
       ClassLoader loader = Thread.currentThread().getContextClassLoader();

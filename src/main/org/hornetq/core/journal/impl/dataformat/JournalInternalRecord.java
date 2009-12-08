@@ -27,25 +27,25 @@ public abstract class JournalInternalRecord implements EncodingSupport
 {
 
    protected int fileID;
-   
+
    public int getFileID()
    {
       return fileID;
    }
 
-   public void setFileID(int fileID)
+   public void setFileID(final int fileID)
    {
       this.fileID = fileID;
    }
 
-   public void decode(HornetQBuffer buffer)
+   public void decode(final HornetQBuffer buffer)
    {
    }
-   
-   public void setNumberOfRecords(int records)
+
+   public void setNumberOfRecords(final int records)
    {
    }
-   
+
    public int getNumberOfRecords()
    {
       return 0;
@@ -53,4 +53,3 @@ public abstract class JournalInternalRecord implements EncodingSupport
 
    public abstract int getEncodeSize();
 }
-

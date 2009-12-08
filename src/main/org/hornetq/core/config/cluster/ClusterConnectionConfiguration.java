@@ -64,7 +64,7 @@ public class ClusterConnectionConfiguration implements Serializable
       this.staticConnectorNamePairs = staticConnectorNamePairs;
       this.duplicateDetection = duplicateDetection;
       this.forwardWhenNoConsumers = forwardWhenNoConsumers;
-      this.discoveryGroupName = null;
+      discoveryGroupName = null;
       this.maxHops = maxHops;
       this.confirmationWindowSize = confirmationWindowSize;
    }
@@ -84,7 +84,7 @@ public class ClusterConnectionConfiguration implements Serializable
       this.duplicateDetection = duplicateDetection;
       this.forwardWhenNoConsumers = forwardWhenNoConsumers;
       this.discoveryGroupName = discoveryGroupName;
-      this.staticConnectorNamePairs = null;
+      staticConnectorNamePairs = null;
       this.maxHops = maxHops;
       this.confirmationWindowSize = confirmationWindowSize;
    }

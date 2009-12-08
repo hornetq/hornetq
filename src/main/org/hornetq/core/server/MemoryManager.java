@@ -12,7 +12,6 @@
  */
 package org.hornetq.core.server;
 
-
 /**
  * A MemoryManager
 
@@ -24,5 +23,5 @@ package org.hornetq.core.server;
  */
 public interface MemoryManager extends HornetQComponent
 {
-   boolean isMemoryLow();    
+   boolean isMemoryLow();
 }

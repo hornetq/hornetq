@@ -19,7 +19,6 @@ import java.util.List;
 import javax.transaction.xa.Xid;
 
 import org.hornetq.core.buffers.HornetQBuffer;
-import org.hornetq.utils.DataConstants;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -40,14 +39,14 @@ public class SessionXAGetInDoubtXidsResponseMessage extends PacketImpl
 
    public SessionXAGetInDoubtXidsResponseMessage(final List<Xid> xids)
    {
-      super(SESS_XA_INDOUBT_XIDS_RESP);
+      super(PacketImpl.SESS_XA_INDOUBT_XIDS_RESP);
 
       this.xids = xids;
    }
 
    public SessionXAGetInDoubtXidsResponseMessage()
    {
-      super(SESS_XA_INDOUBT_XIDS_RESP);
+      super(PacketImpl.SESS_XA_INDOUBT_XIDS_RESP);
    }
 
    // Public --------------------------------------------------------

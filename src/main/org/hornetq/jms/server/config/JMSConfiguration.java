@@ -27,9 +27,12 @@ import javax.naming.Context;
 public interface JMSConfiguration
 {
    void setContext(Context context);
+
    Context getContext();
-   
+
    List<QueueConfiguration> getQueueConfigurations();
+
    List<TopicConfiguration> getTopicConfigurations();
+
    List<ConnectionFactoryConfiguration> getConnectionFactoryConfigurations();
 }

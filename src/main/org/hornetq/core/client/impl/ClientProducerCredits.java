@@ -25,8 +25,8 @@ public interface ClientProducerCredits
    void acquireCredits(int credits) throws InterruptedException;
 
    void receiveCredits(int credits, int offset);
-   
+
    void reset();
-   
+
    void close();
 }

@@ -14,8 +14,6 @@
 package org.hornetq.tests.util;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static junit.framework.Assert.assertNotSame;
-import static junit.framework.Assert.assertSame;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -27,6 +25,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeoutException;
+
+import junit.framework.Assert;
 
 import org.hornetq.core.logging.Logger;
 
@@ -50,25 +50,25 @@ public class SpawnedVMSupport
 
    public static Process spawnVM(final String className, final String... args) throws Exception
    {
-      return spawnVM(className, new String[0], true, args);
+      return SpawnedVMSupport.spawnVM(className, new String[0], true, args);
    }
 
    public static Process spawnVM(final String className, final boolean logOutput, final String... args) throws Exception
    {
-      return spawnVM(className, new String[0], logOutput, args);
+      return SpawnedVMSupport.spawnVM(className, new String[0], logOutput, args);
    }
 
    public static Process spawnVM(final String className, final String[] vmargs, final String... args) throws Exception
    {
-      return spawnVM(className, vmargs, true, args);
+      return SpawnedVMSupport.spawnVM(className, vmargs, true, args);
    }
-   
+
    public static Process spawnVM(final String className,
                                  final String[] vmargs,
                                  final boolean logOutput,
                                  final String... args) throws Exception
    {
-      return spawnVM(className, "-Xms512m -Xmx512m ", vmargs, logOutput, false, args);
+      return SpawnedVMSupport.spawnVM(className, "-Xms512m -Xmx512m ", vmargs, logOutput, false, args);
    }
 
    public static Process spawnVM(final String className,
@@ -100,7 +100,7 @@ public class SpawnedVMSupport
       {
          sb.append("-cp").append(" \"").append(classPath).append("\" ");
       }
-      
+
       sb.append("-Djava.io.tmpdir=" + System.getProperty("java.io.tmpdir", "./tmp")).append(" ");
 
       sb.append("-Djava.library.path=").append(System.getProperty("java.library.path", "./native/bin")).append(" ");
@@ -126,15 +126,15 @@ public class SpawnedVMSupport
 
       String commandLine = sb.toString();
 
-      log.trace("command line: " + commandLine);
+      SpawnedVMSupport.log.trace("command line: " + commandLine);
 
       Process process = Runtime.getRuntime().exec(commandLine);
 
-      log.trace("process: " + process);
+      SpawnedVMSupport.log.trace("process: " + process);
 
       if (logOutput)
       {
-         startLogger(className, process);
+         SpawnedVMSupport.startLogger(className, process);
 
       }
 
@@ -151,7 +151,7 @@ public class SpawnedVMSupport
     * @param process
     * @throws ClassNotFoundException
     */
-   public static void startLogger(final String className, Process process) throws ClassNotFoundException
+   public static void startLogger(final String className, final Process process) throws ClassNotFoundException
    {
       ProcessLogger outputLogger = new ProcessLogger(true, process.getInputStream(), className);
       outputLogger.start();
@@ -182,11 +182,11 @@ public class SpawnedVMSupport
          int exitValue = future.get(10, SECONDS);
          if (sameValue)
          {
-            assertSame(value, exitValue);
+            Assert.assertSame(value, exitValue);
          }
          else
          {
-            assertNotSame(value, exitValue);
+            Assert.assertNotSame(value, exitValue);
          }
       }
       finally
@@ -200,9 +200,9 @@ public class SpawnedVMSupport
     */
    static class ProcessLogger extends Thread
    {
-      private InputStream is;
-      
-      private String className;
+      private final InputStream is;
+
+      private final String className;
 
       private final boolean print;
 

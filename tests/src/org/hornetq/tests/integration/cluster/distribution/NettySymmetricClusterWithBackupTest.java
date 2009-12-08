@@ -20,7 +20,6 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-
 package org.hornetq.tests.integration.cluster.distribution;
 
 /**
@@ -32,11 +31,12 @@ package org.hornetq.tests.integration.cluster.distribution;
  */
 public class NettySymmetricClusterWithBackupTest extends SymmetricClusterWithBackupTest
 {
+   @Override
    protected boolean isNetty()
    {
       return true;
    }
-   
+
    public void _test() throws Exception
    {
       for (int i = 0; i < 50; i++)
@@ -45,6 +45,6 @@ public class NettySymmetricClusterWithBackupTest extends SymmetricClusterWithBac
          testStartStopServers();
          tearDown();
          setUp();
-      }  
+      }
    }
 }

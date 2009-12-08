@@ -14,7 +14,6 @@
 package org.hornetq.core.remoting.impl.wireformat;
 
 import org.hornetq.core.buffers.HornetQBuffer;
-import org.hornetq.utils.DataConstants;
 
 /**
  * A SessionReceiveLargeMessage
@@ -36,7 +35,7 @@ public class SessionReceiveLargeMessage extends PacketImpl
 
    public SessionReceiveLargeMessage()
    {
-      super(SESS_RECEIVE_LARGE_MSG);
+      super(PacketImpl.SESS_RECEIVE_LARGE_MSG);
    }
 
    public SessionReceiveLargeMessage(final long consumerID,
@@ -44,7 +43,7 @@ public class SessionReceiveLargeMessage extends PacketImpl
                                      final long largeMessageSize,
                                      final int deliveryCount)
    {
-      super(SESS_RECEIVE_LARGE_MSG);
+      super(PacketImpl.SESS_RECEIVE_LARGE_MSG);
 
       this.consumerID = consumerID;
 
@@ -64,7 +63,7 @@ public class SessionReceiveLargeMessage extends PacketImpl
    {
       return consumerID;
    }
-   
+
    public int getDeliveryCount()
    {
       return deliveryCount;
@@ -77,7 +76,8 @@ public class SessionReceiveLargeMessage extends PacketImpl
    {
       return largeMessageSize;
    }
-   
+
+   @Override
    public void encodeRest(final HornetQBuffer buffer)
    {
       buffer.writeLong(consumerID);
@@ -87,6 +87,7 @@ public class SessionReceiveLargeMessage extends PacketImpl
       buffer.writeBytes(largeMessageHeader);
    }
 
+   @Override
    public void decodeRest(final HornetQBuffer buffer)
    {
       consumerID = buffer.readLong();

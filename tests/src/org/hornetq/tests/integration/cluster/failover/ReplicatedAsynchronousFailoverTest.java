@@ -65,7 +65,6 @@ public class ReplicatedAsynchronousFailoverTest extends AsynchronousFailoverTest
       server0Service.start();
    }
 
-
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------

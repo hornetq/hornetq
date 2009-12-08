@@ -9,7 +9,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
  * implied.  See the License for the specific language governing
  * permissions and limitations under the License.
- */ 
+ */
 
 package org.hornetq.tests.unit.core.server.impl.fakes;
 
@@ -27,44 +27,44 @@ import org.hornetq.utils.SimpleString;
 public class FakeFilter implements Filter
 {
    private String headerName;
-   
+
    private Object headerValue;
-         
-   public FakeFilter(String headerName, Object headerValue)
+
+   public FakeFilter(final String headerName, final Object headerValue)
    {
       this.headerName = headerName;
-      
+
       this.headerValue = headerValue;
    }
-   
+
    public FakeFilter()
-   {         
+   {
    }
-   
-   public boolean match(ServerMessage message)
+
+   public boolean match(final ServerMessage message)
    {
       if (headerName != null)
       {
          Object value = message.getObjectProperty(new SimpleString(headerName));
-         
+
          if (value instanceof SimpleString)
          {
             value = ((SimpleString)value).toString();
          }
-         
+
          if (value != null && headerValue.equals(value))
          {
             return true;
          }
-         
+
          return false;
       }
-      
+
       return true;
    }
 
    public SimpleString getFilterString()
    {
       return null;
-   }      
+   }
 }

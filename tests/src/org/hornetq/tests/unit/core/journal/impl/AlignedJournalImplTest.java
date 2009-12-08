@@ -22,6 +22,8 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.journal.EncodingSupport;
 import org.hornetq.core.journal.LoaderCallback;
 import org.hornetq.core.journal.PreparedTransactionInfo;
@@ -48,23 +50,25 @@ public class AlignedJournalImplTest extends UnitTestCase
    private static final LoaderCallback dummyLoader = new LoaderCallback()
    {
 
-      public void addPreparedTransaction(PreparedTransactionInfo preparedTransaction)
+      public void addPreparedTransaction(final PreparedTransactionInfo preparedTransaction)
       {
       }
 
-      public void addRecord(RecordInfo info)
+      public void addRecord(final RecordInfo info)
       {
       }
 
-      public void deleteRecord(long id)
+      public void deleteRecord(final long id)
       {
       }
 
-      public void updateRecord(RecordInfo info)
+      public void updateRecord(final RecordInfo info)
       {
       }
 
-      public void failedTransaction(long transactionID, List<RecordInfo> records, List<RecordInfo> recordsToDelete)
+      public void failedTransaction(final long transactionID,
+                                    final List<RecordInfo> records,
+                                    final List<RecordInfo> recordsToDelete)
       {
       }
    };
@@ -76,7 +80,7 @@ public class AlignedJournalImplTest extends UnitTestCase
    JournalImpl journalImpl = null;
 
    private ArrayList<RecordInfo> records = null;
-   
+
    private ArrayList<Long> incompleteTransactions = null;
 
    private ArrayList<PreparedTransactionInfo> transactions = null;
@@ -125,12 +129,12 @@ public class AlignedJournalImplTest extends UnitTestCase
 
          for (int i = 0; i < 200; i++)
          {
-            assertEquals((byte)1, buffer.get(i));
+            Assert.assertEquals((byte)1, buffer.get(i));
          }
 
          for (int i = 201; i < 600; i++)
          {
-            assertEquals("Position " + i, (byte)2, buffer.get(i));
+            Assert.assertEquals("Position " + i, (byte)2, buffer.get(i));
          }
 
       }
@@ -146,7 +150,7 @@ public class AlignedJournalImplTest extends UnitTestCase
       try
       {
          journalImpl = new JournalImpl(2000, 2, 0, 0, factory, "tt", "tt", 1000);
-         fail("Supposed to throw an exception");
+         Assert.fail("Supposed to throw an exception");
       }
       catch (Exception ignored)
       {
@@ -168,15 +172,15 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       setupAndLoadJournal(JOURNAL_SIZE, 10);
 
-      assertEquals(1, records.size());
+      Assert.assertEquals(1, records.size());
 
-      assertEquals(13, records.get(0).id);
+      Assert.assertEquals(13, records.get(0).id);
 
-      assertEquals(14, records.get(0).userRecordType);
+      Assert.assertEquals(14, records.get(0).userRecordType);
 
-      assertEquals(1, records.get(0).data.length);
+      Assert.assertEquals(1, records.get(0).data.length);
 
-      assertEquals(15, records.get(0).data[0]);
+      Assert.assertEquals(15, records.get(0).data[0]);
 
    }
 
@@ -187,8 +191,8 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       setupAndLoadJournal(JOURNAL_SIZE, 10);
 
-      assertEquals(0, records.size());
-      assertEquals(0, transactions.size());
+      Assert.assertEquals(0, records.size());
+      Assert.assertEquals(0, transactions.size());
 
       for (int i = 0; i < 25; i++)
       {
@@ -208,17 +212,17 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       setupAndLoadJournal(JOURNAL_SIZE, 1024);
 
-      assertEquals(50, records.size());
+      Assert.assertEquals(50, records.size());
 
       int i = 0;
       for (RecordInfo recordItem : records)
       {
-         assertEquals(i * 100l, recordItem.id);
-         assertEquals(i, recordItem.getUserRecordType());
-         assertEquals(5, recordItem.data.length);
+         Assert.assertEquals(i * 100l, recordItem.id);
+         Assert.assertEquals(i, recordItem.getUserRecordType());
+         Assert.assertEquals(5, recordItem.data.length);
          for (int j = 0; j < 5; j++)
          {
-            assertEquals((byte)i, recordItem.data[j]);
+            Assert.assertEquals((byte)i, recordItem.data[j]);
          }
 
          i++;
@@ -243,23 +247,23 @@ public class AlignedJournalImplTest extends UnitTestCase
 
          if (i < 50)
          {
-            assertEquals(i * 100l, recordItem.id);
-            assertEquals(i, recordItem.getUserRecordType());
-            assertEquals(5, recordItem.data.length);
+            Assert.assertEquals(i * 100l, recordItem.id);
+            Assert.assertEquals(i, recordItem.getUserRecordType());
+            Assert.assertEquals(5, recordItem.data.length);
             for (int j = 0; j < 5; j++)
             {
-               assertEquals((byte)i, recordItem.data[j]);
+               Assert.assertEquals((byte)i, recordItem.data[j]);
             }
          }
          else
          {
-            assertEquals((i - 10) * 100l, recordItem.id);
-            assertEquals(i - 10, recordItem.getUserRecordType());
-            assertTrue(recordItem.isUpdate);
-            assertEquals(10, recordItem.data.length);
+            Assert.assertEquals((i - 10) * 100l, recordItem.id);
+            Assert.assertEquals(i - 10, recordItem.getUserRecordType());
+            Assert.assertTrue(recordItem.isUpdate);
+            Assert.assertEquals(10, recordItem.data.length);
             for (int j = 0; j < 10; j++)
             {
-               assertEquals((byte)'x', recordItem.data[j]);
+               Assert.assertEquals((byte)'x', recordItem.data[j]);
             }
          }
 
@@ -282,11 +286,11 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       journalImpl.debugWait();
 
-      assertEquals(2, factory.listFiles("tt").size());
+      Assert.assertEquals(2, factory.listFiles("tt").size());
 
-      log.debug("Initial:--> " + journalImpl.debug());
+      AlignedJournalImplTest.log.debug("Initial:--> " + journalImpl.debug());
 
-      log.debug("_______________________________");
+      AlignedJournalImplTest.log.debug("_______________________________");
 
       for (int i = 0; i < 50; i++)
       {
@@ -299,7 +303,7 @@ public class AlignedJournalImplTest extends UnitTestCase
       // async requests are done
       journalImpl.debugWait();
 
-      assertEquals(3, factory.listFiles("tt").size());
+      Assert.assertEquals(3, factory.listFiles("tt").size());
 
       for (int i = 10; i < 50; i++)
       {
@@ -310,9 +314,9 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       setupAndLoadJournal(JOURNAL_SIZE, 100);
 
-      assertEquals(10, records.size());
+      Assert.assertEquals(10, records.size());
 
-      assertEquals(3, factory.listFiles("tt").size());
+      Assert.assertEquals(3, factory.listFiles("tt").size());
 
    }
 
@@ -328,11 +332,11 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       journalImpl.debugWait();
 
-      assertEquals(2, factory.listFiles("tt").size());
+      Assert.assertEquals(2, factory.listFiles("tt").size());
 
-      log.debug("Initial:--> " + journalImpl.debug());
+      AlignedJournalImplTest.log.debug("Initial:--> " + journalImpl.debug());
 
-      log.debug("_______________________________");
+      AlignedJournalImplTest.log.debug("_______________________________");
 
       for (int i = 0; i < 50; i++)
       {
@@ -343,7 +347,7 @@ public class AlignedJournalImplTest extends UnitTestCase
       // async requests are done
       journalImpl.debugWait();
 
-      assertEquals(2, factory.listFiles("tt").size());
+      Assert.assertEquals(2, factory.listFiles("tt").size());
 
       for (int i = 0; i < 50; i++)
       {
@@ -356,27 +360,27 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       journalImpl.debugWait();
 
-      assertEquals(3, factory.listFiles("tt").size());
+      Assert.assertEquals(3, factory.listFiles("tt").size());
 
       setupAndLoadJournal(JOURNAL_SIZE, 1);
 
-      assertEquals(1, records.size());
+      Assert.assertEquals(1, records.size());
 
-      assertEquals(1000, records.get(0).id);
+      Assert.assertEquals(1000, records.get(0).id);
 
       journalImpl.checkReclaimStatus();
 
-      log.debug(journalImpl.debug());
+      AlignedJournalImplTest.log.debug(journalImpl.debug());
 
       journalImpl.debugWait();
 
-      log.debug("Final:--> " + journalImpl.debug());
+      AlignedJournalImplTest.log.debug("Final:--> " + journalImpl.debug());
 
-      log.debug("_______________________________");
+      AlignedJournalImplTest.log.debug("_______________________________");
 
-      log.debug("Files bufferSize:" + factory.listFiles("tt").size());
+      AlignedJournalImplTest.log.debug("Files bufferSize:" + factory.listFiles("tt").size());
 
-      assertEquals(2, factory.listFiles("tt").size());
+      Assert.assertEquals(2, factory.listFiles("tt").size());
 
    }
 
@@ -386,32 +390,32 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       setupAndLoadJournal(JOURNAL_SIZE, 100);
 
-      assertEquals(0, records.size());
-      assertEquals(0, transactions.size());
+      Assert.assertEquals(0, records.size());
+      Assert.assertEquals(0, transactions.size());
 
       journalImpl.appendAddRecordTransactional(1, 1, (byte)1, new SimpleEncoding(1, (byte)1));
 
       setupAndLoadJournal(JOURNAL_SIZE, 100);
 
-      assertEquals(0, records.size());
-      assertEquals(0, transactions.size());
+      Assert.assertEquals(0, records.size());
+      Assert.assertEquals(0, transactions.size());
 
       try
       {
          journalImpl.appendCommitRecord(1l, false);
          // This was supposed to throw an exception, as the transaction was
          // forgotten (interrupted by a reload).
-         fail("Supposed to throw exception");
+         Assert.fail("Supposed to throw exception");
       }
       catch (Exception e)
       {
-         log.warn(e);
+         AlignedJournalImplTest.log.warn(e);
       }
 
       setupAndLoadJournal(JOURNAL_SIZE, 100);
 
-      assertEquals(0, records.size());
-      assertEquals(0, transactions.size());
+      Assert.assertEquals(0, records.size());
+      Assert.assertEquals(0, transactions.size());
 
    }
 
@@ -423,8 +427,8 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       journalImpl.setAutoReclaim(false);
 
-      assertEquals(0, records.size());
-      assertEquals(0, transactions.size());
+      Assert.assertEquals(0, records.size());
+      Assert.assertEquals(0, transactions.size());
 
       for (int i = 0; i < 10; i++)
       {
@@ -434,38 +438,38 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       journalImpl.debugWait();
 
-      assertEquals(12, factory.listFiles("tt").size());
+      Assert.assertEquals(12, factory.listFiles("tt").size());
 
       journalImpl.appendAddRecordTransactional(78l, 1, (byte)1, new SimpleEncoding(1, (byte)1));
 
-      assertEquals(12, factory.listFiles("tt").size());
+      Assert.assertEquals(12, factory.listFiles("tt").size());
 
       setupAndLoadJournal(JOURNAL_SIZE, 100);
 
-      assertEquals(0, records.size());
-      assertEquals(0, transactions.size());
-      assertEquals(2, incompleteTransactions.size());
-      assertEquals((Long)77l, incompleteTransactions.get(0));
-      assertEquals((Long)78l, incompleteTransactions.get(1));
+      Assert.assertEquals(0, records.size());
+      Assert.assertEquals(0, transactions.size());
+      Assert.assertEquals(2, incompleteTransactions.size());
+      Assert.assertEquals((Long)77l, incompleteTransactions.get(0));
+      Assert.assertEquals((Long)78l, incompleteTransactions.get(1));
 
       try
       {
          journalImpl.appendCommitRecord(77l, false);
          // This was supposed to throw an exception, as the transaction was
          // forgotten (interrupted by a reload).
-         fail("Supposed to throw exception");
+         Assert.fail("Supposed to throw exception");
       }
       catch (Exception e)
       {
-         log.debug("Expected exception " + e, e);
+         AlignedJournalImplTest.log.debug("Expected exception " + e, e);
       }
 
       setupAndLoadJournal(JOURNAL_SIZE, 100);
 
-      assertEquals(0, records.size());
-      assertEquals(0, transactions.size());
+      Assert.assertEquals(0, records.size());
+      Assert.assertEquals(0, transactions.size());
 
-      assertEquals(2, factory.listFiles("tt").size());
+      Assert.assertEquals(2, factory.listFiles("tt").size());
 
    }
 
@@ -475,8 +479,8 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       setupAndLoadJournal(JOURNAL_SIZE, 100);
 
-      assertEquals(0, records.size());
-      assertEquals(0, transactions.size());
+      Assert.assertEquals(0, records.size());
+      Assert.assertEquals(0, transactions.size());
 
       for (int i = 0; i < 10; i++)
       {
@@ -488,18 +492,18 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       journalImpl.debugWait();
 
-      assertEquals(12, factory.listFiles("tt").size());
+      Assert.assertEquals(12, factory.listFiles("tt").size());
 
       setupAndLoadJournal(JOURNAL_SIZE, 100);
 
-      assertEquals(10, records.size());
-      assertEquals(0, transactions.size());
+      Assert.assertEquals(10, records.size());
+      Assert.assertEquals(0, transactions.size());
 
       journalImpl.checkReclaimStatus();
 
-      assertEquals(10, journalImpl.getDataFilesCount());
+      Assert.assertEquals(10, journalImpl.getDataFilesCount());
 
-      assertEquals(12, factory.listFiles("tt").size());
+      Assert.assertEquals(12, factory.listFiles("tt").size());
 
       for (int i = 0; i < 10; i++)
       {
@@ -517,13 +521,13 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       journalImpl.checkReclaimStatus();
 
-      assertEquals(1, journalImpl.getDataFilesCount());
+      Assert.assertEquals(1, journalImpl.getDataFilesCount());
 
       setupAndLoadJournal(JOURNAL_SIZE, 100);
 
-      assertEquals(1, journalImpl.getDataFilesCount());
+      Assert.assertEquals(1, journalImpl.getDataFilesCount());
 
-      assertEquals(3, factory.listFiles("tt").size());
+      Assert.assertEquals(3, factory.listFiles("tt").size());
    }
 
    public void testTotalSize() throws Exception
@@ -532,8 +536,8 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       setupAndLoadJournal(JOURNAL_SIZE, 100);
 
-      assertEquals(0, records.size());
-      assertEquals(0, transactions.size());
+      Assert.assertEquals(0, records.size());
+      Assert.assertEquals(0, transactions.size());
 
       journalImpl.appendAddRecordTransactional(1l,
                                                2l,
@@ -546,7 +550,7 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       setupAndLoadJournal(JOURNAL_SIZE, 100);
 
-      assertEquals(1, records.size());
+      Assert.assertEquals(1, records.size());
 
    }
 
@@ -556,10 +560,10 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       setupAndLoadJournal(JOURNAL_SIZE, 100);
 
-      assertEquals(2, factory.listFiles("tt").size());
+      Assert.assertEquals(2, factory.listFiles("tt").size());
 
-      assertEquals(0, records.size());
-      assertEquals(0, transactions.size());
+      Assert.assertEquals(0, records.size());
+      Assert.assertEquals(0, transactions.size());
 
       for (int i = 0; i < 2; i++)
       {
@@ -587,7 +591,7 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       int posCheckSize = buffer.position();
 
-      assertEquals(JournalImpl.SIZE_ADD_RECORD_TX + 1, buffer.getInt());
+      Assert.assertEquals(JournalImpl.SIZE_ADD_RECORD_TX + 1, buffer.getInt());
 
       buffer.position(posCheckSize);
 
@@ -604,13 +608,13 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       setupAndLoadJournal(JOURNAL_SIZE, 100);
 
-      assertEquals(0, records.size());
+      Assert.assertEquals(0, records.size());
 
       journalImpl.checkReclaimStatus();
 
-      assertEquals(0, journalImpl.getDataFilesCount());
+      Assert.assertEquals(0, journalImpl.getDataFilesCount());
 
-      assertEquals(2, factory.listFiles("tt").size());
+      Assert.assertEquals(2, factory.listFiles("tt").size());
 
    }
 
@@ -620,10 +624,10 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       setupAndLoadJournal(JOURNAL_SIZE, 100);
 
-      assertEquals(2, factory.listFiles("tt").size());
+      Assert.assertEquals(2, factory.listFiles("tt").size());
 
-      assertEquals(0, records.size());
-      assertEquals(0, transactions.size());
+      Assert.assertEquals(0, records.size());
+      Assert.assertEquals(0, transactions.size());
 
       for (int i = 0; i < 20; i++)
       {
@@ -652,7 +656,7 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       int posCheckSize = buffer.position();
 
-      assertEquals(JournalImpl.SIZE_ADD_RECORD_TX + 1, buffer.getInt());
+      Assert.assertEquals(JournalImpl.SIZE_ADD_RECORD_TX + 1, buffer.getInt());
 
       buffer.position(posCheckSize);
 
@@ -669,7 +673,7 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       setupAndLoadJournal(JOURNAL_SIZE, 100);
 
-      assertEquals(20, records.size());
+      Assert.assertEquals(20, records.size());
 
       journalImpl.checkReclaimStatus();
 
@@ -681,11 +685,11 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       setupAndLoadJournal(JOURNAL_SIZE, 100, 10);
 
-      assertEquals(10, factory.listFiles("tt").size());
+      Assert.assertEquals(10, factory.listFiles("tt").size());
 
       setupAndLoadJournal(JOURNAL_SIZE, 100, 2);
 
-      assertEquals(10, factory.listFiles("tt").size());
+      Assert.assertEquals(10, factory.listFiles("tt").size());
 
       for (int i = 0; i < 10; i++)
       {
@@ -695,9 +699,9 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       setupAndLoadJournal(JOURNAL_SIZE, 100, 2);
 
-      assertEquals(10, records.size());
+      Assert.assertEquals(10, records.size());
 
-      assertEquals(12, factory.listFiles("tt").size());
+      Assert.assertEquals(12, factory.listFiles("tt").size());
 
       for (int i = 0; i < 10; i++)
       {
@@ -710,9 +714,9 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       setupAndLoadJournal(JOURNAL_SIZE, 100, 2);
 
-      assertEquals(0, records.size());
+      Assert.assertEquals(0, records.size());
 
-      assertEquals(2, factory.listFiles("tt").size());
+      Assert.assertEquals(2, factory.listFiles("tt").size());
    }
 
    public void testReloadIncompleteTransaction() throws Exception
@@ -721,10 +725,10 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       setupAndLoadJournal(JOURNAL_SIZE, 1);
 
-      assertEquals(2, factory.listFiles("tt").size());
+      Assert.assertEquals(2, factory.listFiles("tt").size());
 
-      assertEquals(0, records.size());
-      assertEquals(0, transactions.size());
+      Assert.assertEquals(0, records.size());
+      Assert.assertEquals(0, transactions.size());
 
       for (int i = 0; i < 10; i++)
       {
@@ -766,13 +770,13 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       setupAndLoadJournal(JOURNAL_SIZE, 100);
 
-      assertEquals(0, records.size());
+      Assert.assertEquals(0, records.size());
 
       journalImpl.checkReclaimStatus();
 
-      assertEquals(0, journalImpl.getDataFilesCount());
+      Assert.assertEquals(0, journalImpl.getDataFilesCount());
 
-      assertEquals(2, factory.listFiles("tt").size());
+      Assert.assertEquals(2, factory.listFiles("tt").size());
 
    }
 
@@ -782,8 +786,8 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       setupAndLoadJournal(JOURNAL_SIZE, 100);
 
-      assertEquals(0, records.size());
-      assertEquals(0, transactions.size());
+      Assert.assertEquals(0, records.size());
+      Assert.assertEquals(0, transactions.size());
 
       for (int i = 0; i < 10; i++)
       {
@@ -814,7 +818,7 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       setupAndLoadJournal(JOURNAL_SIZE, 100);
 
-      assertEquals(1, records.size());
+      Assert.assertEquals(1, records.size());
    }
 
    public void testCommitWithMultipleFiles() throws Exception
@@ -823,8 +827,8 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       setupAndLoadJournal(JOURNAL_SIZE, 100);
 
-      assertEquals(0, records.size());
-      assertEquals(0, transactions.size());
+      Assert.assertEquals(0, records.size());
+      Assert.assertEquals(0, transactions.size());
 
       for (int i = 0; i < 50; i++)
       {
@@ -852,7 +856,7 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       setupAndLoadJournal(JOURNAL_SIZE, 100);
 
-      assertEquals(40, records.size());
+      Assert.assertEquals(40, records.size());
 
    }
 
@@ -862,8 +866,8 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       setupAndLoadJournal(JOURNAL_SIZE, 1);
 
-      assertEquals(0, records.size());
-      assertEquals(0, transactions.size());
+      Assert.assertEquals(0, records.size());
+      Assert.assertEquals(0, transactions.size());
 
       SimpleEncoding xid = new SimpleEncoding(10, (byte)1);
 
@@ -877,25 +881,25 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       setupAndLoadJournal(JOURNAL_SIZE, 1);
 
-      assertEquals(1, transactions.size());
-      assertEquals(1, transactions.get(0).recordsToDelete.size());
-      assertEquals(1, records.size());
+      Assert.assertEquals(1, transactions.size());
+      Assert.assertEquals(1, transactions.get(0).recordsToDelete.size());
+      Assert.assertEquals(1, records.size());
 
       for (RecordInfo record : transactions.get(0).recordsToDelete)
       {
          byte[] data = record.data;
-         assertEquals(100, data.length);
+         Assert.assertEquals(100, data.length);
          for (byte element : data)
          {
-            assertEquals((byte)'j', element);
+            Assert.assertEquals((byte)'j', element);
          }
       }
 
-      assertEquals(10, transactions.get(0).extraData.length);
+      Assert.assertEquals(10, transactions.get(0).extraData.length);
 
       for (int i = 0; i < 10; i++)
       {
-         assertEquals((byte)1, transactions.get(0).extraData[i]);
+         Assert.assertEquals((byte)1, transactions.get(0).extraData[i]);
       }
 
       journalImpl.appendCommitRecord(1l, false);
@@ -904,8 +908,8 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       setupAndLoadJournal(JOURNAL_SIZE, 1);
 
-      assertEquals(0, transactions.size());
-      assertEquals(0, records.size());
+      Assert.assertEquals(0, transactions.size());
+      Assert.assertEquals(0, records.size());
 
    }
 
@@ -915,8 +919,8 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       setupAndLoadJournal(JOURNAL_SIZE, 1);
 
-      assertEquals(0, records.size());
-      assertEquals(0, transactions.size());
+      Assert.assertEquals(0, records.size());
+      Assert.assertEquals(0, transactions.size());
 
       for (int i = 0; i < 10; i++)
       {
@@ -930,30 +934,30 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       journalImpl.appendPrepareRecord(1l, xid1, false);
 
-      assertEquals(12, factory.listFiles("tt").size());
+      Assert.assertEquals(12, factory.listFiles("tt").size());
 
       setupAndLoadJournal(JOURNAL_SIZE, 1024);
 
-      assertEquals(0, records.size());
-      assertEquals(1, transactions.size());
+      Assert.assertEquals(0, records.size());
+      Assert.assertEquals(1, transactions.size());
 
-      assertEquals(10, transactions.get(0).extraData.length);
+      Assert.assertEquals(10, transactions.get(0).extraData.length);
       for (int i = 0; i < 10; i++)
       {
-         assertEquals((byte)1, transactions.get(0).extraData[i]);
+         Assert.assertEquals((byte)1, transactions.get(0).extraData[i]);
       }
 
       journalImpl.checkReclaimStatus();
 
-      assertEquals(10, journalImpl.getDataFilesCount());
+      Assert.assertEquals(10, journalImpl.getDataFilesCount());
 
-      assertEquals(12, factory.listFiles("tt").size());
+      Assert.assertEquals(12, factory.listFiles("tt").size());
 
       journalImpl.appendCommitRecord(1l, false);
 
       setupAndLoadJournal(JOURNAL_SIZE, 1024);
 
-      assertEquals(10, records.size());
+      Assert.assertEquals(10, records.size());
 
       journalImpl.checkReclaimStatus();
 
@@ -968,25 +972,25 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       setupAndLoadJournal(JOURNAL_SIZE, 1);
 
-      assertEquals(1, transactions.size());
+      Assert.assertEquals(1, transactions.size());
 
-      assertEquals(15, transactions.get(0).extraData.length);
+      Assert.assertEquals(15, transactions.get(0).extraData.length);
 
       for (byte element : transactions.get(0).extraData)
       {
-         assertEquals(2, element);
+         Assert.assertEquals(2, element);
       }
 
-      assertEquals(10, journalImpl.getDataFilesCount());
+      Assert.assertEquals(10, journalImpl.getDataFilesCount());
 
-      assertEquals(12, factory.listFiles("tt").size());
+      Assert.assertEquals(12, factory.listFiles("tt").size());
 
       journalImpl.appendCommitRecord(2l, false);
 
       setupAndLoadJournal(JOURNAL_SIZE, 1);
 
-      assertEquals(0, records.size());
-      assertEquals(0, transactions.size());
+      Assert.assertEquals(0, records.size());
+      Assert.assertEquals(0, transactions.size());
 
       journalImpl.forceMoveNextFile();
 
@@ -994,7 +998,7 @@ public class AlignedJournalImplTest extends UnitTestCase
       // ignored
       journalImpl.checkReclaimStatus();
 
-      assertEquals(2, factory.listFiles("tt").size());
+      Assert.assertEquals(2, factory.listFiles("tt").size());
 
    }
 
@@ -1004,8 +1008,8 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       setupAndLoadJournal(JOURNAL_SIZE, 100);
 
-      assertEquals(0, records.size());
-      assertEquals(0, transactions.size());
+      Assert.assertEquals(0, records.size());
+      Assert.assertEquals(0, transactions.size());
 
       for (int i = 0; i < 10; i++)
       {
@@ -1015,8 +1019,8 @@ public class AlignedJournalImplTest extends UnitTestCase
       journalImpl.appendPrepareRecord(1l, new SimpleEncoding(13, (byte)0), false);
 
       setupAndLoadJournal(JOURNAL_SIZE, 100);
-      assertEquals(0, records.size());
-      assertEquals(1, transactions.size());
+      Assert.assertEquals(0, records.size());
+      Assert.assertEquals(1, transactions.size());
 
       SequentialFile file = factory.createSequentialFile("tt-1.tt", 1);
 
@@ -1045,8 +1049,8 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       setupAndLoadJournal(JOURNAL_SIZE, 100);
 
-      assertEquals(0, records.size());
-      assertEquals(0, transactions.size());
+      Assert.assertEquals(0, records.size());
+      Assert.assertEquals(0, transactions.size());
    }
 
    public void testReclaimAfterRollabck() throws Exception
@@ -1067,13 +1071,13 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       journalImpl.checkReclaimStatus();
 
-      assertEquals(0, journalImpl.getDataFilesCount());
+      Assert.assertEquals(0, journalImpl.getDataFilesCount());
 
       setupAndLoadJournal(JOURNAL_SIZE, 1);
 
-      assertEquals(0, journalImpl.getDataFilesCount());
+      Assert.assertEquals(0, journalImpl.getDataFilesCount());
 
-      assertEquals(2, factory.listFiles("tt").size());
+      Assert.assertEquals(2, factory.listFiles("tt").size());
 
    }
 
@@ -1093,11 +1097,11 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       setupAndLoadJournal(JOURNAL_SIZE, 100);
 
-      assertEquals(10, records.size());
+      Assert.assertEquals(10, records.size());
 
       setupAndLoadJournal(JOURNAL_SIZE, 1);
 
-      assertEquals(10, records.size());
+      Assert.assertEquals(10, records.size());
    }
 
    // It should be ok to write records on NIO, and later read then on AIO
@@ -1116,11 +1120,11 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       setupAndLoadJournal(JOURNAL_SIZE, 100);
 
-      assertEquals(10, records.size());
+      Assert.assertEquals(10, records.size());
 
       setupAndLoadJournal(JOURNAL_SIZE, 512);
 
-      assertEquals(10, records.size());
+      Assert.assertEquals(10, records.size());
    }
 
    public void testEmptyPrepare() throws Exception
@@ -1137,17 +1141,17 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       setupAndLoadJournal(JOURNAL_SIZE, 1);
 
-      assertEquals(1, journalImpl.getDataFilesCount());
+      Assert.assertEquals(1, journalImpl.getDataFilesCount());
 
-      assertEquals(1, transactions.size());
+      Assert.assertEquals(1, transactions.size());
 
       journalImpl.forceMoveNextFile();
 
       setupAndLoadJournal(JOURNAL_SIZE, 1);
 
-      assertEquals(1, journalImpl.getDataFilesCount());
+      Assert.assertEquals(1, journalImpl.getDataFilesCount());
 
-      assertEquals(1, transactions.size());
+      Assert.assertEquals(1, transactions.size());
 
       journalImpl.appendCommitRecord(2l, false);
 
@@ -1161,8 +1165,8 @@ public class AlignedJournalImplTest extends UnitTestCase
       journalImpl.debugWait();
       journalImpl.checkReclaimStatus();
 
-      assertEquals(0, transactions.size());
-      assertEquals(0, journalImpl.getDataFilesCount());
+      Assert.assertEquals(0, transactions.size());
+      Assert.assertEquals(0, journalImpl.getDataFilesCount());
 
    }
 
@@ -1172,8 +1176,8 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       setupAndLoadJournal(JOURNAL_SIZE, 1);
 
-      assertEquals(0, records.size());
-      assertEquals(0, transactions.size());
+      Assert.assertEquals(0, records.size());
+      Assert.assertEquals(0, transactions.size());
 
       final CountDownLatch latchReady = new CountDownLatch(2);
       final CountDownLatch latchStart = new CountDownLatch(1);
@@ -1242,7 +1246,7 @@ public class AlignedJournalImplTest extends UnitTestCase
       t1.join();
       t2.join();
 
-      assertEquals(2, finishedOK.intValue());
+      Assert.assertEquals(2, finishedOK.intValue());
 
       journalImpl.debugWait();
 
@@ -1252,9 +1256,9 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       journalImpl.checkReclaimStatus();
 
-      assertEquals(0, journalImpl.getDataFilesCount());
+      Assert.assertEquals(0, journalImpl.getDataFilesCount());
 
-      assertEquals(2, factory.listFiles("tt").size());
+      Assert.assertEquals(2, factory.listFiles("tt").size());
 
    }
 
@@ -1266,7 +1270,7 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       impl.start();
 
-      impl.load(dummyLoader);
+      impl.load(AlignedJournalImplTest.dummyLoader);
 
       impl.appendAddRecord(1l, (byte)0, new SimpleEncoding(100, (byte)'a'), false);
       impl.appendAddRecord(2l, (byte)0, new SimpleEncoding(100, (byte)'b'), false);
@@ -1277,7 +1281,7 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       impl = new JournalImpl(512 + 1024 + 512, 20, 0, 0, factory, "hq", "hq", 1000);
       impl.start();
-      impl.load(dummyLoader);
+      impl.load(AlignedJournalImplTest.dummyLoader);
 
       // It looks silly, but this forceMoveNextFile is in place to replicate one
       // specific bug caught during development
@@ -1298,8 +1302,8 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       impl.load(info, trans, null);
 
-      assertEquals(0, info.size());
-      assertEquals(0, trans.size());
+      Assert.assertEquals(0, info.size());
+      Assert.assertEquals(0, trans.size());
 
    }
 
@@ -1315,7 +1319,7 @@ public class AlignedJournalImplTest extends UnitTestCase
       records = new ArrayList<RecordInfo>();
 
       transactions = new ArrayList<PreparedTransactionInfo>();
-      
+
       incompleteTransactions = new ArrayList<Long>();
 
       factory = null;
@@ -1341,7 +1345,7 @@ public class AlignedJournalImplTest extends UnitTestCase
       records = null;
 
       transactions = null;
-      
+
       incompleteTransactions = null;
 
       factory = null;
@@ -1380,12 +1384,14 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       journalImpl.load(records, transactions, new TransactionFailureCallback()
       {
-         public void failedTransaction(long transactionID, List<RecordInfo> records, List<RecordInfo> recordsToDelete)
+         public void failedTransaction(final long transactionID,
+                                       final List<RecordInfo> records,
+                                       final List<RecordInfo> recordsToDelete)
          {
             System.out.println("records.length = " + records.size());
             incompleteTransactions.add(transactionID);
          }
-         
+
       });
    }
 

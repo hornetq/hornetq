@@ -29,7 +29,7 @@ import javax.naming.InitialContext;
  */
 public class JMSBridgeExample
 {
-   public static void main(String[] args) throws Exception
+   public static void main(final String[] args) throws Exception
    {
       InitialContext initialContext = null;
       Connection sourceConnection = null;
@@ -77,7 +77,7 @@ public class JMSBridgeExample
          System.out.format("\nReceived from %s: %s\n",
                            ((Queue)messageReceived.getJMSDestination()).getQueueName(),
                            messageReceived.getText());
-         
+
          // Step 11. Display the received message's ID
          System.out.format("Message ID         : %s\n", messageReceived.getJMSMessageID());
 

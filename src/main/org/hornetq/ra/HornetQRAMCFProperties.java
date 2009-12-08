@@ -44,7 +44,7 @@ public class HornetQRAMCFProperties extends ConnectionFactoryProperties implemen
    /**
     * Trace enabled
     */
-   private static boolean trace = log.isTraceEnabled();
+   private static boolean trace = HornetQRAMCFProperties.log.isTraceEnabled();
 
    /**
     * The queue type
@@ -55,8 +55,6 @@ public class HornetQRAMCFProperties extends ConnectionFactoryProperties implemen
     * The topic type
     */
    private static final String TOPIC_TYPE = Topic.class.getName();
-
-
 
    public String strConnectionParameters;
 
@@ -77,9 +75,9 @@ public class HornetQRAMCFProperties extends ConnectionFactoryProperties implemen
     */
    public HornetQRAMCFProperties()
    {
-      if (trace)
+      if (HornetQRAMCFProperties.trace)
       {
-         log.trace("constructor()");
+         HornetQRAMCFProperties.log.trace("constructor()");
       }
 
       useTryLock = null;
@@ -92,9 +90,9 @@ public class HornetQRAMCFProperties extends ConnectionFactoryProperties implemen
     */
    public int getType()
    {
-      if (trace)
+      if (HornetQRAMCFProperties.trace)
       {
-         log.trace("getType()");
+         HornetQRAMCFProperties.log.trace("getType()");
       }
 
       return type;
@@ -107,7 +105,6 @@ public class HornetQRAMCFProperties extends ConnectionFactoryProperties implemen
    {
       return strConnectionParameters;
    }
-
 
    public void setConnectionParameters(final String configuration)
    {
@@ -128,7 +125,7 @@ public class HornetQRAMCFProperties extends ConnectionFactoryProperties implemen
       strBackupConnectionParameters = configuration;
       setParsedBackupConnectionParameters(Util.parseConfig(configuration));
    }
-   
+
    /**
     * Set the default session type.
     *
@@ -136,16 +133,16 @@ public class HornetQRAMCFProperties extends ConnectionFactoryProperties implemen
     */
    public void setSessionDefaultType(final String defaultType)
    {
-      if (trace)
+      if (HornetQRAMCFProperties.trace)
       {
-         log.trace("setSessionDefaultType(" + type + ")");
+         HornetQRAMCFProperties.log.trace("setSessionDefaultType(" + type + ")");
       }
 
-      if (defaultType.equals(QUEUE_TYPE))
+      if (defaultType.equals(HornetQRAMCFProperties.QUEUE_TYPE))
       {
          type = HornetQRAConnectionFactory.QUEUE_CONNECTION;
       }
-      else if (defaultType.equals(TOPIC_TYPE))
+      else if (defaultType.equals(HornetQRAMCFProperties.TOPIC_TYPE))
       {
          type = HornetQRAConnectionFactory.TOPIC_CONNECTION;
       }
@@ -162,9 +159,9 @@ public class HornetQRAMCFProperties extends ConnectionFactoryProperties implemen
     */
    public String getSessionDefaultType()
    {
-      if (trace)
+      if (HornetQRAMCFProperties.trace)
       {
-         log.trace("getSessionDefaultType()");
+         HornetQRAMCFProperties.log.trace("getSessionDefaultType()");
       }
 
       if (type == HornetQRAConnectionFactory.CONNECTION)
@@ -173,11 +170,11 @@ public class HornetQRAMCFProperties extends ConnectionFactoryProperties implemen
       }
       else if (type == HornetQRAConnectionFactory.QUEUE_CONNECTION)
       {
-         return TOPIC_TYPE;
+         return HornetQRAMCFProperties.TOPIC_TYPE;
       }
       else
       {
-         return QUEUE_TYPE;
+         return HornetQRAMCFProperties.QUEUE_TYPE;
       }
    }
 
@@ -188,9 +185,9 @@ public class HornetQRAMCFProperties extends ConnectionFactoryProperties implemen
     */
    public Integer getUseTryLock()
    {
-      if (trace)
+      if (HornetQRAMCFProperties.trace)
       {
-         log.trace("getUseTryLock()");
+         HornetQRAMCFProperties.log.trace("getUseTryLock()");
       }
 
       return useTryLock;
@@ -203,9 +200,9 @@ public class HornetQRAMCFProperties extends ConnectionFactoryProperties implemen
     */
    public void setUseTryLock(final Integer useTryLock)
    {
-      if (trace)
+      if (HornetQRAMCFProperties.trace)
       {
-         log.trace("setUseTryLock(" + useTryLock + ")");
+         HornetQRAMCFProperties.log.trace("setUseTryLock(" + useTryLock + ")");
       }
 
       this.useTryLock = useTryLock;

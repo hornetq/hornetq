@@ -16,8 +16,6 @@ package org.hornetq.core.management.impl;
 import java.util.List;
 import java.util.Map;
 
-import javax.management.StandardMBean;
-
 import org.hornetq.core.config.cluster.ClusterConnectionConfiguration;
 import org.hornetq.core.management.ClusterConnectionControl;
 import org.hornetq.core.persistence.StorageManager;
@@ -48,7 +46,7 @@ public class ClusterConnectionControlImpl extends AbstractControl implements Clu
 
    public ClusterConnectionControlImpl(final ClusterConnection clusterConnection,
                                        final StorageManager storageManager,
-                                       ClusterConnectionConfiguration configuration) throws Exception
+                                       final ClusterConnectionConfiguration configuration) throws Exception
    {
       super(ClusterConnectionControl.class, storageManager);
       this.clusterConnection = clusterConnection;

@@ -11,13 +11,10 @@
  * permissions and limitations under the License.
  */
 
-
 package org.hornetq.core.server;
 
 import org.hornetq.core.filter.Filter;
 import org.hornetq.utils.SimpleString;
-
-
 
 /**
  * A Divert
@@ -31,10 +28,10 @@ import org.hornetq.utils.SimpleString;
 public interface Divert extends Bindable
 {
    Filter getFilter();
-   
+
    boolean isExclusive();
-   
+
    SimpleString getUniqueName();
-   
+
    SimpleString getRoutingName();
 }

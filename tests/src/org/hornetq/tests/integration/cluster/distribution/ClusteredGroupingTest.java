@@ -15,6 +15,9 @@ package org.hornetq.tests.integration.cluster.distribution;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import junit.framework.Assert;
+
+import org.hornetq.core.client.management.impl.ManagementHelper;
 import org.hornetq.core.management.Notification;
 import org.hornetq.core.management.NotificationListener;
 import org.hornetq.core.management.NotificationType;
@@ -24,7 +27,6 @@ import org.hornetq.core.server.group.impl.GroupBinding;
 import org.hornetq.core.server.group.impl.GroupingHandlerConfiguration;
 import org.hornetq.core.server.group.impl.Proposal;
 import org.hornetq.core.server.group.impl.Response;
-import org.hornetq.core.client.management.impl.ManagementHelper;
 import org.hornetq.utils.SimpleString;
 
 /**
@@ -114,40 +116,40 @@ public class ClusteredGroupingTest extends ClusterTestBase
          {
             public SimpleString getName()
             {
-                  return null;
+               return null;
             }
 
-            public Response propose(Proposal proposal) throws Exception
+            public Response propose(final Proposal proposal) throws Exception
             {
                return null;
             }
 
-            public void proposed(Response response) throws Exception
+            public void proposed(final Response response) throws Exception
             {
                System.out.println("ClusteredGroupingTest.proposed");
             }
 
-            public void send(Response response, int distance) throws Exception
+            public void send(final Response response, final int distance) throws Exception
             {
                System.out.println("ClusteredGroupingTest.send");
             }
 
-            public Response receive(Proposal proposal, int distance) throws Exception
+            public Response receive(final Proposal proposal, final int distance) throws Exception
             {
                return null;
             }
 
-            public void onNotification(Notification notification)
+            public void onNotification(final Notification notification)
             {
                System.out.println("ClusteredGroupingTest.onNotification");
             }
 
-            public void addGroupBinding(GroupBinding groupBinding)
+            public void addGroupBinding(final GroupBinding groupBinding)
             {
                System.out.println("ClusteredGroupingTest.addGroupBinding");
             }
 
-            public Response getProposal(SimpleString fullID)
+            public Response getProposal(final SimpleString fullID)
             {
                return null;
             }
@@ -176,13 +178,12 @@ public class ClusteredGroupingTest extends ClusterTestBase
          try
          {
             sendWithProperty(1, "queues.testaddress", 10, false, MessageImpl.HDR_GROUP_ID, new SimpleString("id1"));
-            fail("should timeout");
+            Assert.fail("should timeout");
          }
          catch (Exception e)
          {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            e.printStackTrace(); // To change body of catch statement use File | Settings | File Templates.
          }
-
 
          System.out.println("*****************************************************************************");
       }
@@ -195,7 +196,6 @@ public class ClusteredGroupingTest extends ClusterTestBase
          stopServers(0, 1, 2);
       }
    }
-
 
    public void testGroupingSendTo2queues() throws Exception
    {
@@ -212,7 +212,6 @@ public class ClusteredGroupingTest extends ClusterTestBase
       setUpGroupHandler(GroupingHandlerConfiguration.TYPE.LOCAL, 0);
       setUpGroupHandler(GroupingHandlerConfiguration.TYPE.REMOTE, 1);
       setUpGroupHandler(GroupingHandlerConfiguration.TYPE.REMOTE, 2);
-
 
       startServers(0, 1, 2);
 
@@ -272,7 +271,6 @@ public class ClusteredGroupingTest extends ClusterTestBase
       setUpGroupHandler(GroupingHandlerConfiguration.TYPE.LOCAL, 0);
       setUpGroupHandler(GroupingHandlerConfiguration.TYPE.REMOTE, 1);
       setUpGroupHandler(GroupingHandlerConfiguration.TYPE.REMOTE, 2);
-
 
       startServers(0, 1, 2);
 
@@ -336,7 +334,6 @@ public class ClusteredGroupingTest extends ClusterTestBase
       setUpGroupHandler(GroupingHandlerConfiguration.TYPE.REMOTE, 1);
       setUpGroupHandler(GroupingHandlerConfiguration.TYPE.REMOTE, 2);
 
-
       startServers(0, 1, 2);
 
       try
@@ -397,7 +394,6 @@ public class ClusteredGroupingTest extends ClusterTestBase
       setUpGroupHandler(GroupingHandlerConfiguration.TYPE.REMOTE, 1);
       setUpGroupHandler(GroupingHandlerConfiguration.TYPE.REMOTE, 2);
 
-
       startServers(0, 1, 2);
 
       try
@@ -411,7 +407,7 @@ public class ClusteredGroupingTest extends ClusterTestBase
          createQueue(2, "queues.testaddress", "queue0", null, false);
 
          addConsumer(0, 0, "queue0", null);
-         //addConsumer(1, 1, "queue0", null);
+         // addConsumer(1, 1, "queue0", null);
          addConsumer(2, 2, "queue0", null);
 
          waitForBindings(0, "queues.testaddress", 1, 1, true);
@@ -444,7 +440,6 @@ public class ClusteredGroupingTest extends ClusterTestBase
       }
    }
 
-
    public void testGroupingRoundRobin() throws Exception
    {
       setupServer(0, isFileStorage(), isNetty());
@@ -460,7 +455,6 @@ public class ClusteredGroupingTest extends ClusterTestBase
       setUpGroupHandler(GroupingHandlerConfiguration.TYPE.LOCAL, 0);
       setUpGroupHandler(GroupingHandlerConfiguration.TYPE.REMOTE, 1);
       setUpGroupHandler(GroupingHandlerConfiguration.TYPE.REMOTE, 2);
-
 
       startServers(0, 1, 2);
 
@@ -486,12 +480,10 @@ public class ClusteredGroupingTest extends ClusterTestBase
          waitForBindings(1, "queues.testaddress", 2, 2, false);
          waitForBindings(2, "queues.testaddress", 2, 2, false);
 
-
          sendInRange(0, "queues.testaddress", 0, 10, false, MessageImpl.HDR_GROUP_ID, new SimpleString("id1"));
          sendInRange(0, "queues.testaddress", 10, 20, false, MessageImpl.HDR_GROUP_ID, new SimpleString("id2"));
          sendInRange(0, "queues.testaddress", 20, 30, false, MessageImpl.HDR_GROUP_ID, new SimpleString("id3"));
          verifyReceiveAllWithGroupIDRoundRobin(0, 10, 0, 1, 2);
-
 
          System.out.println("*****************************************************************************");
       }
@@ -504,7 +496,6 @@ public class ClusteredGroupingTest extends ClusterTestBase
          stopServers(0, 1, 2);
       }
    }
-
 
    public void testGroupingSendTo3queuesQueueRemoved() throws Exception
    {
@@ -521,7 +512,6 @@ public class ClusteredGroupingTest extends ClusterTestBase
       setUpGroupHandler(GroupingHandlerConfiguration.TYPE.LOCAL, 0);
       setUpGroupHandler(GroupingHandlerConfiguration.TYPE.REMOTE, 1);
       setUpGroupHandler(GroupingHandlerConfiguration.TYPE.REMOTE, 2);
-
 
       startServers(0, 1, 2);
 
@@ -632,22 +622,27 @@ public class ClusteredGroupingTest extends ClusterTestBase
 
          closeAllConsumers();
 
-
          final CountDownLatch latch = new CountDownLatch(4);
          NotificationListener listener = new NotificationListener()
          {
-            public void onNotification(Notification notification)
+            public void onNotification(final Notification notification)
             {
-               if(NotificationType.BINDING_REMOVED == notification.getType())
+               if (NotificationType.BINDING_REMOVED == notification.getType())
                {
-                  if(notification.getProperties().getSimpleStringProperty(ManagementHelper.HDR_ADDRESS).toString().equals("queues.testaddress"))
+                  if (notification.getProperties()
+                                  .getSimpleStringProperty(ManagementHelper.HDR_ADDRESS)
+                                  .toString()
+                                  .equals("queues.testaddress"))
                   {
                      latch.countDown();
                   }
                }
-               else  if(NotificationType.BINDING_ADDED == notification.getType())
+               else if (NotificationType.BINDING_ADDED == notification.getType())
                {
-                  if(notification.getProperties().getSimpleStringProperty(ManagementHelper.HDR_ADDRESS).toString().equals("queues.testaddress"))
+                  if (notification.getProperties()
+                                  .getSimpleStringProperty(ManagementHelper.HDR_ADDRESS)
+                                  .toString()
+                                  .equals("queues.testaddress"))
                   {
                      latch.countDown();
                   }
@@ -660,7 +655,8 @@ public class ClusteredGroupingTest extends ClusterTestBase
          stopServers(1);
 
          startServers(1);
-         assertTrue("timed out waiting for bindings to be removed and added back",latch.await(5, TimeUnit.SECONDS));
+         Assert.assertTrue("timed out waiting for bindings to be removed and added back", latch.await(5,
+                                                                                                      TimeUnit.SECONDS));
          getServer(0).getManagementService().removeNotificationListener(listener);
          getServer(2).getManagementService().removeNotificationListener(listener);
          addConsumer(1, 2, "queue0", null);
@@ -670,7 +666,6 @@ public class ClusteredGroupingTest extends ClusterTestBase
          waitForBindings(0, "queues.testaddress", 2, 1, false);
          sendInRange(2, "queues.testaddress", 10, 20, true, MessageImpl.HDR_GROUP_ID, new SimpleString("id1"));
          verifyReceiveAllInRange(10, 20, 1);
-
 
          System.out.println("*****************************************************************************");
       }
@@ -733,18 +728,24 @@ public class ClusteredGroupingTest extends ClusterTestBase
          final CountDownLatch latch = new CountDownLatch(4);
          NotificationListener listener = new NotificationListener()
          {
-            public void onNotification(Notification notification)
+            public void onNotification(final Notification notification)
             {
-               if(NotificationType.BINDING_REMOVED == notification.getType())
+               if (NotificationType.BINDING_REMOVED == notification.getType())
                {
-                  if(notification.getProperties().getSimpleStringProperty(ManagementHelper.HDR_ADDRESS).toString().equals("queues.testaddress"))
+                  if (notification.getProperties()
+                                  .getSimpleStringProperty(ManagementHelper.HDR_ADDRESS)
+                                  .toString()
+                                  .equals("queues.testaddress"))
                   {
                      latch.countDown();
                   }
                }
-               else  if(NotificationType.BINDING_ADDED == notification.getType())
+               else if (NotificationType.BINDING_ADDED == notification.getType())
                {
-                  if(notification.getProperties().getSimpleStringProperty(ManagementHelper.HDR_ADDRESS).toString().equals("queues.testaddress"))
+                  if (notification.getProperties()
+                                  .getSimpleStringProperty(ManagementHelper.HDR_ADDRESS)
+                                  .toString()
+                                  .equals("queues.testaddress"))
                   {
                      latch.countDown();
                   }
@@ -757,7 +758,8 @@ public class ClusteredGroupingTest extends ClusterTestBase
          stopServers(1);
 
          startServers(1);
-         assertTrue("timed out waiting for bindings to be removed and added back",latch.await(5, TimeUnit.SECONDS));
+         Assert.assertTrue("timed out waiting for bindings to be removed and added back", latch.await(5,
+                                                                                                      TimeUnit.SECONDS));
          getServer(0).getManagementService().removeNotificationListener(listener);
          getServer(2).getManagementService().removeNotificationListener(listener);
          addConsumer(1, 1, "queue0", null);
@@ -767,7 +769,6 @@ public class ClusteredGroupingTest extends ClusterTestBase
          waitForBindings(2, "queues.testaddress", 2, 1, false);
 
          verifyReceiveAllInRange(10, 20, 1);
-
 
          System.out.println("*****************************************************************************");
       }
@@ -780,7 +781,6 @@ public class ClusteredGroupingTest extends ClusterTestBase
          stopServers(0, 1, 2);
       }
    }
-
 
    public void testGroupingSendTo3queuesPinnedNodeGoesDownSendAfterRestart() throws Exception
    {
@@ -827,18 +827,24 @@ public class ClusteredGroupingTest extends ClusterTestBase
          final CountDownLatch latch = new CountDownLatch(4);
          NotificationListener listener = new NotificationListener()
          {
-            public void onNotification(Notification notification)
+            public void onNotification(final Notification notification)
             {
-               if(NotificationType.BINDING_REMOVED == notification.getType())
+               if (NotificationType.BINDING_REMOVED == notification.getType())
                {
-                  if(notification.getProperties().getSimpleStringProperty(ManagementHelper.HDR_ADDRESS).toString().equals("queues.testaddress"))
+                  if (notification.getProperties()
+                                  .getSimpleStringProperty(ManagementHelper.HDR_ADDRESS)
+                                  .toString()
+                                  .equals("queues.testaddress"))
                   {
                      latch.countDown();
                   }
                }
-               else  if(NotificationType.BINDING_ADDED == notification.getType())
+               else if (NotificationType.BINDING_ADDED == notification.getType())
                {
-                  if(notification.getProperties().getSimpleStringProperty(ManagementHelper.HDR_ADDRESS).toString().equals("queues.testaddress"))
+                  if (notification.getProperties()
+                                  .getSimpleStringProperty(ManagementHelper.HDR_ADDRESS)
+                                  .toString()
+                                  .equals("queues.testaddress"))
                   {
                      latch.countDown();
                   }
@@ -850,7 +856,8 @@ public class ClusteredGroupingTest extends ClusterTestBase
          stopServers(1);
 
          startServers(1);
-         assertTrue("timed out waiting for bindings to be removed and added back",latch.await(5, TimeUnit.SECONDS));
+         Assert.assertTrue("timed out waiting for bindings to be removed and added back", latch.await(5,
+                                                                                                      TimeUnit.SECONDS));
          getServer(0).getManagementService().removeNotificationListener(listener);
          getServer(2).getManagementService().removeNotificationListener(listener);
          addConsumer(1, 1, "queue0", null);
@@ -859,9 +866,7 @@ public class ClusteredGroupingTest extends ClusterTestBase
          waitForBindings(2, "queues.testaddress", 2, 1, false);
          sendInRange(2, "queues.testaddress", 10, 20, false, MessageImpl.HDR_GROUP_ID, new SimpleString("id1"));
 
-
          verifyReceiveAllInRange(10, 20, 1);
-
 
          sendInRange(0, "queues.testaddress", 20, 30, false, MessageImpl.HDR_GROUP_ID, new SimpleString("id1"));
          verifyReceiveAllInRange(20, 30, 1);
@@ -877,7 +882,6 @@ public class ClusteredGroupingTest extends ClusterTestBase
          stopServers(0, 1, 2);
       }
    }
-
 
    public void testGroupingMultipleQueuesOnAddress() throws Exception
    {
@@ -926,7 +930,6 @@ public class ClusteredGroupingTest extends ClusterTestBase
          waitForBindings(0, "queues.testaddress", 4, 4, false);
          waitForBindings(1, "queues.testaddress", 4, 4, false);
          waitForBindings(2, "queues.testaddress", 4, 4, false);
-
 
          sendWithProperty(0, "queues.testaddress", 10, false, MessageImpl.HDR_GROUP_ID, new SimpleString("id1"));
 
@@ -1010,7 +1013,6 @@ public class ClusteredGroupingTest extends ClusterTestBase
       }
    }
 
-
    public boolean isNetty()
    {
       return true;
@@ -1018,14 +1020,24 @@ public class ClusteredGroupingTest extends ClusterTestBase
 
    class ThreadSender implements Runnable
    {
-      private int msgStart;
-      private int msgEnd;
-      private SimpleString id;
-      private CountDownLatch latch;
-      private boolean wait;
-      private int node;
+      private final int msgStart;
 
-      public ThreadSender(int msgStart, int msgEnd, int node, SimpleString id, CountDownLatch latch, boolean wait)
+      private final int msgEnd;
+
+      private final SimpleString id;
+
+      private final CountDownLatch latch;
+
+      private final boolean wait;
+
+      private final int node;
+
+      public ThreadSender(final int msgStart,
+                          final int msgEnd,
+                          final int node,
+                          final SimpleString id,
+                          final CountDownLatch latch,
+                          final boolean wait)
       {
          this.msgStart = msgStart;
          this.msgEnd = msgEnd;
@@ -1045,7 +1057,7 @@ public class ClusteredGroupingTest extends ClusterTestBase
             }
             catch (InterruptedException e)
             {
-               e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+               e.printStackTrace(); // To change body of catch statement use File | Settings | File Templates.
             }
          }
          else
@@ -1058,9 +1070,8 @@ public class ClusteredGroupingTest extends ClusterTestBase
          }
          catch (Exception e)
          {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            e.printStackTrace(); // To change body of catch statement use File | Settings | File Templates.
          }
       }
    }
 }
-

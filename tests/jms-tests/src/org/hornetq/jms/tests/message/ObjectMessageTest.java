@@ -24,6 +24,8 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.ObjectMessage;
 
+import org.hornetq.jms.tests.util.ProxyAssertSupport;
+
 /**
  * A test that sends/receives object messages to the JMS provider and verifies their integrity.
  *
@@ -45,18 +47,19 @@ public class ObjectMessageTest extends MessageTestBase
 
    // Public ---------------------------------------------------------------------------------------
 
+   @Override
    public void setUp() throws Exception
    {
       super.setUp();
       message = session.createObjectMessage();
    }
 
+   @Override
    public void tearDown() throws Exception
    {
       message = null;
       super.tearDown();
    }
-
 
    public void testClassLoaderIsolation() throws Exception
    {
@@ -66,11 +69,11 @@ public class ObjectMessageTest extends MessageTestBase
       {
          queueProd.setDeliveryMode(DeliveryMode.PERSISTENT);
 
-         ObjectMessage om = (ObjectMessage) message;
+         ObjectMessage om = (ObjectMessage)message;
 
          SomeObject testObject = new SomeObject(3, 7);
 
-         ClassLoader testClassLoader = newClassLoader(testObject.getClass());
+         ClassLoader testClassLoader = ObjectMessageTest.newClassLoader(testObject.getClass());
 
          om.setObject(testObject);
 
@@ -78,18 +81,16 @@ public class ObjectMessageTest extends MessageTestBase
 
          Thread.currentThread().setContextClassLoader(testClassLoader);
 
-         ObjectMessage r = (ObjectMessage) queueCons.receive();
+         ObjectMessage r = (ObjectMessage)queueCons.receive();
 
          Object testObject2 = r.getObject();
 
-         assertEquals("org.hornetq.jms.tests.message.SomeObject",
-            testObject2.getClass().getName());
-         assertNotSame(testObject, testObject2);
-         assertNotSame(testObject.getClass(), testObject2.getClass());
-         assertNotSame(testObject.getClass().getClassLoader(),
-            testObject2.getClass().getClassLoader());
-         assertSame(testClassLoader,
-            testObject2.getClass().getClassLoader());
+         ProxyAssertSupport.assertEquals("org.hornetq.jms.tests.message.SomeObject", testObject2.getClass().getName());
+         ProxyAssertSupport.assertNotSame(testObject, testObject2);
+         ProxyAssertSupport.assertNotSame(testObject.getClass(), testObject2.getClass());
+         ProxyAssertSupport.assertNotSame(testObject.getClass().getClassLoader(), testObject2.getClass()
+                                                                                             .getClassLoader());
+         ProxyAssertSupport.assertSame(testClassLoader, testObject2.getClass().getClassLoader());
       }
       finally
       {
@@ -97,7 +98,6 @@ public class ObjectMessageTest extends MessageTestBase
       }
 
    }
-
 
    public void testVectorOnObjectMessage() throws Exception
    {
@@ -107,82 +107,83 @@ public class ObjectMessageTest extends MessageTestBase
 
       queueProd.send(message);
 
-      ObjectMessage r = (ObjectMessage) queueCons.receive(5000);
-      assertNotNull(r);
+      ObjectMessage r = (ObjectMessage)queueCons.receive(5000);
+      ProxyAssertSupport.assertNotNull(r);
 
-      java.util.Vector v2 = (java.util.Vector) r.getObject();
+      java.util.Vector v2 = (java.util.Vector)r.getObject();
 
-      assertEquals(vectorOnMessage.get(0), v2.get(0));
+      ProxyAssertSupport.assertEquals(vectorOnMessage.get(0), v2.get(0));
    }
-   
+
    public void testObjectIsolation() throws Exception
    {
       ObjectMessage msgTest = session.createObjectMessage();
       ArrayList list = new ArrayList();
       list.add("hello");
       msgTest.setObject(list);
-      
+
       list.clear();
-      
-      list = (ArrayList) msgTest.getObject();
-      
-      assertEquals(1, list.size());
-      assertEquals("hello", list.get(0));
-      
+
+      list = (ArrayList)msgTest.getObject();
+
+      ProxyAssertSupport.assertEquals(1, list.size());
+      ProxyAssertSupport.assertEquals("hello", list.get(0));
+
       list.add("hello2");
-      
+
       msgTest.setObject(list);
-      
+
       list.clear();
-      
-      list = (ArrayList) msgTest.getObject();
-      
-      assertEquals(2, list.size());
-      assertEquals("hello", list.get(0));
-      assertEquals("hello2", list.get(1));
-      
+
+      list = (ArrayList)msgTest.getObject();
+
+      ProxyAssertSupport.assertEquals(2, list.size());
+      ProxyAssertSupport.assertEquals("hello", list.get(0));
+      ProxyAssertSupport.assertEquals("hello2", list.get(1));
+
       msgTest.setObject(list);
       list.add("hello3");
       msgTest.setObject(list);
-      
-      list = (ArrayList) msgTest.getObject();
-      assertEquals(3, list.size());
-      assertEquals("hello", list.get(0));
-      assertEquals("hello2", list.get(1));
-      assertEquals("hello3", list.get(2));
-      
-      list = (ArrayList) msgTest.getObject();
-      
+
+      list = (ArrayList)msgTest.getObject();
+      ProxyAssertSupport.assertEquals(3, list.size());
+      ProxyAssertSupport.assertEquals("hello", list.get(0));
+      ProxyAssertSupport.assertEquals("hello2", list.get(1));
+      ProxyAssertSupport.assertEquals("hello3", list.get(2));
+
+      list = (ArrayList)msgTest.getObject();
+
       list.clear();
-      
+
       queueProd.send(msgTest);
-      
-      msgTest = (ObjectMessage) queueCons.receive(5000);
-      
-      list = (ArrayList) msgTest.getObject();
-      
-      assertEquals(3, list.size());
-      assertEquals("hello", list.get(0));
-      assertEquals("hello2", list.get(1));
-      assertEquals("hello3", list.get(2));
-      
+
+      msgTest = (ObjectMessage)queueCons.receive(5000);
+
+      list = (ArrayList)msgTest.getObject();
+
+      ProxyAssertSupport.assertEquals(3, list.size());
+      ProxyAssertSupport.assertEquals("hello", list.get(0));
+      ProxyAssertSupport.assertEquals("hello2", list.get(1));
+      ProxyAssertSupport.assertEquals("hello3", list.get(2));
+
    }
-   
+
    public void testReadOnEmptyObjectMessage() throws Exception
    {
-      ObjectMessage obm = (ObjectMessage) message;
-      assertNull(obm.getObject());
-      
+      ObjectMessage obm = (ObjectMessage)message;
+      ProxyAssertSupport.assertNull(obm.getObject());
+
       queueProd.send(message);
-      ObjectMessage r = (ObjectMessage) queueCons.receive();
-      
-      assertNull(r.getObject());
-      
+      ObjectMessage r = (ObjectMessage)queueCons.receive();
+
+      ProxyAssertSupport.assertNull(r.getObject());
+
    }
-   
+
    // Protected ------------------------------------------------------------------------------------
 
-   protected void prepareMessage(Message m) throws JMSException
+   @Override
+   protected void prepareMessage(final Message m) throws JMSException
    {
       super.prepareMessage(m);
 
@@ -191,19 +192,19 @@ public class ObjectMessageTest extends MessageTestBase
 
    }
 
-   protected void assertEquivalent(Message m, int mode, boolean redelivery) throws JMSException
+   @Override
+   protected void assertEquivalent(final Message m, final int mode, final boolean redelivery) throws JMSException
    {
       super.assertEquivalent(m, mode, redelivery);
 
       ObjectMessage om = (ObjectMessage)m;
-      assertEquals("this is the serializable object", om.getObject());
+      ProxyAssertSupport.assertEquals("this is the serializable object", om.getObject());
    }
 
-   protected static ClassLoader newClassLoader(Class anyUserClass) throws Exception
+   protected static ClassLoader newClassLoader(final Class anyUserClass) throws Exception
    {
       URL classLocation = anyUserClass.getProtectionDomain().getCodeSource().getLocation();
-      StringTokenizer tokenString = new StringTokenizer(System.getProperty("java.class.path"),
-         File.pathSeparator);
+      StringTokenizer tokenString = new StringTokenizer(System.getProperty("java.class.path"), File.pathSeparator);
       String pathIgnore = System.getProperty("java.home");
       if (pathIgnore == null)
       {
@@ -215,20 +216,17 @@ public class ObjectMessageTest extends MessageTestBase
       {
          String value = tokenString.nextToken();
          URL itemLocation = new File(value).toURI().toURL();
-         if (!itemLocation.equals(classLocation) &&
-                      itemLocation.toString().indexOf(pathIgnore) >= 0)
+         if (!itemLocation.equals(classLocation) && itemLocation.toString().indexOf(pathIgnore) >= 0)
          {
             urls.add(itemLocation);
          }
       }
 
-      URL[] urlArray = (URL[]) urls.toArray(new URL[urls.size()]);
+      URL[] urlArray = (URL[])urls.toArray(new URL[urls.size()]);
 
       ClassLoader masterClassLoader = URLClassLoader.newInstance(urlArray, null);
 
-
-      ClassLoader appClassLoader = URLClassLoader.newInstance(new URL[]{classLocation},
-                                      masterClassLoader);
+      ClassLoader appClassLoader = URLClassLoader.newInstance(new URL[] { classLocation }, masterClassLoader);
 
       return appClassLoader;
    }

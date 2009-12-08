@@ -15,6 +15,8 @@ package org.hornetq.jms.tests.message;
 
 import javax.jms.Message;
 
+import org.hornetq.jms.tests.util.ProxyAssertSupport;
+
 /**
  * @author <a href="mailto:dua_rajdeep@yahoo.com">Rajdeep Dua</a>
  * @version <tt>$Revision$</tt>
@@ -24,7 +26,7 @@ public class JMSTypeHeaderTest extends MessageHeaderTestBase
    // Constants -----------------------------------------------------
 
    // Static --------------------------------------------------------
-   
+
    // Attributes ----------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -34,27 +36,26 @@ public class JMSTypeHeaderTest extends MessageHeaderTestBase
    public void testJMSType() throws Exception
    {
       Message m = queueProducerSession.createMessage();
-      String originalType =  "TYPE1";
+      String originalType = "TYPE1";
       m.setJMSType(originalType);
       queueProducer.send(m);
       String gotType = queueConsumer.receive(1000).getJMSType();
-      assertEquals(originalType, gotType);
+      ProxyAssertSupport.assertEquals(originalType, gotType);
    }
 
    public void testNULLJMSType() throws Exception
    {
       Message m = queueProducerSession.createMessage();
       queueProducer.send(m);
-      assertEquals(null, queueConsumer.receive(1000).getJMSType());
+      ProxyAssertSupport.assertEquals(null, queueConsumer.receive(1000).getJMSType());
    }
 
-
    // Package protected ---------------------------------------------
-   
+
    // Protected -----------------------------------------------------
-   
+
    // Private -------------------------------------------------------
-   
+
    // Inner classes -------------------------------------------------
 
 }

@@ -27,7 +27,7 @@ public class SimpleJMSTextMessage extends SimpleJMSMessage implements TextMessag
    // Constants -----------------------------------------------------
 
    // Static --------------------------------------------------------
-   
+
    // Attributes ----------------------------------------------------
 
    private String text;
@@ -39,14 +39,14 @@ public class SimpleJMSTextMessage extends SimpleJMSMessage implements TextMessag
       this(null);
    }
 
-   public SimpleJMSTextMessage(String text)
+   public SimpleJMSTextMessage(final String text)
    {
       this.text = text;
    }
 
    // TextMessage implementation ------------------------------------
 
-   public void setText(String text) throws JMSException
+   public void setText(final String text) throws JMSException
    {
       this.text = text;
    }
@@ -59,10 +59,10 @@ public class SimpleJMSTextMessage extends SimpleJMSMessage implements TextMessag
    // Public --------------------------------------------------------
 
    // Package protected ---------------------------------------------
-   
+
    // Protected -----------------------------------------------------
-   
+
    // Private -------------------------------------------------------
-   
+
    // Inner classes -------------------------------------------------
 }

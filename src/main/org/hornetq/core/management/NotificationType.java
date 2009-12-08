@@ -38,10 +38,9 @@ public enum NotificationType
    PROPOSAL(18),
    PROPOSAL_RESPONSE(19);
 
-
    private final int value;
 
-   private NotificationType(int value)
+   private NotificationType(final int value)
    {
       this.value = value;
    }

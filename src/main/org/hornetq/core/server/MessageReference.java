@@ -13,7 +13,6 @@
 
 package org.hornetq.core.server;
 
-
 /**
  * A reference to a message.
  * 
@@ -30,7 +29,7 @@ public interface MessageReference
    ServerMessage getMessage();
 
    MessageReference copy(Queue queue);
-   
+
    /**
     * 
     * @return The time in the future that delivery will be delayed until, or zero if
@@ -45,10 +44,10 @@ public interface MessageReference
    void setDeliveryCount(int deliveryCount);
 
    void incrementDeliveryCount();
-   
+
    void decrementDeliveryCount();
 
    Queue getQueue();
-   
+
    void handled();
 }

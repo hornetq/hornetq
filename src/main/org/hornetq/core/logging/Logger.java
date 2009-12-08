@@ -37,43 +37,45 @@ public class Logger
 
    static
    {
-      initialise();
+      Logger.initialise();
    }
 
    public static void setDelegateFactory(final LogDelegateFactory delegateFactory)
    {
-      clear();
-      
+      Logger.clear();
+
       Logger.delegateFactory = delegateFactory;
    }
-   
+
    private static void clear()
    {
-      loggers.clear();
+      Logger.loggers.clear();
    }
-   
+
    public static void reset()
    {
-      clear();
-      
-      initialise();
+      Logger.clear();
+
+      Logger.initialise();
    }
 
    public static void initialise()
-   {      
+   {
       LogDelegateFactory delegateFactory;
 
       // If a system property is specified then this overrides any delegate factory which is set
       // programmatically - this is primarily of use so we can configure the logger delegate on the client side.
-      // call to System.getProperty is wrapped in a try block as it will fail if the client runs in a secured environment
+      // call to System.getProperty is wrapped in a try block as it will fail if the client runs in a secured
+      // environment
       String className = JULLogDelegateFactory.class.getName();
       try
       {
-         className = System.getProperty(LOGGER_DELEGATE_FACTORY_CLASS_NAME);
-      } catch (Exception e)
+         className = System.getProperty(Logger.LOGGER_DELEGATE_FACTORY_CLASS_NAME);
+      }
+      catch (Exception e)
       {
       }
-      
+
       if (className != null)
       {
          ClassLoader loader = Thread.currentThread().getContextClassLoader();
@@ -91,23 +93,23 @@ public class Logger
       {
          delegateFactory = new JULLogDelegateFactory();
       }
-      
+
       Logger.delegateFactory = delegateFactory;
-      
-      loggers.clear();
+
+      Logger.loggers.clear();
    }
 
    public static Logger getLogger(final Class<?> clazz)
    {
-      Logger logger = loggers.get(clazz);
+      Logger logger = Logger.loggers.get(clazz);
 
       if (logger == null)
       {
-         LogDelegate delegate = delegateFactory.createDelegate(clazz);
+         LogDelegate delegate = Logger.delegateFactory.createDelegate(clazz);
 
          logger = new Logger(delegate);
 
-         Logger oldLogger = loggers.putIfAbsent(clazz, logger);
+         Logger oldLogger = Logger.loggers.putIfAbsent(clazz, logger);
 
          if (oldLogger != null)
          {
@@ -124,7 +126,7 @@ public class Logger
    {
       this.delegate = delegate;
    }
-   
+
    public LogDelegate getDelegate()
    {
       return delegate;

@@ -30,7 +30,7 @@ public interface AddressManager
    Binding removeBinding(SimpleString uniqueName);
 
    Bindings getBindingsForRoutingAddress(SimpleString address);
-   
+
    Bindings getMatchingBindings(SimpleString address);
 
    void clear();

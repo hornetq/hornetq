@@ -13,8 +13,6 @@
 
 package org.hornetq.tests.integration.security;
 
-import static org.hornetq.tests.util.RandomUtil.randomString;
-
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
@@ -24,6 +22,7 @@ import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.jms.client.HornetQTextMessage;
+import org.hornetq.tests.util.RandomUtil;
 
 /**
  * Code to be run in an external VM, via main().
@@ -39,7 +38,7 @@ public class SimpleClient
 
    // Static ---------------------------------------------------------------------------------------
 
-   public static void main(String[] args) throws Exception
+   public static void main(final String[] args) throws Exception
    {
       try
       {
@@ -50,12 +49,12 @@ public class SimpleClient
          }
          String connectorFactoryClassName = args[0];
 
-         String queueName = randomString();
-         String messageText = randomString();
+         String queueName = RandomUtil.randomString();
+         String messageText = RandomUtil.randomString();
 
          ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(connectorFactoryClassName));
          ClientSession session = sf.createSession(false, true, true);
-         
+
          session.createQueue(queueName, queueName, null, false);
          ClientProducer producer = session.createProducer(queueName);
          ClientConsumer consumer = session.createConsumer(queueName);
@@ -75,7 +74,7 @@ public class SimpleClient
          {
             throw new Exception("did not receive the message");
          }
-         
+
          String text = receivedMsg.getBodyBuffer().readString();
          if (text == null || !text.equals(messageText))
          {
@@ -84,9 +83,9 @@ public class SimpleClient
 
          // clean all resources to exit cleanly
          consumer.close();
-         session.deleteQueue(queueName);         
+         session.deleteQueue(queueName);
          session.close();
-         
+
          System.out.println("OK");
       }
       catch (Throwable t)

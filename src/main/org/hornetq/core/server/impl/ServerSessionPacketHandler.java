@@ -89,18 +89,20 @@ public class ServerSessionPacketHandler implements ChannelHandler
    private static final Logger log = Logger.getLogger(ServerSessionPacketHandler.class);
 
    private final ServerSession session;
-   
+
    private final OperationContext sessionContext;
-   
+
    // Storagemanager here is used to set the Context
    private final StorageManager storageManager;
 
-   public ServerSessionPacketHandler(final ServerSession session, OperationContext sessionContext, StorageManager storageManager)
+   public ServerSessionPacketHandler(final ServerSession session,
+                                     final OperationContext sessionContext,
+                                     final StorageManager storageManager)
    {
       this.session = session;
-      
+
       this.storageManager = storageManager;
-      
+
       this.sessionContext = sessionContext;
    }
 
@@ -114,7 +116,7 @@ public class ServerSessionPacketHandler implements ChannelHandler
       byte type = packet.getType();
 
       storageManager.setContext(sessionContext);
-      
+
       try
       {
          switch (type)
@@ -301,7 +303,7 @@ public class ServerSessionPacketHandler implements ChannelHandler
       }
       catch (Throwable t)
       {
-         log.error("Caught unexpected exception", t);
+         ServerSessionPacketHandler.log.error("Caught unexpected exception", t);
       }
       finally
       {

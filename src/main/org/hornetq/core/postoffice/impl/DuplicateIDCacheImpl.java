@@ -53,7 +53,7 @@ public class DuplicateIDCacheImpl implements DuplicateIDCache
 
    private int pos;
 
-   private int cacheSize;
+   private final int cacheSize;
 
    private final StorageManager storageManager;
 
@@ -66,9 +66,9 @@ public class DuplicateIDCacheImpl implements DuplicateIDCache
    {
       this.address = address;
 
-      this.cacheSize = size;
+      cacheSize = size;
 
-      this.ids = new ArrayList<Pair<ByteArrayHolder, Long>>(size);
+      ids = new ArrayList<Pair<ByteArrayHolder, Long>>(size);
 
       this.storageManager = storageManager;
 
@@ -113,13 +113,12 @@ public class DuplicateIDCacheImpl implements DuplicateIDCache
       }
 
       pos = ids.size();
-      
+
       if (pos == cacheSize)
       {
          pos = 0;
       }
 
-      
    }
 
    public boolean contains(final byte[] duplID)
@@ -179,7 +178,7 @@ public class DuplicateIDCacheImpl implements DuplicateIDCache
          }
          catch (Exception e)
          {
-            log.warn("Error on deleting duplicate cache", e);
+            DuplicateIDCacheImpl.log.warn("Error on deleting duplicate cache", e);
          }
 
          id.b = recordID;
@@ -269,7 +268,8 @@ public class DuplicateIDCacheImpl implements DuplicateIDCache
 
       int hash;
 
-      public boolean equals(Object other)
+      @Override
+      public boolean equals(final Object other)
       {
          if (other instanceof ByteArrayHolder)
          {
@@ -296,13 +296,14 @@ public class DuplicateIDCacheImpl implements DuplicateIDCache
          }
       }
 
+      @Override
       public int hashCode()
       {
          if (hash == 0)
          {
-            for (int i = 0; i < bytes.length; i++)
+            for (byte b : bytes)
             {
-               hash = 31 * hash + bytes[i];
+               hash = 31 * hash + b;
             }
          }
 

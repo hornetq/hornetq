@@ -12,8 +12,7 @@
  */
 package org.hornetq.tests.integration.client;
 
-import static org.hornetq.core.message.impl.MessageImpl.HDR_ACTUAL_EXPIRY_TIME;
-import static org.hornetq.tests.util.RandomUtil.randomSimpleString;
+import junit.framework.Assert;
 
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
@@ -25,9 +24,11 @@ import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
+import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.server.HornetQ;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.settings.impl.AddressSettings;
+import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.SimpleString;
 
@@ -52,28 +53,28 @@ public class ExpiryAddressTest extends UnitTestCase
       server.getAddressSettingsRepository().addMatch(qName.toString(), addressSettings);
       clientSession.createQueue(ea, eq, null, false);
       clientSession.createQueue(qName, qName, null, false);
-      
+
       ClientProducer producer = clientSession.createProducer(qName);
       ClientMessage clientMessage = createTextMessage("heyho!", clientSession);
       clientMessage.setExpiration(System.currentTimeMillis());
       producer.send(clientMessage);
-      
+
       clientSession.start();
       ClientConsumer clientConsumer = clientSession.createConsumer(qName);
       ClientMessage m = clientConsumer.receiveImmediate();
-      assertNull(m);
+      Assert.assertNull(m);
       System.out.println("size3 = " + server.getPostOffice().getPagingManager().getTotalMemory());
       m = clientConsumer.receiveImmediate();
-      assertNull(m);
+      Assert.assertNull(m);
       clientConsumer.close();
       clientConsumer = clientSession.createConsumer(eq);
       m = clientConsumer.receive(500);
-      assertNotNull(m);
-      assertEquals(m.getBodyBuffer().readString(), "heyho!");
+      Assert.assertNotNull(m);
+      Assert.assertEquals(m.getBodyBuffer().readString(), "heyho!");
       m.acknowledge();
-      
+
       // PageSize should be the same as when it started
-      assertEquals(0, server.getPostOffice().getPagingManager().getTotalMemory());
+      Assert.assertEquals(0, server.getPostOffice().getPagingManager().getTotalMemory());
    }
 
    public void testBasicSendToMultipleQueues() throws Exception
@@ -91,53 +92,55 @@ public class ExpiryAddressTest extends UnitTestCase
       ClientProducer producer = clientSession.createProducer(qName);
       ClientMessage clientMessage = createTextMessage("heyho!", clientSession);
       clientMessage.setExpiration(System.currentTimeMillis());
-      
+
       System.out.println("initialPageSize = " + server.getPostOffice().getPagingManager().getTotalMemory());
-      
+
       producer.send(clientMessage);
-      
+
       System.out.println("pageSize after message sent = " + server.getPostOffice().getPagingManager().getTotalMemory());
-      
+
       clientSession.start();
       ClientConsumer clientConsumer = clientSession.createConsumer(qName);
       ClientMessage m = clientConsumer.receiveImmediate();
-      
-      System.out.println("pageSize after message received = " + server.getPostOffice().getPagingManager().getTotalMemory());
-      
-      assertNull(m);
-      
+
+      System.out.println("pageSize after message received = " + server.getPostOffice()
+                                                                      .getPagingManager()
+                                                                      .getTotalMemory());
+
+      Assert.assertNull(m);
+
       clientConsumer.close();
-      
+
       clientConsumer = clientSession.createConsumer(eq);
-      
+
       m = clientConsumer.receive(500);
-      
-      assertNotNull(m);
-      
-      log.info("acking");
+
+      Assert.assertNotNull(m);
+
+      ExpiryAddressTest.log.info("acking");
       m.acknowledge();
-      
-      assertEquals(m.getBodyBuffer().readString(), "heyho!");
-      
+
+      Assert.assertEquals(m.getBodyBuffer().readString(), "heyho!");
+
       clientConsumer.close();
-      
+
       clientConsumer = clientSession.createConsumer(eq2);
-      
+
       m = clientConsumer.receive(500);
-      
-      assertNotNull(m);
-      
-      log.info("acking");
+
+      Assert.assertNotNull(m);
+
+      ExpiryAddressTest.log.info("acking");
       m.acknowledge();
-      
-      assertEquals(m.getBodyBuffer().readString(), "heyho!");
-      
+
+      Assert.assertEquals(m.getBodyBuffer().readString(), "heyho!");
+
       clientConsumer.close();
-      
+
       clientSession.commit();
 
       // PageGlobalSize should be untouched as the message expired
-      assertEquals(0, server.getPostOffice().getPagingManager().getTotalMemory());
+      Assert.assertEquals(0, server.getPostOffice().getPagingManager().getTotalMemory());
    }
 
    public void testBasicSendToNoQueue() throws Exception
@@ -156,7 +159,7 @@ public class ExpiryAddressTest extends UnitTestCase
       clientSession.start();
       ClientConsumer clientConsumer = clientSession.createConsumer(qName);
       ClientMessage m = clientConsumer.receiveImmediate();
-      assertNull(m);
+      Assert.assertNull(m);
       clientConsumer.close();
    }
 
@@ -171,7 +174,7 @@ public class ExpiryAddressTest extends UnitTestCase
       SimpleString eq = new SimpleString("EA1");
       clientSession.createQueue(ea, eq, null, false);
       clientSession.createQueue(qName, qName, null, false);
-      ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(INVM_CONNECTOR_FACTORY));
+      ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
       ClientSession sendSession = sessionFactory.createSession(false, true, true);
       ClientProducer producer = sendSession.createProducer(qName);
 
@@ -186,7 +189,7 @@ public class ExpiryAddressTest extends UnitTestCase
       ClientConsumer clientConsumer = clientSession.createConsumer(qName);
       clientSession.start();
       ClientMessage m = clientConsumer.receiveImmediate();
-      assertNull(m);
+      Assert.assertNull(m);
       // All the messages should now be in the EQ
 
       ClientConsumer cc3 = clientSession.createConsumer(eq);
@@ -195,20 +198,20 @@ public class ExpiryAddressTest extends UnitTestCase
       {
          ClientMessage tm = cc3.receive(1000);
 
-         assertNotNull(tm);
+         Assert.assertNotNull(tm);
 
          String text = tm.getBodyBuffer().readString();
-         assertEquals("Message:" + i, text);
+         Assert.assertEquals("Message:" + i, text);
 
          // Check the headers
-         Long actualExpiryTime = (Long)tm.getObjectProperty(HDR_ACTUAL_EXPIRY_TIME);
-         assertTrue(actualExpiryTime >= expiration);
+         Long actualExpiryTime = (Long)tm.getObjectProperty(MessageImpl.HDR_ACTUAL_EXPIRY_TIME);
+         Assert.assertTrue(actualExpiryTime >= expiration);
       }
-      
+
       sendSession.close();
 
    }
-   
+
    public void testExpireWithDefaultAddressSettings() throws Exception
    {
       SimpleString ea = new SimpleString("EA");
@@ -219,25 +222,24 @@ public class ExpiryAddressTest extends UnitTestCase
       server.getAddressSettingsRepository().setDefault(addressSettings);
       clientSession.createQueue(ea, eq, null, false);
       clientSession.createQueue(qName, qName, null, false);
-      
+
       ClientProducer producer = clientSession.createProducer(qName);
       ClientMessage clientMessage = createTextMessage("heyho!", clientSession);
       clientMessage.setExpiration(System.currentTimeMillis());
       producer.send(clientMessage);
-      
+
       clientSession.start();
       ClientConsumer clientConsumer = clientSession.createConsumer(qName);
       ClientMessage m = clientConsumer.receiveImmediate();
-      assertNull(m);
+      Assert.assertNull(m);
       clientConsumer.close();
 
       clientConsumer = clientSession.createConsumer(eq);
       m = clientConsumer.receive(500);
-      assertNotNull(m);
-      assertEquals(m.getBodyBuffer().readString(), "heyho!");
+      Assert.assertNotNull(m);
+      Assert.assertEquals(m.getBodyBuffer().readString(), "heyho!");
       m.acknowledge();
    }
-
 
    public void testExpireWithWildcardAddressSettings() throws Exception
    {
@@ -249,33 +251,33 @@ public class ExpiryAddressTest extends UnitTestCase
       server.getAddressSettingsRepository().addMatch("*", addressSettings);
       clientSession.createQueue(ea, eq, null, false);
       clientSession.createQueue(qName, qName, null, false);
-      
+
       ClientProducer producer = clientSession.createProducer(qName);
       ClientMessage clientMessage = createTextMessage("heyho!", clientSession);
       clientMessage.setExpiration(System.currentTimeMillis());
       producer.send(clientMessage);
-      
+
       clientSession.start();
       ClientConsumer clientConsumer = clientSession.createConsumer(qName);
       ClientMessage m = clientConsumer.receiveImmediate();
-      assertNull(m);
+      Assert.assertNull(m);
       clientConsumer.close();
 
       clientConsumer = clientSession.createConsumer(eq);
       m = clientConsumer.receive(500);
-      assertNotNull(m);
-      assertEquals(m.getBodyBuffer().readString(), "heyho!");
+      Assert.assertNotNull(m);
+      Assert.assertEquals(m.getBodyBuffer().readString(), "heyho!");
       m.acknowledge();
    }
-   
+
    public void testExpireWithOverridenSublevelAddressSettings() throws Exception
    {
       SimpleString address = new SimpleString("prefix.address");
-      SimpleString queue = randomSimpleString();
-      SimpleString defaultExpiryAddress = randomSimpleString();
-      SimpleString defaultExpiryQueue = randomSimpleString();
-      SimpleString specificExpiryAddress = randomSimpleString();
-      SimpleString specificExpiryQueue = randomSimpleString();
+      SimpleString queue = RandomUtil.randomSimpleString();
+      SimpleString defaultExpiryAddress = RandomUtil.randomSimpleString();
+      SimpleString defaultExpiryQueue = RandomUtil.randomSimpleString();
+      SimpleString specificExpiryAddress = RandomUtil.randomSimpleString();
+      SimpleString specificExpiryQueue = RandomUtil.randomSimpleString();
 
       AddressSettings defaultAddressSettings = new AddressSettings();
       defaultAddressSettings.setExpiryAddress(defaultExpiryAddress);
@@ -287,45 +289,46 @@ public class ExpiryAddressTest extends UnitTestCase
       clientSession.createQueue(address, queue, false);
       clientSession.createQueue(defaultExpiryAddress, defaultExpiryQueue, false);
       clientSession.createQueue(specificExpiryAddress, specificExpiryQueue, false);
-      
+
       ClientProducer producer = clientSession.createProducer(address);
       ClientMessage clientMessage = createTextMessage("heyho!", clientSession);
       clientMessage.setExpiration(System.currentTimeMillis());
       producer.send(clientMessage);
-      
+
       clientSession.start();
       ClientConsumer clientConsumer = clientSession.createConsumer(queue);
       ClientMessage m = clientConsumer.receiveImmediate();
-      assertNull(m);
+      Assert.assertNull(m);
       clientConsumer.close();
 
       clientConsumer = clientSession.createConsumer(defaultExpiryQueue);
       m = clientConsumer.receiveImmediate();
-      assertNull(m);
+      Assert.assertNull(m);
       clientConsumer.close();
 
       clientConsumer = clientSession.createConsumer(specificExpiryQueue);
       m = clientConsumer.receive(500);
-      assertNotNull(m);
-      assertEquals(m.getBodyBuffer().readString(), "heyho!");
+      Assert.assertNotNull(m);
+      Assert.assertEquals(m.getBodyBuffer().readString(), "heyho!");
       m.acknowledge();
    }
-   
+
    @Override
    protected void setUp() throws Exception
    {
       super.setUp();
-      
+
       ConfigurationImpl configuration = new ConfigurationImpl();
       configuration.setSecurityEnabled(false);
-      TransportConfiguration transportConfig = new TransportConfiguration(INVM_ACCEPTOR_FACTORY);
+      TransportConfiguration transportConfig = new TransportConfiguration(UnitTestCase.INVM_ACCEPTOR_FACTORY);
       configuration.getAcceptorConfigurations().add(transportConfig);
       server = HornetQ.newHornetQServer(configuration, false);
       // start the server
       server.start();
       // then we create a client as normal
-      ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(INVM_CONNECTOR_FACTORY));
-      sessionFactory.setBlockOnAcknowledge(true); // There are assertions over sizes that needs to be done after the ACK was received on server
+      ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
+      sessionFactory.setBlockOnAcknowledge(true); // There are assertions over sizes that needs to be done after the ACK
+      // was received on server
       clientSession = sessionFactory.createSession(null, null, false, true, true, false, 0);
    }
 
@@ -356,7 +359,7 @@ public class ExpiryAddressTest extends UnitTestCase
       }
       server = null;
       clientSession = null;
-      
+
       super.tearDown();
    }
 

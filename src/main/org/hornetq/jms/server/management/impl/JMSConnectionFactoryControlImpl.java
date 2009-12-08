@@ -43,7 +43,9 @@ public class JMSConnectionFactoryControlImpl extends StandardMBean implements Co
 
    // Constructors --------------------------------------------------
 
-   public JMSConnectionFactoryControlImpl(final HornetQConnectionFactory cf, final String name, final List<String> bindings) throws NotCompliantMBeanException
+   public JMSConnectionFactoryControlImpl(final HornetQConnectionFactory cf,
+                                          final String name,
+                                          final List<String> bindings) throws NotCompliantMBeanException
    {
       super(ConnectionFactoryControl.class);
       this.cf = cf;

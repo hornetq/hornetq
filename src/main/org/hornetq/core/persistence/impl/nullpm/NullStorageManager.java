@@ -55,21 +55,21 @@ import org.hornetq.utils.UUID;
 public class NullStorageManager implements StorageManager
 {
    private final AtomicLong idSequence = new AtomicLong(0);
-   
+
    private UUID id;
 
    private volatile boolean started;
-   
+
    public UUID getPersistentID()
    {
       return id;
    }
-   
+
    public void setPersistentID(final UUID id)
    {
       this.id = id;
    }
-   
+
    public void sync()
    {
       // NO OP
@@ -79,7 +79,7 @@ public class NullStorageManager implements StorageManager
    {
    }
 
-   public void deleteQueueBinding(long queueBindingID) throws Exception
+   public void deleteQueueBinding(final long queueBindingID) throws Exception
    {
    }
 
@@ -87,7 +87,8 @@ public class NullStorageManager implements StorageManager
    {
    }
 
-   public JournalLoadInformation loadBindingJournal(List<QueueBindingInfo> queueBindingInfos, List<GroupingInfo> groupingInfos) throws Exception
+   public JournalLoadInformation loadBindingJournal(final List<QueueBindingInfo> queueBindingInfos,
+                                                    final List<GroupingInfo> groupingInfos) throws Exception
    {
       return new JournalLoadInformation();
    }
@@ -100,7 +101,7 @@ public class NullStorageManager implements StorageManager
    {
    }
 
-   public void storeReference(final long queueID, final long messageID, boolean last) throws Exception
+   public void storeReference(final long queueID, final long messageID, final boolean last) throws Exception
    {
    }
 
@@ -177,12 +178,12 @@ public class NullStorageManager implements StorageManager
                                               final long recordID) throws Exception
    {
    }
-   
+
    public long storeHeuristicCompletion(final Xid xid, final boolean isCommit) throws Exception
    {
       return generateUniqueID();
    }
-   
+
    public void deleteHeuristicCompletion(final long txID) throws Exception
    {
    }
@@ -195,7 +196,7 @@ public class NullStorageManager implements StorageManager
       return new NullStorageLargeServerMessage();
    }
 
-   public LargeServerMessage createLargeMessage(long id, byte[] header)
+   public LargeServerMessage createLargeMessage(final long id, final byte[] header)
    {
       NullStorageLargeServerMessage largeMessage = new NullStorageLargeServerMessage();
 
@@ -208,19 +209,18 @@ public class NullStorageManager implements StorageManager
       return largeMessage;
    }
 
-
    public long generateUniqueID()
    {
       long id = idSequence.getAndIncrement();
-      
+
       return id;
    }
-   
+
    public long getCurrentUniqueID()
    {
       return idSequence.get();
    }
-   
+
    public void setUniqueIDSequence(final long id)
    {
       idSequence.set(id);
@@ -242,9 +242,9 @@ public class NullStorageManager implements StorageManager
       {
          throw new IllegalStateException("Not started");
       }
-      
+
       id = null;
-      
+
       idSequence.set(0);
 
       started = false;
@@ -258,12 +258,12 @@ public class NullStorageManager implements StorageManager
    public void deleteMessageTransactional(final long txID, final long messageID, final long queueID) throws Exception
    {
    }
-   
-   public JournalLoadInformation loadMessageJournal(PostOffice postOffice,
-                                  PagingManager pagingManager,
-                                  ResourceManager resourceManager,
-                                  Map<Long, Queue> queues,
-                                  Map<SimpleString, List<Pair<byte[], Long>>> duplicateIDMap) throws Exception
+
+   public JournalLoadInformation loadMessageJournal(final PostOffice postOffice,
+                                                    final PagingManager pagingManager,
+                                                    final ResourceManager resourceManager,
+                                                    final Map<Long, Queue> queues,
+                                                    final Map<SimpleString, List<Pair<byte[], Long>>> duplicateIDMap) throws Exception
    {
       return new JournalLoadInformation();
    }
@@ -302,43 +302,43 @@ public class NullStorageManager implements StorageManager
    /* (non-Javadoc)
     * @see org.hornetq.core.persistence.StorageManager#pageClosed(org.hornetq.utils.SimpleString, int)
     */
-   public void pageClosed(SimpleString storeName, int pageNumber)
+   public void pageClosed(final SimpleString storeName, final int pageNumber)
    {
    }
 
    /* (non-Javadoc)
     * @see org.hornetq.core.persistence.StorageManager#pageDeleted(org.hornetq.utils.SimpleString, int)
     */
-   public void pageDeleted(SimpleString storeName, int pageNumber)
+   public void pageDeleted(final SimpleString storeName, final int pageNumber)
    {
    }
 
    /* (non-Javadoc)
     * @see org.hornetq.core.persistence.StorageManager#pageWrite(org.hornetq.core.paging.PagedMessage, int)
     */
-   public void pageWrite(PagedMessage message, int pageNumber)
+   public void pageWrite(final PagedMessage message, final int pageNumber)
    {
    }
 
-   public void addGrouping(GroupBinding groupBinding) throws Exception
+   public void addGrouping(final GroupBinding groupBinding) throws Exception
    {
    }
 
-   public void deleteGrouping(GroupBinding groupBinding) throws Exception
+   public void deleteGrouping(final GroupBinding groupBinding) throws Exception
    {
    }
 
    /* (non-Javadoc)
     * @see org.hornetq.core.persistence.StorageManager#blockOnReplication(long)
     */
-   public void waitOnOperations(long timeout) throws Exception
+   public void waitOnOperations(final long timeout) throws Exception
    {
    }
 
    /* (non-Javadoc)
     * @see org.hornetq.core.persistence.StorageManager#setReplicator(org.hornetq.core.replication.ReplicationManager)
     */
-   public void setReplicator(ReplicationManager replicator)
+   public void setReplicator(final ReplicationManager replicator)
    {
       throw new IllegalStateException("Null Persistence should never be used as replicated");
    }
@@ -346,7 +346,7 @@ public class NullStorageManager implements StorageManager
    /* (non-Javadoc)
     * @see org.hornetq.core.persistence.StorageManager#afterCompleteOperations(org.hornetq.core.journal.IOCompletion)
     */
-   public void afterCompleteOperations(IOAsyncTask run)
+   public void afterCompleteOperations(final IOAsyncTask run)
    {
       run.done();
    }
@@ -369,7 +369,7 @@ public class NullStorageManager implements StorageManager
    /* (non-Javadoc)
     * @see org.hornetq.core.persistence.StorageManager#newContext()
     */
-   public OperationContext newContext(Executor executor)
+   public OperationContext newContext(final Executor executor)
    {
       return null;
    }
@@ -377,7 +377,7 @@ public class NullStorageManager implements StorageManager
    /* (non-Javadoc)
     * @see org.hornetq.core.persistence.StorageManager#setContext(org.hornetq.core.persistence.OperationContext)
     */
-   public void setContext(OperationContext context)
+   public void setContext(final OperationContext context)
    {
    }
 

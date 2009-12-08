@@ -43,13 +43,13 @@ public class DivertImpl implements Divert
    private final SimpleString uniqueName;
 
    private final SimpleString routingName;
-   
+
    private final boolean exclusive;
 
    private final Filter filter;
 
    private final Transformer transformer;
-   
+
    private final StorageManager storageManager;
 
    public DivertImpl(final SimpleString forwardAddress,
@@ -74,7 +74,7 @@ public class DivertImpl implements Divert
       this.transformer = transformer;
 
       this.postOffice = postOffice;
-      
+
       this.storageManager = storageManager;
    }
 
@@ -84,13 +84,13 @@ public class DivertImpl implements Divert
       // properly on ack, since the original destination will be overwritten
 
       // TODO we can optimise this so it doesn't copy if it's not routed anywhere else
-      
+
       long id = storageManager.generateUniqueID();
       ServerMessage copy = message.copy(id);
-      
+
       // This will set the original MessageId, and the original destination
       copy.setOriginalHeaders(message, false);
-      
+
       copy.setDestination(forwardAddress);
 
       if (transformer != null)
@@ -140,6 +140,5 @@ public class DivertImpl implements Divert
              transformer +
              "]";
    }
-   
-   
+
 }

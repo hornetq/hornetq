@@ -13,7 +13,6 @@
 
 package org.hornetq.core.management;
 
-
 /**
  * A BridgeControlMBean
  *
@@ -23,9 +22,9 @@ package org.hornetq.core.management;
 public interface BridgeControl extends HornetQComponentControl
 {
    String getName();
-   
+
    String getQueueName();
-   
+
    String getForwardingAddress();
 
    String getFilterString();

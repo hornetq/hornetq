@@ -25,7 +25,8 @@ public class HornetQLoggerFormatter extends java.util.logging.Formatter
 {
    private static String LINE_SEPARATOR = System.getProperty("line.separator");
 
-   public String format(LogRecord record)
+   @Override
+   public String format(final LogRecord record)
    {
       Date date = new Date();
       SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss,SSS");
@@ -34,11 +35,11 @@ public class HornetQLoggerFormatter extends java.util.logging.Formatter
       date.setTime(record.getMillis());
       sb.append("[").append(Thread.currentThread().getName()).append("] ");
       sb.append(dateFormat.format(date)).append(" ");
-      sb.append(record.getLevel()). append(" [");
+      sb.append(record.getLevel()).append(" [");
       sb.append(record.getLoggerName()).append("]").append("  ");
       sb.append(record.getMessage());
-      
-      sb.append(LINE_SEPARATOR);
+
+      sb.append(HornetQLoggerFormatter.LINE_SEPARATOR);
       if (record.getThrown() != null)
       {
          try

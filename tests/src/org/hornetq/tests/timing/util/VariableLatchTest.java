@@ -12,6 +12,8 @@
  */
 package org.hornetq.tests.timing.util;
 
+import junit.framework.Assert;
+
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.VariableLatch;
 
@@ -27,9 +29,9 @@ public class VariableLatchTest extends UnitTestCase
       latch.up();
 
       long start = System.currentTimeMillis();
-      assertFalse(latch.waitCompletion(1000));
+      Assert.assertFalse(latch.waitCompletion(1000));
       long end = System.currentTimeMillis();
 
-      assertTrue("Timeout didn't work correctly", end - start >= 1000 && end - start < 2000);
+      Assert.assertTrue("Timeout didn't work correctly", end - start >= 1000 && end - start < 2000);
    }
 }

@@ -11,7 +11,6 @@
  * permissions and limitations under the License.
  */
 
-
 package org.hornetq.tests.stress.failover;
 
 import org.hornetq.tests.integration.cluster.reattach.RandomReattachTest;
@@ -41,7 +40,8 @@ public class RandomReattachStressTest extends RandomReattachTest
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
-   
+
+   @Override
    protected int getNumIterations()
    {
       return 100;

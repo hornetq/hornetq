@@ -48,22 +48,22 @@ public abstract class PerfBase
    private static final Logger log = Logger.getLogger(PerfSender.class.getName());
 
    private static final String DEFAULT_PERF_PROPERTIES_FILE_NAME = "perf.properties";
-   
+
    private static byte[] randomByteArray(final int length)
    {
       byte[] bytes = new byte[length];
-      
+
       Random random = new Random();
-      
+
       for (int i = 0; i < length; i++)
       {
          bytes[i] = Integer.valueOf(random.nextInt()).byteValue();
       }
-      
-      return bytes;      
+
+      return bytes;
    }
 
-   protected static String getPerfFileName(String[] args)
+   protected static String getPerfFileName(final String[] args)
    {
       String fileName;
 
@@ -73,7 +73,7 @@ public abstract class PerfBase
       }
       else
       {
-         fileName = DEFAULT_PERF_PROPERTIES_FILE_NAME;
+         fileName = PerfBase.DEFAULT_PERF_PROPERTIES_FILE_NAME;
       }
 
       return fileName;
@@ -115,19 +115,19 @@ public abstract class PerfBase
       boolean disableMessageID = Boolean.valueOf(props.getProperty("disable-message-id"));
       boolean disableTimestamp = Boolean.valueOf(props.getProperty("disable-message-timestamp"));
 
-      log.info("num-messages: " + noOfMessages);
-      log.info("num-warmup-messages: " + noOfWarmupMessages);
-      log.info("message-size: " + messageSize);
-      log.info("durable: " + durable);
-      log.info("transacted: " + transacted);
-      log.info("batch-size: " + batchSize);
-      log.info("drain-queue: " + drainQueue);
-      log.info("throttle-rate: " + throttleRate);
-      log.info("connection-factory-lookup: " + connectionFactoryLookup);
-      log.info("destination-lookup: " + destinationLookup);
-      log.info("disable-message-id: " + disableMessageID);
-      log.info("disable-message-timestamp: " + disableTimestamp);
-      log.info("dups-ok-acknowledge: " + dupsOK);
+      PerfBase.log.info("num-messages: " + noOfMessages);
+      PerfBase.log.info("num-warmup-messages: " + noOfWarmupMessages);
+      PerfBase.log.info("message-size: " + messageSize);
+      PerfBase.log.info("durable: " + durable);
+      PerfBase.log.info("transacted: " + transacted);
+      PerfBase.log.info("batch-size: " + batchSize);
+      PerfBase.log.info("drain-queue: " + drainQueue);
+      PerfBase.log.info("throttle-rate: " + throttleRate);
+      PerfBase.log.info("connection-factory-lookup: " + connectionFactoryLookup);
+      PerfBase.log.info("destination-lookup: " + destinationLookup);
+      PerfBase.log.info("disable-message-id: " + disableMessageID);
+      PerfBase.log.info("disable-message-timestamp: " + disableTimestamp);
+      PerfBase.log.info("dups-ok-acknowledge: " + dupsOK);
 
       PerfParams perfParams = new PerfParams();
       perfParams.setNoOfMessagesToSend(noOfMessages);
@@ -183,8 +183,11 @@ public abstract class PerfBase
    private void displayAverage(final long numberOfMessages, final long start, final long end)
    {
       double duration = (1.0 * end - start) / 1000; // in seconds
-      double average = (1.0 * numberOfMessages / duration);
-      log.info(String.format("average: %.2f msg/s (%d messages in %2.2fs)", average, numberOfMessages, duration));
+      double average = 1.0 * numberOfMessages / duration;
+      PerfBase.log.info(String.format("average: %.2f msg/s (%d messages in %2.2fs)",
+                                      average,
+                                      numberOfMessages,
+                                      duration));
    }
 
    protected void runSender()
@@ -199,7 +202,7 @@ public abstract class PerfBase
          }
 
          start = System.currentTimeMillis();
-         log.info("warming up by sending " + perfParams.getNoOfWarmupMessages() + " messages");
+         PerfBase.log.info("warming up by sending " + perfParams.getNoOfWarmupMessages() + " messages");
          sendMessages(perfParams.getNoOfWarmupMessages(),
                       perfParams.getBatchSize(),
                       perfParams.isDurable(),
@@ -207,7 +210,7 @@ public abstract class PerfBase
                       false,
                       perfParams.getThrottleRate(),
                       perfParams.getMessageSize());
-         log.info("warmed up");
+         PerfBase.log.info("warmed up");
          start = System.currentTimeMillis();
          sendMessages(perfParams.getNoOfMessagesToSend(),
                       perfParams.getBatchSize(),
@@ -254,7 +257,7 @@ public abstract class PerfBase
 
          connection.start();
 
-         log.info("READY!!!");
+         PerfBase.log.info("READY!!!");
 
          CountDownLatch countDownLatch = new CountDownLatch(1);
          consumer.setMessageListener(new PerfListener(countDownLatch, perfParams));
@@ -285,7 +288,7 @@ public abstract class PerfBase
 
    private void drainQueue() throws Exception
    {
-      log.info("Draining queue");
+      PerfBase.log.info("Draining queue");
 
       Session drainSession = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -311,7 +314,7 @@ public abstract class PerfBase
 
       drainSession.close();
 
-      log.info("Drained " + count + " messages");
+      PerfBase.log.info("Drained " + count + " messages");
    }
 
    private void sendMessages(final int numberOfMessages,
@@ -332,7 +335,7 @@ public abstract class PerfBase
 
       BytesMessage message = session.createBytesMessage();
 
-      byte[] payload = randomByteArray(messageSize);
+      byte[] payload = PerfBase.randomByteArray(messageSize);
 
       message.writeBytes(payload);
 
@@ -358,10 +361,10 @@ public abstract class PerfBase
             }
          }
 
-         if (display && (i % modulo == 0))
+         if (display && i % modulo == 0)
          {
             double duration = (1.0 * System.currentTimeMillis() - start) / 1000;
-            log.info(String.format("sent %6d messages in %2.2fs", i, duration));
+            PerfBase.log.info(String.format("sent %6d messages in %2.2fs", i, duration));
          }
 
          if (tbl != null)
@@ -394,7 +397,7 @@ public abstract class PerfBase
          this.countDownLatch = countDownLatch;
          this.perfParams = perfParams;
          warmingUp = perfParams.getNoOfWarmupMessages() > 0;
-         this.modulo = 2000;
+         modulo = 2000;
       }
 
       public void onMessage(final Message message)
@@ -406,7 +409,7 @@ public abstract class PerfBase
                boolean committed = checkCommit();
                if (count.incrementAndGet() == perfParams.getNoOfWarmupMessages())
                {
-                  log.info("warmed up after receiving " + count.longValue() + " msgs");
+                  PerfBase.log.info("warmed up after receiving " + count.longValue() + " msgs");
                   if (!committed)
                   {
                      checkCommit();
@@ -437,7 +440,7 @@ public abstract class PerfBase
             if (currentCount % modulo == 0)
             {
                double duration = (1.0 * System.currentTimeMillis() - start) / 1000;
-               log.info(String.format("received %6d messages in %2.2fs", currentCount, duration));
+               PerfBase.log.info(String.format("received %6d messages in %2.2fs", currentCount, duration));
             }
          }
          catch (Exception e)

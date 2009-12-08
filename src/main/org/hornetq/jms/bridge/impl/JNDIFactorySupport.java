@@ -9,7 +9,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
  * implied.  See the License for the specific language governing
  * permissions and limitations under the License.
- */ 
+ */
 
 package org.hornetq.jms.bridge.impl;
 
@@ -27,23 +27,23 @@ import javax.naming.InitialContext;
  */
 public abstract class JNDIFactorySupport
 {
-	protected Hashtable jndiProperties;
-   
+   protected Hashtable jndiProperties;
+
    protected String lookup;
-   
-   protected JNDIFactorySupport(Hashtable jndiProperties, String lookup)
+
+   protected JNDIFactorySupport(final Hashtable jndiProperties, final String lookup)
    {
       this.jndiProperties = jndiProperties;
-      
-      this.lookup = lookup;       
+
+      this.lookup = lookup;
    }
 
    protected Object createObject() throws Exception
    {
       InitialContext ic = null;
-      
+
       Object obj = null;
-      
+
       try
       {
          if (jndiProperties == null)
@@ -54,8 +54,8 @@ public abstract class JNDIFactorySupport
          {
             ic = new InitialContext(jndiProperties);
          }
-         
-         obj = ic.lookup(lookup);         
+
+         obj = ic.lookup(lookup);
       }
       finally
       {
@@ -64,6 +64,6 @@ public abstract class JNDIFactorySupport
             ic.close();
          }
       }
-      return obj;      
+      return obj;
    }
 }

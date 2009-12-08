@@ -15,6 +15,8 @@ package org.hornetq.tests.unit.util;
 
 import java.util.concurrent.CountDownLatch;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.logging.Logger;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.VariableLatch;
@@ -35,14 +37,14 @@ public class VariableLatchTest extends UnitTestCase
       for (int i = 1; i <= 100; i++)
       {
          latch.up();
-         assertEquals(i, latch.getCount());
+         Assert.assertEquals(i, latch.getCount());
       }
 
       for (int i = 100; i > 0; i--)
       {
-         assertEquals(i, latch.getCount());
+         Assert.assertEquals(i, latch.getCount());
          latch.down();
-         assertEquals(i - 1, latch.getCount());
+         Assert.assertEquals(i - 1, latch.getCount());
       }
 
       latch.waitCompletion();
@@ -79,12 +81,12 @@ public class VariableLatchTest extends UnitTestCase
             {
                if (!latch.waitCompletion(5000))
                {
-                  log.error("Latch timed out");
+                  VariableLatchTest.log.error("Latch timed out");
                }
             }
             catch (Exception e)
             {
-               log.error(e);
+               VariableLatchTest.log.error(e);
             }
             waiting = false;
          }
@@ -118,7 +120,7 @@ public class VariableLatchTest extends UnitTestCase
             }
             catch (Exception e)
             {
-               log.error(e.getMessage(), e);
+               VariableLatchTest.log.error(e.getMessage(), e);
             }
          }
       }
@@ -147,10 +149,10 @@ public class VariableLatchTest extends UnitTestCase
 
       for (int i = 0; i < numberOfThreads; i++)
       {
-         assertTrue(waits[i].waiting);
+         Assert.assertTrue(waits[i].waiting);
       }
 
-      assertEquals(numberOfThreads * numberOfAdds + 1, latch.getCount());
+      Assert.assertEquals(numberOfThreads * numberOfAdds + 1, latch.getCount());
 
       class ThreadDown extends Thread
       {
@@ -180,7 +182,7 @@ public class VariableLatchTest extends UnitTestCase
             }
             catch (Exception e)
             {
-               log.error(e.getMessage(), e);
+               VariableLatchTest.log.error(e.getMessage(), e);
             }
          }
       }
@@ -204,11 +206,11 @@ public class VariableLatchTest extends UnitTestCase
          down[i].join();
       }
 
-      assertEquals(1, latch.getCount());
+      Assert.assertEquals(1, latch.getCount());
 
       for (int i = 0; i < numberOfThreads; i++)
       {
-         assertTrue(waits[i].waiting);
+         Assert.assertTrue(waits[i].waiting);
       }
 
       latch.down();
@@ -218,11 +220,11 @@ public class VariableLatchTest extends UnitTestCase
          waits[i].join();
       }
 
-      assertEquals(0, latch.getCount());
+      Assert.assertEquals(0, latch.getCount());
 
       for (int i = 0; i < numberOfThreads; i++)
       {
-         assertFalse(waits[i].waiting);
+         Assert.assertFalse(waits[i].waiting);
       }
    }
 
@@ -248,12 +250,12 @@ public class VariableLatchTest extends UnitTestCase
             {
                if (!latch.waitCompletion(1000))
                {
-                  log.error("Latch timed out!", new Exception("trace"));
+                  VariableLatchTest.log.error("Latch timed out!", new Exception("trace"));
                }
             }
             catch (Exception e)
             {
-               log.error(e);
+               VariableLatchTest.log.error(e);
                this.e = e;
             }
             waiting = false;
@@ -265,15 +267,15 @@ public class VariableLatchTest extends UnitTestCase
 
       t.readyLatch.await();
 
-      assertEquals(true, t.waiting);
+      Assert.assertEquals(true, t.waiting);
 
       latch.down();
 
       t.join();
 
-      assertEquals(false, t.waiting);
+      Assert.assertEquals(false, t.waiting);
 
-      assertNull(t.e);
+      Assert.assertNull(t.e);
 
       latch.up();
 
@@ -282,23 +284,23 @@ public class VariableLatchTest extends UnitTestCase
 
       t.readyLatch.await();
 
-      assertEquals(true, t.waiting);
+      Assert.assertEquals(true, t.waiting);
 
       latch.down();
 
       t.join();
 
-      assertEquals(false, t.waiting);
+      Assert.assertEquals(false, t.waiting);
 
-      assertNull(t.e);
+      Assert.assertNull(t.e);
 
-      assertTrue(latch.waitCompletion(1000));
+      Assert.assertTrue(latch.waitCompletion(1000));
 
-      assertEquals(0, latch.getCount());
+      Assert.assertEquals(0, latch.getCount());
 
       latch.down();
 
-      assertEquals(0, latch.getCount());
+      Assert.assertEquals(0, latch.getCount());
 
    }
 

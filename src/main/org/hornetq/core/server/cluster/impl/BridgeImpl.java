@@ -121,7 +121,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
 
    private final SimpleString idsHeaderName;
 
-   private MessageFlowRecord flowRecord;
+   private final MessageFlowRecord flowRecord;
 
    private final SimpleString managementAddress;
 
@@ -181,7 +181,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
 
       this.executor = executor;
 
-      this.filter = FilterImpl.createFilter(filterString);
+      filter = FilterImpl.createFilter(filterString);
 
       this.forwardingAddress = forwardingAddress;
 
@@ -210,7 +210,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
 
       this.failoverOnServerShutdown = failoverOnServerShutdown;
 
-      this.idsHeaderName = MessageImpl.HDR_ROUTE_TO_IDS.concat(name);
+      idsHeaderName = MessageImpl.HDR_ROUTE_TO_IDS.concat(name);
 
       this.managementAddress = managementAddress;
 
@@ -303,7 +303,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
          }
          catch (Exception e)
          {
-            log.warn("unable to send notification when broadcast group is stopped", e);
+            BridgeImpl.log.warn("unable to send notification when broadcast group is stopped", e);
          }
       }
    }
@@ -364,7 +364,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
       }
       else
       {
-         return ((ClientSessionInternal)session).getConnection();
+         return session.getConnection();
       }
    }
 
@@ -383,7 +383,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
       }
       catch (Exception e)
       {
-         log.error("Failed to ack", e);
+         BridgeImpl.log.error("Failed to ack", e);
       }
    }
 
@@ -411,7 +411,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
 
          if (flowRecord != null)
          {
-            // We make a  copy of the message, then we strip out the unwanted routing id headers and leave
+            // We make a copy of the message, then we strip out the unwanted routing id headers and leave
             // only
             // the one pertinent for the destination node - this is important since different queues on different
             // nodes could have same queue ids
@@ -510,7 +510,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
 
       if (!ok)
       {
-         log.warn("Timed out waiting to stop");
+         BridgeImpl.log.warn("Timed out waiting to stop");
       }
    }
 
@@ -553,7 +553,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
       }
       catch (Exception e)
       {
-         log.error("Failed to cancel refs", e);
+         BridgeImpl.log.error("Failed to cancel refs", e);
       }
    }
 
@@ -565,7 +565,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
       if (flowRecord != null)
       {
          flowRecord.reset();
-         
+
          if (notifConsumer != null)
          {
             try
@@ -576,7 +576,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
             }
             catch (HornetQException e)
             {
-               log.error("Failed to close consumer", e);
+               BridgeImpl.log.error("Failed to close consumer", e);
             }
          }
 
@@ -640,12 +640,12 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
       {
          return false;
       }
-      
+
       boolean retry = false;
 
       do
       {
-         log.info("Connecting bridge " + name + " to its destination");
+         BridgeImpl.log.info("Connecting bridge " + name + " to its destination");
 
          try
          {
@@ -691,47 +691,48 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
 
             queue.deliverAsync(executor);
 
-            log.info("Bridge " + name + " is connected to its destination");
+            BridgeImpl.log.info("Bridge " + name + " is connected to its destination");
 
             return true;
          }
          catch (HornetQException e)
          {
             csf.close();
-            
+
             // the session was created while its server was starting, retry it:
             if (e.getCode() == HornetQException.SESSION_CREATION_REJECTED)
             {
-               log.warn("Server is starting, retry to create the session for bridge " + name);
+               BridgeImpl.log.warn("Server is starting, retry to create the session for bridge " + name);
 
-               //Sleep a little to prevent spinning too much
+               // Sleep a little to prevent spinning too much
                try
                {
                   Thread.sleep(10);
                }
                catch (InterruptedException ignore)
-               {                  
+               {
                }
-               
+
                retry = true;
-               
+
                continue;
             }
             else
             {
-               log.warn("Bridge " + name + " is unable to connect to destination. It will be disabled.", e);
+               BridgeImpl.log.warn("Bridge " + name + " is unable to connect to destination. It will be disabled.", e);
 
                return false;
             }
-         }      
+         }
          catch (Exception e)
          {
-            log.warn("Bridge " + name + " is unable to connect to destination. It will be disabled.", e);
+            BridgeImpl.log.warn("Bridge " + name + " is unable to connect to destination. It will be disabled.", e);
 
             return false;
          }
-      } while(retry);
-      
+      }
+      while (retry);
+
       return false;
    }
 
@@ -772,7 +773,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
          }
          catch (Exception e)
          {
-            log.error("Failed to stop bridge", e);
+            BridgeImpl.log.error("Failed to stop bridge", e);
          }
       }
    }

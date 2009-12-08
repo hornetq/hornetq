@@ -9,12 +9,14 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
  * implied.  See the License for the specific language governing
  * permissions and limitations under the License.
- */ 
+ */
 
 package org.hornetq.tests.unit.util;
 
 import java.util.HashSet;
 import java.util.Set;
+
+import junit.framework.Assert;
 
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.UUIDGenerator;
@@ -41,15 +43,15 @@ public class UUIDTest extends UnitTestCase
    {
       final int MANY_TIMES = getTimes();
       Set<String> uuidsSet = new HashSet<String>();
-      
+
       UUIDGenerator gen = UUIDGenerator.getInstance();
       for (int i = 0; i < MANY_TIMES; i++)
       {
          uuidsSet.add(gen.generateStringUUID());
       }
-      
+
       // we put them in a set to check duplicates
-      assertEquals(MANY_TIMES, uuidsSet.size());
+      Assert.assertEquals(MANY_TIMES, uuidsSet.size());
    }
 
    // Package protected ---------------------------------------------
@@ -60,7 +62,7 @@ public class UUIDTest extends UnitTestCase
    {
       return 100000;
    }
-   
+
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------

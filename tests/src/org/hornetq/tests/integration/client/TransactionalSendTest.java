@@ -12,6 +12,8 @@
  */
 package org.hornetq.tests.integration.client;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.client.ClientProducer;
 import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.client.ClientSessionFactory;
@@ -33,7 +35,6 @@ public class TransactionalSendTest extends ServiceTestBase
 
    public final SimpleString queueC = new SimpleString("queueC");
 
-
    public void testSendWithCommit() throws Exception
    {
       HornetQServer server = createServer(false);
@@ -49,18 +50,18 @@ public class TransactionalSendTest extends ServiceTestBase
          {
             cp.send(session.createClientMessage(false));
          }
-         Queue q = (Queue) server.getPostOffice().getBinding(queueA).getBindable();
-         assertEquals(q.getMessageCount(), 0);
+         Queue q = (Queue)server.getPostOffice().getBinding(queueA).getBindable();
+         Assert.assertEquals(q.getMessageCount(), 0);
          session.commit();
-         assertEquals(q.getMessageCount(), numMessages);
+         Assert.assertEquals(q.getMessageCount(), numMessages);
          // now send some more
          for (int i = 0; i < numMessages; i++)
          {
             cp.send(session.createClientMessage(false));
          }
-         assertEquals(q.getMessageCount(), numMessages);
+         Assert.assertEquals(q.getMessageCount(), numMessages);
          session.commit();
-         assertEquals(q.getMessageCount(), numMessages * 2);
+         Assert.assertEquals(q.getMessageCount(), numMessages * 2);
          session.close();
       }
       finally
@@ -87,18 +88,18 @@ public class TransactionalSendTest extends ServiceTestBase
          {
             cp.send(session.createClientMessage(false));
          }
-         Queue q = (Queue) server.getPostOffice().getBinding(queueA).getBindable();
-         assertEquals(q.getMessageCount(), 0);
+         Queue q = (Queue)server.getPostOffice().getBinding(queueA).getBindable();
+         Assert.assertEquals(q.getMessageCount(), 0);
          session.rollback();
-         assertEquals(q.getMessageCount(), 0);
+         Assert.assertEquals(q.getMessageCount(), 0);
          // now send some more
          for (int i = 0; i < numMessages; i++)
          {
             cp.send(session.createClientMessage(false));
          }
-         assertEquals(q.getMessageCount(), 0);
+         Assert.assertEquals(q.getMessageCount(), 0);
          session.commit();
-         assertEquals(q.getMessageCount(), numMessages);
+         Assert.assertEquals(q.getMessageCount(), numMessages);
          session.close();
       }
       finally

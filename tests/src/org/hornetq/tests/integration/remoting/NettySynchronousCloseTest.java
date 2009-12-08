@@ -11,7 +11,6 @@
  * permissions and limitations under the License.
  */
 
-
 package org.hornetq.tests.integration.remoting;
 
 /**
@@ -23,6 +22,7 @@ package org.hornetq.tests.integration.remoting;
  */
 public class NettySynchronousCloseTest extends SynchronousCloseTest
 {
+   @Override
    protected boolean isNetty()
    {
       return true;

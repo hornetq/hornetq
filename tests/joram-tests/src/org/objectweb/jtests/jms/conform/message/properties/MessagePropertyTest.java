@@ -21,6 +21,7 @@ import javax.jms.Message;
 import javax.jms.MessageFormatException;
 import javax.jms.TextMessage;
 
+import junit.framework.Assert;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
@@ -48,15 +49,14 @@ public class MessagePropertyTest extends PTPTestCase
       {
          Message message = senderSession.createMessage();
          message.setObjectProperty("prop", new Vector());
-         fail("sec. 3.5.5 An attempt to use any other class [than Boolean, Byte,...,String] must throw "
-               + "a JMS MessageFormatException.\n");
+         Assert.fail("sec. 3.5.5 An attempt to use any other class [than Boolean, Byte,...,String] must throw " + "a JMS MessageFormatException.\n");
       }
       catch (MessageFormatException e)
       {
       }
       catch (JMSException e)
       {
-         fail("Should throw a javax.jms.MessageFormatException, not a " + e);
+         Assert.fail("Should throw a javax.jms.MessageFormatException, not a " + e);
       }
    }
 
@@ -70,7 +70,7 @@ public class MessagePropertyTest extends PTPTestCase
       {
          Message message = senderSession.createMessage();
          message.setObjectProperty("pi", new Float(3.14159f));
-         assertEquals(3.14159f, message.getFloatProperty("pi"), 0);
+         Assert.assertEquals(3.14159f, message.getFloatProperty("pi"), 0);
       }
       catch (JMSException e)
       {
@@ -87,9 +87,9 @@ public class MessagePropertyTest extends PTPTestCase
       try
       {
          Message message = senderSession.createMessage();
-         assertEquals(
-               "sec. 3.5.5 A null value is returned [by the getObjectProperty method] if a property by the specified "
-                     + "name does not exits.\n", null, message.getObjectProperty("prop"));
+         Assert.assertEquals("sec. 3.5.5 A null value is returned [by the getObjectProperty method] if a property by the specified " + "name does not exits.\n",
+                             null,
+                             message.getObjectProperty("prop"));
       }
       catch (JMSException e)
       {
@@ -106,9 +106,9 @@ public class MessagePropertyTest extends PTPTestCase
       try
       {
          Message message = senderSession.createMessage();
-         assertEquals(
-               "sec. 3.5.5 A null value is returned [by the getStringProperty method] if a property by the specified "
-                     + "name does not exits.\n", null, message.getStringProperty("prop"));
+         Assert.assertEquals("sec. 3.5.5 A null value is returned [by the getStringProperty method] if a property by the specified " + "name does not exits.\n",
+                             null,
+                             message.getStringProperty("prop"));
       }
       catch (JMSException e)
       {
@@ -126,7 +126,7 @@ public class MessagePropertyTest extends PTPTestCase
       {
          Message message = senderSession.createMessage();
          message.getDoubleProperty("prop");
-         fail("Should raise a NullPointerException.\n");
+         Assert.fail("Should raise a NullPointerException.\n");
       }
       catch (NullPointerException e)
       {
@@ -147,7 +147,7 @@ public class MessagePropertyTest extends PTPTestCase
       {
          Message message = senderSession.createMessage();
          message.getFloatProperty("prop");
-         fail("Should raise a NullPointerException.\n");
+         Assert.fail("Should raise a NullPointerException.\n");
       }
       catch (NullPointerException e)
       {
@@ -168,7 +168,7 @@ public class MessagePropertyTest extends PTPTestCase
       {
          Message message = senderSession.createMessage();
          message.getLongProperty("prop");
-         fail("Should raise a NumberFormatException.\n");
+         Assert.fail("Should raise a NumberFormatException.\n");
       }
       catch (NumberFormatException e)
       {
@@ -189,7 +189,7 @@ public class MessagePropertyTest extends PTPTestCase
       {
          Message message = senderSession.createMessage();
          message.getIntProperty("prop");
-         fail("Should raise a NumberFormatException.\n");
+         Assert.fail("Should raise a NumberFormatException.\n");
       }
       catch (NumberFormatException e)
       {
@@ -210,7 +210,7 @@ public class MessagePropertyTest extends PTPTestCase
       {
          Message message = senderSession.createMessage();
          message.getShortProperty("prop");
-         fail("Should raise a NumberFormatException.\n");
+         Assert.fail("Should raise a NumberFormatException.\n");
       }
       catch (NumberFormatException e)
       {
@@ -231,7 +231,7 @@ public class MessagePropertyTest extends PTPTestCase
       {
          Message message = senderSession.createMessage();
          message.getByteProperty("prop");
-         fail("Should raise a NumberFormatException.\n");
+         Assert.fail("Should raise a NumberFormatException.\n");
       }
       catch (NumberFormatException e)
       {
@@ -251,7 +251,7 @@ public class MessagePropertyTest extends PTPTestCase
       try
       {
          Message message = senderSession.createMessage();
-         assertEquals(false, message.getBooleanProperty("prop"));
+         Assert.assertEquals(false, message.getBooleanProperty("prop"));
       }
       catch (JMSException e)
       {
@@ -273,10 +273,10 @@ public class MessagePropertyTest extends PTPTestCase
          while (enumeration.hasMoreElements())
          {
             String propName = (String)enumeration.nextElement();
-            boolean valid = !propName.startsWith("JMS")|| propName.startsWith("JMSX");            
-            assertTrue("sec. 3.5.6 The getPropertyNames method does not return the names of "
-               + "the JMS standard header field [e.g. JMSCorrelationID]: " + propName,
-               valid);
+            boolean valid = !propName.startsWith("JMS") || propName.startsWith("JMSX");
+            Assert.assertTrue("sec. 3.5.6 The getPropertyNames method does not return the names of " + "the JMS standard header field [e.g. JMSCorrelationID]: " +
+                                       propName,
+                              valid);
          }
       }
       catch (JMSException e)
@@ -299,7 +299,7 @@ public class MessagePropertyTest extends PTPTestCase
          while (enumeration.hasMoreElements())
          {
             enumeration.nextElement();
-            originalCount ++;
+            originalCount++;
          }
          message.setDoubleProperty("pi", 3.14159);
          enumeration = message.getPropertyNames();
@@ -314,8 +314,8 @@ public class MessagePropertyTest extends PTPTestCase
                foundPiProperty = true;
             }
          }
-         assertEquals(originalCount + 1, newCount);
-         assertTrue(foundPiProperty);
+         Assert.assertEquals(originalCount + 1, newCount);
+         Assert.assertTrue(foundPiProperty);
       }
       catch (JMSException e)
       {
@@ -334,8 +334,9 @@ public class MessagePropertyTest extends PTPTestCase
          TextMessage message = senderSession.createTextMessage();
          message.setText("foo");
          message.clearProperties();
-         assertEquals("sec. 3.5.7 Clearing a message's  property entries does not clear the value of its body.\n", "foo",
-               message.getText());
+         Assert.assertEquals("sec. 3.5.7 Clearing a message's  property entries does not clear the value of its body.\n",
+                             "foo",
+                             message.getText());
       }
       catch (JMSException e)
       {
@@ -354,8 +355,9 @@ public class MessagePropertyTest extends PTPTestCase
          TextMessage message = senderSession.createTextMessage();
          message.setStringProperty("prop", "foo");
          message.clearProperties();
-         assertEquals("sec. 3.5.7 A message's properties are deleted by the clearProperties method.\n", null, message
-               .getStringProperty("prop"));
+         Assert.assertEquals("sec. 3.5.7 A message's properties are deleted by the clearProperties method.\n",
+                             null,
+                             message.getStringProperty("prop"));
       }
       catch (JMSException e)
       {
@@ -371,7 +373,7 @@ public class MessagePropertyTest extends PTPTestCase
       return new TestSuite(MessagePropertyTest.class);
    }
 
-   public MessagePropertyTest(String name)
+   public MessagePropertyTest(final String name)
    {
       super(name);
    }

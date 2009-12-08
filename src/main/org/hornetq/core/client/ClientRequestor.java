@@ -12,13 +12,10 @@
  */
 package org.hornetq.core.client;
 
-import static org.hornetq.utils.SimpleString.toSimpleString;
-
 import java.util.UUID;
 
 import org.hornetq.core.client.impl.ClientMessageImpl;
 import org.hornetq.utils.SimpleString;
-
 
 /**
  * The ClientRequestor class helps making requests.
@@ -66,7 +63,7 @@ public class ClientRequestor
     */
    public ClientRequestor(final ClientSession session, final String requestAddress) throws Exception
    {
-      this(session, toSimpleString(requestAddress));
+      this(session, SimpleString.toSimpleString(requestAddress));
    }
 
    /**

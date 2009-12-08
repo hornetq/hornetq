@@ -18,6 +18,7 @@ import javax.jms.MapMessage;
 import javax.jms.Message;
 
 import org.hornetq.jms.tests.message.SimpleJMSMapMessage;
+import org.hornetq.jms.tests.util.ProxyAssertSupport;
 
 /**
  * Tests the delivery/receipt of a foreign map message
@@ -31,41 +32,43 @@ import org.hornetq.jms.tests.message.SimpleJMSMapMessage;
  */
 public class ForeignMapMessageTest extends ForeignMessageTest
 {
-    private String obj = new String("stringobject");
-    
-    protected Message createForeignMessage() throws Exception
-    {
-        SimpleJMSMapMessage m = new SimpleJMSMapMessage();
-        
-        log.debug("creating JMS Message type " + m.getClass().getName());
-        
-        m.setBoolean("boolean1",true);
-        m.setChar("char1",'c');
-        m.setDouble("double1",1.0D);
-        m.setFloat("float1",2.0F);
-        m.setInt("int1",3);
-        m.setLong("long1",4L);
-        m.setObject("object1",obj);
-        m.setShort("short1",(short)5);
-        m.setString("string1","stringvalue");
+   private final String obj = new String("stringobject");
 
-        return m;
-    }
-    
-    protected void assertEquivalent(Message m, int mode, boolean redelivery) throws JMSException
-    {
-        super.assertEquivalent(m,mode,redelivery);
-        
-        MapMessage map = (MapMessage)m;
-        
-        assertTrue(map.getBoolean("boolean1"));
-        assertEquals(map.getChar("char1"),'c');
-        assertEquals(map.getDouble("double1"),1.0D,0.0D);
-        assertEquals(map.getFloat("float1"),2.0F,0.0F);
-        assertEquals(map.getInt("int1"),3);
-        assertEquals(map.getLong("long1"),4L);
-        assertEquals(map.getObject("object1"),obj);
-        assertEquals(map.getShort("short1"),(short)5);
-        assertEquals(map.getString("string1"),"stringvalue");
-    }
+   @Override
+   protected Message createForeignMessage() throws Exception
+   {
+      SimpleJMSMapMessage m = new SimpleJMSMapMessage();
+
+      log.debug("creating JMS Message type " + m.getClass().getName());
+
+      m.setBoolean("boolean1", true);
+      m.setChar("char1", 'c');
+      m.setDouble("double1", 1.0D);
+      m.setFloat("float1", 2.0F);
+      m.setInt("int1", 3);
+      m.setLong("long1", 4L);
+      m.setObject("object1", obj);
+      m.setShort("short1", (short)5);
+      m.setString("string1", "stringvalue");
+
+      return m;
+   }
+
+   @Override
+   protected void assertEquivalent(final Message m, final int mode, final boolean redelivery) throws JMSException
+   {
+      super.assertEquivalent(m, mode, redelivery);
+
+      MapMessage map = (MapMessage)m;
+
+      ProxyAssertSupport.assertTrue(map.getBoolean("boolean1"));
+      ProxyAssertSupport.assertEquals(map.getChar("char1"), 'c');
+      ProxyAssertSupport.assertEquals(map.getDouble("double1"), 1.0D, 0.0D);
+      ProxyAssertSupport.assertEquals(map.getFloat("float1"), 2.0F, 0.0F);
+      ProxyAssertSupport.assertEquals(map.getInt("int1"), 3);
+      ProxyAssertSupport.assertEquals(map.getLong("long1"), 4L);
+      ProxyAssertSupport.assertEquals(map.getObject("object1"), obj);
+      ProxyAssertSupport.assertEquals(map.getShort("short1"), (short)5);
+      ProxyAssertSupport.assertEquals(map.getString("string1"), "stringvalue");
+   }
 }

@@ -16,7 +16,6 @@ package org.hornetq.core.persistence;
 import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.journal.IOCompletion;
 
-
 /**
  * This represents a set of operations done as part of replication. 
  * When the entire set is done a group of Runnables can be executed.
@@ -27,20 +26,20 @@ import org.hornetq.core.journal.IOCompletion;
  */
 public interface OperationContext extends IOCompletion
 {
-   
+
    /** Execute the task when all IO operations are complete,
     *  Or execute it immediately if nothing is pending.  */
    void executeOnCompletion(IOAsyncTask runnable);
-   
+
    void replicationLineUp();
-   
+
    void replicationDone();
 
    /** To be called when there are no more operations pending */
    void complete();
-   
+
    void waitCompletion() throws Exception;
-   
+
    boolean waitCompletion(long timeout) throws Exception;
 
 }

@@ -18,6 +18,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
 import org.hornetq.core.buffers.HornetQBuffer;
 import org.hornetq.core.buffers.HornetQBuffers;
@@ -25,7 +27,6 @@ import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.tests.util.UnitTestCase;
-import org.jboss.netty.buffer.ChannelBuffers;
 
 /**
  * 
@@ -42,23 +43,23 @@ public abstract class SequentialFileFactoryTestBase extends UnitTestCase
    protected void setUp() throws Exception
    {
       super.setUp();
-      
+
       factory = createFactory();
-      
+
       factory.start();
    }
 
    @Override
    protected void tearDown() throws Exception
    {
-      assertEquals(0, AsynchronousFileImpl.getTotalMaxIO());
-      
+      Assert.assertEquals(0, AsynchronousFileImpl.getTotalMaxIO());
+
       factory.stop();
-      
+
       factory = null;
-      
-      forceGC();
-      
+
+      UnitTestCase.forceGC();
+
       super.tearDown();
    }
 
@@ -82,7 +83,7 @@ public abstract class SequentialFileFactoryTestBase extends UnitTestCase
 
          sf.open();
 
-         assertEquals(fileName, sf.getFileName());
+         Assert.assertEquals(fileName, sf.getFileName());
 
          sf.close();
       }
@@ -98,24 +99,24 @@ public abstract class SequentialFileFactoryTestBase extends UnitTestCase
 
       List<String> fileNames = factory.listFiles("hq");
 
-      assertEquals(expectedFiles.size(), fileNames.size());
+      Assert.assertEquals(expectedFiles.size(), fileNames.size());
 
       for (String fileName : expectedFiles)
       {
-         assertTrue(fileNames.contains(fileName));
+         Assert.assertTrue(fileNames.contains(fileName));
       }
 
       fileNames = factory.listFiles("file");
 
-      assertEquals(1, fileNames.size());
+      Assert.assertEquals(1, fileNames.size());
 
-      assertTrue(fileNames.contains("different.file"));
+      Assert.assertTrue(fileNames.contains("different.file"));
 
       fileNames = factory.listFiles("cheese");
 
-      assertEquals(1, fileNames.size());
+      Assert.assertEquals(1, fileNames.size());
 
-      assertTrue(fileNames.contains("different.cheese"));
+      Assert.assertTrue(fileNames.contains("different.cheese"));
 
       sf1.close();
       sf2.close();
@@ -158,24 +159,24 @@ public abstract class SequentialFileFactoryTestBase extends UnitTestCase
 
       List<String> fileNames = factory.listFiles("hq");
 
-      assertEquals(2, fileNames.size());
+      Assert.assertEquals(2, fileNames.size());
 
-      assertTrue(fileNames.contains("delete-me.hq"));
+      Assert.assertTrue(fileNames.contains("delete-me.hq"));
 
-      assertTrue(fileNames.contains("delete-me2.hq"));
+      Assert.assertTrue(fileNames.contains("delete-me2.hq"));
 
       sf.delete();
 
       fileNames = factory.listFiles("hq");
 
-      assertEquals(1, fileNames.size());
+      Assert.assertEquals(1, fileNames.size());
 
-      assertTrue(fileNames.contains("delete-me2.hq"));
+      Assert.assertTrue(fileNames.contains("delete-me2.hq"));
 
       sf2.close();
 
    }
-   
+
    public void testRename() throws Exception
    {
       SequentialFile sf = factory.createSequentialFile("test1.hq", 1);
@@ -184,30 +185,30 @@ public abstract class SequentialFileFactoryTestBase extends UnitTestCase
 
       List<String> fileNames = factory.listFiles("hq");
 
-      assertEquals(1, fileNames.size());
+      Assert.assertEquals(1, fileNames.size());
 
-      assertTrue(fileNames.contains("test1.hq"));
-      
+      Assert.assertTrue(fileNames.contains("test1.hq"));
+
       sf.renameTo("test1.cmp");
 
       fileNames = factory.listFiles("cmp");
 
-      assertEquals(1, fileNames.size());
+      Assert.assertEquals(1, fileNames.size());
 
-      assertTrue(fileNames.contains("test1.cmp"));
+      Assert.assertTrue(fileNames.contains("test1.cmp"));
 
       sf.delete();
 
       fileNames = factory.listFiles("hq");
 
-      assertEquals(0, fileNames.size());
+      Assert.assertEquals(0, fileNames.size());
 
       fileNames = factory.listFiles("cmp");
 
-      assertEquals(0, fileNames.size());
+      Assert.assertEquals(0, fileNames.size());
 
    }
-   
+
    public void testWriteandRead() throws Exception
    {
       SequentialFile sf = factory.createSequentialFile("write.hq", 1);
@@ -225,24 +226,24 @@ public abstract class SequentialFileFactoryTestBase extends UnitTestCase
       String s3 = "echidna";
       byte[] bytes3 = s3.getBytes("UTF-8");
       HornetQBuffer bb3 = wrapBuffer(bytes3);
-      
+
       long initialPos = sf.position();
       sf.write(bb1, true);
       long bytesWritten = sf.position() - initialPos;
 
-      assertEquals(calculateRecordSize(bytes1.length, sf.getAlignment()), bytesWritten);
+      Assert.assertEquals(calculateRecordSize(bytes1.length, sf.getAlignment()), bytesWritten);
 
       initialPos = sf.position();
       sf.write(bb2, true);
       bytesWritten = sf.position() - initialPos;
 
-      assertEquals(calculateRecordSize(bytes2.length, sf.getAlignment()), bytesWritten);
+      Assert.assertEquals(calculateRecordSize(bytes2.length, sf.getAlignment()), bytesWritten);
 
       initialPos = sf.position();
       sf.write(bb3, true);
       bytesWritten = sf.position() - initialPos;
 
-      assertEquals(calculateRecordSize(bytes3.length, sf.getAlignment()), bytesWritten);
+      Assert.assertEquals(calculateRecordSize(bytes3.length, sf.getAlignment()), bytesWritten);
 
       sf.position(0);
 
@@ -251,25 +252,25 @@ public abstract class SequentialFileFactoryTestBase extends UnitTestCase
       ByteBuffer rb3 = factory.newBuffer(bytes3.length);
 
       int bytesRead = sf.read(rb1);
-      assertEquals(calculateRecordSize(bytes1.length, sf.getAlignment()), bytesRead);
+      Assert.assertEquals(calculateRecordSize(bytes1.length, sf.getAlignment()), bytesRead);
 
       for (int i = 0; i < bytes1.length; i++)
       {
-         assertEquals(bytes1[i], rb1.get(i));
+         Assert.assertEquals(bytes1[i], rb1.get(i));
       }
 
       bytesRead = sf.read(rb2);
-      assertEquals(calculateRecordSize(bytes2.length, sf.getAlignment()), bytesRead);
+      Assert.assertEquals(calculateRecordSize(bytes2.length, sf.getAlignment()), bytesRead);
       for (int i = 0; i < bytes2.length; i++)
       {
-         assertEquals(bytes2[i], rb2.get(i));
+         Assert.assertEquals(bytes2[i], rb2.get(i));
       }
 
       bytesRead = sf.read(rb3);
-      assertEquals(calculateRecordSize(bytes3.length, sf.getAlignment()), bytesRead);
+      Assert.assertEquals(calculateRecordSize(bytes3.length, sf.getAlignment()), bytesRead);
       for (int i = 0; i < bytes3.length; i++)
       {
-         assertEquals(bytes3[i], rb3.get(i));
+         Assert.assertEquals(bytes3[i], rb3.get(i));
       }
 
       sf.close();
@@ -294,25 +295,24 @@ public abstract class SequentialFileFactoryTestBase extends UnitTestCase
 
          String s3 = "lemon";
          byte[] bytes3 = s3.getBytes("UTF-8");
- 
+
          long initialPos = sf.position();
          sf.write(wrapBuffer(bytes1), true);
          long bytesWritten = sf.position() - initialPos;
 
-         assertEquals(calculateRecordSize(bytes1.length,sf.getAlignment()), bytesWritten);
+         Assert.assertEquals(calculateRecordSize(bytes1.length, sf.getAlignment()), bytesWritten);
 
          initialPos = sf.position();
          sf.write(wrapBuffer(bytes2), true);
          bytesWritten = sf.position() - initialPos;
 
-         
-         assertEquals(calculateRecordSize(bytes2.length,sf.getAlignment()), bytesWritten);
+         Assert.assertEquals(calculateRecordSize(bytes2.length, sf.getAlignment()), bytesWritten);
 
          initialPos = sf.position();
          sf.write(wrapBuffer(bytes3), true);
          bytesWritten = sf.position() - initialPos;
 
-         assertEquals(calculateRecordSize(bytes3.length,sf.getAlignment()), bytesWritten);
+         Assert.assertEquals(calculateRecordSize(bytes3.length, sf.getAlignment()), bytesWritten);
 
          byte[] rbytes1 = new byte[bytes1.length];
 
@@ -324,28 +324,29 @@ public abstract class SequentialFileFactoryTestBase extends UnitTestCase
          ByteBuffer rb2 = factory.newBuffer(rbytes2.length);
          ByteBuffer rb3 = factory.newBuffer(rbytes3.length);
 
-         sf.position(calculateRecordSize(bytes1.length, sf.getAlignment()) + calculateRecordSize(bytes2.length, sf.getAlignment()));
+         sf.position(calculateRecordSize(bytes1.length, sf.getAlignment()) + calculateRecordSize(bytes2.length,
+                                                                                                 sf.getAlignment()));
 
          int bytesRead = sf.read(rb3);
-         assertEquals(rb3.limit(), bytesRead);
+         Assert.assertEquals(rb3.limit(), bytesRead);
          rb3.rewind();
          rb3.get(rbytes3);
-         assertEqualsByteArrays(bytes3, rbytes3);
+         UnitTestCase.assertEqualsByteArrays(bytes3, rbytes3);
 
          sf.position(rb1.limit());
 
          bytesRead = sf.read(rb2);
-         assertEquals(rb2.limit(), bytesRead);
+         Assert.assertEquals(rb2.limit(), bytesRead);
          rb2.get(rbytes2);
-         assertEqualsByteArrays(bytes2, rbytes2);
+         UnitTestCase.assertEqualsByteArrays(bytes2, rbytes2);
 
          sf.position(0);
 
          bytesRead = sf.read(rb1);
-         assertEquals(rb1.limit(), bytesRead);
+         Assert.assertEquals(rb1.limit(), bytesRead);
          rb1.get(rbytes1);
 
-         assertEqualsByteArrays(bytes1, rbytes1);
+         UnitTestCase.assertEqualsByteArrays(bytes1, rbytes1);
 
       }
       finally
@@ -375,16 +376,16 @@ public abstract class SequentialFileFactoryTestBase extends UnitTestCase
       sf.write(wrapBuffer(bytes1), true);
       long bytesWritten = sf.position() - initialPos;
 
-      assertEquals(calculateRecordSize(bytes1.length, sf.getAlignment()), bytesWritten);
+      Assert.assertEquals(calculateRecordSize(bytes1.length, sf.getAlignment()), bytesWritten);
 
       sf.close();
 
       try
       {
-         
+
          sf.write(wrapBuffer(bytes1), true);
 
-         fail("Should throw exception");
+         Assert.fail("Should throw exception");
       }
       catch (Exception e)
       {
@@ -398,8 +399,8 @@ public abstract class SequentialFileFactoryTestBase extends UnitTestCase
    }
 
    // Private ---------------------------------
-   
-   private HornetQBuffer wrapBuffer(byte[] bytes)
+
+   private HornetQBuffer wrapBuffer(final byte[] bytes)
    {
       return HornetQBuffers.wrappedBuffer(bytes);
    }
@@ -418,12 +419,12 @@ public abstract class SequentialFileFactoryTestBase extends UnitTestCase
 
       int bytesRead = file.read(bb);
 
-      assertEquals(calculateRecordSize(size, file.getAlignment()), bytesRead);
+      Assert.assertEquals(calculateRecordSize(size, file.getAlignment()), bytesRead);
 
       for (int i = 0; i < size; i++)
       {
          // log.debug(" i is " + i);
-         assertEquals(fillChar, bb.get(i));
+         Assert.assertEquals(fillChar, bb.get(i));
       }
 
    }

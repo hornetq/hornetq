@@ -75,7 +75,9 @@ public class ConfigurationHelper
          }
          else if (prop instanceof Integer == false)
          {
-            log.warn("Property " + propName + " must be an Integer, it is " + prop.getClass().getName());
+            ConfigurationHelper.log.warn("Property " + propName +
+                                         " must be an Integer, it is " +
+                                         prop.getClass().getName());
 
             return def;
          }
@@ -108,7 +110,9 @@ public class ConfigurationHelper
          }
          else if (prop instanceof Long == false)
          {
-            log.warn("Property " + propName + " must be an Long, it is " + prop.getClass().getName());
+            ConfigurationHelper.log.warn("Property " + propName +
+                                         " must be an Long, it is " +
+                                         prop.getClass().getName());
 
             return def;
          }
@@ -118,7 +122,7 @@ public class ConfigurationHelper
          }
       }
    }
-   
+
    public static boolean getBooleanProperty(final String propName, final boolean def, final Map<String, Object> props)
    {
       if (props == null)
@@ -141,7 +145,9 @@ public class ConfigurationHelper
          }
          else if (prop instanceof Boolean == false)
          {
-            log.warn("Property " + propName + " must be a Boolean, it is " + prop.getClass().getName());
+            ConfigurationHelper.log.warn("Property " + propName +
+                                         " must be a Boolean, it is " +
+                                         prop.getClass().getName());
 
             return def;
          }
@@ -151,11 +157,11 @@ public class ConfigurationHelper
          }
       }
    }
-   
+
    public static Set<String> checkKeys(final Set<String> allowableKeys, final Set<String> keys)
    {
       Set<String> invalid = new HashSet<String>();
-      
+
       for (String key : keys)
       {
          if (!allowableKeys.contains(key))
@@ -165,7 +171,7 @@ public class ConfigurationHelper
       }
       return invalid;
    }
-   
+
    public static String stringSetToCommaListString(final String msg, final Set<String> invalid)
    {
       StringBuilder sb = new StringBuilder();

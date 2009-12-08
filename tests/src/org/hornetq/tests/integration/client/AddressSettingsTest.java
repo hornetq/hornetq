@@ -12,6 +12,8 @@
  */
 package org.hornetq.tests.integration.client;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
@@ -22,38 +24,39 @@ import org.hornetq.core.settings.HierarchicalRepository;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.utils.SimpleString;
+
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  */
 public class AddressSettingsTest extends ServiceTestBase
 {
-   private SimpleString addressA = new SimpleString("addressA");
+   private final SimpleString addressA = new SimpleString("addressA");
 
-   private SimpleString addressA2 = new SimpleString("add.addressA");
+   private final SimpleString addressA2 = new SimpleString("add.addressA");
 
-   private SimpleString addressB = new SimpleString("addressB");
+   private final SimpleString addressB = new SimpleString("addressB");
 
-   private SimpleString addressB2 = new SimpleString("add.addressB");
+   private final SimpleString addressB2 = new SimpleString("add.addressB");
 
-   private SimpleString addressC = new SimpleString("addressC");
+   private final SimpleString addressC = new SimpleString("addressC");
 
-   private SimpleString queueA = new SimpleString("queueA");
+   private final SimpleString queueA = new SimpleString("queueA");
 
-   private SimpleString queueB = new SimpleString("queueB");
+   private final SimpleString queueB = new SimpleString("queueB");
 
-   private SimpleString queueC = new SimpleString("queueC");
+   private final SimpleString queueC = new SimpleString("queueC");
 
-   private SimpleString dlaA = new SimpleString("dlaA");
+   private final SimpleString dlaA = new SimpleString("dlaA");
 
-   private SimpleString dlqA = new SimpleString("dlqA");
+   private final SimpleString dlqA = new SimpleString("dlqA");
 
-   private SimpleString dlaB = new SimpleString("dlaB");
+   private final SimpleString dlaB = new SimpleString("dlaB");
 
-   private SimpleString dlqB = new SimpleString("dlqB");
+   private final SimpleString dlqB = new SimpleString("dlqB");
 
-   private SimpleString dlaC = new SimpleString("dlaC");
+   private final SimpleString dlaC = new SimpleString("dlaC");
 
-   private SimpleString dlqC = new SimpleString("dlqC");
+   private final SimpleString dlqC = new SimpleString("dlqC");
 
    public void testSimpleHierarchyWithDLA() throws Exception
    {
@@ -92,26 +95,26 @@ public class AddressSettingsTest extends ServiceTestBase
          ClientConsumer cc2 = session.createConsumer(queueB);
          session.start();
          ClientMessage message = cc1.receive(5000);
-         assertNotNull(message);
+         Assert.assertNotNull(message);
          message.acknowledge();
          message = cc2.receive(5000);
-         assertNotNull(message);
+         Assert.assertNotNull(message);
          message.acknowledge();
          session.rollback();
          cc1.close();
          cc2.close();
          message = dlqARec.receive(5000);
-         assertNotNull(message);
-         assertEquals("A", message.getBodyBuffer().readString());
+         Assert.assertNotNull(message);
+         Assert.assertEquals("A", message.getBodyBuffer().readString());
          message = dlqBrec.receive(5000);
-         assertNotNull(message);
-         assertEquals("B", message.getBodyBuffer().readString());
+         Assert.assertNotNull(message);
+         Assert.assertEquals("B", message.getBodyBuffer().readString());
          sendSession.close();
          session.close();
       }
       finally
       {
-         if(server.isStarted())
+         if (server.isStarted())
          {
             server.stop();
          }
@@ -155,26 +158,26 @@ public class AddressSettingsTest extends ServiceTestBase
          ClientConsumer cc2 = session.createConsumer(queueB);
          session.start();
          ClientMessage message = cc1.receive(5000);
-         assertNotNull(message);
+         Assert.assertNotNull(message);
          message.acknowledge();
          message = cc2.receive(5000);
-         assertNotNull(message);
+         Assert.assertNotNull(message);
          message.acknowledge();
          session.rollback();
          cc1.close();
          cc2.close();
          message = dlqARec.receive(5000);
-         assertNotNull(message);
-         assertEquals("A", message.getBodyBuffer().readString());
+         Assert.assertNotNull(message);
+         Assert.assertEquals("A", message.getBodyBuffer().readString());
          message = dlqBrec.receive(5000);
-         assertNotNull(message);
-         assertEquals("B", message.getBodyBuffer().readString());
+         Assert.assertNotNull(message);
+         Assert.assertEquals("B", message.getBodyBuffer().readString());
          sendSession.close();
          session.close();
       }
       finally
       {
-         if(server.isStarted())
+         if (server.isStarted())
          {
             server.stop();
          }
@@ -218,26 +221,26 @@ public class AddressSettingsTest extends ServiceTestBase
          ClientConsumer cc2 = session.createConsumer(queueB);
          session.start();
          ClientMessage message = cc1.receive(5000);
-         assertNotNull(message);
+         Assert.assertNotNull(message);
          message.acknowledge();
          message = cc2.receive(5000);
-         assertNotNull(message);
+         Assert.assertNotNull(message);
          message.acknowledge();
          session.rollback();
          cc1.close();
          cc2.close();
          message = dlqARec.receive(5000);
-         assertNotNull(message);
-         assertEquals("A", message.getBodyBuffer().readString());
+         Assert.assertNotNull(message);
+         Assert.assertEquals("A", message.getBodyBuffer().readString());
          message = dlqBrec.receive(5000);
-         assertNotNull(message);
-         assertEquals("B", message.getBodyBuffer().readString());
+         Assert.assertNotNull(message);
+         Assert.assertEquals("B", message.getBodyBuffer().readString());
          sendSession.close();
          session.close();
       }
       finally
       {
-         if(server.isStarted())
+         if (server.isStarted())
          {
             server.stop();
          }
@@ -293,33 +296,33 @@ public class AddressSettingsTest extends ServiceTestBase
          ClientConsumer cc3 = session.createConsumer(queueC);
          session.start();
          ClientMessage message = cc1.receive(5000);
-         assertNotNull(message);
+         Assert.assertNotNull(message);
          message.acknowledge();
          message = cc2.receive(5000);
-         assertNotNull(message);
+         Assert.assertNotNull(message);
          message.acknowledge();
          message = cc3.receive(5000);
-         assertNotNull(message);
+         Assert.assertNotNull(message);
          message.acknowledge();
          session.rollback();
          cc1.close();
          cc2.close();
          cc3.close();
          message = dlqARec.receive(5000);
-         assertNotNull(message);
-         assertEquals("A", message.getBodyBuffer().readString());
+         Assert.assertNotNull(message);
+         Assert.assertEquals("A", message.getBodyBuffer().readString());
          message = dlqBrec.receive(5000);
-         assertNotNull(message);
-         assertEquals("B", message.getBodyBuffer().readString());
+         Assert.assertNotNull(message);
+         Assert.assertEquals("B", message.getBodyBuffer().readString());
          message = dlqCrec.receive(5000);
-         assertNotNull(message);
-         assertEquals("C", message.getBodyBuffer().readString());
+         Assert.assertNotNull(message);
+         Assert.assertEquals("C", message.getBodyBuffer().readString());
          sendSession.close();
          session.close();
       }
       finally
       {
-         if(server.isStarted())
+         if (server.isStarted())
          {
             server.stop();
          }
@@ -368,30 +371,30 @@ public class AddressSettingsTest extends ServiceTestBase
          ClientConsumer cc3 = session.createConsumer(queueC);
          session.start();
          ClientMessage message = cc1.receive(5000);
-         assertNotNull(message);
+         Assert.assertNotNull(message);
          message.acknowledge();
          message = cc2.receive(5000);
-         assertNotNull(message);
+         Assert.assertNotNull(message);
          message.acknowledge();
          message = cc3.receive(5000);
-         assertNotNull(message);
+         Assert.assertNotNull(message);
          message.acknowledge();
          session.rollback();
          cc1.close();
          cc2.close();
          cc3.close();
          message = dlqCrec.receive(5000);
-         assertNotNull(message);
+         Assert.assertNotNull(message);
          message = dlqCrec.receive(5000);
-         assertNotNull(message);
+         Assert.assertNotNull(message);
          message = dlqCrec.receive(5000);
-         assertNotNull(message);
+         Assert.assertNotNull(message);
          sendSession.close();
          session.close();
       }
       finally
       {
-         if(server.isStarted())
+         if (server.isStarted())
          {
             server.stop();
          }

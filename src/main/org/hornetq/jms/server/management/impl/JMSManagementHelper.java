@@ -28,7 +28,7 @@ import org.hornetq.jms.client.HornetQMessage;
 public class JMSManagementHelper
 {
    // Constants -----------------------------------------------------
-   
+
    // Attributes ----------------------------------------------------
 
    // Static --------------------------------------------------------
@@ -37,38 +37,40 @@ public class JMSManagementHelper
    {
       if (jmsMessage instanceof HornetQMessage == false)
       {
-         throw new IllegalArgumentException("Cannot send a non JBoss message as a management message " +
-                                            jmsMessage.getClass().getName());
+         throw new IllegalArgumentException("Cannot send a non JBoss message as a management message " + jmsMessage.getClass()
+                                                                                                                   .getName());
       }
-      
+
       return ((HornetQMessage)jmsMessage).getCoreMessage();
    }
-   
+
    public static void putAttribute(final Message message, final String resourceName, final String attribute) throws JMSException
    {
-      ManagementHelper.putAttribute(getCoreMessage(message), resourceName, attribute);
+      ManagementHelper.putAttribute(JMSManagementHelper.getCoreMessage(message), resourceName, attribute);
    }
-   
+
    public static void putOperationInvocation(final Message message,
                                              final String resourceName,
                                              final String operationName) throws JMSException
-   {      
+   {
       try
       {
-         ManagementHelper.putOperationInvocation(getCoreMessage(message), resourceName, operationName);
+         ManagementHelper.putOperationInvocation(JMSManagementHelper.getCoreMessage(message),
+                                                 resourceName,
+                                                 operationName);
       }
       catch (Exception e)
       {
-         throw convertFromException(e);
+         throw JMSManagementHelper.convertFromException(e);
       }
    }
-   
-   private static JMSException convertFromException(Exception e)
+
+   private static JMSException convertFromException(final Exception e)
    {
-      JMSException jmse =  new JMSException(e.getMessage());
-      
+      JMSException jmse = new JMSException(e.getMessage());
+
       jmse.initCause(e);
-      
+
       return jmse;
    }
 
@@ -79,37 +81,40 @@ public class JMSManagementHelper
    {
       try
       {
-         ManagementHelper.putOperationInvocation(getCoreMessage(message), resourceName, operationName, parameters);
+         ManagementHelper.putOperationInvocation(JMSManagementHelper.getCoreMessage(message),
+                                                 resourceName,
+                                                 operationName,
+                                                 parameters);
       }
       catch (Exception e)
       {
-         throw convertFromException(e);
+         throw JMSManagementHelper.convertFromException(e);
       }
    }
 
    public static boolean isOperationResult(final Message message) throws JMSException
    {
-      return ManagementHelper.isOperationResult(getCoreMessage(message));
+      return ManagementHelper.isOperationResult(JMSManagementHelper.getCoreMessage(message));
    }
 
    public static boolean isAttributesResult(final Message message) throws JMSException
    {
-      return ManagementHelper.isAttributesResult(getCoreMessage(message));
+      return ManagementHelper.isAttributesResult(JMSManagementHelper.getCoreMessage(message));
    }
 
    public static boolean hasOperationSucceeded(final Message message) throws JMSException
    {
-      return ManagementHelper.hasOperationSucceeded(getCoreMessage(message));
+      return ManagementHelper.hasOperationSucceeded(JMSManagementHelper.getCoreMessage(message));
    }
-   
+
    public static Object[] getResults(final Message message) throws Exception
    {
-      return ManagementHelper.getResults(getCoreMessage(message));
+      return ManagementHelper.getResults(JMSManagementHelper.getCoreMessage(message));
    }
 
    public static Object getResult(final Message message) throws Exception
    {
-      return ManagementHelper.getResult(getCoreMessage(message));
+      return ManagementHelper.getResult(JMSManagementHelper.getCoreMessage(message));
    }
 
    // Constructors --------------------------------------------------

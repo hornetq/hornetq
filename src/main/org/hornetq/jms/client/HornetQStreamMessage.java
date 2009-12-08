@@ -19,7 +19,6 @@ import javax.jms.MessageFormatException;
 import javax.jms.StreamMessage;
 
 import org.hornetq.core.buffers.HornetQBuffer;
-import org.hornetq.core.buffers.HornetQBuffers;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.client.impl.ClientMessageImpl;
@@ -90,7 +89,7 @@ public class HornetQStreamMessage extends HornetQMessage implements StreamMessag
    // For testing only
    public HornetQStreamMessage()
    {
-      this.message = new ClientMessageImpl((byte)0, false, 0, 0, (byte)4, 1500);
+      message = new ClientMessageImpl((byte)0, false, 0, 0, (byte)4, 1500);
    }
 
    // Public --------------------------------------------------------

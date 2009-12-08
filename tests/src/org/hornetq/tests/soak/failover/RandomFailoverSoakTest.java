@@ -11,7 +11,6 @@
  * permissions and limitations under the License.
  */
 
-
 package org.hornetq.tests.soak.failover;
 
 import org.hornetq.tests.integration.cluster.reattach.RandomReattachTest;
@@ -28,9 +27,10 @@ import org.hornetq.tests.integration.cluster.reattach.RandomReattachTest;
 public class RandomFailoverSoakTest extends RandomReattachTest
 {
 
+   @Override
    protected int getNumIterations()
    {
       return 500;
    }
-  
+
 }

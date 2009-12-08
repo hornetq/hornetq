@@ -13,10 +13,6 @@
 
 package org.hornetq.core.paging.impl;
 
-import static org.hornetq.utils.DataConstants.SIZE_BYTE;
-import static org.hornetq.utils.DataConstants.SIZE_INT;
-import static org.hornetq.utils.DataConstants.SIZE_LONG;
-
 import org.hornetq.core.buffers.HornetQBuffer;
 import org.hornetq.core.buffers.HornetQBuffers;
 import org.hornetq.core.logging.Logger;
@@ -25,6 +21,7 @@ import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.server.LargeServerMessage;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.impl.ServerMessageImpl;
+import org.hornetq.utils.DataConstants;
 
 /**
  * 
@@ -40,7 +37,6 @@ public class PagedMessageImpl implements PagedMessage
 
    private static final Logger log = Logger.getLogger(PagedMessageImpl.class);
 
-   
    // Attributes ----------------------------------------------------
 
    // Static --------------------------------------------------------
@@ -68,7 +64,7 @@ public class PagedMessageImpl implements PagedMessage
    }
 
    public PagedMessageImpl()
-   {      
+   {
    }
 
    public ServerMessage getMessage(final StorageManager storage)
@@ -76,7 +72,7 @@ public class PagedMessageImpl implements PagedMessage
       if (largeMessageLazyData != null)
       {
          message = storage.createLargeMessage();
-         HornetQBuffer buffer = HornetQBuffers.dynamicBuffer(largeMessageLazyData); 
+         HornetQBuffer buffer = HornetQBuffers.dynamicBuffer(largeMessageLazyData);
          message.decodeHeadersAndProperties(buffer);
          largeMessageLazyData = null;
       }
@@ -107,9 +103,9 @@ public class PagedMessageImpl implements PagedMessage
       else
       {
          buffer.readInt(); // This value is only used on LargeMessages for now
-         
-         message = new ServerMessageImpl(-1, 50);         
-         
+
+         message = new ServerMessageImpl(-1, 50);
+
          message.decode(buffer);
       }
    }
@@ -117,17 +113,17 @@ public class PagedMessageImpl implements PagedMessage
    public void encode(final HornetQBuffer buffer)
    {
       buffer.writeLong(transactionID);
-      
+
       buffer.writeBoolean(message instanceof LargeServerMessage);
-      
+
       buffer.writeInt(message.getEncodeSize());
-         
+
       message.encode(buffer);
    }
 
    public int getEncodeSize()
    {
-      return SIZE_LONG + SIZE_BYTE + SIZE_INT + message.getEncodeSize();
+      return DataConstants.SIZE_LONG + DataConstants.SIZE_BYTE + DataConstants.SIZE_INT + message.getEncodeSize();
    }
 
    // Package protected ---------------------------------------------

@@ -60,7 +60,7 @@ public class BindingsImpl implements Bindings
 
    private final GroupingHandler groupingHandler;
 
-   public BindingsImpl(GroupingHandler groupingHandler)
+   public BindingsImpl(final GroupingHandler groupingHandler)
    {
       this.groupingHandler = groupingHandler;
    }
@@ -236,7 +236,7 @@ public class BindingsImpl implements Bindings
       }
 
       if (!routed)
-      {                 
+      {
          if (message.containsProperty(MessageImpl.HDR_FROM_CLUSTER))
          {
             routeFromCluster(message, context);
@@ -271,7 +271,9 @@ public class BindingsImpl implements Bindings
       }
    }
 
-   private Binding getNextBinding(ServerMessage message, SimpleString routingName, List<Binding> bindings)
+   private Binding getNextBinding(final ServerMessage message,
+                                  final SimpleString routingName,
+                                  final List<Binding> bindings)
    {
       Integer ipos = routingNamePositions.get(routingName);
 
@@ -473,7 +475,7 @@ public class BindingsImpl implements Bindings
       }
    }
 
-   private final int incrementPos(int pos, int length)
+   private final int incrementPos(int pos, final int length)
    {
       pos++;
 

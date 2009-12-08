@@ -130,14 +130,14 @@ public class PagingStoreImpl implements TestSupportPageStore
 
    // Static --------------------------------------------------------
 
-   private static final boolean isTrace = log.isTraceEnabled();
+   private static final boolean isTrace = PagingStoreImpl.log.isTraceEnabled();
 
    // This is just a debug tool method.
    // During debugs you could make log.trace as log.info, and change the
    // variable isTrace above
    private static void trace(final String message)
    {
-      log.trace(message);
+      PagingStoreImpl.log.trace(message);
    }
 
    // Constructors --------------------------------------------------
@@ -170,13 +170,16 @@ public class PagingStoreImpl implements TestSupportPageStore
 
       pageSize = addressSettings.getPageSizeBytes();
 
-      this.addressFullMessagePolicy = addressSettings.getAddressFullMessagePolicy();
-      
+      addressFullMessagePolicy = addressSettings.getAddressFullMessagePolicy();
+
       if (addressFullMessagePolicy == AddressFullMessagePolicy.PAGE && maxSize != -1 && pageSize >= maxSize)
       {
          throw new IllegalStateException("pageSize for address " + address +
                                          " >= maxSize. Normally pageSize should" +
-                                         " be significantly smaller than maxSize, ms: " + maxSize + " ps " + pageSize);
+                                         " be significantly smaller than maxSize, ms: " +
+                                         maxSize +
+                                         " ps " +
+                                         pageSize);
       }
 
       this.executor = executor;
@@ -187,9 +190,9 @@ public class PagingStoreImpl implements TestSupportPageStore
 
       this.storeFactory = storeFactory;
 
-      this.availableProducerCredits.set(maxSize);
+      availableProducerCredits.set(maxSize);
 
-      this.creditManager = new ServerProducerCreditManagerImpl(this);
+      creditManager = new ServerProducerCreditManagerImpl(this);
 
       this.syncNonTransactional = syncNonTransactional;
    }
@@ -414,7 +417,7 @@ public class PagingStoreImpl implements TestSupportPageStore
 
          if (!latch.await(60, TimeUnit.SECONDS))
          {
-            log.warn("Timed out on waiting PagingStore " + this.address + " to shutdown");
+            PagingStoreImpl.log.warn("Timed out on waiting PagingStore " + address + " to shutdown");
          }
 
          if (currentPage != null)
@@ -463,7 +466,7 @@ public class PagingStoreImpl implements TestSupportPageStore
 
                   for (String fileName : files)
                   {
-                     final int fileId = getPageIdFromFileName(fileName);
+                     final int fileId = PagingStoreImpl.getPageIdFromFileName(fileName);
 
                      if (fileId > currentPageId)
                      {
@@ -534,7 +537,7 @@ public class PagingStoreImpl implements TestSupportPageStore
             {
                // If not possible to starting page due to an IO error, we will just consider it non paging.
                // This shouldn't happen anyway
-               log.warn("IO Error, impossible to start paging", e);
+               PagingStoreImpl.log.warn("IO Error, impossible to start paging", e);
                return false;
             }
 
@@ -573,7 +576,7 @@ public class PagingStoreImpl implements TestSupportPageStore
 
       file.close();
 
-      return new PageImpl(this.storeName, storageManager, fileFactory, file, page);
+      return new PageImpl(storeName, storageManager, fileFactory, file, page);
    }
 
    public ServerProducerCreditManager getProducerCreditManager()
@@ -719,7 +722,7 @@ public class PagingStoreImpl implements TestSupportPageStore
 
             if (num < 0)
             {
-               log.warn("Available credits has gone negative");
+               PagingStoreImpl.log.warn("Available credits has gone negative");
 
                exceededAvailableCredits = true;
             }
@@ -749,9 +752,13 @@ public class PagingStoreImpl implements TestSupportPageStore
             {
                if (startPaging())
                {
-                  if (isTrace)
+                  if (PagingStoreImpl.isTrace)
                   {
-                     trace("Starting paging on " + getStoreName() + ", size = " + addressSize + ", maxSize=" + maxSize);
+                     PagingStoreImpl.trace("Starting paging on " + getStoreName() +
+                                           ", size = " +
+                                           addressSize +
+                                           ", maxSize=" +
+                                           maxSize);
                   }
                }
             }
@@ -762,9 +769,9 @@ public class PagingStoreImpl implements TestSupportPageStore
             {
                if (startDepaging())
                {
-                  if (isTrace)
+                  if (PagingStoreImpl.isTrace)
                   {
-                     trace("Starting depaging Thread, size = " + addressSize);
+                     PagingStoreImpl.trace("Starting depaging Thread, size = " + addressSize);
                   }
                }
             }
@@ -794,7 +801,7 @@ public class PagingStoreImpl implements TestSupportPageStore
             {
                printedDropMessagesWarning = true;
 
-               log.warn("Messages are being dropped on address " + getStoreName());
+               PagingStoreImpl.log.warn("Messages are being dropped on address " + getStoreName());
             }
 
             // Address is full, we just pretend we are paging, and drop the data
@@ -912,9 +919,9 @@ public class PagingStoreImpl implements TestSupportPageStore
 
    private boolean onDepage(final int pageId, final SimpleString destination, final List<PagedMessage> pagedMessages) throws Exception
    {
-      if (isTrace)
+      if (PagingStoreImpl.isTrace)
       {
-         trace("Depaging....");
+         PagingStoreImpl.trace("Depaging....");
       }
 
       if (pagedMessages.size() == 0)
@@ -941,8 +948,8 @@ public class PagingStoreImpl implements TestSupportPageStore
             LargeServerMessage largeMsg = (LargeServerMessage)message;
             if (!largeMsg.isFileExists())
             {
-               log.warn("File for large message " + largeMsg.getMessageID() +
-                        " doesn't exist, so ignoring depage for this large message");
+               PagingStoreImpl.log.warn("File for large message " + largeMsg.getMessageID() +
+                                        " doesn't exist, so ignoring depage for this large message");
                continue;
             }
          }
@@ -958,7 +965,8 @@ public class PagingStoreImpl implements TestSupportPageStore
             if (pageUserTransaction == null)
             {
                // This is not supposed to happen
-               log.warn("Transaction " + pagedMessage.getTransactionID() + " used during paging not found");
+               PagingStoreImpl.log.warn("Transaction " + pagedMessage.getTransactionID() +
+                                        " used during paging not found");
                continue;
             }
             else
@@ -972,9 +980,9 @@ public class PagingStoreImpl implements TestSupportPageStore
                   // This is just to give us a chance to interrupt the process..
                   // if we start a shutdown in the middle of transactions, the commit/rollback may never come, delaying
                   // the shutdown of the server
-                  if (isTrace)
+                  if (PagingStoreImpl.isTrace)
                   {
-                     trace("Waiting pageTransaction to complete");
+                     PagingStoreImpl.trace("Waiting pageTransaction to complete");
                   }
                }
 
@@ -985,9 +993,9 @@ public class PagingStoreImpl implements TestSupportPageStore
 
                if (!pageUserTransaction.isCommit())
                {
-                  if (isTrace)
+                  if (PagingStoreImpl.isTrace)
                   {
-                     trace("Rollback was called after prepare, ignoring message " + message);
+                     PagingStoreImpl.trace("Rollback was called after prepare, ignoring message " + message);
                   }
                   continue;
                }
@@ -1002,7 +1010,6 @@ public class PagingStoreImpl implements TestSupportPageStore
          {
             break;
          }
-
 
          // Update information about transactions
          // This needs to be done after routing because of duplication detection
@@ -1040,9 +1047,9 @@ public class PagingStoreImpl implements TestSupportPageStore
 
       storageManager.waitOnOperations();
 
-      if (isTrace)
+      if (PagingStoreImpl.isTrace)
       {
-         trace("Depage committed, running = " + running);
+         PagingStoreImpl.trace("Depage committed, running = " + running);
       }
 
       return true;
@@ -1070,19 +1077,19 @@ public class PagingStoreImpl implements TestSupportPageStore
    {
       final boolean addressFull = isAddressFull(getPageSizeBytes());
 
-      if (isTrace)
+      if (PagingStoreImpl.isTrace)
       {
-         trace("Clear Depage on Address = " + this.getStoreName() +
-               " PagingManager size " +
-               pagingManager.getTotalMemory() +
-               " addressSize = " +
-               this.getAddressSize() +
-               " addressMax " +
-               maxSize +
-               " isPaging = " +
-               isPaging() +
-               " addressFull = " +
-               addressFull);
+         PagingStoreImpl.trace("Clear Depage on Address = " + getStoreName() +
+                               " PagingManager size " +
+                               pagingManager.getTotalMemory() +
+                               " addressSize = " +
+                               getAddressSize() +
+                               " addressMax " +
+                               maxSize +
+                               " isPaging = " +
+                               isPaging() +
+                               " addressFull = " +
+                               addressFull);
       }
 
       // It should stop the executor when the destination is full or when there is nothing else to be depaged
@@ -1185,7 +1192,7 @@ public class PagingStoreImpl implements TestSupportPageStore
          }
          catch (Throwable e)
          {
-            log.error(e, e);
+            PagingStoreImpl.log.error(e, e);
          }
       }
    }

@@ -16,7 +16,6 @@ package org.hornetq.core.remoting.impl.wireformat;
 import org.hornetq.core.buffers.HornetQBuffer;
 import org.hornetq.core.paging.PagedMessage;
 import org.hornetq.core.paging.impl.PagedMessageImpl;
-import org.hornetq.utils.DataConstants;
 
 /**
  * A ReplicationPageWrite
@@ -42,7 +41,7 @@ public class ReplicationPageWriteMessage extends PacketImpl
 
    public ReplicationPageWriteMessage()
    {
-      super(REPLICATION_PAGE_WRITE);
+      super(PacketImpl.REPLICATION_PAGE_WRITE);
    }
 
    public ReplicationPageWriteMessage(final PagedMessage pagedMessage, final int pageNumber)

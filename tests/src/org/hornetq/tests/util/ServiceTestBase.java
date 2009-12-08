@@ -20,9 +20,10 @@ import java.util.Map;
 
 import javax.management.MBeanServer;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientSession;
-import org.hornetq.core.client.ClientSessionFactory;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.TransportConfiguration;
@@ -72,7 +73,7 @@ public abstract class ServiceTestBase extends UnitTestCase
       super();
    }
 
-   public ServiceTestBase(String name)
+   public ServiceTestBase(final String name)
    {
       super(name);
    }
@@ -85,8 +86,8 @@ public abstract class ServiceTestBase extends UnitTestCase
 
    protected HornetQServer createServer(final boolean realFiles,
                                         final Configuration configuration,
-                                        int pageSize,
-                                        int maxAddressSize,
+                                        final int pageSize,
+                                        final int maxAddressSize,
                                         final Map<String, AddressSettings> settings)
    {
       HornetQServer server;
@@ -196,7 +197,7 @@ public abstract class ServiceTestBase extends UnitTestCase
       if (isNetty)
       {
          return createServer(realFiles,
-                             createClusteredDefaultConfig(index, params, NETTY_ACCEPTOR_FACTORY),
+                             createClusteredDefaultConfig(index, params, ServiceTestBase.NETTY_ACCEPTOR_FACTORY),
                              -1,
                              -1,
                              new HashMap<String, AddressSettings>());
@@ -204,7 +205,7 @@ public abstract class ServiceTestBase extends UnitTestCase
       else
       {
          return createServer(realFiles,
-                             createClusteredDefaultConfig(index, params, INVM_ACCEPTOR_FACTORY),
+                             createClusteredDefaultConfig(index, params, ServiceTestBase.INVM_ACCEPTOR_FACTORY),
                              -1,
                              -1,
                              new HashMap<String, AddressSettings>());
@@ -221,7 +222,7 @@ public abstract class ServiceTestBase extends UnitTestCase
       if (isNetty)
       {
          return createServer(realFiles,
-                             createClusteredDefaultConfig(index, params, NETTY_ACCEPTOR_FACTORY),
+                             createClusteredDefaultConfig(index, params, ServiceTestBase.NETTY_ACCEPTOR_FACTORY),
                              pageSize,
                              maxAddressSize,
                              new HashMap<String, AddressSettings>());
@@ -229,7 +230,7 @@ public abstract class ServiceTestBase extends UnitTestCase
       else
       {
          return createServer(realFiles,
-                             createClusteredDefaultConfig(index, params, INVM_ACCEPTOR_FACTORY),
+                             createClusteredDefaultConfig(index, params, ServiceTestBase.INVM_ACCEPTOR_FACTORY),
                              -1,
                              -1,
                              new HashMap<String, AddressSettings>());
@@ -245,11 +246,13 @@ public abstract class ServiceTestBase extends UnitTestCase
    {
       if (netty)
       {
-         return createDefaultConfig(new HashMap<String, Object>(), INVM_ACCEPTOR_FACTORY, NETTY_ACCEPTOR_FACTORY);
+         return createDefaultConfig(new HashMap<String, Object>(),
+                                    ServiceTestBase.INVM_ACCEPTOR_FACTORY,
+                                    ServiceTestBase.NETTY_ACCEPTOR_FACTORY);
       }
       else
       {
-         return createDefaultConfig(new HashMap<String, Object>(), INVM_ACCEPTOR_FACTORY);
+         return createDefaultConfig(new HashMap<String, Object>(), ServiceTestBase.INVM_ACCEPTOR_FACTORY);
       }
    }
 
@@ -264,7 +267,9 @@ public abstract class ServiceTestBase extends UnitTestCase
       return config;
    }
 
-   protected Configuration createDefaultConfig(int index, final Map<String, Object> params, final String... acceptors)
+   protected Configuration createDefaultConfig(final int index,
+                                               final Map<String, Object> params,
+                                               final String... acceptors)
    {
       Configuration configuration = new ConfigurationImpl();
       configuration.setSecurityEnabled(false);
@@ -318,7 +323,7 @@ public abstract class ServiceTestBase extends UnitTestCase
       return configuration;
    }
 
-   protected ClientSessionFactoryImpl createFactory(boolean isNetty)
+   protected ClientSessionFactoryImpl createFactory(final boolean isNetty)
    {
       if (isNetty)
       {
@@ -332,12 +337,12 @@ public abstract class ServiceTestBase extends UnitTestCase
 
    protected ClientSessionFactoryImpl createInVMFactory()
    {
-      return createFactory(INVM_CONNECTOR_FACTORY);
+      return createFactory(ServiceTestBase.INVM_CONNECTOR_FACTORY);
    }
 
    protected ClientSessionFactoryImpl createNettyFactory()
    {
-      return createFactory(NETTY_CONNECTOR_FACTORY);
+      return createFactory(ServiceTestBase.NETTY_CONNECTOR_FACTORY);
    }
 
    protected ClientSessionFactoryImpl createFactory(final String connectorClass)
@@ -351,7 +356,7 @@ public abstract class ServiceTestBase extends UnitTestCase
       return createTextMessage(session, s, true);
    }
 
-   public String getTextMessage(ClientMessage m)
+   public String getTextMessage(final ClientMessage m)
    {
       m.getBodyBuffer().resetReaderIndex();
       return m.getBodyBuffer().readString();
@@ -382,7 +387,7 @@ public abstract class ServiceTestBase extends UnitTestCase
    /**
     * Deleting a file on LargeDire is an asynchronous process. Wee need to keep looking for a while if the file hasn't been deleted yet
     */
-   protected void validateNoFilesOnLargeDir(int expect) throws Exception
+   protected void validateNoFilesOnLargeDir(final int expect) throws Exception
    {
       File largeMessagesFileDir = new File(getLargeMessagesDir());
 
@@ -399,7 +404,7 @@ public abstract class ServiceTestBase extends UnitTestCase
          }
       }
 
-      assertEquals(expect, largeMessagesFileDir.listFiles().length);
+      Assert.assertEquals(expect, largeMessagesFileDir.listFiles().length);
    }
 
    /**

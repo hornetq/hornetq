@@ -23,17 +23,17 @@ import java.util.List;
  * 
  */
 public interface ConnectionFactoryControl
-{   
+{
    String getName();
-   
+
    List<String> getBindings();
 
    String getClientID();
-   
+
    long getClientFailureCheckPeriod();
-   
+
    long getCallTimeout();
-   
+
    int getDupsOKBatchSize();
 
    int getConsumerMaxRate();

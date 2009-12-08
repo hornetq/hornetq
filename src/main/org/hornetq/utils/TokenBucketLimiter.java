@@ -28,8 +28,8 @@ package org.hornetq.utils;
 public interface TokenBucketLimiter
 {
    int getRate();
-   
+
    boolean isSpin();
-      
+
    void limit();
 }

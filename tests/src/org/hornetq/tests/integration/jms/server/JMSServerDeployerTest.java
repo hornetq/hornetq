@@ -19,6 +19,8 @@ import javax.jms.Queue;
 import javax.jms.Topic;
 import javax.naming.Context;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
@@ -33,6 +35,7 @@ import org.hornetq.jms.server.impl.JMSServerDeployer;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.hornetq.tests.unit.util.InVMContext;
 import org.hornetq.tests.util.ServiceTestBase;
+import org.hornetq.tests.util.UnitTestCase;
 import org.w3c.dom.Element;
 
 /**
@@ -77,30 +80,36 @@ public class JMSServerDeployerTest extends ServiceTestBase
    public void testDeployUnusualQueueNames() throws Exception
    {
       doTestDeployQueuesWithUnusualNames("queue.with.dots.in.name", "/myqueue");
-      
+
       doTestDeployQueuesWithUnusualNames("queue with spaces in name", "/myqueue2");
-      
+
       doTestDeployQueuesWithUnusualNames("queue/with/slashes/in/name", "/myqueue3");
-      
+
       doTestDeployQueuesWithUnusualNames("queue\\with\\backslashes\\in\\name", "/myqueue4");
-      
-      doTestDeployQueuesWithUnusualNames("queue with # chars and * chars in name", "queue with &#35; chars and &#42; chars in name", "/myqueue5");      
+
+      doTestDeployQueuesWithUnusualNames("queue with # chars and * chars in name",
+                                         "queue with &#35; chars and &#42; chars in name",
+                                         "/myqueue5");
    }
-   
+
    public void testDeployUnusualTopicNames() throws Exception
    {
       doTestDeployTopicsWithUnusualNames("topic.with.dots.in.name", "/mytopic");
-      
+
       doTestDeployTopicsWithUnusualNames("topic with spaces in name", "/mytopic2");
-      
+
       doTestDeployTopicsWithUnusualNames("topic/with/slashes/in/name", "/mytopic3");
-      
+
       doTestDeployTopicsWithUnusualNames("topic\\with\\backslashes\\in\\name", "/mytopic4");
-      
-      doTestDeployTopicsWithUnusualNames("topic with # chars and * chars in name", "topic with &#35; chars and &#42; chars in name", "/mytopic5");      
+
+      doTestDeployTopicsWithUnusualNames("topic with # chars and * chars in name",
+                                         "topic with &#35; chars and &#42; chars in name",
+                                         "/mytopic5");
    }
-   
-   private void doTestDeployQueuesWithUnusualNames(final String queueName, String htmlEncodedName, final String jndiName) throws Exception
+
+   private void doTestDeployQueuesWithUnusualNames(final String queueName,
+                                                   final String htmlEncodedName,
+                                                   final String jndiName) throws Exception
    {
       JMSServerDeployer deployer = new JMSServerDeployer(jmsServer, deploymentManager, config);
 
@@ -113,11 +122,13 @@ public class JMSServerDeployerTest extends ServiceTestBase
       deployer.deploy(rootNode);
 
       Queue queue = (Queue)context.lookup(jndiName);
-      assertNotNull(queue);
-      assertEquals(queueName, queue.getQueueName());
+      Assert.assertNotNull(queue);
+      Assert.assertEquals(queueName, queue.getQueueName());
    }
-   
-   private void doTestDeployTopicsWithUnusualNames(final String topicName, String htmlEncodedName, final String jndiName) throws Exception
+
+   private void doTestDeployTopicsWithUnusualNames(final String topicName,
+                                                   final String htmlEncodedName,
+                                                   final String jndiName) throws Exception
    {
       JMSServerDeployer deployer = new JMSServerDeployer(jmsServer, deploymentManager, config);
 
@@ -130,15 +141,15 @@ public class JMSServerDeployerTest extends ServiceTestBase
       deployer.deploy(rootNode);
 
       Topic topic = (Topic)context.lookup(jndiName);
-      assertNotNull(topic);
-      assertEquals(topicName, topic.getTopicName());
+      Assert.assertNotNull(topic);
+      Assert.assertEquals(topicName, topic.getTopicName());
    }
-   
+
    private void doTestDeployQueuesWithUnusualNames(final String queueName, final String jndiName) throws Exception
    {
       doTestDeployQueuesWithUnusualNames(queueName, queueName, jndiName);
    }
-   
+
    private void doTestDeployTopicsWithUnusualNames(final String topicName, final String jndiName) throws Exception
    {
       doTestDeployTopicsWithUnusualNames(topicName, topicName, jndiName);
@@ -160,72 +171,72 @@ public class JMSServerDeployerTest extends ServiceTestBase
 
       for (String binding : connectionFactoryBindings)
       {
-         checkNoBinding(context, binding);
+         UnitTestCase.checkNoBinding(context, binding);
       }
       for (String binding : queueBindings)
       {
-         checkNoBinding(context, binding);
+         UnitTestCase.checkNoBinding(context, binding);
       }
       for (String binding : topicBindings)
       {
-         checkNoBinding(context, binding);
+         UnitTestCase.checkNoBinding(context, binding);
       }
 
       deployer.deploy(confURL);
 
       for (String binding : connectionFactoryBindings)
       {
-         checkBinding(context, binding);
+         UnitTestCase.checkBinding(context, binding);
       }
       for (String binding : queueBindings)
       {
-         checkBinding(context, binding);
+         UnitTestCase.checkBinding(context, binding);
       }
       for (String binding : topicBindings)
       {
-         checkBinding(context, binding);
+         UnitTestCase.checkBinding(context, binding);
       }
 
       for (String binding : connectionFactoryBindings)
       {
          HornetQConnectionFactory cf = (HornetQConnectionFactory)context.lookup(binding);
-         assertNotNull(cf);
-         assertEquals(1234, cf.getClientFailureCheckPeriod());
-         assertEquals(5678, cf.getCallTimeout());
-         assertEquals(12345, cf.getConsumerWindowSize());
-         assertEquals(6789, cf.getConsumerMaxRate());
-         assertEquals(123456, cf.getConfirmationWindowSize());
-         assertEquals(7712652, cf.getProducerWindowSize());
-         assertEquals(789, cf.getProducerMaxRate());
-         assertEquals(12, cf.getMinLargeMessageSize());
-         assertEquals("TestClientID", cf.getClientID());
-         assertEquals(3456, cf.getDupsOKBatchSize());
-         assertEquals(4567, cf.getTransactionBatchSize());
-         assertEquals(true, cf.isBlockOnAcknowledge());
-         assertEquals(false, cf.isBlockOnNonPersistentSend());
-         assertEquals(true, cf.isBlockOnPersistentSend());
-         assertEquals(false, cf.isAutoGroup());
-         assertEquals(true, cf.isPreAcknowledge());
-         assertEquals(2345, cf.getConnectionTTL());
-         assertEquals(false, cf.isFailoverOnServerShutdown());        
-         assertEquals(34, cf.getReconnectAttempts());
-         assertEquals(5, cf.getRetryInterval());
-         assertEquals(6.0, cf.getRetryIntervalMultiplier());
-         assertEquals(true, cf.isCacheLargeMessagesClient());
+         Assert.assertNotNull(cf);
+         Assert.assertEquals(1234, cf.getClientFailureCheckPeriod());
+         Assert.assertEquals(5678, cf.getCallTimeout());
+         Assert.assertEquals(12345, cf.getConsumerWindowSize());
+         Assert.assertEquals(6789, cf.getConsumerMaxRate());
+         Assert.assertEquals(123456, cf.getConfirmationWindowSize());
+         Assert.assertEquals(7712652, cf.getProducerWindowSize());
+         Assert.assertEquals(789, cf.getProducerMaxRate());
+         Assert.assertEquals(12, cf.getMinLargeMessageSize());
+         Assert.assertEquals("TestClientID", cf.getClientID());
+         Assert.assertEquals(3456, cf.getDupsOKBatchSize());
+         Assert.assertEquals(4567, cf.getTransactionBatchSize());
+         Assert.assertEquals(true, cf.isBlockOnAcknowledge());
+         Assert.assertEquals(false, cf.isBlockOnNonPersistentSend());
+         Assert.assertEquals(true, cf.isBlockOnPersistentSend());
+         Assert.assertEquals(false, cf.isAutoGroup());
+         Assert.assertEquals(true, cf.isPreAcknowledge());
+         Assert.assertEquals(2345, cf.getConnectionTTL());
+         Assert.assertEquals(false, cf.isFailoverOnServerShutdown());
+         Assert.assertEquals(34, cf.getReconnectAttempts());
+         Assert.assertEquals(5, cf.getRetryInterval());
+         Assert.assertEquals(6.0, cf.getRetryIntervalMultiplier());
+         Assert.assertEquals(true, cf.isCacheLargeMessagesClient());
       }
 
       for (String binding : queueBindings)
       {
          Queue queue = (Queue)context.lookup(binding);
-         assertNotNull(queue);
-         assertEquals("fullConfigurationQueue", queue.getQueueName());
+         Assert.assertNotNull(queue);
+         Assert.assertEquals("fullConfigurationQueue", queue.getQueueName());
       }
 
       for (String binding : topicBindings)
       {
          Topic topic = (Topic)context.lookup(binding);
-         assertNotNull(topic);
-         assertEquals("fullConfigurationTopic", topic.getTopicName());
+         Assert.assertNotNull(topic);
+         Assert.assertEquals("fullConfigurationTopic", topic.getTopicName());
       }
    }
 

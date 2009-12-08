@@ -16,6 +16,8 @@ package org.hornetq.tests.integration.divert;
 import java.util.ArrayList;
 import java.util.List;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
@@ -45,7 +47,7 @@ public class DivertTest extends ServiceTestBase
    private static final Logger log = Logger.getLogger(DivertTest.class);
 
    private static final int TIMEOUT = 500;
-   
+
    public void testSingleNonExclusiveDivert() throws Exception
    {
       Configuration conf = createDefaultConfig();
@@ -109,29 +111,29 @@ public class DivertTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = consumer1.receive(TIMEOUT);
+         ClientMessage message = consumer1.receive(DivertTest.TIMEOUT);
 
-         assertNotNull(message);
+         Assert.assertNotNull(message);
 
-         assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
+         Assert.assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
 
          message.acknowledge();
       }
 
-      assertNull(consumer1.receiveImmediate());
+      Assert.assertNull(consumer1.receiveImmediate());
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = consumer2.receive(TIMEOUT);
+         ClientMessage message = consumer2.receive(DivertTest.TIMEOUT);
 
-         assertNotNull(message);
+         Assert.assertNotNull(message);
 
-         assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
+         Assert.assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
 
          message.acknowledge();
       }
 
-      assertNull(consumer2.receiveImmediate());
+      Assert.assertNull(consumer2.receiveImmediate());
 
       session.close();
 
@@ -215,55 +217,55 @@ public class DivertTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = consumer1.receive(TIMEOUT);
+         ClientMessage message = consumer1.receive(DivertTest.TIMEOUT);
 
-         assertNotNull(message);
+         Assert.assertNotNull(message);
 
-         assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
+         Assert.assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
 
          message.acknowledge();
       }
 
-      assertNull(consumer1.receiveImmediate());
+      Assert.assertNull(consumer1.receiveImmediate());
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = consumer2.receive(TIMEOUT);
+         ClientMessage message = consumer2.receive(DivertTest.TIMEOUT);
 
-         assertNotNull(message);
+         Assert.assertNotNull(message);
 
-         assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
+         Assert.assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
 
          message.acknowledge();
       }
 
-      assertNull(consumer2.receiveImmediate());
+      Assert.assertNull(consumer2.receiveImmediate());
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = consumer3.receive(TIMEOUT);
+         ClientMessage message = consumer3.receive(DivertTest.TIMEOUT);
 
-         assertNotNull(message);
+         Assert.assertNotNull(message);
 
-         assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
+         Assert.assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
 
          message.acknowledge();
       }
 
-      assertNull(consumer3.receiveImmediate());
+      Assert.assertNull(consumer3.receiveImmediate());
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = consumer4.receive(TIMEOUT);
+         ClientMessage message = consumer4.receive(DivertTest.TIMEOUT);
 
-         assertNotNull(message);
+         Assert.assertNotNull(message);
 
-         assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
+         Assert.assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
 
          message.acknowledge();
       }
 
-      assertNull(consumer4.receiveImmediate());
+      Assert.assertNull(consumer4.receiveImmediate());
 
       session.close();
 
@@ -329,16 +331,16 @@ public class DivertTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = consumer1.receive(TIMEOUT);
+         ClientMessage message = consumer1.receive(DivertTest.TIMEOUT);
 
-         assertNotNull(message);
+         Assert.assertNotNull(message);
 
-         assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
+         Assert.assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
 
          message.acknowledge();
       }
 
-      assertNull(consumer1.receiveImmediate());
+      Assert.assertNull(consumer1.receiveImmediate());
 
       session.close();
 
@@ -420,22 +422,22 @@ public class DivertTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = consumer1.receive(TIMEOUT);
+         ClientMessage message = consumer1.receive(DivertTest.TIMEOUT);
 
-         assertNotNull(message);
+         Assert.assertNotNull(message);
 
-         assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
+         Assert.assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
 
          message.acknowledge();
       }
 
-      assertNull(consumer1.receiveImmediate());
+      Assert.assertNull(consumer1.receiveImmediate());
 
-      assertNull(consumer2.receiveImmediate());
+      Assert.assertNull(consumer2.receiveImmediate());
 
-      assertNull(consumer3.receiveImmediate());
+      Assert.assertNull(consumer3.receiveImmediate());
 
-      assertNull(consumer4.receiveImmediate());
+      Assert.assertNull(consumer4.receiveImmediate());
 
       session.close();
 
@@ -539,55 +541,55 @@ public class DivertTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = consumer1.receive(TIMEOUT);
+         ClientMessage message = consumer1.receive(DivertTest.TIMEOUT);
 
-         assertNotNull(message);
+         Assert.assertNotNull(message);
 
-         assertEquals(i, message.getIntProperty(propKey).intValue());
+         Assert.assertEquals(i, message.getIntProperty(propKey).intValue());
 
          message.acknowledge();
       }
 
-      assertNull(consumer1.receiveImmediate());
+      Assert.assertNull(consumer1.receiveImmediate());
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = consumer2.receive(TIMEOUT);
+         ClientMessage message = consumer2.receive(DivertTest.TIMEOUT);
 
-         assertNotNull(message);
+         Assert.assertNotNull(message);
 
-         assertEquals(i, message.getIntProperty(propKey).intValue());
+         Assert.assertEquals(i, message.getIntProperty(propKey).intValue());
 
          message.acknowledge();
       }
 
-      assertNull(consumer2.receiveImmediate());
+      Assert.assertNull(consumer2.receiveImmediate());
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = consumer3.receive(TIMEOUT);
+         ClientMessage message = consumer3.receive(DivertTest.TIMEOUT);
 
-         assertNotNull(message);
+         Assert.assertNotNull(message);
 
-         assertEquals(i, message.getIntProperty(propKey).intValue());
+         Assert.assertEquals(i, message.getIntProperty(propKey).intValue());
 
          message.acknowledge();
       }
 
-      assertNull(consumer3.receiveImmediate());
+      Assert.assertNull(consumer3.receiveImmediate());
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = consumer4.receive(TIMEOUT);
+         ClientMessage message = consumer4.receive(DivertTest.TIMEOUT);
 
-         assertNotNull(message);
+         Assert.assertNotNull(message);
 
-         assertEquals(i, message.getIntProperty(propKey).intValue());
+         Assert.assertEquals(i, message.getIntProperty(propKey).intValue());
 
          message.acknowledge();
       }
 
-      assertNull(consumer4.receiveImmediate());
+      Assert.assertNull(consumer4.receiveImmediate());
 
       session.close();
 
@@ -691,44 +693,44 @@ public class DivertTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = consumer1.receive(TIMEOUT);
+         ClientMessage message = consumer1.receive(DivertTest.TIMEOUT);
 
-         assertNotNull(message);
+         Assert.assertNotNull(message);
 
-         assertEquals(i, message.getIntProperty(propKey).intValue());
+         Assert.assertEquals(i, message.getIntProperty(propKey).intValue());
 
          message.acknowledge();
       }
 
-      assertNull(consumer1.receiveImmediate());
+      Assert.assertNull(consumer1.receiveImmediate());
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = consumer2.receive(TIMEOUT);
+         ClientMessage message = consumer2.receive(DivertTest.TIMEOUT);
 
-         assertNotNull(message);
+         Assert.assertNotNull(message);
 
-         assertEquals(i, message.getIntProperty(propKey).intValue());
+         Assert.assertEquals(i, message.getIntProperty(propKey).intValue());
 
          message.acknowledge();
       }
 
-      assertNull(consumer2.receiveImmediate());
+      Assert.assertNull(consumer2.receiveImmediate());
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = consumer3.receive(TIMEOUT);
+         ClientMessage message = consumer3.receive(DivertTest.TIMEOUT);
 
-         assertNotNull(message);
+         Assert.assertNotNull(message);
 
-         assertEquals(i, message.getIntProperty(propKey).intValue());
+         Assert.assertEquals(i, message.getIntProperty(propKey).intValue());
 
          message.acknowledge();
       }
 
-      assertNull(consumer3.receiveImmediate());
+      Assert.assertNull(consumer3.receiveImmediate());
 
-      assertNull(consumer4.receiveImmediate());
+      Assert.assertNull(consumer4.receiveImmediate());
 
       session.close();
 
@@ -832,33 +834,33 @@ public class DivertTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = consumer1.receive(TIMEOUT);
+         ClientMessage message = consumer1.receive(DivertTest.TIMEOUT);
 
-         assertNotNull(message);
+         Assert.assertNotNull(message);
 
-         assertEquals(i, message.getIntProperty(propKey).intValue());
+         Assert.assertEquals(i, message.getIntProperty(propKey).intValue());
 
          message.acknowledge();
       }
 
-      assertNull(consumer1.receiveImmediate());
+      Assert.assertNull(consumer1.receiveImmediate());
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = consumer2.receive(TIMEOUT);
+         ClientMessage message = consumer2.receive(DivertTest.TIMEOUT);
 
-         assertNotNull(message);
+         Assert.assertNotNull(message);
 
-         assertEquals(i, message.getIntProperty(propKey).intValue());
+         Assert.assertEquals(i, message.getIntProperty(propKey).intValue());
 
          message.acknowledge();
       }
 
-      assertNull(consumer2.receiveImmediate());
+      Assert.assertNull(consumer2.receiveImmediate());
 
-      assertNull(consumer3.receiveImmediate());
+      Assert.assertNull(consumer3.receiveImmediate());
 
-      assertNull(consumer4.receiveImmediate());
+      Assert.assertNull(consumer4.receiveImmediate());
 
       session.close();
 
@@ -976,46 +978,46 @@ public class DivertTest extends ServiceTestBase
       // message.acknowledge();
       // }
 
-      assertNull(consumer1.receiveImmediate());
+      Assert.assertNull(consumer1.receiveImmediate());
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = consumer2.receive(TIMEOUT);
+         ClientMessage message = consumer2.receive(DivertTest.TIMEOUT);
 
-         assertNotNull(message);
+         Assert.assertNotNull(message);
 
-         assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
+         Assert.assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
 
          message.acknowledge();
       }
 
-      assertNull(consumer2.receiveImmediate());
+      Assert.assertNull(consumer2.receiveImmediate());
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = consumer3.receive(TIMEOUT);
+         ClientMessage message = consumer3.receive(DivertTest.TIMEOUT);
 
-         assertNotNull(message);
+         Assert.assertNotNull(message);
 
-         assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
+         Assert.assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
 
          message.acknowledge();
       }
 
-      assertNull(consumer3.receiveImmediate());
+      Assert.assertNull(consumer3.receiveImmediate());
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = consumer4.receive(TIMEOUT);
+         ClientMessage message = consumer4.receive(DivertTest.TIMEOUT);
 
-         assertNotNull(message);
+         Assert.assertNotNull(message);
 
-         assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
+         Assert.assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
 
          message.acknowledge();
       }
 
-      assertNull(consumer4.receiveImmediate());
+      Assert.assertNull(consumer4.receiveImmediate());
 
       for (int i = 0; i < numMessages; i++)
       {
@@ -1030,22 +1032,22 @@ public class DivertTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = consumer1.receive(TIMEOUT);
+         ClientMessage message = consumer1.receive(DivertTest.TIMEOUT);
 
-         assertNotNull(message);
+         Assert.assertNotNull(message);
 
-         assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
+         Assert.assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
 
          message.acknowledge();
       }
 
-      assertNull(consumer1.receiveImmediate());
+      Assert.assertNull(consumer1.receiveImmediate());
 
-      assertNull(consumer2.receiveImmediate());
+      Assert.assertNull(consumer2.receiveImmediate());
 
-      assertNull(consumer3.receiveImmediate());
+      Assert.assertNull(consumer3.receiveImmediate());
 
-      assertNull(consumer4.receiveImmediate());
+      Assert.assertNull(consumer4.receiveImmediate());
 
       session.close();
 
@@ -1149,26 +1151,11 @@ public class DivertTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages;)
       {
-         ClientMessage message = consumer1.receive(TIMEOUT);
+         ClientMessage message = consumer1.receive(DivertTest.TIMEOUT);
 
-         assertNotNull(message);
+         Assert.assertNotNull(message);
 
-         assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
-
-         message.acknowledge();
-
-         i++;
-
-         if (i == numMessages)
-         {
-            break;
-         }
-
-         message = consumer2.receive(TIMEOUT);
-
-         assertNotNull(message);
-
-         assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
+         Assert.assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
 
          message.acknowledge();
 
@@ -1179,33 +1166,48 @@ public class DivertTest extends ServiceTestBase
             break;
          }
 
-         message = consumer3.receive(TIMEOUT);
+         message = consumer2.receive(DivertTest.TIMEOUT);
 
-         assertNotNull(message);
+         Assert.assertNotNull(message);
 
-         assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
+         Assert.assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
+
+         message.acknowledge();
+
+         i++;
+
+         if (i == numMessages)
+         {
+            break;
+         }
+
+         message = consumer3.receive(DivertTest.TIMEOUT);
+
+         Assert.assertNotNull(message);
+
+         Assert.assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
 
          message.acknowledge();
 
          i++;
       }
 
-      assertNull(consumer1.receiveImmediate());
-      assertNull(consumer2.receiveImmediate());
-      assertNull(consumer3.receiveImmediate());
+      Assert.assertNull(consumer1.receiveImmediate());
+      Assert.assertNull(consumer2.receiveImmediate());
+      Assert.assertNull(consumer3.receiveImmediate());
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = consumer4.receive(TIMEOUT);
+         ClientMessage message = consumer4.receive(DivertTest.TIMEOUT);
 
-         assertNotNull(message);
+         Assert.assertNotNull(message);
 
-         assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
+         Assert.assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
 
          message.acknowledge();
       }
 
-      assertNull(consumer4.receiveImmediate());
+      Assert.assertNull(consumer4.receiveImmediate());
 
       session.close();
 
@@ -1311,44 +1313,44 @@ public class DivertTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = consumer1.receive(TIMEOUT);
+         ClientMessage message = consumer1.receive(DivertTest.TIMEOUT);
 
-         assertNotNull(message);
+         Assert.assertNotNull(message);
 
-         assertEquals(i, message.getIntProperty(propKey).intValue());
+         Assert.assertEquals(i, message.getIntProperty(propKey).intValue());
 
          message.acknowledge();
       }
 
-      assertNull(consumer1.receiveImmediate());
+      Assert.assertNull(consumer1.receiveImmediate());
 
-      assertNull(consumer2.receiveImmediate());
+      Assert.assertNull(consumer2.receiveImmediate());
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = consumer3.receive(TIMEOUT);
+         ClientMessage message = consumer3.receive(DivertTest.TIMEOUT);
 
-         assertNotNull(message);
+         Assert.assertNotNull(message);
 
-         assertEquals(i, message.getIntProperty(propKey).intValue());
+         Assert.assertEquals(i, message.getIntProperty(propKey).intValue());
 
          message.acknowledge();
       }
 
-      assertNull(consumer3.receiveImmediate());
+      Assert.assertNull(consumer3.receiveImmediate());
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = consumer4.receive(TIMEOUT);
+         ClientMessage message = consumer4.receive(DivertTest.TIMEOUT);
 
-         assertNotNull(message);
+         Assert.assertNotNull(message);
 
-         assertEquals(i, message.getIntProperty(propKey).intValue());
+         Assert.assertEquals(i, message.getIntProperty(propKey).intValue());
 
          message.acknowledge();
       }
 
-      assertNull(consumer4.receiveImmediate());
+      Assert.assertNull(consumer4.receiveImmediate());
 
       session.close();
 

@@ -49,7 +49,7 @@ public class DelegatingSession implements ClientSessionInternal
 
    private final ClientSessionInternal session;
 
-   private Exception creationStack;
+   private final Exception creationStack;
 
    private static Set<DelegatingSession> sessions = new ConcurrentHashSet<DelegatingSession>();
 
@@ -57,11 +57,11 @@ public class DelegatingSession implements ClientSessionInternal
 
    public static void dumpSessionCreationStacks()
    {
-      log.info("**** Dumping session creation stacks ****");
+      DelegatingSession.log.info("**** Dumping session creation stacks ****");
 
-      for (DelegatingSession session : sessions)
+      for (DelegatingSession session : DelegatingSession.sessions)
       {
-         log.info("session created", session.creationStack);
+         DelegatingSession.log.info("session created", session.creationStack);
       }
    }
 
@@ -70,10 +70,10 @@ public class DelegatingSession implements ClientSessionInternal
    {
       if (!session.isClosed())
       {
-         log.warn("I'm closing a core ClientSession you left open. Please make sure you close all ClientSessions explicitly " + "before letting them go out of scope! " +
-                  System.identityHashCode(this));
+         DelegatingSession.log.warn("I'm closing a core ClientSession you left open. Please make sure you close all ClientSessions explicitly " + "before letting them go out of scope! " +
+                                    System.identityHashCode(this));
 
-         log.warn("The ClientSession you didn't close was created here:", creationStack);
+         DelegatingSession.log.warn("The ClientSession you didn't close was created here:", creationStack);
 
          close();
       }
@@ -85,40 +85,40 @@ public class DelegatingSession implements ClientSessionInternal
    {
       this.session = session;
 
-      this.creationStack = new Exception();
+      creationStack = new Exception();
 
-      if (debug)
+      if (DelegatingSession.debug)
       {
-         sessions.add(this);
+         DelegatingSession.sessions.add(this);
       }
    }
 
-   public void acknowledge(long consumerID, long messageID) throws HornetQException
+   public void acknowledge(final long consumerID, final long messageID) throws HornetQException
    {
       session.acknowledge(consumerID, messageID);
    }
 
-   public void addConsumer(ClientConsumerInternal consumer)
+   public void addConsumer(final ClientConsumerInternal consumer)
    {
       session.addConsumer(consumer);
    }
 
-   public void addFailureListener(SessionFailureListener listener)
+   public void addFailureListener(final SessionFailureListener listener)
    {
       session.addFailureListener(listener);
    }
 
-   public void addProducer(ClientProducerInternal producer)
+   public void addProducer(final ClientProducerInternal producer)
    {
       session.addProducer(producer);
    }
 
-   public BindingQuery bindingQuery(SimpleString address) throws HornetQException
+   public BindingQuery bindingQuery(final SimpleString address) throws HornetQException
    {
       return session.bindingQuery(address);
    }
 
-   public void forceDelivery(long consumerID, long sequence) throws HornetQException
+   public void forceDelivery(final long consumerID, final long sequence) throws HornetQException
    {
       session.forceDelivery(consumerID, sequence);
    }
@@ -130,9 +130,9 @@ public class DelegatingSession implements ClientSessionInternal
 
    public void close() throws HornetQException
    {
-      if (debug)
+      if (DelegatingSession.debug)
       {
-         sessions.remove(this);
+         DelegatingSession.sessions.remove(this);
       }
 
       session.close();
@@ -143,80 +143,86 @@ public class DelegatingSession implements ClientSessionInternal
       session.commit();
    }
 
-   public void commit(Xid xid, boolean onePhase) throws XAException
+   public void commit(final Xid xid, final boolean onePhase) throws XAException
    {
       session.commit(xid, onePhase);
    }
 
-   public ClientMessage createClientMessage(boolean durable)
+   public ClientMessage createClientMessage(final boolean durable)
    {
       return session.createClientMessage(durable);
    }
 
-   public ClientMessage createClientMessage(byte type, boolean durable, long expiration, long timestamp, byte priority)
+   public ClientMessage createClientMessage(final byte type,
+                                            final boolean durable,
+                                            final long expiration,
+                                            final long timestamp,
+                                            final byte priority)
    {
       return session.createClientMessage(type, durable, expiration, timestamp, priority);
    }
 
-   public ClientMessage createClientMessage(byte type, boolean durable)
+   public ClientMessage createClientMessage(final byte type, final boolean durable)
    {
       return session.createClientMessage(type, durable);
    }
 
-   public ClientConsumer createConsumer(SimpleString queueName, SimpleString filterString, boolean browseOnly) throws HornetQException
+   public ClientConsumer createConsumer(final SimpleString queueName,
+                                        final SimpleString filterString,
+                                        final boolean browseOnly) throws HornetQException
    {
       return session.createConsumer(queueName, filterString, browseOnly);
    }
 
-   public ClientConsumer createConsumer(SimpleString queueName,
-                                        SimpleString filterString,
-                                        int windowSize,
-                                        int maxRate,
-                                        boolean browseOnly) throws HornetQException
+   public ClientConsumer createConsumer(final SimpleString queueName,
+                                        final SimpleString filterString,
+                                        final int windowSize,
+                                        final int maxRate,
+                                        final boolean browseOnly) throws HornetQException
    {
       return session.createConsumer(queueName, filterString, windowSize, maxRate, browseOnly);
    }
 
-   public ClientConsumer createConsumer(SimpleString queueName, SimpleString filterString) throws HornetQException
+   public ClientConsumer createConsumer(final SimpleString queueName, final SimpleString filterString) throws HornetQException
    {
       return session.createConsumer(queueName, filterString);
    }
 
-   public ClientConsumer createConsumer(SimpleString queueName) throws HornetQException
+   public ClientConsumer createConsumer(final SimpleString queueName) throws HornetQException
    {
       return session.createConsumer(queueName);
    }
 
-   public ClientConsumer createConsumer(String queueName, String filterString, boolean browseOnly) throws HornetQException
+   public ClientConsumer createConsumer(final String queueName, final String filterString, final boolean browseOnly) throws HornetQException
    {
       return session.createConsumer(queueName, filterString, browseOnly);
    }
 
-   public ClientConsumer createConsumer(String queueName,
-                                        String filterString,
-                                        int windowSize,
-                                        int maxRate,
-                                        boolean browseOnly) throws HornetQException
+   public ClientConsumer createConsumer(final String queueName,
+                                        final String filterString,
+                                        final int windowSize,
+                                        final int maxRate,
+                                        final boolean browseOnly) throws HornetQException
    {
       return session.createConsumer(queueName, filterString, windowSize, maxRate, browseOnly);
    }
 
-   public ClientConsumer createConsumer(String queueName, String filterString) throws HornetQException
+   public ClientConsumer createConsumer(final String queueName, final String filterString) throws HornetQException
    {
       return session.createConsumer(queueName, filterString);
    }
 
-   public ClientConsumer createConsumer(String queueName) throws HornetQException
+   public ClientConsumer createConsumer(final String queueName) throws HornetQException
    {
       return session.createConsumer(queueName);
    }
 
-   public ClientConsumer createConsumer(SimpleString queueName, boolean browseOnly) throws HornetQException
+   public ClientConsumer createConsumer(final SimpleString queueName, final boolean browseOnly) throws HornetQException
    {
       return session.createConsumer(queueName, browseOnly);
    }
 
-   public ClientConsumer createConsumer(String queueName, boolean browseOnly) throws HornetQException
+   public ClientConsumer createConsumer(final String queueName, final boolean browseOnly) throws HornetQException
    {
       return session.createConsumer(queueName, browseOnly);
    }
@@ -226,87 +232,93 @@ public class DelegatingSession implements ClientSessionInternal
       return session.createProducer();
    }
 
-   public ClientProducer createProducer(SimpleString address, int rate) throws HornetQException
+   public ClientProducer createProducer(final SimpleString address, final int rate) throws HornetQException
    {
       return session.createProducer(address, rate);
    }
 
-   public ClientProducer createProducer(SimpleString address) throws HornetQException
+   public ClientProducer createProducer(final SimpleString address) throws HornetQException
    {
       return session.createProducer(address);
    }
 
-   public ClientProducer createProducer(String address) throws HornetQException
+   public ClientProducer createProducer(final String address) throws HornetQException
    {
       return session.createProducer(address);
    }
 
-   public void createQueue(String address, String queueName) throws HornetQException
+   public void createQueue(final String address, final String queueName) throws HornetQException
    {
       session.createQueue(address, queueName);
    }
 
-   public void createQueue(SimpleString address, SimpleString queueName, boolean durable) throws HornetQException
+   public void createQueue(final SimpleString address, final SimpleString queueName, final boolean durable) throws HornetQException
    {
       session.createQueue(address, queueName, durable);
    }
 
-   public void createQueue(SimpleString address, SimpleString queueName, SimpleString filterString, boolean durable) throws HornetQException
+   public void createQueue(final SimpleString address,
+                           final SimpleString queueName,
+                           final SimpleString filterString,
+                           final boolean durable) throws HornetQException
    {
       session.createQueue(address, queueName, filterString, durable);
    }
 
-   public void createQueue(String address, String queueName, boolean durable) throws HornetQException
+   public void createQueue(final String address, final String queueName, final boolean durable) throws HornetQException
    {
       session.createQueue(address, queueName, durable);
    }
 
-   public void createQueue(String address, String queueName, String filterString, boolean durable) throws HornetQException
+   public void createQueue(final String address,
+                           final String queueName,
+                           final String filterString,
+                           final boolean durable) throws HornetQException
    {
       session.createQueue(address, queueName, filterString, durable);
    }
 
-   public void createTemporaryQueue(SimpleString address, SimpleString queueName, SimpleString filter) throws HornetQException
+   public void createTemporaryQueue(final SimpleString address, final SimpleString queueName, final SimpleString filter) throws HornetQException
    {
       session.createTemporaryQueue(address, queueName, filter);
    }
 
-   public void createTemporaryQueue(SimpleString address, SimpleString queueName) throws HornetQException
+   public void createTemporaryQueue(final SimpleString address, final SimpleString queueName) throws HornetQException
    {
       session.createTemporaryQueue(address, queueName);
    }
 
-   public void createTemporaryQueue(String address, String queueName, String filter) throws HornetQException
+   public void createTemporaryQueue(final String address, final String queueName, final String filter) throws HornetQException
    {
       session.createTemporaryQueue(address, queueName, filter);
    }
 
-   public void createTemporaryQueue(String address, String queueName) throws HornetQException
+   public void createTemporaryQueue(final String address, final String queueName) throws HornetQException
    {
       session.createTemporaryQueue(address, queueName);
    }
 
-   public void deleteQueue(SimpleString queueName) throws HornetQException
+   public void deleteQueue(final SimpleString queueName) throws HornetQException
    {
       session.deleteQueue(queueName);
    }
 
-   public void deleteQueue(String queueName) throws HornetQException
+   public void deleteQueue(final String queueName) throws HornetQException
    {
       session.deleteQueue(queueName);
    }
 
-   public void end(Xid xid, int flags) throws XAException
+   public void end(final Xid xid, final int flags) throws XAException
    {
       session.end(xid, flags);
    }
 
-   public void expire(long consumerID, long messageID) throws HornetQException
+   public void expire(final long consumerID, final long messageID) throws HornetQException
    {
       session.expire(consumerID, messageID);
    }
 
-   public void forget(Xid xid) throws XAException
+   public void forget(final Xid xid) throws XAException
    {
       session.forget(xid);
    }
@@ -341,22 +353,22 @@ public class DelegatingSession implements ClientSessionInternal
       return session.getXAResource();
    }
 
-   public void handleFailover(RemotingConnection backupConnection)
+   public void handleFailover(final RemotingConnection backupConnection)
    {
       session.handleFailover(backupConnection);
    }
 
-   public void handleReceiveContinuation(long consumerID, SessionReceiveContinuationMessage continuation) throws Exception
+   public void handleReceiveContinuation(final long consumerID, final SessionReceiveContinuationMessage continuation) throws Exception
    {
       session.handleReceiveContinuation(consumerID, continuation);
    }
 
-   public void handleReceiveLargeMessage(long consumerID, SessionReceiveLargeMessage message) throws Exception
+   public void handleReceiveLargeMessage(final long consumerID, final SessionReceiveLargeMessage message) throws Exception
    {
       session.handleReceiveLargeMessage(consumerID, message);
    }
 
-   public void handleReceiveMessage(long consumerID, SessionReceiveMessage message) throws Exception
+   public void handleReceiveMessage(final long consumerID, final SessionReceiveMessage message) throws Exception
    {
       session.handleReceiveMessage(consumerID, message);
    }
@@ -386,7 +398,7 @@ public class DelegatingSession implements ClientSessionInternal
       return session.isClosed();
    }
 
-   public boolean isSameRM(XAResource xares) throws XAException
+   public boolean isSameRM(final XAResource xares) throws XAException
    {
       return session.isSameRM(xares);
    }
@@ -396,32 +408,32 @@ public class DelegatingSession implements ClientSessionInternal
       return session.isXA();
    }
 
-   public int prepare(Xid xid) throws XAException
+   public int prepare(final Xid xid) throws XAException
    {
       return session.prepare(xid);
    }
 
-   public QueueQuery queueQuery(SimpleString queueName) throws HornetQException
+   public QueueQuery queueQuery(final SimpleString queueName) throws HornetQException
    {
       return session.queueQuery(queueName);
    }
 
-   public Xid[] recover(int flag) throws XAException
+   public Xid[] recover(final int flag) throws XAException
    {
       return session.recover(flag);
    }
 
-   public void removeConsumer(ClientConsumerInternal consumer) throws HornetQException
+   public void removeConsumer(final ClientConsumerInternal consumer) throws HornetQException
    {
       session.removeConsumer(consumer);
    }
 
-   public boolean removeFailureListener(SessionFailureListener listener)
+   public boolean removeFailureListener(final SessionFailureListener listener)
    {
       return session.removeFailureListener(listener);
    }
 
-   public void removeProducer(ClientProducerInternal producer)
+   public void removeProducer(final ClientProducerInternal producer)
    {
       session.removeProducer(producer);
    }
@@ -441,22 +453,22 @@ public class DelegatingSession implements ClientSessionInternal
       return session.isRollbackOnly();
    }
 
-   public void rollback(boolean considerLastMessageAsDelivered) throws HornetQException
+   public void rollback(final boolean considerLastMessageAsDelivered) throws HornetQException
    {
       session.rollback(considerLastMessageAsDelivered);
    }
 
-   public void rollback(Xid xid) throws XAException
+   public void rollback(final Xid xid) throws XAException
    {
       session.rollback(xid);
    }
 
-   public void setSendAcknowledgementHandler(SendAcknowledgementHandler handler)
+   public void setSendAcknowledgementHandler(final SendAcknowledgementHandler handler)
    {
       session.setSendAcknowledgementHandler(handler);
    }
 
-   public boolean setTransactionTimeout(int seconds) throws XAException
+   public boolean setTransactionTimeout(final int seconds) throws XAException
    {
       return session.setTransactionTimeout(seconds);
    }
@@ -466,7 +478,7 @@ public class DelegatingSession implements ClientSessionInternal
       session.start();
    }
 
-   public void start(Xid xid, int flags) throws XAException
+   public void start(final Xid xid, final int flags) throws XAException
    {
       session.start(xid, flags);
    }
@@ -481,7 +493,7 @@ public class DelegatingSession implements ClientSessionInternal
       return session.getConnectionManager();
    }
 
-   public void setForceNotSameRM(boolean force)
+   public void setForceNotSameRM(final boolean force)
    {
       session.setForceNotSameRM(force);
    }
@@ -491,17 +503,17 @@ public class DelegatingSession implements ClientSessionInternal
       session.workDone();
    }
 
-   public void sendProducerCreditsMessage(int credits, SimpleString destination)
+   public void sendProducerCreditsMessage(final int credits, final SimpleString destination)
    {
       session.sendProducerCreditsMessage(credits, destination);
    }
 
-   public ClientProducerCredits getCredits(SimpleString address)
+   public ClientProducerCredits getCredits(final SimpleString address)
    {
       return session.getCredits(address);
    }
 
-   public void handleReceiveProducerCredits(SimpleString address, int credits, int offset)
+   public void handleReceiveProducerCredits(final SimpleString address, final int credits, final int offset)
    {
       session.handleReceiveProducerCredits(address, credits, offset);
    }

@@ -30,64 +30,69 @@ import org.hornetq.common.example.HornetQExample;
  */
 public class InterceptorExample extends HornetQExample
 {
-   public static void main(String[] args)
+   public static void main(final String[] args)
    {
       new InterceptorExample().run(args);
    }
 
+   @Override
    public boolean runExample() throws Exception
    {
       Connection connection = null;
       InitialContext initialContext = null;
       try
       {
-         //Step 1. Create an initial context to perform the JNDI lookup.
+         // Step 1. Create an initial context to perform the JNDI lookup.
          initialContext = getContext(0);
 
-         //Step 2. Perform a lookup on the queue
-         Queue queue = (Queue) initialContext.lookup("/queue/exampleQueue");
+         // Step 2. Perform a lookup on the queue
+         Queue queue = (Queue)initialContext.lookup("/queue/exampleQueue");
 
-         //Step 3. Perform a lookup on the Connection Factory
-         ConnectionFactory cf = (ConnectionFactory) initialContext.lookup("/ConnectionFactory");
+         // Step 3. Perform a lookup on the Connection Factory
+         ConnectionFactory cf = (ConnectionFactory)initialContext.lookup("/ConnectionFactory");
 
-         //Step 4.Create a JMS Connection
+         // Step 4.Create a JMS Connection
          connection = cf.createConnection();
 
-         //Step 5. Create a JMS Session
+         // Step 5. Create a JMS Session
          Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         //Step 6. Create a JMS Message Producer
+         // Step 6. Create a JMS Message Producer
          MessageProducer producer = session.createProducer(queue);
 
-         //Step 7. Create a Text Message
+         // Step 7. Create a Text Message
          TextMessage message = session.createTextMessage("This is a text message");
 
-         System.out.println("Sending message [" + message.getText() + "] with String property: " + message.getStringProperty("newproperty"));
+         System.out.println("Sending message [" + message.getText() +
+                            "] with String property: " +
+                            message.getStringProperty("newproperty"));
 
-         //Step 8. Send the Message
+         // Step 8. Send the Message
          producer.send(message);
 
-         //Step 9. Create a JMS Message Consumer
+         // Step 9. Create a JMS Message Consumer
          MessageConsumer messageConsumer = session.createConsumer(queue);
 
-         //Step 10. Start the Connection
+         // Step 10. Start the Connection
          connection.start();
 
-         //Step 11. Receive the message
-         TextMessage messageReceived = (TextMessage) messageConsumer.receive(5000);
+         // Step 11. Receive the message
+         TextMessage messageReceived = (TextMessage)messageConsumer.receive(5000);
 
-         System.out.println("Received message [" + messageReceived.getText() + "] with String property: " + messageReceived.getStringProperty("newproperty"));
+         System.out.println("Received message [" + messageReceived.getText() +
+                            "] with String property: " +
+                            messageReceived.getStringProperty("newproperty"));
 
          return true;
       }
       finally
       {
-         //Step 12. Be sure to close our JMS resources!
+         // Step 12. Be sure to close our JMS resources!
          if (initialContext != null)
          {
             initialContext.close();
          }
-         if(connection != null)
+         if (connection != null)
          {
             connection.close();
          }

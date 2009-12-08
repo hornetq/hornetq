@@ -13,6 +13,8 @@
 
 package org.hornetq.tests.timing.util;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.buffers.HornetQBuffer;
 import org.hornetq.core.buffers.HornetQBuffers;
 import org.hornetq.tests.util.UnitTestCase;
@@ -44,10 +46,9 @@ public class UTF8Test extends UnitTestCase
 
    final long numberOfIteractions = 1000000;
 
-
    public void testWriteUTF() throws Exception
    {
-      HornetQBuffer buffer = HornetQBuffers.fixedBuffer(10 * 1024); 
+      HornetQBuffer buffer = HornetQBuffers.fixedBuffer(10 * 1024);
 
       long start = System.currentTimeMillis();
 
@@ -72,7 +73,7 @@ public class UTF8Test extends UnitTestCase
 
    public void testReadUTF() throws Exception
    {
-      HornetQBuffer buffer = HornetQBuffers.fixedBuffer(10 * 1024); 
+      HornetQBuffer buffer = HornetQBuffers.fixedBuffer(10 * 1024);
 
       buffer.writeUTF(str);
 
@@ -89,7 +90,7 @@ public class UTF8Test extends UnitTestCase
 
             buffer.resetReaderIndex();
             String newstr = buffer.readUTF();
-            assertEquals(str, newstr);
+            Assert.assertEquals(str, newstr);
          }
 
          long spentTime = System.currentTimeMillis() - start;
@@ -98,7 +99,8 @@ public class UTF8Test extends UnitTestCase
       }
 
    }
-   
+
+   @Override
    protected void tearDown() throws Exception
    {
       UTF8Util.clearBuffer();

@@ -13,8 +13,6 @@
 
 package org.hornetq.core.management.impl;
 
-import javax.management.StandardMBean;
-
 import org.hornetq.core.config.cluster.BroadcastGroupConfiguration;
 import org.hornetq.core.management.BroadcastGroupControl;
 import org.hornetq.core.persistence.StorageManager;

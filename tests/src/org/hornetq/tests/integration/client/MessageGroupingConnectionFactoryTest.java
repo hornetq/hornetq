@@ -12,36 +12,41 @@
  */
 package org.hornetq.tests.integration.client;
 
-import org.hornetq.tests.util.UnitTestCase;
-import org.hornetq.core.logging.Logger;
-import org.hornetq.core.server.HornetQServer;
-import org.hornetq.core.server.HornetQ;
-import org.hornetq.core.client.*;
-import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
-import org.hornetq.core.exception.HornetQException;
-import org.hornetq.core.config.impl.ConfigurationImpl;
-import org.hornetq.core.config.TransportConfiguration;
-import org.hornetq.core.message.impl.MessageImpl;
-import org.hornetq.utils.SimpleString;
-
+import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import java.util.ArrayList;
+
+import junit.framework.Assert;
+
+import org.hornetq.core.client.ClientConsumer;
+import org.hornetq.core.client.ClientMessage;
+import org.hornetq.core.client.ClientProducer;
+import org.hornetq.core.client.ClientSession;
+import org.hornetq.core.client.ClientSessionFactory;
+import org.hornetq.core.client.MessageHandler;
+import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
+import org.hornetq.core.config.TransportConfiguration;
+import org.hornetq.core.config.impl.ConfigurationImpl;
+import org.hornetq.core.exception.HornetQException;
+import org.hornetq.core.logging.Logger;
+import org.hornetq.core.server.HornetQ;
+import org.hornetq.core.server.HornetQServer;
+import org.hornetq.tests.util.UnitTestCase;
+import org.hornetq.utils.SimpleString;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  *         Created Dec 1, 2009
  */
-public class MessageGroupingConnectionFactoryTest   extends UnitTestCase
+public class MessageGroupingConnectionFactoryTest extends UnitTestCase
 {
    private static final Logger log = Logger.getLogger(MessageGroupingTest.class);
 
-      private HornetQServer server;
+   private HornetQServer server;
 
-      private ClientSession clientSession;
+   private ClientSession clientSession;
 
-      private SimpleString qName = new SimpleString("MessageGroupingTestQueue");
-
+   private final SimpleString qName = new SimpleString("MessageGroupingTestQueue");
 
    public void testBasicGroupingUsingConnection() throws Exception
    {
@@ -60,10 +65,10 @@ public class MessageGroupingConnectionFactoryTest   extends UnitTestCase
 
    public void testBasicGroupingMultipleProducersDirect() throws Exception
    {
-      doTestBasicGroupingMultipleProducers(true);   
+      doTestBasicGroupingMultipleProducers(true);
    }
 
-   private void doTestBasicGroupingUsingConnectionFactory(boolean directDelivery) throws Exception
+   private void doTestBasicGroupingUsingConnectionFactory(final boolean directDelivery) throws Exception
    {
       ClientProducer clientProducer = clientSession.createProducer(qName);
       ClientConsumer consumer = clientSession.createConsumer(qName);
@@ -87,14 +92,14 @@ public class MessageGroupingConnectionFactoryTest   extends UnitTestCase
       consumer.setMessageHandler(dummyMessageHandler);
       DummyMessageHandler dummyMessageHandler2 = new DummyMessageHandler(latch, true);
       consumer2.setMessageHandler(dummyMessageHandler2);
-      assertTrue(latch.await(10, TimeUnit.SECONDS));
-      assertEquals(100, dummyMessageHandler.list.size());
-      assertEquals(0, dummyMessageHandler2.list.size());
+      Assert.assertTrue(latch.await(10, TimeUnit.SECONDS));
+      Assert.assertEquals(100, dummyMessageHandler.list.size());
+      Assert.assertEquals(0, dummyMessageHandler2.list.size());
       consumer.close();
       consumer2.close();
    }
 
-   private void doTestBasicGroupingMultipleProducers(boolean directDelivery) throws Exception
+   private void doTestBasicGroupingMultipleProducers(final boolean directDelivery) throws Exception
    {
       ClientProducer clientProducer = clientSession.createProducer(qName);
       ClientProducer clientProducer2 = clientSession.createProducer(qName);
@@ -122,13 +127,14 @@ public class MessageGroupingConnectionFactoryTest   extends UnitTestCase
       consumer.setMessageHandler(dummyMessageHandler);
       DummyMessageHandler dummyMessageHandler2 = new DummyMessageHandler(latch, true);
       consumer2.setMessageHandler(dummyMessageHandler2);
-      assertTrue(latch.await(10, TimeUnit.SECONDS));
-      assertEquals(300, dummyMessageHandler.list.size());
-      assertEquals(0, dummyMessageHandler2.list.size());
+      Assert.assertTrue(latch.await(10, TimeUnit.SECONDS));
+      Assert.assertEquals(300, dummyMessageHandler.list.size());
+      Assert.assertEquals(0, dummyMessageHandler2.list.size());
       consumer.close();
       consumer2.close();
    }
 
+   @Override
    protected void tearDown() throws Exception
    {
       if (clientSession != null)
@@ -159,20 +165,21 @@ public class MessageGroupingConnectionFactoryTest   extends UnitTestCase
       super.tearDown();
    }
 
+   @Override
    protected void setUp() throws Exception
    {
       super.setUp();
 
       ConfigurationImpl configuration = new ConfigurationImpl();
       configuration.setSecurityEnabled(false);
-      TransportConfiguration transportConfig = new TransportConfiguration(INVM_ACCEPTOR_FACTORY);
+      TransportConfiguration transportConfig = new TransportConfiguration(UnitTestCase.INVM_ACCEPTOR_FACTORY);
       configuration.getAcceptorConfigurations().add(transportConfig);
       server = HornetQ.newHornetQServer(configuration, false);
       // start the server
       server.start();
 
       // then we create a client as normal
-      ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(INVM_CONNECTOR_FACTORY));
+      ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
       sessionFactory.setGroupID("grp1");
       clientSession = sessionFactory.createSession(false, true, true);
       clientSession.createQueue(qName, qName, null, false);
@@ -186,13 +193,13 @@ public class MessageGroupingConnectionFactoryTest   extends UnitTestCase
 
       private final boolean acknowledge;
 
-      public DummyMessageHandler(CountDownLatch latch, boolean acknowledge)
+      public DummyMessageHandler(final CountDownLatch latch, final boolean acknowledge)
       {
          this.latch = latch;
          this.acknowledge = acknowledge;
       }
 
-      public void onMessage(ClientMessage message)
+      public void onMessage(final ClientMessage message)
       {
          list.add(message);
          if (acknowledge)
@@ -209,7 +216,7 @@ public class MessageGroupingConnectionFactoryTest   extends UnitTestCase
          latch.countDown();
       }
 
-      public void reset(CountDownLatch latch)
+      public void reset(final CountDownLatch latch)
       {
          list.clear();
          this.latch = latch;

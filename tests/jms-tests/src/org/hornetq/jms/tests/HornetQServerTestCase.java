@@ -59,9 +59,9 @@ public class HornetQServerTestCase extends ProxyAssertSupport
    public final static int MIN_TIMEOUT = 1000 * 1 /* seconds */;
 
    protected final Logger log = Logger.getLogger(getClass());
-   
+
    // Static --------------------------------------------------------
-   
+
    /** Some testcases are time sensitive, and we need to make sure a GC would happen before certain scenarios*/
    public static void forceGC()
    {
@@ -73,12 +73,13 @@ public class HornetQServerTestCase extends ProxyAssertSupport
          try
          {
             Thread.sleep(500);
-         } catch (InterruptedException e)
+         }
+         catch (InterruptedException e)
          {
          }
       }
    }
-   
+
    // Attributes ----------------------------------------------------
 
    protected static List<Server> servers = new ArrayList<Server>();
@@ -97,64 +98,63 @@ public class HornetQServerTestCase extends ProxyAssertSupport
 
    protected static Queue queue4;
 
+   @Override
    protected void setUp() throws Exception
    {
       super.setUp();
-      
+
       System.setProperty("java.naming.factory.initial", getContextFactory());
 
-      String banner =
-         "####################################################### Start " +
-         " test: " + getName();
+      String banner = "####################################################### Start " + " test: " + getName();
 
       log.info(banner);
 
       try
       {
-         //create any new server we need
-         servers.add(ServerManagement.create());
+         // create any new server we need
+         HornetQServerTestCase.servers.add(ServerManagement.create());
 
-         //start the servers if needed
+         // start the servers if needed
          boolean started = false;
          try
          {
-            started = servers.get(0).isStarted();
+            started = HornetQServerTestCase.servers.get(0).isStarted();
          }
          catch (Exception e)
          {
-            //ignore, incase its a remote server
+            // ignore, incase its a remote server
          }
          if (!started)
          {
-            servers.get(0).start(getContainerConfig(), getConfiguration(), true);
+            HornetQServerTestCase.servers.get(0).start(getContainerConfig(), getConfiguration(), true);
          }
-         //deploy the objects for this test
+         // deploy the objects for this test
          deployAdministeredObjects();
          lookUp();
       }
       catch (Exception e)
       {
-         //if we get here we need to clean up for the next test
+         // if we get here we need to clean up for the next test
          e.printStackTrace();
-         servers.get(0).stop();
+         HornetQServerTestCase.servers.get(0).stop();
          throw e;
       }
-      //empty the queues
-      checkEmpty(queue1);
-      checkEmpty(queue2);
-      checkEmpty(queue3);
-      checkEmpty(queue4);
+      // empty the queues
+      checkEmpty(HornetQServerTestCase.queue1);
+      checkEmpty(HornetQServerTestCase.queue2);
+      checkEmpty(HornetQServerTestCase.queue3);
+      checkEmpty(HornetQServerTestCase.queue4);
 
       // Check no subscriptions left lying around
 
-      checkNoSubscriptions(topic1);
-      checkNoSubscriptions(topic2);
-      checkNoSubscriptions(topic3);
+      checkNoSubscriptions(HornetQServerTestCase.topic1);
+      checkNoSubscriptions(HornetQServerTestCase.topic2);
+      checkNoSubscriptions(HornetQServerTestCase.topic3);
    }
 
    public void stop() throws Exception
    {
-      servers.get(0).stop();
+      HornetQServerTestCase.servers.get(0).stop();
    }
 
    public String getContextFactory()
@@ -165,24 +165,24 @@ public class HornetQServerTestCase extends ProxyAssertSupport
    public void start() throws Exception
    {
       System.setProperty("java.naming.factory.initial", getContextFactory());
-         servers.get(0).start(getContainerConfig(), getConfiguration(), false);
+      HornetQServerTestCase.servers.get(0).start(getContainerConfig(), getConfiguration(), false);
    }
-   
+
    public void startNoDelete() throws Exception
    {
       System.setProperty("java.naming.factory.initial", getContextFactory());
-      servers.get(0).start(getContainerConfig(), getConfiguration(), false);
+      HornetQServerTestCase.servers.get(0).start(getContainerConfig(), getConfiguration(), false);
    }
 
    public void stopServerPeer() throws Exception
    {
-      servers.get(0).stopServerPeer();
+      HornetQServerTestCase.servers.get(0).stopServerPeer();
    }
 
    public void startServerPeer() throws Exception
    {
       System.setProperty("java.naming.factory.initial", getContextFactory());
-      servers.get(0).startServerPeer();
+      HornetQServerTestCase.servers.get(0).startServerPeer();
    }
 
    protected HashMap<String, Object> getConfiguration()
@@ -214,17 +214,16 @@ public class HornetQServerTestCase extends ProxyAssertSupport
       createQueue("Queue4");
    }
 
-   private void lookUp()
-           throws Exception
+   private void lookUp() throws Exception
    {
       InitialContext ic = getInitialContext();
-      topic1 = (Topic) ic.lookup("/topic/Topic1");
-      topic2 = (Topic) ic.lookup("/topic/Topic2");
-      topic3 = (Topic) ic.lookup("/topic/Topic3");
-      queue1 = (Queue) ic.lookup("/queue/Queue1");
-      queue2 = (Queue) ic.lookup("/queue/Queue2");
-      queue3 = (Queue) ic.lookup("/queue/Queue3");
-      queue4 = (Queue) ic.lookup("/queue/Queue4");
+      HornetQServerTestCase.topic1 = (Topic)ic.lookup("/topic/Topic1");
+      HornetQServerTestCase.topic2 = (Topic)ic.lookup("/topic/Topic2");
+      HornetQServerTestCase.topic3 = (Topic)ic.lookup("/topic/Topic3");
+      HornetQServerTestCase.queue1 = (Queue)ic.lookup("/queue/Queue1");
+      HornetQServerTestCase.queue2 = (Queue)ic.lookup("/queue/Queue2");
+      HornetQServerTestCase.queue3 = (Queue)ic.lookup("/queue/Queue3");
+      HornetQServerTestCase.queue4 = (Queue)ic.lookup("/queue/Queue4");
    }
 
    protected void undeployAdministeredObjects() throws Exception
@@ -246,22 +245,22 @@ public class HornetQServerTestCase extends ProxyAssertSupport
       destroyQueue("Queue4");
    }
 
-
    // FIXME https://jira.jboss.org/jira/browse/JBMESSAGING-1606
    public String[] getContainerConfig()
    {
-      return new String[]{"test-beans.xml"};
+      return new String[] { "test-beans.xml" };
    }
 
    protected HornetQServer getJmsServer() throws Exception
    {
-      return servers.get(0).getHornetQServer();
+      return HornetQServerTestCase.servers.get(0).getHornetQServer();
    }
 
    protected JMSServerManager getJmsServerManager() throws Exception
    {
-      return servers.get(0).getJMSServerManager();
+      return HornetQServerTestCase.servers.get(0).getJMSServerManager();
    }
+
    /*protected void tearDown() throws Exception
    {
       super.tearDown();
@@ -272,12 +271,12 @@ public class HornetQServerTestCase extends ProxyAssertSupport
       }
    }*/
 
-   protected void checkNoSubscriptions(Topic topic) throws Exception
+   protected void checkNoSubscriptions(final Topic topic) throws Exception
    {
 
    }
 
-   protected void drainDestination(ConnectionFactory cf, Destination dest) throws Exception
+   protected void drainDestination(final ConnectionFactory cf, final Destination dest) throws Exception
    {
       Connection conn = null;
       try
@@ -291,13 +290,19 @@ public class HornetQServerTestCase extends ProxyAssertSupport
          while (true)
          {
             m = cons.receive(500);
-            if (m == null) break;
+            if (m == null)
+            {
+               break;
+            }
             log.trace("Drained message");
          }
       }
       finally
       {
-         if (conn!= null) conn.close();
+         if (conn != null)
+         {
+            conn.close();
+         }
       }
    }
 
@@ -308,20 +313,20 @@ public class HornetQServerTestCase extends ProxyAssertSupport
 
    public ConnectionFactory getConnectionFactory() throws Exception
    {
-      return (ConnectionFactory) getInitialContext().lookup("/ConnectionFactory");
+      return (ConnectionFactory)getInitialContext().lookup("/ConnectionFactory");
    }
 
    public TopicConnectionFactory getTopicConnectionFactory() throws Exception
    {
-      return (TopicConnectionFactory) getInitialContext().lookup("/ConnectionFactory");
+      return (TopicConnectionFactory)getInitialContext().lookup("/ConnectionFactory");
    }
 
    public XAConnectionFactory getXAConnectionFactory() throws Exception
    {
-      return (XAConnectionFactory) getInitialContext().lookup("/ConnectionFactory");
+      return (XAConnectionFactory)getInitialContext().lookup("/ConnectionFactory");
    }
-   
-   public InitialContext getInitialContext(int serverid) throws Exception
+
+   public InitialContext getInitialContext(final int serverid) throws Exception
    {
       return new InitialContext(ServerManagement.getJNDIEnvironment(serverid));
    }
@@ -331,46 +336,44 @@ public class HornetQServerTestCase extends ProxyAssertSupport
       return new TransactionManagerImple();
    }
 
+   public void configureSecurityForDestination(final String destName, final boolean isQueue, final HashSet<Role> roles) throws Exception
+   {
+      HornetQServerTestCase.servers.get(0).configureSecurityForDestination(destName, isQueue, roles);
+   }
 
-   public void configureSecurityForDestination(String destName, boolean isQueue, HashSet<Role> roles) throws Exception
+   public void createQueue(final String name) throws Exception
    {
-      servers.get(0).configureSecurityForDestination(destName, isQueue, roles);
+      HornetQServerTestCase.servers.get(0).createQueue(name, null);
    }
-   
-   public void createQueue(String name) throws Exception
+
+   public void createTopic(final String name) throws Exception
    {
-      servers.get(0).createQueue(name, null);
+      HornetQServerTestCase.servers.get(0).createTopic(name, null);
    }
-   
-   public void createTopic(String name) throws Exception
+
+   public void destroyQueue(final String name) throws Exception
    {
-      servers.get(0).createTopic(name, null);
+      HornetQServerTestCase.servers.get(0).destroyQueue(name, null);
    }
-   
-   public void destroyQueue(String name) throws Exception
+
+   public void destroyTopic(final String name) throws Exception
    {
-      servers.get(0).destroyQueue(name, null);
+      HornetQServerTestCase.servers.get(0).destroyTopic(name, null);
    }
-   
-   public void destroyTopic(String name) throws Exception
+
+   public void createQueue(final String name, final int i) throws Exception
    {
-      servers.get(0).destroyTopic(name, null);
+      HornetQServerTestCase.servers.get(i).createQueue(name, null);
    }
-   
-   
-   public void createQueue(String name, int i) throws Exception
-   {     
-      servers.get(i).createQueue(name, null);      
-   }
-   
-   public void createTopic(String name, int i) throws Exception
+
+   public void createTopic(final String name, final int i) throws Exception
    {
-      servers.get(i).createTopic(name, null);      
+      HornetQServerTestCase.servers.get(i).createTopic(name, null);
    }
-   
-   public void destroyQueue(String name, int i) throws Exception
+
+   public void destroyQueue(final String name, final int i) throws Exception
    {
-      servers.get(i).destroyQueue(name, null);      
+      HornetQServerTestCase.servers.get(i).destroyQueue(name, null);
    }
 
    public boolean checkNoMessageData()
@@ -378,9 +381,9 @@ public class HornetQServerTestCase extends ProxyAssertSupport
       return false;
    }
 
-   public boolean checkEmpty(Queue queue) throws Exception
+   public boolean checkEmpty(final Queue queue) throws Exception
    {
-      Integer messageCount = servers.get(0).getMessageCountForQueue(queue.getQueueName());
+      Integer messageCount = HornetQServerTestCase.servers.get(0).getMessageCountForQueue(queue.getQueueName());
       if (messageCount > 0)
       {
          removeAllMessages(queue.getQueueName(), true);
@@ -388,133 +391,136 @@ public class HornetQServerTestCase extends ProxyAssertSupport
       return true;
    }
 
-   public boolean checkEmpty(Queue queue, int i)
+   public boolean checkEmpty(final Queue queue, final int i)
    {
       return true;
    }
 
-   public boolean checkEmpty(Topic topic)
+   public boolean checkEmpty(final Topic topic)
    {
       return true;
    }
 
-   protected void removeAllMessages(String destName, boolean isQueue) throws Exception
+   protected void removeAllMessages(final String destName, final boolean isQueue) throws Exception
    {
-      servers.get(0).removeAllMessages(destName, isQueue);
+      HornetQServerTestCase.servers.get(0).removeAllMessages(destName, isQueue);
    }
 
-   protected boolean assertRemainingMessages(int expected) throws Exception
+   protected boolean assertRemainingMessages(final int expected) throws Exception
    {
-      Integer messageCount = servers.get(0).getMessageCountForQueue("Queue1");
+      Integer messageCount = HornetQServerTestCase.servers.get(0).getMessageCountForQueue("Queue1");
 
-      assertEquals(expected, messageCount.intValue());
+      ProxyAssertSupport.assertEquals(expected, messageCount.intValue());
       return expected == messageCount.intValue();
    }
 
-   protected static void assertActiveConnectionsOnTheServer(int expectedSize)
-   throws Exception
+   protected static void assertActiveConnectionsOnTheServer(final int expectedSize) throws Exception
    {
-      assertEquals(expectedSize, servers.get(0).getHornetQServer().getHornetQServerControl().getConnectionCount());
+      ProxyAssertSupport.assertEquals(expectedSize, HornetQServerTestCase.servers.get(0)
+                                                                                 .getHornetQServer()
+                                                                                 .getHornetQServerControl()
+                                                                                 .getConnectionCount());
    }
 
-   public static void deployConnectionFactory(String clientId, String objectName,
-                                              List<String> jndiBindings)
-           throws Exception
+   public static void deployConnectionFactory(final String clientId,
+                                              final String objectName,
+                                              final List<String> jndiBindings) throws Exception
    {
-      servers.get(0).deployConnectionFactory(clientId, objectName, jndiBindings);
+      HornetQServerTestCase.servers.get(0).deployConnectionFactory(clientId, objectName, jndiBindings);
    }
 
-   public static void deployConnectionFactory(String objectName,
-                                              List<String> jndiBindings,
-                                              int prefetchSize)
-           throws Exception
+   public static void deployConnectionFactory(final String objectName,
+                                              final List<String> jndiBindings,
+                                              final int prefetchSize) throws Exception
    {
-      servers.get(0).deployConnectionFactory(objectName, jndiBindings, prefetchSize);
+      HornetQServerTestCase.servers.get(0).deployConnectionFactory(objectName, jndiBindings, prefetchSize);
    }
 
-   public static void deployConnectionFactory(String objectName,
-                                              List<String> jndiBindings)
-           throws Exception
+   public static void deployConnectionFactory(final String objectName, final List<String> jndiBindings) throws Exception
    {
-      servers.get(0).deployConnectionFactory(objectName, jndiBindings);
+      HornetQServerTestCase.servers.get(0).deployConnectionFactory(objectName, jndiBindings);
    }
 
-   public static void deployConnectionFactory(int server,
-                                              String objectName,
-                                              List<String> jndiBindings,
-                                              int prefetchSize)
-           throws Exception
+   public static void deployConnectionFactory(final int server,
+                                              final String objectName,
+                                              final List<String> jndiBindings,
+                                              final int prefetchSize) throws Exception
    {
-      servers.get(server).deployConnectionFactory(objectName, jndiBindings, prefetchSize);
+      HornetQServerTestCase.servers.get(server).deployConnectionFactory(objectName, jndiBindings, prefetchSize);
    }
 
-   public static void deployConnectionFactory(int server,
-                                              String objectName,
-                                              List<String> jndiBindings)
-           throws Exception
+   public static void deployConnectionFactory(final int server, final String objectName, final List<String> jndiBindings) throws Exception
    {
-      servers.get(server).deployConnectionFactory(objectName, jndiBindings);
+      HornetQServerTestCase.servers.get(server).deployConnectionFactory(objectName, jndiBindings);
    }
 
-   public void deployConnectionFactory(String clientId,
-                                       String objectName,
-                                       List<String> jndiBindings,
-                                       int prefetchSize,
-                                       int defaultTempQueueFullSize,
-                                       int defaultTempQueuePageSize,
-                                       int defaultTempQueueDownCacheSize,
-                                       boolean supportsFailover,
-                                       boolean supportsLoadBalancing,              
-                                       int dupsOkBatchSize,
-                                       boolean blockOnAcknowledge) throws Exception
+   public void deployConnectionFactory(final String clientId,
+                                       final String objectName,
+                                       final List<String> jndiBindings,
+                                       final int prefetchSize,
+                                       final int defaultTempQueueFullSize,
+                                       final int defaultTempQueuePageSize,
+                                       final int defaultTempQueueDownCacheSize,
+                                       final boolean supportsFailover,
+                                       final boolean supportsLoadBalancing,
+                                       final int dupsOkBatchSize,
+                                       final boolean blockOnAcknowledge) throws Exception
    {
-      servers.get(0).deployConnectionFactory(clientId, objectName, jndiBindings, prefetchSize, defaultTempQueueFullSize,
-              defaultTempQueuePageSize, defaultTempQueueDownCacheSize, supportsFailover, supportsLoadBalancing, dupsOkBatchSize, blockOnAcknowledge);
+      HornetQServerTestCase.servers.get(0).deployConnectionFactory(clientId,
+                                                                   objectName,
+                                                                   jndiBindings,
+                                                                   prefetchSize,
+                                                                   defaultTempQueueFullSize,
+                                                                   defaultTempQueuePageSize,
+                                                                   defaultTempQueueDownCacheSize,
+                                                                   supportsFailover,
+                                                                   supportsLoadBalancing,
+                                                                   dupsOkBatchSize,
+                                                                   blockOnAcknowledge);
    }
 
-   public static void deployConnectionFactory(String objectName,
-                                              List<String> jndiBindings,
-                                              int prefetchSize,
-                                              int defaultTempQueueFullSize,
-                                              int defaultTempQueuePageSize,
-                                              int defaultTempQueueDownCacheSize)
-           throws Exception
+   public static void deployConnectionFactory(final String objectName,
+                                              final List<String> jndiBindings,
+                                              final int prefetchSize,
+                                              final int defaultTempQueueFullSize,
+                                              final int defaultTempQueuePageSize,
+                                              final int defaultTempQueueDownCacheSize) throws Exception
    {
-      servers.get(0).deployConnectionFactory(objectName,
-              jndiBindings,
-              prefetchSize,
-              defaultTempQueueFullSize,
-              defaultTempQueuePageSize,
-              defaultTempQueueDownCacheSize);
+      HornetQServerTestCase.servers.get(0).deployConnectionFactory(objectName,
+                                                                   jndiBindings,
+                                                                   prefetchSize,
+                                                                   defaultTempQueueFullSize,
+                                                                   defaultTempQueuePageSize,
+                                                                   defaultTempQueueDownCacheSize);
    }
 
-   public static void undeployConnectionFactory(String objectName) throws Exception
+   public static void undeployConnectionFactory(final String objectName) throws Exception
    {
-      servers.get(0).undeployConnectionFactory(objectName);
+      HornetQServerTestCase.servers.get(0).undeployConnectionFactory(objectName);
    }
 
-   protected List<String> listAllSubscribersForTopic(String s) throws Exception
+   protected List<String> listAllSubscribersForTopic(final String s) throws Exception
    {
-      return servers.get(0).listAllSubscribersForTopic(s);
+      return HornetQServerTestCase.servers.get(0).listAllSubscribersForTopic(s);
    }
 
-   protected Integer getMessageCountForQueue(String s) throws Exception
+   protected Integer getMessageCountForQueue(final String s) throws Exception
    {
-      return servers.get(0).getMessageCountForQueue(s);
+      return HornetQServerTestCase.servers.get(0).getMessageCountForQueue(s);
    }
 
    protected Set<Role> getSecurityConfig() throws Exception
    {
-      return servers.get(0).getSecurityConfig();
+      return HornetQServerTestCase.servers.get(0).getSecurityConfig();
    }
 
-   protected void setSecurityConfig(Set<Role> defConfig) throws Exception
+   protected void setSecurityConfig(final Set<Role> defConfig) throws Exception
    {
-      servers.get(0).setSecurityConfig(defConfig);
+      HornetQServerTestCase.servers.get(0).setSecurityConfig(defConfig);
    }
 
-   protected void setSecurityConfigOnManager(String destination, boolean isQueue, Set<Role> roles) throws Exception
+   protected void setSecurityConfigOnManager(final String destination, final boolean isQueue, final Set<Role> roles) throws Exception
    {
-      servers.get(0).configureSecurityForDestination(destination, isQueue, roles);
+      HornetQServerTestCase.servers.get(0).configureSecurityForDestination(destination, isQueue, roles);
    }
 }

@@ -59,7 +59,7 @@ public class HornetQConnectionFactory implements ConnectionFactory, QueueConnect
 
    // Attributes -----------------------------------------------------------------------------------
 
-   private ClientSessionFactory sessionFactory;
+   private final ClientSessionFactory sessionFactory;
 
    private String clientID;
 
@@ -191,7 +191,7 @@ public class HornetQConnectionFactory implements ConnectionFactory, QueueConnect
       return sessionFactory.getConnectionLoadBalancingPolicyClassName();
    }
 
-   public synchronized void setConnectionLoadBalancingPolicyClassName(String connectionLoadBalancingPolicyClassName)
+   public synchronized void setConnectionLoadBalancingPolicyClassName(final String connectionLoadBalancingPolicyClassName)
    {
       checkWrite();
       sessionFactory.setConnectionLoadBalancingPolicyClassName(connectionLoadBalancingPolicyClassName);
@@ -202,7 +202,7 @@ public class HornetQConnectionFactory implements ConnectionFactory, QueueConnect
       return sessionFactory.getStaticConnectors();
    }
 
-   public synchronized void setStaticConnectors(List<Pair<TransportConfiguration, TransportConfiguration>> staticConnectors)
+   public synchronized void setStaticConnectors(final List<Pair<TransportConfiguration, TransportConfiguration>> staticConnectors)
    {
       checkWrite();
       sessionFactory.setStaticConnectors(staticConnectors);
@@ -213,7 +213,7 @@ public class HornetQConnectionFactory implements ConnectionFactory, QueueConnect
       return sessionFactory.getDiscoveryAddress();
    }
 
-   public synchronized void setDiscoveryAddress(String discoveryAddress)
+   public synchronized void setDiscoveryAddress(final String discoveryAddress)
    {
       checkWrite();
       sessionFactory.setDiscoveryAddress(discoveryAddress);
@@ -224,7 +224,7 @@ public class HornetQConnectionFactory implements ConnectionFactory, QueueConnect
       return sessionFactory.getDiscoveryPort();
    }
 
-   public synchronized void setDiscoveryPort(int discoveryPort)
+   public synchronized void setDiscoveryPort(final int discoveryPort)
    {
       checkWrite();
       sessionFactory.setDiscoveryPort(discoveryPort);
@@ -235,7 +235,7 @@ public class HornetQConnectionFactory implements ConnectionFactory, QueueConnect
       return sessionFactory.getDiscoveryRefreshTimeout();
    }
 
-   public synchronized void setDiscoveryRefreshTimeout(long discoveryRefreshTimeout)
+   public synchronized void setDiscoveryRefreshTimeout(final long discoveryRefreshTimeout)
    {
       checkWrite();
       sessionFactory.setDiscoveryRefreshTimeout(discoveryRefreshTimeout);
@@ -246,7 +246,7 @@ public class HornetQConnectionFactory implements ConnectionFactory, QueueConnect
       return sessionFactory.getDiscoveryInitialWaitTimeout();
    }
 
-   public synchronized void setDiscoveryInitialWaitTimeout(long discoveryInitialWaitTimeout)
+   public synchronized void setDiscoveryInitialWaitTimeout(final long discoveryInitialWaitTimeout)
    {
       checkWrite();
       sessionFactory.setDiscoveryInitialWaitTimeout(discoveryInitialWaitTimeout);
@@ -257,7 +257,7 @@ public class HornetQConnectionFactory implements ConnectionFactory, QueueConnect
       return clientID;
    }
 
-   public synchronized void setClientID(String clientID)
+   public synchronized void setClientID(final String clientID)
    {
       checkWrite();
       this.clientID = clientID;
@@ -268,7 +268,7 @@ public class HornetQConnectionFactory implements ConnectionFactory, QueueConnect
       return dupsOKBatchSize;
    }
 
-   public synchronized void setDupsOKBatchSize(int dupsOKBatchSize)
+   public synchronized void setDupsOKBatchSize(final int dupsOKBatchSize)
    {
       checkWrite();
       this.dupsOKBatchSize = dupsOKBatchSize;
@@ -279,7 +279,7 @@ public class HornetQConnectionFactory implements ConnectionFactory, QueueConnect
       return transactionBatchSize;
    }
 
-   public synchronized void setTransactionBatchSize(int transactionBatchSize)
+   public synchronized void setTransactionBatchSize(final int transactionBatchSize)
    {
       checkWrite();
       this.transactionBatchSize = transactionBatchSize;
@@ -290,7 +290,7 @@ public class HornetQConnectionFactory implements ConnectionFactory, QueueConnect
       return sessionFactory.getClientFailureCheckPeriod();
    }
 
-   public synchronized void setClientFailureCheckPeriod(long clientFailureCheckPeriod)
+   public synchronized void setClientFailureCheckPeriod(final long clientFailureCheckPeriod)
    {
       checkWrite();
       sessionFactory.setClientFailureCheckPeriod(clientFailureCheckPeriod);
@@ -301,7 +301,7 @@ public class HornetQConnectionFactory implements ConnectionFactory, QueueConnect
       return sessionFactory.getConnectionTTL();
    }
 
-   public synchronized void setConnectionTTL(long connectionTTL)
+   public synchronized void setConnectionTTL(final long connectionTTL)
    {
       checkWrite();
       sessionFactory.setConnectionTTL(connectionTTL);
@@ -312,7 +312,7 @@ public class HornetQConnectionFactory implements ConnectionFactory, QueueConnect
       return sessionFactory.getCallTimeout();
    }
 
-   public synchronized void setCallTimeout(long callTimeout)
+   public synchronized void setCallTimeout(final long callTimeout)
    {
       checkWrite();
       sessionFactory.setCallTimeout(callTimeout);
@@ -323,7 +323,7 @@ public class HornetQConnectionFactory implements ConnectionFactory, QueueConnect
       return sessionFactory.getConsumerWindowSize();
    }
 
-   public synchronized void setConsumerWindowSize(int consumerWindowSize)
+   public synchronized void setConsumerWindowSize(final int consumerWindowSize)
    {
       checkWrite();
       sessionFactory.setConsumerWindowSize(consumerWindowSize);
@@ -334,7 +334,7 @@ public class HornetQConnectionFactory implements ConnectionFactory, QueueConnect
       return sessionFactory.getConsumerMaxRate();
    }
 
-   public synchronized void setConsumerMaxRate(int consumerMaxRate)
+   public synchronized void setConsumerMaxRate(final int consumerMaxRate)
    {
       checkWrite();
       sessionFactory.setConsumerMaxRate(consumerMaxRate);
@@ -345,7 +345,7 @@ public class HornetQConnectionFactory implements ConnectionFactory, QueueConnect
       return sessionFactory.getConfirmationWindowSize();
    }
 
-   public synchronized void setConfirmationWindowSize(int confirmationWindowSize)
+   public synchronized void setConfirmationWindowSize(final int confirmationWindowSize)
    {
       checkWrite();
       sessionFactory.setConfirmationWindowSize(confirmationWindowSize);
@@ -356,7 +356,7 @@ public class HornetQConnectionFactory implements ConnectionFactory, QueueConnect
       return sessionFactory.getProducerMaxRate();
    }
 
-   public synchronized void setProducerMaxRate(int producerMaxRate)
+   public synchronized void setProducerMaxRate(final int producerMaxRate)
    {
       checkWrite();
       sessionFactory.setProducerMaxRate(producerMaxRate);
@@ -367,7 +367,7 @@ public class HornetQConnectionFactory implements ConnectionFactory, QueueConnect
       return sessionFactory.getProducerWindowSize();
    }
 
-   public synchronized void setProducerWindowSize(int producerWindowSize)
+   public synchronized void setProducerWindowSize(final int producerWindowSize)
    {
       checkWrite();
       sessionFactory.setProducerWindowSize(producerWindowSize);
@@ -376,7 +376,7 @@ public class HornetQConnectionFactory implements ConnectionFactory, QueueConnect
    /**
     * @param cacheLargeMessagesClient
     */
-   public synchronized void setCacheLargeMessagesClient(boolean cacheLargeMessagesClient)
+   public synchronized void setCacheLargeMessagesClient(final boolean cacheLargeMessagesClient)
    {
       checkWrite();
       sessionFactory.setCacheLargeMessagesClient(cacheLargeMessagesClient);
@@ -392,7 +392,7 @@ public class HornetQConnectionFactory implements ConnectionFactory, QueueConnect
       return sessionFactory.getMinLargeMessageSize();
    }
 
-   public synchronized void setMinLargeMessageSize(int minLargeMessageSize)
+   public synchronized void setMinLargeMessageSize(final int minLargeMessageSize)
    {
       checkWrite();
       sessionFactory.setMinLargeMessageSize(minLargeMessageSize);
@@ -403,7 +403,7 @@ public class HornetQConnectionFactory implements ConnectionFactory, QueueConnect
       return sessionFactory.isBlockOnAcknowledge();
    }
 
-   public synchronized void setBlockOnAcknowledge(boolean blockOnAcknowledge)
+   public synchronized void setBlockOnAcknowledge(final boolean blockOnAcknowledge)
    {
       checkWrite();
       sessionFactory.setBlockOnAcknowledge(blockOnAcknowledge);
@@ -414,7 +414,7 @@ public class HornetQConnectionFactory implements ConnectionFactory, QueueConnect
       return sessionFactory.isBlockOnNonPersistentSend();
    }
 
-   public synchronized void setBlockOnNonPersistentSend(boolean blockOnNonPersistentSend)
+   public synchronized void setBlockOnNonPersistentSend(final boolean blockOnNonPersistentSend)
    {
       checkWrite();
       sessionFactory.setBlockOnNonPersistentSend(blockOnNonPersistentSend);
@@ -425,7 +425,7 @@ public class HornetQConnectionFactory implements ConnectionFactory, QueueConnect
       return sessionFactory.isBlockOnPersistentSend();
    }
 
-   public synchronized void setBlockOnPersistentSend(boolean blockOnPersistentSend)
+   public synchronized void setBlockOnPersistentSend(final boolean blockOnPersistentSend)
    {
       checkWrite();
       sessionFactory.setBlockOnPersistentSend(blockOnPersistentSend);
@@ -436,7 +436,7 @@ public class HornetQConnectionFactory implements ConnectionFactory, QueueConnect
       return sessionFactory.isAutoGroup();
    }
 
-   public synchronized void setAutoGroup(boolean autoGroup)
+   public synchronized void setAutoGroup(final boolean autoGroup)
    {
       checkWrite();
       sessionFactory.setAutoGroup(autoGroup);
@@ -447,7 +447,7 @@ public class HornetQConnectionFactory implements ConnectionFactory, QueueConnect
       return sessionFactory.isPreAcknowledge();
    }
 
-   public synchronized void setPreAcknowledge(boolean preAcknowledge)
+   public synchronized void setPreAcknowledge(final boolean preAcknowledge)
    {
       checkWrite();
       sessionFactory.setPreAcknowledge(preAcknowledge);
@@ -458,7 +458,7 @@ public class HornetQConnectionFactory implements ConnectionFactory, QueueConnect
       return sessionFactory.getRetryInterval();
    }
 
-   public synchronized void setRetryInterval(long retryInterval)
+   public synchronized void setRetryInterval(final long retryInterval)
    {
       checkWrite();
       sessionFactory.setRetryInterval(retryInterval);
@@ -469,7 +469,7 @@ public class HornetQConnectionFactory implements ConnectionFactory, QueueConnect
       return sessionFactory.getMaxRetryInterval();
    }
 
-   public synchronized void setMaxRetryInterval(long retryInterval)
+   public synchronized void setMaxRetryInterval(final long retryInterval)
    {
       checkWrite();
       sessionFactory.setMaxRetryInterval(retryInterval);
@@ -480,7 +480,7 @@ public class HornetQConnectionFactory implements ConnectionFactory, QueueConnect
       return sessionFactory.getRetryIntervalMultiplier();
    }
 
-   public synchronized void setRetryIntervalMultiplier(double retryIntervalMultiplier)
+   public synchronized void setRetryIntervalMultiplier(final double retryIntervalMultiplier)
    {
       checkWrite();
       sessionFactory.setRetryIntervalMultiplier(retryIntervalMultiplier);
@@ -491,7 +491,7 @@ public class HornetQConnectionFactory implements ConnectionFactory, QueueConnect
       return sessionFactory.getReconnectAttempts();
    }
 
-   public synchronized void setReconnectAttempts(int reconnectAttempts)
+   public synchronized void setReconnectAttempts(final int reconnectAttempts)
    {
       checkWrite();
       sessionFactory.setReconnectAttempts(reconnectAttempts);
@@ -502,7 +502,7 @@ public class HornetQConnectionFactory implements ConnectionFactory, QueueConnect
       return sessionFactory.isFailoverOnServerShutdown();
    }
 
-   public synchronized void setFailoverOnServerShutdown(boolean failoverOnServerShutdown)
+   public synchronized void setFailoverOnServerShutdown(final boolean failoverOnServerShutdown)
    {
       checkWrite();
       sessionFactory.setFailoverOnServerShutdown(failoverOnServerShutdown);
@@ -513,7 +513,7 @@ public class HornetQConnectionFactory implements ConnectionFactory, QueueConnect
       return sessionFactory.isUseGlobalPools();
    }
 
-   public synchronized void setUseGlobalPools(boolean useGlobalPools)
+   public synchronized void setUseGlobalPools(final boolean useGlobalPools)
    {
       checkWrite();
       sessionFactory.setUseGlobalPools(useGlobalPools);
@@ -524,7 +524,7 @@ public class HornetQConnectionFactory implements ConnectionFactory, QueueConnect
       return sessionFactory.getScheduledThreadPoolMaxSize();
    }
 
-   public synchronized void setScheduledThreadPoolMaxSize(int scheduledThreadPoolMaxSize)
+   public synchronized void setScheduledThreadPoolMaxSize(final int scheduledThreadPoolMaxSize)
    {
       checkWrite();
       sessionFactory.setScheduledThreadPoolMaxSize(scheduledThreadPoolMaxSize);
@@ -535,18 +535,18 @@ public class HornetQConnectionFactory implements ConnectionFactory, QueueConnect
       return sessionFactory.getThreadPoolMaxSize();
    }
 
-   public synchronized void setThreadPoolMaxSize(int threadPoolMaxSize)
+   public synchronized void setThreadPoolMaxSize(final int threadPoolMaxSize)
    {
       checkWrite();
       sessionFactory.setThreadPoolMaxSize(threadPoolMaxSize);
    }
-   
+
    public synchronized int getInitialMessagePacketSize()
    {
       return sessionFactory.getInitialMessagePacketSize();
    }
 
-   public synchronized void setInitialMessagePacketSize(int size)
+   public synchronized void setInitialMessagePacketSize(final int size)
    {
       checkWrite();
       sessionFactory.setInitialMessagePacketSize(size);

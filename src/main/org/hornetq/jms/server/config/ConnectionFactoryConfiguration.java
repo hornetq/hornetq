@@ -82,7 +82,7 @@ public interface ConnectionFactoryConfiguration
    int getConfirmationWindowSize();
 
    void setConfirmationWindowSize(int confirmationWindowSize);
-   
+
    int getProducerWindowSize();
 
    void setProducerWindowSize(int producerWindowSize);
@@ -138,7 +138,7 @@ public interface ConnectionFactoryConfiguration
    int getThreadPoolMaxSize();
 
    void setThreadPoolMaxSize(int threadPoolMaxSize);
-   
+
    long getRetryInterval();
 
    void setRetryInterval(long retryInterval);

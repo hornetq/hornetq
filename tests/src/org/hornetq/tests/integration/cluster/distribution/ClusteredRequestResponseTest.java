@@ -48,8 +48,7 @@ public class ClusteredRequestResponseTest extends ClusterTestBase
    {
       return false;
    }
-   
-   
+
    public void testRequestResponse() throws Exception
    {
       setupCluster();
@@ -75,21 +74,21 @@ public class ClusteredRequestResponseTest extends ClusterTestBase
       waitForBindings(2, "queues.testaddress1", 1, 1, false);
       waitForBindings(3, "queues.testaddress1", 1, 1, false);
       waitForBindings(4, "queues.testaddress1", 1, 1, false);
-      
+
       waitForBindings(0, "queues.testaddress2", 1, 1, false);
       waitForBindings(1, "queues.testaddress2", 1, 1, false);
       waitForBindings(2, "queues.testaddress2", 1, 1, false);
       waitForBindings(3, "queues.testaddress2", 1, 1, false);
-      
+
       send(0, "queues.testaddress2", 10, false, null);
-      
+
       verifyReceiveAll(10, 4);
-      
+
       send(4, "queues.testaddress1", 10, false, null);
-      
-      verifyReceiveAll(10, 0);      
+
+      verifyReceiveAll(10, 0);
    }
-   
+
    /*
     * Don't wait for the response queue bindings to get to the other side
     */
@@ -117,16 +116,15 @@ public class ClusteredRequestResponseTest extends ClusterTestBase
       waitForBindings(1, "queues.testaddress2", 1, 1, false);
       waitForBindings(2, "queues.testaddress2", 1, 1, false);
       waitForBindings(3, "queues.testaddress2", 1, 1, false);
-      
-      send(0, "queues.testaddress2", 10, false, null);
-      
-      verifyReceiveAll(10, 4);
-      
-      send(4, "queues.testaddress1", 10, false, null);
-      
-      verifyReceiveAll(10, 0);      
-   }
 
+      send(0, "queues.testaddress2", 10, false, null);
+
+      verifyReceiveAll(10, 4);
+
+      send(4, "queues.testaddress1", 10, false, null);
+
+      verifyReceiveAll(10, 0);
+   }
 
    protected void setupCluster() throws Exception
    {

@@ -32,29 +32,28 @@ public class NIOSequentialFileFactory extends AbstractSequentialFileFactory impl
 {
    private static final Logger log = Logger.getLogger(NIOSequentialFileFactory.class);
 
-
    public NIOSequentialFileFactory(final String journalDir)
    {
       this(journalDir,
            false,
            ConfigurationImpl.DEFAULT_JOURNAL_BUFFER_SIZE_NIO,
-           ConfigurationImpl.DEFAULT_JOURNAL_BUFFER_TIMEOUT_NIO,           
+           ConfigurationImpl.DEFAULT_JOURNAL_BUFFER_TIMEOUT_NIO,
            false);
    }
 
-   public NIOSequentialFileFactory(final String journalDir, boolean buffered)
+   public NIOSequentialFileFactory(final String journalDir, final boolean buffered)
    {
       this(journalDir,
            buffered,
            ConfigurationImpl.DEFAULT_JOURNAL_BUFFER_SIZE_NIO,
-           ConfigurationImpl.DEFAULT_JOURNAL_BUFFER_TIMEOUT_NIO,          
+           ConfigurationImpl.DEFAULT_JOURNAL_BUFFER_TIMEOUT_NIO,
            false);
    }
 
    public NIOSequentialFileFactory(final String journalDir,
                                    final boolean buffered,
                                    final int bufferSize,
-                                   final int bufferTimeout,                                   
+                                   final int bufferTimeout,
                                    final boolean logRates)
    {
       super(journalDir, buffered, bufferSize, bufferTimeout, logRates);
@@ -67,7 +66,7 @@ public class NIOSequentialFileFactory extends AbstractSequentialFileFactory impl
          // A single threaded IO
          maxIO = 1;
       }
-      
+
       return new NIOSequentialFile(this, journalDir, fileName, maxIO, writeExecutor);
    }
 

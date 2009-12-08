@@ -29,7 +29,7 @@ public class ClientProducerCreditsImpl implements ClientProducerCredits
 {
    private static final Logger log = Logger.getLogger(ClientProducerCreditsImpl.class);
 
-   private Semaphore semaphore;
+   private final Semaphore semaphore;
 
    private final int windowSize;
 
@@ -38,8 +38,6 @@ public class ClientProducerCreditsImpl implements ClientProducerCredits
    private final ClientSessionInternal session;
 
    private int arriving;
-
-   private int offset;
 
    public ClientProducerCreditsImpl(final ClientSessionInternal session,
                                     final SimpleString destination,
@@ -60,12 +58,12 @@ public class ClientProducerCreditsImpl implements ClientProducerCredits
       checkCredits(windowSize);
    }
 
-   public void acquireCredits(int credits) throws InterruptedException
+   public void acquireCredits(final int credits) throws InterruptedException
    {
       // credits += offset;
-      
+
       checkCredits(credits);
-            
+
       semaphore.acquire(credits);
    }
 
@@ -74,21 +72,19 @@ public class ClientProducerCreditsImpl implements ClientProducerCredits
       synchronized (this)
       {
          arriving -= credits;
-
-         this.offset = offset;
       }
 
       semaphore.release(credits);
    }
 
    public synchronized void reset()
-   {      
+   {
       // Any arriving credits from before failover won't arrive, so we re-initialise
 
       semaphore.drainPermits();
 
       arriving = 0;
-      
+
       checkCredits(windowSize * 2);
    }
 
@@ -116,14 +112,14 @@ public class ClientProducerCreditsImpl implements ClientProducerCredits
       }
 
       if (toRequest != -1)
-      {        
+      {
          requestCredits(toRequest);
       }
    }
 
    private void requestCredits(final int credits)
    {
-      
+
       session.sendProducerCreditsMessage(credits, destination);
    }
 

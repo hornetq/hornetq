@@ -12,15 +12,15 @@
  */
 package org.hornetq.service;
 
-import org.hornetq.core.config.impl.ConfigurationImpl;
+import javax.management.MBeanRegistration;
+import javax.management.MBeanServer;
+import javax.management.ObjectName;
+
 import org.hornetq.core.config.Configuration;
+import org.hornetq.core.config.impl.ConfigurationImpl;
+import org.hornetq.core.security.HornetQSecurityManager;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.impl.HornetQServerImpl;
-import org.hornetq.core.security.HornetQSecurityManager;
-
-import javax.management.MBeanServer;
-import javax.management.MBeanRegistration;
-import javax.management.ObjectName;
 
 /**
  * @author <a href="mailto:lucazamador@gmail.com">Lucaz Amador</a>
@@ -42,24 +42,24 @@ public class HornetQStarterService implements HornetQStarterServiceMBean, MBeanR
    {
       Configuration config;
       HornetQSecurityManager hornetQSecurityManager = null;
-      if(securityManagerService != null)
+      if (securityManagerService != null)
       {
          hornetQSecurityManager = securityManagerService.getJBossASSecurityManager();
       }
-      if(configurationService != null)
+      if (configurationService != null)
       {
          config = configurationService.getConfiguration();
       }
       else
       {
-         config = new ConfigurationImpl();   
+         config = new ConfigurationImpl();
       }
       server = new HornetQServerImpl(config, mBeanServer, hornetQSecurityManager);
    }
 
    public void start() throws Exception
    {
-      if(start)
+      if (start)
       {
          server.start();
       }
@@ -67,7 +67,7 @@ public class HornetQStarterService implements HornetQStarterServiceMBean, MBeanR
 
    public void stop() throws Exception
    {
-      if(start)
+      if (start)
       {
          server.stop();
       }
@@ -78,29 +78,29 @@ public class HornetQStarterService implements HornetQStarterServiceMBean, MBeanR
       return server;
    }
 
-   public void setStart(boolean start)
+   public void setStart(final boolean start)
    {
       this.start = start;
    }
 
-   public void setSecurityManagerService(JBossASSecurityManagerServiceMBean securityManagerService)
+   public void setSecurityManagerService(final JBossASSecurityManagerServiceMBean securityManagerService)
    {
       this.securityManagerService = securityManagerService;
    }
 
-   public void setConfigurationService(HornetQFileConfigurationServiceMBean configurationService)
+   public void setConfigurationService(final HornetQFileConfigurationServiceMBean configurationService)
    {
       this.configurationService = configurationService;
    }
 
-   public ObjectName preRegister(MBeanServer server, ObjectName name) throws Exception
+   public ObjectName preRegister(final MBeanServer server, final ObjectName name) throws Exception
    {
-      this.mBeanServer = server;
+      mBeanServer = server;
 
       return name;
    }
 
-   public void postRegister(Boolean registrationDone)
+   public void postRegister(final Boolean registrationDone)
    {
       // NO - OP
    }

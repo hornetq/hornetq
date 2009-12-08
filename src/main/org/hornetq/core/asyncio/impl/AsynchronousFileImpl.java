@@ -52,7 +52,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
    private static int EXPECTED_NATIVE_VERSION = 27;
 
    /** Used to determine the next writing sequence */
-   private AtomicLong nextWritingSequence = new AtomicLong(0);
+   private final AtomicLong nextWritingSequence = new AtomicLong(0);
 
    /** Used to determine the next writing sequence.
     *  This is accessed from a single thread (the Poller Thread) */
@@ -62,45 +62,45 @@ public class AsynchronousFileImpl implements AsynchronousFile
     * AIO can't guarantee ordering over callbacks.
     * We use thie PriorityQueue to hold values until they are in order
     */
-   private PriorityQueue<CallbackHolder> pendingCallbacks = new PriorityQueue<CallbackHolder>();
+   private final PriorityQueue<CallbackHolder> pendingCallbacks = new PriorityQueue<CallbackHolder>();
 
    public static void addMax(final int io)
    {
-      totalMaxIO.addAndGet(io);
+      AsynchronousFileImpl.totalMaxIO.addAndGet(io);
    }
 
    /** For test purposes */
    public static int getTotalMaxIO()
    {
-      return totalMaxIO.get();
+      return AsynchronousFileImpl.totalMaxIO.get();
    }
 
    public static void resetMaxAIO()
    {
-      totalMaxIO.set(0);
+      AsynchronousFileImpl.totalMaxIO.set(0);
    }
 
    private static boolean loadLibrary(final String name)
    {
       try
       {
-         log.trace(name + " being loaded");
+         AsynchronousFileImpl.log.trace(name + " being loaded");
          System.loadLibrary(name);
-         if (getNativeVersion() != EXPECTED_NATIVE_VERSION)
+         if (AsynchronousFileImpl.getNativeVersion() != AsynchronousFileImpl.EXPECTED_NATIVE_VERSION)
          {
-            log.warn("You have a native library with a different version than expected");
+            AsynchronousFileImpl.log.warn("You have a native library with a different version than expected");
             return false;
          }
          else
          {
             // Initializing nanosleep
-            setNanoSleepInterval(1);
+            AsynchronousFileImpl.setNanoSleepInterval(1);
             return true;
          }
       }
       catch (Throwable e)
       {
-         log.trace(name + " -> error loading the native library", e);
+         AsynchronousFileImpl.log.trace(name + " -> error loading the native library", e);
          return false;
       }
 
@@ -112,26 +112,26 @@ public class AsynchronousFileImpl implements AsynchronousFile
 
       for (String library : libraries)
       {
-         if (loadLibrary(library))
+         if (AsynchronousFileImpl.loadLibrary(library))
          {
-            loaded = true;
+            AsynchronousFileImpl.loaded = true;
             break;
          }
          else
          {
-            log.debug("Library " + library + " not found!");
+            AsynchronousFileImpl.log.debug("Library " + library + " not found!");
          }
       }
 
-      if (!loaded)
+      if (!AsynchronousFileImpl.loaded)
       {
-         log.debug("Couldn't locate LibAIO Wrapper");
+         AsynchronousFileImpl.log.debug("Couldn't locate LibAIO Wrapper");
       }
    }
 
    public static boolean isLoaded()
    {
-      return loaded;
+      return AsynchronousFileImpl.loaded;
    }
 
    // Attributes ------------------------------------------------------------------------
@@ -201,7 +201,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
 
          try
          {
-            handler = init(fileName, this.maxIO, log);
+            handler = AsynchronousFileImpl.init(fileName, this.maxIO, AsynchronousFileImpl.log);
          }
          catch (HornetQException e)
          {
@@ -209,7 +209,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
             if (e.getCode() == HornetQException.NATIVE_ERROR_CANT_INITIALIZE_AIO)
             {
                ex = new HornetQException(e.getCode(),
-                                         "Can't initialize AIO. Currently AIO in use = " + totalMaxIO.get() +
+                                         "Can't initialize AIO. Currently AIO in use = " + AsynchronousFileImpl.totalMaxIO.get() +
                                                   ", trying to allocate more " +
                                                   maxIO,
                                          e);
@@ -221,7 +221,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
             throw ex;
          }
          opened = true;
-         addMax(this.maxIO);
+         AsynchronousFileImpl.addMax(this.maxIO);
          nextWritingSequence.set(0);
          nextReadSequence = 0;
       }
@@ -242,12 +242,12 @@ public class AsynchronousFileImpl implements AsynchronousFile
 
          while (!pendingWrites.waitCompletion(60000))
          {
-            log.warn("Couldn't get lock after 60 seconds on closing AsynchronousFileImpl::" + this.fileName);
+            AsynchronousFileImpl.log.warn("Couldn't get lock after 60 seconds on closing AsynchronousFileImpl::" + fileName);
          }
 
          while (!maxIOSemaphore.tryAcquire(maxIO, 60, TimeUnit.SECONDS))
          {
-            log.warn("Couldn't get lock after 60 seconds on closing AsynchronousFileImpl::" + this.fileName);
+            AsynchronousFileImpl.log.warn("Couldn't get lock after 60 seconds on closing AsynchronousFileImpl::" + fileName);
          }
 
          maxIOSemaphore = null;
@@ -256,10 +256,10 @@ public class AsynchronousFileImpl implements AsynchronousFile
             stopPoller();
          }
 
-         closeInternal(handler);
+         AsynchronousFileImpl.closeInternal(handler);
          if (handler != 0)
          {
-            addMax(-maxIO);
+            AsynchronousFileImpl.addMax(-maxIO);
          }
          opened = false;
          handler = 0;
@@ -291,7 +291,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
       if (writeExecutor != null)
       {
          maxIOSemaphore.acquireUninterruptibly();
-         
+
          writeExecutor.execute(new Runnable()
          {
             public void run()
@@ -380,7 +380,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
    public void fill(final long position, final int blocks, final long size, final byte fillChar) throws HornetQException
    {
       checkOpened();
-      fill(handler, position, blocks, size, fillChar);
+      AsynchronousFileImpl.fill(handler, position, blocks, size, fillChar);
    }
 
    public int getBlockSize()
@@ -405,7 +405,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
          throw new RuntimeException("Buffer size needs to be aligned to 512");
       }
 
-      return newNativeBuffer(size);
+      return AsynchronousFileImpl.newNativeBuffer(size);
    }
 
    public void setBufferCallback(final BufferCallback callback)
@@ -421,17 +421,18 @@ public class AsynchronousFileImpl implements AsynchronousFile
 
    public static void clearBuffer(final ByteBuffer buffer)
    {
-      resetBuffer(buffer, buffer.limit());
+      AsynchronousFileImpl.resetBuffer(buffer, buffer.limit());
       buffer.position(0);
    }
 
    // Protected -------------------------------------------------------------------------
 
+   @Override
    protected void finalize()
    {
       if (opened)
       {
-         log.warn("AsynchronousFile: " + this.fileName + " being finalized with opened state");
+         AsynchronousFileImpl.log.warn("AsynchronousFile: " + fileName + " being finalized with opened state");
       }
    }
 
@@ -442,7 +443,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
    private void callbackDone(final AIOCallback callback, final long sequence, final ByteBuffer buffer)
    {
       maxIOSemaphore.release();
-      
+
       pendingWrites.down();
 
       callbackLock.lock();
@@ -487,7 +488,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
          CallbackHolder holder = pendingCallbacks.poll();
          if (holder.isError())
          {
-            ErrorCallback error = (ErrorCallback) holder;
+            ErrorCallback error = (ErrorCallback)holder;
             holder.callback.onError(error.errorCode, error.message);
          }
          else
@@ -501,12 +502,12 @@ public class AsynchronousFileImpl implements AsynchronousFile
    // Called by the JNI layer.. just ignore the
    // warning
    private void callbackError(final AIOCallback callback,
-                                           final long sequence,
-                                           final ByteBuffer buffer,
-                                           final int errorCode,
-                                           final String errorMessage)
+                              final long sequence,
+                              final ByteBuffer buffer,
+                              final int errorCode,
+                              final String errorMessage)
    {
-      log.warn("CallbackError: " + errorMessage);
+      AsynchronousFileImpl.log.warn("CallbackError: " + errorMessage);
 
       maxIOSemaphore.release();
 
@@ -552,7 +553,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
       {
          return;
       }
-      internalPollEvents(handler);
+      AsynchronousFileImpl.internalPollEvents(handler);
    }
 
    private void startPoller()
@@ -572,7 +573,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
             }
             catch (Exception ex)
             {
-               log.error(ex.getMessage(), ex);
+               AsynchronousFileImpl.log.error(ex.getMessage(), ex);
             }
          }
       }
@@ -596,7 +597,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
     */
    private void stopPoller() throws HornetQException, InterruptedException
    {
-      stopPoller(handler);
+      AsynchronousFileImpl.stopPoller(handler);
       // We need to make sure we won't call close until Poller is
       // completely done, or we might get beautiful GPFs
       pollerLatch.waitCompletion();
@@ -659,7 +660,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
          this.callback = callback;
       }
 
-      public int compareTo(CallbackHolder o)
+      public int compareTo(final CallbackHolder o)
       {
          // It shouldn't be equals in any case
          if (sequence <= o.sequence)
@@ -676,20 +677,21 @@ public class AsynchronousFileImpl implements AsynchronousFile
    private static class ErrorCallback extends CallbackHolder
    {
       final int errorCode;
-      
+
       final String message;
-      
+
+      @Override
       public boolean isError()
       {
          return true;
       }
 
-      public ErrorCallback(final long sequence, final AIOCallback callback, int errorCode, String message)
+      public ErrorCallback(final long sequence, final AIOCallback callback, final int errorCode, final String message)
       {
          super(sequence, callback);
-         
+
          this.errorCode = errorCode;
-         
+
          this.message = message;
       }
    }

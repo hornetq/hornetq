@@ -16,6 +16,8 @@ package org.hornetq.jms.tests.message;
 import javax.jms.Message;
 import javax.jms.TemporaryQueue;
 
+import org.hornetq.jms.tests.util.ProxyAssertSupport;
+
 /**
  *
  * A JMSReplyToHeaderTest
@@ -38,7 +40,6 @@ public class JMSReplyToHeaderTest extends MessageHeaderTestBase
 
    // Public --------------------------------------------------------
 
-
    public void testJMSDestinationSimple() throws Exception
    {
       Message m = queueProducerSession.createMessage();
@@ -47,7 +48,7 @@ public class JMSReplyToHeaderTest extends MessageHeaderTestBase
 
       queueProducer.send(m);
       queueConsumer.receive();
-      assertEquals(tempQ, m.getJMSReplyTo());
+      ProxyAssertSupport.assertEquals(tempQ, m.getJMSReplyTo());
    }
 
    public void testJMSDestinationNull() throws Exception
@@ -57,7 +58,7 @@ public class JMSReplyToHeaderTest extends MessageHeaderTestBase
 
       queueProducer.send(m);
       queueConsumer.receive();
-      assertNull(m.getJMSReplyTo());
+      ProxyAssertSupport.assertNull(m.getJMSReplyTo());
    }
 
    // Package protected ---------------------------------------------

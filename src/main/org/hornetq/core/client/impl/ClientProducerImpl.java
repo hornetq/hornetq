@@ -13,8 +13,6 @@
 
 package org.hornetq.core.client.impl;
 
-import static org.hornetq.utils.SimpleString.toSimpleString;
-
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -49,7 +47,7 @@ public class ClientProducerImpl implements ClientProducerInternal
 
    // Attributes -----------------------------------------------------------------------------------
 
-   private final boolean trace = log.isTraceEnabled();
+   private final boolean trace = ClientProducerImpl.log.isTraceEnabled();
 
    private final SimpleString address;
 
@@ -141,9 +139,9 @@ public class ClientProducerImpl implements ClientProducerInternal
       doSend(address, msg);
    }
 
-   public void send(String address, Message message) throws HornetQException
+   public void send(final String address, final Message message) throws HornetQException
    {
-      send(toSimpleString(address), message);
+      send(SimpleString.toSimpleString(address), message);
    }
 
    public synchronized void close() throws HornetQException
@@ -236,7 +234,7 @@ public class ClientProducerImpl implements ClientProducerInternal
       session.workDone();
 
       boolean isLarge;
-      
+
       if (msg.getBodyInputStream() != null || msg.isLargeMessage())
       {
          isLarge = true;
@@ -273,7 +271,7 @@ public class ClientProducerImpl implements ClientProducerInternal
          // data in *memory* and continuations go straight to the disk
 
          if (!isLarge)
-         {            
+         {
             theCredits.acquireCredits(msg.getEncodeSize());
          }
       }
@@ -313,7 +311,7 @@ public class ClientProducerImpl implements ClientProducerInternal
       }
 
       HornetQBuffer headerBuffer = HornetQBuffers.fixedBuffer(headerSize);
-      
+
       msg.encodeHeadersAndProperties(headerBuffer);
 
       SessionSendLargeMessage initialChunk = new SessionSendLargeMessage(headerBuffer.toByteBuffer().array());
@@ -350,10 +348,8 @@ public class ClientProducerImpl implements ClientProducerInternal
                                          final ClientProducerCredits credits) throws HornetQException
    {
       BodyEncoder context = msg.getBodyEncoder();
-      
-      final long bodySize = context.getLargeBodySize();
 
-      
+      final long bodySize = context.getLargeBodySize();
 
       context.open();
       try
@@ -373,7 +369,8 @@ public class ClientProducerImpl implements ClientProducerInternal
 
             lastChunk = pos >= bodySize;
 
-            final SessionSendContinuationMessage chunk = new SessionSendContinuationMessage(bodyBuffer.toByteBuffer().array(),
+            final SessionSendContinuationMessage chunk = new SessionSendContinuationMessage(bodyBuffer.toByteBuffer()
+                                                                                                      .array(),
                                                                                             !lastChunk,
                                                                                             lastChunk && sendBlocking);
 

@@ -14,7 +14,6 @@
 package org.hornetq.core.remoting.impl.wireformat;
 
 import org.hornetq.core.buffers.HornetQBuffer;
-import org.hornetq.utils.DataConstants;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -29,21 +28,21 @@ public class CreateSessionResponseMessage extends PacketImpl
    // Attributes ----------------------------------------------------
 
    private int serverVersion;
-   
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
    public CreateSessionResponseMessage(final int serverVersion)
    {
-      super(CREATESESSION_RESP);
-      
+      super(PacketImpl.CREATESESSION_RESP);
+
       this.serverVersion = serverVersion;
    }
 
    public CreateSessionResponseMessage()
    {
-      super(CREATESESSION_RESP);
+      super(PacketImpl.CREATESESSION_RESP);
    }
 
    // Public --------------------------------------------------------
@@ -61,16 +60,16 @@ public class CreateSessionResponseMessage extends PacketImpl
 
    @Override
    public void encodeRest(final HornetQBuffer buffer)
-   {     
+   {
       buffer.writeInt(serverVersion);
    }
 
    @Override
    public void decodeRest(final HornetQBuffer buffer)
-   {      
+   {
       serverVersion = buffer.readInt();
    }
-   
+
    @Override
    public boolean equals(final Object other)
    {

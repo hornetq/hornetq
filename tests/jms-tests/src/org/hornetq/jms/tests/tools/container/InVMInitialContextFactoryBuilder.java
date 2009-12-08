@@ -46,8 +46,7 @@ public class InVMInitialContextFactoryBuilder implements InitialContextFactoryBu
 
    // InitialContextFactoryBuilder implementation --------------------------------------------------
 
-   public InitialContextFactory createInitialContextFactory(Hashtable environment)
-         throws NamingException
+   public InitialContextFactory createInitialContextFactory(final Hashtable environment) throws NamingException
    {
 
       InitialContextFactory icf = null;
@@ -64,9 +63,9 @@ public class InVMInitialContextFactoryBuilder implements InitialContextFactoryBu
             {
                c = Class.forName(icfName);
             }
-            catch(ClassNotFoundException e)
+            catch (ClassNotFoundException e)
             {
-               log.error("\"" + icfName + "\" cannot be loaded", e);
+               InVMInitialContextFactoryBuilder.log.error("\"" + icfName + "\" cannot be loaded", e);
                throw new NamingException("\"" + icfName + "\" cannot be loaded");
             }
 
@@ -74,16 +73,16 @@ public class InVMInitialContextFactoryBuilder implements InitialContextFactoryBu
             {
                icf = (InitialContextFactory)c.newInstance();
             }
-            catch(InstantiationException e)
+            catch (InstantiationException e)
             {
-               log.error(c.getName() + " cannot be instantiated", e);
+               InVMInitialContextFactoryBuilder.log.error(c.getName() + " cannot be instantiated", e);
                throw new NamingException(c.getName() + " cannot be instantiated");
             }
-            catch(IllegalAccessException e)
+            catch (IllegalAccessException e)
             {
-               log.error(c.getName() + " instantiation generated an IllegalAccessException", e);
-               throw new NamingException(c.getName() +
-                  " instantiation generated an IllegalAccessException");
+               InVMInitialContextFactoryBuilder.log.error(c.getName() + " instantiation generated an IllegalAccessException",
+                                                          e);
+               throw new NamingException(c.getName() + " instantiation generated an IllegalAccessException");
             }
          }
       }

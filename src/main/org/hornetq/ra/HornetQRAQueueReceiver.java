@@ -32,7 +32,7 @@ public class HornetQRAQueueReceiver extends HornetQRAMessageConsumer implements 
    private static final Logger log = Logger.getLogger(HornetQRAQueueReceiver.class);
 
    /** Whether trace is enabled */
-   private static boolean trace = log.isTraceEnabled();
+   private static boolean trace = HornetQRAQueueReceiver.log.isTraceEnabled();
 
    /**
     * Create a new wrapper
@@ -43,9 +43,9 @@ public class HornetQRAQueueReceiver extends HornetQRAMessageConsumer implements 
    {
       super(consumer, session);
 
-      if (trace)
+      if (HornetQRAQueueReceiver.trace)
       {
-         log.trace("constructor(" + consumer + ", " + session + ")");
+         HornetQRAQueueReceiver.log.trace("constructor(" + consumer + ", " + session + ")");
       }
    }
 
@@ -56,9 +56,9 @@ public class HornetQRAQueueReceiver extends HornetQRAMessageConsumer implements 
     */
    public Queue getQueue() throws JMSException
    {
-      if (trace)
+      if (HornetQRAQueueReceiver.trace)
       {
-         log.trace("getQueue()");
+         HornetQRAQueueReceiver.log.trace("getQueue()");
       }
 
       checkState();

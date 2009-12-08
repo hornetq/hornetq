@@ -13,17 +13,12 @@
 
 package org.hornetq.tests.integration.management;
 
-import static org.hornetq.core.remoting.impl.invm.TransportConstants.SERVER_ID_PROP_NAME;
-import static org.hornetq.tests.util.RandomUtil.randomBoolean;
-import static org.hornetq.tests.util.RandomUtil.randomDouble;
-import static org.hornetq.tests.util.RandomUtil.randomPositiveInt;
-import static org.hornetq.tests.util.RandomUtil.randomPositiveLong;
-import static org.hornetq.tests.util.RandomUtil.randomString;
-
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.management.MBeanServerFactory;
+
+import junit.framework.Assert;
 
 import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.client.ClientSessionFactory;
@@ -37,8 +32,10 @@ import org.hornetq.core.management.ObjectNameBuilder;
 import org.hornetq.core.management.ResourceNames;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
+import org.hornetq.core.remoting.impl.invm.TransportConstants;
 import org.hornetq.core.server.HornetQ;
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.utils.Pair;
 
 /**
@@ -73,26 +70,29 @@ public class BridgeControlUsingCoreTest extends ManagementTestBase
       checkResource(ObjectNameBuilder.DEFAULT.getBridgeObjectName(bridgeConfig.getName()));
       CoreMessagingProxy proxy = createProxy(bridgeConfig.getName());
 
-      assertEquals(bridgeConfig.getName(), (String)proxy.retrieveAttributeValue("name"));
-      assertEquals(bridgeConfig.getDiscoveryGroupName(), (String)proxy.retrieveAttributeValue("discoveryGroupName"));
-      assertEquals(bridgeConfig.getQueueName(), (String)proxy.retrieveAttributeValue("queueName"));
-      assertEquals(bridgeConfig.getForwardingAddress(), (String)proxy.retrieveAttributeValue("forwardingAddress"));
-      assertEquals(bridgeConfig.getFilterString(), (String)proxy.retrieveAttributeValue("filterString"));
-      assertEquals(bridgeConfig.getRetryInterval(), ((Long)proxy.retrieveAttributeValue("retryInterval")).longValue());
-      assertEquals(bridgeConfig.getRetryIntervalMultiplier(),
-                   (Double)proxy.retrieveAttributeValue("retryIntervalMultiplier"));
-      assertEquals(bridgeConfig.getReconnectAttempts(),
-                   ((Integer)proxy.retrieveAttributeValue("reconnectAttempts")).intValue());
-      assertEquals(bridgeConfig.isFailoverOnServerShutdown(),
-                   ((Boolean)proxy.retrieveAttributeValue("failoverOnServerShutdown")).booleanValue());
-      assertEquals(bridgeConfig.isUseDuplicateDetection(),
-                   ((Boolean)proxy.retrieveAttributeValue("useDuplicateDetection")).booleanValue());
+      Assert.assertEquals(bridgeConfig.getName(), (String)proxy.retrieveAttributeValue("name"));
+      Assert.assertEquals(bridgeConfig.getDiscoveryGroupName(),
+                          (String)proxy.retrieveAttributeValue("discoveryGroupName"));
+      Assert.assertEquals(bridgeConfig.getQueueName(), (String)proxy.retrieveAttributeValue("queueName"));
+      Assert.assertEquals(bridgeConfig.getForwardingAddress(),
+                          (String)proxy.retrieveAttributeValue("forwardingAddress"));
+      Assert.assertEquals(bridgeConfig.getFilterString(), (String)proxy.retrieveAttributeValue("filterString"));
+      Assert.assertEquals(bridgeConfig.getRetryInterval(),
+                          ((Long)proxy.retrieveAttributeValue("retryInterval")).longValue());
+      Assert.assertEquals(bridgeConfig.getRetryIntervalMultiplier(),
+                          proxy.retrieveAttributeValue("retryIntervalMultiplier"));
+      Assert.assertEquals(bridgeConfig.getReconnectAttempts(),
+                          ((Integer)proxy.retrieveAttributeValue("reconnectAttempts")).intValue());
+      Assert.assertEquals(bridgeConfig.isFailoverOnServerShutdown(),
+                          ((Boolean)proxy.retrieveAttributeValue("failoverOnServerShutdown")).booleanValue());
+      Assert.assertEquals(bridgeConfig.isUseDuplicateDetection(),
+                          ((Boolean)proxy.retrieveAttributeValue("useDuplicateDetection")).booleanValue());
 
       Object[] data = (Object[])proxy.retrieveAttributeValue("connectorPair");
-      assertEquals(bridgeConfig.getConnectorPair().a, data[0]);
-      assertEquals(bridgeConfig.getConnectorPair().b, data[1]);
+      Assert.assertEquals(bridgeConfig.getConnectorPair().a, data[0]);
+      Assert.assertEquals(bridgeConfig.getConnectorPair().b, data[1]);
 
-      assertTrue((Boolean)proxy.retrieveAttributeValue("started"));
+      Assert.assertTrue((Boolean)proxy.retrieveAttributeValue("started"));
    }
 
    public void testStartStop() throws Exception
@@ -101,13 +101,13 @@ public class BridgeControlUsingCoreTest extends ManagementTestBase
       CoreMessagingProxy proxy = createProxy(bridgeConfig.getName());
 
       // started by the server
-      assertTrue((Boolean)proxy.retrieveAttributeValue("Started"));
+      Assert.assertTrue((Boolean)proxy.retrieveAttributeValue("Started"));
 
       proxy.invokeOperation("stop");
-      assertFalse((Boolean)proxy.retrieveAttributeValue("Started"));
+      Assert.assertFalse((Boolean)proxy.retrieveAttributeValue("Started"));
 
       proxy.invokeOperation("start");
-      assertTrue((Boolean)proxy.retrieveAttributeValue("Started"));
+      Assert.assertTrue((Boolean)proxy.retrieveAttributeValue("Started"));
    }
 
    // Package protected ---------------------------------------------
@@ -120,29 +120,35 @@ public class BridgeControlUsingCoreTest extends ManagementTestBase
       super.setUp();
 
       Map<String, Object> acceptorParams = new HashMap<String, Object>();
-      acceptorParams.put(SERVER_ID_PROP_NAME, 1);
+      acceptorParams.put(TransportConstants.SERVER_ID_PROP_NAME, 1);
       TransportConfiguration acceptorConfig = new TransportConfiguration(InVMAcceptorFactory.class.getName(),
                                                                          acceptorParams,
-                                                                         randomString());
+                                                                         RandomUtil.randomString());
 
       TransportConfiguration connectorConfig = new TransportConfiguration(InVMConnectorFactory.class.getName(),
                                                                           acceptorParams,
-                                                                          randomString());
+                                                                          RandomUtil.randomString());
 
-      QueueConfiguration sourceQueueConfig = new QueueConfiguration(randomString(), randomString(), null, false);
-      QueueConfiguration targetQueueConfig = new QueueConfiguration(randomString(), randomString(), null, false);
+      QueueConfiguration sourceQueueConfig = new QueueConfiguration(RandomUtil.randomString(),
+                                                                    RandomUtil.randomString(),
+                                                                    null,
+                                                                    false);
+      QueueConfiguration targetQueueConfig = new QueueConfiguration(RandomUtil.randomString(),
+                                                                    RandomUtil.randomString(),
+                                                                    null,
+                                                                    false);
       Pair<String, String> connectorPair = new Pair<String, String>(connectorConfig.getName(), null);
-      bridgeConfig = new BridgeConfiguration(randomString(),
+      bridgeConfig = new BridgeConfiguration(RandomUtil.randomString(),
                                              sourceQueueConfig.getName(),
                                              targetQueueConfig.getAddress(),
                                              null,
                                              null,
-                                             randomPositiveLong(),
-                                             randomDouble(),
-                                             randomPositiveInt(),
-                                             randomBoolean(),
-                                             randomBoolean(),
-                                             randomPositiveInt(),
+                                             RandomUtil.randomPositiveLong(),
+                                             RandomUtil.randomDouble(),
+                                             RandomUtil.randomPositiveInt(),
+                                             RandomUtil.randomBoolean(),
+                                             RandomUtil.randomBoolean(),
+                                             RandomUtil.randomPositiveInt(),
                                              ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
                                              connectorPair);
 
@@ -167,7 +173,7 @@ public class BridgeControlUsingCoreTest extends ManagementTestBase
 
       server_0 = HornetQ.newHornetQServer(conf_0, mbeanServer, false);
       server_0.start();
-      
+
       ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
       session = sf.createSession(false, true, true);
       session.start();

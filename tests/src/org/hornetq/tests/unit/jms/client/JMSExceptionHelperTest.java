@@ -19,6 +19,8 @@ import javax.jms.InvalidSelectorException;
 import javax.jms.JMSException;
 import javax.jms.JMSSecurityException;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.jms.client.JMSExceptionHelper;
 import org.hornetq.tests.util.UnitTestCase;
@@ -43,62 +45,52 @@ public class JMSExceptionHelperTest extends UnitTestCase
 
    public void testCONNECTION_TIMEDOUT() throws Exception
    {
-      doConvertException(HornetQException.CONNECTION_TIMEDOUT,
-            JMSException.class);
+      doConvertException(HornetQException.CONNECTION_TIMEDOUT, JMSException.class);
    }
 
    public void testILLEGAL_STATE() throws Exception
    {
-      doConvertException(HornetQException.ILLEGAL_STATE,
-            IllegalStateException.class);
+      doConvertException(HornetQException.ILLEGAL_STATE, IllegalStateException.class);
    }
 
    public void testINTERNAL_ERROR() throws Exception
    {
-      doConvertException(HornetQException.INTERNAL_ERROR,
-            JMSException.class);
+      doConvertException(HornetQException.INTERNAL_ERROR, JMSException.class);
    }
 
    public void testINVALID_FILTER_EXPRESSION() throws Exception
    {
-      doConvertException(HornetQException.INVALID_FILTER_EXPRESSION,
-            InvalidSelectorException.class);
+      doConvertException(HornetQException.INVALID_FILTER_EXPRESSION, InvalidSelectorException.class);
    }
 
    public void testNOT_CONNECTED() throws Exception
    {
-      doConvertException(HornetQException.NOT_CONNECTED,
-            JMSException.class);
+      doConvertException(HornetQException.NOT_CONNECTED, JMSException.class);
    }
 
    public void testOBJECT_CLOSED() throws Exception
    {
-      doConvertException(HornetQException.OBJECT_CLOSED,
-            IllegalStateException.class);
+      doConvertException(HornetQException.OBJECT_CLOSED, IllegalStateException.class);
    }
 
    public void testQUEUE_DOES_NOT_EXIST() throws Exception
    {
-      doConvertException(HornetQException.QUEUE_DOES_NOT_EXIST,
-            InvalidDestinationException.class);
+      doConvertException(HornetQException.QUEUE_DOES_NOT_EXIST, InvalidDestinationException.class);
    }
 
    public void testQUEUE_EXISTS() throws Exception
    {
-      doConvertException(HornetQException.QUEUE_EXISTS,
-            InvalidDestinationException.class);
+      doConvertException(HornetQException.QUEUE_EXISTS, InvalidDestinationException.class);
    }
 
    public void testSECURITY_EXCEPTION() throws Exception
    {
-      doConvertException(HornetQException.SECURITY_EXCEPTION,
-            JMSSecurityException.class);
+      doConvertException(HornetQException.SECURITY_EXCEPTION, JMSSecurityException.class);
    }
 
    public void testUNSUPPORTED_PACKET() throws Exception
    {
-      doConvertException(HornetQException.UNSUPPORTED_PACKET,
-            IllegalStateException.class);
+      doConvertException(HornetQException.UNSUPPORTED_PACKET, IllegalStateException.class);
    }
 
    public void testDefault() throws Exception
@@ -113,12 +105,12 @@ public class JMSExceptionHelperTest extends UnitTestCase
 
    // Private -------------------------------------------------------
 
-   private void doConvertException(int errorCode, Class expectedException)
+   private void doConvertException(final int errorCode, final Class expectedException)
    {
       HornetQException me = new HornetQException(errorCode);
       Exception e = JMSExceptionHelper.convertFromHornetQException(me);
-      assertNotNull(e);
-      assertTrue(e.getClass().isAssignableFrom(expectedException));
+      Assert.assertNotNull(e);
+      Assert.assertTrue(e.getClass().isAssignableFrom(expectedException));
    }
 
    // Inner classes -------------------------------------------------

@@ -9,13 +9,12 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
  * implied.  See the License for the specific language governing
  * permissions and limitations under the License.
- */ 
+ */
 
 package org.hornetq.jms.referenceable;
 
 import java.util.Hashtable;
 
-import javax.jms.ConnectionFactory;
 import javax.naming.Context;
 import javax.naming.Name;
 import javax.naming.Reference;
@@ -34,15 +33,13 @@ import javax.naming.spi.ObjectFactory;
  */
 public class ConnectionFactoryObjectFactory implements ObjectFactory
 {
-   public Object getObjectInstance(final Object ref, final Name name, final Context ctx,
-                                   final Hashtable props) throws Exception
+   public Object getObjectInstance(final Object ref, final Name name, final Context ctx, final Hashtable props) throws Exception
    {
       Reference r = (Reference)ref;
-      
+
       byte[] bytes = (byte[])r.get("HornetQ-CF").getContent();
-      
+
       // Deserialize
-      return (ConnectionFactory)SerializableObjectRefAddr.deserialize(bytes);
+      return SerializableObjectRefAddr.deserialize(bytes);
    }
 }
-

@@ -9,7 +9,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
  * implied.  See the License for the specific language governing
  * permissions and limitations under the License.
- */ 
+ */
 
 package org.hornetq.core.security.impl;
 
@@ -57,7 +57,7 @@ public class SecurityStoreImpl implements SecurityStore, HierarchicalRepositoryC
 
    // Attributes ----------------------------------------------------
 
-   private boolean trace = log.isTraceEnabled();
+   private final boolean trace = SecurityStoreImpl.log.isTraceEnabled();
 
    private final HierarchicalRepository<Set<Role>> securityRepository;
 
@@ -68,15 +68,15 @@ public class SecurityStoreImpl implements SecurityStore, HierarchicalRepositoryC
    private final long invalidationInterval;
 
    private volatile long lastCheck;
-   
+
    private final boolean securityEnabled;
 
    private final String managementClusterUser;
-   
+
    private final String managementClusterPassword;
 
    private final NotificationService notificationService;
-   
+
    // Constructors --------------------------------------------------
 
    /**
@@ -92,28 +92,32 @@ public class SecurityStoreImpl implements SecurityStore, HierarchicalRepositoryC
    {
       this.securityRepository = securityRepository;
       this.securityManager = securityManager;
-   	this.invalidationInterval = invalidationInterval;   	
-   	this.securityEnabled = securityEnabled;
-   	this.managementClusterUser = managementClusterUser;
-   	this.managementClusterPassword = managementClusterPassword;
-   	this.notificationService = notificationService;
+      this.invalidationInterval = invalidationInterval;
+      this.securityEnabled = securityEnabled;
+      this.managementClusterUser = managementClusterUser;
+      this.managementClusterPassword = managementClusterPassword;
+      this.notificationService = notificationService;
    }
 
    // SecurityManager implementation --------------------------------
 
    public void authenticate(final String user, final String password) throws Exception
-   {     
+   {
       if (securityEnabled)
       {
-         
+
          if (managementClusterUser.equals(user))
          {
-            if (trace) { log.trace("Authenticating cluster admin user"); }
-            
-            // The special user cluster user is used for creating sessions that replicate management operation between nodes
+            if (trace)
+            {
+               SecurityStoreImpl.log.trace("Authenticating cluster admin user");
+            }
+
+            // The special user cluster user is used for creating sessions that replicate management operation between
+            // nodes
             if (!managementClusterPassword.equals(password))
             {
-               throw new HornetQException(HornetQException.SECURITY_EXCEPTION, "Unable to validate user: " + user);                 
+               throw new HornetQException(HornetQException.SECURITY_EXCEPTION, "Unable to validate user: " + user);
             }
             else
             {
@@ -134,7 +138,7 @@ public class SecurityStoreImpl implements SecurityStore, HierarchicalRepositoryC
                notificationService.sendNotification(notification);
             }
 
-            throw new HornetQException(HornetQException.SECURITY_EXCEPTION, "Unable to validate user: " + user);  
+            throw new HornetQException(HornetQException.SECURITY_EXCEPTION, "Unable to validate user: " + user);
          }
       }
    }
@@ -143,7 +147,10 @@ public class SecurityStoreImpl implements SecurityStore, HierarchicalRepositoryC
    {
       if (securityEnabled)
       {
-         if (trace) { log.trace("checking access permissions to " + address); }
+         if (trace)
+         {
+            SecurityStoreImpl.log.trace("checking access permissions to " + address);
+         }
 
          String user = session.getUsername();
          if (checkCached(address, user, checkType))
@@ -151,17 +158,17 @@ public class SecurityStoreImpl implements SecurityStore, HierarchicalRepositoryC
             // OK
             return;
          }
-   
+
          String saddress = address.toString();
-         
+
          Set<Role> roles = securityRepository.getMatch(saddress);
-         
+
          // bypass permission checks for management cluster user
          if (managementClusterUser.equals(user) && session.getPassword().equals(managementClusterPassword))
          {
             return;
          }
-         
+
          if (!securityManager.validateUserAndRole(user, session.getPassword(), roles, checkType))
          {
             if (notificationService != null)
@@ -177,12 +184,17 @@ public class SecurityStoreImpl implements SecurityStore, HierarchicalRepositoryC
                notificationService.sendNotification(notification);
             }
 
-            throw new HornetQException(HornetQException.SECURITY_EXCEPTION, "Unable to validate user: " + session.getUsername() + " for check type " + checkType + " for address " + saddress);
+            throw new HornetQException(HornetQException.SECURITY_EXCEPTION,
+                                       "Unable to validate user: " + session.getUsername() +
+                                                " for check type " +
+                                                checkType +
+                                                " for address " +
+                                                saddress);
          }
          // if we get here we're granted, add to the cache
          ConcurrentHashSet<SimpleString> set = new ConcurrentHashSet<SimpleString>();
          ConcurrentHashSet<SimpleString> act = cache.putIfAbsent(user + "." + checkType.name(), set);
-         if(act != null)
+         if (act != null)
          {
             set = act;
          }
@@ -208,7 +220,7 @@ public class SecurityStoreImpl implements SecurityStore, HierarchicalRepositoryC
       cache.clear();
    }
 
-   private boolean checkCached(final SimpleString dest, String user, final CheckType checkType)
+   private boolean checkCached(final SimpleString dest, final String user, final CheckType checkType)
    {
       long now = System.currentTimeMillis();
 
@@ -216,12 +228,12 @@ public class SecurityStoreImpl implements SecurityStore, HierarchicalRepositoryC
 
       if (now - lastCheck > invalidationInterval)
       {
-      	invalidateCache();
+         invalidateCache();
       }
       else
       {
          ConcurrentHashSet<SimpleString> act = cache.get(user + "." + checkType.name());
-         if(act != null)
+         if (act != null)
          {
             granted = act.contains(dest);
          }
@@ -231,7 +243,7 @@ public class SecurityStoreImpl implements SecurityStore, HierarchicalRepositoryC
 
       return granted;
    }
-   
+
    // Inner class ---------------------------------------------------
 
 }

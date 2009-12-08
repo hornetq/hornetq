@@ -51,16 +51,17 @@ public class WildcardAddressManager extends SimpleAddressManager
 
    private final Map<SimpleString, Address> wildCardAddresses = new HashMap<SimpleString, Address>();
 
-   public WildcardAddressManager(BindingsFactory bindingsFactory)
+   public WildcardAddressManager(final BindingsFactory bindingsFactory)
    {
       super(bindingsFactory);
    }
 
+   @Override
    public Bindings getBindingsForRoutingAddress(final SimpleString address)
    {
       Bindings bindings = super.getBindingsForRoutingAddress(address);
-      
-      //this should only happen if we're routing to an address that has no mappings when we're running checkAllowable
+
+      // this should only happen if we're routing to an address that has no mappings when we're running checkAllowable
       if (bindings == null && !wildCardAddresses.isEmpty())
       {
          Address add = addAndUpdateAddressMap(address);
@@ -83,7 +84,7 @@ public class WildcardAddressManager extends SimpleAddressManager
       }
       return bindings;
    }
-      
+
    /**
     * If the address to add the binding to contains a wildcard then a copy of the binding (with the same underlying queue)
     * will be added to the actual mappings. Otherwise the binding is added as normal.
@@ -91,6 +92,7 @@ public class WildcardAddressManager extends SimpleAddressManager
     * @param binding the binding to add
     * @return true if the address was a new mapping
     */
+   @Override
    public boolean addBinding(final Binding binding)
    {
       boolean exists = super.addBinding(binding);
@@ -119,7 +121,6 @@ public class WildcardAddressManager extends SimpleAddressManager
       return exists;
    }
 
-
    /**
     * If the address is a wild card then the binding will be removed from the actual mappings for any linked address.
     * otherwise it will be removed as normal.
@@ -127,6 +128,7 @@ public class WildcardAddressManager extends SimpleAddressManager
     * @param uniqueName the name of the binding to remove
     * @return true if this was the last mapping for a specific address
     */
+   @Override
    public Binding removeBinding(final SimpleString uniqueName)
    {
       Binding binding = super.removeBinding(uniqueName);
@@ -159,6 +161,7 @@ public class WildcardAddressManager extends SimpleAddressManager
       return binding;
    }
 
+   @Override
    public void clear()
    {
       super.clear();
@@ -238,7 +241,7 @@ public class WildcardAddressManager extends SimpleAddressManager
 
    private synchronized void removeAndUpdateAddressMap(final Address address)
    {
-      //we only remove if there are no bindings left
+      // we only remove if there are no bindings left
       Bindings bindings = super.getBindingsForRoutingAddress(address.getAddress());
       if (bindings == null || bindings.getBindings().size() == 0)
       {

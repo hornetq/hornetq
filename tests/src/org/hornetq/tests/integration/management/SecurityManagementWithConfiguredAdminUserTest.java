@@ -13,8 +13,6 @@
 
 package org.hornetq.tests.integration.management;
 
-import static org.hornetq.core.config.impl.ConfigurationImpl.DEFAULT_MANAGEMENT_ADDRESS;
-
 import java.util.Set;
 
 import org.hornetq.core.config.Configuration;
@@ -61,7 +59,8 @@ public class SecurityManagementWithConfiguredAdminUserTest extends SecurityManag
    public void testSendManagementMessageWithClusterAdminUser() throws Exception
    {
       doSendManagementMessage(ConfigurationImpl.DEFAULT_MANAGEMENT_CLUSTER_USER,
-                              ConfigurationImpl.DEFAULT_MANAGEMENT_CLUSTER_PASSWORD, true);
+                              ConfigurationImpl.DEFAULT_MANAGEMENT_CLUSTER_PASSWORD,
+                              true);
    }
 
    public void testSendManagementMessageWithAdminRole() throws Exception
@@ -83,6 +82,7 @@ public class SecurityManagementWithConfiguredAdminUserTest extends SecurityManag
 
    // Protected -----------------------------------------------------
 
+   @Override
    protected HornetQServer setupAndStartHornetQServer() throws Exception
    {
       Configuration conf = new ConfigurationImpl();
@@ -93,19 +93,19 @@ public class SecurityManagementWithConfiguredAdminUserTest extends SecurityManag
       HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
       HornetQSecurityManagerImpl securityManager = (HornetQSecurityManagerImpl)server.getSecurityManager();
       securityManager.addUser(validAdminUser, validAdminPassword);
-      securityManager.addUser(invalidAdminUser, invalidAdminPassword);   
+      securityManager.addUser(invalidAdminUser, invalidAdminPassword);
 
       securityManager.addRole(validAdminUser, "admin");
       securityManager.addRole(validAdminUser, "guest");
       securityManager.addRole(invalidAdminUser, "guest");
 
-      Set<Role> adminRole = securityRepository.getMatch(DEFAULT_MANAGEMENT_ADDRESS.toString());
+      Set<Role> adminRole = securityRepository.getMatch(ConfigurationImpl.DEFAULT_MANAGEMENT_ADDRESS.toString());
       adminRole.add(new Role("admin", true, true, true, true, true, true, true));
-      securityRepository.addMatch(DEFAULT_MANAGEMENT_ADDRESS.toString(), adminRole);
+      securityRepository.addMatch(ConfigurationImpl.DEFAULT_MANAGEMENT_ADDRESS.toString(), adminRole);
       Set<Role> guestRole = securityRepository.getMatch("*");
       guestRole.add(new Role("guest", true, true, true, true, true, true, false));
       securityRepository.addMatch("*", guestRole);
-      
+
       return server;
    }
 

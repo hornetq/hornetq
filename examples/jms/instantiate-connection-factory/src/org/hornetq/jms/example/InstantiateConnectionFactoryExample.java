@@ -12,8 +12,6 @@
  */
 package org.hornetq.jms.example;
 
-import static org.hornetq.integration.transports.netty.TransportConstants.PORT_PROP_NAME;
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -28,6 +26,7 @@ import javax.jms.TextMessage;
 import org.hornetq.common.example.HornetQExample;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.integration.transports.netty.NettyConnectorFactory;
+import org.hornetq.integration.transports.netty.TransportConstants;
 import org.hornetq.jms.HornetQQueue;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 
@@ -43,11 +42,12 @@ import org.hornetq.jms.client.HornetQConnectionFactory;
  */
 public class InstantiateConnectionFactoryExample extends HornetQExample
 {
-   public static void main(String[] args)
+   public static void main(final String[] args)
    {
       new InstantiateConnectionFactoryExample().run(args);
    }
 
+   @Override
    public boolean runExample() throws Exception
    {
       Connection connection = null;
@@ -60,7 +60,7 @@ public class InstantiateConnectionFactoryExample extends HornetQExample
          // The server port etc.
 
          Map<String, Object> connectionParams = new HashMap<String, Object>();
-         connectionParams.put(PORT_PROP_NAME, 5446);
+         connectionParams.put(TransportConstants.PORT_PROP_NAME, 5446);
 
          TransportConfiguration transportConfiguration = new TransportConfiguration(NettyConnectorFactory.class.getName(),
                                                                                     connectionParams);

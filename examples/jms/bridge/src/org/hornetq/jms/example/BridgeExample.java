@@ -19,7 +19,6 @@ import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Queue;
 import javax.jms.Session;
-import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
 import org.hornetq.common.example.HornetQExample;
@@ -32,11 +31,12 @@ import org.hornetq.common.example.HornetQExample;
  */
 public class BridgeExample extends HornetQExample
 {
-   public static void main(String[] args)
+   public static void main(final String[] args)
    {
       new BridgeExample().run(args);
    }
 
+   @Override
    public boolean runExample() throws Exception
    {
       Connection connection0 = null;
@@ -49,7 +49,7 @@ public class BridgeExample extends HornetQExample
 
       try
       {
-         // Step 1 -  we create an initial context for looking up JNDI on node 0
+         // Step 1 - we create an initial context for looking up JNDI on node 0
 
          ic0 = getContext(0);
 
@@ -124,16 +124,17 @@ public class BridgeExample extends HornetQExample
                             " hat from mincing-machine on node 1");
 
          // Step 13. We create and send another message, this time representing a sasquatch with a mauve hat to the
-         // sausage-factory on node 0. This won't be bridged to the mincing-machine since we only want aardvarks, not sasquatches
+         // sausage-factory on node 0. This won't be bridged to the mincing-machine since we only want aardvarks, not
+         // sasquatches
 
          message = session0.createMessage();
 
          message.setStringProperty("name", "sasquatch");
 
-         message.setStringProperty("hat", "mauve");        
+         message.setStringProperty("hat", "mauve");
 
          producer.send(message);
-         
+
          System.out.println("Sent " + message.getStringProperty("name") +
                             " message with " +
                             message.getStringProperty("hat") +
@@ -141,7 +142,7 @@ public class BridgeExample extends HornetQExample
 
          // Step 14. We don't receive the message since it has not been bridged.
 
-         receivedMessage = (TextMessage)consumer.receive(1000);
+         receivedMessage = consumer.receive(1000);
 
          if (receivedMessage == null)
          {

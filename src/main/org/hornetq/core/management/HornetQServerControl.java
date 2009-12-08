@@ -13,8 +13,7 @@
 
 package org.hornetq.core.management;
 
-import static javax.management.MBeanOperationInfo.ACTION;
-import static javax.management.MBeanOperationInfo.INFO;
+import javax.management.MBeanOperationInfo;
 
 import org.hornetq.core.config.Configuration;
 
@@ -30,7 +29,7 @@ public interface HornetQServerControl
    String getVersion();
 
    int getConnectionCount();
-   
+
    boolean isStarted();
 
    String[] getInterceptorClassNames();
@@ -60,15 +59,15 @@ public interface HornetQServerControl
    int getJournalMinFiles();
 
    int getJournalMaxIO();
-   
+
    int getJournalBufferSize();
 
    int getJournalBufferTimeout();
-           
+
    int getJournalCompactMinFiles();
-   
+
    int getJournalCompactPercentage();
-   
+
    boolean isPersistenceEnabled();
 
    boolean isCreateBindingsDir();
@@ -88,7 +87,7 @@ public interface HornetQServerControl
    void setMessageCounterSamplePeriod(long newPeriod) throws Exception;
 
    boolean isBackup();
-   
+
    boolean isSharedStore();
 
    String getPagingDirectory();
@@ -122,52 +121,52 @@ public interface HornetQServerControl
    Object[] getConnectors() throws Exception;
 
    String getConnectorsAsJSON() throws Exception;
-   
+
    String[] getAddressNames();
 
    String[] getQueueNames();
 
    // Operations ----------------------------------------------------
 
-   @Operation(desc = "Create a queue with the specified address", impact = ACTION)
+   @Operation(desc = "Create a queue with the specified address", impact = MBeanOperationInfo.ACTION)
    void createQueue(@Parameter(name = "address", desc = "Address of the queue") String address,
                     @Parameter(name = "name", desc = "Name of the queue") String name) throws Exception;
-   
-   @Operation(desc = "Create a queue", impact = ACTION)
+
+   @Operation(desc = "Create a queue", impact = MBeanOperationInfo.ACTION)
    void createQueue(@Parameter(name = "address", desc = "Address of the queue") String address,
                     @Parameter(name = "name", desc = "Name of the queue") String name,
                     @Parameter(name = "filter", desc = "Filter of the queue") String filter,
                     @Parameter(name = "durable", desc = "Is the queue durable?") boolean durable) throws Exception;
-   
-   @Operation(desc = "Create a queue with the specified address, name and durability", impact = ACTION)
+
+   @Operation(desc = "Create a queue with the specified address, name and durability", impact = MBeanOperationInfo.ACTION)
    void createQueue(@Parameter(name = "address", desc = "Address of the queue") String address,
                     @Parameter(name = "name", desc = "Name of the queue") String name,
                     @Parameter(name = "durable", desc = "Is the queue durable?") boolean durable) throws Exception;
 
-   @Operation(desc = "Deploy a queue", impact = ACTION)
+   @Operation(desc = "Deploy a queue", impact = MBeanOperationInfo.ACTION)
    void deployQueue(@Parameter(name = "address", desc = "Address of the queue") String address,
                     @Parameter(name = "name", desc = "Name of the queue") String name,
                     String filterString) throws Exception;
 
-   @Operation(desc = "Deploy a queue", impact = ACTION)
+   @Operation(desc = "Deploy a queue", impact = MBeanOperationInfo.ACTION)
    void deployQueue(@Parameter(name = "address", desc = "Address of the queue") String address,
                     @Parameter(name = "name", desc = "Name of the queue") String name,
                     @Parameter(name = "filter", desc = "Filter of the queue") String filter,
                     @Parameter(name = "durable", desc = "Is the queue durable?") boolean durable) throws Exception;
 
-   @Operation(desc = "Destroy a queue", impact = ACTION)
+   @Operation(desc = "Destroy a queue", impact = MBeanOperationInfo.ACTION)
    void destroyQueue(@Parameter(name = "name", desc = "Name of the queue to destroy") String name) throws Exception;
 
-   @Operation(desc = "Enable message counters", impact = ACTION)
+   @Operation(desc = "Enable message counters", impact = MBeanOperationInfo.ACTION)
    void enableMessageCounters() throws Exception;
 
-   @Operation(desc = "Disable message counters", impact = ACTION)
+   @Operation(desc = "Disable message counters", impact = MBeanOperationInfo.ACTION)
    void disableMessageCounters() throws Exception;
 
-   @Operation(desc = "Reset all message counters", impact = ACTION)
+   @Operation(desc = "Reset all message counters", impact = MBeanOperationInfo.ACTION)
    void resetAllMessageCounters() throws Exception;
 
-   @Operation(desc = "Reset all message counters history", impact = ACTION)
+   @Operation(desc = "Reset all message counters history", impact = MBeanOperationInfo.ACTION)
    void resetAllMessageCounterHistories() throws Exception;
 
    @Operation(desc = "List all the prepared transaction, sorted by date, oldest first")
@@ -183,19 +182,19 @@ public interface HornetQServerControl
    @Operation(desc = "Rollback a prepared transaction")
    boolean rollbackPreparedTransaction(@Parameter(desc = "the Base64 representation of a transaction", name = "transactionAsBase64") String transactionAsBase64) throws Exception;
 
-   @Operation(desc = "List the client addresses", impact = INFO)
+   @Operation(desc = "List the client addresses", impact = MBeanOperationInfo.INFO)
    String[] listRemoteAddresses() throws Exception;
 
-   @Operation(desc = "List the client addresses which match the given IP Address", impact = INFO)
+   @Operation(desc = "List the client addresses which match the given IP Address", impact = MBeanOperationInfo.INFO)
    String[] listRemoteAddresses(@Parameter(desc = "an IP address", name = "ipAddress") String ipAddress) throws Exception;
 
-   @Operation(desc = "Closes all the connections for the given IP Address", impact = INFO)
+   @Operation(desc = "Closes all the connections for the given IP Address", impact = MBeanOperationInfo.INFO)
    boolean closeConnectionsForAddress(@Parameter(desc = "an IP address", name = "ipAddress") String ipAddress) throws Exception;
 
-   @Operation(desc = "List all the connection IDs", impact = INFO)
+   @Operation(desc = "List all the connection IDs", impact = MBeanOperationInfo.INFO)
    String[] listConnectionIDs() throws Exception;
 
-   @Operation(desc = "List the sessions for the given connectionID", impact = INFO)
+   @Operation(desc = "List the sessions for the given connectionID", impact = MBeanOperationInfo.INFO)
    String[] listSessions(@Parameter(desc = "a connection ID", name = "connectionID") String connectionID) throws Exception;
 
    void sendQueueInfoToQueue(String queueName, String address) throws Exception;

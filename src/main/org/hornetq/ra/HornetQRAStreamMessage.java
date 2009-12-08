@@ -31,7 +31,7 @@ public class HornetQRAStreamMessage extends HornetQRAMessage implements StreamMe
    private static final Logger log = Logger.getLogger(HornetQRAStreamMessage.class);
 
    /** Whether trace is enabled */
-   private static boolean trace = log.isTraceEnabled();
+   private static boolean trace = HornetQRAStreamMessage.log.isTraceEnabled();
 
    /**
     * Create a new wrapper
@@ -42,9 +42,9 @@ public class HornetQRAStreamMessage extends HornetQRAMessage implements StreamMe
    {
       super(message, session);
 
-      if (trace)
+      if (HornetQRAStreamMessage.trace)
       {
-         log.trace("constructor(" + message + ", " + session + ")");
+         HornetQRAStreamMessage.log.trace("constructor(" + message + ", " + session + ")");
       }
    }
 
@@ -55,9 +55,9 @@ public class HornetQRAStreamMessage extends HornetQRAMessage implements StreamMe
     */
    public boolean readBoolean() throws JMSException
    {
-      if (trace)
+      if (HornetQRAStreamMessage.trace)
       {
-         log.trace("readBoolean()");
+         HornetQRAStreamMessage.log.trace("readBoolean()");
       }
 
       return ((StreamMessage)message).readBoolean();
@@ -70,9 +70,9 @@ public class HornetQRAStreamMessage extends HornetQRAMessage implements StreamMe
     */
    public byte readByte() throws JMSException
    {
-      if (trace)
+      if (HornetQRAStreamMessage.trace)
       {
-         log.trace("readByte()");
+         HornetQRAStreamMessage.log.trace("readByte()");
       }
 
       return ((StreamMessage)message).readByte();
@@ -86,9 +86,9 @@ public class HornetQRAStreamMessage extends HornetQRAMessage implements StreamMe
     */
    public int readBytes(final byte[] value) throws JMSException
    {
-      if (trace)
+      if (HornetQRAStreamMessage.trace)
       {
-         log.trace("readBytes(" + value + ")");
+         HornetQRAStreamMessage.log.trace("readBytes(" + value + ")");
       }
 
       return ((StreamMessage)message).readBytes(value);
@@ -101,9 +101,9 @@ public class HornetQRAStreamMessage extends HornetQRAMessage implements StreamMe
     */
    public char readChar() throws JMSException
    {
-      if (trace)
+      if (HornetQRAStreamMessage.trace)
       {
-         log.trace("readChar()");
+         HornetQRAStreamMessage.log.trace("readChar()");
       }
 
       return ((StreamMessage)message).readChar();
@@ -116,9 +116,9 @@ public class HornetQRAStreamMessage extends HornetQRAMessage implements StreamMe
     */
    public double readDouble() throws JMSException
    {
-      if (trace)
+      if (HornetQRAStreamMessage.trace)
       {
-         log.trace("readDouble()");
+         HornetQRAStreamMessage.log.trace("readDouble()");
       }
 
       return ((StreamMessage)message).readDouble();
@@ -131,9 +131,9 @@ public class HornetQRAStreamMessage extends HornetQRAMessage implements StreamMe
     */
    public float readFloat() throws JMSException
    {
-      if (trace)
+      if (HornetQRAStreamMessage.trace)
       {
-         log.trace("readFloat()");
+         HornetQRAStreamMessage.log.trace("readFloat()");
       }
 
       return ((StreamMessage)message).readFloat();
@@ -146,9 +146,9 @@ public class HornetQRAStreamMessage extends HornetQRAMessage implements StreamMe
     */
    public int readInt() throws JMSException
    {
-      if (trace)
+      if (HornetQRAStreamMessage.trace)
       {
-         log.trace("readInt()");
+         HornetQRAStreamMessage.log.trace("readInt()");
       }
 
       return ((StreamMessage)message).readInt();
@@ -161,9 +161,9 @@ public class HornetQRAStreamMessage extends HornetQRAMessage implements StreamMe
     */
    public long readLong() throws JMSException
    {
-      if (trace)
+      if (HornetQRAStreamMessage.trace)
       {
-         log.trace("readLong()");
+         HornetQRAStreamMessage.log.trace("readLong()");
       }
 
       return ((StreamMessage)message).readLong();
@@ -176,9 +176,9 @@ public class HornetQRAStreamMessage extends HornetQRAMessage implements StreamMe
     */
    public Object readObject() throws JMSException
    {
-      if (trace)
+      if (HornetQRAStreamMessage.trace)
       {
-         log.trace("readObject()");
+         HornetQRAStreamMessage.log.trace("readObject()");
       }
 
       return ((StreamMessage)message).readObject();
@@ -191,9 +191,9 @@ public class HornetQRAStreamMessage extends HornetQRAMessage implements StreamMe
     */
    public short readShort() throws JMSException
    {
-      if (trace)
+      if (HornetQRAStreamMessage.trace)
       {
-         log.trace("readShort()");
+         HornetQRAStreamMessage.log.trace("readShort()");
       }
 
       return ((StreamMessage)message).readShort();
@@ -206,9 +206,9 @@ public class HornetQRAStreamMessage extends HornetQRAMessage implements StreamMe
     */
    public String readString() throws JMSException
    {
-      if (trace)
+      if (HornetQRAStreamMessage.trace)
       {
-         log.trace("readString()");
+         HornetQRAStreamMessage.log.trace("readString()");
       }
 
       return ((StreamMessage)message).readString();
@@ -220,9 +220,9 @@ public class HornetQRAStreamMessage extends HornetQRAMessage implements StreamMe
     */
    public void reset() throws JMSException
    {
-      if (trace)
+      if (HornetQRAStreamMessage.trace)
       {
-         log.trace("reset()");
+         HornetQRAStreamMessage.log.trace("reset()");
       }
 
       ((StreamMessage)message).reset();
@@ -235,9 +235,9 @@ public class HornetQRAStreamMessage extends HornetQRAMessage implements StreamMe
     */
    public void writeBoolean(final boolean value) throws JMSException
    {
-      if (trace)
+      if (HornetQRAStreamMessage.trace)
       {
-         log.trace("writeBoolean(" + value + ")");
+         HornetQRAStreamMessage.log.trace("writeBoolean(" + value + ")");
       }
 
       ((StreamMessage)message).writeBoolean(value);
@@ -250,9 +250,9 @@ public class HornetQRAStreamMessage extends HornetQRAMessage implements StreamMe
     */
    public void writeByte(final byte value) throws JMSException
    {
-      if (trace)
+      if (HornetQRAStreamMessage.trace)
       {
-         log.trace("writeByte(" + value + ")");
+         HornetQRAStreamMessage.log.trace("writeByte(" + value + ")");
       }
 
       ((StreamMessage)message).writeByte(value);
@@ -267,9 +267,9 @@ public class HornetQRAStreamMessage extends HornetQRAMessage implements StreamMe
     */
    public void writeBytes(final byte[] value, final int offset, final int length) throws JMSException
    {
-      if (trace)
+      if (HornetQRAStreamMessage.trace)
       {
-         log.trace("writeBytes(" + value + ", " + offset + ", " + length + ")");
+         HornetQRAStreamMessage.log.trace("writeBytes(" + value + ", " + offset + ", " + length + ")");
       }
 
       ((StreamMessage)message).writeBytes(value, offset, length);
@@ -282,9 +282,9 @@ public class HornetQRAStreamMessage extends HornetQRAMessage implements StreamMe
     */
    public void writeBytes(final byte[] value) throws JMSException
    {
-      if (trace)
+      if (HornetQRAStreamMessage.trace)
       {
-         log.trace("writeBytes(" + value + ")");
+         HornetQRAStreamMessage.log.trace("writeBytes(" + value + ")");
       }
 
       ((StreamMessage)message).writeBytes(value);
@@ -297,9 +297,9 @@ public class HornetQRAStreamMessage extends HornetQRAMessage implements StreamMe
     */
    public void writeChar(final char value) throws JMSException
    {
-      if (trace)
+      if (HornetQRAStreamMessage.trace)
       {
-         log.trace("writeChar(" + value + ")");
+         HornetQRAStreamMessage.log.trace("writeChar(" + value + ")");
       }
 
       ((StreamMessage)message).writeChar(value);
@@ -312,9 +312,9 @@ public class HornetQRAStreamMessage extends HornetQRAMessage implements StreamMe
     */
    public void writeDouble(final double value) throws JMSException
    {
-      if (trace)
+      if (HornetQRAStreamMessage.trace)
       {
-         log.trace("writeDouble(" + value + ")");
+         HornetQRAStreamMessage.log.trace("writeDouble(" + value + ")");
       }
 
       ((StreamMessage)message).writeDouble(value);
@@ -327,9 +327,9 @@ public class HornetQRAStreamMessage extends HornetQRAMessage implements StreamMe
     */
    public void writeFloat(final float value) throws JMSException
    {
-      if (trace)
+      if (HornetQRAStreamMessage.trace)
       {
-         log.trace("writeFloat(" + value + ")");
+         HornetQRAStreamMessage.log.trace("writeFloat(" + value + ")");
       }
 
       ((StreamMessage)message).writeFloat(value);
@@ -342,9 +342,9 @@ public class HornetQRAStreamMessage extends HornetQRAMessage implements StreamMe
     */
    public void writeInt(final int value) throws JMSException
    {
-      if (trace)
+      if (HornetQRAStreamMessage.trace)
       {
-         log.trace("writeInt(" + value + ")");
+         HornetQRAStreamMessage.log.trace("writeInt(" + value + ")");
       }
 
       ((StreamMessage)message).writeInt(value);
@@ -357,9 +357,9 @@ public class HornetQRAStreamMessage extends HornetQRAMessage implements StreamMe
     */
    public void writeLong(final long value) throws JMSException
    {
-      if (trace)
+      if (HornetQRAStreamMessage.trace)
       {
-         log.trace("writeLong(" + value + ")");
+         HornetQRAStreamMessage.log.trace("writeLong(" + value + ")");
       }
 
       ((StreamMessage)message).writeLong(value);
@@ -372,9 +372,9 @@ public class HornetQRAStreamMessage extends HornetQRAMessage implements StreamMe
     */
    public void writeObject(final Object value) throws JMSException
    {
-      if (trace)
+      if (HornetQRAStreamMessage.trace)
       {
-         log.trace("writeObject(" + value + ")");
+         HornetQRAStreamMessage.log.trace("writeObject(" + value + ")");
       }
 
       ((StreamMessage)message).writeObject(value);
@@ -387,9 +387,9 @@ public class HornetQRAStreamMessage extends HornetQRAMessage implements StreamMe
     */
    public void writeShort(final short value) throws JMSException
    {
-      if (trace)
+      if (HornetQRAStreamMessage.trace)
       {
-         log.trace("writeShort(" + value + ")");
+         HornetQRAStreamMessage.log.trace("writeShort(" + value + ")");
       }
 
       ((StreamMessage)message).writeShort(value);
@@ -402,9 +402,9 @@ public class HornetQRAStreamMessage extends HornetQRAMessage implements StreamMe
     */
    public void writeString(final String value) throws JMSException
    {
-      if (trace)
+      if (HornetQRAStreamMessage.trace)
       {
-         log.trace("writeString(" + value + ")");
+         HornetQRAStreamMessage.log.trace("writeString(" + value + ")");
       }
 
       ((StreamMessage)message).writeString(value);

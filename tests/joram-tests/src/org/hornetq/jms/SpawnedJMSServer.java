@@ -45,14 +45,14 @@ public class SpawnedJMSServer
 
    // Static --------------------------------------------------------
 
-   public static void main(String[] args) throws Exception
+   public static void main(final String[] args) throws Exception
    {
       try
       {
          System.setProperty("java.rmi.server.hostname", "localhost");
          System.setProperty("java.naming.factory.initial", "org.jnp.interfaces.NamingContextFactory");
          System.setProperty("java.naming.factory.url.pkgs", "org.jboss.naming:org.jnp.interfaces");
-  
+
          final NamingBeanImpl namingInfo = new NamingBeanImpl();
          namingInfo.start();
          final Main jndiServer = new Main();
@@ -62,7 +62,7 @@ public class SpawnedJMSServer
          jndiServer.setRmiPort(1098);
          jndiServer.setRmiBindAddress("localhost");
          jndiServer.start();
-         
+
          Configuration conf = new ConfigurationImpl();
          conf.getAcceptorConfigurations().add(new TransportConfiguration(NettyAcceptorFactory.class.getName()));
          conf.setSecurityEnabled(false);
@@ -75,11 +75,11 @@ public class SpawnedJMSServer
          env.put("java.naming.factory.initial", "org.jnp.interfaces.NamingContextFactory");
          env.put("java.naming.factory.url.pkgs", "org.jboss.naming:org.jnp.interfaces");
          JMSServerManager serverManager = new JMSServerManagerImpl(server);
-         serverManager.setContext(new InitialContext(env));         
+         serverManager.setContext(new InitialContext(env));
          serverManager.start();
 
          System.out.println("Server started, ready to start client test");
-         
+
          // create the reader before printing OK so that if the test is quick
          // we will still capture the STOP message sent by the client
          InputStreamReader isr = new InputStreamReader(System.in);
@@ -97,7 +97,7 @@ public class SpawnedJMSServer
                namingInfo.stop();
                System.out.println("Server stopped");
                System.exit(0);
-            } 
+            }
             else
             {
                // stop anyway but with a error status

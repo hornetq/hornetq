@@ -48,12 +48,12 @@ public class InVMAcceptor implements Acceptor
 
    private final ConnectionLifeCycleListener listener;
 
-   private ConcurrentMap<String, Connection> connections = new ConcurrentHashMap<String, Connection>();
+   private final ConcurrentMap<String, Connection> connections = new ConcurrentHashMap<String, Connection>();
 
    private volatile boolean started;
 
    private final ExecutorFactory executorFactory;
-   
+
    private boolean paused;
 
    private NotificationService notificationService;
@@ -67,9 +67,9 @@ public class InVMAcceptor implements Acceptor
 
       this.listener = listener;
 
-      this.id = ConfigurationHelper.getIntProperty(TransportConstants.SERVER_ID_PROP_NAME, 0, configuration);
+      id = ConfigurationHelper.getIntProperty(TransportConstants.SERVER_ID_PROP_NAME, 0, configuration);
 
-      this.executorFactory = new OrderedExecutorFactory(threadPool);
+      executorFactory = new OrderedExecutorFactory(threadPool);
    }
 
    public synchronized void start() throws Exception
@@ -84,14 +84,15 @@ public class InVMAcceptor implements Acceptor
       if (notificationService != null)
       {
          TypedProperties props = new TypedProperties();
-         props.putSimpleStringProperty(new SimpleString("factory"), new SimpleString(InVMAcceptorFactory.class.getName()));
+         props.putSimpleStringProperty(new SimpleString("factory"),
+                                       new SimpleString(InVMAcceptorFactory.class.getName()));
          props.putIntProperty(new SimpleString("id"), id);
          Notification notification = new Notification(null, NotificationType.ACCEPTOR_STARTED, props);
          notificationService.sendNotification(notification);
       }
-      
+
       started = true;
-      
+
       paused = false;
    }
 
@@ -117,7 +118,8 @@ public class InVMAcceptor implements Acceptor
       if (notificationService != null)
       {
          TypedProperties props = new TypedProperties();
-         props.putSimpleStringProperty(new SimpleString("factory"), new SimpleString(InVMAcceptorFactory.class.getName()));
+         props.putSimpleStringProperty(new SimpleString("factory"),
+                                       new SimpleString(InVMAcceptorFactory.class.getName()));
          props.putIntProperty(new SimpleString("id"), id);
          Notification notification = new Notification(null, NotificationType.ACCEPTOR_STOPPED, props);
          try
@@ -130,9 +132,9 @@ public class InVMAcceptor implements Acceptor
             e.printStackTrace();
          }
       }
-      
+
       started = false;
-      
+
       paused = false;
    }
 
@@ -140,23 +142,23 @@ public class InVMAcceptor implements Acceptor
    {
       return started;
    }
-   
+
    /*
     * Stop accepting new connections
     */
    public synchronized void pause()
-   {      
+   {
       if (!started || paused)
       {
          return;
       }
-      
-      InVMRegistry.instance.unregisterAcceptor(id);   
-      
+
+      InVMRegistry.instance.unregisterAcceptor(id);
+
       paused = true;
    }
-   
-   public void setNotificationService(NotificationService notificationService)
+
+   public void setNotificationService(final NotificationService notificationService)
    {
       this.notificationService = notificationService;
    }
@@ -173,7 +175,7 @@ public class InVMAcceptor implements Acceptor
 
    public ExecutorFactory getExecutorFactory()
    {
-      return this.executorFactory;
+      return executorFactory;
    }
 
    public void connect(final String connectionID,
@@ -232,6 +234,7 @@ public class InVMAcceptor implements Acceptor
             // Execute on different thread to avoid deadlocks
             new Thread()
             {
+               @Override
                public void run()
                {
                   // Remove on the other side too

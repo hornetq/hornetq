@@ -19,7 +19,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 
 import org.hornetq.core.buffers.HornetQBuffer;
 import org.hornetq.core.exception.HornetQException;
@@ -133,7 +132,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
 
    public Connection getTransportConnection()
    {
-      return this.transportConnection;
+      return transportConnection;
    }
 
    public List<FailureListener> getFailureListeners()
@@ -143,9 +142,9 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
 
    public void setFailureListeners(final List<FailureListener> listeners)
    {
-      this.failureListeners.clear();
+      failureListeners.clear();
 
-      this.failureListeners.addAll(listeners);
+      failureListeners.addAll(listeners);
    }
 
    public Object getID()
@@ -202,7 +201,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
       return failureListeners.remove(listener);
    }
 
-   public void addCloseListener(CloseListener listener)
+   public void addCloseListener(final CloseListener listener)
    {
       if (listener == null)
       {
@@ -242,7 +241,10 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
          destroyed = true;
       }
 
-      log.warn("Connection failure has been detected: " + me.getMessage() + " [code=" + me.getCode() + "]");
+      RemotingConnectionImpl.log.warn("Connection failure has been detected: " + me.getMessage() +
+                                      " [code=" +
+                                      me.getCode() +
+                                      "]");
 
       // Then call the listeners
       callFailureListeners(me);
@@ -322,11 +324,11 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
 
       return res;
    }
-   
+
    public void removeAllChannels()
    {
-      //We get the transfer lock first - this ensures no packets are being processed AND
-      //it's guaranteed no more packets will be processed once this method is complete
+      // We get the transfer lock first - this ensures no packets are being processed AND
+      // it's guaranteed no more packets will be processed once this method is complete
       synchronized (transferLock)
       {
          channels.clear();
@@ -337,9 +339,9 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
    // ----------------------------------------------------
 
    public void bufferReceived(final Object connectionID, final HornetQBuffer buffer)
-   {                             
+   {
       final Packet packet = decoder.decode(buffer);
-      
+
       if (executor == null || packet.getType() == PacketImpl.PING)
       {
          // Pings must always be handled out of band so we can send pings back to the client quickly
@@ -358,7 +360,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
                }
                catch (Throwable t)
                {
-                  log.error("Unexpected error", t);
+                  RemotingConnectionImpl.log.error("Unexpected error", t);
                }
             }
          });
@@ -370,35 +372,33 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
    private void doBufferReceived(final Packet packet)
    {
       if (interceptors != null)
-      {            
+      {
          for (final Interceptor interceptor : interceptors)
          {
             try
             {
                boolean callNext = interceptor.intercept(packet, this);
-               
+
                if (!callNext)
                {
-                  // abort
-
                   return;
                }
             }
             catch (final Throwable e)
             {
-               log.warn("Failure in calling interceptor: " + interceptor, e);
+               RemotingConnectionImpl.log.warn("Failure in calling interceptor: " + interceptor, e);
             }
          }
       }
-      
+
       synchronized (transferLock)
-      {         
+      {
          final Channel channel = channels.get(packet.getChannelID());
 
          if (channel != null)
          {
             channel.handlePacket(packet);
-         }                 
+         }
       }
    }
 
@@ -426,7 +426,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
             // Failure of one listener to execute shouldn't prevent others
             // from
             // executing
-            log.error("Failed to execute failure listener", t);
+            RemotingConnectionImpl.log.error("Failed to execute failure listener", t);
          }
       }
    }
@@ -446,7 +446,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
             // Failure of one listener to execute shouldn't prevent others
             // from
             // executing
-            log.error("Failed to execute failure listener", t);
+            RemotingConnectionImpl.log.error("Failed to execute failure listener", t);
          }
       }
    }

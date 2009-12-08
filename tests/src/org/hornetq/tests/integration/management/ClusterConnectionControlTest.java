@@ -13,12 +13,6 @@
 
 package org.hornetq.tests.integration.management;
 
-import static org.hornetq.core.remoting.impl.invm.TransportConstants.SERVER_ID_PROP_NAME;
-import static org.hornetq.tests.util.RandomUtil.randomBoolean;
-import static org.hornetq.tests.util.RandomUtil.randomPositiveInt;
-import static org.hornetq.tests.util.RandomUtil.randomPositiveLong;
-import static org.hornetq.tests.util.RandomUtil.randomString;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -26,6 +20,8 @@ import java.util.Map;
 
 import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
+
+import junit.framework.Assert;
 
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.TransportConfiguration;
@@ -38,9 +34,11 @@ import org.hornetq.core.management.NotificationType;
 import org.hornetq.core.management.ObjectNameBuilder;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
+import org.hornetq.core.remoting.impl.invm.TransportConstants;
 import org.hornetq.core.server.HornetQ;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.integration.SimpleNotificationService;
+import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.utils.Pair;
 import org.hornetq.utils.SimpleString;
 import org.hornetq.utils.json.JSONArray;
@@ -64,7 +62,7 @@ public class ClusterConnectionControlTest extends ManagementTestBase
    private HornetQServer server_0;
 
    private ClusterConnectionConfiguration clusterConnectionConfig1;
-   
+
    private ClusterConnectionConfiguration clusterConnectionConfig2;
 
    private HornetQServer server_1;
@@ -81,56 +79,61 @@ public class ClusterConnectionControlTest extends ManagementTestBase
 
       ClusterConnectionControl clusterConnectionControl = createManagementControl(clusterConnectionConfig1.getName());
 
-      assertEquals(clusterConnectionConfig1.getName(), clusterConnectionControl.getName());
-      assertEquals(clusterConnectionConfig1.getAddress(), clusterConnectionControl.getAddress());
-      assertEquals(clusterConnectionConfig1.getDiscoveryGroupName(), clusterConnectionControl.getDiscoveryGroupName());
-      assertEquals(clusterConnectionConfig1.getRetryInterval(), clusterConnectionControl.getRetryInterval());
-      assertEquals(clusterConnectionConfig1.isDuplicateDetection(), clusterConnectionControl.isDuplicateDetection());
-      assertEquals(clusterConnectionConfig1.isForwardWhenNoConsumers(),
-                   clusterConnectionControl.isForwardWhenNoConsumers());
-      assertEquals(clusterConnectionConfig1.getMaxHops(), clusterConnectionControl.getMaxHops());
+      Assert.assertEquals(clusterConnectionConfig1.getName(), clusterConnectionControl.getName());
+      Assert.assertEquals(clusterConnectionConfig1.getAddress(), clusterConnectionControl.getAddress());
+      Assert.assertEquals(clusterConnectionConfig1.getDiscoveryGroupName(),
+                          clusterConnectionControl.getDiscoveryGroupName());
+      Assert.assertEquals(clusterConnectionConfig1.getRetryInterval(), clusterConnectionControl.getRetryInterval());
+      Assert.assertEquals(clusterConnectionConfig1.isDuplicateDetection(),
+                          clusterConnectionControl.isDuplicateDetection());
+      Assert.assertEquals(clusterConnectionConfig1.isForwardWhenNoConsumers(),
+                          clusterConnectionControl.isForwardWhenNoConsumers());
+      Assert.assertEquals(clusterConnectionConfig1.getMaxHops(), clusterConnectionControl.getMaxHops());
 
       Object[] connectorPairs = clusterConnectionControl.getStaticConnectorNamePairs();
-      assertEquals(1, connectorPairs.length);
+      Assert.assertEquals(1, connectorPairs.length);
       Object[] connectorPairData = (Object[])connectorPairs[0];
-      assertEquals(clusterConnectionConfig1.getStaticConnectorNamePairs().get(0).a, connectorPairData[0]);
-      assertEquals(clusterConnectionConfig1.getStaticConnectorNamePairs().get(0).b, connectorPairData[1]);
+      Assert.assertEquals(clusterConnectionConfig1.getStaticConnectorNamePairs().get(0).a, connectorPairData[0]);
+      Assert.assertEquals(clusterConnectionConfig1.getStaticConnectorNamePairs().get(0).b, connectorPairData[1]);
 
       String jsonString = clusterConnectionControl.getStaticConnectorNamePairsAsJSON();
-      assertNotNull(jsonString);
+      Assert.assertNotNull(jsonString);
       JSONArray array = new JSONArray(jsonString);
-      assertEquals(1, array.length());
+      Assert.assertEquals(1, array.length());
       JSONObject data = array.getJSONObject(0);
-      assertEquals(clusterConnectionConfig1.getStaticConnectorNamePairs().get(0).a, data.optString("a"));
-      assertEquals(clusterConnectionConfig1.getStaticConnectorNamePairs().get(0).b, data.optString("b", null));
+      Assert.assertEquals(clusterConnectionConfig1.getStaticConnectorNamePairs().get(0).a, data.optString("a"));
+      Assert.assertEquals(clusterConnectionConfig1.getStaticConnectorNamePairs().get(0).b, data.optString("b", null));
 
-      assertNull(clusterConnectionControl.getDiscoveryGroupName());
-      
-      assertTrue(clusterConnectionControl.isStarted());
+      Assert.assertNull(clusterConnectionControl.getDiscoveryGroupName());
+
+      Assert.assertTrue(clusterConnectionControl.isStarted());
    }
-   
+
    public void testAttributes2() throws Exception
    {
       checkResource(ObjectNameBuilder.DEFAULT.getClusterConnectionObjectName(clusterConnectionConfig2.getName()));
 
       ClusterConnectionControl clusterConnectionControl = createManagementControl(clusterConnectionConfig2.getName());
 
-      assertEquals(clusterConnectionConfig2.getName(), clusterConnectionControl.getName());
-      assertEquals(clusterConnectionConfig2.getAddress(), clusterConnectionControl.getAddress());
-      assertEquals(clusterConnectionConfig2.getDiscoveryGroupName(), clusterConnectionControl.getDiscoveryGroupName());
-      assertEquals(clusterConnectionConfig2.getRetryInterval(), clusterConnectionControl.getRetryInterval());
-      assertEquals(clusterConnectionConfig2.isDuplicateDetection(), clusterConnectionControl.isDuplicateDetection());
-      assertEquals(clusterConnectionConfig2.isForwardWhenNoConsumers(),
-                   clusterConnectionControl.isForwardWhenNoConsumers());
-      assertEquals(clusterConnectionConfig2.getMaxHops(), clusterConnectionControl.getMaxHops());
+      Assert.assertEquals(clusterConnectionConfig2.getName(), clusterConnectionControl.getName());
+      Assert.assertEquals(clusterConnectionConfig2.getAddress(), clusterConnectionControl.getAddress());
+      Assert.assertEquals(clusterConnectionConfig2.getDiscoveryGroupName(),
+                          clusterConnectionControl.getDiscoveryGroupName());
+      Assert.assertEquals(clusterConnectionConfig2.getRetryInterval(), clusterConnectionControl.getRetryInterval());
+      Assert.assertEquals(clusterConnectionConfig2.isDuplicateDetection(),
+                          clusterConnectionControl.isDuplicateDetection());
+      Assert.assertEquals(clusterConnectionConfig2.isForwardWhenNoConsumers(),
+                          clusterConnectionControl.isForwardWhenNoConsumers());
+      Assert.assertEquals(clusterConnectionConfig2.getMaxHops(), clusterConnectionControl.getMaxHops());
 
       Object[] connectorPairs = clusterConnectionControl.getStaticConnectorNamePairs();
-      assertNull(connectorPairs);
-      
+      Assert.assertNull(connectorPairs);
+
       String jsonPairs = clusterConnectionControl.getStaticConnectorNamePairsAsJSON();
-      assertNull(jsonPairs);
-      
-      assertEquals(clusterConnectionConfig2.getDiscoveryGroupName(), clusterConnectionControl.getDiscoveryGroupName());
+      Assert.assertNull(jsonPairs);
+
+      Assert.assertEquals(clusterConnectionConfig2.getDiscoveryGroupName(),
+                          clusterConnectionControl.getDiscoveryGroupName());
    }
 
    public void testStartStop() throws Exception
@@ -139,13 +142,13 @@ public class ClusterConnectionControlTest extends ManagementTestBase
       ClusterConnectionControl clusterConnectionControl = createManagementControl(clusterConnectionConfig1.getName());
 
       // started by the server
-      assertTrue(clusterConnectionControl.isStarted());
+      Assert.assertTrue(clusterConnectionControl.isStarted());
 
       clusterConnectionControl.stop();
-      assertFalse(clusterConnectionControl.isStarted());
+      Assert.assertFalse(clusterConnectionControl.isStarted());
 
       clusterConnectionControl.start();
-      assertTrue(clusterConnectionControl.isStarted());
+      Assert.assertTrue(clusterConnectionControl.isStarted());
    }
 
    public void testNotifications() throws Exception
@@ -155,24 +158,28 @@ public class ClusterConnectionControlTest extends ManagementTestBase
       ClusterConnectionControl clusterConnectionControl = createManagementControl(clusterConnectionConfig1.getName());
 
       server_0.getManagementService().addNotificationListener(notifListener);
-      
-      assertEquals(0, notifListener.getNotifications().size());
-      
+
+      Assert.assertEquals(0, notifListener.getNotifications().size());
+
       clusterConnectionControl.stop();
-      
-      assertTrue(notifListener.getNotifications().size() > 0);
+
+      Assert.assertTrue(notifListener.getNotifications().size() > 0);
       Notification notif = notifListener.getNotifications().get(notifListener.getNotifications().size() - 1);
-      assertEquals(NotificationType.CLUSTER_CONNECTION_STOPPED, notif.getType());
-      assertEquals(clusterConnectionControl.getName(), (notif.getProperties().getSimpleStringProperty(new SimpleString("name")).toString()));
-      
+      Assert.assertEquals(NotificationType.CLUSTER_CONNECTION_STOPPED, notif.getType());
+      Assert.assertEquals(clusterConnectionControl.getName(), notif.getProperties()
+                                                                   .getSimpleStringProperty(new SimpleString("name"))
+                                                                   .toString());
+
       clusterConnectionControl.start();
-      
-      assertTrue(notifListener.getNotifications().size() > 0);
+
+      Assert.assertTrue(notifListener.getNotifications().size() > 0);
       notif = notifListener.getNotifications().get(notifListener.getNotifications().size() - 1);
-      assertEquals(NotificationType.CLUSTER_CONNECTION_STARTED, notif.getType());
-      assertEquals(clusterConnectionControl.getName(), (notif.getProperties().getSimpleStringProperty(new SimpleString("name")).toString()));      
+      Assert.assertEquals(NotificationType.CLUSTER_CONNECTION_STARTED, notif.getType());
+      Assert.assertEquals(clusterConnectionControl.getName(), notif.getProperties()
+                                                                   .getSimpleStringProperty(new SimpleString("name"))
+                                                                   .toString());
    }
-   
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
@@ -183,38 +190,41 @@ public class ClusterConnectionControlTest extends ManagementTestBase
       super.setUp();
 
       Map<String, Object> acceptorParams = new HashMap<String, Object>();
-      acceptorParams.put(SERVER_ID_PROP_NAME, 1);
+      acceptorParams.put(TransportConstants.SERVER_ID_PROP_NAME, 1);
       TransportConfiguration acceptorConfig = new TransportConfiguration(InVMAcceptorFactory.class.getName(),
                                                                          acceptorParams,
-                                                                         randomString());
+                                                                         RandomUtil.randomString());
 
       TransportConfiguration connectorConfig = new TransportConfiguration(InVMConnectorFactory.class.getName(),
                                                                           acceptorParams,
-                                                                          randomString());
+                                                                          RandomUtil.randomString());
 
-      QueueConfiguration queueConfig = new QueueConfiguration(randomString(), randomString(), null, false);
+      QueueConfiguration queueConfig = new QueueConfiguration(RandomUtil.randomString(),
+                                                              RandomUtil.randomString(),
+                                                              null,
+                                                              false);
 
       Pair<String, String> connectorPair = new Pair<String, String>(connectorConfig.getName(), null);
       List<Pair<String, String>> pairs = new ArrayList<Pair<String, String>>();
       pairs.add(connectorPair);
 
-      clusterConnectionConfig1 = new ClusterConnectionConfiguration(randomString(),
-                                                                   queueConfig.getAddress(),
-                                                                   randomPositiveLong(),
-                                                                   randomBoolean(),
-                                                                   randomBoolean(),
-                                                                   randomPositiveInt(),
-                                                                   randomPositiveInt(),
-                                                                   pairs);
-      
-      clusterConnectionConfig2 = new ClusterConnectionConfiguration(randomString(),
+      clusterConnectionConfig1 = new ClusterConnectionConfiguration(RandomUtil.randomString(),
                                                                     queueConfig.getAddress(),
-                                                                    randomPositiveLong(),
-                                                                    randomBoolean(),
-                                                                    randomBoolean(),
-                                                                    randomPositiveInt(),
-                                                                    randomPositiveInt(),
-                                                                    randomString());
+                                                                    RandomUtil.randomPositiveLong(),
+                                                                    RandomUtil.randomBoolean(),
+                                                                    RandomUtil.randomBoolean(),
+                                                                    RandomUtil.randomPositiveInt(),
+                                                                    RandomUtil.randomPositiveInt(),
+                                                                    pairs);
+
+      clusterConnectionConfig2 = new ClusterConnectionConfiguration(RandomUtil.randomString(),
+                                                                    queueConfig.getAddress(),
+                                                                    RandomUtil.randomPositiveLong(),
+                                                                    RandomUtil.randomBoolean(),
+                                                                    RandomUtil.randomBoolean(),
+                                                                    RandomUtil.randomPositiveInt(),
+                                                                    RandomUtil.randomPositiveInt(),
+                                                                    RandomUtil.randomString());
 
       Configuration conf_1 = new ConfigurationImpl();
       conf_1.setSecurityEnabled(false);
@@ -245,9 +255,9 @@ public class ClusterConnectionControlTest extends ManagementTestBase
    {
       server_0.stop();
       server_1.stop();
-      
+
       server_0 = null;
-      
+
       server_1 = null;
 
       MBeanServerFactory.releaseMBeanServer(mbeanServer_1);
@@ -255,8 +265,8 @@ public class ClusterConnectionControlTest extends ManagementTestBase
 
       super.tearDown();
    }
-   
-   protected ClusterConnectionControl createManagementControl(String name) throws Exception
+
+   protected ClusterConnectionControl createManagementControl(final String name) throws Exception
    {
       return ManagementControlHelper.createClusterConnectionControl(name, mbeanServer);
    }

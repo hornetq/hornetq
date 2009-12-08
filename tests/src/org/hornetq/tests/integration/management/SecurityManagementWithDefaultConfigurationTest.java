@@ -41,7 +41,8 @@ public class SecurityManagementWithDefaultConfigurationTest extends SecurityMana
    public void testSendManagementMessageWithDefaultClusterAdminUser() throws Exception
    {
       doSendManagementMessage(ConfigurationImpl.DEFAULT_MANAGEMENT_CLUSTER_USER,
-                              ConfigurationImpl.DEFAULT_MANAGEMENT_CLUSTER_PASSWORD, true);
+                              ConfigurationImpl.DEFAULT_MANAGEMENT_CLUSTER_PASSWORD,
+                              true);
    }
 
    public void testSendManagementMessageWithGuest() throws Exception
@@ -66,10 +67,10 @@ public class SecurityManagementWithDefaultConfigurationTest extends SecurityMana
       conf.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
       HornetQServer server = HornetQ.newHornetQServer(conf, false);
       server.start();
-      
+
       return server;
    }
-   
+
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------

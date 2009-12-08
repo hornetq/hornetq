@@ -14,7 +14,6 @@ package org.hornetq.core.server.impl;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 
 import org.hornetq.core.filter.Filter;
@@ -93,7 +92,7 @@ public class LastValueQueue extends QueueImpl
                }
                catch (Exception e)
                {
-                  log.error("Failed to ack old reference", e);
+                  LastValueQueue.log.error("Failed to ack old reference", e);
                }
 
                hr.setReference(ref);
@@ -124,7 +123,7 @@ public class LastValueQueue extends QueueImpl
                }
                catch (Exception e)
                {
-                  log.error("Failed to ack old reference", e);
+                  LastValueQueue.log.error("Failed to ack old reference", e);
                }
             }
             else

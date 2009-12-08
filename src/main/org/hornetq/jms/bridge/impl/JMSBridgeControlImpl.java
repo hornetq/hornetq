@@ -28,11 +28,11 @@ import org.hornetq.jms.bridge.QualityOfServiceMode;
 public class JMSBridgeControlImpl extends StandardMBean implements JMSBridgeControl
 {
 
-   private JMSBridge bridge;
+   private final JMSBridge bridge;
 
    // Constructors --------------------------------------------------
 
-   public JMSBridgeControlImpl(JMSBridge bridge) throws Exception
+   public JMSBridgeControlImpl(final JMSBridge bridge) throws Exception
    {
       super(JMSBridgeControl.class);
       this.bridge = bridge;
@@ -158,32 +158,32 @@ public class JMSBridgeControlImpl extends StandardMBean implements JMSBridgeCont
       return bridge.isPaused();
    }
 
-   public void setAddMessageIDInHeader(boolean value)
+   public void setAddMessageIDInHeader(final boolean value)
    {
       bridge.setAddMessageIDInHeader(value);
    }
 
-   public void setClientID(String clientID)
+   public void setClientID(final String clientID)
    {
       bridge.setClientID(clientID);
    }
 
-   public void setFailureRetryInterval(long interval)
+   public void setFailureRetryInterval(final long interval)
    {
       bridge.setFailureRetryInterval(interval);
    }
 
-   public void setMaxBatchSize(int size)
+   public void setMaxBatchSize(final int size)
    {
       bridge.setMaxBatchSize(size);
    }
 
-   public void setMaxBatchTime(long time)
+   public void setMaxBatchTime(final long time)
    {
       bridge.setMaxBatchTime(time);
    }
 
-   public void setMaxRetries(int retries)
+   public void setMaxRetries(final int retries)
    {
       bridge.setMaxRetries(retries);
    }
@@ -200,42 +200,42 @@ public class JMSBridgeControlImpl extends StandardMBean implements JMSBridgeCont
       }
    }
 
-   public void setSelector(String selector)
+   public void setSelector(final String selector)
    {
       bridge.setSelector(selector);
    }
 
-   public void setSourcePassword(String pwd)
+   public void setSourcePassword(final String pwd)
    {
       bridge.setSourcePassword(pwd);
    }
 
-   public void setSourceUsername(String name)
+   public void setSourceUsername(final String name)
    {
       bridge.setSourceUsername(name);
    }
 
-   public void setSubscriptionName(String subname)
+   public void setSubscriptionName(final String subname)
    {
       bridge.setSubscriptionName(subname);
    }
 
-   public void setTargetPassword(String pwd)
+   public void setTargetPassword(final String pwd)
    {
       bridge.setTargetPassword(pwd);
    }
 
-   public void setTargetUsername(String name)
+   public void setTargetUsername(final String name)
    {
       bridge.setTargetUsername(name);
    }
 
-   public void setTransactionManagerLocatorClass(String transactionManagerLocatorClass)
+   public void setTransactionManagerLocatorClass(final String transactionManagerLocatorClass)
    {
       bridge.setTransactionManagerLocatorClass(transactionManagerLocatorClass);
    }
 
-   public void setTransactionManagerLocatorMethod(String transactionManagerLocatorMethod)
+   public void setTransactionManagerLocatorMethod(final String transactionManagerLocatorMethod)
    {
       bridge.setTransactionManagerLocatorMethod(transactionManagerLocatorMethod);
    }

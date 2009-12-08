@@ -30,6 +30,7 @@ import org.hornetq.jms.HornetQTopic;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.referenceable.ConnectionFactoryObjectFactory;
 import org.hornetq.jms.referenceable.DestinationObjectFactory;
+import org.hornetq.jms.tests.util.ProxyAssertSupport;
 
 /**
  * 
@@ -47,129 +48,125 @@ public class ReferenceableTest extends JMSTestCase
    // Constants -----------------------------------------------------
 
    // Static --------------------------------------------------------
-   
+
    // Attributes ----------------------------------------------------
-   
+
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
-   
+
    public void testSerializable() throws Exception
    {
-      assertTrue(cf instanceof Serializable);
-      
-      assertTrue(queue1 instanceof Serializable);
-      
-      assertTrue(topic1 instanceof Serializable);            
-   }
+      ProxyAssertSupport.assertTrue(JMSTestCase.cf instanceof Serializable);
 
+      ProxyAssertSupport.assertTrue(HornetQServerTestCase.queue1 instanceof Serializable);
+
+      ProxyAssertSupport.assertTrue(HornetQServerTestCase.topic1 instanceof Serializable);
+   }
 
    public void testReferenceable() throws Exception
    {
-      assertTrue(cf instanceof Referenceable);
-      
-      assertTrue(queue1 instanceof Referenceable);
-      
-      assertTrue(topic1 instanceof Referenceable);
-   }
-   
-   public void testReferenceCF() throws Exception
-   {
-      Reference cfRef = ((Referenceable)cf).getReference();
-      
-      String factoryName = cfRef.getFactoryClassName();
-      
-      Class factoryClass = Class.forName(factoryName);
-      
-      ConnectionFactoryObjectFactory factory = (ConnectionFactoryObjectFactory)factoryClass.newInstance();
-      
-      Object instance = factory.getObjectInstance(cfRef, null, null, null);
-      
-      assertTrue(instance instanceof HornetQConnectionFactory);
-      
-      HornetQConnectionFactory cf2 = (HornetQConnectionFactory)instance;
-      
-      simpleSendReceive(cf2, queue1);
-   }
-   
-   public void testReferenceQueue() throws Exception
-   {
-      Reference queueRef = ((Referenceable)queue1).getReference();
-      
-      String factoryName = queueRef.getFactoryClassName();
-      
-      Class factoryClass = Class.forName(factoryName);
-      
-      DestinationObjectFactory factory = (DestinationObjectFactory)factoryClass.newInstance();
-      
-      Object instance = factory.getObjectInstance(queueRef, null, null, null);
-      
-      assertTrue(instance instanceof HornetQQueue);
-      
-      HornetQQueue queue2 = (HornetQQueue)instance;
-      
-      assertEquals(queue1.getQueueName(), queue2.getQueueName());
-      
-      simpleSendReceive(cf, queue2);
-      
-   }
-   
-   public void testReferenceTopic() throws Exception
-   {
-      Reference topicRef = ((Referenceable)topic1).getReference();
-      
-      String factoryName = topicRef.getFactoryClassName();
-      
-      Class factoryClass = Class.forName(factoryName);
-      
-      DestinationObjectFactory factory = (DestinationObjectFactory)factoryClass.newInstance();
-      
-      Object instance = factory.getObjectInstance(topicRef, null, null, null);
-      
-      assertTrue(instance instanceof HornetQTopic);
-      
-      HornetQTopic topic2 = (HornetQTopic)instance;
-      
-      assertEquals(topic1.getTopicName(), topic2.getTopicName());
-      
-      simpleSendReceive(cf, topic2);
+      ProxyAssertSupport.assertTrue(JMSTestCase.cf instanceof Referenceable);
+
+      ProxyAssertSupport.assertTrue(HornetQServerTestCase.queue1 instanceof Referenceable);
+
+      ProxyAssertSupport.assertTrue(HornetQServerTestCase.topic1 instanceof Referenceable);
    }
 
-   protected void simpleSendReceive(ConnectionFactory cf, Destination dest) throws Exception
+   public void testReferenceCF() throws Exception
+   {
+      Reference cfRef = ((Referenceable)JMSTestCase.cf).getReference();
+
+      String factoryName = cfRef.getFactoryClassName();
+
+      Class factoryClass = Class.forName(factoryName);
+
+      ConnectionFactoryObjectFactory factory = (ConnectionFactoryObjectFactory)factoryClass.newInstance();
+
+      Object instance = factory.getObjectInstance(cfRef, null, null, null);
+
+      ProxyAssertSupport.assertTrue(instance instanceof HornetQConnectionFactory);
+
+      HornetQConnectionFactory cf2 = (HornetQConnectionFactory)instance;
+
+      simpleSendReceive(cf2, HornetQServerTestCase.queue1);
+   }
+
+   public void testReferenceQueue() throws Exception
+   {
+      Reference queueRef = ((Referenceable)HornetQServerTestCase.queue1).getReference();
+
+      String factoryName = queueRef.getFactoryClassName();
+
+      Class factoryClass = Class.forName(factoryName);
+
+      DestinationObjectFactory factory = (DestinationObjectFactory)factoryClass.newInstance();
+
+      Object instance = factory.getObjectInstance(queueRef, null, null, null);
+
+      ProxyAssertSupport.assertTrue(instance instanceof HornetQQueue);
+
+      HornetQQueue queue2 = (HornetQQueue)instance;
+
+      ProxyAssertSupport.assertEquals(HornetQServerTestCase.queue1.getQueueName(), queue2.getQueueName());
+
+      simpleSendReceive(JMSTestCase.cf, queue2);
+
+   }
+
+   public void testReferenceTopic() throws Exception
+   {
+      Reference topicRef = ((Referenceable)HornetQServerTestCase.topic1).getReference();
+
+      String factoryName = topicRef.getFactoryClassName();
+
+      Class factoryClass = Class.forName(factoryName);
+
+      DestinationObjectFactory factory = (DestinationObjectFactory)factoryClass.newInstance();
+
+      Object instance = factory.getObjectInstance(topicRef, null, null, null);
+
+      ProxyAssertSupport.assertTrue(instance instanceof HornetQTopic);
+
+      HornetQTopic topic2 = (HornetQTopic)instance;
+
+      ProxyAssertSupport.assertEquals(HornetQServerTestCase.topic1.getTopicName(), topic2.getTopicName());
+
+      simpleSendReceive(JMSTestCase.cf, topic2);
+   }
+
+   protected void simpleSendReceive(final ConnectionFactory cf, final Destination dest) throws Exception
    {
       Connection conn = null;
-      
+
       try
-      {      
-	      conn = cf.createConnection();
-	      
-	      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-	      
-	      MessageProducer prod = sess.createProducer(dest);
-	      
-	      MessageConsumer cons = sess.createConsumer(dest);
-	      
-	      conn.start();
-	      
-	      TextMessage tm = sess.createTextMessage("ref test");
-	      
-	      prod.send(tm);
-	      
-	      tm = (TextMessage)cons.receive(1000);
-	      
-	      assertNotNull(tm);
-	      
-	      assertEquals("ref test", tm.getText());
+      {
+         conn = cf.createConnection();
+
+         Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+         MessageProducer prod = sess.createProducer(dest);
+
+         MessageConsumer cons = sess.createConsumer(dest);
+
+         conn.start();
+
+         TextMessage tm = sess.createTextMessage("ref test");
+
+         prod.send(tm);
+
+         tm = (TextMessage)cons.receive(1000);
+
+         ProxyAssertSupport.assertNotNull(tm);
+
+         ProxyAssertSupport.assertEquals("ref test", tm.getText());
       }
       finally
       {
-      	if (conn != null)
-      	{
-      		conn.close();
-      	}
+         if (conn != null)
+         {
+            conn.close();
+         }
       }
    }
 }
-
-
-

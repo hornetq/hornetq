@@ -12,21 +12,6 @@
  */
 package org.hornetq.tests.integration.jms;
 
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CACHE_LARGE_MESSAGE_CLIENT;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONFIRMATION_WINDOW_SIZE;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_THREAD_POOL_MAX_SIZE;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_USE_GLOBAL_POOLS;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -115,9 +100,9 @@ public class FloodServerTest extends UnitTestCase
    @Override
    protected void tearDown() throws Exception
    {
-      
+
       serverManager.stop();
-      
+
       server.stop();
 
       server = null;
@@ -150,26 +135,26 @@ public class FloodServerTest extends UnitTestCase
                                             connectorConfigs,
                                             null,
                                             1000,
-                                            DEFAULT_CONNECTION_TTL,
-                                            callTimeout,                                           
-                                            DEFAULT_CACHE_LARGE_MESSAGE_CLIENT,
-                                            DEFAULT_MIN_LARGE_MESSAGE_SIZE,
-                                            DEFAULT_CONSUMER_WINDOW_SIZE,
-                                            DEFAULT_CONSUMER_MAX_RATE,
-                                            DEFAULT_CONFIRMATION_WINDOW_SIZE,
-                                            DEFAULT_PRODUCER_WINDOW_SIZE,
-                                            DEFAULT_PRODUCER_MAX_RATE,
+                                            ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL,
+                                            callTimeout,
+                                            ClientSessionFactoryImpl.DEFAULT_CACHE_LARGE_MESSAGE_CLIENT,
+                                            ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
+                                            ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE,
+                                            ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE,
+                                            ClientSessionFactoryImpl.DEFAULT_CONFIRMATION_WINDOW_SIZE,
+                                            ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE,
+                                            ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE,
                                             false,
                                             false,
                                             false,
-                                            DEFAULT_AUTO_GROUP,
+                                            ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP,
                                             false,
-                                            DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
-                                            DEFAULT_ACK_BATCH_SIZE,
-                                            DEFAULT_ACK_BATCH_SIZE,
-                                            DEFAULT_USE_GLOBAL_POOLS,
-                                            DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE,
-                                            DEFAULT_THREAD_POOL_MAX_SIZE,                                           
+                                            ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
+                                            ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE,
+                                            ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE,
+                                            ClientSessionFactoryImpl.DEFAULT_USE_GLOBAL_POOLS,
+                                            ClientSessionFactoryImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE,
+                                            ClientSessionFactoryImpl.DEFAULT_THREAD_POOL_MAX_SIZE,
                                             retryInterval,
                                             retryIntervalMultiplier,
                                             1000,
@@ -179,10 +164,9 @@ public class FloodServerTest extends UnitTestCase
                                             jndiBindings);
    }
 
-      
-    public void testFoo()
-    {
-    }
+   public void testFoo()
+   {
+   }
 
    public void _testFlood() throws Exception
    {
@@ -232,15 +216,15 @@ public class FloodServerTest extends UnitTestCase
 
    class ProducerThread extends Thread
    {
-      private Connection connection;
+      private final Connection connection;
 
-      private Session session;
+      private final Session session;
 
-      private MessageProducer producer;
+      private final MessageProducer producer;
 
-      private int numMessages;
+      private final int numMessages;
 
-      ProducerThread(ConnectionFactory cf, int numMessages) throws Exception
+      ProducerThread(final ConnectionFactory cf, final int numMessages) throws Exception
       {
          connection = cf.createConnection();
 
@@ -253,6 +237,7 @@ public class FloodServerTest extends UnitTestCase
          this.numMessages = numMessages;
       }
 
+      @Override
       public void run()
       {
          try
@@ -267,10 +252,10 @@ public class FloodServerTest extends UnitTestCase
             {
                producer.send(message);
 
-//               if (i % 1000 == 0)
-//               {
-//                  log.info("Producer " + this + " sent " + i);
-//               }
+               // if (i % 1000 == 0)
+               // {
+               // log.info("Producer " + this + " sent " + i);
+               // }
             }
 
             connection.close();
@@ -284,15 +269,15 @@ public class FloodServerTest extends UnitTestCase
 
    class ConsumerThread extends Thread
    {
-      private Connection connection;
+      private final Connection connection;
 
-      private Session session;
+      private final Session session;
 
-      private MessageConsumer consumer;
+      private final MessageConsumer consumer;
 
-      private int numMessages;
+      private final int numMessages;
 
-      ConsumerThread(ConnectionFactory cf, int numMessages) throws Exception
+      ConsumerThread(final ConnectionFactory cf, final int numMessages) throws Exception
       {
          connection = cf.createConnection();
 
@@ -305,6 +290,7 @@ public class FloodServerTest extends UnitTestCase
          this.numMessages = numMessages;
       }
 
+      @Override
       public void run()
       {
          try
@@ -315,14 +301,14 @@ public class FloodServerTest extends UnitTestCase
 
                if (msg == null)
                {
-                  log.error("message is null");
+                  FloodServerTest.log.error("message is null");
                   break;
                }
 
-//               if (i % 1000 == 0)
-//               {
-//                  log.info("Consumer " + this + " received " + i);
-//               }
+               // if (i % 1000 == 0)
+               // {
+               // log.info("Consumer " + this + " received " + i);
+               // }
             }
 
             connection.close();

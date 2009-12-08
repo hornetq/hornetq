@@ -37,16 +37,16 @@ public class HornetQRAConnectionManager implements ConnectionManager
    private static final Logger log = Logger.getLogger(HornetQRAConnectionManager.class);
 
    /** Trace enabled */
-   private static boolean trace = log.isTraceEnabled();
+   private static boolean trace = HornetQRAConnectionManager.log.isTraceEnabled();
 
    /**
     * Constructor
     */
    public HornetQRAConnectionManager()
    {
-      if (trace)
+      if (HornetQRAConnectionManager.trace)
       {
-         log.trace("constructor()");
+         HornetQRAConnectionManager.log.trace("constructor()");
       }
    }
 
@@ -59,17 +59,17 @@ public class HornetQRAConnectionManager implements ConnectionManager
     */
    public Object allocateConnection(final ManagedConnectionFactory mcf, final ConnectionRequestInfo cxRequestInfo) throws ResourceException
    {
-      if (trace)
+      if (HornetQRAConnectionManager.trace)
       {
-         log.trace("allocateConnection(" + mcf + ", " + cxRequestInfo + ")");
+         HornetQRAConnectionManager.log.trace("allocateConnection(" + mcf + ", " + cxRequestInfo + ")");
       }
 
       ManagedConnection mc = mcf.createManagedConnection(null, cxRequestInfo);
       Object c = mc.getConnection(null, cxRequestInfo);
 
-      if (trace)
+      if (HornetQRAConnectionManager.trace)
       {
-         log.trace("Allocated connection: " + c + ", with managed connection: " + mc);
+         HornetQRAConnectionManager.log.trace("Allocated connection: " + c + ", with managed connection: " + mc);
       }
 
       return c;

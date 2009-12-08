@@ -19,8 +19,6 @@ import java.util.Set;
 import javax.management.MBeanServer;
 
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.exception.HornetQException;
-import org.hornetq.core.journal.JournalLoadInformation;
 import org.hornetq.core.management.ManagementService;
 import org.hornetq.core.management.impl.HornetQServerControlImpl;
 import org.hornetq.core.persistence.StorageManager;
@@ -67,7 +65,7 @@ public interface HornetQServer extends HornetQComponent
    Version getVersion();
 
    HornetQServerControlImpl getHornetQServerControl();
-   
+
    void registerActivateCallback(ActivateCallback callback);
 
    void unregisterActivateCallback(ActivateCallback callback);
@@ -79,7 +77,7 @@ public interface HornetQServer extends HornetQComponent
    ReplicationEndpoint connectToReplicationEndpoint(Channel channel) throws Exception;
 
    CreateSessionResponseMessage createSession(String name,
-                                              long channelID,                                              
+                                              long channelID,
                                               String username,
                                               String password,
                                               int minLargeMessageSize,

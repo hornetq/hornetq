@@ -36,14 +36,14 @@ public class SessionXAResumeMessage extends PacketImpl
 
    public SessionXAResumeMessage(final Xid xid)
    {
-      super(SESS_XA_RESUME);
+      super(PacketImpl.SESS_XA_RESUME);
 
       this.xid = xid;
    }
 
    public SessionXAResumeMessage()
    {
-      super(SESS_XA_RESUME);
+      super(PacketImpl.SESS_XA_RESUME);
    }
 
    // Public --------------------------------------------------------

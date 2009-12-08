@@ -11,7 +11,6 @@
  * permissions and limitations under the License.
  */
 
-
 package org.hornetq.jms.client;
 
 import java.io.Serializable;
@@ -190,9 +189,9 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
       checkClosed();
 
       HornetQTextMessage msg = new HornetQTextMessage(session);
-      
+
       msg.setText(null);
-      
+
       return msg;
    }
 
@@ -399,7 +398,7 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
    public Queue createQueue(final String queueName) throws JMSException
    {
       // As per spec. section 4.11
-      if (sessionType == TYPE_TOPIC_SESSION)
+      if (sessionType == HornetQSession.TYPE_TOPIC_SESSION)
       {
          throw new IllegalStateException("Cannot create a queue using a TopicSession");
       }
@@ -428,7 +427,7 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
    public Topic createTopic(final String topicName) throws JMSException
    {
       // As per spec. section 4.11
-      if (sessionType == TYPE_QUEUE_SESSION)
+      if (sessionType == HornetQSession.TYPE_QUEUE_SESSION)
       {
          throw new IllegalStateException("Cannot create a topic on a QueueSession");
       }
@@ -465,7 +464,7 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
                                                   final boolean noLocal) throws JMSException
    {
       // As per spec. section 4.11
-      if (sessionType == TYPE_QUEUE_SESSION)
+      if (sessionType == HornetQSession.TYPE_QUEUE_SESSION)
       {
          throw new IllegalStateException("Cannot create a durable subscriber on a QueueSession");
       }
@@ -601,8 +600,12 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
 
                   SimpleString oldFilterString = subResponse.getFilterString();
 
-                  boolean selectorChanged = (coreFilterString == null && oldFilterString != null) || (oldFilterString == null && coreFilterString != null) ||
-                                            (oldFilterString != null && coreFilterString != null && !oldFilterString.equals(coreFilterString));
+                  boolean selectorChanged = coreFilterString == null && oldFilterString != null ||
+                                            oldFilterString == null &&
+                                            coreFilterString != null ||
+                                            oldFilterString != null &&
+                                            coreFilterString != null &&
+                                            !oldFilterString.equals(coreFilterString);
 
                   SimpleString oldTopicName = subResponse.getAddress();
 
@@ -647,7 +650,7 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
    public QueueBrowser createBrowser(final Queue queue, String filterString) throws JMSException
    {
       // As per spec. section 4.11
-      if (sessionType == TYPE_TOPIC_SESSION)
+      if (sessionType == HornetQSession.TYPE_TOPIC_SESSION)
       {
          throw new IllegalStateException("Cannot create a browser on a TopicSession");
       }
@@ -696,7 +699,7 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
    public TemporaryQueue createTemporaryQueue() throws JMSException
    {
       // As per spec. section 4.11
-      if (sessionType == TYPE_TOPIC_SESSION)
+      if (sessionType == HornetQSession.TYPE_TOPIC_SESSION)
       {
          throw new IllegalStateException("Cannot create a temporary queue using a TopicSession");
       }
@@ -724,7 +727,7 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
    public TemporaryTopic createTemporaryTopic() throws JMSException
    {
       // As per spec. section 4.11
-      if (sessionType == TYPE_QUEUE_SESSION)
+      if (sessionType == HornetQSession.TYPE_QUEUE_SESSION)
       {
          throw new IllegalStateException("Cannot create a temporary topic on a QueueSession");
       }
@@ -742,7 +745,7 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
          // does not exist - otherwise we would not be able to distinguish from a non existent topic and one with no
          // subscriptions - core has no notion of a topic
 
-         session.createQueue(simpleAddress, simpleAddress, REJECTING_FILTER, false);
+         session.createQueue(simpleAddress, simpleAddress, HornetQSession.REJECTING_FILTER, false);
 
          connection.addTemporaryQueue(simpleAddress);
 
@@ -757,7 +760,7 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
    public void unsubscribe(final String name) throws JMSException
    {
       // As per spec. section 4.11
-      if (sessionType == TYPE_QUEUE_SESSION)
+      if (sessionType == HornetQSession.TYPE_QUEUE_SESSION)
       {
          throw new IllegalStateException("Cannot unsubscribe using a QueueSession");
       }
@@ -856,6 +859,7 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
 
    // Public --------------------------------------------------------
 
+   @Override
    public String toString()
    {
       return "HornetQRASession->" + session;

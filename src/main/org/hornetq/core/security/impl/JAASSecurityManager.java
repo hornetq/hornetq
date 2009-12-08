@@ -49,7 +49,7 @@ public class JAASSecurityManager implements HornetQSecurityManager, HornetQCompo
 
    // Attributes ----------------------------------------------------
 
-   private boolean trace = log.isTraceEnabled();
+   private final boolean trace = JAASSecurityManager.log.isTraceEnabled();
 
    private String configurationName;
 
@@ -116,33 +116,33 @@ public class JAASSecurityManager implements HornetQSecurityManager, HornetQCompo
 
          if (trace)
          {
-            log.trace("user " + user + (authenticated ? " is " : " is NOT ") + "authorized");
+            JAASSecurityManager.log.trace("user " + user + (authenticated ? " is " : " is NOT ") + "authorized");
          }
       }
       return authenticated;
    }
-   
-   public void addRole(String user, String role)
+
+   public void addRole(final String user, final String role)
    {
       // NO-OP
    }
 
-   public void addUser(String user, String password)
+   public void addUser(final String user, final String password)
    {
       // NO-OP
    }
 
-   public void removeRole(String user, String role)
+   public void removeRole(final String user, final String role)
    {
       // NO-OP
    }
 
-   public void removeUser(String user)
+   public void removeUser(final String user)
    {
       // NO-OP
    }
 
-   public void setDefaultUser(String username)
+   public void setDefaultUser(final String username)
    {
       // NO-OP
    }
@@ -202,7 +202,7 @@ public class JAASSecurityManager implements HornetQSecurityManager, HornetQCompo
       return lc.getSubject();
    }
 
-   private Group getSubjectRoles(Subject subject)
+   private Group getSubjectRoles(final Subject subject)
    {
       Set<Group> subjectGroups = subject.getPrincipals(Group.class);
       Iterator<Group> iter = subjectGroups.iterator();
@@ -234,17 +234,17 @@ public class JAASSecurityManager implements HornetQSecurityManager, HornetQCompo
 
    // Public --------------------------------------------------------
 
-   public void setConfigurationName(String configurationName)
+   public void setConfigurationName(final String configurationName)
    {
       this.configurationName = configurationName;
    }
 
-   public void setCallbackHandler(CallbackHandler handler)
+   public void setCallbackHandler(final CallbackHandler handler)
    {
-      this.callbackHandler = handler;
+      callbackHandler = handler;
    }
 
-   public void setConfiguration(Configuration config)
+   public void setConfiguration(final Configuration config)
    {
       this.config = config;
    }
@@ -257,9 +257,9 @@ public class JAASSecurityManager implements HornetQSecurityManager, HornetQCompo
    {
       private static final long serialVersionUID = 1L;
 
-      private String name;
+      private final String name;
 
-      public SimplePrincipal(String name)
+      public SimplePrincipal(final String name)
       {
          this.name = name;
       }
@@ -267,24 +267,33 @@ public class JAASSecurityManager implements HornetQSecurityManager, HornetQCompo
       /** Compare this SimplePrincipal's name against another Principal
       @return true if name equals another.getName();
        */
-      public boolean equals(Object another)
+      @Override
+      public boolean equals(final Object another)
       {
          if (!(another instanceof Principal))
+         {
             return false;
+         }
          String anotherName = ((Principal)another).getName();
          boolean equals = false;
          if (name == null)
+         {
             equals = anotherName == null;
+         }
          else
+         {
             equals = name.equals(anotherName);
+         }
          return equals;
       }
 
+      @Override
       public int hashCode()
       {
-         return (name == null ? 0 : name.hashCode());
+         return name == null ? 0 : name.hashCode();
       }
 
+      @Override
       public String toString()
       {
          return name;
@@ -295,7 +304,5 @@ public class JAASSecurityManager implements HornetQSecurityManager, HornetQCompo
          return name;
       }
    }
-
-   
 
 }

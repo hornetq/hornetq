@@ -11,7 +11,6 @@
  * permissions and limitations under the License.
  */
 
-
 package org.hornetq.jms.client;
 
 import java.util.Enumeration;
@@ -71,7 +70,7 @@ public class HornetQConnectionMetaData implements ConnectionMetaData
 
    public String getJMSProviderName() throws JMSException
    {
-      return JBOSS_MESSAGING;
+      return HornetQConnectionMetaData.JBOSS_MESSAGING;
    }
 
    public String getProviderVersion() throws JMSException
@@ -93,7 +92,7 @@ public class HornetQConnectionMetaData implements ConnectionMetaData
    {
       Vector v = new Vector();
       v.add("JMSXGroupID");
-      //v.add("JMSXGroupSeq");
+      // v.add("JMSXGroupSeq");
       v.add("JMSXDeliveryCount");
       return v.elements();
    }

@@ -18,6 +18,8 @@ import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.journal.Journal;
@@ -46,7 +48,6 @@ public class ValidateTransactionHealthTest extends UnitTestCase
 
    private static final Logger log = Logger.getLogger(ValidateTransactionHealthTest.class);
 
-   
    // Attributes ----------------------------------------------------
 
    private static final int OK = 10;
@@ -96,8 +97,6 @@ public class ValidateTransactionHealthTest extends UnitTestCase
    {
       internalTest("nio", getTestDir(), 10000, 0, true, true, 1);
    }
-   
-   
 
    public void testNIO2() throws Exception
    {
@@ -127,7 +126,7 @@ public class ValidateTransactionHealthTest extends UnitTestCase
    protected void setUp() throws Exception
    {
       super.setUp();
-      
+
       File file = new File(getTestDir());
       deleteDirectory(file);
       file.mkdir();
@@ -164,15 +163,15 @@ public class ValidateTransactionHealthTest extends UnitTestCase
                                                           Integer.toString(transactionSize),
                                                           Integer.toString(numberOfThreads));
                process.waitFor();
-               assertEquals(ValidateTransactionHealthTest.OK, process.exitValue());
+               Assert.assertEquals(ValidateTransactionHealthTest.OK, process.exitValue());
             }
             else
             {
                JournalImpl journal = ValidateTransactionHealthTest.appendData(type,
-                                                                      journalDir,
-                                                                      numberOfRecords,
-                                                                      transactionSize,
-                                                                      numberOfThreads);
+                                                                              journalDir,
+                                                                              numberOfRecords,
+                                                                              transactionSize,
+                                                                              numberOfThreads);
                journal.stop();
             }
          }
@@ -193,11 +192,11 @@ public class ValidateTransactionHealthTest extends UnitTestCase
       journal.start();
       Loader loadTest = new Loader(numberOfRecords);
       journal.load(loadTest);
-      assertEquals(numberOfRecords * numberOfThreads, loadTest.numberOfAdds);
-      assertEquals(0, loadTest.numberOfPreparedTransactions);
-      assertEquals(0, loadTest.numberOfUpdates);
-      assertEquals(0, loadTest.numberOfDeletes);
-      
+      Assert.assertEquals(numberOfRecords * numberOfThreads, loadTest.numberOfAdds);
+      Assert.assertEquals(0, loadTest.numberOfPreparedTransactions);
+      Assert.assertEquals(0, loadTest.numberOfUpdates);
+      Assert.assertEquals(0, loadTest.numberOfDeletes);
+
       journal.stop();
 
       if (loadTest.ex != null)
@@ -271,18 +270,17 @@ public class ValidateTransactionHealthTest extends UnitTestCase
       /* (non-Javadoc)
        * @see org.hornetq.core.journal.TransactionFailureCallback#failedTransaction(long, java.util.List, java.util.List)
        */
-      public void failedTransaction(long transactionID, List<RecordInfo> records, List<RecordInfo> recordsToDelete)
+      public void failedTransaction(final long transactionID,
+                                    final List<RecordInfo> records,
+                                    final List<RecordInfo> recordsToDelete)
       {
       }
 
    }
-   
-   
+
    // Remote part of the test =================================================================
-   
 
-
-   public static void main(String args[]) throws Exception
+   public static void main(final String args[]) throws Exception
    {
 
       if (args.length != 5)
@@ -300,11 +298,15 @@ public class ValidateTransactionHealthTest extends UnitTestCase
 
       try
       {
-         Journal journal = appendData(journalType, journalDir, numberOfElements, transactionSize, numberOfThreads);
-         
+         Journal journal = ValidateTransactionHealthTest.appendData(journalType,
+                                                                    journalDir,
+                                                                    numberOfElements,
+                                                                    transactionSize,
+                                                                    numberOfThreads);
+
          // We don't stop the journal on the case of an external process...
          // The test is making sure that committed data can be reloaded fine...
-         // i.e.  committs are sync on disk as stated on the transaction.
+         // i.e. committs are sync on disk as stated on the transaction.
          // The journal shouldn't leave any state impeding reloading the server
       }
       catch (Exception e)
@@ -314,38 +316,40 @@ public class ValidateTransactionHealthTest extends UnitTestCase
       }
 
       // Simulating a crash on the system right after the data was committed.
-      Runtime.getRuntime().halt(OK);
+      Runtime.getRuntime().halt(ValidateTransactionHealthTest.OK);
    }
-   
-   public static JournalImpl appendData(String journalType,
-                                        String journalDir,
-                                        long numberOfElements,
-                                        int transactionSize,
-                                        int numberOfThreads) throws Exception
+
+   public static JournalImpl appendData(final String journalType,
+                                        final String journalDir,
+                                        final long numberOfElements,
+                                        final int transactionSize,
+                                        final int numberOfThreads) throws Exception
    {
-      final JournalImpl journal = createJournal(journalType, journalDir);
+      final JournalImpl journal = ValidateTransactionHealthTest.createJournal(journalType, journalDir);
 
       journal.start();
       journal.load(new LoaderCallback()
       {
 
-         public void addPreparedTransaction(PreparedTransactionInfo preparedTransaction)
+         public void addPreparedTransaction(final PreparedTransactionInfo preparedTransaction)
          {
          }
 
-         public void addRecord(RecordInfo info)
+         public void addRecord(final RecordInfo info)
          {
          }
 
-         public void deleteRecord(long id)
+         public void deleteRecord(final long id)
          {
          }
 
-         public void updateRecord(RecordInfo info)
+         public void updateRecord(final RecordInfo info)
          {
          }
 
-         public void failedTransaction(long transactionID, List<RecordInfo> records, List<RecordInfo> recordsToDelete)
+         public void failedTransaction(final long transactionID,
+                                       final List<RecordInfo> records,
+                                       final List<RecordInfo> recordsToDelete)
          {
          }
       });
@@ -378,30 +382,29 @@ public class ValidateTransactionHealthTest extends UnitTestCase
       return journal;
    }
 
-   public static JournalImpl createJournal(String journalType, String journalDir)
+   public static JournalImpl createJournal(final String journalType, final String journalDir)
    {
       JournalImpl journal = new JournalImpl(10485760,
                                             2,
                                             0,
                                             0,
-                                            getFactory(journalType, journalDir),
+                                            ValidateTransactionHealthTest.getFactory(journalType, journalDir),
                                             "journaltst",
                                             "tst",
                                             500);
       return journal;
    }
 
-   public static SequentialFileFactory getFactory(String factoryType, String directory)
+   public static SequentialFileFactory getFactory(final String factoryType, final String directory)
    {
       if (factoryType.equals("aio"))
       {
          return new AIOSequentialFileFactory(directory,
                                              ConfigurationImpl.DEFAULT_JOURNAL_BUFFER_SIZE_AIO,
-                                             ConfigurationImpl.DEFAULT_JOURNAL_BUFFER_TIMEOUT_AIO,                                             
+                                             ConfigurationImpl.DEFAULT_JOURNAL_BUFFER_TIMEOUT_AIO,
                                              false);
       }
-      else
-      if (factoryType.equals("nio2"))
+      else if (factoryType.equals("nio2"))
       {
          return new NIOSequentialFileFactory(directory, true);
       }
@@ -423,7 +426,10 @@ public class ValidateTransactionHealthTest extends UnitTestCase
 
       Exception e;
 
-      public LocalThread(JournalImpl journal, long numberOfElements, int transactionSize, AtomicLong nextID)
+      public LocalThread(final JournalImpl journal,
+                         final long numberOfElements,
+                         final int transactionSize,
+                         final AtomicLong nextID)
       {
          super();
          this.journal = journal;
@@ -432,6 +438,7 @@ public class ValidateTransactionHealthTest extends UnitTestCase
          this.nextID = nextID;
       }
 
+      @Override
       public void run()
       {
          try
@@ -483,7 +490,5 @@ public class ValidateTransactionHealthTest extends UnitTestCase
 
       }
    }
-
-   
 
 }

@@ -17,6 +17,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
@@ -60,7 +62,7 @@ public class MessageRateTest extends ServiceTestBase
          ClientSessionFactory sf = createInVMFactory();
          sf.setProducerMaxRate(10);
          ClientSession session = sf.createSession(false, true, true);
-         
+
          session.createQueue(ADDRESS, ADDRESS, true);
 
          ClientProducer producer = session.createProducer(ADDRESS);
@@ -71,8 +73,8 @@ public class MessageRateTest extends ServiceTestBase
          }
          long end = System.currentTimeMillis();
 
-         assertTrue("TotalTime = " + (end - start), end - start >= 1000);
-         
+         Assert.assertTrue("TotalTime = " + (end - start), end - start >= 1000);
+
          session.close();
       }
       finally
@@ -84,7 +86,6 @@ public class MessageRateTest extends ServiceTestBase
       }
 
    }
-
 
    public void testConsumeRate() throws Exception
    {
@@ -96,34 +97,33 @@ public class MessageRateTest extends ServiceTestBase
 
          ClientSessionFactory sf = createInVMFactory();
          sf.setConsumerMaxRate(10);
-         
+
          ClientSession session = sf.createSession(false, true, true);
-         
+
          session.createQueue(ADDRESS, ADDRESS, true);
 
-
          ClientProducer producer = session.createProducer(ADDRESS);
-         
+
          for (int i = 0; i < 12; i++)
          {
             producer.send(session.createClientMessage(false));
          }
 
          session.start();
-         
+
          ClientConsumer consumer = session.createConsumer(ADDRESS);
 
          long start = System.currentTimeMillis();
-         
+
          for (int i = 0; i < 12; i++)
          {
             consumer.receive(1000);
          }
-         
+
          long end = System.currentTimeMillis();
 
-         assertTrue("TotalTime = " + (end - start), end - start >= 1000);
-         
+         Assert.assertTrue("TotalTime = " + (end - start), end - start >= 1000);
+
          session.close();
       }
       finally
@@ -136,7 +136,6 @@ public class MessageRateTest extends ServiceTestBase
 
    }
 
-
    public void testConsumeRateListener() throws Exception
    {
       HornetQServer server = createServer(false);
@@ -147,29 +146,28 @@ public class MessageRateTest extends ServiceTestBase
 
          ClientSessionFactory sf = createInVMFactory();
          sf.setConsumerMaxRate(10);
-         
+
          ClientSession session = sf.createSession(false, true, true);
-         
+
          session.createQueue(ADDRESS, ADDRESS, true);
 
-
          ClientProducer producer = session.createProducer(ADDRESS);
-         
+
          for (int i = 0; i < 12; i++)
          {
             producer.send(session.createClientMessage(false));
          }
-         
+
          ClientConsumer consumer = session.createConsumer(ADDRESS);
-         
+
          final AtomicInteger failures = new AtomicInteger(0);
-         
+
          final CountDownLatch messages = new CountDownLatch(12);
-         
+
          consumer.setMessageHandler(new MessageHandler()
          {
 
-            public void onMessage(ClientMessage message)
+            public void onMessage(final ClientMessage message)
             {
                try
                {
@@ -182,17 +180,16 @@ public class MessageRateTest extends ServiceTestBase
                   failures.incrementAndGet();
                }
             }
-            
+
          });
 
-         
          long start = System.currentTimeMillis();
          session.start();
-         assertTrue(messages.await(5, TimeUnit.SECONDS));
+         Assert.assertTrue(messages.await(5, TimeUnit.SECONDS));
          long end = System.currentTimeMillis();
-         
-         assertTrue("TotalTime = " + (end - start), end - start >= 1000);
-         
+
+         Assert.assertTrue("TotalTime = " + (end - start), end - start >= 1000);
+
          session.close();
       }
       finally

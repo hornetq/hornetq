@@ -11,7 +11,6 @@
  * permissions and limitations under the License.
  */
 
-
 package org.hornetq.jms;
 
 import javax.jms.JMSException;
@@ -31,41 +30,41 @@ public class HornetQTopic extends HornetQDestination implements Topic
 {
    // Constants -----------------------------------------------------
 
-	private static final long serialVersionUID = 7873614001276404156L;
+   private static final long serialVersionUID = 7873614001276404156L;
 
-	public static final String JMS_TOPIC_ADDRESS_PREFIX = "jms.topic.";
+   public static final String JMS_TOPIC_ADDRESS_PREFIX = "jms.topic.";
 
    private static final char SEPARATOR = '.';
-      
+
    // Static --------------------------------------------------------
-      
+
    public static String createQueueNameForDurableSubscription(final String clientID, final String subscriptionName)
    {
-   	return escape(clientID) + SEPARATOR + escape(subscriptionName);
+      return HornetQDestination.escape(clientID) + HornetQTopic.SEPARATOR + HornetQDestination.escape(subscriptionName);
    }
-   
+
    public static Pair<String, String> decomposeQueueNameForDurableSubscription(final String queueName)
    {
       StringBuffer[] parts = new StringBuffer[2];
       int currentPart = 0;
-      
+
       parts[0] = new StringBuffer();
       parts[1] = new StringBuffer();
-      
+
       int pos = 0;
       while (pos < queueName.length())
       {
          char ch = queueName.charAt(pos);
          pos++;
 
-         if (ch == SEPARATOR)
+         if (ch == HornetQTopic.SEPARATOR)
          {
             currentPart++;
             if (currentPart >= parts.length)
             {
                throw new IllegalArgumentException("Invalid message queue name: " + queueName);
             }
-            
+
             continue;
          }
 
@@ -81,29 +80,29 @@ public class HornetQTopic extends HornetQDestination implements Topic
 
          parts[currentPart].append(ch);
       }
-      
+
       if (currentPart != 1)
       {
          throw new IllegalArgumentException("Invalid message queue name: " + queueName);
       }
-      
+
       Pair<String, String> pair = new Pair<String, String>(parts[0].toString(), parts[1].toString());
 
       return pair;
    }
-         
-   public static SimpleString createAddressFromName(String name)
+
+   public static SimpleString createAddressFromName(final String name)
    {
-      return new SimpleString(JMS_TOPIC_ADDRESS_PREFIX + name);
+      return new SimpleString(HornetQTopic.JMS_TOPIC_ADDRESS_PREFIX + name);
    }
 
-   // Attributes ----------------------------------------------------     
-   
+   // Attributes ----------------------------------------------------
+
    // Constructors --------------------------------------------------
 
    public HornetQTopic(final String name)
    {
-      super(JMS_TOPIC_ADDRESS_PREFIX + name, name);
+      super(HornetQTopic.JMS_TOPIC_ADDRESS_PREFIX + name, name);
    }
 
    public HornetQTopic(final String address, final String name)
@@ -120,22 +119,23 @@ public class HornetQTopic extends HornetQDestination implements Topic
 
    // Public --------------------------------------------------------
 
+   @Override
    public boolean isTemporary()
    {
       return false;
-   }   
-   
+   }
+
+   @Override
    public String toString()
    {
       return "HornetQTopic[" + name + "]";
    }
 
-     
    // Package protected ---------------------------------------------
-   
+
    // Protected -----------------------------------------------------
-   
+
    // Private -------------------------------------------------------
-   
-   // Inner classes -------------------------------------------------   
+
+   // Inner classes -------------------------------------------------
 }

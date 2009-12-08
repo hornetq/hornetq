@@ -22,95 +22,95 @@ package org.hornetq.utils;
  */
 public class TokenBucketLimiterImpl implements TokenBucketLimiter
 {
-	private final int rate;
-	
-	private final boolean spin;
-		
-	private volatile long last;
-	
-	private volatile int tokens;
-	
-	private volatile int tokensAdded;
-		
-	public TokenBucketLimiterImpl(final int rate, final boolean spin)
-	{
-		this.rate = rate;
-		
-		this.spin = spin;
-	}
-	
-	public int getRate()
-	{
-	   return rate;
-	}
-	
-	public boolean isSpin()
-	{
-	   return spin;
-	}
-		
-	public void limit()
-	{			
-		while (!check())
-		{
-			if (spin)
-			{
-			   Thread.yield();            
-			}
-			else
-			{			  
-			   try
+   private final int rate;
+
+   private final boolean spin;
+
+   private volatile long last;
+
+   private volatile int tokens;
+
+   private volatile int tokensAdded;
+
+   public TokenBucketLimiterImpl(final int rate, final boolean spin)
+   {
+      this.rate = rate;
+
+      this.spin = spin;
+   }
+
+   public int getRate()
+   {
+      return rate;
+   }
+
+   public boolean isSpin()
+   {
+      return spin;
+   }
+
+   public void limit()
+   {
+      while (!check())
+      {
+         if (spin)
+         {
+            Thread.yield();
+         }
+         else
+         {
+            try
             {
                Thread.sleep(1);
             }
             catch (Exception e)
-            {        
-               //Ignore
+            {
+               // Ignore
             }
-			}
-		}
-	}
-	
-	private boolean check()
-	{					
-		long now = System.currentTimeMillis();
-		
-		if (last == 0)
-		{
-			last = now;
-		}
-		
-		long diff = now - last;
-		
-		if (diff >= 1000)
-		{
-			last = last + 1000;
-			
-			tokens = 0;
-			
-			tokensAdded = 0;
-		}
-														
-		int tokensDue = (int)(rate * diff  / 1000);
-		
-		int tokensToAdd = tokensDue - tokensAdded;
-		
-		if (tokensToAdd > 0)
-		{
-			tokens += tokensToAdd;
-			
-			tokensAdded += tokensToAdd;
-		}
-							
-		if (tokens > 0)
-		{
-			tokens--;
-			
-			return true;
-		}
-		else
-		{
-			return false;
-		}
-	}	
+         }
+      }
+   }
+
+   private boolean check()
+   {
+      long now = System.currentTimeMillis();
+
+      if (last == 0)
+      {
+         last = now;
+      }
+
+      long diff = now - last;
+
+      if (diff >= 1000)
+      {
+         last = last + 1000;
+
+         tokens = 0;
+
+         tokensAdded = 0;
+      }
+
+      int tokensDue = (int)(rate * diff / 1000);
+
+      int tokensToAdd = tokensDue - tokensAdded;
+
+      if (tokensToAdd > 0)
+      {
+         tokens += tokensToAdd;
+
+         tokensAdded += tokensToAdd;
+      }
+
+      if (tokens > 0)
+      {
+         tokens--;
+
+         return true;
+      }
+      else
+      {
+         return false;
+      }
+   }
 }

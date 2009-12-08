@@ -33,7 +33,7 @@ public class HornetQRAObjectMessage extends HornetQRAMessage implements ObjectMe
    private static final Logger log = Logger.getLogger(HornetQRAObjectMessage.class);
 
    /** Whether trace is enabled */
-   private static boolean trace = log.isTraceEnabled();
+   private static boolean trace = HornetQRAObjectMessage.log.isTraceEnabled();
 
    /**
     * Create a new wrapper
@@ -44,9 +44,9 @@ public class HornetQRAObjectMessage extends HornetQRAMessage implements ObjectMe
    {
       super(message, session);
 
-      if (trace)
+      if (HornetQRAObjectMessage.trace)
       {
-         log.trace("constructor(" + message + ", " + session + ")");
+         HornetQRAObjectMessage.log.trace("constructor(" + message + ", " + session + ")");
       }
    }
 
@@ -57,9 +57,9 @@ public class HornetQRAObjectMessage extends HornetQRAMessage implements ObjectMe
     */
    public Serializable getObject() throws JMSException
    {
-      if (trace)
+      if (HornetQRAObjectMessage.trace)
       {
-         log.trace("getObject()");
+         HornetQRAObjectMessage.log.trace("getObject()");
       }
 
       return ((ObjectMessage)message).getObject();
@@ -72,9 +72,9 @@ public class HornetQRAObjectMessage extends HornetQRAMessage implements ObjectMe
     */
    public void setObject(final Serializable object) throws JMSException
    {
-      if (trace)
+      if (HornetQRAObjectMessage.trace)
       {
-         log.trace("setObject(" + object + ")");
+         HornetQRAObjectMessage.log.trace("setObject(" + object + ")");
       }
 
       ((ObjectMessage)message).setObject(object);

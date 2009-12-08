@@ -30,7 +30,7 @@ import org.hornetq.javaee.example.server.SendMessageService;
  */
 public class EJBClientExample
 {
-   public static void main(String[] args) throws Exception
+   public static void main(final String[] args) throws Exception
    {
       InitialContext initialContext = null;
       Connection connection = null;
@@ -72,7 +72,7 @@ public class EJBClientExample
       }
       finally
       {
-         // Step 10. Be sure to close the resources!         
+         // Step 10. Be sure to close the resources!
          if (initialContext != null)
          {
             initialContext.close();

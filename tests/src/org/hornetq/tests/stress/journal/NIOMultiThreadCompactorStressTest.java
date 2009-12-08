@@ -21,8 +21,9 @@ import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
-import org.hornetq.core.buffers.HornetQBuffers;
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
@@ -67,11 +68,13 @@ public class NIOMultiThreadCompactorStressTest extends ServiceTestBase
       return 3;
    }
 
+   @Override
    protected void setUp() throws Exception
    {
       super.setUp();
    }
 
+   @Override
    protected void tearDown() throws Exception
    {
       stopServer();
@@ -105,8 +108,8 @@ public class NIOMultiThreadCompactorStressTest extends ServiceTestBase
          journal.start();
          journal.load(committedRecords, preparedTransactions, null);
 
-         assertEquals(0, committedRecords.size());
-         assertEquals(0, preparedTransactions.size());
+         Assert.assertEquals(0, committedRecords.size());
+         Assert.assertEquals(0, preparedTransactions.size());
 
          System.out.println("DataFiles = " + journal.getDataFilesCount());
 
@@ -114,7 +117,7 @@ public class NIOMultiThreadCompactorStressTest extends ServiceTestBase
          {
             System.out.println("DataFiles = " + journal.getDataFilesCount());
             journal.forceMoveNextFile();
-            assertEquals(0, journal.getDataFilesCount());
+            Assert.assertEquals(0, journal.getDataFilesCount());
          }
 
          journal.stop();
@@ -138,7 +141,7 @@ public class NIOMultiThreadCompactorStressTest extends ServiceTestBase
     * @throws HornetQException
     * @throws XAException
     */
-   private void addEmptyTransaction(Xid xid) throws HornetQException, XAException
+   private void addEmptyTransaction(final Xid xid) throws HornetQException, XAException
    {
       ClientSessionFactory sf = createInVMFactory();
       sf.setBlockOnNonPersistentSend(false);
@@ -151,7 +154,7 @@ public class NIOMultiThreadCompactorStressTest extends ServiceTestBase
       sf.close();
    }
 
-   private void checkEmptyXID(Xid xid) throws HornetQException, XAException
+   private void checkEmptyXID(final Xid xid) throws HornetQException, XAException
    {
       ClientSessionFactory sf = createInVMFactory();
       sf.setBlockOnNonPersistentSend(false);
@@ -159,8 +162,8 @@ public class NIOMultiThreadCompactorStressTest extends ServiceTestBase
       ClientSession session = sf.createSession(true, false, false);
 
       Xid[] xids = session.recover(XAResource.TMSTARTRSCAN);
-      assertEquals(1, xids.length);
-      assertEquals(xid, xids[0]);
+      Assert.assertEquals(1, xids.length);
+      Assert.assertEquals(xid, xids[0]);
 
       session.rollback(xid);
 
@@ -260,7 +263,7 @@ public class NIOMultiThreadCompactorStressTest extends ServiceTestBase
     * @param queue
     * @throws HornetQException
     */
-   private void drainQueue(int numberOfMessagesExpected, SimpleString queue) throws HornetQException
+   private void drainQueue(final int numberOfMessagesExpected, final SimpleString queue) throws HornetQException
    {
       ClientSession sess = sf.createSession(true, true);
 
@@ -271,7 +274,7 @@ public class NIOMultiThreadCompactorStressTest extends ServiceTestBase
       for (int i = 0; i < numberOfMessagesExpected; i++)
       {
          ClientMessage msg = consumer.receive(5000);
-         assertNotNull(msg);
+         Assert.assertNotNull(msg);
 
          if (i % 100 == 0)
          {
@@ -280,7 +283,7 @@ public class NIOMultiThreadCompactorStressTest extends ServiceTestBase
          msg.acknowledge();
       }
 
-      assertNull(consumer.receiveImmediate());
+      Assert.assertNull(consumer.receiveImmediate());
 
       sess.close();
    }
@@ -288,7 +291,7 @@ public class NIOMultiThreadCompactorStressTest extends ServiceTestBase
    /**
     * @throws HornetQException
     */
-   private void addBogusData(int nmessages, String queue) throws HornetQException
+   private void addBogusData(final int nmessages, final String queue) throws HornetQException
    {
       ClientSession session = sf.createSession(false, false);
       try
@@ -311,7 +314,7 @@ public class NIOMultiThreadCompactorStressTest extends ServiceTestBase
       session.start();
 
       ClientConsumer cons = session.createConsumer(queue);
-      assertNotNull(cons.receive(1000));
+      Assert.assertNotNull(cons.receive(1000));
       session.rollback();
       session.close();
    }
@@ -403,12 +406,12 @@ public class NIOMultiThreadCompactorStressTest extends ServiceTestBase
 
       final boolean transactional;
 
-      BaseThread(String name,
-                 CountDownLatch latchReady,
-                 CountDownLatch latchStart,
-                 boolean transactional,
-                 int numberOfMessages,
-                 int commitInterval)
+      BaseThread(final String name,
+                 final CountDownLatch latchReady,
+                 final CountDownLatch latchStart,
+                 final boolean transactional,
+                 final int numberOfMessages,
+                 final int commitInterval)
       {
          super(name);
          this.transactional = transactional;
@@ -422,16 +425,17 @@ public class NIOMultiThreadCompactorStressTest extends ServiceTestBase
 
    class ProducerThread extends BaseThread
    {
-      ProducerThread(int id,
-                     CountDownLatch latchReady,
-                     CountDownLatch latchStart,
-                     boolean transactional,
-                     int numberOfMessages,
-                     int commitInterval)
+      ProducerThread(final int id,
+                     final CountDownLatch latchReady,
+                     final CountDownLatch latchStart,
+                     final boolean transactional,
+                     final int numberOfMessages,
+                     final int commitInterval)
       {
          super("ClientProducer:" + id, latchReady, latchStart, transactional, numberOfMessages, commitInterval);
       }
 
+      @Override
       public void run()
       {
          ClientSession session = null;
@@ -455,7 +459,7 @@ public class NIOMultiThreadCompactorStressTest extends ServiceTestBase
                   // System.out.println(Thread.currentThread().getName() + "::sent #" + i);
                }
                ClientMessage msg = session.createClientMessage(true);
-            
+
                prod.send(msg);
             }
 
@@ -490,16 +494,17 @@ public class NIOMultiThreadCompactorStressTest extends ServiceTestBase
 
    class ConsumerThread extends BaseThread
    {
-      ConsumerThread(int id,
-                     CountDownLatch latchReady,
-                     CountDownLatch latchStart,
-                     boolean transactional,
-                     int numberOfMessages,
-                     int commitInterval)
+      ConsumerThread(final int id,
+                     final CountDownLatch latchReady,
+                     final CountDownLatch latchStart,
+                     final boolean transactional,
+                     final int numberOfMessages,
+                     final int commitInterval)
       {
          super("ClientConsumer:" + id, latchReady, latchStart, transactional, numberOfMessages, commitInterval);
       }
 
+      @Override
       public void run()
       {
          ClientSession session = null;

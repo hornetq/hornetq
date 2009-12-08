@@ -15,7 +15,6 @@ package org.hornetq.core.remoting.impl.wireformat;
 
 import org.hornetq.core.buffers.HornetQBuffer;
 import org.hornetq.core.journal.JournalLoadInformation;
-import org.hornetq.utils.DataConstants;
 
 /**
  * Message used to compare if the Journals between the live and
@@ -37,14 +36,14 @@ public class ReplicationCompareDataMessage extends PacketImpl
 
    public ReplicationCompareDataMessage(final JournalLoadInformation[] journalInformation)
    {
-      super(REPLICATION_COMPARE_DATA);
+      super(PacketImpl.REPLICATION_COMPARE_DATA);
 
       this.journalInformation = journalInformation;
    }
 
    public ReplicationCompareDataMessage()
    {
-      super(REPLICATION_COMPARE_DATA);
+      super(PacketImpl.REPLICATION_COMPARE_DATA);
    }
 
    // Public --------------------------------------------------------
@@ -65,13 +64,13 @@ public class ReplicationCompareDataMessage extends PacketImpl
    {
       int numberOfJournals = buffer.readInt();
 
-      this.journalInformation = new JournalLoadInformation[numberOfJournals];
+      journalInformation = new JournalLoadInformation[numberOfJournals];
 
       for (int i = 0; i < numberOfJournals; i++)
       {
-         this.journalInformation[i] = new JournalLoadInformation();
-         this.journalInformation[i].setNumberOfRecords(buffer.readInt());
-         this.journalInformation[i].setMaxID(buffer.readLong());
+         journalInformation[i] = new JournalLoadInformation();
+         journalInformation[i].setNumberOfRecords(buffer.readInt());
+         journalInformation[i].setMaxID(buffer.readLong());
       }
    }
 

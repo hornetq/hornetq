@@ -25,6 +25,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.buffers.HornetQBuffer;
 import org.hornetq.core.buffers.HornetQBuffers;
 import org.hornetq.core.client.ClientMessage;
@@ -68,7 +70,7 @@ public class LargeMessageBufferTest extends UnitTestCase
       {
          try
          {
-            assertEquals(i, buffer.readByte());
+            Assert.assertEquals(i, buffer.readByte());
          }
          catch (Exception e)
          {
@@ -79,7 +81,7 @@ public class LargeMessageBufferTest extends UnitTestCase
       try
       {
          buffer.readByte();
-         fail("supposed to throw an exception");
+         Assert.fail("supposed to throw an exception");
       }
       catch (IndexOutOfBoundsException e)
       {
@@ -102,7 +104,7 @@ public class LargeMessageBufferTest extends UnitTestCase
 
          bytes = new byte[16];
          buffer.getBytes(0, bytes);
-         fail("supposed to throw an exception");
+         Assert.fail("supposed to throw an exception");
       }
       catch (java.lang.IndexOutOfBoundsException e)
       {
@@ -133,13 +135,13 @@ public class LargeMessageBufferTest extends UnitTestCase
 
       for (int i = 1; i <= 15; i++)
       {
-         assertEquals(i, buffer.readInt());
+         Assert.assertEquals(i, buffer.readInt());
       }
 
       try
       {
          buffer.readByte();
-         fail("supposed to throw an exception");
+         Assert.fail("supposed to throw an exception");
       }
       catch (IndexOutOfBoundsException e)
       {
@@ -153,13 +155,13 @@ public class LargeMessageBufferTest extends UnitTestCase
 
       for (int i = 1; i <= 15; i++)
       {
-         assertEquals(i, buffer.readLong());
+         Assert.assertEquals(i, buffer.readLong());
       }
 
       try
       {
          buffer.readByte();
-         fail("supposed to throw an exception");
+         Assert.fail("supposed to throw an exception");
       }
       catch (IndexOutOfBoundsException e)
       {
@@ -182,21 +184,21 @@ public class LargeMessageBufferTest extends UnitTestCase
 
       LargeMessageBufferImpl readBuffer = splitBuffer(3, dynamic.toByteBuffer().array());
 
-      assertEquals(str1, readBuffer.readUTF());
-      assertEquals(str2, readBuffer.readString());
-      assertEquals(d1, readBuffer.readDouble());
-      assertEquals(f1, readBuffer.readFloat());
+      Assert.assertEquals(str1, readBuffer.readUTF());
+      Assert.assertEquals(str2, readBuffer.readString());
+      Assert.assertEquals(d1, readBuffer.readDouble());
+      Assert.assertEquals(f1, readBuffer.readFloat());
    }
 
    private File getTestFile()
    {
       return new File(getTestDir(), "temp.file");
    }
-   
+
    public void testReadDataOverCached() throws Exception
    {
       clearData();
-      
+
       HornetQBuffer dynamic = HornetQBuffers.dynamicBuffer(1);
 
       String str1 = RandomUtil.randomString();
@@ -211,18 +213,18 @@ public class LargeMessageBufferTest extends UnitTestCase
 
       LargeMessageBufferImpl readBuffer = splitBuffer(3, dynamic.toByteBuffer().array(), getTestFile());
 
-      assertEquals(str1, readBuffer.readUTF());
-      assertEquals(str2, readBuffer.readString());
-      assertEquals(d1, readBuffer.readDouble());
-      assertEquals(f1, readBuffer.readFloat());
-      
+      Assert.assertEquals(str1, readBuffer.readUTF());
+      Assert.assertEquals(str2, readBuffer.readString());
+      Assert.assertEquals(d1, readBuffer.readDouble());
+      Assert.assertEquals(f1, readBuffer.readFloat());
+
       readBuffer.readerIndex(0);
-      
-      assertEquals(str1, readBuffer.readUTF());
-      assertEquals(str2, readBuffer.readString());
-      assertEquals(d1, readBuffer.readDouble());
-      assertEquals(f1, readBuffer.readFloat());
-      
+
+      Assert.assertEquals(str1, readBuffer.readUTF());
+      Assert.assertEquals(str2, readBuffer.readString());
+      Assert.assertEquals(d1, readBuffer.readDouble());
+      Assert.assertEquals(f1, readBuffer.readFloat());
+
       readBuffer.close();
    }
 
@@ -238,7 +240,7 @@ public class LargeMessageBufferTest extends UnitTestCase
 
       for (byte i = 0; i < 5; i++)
       {
-         assertEquals(i, bytes[i]);
+         Assert.assertEquals(i, bytes[i]);
       }
 
       final CountDownLatch latchGo = new CountDownLatch(1);
@@ -247,6 +249,7 @@ public class LargeMessageBufferTest extends UnitTestCase
 
       Thread t = new Thread()
       {
+         @Override
          public void run()
          {
 
@@ -260,7 +263,7 @@ public class LargeMessageBufferTest extends UnitTestCase
             }
             catch (IllegalAccessError ignored)
             {
-               
+
             }
             catch (Throwable e)
             {
@@ -278,7 +281,7 @@ public class LargeMessageBufferTest extends UnitTestCase
 
       t.join();
 
-      assertEquals(0, errorCount.get());
+      Assert.assertEquals(0, errorCount.get());
 
    }
 
@@ -291,7 +294,7 @@ public class LargeMessageBufferTest extends UnitTestCase
 
       for (byte i = 0; i < 5; i++)
       {
-         assertEquals(i, bytes[i]);
+         Assert.assertEquals(i, bytes[i]);
       }
    }
 
@@ -316,6 +319,7 @@ public class LargeMessageBufferTest extends UnitTestCase
 
       Thread treader = new Thread("treader")
       {
+         @Override
          public void run()
          {
             try
@@ -364,6 +368,7 @@ public class LargeMessageBufferTest extends UnitTestCase
 
       Thread twaiter = new Thread("twaiter")
       {
+         @Override
          public void run()
          {
             try
@@ -382,32 +387,32 @@ public class LargeMessageBufferTest extends UnitTestCase
       twaiter.setDaemon(true);
       twaiter.start();
 
-      assertTrue(done1.await(10, TimeUnit.SECONDS));
+      Assert.assertTrue(done1.await(10, TimeUnit.SECONDS));
 
-      assertEquals(3, count.get());
-      assertEquals(1024 * 3, totalBytes.get());
+      Assert.assertEquals(3, count.get());
+      Assert.assertEquals(1024 * 3, totalBytes.get());
 
       for (int i = 0; i < 8; i++)
       {
          outBuffer.addPacket(new FakePacket(-1, new byte[1024], true, false));
       }
 
-      assertEquals(1, waiting.getCount());
+      Assert.assertEquals(1, waiting.getCount());
 
       outBuffer.addPacket(new FakePacket(-1, new byte[123], false, false));
 
-      assertTrue(done2.await(10, TimeUnit.SECONDS));
+      Assert.assertTrue(done2.await(10, TimeUnit.SECONDS));
 
-      assertTrue(waiting.await(10, TimeUnit.SECONDS));
+      Assert.assertTrue(waiting.await(10, TimeUnit.SECONDS));
 
-      assertEquals(12, count.get());
-      assertEquals(1024 * 11 + 123, totalBytes.get());
+      Assert.assertEquals(12, count.get());
+      Assert.assertEquals(1024 * 11 + 123, totalBytes.get());
 
       treader.join();
 
       twaiter.join();
 
-      assertEquals(0, errors.get());
+      Assert.assertEquals(0, errors.get());
 
    }
 
@@ -418,7 +423,7 @@ public class LargeMessageBufferTest extends UnitTestCase
       outBuffer.saveBuffer(new OutputStream()
       {
          @Override
-         public void write(int b) throws IOException
+         public void write(final int b) throws IOException
          {
             // nohting to be done
          }
@@ -438,7 +443,7 @@ public class LargeMessageBufferTest extends UnitTestCase
       outBuffer.setOutputStream(new OutputStream()
       {
          @Override
-         public void write(int b) throws IOException
+         public void write(final int b) throws IOException
          {
             latchBytesWritten1.countDown();
             latchBytesWritten2.countDown();
@@ -450,13 +455,13 @@ public class LargeMessageBufferTest extends UnitTestCase
       try
       {
          outBuffer.readByte();
-         fail("supposed to throw an exception");
+         Assert.fail("supposed to throw an exception");
       }
       catch (IllegalAccessError ignored)
       {
       }
 
-      assertTrue("It waited too much", System.currentTimeMillis() - start < 30000);
+      Assert.assertTrue("It waited too much", System.currentTimeMillis() - start < 30000);
 
    }
 
@@ -468,7 +473,7 @@ public class LargeMessageBufferTest extends UnitTestCase
       return splitBuffer(5, new byte[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 });
    }
 
-   private LargeMessageBufferImpl createBufferWithIntegers(int splitFactor, int... values) throws Exception
+   private LargeMessageBufferImpl createBufferWithIntegers(final int splitFactor, final int... values) throws Exception
    {
       ByteArrayOutputStream byteOut = new ByteArrayOutputStream(values.length * 4);
       DataOutputStream dataOut = new DataOutputStream(byteOut);
@@ -481,7 +486,7 @@ public class LargeMessageBufferTest extends UnitTestCase
       return splitBuffer(splitFactor, byteOut.toByteArray());
    }
 
-   private LargeMessageBufferImpl createBufferWithLongs(int splitFactor, long... values) throws Exception
+   private LargeMessageBufferImpl createBufferWithLongs(final int splitFactor, final long... values) throws Exception
    {
       ByteArrayOutputStream byteOut = new ByteArrayOutputStream(values.length * 8);
       DataOutputStream dataOut = new DataOutputStream(byteOut);
@@ -494,12 +499,12 @@ public class LargeMessageBufferTest extends UnitTestCase
       return splitBuffer(splitFactor, byteOut.toByteArray());
    }
 
-   private LargeMessageBufferImpl splitBuffer(int splitFactor, byte[] bytes) throws Exception
+   private LargeMessageBufferImpl splitBuffer(final int splitFactor, final byte[] bytes) throws Exception
    {
       return splitBuffer(splitFactor, bytes, null);
    }
 
-   private LargeMessageBufferImpl splitBuffer(int splitFactor, byte[] bytes, File file) throws Exception
+   private LargeMessageBufferImpl splitBuffer(final int splitFactor, final byte[] bytes, final File file) throws Exception
    {
       LargeMessageBufferImpl outBuffer = new LargeMessageBufferImpl(new FakeConsumerInternal(), bytes.length, 5, file);
 
@@ -513,7 +518,7 @@ public class LargeMessageBufferTest extends UnitTestCase
          {
             break;
          }
-         
+
          SessionReceiveContinuationMessage packet = null;
 
          if (size < splitFactor)
@@ -527,14 +532,14 @@ public class LargeMessageBufferTest extends UnitTestCase
          {
             packet = new FakePacket(1, splitElement, input.available() > 0, false);
          }
-         
+
          outBuffer.addPacket(packet);
       }
 
       return outBuffer;
 
    }
-   
+
    private class FakePacket extends SessionReceiveContinuationMessage
    {
       public FakePacket(final long consumerID,
@@ -543,18 +548,18 @@ public class LargeMessageBufferTest extends UnitTestCase
                         final boolean requiresResponse)
       {
          super(consumerID, body, continues, requiresResponse);
-         this.size = 1;
+         size = 1;
       }
    }
 
    /**
        * @param bytes
        */
-   private void validateAgainstSample(byte[] bytes)
+   private void validateAgainstSample(final byte[] bytes)
    {
       for (int i = 1; i <= 15; i++)
       {
-         assertEquals(i, bytes[i - 1]);
+         Assert.assertEquals(i, bytes[i - 1]);
       }
    }
 
@@ -572,7 +577,7 @@ public class LargeMessageBufferTest extends UnitTestCase
       public void close() throws HornetQException
       {
          // TODO Auto-generated method stub
-         
+
       }
 
       public Exception getLastException()
@@ -599,7 +604,7 @@ public class LargeMessageBufferTest extends UnitTestCase
          return null;
       }
 
-      public ClientMessage receive(long timeout) throws HornetQException
+      public ClientMessage receive(final long timeout) throws HornetQException
       {
          // TODO Auto-generated method stub
          return null;
@@ -611,46 +616,46 @@ public class LargeMessageBufferTest extends UnitTestCase
          return null;
       }
 
-      public void setMessageHandler(MessageHandler handler) throws HornetQException
+      public void setMessageHandler(final MessageHandler handler) throws HornetQException
       {
          // TODO Auto-generated method stub
-         
+
       }
 
-      public void acknowledge(ClientMessage message) throws HornetQException
+      public void acknowledge(final ClientMessage message) throws HornetQException
       {
          // TODO Auto-generated method stub
-         
+
       }
 
       public void cleanUp() throws HornetQException
       {
          // TODO Auto-generated method stub
-         
+
       }
 
       public void clear() throws HornetQException
       {
          // TODO Auto-generated method stub
-         
+
       }
 
       public void clearAtFailover()
       {
          // TODO Auto-generated method stub
-         
+
       }
 
-      public void flowControl(int messageBytes, boolean discountSlowConsumer) throws HornetQException
+      public void flowControl(final int messageBytes, final boolean discountSlowConsumer) throws HornetQException
       {
          // TODO Auto-generated method stub
-         
+
       }
 
       public void flushAcks() throws HornetQException
       {
          // TODO Auto-generated method stub
-         
+
       }
 
       public int getBufferSize()
@@ -683,22 +688,22 @@ public class LargeMessageBufferTest extends UnitTestCase
          return null;
       }
 
-      public void handleLargeMessage(SessionReceiveLargeMessage largeMessageHeader) throws Exception
+      public void handleLargeMessage(final SessionReceiveLargeMessage largeMessageHeader) throws Exception
       {
          // TODO Auto-generated method stub
-         
+
       }
 
-      public void handleLargeMessageContinuation(SessionReceiveContinuationMessage continuation) throws Exception
+      public void handleLargeMessageContinuation(final SessionReceiveContinuationMessage continuation) throws Exception
       {
          // TODO Auto-generated method stub
-         
+
       }
 
-      public void handleMessage(ClientMessageInternal message) throws Exception
+      public void handleMessage(final ClientMessageInternal message) throws Exception
       {
          // TODO Auto-generated method stub
-         
+
       }
 
       public boolean isBrowseOnly()
@@ -710,15 +715,14 @@ public class LargeMessageBufferTest extends UnitTestCase
       public void start()
       {
          // TODO Auto-generated method stub
-         
+
       }
 
       public void stop() throws HornetQException
       {
          // TODO Auto-generated method stub
-         
+
       }
-      
 
    }
 

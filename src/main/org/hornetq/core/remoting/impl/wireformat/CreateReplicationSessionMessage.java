@@ -14,7 +14,6 @@
 package org.hornetq.core.remoting.impl.wireformat;
 
 import org.hornetq.core.buffers.HornetQBuffer;
-import org.hornetq.utils.DataConstants;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Clebert Suconic</a>
@@ -33,14 +32,14 @@ public class CreateReplicationSessionMessage extends PacketImpl
 
    public CreateReplicationSessionMessage(final long sessionChannelID)
    {
-      super(CREATE_REPLICATION);
+      super(PacketImpl.CREATE_REPLICATION);
 
       this.sessionChannelID = sessionChannelID;
    }
 
    public CreateReplicationSessionMessage()
    {
-      super(CREATE_REPLICATION);
+      super(PacketImpl.CREATE_REPLICATION);
    }
 
    // Public --------------------------------------------------------

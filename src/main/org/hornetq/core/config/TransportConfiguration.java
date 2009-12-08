@@ -64,7 +64,7 @@ public class TransportConfiguration implements Serializable
 
    public TransportConfiguration(final String className, final Map<String, Object> params, final String name)
    {
-      this.factoryClassName = className;
+      factoryClassName = className;
 
       this.params = params;
 
@@ -96,11 +96,13 @@ public class TransportConfiguration implements Serializable
       return params;
    }
 
+   @Override
    public int hashCode()
    {
       return factoryClassName.hashCode();
    }
 
+   @Override
    public boolean equals(final Object other)
    {
       if (other instanceof TransportConfiguration == false)
@@ -148,7 +150,8 @@ public class TransportConfiguration implements Serializable
          return false;
       }
    }
-   
+
+   @Override
    public String toString()
    {
       StringBuilder str = new StringBuilder(replaceWildcardChars(factoryClassName));
@@ -180,7 +183,7 @@ public class TransportConfiguration implements Serializable
 
       return str.toString();
    }
-   
+
    public void encode(final HornetQBuffer buffer)
    {
       buffer.writeString(name);
@@ -198,22 +201,22 @@ public class TransportConfiguration implements Serializable
 
             if (val instanceof Boolean)
             {
-               buffer.writeByte(TYPE_BOOLEAN);
+               buffer.writeByte(TransportConfiguration.TYPE_BOOLEAN);
                buffer.writeBoolean((Boolean)val);
             }
             else if (val instanceof Integer)
             {
-               buffer.writeByte(TYPE_INT);
+               buffer.writeByte(TransportConfiguration.TYPE_INT);
                buffer.writeInt((Integer)val);
             }
             else if (val instanceof Long)
             {
-               buffer.writeByte(TYPE_LONG);
+               buffer.writeByte(TransportConfiguration.TYPE_LONG);
                buffer.writeLong((Long)val);
             }
             else if (val instanceof String)
             {
-               buffer.writeByte(TYPE_STRING);
+               buffer.writeByte(TransportConfiguration.TYPE_STRING);
                buffer.writeString((String)val);
             }
             else
@@ -286,7 +289,7 @@ public class TransportConfiguration implements Serializable
          params.put(key, val);
       }
    }
-   
+
    private String replaceWildcardChars(final String str)
    {
       return str.replace('.', '-');

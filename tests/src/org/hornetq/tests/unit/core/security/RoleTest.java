@@ -9,7 +9,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
  * implied.  See the License for the specific language governing
  * permissions and limitations under the License.
- */ 
+ */
 
 package org.hornetq.tests.unit.core.security;
 
@@ -19,6 +19,7 @@ import static org.hornetq.core.security.CheckType.CREATE_NON_DURABLE_QUEUE;
 import static org.hornetq.core.security.CheckType.DELETE_DURABLE_QUEUE;
 import static org.hornetq.core.security.CheckType.DELETE_NON_DURABLE_QUEUE;
 import static org.hornetq.core.security.CheckType.SEND;
+import junit.framework.Assert;
 
 import org.hornetq.core.security.Role;
 import org.hornetq.tests.util.UnitTestCase;
@@ -41,40 +42,39 @@ public class RoleTest extends UnitTestCase
 
    // Public --------------------------------------------------------
 
-   
    public void testReadRole() throws Exception
    {
       Role role = new Role("testReadRole", true, false, false, false, false, false, false);
-      assertTrue(SEND.hasRole(role));
-      assertFalse(CONSUME.hasRole(role));
-      assertFalse(CREATE_DURABLE_QUEUE.hasRole(role));
-      assertFalse(CREATE_NON_DURABLE_QUEUE.hasRole(role));
-      assertFalse(DELETE_DURABLE_QUEUE.hasRole(role));
-      assertFalse(DELETE_NON_DURABLE_QUEUE.hasRole(role));
+      Assert.assertTrue(SEND.hasRole(role));
+      Assert.assertFalse(CONSUME.hasRole(role));
+      Assert.assertFalse(CREATE_DURABLE_QUEUE.hasRole(role));
+      Assert.assertFalse(CREATE_NON_DURABLE_QUEUE.hasRole(role));
+      Assert.assertFalse(DELETE_DURABLE_QUEUE.hasRole(role));
+      Assert.assertFalse(DELETE_NON_DURABLE_QUEUE.hasRole(role));
    }
-   
+
    public void testWriteRole() throws Exception
    {
       Role role = new Role("testWriteRole", false, true, false, false, false, false, false);
-      assertFalse(SEND.hasRole(role));
-      assertTrue(CONSUME.hasRole(role));
-      assertFalse(CREATE_DURABLE_QUEUE.hasRole(role));
-      assertFalse(CREATE_NON_DURABLE_QUEUE.hasRole(role));
-      assertFalse(DELETE_DURABLE_QUEUE.hasRole(role));
-      assertFalse(DELETE_NON_DURABLE_QUEUE.hasRole(role));
+      Assert.assertFalse(SEND.hasRole(role));
+      Assert.assertTrue(CONSUME.hasRole(role));
+      Assert.assertFalse(CREATE_DURABLE_QUEUE.hasRole(role));
+      Assert.assertFalse(CREATE_NON_DURABLE_QUEUE.hasRole(role));
+      Assert.assertFalse(DELETE_DURABLE_QUEUE.hasRole(role));
+      Assert.assertFalse(DELETE_NON_DURABLE_QUEUE.hasRole(role));
    }
 
    public void testCreateRole() throws Exception
    {
       Role role = new Role("testWriteRole", false, false, true, false, false, false, false);
-      assertFalse(SEND.hasRole(role));
-      assertFalse(CONSUME.hasRole(role));
-      assertTrue(CREATE_DURABLE_QUEUE.hasRole(role));
-      assertFalse(CREATE_NON_DURABLE_QUEUE.hasRole(role));
-      assertFalse(DELETE_DURABLE_QUEUE.hasRole(role));
-      assertFalse(DELETE_NON_DURABLE_QUEUE.hasRole(role));
+      Assert.assertFalse(SEND.hasRole(role));
+      Assert.assertFalse(CONSUME.hasRole(role));
+      Assert.assertTrue(CREATE_DURABLE_QUEUE.hasRole(role));
+      Assert.assertFalse(CREATE_NON_DURABLE_QUEUE.hasRole(role));
+      Assert.assertFalse(DELETE_DURABLE_QUEUE.hasRole(role));
+      Assert.assertFalse(DELETE_NON_DURABLE_QUEUE.hasRole(role));
    }
-   
+
    public void testEqualsAndHashcode() throws Exception
    {
       Role role = new Role("testEquals", true, true, true, false, false, false, false);
@@ -84,26 +84,26 @@ public class RoleTest extends UnitTestCase
       Role roleWithDifferentWrite = new Role("testEquals", true, false, true, false, false, false, false);
       Role roleWithDifferentCreate = new Role("testEquals", true, true, false, false, false, false, false);
 
-      assertTrue(role.equals(role));
+      Assert.assertTrue(role.equals(role));
 
-      assertTrue(role.equals(sameRole));
-      assertTrue(role.hashCode() == sameRole.hashCode());
-      
-      assertFalse(role.equals(roleWithDifferentName));
-      assertFalse(role.hashCode() == roleWithDifferentName.hashCode());
-      
-      assertFalse(role.equals(roleWithDifferentRead));
-      assertFalse(role.hashCode() == roleWithDifferentRead.hashCode());
-      
-      assertFalse(role.equals(roleWithDifferentWrite));
-      assertFalse(role.hashCode() == roleWithDifferentWrite.hashCode());
-      
-      assertFalse(role.equals(roleWithDifferentCreate));
-      assertFalse(role.hashCode() == roleWithDifferentCreate.hashCode());
-      
-      assertFalse(role.equals(null));
+      Assert.assertTrue(role.equals(sameRole));
+      Assert.assertTrue(role.hashCode() == sameRole.hashCode());
+
+      Assert.assertFalse(role.equals(roleWithDifferentName));
+      Assert.assertFalse(role.hashCode() == roleWithDifferentName.hashCode());
+
+      Assert.assertFalse(role.equals(roleWithDifferentRead));
+      Assert.assertFalse(role.hashCode() == roleWithDifferentRead.hashCode());
+
+      Assert.assertFalse(role.equals(roleWithDifferentWrite));
+      Assert.assertFalse(role.hashCode() == roleWithDifferentWrite.hashCode());
+
+      Assert.assertFalse(role.equals(roleWithDifferentCreate));
+      Assert.assertFalse(role.hashCode() == roleWithDifferentCreate.hashCode());
+
+      Assert.assertFalse(role.equals(null));
    }
-   
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

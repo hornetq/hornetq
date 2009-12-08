@@ -18,6 +18,8 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
@@ -52,13 +54,13 @@ public class AsynchronousFailoverTest extends FailoverTestBase
    {
       CountDownLatch latch = new CountDownLatch(1);
 
-      public void connectionFailed(HornetQException me)
+      public void connectionFailed(final HornetQException me)
       {
          latch.countDown();
       }
-      
-      public void beforeReconnect(HornetQException me)
-      {            
+
+      public void beforeReconnect(final HornetQException me)
+      {
       }
    }
 
@@ -74,7 +76,7 @@ public class AsynchronousFailoverTest extends FailoverTestBase
             }
             catch (Exception e)
             {
-               log.error("Test failed", e);
+               AsynchronousFailoverTest.log.error("Test failed", e);
             }
          }
       });
@@ -92,7 +94,7 @@ public class AsynchronousFailoverTest extends FailoverTestBase
             }
             catch (Exception e)
             {
-               log.error("Test failed", e);
+               AsynchronousFailoverTest.log.error("Test failed", e);
             }
          }
       });
@@ -111,7 +113,7 @@ public class AsynchronousFailoverTest extends FailoverTestBase
       {
          failed = true;
       }
-      
+
       void reset()
       {
          failed = false;
@@ -121,67 +123,67 @@ public class AsynchronousFailoverTest extends FailoverTestBase
    private void runTest(final TestRunner runnable) throws Exception
    {
       final int numIts = 1;
-      
+
       DelegatingSession.debug = true;
 
       try
       {
          for (int i = 0; i < numIts; i++)
          {
-            log.info("Iteration " + i);
-   
+            AsynchronousFailoverTest.log.info("Iteration " + i);
+
             sf = getSessionFactory();
-   
+
             sf.setBlockOnNonPersistentSend(true);
             sf.setBlockOnPersistentSend(true);
-   
+
             ClientSession createSession = sf.createSession(true, true);
-   
-            createSession.createQueue(ADDRESS, ADDRESS, null, true);
-   
+
+            createSession.createQueue(FailoverTestBase.ADDRESS, FailoverTestBase.ADDRESS, null, true);
+
             RemotingConnection conn = ((ClientSessionInternal)createSession).getConnection();
-   
+
             Thread t = new Thread(runnable);
-   
+
             t.start();
-   
+
             long randomDelay = (long)(2000 * Math.random());
-   
-            log.info("Sleeping " + randomDelay);
-   
+
+            AsynchronousFailoverTest.log.info("Sleeping " + randomDelay);
+
             Thread.sleep(randomDelay);
-   
-            log.info("Failing asynchronously");
-   
+
+            AsynchronousFailoverTest.log.info("Failing asynchronously");
+
             MyListener listener = this.listener;
-   
+
             // Simulate failure on connection
             conn.fail(new HornetQException(HornetQException.NOT_CONNECTED));
-   
+
             if (listener != null)
             {
                boolean ok = listener.latch.await(10000, TimeUnit.MILLISECONDS);
-   
-               assertTrue(ok);
+
+               Assert.assertTrue(ok);
             }
-   
+
             runnable.setFailed();
-   
-            log.info("Fail complete");
-   
+
+            AsynchronousFailoverTest.log.info("Fail complete");
+
             t.join();
-   
+
             createSession.close();
-   
+
             if (sf.numSessions() != 0)
             {
                DelegatingSession.dumpSessionCreationStacks();
             }
-   
-            assertEquals(0, sf.numSessions());
-   
-            assertEquals(0, sf.numConnections());
-   
+
+            Assert.assertEquals(0, sf.numSessions());
+
+            Assert.assertEquals(0, sf.numConnections());
+
             if (i != numIts - 1)
             {
                tearDown();
@@ -200,7 +202,7 @@ public class AsynchronousFailoverTest extends FailoverTestBase
    {
       while (!runner.isFailed())
       {
-         log.info("looping");
+         AsynchronousFailoverTest.log.info("looping");
 
          ClientSession session = sf.createSession(true, true, 0);
 
@@ -210,7 +212,7 @@ public class AsynchronousFailoverTest extends FailoverTestBase
 
          this.listener = listener;
 
-         ClientProducer producer = session.createProducer(ADDRESS);
+         ClientProducer producer = session.createProducer(FailoverTestBase.ADDRESS);
 
          final int numMessages = 1000;
 
@@ -233,15 +235,15 @@ public class AsynchronousFailoverTest extends FailoverTestBase
                }
                catch (HornetQException e)
                {
-                  log.info("exception when sending message with counter " + i);
-                  assertEquals(e.getCode(), HornetQException.UNBLOCKED);
+                  AsynchronousFailoverTest.log.info("exception when sending message with counter " + i);
+                  Assert.assertEquals(e.getCode(), HornetQException.UNBLOCKED);
 
                   retry = true;
                }
             }
             while (retry);
          }
-         
+
          // create the consumer with retry if failover occurs during createConsumer call
          ClientConsumer consumer = null;
          boolean retry = false;
@@ -249,14 +251,14 @@ public class AsynchronousFailoverTest extends FailoverTestBase
          {
             try
             {
-               consumer = session.createConsumer(ADDRESS);
-               
+               consumer = session.createConsumer(FailoverTestBase.ADDRESS);
+
                retry = false;
             }
             catch (HornetQException e)
             {
-               log.info("exception when creating consumer");
-               assertEquals(e.getCode(), HornetQException.UNBLOCKED);
+               AsynchronousFailoverTest.log.info("exception when creating consumer");
+               Assert.assertEquals(e.getCode(), HornetQException.UNBLOCKED);
 
                retry = true;
             }
@@ -285,18 +287,18 @@ public class AsynchronousFailoverTest extends FailoverTestBase
             {
                if (counterGap)
                {
-                  fail("got a another counter gap at " + count + ": " + counts);
+                  Assert.fail("got a another counter gap at " + count + ": " + counts);
                }
                else
                {
                   if (lastCount != -1)
                   {
-                     log.info("got first counter gap at " + count);                  
+                     AsynchronousFailoverTest.log.info("got first counter gap at " + count);
                      counterGap = true;
                   }
                }
             }
-            
+
             lastCount = count;
 
             message.acknowledge();
@@ -324,7 +326,7 @@ public class AsynchronousFailoverTest extends FailoverTestBase
 
             this.listener = listener;
 
-            ClientProducer producer = session.createProducer(ADDRESS);
+            ClientProducer producer = session.createProducer(FailoverTestBase.ADDRESS);
 
             final int numMessages = 1000;
 
@@ -345,7 +347,7 @@ public class AsynchronousFailoverTest extends FailoverTestBase
                   }
                   catch (HornetQException e)
                   {
-                     assertEquals(e.getCode(), HornetQException.UNBLOCKED);
+                     Assert.assertEquals(e.getCode(), HornetQException.UNBLOCKED);
 
                      retry = true;
                   }
@@ -382,7 +384,7 @@ public class AsynchronousFailoverTest extends FailoverTestBase
                }
             }
 
-            ClientConsumer consumer = session.createConsumer(ADDRESS);
+            ClientConsumer consumer = session.createConsumer(FailoverTestBase.ADDRESS);
 
             session.start();
 
@@ -400,7 +402,7 @@ public class AsynchronousFailoverTest extends FailoverTestBase
 
                int count = message.getIntProperty("counter");
 
-               assertTrue("count:" + count + " last count:" + lastCount, count >= lastCount);
+               Assert.assertTrue("count:" + count + " last count:" + lastCount, count >= lastCount);
 
                lastCount = count;
 
@@ -444,12 +446,12 @@ public class AsynchronousFailoverTest extends FailoverTestBase
             }
          }
 
-         this.listener = null;
+         listener = null;
       }
    }
 
    @Override
-   protected TransportConfiguration getAcceptorTransportConfiguration(boolean live)
+   protected TransportConfiguration getAcceptorTransportConfiguration(final boolean live)
    {
       return getInVMTransportAcceptorConfiguration(live);
    }
@@ -459,6 +461,5 @@ public class AsynchronousFailoverTest extends FailoverTestBase
    {
       return getInVMConnectorTransportConfiguration(live);
    }
-   
 
 }

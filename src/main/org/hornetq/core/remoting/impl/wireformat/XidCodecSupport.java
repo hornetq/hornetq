@@ -9,7 +9,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
  * implied.  See the License for the specific language governing
  * permissions and limitations under the License.
- */ 
+ */
 
 package org.hornetq.core.remoting.impl.wireformat;
 
@@ -49,16 +49,14 @@ public class XidCodecSupport
       byte[] bq = new byte[in.readInt()];
       in.readBytes(bq);
       byte[] gtxid = new byte[in.readInt()];
-      in.readBytes(gtxid);      
-      Xid xid = new XidImpl(bq, formatID, gtxid);      
+      in.readBytes(gtxid);
+      Xid xid = new XidImpl(bq, formatID, gtxid);
       return xid;
    }
 
    public static int getXidEncodeLength(final Xid xid)
    {
-      return DataConstants.SIZE_INT * 3 +
-            xid.getBranchQualifier().length +
-            xid.getGlobalTransactionId().length;
+      return DataConstants.SIZE_INT * 3 + xid.getBranchQualifier().length + xid.getGlobalTransactionId().length;
    }
 
    // Constructors --------------------------------------------------

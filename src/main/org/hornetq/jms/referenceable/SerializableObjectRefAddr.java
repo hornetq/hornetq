@@ -9,7 +9,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
  * implied.  See the License for the specific language governing
  * permissions and limitations under the License.
- */ 
+ */
 
 package org.hornetq.jms.referenceable;
 
@@ -36,46 +36,46 @@ import javax.naming.RefAddr;
  * $Id$
  */
 public class SerializableObjectRefAddr extends RefAddr
-{   
+{
    private static final long serialVersionUID = 9158134548376171898L;
-   
+
    private final byte[] bytes;
-      
+
    public SerializableObjectRefAddr(final String type, final Object content) throws NamingException
    {
       super(type);
-      
+
       try
-      {      
-         //Serialize the object
+      {
+         // Serialize the object
          ByteArrayOutputStream bos = new ByteArrayOutputStream();
-         
+
          ObjectOutputStream oos = new ObjectOutputStream(bos);
-         
+
          oos.writeObject(content);
-         
+
          oos.flush();
-         
+
          bytes = bos.toByteArray();
       }
       catch (IOException e)
       {
          throw new NamingException("Failed to serialize object:" + content + ", " + e.getMessage());
-      }    
+      }
    }
 
+   @Override
    public Object getContent()
    {
       return bytes;
    }
-   
+
    public static Object deserialize(final byte[] bytes) throws IOException, ClassNotFoundException
    {
       ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
-      
-      ObjectInputStream ois = new ObjectInputStream(bis);
-      
-      return ois.readObject();
-   }   
-}
 
+      ObjectInputStream ois = new ObjectInputStream(bis);
+
+      return ois.readObject();
+   }
+}

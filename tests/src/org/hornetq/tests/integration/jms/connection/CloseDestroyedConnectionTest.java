@@ -19,6 +19,8 @@ import javax.jms.Queue;
 import javax.jms.QueueBrowser;
 import javax.jms.Session;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.exception.HornetQException;
@@ -70,58 +72,58 @@ public class CloseDestroyedConnectionTest extends JMSTestBase
       cf.setClientFailureCheckPeriod(connectionTTL / 2);
       // Need to set connection ttl to a low figure so connections get removed quickly on the server
       cf.setConnectionTTL(connectionTTL);
-      
+
       Connection conn = cf.createConnection();
-           
-      assertEquals(1, server.getRemotingService().getConnections().size());
-            
+
+      Assert.assertEquals(1, server.getRemotingService().getConnections().size());
+
       Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      
-      //Give time for the initial ping to reach the server before we fail (it has connection TTL in it)
+
+      // Give time for the initial ping to reach the server before we fail (it has connection TTL in it)
       Thread.sleep(500);
-      
+
       String queueName = "myqueue";
-      
+
       Queue queue = new HornetQQueue(queueName);
-      
+
       super.createQueue(queueName);
-      
+
       MessageConsumer consumer = sess.createConsumer(queue);
-      
+
       MessageProducer producer = sess.createProducer(queue);
-      
+
       QueueBrowser browser = sess.createBrowser(queue);
-            
+
       // Now fail the underlying connection
-      
+
       ClientSessionInternal sessi = (ClientSessionInternal)((HornetQSession)sess).getCoreSession();
-      
+
       RemotingConnection rc = sessi.getConnection();
-      
+
       rc.fail(new HornetQException(HornetQException.INTERNAL_ERROR));
-      
+
       // Now close the connection
-      
+
       conn.close();
-      
+
       long start = System.currentTimeMillis();
-      
+
       while (true)
-      {           
+      {
          int cons = server.getRemotingService().getConnections().size();
-         
+
          if (cons == 0)
          {
             break;
-         }               
-         
+         }
+
          long now = System.currentTimeMillis();
-         
+
          if (now - start > 10000)
          {
             throw new Exception("Timed out waiting for connections to close");
          }
-         
+
          Thread.sleep(50);
       }
    }

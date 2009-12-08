@@ -22,6 +22,8 @@ import java.util.jar.Manifest;
 import javax.jms.Connection;
 import javax.jms.ConnectionMetaData;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQ;
@@ -54,7 +56,7 @@ public class ManifestTest extends UnitTestCase
 
       // The jar must be there
       File file = new File("build/jars", "hornetq-core.jar");
-      assertTrue(file.exists());
+      Assert.assertTrue(file.exists());
 
       // Open the jar and load MANIFEST.MF
       JarFile jar = new JarFile(file);
@@ -72,8 +74,8 @@ public class ManifestTest extends UnitTestCase
          // Compare the value from ConnectionMetaData and MANIFEST.MF
          Attributes attrs = manifest.getMainAttributes();
 
-         assertEquals(meta.getProviderVersion(), attrs.getValue("HornetQ-Version"));
-         assertEquals("https://svn.jboss.org/repos/hornetq/trunk", attrs.getValue("HornetQ-SVN-URL"));
+         Assert.assertEquals(meta.getProviderVersion(), attrs.getValue("HornetQ-Version"));
+         Assert.assertEquals("https://svn.jboss.org/repos/hornetq/trunk", attrs.getValue("HornetQ-SVN-URL"));
       }
       finally
       {

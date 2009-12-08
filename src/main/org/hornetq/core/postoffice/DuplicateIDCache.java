@@ -30,8 +30,8 @@ import org.hornetq.utils.Pair;
 public interface DuplicateIDCache
 {
    boolean contains(byte[] duplicateID);
-   
-   void addToCache(byte[] duplicateID, Transaction tx) throws Exception;  
-   
+
+   void addToCache(byte[] duplicateID, Transaction tx) throws Exception;
+
    void load(List<Pair<byte[], Long>> theIds) throws Exception;
 }

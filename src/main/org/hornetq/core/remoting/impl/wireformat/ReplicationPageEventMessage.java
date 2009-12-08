@@ -14,7 +14,6 @@
 package org.hornetq.core.remoting.impl.wireformat;
 
 import org.hornetq.core.buffers.HornetQBuffer;
-import org.hornetq.utils.DataConstants;
 import org.hornetq.utils.SimpleString;
 
 /**
@@ -46,7 +45,7 @@ public class ReplicationPageEventMessage extends PacketImpl
 
    public ReplicationPageEventMessage()
    {
-      super(REPLICATION_PAGE_EVENT);
+      super(PacketImpl.REPLICATION_PAGE_EVENT);
    }
 
    public ReplicationPageEventMessage(final SimpleString storeName, final int pageNumber, final boolean isDelete)

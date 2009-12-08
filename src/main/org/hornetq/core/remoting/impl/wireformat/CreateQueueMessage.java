@@ -15,7 +15,6 @@ package org.hornetq.core.remoting.impl.wireformat;
 
 import org.hornetq.core.buffers.HornetQBuffer;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.utils.DataConstants;
 import org.hornetq.utils.SimpleString;
 
 /**
@@ -26,9 +25,8 @@ import org.hornetq.utils.SimpleString;
 public class CreateQueueMessage extends PacketImpl
 {
    // Constants -----------------------------------------------------
-   
-   private static final Logger log = Logger.getLogger(CreateQueueMessage.class);
 
+   private static final Logger log = Logger.getLogger(CreateQueueMessage.class);
 
    // Attributes ----------------------------------------------------
 
@@ -41,7 +39,7 @@ public class CreateQueueMessage extends PacketImpl
    private boolean durable;
 
    private boolean temporary;
-   
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -52,7 +50,7 @@ public class CreateQueueMessage extends PacketImpl
                              final boolean durable,
                              final boolean temporary)
    {
-      super(CREATE_QUEUE);
+      super(PacketImpl.CREATE_QUEUE);
 
       this.address = address;
       this.queueName = queueName;
@@ -63,7 +61,7 @@ public class CreateQueueMessage extends PacketImpl
 
    public CreateQueueMessage()
    {
-      super(CREATE_QUEUE);
+      super(PacketImpl.CREATE_QUEUE);
    }
 
    // Public --------------------------------------------------------
@@ -105,7 +103,8 @@ public class CreateQueueMessage extends PacketImpl
    {
       return temporary;
    }
-   
+
+   @Override
    public void encodeRest(final HornetQBuffer buffer)
    {
       buffer.writeSimpleString(address);
@@ -115,6 +114,7 @@ public class CreateQueueMessage extends PacketImpl
       buffer.writeBoolean(temporary);
    }
 
+   @Override
    public void decodeRest(final HornetQBuffer buffer)
    {
       address = buffer.readSimpleString();
@@ -124,7 +124,8 @@ public class CreateQueueMessage extends PacketImpl
       temporary = buffer.readBoolean();
    }
 
-   public boolean equals(Object other)
+   @Override
+   public boolean equals(final Object other)
    {
       if (other instanceof CreateQueueMessage == false)
       {
@@ -133,11 +134,11 @@ public class CreateQueueMessage extends PacketImpl
 
       CreateQueueMessage r = (CreateQueueMessage)other;
 
-      return super.equals(other) && r.address.equals(this.address) &&
-             r.queueName.equals(this.queueName) &&
-             (r.filterString == null ? this.filterString == null : r.filterString.equals(this.filterString)) &&
-             r.durable == this.durable &&
-             r.temporary == this.temporary;
+      return super.equals(other) && r.address.equals(address) &&
+             r.queueName.equals(queueName) &&
+             (r.filterString == null ? filterString == null : r.filterString.equals(filterString)) &&
+             r.durable == durable &&
+             r.temporary == temporary;
    }
 
    // Package protected ---------------------------------------------

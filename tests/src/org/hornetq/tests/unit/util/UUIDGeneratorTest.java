@@ -9,9 +9,11 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
  * implied.  See the License for the specific language governing
  * permissions and limitations under the License.
- */ 
+ */
 
 package org.hornetq.tests.unit.util;
+
+import junit.framework.Assert;
 
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.UUIDGenerator;
@@ -39,39 +41,39 @@ public class UUIDGeneratorTest extends UnitTestCase
       String javaVersion = System.getProperty("java.vm.version");
       if (javaVersion.startsWith("1.5"))
       {
-         assertNull(UUIDGenerator.getHardwareAddress());
-      } else if (javaVersion.startsWith("1.6"))
+         Assert.assertNull(UUIDGenerator.getHardwareAddress());
+      }
+      else if (javaVersion.startsWith("1.6"))
       {
          byte[] bytes = UUIDGenerator.getHardwareAddress();
-         assertNotNull(bytes);
-         assertTrue(bytes.length == 6);
+         Assert.assertNotNull(bytes);
+         Assert.assertTrue(bytes.length == 6);
       }
    }
-   
+
    public void testZeroPaddedBytes() throws Exception
    {
-      assertNull(UUIDGenerator.getZeroPaddedSixBytes(null));
-      assertNull(UUIDGenerator.getZeroPaddedSixBytes(new byte[0]));
-      assertNull(UUIDGenerator.getZeroPaddedSixBytes(new byte[7]));
+      Assert.assertNull(UUIDGenerator.getZeroPaddedSixBytes(null));
+      Assert.assertNull(UUIDGenerator.getZeroPaddedSixBytes(new byte[0]));
+      Assert.assertNull(UUIDGenerator.getZeroPaddedSixBytes(new byte[7]));
 
-      byte[] fiveBytes = new byte[] {1, 2, 3, 4, 5};
+      byte[] fiveBytes = new byte[] { 1, 2, 3, 4, 5 };
       byte[] zeroPaddedFiveBytes = UUIDGenerator.getZeroPaddedSixBytes(fiveBytes);
-      UnitTestCase.assertEqualsByteArrays(new byte[] {1, 2, 3, 4, 5, 0}, zeroPaddedFiveBytes);
+      UnitTestCase.assertEqualsByteArrays(new byte[] { 1, 2, 3, 4, 5, 0 }, zeroPaddedFiveBytes);
 
-      byte[] fourBytes = new byte[] {1, 2, 3, 4};
+      byte[] fourBytes = new byte[] { 1, 2, 3, 4 };
       byte[] zeroPaddedFourBytes = UUIDGenerator.getZeroPaddedSixBytes(fourBytes);
-      UnitTestCase.assertEqualsByteArrays(new byte[] {1, 2, 3, 4, 0, 0}, zeroPaddedFourBytes);
+      UnitTestCase.assertEqualsByteArrays(new byte[] { 1, 2, 3, 4, 0, 0 }, zeroPaddedFourBytes);
 
-      byte[] threeBytes = new byte[] {1, 2, 3};
+      byte[] threeBytes = new byte[] { 1, 2, 3 };
       byte[] zeroPaddedThreeBytes = UUIDGenerator.getZeroPaddedSixBytes(threeBytes);
-      UnitTestCase.assertEqualsByteArrays(new byte[] {1, 2, 3, 0, 0, 0}, zeroPaddedThreeBytes);
+      UnitTestCase.assertEqualsByteArrays(new byte[] { 1, 2, 3, 0, 0, 0 }, zeroPaddedThreeBytes);
    }
-   
-   
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
-   
+
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------

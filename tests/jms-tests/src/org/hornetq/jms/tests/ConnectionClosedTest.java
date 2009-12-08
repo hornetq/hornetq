@@ -25,6 +25,7 @@ import javax.jms.TopicConnectionFactory;
 import javax.jms.TopicSession;
 import javax.jms.TopicSubscriber;
 
+import org.hornetq.jms.tests.util.ProxyAssertSupport;
 
 /**
  * All tests related to closing a Connection.
@@ -40,7 +41,7 @@ public class ConnectionClosedTest extends JMSTestCase
    // Constants -----------------------------------------------------
 
    // Static --------------------------------------------------------
-   
+
    // Attributes ----------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -51,39 +52,39 @@ public class ConnectionClosedTest extends JMSTestCase
 
    public void testCloseOnce() throws Exception
    {
-      Connection conn = cf.createConnection();
+      Connection conn = JMSTestCase.cf.createConnection();
       conn.close();
    }
 
    public void testCloseTwice() throws Exception
    {
-      Connection conn = cf.createConnection();
+      Connection conn = JMSTestCase.cf.createConnection();
       conn.close();
       conn.close();
    }
-   
+
    /** See TCK test: topicconntests.connNotStartedTopicTest */
    public void testCannotReceiveMessageOnStoppedConnection() throws Exception
    {
-      TopicConnection conn1 = ((TopicConnectionFactory)cf).createTopicConnection();
-      TopicConnection conn2 = ((TopicConnectionFactory)cf).createTopicConnection();
-      
+      TopicConnection conn1 = ((TopicConnectionFactory)JMSTestCase.cf).createTopicConnection();
+      TopicConnection conn2 = ((TopicConnectionFactory)JMSTestCase.cf).createTopicConnection();
+
       TopicSession sess1 = conn1.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
       TopicSession sess2 = conn2.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
-      
-      TopicSubscriber sub1 = sess1.createSubscriber(topic1);
-      TopicSubscriber sub2 = sess2.createSubscriber(topic1);
-      
+
+      TopicSubscriber sub1 = sess1.createSubscriber(HornetQServerTestCase.topic1);
+      TopicSubscriber sub2 = sess2.createSubscriber(HornetQServerTestCase.topic1);
+
       conn1.start();
-      
-      Connection conn3 = cf.createConnection();
-      
+
+      Connection conn3 = JMSTestCase.cf.createConnection();
+
       Session sess3 = conn3.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      MessageProducer prod = sess3.createProducer(topic1);
+      MessageProducer prod = sess3.createProducer(HornetQServerTestCase.topic1);
       prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-      
+
       final int NUM_MESSAGES = 10;
-      
+
       for (int i = 0; i < NUM_MESSAGES; i++)
       {
          TextMessage tm = sess3.createTextMessage("hello");
@@ -93,34 +94,33 @@ public class ConnectionClosedTest extends JMSTestCase
       for (int i = 0; i < NUM_MESSAGES; i++)
       {
          TextMessage tm = (TextMessage)sub1.receive(500);
-         assertNotNull(tm);
-         assertEquals("hello", tm.getText());
+         ProxyAssertSupport.assertNotNull(tm);
+         ProxyAssertSupport.assertEquals("hello", tm.getText());
       }
 
       Message m = sub2.receive(200);
-      
-      assertNull(m);
-      
+
+      ProxyAssertSupport.assertNull(m);
+
       conn2.start();
-      
+
       for (int i = 0; i < NUM_MESSAGES; i++)
       {
          TextMessage tm = (TextMessage)sub2.receive(500);
-         assertNotNull(tm);
-         assertEquals("hello", tm.getText());
+         ProxyAssertSupport.assertNotNull(tm);
+         ProxyAssertSupport.assertEquals("hello", tm.getText());
       }
 
       log.debug("all messages received by sub2");
-      
+
       conn1.close();
-      
+
       conn2.close();
-      
+
       conn3.close();
-      
+
    }
 
-  
    /**
     * A close terminates all pending message receives on the connection�s session�s  consumers. The
     * receives may return with a message or null depending on whether or not there was a message
@@ -128,13 +128,13 @@ public class ConnectionClosedTest extends JMSTestCase
     */
    public void testCloseWhileReceiving() throws Exception
    {
-      Connection conn = cf.createConnection();
+      Connection conn = JMSTestCase.cf.createConnection();
 
       Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
       conn.start();
 
-      final MessageConsumer consumer = session.createConsumer(topic1);
+      final MessageConsumer consumer = session.createConsumer(HornetQServerTestCase.topic1);
 
       class TestRunnable implements Runnable
       {
@@ -148,7 +148,7 @@ public class ConnectionClosedTest extends JMSTestCase
                Message m = consumer.receive(2100);
                if (System.currentTimeMillis() - start >= 2000)
                {
-                  //It timed out
+                  // It timed out
                   failed = "Timed out";
                }
                else
@@ -159,7 +159,7 @@ public class ConnectionClosedTest extends JMSTestCase
                   }
                }
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                log.error(e);
                failed = e.getMessage();
@@ -179,23 +179,23 @@ public class ConnectionClosedTest extends JMSTestCase
 
       if (runnable.failed != null)
       {
-         fail(runnable.failed);
+         ProxyAssertSupport.fail(runnable.failed);
       }
 
    }
 
    public void testGetMetadataOnClosedConnection() throws Exception
    {
-      Connection connection = cf.createConnection();
-      
+      Connection connection = JMSTestCase.cf.createConnection();
+
       connection.close();
-      
+
       try
       {
          connection.getMetaData();
-         fail("should throw exception");
+         ProxyAssertSupport.fail("should throw exception");
       }
-      catch(javax.jms.IllegalStateException e)
+      catch (javax.jms.IllegalStateException e)
       {
          // OK
       }
@@ -203,15 +203,15 @@ public class ConnectionClosedTest extends JMSTestCase
 
    public void testCreateSessionOnClosedConnection() throws Exception
    {
-      Connection conn = cf.createConnection();
+      Connection conn = JMSTestCase.cf.createConnection();
       conn.close();
 
       try
       {
          conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         fail("Did not throw javax.jms.IllegalStateException");
+         ProxyAssertSupport.fail("Did not throw javax.jms.IllegalStateException");
       }
-      catch(javax.jms.IllegalStateException e)
+      catch (javax.jms.IllegalStateException e)
       {
          // OK
       }
@@ -222,11 +222,11 @@ public class ConnectionClosedTest extends JMSTestCase
     */
    public void testCloseHierarchy() throws Exception
    {
-      Connection conn = cf.createConnection();
+      Connection conn = JMSTestCase.cf.createConnection();
       Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      MessageConsumer consumer = sess.createConsumer(topic1);
-      MessageProducer producer = sess.createProducer(topic1);
-      sess.createBrowser(queue1);
+      MessageConsumer consumer = sess.createConsumer(HornetQServerTestCase.topic1);
+      MessageProducer producer = sess.createProducer(HornetQServerTestCase.topic1);
+      sess.createBrowser(HornetQServerTestCase.queue1);
       Message m = sess.createMessage();
 
       conn.close();
@@ -239,7 +239,7 @@ public class ConnectionClosedTest extends JMSTestCase
       try
       {
          sess.createMessage();
-         fail("Session is not closed");
+         ProxyAssertSupport.fail("Session is not closed");
       }
       catch (javax.jms.IllegalStateException e)
       {
@@ -248,9 +248,9 @@ public class ConnectionClosedTest extends JMSTestCase
       try
       {
          sess.getAcknowledgeMode();
-         fail("should throw IllegalStateException");
+         ProxyAssertSupport.fail("should throw IllegalStateException");
       }
-      catch(javax.jms.IllegalStateException e)
+      catch (javax.jms.IllegalStateException e)
       {
          // OK
       }
@@ -258,9 +258,9 @@ public class ConnectionClosedTest extends JMSTestCase
       try
       {
          sess.getTransacted();
-         fail("should throw IllegalStateException");
+         ProxyAssertSupport.fail("should throw IllegalStateException");
       }
-      catch(javax.jms.IllegalStateException e)
+      catch (javax.jms.IllegalStateException e)
       {
          // OK
       }
@@ -268,33 +268,32 @@ public class ConnectionClosedTest extends JMSTestCase
       try
       {
          sess.getMessageListener();
-         fail("should throw IllegalStateException");
+         ProxyAssertSupport.fail("should throw IllegalStateException");
       }
-      catch(javax.jms.IllegalStateException e)
+      catch (javax.jms.IllegalStateException e)
       {
          // OK
       }
 
       try
       {
-         sess.createProducer(queue1);
-         fail("should throw IllegalStateException");
+         sess.createProducer(HornetQServerTestCase.queue1);
+         ProxyAssertSupport.fail("should throw IllegalStateException");
       }
-      catch(javax.jms.IllegalStateException e)
+      catch (javax.jms.IllegalStateException e)
       {
          // OK
       }
 
       try
       {
-         sess.createConsumer(queue1);
-         fail("should throw IllegalStateException");
+         sess.createConsumer(HornetQServerTestCase.queue1);
+         ProxyAssertSupport.fail("should throw IllegalStateException");
       }
-      catch(javax.jms.IllegalStateException e)
+      catch (javax.jms.IllegalStateException e)
       {
          // OK
       }
-
 
       // Producer
 
@@ -304,7 +303,7 @@ public class ConnectionClosedTest extends JMSTestCase
       try
       {
          producer.send(m);
-         fail("Producer is not closed");
+         ProxyAssertSupport.fail("Producer is not closed");
       }
       catch (javax.jms.IllegalStateException e)
       {
@@ -313,9 +312,9 @@ public class ConnectionClosedTest extends JMSTestCase
       try
       {
          producer.getDisableMessageID();
-         fail("should throw IllegalStateException");
+         ProxyAssertSupport.fail("should throw IllegalStateException");
       }
-      catch(javax.jms.IllegalStateException e)
+      catch (javax.jms.IllegalStateException e)
       {
          // OK
       }
@@ -323,9 +322,9 @@ public class ConnectionClosedTest extends JMSTestCase
       try
       {
          producer.getPriority();
-         fail("should throw IllegalStateException");
+         ProxyAssertSupport.fail("should throw IllegalStateException");
       }
-      catch(javax.jms.IllegalStateException e)
+      catch (javax.jms.IllegalStateException e)
       {
          // OK
       }
@@ -333,9 +332,9 @@ public class ConnectionClosedTest extends JMSTestCase
       try
       {
          producer.getDestination();
-         fail("should throw IllegalStateException");
+         ProxyAssertSupport.fail("should throw IllegalStateException");
       }
-      catch(javax.jms.IllegalStateException e)
+      catch (javax.jms.IllegalStateException e)
       {
          // OK
       }
@@ -343,9 +342,9 @@ public class ConnectionClosedTest extends JMSTestCase
       try
       {
          producer.getTimeToLive();
-         fail("should throw IllegalStateException");
+         ProxyAssertSupport.fail("should throw IllegalStateException");
       }
-      catch(javax.jms.IllegalStateException e)
+      catch (javax.jms.IllegalStateException e)
       {
          // OK
       }
@@ -355,9 +354,9 @@ public class ConnectionClosedTest extends JMSTestCase
       try
       {
          consumer.getMessageSelector();
-         fail("should throw exception");
+         ProxyAssertSupport.fail("should throw exception");
       }
-      catch(javax.jms.IllegalStateException e)
+      catch (javax.jms.IllegalStateException e)
       {
          // OK
       }
@@ -365,9 +364,9 @@ public class ConnectionClosedTest extends JMSTestCase
       try
       {
          consumer.getMessageListener();
-         fail("should throw exception");
+         ProxyAssertSupport.fail("should throw exception");
       }
-      catch(javax.jms.IllegalStateException e)
+      catch (javax.jms.IllegalStateException e)
       {
          // OK
       }
@@ -375,9 +374,9 @@ public class ConnectionClosedTest extends JMSTestCase
       try
       {
          consumer.receive();
-         fail("should throw exception");
+         ProxyAssertSupport.fail("should throw exception");
       }
-      catch(javax.jms.IllegalStateException e)
+      catch (javax.jms.IllegalStateException e)
       {
          // OK
       }

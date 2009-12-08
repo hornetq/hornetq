@@ -31,8 +31,8 @@ public class SecurityManagementWithModifiedConfigurationTest extends SecurityMan
 
    // Attributes ----------------------------------------------------
 
-   private String configuredClusterPassword = "this is not the default password";
-   
+   private final String configuredClusterPassword = "this is not the default password";
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -41,14 +41,14 @@ public class SecurityManagementWithModifiedConfigurationTest extends SecurityMan
 
    public void testSendManagementMessageWithModifiedClusterAdminUser() throws Exception
    {
-      doSendManagementMessage(ConfigurationImpl.DEFAULT_MANAGEMENT_CLUSTER_USER, 
-                              configuredClusterPassword, true);
+      doSendManagementMessage(ConfigurationImpl.DEFAULT_MANAGEMENT_CLUSTER_USER, configuredClusterPassword, true);
    }
 
    public void testSendManagementMessageWithDefaultClusterAdminUser() throws Exception
    {
-      doSendManagementMessage(ConfigurationImpl.DEFAULT_MANAGEMENT_CLUSTER_USER, 
-                              ConfigurationImpl.DEFAULT_MANAGEMENT_CLUSTER_PASSWORD, false);
+      doSendManagementMessage(ConfigurationImpl.DEFAULT_MANAGEMENT_CLUSTER_USER,
+                              ConfigurationImpl.DEFAULT_MANAGEMENT_CLUSTER_PASSWORD,
+                              false);
    }
 
    public void testSendManagementMessageWithGuest() throws Exception
@@ -74,10 +74,10 @@ public class SecurityManagementWithModifiedConfigurationTest extends SecurityMan
       conf.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
       HornetQServer server = HornetQ.newHornetQServer(conf, false);
       server.start();
-      
+
       return server;
    }
-   
+
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------

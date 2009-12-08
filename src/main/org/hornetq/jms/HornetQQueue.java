@@ -11,7 +11,6 @@
  * permissions and limitations under the License.
  */
 
-
 package org.hornetq.jms;
 
 import javax.jms.JMSException;
@@ -30,32 +29,31 @@ import org.hornetq.utils.SimpleString;
 public class HornetQQueue extends HornetQDestination implements Queue
 {
    // Constants -----------------------------------------------------
-   
+
    private static final Logger log = Logger.getLogger(HornetQQueue.class);
 
-   
-	private static final long serialVersionUID = -1106092883162295462L;
-	
-	public static final String JMS_QUEUE_ADDRESS_PREFIX = "jms.queue.";
+   private static final long serialVersionUID = -1106092883162295462L;
+
+   public static final String JMS_QUEUE_ADDRESS_PREFIX = "jms.queue.";
 
    // Static --------------------------------------------------------
-   
-   public static SimpleString createAddressFromName(String name)
+
+   public static SimpleString createAddressFromName(final String name)
    {
-      return new SimpleString(JMS_QUEUE_ADDRESS_PREFIX + name);
+      return new SimpleString(HornetQQueue.JMS_QUEUE_ADDRESS_PREFIX + name);
    }
 
    // Attributes ----------------------------------------------------
-   
+
    // Constructors --------------------------------------------------
 
    public HornetQQueue(final String name)
-   {      
-      super(JMS_QUEUE_ADDRESS_PREFIX + name, name);
+   {
+      super(HornetQQueue.JMS_QUEUE_ADDRESS_PREFIX + name, name);
    }
 
    public HornetQQueue(final String address, final String name)
-   {      
+   {
       super(address, name);
    }
 
@@ -67,22 +65,24 @@ public class HornetQQueue extends HornetQDestination implements Queue
    }
 
    // Public --------------------------------------------------------
-   
+
+   @Override
    public boolean isTemporary()
    {
       return false;
    }
-   
+
+   @Override
    public String toString()
    {
       return "HornetQQueue[" + name + "]";
    }
-   
+
    // Package protected ---------------------------------------------
-   
+
    // Protected -----------------------------------------------------
-   
+
    // Private -------------------------------------------------------
-   
-   // Inner classes -------------------------------------------------   
+
+   // Inner classes -------------------------------------------------
 }

@@ -14,7 +14,6 @@
 package org.hornetq.core.remoting.impl.wireformat;
 
 import org.hornetq.core.buffers.HornetQBuffer;
-import org.hornetq.utils.DataConstants;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -38,7 +37,7 @@ public class SessionAcknowledgeMessage extends PacketImpl
 
    public SessionAcknowledgeMessage(final long consumerID, final long messageID, final boolean requiresResponse)
    {
-      super(SESS_ACKNOWLEDGE);
+      super(PacketImpl.SESS_ACKNOWLEDGE);
 
       this.consumerID = consumerID;
 
@@ -49,7 +48,7 @@ public class SessionAcknowledgeMessage extends PacketImpl
 
    public SessionAcknowledgeMessage()
    {
-      super(SESS_ACKNOWLEDGE);
+      super(PacketImpl.SESS_ACKNOWLEDGE);
    }
 
    // Public --------------------------------------------------------

@@ -13,8 +13,6 @@
 
 package org.hornetq.tests.integration.jms;
 
-import static org.hornetq.tests.util.RandomUtil.randomString;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -22,6 +20,8 @@ import java.util.Map;
 
 import javax.jms.Connection;
 import javax.jms.Session;
+
+import junit.framework.Assert;
 
 import org.hornetq.core.client.ClientSessionFactory;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
@@ -73,7 +73,7 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
                           null,
                           ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
                           ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL,
-                          ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,                          
+                          ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,
                           ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
                           ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE,
                           ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE,
@@ -96,14 +96,14 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
                           ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS,
                           ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN);
       Connection conn = null;
-      
+
       try
       {
          conn = cf.createConnection();
 
          Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         fail("Should throw exception");        
+         Assert.fail("Should throw exception");
       }
       catch (Exception e)
       {
@@ -114,8 +114,8 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
       {
          conn.close();
       }
-      
-      log.info("Got here");
+
+      HornetQConnectionFactoryTest.log.info("Got here");
 
       testSettersThrowException(cf);
    }
@@ -124,11 +124,11 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
    {
       HornetQConnectionFactory cf = new HornetQConnectionFactory();
       final List<Pair<TransportConfiguration, TransportConfiguration>> staticConnectors = new ArrayList<Pair<TransportConfiguration, TransportConfiguration>>();
-      Pair<TransportConfiguration, TransportConfiguration> pair0 = new Pair<TransportConfiguration, TransportConfiguration>(this.liveTC,
-                                                                                                                            this.backupTC);
+      Pair<TransportConfiguration, TransportConfiguration> pair0 = new Pair<TransportConfiguration, TransportConfiguration>(liveTC,
+                                                                                                                            backupTC);
       staticConnectors.add(pair0);
       cf.setStaticConnectors(staticConnectors);
-      
+
       assertFactoryParams(cf,
                           staticConnectors,
                           null,
@@ -137,7 +137,7 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
                           null,
                           ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
                           ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL,
-                          ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,                          
+                          ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,
                           ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
                           ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE,
                           ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE,
@@ -165,10 +165,10 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
       Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
       testSettersThrowException(cf);
-      
+
       conn.close();
    }
-   
+
    public void testDiscoveryConstructor() throws Exception
    {
       HornetQConnectionFactory cf = new HornetQConnectionFactory(groupAddress, groupPort);
@@ -180,7 +180,7 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
                           null,
                           ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
                           ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL,
-                          ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,                          
+                          ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,
                           ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
                           ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE,
                           ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE,
@@ -214,8 +214,8 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
    public void testStaticConnectorListConstructor() throws Exception
    {
       final List<Pair<TransportConfiguration, TransportConfiguration>> staticConnectors = new ArrayList<Pair<TransportConfiguration, TransportConfiguration>>();
-      Pair<TransportConfiguration, TransportConfiguration> pair0 = new Pair<TransportConfiguration, TransportConfiguration>(this.liveTC,
-                                                                                                                            this.backupTC);
+      Pair<TransportConfiguration, TransportConfiguration> pair0 = new Pair<TransportConfiguration, TransportConfiguration>(liveTC,
+                                                                                                                            backupTC);
       staticConnectors.add(pair0);
 
       HornetQConnectionFactory cf = new HornetQConnectionFactory(staticConnectors);
@@ -227,7 +227,7 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
                           null,
                           ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
                           ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL,
-                          ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,                          
+                          ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,
                           ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
                           ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE,
                           ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE,
@@ -262,11 +262,11 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
    public void testStaticConnectorLiveAndBackupConstructor() throws Exception
    {
       final List<Pair<TransportConfiguration, TransportConfiguration>> staticConnectors = new ArrayList<Pair<TransportConfiguration, TransportConfiguration>>();
-      Pair<TransportConfiguration, TransportConfiguration> pair0 = new Pair<TransportConfiguration, TransportConfiguration>(this.liveTC,
-                                                                                                                            this.backupTC);
+      Pair<TransportConfiguration, TransportConfiguration> pair0 = new Pair<TransportConfiguration, TransportConfiguration>(liveTC,
+                                                                                                                            backupTC);
       staticConnectors.add(pair0);
 
-      HornetQConnectionFactory cf = new HornetQConnectionFactory(this.liveTC, this.backupTC);
+      HornetQConnectionFactory cf = new HornetQConnectionFactory(liveTC, backupTC);
       assertFactoryParams(cf,
                           staticConnectors,
                           null,
@@ -275,7 +275,7 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
                           null,
                           ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
                           ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL,
-                          ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,                         
+                          ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,
                           ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
                           ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE,
                           ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE,
@@ -310,11 +310,11 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
    public void testStaticConnectorLiveConstructor() throws Exception
    {
       final List<Pair<TransportConfiguration, TransportConfiguration>> staticConnectors = new ArrayList<Pair<TransportConfiguration, TransportConfiguration>>();
-      Pair<TransportConfiguration, TransportConfiguration> pair0 = new Pair<TransportConfiguration, TransportConfiguration>(this.liveTC,
+      Pair<TransportConfiguration, TransportConfiguration> pair0 = new Pair<TransportConfiguration, TransportConfiguration>(liveTC,
                                                                                                                             null);
       staticConnectors.add(pair0);
 
-      HornetQConnectionFactory cf = new HornetQConnectionFactory(this.liveTC);
+      HornetQConnectionFactory cf = new HornetQConnectionFactory(liveTC);
       assertFactoryParams(cf,
                           staticConnectors,
                           null,
@@ -323,7 +323,7 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
                           null,
                           ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
                           ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL,
-                          ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,                          
+                          ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,
                           ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
                           ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE,
                           ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE,
@@ -359,17 +359,17 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
       ClientSessionFactory csf = new ClientSessionFactoryImpl();
 
       List<Pair<TransportConfiguration, TransportConfiguration>> staticConnectors = new ArrayList<Pair<TransportConfiguration, TransportConfiguration>>();
-      Pair<TransportConfiguration, TransportConfiguration> pair0 = new Pair<TransportConfiguration, TransportConfiguration>(this.liveTC,
-                                                                                                                            this.backupTC);
+      Pair<TransportConfiguration, TransportConfiguration> pair0 = new Pair<TransportConfiguration, TransportConfiguration>(liveTC,
+                                                                                                                            backupTC);
       staticConnectors.add(pair0);
       HornetQConnectionFactory cf = new HornetQConnectionFactory(csf);
 
-      String discoveryAddress = randomString();
+      String discoveryAddress = RandomUtil.randomString();
       int discoveryPort = RandomUtil.randomPositiveInt();
       long discoveryRefreshTimeout = RandomUtil.randomPositiveLong();
       long clientFailureCheckPeriod = RandomUtil.randomPositiveLong();
       long connectionTTL = RandomUtil.randomPositiveLong();
-      long callTimeout = RandomUtil.randomPositiveLong();      
+      long callTimeout = RandomUtil.randomPositiveLong();
       int minLargeMessageSize = RandomUtil.randomPositiveInt();
       int consumerWindowSize = RandomUtil.randomPositiveInt();
       int consumerMaxRate = RandomUtil.randomPositiveInt();
@@ -396,7 +396,7 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
       cf.setDiscoveryRefreshTimeout(discoveryRefreshTimeout);
       cf.setClientFailureCheckPeriod(clientFailureCheckPeriod);
       cf.setConnectionTTL(connectionTTL);
-      cf.setCallTimeout(callTimeout);      
+      cf.setCallTimeout(callTimeout);
       cf.setMinLargeMessageSize(minLargeMessageSize);
       cf.setConsumerWindowSize(consumerWindowSize);
       cf.setConsumerMaxRate(consumerMaxRate);
@@ -417,50 +417,50 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
       cf.setReconnectAttempts(reconnectAttempts);
       cf.setFailoverOnServerShutdown(failoverOnServerShutdown);
 
-      assertEquals(staticConnectors, cf.getStaticConnectors());
-      assertEquals(discoveryAddress, cf.getDiscoveryAddress());
-      assertEquals(discoveryPort, cf.getDiscoveryPort());
-      assertEquals(discoveryRefreshTimeout, cf.getDiscoveryRefreshTimeout());
-      assertEquals(clientFailureCheckPeriod, cf.getClientFailureCheckPeriod());
-      assertEquals(connectionTTL, cf.getConnectionTTL());
-      assertEquals(callTimeout, cf.getCallTimeout());      
-      assertEquals(minLargeMessageSize, cf.getMinLargeMessageSize());
-      assertEquals(consumerWindowSize, cf.getConsumerWindowSize());
-      assertEquals(consumerMaxRate, cf.getConsumerMaxRate());
-      assertEquals(confirmationWindowSize, cf.getConfirmationWindowSize());
-      assertEquals(producerMaxRate, cf.getProducerMaxRate());
-      assertEquals(blockOnAcknowledge, cf.isBlockOnAcknowledge());
-      assertEquals(blockOnPersistentSend, cf.isBlockOnPersistentSend());
-      assertEquals(blockOnNonPersistentSend, cf.isBlockOnNonPersistentSend());
-      assertEquals(autoGroup, cf.isAutoGroup());
-      assertEquals(preAcknowledge, cf.isPreAcknowledge());
-      assertEquals(loadBalancingPolicyClassName, cf.getConnectionLoadBalancingPolicyClassName());
-      assertEquals(initialWaitTimeout, cf.getDiscoveryInitialWaitTimeout());
-      assertEquals(useGlobalPools, cf.isUseGlobalPools());
-      assertEquals(scheduledThreadPoolMaxSize, cf.getScheduledThreadPoolMaxSize());
-      assertEquals(threadPoolMaxSize, cf.getThreadPoolMaxSize());
-      assertEquals(retryInterval, cf.getRetryInterval());
-      assertEquals(retryIntervalMultiplier, cf.getRetryIntervalMultiplier());
-      assertEquals(reconnectAttempts, cf.getReconnectAttempts());
-      assertEquals(failoverOnServerShutdown, cf.isFailoverOnServerShutdown());
+      Assert.assertEquals(staticConnectors, cf.getStaticConnectors());
+      Assert.assertEquals(discoveryAddress, cf.getDiscoveryAddress());
+      Assert.assertEquals(discoveryPort, cf.getDiscoveryPort());
+      Assert.assertEquals(discoveryRefreshTimeout, cf.getDiscoveryRefreshTimeout());
+      Assert.assertEquals(clientFailureCheckPeriod, cf.getClientFailureCheckPeriod());
+      Assert.assertEquals(connectionTTL, cf.getConnectionTTL());
+      Assert.assertEquals(callTimeout, cf.getCallTimeout());
+      Assert.assertEquals(minLargeMessageSize, cf.getMinLargeMessageSize());
+      Assert.assertEquals(consumerWindowSize, cf.getConsumerWindowSize());
+      Assert.assertEquals(consumerMaxRate, cf.getConsumerMaxRate());
+      Assert.assertEquals(confirmationWindowSize, cf.getConfirmationWindowSize());
+      Assert.assertEquals(producerMaxRate, cf.getProducerMaxRate());
+      Assert.assertEquals(blockOnAcknowledge, cf.isBlockOnAcknowledge());
+      Assert.assertEquals(blockOnPersistentSend, cf.isBlockOnPersistentSend());
+      Assert.assertEquals(blockOnNonPersistentSend, cf.isBlockOnNonPersistentSend());
+      Assert.assertEquals(autoGroup, cf.isAutoGroup());
+      Assert.assertEquals(preAcknowledge, cf.isPreAcknowledge());
+      Assert.assertEquals(loadBalancingPolicyClassName, cf.getConnectionLoadBalancingPolicyClassName());
+      Assert.assertEquals(initialWaitTimeout, cf.getDiscoveryInitialWaitTimeout());
+      Assert.assertEquals(useGlobalPools, cf.isUseGlobalPools());
+      Assert.assertEquals(scheduledThreadPoolMaxSize, cf.getScheduledThreadPoolMaxSize());
+      Assert.assertEquals(threadPoolMaxSize, cf.getThreadPoolMaxSize());
+      Assert.assertEquals(retryInterval, cf.getRetryInterval());
+      Assert.assertEquals(retryIntervalMultiplier, cf.getRetryIntervalMultiplier());
+      Assert.assertEquals(reconnectAttempts, cf.getReconnectAttempts());
+      Assert.assertEquals(failoverOnServerShutdown, cf.isFailoverOnServerShutdown());
 
       cf.close();
    }
 
-   private void testSettersThrowException(HornetQConnectionFactory cf)
+   private void testSettersThrowException(final HornetQConnectionFactory cf)
    {
       List<Pair<TransportConfiguration, TransportConfiguration>> staticConnectors = new ArrayList<Pair<TransportConfiguration, TransportConfiguration>>();
-      Pair<TransportConfiguration, TransportConfiguration> pair0 = new Pair<TransportConfiguration, TransportConfiguration>(this.liveTC,
-                                                                                                                            this.backupTC);
+      Pair<TransportConfiguration, TransportConfiguration> pair0 = new Pair<TransportConfiguration, TransportConfiguration>(liveTC,
+                                                                                                                            backupTC);
       staticConnectors.add(pair0);
 
-      String discoveryAddress = randomString();
+      String discoveryAddress = RandomUtil.randomString();
       int discoveryPort = RandomUtil.randomPositiveInt();
       long discoveryRefreshTimeout = RandomUtil.randomPositiveLong();
       String clientID = RandomUtil.randomString();
       long clientFailureCheckPeriod = RandomUtil.randomPositiveLong();
       long connectionTTL = RandomUtil.randomPositiveLong();
-      long callTimeout = RandomUtil.randomPositiveLong();     
+      long callTimeout = RandomUtil.randomPositiveLong();
       int minLargeMessageSize = RandomUtil.randomPositiveInt();
       int consumerWindowSize = RandomUtil.randomPositiveInt();
       int consumerMaxRate = RandomUtil.randomPositiveInt();
@@ -486,7 +486,7 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
       try
       {
          cf.setStaticConnectors(staticConnectors);
-         fail("Should throw exception");
+         Assert.fail("Should throw exception");
       }
       catch (IllegalStateException e)
       {
@@ -495,7 +495,7 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
       try
       {
          cf.setDiscoveryAddress(discoveryAddress);
-         fail("Should throw exception");
+         Assert.fail("Should throw exception");
       }
       catch (IllegalStateException e)
       {
@@ -504,7 +504,7 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
       try
       {
          cf.setDiscoveryPort(discoveryPort);
-         fail("Should throw exception");
+         Assert.fail("Should throw exception");
       }
       catch (IllegalStateException e)
       {
@@ -513,7 +513,7 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
       try
       {
          cf.setDiscoveryRefreshTimeout(discoveryRefreshTimeout);
-         fail("Should throw exception");
+         Assert.fail("Should throw exception");
       }
       catch (IllegalStateException e)
       {
@@ -522,7 +522,7 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
       try
       {
          cf.setClientID(clientID);
-         fail("Should throw exception");
+         Assert.fail("Should throw exception");
       }
       catch (IllegalStateException e)
       {
@@ -531,7 +531,7 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
       try
       {
          cf.setClientFailureCheckPeriod(clientFailureCheckPeriod);
-         fail("Should throw exception");
+         Assert.fail("Should throw exception");
       }
       catch (IllegalStateException e)
       {
@@ -540,7 +540,7 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
       try
       {
          cf.setConnectionTTL(connectionTTL);
-         fail("Should throw exception");
+         Assert.fail("Should throw exception");
       }
       catch (IllegalStateException e)
       {
@@ -549,7 +549,7 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
       try
       {
          cf.setCallTimeout(callTimeout);
-         fail("Should throw exception");
+         Assert.fail("Should throw exception");
       }
       catch (IllegalStateException e)
       {
@@ -558,7 +558,7 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
       try
       {
          cf.setMinLargeMessageSize(minLargeMessageSize);
-         fail("Should throw exception");
+         Assert.fail("Should throw exception");
       }
       catch (IllegalStateException e)
       {
@@ -567,7 +567,7 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
       try
       {
          cf.setConsumerWindowSize(consumerWindowSize);
-         fail("Should throw exception");
+         Assert.fail("Should throw exception");
       }
       catch (IllegalStateException e)
       {
@@ -576,7 +576,7 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
       try
       {
          cf.setConsumerMaxRate(consumerMaxRate);
-         fail("Should throw exception");
+         Assert.fail("Should throw exception");
       }
       catch (IllegalStateException e)
       {
@@ -585,7 +585,7 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
       try
       {
          cf.setConfirmationWindowSize(confirmationWindowSize);
-         fail("Should throw exception");
+         Assert.fail("Should throw exception");
       }
       catch (IllegalStateException e)
       {
@@ -594,7 +594,7 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
       try
       {
          cf.setProducerMaxRate(producerMaxRate);
-         fail("Should throw exception");
+         Assert.fail("Should throw exception");
       }
       catch (IllegalStateException e)
       {
@@ -603,7 +603,7 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
       try
       {
          cf.setBlockOnAcknowledge(blockOnAcknowledge);
-         fail("Should throw exception");
+         Assert.fail("Should throw exception");
       }
       catch (IllegalStateException e)
       {
@@ -612,7 +612,7 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
       try
       {
          cf.setBlockOnPersistentSend(blockOnPersistentSend);
-         fail("Should throw exception");
+         Assert.fail("Should throw exception");
       }
       catch (IllegalStateException e)
       {
@@ -621,7 +621,7 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
       try
       {
          cf.setBlockOnNonPersistentSend(blockOnNonPersistentSend);
-         fail("Should throw exception");
+         Assert.fail("Should throw exception");
       }
       catch (IllegalStateException e)
       {
@@ -630,7 +630,7 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
       try
       {
          cf.setAutoGroup(autoGroup);
-         fail("Should throw exception");
+         Assert.fail("Should throw exception");
       }
       catch (IllegalStateException e)
       {
@@ -639,7 +639,7 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
       try
       {
          cf.setPreAcknowledge(preAcknowledge);
-         fail("Should throw exception");
+         Assert.fail("Should throw exception");
       }
       catch (IllegalStateException e)
       {
@@ -648,7 +648,7 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
       try
       {
          cf.setConnectionLoadBalancingPolicyClassName(loadBalancingPolicyClassName);
-         fail("Should throw exception");
+         Assert.fail("Should throw exception");
       }
       catch (IllegalStateException e)
       {
@@ -657,7 +657,7 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
       try
       {
          cf.setDupsOKBatchSize(dupsOKBatchSize);
-         fail("Should throw exception");
+         Assert.fail("Should throw exception");
       }
       catch (IllegalStateException e)
       {
@@ -666,7 +666,7 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
       try
       {
          cf.setTransactionBatchSize(transactionBatchSize);
-         fail("Should throw exception");
+         Assert.fail("Should throw exception");
       }
       catch (IllegalStateException e)
       {
@@ -675,7 +675,7 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
       try
       {
          cf.setDiscoveryInitialWaitTimeout(initialWaitTimeout);
-         fail("Should throw exception");
+         Assert.fail("Should throw exception");
       }
       catch (IllegalStateException e)
       {
@@ -684,7 +684,7 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
       try
       {
          cf.setUseGlobalPools(useGlobalPools);
-         fail("Should throw exception");
+         Assert.fail("Should throw exception");
       }
       catch (IllegalStateException e)
       {
@@ -693,7 +693,7 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
       try
       {
          cf.setScheduledThreadPoolMaxSize(scheduledThreadPoolMaxSize);
-         fail("Should throw exception");
+         Assert.fail("Should throw exception");
       }
       catch (IllegalStateException e)
       {
@@ -702,7 +702,7 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
       try
       {
          cf.setThreadPoolMaxSize(threadPoolMaxSize);
-         fail("Should throw exception");
+         Assert.fail("Should throw exception");
       }
       catch (IllegalStateException e)
       {
@@ -711,7 +711,7 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
       try
       {
          cf.setRetryInterval(retryInterval);
-         fail("Should throw exception");
+         Assert.fail("Should throw exception");
       }
       catch (IllegalStateException e)
       {
@@ -720,7 +720,7 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
       try
       {
          cf.setRetryIntervalMultiplier(retryIntervalMultiplier);
-         fail("Should throw exception");
+         Assert.fail("Should throw exception");
       }
       catch (IllegalStateException e)
       {
@@ -729,7 +729,7 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
       try
       {
          cf.setReconnectAttempts(reconnectAttempts);
-         fail("Should throw exception");
+         Assert.fail("Should throw exception");
       }
       catch (IllegalStateException e)
       {
@@ -738,7 +738,7 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
       try
       {
          cf.setFailoverOnServerShutdown(failoverOnServerShutdown);
-         fail("Should throw exception");
+         Assert.fail("Should throw exception");
       }
       catch (IllegalStateException e)
       {
@@ -752,7 +752,7 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
       cf.getClientID();
       cf.getClientFailureCheckPeriod();
       cf.getConnectionTTL();
-      cf.getCallTimeout();      
+      cf.getCallTimeout();
       cf.getMinLargeMessageSize();
       cf.getConsumerWindowSize();
       cf.getConsumerMaxRate();
@@ -777,79 +777,79 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
 
    }
 
-   private void assertFactoryParams(HornetQConnectionFactory cf,
-                                    List<Pair<TransportConfiguration, TransportConfiguration>> staticConnectors,
-                                    String discoveryAddress,
-                                    int discoveryPort,
-                                    long discoveryRefreshTimeout,
-                                    String clientID,
-                                    long clientFailureCheckPeriod,
-                                    long connectionTTL,
-                                    long callTimeout,                                   
-                                    int minLargeMessageSize,
-                                    int consumerWindowSize,
-                                    int consumerMaxRate,
-                                    int confirmationWindowSize,
-                                    int producerMaxRate,
-                                    boolean blockOnAcknowledge,
-                                    boolean blockOnPersistentSend,
-                                    boolean blockOnNonPersistentSend,
-                                    boolean autoGroup,
-                                    boolean preAcknowledge,
-                                    String loadBalancingPolicyClassName,
-                                    int dupsOKBatchSize,
-                                    int transactionBatchSize,
-                                    long initialWaitTimeout,
-                                    boolean useGlobalPools,
-                                    int scheduledThreadPoolMaxSize,
-                                    int threadPoolMaxSize,
-                                    long retryInterval,
-                                    double retryIntervalMultiplier,
-                                    int reconnectAttempts,
-                                    boolean failoverOnServerShutdown)
+   private void assertFactoryParams(final HornetQConnectionFactory cf,
+                                    final List<Pair<TransportConfiguration, TransportConfiguration>> staticConnectors,
+                                    final String discoveryAddress,
+                                    final int discoveryPort,
+                                    final long discoveryRefreshTimeout,
+                                    final String clientID,
+                                    final long clientFailureCheckPeriod,
+                                    final long connectionTTL,
+                                    final long callTimeout,
+                                    final int minLargeMessageSize,
+                                    final int consumerWindowSize,
+                                    final int consumerMaxRate,
+                                    final int confirmationWindowSize,
+                                    final int producerMaxRate,
+                                    final boolean blockOnAcknowledge,
+                                    final boolean blockOnPersistentSend,
+                                    final boolean blockOnNonPersistentSend,
+                                    final boolean autoGroup,
+                                    final boolean preAcknowledge,
+                                    final String loadBalancingPolicyClassName,
+                                    final int dupsOKBatchSize,
+                                    final int transactionBatchSize,
+                                    final long initialWaitTimeout,
+                                    final boolean useGlobalPools,
+                                    final int scheduledThreadPoolMaxSize,
+                                    final int threadPoolMaxSize,
+                                    final long retryInterval,
+                                    final double retryIntervalMultiplier,
+                                    final int reconnectAttempts,
+                                    final boolean failoverOnServerShutdown)
    {
       List<Pair<TransportConfiguration, TransportConfiguration>> cfStaticConnectors = cf.getStaticConnectors();
       if (staticConnectors == null)
       {
-         assertNull(cfStaticConnectors);
+         Assert.assertNull(cfStaticConnectors);
       }
       else
       {
-         assertEquals(staticConnectors.size(), cfStaticConnectors.size());
+         Assert.assertEquals(staticConnectors.size(), cfStaticConnectors.size());
 
          for (int i = 0; i < staticConnectors.size(); i++)
          {
-            assertEquals(staticConnectors.get(i), cfStaticConnectors.get(i));
+            Assert.assertEquals(staticConnectors.get(i), cfStaticConnectors.get(i));
          }
       }
-      assertEquals(cf.getDiscoveryAddress(), discoveryAddress);
-      assertEquals(cf.getDiscoveryPort(), discoveryPort);
-      assertEquals(cf.getDiscoveryRefreshTimeout(), discoveryRefreshTimeout);
-      assertEquals(cf.getClientID(), clientID);
-      assertEquals(cf.getClientFailureCheckPeriod(), clientFailureCheckPeriod);
-      assertEquals(cf.getConnectionTTL(), connectionTTL);
-      assertEquals(cf.getCallTimeout(), callTimeout);     
-      assertEquals(cf.getMinLargeMessageSize(), minLargeMessageSize);
-      assertEquals(cf.getConsumerWindowSize(), consumerWindowSize);
-      assertEquals(cf.getConsumerMaxRate(), consumerMaxRate);
-      assertEquals(cf.getConfirmationWindowSize(), confirmationWindowSize);
-      assertEquals(cf.getProducerMaxRate(), producerMaxRate);
-      assertEquals(cf.isBlockOnAcknowledge(), blockOnAcknowledge);
-      assertEquals(cf.isBlockOnPersistentSend(), blockOnPersistentSend);
-      assertEquals(cf.isBlockOnNonPersistentSend(), blockOnNonPersistentSend);
-      assertEquals(cf.isAutoGroup(), autoGroup);
-      assertEquals(cf.isPreAcknowledge(), preAcknowledge);
-      assertEquals(cf.getConnectionLoadBalancingPolicyClassName(), loadBalancingPolicyClassName);
-      assertEquals(cf.getDupsOKBatchSize(), dupsOKBatchSize);
-      assertEquals(cf.getTransactionBatchSize(), transactionBatchSize);
-      assertEquals(cf.getDiscoveryInitialWaitTimeout(), initialWaitTimeout);
-      assertEquals(cf.isUseGlobalPools(), useGlobalPools);
-      assertEquals(cf.getScheduledThreadPoolMaxSize(), scheduledThreadPoolMaxSize);
-      assertEquals(cf.getThreadPoolMaxSize(), threadPoolMaxSize);
-      assertEquals(cf.getRetryInterval(), retryInterval);
-      assertEquals(cf.getRetryIntervalMultiplier(), retryIntervalMultiplier);
-      assertEquals(cf.getReconnectAttempts(), reconnectAttempts);
-      assertEquals(cf.isFailoverOnServerShutdown(), failoverOnServerShutdown);
+      Assert.assertEquals(cf.getDiscoveryAddress(), discoveryAddress);
+      Assert.assertEquals(cf.getDiscoveryPort(), discoveryPort);
+      Assert.assertEquals(cf.getDiscoveryRefreshTimeout(), discoveryRefreshTimeout);
+      Assert.assertEquals(cf.getClientID(), clientID);
+      Assert.assertEquals(cf.getClientFailureCheckPeriod(), clientFailureCheckPeriod);
+      Assert.assertEquals(cf.getConnectionTTL(), connectionTTL);
+      Assert.assertEquals(cf.getCallTimeout(), callTimeout);
+      Assert.assertEquals(cf.getMinLargeMessageSize(), minLargeMessageSize);
+      Assert.assertEquals(cf.getConsumerWindowSize(), consumerWindowSize);
+      Assert.assertEquals(cf.getConsumerMaxRate(), consumerMaxRate);
+      Assert.assertEquals(cf.getConfirmationWindowSize(), confirmationWindowSize);
+      Assert.assertEquals(cf.getProducerMaxRate(), producerMaxRate);
+      Assert.assertEquals(cf.isBlockOnAcknowledge(), blockOnAcknowledge);
+      Assert.assertEquals(cf.isBlockOnPersistentSend(), blockOnPersistentSend);
+      Assert.assertEquals(cf.isBlockOnNonPersistentSend(), blockOnNonPersistentSend);
+      Assert.assertEquals(cf.isAutoGroup(), autoGroup);
+      Assert.assertEquals(cf.isPreAcknowledge(), preAcknowledge);
+      Assert.assertEquals(cf.getConnectionLoadBalancingPolicyClassName(), loadBalancingPolicyClassName);
+      Assert.assertEquals(cf.getDupsOKBatchSize(), dupsOKBatchSize);
+      Assert.assertEquals(cf.getTransactionBatchSize(), transactionBatchSize);
+      Assert.assertEquals(cf.getDiscoveryInitialWaitTimeout(), initialWaitTimeout);
+      Assert.assertEquals(cf.isUseGlobalPools(), useGlobalPools);
+      Assert.assertEquals(cf.getScheduledThreadPoolMaxSize(), scheduledThreadPoolMaxSize);
+      Assert.assertEquals(cf.getThreadPoolMaxSize(), threadPoolMaxSize);
+      Assert.assertEquals(cf.getRetryInterval(), retryInterval);
+      Assert.assertEquals(cf.getRetryIntervalMultiplier(), retryIntervalMultiplier);
+      Assert.assertEquals(cf.getReconnectAttempts(), reconnectAttempts);
+      Assert.assertEquals(cf.isFailoverOnServerShutdown(), failoverOnServerShutdown);
    }
 
    @Override
@@ -864,14 +864,14 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
    protected void tearDown() throws Exception
    {
       stopLiveAndBackup();
-      
-      this.liveService = null;
-      
-      this.backupService = null;
-      
-      this.liveTC = null;
-      
-      this.backupTC = null;
+
+      liveService = null;
+
+      backupService = null;
+
+      liveTC = null;
+
+      backupTC = null;
 
       super.tearDown();
    }
@@ -896,8 +896,7 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
       backupConf.setClustered(true);
       backupParams.put(TransportConstants.SERVER_ID_PROP_NAME, 1);
       backupConf.getAcceptorConfigurations()
-                .add(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory",
-                                                backupParams));
+                .add(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory", backupParams));
       backupConf.setBackup(true);
       backupConf.setSharedStore(true);
       backupService = HornetQ.newHornetQServer(backupConf, false);
@@ -909,8 +908,7 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
       liveConf.getAcceptorConfigurations()
               .add(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory"));
       Map<String, TransportConfiguration> connectors = new HashMap<String, TransportConfiguration>();
-      backupTC = new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory",
-                                            backupParams);
+      backupTC = new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory", backupParams);
       connectors.put(backupTC.getName(), backupTC);
       connectors.put(liveTC.getName(), liveTC);
       liveConf.setConnectorConfigurations(connectors);

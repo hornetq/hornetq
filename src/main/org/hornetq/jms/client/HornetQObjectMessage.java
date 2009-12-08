@@ -60,7 +60,7 @@ public class HornetQObjectMessage extends HornetQMessage implements ObjectMessag
       super(HornetQObjectMessage.TYPE, session);
    }
 
-   public HornetQObjectMessage(final ClientMessage message, ClientSession session)
+   public HornetQObjectMessage(final ClientMessage message, final ClientSession session)
    {
       super(message, session);
    }
@@ -77,11 +77,13 @@ public class HornetQObjectMessage extends HornetQMessage implements ObjectMessag
 
    // Public --------------------------------------------------------
 
+   @Override
    public byte getType()
    {
       return HornetQObjectMessage.TYPE;
    }
 
+   @Override
    public void doBeforeSend() throws Exception
    {
       message.getBodyBuffer().clear();
@@ -94,6 +96,7 @@ public class HornetQObjectMessage extends HornetQMessage implements ObjectMessag
       super.doBeforeSend();
    }
 
+   @Override
    public void doBeforeReceive() throws Exception
    {
       super.doBeforeReceive();
@@ -112,7 +115,7 @@ public class HornetQObjectMessage extends HornetQMessage implements ObjectMessag
 
    // ObjectMessage implementation ----------------------------------
 
-   public void setObject(Serializable object) throws JMSException
+   public void setObject(final Serializable object) throws JMSException
    {
       checkWrite();
 
@@ -162,6 +165,7 @@ public class HornetQObjectMessage extends HornetQMessage implements ObjectMessag
       }
    }
 
+   @Override
    public void clearBody() throws JMSException
    {
       super.clearBody();

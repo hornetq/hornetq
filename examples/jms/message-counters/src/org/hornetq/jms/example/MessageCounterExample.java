@@ -43,13 +43,14 @@ import org.hornetq.jms.server.management.JMSQueueControl;
  */
 public class MessageCounterExample extends HornetQExample
 {
-   private String JMX_URL = "service:jmx:rmi:///jndi/rmi://localhost:3001/jmxrmi";
+   private final String JMX_URL = "service:jmx:rmi:///jndi/rmi://localhost:3001/jmxrmi";
 
-   public static void main(String[] args)
+   public static void main(final String[] args)
    {
       new MessageCounterExample().run(args);
    }
 
+   @Override
    public boolean runExample() throws Exception
    {
       QueueConnection connection = null;
@@ -83,15 +84,15 @@ public class MessageCounterExample extends HornetQExample
          ObjectName on = ObjectNameBuilder.DEFAULT.getJMSQueueObjectName(queue.getQueueName());
          JMXConnector connector = JMXConnectorFactory.connect(new JMXServiceURL(JMX_URL), new HashMap());
          MBeanServerConnection mbsc = connector.getMBeanServerConnection();
-         JMSQueueControl queueControl = (JMSQueueControl)MBeanServerInvocationHandler.newProxyInstance(mbsc,
-                                                                                                                 on,
-                                                                                                                 JMSQueueControl.class,
-                                                                                                                 false);
+         JMSQueueControl queueControl = MBeanServerInvocationHandler.newProxyInstance(mbsc,
+                                                                                      on,
+                                                                                      JMSQueueControl.class,
+                                                                                      false);
 
          // Step 8. List the message counters and convert them to MessageCounterInfo data structure.
          String counters = queueControl.listMessageCounter();
          MessageCounterInfo messageCounter = MessageCounterInfo.fromJSON(counters);
-         
+
          // Step 9. Display the message counter
          displayMessageCounter(messageCounter);
 
@@ -106,10 +107,10 @@ public class MessageCounterExample extends HornetQExample
 
          // Step 12. Create a JMS consumer on the queue
          MessageConsumer consumer = session.createConsumer(queue);
-         
+
          // Step 13. Start the connection to receive messages on the consumer
          connection.start();
-         
+
          // Step 14. Receive a JMS message from the queue. It corresponds to the message sent at step #5
          TextMessage messageReceived = (TextMessage)consumer.receive(5000);
          System.out.format("Received message: %s\n\n", messageReceived.getText());
@@ -117,12 +118,12 @@ public class MessageCounterExample extends HornetQExample
          // Step 15. Sleep on last time to have the queue sampled
          System.out.println("Sleep a little bit one last time...");
          Thread.sleep(3000);
-         
+
          // Step 16. Display one last time the message counter
          counters = queueControl.listMessageCounter();
          messageCounter = MessageCounterInfo.fromJSON(counters);
          displayMessageCounter(messageCounter);
-         
+
          return true;
       }
       finally
@@ -138,12 +139,16 @@ public class MessageCounterExample extends HornetQExample
          }
       }
    }
-   
-   private void displayMessageCounter(MessageCounterInfo counter)
+
+   private void displayMessageCounter(final MessageCounterInfo counter)
    {
-      System.out.format("%s (sample updated at %s)\n",  counter.getName(), counter.getUdpateTimestamp());
-      System.out.format("   %s message(s) added to the queue (since last sample: %s)\n", counter.getCount(), counter.getCountDelta());
-      System.out.format("   %s message(s) in the queue (since last sample: %s)\n", counter.getDepth(), counter.getDepthDelta());
+      System.out.format("%s (sample updated at %s)\n", counter.getName(), counter.getUdpateTimestamp());
+      System.out.format("   %s message(s) added to the queue (since last sample: %s)\n",
+                        counter.getCount(),
+                        counter.getCountDelta());
+      System.out.format("   %s message(s) in the queue (since last sample: %s)\n",
+                        counter.getDepth(),
+                        counter.getDepthDelta());
       System.out.format("   last message added at %s\n\n", counter.getLastAddTimestamp());
    }
 

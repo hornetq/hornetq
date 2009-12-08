@@ -13,8 +13,6 @@
 
 package org.hornetq.tests.integration.jms.server.management;
 
-import static org.hornetq.tests.util.RandomUtil.randomString;
-
 import java.util.Arrays;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -23,6 +21,8 @@ import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.ExceptionListener;
 import javax.jms.JMSException;
+
+import junit.framework.Assert;
 
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.TransportConfiguration;
@@ -39,6 +39,7 @@ import org.hornetq.jms.server.management.JMSServerControl;
 import org.hornetq.tests.integration.management.ManagementControlHelper;
 import org.hornetq.tests.integration.management.ManagementTestBase;
 import org.hornetq.tests.unit.util.InVMContext;
+import org.hornetq.tests.util.RandomUtil;
 
 /**
  * A QueueControlTest
@@ -57,7 +58,7 @@ public class JMSServerControl2Test extends ManagementTestBase
 
    private static final long CONNECTION_TTL = 1000;
 
-   private static final long PING_PERIOD = CONNECTION_TTL / 2;
+   private static final long PING_PERIOD = JMSServerControl2Test.CONNECTION_TTL / 2;
 
    // Attributes ----------------------------------------------------
 
@@ -69,7 +70,7 @@ public class JMSServerControl2Test extends ManagementTestBase
 
    // Static --------------------------------------------------------
 
-   private void startHornetQServer(String acceptorFactory) throws Exception
+   private void startHornetQServer(final String acceptorFactory) throws Exception
    {
       Configuration conf = new ConfigurationImpl();
       conf.setSecurityEnabled(false);
@@ -148,6 +149,7 @@ public class JMSServerControl2Test extends ManagementTestBase
       return ManagementControlHelper.createJMSServerControl(mbeanServer);
    }
 
+   @Override
    protected void tearDown() throws Exception
    {
       serverManager = null;
@@ -159,7 +161,7 @@ public class JMSServerControl2Test extends ManagementTestBase
 
    // Private -------------------------------------------------------
 
-   private void doListConnectionIDs(String acceptorFactory, String connectorFactory) throws Exception
+   private void doListConnectionIDs(final String acceptorFactory, final String connectorFactory) throws Exception
    {
       try
       {
@@ -167,24 +169,28 @@ public class JMSServerControl2Test extends ManagementTestBase
 
          JMSServerControl control = createManagementControl();
 
-         assertEquals(0, control.listConnectionIDs().length);
+         Assert.assertEquals(0, control.listConnectionIDs().length);
 
-         ConnectionFactory cf1 = JMSUtil.createFactory(connectorFactory, CONNECTION_TTL, PING_PERIOD);
+         ConnectionFactory cf1 = JMSUtil.createFactory(connectorFactory,
+                                                       JMSServerControl2Test.CONNECTION_TTL,
+                                                       JMSServerControl2Test.PING_PERIOD);
          Connection connection = cf1.createConnection();
 
          String[] connectionIDs = control.listConnectionIDs();
-         assertEquals(1, connectionIDs.length);
+         Assert.assertEquals(1, connectionIDs.length);
 
-         ConnectionFactory cf2 = JMSUtil.createFactory(connectorFactory, CONNECTION_TTL, PING_PERIOD);
+         ConnectionFactory cf2 = JMSUtil.createFactory(connectorFactory,
+                                                       JMSServerControl2Test.CONNECTION_TTL,
+                                                       JMSServerControl2Test.PING_PERIOD);
          Connection connection2 = cf2.createConnection();
-         assertEquals(2, control.listConnectionIDs().length);
+         Assert.assertEquals(2, control.listConnectionIDs().length);
 
          connection.close();
-         
+
          waitForConnectionIDs(1, control);
 
          connection2.close();
-         
+
          waitForConnectionIDs(0, control);
       }
       finally
@@ -221,7 +227,7 @@ public class JMSServerControl2Test extends ManagementTestBase
       }
    }
 
-   private void doListSessions(String acceptorFactory, String connectorFactory) throws Exception
+   private void doListSessions(final String acceptorFactory, final String connectorFactory) throws Exception
    {
       try
       {
@@ -229,26 +235,28 @@ public class JMSServerControl2Test extends ManagementTestBase
 
          JMSServerControl control = createManagementControl();
 
-         assertEquals(0, control.listConnectionIDs().length);
+         Assert.assertEquals(0, control.listConnectionIDs().length);
 
-         ConnectionFactory cf = JMSUtil.createFactory(connectorFactory, CONNECTION_TTL, PING_PERIOD);
+         ConnectionFactory cf = JMSUtil.createFactory(connectorFactory,
+                                                      JMSServerControl2Test.CONNECTION_TTL,
+                                                      JMSServerControl2Test.PING_PERIOD);
          Connection connection = cf.createConnection();
 
          String[] connectionIDs = control.listConnectionIDs();
-         assertEquals(1, connectionIDs.length);
+         Assert.assertEquals(1, connectionIDs.length);
          String connectionID = connectionIDs[0];
 
          String[] sessions = control.listSessions(connectionID);
-         assertEquals(1, sessions.length);
+         Assert.assertEquals(1, sessions.length);
          connection.close();
          sessions = control.listSessions(connectionID);
-         assertEquals("got " + Arrays.asList(sessions), 0, sessions.length);
+         Assert.assertEquals("got " + Arrays.asList(sessions), 0, sessions.length);
 
          connection.close();
 
          waitForConnectionIDs(0, control);
 
-         assertEquals(0, control.listConnectionIDs().length);
+         Assert.assertEquals(0, control.listConnectionIDs().length);
       }
       finally
       {
@@ -264,7 +272,7 @@ public class JMSServerControl2Test extends ManagementTestBase
       }
    }
 
-   private void doListClientConnections(String acceptorFactory, String connectorFactory) throws Exception
+   private void doListClientConnections(final String acceptorFactory, final String connectorFactory) throws Exception
    {
       try
       {
@@ -272,13 +280,15 @@ public class JMSServerControl2Test extends ManagementTestBase
 
          JMSServerControl control = createManagementControl();
 
-         assertEquals(0, control.listRemoteAddresses().length);
+         Assert.assertEquals(0, control.listRemoteAddresses().length);
 
-         ConnectionFactory cf = JMSUtil.createFactory(connectorFactory, CONNECTION_TTL, PING_PERIOD);
+         ConnectionFactory cf = JMSUtil.createFactory(connectorFactory,
+                                                      JMSServerControl2Test.CONNECTION_TTL,
+                                                      JMSServerControl2Test.PING_PERIOD);
          Connection connection = cf.createConnection();
 
          String[] remoteAddresses = control.listRemoteAddresses();
-         assertEquals(1, remoteAddresses.length);
+         Assert.assertEquals(1, remoteAddresses.length);
 
          for (String remoteAddress : remoteAddresses)
          {
@@ -290,7 +300,7 @@ public class JMSServerControl2Test extends ManagementTestBase
          waitForConnectionIDs(0, control);
 
          remoteAddresses = control.listRemoteAddresses();
-         assertEquals("got " + Arrays.asList(remoteAddresses), 0, remoteAddresses.length);
+         Assert.assertEquals("got " + Arrays.asList(remoteAddresses), 0, remoteAddresses.length);
       }
       finally
       {
@@ -306,7 +316,7 @@ public class JMSServerControl2Test extends ManagementTestBase
       }
    }
 
-   private void doCloseConnectionsForAddress(String acceptorFactory, String connectorFactory) throws Exception
+   private void doCloseConnectionsForAddress(final String acceptorFactory, final String connectorFactory) throws Exception
    {
       try
       {
@@ -314,35 +324,37 @@ public class JMSServerControl2Test extends ManagementTestBase
 
          JMSServerControl control = createManagementControl();
 
-         assertEquals(0, server.getConnectionCount());
-         assertEquals(0, control.listRemoteAddresses().length);
+         Assert.assertEquals(0, server.getConnectionCount());
+         Assert.assertEquals(0, control.listRemoteAddresses().length);
 
-         ConnectionFactory cf = JMSUtil.createFactory(connectorFactory, CONNECTION_TTL, PING_PERIOD);
+         ConnectionFactory cf = JMSUtil.createFactory(connectorFactory,
+                                                      JMSServerControl2Test.CONNECTION_TTL,
+                                                      JMSServerControl2Test.PING_PERIOD);
          Connection connection = cf.createConnection();
 
-         assertEquals(1, server.getConnectionCount());
+         Assert.assertEquals(1, server.getConnectionCount());
 
          String[] remoteAddresses = control.listRemoteAddresses();
-         assertEquals(1, remoteAddresses.length);
+         Assert.assertEquals(1, remoteAddresses.length);
          String remoteAddress = remoteAddresses[0];
 
          final CountDownLatch exceptionLatch = new CountDownLatch(1);
          connection.setExceptionListener(new ExceptionListener()
          {
-            public void onException(JMSException e)
+            public void onException(final JMSException e)
             {
                exceptionLatch.countDown();
             }
          });
 
-         assertTrue(control.closeConnectionsForAddress(remoteAddress));
+         Assert.assertTrue(control.closeConnectionsForAddress(remoteAddress));
 
-         boolean gotException = exceptionLatch.await(2 * CONNECTION_TTL, TimeUnit.MILLISECONDS);
-         assertTrue("did not received the expected JMSException", gotException);
+         boolean gotException = exceptionLatch.await(2 * JMSServerControl2Test.CONNECTION_TTL, TimeUnit.MILLISECONDS);
+         Assert.assertTrue("did not received the expected JMSException", gotException);
 
          remoteAddresses = control.listRemoteAddresses();
-         assertEquals("got " + Arrays.asList(remoteAddresses), 0, remoteAddresses.length);
-         assertEquals(0, server.getConnectionCount());
+         Assert.assertEquals("got " + Arrays.asList(remoteAddresses), 0, remoteAddresses.length);
+         Assert.assertEquals(0, server.getConnectionCount());
 
          connection.close();
       }
@@ -360,9 +372,9 @@ public class JMSServerControl2Test extends ManagementTestBase
       }
    }
 
-   private void doCloseConnectionsForUnknownAddress(String acceptorFactory, String connectorFactory) throws Exception
+   private void doCloseConnectionsForUnknownAddress(final String acceptorFactory, final String connectorFactory) throws Exception
    {
-      String unknownAddress = randomString();
+      String unknownAddress = RandomUtil.randomString();
 
       try
       {
@@ -370,32 +382,34 @@ public class JMSServerControl2Test extends ManagementTestBase
 
          JMSServerControl control = createManagementControl();
 
-         assertEquals(0, server.getConnectionCount());
-         assertEquals(0, control.listRemoteAddresses().length);
+         Assert.assertEquals(0, server.getConnectionCount());
+         Assert.assertEquals(0, control.listRemoteAddresses().length);
 
-         ConnectionFactory cf = JMSUtil.createFactory(connectorFactory, CONNECTION_TTL, PING_PERIOD);
+         ConnectionFactory cf = JMSUtil.createFactory(connectorFactory,
+                                                      JMSServerControl2Test.CONNECTION_TTL,
+                                                      JMSServerControl2Test.PING_PERIOD);
          Connection connection = cf.createConnection();
 
-         assertEquals(1, server.getConnectionCount());
+         Assert.assertEquals(1, server.getConnectionCount());
          String[] remoteAddresses = control.listRemoteAddresses();
-         assertEquals(1, remoteAddresses.length);
+         Assert.assertEquals(1, remoteAddresses.length);
 
          final CountDownLatch exceptionLatch = new CountDownLatch(1);
          connection.setExceptionListener(new ExceptionListener()
          {
-            public void onException(JMSException e)
+            public void onException(final JMSException e)
             {
                exceptionLatch.countDown();
             }
          });
 
-         assertFalse(control.closeConnectionsForAddress(unknownAddress));
+         Assert.assertFalse(control.closeConnectionsForAddress(unknownAddress));
 
-         boolean gotException = exceptionLatch.await(2 * CONNECTION_TTL, TimeUnit.MILLISECONDS);
-         assertFalse(gotException);
+         boolean gotException = exceptionLatch.await(2 * JMSServerControl2Test.CONNECTION_TTL, TimeUnit.MILLISECONDS);
+         Assert.assertFalse(gotException);
 
-         assertEquals(1, control.listRemoteAddresses().length);
-         assertEquals(1, server.getConnectionCount());
+         Assert.assertEquals(1, control.listRemoteAddresses().length);
+         Assert.assertEquals(1, server.getConnectionCount());
 
          connection.close();
 

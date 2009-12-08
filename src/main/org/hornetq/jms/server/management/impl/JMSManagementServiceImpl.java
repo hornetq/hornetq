@@ -130,20 +130,20 @@ public class JMSManagementServiceImpl implements JMSManagementService
       managementService.unregisterFromJMX(objectName);
       managementService.unregisterFromRegistry(ResourceNames.JMS_CONNECTION_FACTORY + name);
    }
-   
+
    public void stop() throws Exception
    {
       for (Object resource : managementService.getResources(ConnectionFactoryControl.class))
       {
-         unregisterConnectionFactory(((ConnectionFactoryControl)resource).getName());         
+         unregisterConnectionFactory(((ConnectionFactoryControl)resource).getName());
       }
       for (Object resource : managementService.getResources(JMSQueueControl.class))
       {
-         unregisterQueue(((JMSQueueControl)resource).getName());         
+         unregisterQueue(((JMSQueueControl)resource).getName());
       }
       for (Object resource : managementService.getResources(TopicControl.class))
       {
-         unregisterTopic(((TopicControl)resource).getName());         
+         unregisterTopic(((TopicControl)resource).getName());
       }
    }
 

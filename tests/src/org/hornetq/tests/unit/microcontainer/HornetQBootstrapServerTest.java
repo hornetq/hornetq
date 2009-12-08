@@ -14,6 +14,8 @@ package org.hornetq.tests.unit.microcontainer;
 
 import java.util.Properties;
 
+import junit.framework.Assert;
+
 import org.hornetq.integration.bootstrap.HornetQBootstrapServer;
 import org.hornetq.tests.util.UnitTestCase;
 import org.jboss.kernel.plugins.config.property.PropertyKernelConfig;
@@ -24,60 +26,61 @@ import org.jboss.kernel.spi.deployment.KernelDeployment;
  */
 public class HornetQBootstrapServerTest extends UnitTestCase
 {
-   private static  String beans1 = "beans1.xml";
+   private static String beans1 = "beans1.xml";
 
-   private static String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-           "\n" +
-           "<deployment xmlns=\"urn:jboss:bean-deployer:2.0\">\n" +
-           "   <bean name=\"bean\" class=\"org.hornetq.tests.unit.microcontainer.DummyBean\"/>\n" +
-           "</deployment>";
+   private static String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + "\n"
+                               + "<deployment xmlns=\"urn:jboss:bean-deployer:2.0\">\n"
+                               + "   <bean name=\"bean\" class=\"org.hornetq.tests.unit.microcontainer.DummyBean\"/>\n"
+                               + "</deployment>";
 
    public void testMain() throws Exception
    {
-      HornetQBootstrapServer.main(new String[]{beans1});
-      assertTrue(DummyBean.started);
+      HornetQBootstrapServer.main(new String[] { HornetQBootstrapServerTest.beans1 });
+      Assert.assertTrue(DummyBean.started);
    }
+
    public void testRun() throws Exception
    {
-      HornetQBootstrapServer bootstrap = new HornetQBootstrapServer(beans1);
+      HornetQBootstrapServer bootstrap = new HornetQBootstrapServer(HornetQBootstrapServerTest.beans1);
       bootstrap.run();
-      assertTrue(DummyBean.started);
+      Assert.assertTrue(DummyBean.started);
       bootstrap.shutDown();
-      assertFalse(DummyBean.started);
+      Assert.assertFalse(DummyBean.started);
    }
 
    public void testRunWithConfig() throws Exception
    {
       Properties properties = new Properties();
       properties.setProperty("test", "foo");
-      HornetQBootstrapServer bootstrap = new HornetQBootstrapServer(new PropertyKernelConfig(properties), beans1);
+      HornetQBootstrapServer bootstrap = new HornetQBootstrapServer(new PropertyKernelConfig(properties),
+                                                                    HornetQBootstrapServerTest.beans1);
       bootstrap.run();
-      assertTrue(DummyBean.started);
+      Assert.assertTrue(DummyBean.started);
       bootstrap.shutDown();
-      assertFalse(DummyBean.started);
+      Assert.assertFalse(DummyBean.started);
    }
 
    public void testDeploy() throws Throwable
    {
-      HornetQBootstrapServer bootstrap = new HornetQBootstrapServer(new String[]{});
+      HornetQBootstrapServer bootstrap = new HornetQBootstrapServer(new String[] {});
       bootstrap.run();
-      assertFalse(DummyBean.started);
-      KernelDeployment kernelDeployment = bootstrap.deploy(beans1);
-      assertTrue(DummyBean.started);
+      Assert.assertFalse(DummyBean.started);
+      KernelDeployment kernelDeployment = bootstrap.deploy(HornetQBootstrapServerTest.beans1);
+      Assert.assertTrue(DummyBean.started);
       bootstrap.undeploy(kernelDeployment);
-      assertFalse(DummyBean.started);
+      Assert.assertFalse(DummyBean.started);
       bootstrap.shutDown();
    }
 
    public void testDeployXml() throws Throwable
    {
-      HornetQBootstrapServer bootstrap = new HornetQBootstrapServer(new String[]{});
+      HornetQBootstrapServer bootstrap = new HornetQBootstrapServer(new String[] {});
       bootstrap.run();
-      assertFalse(DummyBean.started);
-      KernelDeployment kernelDeployment = bootstrap.deploy("test", xml);
-      assertTrue(DummyBean.started);
+      Assert.assertFalse(DummyBean.started);
+      KernelDeployment kernelDeployment = bootstrap.deploy("test", HornetQBootstrapServerTest.xml);
+      Assert.assertTrue(DummyBean.started);
       bootstrap.undeploy(kernelDeployment);
-      assertFalse(DummyBean.started);
+      Assert.assertFalse(DummyBean.started);
       bootstrap.shutDown();
    }
 }

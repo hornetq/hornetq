@@ -66,7 +66,7 @@ public class HornetQBootstrapServer extends BasicBootstrap
     */
    public static void main(final String[] args) throws Exception
    {
-      log.info("Starting HornetQ Server");
+      HornetQBootstrapServer.log.info("Starting HornetQ Server");
 
       final HornetQBootstrapServer bootstrap = new HornetQBootstrapServer(args);
 
@@ -96,7 +96,7 @@ public class HornetQBootstrapServer extends BasicBootstrap
             {
                try
                {
-                  log.info("Stopping HornetQ Server");
+                  HornetQBootstrapServer.log.info("Stopping HornetQ Server");
                   shutDown();
                   timer.cancel();
                }
@@ -109,7 +109,7 @@ public class HornetQBootstrapServer extends BasicBootstrap
       }, 500, 500);
    }
 
-
+   @Override
    public void run()
    {
       try
@@ -118,7 +118,7 @@ public class HornetQBootstrapServer extends BasicBootstrap
       }
       catch (RuntimeException e)
       {
-         log.error("Failed to start server", e);
+         HornetQBootstrapServer.log.error("Failed to start server", e);
 
          throw e;
       }
@@ -132,18 +132,19 @@ public class HornetQBootstrapServer extends BasicBootstrap
     * @param args the arguments
     * @throws Exception for any error
     */
-   public HornetQBootstrapServer(String... args) throws Exception
+   public HornetQBootstrapServer(final String... args) throws Exception
    {
       super();
       this.args = args;
    }
 
-   public HornetQBootstrapServer(KernelConfig kernelConfig, final String... args) throws Exception
+   public HornetQBootstrapServer(final KernelConfig kernelConfig, final String... args) throws Exception
    {
       super(kernelConfig);
       this.args = args;
    }
 
+   @Override
    public void bootstrap() throws Throwable
    {
       super.bootstrap();
@@ -165,16 +166,16 @@ public class HornetQBootstrapServer extends BasicBootstrap
     */
    public void undeploy(final KernelDeployment deployment) throws Throwable
    {
-      log.debug("Undeploying " + deployment.getName());
+      HornetQBootstrapServer.log.debug("Undeploying " + deployment.getName());
       deployments.remove(deployment);
       try
       {
          deployer.undeploy(deployment);
-         log.debug("Undeployed " + deployment.getName());
+         HornetQBootstrapServer.log.debug("Undeployed " + deployment.getName());
       }
       catch (Throwable t)
       {
-         log.warn("Error during undeployment: " + deployment.getName(), t);
+         HornetQBootstrapServer.log.warn("Error during undeployment: " + deployment.getName(), t);
       }
    }
 
@@ -186,7 +187,7 @@ public class HornetQBootstrapServer extends BasicBootstrap
       {
          url = cl.getResource("META-INF/" + arg);
       }
-      //try the system classpath
+      // try the system classpath
       if (url == null)
       {
          url = getClass().getClassLoader().getResource(arg);
@@ -224,7 +225,6 @@ public class HornetQBootstrapServer extends BasicBootstrap
       return deployment;
    }
 
-
    /**
     * Deploy a url
     *
@@ -233,10 +233,10 @@ public class HornetQBootstrapServer extends BasicBootstrap
     */
    protected KernelDeployment deploy(final URL url) throws Throwable
    {
-      log.debug("Deploying " + url);
+      HornetQBootstrapServer.log.debug("Deploying " + url);
       KernelDeployment deployment = deployer.deploy(url);
       deployments.add(deployment);
-      log.debug("Deployed " + url);
+      HornetQBootstrapServer.log.debug("Deployed " + url);
       return deployment;
    }
 
@@ -252,21 +252,21 @@ public class HornetQBootstrapServer extends BasicBootstrap
          }
          catch (Throwable t)
          {
-            log.warn("Unable to undeploy: " + deployment.getName(), t);  
+            HornetQBootstrapServer.log.warn("Unable to undeploy: " + deployment.getName(), t);
          }
       }
    }
 
+   @Override
    protected Properties getConfigProperties()
    {
       return properties;
    }
 
-   public void setProperties(Properties props)
+   public void setProperties(final Properties props)
    {
       properties = props;
    }
-
 
    protected class Shutdown extends Thread
    {
@@ -274,12 +274,11 @@ public class HornetQBootstrapServer extends BasicBootstrap
       {
          super("hornetq-shutdown-thread");
       }
-      
+
+      @Override
       public void run()
       {
-         HornetQBootstrapServer.this.shutDown();
+         shutDown();
       }
    }
 }
-
-

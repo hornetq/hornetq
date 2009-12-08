@@ -13,11 +13,6 @@
 
 package org.hornetq.tests.integration.management;
 
-import static org.hornetq.tests.util.RandomUtil.randomBoolean;
-import static org.hornetq.tests.util.RandomUtil.randomPositiveInt;
-import static org.hornetq.tests.util.RandomUtil.randomPositiveLong;
-import static org.hornetq.tests.util.RandomUtil.randomString;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -25,6 +20,8 @@ import java.util.Map;
 
 import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
+
+import junit.framework.Assert;
 
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.config.Configuration;
@@ -41,9 +38,8 @@ import org.hornetq.core.server.HornetQServer;
 import org.hornetq.integration.transports.netty.NettyAcceptorFactory;
 import org.hornetq.integration.transports.netty.NettyConnectorFactory;
 import org.hornetq.integration.transports.netty.TransportConstants;
+import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.utils.Pair;
-import org.hornetq.utils.json.JSONArray;
-import org.hornetq.utils.json.JSONObject;
 
 /**
  * A BridgeControlTest
@@ -65,12 +61,12 @@ public class ClusterConnectionControl2Test extends ManagementTestBase
    private HornetQServer server_1;
 
    private MBeanServer mbeanServer_1;
-   
-   private int port_1 = TransportConstants.DEFAULT_PORT + 1000;
-   
+
+   private final int port_1 = TransportConstants.DEFAULT_PORT + 1000;
+
    private ClusterConnectionConfiguration clusterConnectionConfig_0;
 
-   private String clusterName = "cluster";
+   private final String clusterName = "cluster";
 
    // Constructors --------------------------------------------------
 
@@ -79,17 +75,17 @@ public class ClusterConnectionControl2Test extends ManagementTestBase
    public void testNodes() throws Exception
    {
       ClusterConnectionControl clusterConnectionControl_0 = createManagementControl(clusterConnectionConfig_0.getName());
-      assertTrue(clusterConnectionControl_0.isStarted());
+      Assert.assertTrue(clusterConnectionControl_0.isStarted());
       Map<String, String> nodes = clusterConnectionControl_0.getNodes();
-      assertEquals(0, nodes.size());
-      
+      Assert.assertEquals(0, nodes.size());
+
       server_1.start();
       long start = System.currentTimeMillis();
-      
+
       while (true)
       {
          nodes = clusterConnectionControl_0.getNodes();
-         
+
          if (nodes.size() != 1 && System.currentTimeMillis() - start < 30000)
          {
             Thread.sleep(500);
@@ -99,11 +95,11 @@ public class ClusterConnectionControl2Test extends ManagementTestBase
             break;
          }
       }
-            
-      assertEquals(1, nodes.size());
-      
+
+      Assert.assertEquals(1, nodes.size());
+
       String remoteAddress = nodes.values().iterator().next();
-      assertTrue(remoteAddress.endsWith(":" + port_1));
+      Assert.assertTrue(remoteAddress.endsWith(":" + port_1));
    }
 
    // Package protected ---------------------------------------------
@@ -115,29 +111,33 @@ public class ClusterConnectionControl2Test extends ManagementTestBase
    {
       super.setUp();
 
-      String discoveryName = randomString();
+      String discoveryName = RandomUtil.randomString();
       String groupAddress = "231.7.7.7";
       int groupPort = 9876;
 
       Map<String, Object> acceptorParams_1 = new HashMap<String, Object>();
       acceptorParams_1.put(TransportConstants.PORT_PROP_NAME, port_1);
-      TransportConfiguration acceptorConfig_1 = new TransportConfiguration(NettyAcceptorFactory.class.getName(), acceptorParams_1);
-      
+      TransportConfiguration acceptorConfig_1 = new TransportConfiguration(NettyAcceptorFactory.class.getName(),
+                                                                           acceptorParams_1);
+
       TransportConfiguration connectorConfig_1 = new TransportConfiguration(NettyConnectorFactory.class.getName(),
                                                                             acceptorParams_1);
 
       TransportConfiguration connectorConfig_0 = new TransportConfiguration(NettyConnectorFactory.class.getName());
 
-      QueueConfiguration queueConfig = new QueueConfiguration(randomString(), randomString(), null, false);
+      QueueConfiguration queueConfig = new QueueConfiguration(RandomUtil.randomString(),
+                                                              RandomUtil.randomString(),
+                                                              null,
+                                                              false);
 
       clusterConnectionConfig_0 = new ClusterConnectionConfiguration(clusterName,
-                                                                   queueConfig.getAddress(),
-                                                                   1000,
-                                                                   false,
-                                                                   false,
-                                                                   1,
-                                                                   1024,
-                                                                   discoveryName);
+                                                                     queueConfig.getAddress(),
+                                                                     1000,
+                                                                     false,
+                                                                     false,
+                                                                     1,
+                                                                     1024,
+                                                                     discoveryName);
       List<Pair<String, String>> connectorInfos = new ArrayList<Pair<String, String>>();
       connectorInfos.add(new Pair<String, String>("netty", null));
       BroadcastGroupConfiguration broadcastGroupConfig = new BroadcastGroupConfiguration(discoveryName,
@@ -184,17 +184,17 @@ public class ClusterConnectionControl2Test extends ManagementTestBase
    {
       server_0.stop();
       server_1.stop();
-      
+
       server_0 = null;
       server_1 = null;
-      
+
       MBeanServerFactory.releaseMBeanServer(mbeanServer_1);
       mbeanServer_1 = null;
 
       super.tearDown();
    }
 
-   protected ClusterConnectionControl createManagementControl(String name) throws Exception
+   protected ClusterConnectionControl createManagementControl(final String name) throws Exception
    {
       return ManagementControlHelper.createClusterConnectionControl(name, mbeanServer);
    }

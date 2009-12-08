@@ -13,20 +13,17 @@
 
 package org.hornetq.tests.unit.core.config.impl;
 
-import static org.hornetq.tests.util.RandomUtil.randomBoolean;
-import static org.hornetq.tests.util.RandomUtil.randomInt;
-import static org.hornetq.tests.util.RandomUtil.randomLong;
-import static org.hornetq.tests.util.RandomUtil.randomSimpleString;
-import static org.hornetq.tests.util.RandomUtil.randomString;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.server.JournalType;
+import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.SimpleString;
 
@@ -43,271 +40,279 @@ public class ConfigurationImplTest extends UnitTestCase
 
    public void testDefaults()
    {
-      assertEquals(ConfigurationImpl.DEFAULT_CLUSTERED, conf.isClustered());
-      assertEquals(ConfigurationImpl.DEFAULT_BACKUP, conf.isBackup());
-      assertEquals(ConfigurationImpl.DEFAULT_SHARED_STORE, conf.isSharedStore());
-      assertEquals(ConfigurationImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE, conf.getScheduledThreadPoolMaxSize());
-      assertEquals(ConfigurationImpl.DEFAULT_SECURITY_INVALIDATION_INTERVAL, conf.getSecurityInvalidationInterval());
-      assertEquals(ConfigurationImpl.DEFAULT_SECURITY_ENABLED, conf.isSecurityEnabled());
-      assertEquals(ConfigurationImpl.DEFAULT_LOG_DELEGATE_FACTORY_CLASS_NAME, conf.getLogDelegateFactoryClassName());
-      assertEquals(ConfigurationImpl.DEFAULT_BINDINGS_DIRECTORY, conf.getBindingsDirectory());
-      assertEquals(ConfigurationImpl.DEFAULT_CREATE_BINDINGS_DIR, conf.isCreateBindingsDir());
-      assertEquals(ConfigurationImpl.DEFAULT_JOURNAL_DIR, conf.getJournalDirectory());
-      assertEquals(ConfigurationImpl.DEFAULT_CREATE_JOURNAL_DIR, conf.isCreateJournalDir());
-      assertEquals(ConfigurationImpl.DEFAULT_JOURNAL_TYPE, conf.getJournalType());
-      assertEquals(ConfigurationImpl.DEFAULT_JOURNAL_SYNC_TRANSACTIONAL, conf.isJournalSyncTransactional());
-      assertEquals(ConfigurationImpl.DEFAULT_JOURNAL_SYNC_NON_TRANSACTIONAL, conf.isJournalSyncNonTransactional());
-      assertEquals(ConfigurationImpl.DEFAULT_JOURNAL_FILE_SIZE, conf.getJournalFileSize());
-      assertEquals(ConfigurationImpl.DEFAULT_JOURNAL_MIN_FILES, conf.getJournalMinFiles());
-      assertEquals(ConfigurationImpl.DEFAULT_JOURNAL_MAX_IO_AIO, conf.getJournalMaxIO_AIO());
-      assertEquals(ConfigurationImpl.DEFAULT_JOURNAL_MAX_IO_NIO, conf.getJournalMaxIO_NIO());
-      assertEquals(ConfigurationImpl.DEFAULT_WILDCARD_ROUTING_ENABLED, conf.isWildcardRoutingEnabled());
-      assertEquals(ConfigurationImpl.DEFAULT_TRANSACTION_TIMEOUT, conf.getTransactionTimeout());
-      assertEquals(ConfigurationImpl.DEFAULT_MESSAGE_EXPIRY_SCAN_PERIOD, conf.getMessageExpiryScanPeriod()); // OK
-      assertEquals(ConfigurationImpl.DEFAULT_MESSAGE_EXPIRY_THREAD_PRIORITY, conf.getMessageExpiryThreadPriority()); // OK
-      assertEquals(ConfigurationImpl.DEFAULT_TRANSACTION_TIMEOUT_SCAN_PERIOD, conf.getTransactionTimeoutScanPeriod()); // OK
-      assertEquals(ConfigurationImpl.DEFAULT_MANAGEMENT_ADDRESS, conf.getManagementAddress()); // OK
-      assertEquals(ConfigurationImpl.DEFAULT_MANAGEMENT_NOTIFICATION_ADDRESS, conf.getManagementNotificationAddress()); // OK
-      assertEquals(ConfigurationImpl.DEFAULT_MANAGEMENT_CLUSTER_USER, conf.getManagementClusterUser()); // OK
-      assertEquals(ConfigurationImpl.DEFAULT_MANAGEMENT_CLUSTER_PASSWORD, conf.getManagementClusterPassword()); // OK
-      assertEquals(ConfigurationImpl.DEFAULT_PERSISTENCE_ENABLED, conf.isPersistenceEnabled());
-      assertEquals(ConfigurationImpl.DEFAULT_FILE_DEPLOYMENT_ENABLED, conf.isFileDeploymentEnabled());
-      assertEquals(ConfigurationImpl.DEFAULT_PERSIST_DELIVERY_COUNT_BEFORE_DELIVERY,
-                   conf.isPersistDeliveryCountBeforeDelivery());
-      assertEquals(ConfigurationImpl.DEFAULT_FILE_DEPLOYER_SCAN_PERIOD, conf.getFileDeployerScanPeriod());
-      assertEquals(ConfigurationImpl.DEFAULT_THREAD_POOL_MAX_SIZE, conf.getThreadPoolMaxSize());
-      assertEquals(ConfigurationImpl.DEFAULT_JMX_MANAGEMENT_ENABLED, conf.isJMXManagementEnabled());
-      assertEquals(ConfigurationImpl.DEFAULT_CONNECTION_TTL_OVERRIDE, conf.getConnectionTTLOverride());
-      assertEquals(ConfigurationImpl.DEFAULT_ASYNC_CONNECTION_EXECUTION_ENABLED,
-                   conf.isAsyncConnectionExecutionEnabled());
-      assertEquals(ConfigurationImpl.DEFAULT_PAGING_DIR, conf.getPagingDirectory());
-      assertEquals(ConfigurationImpl.DEFAULT_LARGE_MESSAGES_DIR, conf.getLargeMessagesDirectory());
-      assertEquals(ConfigurationImpl.DEFAULT_JOURNAL_COMPACT_PERCENTAGE, conf.getJournalCompactPercentage());
-      assertEquals(ConfigurationImpl.DEFAULT_JOURNAL_BUFFER_TIMEOUT_AIO, conf.getJournalBufferTimeout_AIO());
-      assertEquals(ConfigurationImpl.DEFAULT_JOURNAL_BUFFER_TIMEOUT_NIO, conf.getJournalBufferTimeout_NIO());
-      assertEquals(ConfigurationImpl.DEFAULT_JOURNAL_BUFFER_SIZE_AIO, conf.getJournalBufferSize_AIO());
-      assertEquals(ConfigurationImpl.DEFAULT_JOURNAL_BUFFER_SIZE_NIO, conf.getJournalBufferSize_NIO());
-      assertEquals(ConfigurationImpl.DEFAULT_JOURNAL_LOG_WRITE_RATE, conf.isLogJournalWriteRate());
-      assertEquals(ConfigurationImpl.DEFAULT_JOURNAL_PERF_BLAST_PAGES, conf.getJournalPerfBlastPages());
-      assertEquals(ConfigurationImpl.DEFAULT_MESSAGE_COUNTER_ENABLED, conf.isMessageCounterEnabled());
-      assertEquals(ConfigurationImpl.DEFAULT_MESSAGE_COUNTER_MAX_DAY_HISTORY, conf.getMessageCounterMaxDayHistory());
-      assertEquals(ConfigurationImpl.DEFAULT_MESSAGE_COUNTER_SAMPLE_PERIOD, conf.getMessageCounterSamplePeriod());
-      assertEquals(ConfigurationImpl.DEFAULT_MANAGEMENT_REQUEST_TIMEOUT, conf.getManagementRequestTimeout());
-      assertEquals(ConfigurationImpl.DEFAULT_ID_CACHE_SIZE, conf.getIDCacheSize());
-      assertEquals(ConfigurationImpl.DEFAULT_PERSIST_ID_CACHE, conf.isPersistIDCache());
-      assertEquals(ConfigurationImpl.DEFAULT_SERVER_DUMP_INTERVAL, conf.getServerDumpInterval());
-      assertEquals(ConfigurationImpl.DEFAULT_MEMORY_WARNING_THRESHOLD, conf.getMemoryWarningThreshold());
-      assertEquals(ConfigurationImpl.DEFAULT_MEMORY_MEASURE_INTERVAL, conf.getMemoryMeasureInterval());
+      Assert.assertEquals(ConfigurationImpl.DEFAULT_CLUSTERED, conf.isClustered());
+      Assert.assertEquals(ConfigurationImpl.DEFAULT_BACKUP, conf.isBackup());
+      Assert.assertEquals(ConfigurationImpl.DEFAULT_SHARED_STORE, conf.isSharedStore());
+      Assert.assertEquals(ConfigurationImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE,
+                          conf.getScheduledThreadPoolMaxSize());
+      Assert.assertEquals(ConfigurationImpl.DEFAULT_SECURITY_INVALIDATION_INTERVAL,
+                          conf.getSecurityInvalidationInterval());
+      Assert.assertEquals(ConfigurationImpl.DEFAULT_SECURITY_ENABLED, conf.isSecurityEnabled());
+      Assert.assertEquals(ConfigurationImpl.DEFAULT_LOG_DELEGATE_FACTORY_CLASS_NAME,
+                          conf.getLogDelegateFactoryClassName());
+      Assert.assertEquals(ConfigurationImpl.DEFAULT_BINDINGS_DIRECTORY, conf.getBindingsDirectory());
+      Assert.assertEquals(ConfigurationImpl.DEFAULT_CREATE_BINDINGS_DIR, conf.isCreateBindingsDir());
+      Assert.assertEquals(ConfigurationImpl.DEFAULT_JOURNAL_DIR, conf.getJournalDirectory());
+      Assert.assertEquals(ConfigurationImpl.DEFAULT_CREATE_JOURNAL_DIR, conf.isCreateJournalDir());
+      Assert.assertEquals(ConfigurationImpl.DEFAULT_JOURNAL_TYPE, conf.getJournalType());
+      Assert.assertEquals(ConfigurationImpl.DEFAULT_JOURNAL_SYNC_TRANSACTIONAL, conf.isJournalSyncTransactional());
+      Assert.assertEquals(ConfigurationImpl.DEFAULT_JOURNAL_SYNC_NON_TRANSACTIONAL,
+                          conf.isJournalSyncNonTransactional());
+      Assert.assertEquals(ConfigurationImpl.DEFAULT_JOURNAL_FILE_SIZE, conf.getJournalFileSize());
+      Assert.assertEquals(ConfigurationImpl.DEFAULT_JOURNAL_MIN_FILES, conf.getJournalMinFiles());
+      Assert.assertEquals(ConfigurationImpl.DEFAULT_JOURNAL_MAX_IO_AIO, conf.getJournalMaxIO_AIO());
+      Assert.assertEquals(ConfigurationImpl.DEFAULT_JOURNAL_MAX_IO_NIO, conf.getJournalMaxIO_NIO());
+      Assert.assertEquals(ConfigurationImpl.DEFAULT_WILDCARD_ROUTING_ENABLED, conf.isWildcardRoutingEnabled());
+      Assert.assertEquals(ConfigurationImpl.DEFAULT_TRANSACTION_TIMEOUT, conf.getTransactionTimeout());
+      Assert.assertEquals(ConfigurationImpl.DEFAULT_MESSAGE_EXPIRY_SCAN_PERIOD, conf.getMessageExpiryScanPeriod()); // OK
+      Assert.assertEquals(ConfigurationImpl.DEFAULT_MESSAGE_EXPIRY_THREAD_PRIORITY,
+                          conf.getMessageExpiryThreadPriority()); // OK
+      Assert.assertEquals(ConfigurationImpl.DEFAULT_TRANSACTION_TIMEOUT_SCAN_PERIOD,
+                          conf.getTransactionTimeoutScanPeriod()); // OK
+      Assert.assertEquals(ConfigurationImpl.DEFAULT_MANAGEMENT_ADDRESS, conf.getManagementAddress()); // OK
+      Assert.assertEquals(ConfigurationImpl.DEFAULT_MANAGEMENT_NOTIFICATION_ADDRESS,
+                          conf.getManagementNotificationAddress()); // OK
+      Assert.assertEquals(ConfigurationImpl.DEFAULT_MANAGEMENT_CLUSTER_USER, conf.getManagementClusterUser()); // OK
+      Assert.assertEquals(ConfigurationImpl.DEFAULT_MANAGEMENT_CLUSTER_PASSWORD, conf.getManagementClusterPassword()); // OK
+      Assert.assertEquals(ConfigurationImpl.DEFAULT_PERSISTENCE_ENABLED, conf.isPersistenceEnabled());
+      Assert.assertEquals(ConfigurationImpl.DEFAULT_FILE_DEPLOYMENT_ENABLED, conf.isFileDeploymentEnabled());
+      Assert.assertEquals(ConfigurationImpl.DEFAULT_PERSIST_DELIVERY_COUNT_BEFORE_DELIVERY,
+                          conf.isPersistDeliveryCountBeforeDelivery());
+      Assert.assertEquals(ConfigurationImpl.DEFAULT_FILE_DEPLOYER_SCAN_PERIOD, conf.getFileDeployerScanPeriod());
+      Assert.assertEquals(ConfigurationImpl.DEFAULT_THREAD_POOL_MAX_SIZE, conf.getThreadPoolMaxSize());
+      Assert.assertEquals(ConfigurationImpl.DEFAULT_JMX_MANAGEMENT_ENABLED, conf.isJMXManagementEnabled());
+      Assert.assertEquals(ConfigurationImpl.DEFAULT_CONNECTION_TTL_OVERRIDE, conf.getConnectionTTLOverride());
+      Assert.assertEquals(ConfigurationImpl.DEFAULT_ASYNC_CONNECTION_EXECUTION_ENABLED,
+                          conf.isAsyncConnectionExecutionEnabled());
+      Assert.assertEquals(ConfigurationImpl.DEFAULT_PAGING_DIR, conf.getPagingDirectory());
+      Assert.assertEquals(ConfigurationImpl.DEFAULT_LARGE_MESSAGES_DIR, conf.getLargeMessagesDirectory());
+      Assert.assertEquals(ConfigurationImpl.DEFAULT_JOURNAL_COMPACT_PERCENTAGE, conf.getJournalCompactPercentage());
+      Assert.assertEquals(ConfigurationImpl.DEFAULT_JOURNAL_BUFFER_TIMEOUT_AIO, conf.getJournalBufferTimeout_AIO());
+      Assert.assertEquals(ConfigurationImpl.DEFAULT_JOURNAL_BUFFER_TIMEOUT_NIO, conf.getJournalBufferTimeout_NIO());
+      Assert.assertEquals(ConfigurationImpl.DEFAULT_JOURNAL_BUFFER_SIZE_AIO, conf.getJournalBufferSize_AIO());
+      Assert.assertEquals(ConfigurationImpl.DEFAULT_JOURNAL_BUFFER_SIZE_NIO, conf.getJournalBufferSize_NIO());
+      Assert.assertEquals(ConfigurationImpl.DEFAULT_JOURNAL_LOG_WRITE_RATE, conf.isLogJournalWriteRate());
+      Assert.assertEquals(ConfigurationImpl.DEFAULT_JOURNAL_PERF_BLAST_PAGES, conf.getJournalPerfBlastPages());
+      Assert.assertEquals(ConfigurationImpl.DEFAULT_MESSAGE_COUNTER_ENABLED, conf.isMessageCounterEnabled());
+      Assert.assertEquals(ConfigurationImpl.DEFAULT_MESSAGE_COUNTER_MAX_DAY_HISTORY,
+                          conf.getMessageCounterMaxDayHistory());
+      Assert.assertEquals(ConfigurationImpl.DEFAULT_MESSAGE_COUNTER_SAMPLE_PERIOD, conf.getMessageCounterSamplePeriod());
+      Assert.assertEquals(ConfigurationImpl.DEFAULT_MANAGEMENT_REQUEST_TIMEOUT, conf.getManagementRequestTimeout());
+      Assert.assertEquals(ConfigurationImpl.DEFAULT_ID_CACHE_SIZE, conf.getIDCacheSize());
+      Assert.assertEquals(ConfigurationImpl.DEFAULT_PERSIST_ID_CACHE, conf.isPersistIDCache());
+      Assert.assertEquals(ConfigurationImpl.DEFAULT_SERVER_DUMP_INTERVAL, conf.getServerDumpInterval());
+      Assert.assertEquals(ConfigurationImpl.DEFAULT_MEMORY_WARNING_THRESHOLD, conf.getMemoryWarningThreshold());
+      Assert.assertEquals(ConfigurationImpl.DEFAULT_MEMORY_MEASURE_INTERVAL, conf.getMemoryMeasureInterval());
    }
 
    public void testSetGetAttributes()
    {
       for (int j = 0; j < 100; j++)
       {
-         boolean b = randomBoolean();
+         boolean b = RandomUtil.randomBoolean();
          conf.setClustered(b);
-         assertEquals(b, conf.isClustered());
+         Assert.assertEquals(b, conf.isClustered());
 
-         b = randomBoolean();
+         b = RandomUtil.randomBoolean();
          conf.setBackup(b);
-         assertEquals(b, conf.isBackup());
+         Assert.assertEquals(b, conf.isBackup());
 
-         b = randomBoolean();
+         b = RandomUtil.randomBoolean();
          conf.setSharedStore(b);
-         assertEquals(b, conf.isSharedStore());
+         Assert.assertEquals(b, conf.isSharedStore());
 
-         int i = randomInt();
+         int i = RandomUtil.randomInt();
          conf.setScheduledThreadPoolMaxSize(i);
-         assertEquals(i, conf.getScheduledThreadPoolMaxSize());
+         Assert.assertEquals(i, conf.getScheduledThreadPoolMaxSize());
 
-         long l = randomLong();
+         long l = RandomUtil.randomLong();
          conf.setSecurityInvalidationInterval(l);
-         assertEquals(l, conf.getSecurityInvalidationInterval());
+         Assert.assertEquals(l, conf.getSecurityInvalidationInterval());
 
-         b = randomBoolean();
+         b = RandomUtil.randomBoolean();
          conf.setSecurityEnabled(b);
-         assertEquals(b, conf.isSecurityEnabled());
+         Assert.assertEquals(b, conf.isSecurityEnabled());
 
-         String s = randomString();
+         String s = RandomUtil.randomString();
          conf.setBindingsDirectory(s);
-         assertEquals(s, conf.getBindingsDirectory());
+         Assert.assertEquals(s, conf.getBindingsDirectory());
 
-         b = randomBoolean();
+         b = RandomUtil.randomBoolean();
          conf.setCreateBindingsDir(b);
-         assertEquals(b, conf.isCreateBindingsDir());
+         Assert.assertEquals(b, conf.isCreateBindingsDir());
 
-         s = randomString();
+         s = RandomUtil.randomString();
          conf.setJournalDirectory(s);
-         assertEquals(s, conf.getJournalDirectory());
+         Assert.assertEquals(s, conf.getJournalDirectory());
 
-         b = randomBoolean();
+         b = RandomUtil.randomBoolean();
          conf.setCreateJournalDir(b);
-         assertEquals(b, conf.isCreateJournalDir());
+         Assert.assertEquals(b, conf.isCreateJournalDir());
 
-         i = randomInt() % 2;
+         i = RandomUtil.randomInt() % 2;
          JournalType journal = i == 0 ? JournalType.ASYNCIO : JournalType.NIO;
          conf.setJournalType(journal);
-         assertEquals(journal, conf.getJournalType());
+         Assert.assertEquals(journal, conf.getJournalType());
 
-         b = randomBoolean();
+         b = RandomUtil.randomBoolean();
          conf.setJournalSyncTransactional(b);
-         assertEquals(b, conf.isJournalSyncTransactional());
+         Assert.assertEquals(b, conf.isJournalSyncTransactional());
 
-         b = randomBoolean();
+         b = RandomUtil.randomBoolean();
          conf.setJournalSyncNonTransactional(b);
-         assertEquals(b, conf.isJournalSyncNonTransactional());
+         Assert.assertEquals(b, conf.isJournalSyncNonTransactional());
 
-         i = randomInt();
+         i = RandomUtil.randomInt();
          conf.setJournalFileSize(i);
-         assertEquals(i, conf.getJournalFileSize());
+         Assert.assertEquals(i, conf.getJournalFileSize());
 
-         i = randomInt();
+         i = RandomUtil.randomInt();
          conf.setJournalMinFiles(i);
-         assertEquals(i, conf.getJournalMinFiles());
+         Assert.assertEquals(i, conf.getJournalMinFiles());
 
-         i = randomInt();
+         i = RandomUtil.randomInt();
          conf.setJournalMaxIO_AIO(i);
-         assertEquals(i, conf.getJournalMaxIO_AIO());
-         
-         i = randomInt();
+         Assert.assertEquals(i, conf.getJournalMaxIO_AIO());
+
+         i = RandomUtil.randomInt();
          conf.setJournalMaxIO_NIO(i);
-         assertEquals(i, conf.getJournalMaxIO_NIO());
+         Assert.assertEquals(i, conf.getJournalMaxIO_NIO());
 
-         s = randomString();
+         s = RandomUtil.randomString();
          conf.setManagementAddress(new SimpleString(s));
-         assertEquals(s, conf.getManagementAddress().toString());
+         Assert.assertEquals(s, conf.getManagementAddress().toString());
 
-         i = randomInt();
+         i = RandomUtil.randomInt();
          conf.setMessageExpiryThreadPriority(i);
-         assertEquals(i, conf.getMessageExpiryThreadPriority());
+         Assert.assertEquals(i, conf.getMessageExpiryThreadPriority());
 
-         l = randomLong();
+         l = RandomUtil.randomLong();
          conf.setMessageExpiryScanPeriod(l);
-         assertEquals(l, conf.getMessageExpiryScanPeriod());
+         Assert.assertEquals(l, conf.getMessageExpiryScanPeriod());
 
-         b = randomBoolean();
+         b = RandomUtil.randomBoolean();
          conf.setPersistDeliveryCountBeforeDelivery(b);
-         assertEquals(b, conf.isPersistDeliveryCountBeforeDelivery());
+         Assert.assertEquals(b, conf.isPersistDeliveryCountBeforeDelivery());
 
-         b = randomBoolean();
+         b = RandomUtil.randomBoolean();
          conf.setEnabledAsyncConnectionExecution(b);
-         assertEquals(b, conf.isAsyncConnectionExecutionEnabled());
+         Assert.assertEquals(b, conf.isAsyncConnectionExecutionEnabled());
 
-         b = randomBoolean();
+         b = RandomUtil.randomBoolean();
          conf.setFileDeploymentEnabled(b);
-         assertEquals(b, conf.isFileDeploymentEnabled());
+         Assert.assertEquals(b, conf.isFileDeploymentEnabled());
 
-         b = randomBoolean();
+         b = RandomUtil.randomBoolean();
          conf.setPersistenceEnabled(b);
-         assertEquals(b, conf.isPersistenceEnabled());
+         Assert.assertEquals(b, conf.isPersistenceEnabled());
 
-         b = randomBoolean();
+         b = RandomUtil.randomBoolean();
          conf.setJMXManagementEnabled(b);
-         assertEquals(b, conf.isJMXManagementEnabled());
+         Assert.assertEquals(b, conf.isJMXManagementEnabled());
 
-         l = randomLong();
+         l = RandomUtil.randomLong();
          conf.setFileDeployerScanPeriod(l);
-         assertEquals(l, conf.getFileDeployerScanPeriod());
+         Assert.assertEquals(l, conf.getFileDeployerScanPeriod());
 
-         l = randomLong();
+         l = RandomUtil.randomLong();
          conf.setConnectionTTLOverride(l);
-         assertEquals(l, conf.getConnectionTTLOverride());
+         Assert.assertEquals(l, conf.getConnectionTTLOverride());
 
-         i = randomInt();
+         i = RandomUtil.randomInt();
          conf.setThreadPoolMaxSize(i);
-         assertEquals(i, conf.getThreadPoolMaxSize());
+         Assert.assertEquals(i, conf.getThreadPoolMaxSize());
 
-         s = randomString();
+         s = RandomUtil.randomString();
          conf.setBackupConnectorName(s);
-         assertEquals(s, conf.getBackupConnectorName());
+         Assert.assertEquals(s, conf.getBackupConnectorName());
 
-         SimpleString ss = randomSimpleString();
+         SimpleString ss = RandomUtil.randomSimpleString();
          conf.setManagementNotificationAddress(ss);
-         assertEquals(ss, conf.getManagementNotificationAddress());
+         Assert.assertEquals(ss, conf.getManagementNotificationAddress());
 
-         s = randomString();
+         s = RandomUtil.randomString();
          conf.setManagementClusterUser(s);
-         assertEquals(s, conf.getManagementClusterUser());
+         Assert.assertEquals(s, conf.getManagementClusterUser());
 
-         l = randomLong();
+         l = RandomUtil.randomLong();
          conf.setManagementRequestTimeout(l);
-         assertEquals(l, conf.getManagementRequestTimeout());
+         Assert.assertEquals(l, conf.getManagementRequestTimeout());
 
-         i = randomInt();
+         i = RandomUtil.randomInt();
          conf.setIDCacheSize(i);
-         assertEquals(i, conf.getIDCacheSize());
+         Assert.assertEquals(i, conf.getIDCacheSize());
 
-         b = randomBoolean();
+         b = RandomUtil.randomBoolean();
          conf.setPersistIDCache(b);
-         assertEquals(b, conf.isPersistIDCache());
+         Assert.assertEquals(b, conf.isPersistIDCache());
 
-         i = randomInt();
+         i = RandomUtil.randomInt();
          conf.setJournalCompactMinFiles(i);
-         assertEquals(i, conf.getJournalCompactMinFiles());
+         Assert.assertEquals(i, conf.getJournalCompactMinFiles());
 
-         i = randomInt();
+         i = RandomUtil.randomInt();
          conf.setJournalCompactPercentage(i);
-         assertEquals(i, conf.getJournalCompactPercentage());
+         Assert.assertEquals(i, conf.getJournalCompactPercentage());
 
-         i = randomInt();
+         i = RandomUtil.randomInt();
          conf.setJournalBufferSize_AIO(i);
-         assertEquals(i, conf.getJournalBufferSize_AIO());
+         Assert.assertEquals(i, conf.getJournalBufferSize_AIO());
 
-         i = randomInt();
+         i = RandomUtil.randomInt();
          conf.setJournalBufferTimeout_AIO(i);
-         assertEquals(i, conf.getJournalBufferTimeout_AIO());
-         
-         i = randomInt();
+         Assert.assertEquals(i, conf.getJournalBufferTimeout_AIO());
+
+         i = RandomUtil.randomInt();
          conf.setJournalBufferSize_NIO(i);
-         assertEquals(i, conf.getJournalBufferSize_NIO());
+         Assert.assertEquals(i, conf.getJournalBufferSize_NIO());
 
-         i = randomInt();
+         i = RandomUtil.randomInt();
          conf.setJournalBufferTimeout_NIO(i);
-         assertEquals(i, conf.getJournalBufferTimeout_NIO());
+         Assert.assertEquals(i, conf.getJournalBufferTimeout_NIO());
 
-         b = randomBoolean();
+         b = RandomUtil.randomBoolean();
          conf.setLogJournalWriteRate(b);
-         assertEquals(b, conf.isLogJournalWriteRate());
+         Assert.assertEquals(b, conf.isLogJournalWriteRate());
 
-         i = randomInt();
+         i = RandomUtil.randomInt();
          conf.setJournalPerfBlastPages(i);
-         assertEquals(i, conf.getJournalPerfBlastPages());
+         Assert.assertEquals(i, conf.getJournalPerfBlastPages());
 
-         l = randomLong();
+         l = RandomUtil.randomLong();
          conf.setServerDumpInterval(l);
-         assertEquals(l, conf.getServerDumpInterval());
+         Assert.assertEquals(l, conf.getServerDumpInterval());
 
-         s = randomString();
+         s = RandomUtil.randomString();
          conf.setPagingDirectory(s);
-         assertEquals(s, conf.getPagingDirectory());
+         Assert.assertEquals(s, conf.getPagingDirectory());
 
-         s = randomString();
+         s = RandomUtil.randomString();
          conf.setLargeMessagesDirectory(s);
-         assertEquals(s, conf.getLargeMessagesDirectory());
+         Assert.assertEquals(s, conf.getLargeMessagesDirectory());
 
-         b = randomBoolean();
+         b = RandomUtil.randomBoolean();
          conf.setWildcardRoutingEnabled(b);
-         assertEquals(b, conf.isWildcardRoutingEnabled());
+         Assert.assertEquals(b, conf.isWildcardRoutingEnabled());
 
-         l = randomLong();
+         l = RandomUtil.randomLong();
          conf.setTransactionTimeout(l);
-         assertEquals(l, conf.getTransactionTimeout());
+         Assert.assertEquals(l, conf.getTransactionTimeout());
 
-         b = randomBoolean();
+         b = RandomUtil.randomBoolean();
          conf.setMessageCounterEnabled(b);
-         assertEquals(b, conf.isMessageCounterEnabled());
+         Assert.assertEquals(b, conf.isMessageCounterEnabled());
 
-         i = randomInt();
+         i = RandomUtil.randomInt();
          conf.setMessageCounterMaxDayHistory(i);
-         assertEquals(i, conf.getMessageCounterMaxDayHistory());
+         Assert.assertEquals(i, conf.getMessageCounterMaxDayHistory());
 
-         l = randomLong();
+         l = RandomUtil.randomLong();
          conf.setTransactionTimeoutScanPeriod(l);
-         assertEquals(l, conf.getTransactionTimeoutScanPeriod());
-         
-         s = randomString();
+         Assert.assertEquals(l, conf.getTransactionTimeoutScanPeriod());
+
+         s = RandomUtil.randomString();
          conf.setManagementClusterPassword(s);
-         assertEquals(s, conf.getManagementClusterPassword());
+         Assert.assertEquals(s, conf.getManagementClusterPassword());
       }
    }
 
@@ -319,216 +324,216 @@ public class ConfigurationImplTest extends UnitTestCase
       conf.getInterceptorClassNames().add(name1);
       conf.getInterceptorClassNames().add(name2);
 
-      assertTrue(conf.getInterceptorClassNames().contains(name1));
-      assertTrue(conf.getInterceptorClassNames().contains(name2));
-      assertFalse(conf.getInterceptorClassNames().contains("iijij"));
+      Assert.assertTrue(conf.getInterceptorClassNames().contains(name1));
+      Assert.assertTrue(conf.getInterceptorClassNames().contains(name2));
+      Assert.assertFalse(conf.getInterceptorClassNames().contains("iijij"));
    }
 
    public void testSerialize() throws Exception
    {
-      boolean b = randomBoolean();
+      boolean b = RandomUtil.randomBoolean();
       conf.setClustered(b);
-      assertEquals(b, conf.isClustered());
+      Assert.assertEquals(b, conf.isClustered());
 
-      b = randomBoolean();
+      b = RandomUtil.randomBoolean();
       conf.setBackup(b);
-      assertEquals(b, conf.isBackup());
+      Assert.assertEquals(b, conf.isBackup());
 
-      b = randomBoolean();
+      b = RandomUtil.randomBoolean();
       conf.setSharedStore(b);
-            
-      int i = randomInt();
+
+      int i = RandomUtil.randomInt();
       conf.setScheduledThreadPoolMaxSize(i);
-      assertEquals(i, conf.getScheduledThreadPoolMaxSize());
+      Assert.assertEquals(i, conf.getScheduledThreadPoolMaxSize());
 
-      long l = randomLong();
+      long l = RandomUtil.randomLong();
       conf.setSecurityInvalidationInterval(l);
-      assertEquals(l, conf.getSecurityInvalidationInterval());
+      Assert.assertEquals(l, conf.getSecurityInvalidationInterval());
 
-      b = randomBoolean();
+      b = RandomUtil.randomBoolean();
       conf.setSecurityEnabled(b);
-      assertEquals(b, conf.isSecurityEnabled());
+      Assert.assertEquals(b, conf.isSecurityEnabled());
 
-      String s = randomString();
+      String s = RandomUtil.randomString();
       conf.setBindingsDirectory(s);
-      assertEquals(s, conf.getBindingsDirectory());
+      Assert.assertEquals(s, conf.getBindingsDirectory());
 
-      b = randomBoolean();
+      b = RandomUtil.randomBoolean();
       conf.setCreateBindingsDir(b);
-      assertEquals(b, conf.isCreateBindingsDir());
+      Assert.assertEquals(b, conf.isCreateBindingsDir());
 
-      s = randomString();
+      s = RandomUtil.randomString();
       conf.setJournalDirectory(s);
-      assertEquals(s, conf.getJournalDirectory());
+      Assert.assertEquals(s, conf.getJournalDirectory());
 
-      b = randomBoolean();
+      b = RandomUtil.randomBoolean();
       conf.setCreateJournalDir(b);
-      assertEquals(b, conf.isCreateJournalDir());
+      Assert.assertEquals(b, conf.isCreateJournalDir());
 
-      i = randomInt() % 2;
+      i = RandomUtil.randomInt() % 2;
       JournalType journal = i == 0 ? JournalType.ASYNCIO : JournalType.NIO;
       conf.setJournalType(journal);
-      assertEquals(journal, conf.getJournalType());
+      Assert.assertEquals(journal, conf.getJournalType());
 
-      b = randomBoolean();
+      b = RandomUtil.randomBoolean();
       conf.setJournalSyncTransactional(b);
-      assertEquals(b, conf.isJournalSyncTransactional());
+      Assert.assertEquals(b, conf.isJournalSyncTransactional());
 
-      b = randomBoolean();
+      b = RandomUtil.randomBoolean();
       conf.setJournalSyncNonTransactional(b);
-      assertEquals(b, conf.isJournalSyncNonTransactional());
+      Assert.assertEquals(b, conf.isJournalSyncNonTransactional());
 
-      i = randomInt();
+      i = RandomUtil.randomInt();
       conf.setJournalFileSize(i);
-      assertEquals(i, conf.getJournalFileSize());
+      Assert.assertEquals(i, conf.getJournalFileSize());
 
-      i = randomInt();
+      i = RandomUtil.randomInt();
       conf.setJournalMinFiles(i);
-      assertEquals(i, conf.getJournalMinFiles());
+      Assert.assertEquals(i, conf.getJournalMinFiles());
 
-      i = randomInt();
+      i = RandomUtil.randomInt();
       conf.setJournalMaxIO_AIO(i);
-      assertEquals(i, conf.getJournalMaxIO_AIO());
-      
-      i = randomInt();
+      Assert.assertEquals(i, conf.getJournalMaxIO_AIO());
+
+      i = RandomUtil.randomInt();
       conf.setJournalMaxIO_NIO(i);
-      assertEquals(i, conf.getJournalMaxIO_NIO());
+      Assert.assertEquals(i, conf.getJournalMaxIO_NIO());
 
-      s = randomString();
+      s = RandomUtil.randomString();
       conf.setManagementAddress(new SimpleString(s));
-      assertEquals(s, conf.getManagementAddress().toString());
+      Assert.assertEquals(s, conf.getManagementAddress().toString());
 
-      i = randomInt();
+      i = RandomUtil.randomInt();
       conf.setMessageExpiryThreadPriority(i);
-      assertEquals(i, conf.getMessageExpiryThreadPriority());
+      Assert.assertEquals(i, conf.getMessageExpiryThreadPriority());
 
-      l = randomLong();
+      l = RandomUtil.randomLong();
       conf.setMessageExpiryScanPeriod(l);
-      assertEquals(l, conf.getMessageExpiryScanPeriod());
+      Assert.assertEquals(l, conf.getMessageExpiryScanPeriod());
 
-      b = randomBoolean();
+      b = RandomUtil.randomBoolean();
       conf.setPersistDeliveryCountBeforeDelivery(b);
-      assertEquals(b, conf.isPersistDeliveryCountBeforeDelivery());
+      Assert.assertEquals(b, conf.isPersistDeliveryCountBeforeDelivery());
 
-      b = randomBoolean();
+      b = RandomUtil.randomBoolean();
       conf.setEnabledAsyncConnectionExecution(b);
-      assertEquals(b, conf.isAsyncConnectionExecutionEnabled());
+      Assert.assertEquals(b, conf.isAsyncConnectionExecutionEnabled());
 
-      b = randomBoolean();
+      b = RandomUtil.randomBoolean();
       conf.setFileDeploymentEnabled(b);
-      assertEquals(b, conf.isFileDeploymentEnabled());
+      Assert.assertEquals(b, conf.isFileDeploymentEnabled());
 
-      b = randomBoolean();
+      b = RandomUtil.randomBoolean();
       conf.setPersistenceEnabled(b);
-      assertEquals(b, conf.isPersistenceEnabled());
+      Assert.assertEquals(b, conf.isPersistenceEnabled());
 
-      b = randomBoolean();
+      b = RandomUtil.randomBoolean();
       conf.setJMXManagementEnabled(b);
-      assertEquals(b, conf.isJMXManagementEnabled());
+      Assert.assertEquals(b, conf.isJMXManagementEnabled());
 
-      l = randomLong();
+      l = RandomUtil.randomLong();
       conf.setFileDeployerScanPeriod(l);
-      assertEquals(l, conf.getFileDeployerScanPeriod());
+      Assert.assertEquals(l, conf.getFileDeployerScanPeriod());
 
-      l = randomLong();
+      l = RandomUtil.randomLong();
       conf.setConnectionTTLOverride(l);
-      assertEquals(l, conf.getConnectionTTLOverride());
+      Assert.assertEquals(l, conf.getConnectionTTLOverride());
 
-      i = randomInt();
+      i = RandomUtil.randomInt();
       conf.setThreadPoolMaxSize(i);
-      assertEquals(i, conf.getThreadPoolMaxSize());
+      Assert.assertEquals(i, conf.getThreadPoolMaxSize());
 
-      s = randomString();
+      s = RandomUtil.randomString();
       conf.setBackupConnectorName(s);
-      assertEquals(s, conf.getBackupConnectorName());
+      Assert.assertEquals(s, conf.getBackupConnectorName());
 
-      SimpleString ss = randomSimpleString();
+      SimpleString ss = RandomUtil.randomSimpleString();
       conf.setManagementNotificationAddress(ss);
-      assertEquals(ss, conf.getManagementNotificationAddress());
+      Assert.assertEquals(ss, conf.getManagementNotificationAddress());
 
-      s = randomString();
+      s = RandomUtil.randomString();
       conf.setManagementClusterUser(s);
-      assertEquals(s, conf.getManagementClusterUser());
+      Assert.assertEquals(s, conf.getManagementClusterUser());
 
-      l = randomLong();
+      l = RandomUtil.randomLong();
       conf.setManagementRequestTimeout(l);
-      assertEquals(l, conf.getManagementRequestTimeout());
+      Assert.assertEquals(l, conf.getManagementRequestTimeout());
 
-      i = randomInt();
+      i = RandomUtil.randomInt();
       conf.setIDCacheSize(i);
-      assertEquals(i, conf.getIDCacheSize());
+      Assert.assertEquals(i, conf.getIDCacheSize());
 
-      b = randomBoolean();
+      b = RandomUtil.randomBoolean();
       conf.setPersistIDCache(b);
-      assertEquals(b, conf.isPersistIDCache());
+      Assert.assertEquals(b, conf.isPersistIDCache());
 
-      i = randomInt();
+      i = RandomUtil.randomInt();
       conf.setJournalCompactMinFiles(i);
-      assertEquals(i, conf.getJournalCompactMinFiles());
+      Assert.assertEquals(i, conf.getJournalCompactMinFiles());
 
-      i = randomInt();
+      i = RandomUtil.randomInt();
       conf.setJournalCompactPercentage(i);
-      assertEquals(i, conf.getJournalCompactPercentage());
+      Assert.assertEquals(i, conf.getJournalCompactPercentage());
 
-      i = randomInt();
+      i = RandomUtil.randomInt();
       conf.setJournalBufferSize_AIO(i);
-      assertEquals(i, conf.getJournalBufferSize_AIO());
+      Assert.assertEquals(i, conf.getJournalBufferSize_AIO());
 
-      i = randomInt();
+      i = RandomUtil.randomInt();
       conf.setJournalBufferTimeout_AIO(i);
-      assertEquals(i, conf.getJournalBufferTimeout_AIO());
-      
-      i = randomInt();
+      Assert.assertEquals(i, conf.getJournalBufferTimeout_AIO());
+
+      i = RandomUtil.randomInt();
       conf.setJournalBufferSize_NIO(i);
-      assertEquals(i, conf.getJournalBufferSize_NIO());
+      Assert.assertEquals(i, conf.getJournalBufferSize_NIO());
 
-      i = randomInt();
+      i = RandomUtil.randomInt();
       conf.setJournalBufferTimeout_NIO(i);
-      assertEquals(i, conf.getJournalBufferTimeout_NIO());
+      Assert.assertEquals(i, conf.getJournalBufferTimeout_NIO());
 
-      b = randomBoolean();
+      b = RandomUtil.randomBoolean();
       conf.setLogJournalWriteRate(b);
-      assertEquals(b, conf.isLogJournalWriteRate());
+      Assert.assertEquals(b, conf.isLogJournalWriteRate());
 
-      i = randomInt();
+      i = RandomUtil.randomInt();
       conf.setJournalPerfBlastPages(i);
-      assertEquals(i, conf.getJournalPerfBlastPages());
+      Assert.assertEquals(i, conf.getJournalPerfBlastPages());
 
-      l = randomLong();
+      l = RandomUtil.randomLong();
       conf.setServerDumpInterval(l);
-      assertEquals(l, conf.getServerDumpInterval());
+      Assert.assertEquals(l, conf.getServerDumpInterval());
 
-      s = randomString();
+      s = RandomUtil.randomString();
       conf.setPagingDirectory(s);
-      assertEquals(s, conf.getPagingDirectory());
+      Assert.assertEquals(s, conf.getPagingDirectory());
 
-      s = randomString();
+      s = RandomUtil.randomString();
       conf.setLargeMessagesDirectory(s);
-      assertEquals(s, conf.getLargeMessagesDirectory());
+      Assert.assertEquals(s, conf.getLargeMessagesDirectory());
 
-      b = randomBoolean();
+      b = RandomUtil.randomBoolean();
       conf.setWildcardRoutingEnabled(b);
-      assertEquals(b, conf.isWildcardRoutingEnabled());
+      Assert.assertEquals(b, conf.isWildcardRoutingEnabled());
 
-      l = randomLong();
+      l = RandomUtil.randomLong();
       conf.setTransactionTimeout(l);
-      assertEquals(l, conf.getTransactionTimeout());
+      Assert.assertEquals(l, conf.getTransactionTimeout());
 
-      b = randomBoolean();
+      b = RandomUtil.randomBoolean();
       conf.setMessageCounterEnabled(b);
-      assertEquals(b, conf.isMessageCounterEnabled());
+      Assert.assertEquals(b, conf.isMessageCounterEnabled());
 
-      i = randomInt();
+      i = RandomUtil.randomInt();
       conf.setMessageCounterMaxDayHistory(i);
-      assertEquals(i, conf.getMessageCounterMaxDayHistory());
+      Assert.assertEquals(i, conf.getMessageCounterMaxDayHistory());
 
-      l = randomLong();
+      l = RandomUtil.randomLong();
       conf.setTransactionTimeoutScanPeriod(l);
-      assertEquals(l, conf.getTransactionTimeoutScanPeriod());
-      
-      s = randomString();
+      Assert.assertEquals(l, conf.getTransactionTimeoutScanPeriod());
+
+      s = RandomUtil.randomString();
       conf.setManagementClusterPassword(s);
-      assertEquals(s, conf.getManagementClusterPassword());
+      Assert.assertEquals(s, conf.getManagementClusterPassword());
 
       ByteArrayOutputStream baos = new ByteArrayOutputStream();
       ObjectOutputStream oos = new ObjectOutputStream(baos);
@@ -539,11 +544,12 @@ public class ConfigurationImplTest extends UnitTestCase
       ObjectInputStream ois = new ObjectInputStream(bais);
       Configuration conf2 = (Configuration)ois.readObject();
 
-      assertTrue(conf.equals(conf2));
+      Assert.assertTrue(conf.equals(conf2));
    }
 
    // Protected ----------------------------------------------------------------------------------------
 
+   @Override
    protected void setUp() throws Exception
    {
       super.setUp();

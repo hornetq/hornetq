@@ -11,7 +11,6 @@
  * permissions and limitations under the License.
  */
 
-
 package org.hornetq.core.journal.impl;
 
 import java.nio.ByteBuffer;
@@ -38,16 +37,13 @@ public interface TimedBufferObserver
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
-   
+
    public void flushBuffer(ByteBuffer buffer, boolean syncRequested, List<IOAsyncTask> callbacks);
-   
-   
+
    /** Return the number of remaining bytes that still fit on the observer (file) */
    public int getRemainingBytes();
-   
-   
+
    public ByteBuffer newBuffer(int size, int limit);
-   
 
    // Package protected ---------------------------------------------
 

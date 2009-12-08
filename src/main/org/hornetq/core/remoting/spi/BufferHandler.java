@@ -23,6 +23,6 @@ import org.hornetq.core.buffers.HornetQBuffer;
 public interface BufferHandler
 {
    void bufferReceived(Object connectionID, HornetQBuffer buffer);
-   
+
    int isReadyToHandle(HornetQBuffer buffer);
 }

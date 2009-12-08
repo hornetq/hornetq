@@ -14,7 +14,6 @@
 package org.hornetq.core.remoting.impl.wireformat;
 
 import org.hornetq.core.buffers.HornetQBuffer;
-import org.hornetq.utils.DataConstants;
 import org.hornetq.utils.SimpleString;
 
 /**
@@ -28,25 +27,25 @@ public class SessionRequestProducerCreditsMessage extends PacketImpl
    // Attributes ----------------------------------------------------
 
    private int credits;
-   
+
    private SimpleString address;
-   
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
    public SessionRequestProducerCreditsMessage(final int credits, final SimpleString address)
    {
-      super(SESS_PRODUCER_REQUEST_CREDITS);
+      super(PacketImpl.SESS_PRODUCER_REQUEST_CREDITS);
 
       this.credits = credits;
-      
+
       this.address = address;
    }
 
    public SessionRequestProducerCreditsMessage()
    {
-      super(SESS_PRODUCER_REQUEST_CREDITS);
+      super(PacketImpl.SESS_PRODUCER_REQUEST_CREDITS);
    }
 
    // Public --------------------------------------------------------
@@ -55,17 +54,17 @@ public class SessionRequestProducerCreditsMessage extends PacketImpl
    {
       return credits;
    }
-   
+
    public SimpleString getAddress()
    {
       return address;
    }
-   
-//   public boolean isRequiresConfirmations()
-//   {
-//      return false;
-//   }
-   
+
+   // public boolean isRequiresConfirmations()
+   // {
+   // return false;
+   // }
+
    @Override
    public void encodeRest(final HornetQBuffer buffer)
    {

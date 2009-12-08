@@ -25,9 +25,9 @@ public interface PageTransactionInfo extends EncodingSupport
    boolean waitCompletion(int timeoutMilliSeconds) throws Exception;
 
    boolean isCommit();
-   
+
    boolean isRollback();
-   
+
    void commit();
 
    void rollback();

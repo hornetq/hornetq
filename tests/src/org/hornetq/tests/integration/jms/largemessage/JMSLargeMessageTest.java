@@ -29,7 +29,10 @@ import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
+import junit.framework.Assert;
+
 import org.hornetq.tests.util.JMSTestBase;
+import org.hornetq.tests.util.UnitTestCase;
 
 /**
  *
@@ -43,7 +46,7 @@ public class JMSLargeMessageTest extends JMSTestBase
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
-   
+
    Queue queue1;
 
    // Static --------------------------------------------------------
@@ -52,17 +55,20 @@ public class JMSLargeMessageTest extends JMSTestBase
 
    // Public --------------------------------------------------------
 
+   @Override
    protected boolean usePersistence()
    {
       return true;
    }
-   
+
+   @Override
    protected void setUp() throws Exception
    {
       super.setUp();
       queue1 = createQueue("queue1");
    }
 
+   @Override
    protected void tearDown() throws Exception
    {
       queue1 = null;
@@ -83,7 +89,7 @@ public class JMSLargeMessageTest extends JMSTestBase
 
          BytesMessage m = session.createBytesMessage();
 
-         m.setObjectProperty("JMS_HQ_InputStream", createFakeLargeStream(1024 * 1024));
+         m.setObjectProperty("JMS_HQ_InputStream", UnitTestCase.createFakeLargeStream(1024 * 1024));
 
          prod.send(m);
 
@@ -106,14 +112,14 @@ public class JMSLargeMessageTest extends JMSTestBase
          for (int i = 0; i < 1024 * 1024; i += 1024)
          {
             int numberOfBytes = rm.readBytes(data);
-            assertEquals(1024, numberOfBytes);
+            Assert.assertEquals(1024, numberOfBytes);
             for (int j = 0; j < 1024; j++)
             {
-               assertEquals(getSamplebyte(i + j), data[j]);
+               Assert.assertEquals(UnitTestCase.getSamplebyte(i + j), data[j]);
             }
          }
 
-         assertNotNull(rm);
+         Assert.assertNotNull(rm);
 
       }
       finally
@@ -140,7 +146,7 @@ public class JMSLargeMessageTest extends JMSTestBase
 
          BytesMessage m = session.createBytesMessage();
 
-         m.setObjectProperty("JMS_HQ_InputStream", createFakeLargeStream(10));
+         m.setObjectProperty("JMS_HQ_InputStream", UnitTestCase.createFakeLargeStream(10));
 
          prod.send(m);
 
@@ -161,13 +167,13 @@ public class JMSLargeMessageTest extends JMSTestBase
          System.out.println("Message = " + rm);
 
          int numberOfBytes = rm.readBytes(data);
-         assertEquals(10, numberOfBytes);
+         Assert.assertEquals(10, numberOfBytes);
          for (int j = 0; j < numberOfBytes; j++)
          {
-            assertEquals(getSamplebyte(j), data[j]);
+            Assert.assertEquals(UnitTestCase.getSamplebyte(j), data[j]);
          }
 
-         assertNotNull(rm);
+         Assert.assertNotNull(rm);
 
       }
       finally
@@ -194,8 +200,8 @@ public class JMSLargeMessageTest extends JMSTestBase
 
          try
          {
-            msg.setObjectProperty("JMS_HQ_InputStream", createFakeLargeStream(10));
-            fail("Exception was expected");
+            msg.setObjectProperty("JMS_HQ_InputStream", UnitTestCase.createFakeLargeStream(10));
+            Assert.fail("Exception was expected");
          }
          catch (JMSException e)
          {
@@ -224,22 +230,21 @@ public class JMSLargeMessageTest extends JMSTestBase
             rm.setObjectProperty("JMS_HQ_OutputStream", new OutputStream()
             {
                @Override
-               public void write(int b) throws IOException
+               public void write(final int b) throws IOException
                {
                   System.out.println("b = " + b);
                }
 
             });
-            fail("Exception was expected");
+            Assert.fail("Exception was expected");
          }
          catch (JMSException e)
          {
          }
 
-         
-         assertEquals("hello", rm.getText());
+         Assert.assertEquals("hello", rm.getText());
 
-         assertNotNull(rm);
+         Assert.assertNotNull(rm);
 
       }
       finally
@@ -268,7 +273,7 @@ public class JMSLargeMessageTest extends JMSTestBase
 
          BytesMessage m = session.createBytesMessage();
 
-         m.setObjectProperty("JMS_HQ_InputStream", createFakeLargeStream(msgSize));
+         m.setObjectProperty("JMS_HQ_InputStream", UnitTestCase.createFakeLargeStream(msgSize));
 
          prod.send(m);
 
@@ -283,7 +288,7 @@ public class JMSLargeMessageTest extends JMSTestBase
          conn.start();
 
          BytesMessage rm = (BytesMessage)cons.receive(10000);
-         assertNotNull(rm);
+         Assert.assertNotNull(rm);
 
          final AtomicLong numberOfBytes = new AtomicLong(0);
 
@@ -295,10 +300,10 @@ public class JMSLargeMessageTest extends JMSTestBase
             int position = 0;
 
             @Override
-            public void write(int b) throws IOException
+            public void write(final int b) throws IOException
             {
                numberOfBytes.incrementAndGet();
-               if (getSamplebyte(position++) != b)
+               if (UnitTestCase.getSamplebyte(position++) != b)
                {
                   System.out.println("Wrong byte at position " + position);
                   numberOfErrors.incrementAndGet();
@@ -306,11 +311,11 @@ public class JMSLargeMessageTest extends JMSTestBase
             }
 
          };
-         
+
          try
          {
-            rm.setObjectProperty("JMS_HQ_InputStream", createFakeLargeStream(100));
-            fail("Exception expected!");
+            rm.setObjectProperty("JMS_HQ_InputStream", UnitTestCase.createFakeLargeStream(100));
+            Assert.fail("Exception expected!");
          }
          catch (MessageNotWriteableException expected)
          {
@@ -318,9 +323,9 @@ public class JMSLargeMessageTest extends JMSTestBase
 
          rm.setObjectProperty("JMS_HQ_SaveStream", out);
 
-         assertEquals(msgSize, numberOfBytes.get());
+         Assert.assertEquals(msgSize, numberOfBytes.get());
 
-         assertEquals(0, numberOfErrors.get());
+         Assert.assertEquals(0, numberOfErrors.get());
 
       }
       finally
@@ -345,11 +350,12 @@ public class JMSLargeMessageTest extends JMSTestBase
    {
       CountDownLatch latch;
 
-      ThreadReader(CountDownLatch latch)
+      ThreadReader(final CountDownLatch latch)
       {
          this.latch = latch;
       }
 
+      @Override
       public void run()
       {
       }

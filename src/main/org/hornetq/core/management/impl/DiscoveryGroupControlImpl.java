@@ -13,8 +13,6 @@
 
 package org.hornetq.core.management.impl;
 
-import javax.management.StandardMBean;
-
 import org.hornetq.core.cluster.DiscoveryGroup;
 import org.hornetq.core.config.cluster.DiscoveryGroupConfiguration;
 import org.hornetq.core.management.DiscoveryGroupControl;
@@ -47,7 +45,7 @@ public class DiscoveryGroupControlImpl extends AbstractControl implements Discov
                                     final DiscoveryGroupConfiguration configuration) throws Exception
    {
       super(DiscoveryGroupControl.class, storageManager);
-      this.discoveryGroup = acceptor;
+      discoveryGroup = acceptor;
       this.configuration = configuration;
    }
 

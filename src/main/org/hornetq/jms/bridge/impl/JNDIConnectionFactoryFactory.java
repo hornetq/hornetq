@@ -9,7 +9,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
  * implied.  See the License for the specific language governing
  * permissions and limitations under the License.
- */ 
+ */
 
 package org.hornetq.jms.bridge.impl;
 
@@ -30,14 +30,14 @@ import org.hornetq.jms.bridge.ConnectionFactoryFactory;
  */
 public class JNDIConnectionFactoryFactory extends JNDIFactorySupport implements ConnectionFactoryFactory
 {
-	public JNDIConnectionFactoryFactory(Hashtable jndiProperties, String lookup)
+   public JNDIConnectionFactoryFactory(final Hashtable jndiProperties, final String lookup)
    {
-      super(jndiProperties, lookup);      
+      super(jndiProperties, lookup);
    }
 
    public ConnectionFactory createConnectionFactory() throws Exception
    {
-   	return (ConnectionFactory)createObject();   	
+      return (ConnectionFactory)createObject();
    }
 
 }

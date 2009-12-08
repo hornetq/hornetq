@@ -36,7 +36,7 @@ import org.hornetq.javaee.example.server.XARecoveryExampleService;
 public class XARecoveryExample
 {
 
-   public static void main(String[] args) throws Exception
+   public static void main(final String[] args) throws Exception
    {
       InitialContext initialContext = null;
       try
@@ -63,17 +63,17 @@ public class XARecoveryExample
 
          System.out.println("\n\n\nRestart the server by running 'ant restart' in a terminal");
 
-         // Step 4. We will try to receive a message. Once the server is restarted, the message 
+         // Step 4. We will try to receive a message. Once the server is restarted, the message
          // will be recovered and the consumer will receive it
          System.out.println("Waiting for the server to restart and recover before receiving a message");
-         
+
          boolean received = false;
          while (!received)
          {
             try
             {
                Thread.sleep(15000);
-               receiveMessage();
+               XARecoveryExample.receiveMessage();
                received = true;
             }
             catch (Exception e)
@@ -118,7 +118,9 @@ public class XARecoveryExample
          // Step 6. Receive the message sent by the EJB
          System.out.println("\nwaiting to receive a message...");
          TextMessage messageReceived = (TextMessage)consumer.receive(3600 * 1000);
-         System.out.format("Received message: %s \n\t(JMS MessageID: %s)\n", messageReceived.getText(), messageReceived.getJMSMessageID());
+         System.out.format("Received message: %s \n\t(JMS MessageID: %s)\n",
+                           messageReceived.getText(),
+                           messageReceived.getJMSMessageID());
       }
       finally
       {

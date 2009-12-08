@@ -13,6 +13,8 @@
 
 package org.hornetq.tests.integration.clientcrash;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
@@ -69,16 +71,16 @@ public class ClientCrashTest extends ClientTestBase
       Process p = SpawnedVMSupport.spawnVM(CrashClient.class.getName());
 
       ClientSession session = sf.createSession(false, true, true);
-      session.createQueue(QUEUE, QUEUE, null, false);
-      ClientConsumer consumer = session.createConsumer(QUEUE);
-      ClientProducer producer = session.createProducer(QUEUE);
+      session.createQueue(ClientCrashTest.QUEUE, ClientCrashTest.QUEUE, null, false);
+      ClientConsumer consumer = session.createConsumer(ClientCrashTest.QUEUE);
+      ClientProducer producer = session.createProducer(ClientCrashTest.QUEUE);
 
       session.start();
 
       // send the message to the queue
       Message messageFromClient = consumer.receive(5000);
-      assertNotNull("no message received", messageFromClient);
-      assertEquals(MESSAGE_TEXT_FROM_CLIENT, messageFromClient.getBodyBuffer().readString());
+      Assert.assertNotNull("no message received", messageFromClient);
+      Assert.assertEquals(ClientCrashTest.MESSAGE_TEXT_FROM_CLIENT, messageFromClient.getBodyBuffer().readString());
 
       assertActiveConnections(1 + 1); // One local and one from the other vm
       assertActiveSession(1 + 1);
@@ -91,14 +93,14 @@ public class ClientCrashTest extends ClientTestBase
       message.getBodyBuffer().writeString(ClientCrashTest.MESSAGE_TEXT_FROM_SERVER);
       producer.send(message);
 
-      log.debug("waiting for the client VM to crash ...");
+      ClientCrashTest.log.debug("waiting for the client VM to crash ...");
       p.waitFor();
 
-      assertEquals(9, p.exitValue());
+      Assert.assertEquals(9, p.exitValue());
 
       System.out.println("VM Exited");
 
-      Thread.sleep(3 * CONNECTION_TTL);
+      Thread.sleep(3 * ClientCrashTest.CONNECTION_TTL);
 
       assertActiveConnections(1);
       // FIXME https://jira.jboss.org/jira/browse/JBMESSAGING-1421
@@ -106,7 +108,7 @@ public class ClientCrashTest extends ClientTestBase
 
       session.close();
 
-      Thread.sleep(2 * CONNECTION_TTL);
+      Thread.sleep(2 * ClientCrashTest.CONNECTION_TTL);
 
       // the crash must have been detected and the resources cleaned up
       assertActiveConnections(0);
@@ -122,16 +124,16 @@ public class ClientCrashTest extends ClientTestBase
       super.setUp();
 
       sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.hornetq.integration.transports.netty.NettyConnectorFactory"));
-      
-      sf.setClientFailureCheckPeriod(PING_PERIOD);
-      sf.setConnectionTTL(CONNECTION_TTL);
+
+      sf.setClientFailureCheckPeriod(ClientCrashTest.PING_PERIOD);
+      sf.setConnectionTTL(ClientCrashTest.CONNECTION_TTL);
    }
 
    @Override
    protected void tearDown() throws Exception
    {
       // sf.close();
-      
+
       sf = null;
 
       super.tearDown();

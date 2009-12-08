@@ -11,13 +11,12 @@
  * permissions and limitations under the License.
  */
 
-
 package org.hornetq.core.message;
+
+import java.nio.ByteBuffer;
 
 import org.hornetq.core.buffers.HornetQBuffer;
 import org.hornetq.core.exception.HornetQException;
-
-import java.nio.ByteBuffer;
 
 /**
  * Class used to encode message body into buffers.

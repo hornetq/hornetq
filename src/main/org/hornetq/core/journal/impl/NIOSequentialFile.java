@@ -146,7 +146,7 @@ public class NIOSequentialFile extends AbstractSequentialFile
       {
          while (!maxIOSemaphore.tryAcquire(maxIO, 60, TimeUnit.SECONDS))
          {
-            log.warn("Couldn't get lock after 60 seconds on closing AsynchronousFileImpl::" + getFileName());
+            NIOSequentialFile.log.warn("Couldn't get lock after 60 seconds on closing AsynchronousFileImpl::" + getFileName());
          }
       }
 
@@ -307,7 +307,7 @@ public class NIOSequentialFile extends AbstractSequentialFile
                   }
                   catch (Throwable e)
                   {
-                     log.warn("Exception on submitting write", e);
+                     NIOSequentialFile.log.warn("Exception on submitting write", e);
                      callback.onError(HornetQException.IO_ERROR, e.getMessage());
                   }
                }

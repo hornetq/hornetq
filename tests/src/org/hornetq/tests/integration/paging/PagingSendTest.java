@@ -13,6 +13,8 @@
 
 package org.hornetq.tests.integration.paging;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
@@ -101,9 +103,9 @@ public class PagingSendTest extends ServiceTestBase
 
          ClientSession session = sf.createSession(null, null, false, true, true, false, 0);
 
-         session.createQueue(ADDRESS, ADDRESS, null, true);
+         session.createQueue(PagingSendTest.ADDRESS, PagingSendTest.ADDRESS, null, true);
 
-         ClientProducer producer = session.createProducer(ADDRESS);
+         ClientProducer producer = session.createProducer(PagingSendTest.ADDRESS);
 
          ClientMessage message = null;
 
@@ -117,11 +119,11 @@ public class PagingSendTest extends ServiceTestBase
 
          session.close();
 
-         assertTrue(server.getPostOffice().getPagingManager().getTotalMemory() > 0);
+         Assert.assertTrue(server.getPostOffice().getPagingManager().getTotalMemory() > 0);
 
          session = sf.createSession(null, null, false, true, true, false, 0);
 
-         ClientConsumer consumer = session.createConsumer(ADDRESS);
+         ClientConsumer consumer = session.createConsumer(PagingSendTest.ADDRESS);
 
          session.start();
 
@@ -129,7 +131,7 @@ public class PagingSendTest extends ServiceTestBase
          {
             ClientMessage message2 = consumer.receive(10000);
 
-            assertNotNull(message2);
+            Assert.assertNotNull(message2);
 
             if (i == 100)
             {
@@ -143,7 +145,7 @@ public class PagingSendTest extends ServiceTestBase
 
          session.close();
 
-         assertEquals(0, server.getPostOffice().getPagingManager().getTotalMemory());
+         Assert.assertEquals(0, server.getPostOffice().getPagingManager().getTotalMemory());
 
       }
       finally

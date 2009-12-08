@@ -40,12 +40,12 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.integration.transports.netty.NettyConnectorFactory;
-import org.hornetq.jms.HornetQQueue;
 import org.hornetq.jms.HornetQTopic;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 
@@ -66,6 +66,11 @@ public class AppletExample extends JApplet implements ActionListener
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
+
+   /**
+    * 
+    */
+   private static final long serialVersionUID = -2129589098734805722L;
 
    private Destination destination;
 
@@ -184,7 +189,7 @@ public class AppletExample extends JApplet implements ActionListener
 
    // Public --------------------------------------------------------
 
-   public static void main(String[] args)
+   public static void main(final String[] args)
    {
 
       final AppletExample applet = new AppletExample();
@@ -208,11 +213,11 @@ public class AppletExample extends JApplet implements ActionListener
       });
    }
 
-   public void actionPerformed(ActionEvent e)
+   public void actionPerformed(final ActionEvent e)
    {
       try
       {
-         producer.send(session.createTextMessage((new Date()).toString()));
+         producer.send(session.createTextMessage(new Date().toString()));
       }
       catch (JMSException e1)
       {
@@ -232,7 +237,7 @@ public class AppletExample extends JApplet implements ActionListener
       GridBagConstraints c = new GridBagConstraints();
       int numColumns = 3;
 
-      JLabel l1 = new JLabel("Received Messages:", JLabel.CENTER);
+      JLabel l1 = new JLabel("Received Messages:", SwingConstants.CENTER);
       c.gridx = 0;
       c.gridy = 0;
       c.anchor = GridBagConstraints.SOUTH;
@@ -269,7 +274,7 @@ public class AppletExample extends JApplet implements ActionListener
 
       clearButton.addActionListener(new ActionListener()
       {
-         public void actionPerformed(ActionEvent e)
+         public void actionPerformed(final ActionEvent e)
          {
             display.setText("");
          }
@@ -280,7 +285,7 @@ public class AppletExample extends JApplet implements ActionListener
                                                                BorderFactory.createEmptyBorder(5, 20, 5, 10)));
       setContentPane(contentPane);
    }
-   
+
    // Inner classes -------------------------------------------------
 
 }

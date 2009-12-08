@@ -13,7 +13,6 @@
 
 package org.hornetq.core.remoting.impl.wireformat;
 
-
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
@@ -30,9 +29,9 @@ public class NullResponseMessage extends PacketImpl
 
    public NullResponseMessage()
    {
-      super(NULL_RESPONSE);
+      super(PacketImpl.NULL_RESPONSE);
    }
-   
+
    // Public --------------------------------------------------------
 
    @Override

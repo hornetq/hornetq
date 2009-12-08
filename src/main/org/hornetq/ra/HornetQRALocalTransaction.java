@@ -32,7 +32,7 @@ public class HornetQRALocalTransaction implements LocalTransaction
    private static final Logger log = Logger.getLogger(HornetQRALocalTransaction.class);
 
    /** Trace enabled */
-   private static boolean trace = log.isTraceEnabled();
+   private static boolean trace = HornetQRALocalTransaction.log.isTraceEnabled();
 
    /** The managed connection */
    private final HornetQRAManagedConnection mc;
@@ -43,9 +43,9 @@ public class HornetQRALocalTransaction implements LocalTransaction
     */
    public HornetQRALocalTransaction(final HornetQRAManagedConnection mc)
    {
-      if (trace)
+      if (HornetQRALocalTransaction.trace)
       {
-         log.trace("constructor(" + mc + ")");
+         HornetQRALocalTransaction.log.trace("constructor(" + mc + ")");
       }
 
       this.mc = mc;

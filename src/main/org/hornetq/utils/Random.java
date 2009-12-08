@@ -11,9 +11,7 @@
  * permissions and limitations under the License.
  */
 
-
 package org.hornetq.utils;
-
 
 /**
  * A Random
@@ -27,16 +25,16 @@ package org.hornetq.utils;
 public class Random
 {
    private static int extraSeed;
-   
+
    private static synchronized long getSeed()
    {
-      long seed = System.currentTimeMillis() + extraSeed++;
-      
+      long seed = System.currentTimeMillis() + Random.extraSeed++;
+
       return seed;
    }
-   
-   private java.util.Random random = new java.util.Random(getSeed());
-   
+
+   private final java.util.Random random = new java.util.Random(Random.getSeed());
+
    public java.util.Random getRandom()
    {
       return random;

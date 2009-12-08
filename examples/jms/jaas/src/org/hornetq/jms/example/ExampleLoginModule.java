@@ -55,10 +55,10 @@ public class ExampleLoginModule implements LoginModule
       return true;
    }
 
-   public void initialize(Subject subject,
-                          CallbackHandler callbackHandler,
-                          Map<String, ?> sharedState,
-                          Map<String, ?> options)
+   public void initialize(final Subject subject,
+                          final CallbackHandler callbackHandler,
+                          final Map<String, ?> sharedState,
+                          final Map<String, ?> options)
    {
       this.subject = subject;
       // the credentials are passed directly to the
@@ -101,19 +101,19 @@ public class ExampleLoginModule implements LoginModule
    {
       private final String name;
 
-      private Set<Principal> members = new HashSet<Principal>();
+      private final Set<Principal> members = new HashSet<Principal>();
 
-      public SimpleGroup(String name)
+      public SimpleGroup(final String name)
       {
          this.name = name;
       }
 
-      public boolean addMember(Principal principal)
+      public boolean addMember(final Principal principal)
       {
          return members.add(principal);
       }
 
-      public boolean isMember(Principal principal)
+      public boolean isMember(final Principal principal)
       {
          return members.contains(principal);
       }
@@ -123,7 +123,7 @@ public class ExampleLoginModule implements LoginModule
          return Collections.enumeration(members);
       }
 
-      public boolean removeMember(Principal principal)
+      public boolean removeMember(final Principal principal)
       {
          return members.remove(principal);
       }

@@ -27,46 +27,48 @@ import java.io.Serializable;
  */
 public class ForeignTestObject implements Serializable
 {
-	private static final long serialVersionUID = -7503042537789321104L;
+   private static final long serialVersionUID = -7503042537789321104L;
 
-	private String s1;
-	private double d1;
+   private String s1;
 
-	public ForeignTestObject(String s, double d)
-	{
-		s1 = s;
-		d1 = d;
-	}
+   private double d1;
 
-	public double getD1()
-	{
-		return d1;
-	}
+   public ForeignTestObject(final String s, final double d)
+   {
+      s1 = s;
+      d1 = d;
+   }
 
-	public void setD1(double d1)
-	{
-		this.d1 = d1;
-	}
+   public double getD1()
+   {
+      return d1;
+   }
 
-	public String getS1()
-	{
-		return s1;
-	}
+   public void setD1(final double d1)
+   {
+      this.d1 = d1;
+   }
 
-	public void setS1(String s1)
-	{
-		this.s1 = s1;
-	}
+   public String getS1()
+   {
+      return s1;
+   }
 
-	public boolean equals(Object o)
-	{
-		if(o instanceof ForeignTestObject)
-		{
-			ForeignTestObject to = (ForeignTestObject)o;
+   public void setS1(final String s1)
+   {
+      this.s1 = s1;
+   }
 
-			return (s1.equals(to.getS1()) && d1 == to.getD1());
-		}
-		return super.equals(o);
-	}
+   @Override
+   public boolean equals(final Object o)
+   {
+      if (o instanceof ForeignTestObject)
+      {
+         ForeignTestObject to = (ForeignTestObject)o;
+
+         return s1.equals(to.getS1()) && d1 == to.getD1();
+      }
+      return super.equals(o);
+   }
 
 }

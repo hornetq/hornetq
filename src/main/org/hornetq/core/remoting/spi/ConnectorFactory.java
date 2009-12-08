@@ -27,11 +27,12 @@ import java.util.concurrent.ScheduledExecutorService;
  */
 public interface ConnectorFactory
 {
-   Connector createConnector(Map<String, Object> configuration, BufferHandler handler,                           
+   Connector createConnector(Map<String, Object> configuration,
+                             BufferHandler handler,
                              ConnectionLifeCycleListener listener,
                              Executor closeExecutor,
-                             Executor threadPool, 
+                             Executor threadPool,
                              ScheduledExecutorService scheduledThreadPool);
-   
-   Set<String> getAllowableProperties();   
+
+   Set<String> getAllowableProperties();
 }

@@ -12,8 +12,6 @@
  */
 package org.hornetq.javaee.example.server;
 
-import org.jboss.ejb3.annotation.ResourceAdapter;
-
 import javax.annotation.Resource;
 import javax.ejb.ActivationConfigProperty;
 import javax.ejb.MessageDriven;
@@ -25,39 +23,37 @@ import javax.jms.MessageListener;
 import javax.jms.TextMessage;
 import javax.transaction.UserTransaction;
 
+import org.jboss.ejb3.annotation.ResourceAdapter;
+
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  */
-@MessageDriven(name = "MDB_BMTExample",
-               activationConfig =
-                     {
-                        @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
-                        @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/testQueue"),
-                        @ActivationConfigProperty(propertyName = "acknowledgeMode", propertyValue = "Dups-ok-acknowledge")
-                     })
-@TransactionManagement(value= TransactionManagementType.BEAN)
+@MessageDriven(name = "MDB_BMTExample", activationConfig = { @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
+                                                            @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/testQueue"),
+                                                            @ActivationConfigProperty(propertyName = "acknowledgeMode", propertyValue = "Dups-ok-acknowledge") })
+@TransactionManagement(value = TransactionManagementType.BEAN)
 @ResourceAdapter("hornetq-ra.rar")
 public class MDB_BMTExample implements MessageListener
 {
    @Resource
    MessageDrivenContext ctx;
 
-   public void onMessage(Message message)
+   public void onMessage(final Message message)
    {
       try
       {
-         //Step 9. We know the client is sending a text message so we cast
+         // Step 9. We know the client is sending a text message so we cast
          TextMessage textMessage = (TextMessage)message;
 
-         //Step 10. get the text from the message.
+         // Step 10. get the text from the message.
          String text = textMessage.getText();
 
          System.out.println("message " + text + " received");
 
-         //Step 11. lets look at the user transaction to make sure there isn't one.
+         // Step 11. lets look at the user transaction to make sure there isn't one.
          UserTransaction tx = ctx.getUserTransaction();
 
-         if(tx != null)
+         if (tx != null)
          {
             tx.begin();
             System.out.println("we're in the middle of a transaction: " + tx);

@@ -28,6 +28,7 @@ import javax.jms.TextMessage;
 import org.hornetq.jms.HornetQTopic;
 import org.hornetq.jms.tests.message.SimpleJMSMessage;
 import org.hornetq.jms.tests.message.SimpleJMSTextMessage;
+import org.hornetq.jms.tests.util.ProxyAssertSupport;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -54,13 +55,13 @@ public class MessageProducerTest extends JMSTestCase
 
       try
       {
-         conn = cf.createConnection();
+         conn = JMSTestCase.cf.createConnection();
 
          Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         MessageProducer p = sess.createProducer(queue1);
+         MessageProducer p = sess.createProducer(HornetQServerTestCase.queue1);
 
-         MessageConsumer c = sess.createConsumer(queue1);
+         MessageConsumer c = sess.createConsumer(HornetQServerTestCase.queue1);
 
          conn.start();
 
@@ -74,7 +75,7 @@ public class MessageProducerTest extends JMSTestCase
 
          Message m = c.receive(1000);
 
-         assertNotNull(m);
+         ProxyAssertSupport.assertNotNull(m);
 
       }
       finally
@@ -85,6 +86,11 @@ public class MessageProducerTest extends JMSTestCase
 
    private static class SimpleDestination implements Destination, Serializable
    {
+
+      /**
+       * 
+       */
+      private static final long serialVersionUID = -2553676986492799801L;
    }
 
    public void testSendToQueuePersistent() throws Exception
@@ -97,20 +103,20 @@ public class MessageProducerTest extends JMSTestCase
       sendToQueue(false);
    }
 
-   private void sendToQueue(boolean persistent) throws Exception
+   private void sendToQueue(final boolean persistent) throws Exception
    {
       Connection pconn = null;
       Connection cconn = null;
 
       try
       {
-         pconn = cf.createConnection();
-         cconn = cf.createConnection();
+         pconn = JMSTestCase.cf.createConnection();
+         cconn = JMSTestCase.cf.createConnection();
 
          Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          Session cs = cconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer p = ps.createProducer(queue1);
-         MessageConsumer c = cs.createConsumer(queue1);
+         MessageProducer p = ps.createProducer(HornetQServerTestCase.queue1);
+         MessageConsumer c = cs.createConsumer(HornetQServerTestCase.queue1);
 
          cconn.start();
 
@@ -119,8 +125,8 @@ public class MessageProducerTest extends JMSTestCase
 
          TextMessage r = (TextMessage)c.receive(3000);
 
-         assertEquals(m.getJMSMessageID(), r.getJMSMessageID());
-         assertEquals("test", r.getText());
+         ProxyAssertSupport.assertEquals(m.getJMSMessageID(), r.getJMSMessageID());
+         ProxyAssertSupport.assertEquals("test", r.getText());
       }
       finally
       {
@@ -145,22 +151,22 @@ public class MessageProducerTest extends JMSTestCase
       transactedSend(false);
    }
 
-   private void transactedSend(boolean persistent) throws Exception
+   private void transactedSend(final boolean persistent) throws Exception
    {
       Connection pconn = null;
       Connection cconn = null;
 
       try
       {
-         pconn = cf.createConnection();
-         cconn = cf.createConnection();
+         pconn = JMSTestCase.cf.createConnection();
+         cconn = JMSTestCase.cf.createConnection();
 
          cconn.start();
 
          Session ts = pconn.createSession(true, -1);
          Session cs = cconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer p = ts.createProducer(queue1);
-         MessageConsumer c = cs.createConsumer(queue1);
+         MessageProducer p = ts.createProducer(HornetQServerTestCase.queue1);
+         MessageConsumer c = cs.createConsumer(HornetQServerTestCase.queue1);
 
          TextMessage m = ts.createTextMessage("test");
          p.send(m);
@@ -169,8 +175,8 @@ public class MessageProducerTest extends JMSTestCase
 
          TextMessage r = (TextMessage)c.receive();
 
-         assertEquals(m.getJMSMessageID(), r.getJMSMessageID());
-         assertEquals("test", r.getText());
+         ProxyAssertSupport.assertEquals(m.getJMSMessageID(), r.getJMSMessageID());
+         ProxyAssertSupport.assertEquals("test", r.getText());
       }
       finally
       {
@@ -191,7 +197,7 @@ public class MessageProducerTest extends JMSTestCase
 
       Message m;
 
-      Sender(MessageProducer prod, Message m)
+      Sender(final MessageProducer prod, final Message m)
       {
          this.prod = prod;
 
@@ -223,21 +229,21 @@ public class MessageProducerTest extends JMSTestCase
       sendToTopic(false);
    }
 
-   private void sendToTopic(boolean persistent) throws Exception
+   private void sendToTopic(final boolean persistent) throws Exception
    {
 
-      Connection pconn = cf.createConnection();
-      Connection cconn = cf.createConnection();
+      Connection pconn = JMSTestCase.cf.createConnection();
+      Connection cconn = JMSTestCase.cf.createConnection();
 
       try
       {
          Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          Session cs = cconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         final MessageProducer p = ps.createProducer(topic1);
+         final MessageProducer p = ps.createProducer(HornetQServerTestCase.topic1);
 
          p.setDeliveryMode(persistent ? DeliveryMode.PERSISTENT : DeliveryMode.NON_PERSISTENT);
 
-         MessageConsumer c = cs.createConsumer(topic1);
+         MessageConsumer c = cs.createConsumer(HornetQServerTestCase.topic1);
 
          cconn.start();
 
@@ -257,8 +263,8 @@ public class MessageProducerTest extends JMSTestCase
             throw sender.ex;
          }
 
-         assertEquals(m2.getJMSMessageID(), m1.getJMSMessageID());
-         assertEquals("test", m2.getText());
+         ProxyAssertSupport.assertEquals(m2.getJMSMessageID(), m1.getJMSMessageID());
+         ProxyAssertSupport.assertEquals("test", m2.getText());
 
          t.join();
       }
@@ -274,14 +280,14 @@ public class MessageProducerTest extends JMSTestCase
     * */
    public void testSendDestination() throws Exception
    {
-      Connection pconn = cf.createConnection();
-      Connection cconn = cf.createConnection();
+      Connection pconn = JMSTestCase.cf.createConnection();
+      Connection cconn = JMSTestCase.cf.createConnection();
 
       try
       {
          Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          Session cs = cconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageConsumer c2 = cs.createConsumer(topic2);
+         MessageConsumer c2 = cs.createConsumer(HornetQServerTestCase.topic2);
          final Message m1 = ps.createMessage();
 
          cconn.start();
@@ -294,7 +300,7 @@ public class MessageProducerTest extends JMSTestCase
             {
                try
                {
-                  anonProducer.send(topic2, m1);
+                  anonProducer.send(HornetQServerTestCase.topic2, m1);
                }
                catch (Exception e)
                {
@@ -304,7 +310,7 @@ public class MessageProducerTest extends JMSTestCase
          }, "Producer Thread").start();
 
          Message m2 = c2.receive(3000);
-         assertEquals(m1.getJMSMessageID(), m2.getJMSMessageID());
+         ProxyAssertSupport.assertEquals(m1.getJMSMessageID(), m2.getJMSMessageID());
 
          log.debug("ending test");
       }
@@ -317,15 +323,15 @@ public class MessageProducerTest extends JMSTestCase
 
    public void testSendForeignMessage() throws Exception
    {
-      Connection pconn = cf.createConnection();
-      Connection cconn = cf.createConnection();
+      Connection pconn = JMSTestCase.cf.createConnection();
+      Connection cconn = JMSTestCase.cf.createConnection();
 
       try
       {
          Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          Session cs = cconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer p = ps.createProducer(queue1);
-         MessageConsumer c = cs.createConsumer(queue1);
+         MessageProducer p = ps.createProducer(HornetQServerTestCase.queue1);
+         MessageConsumer c = cs.createConsumer(HornetQServerTestCase.queue1);
 
          // send a message that is not created by the session
 
@@ -336,7 +342,7 @@ public class MessageProducerTest extends JMSTestCase
 
          TextMessage rec = (TextMessage)c.receive(3000);
 
-         assertEquals("something", rec.getText());
+         ProxyAssertSupport.assertEquals("something", rec.getText());
 
       }
       finally
@@ -348,14 +354,14 @@ public class MessageProducerTest extends JMSTestCase
 
    public void testGetDestination() throws Exception
    {
-      Connection pconn = cf.createConnection();
+      Connection pconn = JMSTestCase.cf.createConnection();
 
       try
       {
          Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer p = ps.createProducer(topic1);
+         MessageProducer p = ps.createProducer(HornetQServerTestCase.topic1);
          Destination dest = p.getDestination();
-         assertEquals(dest, topic1);
+         ProxyAssertSupport.assertEquals(dest, HornetQServerTestCase.topic1);
       }
       finally
       {
@@ -365,18 +371,18 @@ public class MessageProducerTest extends JMSTestCase
 
    public void testGetDestinationOnClosedProducer() throws Exception
    {
-      Connection pconn = cf.createConnection();
+      Connection pconn = JMSTestCase.cf.createConnection();
 
       try
       {
          Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer p = ps.createProducer(topic1);
+         MessageProducer p = ps.createProducer(HornetQServerTestCase.topic1);
          p.close();
 
          try
          {
             p.getDestination();
-            fail("should throw exception");
+            ProxyAssertSupport.fail("should throw exception");
          }
          catch (javax.jms.IllegalStateException e)
          {
@@ -391,14 +397,14 @@ public class MessageProducerTest extends JMSTestCase
 
    public void testCreateProducerOnInexistentDestination() throws Exception
    {
-      Connection pconn = cf.createConnection();
+      Connection pconn = JMSTestCase.cf.createConnection();
       try
       {
          Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          try
          {
             ps.createProducer(new HornetQTopic("NoSuchTopic"));
-            fail("should throw exception");
+            ProxyAssertSupport.fail("should throw exception");
          }
          catch (InvalidDestinationException e)
          {
@@ -417,14 +423,14 @@ public class MessageProducerTest extends JMSTestCase
 
    public void testGetDisableMessageID() throws Exception
    {
-      Connection pconn = cf.createConnection();
+      Connection pconn = JMSTestCase.cf.createConnection();
 
       try
       {
          Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer p = ps.createProducer(topic1);
+         MessageProducer p = ps.createProducer(HornetQServerTestCase.topic1);
 
-         assertFalse(p.getDisableMessageID());
+         ProxyAssertSupport.assertFalse(p.getDisableMessageID());
       }
       finally
       {
@@ -434,19 +440,19 @@ public class MessageProducerTest extends JMSTestCase
 
    public void testGetDisableMessageIDOnClosedProducer() throws Exception
    {
-      Connection pconn = cf.createConnection();
+      Connection pconn = JMSTestCase.cf.createConnection();
 
       try
       {
          Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer p = ps.createProducer(topic1);
+         MessageProducer p = ps.createProducer(HornetQServerTestCase.topic1);
 
          p.close();
 
          try
          {
             p.getDisableMessageID();
-            fail("should throw exception");
+            ProxyAssertSupport.fail("should throw exception");
          }
          catch (javax.jms.IllegalStateException e)
          {
@@ -465,15 +471,15 @@ public class MessageProducerTest extends JMSTestCase
 
    public void testDefaultTimestampDisabled() throws Exception
    {
-      Connection pconn = cf.createConnection();
+      Connection pconn = JMSTestCase.cf.createConnection();
 
       try
       {
          Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer tp = ps.createProducer(topic1);
-         MessageProducer qp = ps.createProducer(queue1);
-         assertFalse(tp.getDisableMessageTimestamp());
-         assertFalse(qp.getDisableMessageTimestamp());
+         MessageProducer tp = ps.createProducer(HornetQServerTestCase.topic1);
+         MessageProducer qp = ps.createProducer(HornetQServerTestCase.queue1);
+         ProxyAssertSupport.assertFalse(tp.getDisableMessageTimestamp());
+         ProxyAssertSupport.assertFalse(qp.getDisableMessageTimestamp());
       }
       finally
       {
@@ -483,29 +489,29 @@ public class MessageProducerTest extends JMSTestCase
 
    public void testSetTimestampDisabled() throws Exception
    {
-      Connection pconn = cf.createConnection();
-      Connection cconn = cf.createConnection();
+      Connection pconn = JMSTestCase.cf.createConnection();
+      Connection cconn = JMSTestCase.cf.createConnection();
 
       try
       {
          Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          Session cs = cconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer p = ps.createProducer(queue1);
-         MessageConsumer c = cs.createConsumer(queue1);
+         MessageProducer p = ps.createProducer(HornetQServerTestCase.queue1);
+         MessageConsumer c = cs.createConsumer(HornetQServerTestCase.queue1);
 
          cconn.start();
 
          p.setDisableMessageTimestamp(true);
-         assertTrue(p.getDisableMessageTimestamp());
+         ProxyAssertSupport.assertTrue(p.getDisableMessageTimestamp());
 
          p.send(ps.createMessage());
 
          Message m = c.receive(3000);
 
-         assertEquals(0l, m.getJMSTimestamp());
+         ProxyAssertSupport.assertEquals(0l, m.getJMSTimestamp());
 
          p.setDisableMessageTimestamp(false);
-         assertFalse(p.getDisableMessageTimestamp());
+         ProxyAssertSupport.assertFalse(p.getDisableMessageTimestamp());
 
          long t1 = System.currentTimeMillis();
 
@@ -516,8 +522,8 @@ public class MessageProducerTest extends JMSTestCase
          long t2 = System.currentTimeMillis();
          long timestamp = m.getJMSTimestamp();
 
-         assertTrue(timestamp >= t1);
-         assertTrue(timestamp <= t2);
+         ProxyAssertSupport.assertTrue(timestamp >= t1);
+         ProxyAssertSupport.assertTrue(timestamp <= t2);
       }
       finally
       {
@@ -528,19 +534,19 @@ public class MessageProducerTest extends JMSTestCase
 
    public void testGetTimestampDisabledOnClosedProducer() throws Exception
    {
-      Connection pconn = cf.createConnection();
+      Connection pconn = JMSTestCase.cf.createConnection();
 
       try
       {
          Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer p = ps.createProducer(topic1);
+         MessageProducer p = ps.createProducer(HornetQServerTestCase.topic1);
 
          p.close();
 
          try
          {
             p.getDisableMessageTimestamp();
-            fail("should throw exception");
+            ProxyAssertSupport.fail("should throw exception");
          }
          catch (javax.jms.IllegalStateException e)
          {
@@ -559,16 +565,16 @@ public class MessageProducerTest extends JMSTestCase
 
    public void testDefaultDeliveryMode() throws Exception
    {
-      Connection pconn = cf.createConnection();
+      Connection pconn = JMSTestCase.cf.createConnection();
 
       try
       {
          Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer tp = ps.createProducer(topic1);
-         MessageProducer qp = ps.createProducer(queue1);
+         MessageProducer tp = ps.createProducer(HornetQServerTestCase.topic1);
+         MessageProducer qp = ps.createProducer(HornetQServerTestCase.queue1);
 
-         assertEquals(DeliveryMode.PERSISTENT, tp.getDeliveryMode());
-         assertEquals(DeliveryMode.PERSISTENT, qp.getDeliveryMode());
+         ProxyAssertSupport.assertEquals(DeliveryMode.PERSISTENT, tp.getDeliveryMode());
+         ProxyAssertSupport.assertEquals(DeliveryMode.PERSISTENT, qp.getDeliveryMode());
       }
       finally
       {
@@ -578,18 +584,18 @@ public class MessageProducerTest extends JMSTestCase
 
    public void testSetDeliveryMode() throws Exception
    {
-      Connection pconn = cf.createConnection();
+      Connection pconn = JMSTestCase.cf.createConnection();
 
       try
       {
          Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer p = ps.createProducer(topic1);
+         MessageProducer p = ps.createProducer(HornetQServerTestCase.topic1);
 
          p.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-         assertEquals(DeliveryMode.NON_PERSISTENT, p.getDeliveryMode());
+         ProxyAssertSupport.assertEquals(DeliveryMode.NON_PERSISTENT, p.getDeliveryMode());
 
          p.setDeliveryMode(DeliveryMode.PERSISTENT);
-         assertEquals(DeliveryMode.PERSISTENT, p.getDeliveryMode());
+         ProxyAssertSupport.assertEquals(DeliveryMode.PERSISTENT, p.getDeliveryMode());
       }
       finally
       {
@@ -599,19 +605,19 @@ public class MessageProducerTest extends JMSTestCase
 
    public void testGetDeliveryModeOnClosedProducer() throws Exception
    {
-      Connection pconn = cf.createConnection();
+      Connection pconn = JMSTestCase.cf.createConnection();
 
       try
       {
          Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer p = ps.createProducer(topic1);
+         MessageProducer p = ps.createProducer(HornetQServerTestCase.topic1);
 
          p.close();
 
          try
          {
             p.getDeliveryMode();
-            fail("should throw exception");
+            ProxyAssertSupport.fail("should throw exception");
          }
          catch (javax.jms.IllegalStateException e)
          {
@@ -630,16 +636,16 @@ public class MessageProducerTest extends JMSTestCase
 
    public void testDefaultPriority() throws Exception
    {
-      Connection pconn = cf.createConnection();
+      Connection pconn = JMSTestCase.cf.createConnection();
 
       try
       {
          Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer tp = ps.createProducer(topic1);
-         MessageProducer qp = ps.createProducer(queue1);
+         MessageProducer tp = ps.createProducer(HornetQServerTestCase.topic1);
+         MessageProducer qp = ps.createProducer(HornetQServerTestCase.queue1);
 
-         assertEquals(4, tp.getPriority());
-         assertEquals(4, qp.getPriority());
+         ProxyAssertSupport.assertEquals(4, tp.getPriority());
+         ProxyAssertSupport.assertEquals(4, qp.getPriority());
       }
       finally
       {
@@ -649,18 +655,18 @@ public class MessageProducerTest extends JMSTestCase
 
    public void testSetPriority() throws Exception
    {
-      Connection pconn = cf.createConnection();
+      Connection pconn = JMSTestCase.cf.createConnection();
 
       try
       {
          Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer p = ps.createProducer(topic1);
+         MessageProducer p = ps.createProducer(HornetQServerTestCase.topic1);
 
          p.setPriority(9);
-         assertEquals(9, p.getPriority());
+         ProxyAssertSupport.assertEquals(9, p.getPriority());
 
          p.setPriority(0);
-         assertEquals(0, p.getPriority());
+         ProxyAssertSupport.assertEquals(0, p.getPriority());
       }
       finally
       {
@@ -670,19 +676,19 @@ public class MessageProducerTest extends JMSTestCase
 
    public void testGetPriorityOnClosedProducer() throws Exception
    {
-      Connection pconn = cf.createConnection();
+      Connection pconn = JMSTestCase.cf.createConnection();
 
       try
       {
          Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer p = ps.createProducer(topic1);
+         MessageProducer p = ps.createProducer(HornetQServerTestCase.topic1);
 
          p.close();
 
          try
          {
             p.getPriority();
-            fail("should throw exception");
+            ProxyAssertSupport.fail("should throw exception");
          }
          catch (javax.jms.IllegalStateException e)
          {
@@ -701,16 +707,16 @@ public class MessageProducerTest extends JMSTestCase
 
    public void testDefaultTimeToLive() throws Exception
    {
-      Connection pconn = cf.createConnection();
+      Connection pconn = JMSTestCase.cf.createConnection();
 
       try
       {
          Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer tp = ps.createProducer(topic1);
-         MessageProducer qp = ps.createProducer(queue1);
+         MessageProducer tp = ps.createProducer(HornetQServerTestCase.topic1);
+         MessageProducer qp = ps.createProducer(HornetQServerTestCase.queue1);
 
-         assertEquals(0l, tp.getTimeToLive());
-         assertEquals(0l, qp.getTimeToLive());
+         ProxyAssertSupport.assertEquals(0l, tp.getTimeToLive());
+         ProxyAssertSupport.assertEquals(0l, qp.getTimeToLive());
       }
       finally
       {
@@ -720,18 +726,18 @@ public class MessageProducerTest extends JMSTestCase
 
    public void testSetTimeToLive() throws Exception
    {
-      Connection pconn = cf.createConnection();
+      Connection pconn = JMSTestCase.cf.createConnection();
 
       try
       {
          Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer p = ps.createProducer(topic1);
+         MessageProducer p = ps.createProducer(HornetQServerTestCase.topic1);
 
          p.setTimeToLive(100l);
-         assertEquals(100l, p.getTimeToLive());
+         ProxyAssertSupport.assertEquals(100l, p.getTimeToLive());
 
          p.setTimeToLive(0l);
-         assertEquals(0l, p.getTimeToLive());
+         ProxyAssertSupport.assertEquals(0l, p.getTimeToLive());
       }
       finally
       {
@@ -741,19 +747,19 @@ public class MessageProducerTest extends JMSTestCase
 
    public void testGetTimeToLiveOnClosedProducer() throws Exception
    {
-      Connection pconn = cf.createConnection();
+      Connection pconn = JMSTestCase.cf.createConnection();
 
       try
       {
          Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer p = ps.createProducer(topic1);
+         MessageProducer p = ps.createProducer(HornetQServerTestCase.topic1);
 
          p.close();
 
          try
          {
             p.setTimeToLive(100l);
-            fail("should throw exception");
+            ProxyAssertSupport.fail("should throw exception");
          }
          catch (javax.jms.IllegalStateException e)
          {

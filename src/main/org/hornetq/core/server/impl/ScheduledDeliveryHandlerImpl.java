@@ -36,7 +36,7 @@ public class ScheduledDeliveryHandlerImpl implements ScheduledDeliveryHandler
 {
    private static final Logger log = Logger.getLogger(ScheduledDeliveryHandlerImpl.class);
 
-   private static final boolean trace = log.isTraceEnabled();
+   private static final boolean trace = ScheduledDeliveryHandlerImpl.log.isTraceEnabled();
 
    private final ScheduledExecutorService scheduledExecutor;
 
@@ -55,9 +55,9 @@ public class ScheduledDeliveryHandlerImpl implements ScheduledDeliveryHandler
 
       if (deliveryTime != 0 && scheduledExecutor != null)
       {
-         if (trace)
+         if (ScheduledDeliveryHandlerImpl.trace)
          {
-            log.trace("Scheduling delivery for " + ref + " to occur at " + deliveryTime);
+            ScheduledDeliveryHandlerImpl.log.trace("Scheduling delivery for " + ref + " to occur at " + deliveryTime);
          }
 
          ScheduledDeliveryRunnable runnable = new ScheduledDeliveryRunnable(ref);
@@ -196,9 +196,9 @@ public class ScheduledDeliveryHandlerImpl implements ScheduledDeliveryHandler
 
       public void run()
       {
-         if (trace)
+         if (ScheduledDeliveryHandlerImpl.trace)
          {
-            log.trace("Scheduled delivery timeout " + ref);
+            ScheduledDeliveryHandlerImpl.log.trace("Scheduled delivery timeout " + ref);
          }
 
          synchronized (scheduledRunnables)
@@ -207,7 +207,7 @@ public class ScheduledDeliveryHandlerImpl implements ScheduledDeliveryHandler
 
             if (removed == null)
             {
-               log.warn("Failed to remove timeout " + this);
+               ScheduledDeliveryHandlerImpl.log.warn("Failed to remove timeout " + this);
 
                return;
             }

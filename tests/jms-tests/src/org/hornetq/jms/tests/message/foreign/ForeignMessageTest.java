@@ -19,7 +19,7 @@ import javax.jms.TextMessage;
 import org.hornetq.jms.tests.message.MessageTestBase;
 import org.hornetq.jms.tests.message.SimpleJMSMessage;
 import org.hornetq.jms.tests.message.SimpleJMSTextMessage;
-
+import org.hornetq.jms.tests.util.ProxyAssertSupport;
 
 /**
  *
@@ -33,39 +33,41 @@ import org.hornetq.jms.tests.message.SimpleJMSTextMessage;
  */
 public class ForeignMessageTest extends MessageTestBase
 {
-    public void setUp() throws Exception
-    {
-       super.setUp();
-       this.message = createForeignMessage();
-    }
+   @Override
+   public void setUp() throws Exception
+   {
+      super.setUp();
+      message = createForeignMessage();
+   }
 
-    public void tearDown() throws Exception
-    {
-       super.tearDown();
-       message = null;
-    }
+   @Override
+   public void tearDown() throws Exception
+   {
+      super.tearDown();
+      message = null;
+   }
 
-    protected Message createForeignMessage() throws Exception
-    {
-        SimpleJMSMessage m = new SimpleJMSMessage();
-        log.debug("creating JMS Message type " + m.getClass().getName());
+   protected Message createForeignMessage() throws Exception
+   {
+      SimpleJMSMessage m = new SimpleJMSMessage();
+      log.debug("creating JMS Message type " + m.getClass().getName());
 
-        return m;
-    }
-    
-    public void testForeignMessageSetDestination() throws Exception
-    {
-       // create a Bytes foreign message
-       SimpleJMSTextMessage txt = new SimpleJMSTextMessage("hello from Brazil!");
-       txt.setJMSDestination(null);
+      return m;
+   }
 
-       queueProd.send(txt);
+   public void testForeignMessageSetDestination() throws Exception
+   {
+      // create a Bytes foreign message
+      SimpleJMSTextMessage txt = new SimpleJMSTextMessage("hello from Brazil!");
+      txt.setJMSDestination(null);
 
-       assertNotNull(txt.getJMSDestination());
+      queueProd.send(txt);
 
-       TextMessage tm = (TextMessage)queueCons.receive();
-       assertNotNull(tm);
-       assertEquals("hello from Brazil!", txt.getText());
-    }
+      ProxyAssertSupport.assertNotNull(txt.getJMSDestination());
+
+      TextMessage tm = (TextMessage)queueCons.receive();
+      ProxyAssertSupport.assertNotNull(tm);
+      ProxyAssertSupport.assertEquals("hello from Brazil!", txt.getText());
+   }
 
 }

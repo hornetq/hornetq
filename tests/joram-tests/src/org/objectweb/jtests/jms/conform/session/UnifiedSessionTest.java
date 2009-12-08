@@ -21,6 +21,7 @@ import javax.jms.Session;
 import javax.jms.TopicConnection;
 import javax.jms.TopicSession;
 
+import junit.framework.Assert;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
@@ -71,15 +72,15 @@ public class UnifiedSessionTest extends UnifiedTestCase
    {
       try
       {
-         queueConnection.createDurableConnectionConsumer(topic, "subscriptionName", "", (ServerSessionPool) null, 1);
-         fail("Should throw a javax.jms.IllegalStateException");
+         queueConnection.createDurableConnectionConsumer(topic, "subscriptionName", "", (ServerSessionPool)null, 1);
+         Assert.fail("Should throw a javax.jms.IllegalStateException");
       }
       catch (javax.jms.IllegalStateException e)
       {
       }
       catch (JMSException e)
       {
-         fail("Should throw a javax.jms.IllegalStateException, not a " + e);
+         Assert.fail("Should throw a javax.jms.IllegalStateException, not a " + e);
       }
    }
 
@@ -96,14 +97,14 @@ public class UnifiedSessionTest extends UnifiedTestCase
       try
       {
          queueSession.createDurableSubscriber(topic, "subscriptionName");
-         fail("Should throw a javax.jms.IllegalStateException");
+         Assert.fail("Should throw a javax.jms.IllegalStateException");
       }
       catch (javax.jms.IllegalStateException e)
       {
       }
       catch (JMSException e)
       {
-         fail("Should throw a javax.jms.IllegalStateException, not a " + e);
+         Assert.fail("Should throw a javax.jms.IllegalStateException, not a " + e);
       }
    }
 
@@ -120,14 +121,14 @@ public class UnifiedSessionTest extends UnifiedTestCase
       try
       {
          queueSession.createTemporaryTopic();
-         fail("Should throw a javax.jms.IllegalStateException");
+         Assert.fail("Should throw a javax.jms.IllegalStateException");
       }
       catch (javax.jms.IllegalStateException e)
       {
       }
       catch (JMSException e)
       {
-         fail("Should throw a javax.jms.IllegalStateException, not a " + e);
+         Assert.fail("Should throw a javax.jms.IllegalStateException, not a " + e);
       }
    }
 
@@ -144,14 +145,14 @@ public class UnifiedSessionTest extends UnifiedTestCase
       try
       {
          queueSession.createTopic("topic_name");
-         fail("Should throw a javax.jms.IllegalStateException");
+         Assert.fail("Should throw a javax.jms.IllegalStateException");
       }
       catch (javax.jms.IllegalStateException e)
       {
       }
       catch (JMSException e)
       {
-         fail("Should throw a javax.jms.IllegalStateException, not a " + e);
+         Assert.fail("Should throw a javax.jms.IllegalStateException, not a " + e);
       }
    }
 
@@ -168,14 +169,14 @@ public class UnifiedSessionTest extends UnifiedTestCase
       try
       {
          queueSession.unsubscribe("subscriptionName");
-         fail("Should throw a javax.jms.IllegalStateException");
+         Assert.fail("Should throw a javax.jms.IllegalStateException");
       }
       catch (javax.jms.IllegalStateException e)
       {
       }
       catch (JMSException e)
       {
-         fail("Should throw a javax.jms.IllegalStateException, not a " + e);
+         Assert.fail("Should throw a javax.jms.IllegalStateException, not a " + e);
       }
    }
 
@@ -192,14 +193,14 @@ public class UnifiedSessionTest extends UnifiedTestCase
       try
       {
          topicSession.createBrowser(queue);
-         fail("Should throw a javax.jms.IllegalStateException");
+         Assert.fail("Should throw a javax.jms.IllegalStateException");
       }
       catch (javax.jms.IllegalStateException e)
       {
       }
       catch (JMSException e)
       {
-         fail("Should throw a javax.jms.IllegalStateException, not a " + e);
+         Assert.fail("Should throw a javax.jms.IllegalStateException, not a " + e);
       }
    }
 
@@ -216,14 +217,14 @@ public class UnifiedSessionTest extends UnifiedTestCase
       try
       {
          topicSession.createQueue("queue_name");
-         fail("Should throw a javax.jms.IllegalStateException");
+         Assert.fail("Should throw a javax.jms.IllegalStateException");
       }
       catch (javax.jms.IllegalStateException e)
       {
       }
       catch (JMSException e)
       {
-         fail("Should throw a javax.jms.IllegalStateException, not a " + e);
+         Assert.fail("Should throw a javax.jms.IllegalStateException, not a " + e);
       }
    }
 
@@ -240,17 +241,18 @@ public class UnifiedSessionTest extends UnifiedTestCase
       try
       {
          topicSession.createTemporaryQueue();
-         fail("Should throw a javax.jms.IllegalStateException");
+         Assert.fail("Should throw a javax.jms.IllegalStateException");
       }
       catch (javax.jms.IllegalStateException e)
       {
       }
       catch (JMSException e)
       {
-         fail("Should throw a javax.jms.IllegalStateException, not a " + e);
+         Assert.fail("Should throw a javax.jms.IllegalStateException, not a " + e);
       }
    }
 
+   @Override
    public void setUp() throws Exception
    {
       super.setUp();
@@ -270,6 +272,7 @@ public class UnifiedSessionTest extends UnifiedTestCase
       }
    }
 
+   @Override
    public void tearDown() throws Exception
    {
       try
@@ -298,7 +301,7 @@ public class UnifiedSessionTest extends UnifiedTestCase
       return new TestSuite(UnifiedSessionTest.class);
    }
 
-   public UnifiedSessionTest(String name)
+   public UnifiedSessionTest(final String name)
    {
       super(name);
    }

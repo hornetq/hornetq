@@ -16,6 +16,8 @@ import java.util.Collection;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
@@ -47,7 +49,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
 
    private static final Logger log = Logger.getLogger(ConsumerWindowSizeTest.class);
 
-   private static final boolean isTrace = log.isTraceEnabled();
+   private static final boolean isTrace = ConsumerWindowSizeTest.log.isTraceEnabled();
 
    protected boolean isNetty()
    {
@@ -81,7 +83,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
          messagingService.start();
          cf.setBlockOnNonPersistentSend(false);
          int numMessage = 100;
-         cf.setConsumerWindowSize(numMessage * this.getMessageEncodeSize(addressA));
+         cf.setConsumerWindowSize(numMessage * getMessageEncodeSize(addressA));
          ClientSession sendSession = cf.createSession(false, true, true);
          ClientSession receiveSession = cf.createSession(false, true, true);
          sendSession.createQueue(addressA, queueA, false);
@@ -100,7 +102,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
          for (int i = 0; i < numMessage * 2; i++)
          {
             ClientMessage m = receivingConsumer.receive(5000);
-            assertNotNull(m);
+            Assert.assertNotNull(m);
             m.acknowledge();
          }
          receiveSession.close();
@@ -108,14 +110,14 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
          for (int i = 0; i < numMessage * 2; i++)
          {
             ClientMessage m = cc.receive(5000);
-            assertNotNull(m);
+            Assert.assertNotNull(m);
             m.acknowledge();
          }
 
          session.close();
          sendSession.close();
 
-         assertEquals(0, getMessageCount(messagingService, queueA.toString()));
+         Assert.assertEquals(0, getMessageCount(messagingService, queueA.toString()));
 
       }
       finally
@@ -168,12 +170,12 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
          for (int i = 0; i < numberOfMessages - 1; i++)
          {
             ClientMessage msg = cons1.receive(1000);
-            assertNotNull("expected message at i = " + i, msg);
+            Assert.assertNotNull("expected message at i = " + i, msg);
             msg.acknowledge();
          }
 
          ClientMessage msg = consNeverUsed.receive(500);
-         assertNotNull(msg);
+         Assert.assertNotNull(msg);
          msg.acknowledge();
 
          session.close();
@@ -182,7 +184,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
          sessionB.close();
          sessionB = null;
 
-         assertEquals(0, getMessageCount(server, ADDRESS.toString()));
+         Assert.assertEquals(0, getMessageCount(server, ADDRESS.toString()));
 
       }
       finally
@@ -259,7 +261,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
          // This will force a credit to be sent, but if the message wasn't received we need to take out that credit from
          // the server
          // or the client will be buffering messages
-         assertNull(consNeverUsed.receive(1));
+         Assert.assertNull(consNeverUsed.receive(1));
 
          ClientMessage msg = createTextMessage(session, "This one will expire");
          if (largeMessages)
@@ -279,8 +281,8 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
          // It will be able to receive another message, but it shouldn't send a credit again, as the credit was already
          // sent
          msg = consNeverUsed.receive(TIMEOUT * 1000);
-         assertNotNull(msg);
-         assertEquals("First-on-non-buffered", getTextMessage(msg));
+         Assert.assertNotNull(msg);
+         Assert.assertEquals("First-on-non-buffered", getTextMessage(msg));
          msg.acknowledge();
 
          ClientConsumer cons1 = session.createConsumer(ADDRESS);
@@ -300,12 +302,12 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
          for (int i = 0; i < numberOfMessages; i++)
          {
             msg = cons1.receive(1000);
-            assertNotNull("expected message at i = " + i, msg);
-            assertEquals("Msg" + i, getTextMessage(msg));
+            Assert.assertNotNull("expected message at i = " + i, msg);
+            Assert.assertEquals("Msg" + i, getTextMessage(msg));
             msg.acknowledge();
          }
 
-         assertEquals(0, consNeverUsed.getBufferSize());
+         Assert.assertEquals(0, consNeverUsed.getBufferSize());
 
          session.close();
          session = null;
@@ -313,7 +315,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
          sessionB.close();
          sessionB = null;
 
-         assertEquals(0, getMessageCount(server, ADDRESS.toString()));
+         Assert.assertEquals(0, getMessageCount(server, ADDRESS.toString()));
 
       }
       finally
@@ -405,27 +407,31 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
          for (int i = 0; i < numberOfMessages / 2; i++)
          {
             ClientMessage msg = cons1.receive(1000);
-            assertNotNull("expected message at i = " + i, msg);
+            Assert.assertNotNull("expected message at i = " + i, msg);
 
             String str = getTextMessage(msg);
-            assertEquals("Msg" + i, str);
+            Assert.assertEquals("Msg" + i, str);
 
             msg.acknowledge();
 
-            assertEquals("A slow consumer shouldn't buffer anything on the client side!", 0, cons1.getBufferSize());
+            Assert.assertEquals("A slow consumer shouldn't buffer anything on the client side!",
+                                0,
+                                cons1.getBufferSize());
          }
 
          for (int i = numberOfMessages / 2; i < numberOfMessages; i++)
          {
             ClientMessage msg = cons2.receive(1000);
 
-            assertNotNull("expected message at i = " + i, msg);
+            Assert.assertNotNull("expected message at i = " + i, msg);
 
-            assertEquals("Msg" + i, msg.getBodyBuffer().readString());
+            Assert.assertEquals("Msg" + i, msg.getBodyBuffer().readString());
 
             msg.acknowledge();
 
-            assertEquals("A slow consumer shouldn't buffer anything on the client side!", 0, cons2.getBufferSize());
+            Assert.assertEquals("A slow consumer shouldn't buffer anything on the client side!",
+                                0,
+                                cons2.getBufferSize());
          }
 
          session1.close(); // just to make sure everything is flushed and no pending packets on the sending buffer, or
@@ -439,7 +445,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
 
          prod = session1.createProducer(ADDRESS);
 
-         assertEquals(0, getMessageCount(server, ADDRESS.toString()));
+         Assert.assertEquals(0, getMessageCount(server, ADDRESS.toString()));
 
          // This should also work the other way around
 
@@ -468,13 +474,15 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
          for (int i = 0; i < numberOfMessages / 2; i++)
          {
             ClientMessage msg = cons2.receive(1000);
-            assertNotNull("expected message at i = " + i, msg);
+            Assert.assertNotNull("expected message at i = " + i, msg);
 
-            assertEquals("Msg" + i, msg.getBodyBuffer().readString());
+            Assert.assertEquals("Msg" + i, msg.getBodyBuffer().readString());
 
             msg.acknowledge();
 
-            assertEquals("A slow consumer shouldn't buffer anything on the client side!", 0, cons2.getBufferSize());
+            Assert.assertEquals("A slow consumer shouldn't buffer anything on the client side!",
+                                0,
+                                cons2.getBufferSize());
 
          }
 
@@ -482,20 +490,22 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
          {
             ClientMessage msg = cons1.receive(1000);
 
-            assertNotNull("expected message at i = " + i, msg);
+            Assert.assertNotNull("expected message at i = " + i, msg);
 
-            assertEquals("Msg" + i, msg.getBodyBuffer().readString());
+            Assert.assertEquals("Msg" + i, msg.getBodyBuffer().readString());
 
             msg.acknowledge();
 
-            assertEquals("A slow consumer shouldn't buffer anything on the client side!", 0, cons1.getBufferSize());
+            Assert.assertEquals("A slow consumer shouldn't buffer anything on the client side!",
+                                0,
+                                cons1.getBufferSize());
          }
 
          session1.close();
          session1 = null;
          session2.close();
          session2 = null;
-         assertEquals(0, getMessageCount(server, ADDRESS.toString()));
+         Assert.assertEquals(0, getMessageCount(server, ADDRESS.toString()));
 
       }
       finally
@@ -639,24 +649,24 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
 
          consReceiveOneAndHold.setMessageHandler(handler);
 
-         assertTrue(latchReceived.await(TIMEOUT, TimeUnit.SECONDS));
+         Assert.assertTrue(latchReceived.await(TIMEOUT, TimeUnit.SECONDS));
 
-         assertEquals(0, consReceiveOneAndHold.getBufferSize());
+         Assert.assertEquals(0, consReceiveOneAndHold.getBufferSize());
 
          for (int i = 2; i < numberOfMessages; i++)
          {
             ClientMessage msg = cons1.receive(1000);
-            assertNotNull("expected message at i = " + i, msg);
-            assertEquals("Msg" + i, getTextMessage(msg));
+            Assert.assertNotNull("expected message at i = " + i, msg);
+            Assert.assertEquals("Msg" + i, getTextMessage(msg));
             msg.acknowledge();
          }
 
-         assertEquals(0, consReceiveOneAndHold.getBufferSize());
+         Assert.assertEquals(0, consReceiveOneAndHold.getBufferSize());
 
          latchDone.countDown();
 
          // The test can' t close the session while the message is still being read, or it could interrupt the data
-         assertTrue(latchRead.await(10, TimeUnit.SECONDS));
+         Assert.assertTrue(latchRead.await(10, TimeUnit.SECONDS));
 
          session.close();
          session = null;
@@ -664,9 +674,9 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
          sessionB.close();
          sessionB = null;
 
-         assertEquals(0, getMessageCount(server, ADDRESS.toString()));
+         Assert.assertEquals(0, getMessageCount(server, ADDRESS.toString()));
 
-         assertFalse("MessageHandler received a failure", handler.failed);
+         Assert.assertFalse("MessageHandler received a failure", handler.failed);
 
       }
       finally
@@ -752,9 +762,9 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
                try
                {
                   String str = getTextMessage(message);
-                  if (isTrace)
+                  if (ConsumerWindowSizeTest.isTrace)
                   {
-                     log.trace("Received message " + str);
+                     ConsumerWindowSizeTest.log.trace("Received message " + str);
                   }
 
                   failed = failed || !str.equals("Msg" + count);
@@ -797,7 +807,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
 
          consReceiveOneAndHold.setMessageHandler(handler);
 
-         assertTrue(latchReceived.await(TIMEOUT, TimeUnit.SECONDS));
+         Assert.assertTrue(latchReceived.await(TIMEOUT, TimeUnit.SECONDS));
 
          long timeout = System.currentTimeMillis() + 1000 * TIMEOUT;
          while (consReceiveOneAndHold.getBufferSize() == 0 && System.currentTimeMillis() < timeout)
@@ -805,22 +815,22 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
             Thread.sleep(10);
          }
 
-         assertEquals(1, consReceiveOneAndHold.getBufferSize());
+         Assert.assertEquals(1, consReceiveOneAndHold.getBufferSize());
 
          ClientConsumer cons1 = session.createConsumer(ADDRESS);
 
          for (int i = 3; i < numberOfMessages; i++)
          {
             ClientMessage msg = cons1.receive(1000);
-            assertNotNull("expected message at i = " + i, msg);
+            Assert.assertNotNull("expected message at i = " + i, msg);
             String text = getTextMessage(msg);
-            assertEquals("Msg" + i, text);
+            Assert.assertEquals("Msg" + i, text);
             msg.acknowledge();
          }
 
          latchDone.countDown();
 
-         assertTrue(latchReceivedBuffered.await(TIMEOUT, TimeUnit.SECONDS));
+         Assert.assertTrue(latchReceivedBuffered.await(TIMEOUT, TimeUnit.SECONDS));
 
          session.close();
          session = null;
@@ -828,9 +838,9 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
          sessionB.close();
          sessionB = null;
 
-         assertEquals(0, getMessageCount(server, ADDRESS.toString()));
+         Assert.assertEquals(0, getMessageCount(server, ADDRESS.toString()));
 
-         assertFalse("MessageHandler received a failure", handler.failed);
+         Assert.assertFalse("MessageHandler received a failure", handler.failed);
 
       }
       finally
@@ -907,7 +917,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
             // even as expected by the test
             Bindings bindings = server.getPostOffice().getBindingsForAddress(ADDRESS);
 
-            assertEquals(1, bindings.getBindings().size());
+            Assert.assertEquals(1, bindings.getBindings().size());
 
             for (Binding binding : bindings.getBindings())
             {
@@ -922,7 +932,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
                      Thread.sleep(10);
                   }
 
-                  assertNull(consumerImpl.getAvailableCredits());
+                  Assert.assertNull(consumerImpl.getAvailableCredits());
                }
             }
          }
@@ -953,22 +963,22 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
          }
          while ((!foundA || !foundB) && System.currentTimeMillis() < timeout);
 
-         assertTrue("ConsumerA didn't receive the expected number of messages on buffer (consA=" + consA.getBufferSize() +
-                             ", consB=" +
-                             consB.getBufferSize() +
-                             ") foundA = " +
-                             foundA +
-                             " foundB = " +
-                             foundB,
-                    foundA);
-         assertTrue("ConsumerB didn't receive the expected number of messages on buffer (consA=" + consA.getBufferSize() +
-                             ", consB=" +
-                             consB.getBufferSize() +
-                             ") foundA = " +
-                             foundA +
-                             " foundB = " +
-                             foundB,
-                    foundB);
+         Assert.assertTrue("ConsumerA didn't receive the expected number of messages on buffer (consA=" + consA.getBufferSize() +
+                                    ", consB=" +
+                                    consB.getBufferSize() +
+                                    ") foundA = " +
+                                    foundA +
+                                    " foundB = " +
+                                    foundB,
+                           foundA);
+         Assert.assertTrue("ConsumerB didn't receive the expected number of messages on buffer (consA=" + consA.getBufferSize() +
+                                    ", consB=" +
+                                    consB.getBufferSize() +
+                                    ") foundA = " +
+                                    foundA +
+                                    " foundB = " +
+                                    foundB,
+                           foundB);
 
       }
       finally

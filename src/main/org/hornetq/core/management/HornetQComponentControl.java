@@ -11,7 +11,6 @@
  * permissions and limitations under the License.
  */
 
-
 package org.hornetq.core.management;
 
 /**
@@ -22,8 +21,8 @@ package org.hornetq.core.management;
 public interface HornetQComponentControl
 {
    boolean isStarted();
-   
+
    void start() throws Exception;
-   
+
    void stop() throws Exception;
 }

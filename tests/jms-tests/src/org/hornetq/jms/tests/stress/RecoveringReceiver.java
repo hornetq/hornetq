@@ -36,37 +36,44 @@ import org.hornetq.core.logging.Logger;
 public class RecoveringReceiver extends Receiver
 {
    private static final Logger log = Logger.getLogger(RecoveringReceiver.class);
-   
+
    protected int ackSize;
+
    protected int recoverSize;
 
    class Count
-   {      
+   {
       int lastAcked;
+
       int lastReceived;
    }
-    
-   public RecoveringReceiver(Session sess, MessageConsumer cons,
-         int numMessages, int ackSize, int recoverSize, boolean isListener) throws Exception
+
+   public RecoveringReceiver(final Session sess,
+                             final MessageConsumer cons,
+                             final int numMessages,
+                             final int ackSize,
+                             final int recoverSize,
+                             final boolean isListener) throws Exception
    {
       super(sess, cons, numMessages, isListener);
       this.ackSize = ackSize;
-      this.recoverSize = recoverSize;    
+      this.recoverSize = recoverSize;
    }
-   
+
+   @Override
    public void run()
-   {      
-      //Small pause so as not to miss any messages in a topic
+   {
+      // Small pause so as not to miss any messages in a topic
       try
       {
          Thread.sleep(1000);
       }
       catch (InterruptedException e)
-      {         
+      {
       }
-      
+
       try
-      {      
+      {
          int iterations = numMessages / ackSize;
 
          for (int outerCount = 0; outerCount < iterations; outerCount++)
@@ -75,23 +82,23 @@ public class RecoveringReceiver extends Receiver
             for (int innerCount = 0; innerCount < ackSize; innerCount++)
             {
                m = getMessage();
-            
+
                if (m == null)
                {
-                  log.error("Message is null");
+                  RecoveringReceiver.log.error("Message is null");
                   setFailed(true);
                   return;
                }
                String prodName = m.getStringProperty("PROD_NAME");
                Integer msgCount = new Integer(m.getIntProperty("MSG_NUMBER"));
-               
+
                Count count = (Count)counts.get(prodName);
                if (count == null)
                {
-                  //First time
+                  // First time
                   if (msgCount.intValue() != 0)
                   {
-                     log.error("First message from " + prodName + " is not 0, it is " + msgCount);
+                     RecoveringReceiver.log.error("First message from " + prodName + " is not 0, it is " + msgCount);
                      setFailed(true);
                      return;
                   }
@@ -105,47 +112,49 @@ public class RecoveringReceiver extends Receiver
                {
                   if (count.lastAcked != msgCount.intValue() - 1)
                   {
-                     log.error("Message out of sequence for " + prodName + ", expected " + (count.lastAcked + 1));
+                     RecoveringReceiver.log.error("Message out of sequence for " + prodName +
+                                                  ", expected " +
+                                                  (count.lastAcked + 1));
                      setFailed(true);
                      return;
                   }
                }
                count.lastAcked = msgCount.intValue();
-               
+
                count.lastReceived = msgCount.intValue();
-               
-               if (innerCount == ackSize -1)
+
+               if (innerCount == ackSize - 1)
                {
                   m.acknowledge();
                }
-               this.processingDone();
-            
+               processingDone();
+
             }
-            
+
             if (outerCount == iterations - 1)
             {
                break;
             }
-                        
+
             for (int innerCount = 0; innerCount < recoverSize; innerCount++)
             {
                m = getMessage();
-               
+
                if (m == null)
                {
-                  log.error("Message is null");
+                  RecoveringReceiver.log.error("Message is null");
                   return;
                }
-               String prodName = m.getStringProperty("PROD_NAME");               
-               Integer msgCount = new Integer(m.getIntProperty("MSG_NUMBER"));   
-               
+               String prodName = m.getStringProperty("PROD_NAME");
+               Integer msgCount = new Integer(m.getIntProperty("MSG_NUMBER"));
+
                Count count = (Count)counts.get(prodName);
                if (count == null)
                {
                   // First time
                   if (msgCount.intValue() != 0)
                   {
-                     log.error("First message from " + prodName + " is not 0, it is " + msgCount);
+                     RecoveringReceiver.log.error("First message from " + prodName + " is not 0, it is " + msgCount);
                      setFailed(true);
                      return;
                   }
@@ -154,30 +163,30 @@ public class RecoveringReceiver extends Receiver
                      count = new Count();
                      count.lastAcked = -1;
                      counts.put(prodName, count);
-                  }                 
+                  }
                }
                else
                {
                   if (count.lastReceived != msgCount.intValue() - 1)
                   {
-                     log.error("Message out of sequence");
+                     RecoveringReceiver.log.error("Message out of sequence");
                      setFailed(true);
                      return;
                   }
                }
-               count.lastReceived = msgCount.intValue();             
-               
+               count.lastReceived = msgCount.intValue();
+
                if (innerCount == recoverSize - 1)
                {
                   sess.recover();
                }
-               this.processingDone();
+               processingDone();
             }
-         }        
+         }
       }
       catch (Exception e)
       {
-         log.error("Failed to receive message", e);
+         RecoveringReceiver.log.error("Failed to receive message", e);
          setFailed(true);
       }
    }

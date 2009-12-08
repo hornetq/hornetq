@@ -16,6 +16,8 @@ package org.hornetq.tests.unit.core.deployers.impl;
 import java.util.ArrayList;
 import java.util.List;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.cluster.QueueConfiguration;
 import org.hornetq.core.deployers.DeploymentManager;
@@ -62,16 +64,16 @@ public class QueueDeployerTest extends UnitTestCase
       Element rootNode = org.hornetq.utils.XMLUtil.stringToElement(xml);
       deployer.validate(rootNode);
       NodeList queueNodes = rootNode.getElementsByTagName("queue");
-      assertEquals(1, queueNodes.getLength());
+      Assert.assertEquals(1, queueNodes.getLength());
       deployer.deploy(queueNodes.item(0));
 
-      assertEquals(1, serverControl.configs.size());
+      Assert.assertEquals(1, serverControl.configs.size());
 
       QueueConfiguration queueConfiguration = serverControl.configs.get(0);
-      assertEquals("foo", queueConfiguration.getName());
-      assertEquals("bar", queueConfiguration.getAddress());
-      assertEquals("speed > 88", queueConfiguration.getFilterString());
-      assertEquals(false, queueConfiguration.isDurable());
+      Assert.assertEquals("foo", queueConfiguration.getName());
+      Assert.assertEquals("bar", queueConfiguration.getAddress());
+      Assert.assertEquals("speed > 88", queueConfiguration.getFilterString());
+      Assert.assertEquals(false, queueConfiguration.isDurable());
    }
 
    public void testParseQueueConfigurationFromHornetQConfiguration() throws Exception
@@ -93,20 +95,21 @@ public class QueueDeployerTest extends UnitTestCase
       Element rootNode = org.hornetq.utils.XMLUtil.stringToElement(xml);
       deployer.validate(rootNode);
       NodeList queueNodes = rootNode.getElementsByTagName("queue");
-      assertEquals(2, queueNodes.getLength());
+      Assert.assertEquals(2, queueNodes.getLength());
 
       deployer.deploy(queueNodes.item(0));
       deployer.deploy(queueNodes.item(1));
 
-      assertEquals(2, serverControl.configs.size());
-      assertEquals("foo", serverControl.configs.get(0).getName());
-      assertEquals("foo2", serverControl.configs.get(1).getName());
+      Assert.assertEquals(2, serverControl.configs.size());
+      Assert.assertEquals("foo", serverControl.configs.get(0).getName());
+      Assert.assertEquals("foo2", serverControl.configs.get(1).getName());
    }
 
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
 
+   @Override
    protected void setUp() throws Exception
    {
       super.setUp();
@@ -115,6 +118,7 @@ public class QueueDeployerTest extends UnitTestCase
       deployer = new QueueDeployer(deploymentManager, serverControl);
    }
 
+   @Override
    protected void tearDown() throws Exception
    {
       deployer = null;
@@ -138,29 +142,29 @@ public class QueueDeployerTest extends UnitTestCase
          return 0;
       }
 
-      public boolean closeConnectionsForAddress(String ipAddress) throws Exception
+      public boolean closeConnectionsForAddress(final String ipAddress) throws Exception
       {
 
          return false;
       }
 
-      public boolean commitPreparedTransaction(String transactionAsBase64) throws Exception
+      public boolean commitPreparedTransaction(final String transactionAsBase64) throws Exception
       {
 
          return false;
       }
 
-      public void createQueue(String address, String name, String filter, boolean durable) throws Exception
+      public void createQueue(final String address, final String name, final String filter, final boolean durable) throws Exception
       {
 
       }
 
-      public void createQueue(String address, String name) throws Exception
+      public void createQueue(final String address, final String name) throws Exception
       {
 
       }
-      
-      public void createQueue(String address, String name, boolean durable) throws Exception
+
+      public void createQueue(final String address, final String name, final boolean durable) throws Exception
       {
 
       }
@@ -169,7 +173,7 @@ public class QueueDeployerTest extends UnitTestCase
       {
          return null;
       }
-      
+
       public String[] getQueueNames()
       {
          return null;
@@ -177,19 +181,19 @@ public class QueueDeployerTest extends UnitTestCase
 
       List<QueueConfiguration> configs = new ArrayList<QueueConfiguration>();
 
-      public void deployQueue(String address, String name, String filter, boolean durable) throws Exception
+      public void deployQueue(final String address, final String name, final String filter, final boolean durable) throws Exception
       {
          QueueConfiguration config = new QueueConfiguration(address, name, filter, durable);
 
          configs.add(config);
       }
 
-      public void deployQueue(String address, String name, String filterString) throws Exception
+      public void deployQueue(final String address, final String name, final String filterString) throws Exception
       {
 
       }
 
-      public void destroyQueue(String name) throws Exception
+      public void destroyQueue(final String name) throws Exception
       {
 
       }
@@ -227,7 +231,7 @@ public class QueueDeployerTest extends UnitTestCase
 
          return 0;
       }
-      
+
       public long getConnectionTTLOverride()
       {
 
@@ -239,7 +243,7 @@ public class QueueDeployerTest extends UnitTestCase
 
          return null;
       }
-      
+
       public String getConnectorsAsJSON() throws Exception
       {
          return null;
@@ -466,30 +470,30 @@ public class QueueDeployerTest extends UnitTestCase
 
          return null;
       }
-      
+
       public String[] listHeuristicCommittedTransactions() throws Exception
       {
          return null;
       }
-      
+
       public String[] listHeuristicRolledBackTransactions() throws Exception
       {
          return null;
       }
-      
+
       public String[] listRemoteAddresses() throws Exception
       {
 
          return null;
       }
 
-      public String[] listRemoteAddresses(String ipAddress) throws Exception
+      public String[] listRemoteAddresses(final String ipAddress) throws Exception
       {
 
          return null;
       }
 
-      public String[] listSessions(String connectionID) throws Exception
+      public String[] listSessions(final String connectionID) throws Exception
       {
 
          return null;
@@ -505,23 +509,23 @@ public class QueueDeployerTest extends UnitTestCase
 
       }
 
-      public boolean rollbackPreparedTransaction(String transactionAsBase64) throws Exception
+      public boolean rollbackPreparedTransaction(final String transactionAsBase64) throws Exception
       {
 
          return false;
       }
 
-      public void sendQueueInfoToQueue(String queueName, String address) throws Exception
+      public void sendQueueInfoToQueue(final String queueName, final String address) throws Exception
       {
 
       }
 
-      public void setMessageCounterMaxDayCount(int count) throws Exception
+      public void setMessageCounterMaxDayCount(final int count) throws Exception
       {
 
       }
 
-      public void setMessageCounterSamplePeriod(long newPeriod) throws Exception
+      public void setMessageCounterSamplePeriod(final long newPeriod) throws Exception
       {
 
       }

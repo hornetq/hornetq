@@ -11,21 +11,16 @@
  * permissions and limitations under the License.
  */
 
-
 package org.hornetq.core.postoffice.impl;
-
-import java.util.Collection;
 
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.postoffice.BindingType;
 import org.hornetq.core.postoffice.QueueBinding;
 import org.hornetq.core.server.Bindable;
-import org.hornetq.core.server.Consumer;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.RoutingContext;
 import org.hornetq.core.server.ServerMessage;
-import org.hornetq.core.server.cluster.impl.Redistributor;
 import org.hornetq.utils.SimpleString;
 
 /**
@@ -42,38 +37,38 @@ public class LocalQueueBinding implements QueueBinding
    private static final Logger log = Logger.getLogger(LocalQueueBinding.class);
 
    private final SimpleString address;
-   
+
    private final Queue queue;
-   
+
    private final Filter filter;
-   
+
    private final SimpleString name;
-   
-   private SimpleString clusterName;
-   
+
+   private final SimpleString clusterName;
+
    public LocalQueueBinding(final SimpleString address, final Queue queue, final SimpleString nodeID)
    {
       this.address = address;
-      
+
       this.queue = queue;
-      
-      this.filter = queue.getFilter();
-      
-      this.name = queue.getName();
-      
-      this.clusterName = name.concat(nodeID);
+
+      filter = queue.getFilter();
+
+      name = queue.getName();
+
+      clusterName = name.concat(nodeID);
    }
-   
+
    public long getID()
    {
       return queue.getID();
    }
-   
+
    public Filter getFilter()
    {
       return filter;
    }
-        
+
    public SimpleString getAddress()
    {
       return address;
@@ -83,7 +78,7 @@ public class LocalQueueBinding implements QueueBinding
    {
       return queue;
    }
-   
+
    public Queue getQueue()
    {
       return queue;
@@ -98,7 +93,7 @@ public class LocalQueueBinding implements QueueBinding
    {
       return name;
    }
-   
+
    public SimpleString getClusterName()
    {
       return clusterName;
@@ -108,7 +103,7 @@ public class LocalQueueBinding implements QueueBinding
    {
       return false;
    }
-   
+
    public int getDistance()
    {
       return 0;
@@ -116,31 +111,31 @@ public class LocalQueueBinding implements QueueBinding
 
    public boolean isHighAcceptPriority(final ServerMessage message)
    {
-      //It's a high accept priority if the queue has at least one matching consumer
-      
-      return queue.hasMatchingConsumer(message);      
+      // It's a high accept priority if the queue has at least one matching consumer
+
+      return queue.hasMatchingConsumer(message);
    }
-   
+
    public void route(final ServerMessage message, final RoutingContext context) throws Exception
    {
       queue.route(message, context);
    }
-   
+
    public boolean isQueueBinding()
    {
       return true;
    }
-   
+
    public int consumerCount()
    {
       return queue.getConsumerCount();
    }
-   
+
    public BindingType getType()
    {
       return BindingType.LOCAL_QUEUE;
    }
-   
+
    /* (non-Javadoc)
     * @see java.lang.Object#toString()
     */
@@ -149,7 +144,5 @@ public class LocalQueueBinding implements QueueBinding
    {
       return "LocalQueueBinding [address=" + address + ", name=" + name + ", filter=" + filter + "]";
    }
-
-   
 
 }

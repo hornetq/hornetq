@@ -9,7 +9,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
  * implied.  See the License for the specific language governing
  * permissions and limitations under the License.
- */ 
+ */
 
 package org.hornetq.jms.server.recovery;
 
@@ -35,40 +35,52 @@ import org.hornetq.core.logging.Logger;
  */
 public class HornetQXAResourceRecovery implements XAResourceRecovery
 {
-   private boolean trace = log.isTraceEnabled();
+   private final boolean trace = HornetQXAResourceRecovery.log.isTraceEnabled();
 
    private static final Logger log = Logger.getLogger(HornetQXAResourceRecovery.class);
-   
+
    private boolean hasMore;
-   
+
    private HornetQXAResourceWrapper res;
 
    public HornetQXAResourceRecovery()
    {
-      if(trace) log.trace("Constructing HornetQXAResourceRecovery");
+      if (trace)
+      {
+         HornetQXAResourceRecovery.log.trace("Constructing HornetQXAResourceRecovery");
+      }
    }
 
-   public boolean initialise(String config)
+   public boolean initialise(final String config)
    {
-      if (log.isTraceEnabled()) { log.trace(this + " intialise: " + config); }
-      
+      if (HornetQXAResourceRecovery.log.isTraceEnabled())
+      {
+         HornetQXAResourceRecovery.log.trace(this + " intialise: " + config);
+      }
+
       ConfigParser parser = new ConfigParser(config);
       String connectorFactoryClassName = parser.getConnectorFactoryClassName();
       Map<String, Object> connectorParams = parser.getConnectorParameters();
       String username = parser.getUsername();
       String password = parser.getPassword();
-      
+
       res = new HornetQXAResourceWrapper(connectorFactoryClassName, connectorParams, username, password);
-             
-      if (log.isTraceEnabled()) { log.trace(this + " initialised"); }      
-      
-      return true;      
+
+      if (HornetQXAResourceRecovery.log.isTraceEnabled())
+      {
+         HornetQXAResourceRecovery.log.trace(this + " initialised");
+      }
+
+      return true;
    }
 
    public boolean hasMoreResources()
    {
-      if (log.isTraceEnabled()) { log.trace(this + " hasMoreResources"); }
-                        
+      if (HornetQXAResourceRecovery.log.isTraceEnabled())
+      {
+         HornetQXAResourceRecovery.log.trace(this + " hasMoreResources");
+      }
+
       /*
        * The way hasMoreResources is supposed to work is as follows:
        * For each "sweep" the recovery manager will call hasMoreResources, then if it returns
@@ -82,80 +94,83 @@ public class HornetQXAResourceRecovery implements XAResourceRecovery
        * 
        * 
        */
-                         
+
       hasMore = !hasMore;
-      
-      return hasMore;      
+
+      return hasMore;
    }
 
    public XAResource getXAResource()
    {
-      if (log.isTraceEnabled()) { log.trace(this + " getXAResource"); }
-      
+      if (HornetQXAResourceRecovery.log.isTraceEnabled())
+      {
+         HornetQXAResourceRecovery.log.trace(this + " getXAResource");
+      }
+
       return res;
    }
 
    public XAResource[] getXAResources()
    {
-      return new XAResource[]{res};
+      return new XAResource[] { res };
    }
 
+   @Override
    protected void finalize()
    {
-      res.close();  
+      res.close();
    }
-   
+
    public static class ConfigParser
    {
-      private String connectorFactoryClassName;
-      
-      private Map<String, Object> connectorParameters;
+      private final String connectorFactoryClassName;
+
+      private final Map<String, Object> connectorParameters;
 
       private String username;
-      
+
       private String password;
 
-      public ConfigParser(String config)
+      public ConfigParser(final String config)
       {
          if (config == null || config.length() == 0)
          {
             throw new IllegalArgumentException("Must specify provider connector factory class name in config");
          }
-         
+
          String[] strings = config.split(",");
-         
-         //First (mandatory) param is the  connector factory class name
+
+         // First (mandatory) param is the connector factory class name
          if (strings.length < 1)
          {
             throw new IllegalArgumentException("Must specify provider connector factory class name in config");
          }
-         
+
          connectorFactoryClassName = strings[0].trim();
-                     
-         //Next two (optional) parameters are the username and password to use for creating the session for recovery
-         
+
+         // Next two (optional) parameters are the username and password to use for creating the session for recovery
+
          if (strings.length >= 2)
          {
-            
+
             username = strings[1].trim();
             if (username.length() == 0)
             {
                username = null;
             }
-            
+
             if (strings.length == 2)
             {
                throw new IllegalArgumentException("If username is specified, password must be specified too");
             }
-            
+
             password = strings[2].trim();
             if (password.length() == 0)
             {
                password = null;
             }
          }
-         
-         
+
          // other tokens are for connector configurations
          connectorParameters = new HashMap<String, Object>();
          if (strings.length >= 3)
@@ -170,26 +185,25 @@ public class HornetQXAResourceRecovery implements XAResourceRecovery
             }
          }
       }
-      
+
       public String getConnectorFactoryClassName()
       {
          return connectorFactoryClassName;
       }
-      
+
       public Map<String, Object> getConnectorParameters()
       {
          return connectorParameters;
       }
-      
+
       public String getUsername()
       {
          return username;
       }
-      
+
       public String getPassword()
       {
          return password;
       }
    }
 }
-

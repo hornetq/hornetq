@@ -16,8 +16,8 @@ import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import org.hornetq.core.client.ClientSession;
-import org.hornetq.core.client.impl.ClientSessionInternal;
+import junit.framework.Assert;
+
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.remoting.FailureListener;
@@ -35,7 +35,6 @@ import org.hornetq.utils.SimpleString;
 public abstract class GroupingFailoverTestBase extends ClusterTestBase
 {
 
-
    public void testGroupingLocalHandlerFails() throws Exception
    {
       setupReplicatedServer(2, isFileStorage(), isNetty(), 0);
@@ -46,7 +45,7 @@ public abstract class GroupingFailoverTestBase extends ClusterTestBase
 
       setupClusterConnection("cluster0", "queues", false, 1, isNetty(), 0, 1);
 
-      setupClusterConnectionWithBackups("cluster1", "queues", false, 1, isNetty(), 1, new int[]{0}, new int[]{2});
+      setupClusterConnectionWithBackups("cluster1", "queues", false, 1, isNetty(), 1, new int[] { 0 }, new int[] { 2 });
 
       setupClusterConnection("cluster2", "queues", false, 1, isNetty(), 2, 1);
 
@@ -55,7 +54,6 @@ public abstract class GroupingFailoverTestBase extends ClusterTestBase
       setUpGroupHandler(GroupingHandlerConfiguration.TYPE.REMOTE, 1);
 
       setUpGroupHandler(GroupingHandlerConfiguration.TYPE.LOCAL, 2);
-
 
       startServers(2, 0, 1);
 
@@ -69,7 +67,7 @@ public abstract class GroupingFailoverTestBase extends ClusterTestBase
 
          waitForBindings(0, "queues.testaddress", 1, 0, true);
          waitForBindings(1, "queues.testaddress", 1, 0, true);
-         
+
          addConsumer(0, 0, "queue0", null);
          addConsumer(1, 1, "queue0", null);
 
@@ -86,14 +84,15 @@ public abstract class GroupingFailoverTestBase extends ClusterTestBase
 
          class MyListener implements FailureListener
          {
-            public void connectionFailed(HornetQException me)
+            public void connectionFailed(final HornetQException me)
             {
                latch.countDown();
             }
          }
 
-         Map<String, MessageFlowRecord> records = ((ClusterConnectionImpl)getServer(1).getClusterManager().getClusterConnection(new SimpleString("cluster1"))).getRecords();
-         RemotingConnection rc = records.get("0").getBridge().getForwardingConnection() ;
+         Map<String, MessageFlowRecord> records = ((ClusterConnectionImpl)getServer(1).getClusterManager()
+                                                                                      .getClusterConnection(new SimpleString("cluster1"))).getRecords();
+         RemotingConnection rc = records.get("0").getBridge().getForwardingConnection();
          rc.addFailureListener(new MyListener());
          fail(rc, latch);
 
@@ -137,7 +136,7 @@ public abstract class GroupingFailoverTestBase extends ClusterTestBase
 
       setupClusterConnection("cluster0", "queues", false, 1, isNetty(), 0, 1);
 
-      setupClusterConnectionWithBackups("cluster1", "queues", false, 1, isNetty(), 1, new int[]{0}, new int[]{2});
+      setupClusterConnectionWithBackups("cluster1", "queues", false, 1, isNetty(), 1, new int[] { 0 }, new int[] { 2 });
 
       setupClusterConnection("cluster2", "queues", false, 1, isNetty(), 2, 1);
 
@@ -146,7 +145,6 @@ public abstract class GroupingFailoverTestBase extends ClusterTestBase
       setUpGroupHandler(GroupingHandlerConfiguration.TYPE.REMOTE, 1);
 
       setUpGroupHandler(GroupingHandlerConfiguration.TYPE.LOCAL, 2);
-
 
       startServers(2, 0, 1);
 
@@ -166,7 +164,6 @@ public abstract class GroupingFailoverTestBase extends ClusterTestBase
          addConsumer(0, 0, "queue0", null);
          addConsumer(1, 1, "queue0", null);
 
-
          waitForBindings(0, "queues.testaddress", 1, 1, false);
          waitForBindings(1, "queues.testaddress", 1, 1, false);
 
@@ -185,17 +182,17 @@ public abstract class GroupingFailoverTestBase extends ClusterTestBase
 
          class MyListener implements FailureListener
          {
-            public void connectionFailed(HornetQException me)
+            public void connectionFailed(final HornetQException me)
             {
                latch.countDown();
             }
          }
 
-         Map<String, MessageFlowRecord> records = ((ClusterConnectionImpl)getServer(1).getClusterManager().getClusterConnection(new SimpleString("cluster1"))).getRecords();
-         RemotingConnection rc = records.get("0").getBridge().getForwardingConnection() ;
+         Map<String, MessageFlowRecord> records = ((ClusterConnectionImpl)getServer(1).getClusterManager()
+                                                                                      .getClusterConnection(new SimpleString("cluster1"))).getRecords();
+         RemotingConnection rc = records.get("0").getBridge().getForwardingConnection();
          rc.addFailureListener(new MyListener());
          fail(rc, latch);
-
 
          waitForServerRestart(2);
 
@@ -234,7 +231,6 @@ public abstract class GroupingFailoverTestBase extends ClusterTestBase
 
    abstract void setupMasterServer(int i, boolean fileStorage, boolean netty);
 
-
    public boolean isNetty()
    {
       return true;
@@ -242,22 +238,7 @@ public abstract class GroupingFailoverTestBase extends ClusterTestBase
 
    abstract void setupReplicatedServer(int node, boolean fileStorage, boolean netty, int backupNode);
 
-   private void fail(ClientSession session, final CountDownLatch latch) throws InterruptedException
-   {
-
-      RemotingConnection conn = ((ClientSessionInternal)session).getConnection();
-
-      // Simulate failure on connection
-      conn.fail(new HornetQException(HornetQException.NOT_CONNECTED));
-
-      // Wait to be informed of failure
-
-      boolean ok = latch.await(1000, TimeUnit.MILLISECONDS);
-
-      assertTrue(ok);
-   }
-
-   private void fail(RemotingConnection conn, final CountDownLatch latch) throws InterruptedException
+   private void fail(final RemotingConnection conn, final CountDownLatch latch) throws InterruptedException
    {
       // Simulate failure on connection
       conn.fail(new HornetQException(HornetQException.NOT_CONNECTED));
@@ -266,7 +247,7 @@ public abstract class GroupingFailoverTestBase extends ClusterTestBase
 
       boolean ok = latch.await(1000, TimeUnit.MILLISECONDS);
 
-      assertTrue(ok);
+      Assert.assertTrue(ok);
    }
-   
+
 }

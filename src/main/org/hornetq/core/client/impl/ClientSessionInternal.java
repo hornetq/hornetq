@@ -53,24 +53,24 @@ public interface ClientSessionInternal extends ClientSession
    void handleReceiveContinuation(long consumerID, SessionReceiveContinuationMessage continuation) throws Exception;
 
    void handleFailover(RemotingConnection backupConnection);
-   
+
    RemotingConnection getConnection();
 
    void cleanUp() throws Exception;
 
    void returnBlocking();
-   
+
    void setForceNotSameRM(boolean force);
-   
+
    FailoverManager getConnectionManager();
-   
+
    void workDone();
-   
+
    void forceDelivery(long consumerID, long sequence) throws HornetQException;
-   
+
    void sendProducerCreditsMessage(int credits, SimpleString destination);
-   
+
    ClientProducerCredits getCredits(SimpleString address);
-   
+
    void handleReceiveProducerCredits(SimpleString address, int credits, int offset);
 }

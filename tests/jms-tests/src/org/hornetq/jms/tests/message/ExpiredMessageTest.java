@@ -21,7 +21,9 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 
 import org.hornetq.core.logging.Logger;
+import org.hornetq.jms.tests.HornetQServerTestCase;
 import org.hornetq.jms.tests.JMSTestCase;
+import org.hornetq.jms.tests.util.ProxyAssertSupport;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -48,7 +50,7 @@ public class ExpiredMessageTest extends JMSTestCase
 
       Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-      MessageProducer prod = session.createProducer(queue1);
+      MessageProducer prod = session.createProducer(HornetQServerTestCase.queue1);
       prod.setTimeToLive(1);
 
       Message m = session.createTextMessage("This message will die");
@@ -59,20 +61,20 @@ public class ExpiredMessageTest extends JMSTestCase
 
       Thread.sleep(250);
 
-      MessageConsumer cons = session.createConsumer(queue1);
+      MessageConsumer cons = session.createConsumer(HornetQServerTestCase.queue1);
 
       conn.start();
 
-      assertNull(cons.receive(2000));
-      
+      ProxyAssertSupport.assertNull(cons.receive(2000));
+
       conn.close();
    }
-   
+
    public void testExpiredAndLivingMessages() throws Exception
    {
       Connection conn = getConnectionFactory().createConnection();
       Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      MessageProducer prod = session.createProducer(queue1);
+      MessageProducer prod = session.createProducer(HornetQServerTestCase.queue1);
 
       // sent 2 messages: 1 expiring, 1 living
       TextMessage livingMessage = session.createTextMessage("This message will live");
@@ -83,57 +85,55 @@ public class ExpiredMessageTest extends JMSTestCase
 
       prod.setTimeToLive(0);
       prod.send(livingMessage);
-      
+
       // wait for the expiring message to die
       Thread.sleep(250);
 
-      MessageConsumer cons = session.createConsumer(queue1);
+      MessageConsumer cons = session.createConsumer(HornetQServerTestCase.queue1);
       conn.start();
 
       // receive living message
       Message receivedMessage = cons.receive(1000);
-      assertNotNull("did not receive living message", receivedMessage);
-      assertTrue(receivedMessage instanceof TextMessage);
-      assertEquals(livingMessage.getText(), ((TextMessage)receivedMessage).getText());
+      ProxyAssertSupport.assertNotNull("did not receive living message", receivedMessage);
+      ProxyAssertSupport.assertTrue(receivedMessage instanceof TextMessage);
+      ProxyAssertSupport.assertEquals(livingMessage.getText(), ((TextMessage)receivedMessage).getText());
 
       // we do not receive the expiring message
-      assertNull(cons.receive(1000));
-      
+      ProxyAssertSupport.assertNull(cons.receive(1000));
+
       conn.close();
    }
-   
+
    public void testManyExpiredMessagesAtOnce() throws Exception
    {
       Connection conn = getConnectionFactory().createConnection();
-      
+
       Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      
-      MessageProducer prod = session.createProducer(queue1);
+
+      MessageProducer prod = session.createProducer(HornetQServerTestCase.queue1);
       prod.setTimeToLive(1);
-      
+
       Message m = session.createTextMessage("This message will die");
-      
+
       final int MESSAGE_COUNT = 100;
-   
+
       for (int i = 0; i < MESSAGE_COUNT; i++)
       {
          prod.send(m);
       }
-      
-      MessageConsumer cons = session.createConsumer(queue1);
+
+      MessageConsumer cons = session.createConsumer(HornetQServerTestCase.queue1);
       conn.start();
-      
-      assertNull(cons.receive(2000));
-      
+
+      ProxyAssertSupport.assertNull(cons.receive(2000));
+
       conn.close();
    }
-
-  
 
    // Package protected ----------------------------------------------------------------------------
 
    // Protected ------------------------------------------------------------------------------------
- 
+
    // Private --------------------------------------------------------------------------------------
 
    // Inner classes --------------------------------------------------------------------------------

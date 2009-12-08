@@ -18,6 +18,8 @@ import javax.jms.Message;
 import javax.jms.MessageNotWriteableException;
 import javax.jms.TextMessage;
 
+import junit.framework.Assert;
+
 import org.objectweb.jtests.jms.framework.PTPTestCase;
 import org.objectweb.jtests.jms.framework.TestConfig;
 
@@ -41,9 +43,9 @@ public class MessageBodyTest extends PTPTestCase
          TextMessage message = senderSession.createTextMessage();
          message.setStringProperty("prop", "foo");
          message.clearBody();
-         assertEquals("sec. 3.11.1 Clearing a message's body does not clear its property entries.\n",
-                      "foo",
-                      message.getStringProperty("prop"));
+         Assert.assertEquals("sec. 3.11.1 Clearing a message's body does not clear its property entries.\n",
+                             "foo",
+                             message.getStringProperty("prop"));
       }
       catch (JMSException e)
       {
@@ -61,10 +63,10 @@ public class MessageBodyTest extends PTPTestCase
          TextMessage message = senderSession.createTextMessage();
          message.setText("bar");
          message.clearBody();
-         assertEquals("sec. 3 .11.1 the clearBody method of Message resets the value of the message body " + "to the 'empty' initial message value as set by the message type's create "
-                               + "method provided by Session.\n",
-                      null,
-                      message.getText());
+         Assert.assertEquals("sec. 3 .11.1 the clearBody method of Message resets the value of the message body " + "to the 'empty' initial message value as set by the message type's create "
+                                      + "method provided by Session.\n",
+                             null,
+                             message.getText());
       }
       catch (JMSException e)
       {
@@ -85,10 +87,10 @@ public class MessageBodyTest extends PTPTestCase
          sender.send(message);
 
          Message m = receiver.receive(TestConfig.TIMEOUT);
-         assertTrue("The message should be an instance of TextMessage.\n", m instanceof TextMessage);
+         Assert.assertTrue("The message should be an instance of TextMessage.\n", m instanceof TextMessage);
          TextMessage msg = (TextMessage)m;
          msg.setText("bar");
-         fail("should raise a MessageNotWriteableException (sec. 3.11.2)");
+         Assert.fail("should raise a MessageNotWriteableException (sec. 3.11.2)");
       }
       catch (MessageNotWriteableException e)
       {
@@ -99,22 +101,22 @@ public class MessageBodyTest extends PTPTestCase
       }
    }
 
-   public MessageBodyTest(String name)
+   public MessageBodyTest(final String name)
    {
       super(name);
    }
-   
+
    @Override
    protected void setUp() throws Exception
    {
-      
+
       super.setUp();
    }
-   
+
    @Override
    protected void tearDown() throws Exception
-   {      
+   {
       super.tearDown();
-      
+
    }
 }

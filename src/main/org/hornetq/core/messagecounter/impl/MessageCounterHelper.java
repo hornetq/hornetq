@@ -53,14 +53,15 @@ public class MessageCounterHelper
       }
       return DayCounterInfo.toJSON(infos);
    }
-   
-   public static String listMessageCounterAsHTML(MessageCounter[] counters)
+
+   public static String listMessageCounterAsHTML(final MessageCounter[] counters)
    {
       if (counters == null)
+      {
          return null;
+      }
 
-      String ret = "<table class=\"hornetq-message-counter\">\n" 
-                   + "<tr>"
+      String ret = "<table class=\"hornetq-message-counter\">\n" + "<tr>"
                    + "<th>Type</th>"
                    + "<th>Name</th>"
                    + "<th>Subscription</th>"
@@ -85,21 +86,21 @@ public class MessageCounterHelper
          String durableStr = "-"; // makes no sense for a queue
          if (counter.isDestinationTopic())
          {
-            durableStr = Boolean.toString(counter.isDestinationDurable());            
+            durableStr = Boolean.toString(counter.isDestinationDurable());
          }
-         ret += "<tr bgcolor=\"#" + ((i % 2) == 0 ? "FFFFFF" : "F0F0F0") + "\">";
+         ret += "<tr bgcolor=\"#" + (i % 2 == 0 ? "FFFFFF" : "F0F0F0") + "\">";
 
          ret += "<td>" + type + "</td>";
          ret += "<td>" + counter.getDestinationName() + "</td>";
          ret += "<td>" + subscription + "</td>";
          ret += "<td>" + durableStr + "</td>";
          ret += "<td>" + counter.getCount() + "</td>";
-         ret += "<td>" + prettify(counter.getCountDelta()) + "</td>";
-         ret += "<td>" + prettify(counter.getMessageCount()) + "</td>";
-         ret += "<td>" + prettify(counter.getMessageCountDelta()) + "</td>";
-         ret += "<td>" + asDate(counter.getLastAddedMessageTime()) + "</td>";
-         ret += "<td>" + asDate(counter.getLastUpdate()) + "</td>";
-         
+         ret += "<td>" + MessageCounterHelper.prettify(counter.getCountDelta()) + "</td>";
+         ret += "<td>" + MessageCounterHelper.prettify(counter.getMessageCount()) + "</td>";
+         ret += "<td>" + MessageCounterHelper.prettify(counter.getMessageCountDelta()) + "</td>";
+         ret += "<td>" + MessageCounterHelper.asDate(counter.getLastAddedMessageTime()) + "</td>";
+         ret += "<td>" + MessageCounterHelper.asDate(counter.getLastUpdate()) + "</td>";
+
          ret += "</tr>\n";
       }
 
@@ -108,27 +109,29 @@ public class MessageCounterHelper
       return ret;
    }
 
-   public static String listMessageCounterHistoryAsHTML(MessageCounter[] counters)
+   public static String listMessageCounterHistoryAsHTML(final MessageCounter[] counters)
    {
       if (counters == null)
+      {
          return null;
+      }
 
       String ret = "<ul>\n";
 
-      for (int i = 0; i < counters.length; i++)
+      for (MessageCounter counter : counters)
       {
          ret += "<li>\n";
          ret += "  <ul>\n";
 
          ret += "    <li>";
          // destination name
-         ret += (counters[i].isDestinationTopic() ? "Topic '" : "Queue '") + counters[i].getDestinationName() + "'";
+         ret += (counter.isDestinationTopic() ? "Topic '" : "Queue '") + counter.getDestinationName() + "'";
          ret += "</li>\n";
 
-         if (counters[i].getDestinationSubscription() != null)
+         if (counter.getDestinationSubscription() != null)
          {
             ret += "    <li>";
-            ret += "Subscription '" + counters[i].getDestinationSubscription() + "'";
+            ret += "Subscription '" + counter.getDestinationSubscription() + "'";
             ret += "</li>\n";
          }
 
@@ -138,12 +141,14 @@ public class MessageCounterHelper
          ret += "<tr><th>Date</th>";
 
          for (int j = 0; j < 24; j++)
+         {
             ret += "<th>" + j + "</th>";
+         }
 
          ret += "<th>Total</th></tr>\n";
 
          // get history data as CSV string
-         StringTokenizer tokens = new StringTokenizer(counters[i].getHistoryAsString(), ",\n");
+         StringTokenizer tokens = new StringTokenizer(counter.getHistoryAsString(), ",\n");
 
          // get history day count
          int days = Integer.parseInt(tokens.nextToken());
@@ -151,7 +156,7 @@ public class MessageCounterHelper
          for (int j = 0; j < days; j++)
          {
             // next day counter row
-            ret += "<tr bgcolor=\"#" + ((j % 2) == 0 ? "FFFFFF" : "F0F0F0") + "\">";
+            ret += "<tr bgcolor=\"#" + (j % 2 == 0 ? "FFFFFF" : "F0F0F0") + "\">";
 
             // date
             ret += "<td>" + tokens.nextToken() + "</td>";
@@ -187,8 +192,8 @@ public class MessageCounterHelper
 
       return ret;
    }
-   
-   private static String prettify(long value)
+
+   private static String prettify(final long value)
    {
       if (value == 0)
       {
@@ -196,8 +201,8 @@ public class MessageCounterHelper
       }
       return Long.toString(value);
    }
-   
-   private static String asDate(long time)
+
+   private static String asDate(final long time)
    {
       if (time > 0)
       {

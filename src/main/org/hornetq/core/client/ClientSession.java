@@ -13,7 +13,6 @@
 
 package org.hornetq.core.client;
 
-
 import java.util.List;
 
 import javax.transaction.xa.XAResource;
@@ -36,7 +35,7 @@ public interface ClientSession extends XAResource
 
       public List<SimpleString> getQueueNames();
    }
-   
+
    public interface QueueQuery
    {
       boolean isExists();
@@ -51,7 +50,7 @@ public interface ClientSession extends XAResource
 
       SimpleString getAddress();
    }
-   
+
    // Lifecycle operations ------------------------------------------
 
    /**
@@ -408,7 +407,6 @@ public interface ClientSession extends XAResource
     */
    ClientMessage createClientMessage(byte type, boolean durable);
 
-
    /**
     * Create a ClientMessage with the given HornetQBuffer as its body.
     * 
@@ -496,6 +494,5 @@ public interface ClientSession extends XAResource
    boolean isBlockOnAcknowledge();
 
    void setSendAcknowledgementHandler(SendAcknowledgementHandler handler);
-
 
 }

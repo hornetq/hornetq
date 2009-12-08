@@ -15,6 +15,8 @@ package org.hornetq.tests.timing.core.journal.impl;
 
 import java.util.ArrayList;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
 import org.hornetq.core.journal.PreparedTransactionInfo;
 import org.hornetq.core.journal.RecordInfo;
@@ -38,7 +40,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
    {
       super.tearDown();
 
-      assertEquals(0, AsynchronousFileImpl.getTotalMaxIO());
+      Assert.assertEquals(0, AsynchronousFileImpl.getTotalMaxIO());
    }
 
    public void testAddUpdateDeleteManyLargeFileSize() throws Exception
@@ -152,7 +154,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 
          if (count % 100 == 0)
          {
-            log.debug("Done: " + count);
+            JournalImplTestUnit.log.debug("Done: " + count);
          }
       }
 
@@ -160,16 +162,16 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 
       double rate = 1000 * (double)NUMBER_OF_RECORDS / (end - start);
 
-      log.debug("Rate of " + rate + " adds/removes per sec");
+      JournalImplTestUnit.log.debug("Rate of " + rate + " adds/removes per sec");
 
-      log.debug("Reclaim status = " + debugJournal());
+      JournalImplTestUnit.log.debug("Reclaim status = " + debugJournal());
 
       stopJournal();
       createJournal();
       startJournal();
       journal.load(new ArrayList<RecordInfo>(), new ArrayList<PreparedTransactionInfo>(), null);
 
-      assertEquals(NUMBER_OF_RECORDS / 2, journal.getIDMapSize());
+      Assert.assertEquals(NUMBER_OF_RECORDS / 2, journal.getIDMapSize());
 
       stopJournal();
    }

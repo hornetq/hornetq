@@ -13,8 +13,6 @@
 
 package org.hornetq.core.config.impl;
 
-import static java.lang.String.format;
-
 import org.hornetq.core.server.JournalType;
 import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 
@@ -41,7 +39,7 @@ public class Validators
 
    public static Validator NO_CHECK = new Validator()
    {
-      public void validate(String name, Object value)
+      public void validate(final String name, final Object value)
       {
          return;
       }
@@ -49,19 +47,19 @@ public class Validators
 
    public static Validator NOT_NULL_OR_EMPTY = new Validator()
    {
-      public void validate(String name, Object value)
+      public void validate(final String name, final Object value)
       {
          String str = (String)value;
          if (str == null || str.length() == 0)
          {
-            throw new IllegalArgumentException(format("%s must neither be null nor empty", name));
+            throw new IllegalArgumentException(String.format("%s must neither be null nor empty", name));
          }
       }
    };
 
    public static Validator GT_ZERO = new Validator()
    {
-      public void validate(String name, Object value)
+      public void validate(final String name, final Object value)
       {
          Number val = (Number)value;
          if (val.doubleValue() > 0)
@@ -70,28 +68,28 @@ public class Validators
          }
          else
          {
-            throw new IllegalArgumentException(format("%s  must be greater than 0 (actual value: %s)", name, val));
+            throw new IllegalArgumentException(String.format("%s  must be greater than 0 (actual value: %s)", name, val));
          }
       }
    };
 
    public static Validator PERCENTAGE = new Validator()
    {
-      public void validate(String name, Object value)
+      public void validate(final String name, final Object value)
       {
          Number val = (Number)value;
          if (val != null && val.intValue() < 0 || val.intValue() > 100)
          {
-            throw new IllegalArgumentException(format("%s  must be a valid percentual value between 0 and 100 (actual value: %s)",
-                                                      name,
-                                                      val));
+            throw new IllegalArgumentException(String.format("%s  must be a valid percentual value between 0 and 100 (actual value: %s)",
+                                                             name,
+                                                             val));
          }
       }
    };
 
    public static Validator GE_ZERO = new Validator()
    {
-      public void validate(String name, Object value)
+      public void validate(final String name, final Object value)
       {
          Number val = (Number)value;
          if (val.doubleValue() >= 0)
@@ -100,16 +98,16 @@ public class Validators
          }
          else
          {
-            throw new IllegalArgumentException(format("%s  must be greater or equals than 0 (actual value: %s)",
-                                                      name,
-                                                      val));
+            throw new IllegalArgumentException(String.format("%s  must be greater or equals than 0 (actual value: %s)",
+                                                             name,
+                                                             val));
          }
       }
    };
 
    public static Validator MINUS_ONE_OR_GT_ZERO = new Validator()
    {
-      public void validate(String name, Object value)
+      public void validate(final String name, final Object value)
       {
          Number val = (Number)value;
          if (val.doubleValue() == -1 || val.doubleValue() > 0)
@@ -118,16 +116,16 @@ public class Validators
          }
          else
          {
-            throw new IllegalArgumentException(format("%s  must be equals to -1 or greater than 0 (actual value: %s)",
-                                                      name,
-                                                      val));
+            throw new IllegalArgumentException(String.format("%s  must be equals to -1 or greater than 0 (actual value: %s)",
+                                                             name,
+                                                             val));
          }
       }
    };
 
    public static Validator MINUS_ONE_OR_GE_ZERO = new Validator()
    {
-      public void validate(String name, Object value)
+      public void validate(final String name, final Object value)
       {
          Number val = (Number)value;
          if (val.doubleValue() == -1 || val.doubleValue() >= 0)
@@ -136,16 +134,16 @@ public class Validators
          }
          else
          {
-            throw new IllegalArgumentException(format("%s  must be equals to -1 or greater or equals to 0 (actual value: %s)",
-                                                      name,
-                                                      val));
+            throw new IllegalArgumentException(String.format("%s  must be equals to -1 or greater or equals to 0 (actual value: %s)",
+                                                             name,
+                                                             val));
          }
       }
    };
 
    public static final Validator THREAD_PRIORITY_RANGE = new Validator()
    {
-      public void validate(String name, Object value)
+      public void validate(final String name, final Object value)
       {
          Number val = (Number)value;
          if (val.intValue() >= Thread.MIN_PRIORITY && val.intValue() <= Thread.MAX_PRIORITY)
@@ -154,18 +152,18 @@ public class Validators
          }
          else
          {
-            throw new IllegalArgumentException(format("%s must be betwen %s and %s inclusive (actual value: %s)",
-                                                      name,
-                                                      Thread.MIN_PRIORITY,
-                                                      Thread.MAX_PRIORITY,
-                                                      value));
+            throw new IllegalArgumentException(String.format("%s must be betwen %s and %s inclusive (actual value: %s)",
+                                                             name,
+                                                             Thread.MIN_PRIORITY,
+                                                             Thread.MAX_PRIORITY,
+                                                             value));
          }
       }
    };
 
    public static final Validator JOURNAL_TYPE = new Validator()
    {
-      public void validate(String name, Object value)
+      public void validate(final String name, final Object value)
       {
          String val = (String)value;
          if (val == null || !val.equals(JournalType.NIO.toString()) && !val.equals(JournalType.ASYNCIO.toString()))
@@ -177,7 +175,7 @@ public class Validators
 
    public static final Validator ADDRESS_FULL_MESSAGE_POLICY_TYPE = new Validator()
    {
-      public void validate(String name, Object value)
+      public void validate(final String name, final Object value)
       {
          String val = (String)value;
          if (val == null || !val.equals(AddressFullMessagePolicy.PAGE.toString()) &&

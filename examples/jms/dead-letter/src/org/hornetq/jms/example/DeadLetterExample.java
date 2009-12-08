@@ -31,16 +31,17 @@ import org.hornetq.common.example.HornetQExample;
  */
 public class DeadLetterExample extends HornetQExample
 {
-   public static void main(String[] args)
+   public static void main(final String[] args)
    {
       new DeadLetterExample().run(args);
    }
 
+   @Override
    public boolean runExample() throws Exception
    {
       Connection connection = null;
       InitialContext initialContext = null;
-      
+
       try
       {
          // Step 1. Create an initial context to perform the JNDI lookup.
@@ -112,12 +113,15 @@ public class DeadLetterExample extends HornetQExample
          messageReceived = (TextMessage)deadLetterConsumer.receive(5000);
 
          // Step 20. The message sent to the queue was moved to the dead letter queue after 3 unsuccessful deliveries
-         System.out.println("Received message from " + deadLetterQueue.getQueueName() + ": " + messageReceived.getText());
+         System.out.println("Received message from " + deadLetterQueue.getQueueName() +
+                            ": " +
+                            messageReceived.getText());
 
-         // The message received from the dead letter queue has the same content than the undelivered message but its JMS headers
+         // The message received from the dead letter queue has the same content than the undelivered message but its
+         // JMS headers
          // differ (from JMS point of view, it's not the same message).
          // HornetQ defines additional properties for messages received from the dead letter queue
-         
+
          System.out.println();
          // Step 21. the messageReceived's destination is now the dead letter queue.
          System.out.println("Destination of the message: " + ((Queue)messageReceived.getJMSDestination()).getQueueName());
@@ -127,7 +131,7 @@ public class DeadLetterExample extends HornetQExample
 
          // Step 23. This time, we commit the session, the delivery from the dead letter queue is successful!
          session.commit();
-         
+
          return true;
       }
       finally

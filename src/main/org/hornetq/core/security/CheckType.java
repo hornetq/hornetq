@@ -22,13 +22,62 @@ package org.hornetq.core.security;
  */
 public enum CheckType
 {
-   SEND {public boolean hasRole(final Role role) { return role.isSend();}},
-   CONSUME {public boolean hasRole(final Role role) { return role.isConsume();}},
-   CREATE_DURABLE_QUEUE {public boolean hasRole(final Role role) { return role.isCreateDurableQueue();}},
-   DELETE_DURABLE_QUEUE {public boolean hasRole(final Role role) { return role.isDeleteDurableQueue();}},
-   CREATE_NON_DURABLE_QUEUE {public boolean hasRole(final Role role) { return role.isCreateNonDurableQueue();}},
-   DELETE_NON_DURABLE_QUEUE {public boolean hasRole(final Role role) { return role.isDeleteNonDurableQueue();}},
-   MANAGE {public boolean hasRole(final Role role) { return role.isManage();}};
+   SEND
+   {
+      @Override
+      public boolean hasRole(final Role role)
+      {
+         return role.isSend();
+      }
+   },
+   CONSUME
+   {
+      @Override
+      public boolean hasRole(final Role role)
+      {
+         return role.isConsume();
+      }
+   },
+   CREATE_DURABLE_QUEUE
+   {
+      @Override
+      public boolean hasRole(final Role role)
+      {
+         return role.isCreateDurableQueue();
+      }
+   },
+   DELETE_DURABLE_QUEUE
+   {
+      @Override
+      public boolean hasRole(final Role role)
+      {
+         return role.isDeleteDurableQueue();
+      }
+   },
+   CREATE_NON_DURABLE_QUEUE
+   {
+      @Override
+      public boolean hasRole(final Role role)
+      {
+         return role.isCreateNonDurableQueue();
+      }
+   },
+   DELETE_NON_DURABLE_QUEUE
+   {
+      @Override
+      public boolean hasRole(final Role role)
+      {
+         return role.isDeleteNonDurableQueue();
+      }
+   },
+   MANAGE
+   {
+      @Override
+      public boolean hasRole(final Role role)
+      {
+         return role.isManage();
+      }
+   };
 
    public abstract boolean hasRole(final Role role);
 }

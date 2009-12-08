@@ -12,9 +12,6 @@
  */
 package org.hornetq.integration.transports.netty;
 
-import static org.jboss.netty.channel.Channels.pipeline;
-import static org.jboss.netty.channel.Channels.write;
-
 import java.net.ConnectException;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
@@ -50,6 +47,7 @@ import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelPipelineCoverage;
 import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.channel.ChannelStateEvent;
+import org.jboss.netty.channel.Channels;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelHandler;
 import org.jboss.netty.channel.UpstreamMessageEvent;
@@ -229,7 +227,7 @@ public class NettyConnector implements Connector
                                                                 configuration);
 
       this.closeExecutor = closeExecutor;
-      
+
       virtualExecutor = new VirtualExecutorService(threadPool);
 
       this.scheduledThreadPool = scheduledThreadPool;
@@ -301,7 +299,7 @@ public class NettyConnector implements Connector
       {
          public ChannelPipeline getPipeline() throws Exception
          {
-            ChannelPipeline pipeline = pipeline();
+            ChannelPipeline pipeline = Channels.pipeline();
             if (sslEnabled && !useServlet)
             {
                ChannelPipelineSupport.addSSLFilter(pipeline, context, true);
@@ -319,11 +317,12 @@ public class NettyConnector implements Connector
       });
       if (!Version.ID.equals(VersionLoader.getVersion().getNettyVersion()))
       {
-         log.warn("Unexpected Netty Version was expecting " + VersionLoader.getVersion().getNettyVersion() +
-                  " using " +
-                  Version.ID);
+         NettyConnector.log.warn("Unexpected Netty Version was expecting " + VersionLoader.getVersion()
+                                                                                          .getNettyVersion() +
+                                 " using " +
+                                 Version.ID);
       }
-      log.debug("Started Netty Connector version " + Version.ID);
+      NettyConnector.log.debug("Started Netty Connector version " + Version.ID);
    }
 
    public synchronized void close()
@@ -418,7 +417,7 @@ public class NettyConnector implements Connector
 
          if (t != null && !(t instanceof ConnectException))
          {
-            log.error("Failed to create netty connection", future.getCause());
+            NettyConnector.log.error("Failed to create netty connection", future.getCause());
          }
 
          return null;
@@ -549,12 +548,12 @@ public class NettyConnector implements Connector
             ChannelBuffer buf = (ChannelBuffer)e.getMessage();
             httpRequest.setContent(buf);
             httpRequest.addHeader(HttpHeaders.Names.CONTENT_LENGTH, String.valueOf(buf.writerIndex()));
-            write(ctx, e.getFuture(), httpRequest, e.getRemoteAddress());
+            Channels.write(ctx, e.getFuture(), httpRequest, e.getRemoteAddress());
             lastSendTime = System.currentTimeMillis();
          }
          else
          {
-            write(ctx, e.getFuture(), e.getMessage(), e.getRemoteAddress());
+            Channels.write(ctx, e.getFuture(), e.getMessage(), e.getRemoteAddress());
             lastSendTime = System.currentTimeMillis();
          }
       }

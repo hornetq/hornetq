@@ -44,10 +44,10 @@ public class SimpleJMSStreamMessage extends SimpleJMSMessage implements StreamMe
    protected int offset;
 
    protected int size;
-   
+
    protected boolean bodyWriteOnly = true;
 
-   //protected transient boolean deserialised;
+   // protected transient boolean deserialised;
 
    // Static --------------------------------------------------------
 
@@ -84,11 +84,11 @@ public class SimpleJMSStreamMessage extends SimpleJMSMessage implements StreamMe
          else if (value instanceof Boolean)
          {
             position++;
-            return ((Boolean) value).booleanValue();
+            return ((Boolean)value).booleanValue();
          }
          else if (value instanceof String)
          {
-            boolean result = Boolean.valueOf((String) value).booleanValue();
+            boolean result = Boolean.valueOf((String)value).booleanValue();
             position++;
             return result;
          }
@@ -122,11 +122,11 @@ public class SimpleJMSStreamMessage extends SimpleJMSMessage implements StreamMe
          else if (value instanceof Byte)
          {
             position++;
-            return ((Byte) value).byteValue();
+            return ((Byte)value).byteValue();
          }
          else if (value instanceof String)
          {
-            byte result = Byte.parseByte((String) value);
+            byte result = Byte.parseByte((String)value);
             position++;
             return result;
          }
@@ -159,16 +159,16 @@ public class SimpleJMSStreamMessage extends SimpleJMSMessage implements StreamMe
          else if (value instanceof Byte)
          {
             position++;
-            return ((Byte) value).shortValue();
+            return ((Byte)value).shortValue();
          }
          else if (value instanceof Short)
          {
             position++;
-            return ((Short) value).shortValue();
+            return ((Short)value).shortValue();
          }
          else if (value instanceof String)
          {
-            short result = Short.parseShort((String) value);
+            short result = Short.parseShort((String)value);
             position++;
             return result;
          }
@@ -201,7 +201,7 @@ public class SimpleJMSStreamMessage extends SimpleJMSMessage implements StreamMe
          else if (value instanceof Character)
          {
             position++;
-            return ((Character) value).charValue();
+            return ((Character)value).charValue();
          }
          else
          {
@@ -232,21 +232,21 @@ public class SimpleJMSStreamMessage extends SimpleJMSMessage implements StreamMe
          else if (value instanceof Byte)
          {
             position++;
-            return ((Byte) value).intValue();
+            return ((Byte)value).intValue();
          }
          else if (value instanceof Short)
          {
             position++;
-            return ((Short) value).intValue();
+            return ((Short)value).intValue();
          }
          else if (value instanceof Integer)
          {
             position++;
-            return ((Integer) value).intValue();
+            return ((Integer)value).intValue();
          }
          else if (value instanceof String)
          {
-            int result = Integer.parseInt((String) value);
+            int result = Integer.parseInt((String)value);
             position++;
             return result;
          }
@@ -279,26 +279,26 @@ public class SimpleJMSStreamMessage extends SimpleJMSMessage implements StreamMe
          else if (value instanceof Byte)
          {
             position++;
-            return ((Byte) value).longValue();
+            return ((Byte)value).longValue();
          }
          else if (value instanceof Short)
          {
             position++;
-            return ((Short) value).longValue();
+            return ((Short)value).longValue();
          }
          else if (value instanceof Integer)
          {
             position++;
-            return ((Integer) value).longValue();
+            return ((Integer)value).longValue();
          }
          else if (value instanceof Long)
          {
             position++;
-            return ((Long) value).longValue();
+            return ((Long)value).longValue();
          }
          else if (value instanceof String)
          {
-            long result = Long.parseLong((String) value);
+            long result = Long.parseLong((String)value);
             position++;
             return result;
          }
@@ -331,11 +331,11 @@ public class SimpleJMSStreamMessage extends SimpleJMSMessage implements StreamMe
          else if (value instanceof Float)
          {
             position++;
-            return ((Float) value).floatValue();
+            return ((Float)value).floatValue();
          }
          else if (value instanceof String)
          {
-            float result = Float.parseFloat((String) value);
+            float result = Float.parseFloat((String)value);
             position++;
             return result;
          }
@@ -368,16 +368,16 @@ public class SimpleJMSStreamMessage extends SimpleJMSMessage implements StreamMe
          else if (value instanceof Float)
          {
             position++;
-            return ((Float) value).doubleValue();
+            return ((Float)value).doubleValue();
          }
          else if (value instanceof Double)
          {
             position++;
-            return ((Double) value).doubleValue();
+            return ((Double)value).doubleValue();
          }
          else if (value instanceof String)
          {
-            double result = Double.parseDouble((String) value);
+            double result = Double.parseDouble((String)value);
             position++;
             return result;
          }
@@ -411,47 +411,47 @@ public class SimpleJMSStreamMessage extends SimpleJMSMessage implements StreamMe
          else if (value instanceof Boolean)
          {
             position++;
-            return ((Boolean) value).toString();
+            return ((Boolean)value).toString();
          }
          else if (value instanceof Byte)
          {
             position++;
-            return ((Byte) value).toString();
+            return ((Byte)value).toString();
          }
          else if (value instanceof Short)
          {
             position++;
-            return ((Short) value).toString();
+            return ((Short)value).toString();
          }
          else if (value instanceof Character)
          {
             position++;
-            return ((Character) value).toString();
+            return ((Character)value).toString();
          }
          else if (value instanceof Integer)
          {
             position++;
-            return ((Integer) value).toString();
+            return ((Integer)value).toString();
          }
          else if (value instanceof Long)
          {
             position++;
-            return ((Long) value).toString();
+            return ((Long)value).toString();
          }
          else if (value instanceof Float)
          {
             position++;
-            return ((Float) value).toString();
+            return ((Float)value).toString();
          }
          else if (value instanceof Double)
          {
             position++;
-            return ((Double) value).toString();
+            return ((Double)value).toString();
          }
          else if (value instanceof String)
          {
             position++;
-            return (String) value;
+            return (String)value;
          }
          else
          {
@@ -464,7 +464,7 @@ public class SimpleJMSStreamMessage extends SimpleJMSMessage implements StreamMe
       }
    }
 
-   public int readBytes(byte[] value) throws JMSException
+   public int readBytes(final byte[] value) throws JMSException
    {
       if (bodyWriteOnly)
       {
@@ -481,7 +481,7 @@ public class SimpleJMSStreamMessage extends SimpleJMSMessage implements StreamMe
          {
             throw new MessageFormatException("Invalid conversion");
          }
-         byte[] obj = (byte[]) myObj;
+         byte[] obj = (byte[])myObj;
 
          if (obj.length == 0)
          {
@@ -547,7 +547,7 @@ public class SimpleJMSStreamMessage extends SimpleJMSMessage implements StreamMe
       }
    }
 
-   public void writeBoolean(boolean value) throws JMSException
+   public void writeBoolean(final boolean value) throws JMSException
    {
       if (!bodyWriteOnly)
       {
@@ -556,7 +556,7 @@ public class SimpleJMSStreamMessage extends SimpleJMSMessage implements StreamMe
       content.add(Primitives.valueOf(value));
    }
 
-   public void writeByte(byte value) throws JMSException
+   public void writeByte(final byte value) throws JMSException
    {
       if (!bodyWriteOnly)
       {
@@ -565,7 +565,7 @@ public class SimpleJMSStreamMessage extends SimpleJMSMessage implements StreamMe
       content.add(new Byte(value));
    }
 
-   public void writeShort(short value) throws JMSException
+   public void writeShort(final short value) throws JMSException
    {
       if (!bodyWriteOnly)
       {
@@ -574,7 +574,7 @@ public class SimpleJMSStreamMessage extends SimpleJMSMessage implements StreamMe
       content.add(new Short(value));
    }
 
-   public void writeChar(char value) throws JMSException
+   public void writeChar(final char value) throws JMSException
    {
       if (!bodyWriteOnly)
       {
@@ -583,7 +583,7 @@ public class SimpleJMSStreamMessage extends SimpleJMSMessage implements StreamMe
       content.add(new Character(value));
    }
 
-   public void writeInt(int value) throws JMSException
+   public void writeInt(final int value) throws JMSException
    {
       if (!bodyWriteOnly)
       {
@@ -592,7 +592,7 @@ public class SimpleJMSStreamMessage extends SimpleJMSMessage implements StreamMe
       content.add(new Integer(value));
    }
 
-   public void writeLong(long value) throws JMSException
+   public void writeLong(final long value) throws JMSException
    {
       if (!bodyWriteOnly)
       {
@@ -601,7 +601,7 @@ public class SimpleJMSStreamMessage extends SimpleJMSMessage implements StreamMe
       content.add(new Long(value));
    }
 
-   public void writeFloat(float value) throws JMSException
+   public void writeFloat(final float value) throws JMSException
    {
       if (!bodyWriteOnly)
       {
@@ -610,7 +610,7 @@ public class SimpleJMSStreamMessage extends SimpleJMSMessage implements StreamMe
       content.add(new Float(value));
    }
 
-   public void writeDouble(double value) throws JMSException
+   public void writeDouble(final double value) throws JMSException
    {
       if (!bodyWriteOnly)
       {
@@ -619,7 +619,7 @@ public class SimpleJMSStreamMessage extends SimpleJMSMessage implements StreamMe
       content.add(new Double(value));
    }
 
-   public void writeString(String value) throws JMSException
+   public void writeString(final String value) throws JMSException
    {
       if (!bodyWriteOnly)
       {
@@ -635,7 +635,7 @@ public class SimpleJMSStreamMessage extends SimpleJMSMessage implements StreamMe
       }
    }
 
-   public void writeBytes(byte[] value) throws JMSException
+   public void writeBytes(final byte[] value) throws JMSException
    {
       if (!bodyWriteOnly)
       {
@@ -644,7 +644,7 @@ public class SimpleJMSStreamMessage extends SimpleJMSMessage implements StreamMe
       content.add(value.clone());
    }
 
-   public void writeBytes(byte[] value, int offset, int length) throws JMSException
+   public void writeBytes(final byte[] value, final int offset, final int length) throws JMSException
    {
       if (!bodyWriteOnly)
       {
@@ -664,7 +664,7 @@ public class SimpleJMSStreamMessage extends SimpleJMSMessage implements StreamMe
       content.add(temp);
    }
 
-   public void writeObject(Object value) throws JMSException
+   public void writeObject(final Object value) throws JMSException
    {
       if (!bodyWriteOnly)
       {
@@ -712,7 +712,7 @@ public class SimpleJMSStreamMessage extends SimpleJMSMessage implements StreamMe
       }
       else if (value instanceof byte[])
       {
-         content.add(((byte[]) value).clone());
+         content.add(((byte[])value).clone());
       }
       else
       {
@@ -727,7 +727,6 @@ public class SimpleJMSStreamMessage extends SimpleJMSMessage implements StreamMe
       size = content.size();
       offset = 0;
    }
-
 
    // Package protected ---------------------------------------------
 

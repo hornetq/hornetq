@@ -12,6 +12,8 @@
  */
 package org.hornetq.tests.integration.client;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
@@ -78,7 +80,7 @@ public class MessageCounterTest extends ServiceTestBase
       session.commit();
       session.start();
 
-      assertEquals(100, getMessageCount(server.getPostOffice(), QUEUE.toString()));
+      Assert.assertEquals(100, getMessageCount(server.getPostOffice(), QUEUE.toString()));
 
       ClientConsumer consumer = session.createConsumer(QUEUE, null, false);
 
@@ -86,17 +88,17 @@ public class MessageCounterTest extends ServiceTestBase
       {
          ClientMessage message = consumer.receive(1000);
 
-         assertNotNull(message);
+         Assert.assertNotNull(message);
          message.acknowledge();
 
          session.commit();
 
-         assertEquals("m" + i, message.getBodyBuffer().readString());
+         Assert.assertEquals("m" + i, message.getBodyBuffer().readString());
       }
 
       session.close();
 
-      assertEquals(0, getMessageCount(server.getPostOffice(), QUEUE.toString()));
+      Assert.assertEquals(0, getMessageCount(server.getPostOffice(), QUEUE.toString()));
 
    }
 

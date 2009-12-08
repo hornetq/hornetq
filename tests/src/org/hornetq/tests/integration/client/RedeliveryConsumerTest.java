@@ -13,16 +13,16 @@
 
 package org.hornetq.tests.integration.client;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
 import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.client.ClientSessionFactory;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.utils.SimpleString;
@@ -43,7 +43,6 @@ public class RedeliveryConsumerTest extends ServiceTestBase
 
    private static final Logger log = Logger.getLogger(RedeliveryConsumerTest.class);
 
-   
    // Attributes ----------------------------------------------------
 
    HornetQServer server;
@@ -92,9 +91,8 @@ public class RedeliveryConsumerTest extends ServiceTestBase
       session.commit();
       session.close();
 
-      
       session = factory.createSession(null, null, false, true, true, true, 0);
-      
+
       session.start();
       for (int loopAck = 0; loopAck < 5; loopAck++)
       {
@@ -102,22 +100,20 @@ public class RedeliveryConsumerTest extends ServiceTestBase
          for (int i = 0; i < 10; i++)
          {
             ClientMessage msg = browser.receive(1000);
-            assertNotNull("element i=" + i + " loopAck = " + loopAck + " was expected", msg);
+            Assert.assertNotNull("element i=" + i + " loopAck = " + loopAck + " was expected", msg);
             msg.acknowledge();
-            assertEquals(Integer.toString(i), getTextMessage(msg));
-   
+            Assert.assertEquals(Integer.toString(i), getTextMessage(msg));
+
             // We don't change the deliveryCounter on Browser, so this should be always 0
-            assertEquals(0, msg.getDeliveryCount());
+            Assert.assertEquals(0, msg.getDeliveryCount());
          }
-         
+
          session.commit();
          browser.close();
       }
-      
+
       session.close();
-      
-      
-      
+
       session = factory.createSession(false, false, false);
       session.start();
 
@@ -128,11 +124,11 @@ public class RedeliveryConsumerTest extends ServiceTestBase
          for (int i = 0; i < 10; i++)
          {
             ClientMessage msg = consumer.receive(1000);
-            assertNotNull(msg);
-            assertEquals(Integer.toString(i), getTextMessage(msg));
+            Assert.assertNotNull(msg);
+            Assert.assertEquals(Integer.toString(i), getTextMessage(msg));
 
             // No ACK done, so deliveryCount should be always = 1
-            assertEquals(1, msg.getDeliveryCount());
+            Assert.assertEquals(1, msg.getDeliveryCount());
          }
          session.rollback();
       }
@@ -152,10 +148,10 @@ public class RedeliveryConsumerTest extends ServiceTestBase
          for (int i = 0; i < 10; i++)
          {
             ClientMessage msg = consumer.receive(1000);
-            assertNotNull(msg);
+            Assert.assertNotNull(msg);
             msg.acknowledge();
-            assertEquals(Integer.toString(i), getTextMessage(msg));
-            assertEquals(loopAck, msg.getDeliveryCount());
+            Assert.assertEquals(Integer.toString(i), getTextMessage(msg));
+            Assert.assertEquals(loopAck, msg.getDeliveryCount());
          }
          if (loopAck < 5)
          {
@@ -182,9 +178,9 @@ public class RedeliveryConsumerTest extends ServiceTestBase
    {
       setUp(strictUpdate);
       ClientSession session = factory.createSession(false, false, false);
-      
-      log.info("created");
-      
+
+      RedeliveryConsumerTest.log.info("created");
+
       ClientProducer prod = session.createProducer(ADDRESS);
       prod.send(createTextMessage(session, "Hello"));
       session.commit();
@@ -195,7 +191,7 @@ public class RedeliveryConsumerTest extends ServiceTestBase
       ClientConsumer consumer = session.createConsumer(ADDRESS);
 
       ClientMessage msg = consumer.receive(1000);
-      assertEquals(1, msg.getDeliveryCount());
+      Assert.assertEquals(1, msg.getDeliveryCount());
       session.stop();
 
       // if strictUpdate == true, this will simulate a crash, where the server is stopped without closing/rolling back
@@ -203,27 +199,27 @@ public class RedeliveryConsumerTest extends ServiceTestBase
       if (!strictUpdate)
       {
          // If non Strict, at least rollback/cancel should still update the delivery-counts
-         session.rollback(true);         
-         
+         session.rollback(true);
+
          session.close();
       }
-      
+
       server.stop();
-      
+
       // once the server is stopped, we close the session
       // to clean up its client resources
       session.close();
 
       server.start();
-      
+
       factory = createInVMFactory();
 
       session = factory.createSession(false, true, false);
       session.start();
       consumer = session.createConsumer(ADDRESS);
       msg = consumer.receive(1000);
-      assertNotNull(msg);
-      assertEquals(2, msg.getDeliveryCount());
+      Assert.assertNotNull(msg);
+      Assert.assertEquals(2, msg.getDeliveryCount());
       session.close();
    }
 
@@ -242,7 +238,7 @@ public class RedeliveryConsumerTest extends ServiceTestBase
       config.setPersistDeliveryCountBeforeDelivery(persistDeliveryCountBeforeDelivery);
 
       server = createServer(true, config);
-      
+
       server.start();
 
       factory = createInVMFactory();
@@ -261,17 +257,16 @@ public class RedeliveryConsumerTest extends ServiceTestBase
       {
          factory.close();
       }
-      
+
       if (server != null && server.isStarted())
       {
          server.stop();
       }
-      
-      
+
       factory = null;
-      
+
       server = null;
-      
+
       super.tearDown();
    }
 

@@ -13,8 +13,7 @@
 
 package org.hornetq.tests.integration.client;
 
-import static org.hornetq.tests.util.RandomUtil.randomLong;
-import static org.hornetq.tests.util.RandomUtil.randomSimpleString;
+import junit.framework.Assert;
 
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
@@ -33,6 +32,7 @@ import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.server.HornetQ;
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.SimpleString;
 
@@ -49,7 +49,7 @@ public class RequestorTest extends UnitTestCase
    // Attributes ----------------------------------------------------
 
    private HornetQServer service;
-   
+
    private ClientSessionFactory sf;
 
    // Static --------------------------------------------------------
@@ -60,15 +60,15 @@ public class RequestorTest extends UnitTestCase
 
    public void testRequest() throws Exception
    {
-      final SimpleString key = randomSimpleString();
-      long value = randomLong();
-      SimpleString requestAddress = randomSimpleString();
-      SimpleString requestQueue = randomSimpleString();
+      final SimpleString key = RandomUtil.randomSimpleString();
+      long value = RandomUtil.randomLong();
+      SimpleString requestAddress = RandomUtil.randomSimpleString();
+      SimpleString requestQueue = RandomUtil.randomSimpleString();
 
       final ClientSession session = sf.createSession(false, true, true);
 
       session.start();
-     
+
       session.createTemporaryQueue(requestAddress, requestQueue);
 
       ClientConsumer requestConsumer = session.createConsumer(requestQueue);
@@ -79,24 +79,24 @@ public class RequestorTest extends UnitTestCase
       request.putLongProperty(key, value);
 
       ClientMessage reply = requestor.request(request, 500);
-      assertNotNull("reply was not received", reply);
-      assertEquals(value, reply.getObjectProperty(key));
+      Assert.assertNotNull("reply was not received", reply);
+      Assert.assertEquals(value, reply.getObjectProperty(key));
 
       session.close();
    }
 
    public void testTwoRequests() throws Exception
    {
-      final SimpleString key = randomSimpleString();
-      long value = randomLong();
-      SimpleString requestAddress = randomSimpleString();
-      SimpleString requestQueue = randomSimpleString();
+      final SimpleString key = RandomUtil.randomSimpleString();
+      long value = RandomUtil.randomLong();
+      SimpleString requestAddress = RandomUtil.randomSimpleString();
+      SimpleString requestQueue = RandomUtil.randomSimpleString();
 
       ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
       final ClientSession session = sf.createSession(false, true, true);
 
       session.start();
-      
+
       session.createTemporaryQueue(requestAddress, requestQueue);
 
       ClientConsumer requestConsumer = session.createConsumer(requestQueue);
@@ -107,36 +107,36 @@ public class RequestorTest extends UnitTestCase
       request.putLongProperty(key, value);
 
       ClientMessage reply = requestor.request(request, 500);
-      assertNotNull("reply was not received", reply);
-      assertEquals(value, reply.getObjectProperty(key));
+      Assert.assertNotNull("reply was not received", reply);
+      Assert.assertEquals(value, reply.getObjectProperty(key));
 
       request = session.createClientMessage(false);
       request.putLongProperty(key, value + 1);
 
       reply = requestor.request(request, 500);
-      assertNotNull("reply was not received", reply);
-      assertEquals(value + 1, reply.getObjectProperty(key));
+      Assert.assertNotNull("reply was not received", reply);
+      Assert.assertEquals(value + 1, reply.getObjectProperty(key));
 
       session.close();
    }
 
    public void testRequestWithRequestConsumerWhichDoesNotReply() throws Exception
    {
-      SimpleString requestAddress = randomSimpleString();
-      SimpleString requestQueue = randomSimpleString();
+      SimpleString requestAddress = RandomUtil.randomSimpleString();
+      SimpleString requestQueue = RandomUtil.randomSimpleString();
 
       ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
       final ClientSession session = sf.createSession(false, true, true);
 
       session.start();
-      
+
       session.createTemporaryQueue(requestAddress, requestQueue);
 
       ClientConsumer requestConsumer = session.createConsumer(requestQueue);
       requestConsumer.setMessageHandler(new MessageHandler()
       {
          // return a message with the negative request's value
-         public void onMessage(ClientMessage request)
+         public void onMessage(final ClientMessage request)
          {
             // do nothing -> no reply
          }
@@ -146,40 +146,43 @@ public class RequestorTest extends UnitTestCase
       ClientMessage request = session.createClientMessage(false);
 
       ClientMessage reply = requestor.request(request, 500);
-      assertNull(reply);
+      Assert.assertNull(reply);
 
       session.close();
    }
 
    public void testClientRequestorConstructorWithClosedSession() throws Exception
    {
-      final SimpleString requestAddress = randomSimpleString();
+      final SimpleString requestAddress = RandomUtil.randomSimpleString();
 
       ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
       final ClientSession session = sf.createSession(false, true, true);
 
       session.close();
 
-      expectHornetQException("ClientRequestor's session must not be closed", HornetQException.OBJECT_CLOSED, new HornetQAction(){
-         public void run() throws Exception
-         {
-            new ClientRequestor(session, requestAddress);
-         }
-      });
+      UnitTestCase.expectHornetQException("ClientRequestor's session must not be closed",
+                                          HornetQException.OBJECT_CLOSED,
+                                          new HornetQAction()
+                                          {
+                                             public void run() throws Exception
+                                             {
+                                                new ClientRequestor(session, requestAddress);
+                                             }
+                                          });
    }
 
    public void testClose() throws Exception
    {
-      final SimpleString key = randomSimpleString();
-      long value = randomLong();
-      SimpleString requestAddress = randomSimpleString();
-      SimpleString requestQueue = randomSimpleString();
+      final SimpleString key = RandomUtil.randomSimpleString();
+      long value = RandomUtil.randomLong();
+      SimpleString requestAddress = RandomUtil.randomSimpleString();
+      SimpleString requestQueue = RandomUtil.randomSimpleString();
 
       ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
       final ClientSession session = sf.createSession(false, true, true);
 
       session.start();
-      
+
       session.createTemporaryQueue(requestAddress, requestQueue);
 
       ClientConsumer requestConsumer = session.createConsumer(requestQueue);
@@ -190,21 +193,24 @@ public class RequestorTest extends UnitTestCase
       request.putLongProperty(key, value);
 
       ClientMessage reply = requestor.request(request, 500);
-      assertNotNull("reply was not received", reply);
-      assertEquals(value, reply.getObjectProperty(key));
+      Assert.assertNotNull("reply was not received", reply);
+      Assert.assertEquals(value, reply.getObjectProperty(key));
 
       request = session.createClientMessage(false);
       request.putLongProperty(key, value + 1);
 
       requestor.close();
 
-      expectHornetQException("can not send a request on a closed ClientRequestor", HornetQException.OBJECT_CLOSED, new HornetQAction(){
+      UnitTestCase.expectHornetQException("can not send a request on a closed ClientRequestor",
+                                          HornetQException.OBJECT_CLOSED,
+                                          new HornetQAction()
+                                          {
 
-         public void run() throws Exception
-         {
-            requestor.request(session.createClientMessage(false), 500);
-         }
-      });
+                                             public void run() throws Exception
+                                             {
+                                                requestor.request(session.createClientMessage(false), 500);
+                                             }
+                                          });
    }
 
    // Package protected ---------------------------------------------
@@ -221,7 +227,7 @@ public class RequestorTest extends UnitTestCase
       conf.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
       service = HornetQ.newHornetQServer(conf, false);
       service.start();
-      
+
       sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
    }
 
@@ -229,11 +235,11 @@ public class RequestorTest extends UnitTestCase
    protected void tearDown() throws Exception
    {
       service.stop();
-      
+
       sf.close();
-      
+
       sf = null;
-      
+
       service = null;
 
       super.tearDown();
@@ -249,13 +255,13 @@ public class RequestorTest extends UnitTestCase
 
       private final ClientSession session;
 
-      private SimpleMessageHandler(SimpleString key, ClientSession session)
+      private SimpleMessageHandler(final SimpleString key, final ClientSession session)
       {
          this.key = key;
          this.session = session;
       }
 
-      public void onMessage(ClientMessage request)
+      public void onMessage(final ClientMessage request)
       {
          try
          {

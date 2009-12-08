@@ -37,7 +37,6 @@ public class BatchingIDGenerator implements IDGenerator
 
    private static final Logger log = Logger.getLogger(BatchingIDGenerator.class);
 
-
    // Attributes ----------------------------------------------------
 
    // Static --------------------------------------------------------
@@ -63,10 +62,9 @@ public class BatchingIDGenerator implements IDGenerator
 
       this.checkpointSize = checkpointSize;
 
-      
-      this.journalStorage = journalstorage;
+      journalStorage = journalstorage;
    }
-   
+
    public void close()
    {
       storeID(counter.incrementAndGet(), counter.get());
@@ -80,7 +78,7 @@ public class BatchingIDGenerator implements IDGenerator
 
       // Keep nextID and counter the same, the next generateID will update the checkpoint
       nextID = encoding.id;
-      
+
       counter.set(nextID);
    }
 
@@ -99,12 +97,12 @@ public class BatchingIDGenerator implements IDGenerator
          return id;
       }
    }
-   
+
    public long getCurrentID()
    {
       return counter.get();
    }
-   
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
@@ -120,19 +118,20 @@ public class BatchingIDGenerator implements IDGenerator
       }
    }
 
-   
    private void storeID(final long journalID, final long id)
    {
       try
       {
-         journalStorage.appendAddRecord(journalID, JournalStorageManager.ID_COUNTER_RECORD, new IDCounterEncoding(id), true);
+         journalStorage.appendAddRecord(journalID,
+                                        JournalStorageManager.ID_COUNTER_RECORD,
+                                        new IDCounterEncoding(id),
+                                        true);
       }
       catch (Exception e)
       {
-         log.error("Failed to store id", e);
+         BatchingIDGenerator.log.error("Failed to store id", e);
       }
    }
-
 
    // Inner classes -------------------------------------------------
 

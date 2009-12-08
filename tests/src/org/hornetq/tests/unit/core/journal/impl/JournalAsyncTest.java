@@ -17,6 +17,8 @@ import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.journal.PreparedTransactionInfo;
 import org.hornetq.core.journal.RecordInfo;
 import org.hornetq.core.journal.impl.JournalImpl;
@@ -110,13 +112,13 @@ public class JournalAsyncTest extends UnitTestCase
       LocalThread t = new LocalThread();
       t.start();
 
-      assertTrue(latch.await(5, TimeUnit.SECONDS));
+      Assert.assertTrue(latch.await(5, TimeUnit.SECONDS));
 
       Thread.yield();
-      
+
       Thread.sleep(100);
 
-      assertTrue(t.isAlive());
+      Assert.assertTrue(t.isAlive());
 
       factory.flushAllCallbacks();
 
@@ -127,7 +129,7 @@ public class JournalAsyncTest extends UnitTestCase
          throw t.e;
       }
    }
-   
+
    // If a callback error already arrived, we should just throw the exception
    // right away
    public void testPreviousError() throws Exception
@@ -149,7 +151,7 @@ public class JournalAsyncTest extends UnitTestCase
       try
       {
          journalImpl.appendAddRecordTransactional(1l, 2, (byte)1, new SimpleEncoding(1, (byte)0));
-         fail("Exception expected"); // An exception already happened in one
+         Assert.fail("Exception expected"); // An exception already happened in one
          // of the elements on this transaction.
          // We can't accept any more elements on
          // the transaction
@@ -170,7 +172,7 @@ public class JournalAsyncTest extends UnitTestCase
       try
       {
          journalImpl.appendAddRecord(1l, (byte)0, new SimpleEncoding(1, (byte)0), true);
-         fail("Exception expected");
+         Assert.fail("Exception expected");
       }
       catch (Exception ignored)
       {

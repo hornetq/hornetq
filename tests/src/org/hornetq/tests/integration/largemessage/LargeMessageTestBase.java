@@ -24,6 +24,8 @@ import java.util.concurrent.atomic.AtomicLong;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.buffers.HornetQBuffer;
 import org.hornetq.core.buffers.HornetQBuffers;
 import org.hornetq.core.client.ClientConsumer;
@@ -38,6 +40,7 @@ import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
 import org.hornetq.tests.util.ServiceTestBase;
+import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.DataConstants;
 import org.hornetq.utils.SimpleString;
 
@@ -72,6 +75,7 @@ public abstract class LargeMessageTestBase extends ServiceTestBase
 
    // Protected -----------------------------------------------------
 
+   @Override
    protected void tearDown() throws Exception
    {
       if (server != null && server.isStarted())
@@ -82,7 +86,7 @@ public abstract class LargeMessageTestBase extends ServiceTestBase
          }
          catch (Exception e)
          {
-            log.warn(e.getMessage(), e);
+            LargeMessageTestBase.log.warn(e.getMessage(), e);
          }
       }
 
@@ -192,13 +196,13 @@ public abstract class LargeMessageTestBase extends ServiceTestBase
                   server.stop();
                   server.start();
                }
-               
+
                session = sf.createSession(null, null, isXA, false, false, preAck, 0);
-               
+
                Xid[] xids = session.recover(XAResource.TMSTARTRSCAN);
-               assertEquals(1, xids.length);
-               assertEquals(xid, xids[0]);
-               
+               Assert.assertEquals(1, xids.length);
+               Assert.assertEquals(xid, xids[0]);
+
                session.rollback(xid);
                producer = session.createProducer(ADDRESS);
                xid = newXID();
@@ -213,7 +217,7 @@ public abstract class LargeMessageTestBase extends ServiceTestBase
          }
 
          sendMessages(numberOfMessages, numberOfBytes, delayDelivery, session, producer);
-         
+
          if (isXA)
          {
             session.end(xid, XAResource.TMSUCCESS);
@@ -228,11 +232,10 @@ public abstract class LargeMessageTestBase extends ServiceTestBase
             }
 
             session = sf.createSession(null, null, isXA, false, false, preAck, 0);
-            
+
             Xid[] xids = session.recover(XAResource.TMSTARTRSCAN);
-            assertEquals(1, xids.length);
-            assertEquals(xid, xids[0]);
-            
+            Assert.assertEquals(1, xids.length);
+            Assert.assertEquals(xid, xids[0]);
 
             producer = session.createProducer(ADDRESS);
 
@@ -290,8 +293,8 @@ public abstract class LargeMessageTestBase extends ServiceTestBase
                         if (delayDelivery > 0)
                         {
                            long originalTime = (Long)message.getObjectProperty(new SimpleString("original-time"));
-                           assertTrue(System.currentTimeMillis() - originalTime + "<" + delayDelivery,
-                                      System.currentTimeMillis() - originalTime >= delayDelivery);
+                           Assert.assertTrue(System.currentTimeMillis() - originalTime + "<" + delayDelivery,
+                                             System.currentTimeMillis() - originalTime >= delayDelivery);
                         }
 
                         if (!preAck)
@@ -299,15 +302,15 @@ public abstract class LargeMessageTestBase extends ServiceTestBase
                            message.acknowledge();
                         }
 
-                        assertNotNull(message);
-                        
+                        Assert.assertNotNull(message);
+
                         if (delayDelivery <= 0)
                         {
                            // right now there is no guarantee of ordered delivered on multiple scheduledMessages with
                            // the same
                            // scheduled delivery time
-                           assertEquals(msgCounter,
-                                        ((Integer)message.getObjectProperty(new SimpleString("counter-message"))).intValue());
+                           Assert.assertEquals(msgCounter,
+                                               ((Integer)message.getObjectProperty(new SimpleString("counter-message"))).intValue());
                         }
 
                         if (useStreamOnConsume)
@@ -316,34 +319,35 @@ public abstract class LargeMessageTestBase extends ServiceTestBase
                            message.saveToOutputStream(new OutputStream()
                            {
 
-                              public void write(byte b[]) throws IOException
+                              @Override
+                              public void write(final byte b[]) throws IOException
                               {
-                                 if (b[0] == getSamplebyte(bytesRead.get()))
+                                 if (b[0] == UnitTestCase.getSamplebyte(bytesRead.get()))
                                  {
                                     bytesRead.addAndGet(b.length);
-                                    log.debug("Read position " + bytesRead.get() + " on consumer");
+                                    LargeMessageTestBase.log.debug("Read position " + bytesRead.get() + " on consumer");
                                  }
                                  else
                                  {
-                                    log.warn("Received invalid packet at position " + bytesRead.get());
+                                    LargeMessageTestBase.log.warn("Received invalid packet at position " + bytesRead.get());
                                  }
                               }
 
                               @Override
-                              public void write(int b) throws IOException
+                              public void write(final int b) throws IOException
                               {
-                                 if (b == getSamplebyte(bytesRead.get()))
+                                 if (b == UnitTestCase.getSamplebyte(bytesRead.get()))
                                  {
                                     bytesRead.incrementAndGet();
                                  }
                                  else
                                  {
-                                    log.warn("byte not as expected!");
+                                    LargeMessageTestBase.log.warn("byte not as expected!");
                                  }
                               }
                            });
 
-                           assertEquals(numberOfBytes, bytesRead.get());
+                           Assert.assertEquals(numberOfBytes, bytesRead.get());
                         }
                         else
                         {
@@ -354,16 +358,16 @@ public abstract class LargeMessageTestBase extends ServiceTestBase
                            {
                               if (b % (1024l * 1024l) == 0)
                               {
-                                 log.debug("Read " + b + " bytes");
+                                 LargeMessageTestBase.log.debug("Read " + b + " bytes");
                               }
 
-                              assertEquals(getSamplebyte(b), buffer.readByte());
+                              Assert.assertEquals(UnitTestCase.getSamplebyte(b), buffer.readByte());
                            }
-                           
+
                            try
                            {
                               buffer.readByte();
-                              fail("Supposed to throw an exception");
+                              Assert.fail("Supposed to throw an exception");
                            }
                            catch (Exception e)
                            {
@@ -373,7 +377,7 @@ public abstract class LargeMessageTestBase extends ServiceTestBase
                      catch (Throwable e)
                      {
                         e.printStackTrace();
-                        log.warn("Got an error", e);
+                        LargeMessageTestBase.log.warn("Got an error", e);
                         errors.incrementAndGet();
                      }
                      finally
@@ -388,8 +392,8 @@ public abstract class LargeMessageTestBase extends ServiceTestBase
 
                consumer.setMessageHandler(handler);
 
-               assertTrue(latchDone.await(waitOnConsumer, TimeUnit.SECONDS));
-               assertEquals(0, errors.get());
+               Assert.assertTrue(latchDone.await(waitOnConsumer, TimeUnit.SECONDS));
+               Assert.assertEquals(0, errors.get());
             }
             else
             {
@@ -402,15 +406,15 @@ public abstract class LargeMessageTestBase extends ServiceTestBase
 
                   ClientMessage message = consumer.receive(waitOnConsumer + delayDelivery);
 
-                  assertNotNull(message);
+                  Assert.assertNotNull(message);
 
                   System.currentTimeMillis();
 
                   if (delayDelivery > 0)
                   {
                      long originalTime = (Long)message.getObjectProperty(new SimpleString("original-time"));
-                     assertTrue(System.currentTimeMillis() - originalTime + "<" + delayDelivery,
-                                System.currentTimeMillis() - originalTime >= delayDelivery);
+                     Assert.assertTrue(System.currentTimeMillis() - originalTime + "<" + delayDelivery,
+                                       System.currentTimeMillis() - originalTime >= delayDelivery);
                   }
 
                   if (!preAck)
@@ -418,13 +422,14 @@ public abstract class LargeMessageTestBase extends ServiceTestBase
                      message.acknowledge();
                   }
 
-                  assertNotNull(message);
+                  Assert.assertNotNull(message);
 
                   if (delayDelivery <= 0)
                   {
                      // right now there is no guarantee of ordered delivered on multiple scheduledMessages with the same
                      // scheduled delivery time
-                     assertEquals(i, ((Integer)message.getObjectProperty(new SimpleString("counter-message"))).intValue());
+                     Assert.assertEquals(i,
+                                         ((Integer)message.getObjectProperty(new SimpleString("counter-message"))).intValue());
                   }
 
                   HornetQBuffer buffer = message.getBodyBuffer();
@@ -436,25 +441,26 @@ public abstract class LargeMessageTestBase extends ServiceTestBase
                      message.saveToOutputStream(new OutputStream()
                      {
 
-                        public void write(byte b[]) throws IOException
+                        @Override
+                        public void write(final byte b[]) throws IOException
                         {
-                           if (b[0] == getSamplebyte(bytesRead.get()))
+                           if (b[0] == UnitTestCase.getSamplebyte(bytesRead.get()))
                            {
                               bytesRead.addAndGet(b.length);
                            }
                            else
                            {
-                              log.warn("Received invalid packet at position " + bytesRead.get());
+                              LargeMessageTestBase.log.warn("Received invalid packet at position " + bytesRead.get());
                            }
 
                         }
 
                         @Override
-                        public void write(int b) throws IOException
+                        public void write(final int b) throws IOException
                         {
                            if (bytesRead.get() % (1024l * 1024l) == 0)
                            {
-                              log.debug("Read " + bytesRead.get() + " bytes");
+                              LargeMessageTestBase.log.debug("Read " + bytesRead.get() + " bytes");
                            }
                            if (b == (byte)'a')
                            {
@@ -462,12 +468,12 @@ public abstract class LargeMessageTestBase extends ServiceTestBase
                            }
                            else
                            {
-                              log.warn("byte not as expected!");
+                              LargeMessageTestBase.log.warn("byte not as expected!");
                            }
                         }
                      });
 
-                     assertEquals(numberOfBytes, bytesRead.get());
+                     Assert.assertEquals(numberOfBytes, bytesRead.get());
                   }
                   else
                   {
@@ -475,9 +481,9 @@ public abstract class LargeMessageTestBase extends ServiceTestBase
                      {
                         if (b % (1024l * 1024l) == 0l)
                         {
-                           log.debug("Read " + b + " bytes");
+                           LargeMessageTestBase.log.debug("Read " + b + " bytes");
                         }
-                        assertEquals(getSamplebyte(b), buffer.readByte());
+                        Assert.assertEquals(UnitTestCase.getSamplebyte(b), buffer.readByte());
                      }
                   }
 
@@ -496,8 +502,8 @@ public abstract class LargeMessageTestBase extends ServiceTestBase
                   session.start(xid, XAResource.TMNOFLAGS);
                }
                else
-               {    
-                  session.rollback();                 
+               {
+                  session.rollback();
                }
             }
             else
@@ -519,9 +525,9 @@ public abstract class LargeMessageTestBase extends ServiceTestBase
          session.close();
 
          long globalSize = server.getPostOffice().getPagingManager().getTotalMemory();
-         assertEquals(0l, globalSize);
-         assertEquals(0, ((Queue)server.getPostOffice().getBinding(ADDRESS).getBindable()).getDeliveringCount());
-         assertEquals(0, ((Queue)server.getPostOffice().getBinding(ADDRESS).getBindable()).getMessageCount());
+         Assert.assertEquals(0l, globalSize);
+         Assert.assertEquals(0, ((Queue)server.getPostOffice().getBinding(ADDRESS).getBindable()).getDeliveringCount());
+         Assert.assertEquals(0, ((Queue)server.getPostOffice().getBinding(ADDRESS).getBindable()).getMessageCount());
 
          validateNoFilesOnLargeDir();
 
@@ -556,7 +562,7 @@ public abstract class LargeMessageTestBase extends ServiceTestBase
                              final ClientSession session,
                              final ClientProducer producer) throws Exception
    {
-      log.debug("NumberOfBytes = " + numberOfBytes);
+      LargeMessageTestBase.log.debug("NumberOfBytes = " + numberOfBytes);
       for (int i = 0; i < numberOfMessages; i++)
       {
          ClientMessage message = session.createClientMessage(true);
@@ -565,16 +571,16 @@ public abstract class LargeMessageTestBase extends ServiceTestBase
          // test
          if (numberOfBytes > 1024 * 1024 || i % 2 == 0)
          {
-            log.debug("Sending message (stream)" + i);
-            message.setBodyInputStream(createFakeLargeStream(numberOfBytes));
+            LargeMessageTestBase.log.debug("Sending message (stream)" + i);
+            message.setBodyInputStream(UnitTestCase.createFakeLargeStream(numberOfBytes));
          }
          else
          {
-            log.debug("Sending message (array)" + i);
+            LargeMessageTestBase.log.debug("Sending message (array)" + i);
             byte[] bytes = new byte[(int)numberOfBytes];
             for (int j = 0; j < bytes.length; j++)
             {
-               bytes[j] = getSamplebyte(j);
+               bytes[j] = UnitTestCase.getSamplebyte(j);
             }
             message.getBodyBuffer().writeBytes(bytes);
          }
@@ -619,7 +625,7 @@ public abstract class LargeMessageTestBase extends ServiceTestBase
 
       ClientMessage clientMessage = session.createClientMessage(persistent);
 
-      clientMessage.setBodyInputStream(createFakeLargeStream(numberOfBytes));
+      clientMessage.setBodyInputStream(UnitTestCase.createFakeLargeStream(numberOfBytes));
 
       return clientMessage;
    }
@@ -642,7 +648,7 @@ public abstract class LargeMessageTestBase extends ServiceTestBase
 
       ClientMessage clientMessage = consumer.receive(5000);
 
-      assertNotNull(clientMessage);
+      Assert.assertNotNull(clientMessage);
 
       clientMessage.acknowledge();
 
@@ -672,7 +678,7 @@ public abstract class LargeMessageTestBase extends ServiceTestBase
          {
             if (count++ % 1024 * 1024 == 0)
             {
-               log.debug("OutputStream received " + count + " bytes");
+               LargeMessageTestBase.log.debug("OutputStream received " + count + " bytes");
             }
             if (closed)
             {

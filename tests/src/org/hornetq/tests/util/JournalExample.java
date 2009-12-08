@@ -52,7 +52,7 @@ public class JournalExample
 
    // Inner classes -------------------------------------------------
 
-   public static void main(String arg[])
+   public static void main(final String arg[])
    {
       TimeAndCounterIDGenerator idgenerator = new TimeAndCounterIDGenerator();
       try

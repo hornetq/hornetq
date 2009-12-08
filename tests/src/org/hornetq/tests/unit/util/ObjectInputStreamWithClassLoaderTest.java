@@ -25,6 +25,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import junit.framework.Assert;
+
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.ObjectInputStreamWithClassLoader;
 
@@ -43,7 +45,7 @@ public class ObjectInputStreamWithClassLoaderTest extends UnitTestCase
 
    // Static --------------------------------------------------------
 
-   public static ClassLoader newClassLoader(Class anyUserClass) throws Exception
+   public static ClassLoader newClassLoader(final Class anyUserClass) throws Exception
    {
       URL classLocation = anyUserClass.getProtectionDomain().getCodeSource().getLocation();
       StringTokenizer tokenString = new StringTokenizer(System.getProperty("java.class.path"), File.pathSeparator);
@@ -64,7 +66,7 @@ public class ObjectInputStreamWithClassLoaderTest extends UnitTestCase
          }
       }
 
-      URL[] urlArray = (URL[])urls.toArray(new URL[urls.size()]);
+      URL[] urlArray = urls.toArray(new URL[urls.size()]);
 
       ClassLoader masterClassLoader = URLClassLoader.newInstance(urlArray, null);
       ClassLoader appClassLoader = URLClassLoader.newInstance(new URL[] { classLocation }, masterClassLoader);
@@ -82,9 +84,9 @@ public class ObjectInputStreamWithClassLoaderTest extends UnitTestCase
       try
       {
          AnObject obj = new AnObject();
-         byte[] bytes = toBytes(obj);
+         byte[] bytes = ObjectInputStreamWithClassLoaderTest.toBytes(obj);
 
-         ClassLoader testClassLoader = newClassLoader(obj.getClass());
+         ClassLoader testClassLoader = ObjectInputStreamWithClassLoaderTest.newClassLoader(obj.getClass());
          Thread.currentThread().setContextClassLoader(testClassLoader);
 
          ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
@@ -92,10 +94,10 @@ public class ObjectInputStreamWithClassLoaderTest extends UnitTestCase
 
          Object deserializedObj = ois.readObject();
 
-         assertNotSame(obj, deserializedObj);
-         assertNotSame(obj.getClass(), deserializedObj.getClass());
-         assertNotSame(obj.getClass().getClassLoader(), deserializedObj.getClass().getClassLoader());
-         assertSame(testClassLoader, deserializedObj.getClass().getClassLoader());
+         Assert.assertNotSame(obj, deserializedObj);
+         Assert.assertNotSame(obj.getClass(), deserializedObj.getClass());
+         Assert.assertNotSame(obj.getClass().getClassLoader(), deserializedObj.getClass().getClassLoader());
+         Assert.assertSame(testClassLoader, deserializedObj.getClass().getClassLoader());
       }
       finally
       {
@@ -110,9 +112,9 @@ public class ObjectInputStreamWithClassLoaderTest extends UnitTestCase
 
    // Private -------------------------------------------------------
 
-   private static byte[] toBytes(Object obj) throws IOException
+   private static byte[] toBytes(final Object obj) throws IOException
    {
-      assertTrue(obj instanceof Serializable);
+      Assert.assertTrue(obj instanceof Serializable);
       ByteArrayOutputStream baos = new ByteArrayOutputStream();
       ObjectOutputStream oos = new ObjectOutputStream(baos);
       oos.writeObject(obj);

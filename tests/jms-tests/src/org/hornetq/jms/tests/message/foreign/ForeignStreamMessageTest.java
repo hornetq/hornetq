@@ -18,6 +18,7 @@ import javax.jms.Message;
 import javax.jms.StreamMessage;
 
 import org.hornetq.jms.tests.message.SimpleJMSStreamMessage;
+import org.hornetq.jms.tests.util.ProxyAssertSupport;
 
 /**
  * Tests the delivery/receipt of a foreign stream message
@@ -32,6 +33,7 @@ import org.hornetq.jms.tests.message.SimpleJMSStreamMessage;
 public class ForeignStreamMessageTest extends ForeignMessageTest
 {
 
+   @Override
    protected Message createForeignMessage() throws Exception
    {
       SimpleJMSStreamMessage m = new SimpleJMSStreamMessage();
@@ -52,28 +54,29 @@ public class ForeignStreamMessageTest extends ForeignMessageTest
       return m;
    }
 
-   protected void assertEquivalent(Message m, int mode, boolean redelivery) throws JMSException
+   @Override
+   protected void assertEquivalent(final Message m, final int mode, final boolean redelivery) throws JMSException
    {
       super.assertEquivalent(m, mode, redelivery);
 
       StreamMessage sm = (StreamMessage)m;
 
-      assertTrue(sm.readBoolean());
+      ProxyAssertSupport.assertTrue(sm.readBoolean());
 
       byte bytes[] = new byte[5];
       sm.readBytes(bytes);
       String s = new String(bytes);
-      assertEquals("jboss", s);
-      assertEquals(-1, sm.readBytes(bytes));
+      ProxyAssertSupport.assertEquals("jboss", s);
+      ProxyAssertSupport.assertEquals(-1, sm.readBytes(bytes));
 
-      assertEquals(sm.readChar(), 'c');
-      assertEquals(sm.readDouble(), 1.0D, 0.0D);
-      assertEquals(sm.readFloat(), 2.0F, 0.0F);
-      assertEquals(sm.readInt(), 3);
-      assertEquals(sm.readLong(), 4L);
-      assertEquals(sm.readObject(), "object");
-      assertEquals(sm.readShort(), (short)5);
-      assertEquals(sm.readString(), "stringvalue");
+      ProxyAssertSupport.assertEquals(sm.readChar(), 'c');
+      ProxyAssertSupport.assertEquals(sm.readDouble(), 1.0D, 0.0D);
+      ProxyAssertSupport.assertEquals(sm.readFloat(), 2.0F, 0.0F);
+      ProxyAssertSupport.assertEquals(sm.readInt(), 3);
+      ProxyAssertSupport.assertEquals(sm.readLong(), 4L);
+      ProxyAssertSupport.assertEquals(sm.readObject(), "object");
+      ProxyAssertSupport.assertEquals(sm.readShort(), (short)5);
+      ProxyAssertSupport.assertEquals(sm.readString(), "stringvalue");
    }
 
 }

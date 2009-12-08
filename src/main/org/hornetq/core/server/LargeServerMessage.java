@@ -13,7 +13,6 @@
 
 package org.hornetq.core.server;
 
-
 /**
  * A LargeMessage
  *
@@ -26,18 +25,18 @@ package org.hornetq.core.server;
 public interface LargeServerMessage extends ServerMessage
 {
    void addBytes(byte[] bytes) throws Exception;
-   
+
    /** When a large message is copied (e.g. ExpiryQueue) instead of copying the file, we specify a link between the messages */
    void setLinkedMessage(LargeServerMessage message);
-   
+
    boolean isFileExists() throws Exception;
 
    /** Close the files if opened */
    void releaseResources();
-   
+
    void deleteFile() throws Exception;
-   
+
    void incrementDelayDeletionCount();
-   
+
    void decrementDelayDeletionCount() throws Exception;
 }

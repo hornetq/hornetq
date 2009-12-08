@@ -11,7 +11,6 @@
  * permissions and limitations under the License.
  */
 
-
 package org.hornetq.jms.client;
 
 import java.util.Collections;
@@ -49,7 +48,7 @@ public class HornetQMapMessage extends HornetQMessage implements MapMessage
    public static final byte TYPE = 5;
 
    // Attributes ----------------------------------------------------
-   
+
    private TypedProperties map = new TypedProperties();
 
    // Static --------------------------------------------------------
@@ -62,17 +61,17 @@ public class HornetQMapMessage extends HornetQMessage implements MapMessage
    public HornetQMapMessage(final ClientSession session)
    {
       super(HornetQMapMessage.TYPE, session);
-      
+
       map = new TypedProperties();
    }
-   
+
    public HornetQMapMessage(final ClientMessage message, final ClientSession session)
    {
       super(message, session);
    }
-   
+
    public HornetQMapMessage()
-   {      
+   {
    }
 
    /**
@@ -83,23 +82,24 @@ public class HornetQMapMessage extends HornetQMessage implements MapMessage
     */
    public HornetQMapMessage(final MapMessage foreign, final ClientSession session) throws JMSException
    {
-      super(foreign, HornetQMapMessage.TYPE, session);     
+      super(foreign, HornetQMapMessage.TYPE, session);
       Enumeration names = foreign.getMapNames();
       while (names.hasMoreElements())
       {
          String name = (String)names.nextElement();
          Object obj = foreign.getObject(name);
-         this.setObject(name, obj);
-      } 
+         setObject(name, obj);
+      }
    }
 
    // Public --------------------------------------------------------
 
+   @Override
    public byte getType()
    {
       return HornetQMapMessage.TYPE;
    }
-      
+
    // MapMessage implementation -------------------------------------
 
    public void setBoolean(final String name, final boolean value) throws JMSException
@@ -179,27 +179,49 @@ public class HornetQMapMessage extends HornetQMessage implements MapMessage
       checkName(name);
       SimpleString key = new SimpleString(name);
       if (value instanceof Boolean)
+      {
          map.putBooleanProperty(key, (Boolean)value);
+      }
       else if (value instanceof Byte)
+      {
          map.putByteProperty(key, (Byte)value);
+      }
       else if (value instanceof Short)
+      {
          map.putShortProperty(key, (Short)value);
+      }
       else if (value instanceof Character)
+      {
          map.putCharProperty(key, (Character)value);
+      }
       else if (value instanceof Integer)
+      {
          map.putIntProperty(key, (Integer)value);
+      }
       else if (value instanceof Long)
+      {
          map.putLongProperty(key, (Long)value);
+      }
       else if (value instanceof Float)
+      {
          map.putFloatProperty(key, (Float)value);
+      }
       else if (value instanceof Double)
+      {
          map.putDoubleProperty(key, (Double)value);
+      }
       else if (value instanceof String)
+      {
          map.putSimpleStringProperty(key, new SimpleString((String)value));
+      }
       else if (value instanceof byte[])
-         map.putBytesProperty(key, (byte[]) value);
+      {
+         map.putBytesProperty(key, (byte[])value);
+      }
       else
+      {
          throw new MessageFormatException("Invalid object type.");
+      }
    }
 
    public boolean getBoolean(final String name) throws JMSException
@@ -302,7 +324,7 @@ public class HornetQMapMessage extends HornetQMessage implements MapMessage
    {
       try
       {
-         SimpleString str =  map.getSimpleStringProperty(new SimpleString(name));
+         SimpleString str = map.getSimpleStringProperty(new SimpleString(name));
          if (str == null)
          {
             return null;
@@ -333,24 +355,24 @@ public class HornetQMapMessage extends HornetQMessage implements MapMessage
    public Object getObject(final String name) throws JMSException
    {
       Object val = map.getProperty(new SimpleString(name));
-      
+
       if (val instanceof SimpleString)
       {
          val = ((SimpleString)val).toString();
       }
-      
+
       return val;
    }
 
    public Enumeration getMapNames() throws JMSException
    {
       Set propNames = new HashSet<String>();
-      
-      for (SimpleString str: map.getPropertyNames())
+
+      for (SimpleString str : map.getPropertyNames())
       {
          propNames.add(str.toString());
       }
-      
+
       return Collections.enumeration(propNames);
    }
 
@@ -361,42 +383,45 @@ public class HornetQMapMessage extends HornetQMessage implements MapMessage
 
    // HornetQRAMessage overrides ----------------------------------------
 
+   @Override
    public void clearBody() throws JMSException
    {
       super.clearBody();
-      
+
       map.clear();
    }
-   
+
+   @Override
    public void doBeforeSend() throws Exception
    {
       map.encode(message.getBodyBuffer());
-      
+
       super.doBeforeSend();
    }
-   
+
+   @Override
    public void doBeforeReceive() throws Exception
-   {        
+   {
       super.doBeforeReceive();
-      
+
       map.decode(message.getBodyBuffer());
    }
-   
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
-     
+
    // Private -------------------------------------------------------
-   
+
    /**
     * Check the name
     * 
     * @param name the name
     */
-   private void checkName(String name) throws JMSException
+   private void checkName(final String name) throws JMSException
    {
-      checkWrite();            
-      
+      checkWrite();
+
       if (name == null)
       {
          throw new IllegalArgumentException("Name must not be null.");
@@ -411,4 +436,3 @@ public class HornetQMapMessage extends HornetQMessage implements MapMessage
    // Inner classes -------------------------------------------------
 
 }
-

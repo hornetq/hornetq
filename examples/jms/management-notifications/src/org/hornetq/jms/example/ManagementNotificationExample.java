@@ -34,11 +34,12 @@ import org.hornetq.common.example.HornetQExample;
  */
 public class ManagementNotificationExample extends HornetQExample
 {
-   public static void main(String[] args)
+   public static void main(final String[] args)
    {
       new ManagementNotificationExample().run(args);
    }
 
+   @Override
    public boolean runExample() throws Exception
    {
       Connection connection = null;
@@ -49,10 +50,10 @@ public class ManagementNotificationExample extends HornetQExample
          initialContext = getContext(0);
 
          // Step 2. Perform a lookup on the queue
-         Queue queue = (Queue) initialContext.lookup("/queue/exampleQueue");
-         
+         Queue queue = (Queue)initialContext.lookup("/queue/exampleQueue");
+
          // Step 3. Perform a lookup on the Connection Factory
-         ConnectionFactory cf = (ConnectionFactory) initialContext.lookup("/ConnectionFactory");
+         ConnectionFactory cf = (ConnectionFactory)initialContext.lookup("/ConnectionFactory");
 
          // Step 4.Create a JMS connection, a session and a producer for the queue
          connection = cf.createConnection();
@@ -60,14 +61,14 @@ public class ManagementNotificationExample extends HornetQExample
          MessageProducer producer = session.createProducer(queue);
 
          // Step 5. Perform a lookup on the notifications queue
-         Queue notificationsQueue = (Queue) initialContext.lookup("/queue/notificationsQueue");
-         
+         Queue notificationsQueue = (Queue)initialContext.lookup("/queue/notificationsQueue");
+
          // Step 6. Create a JMS message consumer for the notification queue and set its message listener
          // It will display all the properties of the JMS Message
          MessageConsumer notificationConsumer = session.createConsumer(notificationsQueue);
          notificationConsumer.setMessageListener(new MessageListener()
          {
-            public void onMessage(Message notif)
+            public void onMessage(final Message notif)
             {
                System.out.println("------------------------");
                System.out.println("Received notification:");
@@ -84,40 +85,41 @@ public class ManagementNotificationExample extends HornetQExample
                {
                }
                System.out.println("------------------------");
-            }            
+            }
          });
 
          // Step 7. Start the Connection to allow the consumers to receive messages
          connection.start();
 
-         // Step 8. Create a JMS Message Consumer on the queue         
+         // Step 8. Create a JMS Message Consumer on the queue
          MessageConsumer consumer = session.createConsumer(queue);
 
          // Step 9. Close the consumer
          consumer.close();
-         
+
          // Step 10. Try to create a connection with unknown user
          try
          {
             cf.createConnection("not.a.valid.user", "not.a.valid.password");
-         } catch (JMSException e)
-         {            
          }
-         
+         catch (JMSException e)
+         {
+         }
+
          // sleep a little bit to be sure to receive the notification for the security
          // authentication violation before leaving the example
          Thread.sleep(2000);
-         
+
          return true;
       }
       finally
       {
-         //Step 11. Be sure to close the resources!
+         // Step 11. Be sure to close the resources!
          if (initialContext != null)
          {
             initialContext.close();
          }
-         if(connection != null)
+         if (connection != null)
          {
             connection.close();
          }

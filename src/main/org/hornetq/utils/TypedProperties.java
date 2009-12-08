@@ -21,17 +21,8 @@ import static org.hornetq.utils.DataConstants.DOUBLE;
 import static org.hornetq.utils.DataConstants.FLOAT;
 import static org.hornetq.utils.DataConstants.INT;
 import static org.hornetq.utils.DataConstants.LONG;
-import static org.hornetq.utils.DataConstants.NOT_NULL;
 import static org.hornetq.utils.DataConstants.NULL;
 import static org.hornetq.utils.DataConstants.SHORT;
-import static org.hornetq.utils.DataConstants.SIZE_BOOLEAN;
-import static org.hornetq.utils.DataConstants.SIZE_BYTE;
-import static org.hornetq.utils.DataConstants.SIZE_CHAR;
-import static org.hornetq.utils.DataConstants.SIZE_DOUBLE;
-import static org.hornetq.utils.DataConstants.SIZE_FLOAT;
-import static org.hornetq.utils.DataConstants.SIZE_INT;
-import static org.hornetq.utils.DataConstants.SIZE_LONG;
-import static org.hornetq.utils.DataConstants.SIZE_SHORT;
 import static org.hornetq.utils.DataConstants.STRING;
 
 import java.util.Collections;
@@ -65,13 +56,13 @@ public class TypedProperties
    public TypedProperties()
    {
    }
-   
+
    public int getMemoryOffset()
    {
-      //The estimate is basically the encode size + 2 object references for each entry in the map
-      //Note we don't include the attributes or anything else since they already included in the memory estimate
-      //of the ServerMessage
-       
+      // The estimate is basically the encode size + 2 object references for each entry in the map
+      // Note we don't include the attributes or anything else since they already included in the memory estimate
+      // of the ServerMessage
+
       return properties == null ? 0 : size + 2 * DataConstants.SIZE_INT * properties.size();
    }
 
@@ -147,15 +138,15 @@ public class TypedProperties
       {
          return;
       }
-      
+
       checkCreateProperties();
-      Set<Entry<SimpleString,PropertyValue>> otherEntries = otherProps.properties.entrySet();
+      Set<Entry<SimpleString, PropertyValue>> otherEntries = otherProps.properties.entrySet();
       for (Entry<SimpleString, PropertyValue> otherEntry : otherEntries)
       {
          doPutValue(otherEntry.getKey(), otherEntry.getValue());
       }
    }
-   
+
    public Object getProperty(final SimpleString key)
    {
       return doGetProperty(key);
@@ -181,8 +172,8 @@ public class TypedProperties
          throw new PropertyConversionException("Invalid conversion");
       }
    }
-   
-   public Byte getByteProperty(SimpleString key) throws PropertyConversionException
+
+   public Byte getByteProperty(final SimpleString key) throws PropertyConversionException
    {
       Object value = doGetProperty(key);
       if (value == null)
@@ -202,20 +193,26 @@ public class TypedProperties
          throw new PropertyConversionException("Invalid conversion");
       }
    }
-   
-   public Character getCharProperty(SimpleString key) throws PropertyConversionException
+
+   public Character getCharProperty(final SimpleString key) throws PropertyConversionException
    {
       Object value = doGetProperty(key);
       if (value == null)
+      {
          throw new NullPointerException("Invalid conversion");
+      }
 
       if (value instanceof Character)
-         return ((Character) value).charValue();
+      {
+         return ((Character)value).charValue();
+      }
       else
+      {
          throw new PropertyConversionException("Invalid conversion");
+      }
    }
-   
-   public byte[] getBytesProperty(SimpleString key) throws PropertyConversionException
+
+   public byte[] getBytesProperty(final SimpleString key) throws PropertyConversionException
    {
       Object value = doGetProperty(key);
       if (value == null)
@@ -231,8 +228,8 @@ public class TypedProperties
          throw new PropertyConversionException("Invalid conversion");
       }
    }
-   
-   public Double getDoubleProperty(SimpleString key) throws PropertyConversionException
+
+   public Double getDoubleProperty(final SimpleString key) throws PropertyConversionException
    {
       Object value = doGetProperty(key);
       if (value == null)
@@ -256,8 +253,8 @@ public class TypedProperties
          throw new PropertyConversionException("Invalid conversion");
       }
    }
-   
-   public Integer getIntProperty(SimpleString key) throws PropertyConversionException
+
+   public Integer getIntProperty(final SimpleString key) throws PropertyConversionException
    {
       Object value = doGetProperty(key);
       if (value == null)
@@ -285,8 +282,8 @@ public class TypedProperties
          throw new PropertyConversionException("Invalid conversion");
       }
    }
-   
-   public Long getLongProperty(SimpleString key) throws PropertyConversionException
+
+   public Long getLongProperty(final SimpleString key) throws PropertyConversionException
    {
       Object value = doGetProperty(key);
       if (value == null)
@@ -318,8 +315,8 @@ public class TypedProperties
          throw new PropertyConversionException("Invalid conversion");
       }
    }
-   
-   public Short getShortProperty(SimpleString key) throws PropertyConversionException
+
+   public Short getShortProperty(final SimpleString key) throws PropertyConversionException
    {
       Object value = doGetProperty(key);
       if (value == null)
@@ -343,8 +340,8 @@ public class TypedProperties
          throw new PropertyConversionException("Invalid Conversion.");
       }
    }
-   
-   public Float getFloatProperty(SimpleString key) throws PropertyConversionException
+
+   public Float getFloatProperty(final SimpleString key) throws PropertyConversionException
    {
       Object value = doGetProperty(key);
       if (value == null)
@@ -365,8 +362,8 @@ public class TypedProperties
          throw new PropertyConversionException("Invalid conversion");
       }
    }
-   
-   public SimpleString getSimpleStringProperty(SimpleString key) throws PropertyConversionException
+
+   public SimpleString getSimpleStringProperty(final SimpleString key) throws PropertyConversionException
    {
       Object value = doGetProperty(key);
 
@@ -416,7 +413,7 @@ public class TypedProperties
          throw new PropertyConversionException("Invalid conversion");
       }
    }
-   
+
    public Object removeProperty(final SimpleString key)
    {
       return doRemoveProperty(key);
@@ -450,7 +447,7 @@ public class TypedProperties
    {
       byte b = buffer.readByte();
 
-      if (b == NULL)
+      if (b == DataConstants.NULL)
       {
          properties = null;
       }
@@ -463,7 +460,7 @@ public class TypedProperties
 
          for (int i = 0; i < numHeaders; i++)
          {
-            int len = buffer.readInt();        
+            int len = buffer.readInt();
             byte[] data = new byte[len];
             buffer.readBytes(data);
             SimpleString key = new SimpleString(data);
@@ -553,11 +550,11 @@ public class TypedProperties
    {
       if (properties == null)
       {
-         buffer.writeByte(NULL);
+         buffer.writeByte(DataConstants.NULL);
       }
       else
       {
-         buffer.writeByte(NOT_NULL);
+         buffer.writeByte(DataConstants.NOT_NULL);
 
          buffer.writeInt(properties.size());
 
@@ -577,12 +574,11 @@ public class TypedProperties
    {
       if (properties == null)
       {
-         return SIZE_BYTE;
+         return DataConstants.SIZE_BYTE;
       }
       else
       {
-         return SIZE_BYTE + SIZE_INT + size;
-
+         return DataConstants.SIZE_BYTE + DataConstants.SIZE_INT + size;
       }
    }
 
@@ -593,13 +589,13 @@ public class TypedProperties
          properties.clear();
       }
    }
-   
+
    @Override
    public String toString()
    {
-      return "TypedProperties[" + properties  + "]";
+      return "TypedProperties[" + properties + "]";
    }
-   
+
    // Private ------------------------------------------------------------------------------------
 
    private void checkCreateProperties()
@@ -672,7 +668,7 @@ public class TypedProperties
       abstract void write(HornetQBuffer buffer);
 
       abstract int encodeSize();
-      
+
       @Override
       public String toString()
       {
@@ -686,19 +682,22 @@ public class TypedProperties
       {
       }
 
+      @Override
       public Object getValue()
       {
          return null;
       }
 
+      @Override
       public void write(final HornetQBuffer buffer)
       {
-         buffer.writeByte(NULL);
+         buffer.writeByte(DataConstants.NULL);
       }
 
+      @Override
       public int encodeSize()
       {
-         return SIZE_BYTE;
+         return DataConstants.SIZE_BYTE;
       }
 
    }
@@ -717,20 +716,23 @@ public class TypedProperties
          val = buffer.readBoolean();
       }
 
+      @Override
       public Object getValue()
       {
          return val;
       }
 
+      @Override
       public void write(final HornetQBuffer buffer)
       {
-         buffer.writeByte(BOOLEAN);
+         buffer.writeByte(DataConstants.BOOLEAN);
          buffer.writeBoolean(val);
       }
 
+      @Override
       public int encodeSize()
       {
-         return SIZE_BYTE + SIZE_BOOLEAN;
+         return DataConstants.SIZE_BYTE + DataConstants.SIZE_BOOLEAN;
       }
 
    }
@@ -749,20 +751,23 @@ public class TypedProperties
          val = buffer.readByte();
       }
 
+      @Override
       public Object getValue()
       {
          return val;
       }
 
+      @Override
       public void write(final HornetQBuffer buffer)
       {
-         buffer.writeByte(BYTE);
+         buffer.writeByte(DataConstants.BYTE);
          buffer.writeByte(val);
       }
 
+      @Override
       public int encodeSize()
       {
-         return SIZE_BYTE + SIZE_BYTE;
+         return DataConstants.SIZE_BYTE + DataConstants.SIZE_BYTE;
       }
    }
 
@@ -782,21 +787,24 @@ public class TypedProperties
          buffer.readBytes(val);
       }
 
+      @Override
       public Object getValue()
       {
          return val;
       }
 
+      @Override
       public void write(final HornetQBuffer buffer)
       {
-         buffer.writeByte(BYTES);
+         buffer.writeByte(DataConstants.BYTES);
          buffer.writeInt(val.length);
          buffer.writeBytes(val);
       }
 
+      @Override
       public int encodeSize()
       {
-         return SIZE_BYTE + SIZE_INT + val.length;
+         return DataConstants.SIZE_BYTE + DataConstants.SIZE_INT + val.length;
       }
 
    }
@@ -815,20 +823,23 @@ public class TypedProperties
          val = buffer.readShort();
       }
 
+      @Override
       public Object getValue()
       {
          return val;
       }
 
+      @Override
       public void write(final HornetQBuffer buffer)
       {
-         buffer.writeByte(SHORT);
+         buffer.writeByte(DataConstants.SHORT);
          buffer.writeShort(val);
       }
 
+      @Override
       public int encodeSize()
       {
-         return SIZE_BYTE + SIZE_SHORT;
+         return DataConstants.SIZE_BYTE + DataConstants.SIZE_SHORT;
       }
    }
 
@@ -846,20 +857,23 @@ public class TypedProperties
          val = buffer.readInt();
       }
 
+      @Override
       public Object getValue()
       {
          return val;
       }
 
+      @Override
       public void write(final HornetQBuffer buffer)
       {
-         buffer.writeByte(INT);
+         buffer.writeByte(DataConstants.INT);
          buffer.writeInt(val);
       }
 
+      @Override
       public int encodeSize()
       {
-         return SIZE_BYTE + SIZE_INT;
+         return DataConstants.SIZE_BYTE + DataConstants.SIZE_INT;
       }
    }
 
@@ -877,20 +891,23 @@ public class TypedProperties
          val = buffer.readLong();
       }
 
+      @Override
       public Object getValue()
       {
          return val;
       }
 
+      @Override
       public void write(final HornetQBuffer buffer)
       {
-         buffer.writeByte(LONG);
+         buffer.writeByte(DataConstants.LONG);
          buffer.writeLong(val);
       }
 
+      @Override
       public int encodeSize()
       {
-         return SIZE_BYTE + SIZE_LONG;
+         return DataConstants.SIZE_BYTE + DataConstants.SIZE_LONG;
       }
    }
 
@@ -908,20 +925,23 @@ public class TypedProperties
          val = Float.intBitsToFloat(buffer.readInt());
       }
 
+      @Override
       public Object getValue()
       {
          return val;
       }
 
+      @Override
       public void write(final HornetQBuffer buffer)
       {
-         buffer.writeByte(FLOAT);
+         buffer.writeByte(DataConstants.FLOAT);
          buffer.writeInt(Float.floatToIntBits(val));
       }
 
+      @Override
       public int encodeSize()
       {
-         return SIZE_BYTE + SIZE_FLOAT;
+         return DataConstants.SIZE_BYTE + DataConstants.SIZE_FLOAT;
       }
 
    }
@@ -940,20 +960,23 @@ public class TypedProperties
          val = Double.longBitsToDouble(buffer.readLong());
       }
 
+      @Override
       public Object getValue()
       {
          return val;
       }
 
+      @Override
       public void write(final HornetQBuffer buffer)
       {
-         buffer.writeByte(DOUBLE);
+         buffer.writeByte(DataConstants.DOUBLE);
          buffer.writeLong(Double.doubleToLongBits(val));
       }
 
+      @Override
       public int encodeSize()
       {
-         return SIZE_BYTE + SIZE_DOUBLE;
+         return DataConstants.SIZE_BYTE + DataConstants.SIZE_DOUBLE;
       }
    }
 
@@ -971,20 +994,23 @@ public class TypedProperties
          val = (char)buffer.readShort();
       }
 
+      @Override
       public Object getValue()
       {
          return val;
       }
 
+      @Override
       public void write(final HornetQBuffer buffer)
       {
-         buffer.writeByte(CHAR);
+         buffer.writeByte(DataConstants.CHAR);
          buffer.writeShort((short)val);
       }
 
+      @Override
       public int encodeSize()
       {
-         return SIZE_BYTE + SIZE_CHAR;
+         return DataConstants.SIZE_BYTE + DataConstants.SIZE_CHAR;
       }
    }
 
@@ -1002,20 +1028,23 @@ public class TypedProperties
          val = buffer.readSimpleString();
       }
 
+      @Override
       public Object getValue()
       {
          return val;
       }
 
+      @Override
       public void write(final HornetQBuffer buffer)
       {
-         buffer.writeByte(STRING);
+         buffer.writeByte(DataConstants.STRING);
          buffer.writeSimpleString(val);
       }
 
+      @Override
       public int encodeSize()
       {
-         return SIZE_BYTE + SimpleString.sizeofString(val);
+         return DataConstants.SIZE_BYTE + SimpleString.sizeofString(val);
       }
    }
 }

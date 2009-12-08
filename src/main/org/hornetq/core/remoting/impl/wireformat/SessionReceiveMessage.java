@@ -38,8 +38,8 @@ public class SessionReceiveMessage extends MessagePacket
 
    public SessionReceiveMessage(final long consumerID, final Message message, final int deliveryCount)
    {
-      super(SESS_RECEIVE_MSG, message);
-      
+      super(PacketImpl.SESS_RECEIVE_MSG, message);
+
       this.consumerID = consumerID;
 
       this.deliveryCount = deliveryCount;
@@ -47,7 +47,7 @@ public class SessionReceiveMessage extends MessagePacket
 
    public SessionReceiveMessage()
    {
-      super(SESS_RECEIVE_MSG, new ClientMessageImpl());
+      super(PacketImpl.SESS_RECEIVE_MSG, new ClientMessageImpl());
    }
 
    // Public --------------------------------------------------------
@@ -56,7 +56,7 @@ public class SessionReceiveMessage extends MessagePacket
    {
       return consumerID;
    }
-   
+
    public int getDeliveryCount()
    {
       return deliveryCount;
@@ -65,54 +65,54 @@ public class SessionReceiveMessage extends MessagePacket
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
-   
+
    @Override
    public HornetQBuffer encode(final RemotingConnection connection)
    {
       HornetQBuffer buffer = message.getEncodedBuffer();
-      
-      //Sanity check
+
+      // Sanity check
       if (buffer.writerIndex() != message.getEndOfMessagePosition())
       {
          throw new IllegalStateException("Wrong encode position");
       }
-      
-      buffer.writeLong(consumerID);      
+
+      buffer.writeLong(consumerID);
       buffer.writeInt(deliveryCount);
-                 
+
       size = buffer.writerIndex();
-                
-      //Write standard headers
-      
+
+      // Write standard headers
+
       int len = size - DataConstants.SIZE_INT;
       buffer.setInt(0, len);
       buffer.setByte(DataConstants.SIZE_INT, type);
       buffer.setLong(DataConstants.SIZE_INT + DataConstants.SIZE_BYTE, channelID);
-      
-      //Position reader for reading by Netty
+
+      // Position reader for reading by Netty
       buffer.setIndex(0, size);
-      
+
       return buffer;
    }
-   
+
    @Override
-   public void decode(HornetQBuffer buffer)
+   public void decode(final HornetQBuffer buffer)
    {
       channelID = buffer.readLong();
 
       message.decodeFromBuffer(buffer);
-      
+
       consumerID = buffer.readLong();
-      
-      deliveryCount = buffer.readInt();  
-      
+
+      deliveryCount = buffer.readInt();
+
       size = buffer.readerIndex();
 
-      //Need to position buffer for reading
-      
-      buffer.setIndex(PacketImpl.PACKET_HEADERS_SIZE + DataConstants.SIZE_INT, message.getEndOfBodyPosition());    
+      // Need to position buffer for reading
+
+      buffer.setIndex(PacketImpl.PACKET_HEADERS_SIZE + DataConstants.SIZE_INT, message.getEndOfBodyPosition());
    }
-   
+
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------

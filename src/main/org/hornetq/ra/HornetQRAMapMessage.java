@@ -33,7 +33,7 @@ public class HornetQRAMapMessage extends HornetQRAMessage implements MapMessage
    private static final Logger log = Logger.getLogger(HornetQRAMapMessage.class);
 
    /** Whether trace is enabled */
-   private static boolean trace = log.isTraceEnabled();
+   private static boolean trace = HornetQRAMapMessage.log.isTraceEnabled();
 
    /**
     * Create a new wrapper
@@ -45,9 +45,9 @@ public class HornetQRAMapMessage extends HornetQRAMessage implements MapMessage
    {
       super(message, session);
 
-      if (trace)
+      if (HornetQRAMapMessage.trace)
       {
-         log.trace("constructor(" + message + ", " + session + ")");
+         HornetQRAMapMessage.log.trace("constructor(" + message + ", " + session + ")");
       }
    }
 
@@ -59,9 +59,9 @@ public class HornetQRAMapMessage extends HornetQRAMessage implements MapMessage
     */
    public boolean getBoolean(final String name) throws JMSException
    {
-      if (trace)
+      if (HornetQRAMapMessage.trace)
       {
-         log.trace("getBoolean(" + name + ")");
+         HornetQRAMapMessage.log.trace("getBoolean(" + name + ")");
       }
 
       return ((MapMessage)message).getBoolean(name);
@@ -75,9 +75,9 @@ public class HornetQRAMapMessage extends HornetQRAMessage implements MapMessage
     */
    public byte getByte(final String name) throws JMSException
    {
-      if (trace)
+      if (HornetQRAMapMessage.trace)
       {
-         log.trace("getByte(" + name + ")");
+         HornetQRAMapMessage.log.trace("getByte(" + name + ")");
       }
 
       return ((MapMessage)message).getByte(name);
@@ -91,9 +91,9 @@ public class HornetQRAMapMessage extends HornetQRAMessage implements MapMessage
     */
    public byte[] getBytes(final String name) throws JMSException
    {
-      if (trace)
+      if (HornetQRAMapMessage.trace)
       {
-         log.trace("getBytes(" + name + ")");
+         HornetQRAMapMessage.log.trace("getBytes(" + name + ")");
       }
 
       return ((MapMessage)message).getBytes(name);
@@ -107,9 +107,9 @@ public class HornetQRAMapMessage extends HornetQRAMessage implements MapMessage
     */
    public char getChar(final String name) throws JMSException
    {
-      if (trace)
+      if (HornetQRAMapMessage.trace)
       {
-         log.trace("getChar(" + name + ")");
+         HornetQRAMapMessage.log.trace("getChar(" + name + ")");
       }
 
       return ((MapMessage)message).getChar(name);
@@ -123,9 +123,9 @@ public class HornetQRAMapMessage extends HornetQRAMessage implements MapMessage
     */
    public double getDouble(final String name) throws JMSException
    {
-      if (trace)
+      if (HornetQRAMapMessage.trace)
       {
-         log.trace("getDouble(" + name + ")");
+         HornetQRAMapMessage.log.trace("getDouble(" + name + ")");
       }
 
       return ((MapMessage)message).getDouble(name);
@@ -139,9 +139,9 @@ public class HornetQRAMapMessage extends HornetQRAMessage implements MapMessage
     */
    public float getFloat(final String name) throws JMSException
    {
-      if (trace)
+      if (HornetQRAMapMessage.trace)
       {
-         log.trace("getFloat(" + name + ")");
+         HornetQRAMapMessage.log.trace("getFloat(" + name + ")");
       }
 
       return ((MapMessage)message).getFloat(name);
@@ -155,9 +155,9 @@ public class HornetQRAMapMessage extends HornetQRAMessage implements MapMessage
     */
    public int getInt(final String name) throws JMSException
    {
-      if (trace)
+      if (HornetQRAMapMessage.trace)
       {
-         log.trace("getInt(" + name + ")");
+         HornetQRAMapMessage.log.trace("getInt(" + name + ")");
       }
 
       return ((MapMessage)message).getInt(name);
@@ -171,9 +171,9 @@ public class HornetQRAMapMessage extends HornetQRAMessage implements MapMessage
     */
    public long getLong(final String name) throws JMSException
    {
-      if (trace)
+      if (HornetQRAMapMessage.trace)
       {
-         log.trace("getLong(" + name + ")");
+         HornetQRAMapMessage.log.trace("getLong(" + name + ")");
       }
 
       return ((MapMessage)message).getLong(name);
@@ -186,9 +186,9 @@ public class HornetQRAMapMessage extends HornetQRAMessage implements MapMessage
     */
    public Enumeration getMapNames() throws JMSException
    {
-      if (trace)
+      if (HornetQRAMapMessage.trace)
       {
-         log.trace("getMapNames()");
+         HornetQRAMapMessage.log.trace("getMapNames()");
       }
 
       return ((MapMessage)message).getMapNames();
@@ -202,9 +202,9 @@ public class HornetQRAMapMessage extends HornetQRAMessage implements MapMessage
     */
    public Object getObject(final String name) throws JMSException
    {
-      if (trace)
+      if (HornetQRAMapMessage.trace)
       {
-         log.trace("getObject(" + name + ")");
+         HornetQRAMapMessage.log.trace("getObject(" + name + ")");
       }
 
       return ((MapMessage)message).getObject(name);
@@ -218,9 +218,9 @@ public class HornetQRAMapMessage extends HornetQRAMessage implements MapMessage
     */
    public short getShort(final String name) throws JMSException
    {
-      if (trace)
+      if (HornetQRAMapMessage.trace)
       {
-         log.trace("getShort(" + name + ")");
+         HornetQRAMapMessage.log.trace("getShort(" + name + ")");
       }
 
       return ((MapMessage)message).getShort(name);
@@ -234,9 +234,9 @@ public class HornetQRAMapMessage extends HornetQRAMessage implements MapMessage
     */
    public String getString(final String name) throws JMSException
    {
-      if (trace)
+      if (HornetQRAMapMessage.trace)
       {
-         log.trace("getString(" + name + ")");
+         HornetQRAMapMessage.log.trace("getString(" + name + ")");
       }
 
       return ((MapMessage)message).getString(name);
@@ -250,9 +250,9 @@ public class HornetQRAMapMessage extends HornetQRAMessage implements MapMessage
     */
    public boolean itemExists(final String name) throws JMSException
    {
-      if (trace)
+      if (HornetQRAMapMessage.trace)
       {
-         log.trace("itemExists(" + name + ")");
+         HornetQRAMapMessage.log.trace("itemExists(" + name + ")");
       }
 
       return ((MapMessage)message).itemExists(name);
@@ -266,9 +266,9 @@ public class HornetQRAMapMessage extends HornetQRAMessage implements MapMessage
     */
    public void setBoolean(final String name, final boolean value) throws JMSException
    {
-      if (trace)
+      if (HornetQRAMapMessage.trace)
       {
-         log.trace("setBoolean(" + name + ", " + value + ")");
+         HornetQRAMapMessage.log.trace("setBoolean(" + name + ", " + value + ")");
       }
 
       ((MapMessage)message).setBoolean(name, value);
@@ -282,9 +282,9 @@ public class HornetQRAMapMessage extends HornetQRAMessage implements MapMessage
     */
    public void setByte(final String name, final byte value) throws JMSException
    {
-      if (trace)
+      if (HornetQRAMapMessage.trace)
       {
-         log.trace("setByte(" + name + ", " + value + ")");
+         HornetQRAMapMessage.log.trace("setByte(" + name + ", " + value + ")");
       }
 
       ((MapMessage)message).setByte(name, value);
@@ -300,9 +300,9 @@ public class HornetQRAMapMessage extends HornetQRAMessage implements MapMessage
     */
    public void setBytes(final String name, final byte[] value, final int offset, final int length) throws JMSException
    {
-      if (trace)
+      if (HornetQRAMapMessage.trace)
       {
-         log.trace("setBytes(" + name + ", " + value + ", " + offset + ", " + length + ")");
+         HornetQRAMapMessage.log.trace("setBytes(" + name + ", " + value + ", " + offset + ", " + length + ")");
       }
 
       ((MapMessage)message).setBytes(name, value, offset, length);
@@ -316,9 +316,9 @@ public class HornetQRAMapMessage extends HornetQRAMessage implements MapMessage
     */
    public void setBytes(final String name, final byte[] value) throws JMSException
    {
-      if (trace)
+      if (HornetQRAMapMessage.trace)
       {
-         log.trace("setBytes(" + name + ", " + value + ")");
+         HornetQRAMapMessage.log.trace("setBytes(" + name + ", " + value + ")");
       }
 
       ((MapMessage)message).setBytes(name, value);
@@ -332,9 +332,9 @@ public class HornetQRAMapMessage extends HornetQRAMessage implements MapMessage
     */
    public void setChar(final String name, final char value) throws JMSException
    {
-      if (trace)
+      if (HornetQRAMapMessage.trace)
       {
-         log.trace("setChar(" + name + ", " + value + ")");
+         HornetQRAMapMessage.log.trace("setChar(" + name + ", " + value + ")");
       }
 
       ((MapMessage)message).setChar(name, value);
@@ -348,9 +348,9 @@ public class HornetQRAMapMessage extends HornetQRAMessage implements MapMessage
     */
    public void setDouble(final String name, final double value) throws JMSException
    {
-      if (trace)
+      if (HornetQRAMapMessage.trace)
       {
-         log.trace("setDouble(" + name + ", " + value + ")");
+         HornetQRAMapMessage.log.trace("setDouble(" + name + ", " + value + ")");
       }
 
       ((MapMessage)message).setDouble(name, value);
@@ -364,9 +364,9 @@ public class HornetQRAMapMessage extends HornetQRAMessage implements MapMessage
     */
    public void setFloat(final String name, final float value) throws JMSException
    {
-      if (trace)
+      if (HornetQRAMapMessage.trace)
       {
-         log.trace("setFloat(" + name + ", " + value + ")");
+         HornetQRAMapMessage.log.trace("setFloat(" + name + ", " + value + ")");
       }
 
       ((MapMessage)message).setFloat(name, value);
@@ -380,9 +380,9 @@ public class HornetQRAMapMessage extends HornetQRAMessage implements MapMessage
     */
    public void setInt(final String name, final int value) throws JMSException
    {
-      if (trace)
+      if (HornetQRAMapMessage.trace)
       {
-         log.trace("setInt(" + name + ", " + value + ")");
+         HornetQRAMapMessage.log.trace("setInt(" + name + ", " + value + ")");
       }
 
       ((MapMessage)message).setInt(name, value);
@@ -396,9 +396,9 @@ public class HornetQRAMapMessage extends HornetQRAMessage implements MapMessage
     */
    public void setLong(final String name, final long value) throws JMSException
    {
-      if (trace)
+      if (HornetQRAMapMessage.trace)
       {
-         log.trace("setLong(" + name + ", " + value + ")");
+         HornetQRAMapMessage.log.trace("setLong(" + name + ", " + value + ")");
       }
 
       ((MapMessage)message).setLong(name, value);
@@ -412,9 +412,9 @@ public class HornetQRAMapMessage extends HornetQRAMessage implements MapMessage
     */
    public void setObject(final String name, final Object value) throws JMSException
    {
-      if (trace)
+      if (HornetQRAMapMessage.trace)
       {
-         log.trace("setObject(" + name + ", " + value + ")");
+         HornetQRAMapMessage.log.trace("setObject(" + name + ", " + value + ")");
       }
 
       ((MapMessage)message).setObject(name, value);
@@ -428,9 +428,9 @@ public class HornetQRAMapMessage extends HornetQRAMessage implements MapMessage
     */
    public void setShort(final String name, final short value) throws JMSException
    {
-      if (trace)
+      if (HornetQRAMapMessage.trace)
       {
-         log.trace("setShort(" + name + ", " + value + ")");
+         HornetQRAMapMessage.log.trace("setShort(" + name + ", " + value + ")");
       }
 
       ((MapMessage)message).setShort(name, value);
@@ -444,9 +444,9 @@ public class HornetQRAMapMessage extends HornetQRAMessage implements MapMessage
     */
    public void setString(final String name, final String value) throws JMSException
    {
-      if (trace)
+      if (HornetQRAMapMessage.trace)
       {
-         log.trace("setString(" + name + ", " + value + ")");
+         HornetQRAMapMessage.log.trace("setString(" + name + ", " + value + ")");
       }
 
       ((MapMessage)message).setString(name, value);

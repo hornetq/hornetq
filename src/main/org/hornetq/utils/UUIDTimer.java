@@ -74,11 +74,13 @@ public class UUIDTimer
     * need to apply the offset:
     */
    private final static long kClockOffset = 0x01b21dd213814000L;
+
    /**
     * Also, instead of getting time in units of 100nsecs, we get something with
     * max resolution of 1 msec... and need the multiplier as well
     */
    private final static long kClockMultiplier = 10000;
+
    private final static long kClockMultiplierL = 10000L;
 
    /**
@@ -123,7 +125,7 @@ public class UUIDTimer
     */
    private int mClockCounter = 0;
 
-   UUIDTimer(Random rnd)
+   UUIDTimer(final Random rnd)
    {
       mRnd = rnd;
       initCounters(rnd);
@@ -132,7 +134,7 @@ public class UUIDTimer
       mLastUsedTimestamp = 0L;
    }
 
-   private void initCounters(Random rnd)
+   private void initCounters(final Random rnd)
    {
       /*
        * Let's generate the clock sequence field now; as with counter, this
@@ -149,7 +151,7 @@ public class UUIDTimer
       mClockCounter = mClockSequence[2] & 0xFF;
    }
 
-   public void getTimestamp(byte[] uuidData)
+   public void getTimestamp(final byte[] uuidData)
    {
       // First the clock sequence:
       uuidData[UUID.INDEX_CLOCK_SEQUENCE] = mClockSequence[0];
@@ -180,10 +182,11 @@ public class UUIDTimer
           * Can we just use the last time stamp (ok if the counter hasn't hit
           * max yet)
           */
-         if (mClockCounter < kClockMultiplier)
+         if (mClockCounter < UUIDTimer.kClockMultiplier)
          { // yup, still have room
             systime = mLastUsedTimestamp;
-         } else
+         }
+         else
          { // nope, have to roll over to next value and maybe wait
             long actDiff = mLastUsedTimestamp - systime;
             long origTime = systime;
@@ -205,12 +208,13 @@ public class UUIDTimer
              * been moved backwards, or when coarse clock resolution has forced
              * us to advance virtual timer too far)
              */
-            if (actDiff >= kMaxClockAdvance)
+            if (actDiff >= UUIDTimer.kMaxClockAdvance)
             {
-               slowDown(origTime, actDiff);
+               UUIDTimer.slowDown(origTime, actDiff);
             }
          }
-      } else
+      }
+      else
       {
          /*
           * Clock has advanced normally; just need to make sure counter is reset
@@ -226,8 +230,8 @@ public class UUIDTimer
        * Now, let's translate the timestamp to one UUID needs, 100ns unit offset
        * from the beginning of Gregorian calendar...
        */
-      systime *= kClockMultiplierL;
-      systime += kClockOffset;
+      systime *= UUIDTimer.kClockMultiplierL;
+      systime += UUIDTimer.kClockOffset;
 
       // Plus add the clock counter:
       systime += mClockCounter;
@@ -238,18 +242,18 @@ public class UUIDTimer
        * Time fields are nicely split across the UUID, so can't just linearly
        * dump the stamp:
        */
-      int clockHi = (int) (systime >>> 32);
-      int clockLo = (int) systime;
+      int clockHi = (int)(systime >>> 32);
+      int clockLo = (int)systime;
 
-      uuidData[UUID.INDEX_CLOCK_HI] = (byte) (clockHi >>> 24);
-      uuidData[UUID.INDEX_CLOCK_HI + 1] = (byte) (clockHi >>> 16);
-      uuidData[UUID.INDEX_CLOCK_MID] = (byte) (clockHi >>> 8);
-      uuidData[UUID.INDEX_CLOCK_MID + 1] = (byte) clockHi;
+      uuidData[UUID.INDEX_CLOCK_HI] = (byte)(clockHi >>> 24);
+      uuidData[UUID.INDEX_CLOCK_HI + 1] = (byte)(clockHi >>> 16);
+      uuidData[UUID.INDEX_CLOCK_MID] = (byte)(clockHi >>> 8);
+      uuidData[UUID.INDEX_CLOCK_MID + 1] = (byte)clockHi;
 
-      uuidData[UUID.INDEX_CLOCK_LO] = (byte) (clockLo >>> 24);
-      uuidData[UUID.INDEX_CLOCK_LO + 1] = (byte) (clockLo >>> 16);
-      uuidData[UUID.INDEX_CLOCK_LO + 2] = (byte) (clockLo >>> 8);
-      uuidData[UUID.INDEX_CLOCK_LO + 3] = (byte) clockLo;
+      uuidData[UUID.INDEX_CLOCK_LO] = (byte)(clockLo >>> 24);
+      uuidData[UUID.INDEX_CLOCK_LO + 1] = (byte)(clockLo >>> 16);
+      uuidData[UUID.INDEX_CLOCK_LO + 2] = (byte)(clockLo >>> 8);
+      uuidData[UUID.INDEX_CLOCK_LO + 3] = (byte)clockLo;
    }
 
    /*
@@ -269,25 +273,28 @@ public class UUIDTimer
     * @param msecs
     *           Number of milliseconds to wait for from current time point
     */
-   private final static void slowDown(long startTime, long actDiff)
+   private final static void slowDown(final long startTime, final long actDiff)
    {
       /*
        * First, let's determine how long we'd like to wait. This is based on how
        * far ahead are we as of now.
        */
-      long ratio = actDiff / kMaxClockAdvance;
+      long ratio = actDiff / UUIDTimer.kMaxClockAdvance;
       long delay;
 
       if (ratio < 2L)
       { // 200 msecs or less
          delay = 1L;
-      } else if (ratio < 10L)
+      }
+      else if (ratio < 10L)
       { // 1 second or less
          delay = 2L;
-      } else if (ratio < 600L)
+      }
+      else if (ratio < 600L)
       { // 1 minute or less
          delay = 3L;
-      } else
+      }
+      else
       {
          delay = 5L;
       }
@@ -300,7 +307,8 @@ public class UUIDTimer
          try
          {
             Thread.sleep(delay);
-         } catch (InterruptedException ie)
+         }
+         catch (InterruptedException ie)
          {
          }
          delay = 1L;
@@ -308,10 +316,11 @@ public class UUIDTimer
           * This is just a sanity check: don't want an "infinite" loop if clock
           * happened to be moved backwards by, say, an hour...
           */
-         if (++counter > MAX_WAIT_COUNT)
+         if (++counter > UUIDTimer.MAX_WAIT_COUNT)
          {
             break;
          }
-      } while (System.currentTimeMillis() < waitUntil);
+      }
+      while (System.currentTimeMillis() < waitUntil);
    }
 }

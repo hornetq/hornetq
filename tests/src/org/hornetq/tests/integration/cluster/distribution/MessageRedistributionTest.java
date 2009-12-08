@@ -67,7 +67,7 @@ public class MessageRedistributionTest extends ClusterTestBase
    {
       setupCluster(false);
 
-      log.info("Doing test");
+      MessageRedistributionTest.log.info("Doing test");
 
       startServers(0, 1, 2);
 
@@ -101,7 +101,7 @@ public class MessageRedistributionTest extends ClusterTestBase
 
       verifyReceiveRoundRobinInSomeOrderWithCounts(false, ids1, 0, 2);
 
-      log.info("Test done");
+      MessageRedistributionTest.log.info("Test done");
    }
 
    public void testRedistributionWhenConsumerIsClosedNotConsumersOnAllNodes() throws Exception

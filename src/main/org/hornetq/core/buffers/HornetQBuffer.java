@@ -88,20 +88,20 @@ public interface HornetQBuffer
    void getBytes(int index, byte[] dst, int dstIndex, int length);
 
    void getBytes(int index, ByteBuffer dst);
-   
+
    char getChar(int index);
-   
+
    float getFloat(int index);
-   
+
    double getDouble(int index);
 
-   void setByte(int index, byte  value);
+   void setByte(int index, byte value);
 
    void setShort(int index, short value);
 
-   void setInt(int index, int   value);
+   void setInt(int index, int value);
 
-   void setLong(int index, long  value);
+   void setLong(int index, long value);
 
    void setBytes(int index, HornetQBuffer src);
 
@@ -114,11 +114,11 @@ public interface HornetQBuffer
    void setBytes(int index, byte[] src, int srcIndex, int length);
 
    void setBytes(int index, ByteBuffer src);
-   
+
    void setChar(int index, char value);
-   
+
    void setFloat(int index, float value);
-   
+
    void setDouble(int index, double value);
 
    byte readByte();
@@ -134,11 +134,11 @@ public interface HornetQBuffer
    long readUnsignedInt();
 
    long readLong();
-   
+
    char readChar();
-   
+
    float readFloat();
-   
+
    double readDouble();
 
    HornetQBuffer readBytes(int length);
@@ -159,20 +159,20 @@ public interface HornetQBuffer
 
    void skipBytes(int length);
 
-   void writeByte(byte  value);
+   void writeByte(byte value);
 
    void writeShort(short value);
 
    void writeInt(int value);
 
    void writeLong(long value);
-   
+
    void writeChar(char chr);
-   
+
    void writeFloat(float value);
-   
+
    void writeDouble(double value);
-   
+
    void writeBytes(HornetQBuffer src, int length);
 
    void writeBytes(HornetQBuffer src, int srcIndex, int length);

@@ -16,6 +16,7 @@ package org.objectweb.jtests.jms.conform.selector;
 import javax.jms.InvalidSelectorException;
 import javax.jms.JMSException;
 
+import junit.framework.Assert;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
@@ -42,18 +43,18 @@ public class SelectorSyntaxTest extends PTPTestCase
       try
       {
          identifier = "_correct";
-         assertTrue(identifier + " starts with an invalid Java identifier start character", Character
-               .isJavaIdentifierStart(identifier.charAt(0)));
+         Assert.assertTrue(identifier + " starts with an invalid Java identifier start character",
+                           Character.isJavaIdentifierStart(identifier.charAt(0)));
          receiver = receiverSession.createReceiver(receiverQueue, identifier + " IS NULL");
 
          identifier = "$correct";
-         assertTrue(identifier + " starts with an invalid Java identifier start character", Character
-               .isJavaIdentifierStart(identifier.charAt(0)));
+         Assert.assertTrue(identifier + " starts with an invalid Java identifier start character",
+                           Character.isJavaIdentifierStart(identifier.charAt(0)));
          receiver = receiverSession.createReceiver(receiverQueue, identifier + " IS NULL");
       }
       catch (JMSException e)
       {
-         fail(identifier + " is a correct identifier. \n" + e);
+         Assert.fail(identifier + " is a correct identifier. \n" + e);
       }
    }
 
@@ -69,10 +70,10 @@ public class SelectorSyntaxTest extends PTPTestCase
       {
          identifier = "1uncorrect";
 
-         assertTrue(identifier + " starts with an invalid Java identifier start character", !Character
-               .isJavaIdentifierStart(identifier.charAt(0)));
+         Assert.assertTrue(identifier + " starts with an invalid Java identifier start character",
+                           !Character.isJavaIdentifierStart(identifier.charAt(0)));
          receiver = receiverSession.createReceiver(receiverQueue, identifier + " IS NULL");
-         fail(identifier + " starts with an invalid Java identifier start character");
+         Assert.fail(identifier + " starts with an invalid Java identifier start character");
       }
       catch (JMSException e)
       {
@@ -82,10 +83,10 @@ public class SelectorSyntaxTest extends PTPTestCase
       {
          identifier = "%uncorrect";
 
-         assertTrue(identifier + " starts with an invalid Java identifier start character", !Character
-               .isJavaIdentifierStart(identifier.charAt(0)));
+         Assert.assertTrue(identifier + " starts with an invalid Java identifier start character",
+                           !Character.isJavaIdentifierStart(identifier.charAt(0)));
          receiver = receiverSession.createReceiver(receiverQueue, identifier + " IS NULL");
-         fail(identifier + " starts with an invalid Java identifier start character");
+         Assert.fail(identifier + " starts with an invalid Java identifier start character");
       }
       catch (JMSException e)
       {
@@ -116,7 +117,7 @@ public class SelectorSyntaxTest extends PTPTestCase
       try
       {
          receiver = receiverSession.createReceiver(receiverQueue, "NULL = ZERO");
-         fail("NULL is not a valid identifier");
+         Assert.fail("NULL is not a valid identifier");
       }
       catch (InvalidSelectorException e)
       {
@@ -135,7 +136,7 @@ public class SelectorSyntaxTest extends PTPTestCase
       try
       {
          receiver = receiverSession.createReceiver(receiverQueue, "TRUE > 0");
-         fail("TRUE is not a valid identifier");
+         Assert.fail("TRUE is not a valid identifier");
       }
       catch (JMSException e)
       {
@@ -150,7 +151,7 @@ public class SelectorSyntaxTest extends PTPTestCase
       try
       {
          receiver = receiverSession.createReceiver(receiverQueue, "FALSE > 0");
-         fail("FALSE is not a valid identifier");
+         Assert.fail("FALSE is not a valid identifier");
       }
       catch (JMSException e)
       {
@@ -165,7 +166,7 @@ public class SelectorSyntaxTest extends PTPTestCase
       try
       {
          receiver = receiverSession.createReceiver(receiverQueue, "NOT > 0");
-         fail("NOT is not a valid identifier");
+         Assert.fail("NOT is not a valid identifier");
       }
       catch (JMSException e)
       {
@@ -180,7 +181,7 @@ public class SelectorSyntaxTest extends PTPTestCase
       try
       {
          receiver = receiverSession.createReceiver(receiverQueue, "AND > 0");
-         fail("AND is not a valid identifier");
+         Assert.fail("AND is not a valid identifier");
       }
       catch (JMSException e)
       {
@@ -195,7 +196,7 @@ public class SelectorSyntaxTest extends PTPTestCase
       try
       {
          receiver = receiverSession.createReceiver(receiverQueue, "OR > 0");
-         fail("OR is not a valid identifier");
+         Assert.fail("OR is not a valid identifier");
       }
       catch (JMSException e)
       {
@@ -210,7 +211,7 @@ public class SelectorSyntaxTest extends PTPTestCase
       try
       {
          receiver = receiverSession.createReceiver(receiverQueue, "BETWEEN > 0");
-         fail("BETWEEN is not a valid identifier");
+         Assert.fail("BETWEEN is not a valid identifier");
       }
       catch (JMSException e)
       {
@@ -225,7 +226,7 @@ public class SelectorSyntaxTest extends PTPTestCase
       try
       {
          receiver = receiverSession.createReceiver(receiverQueue, "LIKE > 0");
-         fail("LIKE is not a valid identifier");
+         Assert.fail("LIKE is not a valid identifier");
       }
       catch (JMSException e)
       {
@@ -240,7 +241,7 @@ public class SelectorSyntaxTest extends PTPTestCase
       try
       {
          receiver = receiverSession.createReceiver(receiverQueue, "IN > 0");
-         fail("IN is not a valid identifier");
+         Assert.fail("IN is not a valid identifier");
       }
       catch (JMSException e)
       {
@@ -255,7 +256,7 @@ public class SelectorSyntaxTest extends PTPTestCase
       try
       {
          receiver = receiverSession.createReceiver(receiverQueue, "IS > 0");
-         fail("IS is not a valid identifier");
+         Assert.fail("IS is not a valid identifier");
       }
       catch (JMSException e)
       {
@@ -270,7 +271,7 @@ public class SelectorSyntaxTest extends PTPTestCase
       try
       {
          receiver = receiverSession.createReceiver(receiverQueue, "ESCAPE > 0");
-         fail("ESCAPE is not a valid identifier");
+         Assert.fail("ESCAPE is not a valid identifier");
       }
       catch (JMSException e)
       {
@@ -409,7 +410,7 @@ public class SelectorSyntaxTest extends PTPTestCase
          fail(e);
       }
    }
-   
+
    /** 
     * Method to use this class in a Test suite
     */
@@ -418,7 +419,7 @@ public class SelectorSyntaxTest extends PTPTestCase
       return new TestSuite(SelectorSyntaxTest.class);
    }
 
-   public SelectorSyntaxTest(String name)
+   public SelectorSyntaxTest(final String name)
    {
       super(name);
    }

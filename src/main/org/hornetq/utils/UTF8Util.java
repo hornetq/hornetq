@@ -13,7 +13,6 @@
 
 package org.hornetq.utils;
 
-import java.io.IOException;
 import java.lang.ref.SoftReference;
 
 import org.hornetq.core.buffers.HornetQBuffer;
@@ -37,20 +36,20 @@ public class UTF8Util
 
    private static final Logger log = Logger.getLogger(UTF8Util.class);
 
-   private static final boolean isDebug = log.isDebugEnabled();
+   private static final boolean isDebug = UTF8Util.log.isDebugEnabled();
 
    private static ThreadLocal<SoftReference<StringUtilBuffer>> currenBuffer = new ThreadLocal<SoftReference<StringUtilBuffer>>();
 
    public static void saveUTF(final HornetQBuffer out, final String str)
    {
-      StringUtilBuffer buffer = getThreadLocalBuffer();
+      StringUtilBuffer buffer = UTF8Util.getThreadLocalBuffer();
 
       if (str.length() > 0xffff)
       {
          throw new IllegalArgumentException("the specified string is too long (" + str.length() + ")");
       }
 
-      final int len = calculateUTFSize(str, buffer);
+      final int len = UTF8Util.calculateUTFSize(str, buffer);
 
       if (len > 0xffff)
       {
@@ -74,9 +73,9 @@ public class UTF8Util
       }
       else
       {
-         if (isDebug)
+         if (UTF8Util.isDebug)
          {
-            log.debug("Saving string with utfSize=" + len + " stringSize=" + str.length());
+            UTF8Util.log.debug("Saving string with utfSize=" + len + " stringSize=" + str.length());
          }
 
          int stringLength = str.length();
@@ -109,7 +108,7 @@ public class UTF8Util
 
    public static String readUTF(final HornetQBuffer input)
    {
-      StringUtilBuffer buffer = getThreadLocalBuffer();
+      StringUtilBuffer buffer = UTF8Util.getThreadLocalBuffer();
 
       final int size = input.readUnsignedShort();
 
@@ -123,9 +122,9 @@ public class UTF8Util
          buffer.resizeCharBuffer(size);
       }
 
-      if (isDebug)
+      if (UTF8Util.isDebug)
       {
-         log.debug("Reading string with utfSize=" + size);
+         UTF8Util.log.debug("Reading string with utfSize=" + size);
       }
 
       int count = 0;
@@ -167,13 +166,13 @@ public class UTF8Util
 
    private static StringUtilBuffer getThreadLocalBuffer()
    {
-      SoftReference<StringUtilBuffer> softReference = currenBuffer.get();
+      SoftReference<StringUtilBuffer> softReference = UTF8Util.currenBuffer.get();
       StringUtilBuffer value;
       if (softReference == null)
       {
          value = new StringUtilBuffer();
          softReference = new SoftReference<StringUtilBuffer>(value);
-         currenBuffer.set(softReference);
+         UTF8Util.currenBuffer.set(softReference);
       }
       else
       {
@@ -184,7 +183,7 @@ public class UTF8Util
       {
          value = new StringUtilBuffer();
          softReference = new SoftReference<StringUtilBuffer>(value);
-         currenBuffer.set(softReference);
+         UTF8Util.currenBuffer.set(softReference);
       }
 
       return value;
@@ -192,7 +191,7 @@ public class UTF8Util
 
    public static void clearBuffer()
    {
-      SoftReference<StringUtilBuffer> ref = currenBuffer.get();
+      SoftReference<StringUtilBuffer> ref = UTF8Util.currenBuffer.get();
       if (ref.get() != null)
       {
          ref.clear();
@@ -202,14 +201,14 @@ public class UTF8Util
    public static int calculateUTFSize(final String str, final StringUtilBuffer stringBuffer)
    {
       int calculatedLen = 0;
-      
+
       int stringLength = str.length();
 
       if (stringLength > stringBuffer.charBuffer.length)
       {
          stringBuffer.resizeCharBuffer(stringLength);
       }
-      
+
       str.getChars(0, stringLength, stringBuffer.charBuffer, 0);
 
       for (int i = 0; i < stringLength; i++)
@@ -251,7 +250,7 @@ public class UTF8Util
       {
          if (newSize > byteBuffer.length)
          {
-            this.byteBuffer = new byte[newSize];
+            byteBuffer = new byte[newSize];
          }
       }
 

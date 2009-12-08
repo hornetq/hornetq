@@ -12,8 +12,6 @@
  */
 package org.hornetq.javaee.example.server;
 
-import org.jboss.ejb3.annotation.ResourceAdapter;
-
 import javax.annotation.Resource;
 import javax.ejb.ActivationConfigProperty;
 import javax.ejb.MessageDriven;
@@ -29,39 +27,37 @@ import javax.transaction.SystemException;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 
+import org.jboss.ejb3.annotation.ResourceAdapter;
+
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  */
-@MessageDriven(name = "MDB_CMT_TxRequiredExample",
-               activationConfig =
-                     {
-                        @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
-                        @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/testQueue")
-                     })
-@TransactionManagement(value= TransactionManagementType.CONTAINER)
-@TransactionAttribute(value= TransactionAttributeType.REQUIRED)
+@MessageDriven(name = "MDB_CMT_TxRequiredExample", activationConfig = { @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
+                                                                       @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/testQueue") })
+@TransactionManagement(value = TransactionManagementType.CONTAINER)
+@TransactionAttribute(value = TransactionAttributeType.REQUIRED)
 @ResourceAdapter("hornetq-ra.rar")
 public class MDB_CMT_TxRequiredExample implements MessageListener
 {
    @Resource(mappedName = "java:/TransactionManager")
    private TransactionManager tm;
 
-   public void onMessage(Message message)
+   public void onMessage(final Message message)
    {
       try
       {
-         //Step 9. We know the client is sending a text message so we cast
+         // Step 9. We know the client is sending a text message so we cast
          TextMessage textMessage = (TextMessage)message;
 
-         //Step 10. get the text from the message.
+         // Step 10. get the text from the message.
          String text = textMessage.getText();
 
          System.out.println("message " + text + " received");
 
-         //Step 11. Lets take a look at the transaction and see whats happening.
+         // Step 11. Lets take a look at the transaction and see whats happening.
          Transaction tx = tm.getTransaction();
 
-         if(tx != null)
+         if (tx != null)
          {
             System.out.println("we're in the middle of a transaction: " + tx);
          }

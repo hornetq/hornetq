@@ -36,7 +36,7 @@ import org.hornetq.common.example.HornetQExample;
  */
 public class QueueBrowserExample extends HornetQExample
 {
-   public static void main(String[] args)
+   public static void main(final String[] args)
    {
       new QueueBrowserExample().run(args);
    }
@@ -76,7 +76,7 @@ public class QueueBrowserExample extends HornetQExample
 
          // Step 9. Create the JMS QueueBrowser
          QueueBrowser browser = session.createBrowser(queue);
-         
+
          // Step 10. Browse the messages on the queue
          // Browsing a queue does not remove the messages from the queue
          Enumeration messageEnum = browser.getEnumeration();
@@ -88,7 +88,7 @@ public class QueueBrowserExample extends HornetQExample
 
          // Step 11. Close the browser
          browser.close();
-         
+
          // Step 12. Create a JMS Message Consumer
          MessageConsumer messageConsumer = session.createConsumer(queue);
 
@@ -100,9 +100,9 @@ public class QueueBrowserExample extends HornetQExample
          System.out.println("Received message: " + messageReceived.getText());
          messageReceived = (TextMessage)messageConsumer.receive(5000);
          System.out.println("Received message: " + messageReceived.getText());
-         
+
          return true;
-         
+
       }
       finally
       {

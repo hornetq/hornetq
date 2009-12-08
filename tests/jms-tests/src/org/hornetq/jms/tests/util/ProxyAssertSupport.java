@@ -32,20 +32,20 @@ public class ProxyAssertSupport extends TestCase
 
    private static Logger log = Logger.getLogger(ProxyAssertSupport.class);
 
-   public static void assertTrue(java.lang.String string, boolean b)
+   public static void assertTrue(final java.lang.String string, final boolean b)
    {
       try
       {
-         Assert.assertTrue(string,b);
+         Assert.assertTrue(string, b);
       }
       catch (AssertionFailedError e)
       {
-         log.warn("AssertionFailure::"+e.toString(),e);
+         ProxyAssertSupport.log.warn("AssertionFailure::" + e.toString(), e);
          throw e;
       }
    }
 
-    public static void assertTrue(boolean b)
+   public static void assertTrue(final boolean b)
    {
       try
       {
@@ -53,25 +53,25 @@ public class ProxyAssertSupport extends TestCase
       }
       catch (AssertionFailedError e)
       {
-         log.warn("AssertionFailure::"+e.toString(),e);
+         ProxyAssertSupport.log.warn("AssertionFailure::" + e.toString(), e);
          throw e;
       }
    }
 
-    public static void assertFalse(java.lang.String string, boolean b)
+   public static void assertFalse(final java.lang.String string, final boolean b)
    {
       try
       {
-         Assert.assertFalse(string,b);
+         Assert.assertFalse(string, b);
       }
       catch (AssertionFailedError e)
       {
-         log.warn("AssertionFailure::"+e.toString(),e);
+         ProxyAssertSupport.log.warn("AssertionFailure::" + e.toString(), e);
          throw e;
       }
    }
 
-    public static void assertFalse(boolean b)
+   public static void assertFalse(final boolean b)
    {
       try
       {
@@ -79,12 +79,12 @@ public class ProxyAssertSupport extends TestCase
       }
       catch (AssertionFailedError e)
       {
-         log.warn("AssertionFailure::"+e.toString(),e);
+         ProxyAssertSupport.log.warn("AssertionFailure::" + e.toString(), e);
          throw e;
       }
    }
 
-    public static void fail(java.lang.String string)
+   public static void fail(final java.lang.String string)
 
    {
       try
@@ -93,12 +93,12 @@ public class ProxyAssertSupport extends TestCase
       }
       catch (AssertionFailedError e)
       {
-         log.warn("AssertionFailure::"+e.toString(),e);
+         ProxyAssertSupport.log.warn("AssertionFailure::" + e.toString(), e);
          throw e;
       }
    }
 
-    public static void fail()
+   public static void fail()
    {
       try
       {
@@ -106,272 +106,276 @@ public class ProxyAssertSupport extends TestCase
       }
       catch (AssertionFailedError e)
       {
-         log.warn("AssertionFailure::"+e.toString(),e);
+         ProxyAssertSupport.log.warn("AssertionFailure::" + e.toString(), e);
          throw e;
       }
    }
 
-    public static void assertEquals(java.lang.String string, java.lang.Object object, java.lang.Object object1)
+   public static void assertEquals(final java.lang.String string,
+                                   final java.lang.Object object,
+                                   final java.lang.Object object1)
    {
       try
       {
-         Assert.assertEquals(string,object,object1);
+         Assert.assertEquals(string, object, object1);
       }
       catch (AssertionFailedError e)
       {
-         log.warn("AssertionFailure::"+e.toString(),e);
+         ProxyAssertSupport.log.warn("AssertionFailure::" + e.toString(), e);
          throw e;
       }
    }
 
-    public static void assertEquals(java.lang.Object object, java.lang.Object object1)
+   public static void assertEquals(final java.lang.Object object, final java.lang.Object object1)
    {
       try
       {
-         Assert.assertEquals(object,object1);
+         Assert.assertEquals(object, object1);
       }
       catch (AssertionFailedError e)
       {
-         log.warn("AssertionFailure::"+e.toString(),e);
+         ProxyAssertSupport.log.warn("AssertionFailure::" + e.toString(), e);
          throw e;
       }
    }
 
-    public static void assertEquals(java.lang.String string, java.lang.String string1, java.lang.String string2)
+   public static void assertEquals(final java.lang.String string,
+                                   final java.lang.String string1,
+                                   final java.lang.String string2)
    {
       try
       {
-         Assert.assertEquals(string,string1,string2);
+         Assert.assertEquals(string, string1, string2);
       }
       catch (AssertionFailedError e)
       {
-         log.warn("AssertionFailure::"+e.toString(),e);
+         ProxyAssertSupport.log.warn("AssertionFailure::" + e.toString(), e);
          throw e;
       }
    }
 
-    public static void assertEquals(java.lang.String string, java.lang.String string1)
+   public static void assertEquals(final java.lang.String string, final java.lang.String string1)
    {
       try
       {
-         Assert.assertEquals(string,string1);
+         Assert.assertEquals(string, string1);
       }
       catch (AssertionFailedError e)
       {
-         log.warn("AssertionFailure::"+e.toString(),e);
+         ProxyAssertSupport.log.warn("AssertionFailure::" + e.toString(), e);
          throw e;
       }
    }
 
-    public static void assertEquals(java.lang.String string, double v, double v1, double v2)
+   public static void assertEquals(final java.lang.String string, final double v, final double v1, final double v2)
    {
       try
       {
-         Assert.assertEquals(string,v,v1,v2);
+         Assert.assertEquals(string, v, v1, v2);
       }
       catch (AssertionFailedError e)
       {
-         log.warn("AssertionFailure::"+e.toString(),e);
+         ProxyAssertSupport.log.warn("AssertionFailure::" + e.toString(), e);
          throw e;
       }
    }
 
-    public static void assertEquals(double v, double v1, double v2)
+   public static void assertEquals(final double v, final double v1, final double v2)
    {
       try
       {
-         Assert.assertEquals(v,v1,v2);
+         Assert.assertEquals(v, v1, v2);
       }
       catch (AssertionFailedError e)
       {
-         log.warn("AssertionFailure::"+e.toString(),e);
+         ProxyAssertSupport.log.warn("AssertionFailure::" + e.toString(), e);
          throw e;
       }
    }
 
-    public static void assertEquals(java.lang.String string, float v, float v1, float v2)
+   public static void assertEquals(final java.lang.String string, final float v, final float v1, final float v2)
    {
       try
       {
-         Assert.assertEquals(string,v,v1,v2);
+         Assert.assertEquals(string, v, v1, v2);
       }
       catch (AssertionFailedError e)
       {
-         log.warn("AssertionFailure::"+e.toString(),e);
+         ProxyAssertSupport.log.warn("AssertionFailure::" + e.toString(), e);
          throw e;
       }
    }
 
-    public static void assertEquals(float v, float v1, float v2)
+   public static void assertEquals(final float v, final float v1, final float v2)
    {
       try
       {
-         Assert.assertEquals(v,v1,v2);
+         Assert.assertEquals(v, v1, v2);
       }
       catch (AssertionFailedError e)
       {
-         log.warn("AssertionFailure::"+e.toString(),e);
+         ProxyAssertSupport.log.warn("AssertionFailure::" + e.toString(), e);
          throw e;
       }
    }
 
-    public static void assertEquals(java.lang.String string, long l, long l1)
+   public static void assertEquals(final java.lang.String string, final long l, final long l1)
    {
       try
       {
-         Assert.assertEquals(string,l,l1);
+         Assert.assertEquals(string, l, l1);
       }
       catch (AssertionFailedError e)
       {
-         log.warn("AssertionFailure::"+e.toString(),e);
+         ProxyAssertSupport.log.warn("AssertionFailure::" + e.toString(), e);
          throw e;
       }
    }
 
-    public static void assertEquals(long l, long l1)
+   public static void assertEquals(final long l, final long l1)
    {
       try
       {
-         Assert.assertEquals(l,l1);
+         Assert.assertEquals(l, l1);
       }
       catch (AssertionFailedError e)
       {
-         log.warn("AssertionFailure::"+e.toString(),e);
+         ProxyAssertSupport.log.warn("AssertionFailure::" + e.toString(), e);
          throw e;
       }
    }
 
-    public static void assertEquals(java.lang.String string, boolean b, boolean b1)
+   public static void assertEquals(final java.lang.String string, final boolean b, final boolean b1)
    {
       try
       {
-         Assert.assertEquals(string,b,b1);
+         Assert.assertEquals(string, b, b1);
       }
       catch (AssertionFailedError e)
       {
-         log.warn("AssertionFailure::"+e.toString(),e);
+         ProxyAssertSupport.log.warn("AssertionFailure::" + e.toString(), e);
          throw e;
       }
    }
 
-    public static void assertEquals(boolean b, boolean b1)
+   public static void assertEquals(final boolean b, final boolean b1)
    {
       try
       {
-         Assert.assertEquals(b,b1);
+         Assert.assertEquals(b, b1);
       }
       catch (AssertionFailedError e)
       {
-         log.warn("AssertionFailure::"+e.toString(),e);
+         ProxyAssertSupport.log.warn("AssertionFailure::" + e.toString(), e);
          throw e;
       }
    }
 
-    public static void assertEquals(java.lang.String string, byte b, byte b1)
+   public static void assertEquals(final java.lang.String string, final byte b, final byte b1)
    {
       try
       {
-         Assert.assertEquals(string,b,b1);
+         Assert.assertEquals(string, b, b1);
       }
       catch (AssertionFailedError e)
       {
-         log.warn("AssertionFailure::"+e.toString(),e);
+         ProxyAssertSupport.log.warn("AssertionFailure::" + e.toString(), e);
          throw e;
       }
    }
 
-    public static void assertEquals(byte b, byte b1)
+   public static void assertEquals(final byte b, final byte b1)
    {
       try
       {
-         Assert.assertEquals(b,b1);
+         Assert.assertEquals(b, b1);
       }
       catch (AssertionFailedError e)
       {
-         log.warn("AssertionFailure::"+e.toString(),e);
+         ProxyAssertSupport.log.warn("AssertionFailure::" + e.toString(), e);
          throw e;
       }
    }
 
-    public static void assertEquals(java.lang.String string, char c, char c1)
+   public static void assertEquals(final java.lang.String string, final char c, final char c1)
    {
       try
       {
-         Assert.assertEquals(string,c,c1);
+         Assert.assertEquals(string, c, c1);
       }
       catch (AssertionFailedError e)
       {
-         log.warn("AssertionFailure::"+e.toString(),e);
+         ProxyAssertSupport.log.warn("AssertionFailure::" + e.toString(), e);
          throw e;
       }
    }
 
-    public static void assertEquals(char c, char c1)
+   public static void assertEquals(final char c, final char c1)
    {
       try
       {
-         Assert.assertEquals(c,c1);
+         Assert.assertEquals(c, c1);
       }
       catch (AssertionFailedError e)
       {
-         log.warn("AssertionFailure::"+e.toString(),e);
+         ProxyAssertSupport.log.warn("AssertionFailure::" + e.toString(), e);
          throw e;
       }
    }
 
-    public static void assertEquals(java.lang.String string, short i, short i1)
+   public static void assertEquals(final java.lang.String string, final short i, final short i1)
    {
       try
       {
-         Assert.assertEquals(string,i,i1);
+         Assert.assertEquals(string, i, i1);
       }
       catch (AssertionFailedError e)
       {
-         log.warn("AssertionFailure::"+e.toString(),e);
+         ProxyAssertSupport.log.warn("AssertionFailure::" + e.toString(), e);
          throw e;
       }
    }
 
-    public static void assertEquals(short i, short i1)
+   public static void assertEquals(final short i, final short i1)
    {
       try
       {
-         Assert.assertEquals(i,i1);
+         Assert.assertEquals(i, i1);
       }
       catch (AssertionFailedError e)
       {
-         log.warn("AssertionFailure::"+e.toString(),e);
+         ProxyAssertSupport.log.warn("AssertionFailure::" + e.toString(), e);
          throw e;
       }
    }
 
-    public static void assertEquals(java.lang.String string, int i, int i1)
+   public static void assertEquals(final java.lang.String string, final int i, final int i1)
    {
       try
       {
-         Assert.assertEquals(string,i,i1);
+         Assert.assertEquals(string, i, i1);
       }
       catch (AssertionFailedError e)
       {
-         log.warn("AssertionFailure::"+e.toString(),e);
+         ProxyAssertSupport.log.warn("AssertionFailure::" + e.toString(), e);
          throw e;
       }
    }
 
-    public static void assertEquals(int i, int i1)
+   public static void assertEquals(final int i, final int i1)
    {
       try
       {
-         Assert.assertEquals(i,i1);
+         Assert.assertEquals(i, i1);
       }
       catch (AssertionFailedError e)
       {
-         log.warn("AssertionFailure::"+e.toString(),e);
+         ProxyAssertSupport.log.warn("AssertionFailure::" + e.toString(), e);
          throw e;
       }
    }
 
-    public static void assertNotNull(java.lang.Object object)
+   public static void assertNotNull(final java.lang.Object object)
    {
       try
       {
@@ -379,25 +383,25 @@ public class ProxyAssertSupport extends TestCase
       }
       catch (AssertionFailedError e)
       {
-         log.warn("AssertionFailure::"+e.toString(),e);
+         ProxyAssertSupport.log.warn("AssertionFailure::" + e.toString(), e);
          throw e;
       }
    }
 
-    public static void assertNotNull(java.lang.String string, java.lang.Object object)
+   public static void assertNotNull(final java.lang.String string, final java.lang.Object object)
    {
       try
       {
-         Assert.assertNotNull(string,object);
+         Assert.assertNotNull(string, object);
       }
       catch (AssertionFailedError e)
       {
-         log.warn("AssertionFailure::"+e.toString(),e);
+         ProxyAssertSupport.log.warn("AssertionFailure::" + e.toString(), e);
          throw e;
       }
    }
 
-    public static void assertNull(java.lang.Object object)
+   public static void assertNull(final java.lang.Object object)
    {
       try
       {
@@ -405,79 +409,83 @@ public class ProxyAssertSupport extends TestCase
       }
       catch (AssertionFailedError e)
       {
-         log.warn("AssertionFailure::"+e.toString(),e);
+         ProxyAssertSupport.log.warn("AssertionFailure::" + e.toString(), e);
          throw e;
       }
    }
 
-    public static void assertNull(java.lang.String string, java.lang.Object object)
+   public static void assertNull(final java.lang.String string, final java.lang.Object object)
    {
       try
       {
-         Assert.assertNull(string,object);
+         Assert.assertNull(string, object);
       }
       catch (AssertionFailedError e)
       {
-         log.warn("AssertionFailure::"+e.toString(),e);
+         ProxyAssertSupport.log.warn("AssertionFailure::" + e.toString(), e);
          throw e;
       }
    }
 
-    public static void assertSame(java.lang.String string, java.lang.Object object, java.lang.Object object1)
+   public static void assertSame(final java.lang.String string,
+                                 final java.lang.Object object,
+                                 final java.lang.Object object1)
    {
       try
       {
-         Assert.assertSame(string,object,object1);
+         Assert.assertSame(string, object, object1);
       }
       catch (AssertionFailedError e)
       {
-         log.warn("AssertionFailure::"+e.toString(),e);
+         ProxyAssertSupport.log.warn("AssertionFailure::" + e.toString(), e);
          throw e;
       }
    }
 
-    public static void assertSame(java.lang.Object object, java.lang.Object object1)
+   public static void assertSame(final java.lang.Object object, final java.lang.Object object1)
    {
       try
       {
-         Assert.assertSame(object,object1);
+         Assert.assertSame(object, object1);
       }
       catch (AssertionFailedError e)
       {
-         log.warn("AssertionFailure::"+e.toString(),e);
+         ProxyAssertSupport.log.warn("AssertionFailure::" + e.toString(), e);
          throw e;
       }
    }
 
-    public static void assertNotSame(java.lang.String string, java.lang.Object object, java.lang.Object object1)
+   public static void assertNotSame(final java.lang.String string,
+                                    final java.lang.Object object,
+                                    final java.lang.Object object1)
    {
       try
       {
-         Assert.assertNotSame(string,object,object1);
+         Assert.assertNotSame(string, object, object1);
       }
       catch (AssertionFailedError e)
       {
-         log.warn("AssertionFailure::"+e.toString(),e);
+         ProxyAssertSupport.log.warn("AssertionFailure::" + e.toString(), e);
          throw e;
       }
    }
 
-    public static void assertNotSame(java.lang.Object object, java.lang.Object object1)
+   public static void assertNotSame(final java.lang.Object object, final java.lang.Object object1)
    {
       try
       {
-         Assert.assertNotSame(object,object1);
+         Assert.assertNotSame(object, object1);
       }
       catch (AssertionFailedError e)
       {
-         log.warn("AssertionFailure::"+e.toString(),e);
+         ProxyAssertSupport.log.warn("AssertionFailure::" + e.toString(), e);
          throw e;
       }
    }
 
    // Constructors ---------------------------------------------------------------------------------
 
-   public ProxyAssertSupport(String string)
+   public ProxyAssertSupport(final String string)
    {
       super(string);
    }
@@ -487,6 +495,5 @@ public class ProxyAssertSupport extends TestCase
       super();
 
    }
-
 
 }

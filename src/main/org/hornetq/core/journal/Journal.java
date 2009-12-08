@@ -45,7 +45,11 @@ public interface Journal extends HornetQComponent
 
    void appendUpdateRecord(long id, byte recordType, EncodingSupport record, boolean sync) throws Exception;
 
-   void appendUpdateRecord(long id, byte recordType, EncodingSupport record, boolean sync, IOCompletion completionCallback) throws Exception;
+   void appendUpdateRecord(long id,
+                           byte recordType,
+                           EncodingSupport record,
+                           boolean sync,
+                           IOCompletion completionCallback) throws Exception;
 
    void appendDeleteRecord(long id, boolean sync) throws Exception;
 
@@ -95,7 +99,7 @@ public interface Journal extends HornetQComponent
    void appendRollbackRecord(long txID, boolean sync, IOCompletion callback) throws Exception;
 
    // Load
-   
+
    JournalLoadInformation load(LoaderCallback reloadManager) throws Exception;
 
    /** Load internal data structures and not expose any data.
@@ -103,11 +107,12 @@ public interface Journal extends HornetQComponent
     *  Useful in situations where the journal is being replicated, copied... etc. */
    JournalLoadInformation loadInternalOnly() throws Exception;
 
-
-   JournalLoadInformation load(List<RecordInfo> committedRecords, List<PreparedTransactionInfo> preparedTransactions, TransactionFailureCallback transactionFailure) throws Exception;
+   JournalLoadInformation load(List<RecordInfo> committedRecords,
+                               List<PreparedTransactionInfo> preparedTransactions,
+                               TransactionFailureCallback transactionFailure) throws Exception;
 
    int getAlignment() throws Exception;
-   
+
    int getNumberOfRecords();
 
    void perfBlast(int pages) throws Exception;

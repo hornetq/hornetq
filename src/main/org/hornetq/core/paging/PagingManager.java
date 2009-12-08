@@ -49,7 +49,7 @@ public interface PagingManager extends HornetQComponent
 
    /** An injection point for the PostOffice to inject itself */
    void setPostOffice(PostOffice postOffice);
-   
+
    /** Used to start depaging every paged destination, after a reload/restart */
    void resumeDepages() throws Exception;
 

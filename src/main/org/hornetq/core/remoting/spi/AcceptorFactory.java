@@ -9,7 +9,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
  * implied.  See the License for the specific language governing
  * permissions and limitations under the License.
- */ 
+ */
 
 package org.hornetq.core.remoting.spi;
 
@@ -26,10 +26,10 @@ import java.util.concurrent.ScheduledExecutorService;
 public interface AcceptorFactory
 {
    Acceptor createAcceptor(final Map<String, Object> configuration,
-                           BufferHandler handler,                        
+                           BufferHandler handler,
                            ConnectionLifeCycleListener listener,
                            Executor threadPool,
                            ScheduledExecutorService scheduledThreadPool);
-   
+
    Set<String> getAllowableProperties();
 }

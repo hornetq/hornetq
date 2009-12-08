@@ -13,10 +13,11 @@
 
 package org.hornetq.jms.tests.message;
 
-
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.TextMessage;
+
+import org.hornetq.jms.tests.util.ProxyAssertSupport;
 
 /**
  * A test that sends/receives text messages to the JMS provider and verifies their integrity.
@@ -38,12 +39,14 @@ public class TextMessageTest extends MessageTestBase
 
    // Public --------------------------------------------------------
 
+   @Override
    public void setUp() throws Exception
    {
       super.setUp();
       message = session.createTextMessage();
    }
 
+   @Override
    public void tearDown() throws Exception
    {
       message = null;
@@ -59,12 +62,13 @@ public class TextMessageTest extends MessageTestBase
 
       rm.clearProperties();
 
-      assertEquals("something", rm.getText());
+      ProxyAssertSupport.assertEquals("something", rm.getText());
    }
 
    // Protected -----------------------------------------------------
 
-   protected void prepareMessage(Message m) throws JMSException
+   @Override
+   protected void prepareMessage(final Message m) throws JMSException
    {
       super.prepareMessage(m);
 
@@ -72,11 +76,12 @@ public class TextMessageTest extends MessageTestBase
       tm.setText("this is the payload");
    }
 
-   protected void assertEquivalent(Message m, int mode, boolean redelivery) throws JMSException
+   @Override
+   protected void assertEquivalent(final Message m, final int mode, final boolean redelivery) throws JMSException
    {
       super.assertEquivalent(m, mode, redelivery);
 
       TextMessage tm = (TextMessage)m;
-      assertEquals("this is the payload", tm.getText());
+      ProxyAssertSupport.assertEquals("this is the payload", tm.getText());
    }
 }

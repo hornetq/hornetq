@@ -21,6 +21,7 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 
 import org.hornetq.jms.tests.HornetQServerTestCase;
+import org.hornetq.jms.tests.util.ProxyAssertSupport;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -33,13 +34,12 @@ public class JMSPriorityHeaderTest extends HornetQServerTestCase
    // Constants -----------------------------------------------------
 
    // Static --------------------------------------------------------
-   
+
    // Attributes ----------------------------------------------------
-   
+
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
-
 
    /*
     * Note - this test is testing our current implementation of message ordering since the spec
@@ -49,13 +49,13 @@ public class JMSPriorityHeaderTest extends HornetQServerTestCase
    public void testMessageOrder() throws Exception
    {
       Connection conn = getConnectionFactory().createConnection();
-      
+
       conn.start();
-      
+
       Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-            
-      MessageProducer prod = sessSend.createProducer(queue1);
-      
+
+      MessageProducer prod = sessSend.createProducer(HornetQServerTestCase.queue1);
+
       TextMessage m0 = sessSend.createTextMessage("a");
       TextMessage m1 = sessSend.createTextMessage("b");
       TextMessage m2 = sessSend.createTextMessage("c");
@@ -66,8 +66,7 @@ public class JMSPriorityHeaderTest extends HornetQServerTestCase
       TextMessage m7 = sessSend.createTextMessage("h");
       TextMessage m8 = sessSend.createTextMessage("i");
       TextMessage m9 = sessSend.createTextMessage("j");
-      
-      
+
       prod.send(m0, DeliveryMode.NON_PERSISTENT, 0, 0);
       prod.send(m1, DeliveryMode.NON_PERSISTENT, 1, 0);
       prod.send(m2, DeliveryMode.NON_PERSISTENT, 2, 0);
@@ -78,71 +77,71 @@ public class JMSPriorityHeaderTest extends HornetQServerTestCase
       prod.send(m7, DeliveryMode.NON_PERSISTENT, 7, 0);
       prod.send(m8, DeliveryMode.NON_PERSISTENT, 8, 0);
       prod.send(m9, DeliveryMode.NON_PERSISTENT, 9, 0);
-      
-      //NP messages are sent async so we need to allow them time to all hit the server
+
+      // NP messages are sent async so we need to allow them time to all hit the server
       Thread.sleep(2000);
 
       Session sessReceive = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      
-      MessageConsumer cons = sessReceive.createConsumer(queue1);
-      
+
+      MessageConsumer cons = sessReceive.createConsumer(HornetQServerTestCase.queue1);
+
       {
          TextMessage t = (TextMessage)cons.receive(1000);
-         assertNotNull(t);
-         assertEquals("j", t.getText());
+         ProxyAssertSupport.assertNotNull(t);
+         ProxyAssertSupport.assertEquals("j", t.getText());
       }
       {
          TextMessage t = (TextMessage)cons.receive(1000);
-         assertNotNull(t);
-         assertEquals("i", t.getText());
+         ProxyAssertSupport.assertNotNull(t);
+         ProxyAssertSupport.assertEquals("i", t.getText());
       }
       {
          TextMessage t = (TextMessage)cons.receive(1000);
-         assertNotNull(t);
-         assertEquals("h", t.getText());
+         ProxyAssertSupport.assertNotNull(t);
+         ProxyAssertSupport.assertEquals("h", t.getText());
       }
       {
          TextMessage t = (TextMessage)cons.receive(1000);
-         assertNotNull(t);
-         assertEquals("g", t.getText());
+         ProxyAssertSupport.assertNotNull(t);
+         ProxyAssertSupport.assertEquals("g", t.getText());
       }
       {
          TextMessage t = (TextMessage)cons.receive(1000);
-         assertNotNull(t);
-         assertEquals("f", t.getText());
+         ProxyAssertSupport.assertNotNull(t);
+         ProxyAssertSupport.assertEquals("f", t.getText());
       }
       {
          TextMessage t = (TextMessage)cons.receive(1000);
-         assertNotNull(t);
-         assertEquals("e", t.getText());
+         ProxyAssertSupport.assertNotNull(t);
+         ProxyAssertSupport.assertEquals("e", t.getText());
       }
       {
          TextMessage t = (TextMessage)cons.receive(1000);
-         assertNotNull(t);
-         assertEquals("d", t.getText());
+         ProxyAssertSupport.assertNotNull(t);
+         ProxyAssertSupport.assertEquals("d", t.getText());
       }
       {
          TextMessage t = (TextMessage)cons.receive(1000);
-         assertNotNull(t);
-         assertEquals("c", t.getText());
+         ProxyAssertSupport.assertNotNull(t);
+         ProxyAssertSupport.assertEquals("c", t.getText());
       }
       {
          TextMessage t = (TextMessage)cons.receive(1000);
-         assertNotNull(t);
-         assertEquals("b", t.getText());
+         ProxyAssertSupport.assertNotNull(t);
+         ProxyAssertSupport.assertEquals("b", t.getText());
       }
       {
          TextMessage t = (TextMessage)cons.receive(1000);
-         assertNotNull(t);
-         assertEquals("a", t.getText());
+         ProxyAssertSupport.assertNotNull(t);
+         ProxyAssertSupport.assertEquals("a", t.getText());
       }
       {
          TextMessage t = (TextMessage)cons.receive(500);
-         assertNull(t);
+         ProxyAssertSupport.assertNull(t);
       }
-      
+
       cons.close();
-      
+
       prod.send(m0, DeliveryMode.NON_PERSISTENT, 0, 0);
       prod.send(m1, DeliveryMode.NON_PERSISTENT, 0, 0);
       prod.send(m2, DeliveryMode.NON_PERSISTENT, 0, 0);
@@ -153,119 +152,116 @@ public class JMSPriorityHeaderTest extends HornetQServerTestCase
       prod.send(m7, DeliveryMode.NON_PERSISTENT, 5, 0);
       prod.send(m8, DeliveryMode.NON_PERSISTENT, 5, 0);
       prod.send(m9, DeliveryMode.NON_PERSISTENT, 6, 0);
-      
-      //Give them time to hit the server
+
+      // Give them time to hit the server
       Thread.sleep(2000);
-      
-      cons = sessReceive.createConsumer(queue1);         
-      
+
+      cons = sessReceive.createConsumer(HornetQServerTestCase.queue1);
+
       {
          TextMessage t = (TextMessage)cons.receive(1000);
-         assertNotNull(t);
-         assertEquals("j", t.getText());
+         ProxyAssertSupport.assertNotNull(t);
+         ProxyAssertSupport.assertEquals("j", t.getText());
       }
       {
          TextMessage t = (TextMessage)cons.receive(1000);
-         assertNotNull(t);
-         assertEquals("h", t.getText());
+         ProxyAssertSupport.assertNotNull(t);
+         ProxyAssertSupport.assertEquals("h", t.getText());
       }
       {
          TextMessage t = (TextMessage)cons.receive(1000);
-         assertNotNull(t);
-         assertEquals("i", t.getText());
+         ProxyAssertSupport.assertNotNull(t);
+         ProxyAssertSupport.assertEquals("i", t.getText());
       }
       {
          TextMessage t = (TextMessage)cons.receive(1000);
-         assertNotNull(t);
-         assertEquals("f", t.getText());
+         ProxyAssertSupport.assertNotNull(t);
+         ProxyAssertSupport.assertEquals("f", t.getText());
       }
       {
          TextMessage t = (TextMessage)cons.receive(1000);
-         assertNotNull(t);
-         assertEquals("g", t.getText());
+         ProxyAssertSupport.assertNotNull(t);
+         ProxyAssertSupport.assertEquals("g", t.getText());
       }
       {
          TextMessage t = (TextMessage)cons.receive(1000);
-         assertNotNull(t);
-         assertEquals("d", t.getText());
+         ProxyAssertSupport.assertNotNull(t);
+         ProxyAssertSupport.assertEquals("d", t.getText());
       }
       {
          TextMessage t = (TextMessage)cons.receive(1000);
-         assertNotNull(t);
-         assertEquals("e", t.getText());
+         ProxyAssertSupport.assertNotNull(t);
+         ProxyAssertSupport.assertEquals("e", t.getText());
       }
       {
          TextMessage t = (TextMessage)cons.receive(1000);
-         assertNotNull(t);
-         assertEquals("a", t.getText());
+         ProxyAssertSupport.assertNotNull(t);
+         ProxyAssertSupport.assertEquals("a", t.getText());
       }
       {
          TextMessage t = (TextMessage)cons.receive(1000);
-         assertNotNull(t);
-         assertEquals("b", t.getText());
+         ProxyAssertSupport.assertNotNull(t);
+         ProxyAssertSupport.assertEquals("b", t.getText());
       }
       {
          TextMessage t = (TextMessage)cons.receive(1000);
-         assertNotNull(t);
-         assertEquals("c", t.getText());
+         ProxyAssertSupport.assertNotNull(t);
+         ProxyAssertSupport.assertEquals("c", t.getText());
       }
       {
          TextMessage t = (TextMessage)cons.receiveNoWait();
-         assertNull(t);
+         ProxyAssertSupport.assertNull(t);
       }
-      
+
       conn.close();
    }
-   
-      public void testSimple() throws Exception
+
+   public void testSimple() throws Exception
    {
       Connection conn = getConnectionFactory().createConnection();
-      
+
       conn.start();
-      
+
       Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-            
-      MessageProducer prod = sessSend.createProducer(queue1);
-      
+
+      MessageProducer prod = sessSend.createProducer(HornetQServerTestCase.queue1);
+
       TextMessage m0 = sessSend.createTextMessage("a");
-         
+
       prod.send(m0, DeliveryMode.NON_PERSISTENT, 7, 0);
-      
-      //Let it hit server
+
+      // Let it hit server
       Thread.sleep(2000);
 
       Session sessReceive = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      
-      MessageConsumer cons = sessReceive.createConsumer(queue1);
-     
+
+      MessageConsumer cons = sessReceive.createConsumer(HornetQServerTestCase.queue1);
+
       {
          TextMessage t = (TextMessage)cons.receive(1000);
-         assertNotNull(t);
-         assertEquals("a", t.getText());
-         assertEquals(7, t.getJMSPriority());
+         ProxyAssertSupport.assertNotNull(t);
+         ProxyAssertSupport.assertEquals("a", t.getText());
+         ProxyAssertSupport.assertEquals(7, t.getJMSPriority());
       }
-      
-      //Give the message enough time to reach the consumer
-      
+
+      // Give the message enough time to reach the consumer
+
       Thread.sleep(2000);
-      
+
       {
          TextMessage t = (TextMessage)cons.receiveNoWait();
-         assertNull(t);
+         ProxyAssertSupport.assertNull(t);
       }
-      
+
       conn.close();
    }
-   
-   
-
 
    // Package protected ---------------------------------------------
-   
+
    // Protected -----------------------------------------------------
-   
+
    // Private -------------------------------------------------------
-   
+
    // Inner classes -------------------------------------------------
 
 }

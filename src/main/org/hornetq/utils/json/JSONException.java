@@ -1,4 +1,3 @@
-
 /*
 Copyright (c) 2002 JSON.org
 
@@ -30,23 +29,33 @@ package org.hornetq.utils.json;
  * @author JSON.org
  * @version 2008-09-18
  */
-public class JSONException extends Exception {
-    private Throwable cause;
+public class JSONException extends Exception
+{
+   /**
+   * 
+   */
+   private static final long serialVersionUID = -3940674325153571604L;
 
-    /**
-     * Constructs a JSONException with an explanatory message.
-     * @param message Detail about the reason for the exception.
-     */
-    public JSONException(String message) {
-        super(message);
-    }
+   private Throwable cause;
 
-    public JSONException(Throwable t) {
-        super(t.getMessage());
-        this.cause = t;
-    }
+   /**
+    * Constructs a JSONException with an explanatory message.
+    * @param message Detail about the reason for the exception.
+    */
+   public JSONException(final String message)
+   {
+      super(message);
+   }
 
-    public Throwable getCause() {
-        return this.cause;
-    }
+   public JSONException(final Throwable t)
+   {
+      super(t.getMessage());
+      cause = t;
+   }
+
+   @Override
+   public Throwable getCause()
+   {
+      return cause;
+   }
 }

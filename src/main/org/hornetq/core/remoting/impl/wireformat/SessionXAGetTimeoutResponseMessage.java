@@ -14,7 +14,6 @@
 package org.hornetq.core.remoting.impl.wireformat;
 
 import org.hornetq.core.buffers.HornetQBuffer;
-import org.hornetq.utils.DataConstants;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -35,18 +34,19 @@ public class SessionXAGetTimeoutResponseMessage extends PacketImpl
 
    public SessionXAGetTimeoutResponseMessage(final int timeoutSeconds)
    {
-      super(SESS_XA_GET_TIMEOUT_RESP);
+      super(PacketImpl.SESS_XA_GET_TIMEOUT_RESP);
 
       this.timeoutSeconds = timeoutSeconds;
    }
 
    public SessionXAGetTimeoutResponseMessage()
    {
-      super(SESS_XA_GET_TIMEOUT_RESP);
+      super(PacketImpl.SESS_XA_GET_TIMEOUT_RESP);
    }
 
    // Public --------------------------------------------------------
 
+   @Override
    public boolean isResponse()
    {
       return true;
@@ -54,20 +54,23 @@ public class SessionXAGetTimeoutResponseMessage extends PacketImpl
 
    public int getTimeoutSeconds()
    {
-      return this.timeoutSeconds;
+      return timeoutSeconds;
    }
 
+   @Override
    public void encodeRest(final HornetQBuffer buffer)
    {
       buffer.writeInt(timeoutSeconds);
    }
 
+   @Override
    public void decodeRest(final HornetQBuffer buffer)
    {
       timeoutSeconds = buffer.readInt();
    }
 
-   public boolean equals(Object other)
+   @Override
+   public boolean equals(final Object other)
    {
       if (other instanceof SessionXAGetTimeoutResponseMessage == false)
       {
@@ -76,7 +79,7 @@ public class SessionXAGetTimeoutResponseMessage extends PacketImpl
 
       SessionXAGetTimeoutResponseMessage r = (SessionXAGetTimeoutResponseMessage)other;
 
-      return super.equals(other) && this.timeoutSeconds == r.timeoutSeconds;
+      return super.equals(other) && timeoutSeconds == r.timeoutSeconds;
    }
 
    // Package protected ---------------------------------------------

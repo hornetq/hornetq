@@ -26,19 +26,20 @@ public class Pair<A, B> implements Serializable
 {
    private static final long serialVersionUID = -2496357457812368127L;
 
-   public Pair(A a, B b)
+   public Pair(final A a, final B b)
    {
       this.a = a;
-      
+
       this.b = b;
    }
-   
+
    public A a;
-   
+
    public B b;
-   
+
    private int hash = -1;
-   
+
+   @Override
    public int hashCode()
    {
       if (hash == -1)
@@ -52,29 +53,29 @@ public class Pair<A, B> implements Serializable
             hash = (a == null ? 0 : a.hashCode()) + 37 * (b == null ? 0 : b.hashCode());
          }
       }
-      
+
       return hash;
    }
-   
-   public boolean equals(Object other)
+
+   @Override
+   public boolean equals(final Object other)
    {
       if (other == this)
       {
          return true;
       }
-      
+
       if (other instanceof Pair == false)
       {
          return false;
       }
-      
+
       Pair<A, B> pother = (Pair<A, B>)other;
-      
-      return (pother.a == null ? a == null : pother.a.equals(a)) &&
-             (pother.b == null ? b == null : pother.b.equals(b));                 
-      
+
+      return (pother.a == null ? a == null : pother.a.equals(a)) && (pother.b == null ? b == null : pother.b.equals(b));
+
    }
-   
+
    @Override
    public String toString()
    {

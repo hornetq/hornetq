@@ -18,14 +18,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.persistence.QueueBindingInfo;
 import org.hornetq.core.persistence.GroupingInfo;
+import org.hornetq.core.persistence.QueueBindingInfo;
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.server.JournalType;
@@ -53,31 +52,32 @@ public class RestartSMTest extends ServiceTestBase
    // Attributes ----------------------------------------------------
 
    ExecutorService executor;
-   
+
    ExecutorFactory execFactory;
-   
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
-   
+
+   @Override
    protected void setUp() throws Exception
    {
       super.setUp();
-      
+
       executor = Executors.newCachedThreadPool();
-      
-      this.execFactory = new OrderedExecutorFactory(executor);
+
+      execFactory = new OrderedExecutorFactory(executor);
    }
-   
+
+   @Override
    protected void tearDown() throws Exception
    {
       executor.shutdown();
-      
+
       super.tearDown();
    }
-   
 
    public void testRestartStorageManager() throws Exception
    {
@@ -93,7 +93,7 @@ public class RestartSMTest extends ServiceTestBase
       PostOffice postOffice = new FakePostOffice();
 
       final JournalStorageManager journal = new JournalStorageManager(configuration, execFactory);
-      
+
       try
       {
 
@@ -132,7 +132,7 @@ public class RestartSMTest extends ServiceTestBase
          }
          catch (Exception ex)
          {
-            log.warn(ex.getMessage(), ex);
+            RestartSMTest.log.warn(ex.getMessage(), ex);
          }
       }
    }

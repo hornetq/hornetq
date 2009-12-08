@@ -31,11 +31,12 @@ import org.hornetq.common.example.HornetQExample;
  */
 public class ProducerRateLimitExample extends HornetQExample
 {
-   public static void main(String[] args)
+   public static void main(final String[] args)
    {
       new ProducerRateLimitExample().run(args);
    }
 
+   @Override
    public boolean runExample() throws Exception
    {
       Connection connection = null;

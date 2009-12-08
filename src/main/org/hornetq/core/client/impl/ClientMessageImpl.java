@@ -127,7 +127,7 @@ public class ClientMessageImpl extends MessageImpl implements ClientMessageInter
    }
 
    public int getBodySize()
-   {      
+   {
       return buffer.writerIndex() - buffer.readerIndex();
    }
 
@@ -147,7 +147,6 @@ public class ClientMessageImpl extends MessageImpl implements ClientMessageInter
     */
 
    // FIXME - only used for large messages - move it!
-
    /* (non-Javadoc)
     * @see org.hornetq.core.client.ClientMessage#saveToOutputStream(java.io.OutputStream)
     */
@@ -155,7 +154,7 @@ public class ClientMessageImpl extends MessageImpl implements ClientMessageInter
    {
       if (largeMessage)
       {
-         ((LargeMessageBufferImpl)this.getWholeBuffer()).saveBuffer(out);
+         ((LargeMessageBufferImpl)getWholeBuffer()).saveBuffer(out);
       }
       else
       {
@@ -180,7 +179,7 @@ public class ClientMessageImpl extends MessageImpl implements ClientMessageInter
    {
       if (largeMessage)
       {
-         ((LargeMessageBufferImpl)this.getWholeBuffer()).setOutputStream(out);
+         ((LargeMessageBufferImpl)getWholeBuffer()).setOutputStream(out);
       }
       else
       {
@@ -196,7 +195,7 @@ public class ClientMessageImpl extends MessageImpl implements ClientMessageInter
    {
       if (largeMessage)
       {
-         return ((LargeMessageBufferImpl)this.getWholeBuffer()).waitCompletion(timeMilliseconds);
+         return ((LargeMessageBufferImpl)getWholeBuffer()).waitCompletion(timeMilliseconds);
       }
       else
       {
@@ -230,60 +229,55 @@ public class ClientMessageImpl extends MessageImpl implements ClientMessageInter
    {
       this.bodyInputStream = bodyInputStream;
    }
-   
- public void setBuffer(HornetQBuffer buffer)
- {
-    this.buffer = buffer; 
-    
-    if (bodyBuffer != null)
-    {
-       bodyBuffer.setBuffer(buffer);
-    }
- }
- 
- public BodyEncoder getBodyEncoder() throws HornetQException
- {
-    return new DecodingContext();
- }
 
+   public void setBuffer(final HornetQBuffer buffer)
+   {
+      this.buffer = buffer;
 
+      if (bodyBuffer != null)
+      {
+         bodyBuffer.setBuffer(buffer);
+      }
+   }
 
- private final class DecodingContext implements BodyEncoder
- {
-    private int lastPos = 0;
+   @Override
+   public BodyEncoder getBodyEncoder() throws HornetQException
+   {
+      return new DecodingContext();
+   }
 
-    public DecodingContext()
-    {
-    }
+   private final class DecodingContext implements BodyEncoder
+   {
+      public DecodingContext()
+      {
+      }
 
-    public void open()
-    {
-    }
+      public void open()
+      {
+      }
 
-    public void close()
-    {
-    }
-    
-    public long getLargeBodySize()
-    {
-       return buffer.writerIndex();
-    }
+      public void close()
+      {
+      }
 
-    public int encode(final ByteBuffer bufferRead) throws HornetQException
-    {
-       HornetQBuffer buffer = HornetQBuffers.wrappedBuffer(bufferRead);
-       return encode(buffer, bufferRead.capacity());
-    }
+      public long getLargeBodySize()
+      {
+         return buffer.writerIndex();
+      }
 
-    public int encode(final HornetQBuffer bufferOut, final int size)
-    {
-       byte[] bytes = new byte[size];
-       getWholeBuffer().readBytes(bytes);
-       bufferOut.writeBytes(bytes, 0, size);
-       return size;
-    }
- }
+      public int encode(final ByteBuffer bufferRead) throws HornetQException
+      {
+         HornetQBuffer buffer = HornetQBuffers.wrappedBuffer(bufferRead);
+         return encode(buffer, bufferRead.capacity());
+      }
 
- 
+      public int encode(final HornetQBuffer bufferOut, final int size)
+      {
+         byte[] bytes = new byte[size];
+         getWholeBuffer().readBytes(bytes);
+         bufferOut.writeBytes(bytes, 0, size);
+         return size;
+      }
+   }
 
 }

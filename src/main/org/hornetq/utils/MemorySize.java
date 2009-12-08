@@ -35,15 +35,15 @@ public class MemorySize
    {
       return factory.createObject();
    }
-   
+
    public static boolean is64bitArch()
    {
-      boolean is64bit = true; //Default to 64 e.g. if can't retrieve property
-      
+      boolean is64bit = true; // Default to 64 e.g. if can't retrieve property
+
       try
       {
          String arch = System.getProperty("os.arch");
-         
+
          if (arch != null)
          {
             is64bit = arch.contains("64");
@@ -51,64 +51,65 @@ public class MemorySize
       }
       catch (Exception e)
       {
-         //Ignore
+         // Ignore
       }
-      
+
       return is64bit;
    }
-   
+
    public interface ObjectFactory
    {
       Object createObject();
    }
-   
+
    public static int calculateSize(final ObjectFactory factory) throws Exception
    {
       final Runtime runtime = Runtime.getRuntime();
-      
-      getMemorySize(runtime);
-      
-      newObject(factory);
-      
+
+      MemorySize.getMemorySize(runtime);
+
+      MemorySize.newObject(factory);
+
       int i = 0;
       long heap1 = 0;
       long heap2 = 0;
       long totalMemory1 = 0;
       long totalMemory2 = 0;
 
-      //First we do a dry run with twice as many then throw away the results
-      
-      Object[] obj = new Object[numberOfObjects * 2];
-      
-      for (i = 0; i < numberOfObjects * 2; i++)
+      // First we do a dry run with twice as many then throw away the results
+
+      Object[] obj = new Object[MemorySize.numberOfObjects * 2];
+
+      for (i = 0; i < MemorySize.numberOfObjects * 2; i++)
       {
-         obj[i] = newObject(factory);
+         obj[i] = MemorySize.newObject(factory);
       }
-      
-      obj = new Object[numberOfObjects * 2];
-      
-      heap1 = getMemorySize(runtime);
+
+      obj = new Object[MemorySize.numberOfObjects * 2];
+
+      heap1 = MemorySize.getMemorySize(runtime);
 
       totalMemory1 = runtime.totalMemory();
 
-      for (i = 0; i < numberOfObjects; i++)
+      for (i = 0; i < MemorySize.numberOfObjects; i++)
       {
-         obj[i] = newObject(factory);
+         obj[i] = MemorySize.newObject(factory);
       }
 
-      heap2 = getMemorySize(runtime);
+      heap2 = MemorySize.getMemorySize(runtime);
 
       totalMemory2 = runtime.totalMemory();
 
-      final int size = Math.round(((float)(heap2 - heap1)) / numberOfObjects);
+      final int size = Math.round((float)(heap2 - heap1) / MemorySize.numberOfObjects);
 
       if (totalMemory1 != totalMemory2)
       {
-         //throw new IllegalStateException("Warning: JVM allocated more data what would make results invalid " +
-         //                              totalMemory1 + ":" + totalMemory2);
-         
-         log.warn("Warning: JVM allocated more data what would make results invalid " +
-                                                totalMemory1 + ":" + totalMemory2);
+         // throw new IllegalStateException("Warning: JVM allocated more data what would make results invalid " +
+         // totalMemory1 + ":" + totalMemory2);
+
+         MemorySize.log.warn("Warning: JVM allocated more data what would make results invalid " + totalMemory1 +
+                             ":" +
+                             totalMemory2);
       }
 
       return size;
@@ -118,11 +119,11 @@ public class MemorySize
    {
       for (int i = 0; i < 5; i++)
       {
-         forceGC();
+         MemorySize.forceGC();
       }
       return runtime.totalMemory() - runtime.freeMemory();
    }
-   
+
    private static void forceGC()
    {
       WeakReference<Object> dumbReference = new WeakReference<Object>(new Object());

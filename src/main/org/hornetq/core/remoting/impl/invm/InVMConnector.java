@@ -46,17 +46,17 @@ public class InVMConnector implements Connector
 
    public static synchronized void resetFailures()
    {
-      failures = 0;
-      failOnCreateConnection = false;
-      numberOfFailures = -1;
+      InVMConnector.failures = 0;
+      InVMConnector.failOnCreateConnection = false;
+      InVMConnector.numberOfFailures = -1;
    }
 
    private static synchronized void incFailures()
    {
-      failures++;
-      if (failures == numberOfFailures)
+      InVMConnector.failures++;
+      if (InVMConnector.failures == InVMConnector.numberOfFailures)
       {
-         resetFailures();
+         InVMConnector.resetFailures();
       }
    }
 
@@ -68,7 +68,7 @@ public class InVMConnector implements Connector
 
    private final InVMAcceptor acceptor;
 
-   private ConcurrentMap<String, Connection> connections = new ConcurrentHashMap<String, Connection>();
+   private final ConcurrentMap<String, Connection> connections = new ConcurrentHashMap<String, Connection>();
 
    private volatile boolean started;
 
@@ -81,11 +81,11 @@ public class InVMConnector implements Connector
    {
       this.listener = listener;
 
-      this.id = ConfigurationHelper.getIntProperty(TransportConstants.SERVER_ID_PROP_NAME, 0, configuration);
+      id = ConfigurationHelper.getIntProperty(TransportConstants.SERVER_ID_PROP_NAME, 0, configuration);
 
       this.handler = handler;
 
-      this.executorFactory = new OrderedExecutorFactory(threadPool);
+      executorFactory = new OrderedExecutorFactory(threadPool);
 
       InVMRegistry registry = InVMRegistry.instance;
 
@@ -119,14 +119,15 @@ public class InVMConnector implements Connector
 
    public Connection createConnection()
    {
-      if (failOnCreateConnection)
+      if (InVMConnector.failOnCreateConnection)
       {
-         incFailures();
+         InVMConnector.incFailures();
          // For testing only
          return null;
       }
 
-      Connection conn = internalCreateConnection(acceptor.getHandler(), new Listener(), acceptor.getExecutorFactory().getExecutor());
+      Connection conn = internalCreateConnection(acceptor.getHandler(), new Listener(), acceptor.getExecutorFactory()
+                                                                                                .getExecutor());
 
       acceptor.connect((String)conn.getID(), handler, this, executorFactory.getExecutor());
 
@@ -184,26 +185,28 @@ public class InVMConnector implements Connector
          {
             // Close the corresponding connection on the other side
             acceptor.disconnect((String)connectionID);
-            
+
             // Execute on different thread to avoid deadlocks
             new Thread()
             {
+               @Override
                public void run()
                {
-                  listener.connectionDestroyed(connectionID);                  
+                  listener.connectionDestroyed(connectionID);
                }
             }.start();
          }
       }
 
       public void connectionException(final Object connectionID, final HornetQException me)
-      {                  
+      {
          // Execute on different thread to avoid deadlocks
          new Thread()
          {
+            @Override
             public void run()
             {
-               listener.connectionException(connectionID, me);       
+               listener.connectionException(connectionID, me);
             }
          }.start();
       }

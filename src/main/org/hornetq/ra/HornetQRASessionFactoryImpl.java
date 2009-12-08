@@ -53,7 +53,7 @@ public class HornetQRASessionFactoryImpl implements HornetQRASessionFactory, Ref
    private static final Logger log = Logger.getLogger(HornetQRASessionFactoryImpl.class);
 
    /** Trace enabled */
-   private static boolean trace = log.isTraceEnabled();
+   private static boolean trace = HornetQRASessionFactoryImpl.log.isTraceEnabled();
 
    /** Are we closed? */
    private boolean closed = false;
@@ -97,7 +97,9 @@ public class HornetQRASessionFactoryImpl implements HornetQRASessionFactory, Ref
     * @param cm The connection manager
     * @param type The connection type
     */
-   public HornetQRASessionFactoryImpl(final HornetQRAManagedConnectionFactory mcf, final ConnectionManager cm, final int type)
+   public HornetQRASessionFactoryImpl(final HornetQRAManagedConnectionFactory mcf,
+                                      final ConnectionManager cm,
+                                      final int type)
    {
       this.mcf = mcf;
 
@@ -112,9 +114,9 @@ public class HornetQRASessionFactoryImpl implements HornetQRASessionFactory, Ref
 
       this.type = type;
 
-      if (trace)
+      if (HornetQRASessionFactoryImpl.trace)
       {
-         log.trace("constructor(" + mcf + ", " + cm + ", " + type);
+         HornetQRASessionFactoryImpl.log.trace("constructor(" + mcf + ", " + cm + ", " + type);
       }
    }
 
@@ -124,9 +126,9 @@ public class HornetQRASessionFactoryImpl implements HornetQRASessionFactory, Ref
     */
    public void setReference(final Reference reference)
    {
-      if (trace)
+      if (HornetQRASessionFactoryImpl.trace)
       {
-         log.trace("setReference(" + reference + ")");
+         HornetQRASessionFactoryImpl.log.trace("setReference(" + reference + ")");
       }
 
       this.reference = reference;
@@ -138,9 +140,9 @@ public class HornetQRASessionFactoryImpl implements HornetQRASessionFactory, Ref
     */
    public Reference getReference()
    {
-      if (trace)
+      if (HornetQRASessionFactoryImpl.trace)
       {
-         log.trace("getReference()");
+         HornetQRASessionFactoryImpl.log.trace("getReference()");
       }
 
       return reference;
@@ -152,9 +154,9 @@ public class HornetQRASessionFactoryImpl implements HornetQRASessionFactory, Ref
     */
    public void setUserName(final String name)
    {
-      if (trace)
+      if (HornetQRASessionFactoryImpl.trace)
       {
-         log.trace("setUserName(" + name + ")");
+         HornetQRASessionFactoryImpl.log.trace("setUserName(" + name + ")");
       }
 
       userName = name;
@@ -166,9 +168,9 @@ public class HornetQRASessionFactoryImpl implements HornetQRASessionFactory, Ref
     */
    public void setPassword(final String password)
    {
-      if (trace)
+      if (HornetQRASessionFactoryImpl.trace)
       {
-         log.trace("setPassword(****)");
+         HornetQRASessionFactoryImpl.log.trace("setPassword(****)");
       }
 
       this.password = password;
@@ -181,9 +183,9 @@ public class HornetQRASessionFactoryImpl implements HornetQRASessionFactory, Ref
     */
    public String getClientID() throws JMSException
    {
-      if (trace)
+      if (HornetQRASessionFactoryImpl.trace)
       {
-         log.trace("getClientID()");
+         HornetQRASessionFactoryImpl.log.trace("getClientID()");
       }
 
       checkClosed();
@@ -203,12 +205,12 @@ public class HornetQRASessionFactoryImpl implements HornetQRASessionFactory, Ref
     */
    public void setClientID(final String cID) throws JMSException
    {
-      if (trace)
+      if (HornetQRASessionFactoryImpl.trace)
       {
-         log.trace("setClientID(" + cID + ")");
+         HornetQRASessionFactoryImpl.log.trace("setClientID(" + cID + ")");
       }
 
-      throw new IllegalStateException(ISE);
+      throw new IllegalStateException(HornetQRASessionFactory.ISE);
    }
 
    /**
@@ -220,9 +222,9 @@ public class HornetQRASessionFactoryImpl implements HornetQRASessionFactory, Ref
     */
    public QueueSession createQueueSession(final boolean transacted, final int acknowledgeMode) throws JMSException
    {
-      if (trace)
+      if (HornetQRASessionFactoryImpl.trace)
       {
-         log.trace("createQueueSession(" + transacted + ", " + acknowledgeMode + ")");
+         HornetQRASessionFactoryImpl.log.trace("createQueueSession(" + transacted + ", " + acknowledgeMode + ")");
       }
 
       checkClosed();
@@ -242,9 +244,9 @@ public class HornetQRASessionFactoryImpl implements HornetQRASessionFactory, Ref
     */
    public XAQueueSession createXAQueueSession() throws JMSException
    {
-      if (trace)
+      if (HornetQRASessionFactoryImpl.trace)
       {
-         log.trace("createXAQueueSession()");
+         HornetQRASessionFactoryImpl.log.trace("createXAQueueSession()");
       }
 
       checkClosed();
@@ -272,19 +274,19 @@ public class HornetQRASessionFactoryImpl implements HornetQRASessionFactory, Ref
                                                       final ServerSessionPool sessionPool,
                                                       final int maxMessages) throws JMSException
    {
-      if (trace)
+      if (HornetQRASessionFactoryImpl.trace)
       {
-         log.trace("createConnectionConsumer(" + queue +
-                   ", " +
-                   messageSelector +
-                   ", " +
-                   sessionPool +
-                   ", " +
-                   maxMessages +
-                   ")");
+         HornetQRASessionFactoryImpl.log.trace("createConnectionConsumer(" + queue +
+                                               ", " +
+                                               messageSelector +
+                                               ", " +
+                                               sessionPool +
+                                               ", " +
+                                               maxMessages +
+                                               ")");
       }
 
-      throw new IllegalStateException(ISE);
+      throw new IllegalStateException(HornetQRASessionFactory.ISE);
    }
 
    /**
@@ -296,9 +298,9 @@ public class HornetQRASessionFactoryImpl implements HornetQRASessionFactory, Ref
     */
    public TopicSession createTopicSession(final boolean transacted, final int acknowledgeMode) throws JMSException
    {
-      if (trace)
+      if (HornetQRASessionFactoryImpl.trace)
       {
-         log.trace("createTopicSession(" + transacted + ", " + acknowledgeMode + ")");
+         HornetQRASessionFactoryImpl.log.trace("createTopicSession(" + transacted + ", " + acknowledgeMode + ")");
       }
 
       checkClosed();
@@ -318,9 +320,9 @@ public class HornetQRASessionFactoryImpl implements HornetQRASessionFactory, Ref
     */
    public XATopicSession createXATopicSession() throws JMSException
    {
-      if (trace)
+      if (HornetQRASessionFactoryImpl.trace)
       {
-         log.trace("createXATopicSession()");
+         HornetQRASessionFactoryImpl.log.trace("createXATopicSession()");
       }
 
       checkClosed();
@@ -348,19 +350,19 @@ public class HornetQRASessionFactoryImpl implements HornetQRASessionFactory, Ref
                                                       final ServerSessionPool sessionPool,
                                                       final int maxMessages) throws JMSException
    {
-      if (trace)
+      if (HornetQRASessionFactoryImpl.trace)
       {
-         log.trace("createConnectionConsumer(" + topic +
-                   ", " +
-                   messageSelector +
-                   ", " +
-                   sessionPool +
-                   ", " +
-                   maxMessages +
-                   ")");
+         HornetQRASessionFactoryImpl.log.trace("createConnectionConsumer(" + topic +
+                                               ", " +
+                                               messageSelector +
+                                               ", " +
+                                               sessionPool +
+                                               ", " +
+                                               maxMessages +
+                                               ")");
       }
 
-      throw new IllegalStateException(ISE);
+      throw new IllegalStateException(HornetQRASessionFactory.ISE);
    }
 
    /**
@@ -379,21 +381,21 @@ public class HornetQRASessionFactoryImpl implements HornetQRASessionFactory, Ref
                                                              final ServerSessionPool sessionPool,
                                                              final int maxMessages) throws JMSException
    {
-      if (trace)
+      if (HornetQRASessionFactoryImpl.trace)
       {
-         log.trace("createConnectionConsumer(" + topic +
-                   ", " +
-                   subscriptionName +
-                   ", " +
-                   messageSelector +
-                   ", " +
-                   sessionPool +
-                   ", " +
-                   maxMessages +
-                   ")");
+         HornetQRASessionFactoryImpl.log.trace("createConnectionConsumer(" + topic +
+                                               ", " +
+                                               subscriptionName +
+                                               ", " +
+                                               messageSelector +
+                                               ", " +
+                                               sessionPool +
+                                               ", " +
+                                               maxMessages +
+                                               ")");
       }
 
-      throw new IllegalStateException(ISE);
+      throw new IllegalStateException(HornetQRASessionFactory.ISE);
    }
 
    /**
@@ -408,12 +410,17 @@ public class HornetQRASessionFactoryImpl implements HornetQRASessionFactory, Ref
                                                       final ServerSessionPool pool,
                                                       final int maxMessages) throws JMSException
    {
-      if (trace)
+      if (HornetQRASessionFactoryImpl.trace)
       {
-         log.trace("createConnectionConsumer(" + destination + ", " + pool + ", " + maxMessages + ")");
+         HornetQRASessionFactoryImpl.log.trace("createConnectionConsumer(" + destination +
+                                               ", " +
+                                               pool +
+                                               ", " +
+                                               maxMessages +
+                                               ")");
       }
 
-      throw new IllegalStateException(ISE);
+      throw new IllegalStateException(HornetQRASessionFactory.ISE);
    }
 
    /**
@@ -430,12 +437,19 @@ public class HornetQRASessionFactoryImpl implements HornetQRASessionFactory, Ref
                                                       final ServerSessionPool pool,
                                                       final int maxMessages) throws JMSException
    {
-      if (trace)
+      if (HornetQRASessionFactoryImpl.trace)
       {
-         log.trace("createConnectionConsumer(" + destination + ", " + name + ", " + pool + ", " + maxMessages + ")");
+         HornetQRASessionFactoryImpl.log.trace("createConnectionConsumer(" + destination +
+                                               ", " +
+                                               name +
+                                               ", " +
+                                               pool +
+                                               ", " +
+                                               maxMessages +
+                                               ")");
       }
 
-      throw new IllegalStateException(ISE);
+      throw new IllegalStateException(HornetQRASessionFactory.ISE);
    }
 
    /**
@@ -447,9 +461,9 @@ public class HornetQRASessionFactoryImpl implements HornetQRASessionFactory, Ref
     */
    public Session createSession(final boolean transacted, final int acknowledgeMode) throws JMSException
    {
-      if (trace)
+      if (HornetQRASessionFactoryImpl.trace)
       {
-         log.trace("createSession(" + transacted + ", " + acknowledgeMode + ")");
+         HornetQRASessionFactoryImpl.log.trace("createSession(" + transacted + ", " + acknowledgeMode + ")");
       }
 
       checkClosed();
@@ -463,9 +477,9 @@ public class HornetQRASessionFactoryImpl implements HornetQRASessionFactory, Ref
     */
    public XASession createXASession() throws JMSException
    {
-      if (trace)
+      if (HornetQRASessionFactoryImpl.trace)
       {
-         log.trace("createXASession()");
+         HornetQRASessionFactoryImpl.log.trace("createXASession()");
       }
 
       checkClosed();
@@ -479,9 +493,9 @@ public class HornetQRASessionFactoryImpl implements HornetQRASessionFactory, Ref
     */
    public ConnectionMetaData getMetaData() throws JMSException
    {
-      if (trace)
+      if (HornetQRASessionFactoryImpl.trace)
       {
-         log.trace("getMetaData()");
+         HornetQRASessionFactoryImpl.log.trace("getMetaData()");
       }
 
       checkClosed();
@@ -495,12 +509,12 @@ public class HornetQRASessionFactoryImpl implements HornetQRASessionFactory, Ref
     */
    public ExceptionListener getExceptionListener() throws JMSException
    {
-      if (trace)
+      if (HornetQRASessionFactoryImpl.trace)
       {
-         log.trace("getExceptionListener()");
+         HornetQRASessionFactoryImpl.log.trace("getExceptionListener()");
       }
 
-      throw new IllegalStateException(ISE);
+      throw new IllegalStateException(HornetQRASessionFactory.ISE);
    }
 
    /**
@@ -510,12 +524,12 @@ public class HornetQRASessionFactoryImpl implements HornetQRASessionFactory, Ref
     */
    public void setExceptionListener(final ExceptionListener listener) throws JMSException
    {
-      if (trace)
+      if (HornetQRASessionFactoryImpl.trace)
       {
-         log.trace("setExceptionListener(" + listener + ")");
+         HornetQRASessionFactoryImpl.log.trace("setExceptionListener(" + listener + ")");
       }
 
-      throw new IllegalStateException(ISE);
+      throw new IllegalStateException(HornetQRASessionFactory.ISE);
    }
 
    /**
@@ -526,9 +540,9 @@ public class HornetQRASessionFactoryImpl implements HornetQRASessionFactory, Ref
    {
       checkClosed();
 
-      if (trace)
+      if (HornetQRASessionFactoryImpl.trace)
       {
-         log.trace("start() " + this);
+         HornetQRASessionFactoryImpl.log.trace("start() " + this);
       }
 
       synchronized (sessions)
@@ -552,12 +566,12 @@ public class HornetQRASessionFactoryImpl implements HornetQRASessionFactory, Ref
     */
    public void stop() throws JMSException
    {
-      if (trace)
+      if (HornetQRASessionFactoryImpl.trace)
       {
-         log.trace("stop() " + this);
+         HornetQRASessionFactoryImpl.log.trace("stop() " + this);
       }
 
-      throw new IllegalStateException(ISE);
+      throw new IllegalStateException(HornetQRASessionFactory.ISE);
    }
 
    /**
@@ -566,9 +580,9 @@ public class HornetQRASessionFactoryImpl implements HornetQRASessionFactory, Ref
     */
    public void close() throws JMSException
    {
-      if (trace)
+      if (HornetQRASessionFactoryImpl.trace)
       {
-         log.trace("close() " + this);
+         HornetQRASessionFactoryImpl.log.trace("close() " + this);
       }
 
       if (closed)
@@ -589,7 +603,7 @@ public class HornetQRASessionFactoryImpl implements HornetQRASessionFactory, Ref
             }
             catch (Throwable t)
             {
-               log.trace("Error closing session", t);
+               HornetQRASessionFactoryImpl.log.trace("Error closing session", t);
             }
             i.remove();
          }
@@ -602,15 +616,15 @@ public class HornetQRASessionFactoryImpl implements HornetQRASessionFactory, Ref
             TemporaryQueue temp = (TemporaryQueue)i.next();
             try
             {
-               if (trace)
+               if (HornetQRASessionFactoryImpl.trace)
                {
-                  log.trace("Closing temporary queue " + temp + " for " + this);
+                  HornetQRASessionFactoryImpl.log.trace("Closing temporary queue " + temp + " for " + this);
                }
                temp.delete();
             }
             catch (Throwable t)
             {
-               log.trace("Error deleting temporary queue", t);
+               HornetQRASessionFactoryImpl.log.trace("Error deleting temporary queue", t);
             }
             i.remove();
          }
@@ -623,15 +637,15 @@ public class HornetQRASessionFactoryImpl implements HornetQRASessionFactory, Ref
             TemporaryTopic temp = (TemporaryTopic)i.next();
             try
             {
-               if (trace)
+               if (HornetQRASessionFactoryImpl.trace)
                {
-                  log.trace("Closing temporary topic " + temp + " for " + this);
+                  HornetQRASessionFactoryImpl.log.trace("Closing temporary topic " + temp + " for " + this);
                }
                temp.delete();
             }
             catch (Throwable t)
             {
-               log.trace("Error deleting temporary queue", t);
+               HornetQRASessionFactoryImpl.log.trace("Error deleting temporary queue", t);
             }
             i.remove();
          }
@@ -645,9 +659,9 @@ public class HornetQRASessionFactoryImpl implements HornetQRASessionFactory, Ref
     */
    public void closeSession(final HornetQRASession session) throws JMSException
    {
-      if (trace)
+      if (HornetQRASessionFactoryImpl.trace)
       {
-         log.trace("closeSession(" + session + ")");
+         HornetQRASessionFactoryImpl.log.trace("closeSession(" + session + ")");
       }
 
       synchronized (sessions)
@@ -662,9 +676,9 @@ public class HornetQRASessionFactoryImpl implements HornetQRASessionFactory, Ref
     */
    public void addTemporaryQueue(final TemporaryQueue temp)
    {
-      if (trace)
+      if (HornetQRASessionFactoryImpl.trace)
       {
-         log.trace("addTemporaryQueue(" + temp + ")");
+         HornetQRASessionFactoryImpl.log.trace("addTemporaryQueue(" + temp + ")");
       }
 
       synchronized (tempQueues)
@@ -679,9 +693,9 @@ public class HornetQRASessionFactoryImpl implements HornetQRASessionFactory, Ref
     */
    public void addTemporaryTopic(final TemporaryTopic temp)
    {
-      if (trace)
+      if (HornetQRASessionFactoryImpl.trace)
       {
-         log.trace("addTemporaryTopic(" + temp + ")");
+         HornetQRASessionFactoryImpl.log.trace("addTemporaryTopic(" + temp + ")");
       }
 
       synchronized (tempTopics)
@@ -698,9 +712,9 @@ public class HornetQRASessionFactoryImpl implements HornetQRASessionFactory, Ref
     */
    protected HornetQRASession allocateConnection(final int sessionType) throws JMSException
    {
-      if (trace)
+      if (HornetQRASessionFactoryImpl.trace)
       {
-         log.trace("allocateConnection(" + sessionType + ")");
+         HornetQRASessionFactoryImpl.log.trace("allocateConnection(" + sessionType + ")");
       }
 
       try
@@ -718,18 +732,18 @@ public class HornetQRASessionFactoryImpl implements HornetQRASessionFactory, Ref
             info.setClientID(clientID);
             info.setDefaults(((HornetQResourceAdapter)mcf.getResourceAdapter()).getProperties());
 
-            if (trace)
+            if (HornetQRASessionFactoryImpl.trace)
             {
-               log.trace("Allocating session for " + this + " with request info=" + info);
+               HornetQRASessionFactoryImpl.log.trace("Allocating session for " + this + " with request info=" + info);
             }
 
             HornetQRASession session = (HornetQRASession)cm.allocateConnection(mcf, info);
 
             try
             {
-               if (trace)
+               if (HornetQRASessionFactoryImpl.trace)
                {
-                  log.trace("Allocated  " + this + " session=" + session);
+                  HornetQRASessionFactoryImpl.log.trace("Allocated  " + this + " session=" + session);
                }
 
                session.setHornetQSessionFactory(this);
@@ -765,7 +779,7 @@ public class HornetQRASessionFactoryImpl implements HornetQRASessionFactory, Ref
       }
       catch (Exception e)
       {
-         log.error("Could not create session", e);
+         HornetQRASessionFactoryImpl.log.error("Could not create session", e);
 
          JMSException je = new JMSException("Could not create a session: " + e.getMessage());
          je.setLinkedException(e);
@@ -783,9 +797,14 @@ public class HornetQRASessionFactoryImpl implements HornetQRASessionFactory, Ref
     */
    protected HornetQRASession allocateConnection(final boolean transacted, int acknowledgeMode, final int sessionType) throws JMSException
    {
-      if (trace)
+      if (HornetQRASessionFactoryImpl.trace)
       {
-         log.trace("allocateConnection(" + transacted + ", " + acknowledgeMode + ", " + sessionType + ")");
+         HornetQRASessionFactoryImpl.log.trace("allocateConnection(" + transacted +
+                                               ", " +
+                                               acknowledgeMode +
+                                               ", " +
+                                               sessionType +
+                                               ")");
       }
 
       try
@@ -802,24 +821,26 @@ public class HornetQRASessionFactoryImpl implements HornetQRASessionFactory, Ref
                acknowledgeMode = Session.SESSION_TRANSACTED;
             }
 
-            HornetQRAConnectionRequestInfo info = new HornetQRAConnectionRequestInfo(transacted, acknowledgeMode, sessionType);
+            HornetQRAConnectionRequestInfo info = new HornetQRAConnectionRequestInfo(transacted,
+                                                                                     acknowledgeMode,
+                                                                                     sessionType);
             info.setUserName(userName);
             info.setPassword(password);
             info.setClientID(clientID);
             info.setDefaults(((HornetQResourceAdapter)mcf.getResourceAdapter()).getProperties());
 
-            if (trace)
+            if (HornetQRASessionFactoryImpl.trace)
             {
-               log.trace("Allocating session for " + this + " with request info=" + info);
+               HornetQRASessionFactoryImpl.log.trace("Allocating session for " + this + " with request info=" + info);
             }
 
             HornetQRASession session = (HornetQRASession)cm.allocateConnection(mcf, info);
 
             try
             {
-               if (trace)
+               if (HornetQRASessionFactoryImpl.trace)
                {
-                  log.trace("Allocated  " + this + " session=" + session);
+                  HornetQRASessionFactoryImpl.log.trace("Allocated  " + this + " session=" + session);
                }
 
                session.setHornetQSessionFactory(this);
@@ -855,7 +876,7 @@ public class HornetQRASessionFactoryImpl implements HornetQRASessionFactory, Ref
       }
       catch (Exception e)
       {
-         log.error("Could not create session", e);
+         HornetQRASessionFactoryImpl.log.error("Could not create session", e);
 
          JMSException je = new JMSException("Could not create a session: " + e.getMessage());
          je.setLinkedException(e);
@@ -869,9 +890,9 @@ public class HornetQRASessionFactoryImpl implements HornetQRASessionFactory, Ref
     */
    protected void checkClosed() throws IllegalStateException
    {
-      if (trace)
+      if (HornetQRASessionFactoryImpl.trace)
       {
-         log.trace("checkClosed()" + this);
+         HornetQRASessionFactoryImpl.log.trace("checkClosed()" + this);
       }
 
       if (closed)

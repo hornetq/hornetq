@@ -11,7 +11,6 @@
  * permissions and limitations under the License.
  */
 
-
 package org.hornetq.core.server.cluster;
 
 import org.hornetq.core.server.ServerMessage;

@@ -9,13 +9,12 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
  * implied.  See the License for the specific language governing
  * permissions and limitations under the License.
- */ 
+ */
 
 package org.hornetq.core.remoting.impl.wireformat;
 
 import org.hornetq.core.buffers.HornetQBuffer;
 import org.hornetq.utils.SimpleString;
-
 
 /**
  * 
@@ -30,14 +29,14 @@ public class SessionQueueQueryMessage extends PacketImpl
 
    public SessionQueueQueryMessage(final SimpleString queueName)
    {
-      super(SESS_QUEUEQUERY);
+      super(PacketImpl.SESS_QUEUEQUERY);
 
-      this.queueName = queueName;            
+      this.queueName = queueName;
    }
-   
+
    public SessionQueueQueryMessage()
    {
-      super(SESS_QUEUEQUERY);        
+      super(PacketImpl.SESS_QUEUEQUERY);
    }
 
    public SimpleString getQueueName()
@@ -45,26 +44,29 @@ public class SessionQueueQueryMessage extends PacketImpl
       return queueName;
    }
 
+   @Override
    public void encodeRest(final HornetQBuffer buffer)
    {
       buffer.writeSimpleString(queueName);
    }
-   
+
+   @Override
    public void decodeRest(final HornetQBuffer buffer)
    {
       queueName = buffer.readSimpleString();
    }
-   
-   public boolean equals(Object other)
+
+   @Override
+   public boolean equals(final Object other)
    {
       if (other instanceof SessionQueueQueryMessage == false)
       {
          return false;
       }
-            
+
       SessionQueueQueryMessage r = (SessionQueueQueryMessage)other;
-      
-      return super.equals(other) && r.queueName.equals(this.queueName);
+
+      return super.equals(other) && r.queueName.equals(queueName);
    }
-   
+
 }

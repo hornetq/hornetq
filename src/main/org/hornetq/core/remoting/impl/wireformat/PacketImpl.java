@@ -139,7 +139,7 @@ public class PacketImpl implements Packet
    public static final byte SESS_CONSUMER_CLOSE = 74;
 
    public static final byte SESS_RECEIVE_MSG = 75;
-   
+
    public static final byte SESS_RECEIVE_LARGE_MSG = 76;
 
    public static final byte SESS_RECEIVE_CONTINUATION = 77;
@@ -206,7 +206,7 @@ public class PacketImpl implements Packet
 
    public HornetQBuffer encode(final RemotingConnection connection)
    {
-      HornetQBuffer buffer = connection.createBuffer(INITIAL_PACKET_SIZE);
+      HornetQBuffer buffer = connection.createBuffer(PacketImpl.INITIAL_PACKET_SIZE);
 
       // The standard header fields
 
@@ -241,7 +241,7 @@ public class PacketImpl implements Packet
       {
          throw new IllegalStateException("Packet hasn't been encoded/decoded yet");
       }
-      
+
       return size;
    }
 
@@ -291,12 +291,12 @@ public class PacketImpl implements Packet
 
    // Protected -----------------------------------------------------
 
-   protected int stringEncodeSize(String str)
+   protected int stringEncodeSize(final String str)
    {
       return DataConstants.SIZE_INT + str.length() * 2;
    }
 
-   protected int nullableStringEncodeSize(String str)
+   protected int nullableStringEncodeSize(final String str)
    {
       return DataConstants.SIZE_BOOLEAN + (str != null ? stringEncodeSize(str) : 0);
    }

@@ -13,11 +13,6 @@
 
 package org.hornetq.core.message.impl;
 
-import static org.hornetq.utils.DataConstants.SIZE_BOOLEAN;
-import static org.hornetq.utils.DataConstants.SIZE_BYTE;
-import static org.hornetq.utils.DataConstants.SIZE_INT;
-import static org.hornetq.utils.DataConstants.SIZE_LONG;
-
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
@@ -170,7 +165,7 @@ public abstract class MessageImpl implements Message
       endOfBodyPosition = other.endOfBodyPosition;
       endOfMessagePosition = other.endOfMessagePosition;
       copied = other.copied;
-      
+
       if (other.buffer != null)
       {
          createBody(other.buffer.capacity());
@@ -191,19 +186,19 @@ public abstract class MessageImpl implements Message
 
       int bodySize = bodyPos - PacketImpl.PACKET_HEADERS_SIZE - DataConstants.SIZE_INT;
 
-      return SIZE_INT + bodySize + SIZE_INT + headersPropsSize;
+      return DataConstants.SIZE_INT + bodySize + DataConstants.SIZE_INT + headersPropsSize;
    }
 
    public int getHeadersAndPropertiesEncodeSize()
    {
-      return SIZE_LONG + // Message ID
-      /* Destination */SimpleString.sizeofString(destination) +
-      /* Type */SIZE_BYTE +
-      /* Durable */SIZE_BOOLEAN +
-      /* Expiration */SIZE_LONG +
-      /* Timestamp */SIZE_LONG +
-      /* Priority */SIZE_BYTE +
-      /* PropertySize and Properties */properties.getEncodeSize();      
+      return DataConstants.SIZE_LONG + // Message ID
+             /* Destination */SimpleString.sizeofString(destination) +
+             DataConstants./* Type */SIZE_BYTE +
+             DataConstants./* Durable */SIZE_BOOLEAN +
+             DataConstants./* Expiration */SIZE_LONG +
+             DataConstants./* Timestamp */SIZE_LONG +
+             DataConstants./* Priority */SIZE_BYTE +
+             /* PropertySize and Properties */properties.getEncodeSize();
    }
 
    public void encodeHeadersAndProperties(final HornetQBuffer buffer)
@@ -298,9 +293,9 @@ public abstract class MessageImpl implements Message
    {
       if (this.expiration != expiration)
       {
-      this.expiration = expiration;
+         this.expiration = expiration;
 
-      bufferValid = false;
+         bufferValid = false;
       }
    }
 
@@ -313,9 +308,9 @@ public abstract class MessageImpl implements Message
    {
       if (this.timestamp != timestamp)
       {
-      this.timestamp = timestamp;
+         this.timestamp = timestamp;
 
-      bufferValid = false;
+         bufferValid = false;
       }
    }
 
@@ -914,7 +909,7 @@ public abstract class MessageImpl implements Message
       public void close()
       {
       }
-      
+
       public long getLargeBodySize()
       {
          return buffer.writerIndex();

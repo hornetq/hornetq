@@ -46,7 +46,7 @@ public class ListJournal
 
    // Public --------------------------------------------------------
 
-   public static void main(String arg[])
+   public static void main(final String arg[])
    {
       try
       {

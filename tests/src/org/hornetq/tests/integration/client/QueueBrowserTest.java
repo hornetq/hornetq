@@ -12,6 +12,8 @@
  */
 package org.hornetq.tests.integration.client;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
@@ -56,7 +58,7 @@ public class QueueBrowserTest extends ServiceTestBase
 
       super.tearDown();
    }
-   
+
    private ClientSessionFactory sf;
 
    public void testSimpleConsumerBrowser() throws Exception
@@ -85,7 +87,7 @@ public class QueueBrowserTest extends ServiceTestBase
       {
          ClientMessage message2 = consumer.receive(1000);
 
-         assertEquals("m" + i, message2.getBodyBuffer().readString());
+         Assert.assertEquals("m" + i, message2.getBodyBuffer().readString());
       }
 
       consumer.close();
@@ -96,13 +98,13 @@ public class QueueBrowserTest extends ServiceTestBase
       {
          ClientMessage message2 = consumer.receive(1000);
 
-         assertEquals("m" + i, message2.getBodyBuffer().readString());
+         Assert.assertEquals("m" + i, message2.getBodyBuffer().readString());
       }
 
       consumer.close();
 
       session.close();
-      
+
       sf.close();
 
    }
@@ -133,7 +135,7 @@ public class QueueBrowserTest extends ServiceTestBase
       {
          ClientMessage message2 = consumer.receive(1000);
 
-         assertEquals("m" + i, message2.getBodyBuffer().readString());
+         Assert.assertEquals("m" + i, message2.getBodyBuffer().readString());
       }
 
       consumer.close();
@@ -144,7 +146,7 @@ public class QueueBrowserTest extends ServiceTestBase
       {
          ClientMessage message2 = consumer.receive(1000);
 
-         assertEquals("m" + i, message2.getBodyBuffer().readString());
+         Assert.assertEquals("m" + i, message2.getBodyBuffer().readString());
       }
 
       consumer.close();
@@ -184,7 +186,7 @@ public class QueueBrowserTest extends ServiceTestBase
       {
          ClientMessage message2 = consumer.receive(1000);
 
-         assertEquals("m" + i, message2.getBodyBuffer().readString());
+         Assert.assertEquals("m" + i, message2.getBodyBuffer().readString());
       }
 
       session.close();
@@ -219,11 +221,11 @@ public class QueueBrowserTest extends ServiceTestBase
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message2 = consumer.receive(1000);
-         assertEquals("m" + i, message2.getBodyBuffer().readString());
+         Assert.assertEquals("m" + i, message2.getBodyBuffer().readString());
          message2 = consumer2.receive(1000);
-         assertEquals("m" + i, message2.getBodyBuffer().readString());
+         Assert.assertEquals("m" + i, message2.getBodyBuffer().readString());
          message2 = consumer3.receive(1000);
-         assertEquals("m" + i, message2.getBodyBuffer().readString());
+         Assert.assertEquals("m" + i, message2.getBodyBuffer().readString());
       }
 
       session.close();
@@ -258,22 +260,21 @@ public class QueueBrowserTest extends ServiceTestBase
       for (int i = 0; i < 50; i++)
       {
          ClientMessage message2 = consumer.receive(1000);
-         assertEquals("m" + i, message2.getBodyBuffer().readString());
+         Assert.assertEquals("m" + i, message2.getBodyBuffer().readString());
       }
       for (int i = 50; i < numMessages; i++)
       {
          ClientMessage message2 = consumer2.receive(1000);
-         assertEquals("m" + i, message2.getBodyBuffer().readString());
+         Assert.assertEquals("m" + i, message2.getBodyBuffer().readString());
       }
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message2 = consumer3.receive(1000);
-         assertEquals("m" + i, message2.getBodyBuffer().readString());
+         Assert.assertEquals("m" + i, message2.getBodyBuffer().readString());
       }
 
       session.close();
-      
-      
+
       sf.close();
 
    }
@@ -288,7 +289,7 @@ public class QueueBrowserTest extends ServiceTestBase
       testConsumerBrowserMessagesArentAcked(false);
    }
 
-   private void testConsumerBrowserMessagesArentAcked(boolean preACK) throws Exception
+   private void testConsumerBrowserMessagesArentAcked(final boolean preACK) throws Exception
    {
       ClientSessionFactory sf = createInVMFactory();
 
@@ -312,14 +313,14 @@ public class QueueBrowserTest extends ServiceTestBase
       {
          ClientMessage message2 = consumer.receive(1000);
 
-         assertEquals("m" + i, message2.getBodyBuffer().readString());
+         Assert.assertEquals("m" + i, message2.getBodyBuffer().readString());
       }
       // assert that all the messages are there and none have been acked
-      assertEquals(0, ((Queue)server.getPostOffice().getBinding(QUEUE).getBindable()).getDeliveringCount());
-      assertEquals(100, ((Queue)server.getPostOffice().getBinding(QUEUE).getBindable()).getMessageCount());
+      Assert.assertEquals(0, ((Queue)server.getPostOffice().getBinding(QUEUE).getBindable()).getDeliveringCount());
+      Assert.assertEquals(100, ((Queue)server.getPostOffice().getBinding(QUEUE).getBindable()).getMessageCount());
 
       session.close();
-      
+
       sf.close();
    }
 
@@ -349,14 +350,14 @@ public class QueueBrowserTest extends ServiceTestBase
 
          message2.acknowledge();
 
-         assertEquals("m" + i, message2.getBodyBuffer().readString());
+         Assert.assertEquals("m" + i, message2.getBodyBuffer().readString());
       }
       // assert that all the messages are there and none have been acked
-      assertEquals(0, ((Queue)server.getPostOffice().getBinding(QUEUE).getBindable()).getDeliveringCount());
-      assertEquals(100, ((Queue)server.getPostOffice().getBinding(QUEUE).getBindable()).getMessageCount());
+      Assert.assertEquals(0, ((Queue)server.getPostOffice().getBinding(QUEUE).getBindable()).getDeliveringCount());
+      Assert.assertEquals(100, ((Queue)server.getPostOffice().getBinding(QUEUE).getBindable()).getMessageCount());
 
       session.close();
-      
+
       sf.close();
    }
 

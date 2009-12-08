@@ -17,6 +17,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Executors;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.buffers.HornetQBuffer;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.exception.HornetQException;
@@ -41,24 +43,24 @@ public class NettyAcceptorTest extends UnitTestCase
    protected void setUp() throws Exception
    {
       super.setUp();
-      
-      checkFreePort(TransportConstants.DEFAULT_PORT);      
+
+      UnitTestCase.checkFreePort(TransportConstants.DEFAULT_PORT);
    }
-   
+
    @Override
    protected void tearDown() throws Exception
    {
-      checkFreePort(TransportConstants.DEFAULT_PORT);
+      UnitTestCase.checkFreePort(TransportConstants.DEFAULT_PORT);
 
       super.tearDown();
    }
-   
+
    public void testStartStop() throws Exception
    {
       BufferHandler handler = new AbstractBufferHandler()
       {
 
-         public void bufferReceived(Object connectionID, HornetQBuffer buffer)
+         public void bufferReceived(final Object connectionID, final HornetQBuffer buffer)
          {
          }
       };
@@ -67,33 +69,35 @@ public class NettyAcceptorTest extends UnitTestCase
       ConnectionLifeCycleListener listener = new ConnectionLifeCycleListener()
       {
 
-         public void connectionException(Object connectionID, HornetQException me)
+         public void connectionException(final Object connectionID, final HornetQException me)
          {
          }
 
-         public void connectionDestroyed(Object connectionID)
+         public void connectionDestroyed(final Object connectionID)
          {
          }
 
-         public void connectionCreated(Connection connection)
+         public void connectionCreated(final Connection connection)
          {
          }
       };
-      NettyAcceptor acceptor = new NettyAcceptor(params, handler, listener, 
-                                                 Executors.newCachedThreadPool(), 
+      NettyAcceptor acceptor = new NettyAcceptor(params,
+                                                 handler,
+                                                 listener,
+                                                 Executors.newCachedThreadPool(),
                                                  Executors.newScheduledThreadPool(ConfigurationImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE));
 
       acceptor.start();
-      assertTrue(acceptor.isStarted());
+      Assert.assertTrue(acceptor.isStarted());
       acceptor.stop();
-      assertFalse(acceptor.isStarted());      
-      checkFreePort(TransportConstants.DEFAULT_PORT);
-      
+      Assert.assertFalse(acceptor.isStarted());
+      UnitTestCase.checkFreePort(TransportConstants.DEFAULT_PORT);
+
       acceptor.start();
-      assertTrue(acceptor.isStarted());
+      Assert.assertTrue(acceptor.isStarted());
       acceptor.stop();
-      assertFalse(acceptor.isStarted());
-      checkFreePort(TransportConstants.DEFAULT_PORT);
+      Assert.assertFalse(acceptor.isStarted());
+      UnitTestCase.checkFreePort(TransportConstants.DEFAULT_PORT);
    }
-     
+
 }

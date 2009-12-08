@@ -70,9 +70,9 @@ public abstract class AbstractJournalUpdateTask implements JournalReaderCallback
    // Constructors --------------------------------------------------
 
    protected AbstractJournalUpdateTask(final SequentialFileFactory fileFactory,
-                                      final JournalImpl journal,
-                                      final Set<Long> recordsSnapshot,
-                                      final int nextOrderingID)
+                                       final JournalImpl journal,
+                                       final Set<Long> recordsSnapshot,
+                                       final int nextOrderingID)
    {
       super();
       this.journal = journal;
@@ -82,14 +82,14 @@ public abstract class AbstractJournalUpdateTask implements JournalReaderCallback
    }
 
    // Public --------------------------------------------------------
-   
+
    public static SequentialFile writeControlFile(final SequentialFileFactory fileFactory,
                                                  final List<JournalFile> files,
                                                  final List<JournalFile> newFiles,
                                                  final List<Pair<String, String>> renames) throws Exception
    {
 
-      SequentialFile controlFile = fileFactory.createSequentialFile(FILE_COMPACT_CONTROL, 1);
+      SequentialFile controlFile = fileFactory.createSequentialFile(AbstractJournalUpdateTask.FILE_COMPACT_CONTROL, 1);
 
       try
       {
@@ -149,15 +149,14 @@ public abstract class AbstractJournalUpdateTask implements JournalReaderCallback
             }
          }
 
-         
          JournalInternalRecord controlRecord = new JournalAddRecord(true,
                                                                     1,
                                                                     (byte)0,
                                                                     new ByteArrayEncoding(filesToRename.toByteBuffer()
                                                                                                        .array()));
-         
+
          controlRecord.setFileID(-1);
-         
+
          controlRecord.encode(renameBuffer);
 
          ByteBuffer writeBuffer = fileFactory.newBuffer(renameBuffer.writerIndex());
@@ -210,7 +209,7 @@ public abstract class AbstractJournalUpdateTask implements JournalReaderCallback
 
       ByteBuffer bufferWrite = fileFactory.newBuffer(journal.getFileSize());
       writingChannel = HornetQBuffers.wrappedBuffer(bufferWrite);
-      
+
       currentFile = journal.getFile(false, false, false, true);
       sequentialFile = currentFile.getFile();
 
@@ -221,7 +220,7 @@ public abstract class AbstractJournalUpdateTask implements JournalReaderCallback
       writingChannel.writeInt(fileID);
    }
 
-   protected void addToRecordsSnaptshot(long id)
+   protected void addToRecordsSnaptshot(final long id)
    {
       recordsSnapshot.add(id);
    }
@@ -233,20 +232,18 @@ public abstract class AbstractJournalUpdateTask implements JournalReaderCallback
    {
       return writingChannel;
    }
-   
-   protected void writeEncoder(JournalInternalRecord record) throws Exception
+
+   protected void writeEncoder(final JournalInternalRecord record) throws Exception
    {
       record.setFileID(fileID);
       record.encode(getWritingChannel());
    }
 
-   protected void writeEncoder(JournalInternalRecord record, int txcounter) throws Exception
+   protected void writeEncoder(final JournalInternalRecord record, final int txcounter) throws Exception
    {
       record.setNumberOfRecords(txcounter);
       writeEncoder(record);
    }
-
-   
 
    // Private -------------------------------------------------------
 

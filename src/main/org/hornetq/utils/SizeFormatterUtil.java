@@ -27,31 +27,31 @@ public class SizeFormatterUtil
 
    private static long oneKiB = 1024;
 
-   private static long oneMiB = oneKiB * 1024;
+   private static long oneMiB = SizeFormatterUtil.oneKiB * 1024;
 
-   private static long oneGiB = oneMiB * 1024;
+   private static long oneGiB = SizeFormatterUtil.oneMiB * 1024;
 
    // Attributes ----------------------------------------------------
 
    // Static --------------------------------------------------------
 
-   public static String sizeof(long size)
+   public static String sizeof(final long size)
    {
       double s = Long.valueOf(size).doubleValue();
       String suffix = "B";
-      if (s > oneGiB)
+      if (s > SizeFormatterUtil.oneGiB)
       {
-         s /= oneGiB;
+         s /= SizeFormatterUtil.oneGiB;
          suffix = "GiB";
       }
-      else if (s > oneMiB)
+      else if (s > SizeFormatterUtil.oneMiB)
       {
-         s /= oneMiB;
+         s /= SizeFormatterUtil.oneMiB;
          suffix = "MiB";
       }
-      else if (s > oneKiB)
+      else if (s > SizeFormatterUtil.oneKiB)
       {
-         s /= oneKiB;
+         s /= SizeFormatterUtil.oneKiB;
          suffix = "kiB";
       }
       return String.format("%.2f %s", s, suffix);

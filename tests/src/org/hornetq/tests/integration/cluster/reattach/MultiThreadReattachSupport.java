@@ -11,13 +11,14 @@
  * permissions and limitations under the License.
  */
 
-
 package org.hornetq.tests.integration.cluster.reattach;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
+
+import junit.framework.Assert;
 
 import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.client.ClientSessionFactory;
@@ -28,6 +29,7 @@ import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.impl.RemotingConnectionImpl;
 import org.hornetq.core.remoting.impl.invm.InVMConnector;
 import org.hornetq.tests.util.ServiceTestBase;
+import org.hornetq.tests.util.UnitTestCase;
 
 /**
  * A MultiThreadFailoverSupport
@@ -43,7 +45,7 @@ public abstract class MultiThreadReattachSupport extends ServiceTestBase
 {
 
    // Constants -----------------------------------------------------
-   
+
    private final Logger log = Logger.getLogger(this.getClass());
 
    // Attributes ----------------------------------------------------
@@ -63,37 +65,39 @@ public abstract class MultiThreadReattachSupport extends ServiceTestBase
    protected abstract void start() throws Exception;
 
    protected abstract void stop() throws Exception;
-   
+
    protected abstract ClientSessionFactoryInternal createSessionFactory();
-   
+
+   @Override
    protected void setUp() throws Exception
    {
       super.setUp();
       timer = new Timer();
    }
-   
+
+   @Override
    protected void tearDown() throws Exception
    {
       timer.cancel();
       timer = null;
       super.tearDown();
    }
-   
+
    protected boolean shouldFail()
    {
       return true;
    }
-  
+
    protected void runMultipleThreadsFailoverTest(final RunnableT runnable,
-                                       final int numThreads,
-                                       final int numIts,
-                                       final boolean failOnCreateConnection,
-                                       final long failDelay) throws Exception
+                                                 final int numThreads,
+                                                 final int numIts,
+                                                 final boolean failOnCreateConnection,
+                                                 final long failDelay) throws Exception
    {
       for (int its = 0; its < numIts; its++)
       {
          log.info("Beginning iteration " + its);
-         
+
          start();
 
          final ClientSessionFactoryInternal sf = createSessionFactory();
@@ -132,7 +136,8 @@ public abstract class MultiThreadReattachSupport extends ServiceTestBase
 
                   // Case a failure happened here, it should print the Thread dump
                   // Sending it to System.out, as it would show on the Tests report
-                  System.out.println(threadDump(" - fired by MultiThreadRandomReattachTestBase::runTestMultipleThreads (" + t.getLocalizedMessage() + ")"));
+                  System.out.println(UnitTestCase.threadDump(" - fired by MultiThreadRandomReattachTestBase::runTestMultipleThreads (" + t.getLocalizedMessage() +
+                                                             ")"));
                }
             }
          }
@@ -169,16 +174,15 @@ public abstract class MultiThreadReattachSupport extends ServiceTestBase
 
          session.close();
 
-         assertEquals(0, sf.numSessions());
+         Assert.assertEquals(0, sf.numSessions());
 
-         assertEquals(0, sf.numConnections());
-         
+         Assert.assertEquals(0, sf.numConnections());
+
          sf.close();
 
          stop();
-               }
+      }
    }
-
 
    // Private -------------------------------------------------------
 
@@ -195,10 +199,8 @@ public abstract class MultiThreadReattachSupport extends ServiceTestBase
       return failer;
    }
 
-
    // Inner classes -------------------------------------------------
 
- 
    protected abstract class RunnableT extends Thread
    {
       private volatile String failReason;
@@ -219,14 +221,12 @@ public abstract class MultiThreadReattachSupport extends ServiceTestBase
          }
          if (failReason != null)
          {
-            fail(failReason);
+            Assert.fail(failReason);
          }
       }
 
       public abstract void run(final ClientSessionFactory sf, final int threadNum) throws Exception;
    }
-
-   
 
    private class Failer extends TimerTask
    {
@@ -272,7 +272,5 @@ public abstract class MultiThreadReattachSupport extends ServiceTestBase
          return executed;
       }
    }
-
-   
 
 }

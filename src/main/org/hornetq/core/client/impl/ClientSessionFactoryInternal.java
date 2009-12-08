@@ -21,10 +21,10 @@ import org.hornetq.core.client.ClientSessionFactory;
  *
  */
 public interface ClientSessionFactoryInternal extends ClientSessionFactory
-{ 
-   //for testing
-   
+{
+   // for testing
+
    int numConnections();
-   
+
    int numSessions();
 }

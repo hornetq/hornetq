@@ -18,7 +18,6 @@ import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.spi.BufferHandler;
 import org.hornetq.core.remoting.spi.ConnectionLifeCycleListener;
 import org.jboss.netty.buffer.ChannelBuffer;
-import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelStateEvent;
 import org.jboss.netty.channel.ExceptionEvent;
@@ -98,10 +97,10 @@ class HornetQChannelHandler extends SimpleChannelHandler
             return;
          }
 
-         //We don't want to log this - since it is normal for this to happen during failover/reconnect
-         //and we don't want to spew out stack traces in that event
-         //The user has access to this exeception anyway via the HornetQException initial cause
-         
+         // We don't want to log this - since it is normal for this to happen during failover/reconnect
+         // and we don't want to spew out stack traces in that event
+         // The user has access to this exeception anyway via the HornetQException initial cause
+
          HornetQException me = new HornetQException(HornetQException.INTERNAL_ERROR, "Netty exception");
          me.initCause(e.getCause());
          try
@@ -111,7 +110,7 @@ class HornetQChannelHandler extends SimpleChannelHandler
          }
          catch (Exception ex)
          {
-            log.error("failed to notify the listener:", ex);
+            HornetQChannelHandler.log.error("failed to notify the listener:", ex);
          }
       }
    }

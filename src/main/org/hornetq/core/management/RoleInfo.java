@@ -64,7 +64,7 @@ public class RoleInfo
                     final boolean deleteDurableQueue,
                     final boolean createNonDurableQueue,
                     final boolean deleteNonDurableQueue,
-                    boolean manage)
+                    final boolean manage)
    {
       this.name = name;
       this.send = send;

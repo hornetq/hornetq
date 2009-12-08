@@ -13,8 +13,6 @@
 
 package org.hornetq.integration.transports.netty;
 
-import static org.hornetq.utils.DataConstants.SIZE_INT;
-
 import org.hornetq.core.buffers.impl.ChannelBufferWrapper;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.spi.BufferHandler;
@@ -55,26 +53,26 @@ public class HornetQFrameDecoder extends FrameDecoder
       int start = in.readerIndex();
 
       int length = handler.isReadyToHandle(new ChannelBufferWrapper(in));
-      
+
       in.readerIndex(start);
-      
+
       if (length == -1)
-      {                 
+      {
          return null;
       }
 
-      //in.readerIndex(start + SIZE_INT);
-      
+      // in.readerIndex(start + SIZE_INT);
+
       ChannelBuffer buffer = in.readBytes(length + DataConstants.SIZE_INT);
-      
+
       // FIXME - we should get Netty to give us a DynamicBuffer - seems to currently give us a non resizable buffer
 
       ChannelBuffer newBuffer = ChannelBuffers.dynamicBuffer(buffer.writerIndex());
-      
+
       newBuffer.writeBytes(buffer);
-      
+
       newBuffer.readInt();
-      
+
       return newBuffer;
    }
 }

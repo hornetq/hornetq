@@ -64,7 +64,7 @@ public class ClientProducerCreditManagerImpl implements ClientProducerCreditMana
          cr.receiveCredits(credits, offset);
       }
    }
-   
+
    public synchronized void reset()
    {
       for (ClientProducerCredits credits : producerCredits.values())

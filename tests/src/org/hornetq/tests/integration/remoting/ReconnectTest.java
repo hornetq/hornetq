@@ -17,6 +17,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.client.ClientSessionFactory;
 import org.hornetq.core.client.SessionFailureListener;
 import org.hornetq.core.client.impl.ClientSessionInternal;
@@ -93,7 +95,7 @@ public class ReconnectTest extends ServiceTestBase
                latch.countDown();
             }
 
-            public void beforeReconnect(HornetQException exception)
+            public void beforeReconnect(final HornetQException exception)
             {
             }
 
@@ -101,16 +103,16 @@ public class ReconnectTest extends ServiceTestBase
 
          server.stop();
 
-         Thread.sleep((int)(pingPeriod * 2));
+         Thread.sleep((pingPeriod * 2));
 
          server.start();
 
-         assertTrue(latch.await(5, TimeUnit.SECONDS));
+         Assert.assertTrue(latch.await(5, TimeUnit.SECONDS));
 
          // Some time to let possible loops to occur
          Thread.sleep(500);
 
-         assertEquals(1, count.get());
+         Assert.assertEquals(1, count.get());
 
       }
       finally

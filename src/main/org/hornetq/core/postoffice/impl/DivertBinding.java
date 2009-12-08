@@ -11,7 +11,6 @@
  * permissions and limitations under the License.
  */
 
-
 package org.hornetq.core.postoffice.impl;
 
 import org.hornetq.core.filter.Filter;
@@ -35,41 +34,41 @@ import org.hornetq.utils.SimpleString;
 public class DivertBinding implements Binding
 {
    private final SimpleString address;
-   
+
    private final Divert divert;
-   
+
    private final Filter filter;
-   
+
    private final SimpleString uniqueName;
-   
+
    private final SimpleString routingName;
-   
+
    private final boolean exclusive;
-   
+
    private final long id;
-   
-   public DivertBinding(long id, final SimpleString address, final Divert divert)
+
+   public DivertBinding(final long id, final SimpleString address, final Divert divert)
    {
       this.id = id;
 
       this.address = address;
-      
+
       this.divert = divert;
-      
-      this.filter = divert.getFilter();
-      
-      this.uniqueName = divert.getUniqueName();
-      
-      this.routingName = divert.getRoutingName();
-      
-      this.exclusive = divert.isExclusive();
+
+      filter = divert.getFilter();
+
+      uniqueName = divert.getUniqueName();
+
+      routingName = divert.getRoutingName();
+
+      exclusive = divert.isExclusive();
    }
-   
+
    public long getID()
    {
       return id;
    }
-   
+
    public Filter getFilter()
    {
       return filter;
@@ -94,7 +93,7 @@ public class DivertBinding implements Binding
    {
       return uniqueName;
    }
-   
+
    public SimpleString getClusterName()
    {
       return uniqueName;
@@ -109,7 +108,7 @@ public class DivertBinding implements Binding
    {
       return true;
    }
-   
+
    public void route(final ServerMessage message, final RoutingContext context) throws Exception
    {
       divert.route(message, context);
@@ -119,7 +118,7 @@ public class DivertBinding implements Binding
    {
       return 0;
    }
-   
+
    public BindingType getType()
    {
       return BindingType.DIVERT;
@@ -135,4 +134,3 @@ public class DivertBinding implements Binding
    }
 
 }
-

@@ -31,11 +31,12 @@ import org.hornetq.common.example.HornetQExample;
  */
 public class PagingExample extends HornetQExample
 {
-   public static void main(String[] args)
+   public static void main(final String[] args)
    {
       new PagingExample().run(args);
    }
 
+   @Override
    public boolean runExample() throws Exception
    {
       Connection connection = null;
@@ -101,7 +102,8 @@ public class PagingExample extends HornetQExample
          // Step 16. Start the JMS Connection. This step will activate the subscribers to receive messages.
          connection.start();
 
-         // Step 17. Receive the messages. It's important to ACK for messages as HornetQ will not read messages from paging
+         // Step 17. Receive the messages. It's important to ACK for messages as HornetQ will not read messages from
+         // paging
          // until messages are ACKed
 
          for (int i = 0; i < 30000; i++)

@@ -13,32 +13,9 @@
 
 package org.hornetq.tests.unit.core.filter.impl;
 
-import static org.hornetq.core.filter.impl.Operator.ADD;
-import static org.hornetq.core.filter.impl.Operator.AND;
-import static org.hornetq.core.filter.impl.Operator.BETWEEN;
-import static org.hornetq.core.filter.impl.Operator.DIFFERENT;
-import static org.hornetq.core.filter.impl.Operator.DIV;
-import static org.hornetq.core.filter.impl.Operator.EQUAL;
-import static org.hornetq.core.filter.impl.Operator.GE;
-import static org.hornetq.core.filter.impl.Operator.GT;
-import static org.hornetq.core.filter.impl.Operator.IN;
-import static org.hornetq.core.filter.impl.Operator.IS_NOT_NULL;
-import static org.hornetq.core.filter.impl.Operator.IS_NULL;
-import static org.hornetq.core.filter.impl.Operator.LE;
-import static org.hornetq.core.filter.impl.Operator.LIKE;
-import static org.hornetq.core.filter.impl.Operator.LIKE_ESCAPE;
-import static org.hornetq.core.filter.impl.Operator.LT;
-import static org.hornetq.core.filter.impl.Operator.MUL;
-import static org.hornetq.core.filter.impl.Operator.NEG;
-import static org.hornetq.core.filter.impl.Operator.NOT;
-import static org.hornetq.core.filter.impl.Operator.NOT_BETWEEN;
-import static org.hornetq.core.filter.impl.Operator.NOT_IN;
-import static org.hornetq.core.filter.impl.Operator.NOT_LIKE;
-import static org.hornetq.core.filter.impl.Operator.NOT_LIKE_ESCAPE;
-import static org.hornetq.core.filter.impl.Operator.OR;
-import static org.hornetq.core.filter.impl.Operator.SUB;
-
 import java.util.HashSet;
+
+import junit.framework.Assert;
 
 import org.hornetq.core.filter.impl.Operator;
 import org.hornetq.tests.util.UnitTestCase;
@@ -61,47 +38,51 @@ public class OperatorTest extends UnitTestCase
    // Attributes ----------------------------------------------------
 
    // Static --------------------------------------------------------
-   private static void assertSuccess(int op, Object arg1, Object expectedResult) throws Exception
+   private static void assertSuccess(final int op, final Object arg1, final Object expectedResult) throws Exception
    {
-      assertOperationSuccess(new Operator(op, arg1), expectedResult);
+      OperatorTest.assertOperationSuccess(new Operator(op, arg1), expectedResult);
    }
 
-   private static void assertSuccess(int op, Object arg1, Object arg2, Object expectedResult) throws Exception
+   private static void assertSuccess(final int op, final Object arg1, final Object arg2, final Object expectedResult) throws Exception
    {
-      assertOperationSuccess(new Operator(op, arg1, arg2), expectedResult);
+      OperatorTest.assertOperationSuccess(new Operator(op, arg1, arg2), expectedResult);
    }
 
-   private static void assertSuccess(int op, Object arg1, Object arg2, Object arg3, Object expectedResult) throws Exception
+   private static void assertSuccess(final int op,
+                                     final Object arg1,
+                                     final Object arg2,
+                                     final Object arg3,
+                                     final Object expectedResult) throws Exception
    {
-      assertOperationSuccess(new Operator(op, arg1, arg2, arg3), expectedResult);
+      OperatorTest.assertOperationSuccess(new Operator(op, arg1, arg2, arg3), expectedResult);
    }
 
-   private static void assertOperationSuccess(Operator operator, Object expectedResult) throws Exception
+   private static void assertOperationSuccess(final Operator operator, final Object expectedResult) throws Exception
    {
-      assertEquals(expectedResult, operator.apply());
+      Assert.assertEquals(expectedResult, operator.apply());
    }
 
-   private static void assertFailure(int op, Object arg1) throws Exception
+   private static void assertFailure(final int op, final Object arg1) throws Exception
    {
-      assertOperationFailure(new Operator(op, arg1));
+      OperatorTest.assertOperationFailure(new Operator(op, arg1));
    }
 
-   private static void assertFailure(int op, Object arg1, Object arg2) throws Exception
+   private static void assertFailure(final int op, final Object arg1, final Object arg2) throws Exception
    {
-      assertOperationFailure(new Operator(op, arg1, arg2));
+      OperatorTest.assertOperationFailure(new Operator(op, arg1, arg2));
    }
 
-   private static void assertFailure(int op, Object arg1, Object arg2, Object arg3) throws Exception
+   private static void assertFailure(final int op, final Object arg1, final Object arg2, final Object arg3) throws Exception
    {
-      assertOperationFailure(new Operator(op, arg1, arg2, arg3));
+      OperatorTest.assertOperationFailure(new Operator(op, arg1, arg2, arg3));
    }
 
-   private static void assertOperationFailure(Operator operator)
+   private static void assertOperationFailure(final Operator operator)
    {
       try
       {
          operator.apply();
-         fail("expected to throw an exception");
+         Assert.fail("expected to throw an exception");
       }
       catch (Exception e)
       {
@@ -114,283 +95,283 @@ public class OperatorTest extends UnitTestCase
 
    public void test_EQUAL() throws Exception
    {
-      assertSuccess(EQUAL, 1, 1, true);
-      assertSuccess(EQUAL, 1, 1.0, true);
-      assertSuccess(EQUAL, 1, null, null);
-      assertSuccess(EQUAL, 1.0, 1, true);
-      assertSuccess(EQUAL, 1.0, 1.0, true);
-      assertSuccess(EQUAL, 1.0, null, null);
+      OperatorTest.assertSuccess(Operator.EQUAL, 1, 1, true);
+      OperatorTest.assertSuccess(Operator.EQUAL, 1, 1.0, true);
+      OperatorTest.assertSuccess(Operator.EQUAL, 1, null, null);
+      OperatorTest.assertSuccess(Operator.EQUAL, 1.0, 1, true);
+      OperatorTest.assertSuccess(Operator.EQUAL, 1.0, 1.0, true);
+      OperatorTest.assertSuccess(Operator.EQUAL, 1.0, null, null);
 
-      assertSuccess(EQUAL, false, false, true);
-      assertSuccess(EQUAL, true, false, false);
-      assertSuccess(EQUAL, false, true, false);
-      assertSuccess(EQUAL, true, true, true);
+      OperatorTest.assertSuccess(Operator.EQUAL, false, false, true);
+      OperatorTest.assertSuccess(Operator.EQUAL, true, false, false);
+      OperatorTest.assertSuccess(Operator.EQUAL, false, true, false);
+      OperatorTest.assertSuccess(Operator.EQUAL, true, true, true);
 
       SimpleString foo = new SimpleString("foo");
       SimpleString foo2 = new SimpleString("foo");
       SimpleString bar = new SimpleString("bar");
-      assertSuccess(EQUAL, foo, foo, true);
-      assertSuccess(EQUAL, foo, foo2, true);
-      assertSuccess(EQUAL, foo, bar, false);
-      assertSuccess(EQUAL, foo, null, false);
+      OperatorTest.assertSuccess(Operator.EQUAL, foo, foo, true);
+      OperatorTest.assertSuccess(Operator.EQUAL, foo, foo2, true);
+      OperatorTest.assertSuccess(Operator.EQUAL, foo, bar, false);
+      OperatorTest.assertSuccess(Operator.EQUAL, foo, null, false);
 
-      assertSuccess(EQUAL, null, 1.0, false);
+      OperatorTest.assertSuccess(Operator.EQUAL, null, 1.0, false);
    }
-   
+
    public void test_DIFFERENT() throws Exception
    {
-      assertSuccess(DIFFERENT, 2, 1, true);
-      assertSuccess(DIFFERENT, 2, 1.0, true);
-      assertSuccess(DIFFERENT, 2, null, null);
-      assertSuccess(DIFFERENT, 2.0, 1, true);
-      assertSuccess(DIFFERENT, 2.0, 1.0, true);
-      assertSuccess(DIFFERENT, 2.0, null, null);
+      OperatorTest.assertSuccess(Operator.DIFFERENT, 2, 1, true);
+      OperatorTest.assertSuccess(Operator.DIFFERENT, 2, 1.0, true);
+      OperatorTest.assertSuccess(Operator.DIFFERENT, 2, null, null);
+      OperatorTest.assertSuccess(Operator.DIFFERENT, 2.0, 1, true);
+      OperatorTest.assertSuccess(Operator.DIFFERENT, 2.0, 1.0, true);
+      OperatorTest.assertSuccess(Operator.DIFFERENT, 2.0, null, null);
 
-      assertSuccess(DIFFERENT, false, false, false);
-      assertSuccess(DIFFERENT, true, false, true);
-      assertSuccess(DIFFERENT, false, true, true);
-      assertSuccess(DIFFERENT, true, true, false);
+      OperatorTest.assertSuccess(Operator.DIFFERENT, false, false, false);
+      OperatorTest.assertSuccess(Operator.DIFFERENT, true, false, true);
+      OperatorTest.assertSuccess(Operator.DIFFERENT, false, true, true);
+      OperatorTest.assertSuccess(Operator.DIFFERENT, true, true, false);
 
       SimpleString foo = new SimpleString("foo");
       SimpleString foo2 = new SimpleString("foo");
       SimpleString bar = new SimpleString("bar");
-      assertSuccess(DIFFERENT, foo, foo, false);
-      assertSuccess(DIFFERENT, foo, foo2, false);
-      assertSuccess(DIFFERENT, foo, bar, true);
-      assertSuccess(DIFFERENT, foo, null, null);
+      OperatorTest.assertSuccess(Operator.DIFFERENT, foo, foo, false);
+      OperatorTest.assertSuccess(Operator.DIFFERENT, foo, foo2, false);
+      OperatorTest.assertSuccess(Operator.DIFFERENT, foo, bar, true);
+      OperatorTest.assertSuccess(Operator.DIFFERENT, foo, null, null);
 
-      assertSuccess(DIFFERENT, null, 1.0, true);
-      assertSuccess(DIFFERENT, null, null, false);
+      OperatorTest.assertSuccess(Operator.DIFFERENT, null, 1.0, true);
+      OperatorTest.assertSuccess(Operator.DIFFERENT, null, null, false);
    }
 
    public void test_IS_NULL() throws Exception
    {
-      assertSuccess(IS_NULL, null, true);
-      assertSuccess(IS_NULL, 1, false);
+      OperatorTest.assertSuccess(Operator.IS_NULL, null, true);
+      OperatorTest.assertSuccess(Operator.IS_NULL, 1, false);
    }
 
    public void test_IS_NOT_NULL() throws Exception
    {
-      assertSuccess(IS_NOT_NULL, null, false);
-      assertSuccess(IS_NOT_NULL, 1, true);
+      OperatorTest.assertSuccess(Operator.IS_NOT_NULL, null, false);
+      OperatorTest.assertSuccess(Operator.IS_NOT_NULL, 1, true);
    }
 
    public void test_ADD() throws Exception
    {
-      assertSuccess(ADD, 1, 1, 2L);
-      assertSuccess(ADD, 1.0, 1, 2.0);
-      assertSuccess(ADD, 1, 1.0, 2.0);
-      assertSuccess(ADD, 1.0, 1.0, 2.0);
+      OperatorTest.assertSuccess(Operator.ADD, 1, 1, 2L);
+      OperatorTest.assertSuccess(Operator.ADD, 1.0, 1, 2.0);
+      OperatorTest.assertSuccess(Operator.ADD, 1, 1.0, 2.0);
+      OperatorTest.assertSuccess(Operator.ADD, 1.0, 1.0, 2.0);
 
       // incompatible types
-      assertFailure(ADD, true, 1.0);
-      assertFailure(ADD, 1, true);
+      OperatorTest.assertFailure(Operator.ADD, true, 1.0);
+      OperatorTest.assertFailure(Operator.ADD, 1, true);
    }
 
    public void test_SUB() throws Exception
    {
-      assertSuccess(SUB, 2, 1, 1L);
-      assertSuccess(SUB, 2.0, 1, 1.0);
-      assertSuccess(SUB, 2, 1.0, 1.0);
-      assertSuccess(SUB, 2.0, 1.0, 1.0);
+      OperatorTest.assertSuccess(Operator.SUB, 2, 1, 1L);
+      OperatorTest.assertSuccess(Operator.SUB, 2.0, 1, 1.0);
+      OperatorTest.assertSuccess(Operator.SUB, 2, 1.0, 1.0);
+      OperatorTest.assertSuccess(Operator.SUB, 2.0, 1.0, 1.0);
 
       // incompatible types
-      assertFailure(SUB, true, 1.0);
-      assertFailure(SUB, 1, true);
+      OperatorTest.assertFailure(Operator.SUB, true, 1.0);
+      OperatorTest.assertFailure(Operator.SUB, 1, true);
    }
 
    public void test_MUL() throws Exception
    {
-      assertSuccess(MUL, 2, 1, 2L);
-      assertSuccess(MUL, 2.0, 1, 2.0);
-      assertSuccess(MUL, 2, 1.0, 2.0);
-      assertSuccess(MUL, 2.0, 1.0, 2.0);
+      OperatorTest.assertSuccess(Operator.MUL, 2, 1, 2L);
+      OperatorTest.assertSuccess(Operator.MUL, 2.0, 1, 2.0);
+      OperatorTest.assertSuccess(Operator.MUL, 2, 1.0, 2.0);
+      OperatorTest.assertSuccess(Operator.MUL, 2.0, 1.0, 2.0);
 
       // incompatible types
-      assertSuccess(MUL, 2, null, null);
-      assertSuccess(MUL, null, 1.0, null);
-      assertFailure(MUL, true, 1.0);
-      assertFailure(MUL, 1, true);
+      OperatorTest.assertSuccess(Operator.MUL, 2, null, null);
+      OperatorTest.assertSuccess(Operator.MUL, null, 1.0, null);
+      OperatorTest.assertFailure(Operator.MUL, true, 1.0);
+      OperatorTest.assertFailure(Operator.MUL, 1, true);
    }
 
    public void test_DIV() throws Exception
    {
-      assertSuccess(DIV, 2, 2, 1L);
-      assertSuccess(DIV, 2.0, 2, 1.0);
-      assertSuccess(DIV, 2, 2.0, 1.0);
-      assertSuccess(DIV, 2.0, 2.0, 1.0);
+      OperatorTest.assertSuccess(Operator.DIV, 2, 2, 1L);
+      OperatorTest.assertSuccess(Operator.DIV, 2.0, 2, 1.0);
+      OperatorTest.assertSuccess(Operator.DIV, 2, 2.0, 1.0);
+      OperatorTest.assertSuccess(Operator.DIV, 2.0, 2.0, 1.0);
 
       // incompatible types
-      assertSuccess(DIV, 2, null, null);
-      assertSuccess(DIV, null, 1.0, null);
-      assertFailure(DIV, true, 1.0);
-      assertFailure(DIV, 1, true);
+      OperatorTest.assertSuccess(Operator.DIV, 2, null, null);
+      OperatorTest.assertSuccess(Operator.DIV, null, 1.0, null);
+      OperatorTest.assertFailure(Operator.DIV, true, 1.0);
+      OperatorTest.assertFailure(Operator.DIV, 1, true);
    }
 
    public void test_NEG() throws Exception
    {
-      assertSuccess(NEG, 1, -1L);
-      assertSuccess(NEG, -1.0, 1.0);
+      OperatorTest.assertSuccess(Operator.NEG, 1, -1L);
+      OperatorTest.assertSuccess(Operator.NEG, -1.0, 1.0);
 
       // incompatible types
-      assertFailure(NEG, true);
+      OperatorTest.assertFailure(Operator.NEG, true);
    }
 
    public void test_AND() throws Exception
    {
       // NULL and NULL -> NULL
-      assertSuccess(AND, null, null, null);
+      OperatorTest.assertSuccess(Operator.AND, null, null, null);
       // NULL and F -> F
-      assertSuccess(AND, null, false, false);
+      OperatorTest.assertSuccess(Operator.AND, null, false, false);
       // NULL and T -> NULL
-      assertSuccess(AND, null, true, null);
+      OperatorTest.assertSuccess(Operator.AND, null, true, null);
 
       // F and NULL -> F
-      assertSuccess(AND, false, null, false);
+      OperatorTest.assertSuccess(Operator.AND, false, null, false);
       // F and F -> F
-      assertSuccess(AND, false, false, false);
+      OperatorTest.assertSuccess(Operator.AND, false, false, false);
       // F and T -> F
-      assertSuccess(AND, false, true, false);
+      OperatorTest.assertSuccess(Operator.AND, false, true, false);
 
       // T and NULL -> NULL
-      assertSuccess(AND, true, null, null);
+      OperatorTest.assertSuccess(Operator.AND, true, null, null);
       // T and F -> F
-      assertSuccess(AND, true, false, false);
+      OperatorTest.assertSuccess(Operator.AND, true, false, false);
       // T and T -> T
-      assertSuccess(AND, true, true, true);
+      OperatorTest.assertSuccess(Operator.AND, true, true, true);
 
       // incompatible types
-      assertFailure(AND, 1.0, true);
-      assertFailure(AND, true, 1.0);
-      assertFailure(AND, null, 1.0);
+      OperatorTest.assertFailure(Operator.AND, 1.0, true);
+      OperatorTest.assertFailure(Operator.AND, true, 1.0);
+      OperatorTest.assertFailure(Operator.AND, null, 1.0);
    }
 
    public void test_OR() throws Exception
    {
       // NULL OR NULL -> NULL
-      assertSuccess(OR, null, null, null);
+      OperatorTest.assertSuccess(Operator.OR, null, null, null);
       // NULL OR F -> NULL
-      assertSuccess(OR, null, false, null);
+      OperatorTest.assertSuccess(Operator.OR, null, false, null);
       // NULL OR T -> T
-      assertSuccess(OR, null, true, true);
+      OperatorTest.assertSuccess(Operator.OR, null, true, true);
 
       // F or NULL -> NULL
-      assertSuccess(OR, false, null, null);
+      OperatorTest.assertSuccess(Operator.OR, false, null, null);
       // F or F -> F
-      assertSuccess(OR, false, false, false);
+      OperatorTest.assertSuccess(Operator.OR, false, false, false);
       // F or T -> F
-      assertSuccess(OR, false, true, true);
+      OperatorTest.assertSuccess(Operator.OR, false, true, true);
 
       // T or NULL -> T
-      assertSuccess(OR, true, null, true);
+      OperatorTest.assertSuccess(Operator.OR, true, null, true);
       // T or F -> T
-      assertSuccess(OR, true, false, true);
+      OperatorTest.assertSuccess(Operator.OR, true, false, true);
       // T or T -> T
-      assertSuccess(OR, true, true, true);
+      OperatorTest.assertSuccess(Operator.OR, true, true, true);
 
       // incompatible types
-      assertFailure(OR, 1.0, true);
-      assertFailure(OR, false, 1.0);
-      assertFailure(OR, null, 1.0);
+      OperatorTest.assertFailure(Operator.OR, 1.0, true);
+      OperatorTest.assertFailure(Operator.OR, false, 1.0);
+      OperatorTest.assertFailure(Operator.OR, null, 1.0);
    }
 
    public void test_NOT() throws Exception
    {
       // NOT NULL -> NULL
-      assertSuccess(NOT, null, null);
+      OperatorTest.assertSuccess(Operator.NOT, null, null);
       // NOT F -> T
-      assertSuccess(NOT, false, true);
+      OperatorTest.assertSuccess(Operator.NOT, false, true);
       // NOT T -> F
-      assertSuccess(NOT, true, false);
+      OperatorTest.assertSuccess(Operator.NOT, true, false);
 
       // incompatible types
-      assertFailure(NOT, 1.0);
+      OperatorTest.assertFailure(Operator.NOT, 1.0);
    }
 
    public void test_GT() throws Exception
    {
-      assertSuccess(GT, 2, 1, true);
-      assertSuccess(GT, 2.0, 1, true);
-      assertSuccess(GT, 2, 1.0, true);
-      assertSuccess(GT, 2.0, 1.0, true);
+      OperatorTest.assertSuccess(Operator.GT, 2, 1, true);
+      OperatorTest.assertSuccess(Operator.GT, 2.0, 1, true);
+      OperatorTest.assertSuccess(Operator.GT, 2, 1.0, true);
+      OperatorTest.assertSuccess(Operator.GT, 2.0, 1.0, true);
 
       // incompatible types
-      assertSuccess(GT, 2.0, true, false);
-      assertSuccess(GT, 2, null, null);
-      assertSuccess(GT, true, 1.0, false);
-      assertSuccess(GT, null, 1, null);
-      assertSuccess(GT, true, true, false);
-      assertSuccess(GT, null, null, null);
+      OperatorTest.assertSuccess(Operator.GT, 2.0, true, false);
+      OperatorTest.assertSuccess(Operator.GT, 2, null, null);
+      OperatorTest.assertSuccess(Operator.GT, true, 1.0, false);
+      OperatorTest.assertSuccess(Operator.GT, null, 1, null);
+      OperatorTest.assertSuccess(Operator.GT, true, true, false);
+      OperatorTest.assertSuccess(Operator.GT, null, null, null);
    }
 
    public void test_GE() throws Exception
    {
-      assertSuccess(GE, 1, 1, true);
-      assertSuccess(GE, 1.0, 1, true);
-      assertSuccess(GE, 1, 1.0, true);
-      assertSuccess(GE, 1.0, 1.0, true);
+      OperatorTest.assertSuccess(Operator.GE, 1, 1, true);
+      OperatorTest.assertSuccess(Operator.GE, 1.0, 1, true);
+      OperatorTest.assertSuccess(Operator.GE, 1, 1.0, true);
+      OperatorTest.assertSuccess(Operator.GE, 1.0, 1.0, true);
 
       // incompatible types
-      assertSuccess(GE, 2.0, true, false);
-      assertSuccess(GE, 2, null, null);
-      assertSuccess(GE, true, 1.0, false);
-      assertSuccess(GE, null, 1, null);
-      assertSuccess(GE, true, true, false);
-      assertSuccess(GE, null, null, null);
+      OperatorTest.assertSuccess(Operator.GE, 2.0, true, false);
+      OperatorTest.assertSuccess(Operator.GE, 2, null, null);
+      OperatorTest.assertSuccess(Operator.GE, true, 1.0, false);
+      OperatorTest.assertSuccess(Operator.GE, null, 1, null);
+      OperatorTest.assertSuccess(Operator.GE, true, true, false);
+      OperatorTest.assertSuccess(Operator.GE, null, null, null);
    }
 
    public void test_LT() throws Exception
    {
-      assertSuccess(LT, 1, 2, true);
-      assertSuccess(LT, 1.0, 2, true);
-      assertSuccess(LT, 1, 2.0, true);
-      assertSuccess(LT, 1.0, 2.0, true);
+      OperatorTest.assertSuccess(Operator.LT, 1, 2, true);
+      OperatorTest.assertSuccess(Operator.LT, 1.0, 2, true);
+      OperatorTest.assertSuccess(Operator.LT, 1, 2.0, true);
+      OperatorTest.assertSuccess(Operator.LT, 1.0, 2.0, true);
 
       // incompatible types
-      assertSuccess(LT, 1.0, true, false);
-      assertSuccess(LT, 1, null, null);
-      assertSuccess(LT, true, 2.0, false);
-      assertSuccess(LT, null, 2, null);
-      assertSuccess(LT, true, true, false);
-      assertSuccess(LT, null, null, null);
+      OperatorTest.assertSuccess(Operator.LT, 1.0, true, false);
+      OperatorTest.assertSuccess(Operator.LT, 1, null, null);
+      OperatorTest.assertSuccess(Operator.LT, true, 2.0, false);
+      OperatorTest.assertSuccess(Operator.LT, null, 2, null);
+      OperatorTest.assertSuccess(Operator.LT, true, true, false);
+      OperatorTest.assertSuccess(Operator.LT, null, null, null);
    }
 
    public void test_LE() throws Exception
    {
-      assertSuccess(LE, 1, 1, true);
-      assertSuccess(LE, 1.0, 1, true);
-      assertSuccess(LE, 1, 1.0, true);
-      assertSuccess(LE, 1.0, 1.0, true);
+      OperatorTest.assertSuccess(Operator.LE, 1, 1, true);
+      OperatorTest.assertSuccess(Operator.LE, 1.0, 1, true);
+      OperatorTest.assertSuccess(Operator.LE, 1, 1.0, true);
+      OperatorTest.assertSuccess(Operator.LE, 1.0, 1.0, true);
 
       // incompatible types
-      assertSuccess(LE, 1.0, true, false);
-      assertSuccess(LE, 1, null, null);
-      assertSuccess(LE, true, 1.0, false);
-      assertSuccess(LE, null, 1, null);
-      assertSuccess(LE, true, true, false);
-      assertSuccess(LE, null, null, null);
+      OperatorTest.assertSuccess(Operator.LE, 1.0, true, false);
+      OperatorTest.assertSuccess(Operator.LE, 1, null, null);
+      OperatorTest.assertSuccess(Operator.LE, true, 1.0, false);
+      OperatorTest.assertSuccess(Operator.LE, null, 1, null);
+      OperatorTest.assertSuccess(Operator.LE, true, true, false);
+      OperatorTest.assertSuccess(Operator.LE, null, null, null);
    }
 
    public void test_BETWEEN() throws Exception
    {
       // 2 BETWEEN 1 AND 3
-      assertSuccess(BETWEEN, 2, 1, 3, true);
-      assertSuccess(BETWEEN, 2.0, 1.0, 3.0, true);
+      OperatorTest.assertSuccess(Operator.BETWEEN, 2, 1, 3, true);
+      OperatorTest.assertSuccess(Operator.BETWEEN, 2.0, 1.0, 3.0, true);
 
       // incompatible types
-      assertSuccess(BETWEEN, true, 1, 3, false);
-      assertSuccess(BETWEEN, null, null, 3, null);
+      OperatorTest.assertSuccess(Operator.BETWEEN, true, 1, 3, false);
+      OperatorTest.assertSuccess(Operator.BETWEEN, null, null, 3, null);
    }
 
    public void test_NOT_BETWEEN() throws Exception
    {
       // 2 NOT BETWEEN 3 AND 4
-      assertSuccess(NOT_BETWEEN, 2, 3, 4, true);
-      assertSuccess(NOT_BETWEEN, 2.0, 3.0, 4.0, true);
+      OperatorTest.assertSuccess(Operator.NOT_BETWEEN, 2, 3, 4, true);
+      OperatorTest.assertSuccess(Operator.NOT_BETWEEN, 2.0, 3.0, 4.0, true);
 
       // incompatible types
-      assertSuccess(NOT_BETWEEN, true, 1, 3, false);
-      assertSuccess(NOT_BETWEEN, null, null, 3, null);
+      OperatorTest.assertSuccess(Operator.NOT_BETWEEN, true, 1, 3, false);
+      OperatorTest.assertSuccess(Operator.NOT_BETWEEN, null, null, 3, null);
    }
 
    public void test_IN() throws Exception
@@ -402,11 +383,11 @@ public class OperatorTest extends UnitTestCase
 
       SimpleString foo = new SimpleString("foo");
 
-      assertSuccess(IN, foo, set, true);
-      assertSuccess(IN, foo, new HashSet(), false);
+      OperatorTest.assertSuccess(Operator.IN, foo, set, true);
+      OperatorTest.assertSuccess(Operator.IN, foo, new HashSet(), false);
 
       // incompatible types
-      assertFailure(IN, true, set);
+      OperatorTest.assertFailure(Operator.IN, true, set);
    }
 
    public void test_NOT_IN() throws Exception
@@ -418,56 +399,62 @@ public class OperatorTest extends UnitTestCase
 
       SimpleString foo = new SimpleString("foo");
 
-      assertSuccess(NOT_IN, foo, set, false);
-      assertSuccess(NOT_IN, foo, new HashSet(), true);
+      OperatorTest.assertSuccess(Operator.NOT_IN, foo, set, false);
+      OperatorTest.assertSuccess(Operator.NOT_IN, foo, new HashSet(), true);
 
       // incompatible types
-      assertFailure(NOT_IN, true, set);
+      OperatorTest.assertFailure(Operator.NOT_IN, true, set);
    }
 
    public void test_LIKE() throws Exception
    {
       SimpleString pattern = new SimpleString("12%3");
-      assertSuccess(LIKE, new SimpleString("123"), pattern, true);
-      assertSuccess(LIKE, new SimpleString("12993"), pattern, true);
-      assertSuccess(LIKE, new SimpleString("1234"), pattern, false);
+      OperatorTest.assertSuccess(Operator.LIKE, new SimpleString("123"), pattern, true);
+      OperatorTest.assertSuccess(Operator.LIKE, new SimpleString("12993"), pattern, true);
+      OperatorTest.assertSuccess(Operator.LIKE, new SimpleString("1234"), pattern, false);
 
       pattern = new SimpleString("l_se");
-      assertSuccess(LIKE, new SimpleString("lose"), pattern, true);
-      assertSuccess(LIKE, new SimpleString("loose"), pattern, false);
+      OperatorTest.assertSuccess(Operator.LIKE, new SimpleString("lose"), pattern, true);
+      OperatorTest.assertSuccess(Operator.LIKE, new SimpleString("loose"), pattern, false);
 
-      assertSuccess(LIKE, null, pattern, false);
+      OperatorTest.assertSuccess(Operator.LIKE, null, pattern, false);
    }
 
    public void test_LIKE_ESCAPE() throws Exception
    {
       SimpleString pattern = new SimpleString("\\_%");
       SimpleString escapeChar = new SimpleString("\\");
-      assertSuccess(LIKE_ESCAPE, new SimpleString("_foo"), pattern, escapeChar, true);
-      assertSuccess(LIKE_ESCAPE, new SimpleString("bar"), pattern, escapeChar, false);
-      assertSuccess(LIKE_ESCAPE, null, pattern, escapeChar, false);
+      OperatorTest.assertSuccess(Operator.LIKE_ESCAPE, new SimpleString("_foo"), pattern, escapeChar, true);
+      OperatorTest.assertSuccess(Operator.LIKE_ESCAPE, new SimpleString("bar"), pattern, escapeChar, false);
+      OperatorTest.assertSuccess(Operator.LIKE_ESCAPE, null, pattern, escapeChar, false);
 
-      assertFailure(LIKE_ESCAPE, new SimpleString("_foo"), pattern, new SimpleString("must be a single char"));
+      OperatorTest.assertFailure(Operator.LIKE_ESCAPE,
+                                 new SimpleString("_foo"),
+                                 pattern,
+                                 new SimpleString("must be a single char"));
    }
 
    public void test_NOT_LIKE() throws Exception
    {
       SimpleString pattern = new SimpleString("12%3");
-      assertSuccess(NOT_LIKE, new SimpleString("123"), pattern, false);
-      assertSuccess(NOT_LIKE, new SimpleString("12993"), pattern, false);
-      assertSuccess(NOT_LIKE, new SimpleString("1234"), pattern, true);
-      assertSuccess(NOT_LIKE, null, pattern, false);
+      OperatorTest.assertSuccess(Operator.NOT_LIKE, new SimpleString("123"), pattern, false);
+      OperatorTest.assertSuccess(Operator.NOT_LIKE, new SimpleString("12993"), pattern, false);
+      OperatorTest.assertSuccess(Operator.NOT_LIKE, new SimpleString("1234"), pattern, true);
+      OperatorTest.assertSuccess(Operator.NOT_LIKE, null, pattern, false);
    }
 
    public void test_NOT_LIKE_ESCAPE() throws Exception
    {
       SimpleString pattern = new SimpleString("\\_%");
       SimpleString escapeChar = new SimpleString("\\");
-      assertSuccess(NOT_LIKE_ESCAPE, new SimpleString("_foo"), pattern, escapeChar, false);
-      assertSuccess(NOT_LIKE_ESCAPE, new SimpleString("bar"), pattern, escapeChar, true);
-      assertSuccess(NOT_LIKE_ESCAPE, null, pattern, escapeChar, false);
+      OperatorTest.assertSuccess(Operator.NOT_LIKE_ESCAPE, new SimpleString("_foo"), pattern, escapeChar, false);
+      OperatorTest.assertSuccess(Operator.NOT_LIKE_ESCAPE, new SimpleString("bar"), pattern, escapeChar, true);
+      OperatorTest.assertSuccess(Operator.NOT_LIKE_ESCAPE, null, pattern, escapeChar, false);
 
-      assertFailure(NOT_LIKE_ESCAPE, new SimpleString("_foo"), pattern, new SimpleString("must be a single char"));
+      OperatorTest.assertFailure(Operator.NOT_LIKE_ESCAPE,
+                                 new SimpleString("_foo"),
+                                 pattern,
+                                 new SimpleString("must be a single char"));
    }
 
    // Package protected ---------------------------------------------

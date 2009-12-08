@@ -18,6 +18,7 @@ import javax.jms.Message;
 import javax.jms.ObjectMessage;
 
 import org.hornetq.jms.tests.message.SimpleJMSObjectMessage;
+import org.hornetq.jms.tests.util.ProxyAssertSupport;
 
 /**
  * Tests the delivery/receipt of a foreign object message
@@ -31,41 +32,44 @@ import org.hornetq.jms.tests.message.SimpleJMSObjectMessage;
  */
 public class ForeignObjectMessageTest extends ForeignMessageTest
 {
-    private ForeignTestObject testObj;
-    
-    public void setUp() throws Exception
-    {
-        testObj = new ForeignTestObject("hello",2.2D); 
-        super.setUp();
-       
-    }
+   private ForeignTestObject testObj;
 
-    public void tearDown() throws Exception
-    {
-       super.tearDown();
-       testObj = null;
-    }
+   @Override
+   public void setUp() throws Exception
+   {
+      testObj = new ForeignTestObject("hello", 2.2D);
+      super.setUp();
 
-    protected Message createForeignMessage() throws Exception
-    {
-        SimpleJMSObjectMessage m = new SimpleJMSObjectMessage();
-        
-        log.debug("creating JMS Message type " + m.getClass().getName());
-        
-        m.setObject(testObj);
+   }
 
-        return m;
-    }
-    
-    protected void assertEquivalent(Message m, int mode, boolean redelivery) throws JMSException
-    {
-        super.assertEquivalent(m,mode, redelivery);
-        
-        ObjectMessage obj = (ObjectMessage)m;
-        
-        assertNotNull(obj.getObject());
-        assertEquals(obj.getObject(),testObj);
-    }
-    
+   @Override
+   public void tearDown() throws Exception
+   {
+      super.tearDown();
+      testObj = null;
+   }
+
+   @Override
+   protected Message createForeignMessage() throws Exception
+   {
+      SimpleJMSObjectMessage m = new SimpleJMSObjectMessage();
+
+      log.debug("creating JMS Message type " + m.getClass().getName());
+
+      m.setObject(testObj);
+
+      return m;
+   }
+
+   @Override
+   protected void assertEquivalent(final Message m, final int mode, final boolean redelivery) throws JMSException
+   {
+      super.assertEquivalent(m, mode, redelivery);
+
+      ObjectMessage obj = (ObjectMessage)m;
+
+      ProxyAssertSupport.assertNotNull(obj.getObject());
+      ProxyAssertSupport.assertEquals(obj.getObject(), testObj);
+   }
 
 }

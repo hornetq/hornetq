@@ -15,6 +15,9 @@ package org.hornetq.jms.tests.message;
 
 import javax.jms.Message;
 
+import org.hornetq.jms.tests.HornetQServerTestCase;
+import org.hornetq.jms.tests.util.ProxyAssertSupport;
+
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
@@ -24,7 +27,7 @@ public class JMSDestinationHeaderTest extends MessageHeaderTestBase
    // Constants -----------------------------------------------------
 
    // Static --------------------------------------------------------
-   
+
    // Attributes ----------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -35,14 +38,14 @@ public class JMSDestinationHeaderTest extends MessageHeaderTestBase
    {
       queueProducer.send(queueProducerSession.createMessage());
       Message m = queueConsumer.receive();
-      assertEquals(queue1, m.getJMSDestination());
+      ProxyAssertSupport.assertEquals(HornetQServerTestCase.queue1, m.getJMSDestination());
    }
 
    // Package protected ---------------------------------------------
-   
+
    // Protected -----------------------------------------------------
-   
+
    // Private -------------------------------------------------------
-   
+
    // Inner classes -------------------------------------------------
 }

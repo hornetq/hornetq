@@ -29,7 +29,7 @@ import javax.naming.InitialContext;
 
 import org.hornetq.core.logging.Logger;
 import org.hornetq.jms.tests.HornetQServerTestCase;
-
+import org.hornetq.jms.tests.util.ProxyAssertSupport;
 
 /**
  * 
@@ -46,202 +46,200 @@ public class ManyConnectionsStressTest extends HornetQServerTestCase
    // Constants -----------------------------------------------------
 
    private static Logger log = Logger.getLogger(RelayStressTest.class);
-   
-	private static final int NUM_CONNECTIONS = 500;
-	
-	private static final int NUM_MESSAGES = 100;
-	
+
+   private static final int NUM_CONNECTIONS = 500;
+
+   private static final int NUM_MESSAGES = 100;
 
    // Static --------------------------------------------------------
 
    // Attributes ----------------------------------------------------
 
    private InitialContext ic;
-   
+
    private volatile boolean failed;
-   
-   private Set listeners = new HashSet();
-   
+
+   private final Set listeners = new HashSet();
 
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
 
+   @Override
    protected void setUp() throws Exception
    {
       super.setUp();
 
-      //ServerManagement.start("all");
-      
+      // ServerManagement.start("all");
+
       ic = getInitialContext();
-      
+
       createTopic("StressTestTopic");
 
-      log.debug("setup done");
+      ManyConnectionsStressTest.log.debug("setup done");
    }
 
+   @Override
    protected void tearDown() throws Exception
    {
       destroyTopic("StressTestTopic");
-      
+
       ic.close();
-      
+
       super.tearDown();
    }
-   
+
    public void testManyConnections() throws Exception
    {
-   	ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
-   	
-   	Topic topic = (Topic)ic.lookup("/topic/StressTestTopic");
-   	
-   	Connection[] conns = new Connection[NUM_CONNECTIONS];
-   	
-   	Connection connSend = null;
-   	
-   	try
-   	{
-   		for (int i = 0; i < NUM_CONNECTIONS; i++)
-   		{
-   			conns[i] = cf.createConnection();
-   			
-   			Session sess = conns[i].createSession(false, Session.AUTO_ACKNOWLEDGE);
-   			
-   			MessageConsumer cons = sess.createConsumer(topic);
-   			
-   			MyListener listener = new MyListener();
-   			
-   			synchronized (listeners)
-   			{
-   				listeners.add(listener);
-   			}
-   			
-   			cons.setMessageListener(listener);
-   			
-   			conns[i].start();
-   			
-   			log.info("Created " + i);
-   		}
-   		
-   		//Thread.sleep(100 * 60 * 1000);
-   		
-   		connSend = cf.createConnection();
-   		
-   		Session sessSend = connSend.createSession(false, Session.AUTO_ACKNOWLEDGE);
-   		
-   		MessageProducer prod = sessSend.createProducer(topic);
-   		
-   		for (int i = 0; i < NUM_MESSAGES; i++)
-   		{
-   			TextMessage tm = sessSend.createTextMessage("message" + i);
-   			
-   			tm.setIntProperty("count", i);
-   			
-   			prod.send(tm);
-   		}
-   		
-   		long wait = 30000;
-   		
-   		synchronized (listeners)
-   		{
-   			while (!listeners.isEmpty() && wait > 0)
-   			{
-   				long start = System.currentTimeMillis();               
-   				try
-   				{
-   					listeners.wait(wait);
-   				}
-   				catch (InterruptedException e)
-   				{  
-   					//Ignore
-   				}
-   				wait -= (System.currentTimeMillis() - start);
-   			} 
-   		}
-   		
-   		if (wait <= 0)
-   		{
-   			fail("Timed out");
-   		}
-   		
-   		assertFalse(failed);
+      ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
 
-   		log.info("Done");
-   	}
-   	finally
-   	{
-   		for (int i = 0; i < NUM_CONNECTIONS; i++)
-   		{
-   			try
-   			{
-   				if (conns[i] != null)
-   				{
-   					conns[i].close();
-   				}
-   			}
-   			catch (Throwable t)
-   			{
-   				log.error("Failed to close connection", t);
-   			}
-   		}
-   		
-   		if (connSend != null)
-   		{
-   			connSend.close();
-   		}
-   	}
+      Topic topic = (Topic)ic.lookup("/topic/StressTestTopic");
+
+      Connection[] conns = new Connection[ManyConnectionsStressTest.NUM_CONNECTIONS];
+
+      Connection connSend = null;
+
+      try
+      {
+         for (int i = 0; i < ManyConnectionsStressTest.NUM_CONNECTIONS; i++)
+         {
+            conns[i] = cf.createConnection();
+
+            Session sess = conns[i].createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+            MessageConsumer cons = sess.createConsumer(topic);
+
+            MyListener listener = new MyListener();
+
+            synchronized (listeners)
+            {
+               listeners.add(listener);
+            }
+
+            cons.setMessageListener(listener);
+
+            conns[i].start();
+
+            ManyConnectionsStressTest.log.info("Created " + i);
+         }
+
+         // Thread.sleep(100 * 60 * 1000);
+
+         connSend = cf.createConnection();
+
+         Session sessSend = connSend.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+         MessageProducer prod = sessSend.createProducer(topic);
+
+         for (int i = 0; i < ManyConnectionsStressTest.NUM_MESSAGES; i++)
+         {
+            TextMessage tm = sessSend.createTextMessage("message" + i);
+
+            tm.setIntProperty("count", i);
+
+            prod.send(tm);
+         }
+
+         long wait = 30000;
+
+         synchronized (listeners)
+         {
+            while (!listeners.isEmpty() && wait > 0)
+            {
+               long start = System.currentTimeMillis();
+               try
+               {
+                  listeners.wait(wait);
+               }
+               catch (InterruptedException e)
+               {
+                  // Ignore
+               }
+               wait -= System.currentTimeMillis() - start;
+            }
+         }
+
+         if (wait <= 0)
+         {
+            ProxyAssertSupport.fail("Timed out");
+         }
+
+         ProxyAssertSupport.assertFalse(failed);
+
+         ManyConnectionsStressTest.log.info("Done");
+      }
+      finally
+      {
+         for (int i = 0; i < ManyConnectionsStressTest.NUM_CONNECTIONS; i++)
+         {
+            try
+            {
+               if (conns[i] != null)
+               {
+                  conns[i].close();
+               }
+            }
+            catch (Throwable t)
+            {
+               ManyConnectionsStressTest.log.error("Failed to close connection", t);
+            }
+         }
+
+         if (connSend != null)
+         {
+            connSend.close();
+         }
+      }
    }
-   
-   private void finished(MyListener listener)
+
+   private void finished(final MyListener listener)
    {
-   	synchronized (listeners)
-   	{
-   		log.info("consumer " + listener + " has finished");
-   		
-   		listeners.remove(listener);
-   		
-   		listeners.notify();
-   	}   	   	
+      synchronized (listeners)
+      {
+         ManyConnectionsStressTest.log.info("consumer " + listener + " has finished");
+
+         listeners.remove(listener);
+
+         listeners.notify();
+      }
    }
-   
-   private void failed(MyListener listener)
+
+   private void failed(final MyListener listener)
    {
-   	synchronized (listeners)
-   	{
-   		log.error("consumer " + listener + " has failed");
-   		
-   		listeners.remove(listener);
-   		
-   		failed = true;
-   		
-   		listeners.notify();
-   	}
+      synchronized (listeners)
+      {
+         ManyConnectionsStressTest.log.error("consumer " + listener + " has failed");
+
+         listeners.remove(listener);
+
+         failed = true;
+
+         listeners.notify();
+      }
    }
-   
+
    private class MyListener implements MessageListener
    {
-		public void onMessage(Message msg)
-		{
-			try
-			{
-				int count = msg.getIntProperty("count");
-				
-				//log.info(this + " got message " + msg);
-				
-				if (count == NUM_MESSAGES - 1)
-				{
-					finished(this);
-				}
-			}
-			catch (JMSException e)
-			{
-				log.error("Failed to get int property", e);
-				
-				failed(this);
-			}
-		}
-   	
+      public void onMessage(final Message msg)
+      {
+         try
+         {
+            int count = msg.getIntProperty("count");
+
+            // log.info(this + " got message " + msg);
+
+            if (count == ManyConnectionsStressTest.NUM_MESSAGES - 1)
+            {
+               finished(this);
+            }
+         }
+         catch (JMSException e)
+         {
+            ManyConnectionsStressTest.log.error("Failed to get int property", e);
+
+            failed(this);
+         }
+      }
+
    }
 }
-
-

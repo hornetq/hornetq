@@ -40,7 +40,7 @@ import org.hornetq.core.messagecounter.MessageCounterManager;
  */
 public class MessageCounterManagerImpl implements MessageCounterManager
 {
-   
+
    public static final long DEFAULT_SAMPLE_PERIOD = ConfigurationImpl.DEFAULT_MESSAGE_COUNTER_SAMPLE_PERIOD;
 
    public static final long MIN_SAMPLE_PERIOD = 1000;
@@ -48,106 +48,109 @@ public class MessageCounterManagerImpl implements MessageCounterManager
    public static final int DEFAULT_MAX_DAY_COUNT = ConfigurationImpl.DEFAULT_MESSAGE_COUNTER_MAX_DAY_HISTORY;
 
    private static final Logger log = Logger.getLogger(MessageCounterManagerImpl.class);
-   
-   private Map<String, MessageCounter> messageCounters;
-   
+
+   private final Map<String, MessageCounter> messageCounters;
+
    private boolean started;
-   
-   private long period = DEFAULT_SAMPLE_PERIOD;
-   
+
+   private long period = MessageCounterManagerImpl.DEFAULT_SAMPLE_PERIOD;
+
    private MessageCountersPinger messageCountersPinger;
 
-   private int maxDayCount = DEFAULT_MAX_DAY_COUNT;
+   private int maxDayCount = MessageCounterManagerImpl.DEFAULT_MAX_DAY_COUNT;
 
    private final ScheduledExecutorService scheduledThreadPool;
-          
+
    public MessageCounterManagerImpl(final ScheduledExecutorService scheduledThreadPool)
    {
       messageCounters = new HashMap<String, MessageCounter>();
-      
+
       this.scheduledThreadPool = scheduledThreadPool;
    }
 
    public synchronized void start()
    {
       if (started)
-      {  
+      {
          return;
       }
-      
+
       messageCountersPinger = new MessageCountersPinger();
-      
-      Future<?> future = scheduledThreadPool.scheduleAtFixedRate(messageCountersPinger, 0, period, TimeUnit.MILLISECONDS);
+
+      Future<?> future = scheduledThreadPool.scheduleAtFixedRate(messageCountersPinger,
+                                                                 0,
+                                                                 period,
+                                                                 TimeUnit.MILLISECONDS);
       messageCountersPinger.setFuture(future);
-      
-      started = true;      
+
+      started = true;
    }
 
    public synchronized void stop()
-   { 
+   {
       if (!started)
       {
          return;
       }
-      
+
       messageCountersPinger.stop();
-      
+
       started = false;
    }
-   
+
    public synchronized void clear()
-   { 
-      messageCounters.clear();     
-   }   
-   
-   public synchronized void reschedule(long newPeriod)
    {
-      boolean wasStarted = this.started;
-      
+      messageCounters.clear();
+   }
+
+   public synchronized void reschedule(final long newPeriod)
+   {
+      boolean wasStarted = started;
+
       if (wasStarted)
       {
          stop();
       }
-      
+
       period = newPeriod;
-      
+
       if (wasStarted)
       {
          start();
       }
    }
-   
+
    public long getSamplePeriod()
-   {   
+   {
       return period;
    }
-   
+
    public int getMaxDayCount()
    {
       return maxDayCount;
    }
-   
-   public void setMaxDayCount(int count)
+
+   public void setMaxDayCount(final int count)
    {
-      maxDayCount = count;  
+      maxDayCount = count;
    }
-   
-   public void registerMessageCounter(String name, MessageCounter counter)
+
+   public void registerMessageCounter(final String name, final MessageCounter counter)
    {
       synchronized (messageCounters)
       {
          messageCounters.put(name, counter);
       }
    }
-   
-   public MessageCounter unregisterMessageCounter(String name)
+
+   public MessageCounter unregisterMessageCounter(final String name)
    {
       synchronized (messageCounters)
       {
-         return (MessageCounter)messageCounters.remove(name);
+         return messageCounters.remove(name);
       }
    }
-   
+
    public Set<MessageCounter> getMessageCounters()
    {
       synchronized (messageCounters)
@@ -155,49 +158,49 @@ public class MessageCounterManagerImpl implements MessageCounterManager
          return new HashSet<MessageCounter>(messageCounters.values());
       }
    }
-   
-   public MessageCounter getMessageCounter(String name)
+
+   public MessageCounter getMessageCounter(final String name)
    {
       synchronized (messageCounters)
       {
-         return (MessageCounter)messageCounters.get(name);
+         return messageCounters.get(name);
       }
    }
-   
+
    public void resetAllCounters()
    {
       synchronized (messageCounters)
       {
          Iterator<MessageCounter> iter = messageCounters.values().iterator();
-         
+
          while (iter.hasNext())
          {
-            MessageCounter counter = (MessageCounter)iter.next();
-            
+            MessageCounter counter = iter.next();
+
             counter.resetCounter();
          }
       }
    }
-   
+
    public void resetAllCounterHistories()
    {
       synchronized (messageCounters)
       {
          Iterator<MessageCounter> iter = messageCounters.values().iterator();
-         
+
          while (iter.hasNext())
          {
-            MessageCounter counter = (MessageCounter)iter.next();
-            
+            MessageCounter counter = iter.next();
+
             counter.resetHistory();
          }
       }
    }
-   
+
    class MessageCountersPinger implements Runnable
    {
       private boolean closed = false;
-      
+
       private Future<?> future;
 
       public synchronized void run()
@@ -206,21 +209,21 @@ public class MessageCounterManagerImpl implements MessageCounterManager
          {
             return;
          }
-         
+
          synchronized (messageCounters)
          {
             Iterator<MessageCounter> iter = messageCounters.values().iterator();
-            
+
             while (iter.hasNext())
             {
-               MessageCounter counter = (MessageCounter)iter.next();
-               
+               MessageCounter counter = iter.next();
+
                counter.onTimer();
             }
          }
-      }  
-                        
-      public void setFuture(Future<?> future)
+      }
+
+      public void setFuture(final Future<?> future)
       {
          this.future = future;
       }
@@ -231,7 +234,7 @@ public class MessageCounterManagerImpl implements MessageCounterManager
          {
             future.cancel(false);
          }
-         
+
          closed = true;
       }
    }

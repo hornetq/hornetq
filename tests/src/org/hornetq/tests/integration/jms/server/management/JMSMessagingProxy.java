@@ -37,21 +37,21 @@ public class JMSMessagingProxy
 
    private final String resourceName;
 
-   private Session session;
+   private final Session session;
 
-   private QueueRequestor requestor;
+   private final QueueRequestor requestor;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public JMSMessagingProxy(QueueSession session, Queue managementQueue, String resourceName) throws Exception
+   public JMSMessagingProxy(final QueueSession session, final Queue managementQueue, final String resourceName) throws Exception
    {
       this.session = session;
 
       this.resourceName = resourceName;
 
-      this.requestor = new QueueRequestor(session, managementQueue);
+      requestor = new QueueRequestor(session, managementQueue);
    }
 
    // Public --------------------------------------------------------
@@ -60,7 +60,7 @@ public class JMSMessagingProxy
 
    // Protected -----------------------------------------------------
 
-   public Object retrieveAttributeValue(String attributeName)
+   public Object retrieveAttributeValue(final String attributeName)
    {
       try
       {
@@ -75,7 +75,7 @@ public class JMSMessagingProxy
       }
    }
 
-   public Object invokeOperation(String operationName, Object... args) throws Exception
+   public Object invokeOperation(final String operationName, final Object... args) throws Exception
    {
       Message m = session.createMessage();
       JMSManagementHelper.putOperationInvocation(m, resourceName, operationName, args);

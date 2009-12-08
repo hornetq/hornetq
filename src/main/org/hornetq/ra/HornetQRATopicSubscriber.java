@@ -32,7 +32,7 @@ public class HornetQRATopicSubscriber extends HornetQRAMessageConsumer implement
    private static final Logger log = Logger.getLogger(HornetQRATopicSubscriber.class);
 
    /** Whether trace is enabled */
-   private static boolean trace = log.isTraceEnabled();
+   private static boolean trace = HornetQRATopicSubscriber.log.isTraceEnabled();
 
    /**
     * Create a new wrapper
@@ -43,9 +43,9 @@ public class HornetQRATopicSubscriber extends HornetQRAMessageConsumer implement
    {
       super(consumer, session);
 
-      if (trace)
+      if (HornetQRATopicSubscriber.trace)
       {
-         log.trace("constructor(" + consumer + ", " + session + ")");
+         HornetQRATopicSubscriber.log.trace("constructor(" + consumer + ", " + session + ")");
       }
    }
 
@@ -56,9 +56,9 @@ public class HornetQRATopicSubscriber extends HornetQRAMessageConsumer implement
     */
    public boolean getNoLocal() throws JMSException
    {
-      if (trace)
+      if (HornetQRATopicSubscriber.trace)
       {
-         log.trace("getNoLocal()");
+         HornetQRATopicSubscriber.log.trace("getNoLocal()");
       }
 
       checkState();
@@ -72,9 +72,9 @@ public class HornetQRATopicSubscriber extends HornetQRAMessageConsumer implement
     */
    public Topic getTopic() throws JMSException
    {
-      if (trace)
+      if (HornetQRATopicSubscriber.trace)
       {
-         log.trace("getTopic()");
+         HornetQRATopicSubscriber.log.trace("getTopic()");
       }
 
       checkState();

@@ -35,7 +35,7 @@ public class SoakReceiver
 
    private static final String EOF = UUID.randomUUID().toString();
 
-   public static void main(String[] args)
+   public static void main(final String[] args)
    {
       for (int i = 0; i < args.length; i++)
       {
@@ -46,9 +46,9 @@ public class SoakReceiver
       {
          jndiURL = args[0];
       }
-      
+
       System.out.println("Connecting to JNDI at " + jndiURL);
-      
+
       try
       {
          String fileName = SoakBase.getPerfFileName(args);
@@ -85,7 +85,7 @@ public class SoakReceiver
 
    private final ExceptionListener exceptionListener = new ExceptionListener()
    {
-      public void onException(JMSException e)
+      public void onException(final JMSException e)
       {
          disconnect();
          connect();
@@ -98,19 +98,21 @@ public class SoakReceiver
 
       private final AtomicLong count = new AtomicLong(0);
 
-      private long start = System.currentTimeMillis();
+      private final long start = System.currentTimeMillis();
+
       long moduloStart = start;
 
-      public void onMessage(Message msg)
+      public void onMessage(final Message msg)
       {
          long totalDuration = System.currentTimeMillis() - start;
 
          try
          {
-            if (EOF.equals(msg.getStringProperty("eof")))
+            if (SoakReceiver.EOF.equals(msg.getStringProperty("eof")))
             {
-               log.info(String.format("Received %s messages in %.2f minutes", count, (1.0 * totalDuration) / SoakBase.TO_MILLIS));
-               log.info("END OF RUN");
+               SoakReceiver.log.info(String.format("Received %s messages in %.2f minutes", count, 1.0 * totalDuration /
+                                                                                                  SoakBase.TO_MILLIS));
+               SoakReceiver.log.info("END OF RUN");
 
                return;
             }
@@ -123,7 +125,10 @@ public class SoakReceiver
          {
             double duration = (1.0 * System.currentTimeMillis() - moduloStart) / 1000;
             moduloStart = System.currentTimeMillis();
-            log.info(String.format("received %s messages in %2.2fs (total: %.0fs)", modulo, duration, totalDuration / 1000.0));
+            SoakReceiver.log.info(String.format("received %s messages in %2.2fs (total: %.0fs)",
+                                                modulo,
+                                                duration,
+                                                totalDuration / 1000.0));
          }
       }
    };
@@ -142,7 +147,7 @@ public class SoakReceiver
    {
       connect();
 
-      boolean runInfinitely = (perfParams.getDurationInMinutes() == -1);
+      boolean runInfinitely = perfParams.getDurationInMinutes() == -1;
 
       if (!runInfinitely)
       {
@@ -150,15 +155,16 @@ public class SoakReceiver
 
          // send EOF message
          Message eof = session.createMessage();
-         eof.setStringProperty("eof", EOF);
+         eof.setStringProperty("eof", SoakReceiver.EOF);
          listener.onMessage(eof);
-         
+
          if (connection != null)
          {
             connection.close();
             connection = null;
          }
-      } else
+      }
+      else
       {
          while (true)
          {
@@ -202,8 +208,8 @@ public class SoakReceiver
          connection.setExceptionListener(exceptionListener);
 
          session = connection.createSession(perfParams.isSessionTransacted(),
-                                                    perfParams.isDupsOK() ? Session.DUPS_OK_ACKNOWLEDGE
-                                                                         : Session.AUTO_ACKNOWLEDGE);
+                                            perfParams.isDupsOK() ? Session.DUPS_OK_ACKNOWLEDGE
+                                                                 : Session.AUTO_ACKNOWLEDGE);
 
          MessageConsumer messageConsumer = session.createConsumer(destination);
          messageConsumer.setMessageListener(listener);

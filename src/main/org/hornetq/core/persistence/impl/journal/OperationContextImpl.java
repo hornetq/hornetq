@@ -42,30 +42,30 @@ import org.hornetq.utils.ExecutorFactory;
 public class OperationContextImpl implements OperationContext
 {
    private static final Logger log = Logger.getLogger(OperationContextImpl.class);
-   
+
    private static final ThreadLocal<OperationContext> threadLocalContext = new ThreadLocal<OperationContext>();
 
    public static void clearContext()
    {
-      threadLocalContext.set(null);
+      OperationContextImpl.threadLocalContext.set(null);
    }
-   
+
    public static OperationContext getContext(final ExecutorFactory executorFactory)
    {
-      OperationContext token = threadLocalContext.get();
+      OperationContext token = OperationContextImpl.threadLocalContext.get();
       if (token == null)
       {
          token = new OperationContextImpl(executorFactory.getExecutor());
-         threadLocalContext.set(token);
+         OperationContextImpl.threadLocalContext.set(token);
       }
       return token;
    }
-   
-   public static void setContext(OperationContext context)
+
+   public static void setContext(final OperationContext context)
    {
-      threadLocalContext.set(context);
+      OperationContextImpl.threadLocalContext.set(context);
    }
-      
+
    private List<TaskHolder> tasks;
 
    private volatile int storeLineUp = 0;
@@ -93,9 +93,9 @@ public class OperationContextImpl implements OperationContext
       super();
       this.executor = executor;
    }
-   
+
    public void storeLineUp()
-   {     
+   {
       storeLineUp++;
    }
 
@@ -151,7 +151,7 @@ public class OperationContextImpl implements OperationContext
             tasks.add(new TaskHolder(completion));
          }
       }
-      
+
       if (executeNow)
       {
          // Executing outside of any locks
@@ -203,7 +203,7 @@ public class OperationContextImpl implements OperationContext
             public void run()
             {
                // If any IO is done inside the callback, it needs to be done on a new context
-               clearContext();
+               OperationContextImpl.clearContext();
                task.done();
                executorsPending.decrementAndGet();
             }
@@ -212,9 +212,10 @@ public class OperationContextImpl implements OperationContext
       catch (Throwable e)
       {
          e.printStackTrace();
-         log.warn("Error on executor's submit");
+         OperationContextImpl.log.warn("Error on executor's submit");
          executorsPending.decrementAndGet();
-         task.onError(HornetQException.INTERNAL_ERROR, "It wasn't possible to complete IO operation - " + e.getMessage());
+         task.onError(HornetQException.INTERNAL_ERROR,
+                      "It wasn't possible to complete IO operation - " + e.getMessage());
       }
    }
 
@@ -228,7 +229,7 @@ public class OperationContextImpl implements OperationContext
    /* (non-Javadoc)
     * @see org.hornetq.core.asyncio.AIOCallback#onError(int, java.lang.String)
     */
-   public synchronized void onError(int errorCode, String errorMessage)
+   public synchronized void onError(final int errorCode, final String errorMessage)
    {
       this.errorCode = errorCode;
       this.errorMessage = errorMessage;
@@ -253,10 +254,10 @@ public class OperationContextImpl implements OperationContext
 
       IOAsyncTask task;
 
-      TaskHolder(IOAsyncTask task)
+      TaskHolder(final IOAsyncTask task)
       {
-         this.storeLined = storeLineUp;
-         this.replicationLined = replicationLineUp;
+         storeLined = storeLineUp;
+         replicationLined = replicationLineUp;
          this.task = task;
       }
    }
@@ -272,7 +273,7 @@ public class OperationContextImpl implements OperationContext
    /* (non-Javadoc)
     * @see org.hornetq.core.persistence.OperationContext#waitCompletion(long)
     */
-   public boolean waitCompletion(long timeout) throws Exception
+   public boolean waitCompletion(final long timeout) throws Exception
    {
       SimpleWaitIOCallback waitCallback = new SimpleWaitIOCallback();
       executeOnCompletion(waitCallback);
@@ -281,7 +282,7 @@ public class OperationContextImpl implements OperationContext
       {
          waitCallback.waitCompletion();
       }
-      return (waitCallback.waitCompletion(timeout));
+      return waitCallback.waitCompletion(timeout);
    }
 
 }

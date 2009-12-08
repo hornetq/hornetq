@@ -9,11 +9,10 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
  * implied.  See the License for the specific language governing
  * permissions and limitations under the License.
- */ 
+ */
 
 package org.hornetq.tests.unit.core.server.impl.fakes;
 
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -34,21 +33,34 @@ import org.hornetq.utils.SimpleString;
 public class FakeQueueFactory implements QueueFactory
 {
    private final ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
-   
-	private PostOffice postOffice;
 
-	public Queue createQueue(long persistenceID, final SimpleString address, SimpleString name, Filter filter,
-			                   boolean durable, boolean temporary)
-	{
-		return new QueueImpl(persistenceID, address, name, filter, durable, temporary, scheduledExecutor, postOffice, null, null);
-	}
-	
-   public void setPostOffice(PostOffice postOffice)
+   private PostOffice postOffice;
+
+   public Queue createQueue(final long persistenceID,
+                            final SimpleString address,
+                            final SimpleString name,
+                            final Filter filter,
+                            final boolean durable,
+                            final boolean temporary)
+   {
+      return new QueueImpl(persistenceID,
+                           address,
+                           name,
+                           filter,
+                           durable,
+                           temporary,
+                           scheduledExecutor,
+                           postOffice,
+                           null,
+                           null);
+   }
+
+   public void setPostOffice(final PostOffice postOffice)
    {
       this.postOffice = postOffice;
-      
+
    }
-   
+
    public void stop() throws Exception
    {
       scheduledExecutor.shutdown();

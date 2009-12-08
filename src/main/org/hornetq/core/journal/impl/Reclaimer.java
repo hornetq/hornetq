@@ -38,11 +38,11 @@ public class Reclaimer
 {
    private static final Logger log = Logger.getLogger(Reclaimer.class);
 
-   private static boolean trace = log.isTraceEnabled();
+   private static boolean trace = Reclaimer.log.isTraceEnabled();
 
    private static void trace(final String message)
    {
-      log.trace(message);
+      Reclaimer.log.trace(message);
    }
 
    public void scan(final JournalFile[] files)
@@ -59,18 +59,18 @@ public class Reclaimer
 
          int totNeg = 0;
 
-         if (trace)
+         if (Reclaimer.trace)
          {
-            trace("posCount on " + currentFile + " = " + posCount);
+            Reclaimer.trace("posCount on " + currentFile + " = " + posCount);
          }
 
          for (int j = i; j < files.length; j++)
          {
-            if (trace)
+            if (Reclaimer.trace)
             {
                if (files[j].getNegCount(currentFile) != 0)
                {
-                  trace("Negative from " + files[j] + " = " + files[j].getNegCount(currentFile));
+                  Reclaimer.trace("Negative from " + files[j] + " = " + files[j].getNegCount(currentFile));
                }
             }
 
@@ -97,9 +97,9 @@ public class Reclaimer
                   }
                   else
                   {
-                     if (trace)
+                     if (Reclaimer.trace)
                      {
-                        trace(currentFile + " Can't be reclaimed because " + file + " has negative values");
+                        Reclaimer.trace(currentFile + " Can't be reclaimed because " + file + " has negative values");
                      }
 
                      file.setNeedCleanup(true);

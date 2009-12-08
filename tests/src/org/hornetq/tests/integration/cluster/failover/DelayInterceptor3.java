@@ -31,16 +31,16 @@ public class DelayInterceptor3 implements Interceptor
 {
    private static final Logger log = Logger.getLogger(DelayInterceptor3.class);
 
-   public boolean intercept(Packet packet, RemotingConnection connection) throws HornetQException
+   public boolean intercept(final Packet packet, final RemotingConnection connection) throws HornetQException
    {
       if (packet.getType() == PacketImpl.SESS_COMMIT)
       {
-         //lose the commit
+         // lose the commit
          return false;
       }
       else
-      {      
+      {
          return true;
-      }      
+      }
    }
 }

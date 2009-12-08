@@ -62,7 +62,7 @@ public abstract class AbstractSequentialFileFactory implements SequentialFileFac
    public AbstractSequentialFileFactory(final String journalDir,
                                         final boolean buffered,
                                         final int bufferSize,
-                                        final int bufferTimeout,                                        
+                                        final int bufferTimeout,
                                         final boolean logRates)
    {
       this.journalDir = journalDir;
@@ -92,9 +92,10 @@ public abstract class AbstractSequentialFileFactory implements SequentialFileFac
 
          try
          {
-            if (!writeExecutor.awaitTermination(EXECUTOR_TIMEOUT, TimeUnit.SECONDS))
+            if (!writeExecutor.awaitTermination(AbstractSequentialFileFactory.EXECUTOR_TIMEOUT, TimeUnit.SECONDS))
             {
-               log.warn("Timed out on AIO writer shutdown", new Exception("Timed out on AIO writer shutdown"));
+               AbstractSequentialFileFactory.log.warn("Timed out on AIO writer shutdown",
+                                                      new Exception("Timed out on AIO writer shutdown"));
             }
          }
          catch (InterruptedException e)

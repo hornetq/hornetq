@@ -22,6 +22,7 @@ import javax.jms.MessageProducer;
 import javax.jms.Session;
 
 import org.hornetq.jms.tests.HornetQServerTestCase;
+import org.hornetq.jms.tests.util.ProxyAssertSupport;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -51,6 +52,7 @@ public abstract class MessageTestBase extends HornetQServerTestCase
 
    // Public --------------------------------------------------------
 
+   @Override
    public void setUp() throws Exception
    {
       super.setUp();
@@ -58,12 +60,13 @@ public abstract class MessageTestBase extends HornetQServerTestCase
       conn = getConnectionFactory().createConnection();
       session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-      queueProd = session.createProducer(queue1);
-      queueCons = session.createConsumer(queue1);
+      queueProd = session.createProducer(HornetQServerTestCase.queue1);
+      queueCons = session.createConsumer(HornetQServerTestCase.queue1);
 
       conn.start();
    }
 
+   @Override
    public void tearDown() throws Exception
    {
       conn.close();
@@ -81,11 +84,11 @@ public abstract class MessageTestBase extends HornetQServerTestCase
       log.debug("Message sent");
 
       Message r = queueCons.receive(2000);
-      assertNotNull(r);
+      ProxyAssertSupport.assertNotNull(r);
 
       log.debug("Message received");
 
-      assertEquals(DeliveryMode.NON_PERSISTENT, r.getJMSDeliveryMode());
+      ProxyAssertSupport.assertEquals(DeliveryMode.NON_PERSISTENT, r.getJMSDeliveryMode());
 
       assertEquivalent(r, DeliveryMode.NON_PERSISTENT);
    }
@@ -99,9 +102,9 @@ public abstract class MessageTestBase extends HornetQServerTestCase
       queueProd.send(message);
 
       Message r = queueCons.receive(1000);
-      assertNotNull(r);
+      ProxyAssertSupport.assertNotNull(r);
 
-      assertEquals(DeliveryMode.PERSISTENT, r.getJMSDeliveryMode());
+      ProxyAssertSupport.assertEquals(DeliveryMode.PERSISTENT, r.getJMSDeliveryMode());
 
       assertEquivalent(r, DeliveryMode.PERSISTENT);
    }
@@ -113,9 +116,9 @@ public abstract class MessageTestBase extends HornetQServerTestCase
       session.close();
       session = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
 
-      queueProd = session.createProducer(queue1);
+      queueProd = session.createProducer(HornetQServerTestCase.queue1);
       queueProd.setDeliveryMode(DeliveryMode.PERSISTENT);
-      queueCons = session.createConsumer(queue1);
+      queueCons = session.createConsumer(HornetQServerTestCase.queue1);
 
       queueProd.send(message);
 
@@ -127,15 +130,14 @@ public abstract class MessageTestBase extends HornetQServerTestCase
       session.close();
 
       session = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
-      queueCons = session.createConsumer(queue1);
+      queueCons = session.createConsumer(HornetQServerTestCase.queue1);
       r = queueCons.receive(1000);
 
       assertEquivalent(r, DeliveryMode.PERSISTENT, true);
 
       r.acknowledge();
 
-      assertNull(queueCons.receive(100));
-
+      ProxyAssertSupport.assertNull(queueCons.receive(100));
 
    }
 
@@ -143,7 +145,7 @@ public abstract class MessageTestBase extends HornetQServerTestCase
 
    // Protected -----------------------------------------------------
 
-   protected void prepareMessage(Message m) throws JMSException
+   protected void prepareMessage(final Message m) throws JMSException
    {
       m.setBooleanProperty("booleanProperty", true);
       m.setByteProperty("byteProperty", (byte)3);
@@ -152,37 +154,36 @@ public abstract class MessageTestBase extends HornetQServerTestCase
       m.setIntProperty("intProperty", 6);
       m.setLongProperty("longProperty", 7);
       m.setShortProperty("shortProperty", (short)8);
-      m.setStringProperty("stringProperty", "this is a String property");      
+      m.setStringProperty("stringProperty", "this is a String property");
 
       m.setJMSCorrelationID("this is the correlation ID");
-      m.setJMSReplyTo(topic1);
+      m.setJMSReplyTo(HornetQServerTestCase.topic1);
       m.setJMSType("someArbitraryType");
    }
 
-
-   private void assertEquivalent(Message m, int mode) throws JMSException
+   private void assertEquivalent(final Message m, final int mode) throws JMSException
    {
       assertEquivalent(m, mode, false);
    }
 
-   protected void assertEquivalent(Message m, int mode, boolean redelivered) throws JMSException
+   protected void assertEquivalent(final Message m, final int mode, final boolean redelivered) throws JMSException
    {
-      assertNotNull(m);
-      assertEquals(true, m.getBooleanProperty("booleanProperty"));
-      assertEquals((byte)3, m.getByteProperty("byteProperty"));
-      assertEquals(new Double(4.0), new Double(m.getDoubleProperty("doubleProperty")));
-      assertEquals(new Float(5.0f), new Float(m.getFloatProperty("floatProperty")));
-      assertEquals(6, m.getIntProperty("intProperty"));
-      assertEquals(7, m.getLongProperty("longProperty"));
-      assertEquals((short)8, m.getShortProperty("shortProperty"));
-      assertEquals("this is a String property", m.getStringProperty("stringProperty"));
+      ProxyAssertSupport.assertNotNull(m);
+      ProxyAssertSupport.assertEquals(true, m.getBooleanProperty("booleanProperty"));
+      ProxyAssertSupport.assertEquals((byte)3, m.getByteProperty("byteProperty"));
+      ProxyAssertSupport.assertEquals(new Double(4.0), new Double(m.getDoubleProperty("doubleProperty")));
+      ProxyAssertSupport.assertEquals(new Float(5.0f), new Float(m.getFloatProperty("floatProperty")));
+      ProxyAssertSupport.assertEquals(6, m.getIntProperty("intProperty"));
+      ProxyAssertSupport.assertEquals(7, m.getLongProperty("longProperty"));
+      ProxyAssertSupport.assertEquals((short)8, m.getShortProperty("shortProperty"));
+      ProxyAssertSupport.assertEquals("this is a String property", m.getStringProperty("stringProperty"));
 
-      assertEquals("this is the correlation ID", m.getJMSCorrelationID());
-      assertEquals(topic1, m.getJMSReplyTo());
-      assertEquals("someArbitraryType", m.getJMSType());
-      assertEquals(queue1, m.getJMSDestination());
-      assertEquals("JMS Redelivered property", m.getJMSRedelivered(), redelivered);
-      assertEquals(mode, m.getJMSDeliveryMode());
+      ProxyAssertSupport.assertEquals("this is the correlation ID", m.getJMSCorrelationID());
+      ProxyAssertSupport.assertEquals(HornetQServerTestCase.topic1, m.getJMSReplyTo());
+      ProxyAssertSupport.assertEquals("someArbitraryType", m.getJMSType());
+      ProxyAssertSupport.assertEquals(HornetQServerTestCase.queue1, m.getJMSDestination());
+      ProxyAssertSupport.assertEquals("JMS Redelivered property", m.getJMSRedelivered(), redelivered);
+      ProxyAssertSupport.assertEquals(mode, m.getJMSDeliveryMode());
    }
 
    // Private -------------------------------------------------------

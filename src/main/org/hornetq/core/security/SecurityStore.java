@@ -9,13 +9,12 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
  * implied.  See the License for the specific language governing
  * permissions and limitations under the License.
- */ 
+ */
 
 package org.hornetq.core.security;
 
 import org.hornetq.core.server.ServerSession;
 import org.hornetq.utils.SimpleString;
-
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -27,6 +26,6 @@ import org.hornetq.utils.SimpleString;
 public interface SecurityStore
 {
    void authenticate(String user, String password) throws Exception;
-   
+
    void check(SimpleString address, CheckType checkType, ServerSession session) throws Exception;
 }

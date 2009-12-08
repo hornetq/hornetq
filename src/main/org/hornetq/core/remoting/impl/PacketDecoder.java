@@ -150,11 +150,11 @@ import org.hornetq.core.remoting.impl.wireformat.SessionXAStartMessage;
 public class PacketDecoder
 {
    private static final Logger log = Logger.getLogger(PacketDecoder.class);
-   
+
    public Packet decode(final HornetQBuffer in)
    {
       final byte packetType = in.readByte();
-      
+
       Packet packet;
 
       switch (packetType)
@@ -166,7 +166,7 @@ public class PacketDecoder
          }
          case DISCONNECT:
          {
-            packet = new PacketImpl(DISCONNECT);
+            packet = new PacketImpl(PacketImpl.DISCONNECT);
             break;
          }
          case EXCEPTION:

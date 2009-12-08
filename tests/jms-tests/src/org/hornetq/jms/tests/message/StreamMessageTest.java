@@ -13,10 +13,11 @@
 
 package org.hornetq.jms.tests.message;
 
-
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.StreamMessage;
+
+import org.hornetq.jms.tests.util.ProxyAssertSupport;
 
 /**
  * A test that sends/receives stream messages to the JMS provider and verifies their integrity.
@@ -38,12 +39,14 @@ public class StreamMessageTest extends MessageTestBase
 
    // Public --------------------------------------------------------
 
+   @Override
    public void setUp() throws Exception
    {
       super.setUp();
       message = session.createStreamMessage();
    }
 
+   @Override
    public void tearDown() throws Exception
    {
       message = null;
@@ -62,12 +65,13 @@ public class StreamMessageTest extends MessageTestBase
 
       StreamMessage rm = (StreamMessage)queueCons.receive();
 
-      assertNull(rm.readString());
+      ProxyAssertSupport.assertNull(rm.readString());
    }
 
    // Protected -----------------------------------------------------
 
-   protected void prepareMessage(Message m) throws JMSException
+   @Override
+   protected void prepareMessage(final Message m) throws JMSException
    {
       super.prepareMessage(m);
 
@@ -75,7 +79,7 @@ public class StreamMessageTest extends MessageTestBase
 
       sm.writeBoolean(true);
       sm.writeByte((byte)3);
-      sm.writeBytes(new byte[] {(byte)4, (byte)5, (byte)6});
+      sm.writeBytes(new byte[] { (byte)4, (byte)5, (byte)6 });
       sm.writeChar((char)7);
       sm.writeDouble(8.0);
       sm.writeFloat(9.0f);
@@ -86,7 +90,8 @@ public class StreamMessageTest extends MessageTestBase
       sm.writeString("this is a String");
    }
 
-   protected void assertEquivalent(Message m, int mode, boolean redelivery) throws JMSException
+   @Override
+   protected void assertEquivalent(final Message m, final int mode, final boolean redelivery) throws JMSException
    {
       super.assertEquivalent(m, mode, redelivery);
 
@@ -94,23 +99,22 @@ public class StreamMessageTest extends MessageTestBase
 
       sm.reset();
 
-      assertEquals(true, sm.readBoolean());
-      assertEquals((byte)3, sm.readByte());
+      ProxyAssertSupport.assertEquals(true, sm.readBoolean());
+      ProxyAssertSupport.assertEquals((byte)3, sm.readByte());
       byte[] bytes = new byte[3];
       sm.readBytes(bytes);
-      assertEquals((byte)4, bytes[0]);
-      assertEquals((byte)5, bytes[1]);
-      assertEquals((byte)6, bytes[2]);
-      assertEquals(-1, sm.readBytes(bytes));
-      assertEquals((char)7, sm.readChar());
-      assertEquals(new Double(8.0), new Double(sm.readDouble()));
-      assertEquals(new Float(9.0), new Float(sm.readFloat()));
-      assertEquals(10, sm.readInt());
-      assertEquals(11l, sm.readLong());
-      assertEquals("this is an object", sm.readObject());
-      assertEquals((short)12, sm.readShort());
-      assertEquals("this is a String", sm.readString());
+      ProxyAssertSupport.assertEquals((byte)4, bytes[0]);
+      ProxyAssertSupport.assertEquals((byte)5, bytes[1]);
+      ProxyAssertSupport.assertEquals((byte)6, bytes[2]);
+      ProxyAssertSupport.assertEquals(-1, sm.readBytes(bytes));
+      ProxyAssertSupport.assertEquals((char)7, sm.readChar());
+      ProxyAssertSupport.assertEquals(new Double(8.0), new Double(sm.readDouble()));
+      ProxyAssertSupport.assertEquals(new Float(9.0), new Float(sm.readFloat()));
+      ProxyAssertSupport.assertEquals(10, sm.readInt());
+      ProxyAssertSupport.assertEquals(11l, sm.readLong());
+      ProxyAssertSupport.assertEquals("this is an object", sm.readObject());
+      ProxyAssertSupport.assertEquals((short)12, sm.readShort());
+      ProxyAssertSupport.assertEquals("this is a String", sm.readString());
    }
-
 
 }

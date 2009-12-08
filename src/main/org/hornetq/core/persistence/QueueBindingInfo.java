@@ -11,7 +11,6 @@
  * permissions and limitations under the License.
  */
 
-
 package org.hornetq.core.persistence;
 
 import org.hornetq.utils.SimpleString;
@@ -28,11 +27,11 @@ import org.hornetq.utils.SimpleString;
 public interface QueueBindingInfo
 {
    long getId();
-   
+
    SimpleString getAddress();
-   
+
    SimpleString getQueueName();
-      
+
    SimpleString getFilterString();
 
 }

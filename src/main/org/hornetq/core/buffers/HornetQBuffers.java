@@ -19,7 +19,6 @@ import org.hornetq.core.buffers.impl.ChannelBufferWrapper;
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBuffers;
 
-
 /**
  * 
  * A HornetQChannelBuffers
@@ -30,35 +29,35 @@ import org.jboss.netty.buffer.ChannelBuffers;
  */
 public class HornetQBuffers
 {
-   public static HornetQBuffer dynamicBuffer(int estimatedLength)
+   public static HornetQBuffer dynamicBuffer(final int estimatedLength)
    {
       return new ChannelBufferWrapper(ChannelBuffers.dynamicBuffer(estimatedLength));
    }
-   
-   public static HornetQBuffer dynamicBuffer(byte[] bytes)
+
+   public static HornetQBuffer dynamicBuffer(final byte[] bytes)
    {
       ChannelBuffer buff = ChannelBuffers.dynamicBuffer(bytes.length);
-      
+
       buff.writeBytes(bytes);
-      
+
       return new ChannelBufferWrapper(buff);
    }
-   
-   public static HornetQBuffer wrappedBuffer(ByteBuffer underlying)
+
+   public static HornetQBuffer wrappedBuffer(final ByteBuffer underlying)
    {
       HornetQBuffer buff = new ChannelBufferWrapper(ChannelBuffers.wrappedBuffer(underlying));
-      
+
       buff.clear();
-      
+
       return buff;
    }
-   
-   public static HornetQBuffer wrappedBuffer(byte[] underlying)
+
+   public static HornetQBuffer wrappedBuffer(final byte[] underlying)
    {
       return new ChannelBufferWrapper(ChannelBuffers.wrappedBuffer(underlying));
    }
-   
-   public static HornetQBuffer fixedBuffer(int size)
+
+   public static HornetQBuffer fixedBuffer(final int size)
    {
       return new ChannelBufferWrapper(ChannelBuffers.buffer(size));
    }

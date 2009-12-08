@@ -20,6 +20,7 @@ import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.server.HornetQ;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.JournalType;
+import org.hornetq.tests.util.ServiceTestBase;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -27,7 +28,11 @@ import org.hornetq.core.server.JournalType;
  */
 public class GroupingFailoverSharedServerTest extends GroupingFailoverTestBase
 {
-   protected void setupReplicatedServer(int node, boolean fileStorage, boolean netty, int backupNode)
+   @Override
+   protected void setupReplicatedServer(final int node,
+                                        final boolean fileStorage,
+                                        final boolean netty,
+                                        final int backupNode)
    {
       if (servers[node] != null)
       {
@@ -54,12 +59,12 @@ public class GroupingFailoverSharedServerTest extends GroupingFailoverTestBase
 
       Map<String, Object> params = generateParams(node, netty);
 
-      TransportConfiguration invmtc = new TransportConfiguration(INVM_ACCEPTOR_FACTORY, params);
+      TransportConfiguration invmtc = new TransportConfiguration(ServiceTestBase.INVM_ACCEPTOR_FACTORY, params);
       configuration.getAcceptorConfigurations().add(invmtc);
 
       if (netty)
       {
-         TransportConfiguration nettytc = new TransportConfiguration(NETTY_ACCEPTOR_FACTORY, params);
+         TransportConfiguration nettytc = new TransportConfiguration(ServiceTestBase.NETTY_ACCEPTOR_FACTORY, params);
          configuration.getAcceptorConfigurations().add(nettytc);
       }
 
@@ -76,7 +81,8 @@ public class GroupingFailoverSharedServerTest extends GroupingFailoverTestBase
       servers[node] = server;
    }
 
-   public void setupMasterServer(int i, boolean fileStorage, boolean netty)
+   @Override
+   public void setupMasterServer(final int i, final boolean fileStorage, final boolean netty)
    {
       setupServer(i, fileStorage, netty);
    }

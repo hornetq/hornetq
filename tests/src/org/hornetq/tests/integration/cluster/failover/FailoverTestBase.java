@@ -16,6 +16,8 @@ package org.hornetq.tests.integration.cluster.failover;
 import java.util.HashMap;
 import java.util.Map;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.config.Configuration;
@@ -59,15 +61,16 @@ public abstract class FailoverTestBase extends ServiceTestBase
    /**
     * @param name
     */
-   public FailoverTestBase(String name)
+   public FailoverTestBase(final String name)
    {
       super(name);
    }
-   
+
    public FailoverTestBase()
    {
    }
 
+   @Override
    protected void setUp() throws Exception
    {
       super.setUp();
@@ -78,7 +81,7 @@ public abstract class FailoverTestBase extends ServiceTestBase
       {
          server1Service.start();
       }
-      
+
       server0Service.start();
    }
 
@@ -132,13 +135,14 @@ public abstract class FailoverTestBase extends ServiceTestBase
       server0Service.start();
    }
 
+   @Override
    protected void tearDown() throws Exception
    {
       server1Service.stop();
 
       server0Service.stop();
 
-      assertEquals(0, InVMRegistry.instance.size());
+      Assert.assertEquals(0, InVMRegistry.instance.size());
 
       server1Service = null;
 
@@ -165,7 +169,7 @@ public abstract class FailoverTestBase extends ServiceTestBase
       }
    }
 
-   protected TransportConfiguration getInVMTransportAcceptorConfiguration(boolean live)
+   protected TransportConfiguration getInVMTransportAcceptorConfiguration(final boolean live)
    {
       if (live)
       {
@@ -181,7 +185,7 @@ public abstract class FailoverTestBase extends ServiceTestBase
       }
    }
 
-   protected TransportConfiguration getNettyAcceptorTransportConfiguration(boolean live)
+   protected TransportConfiguration getNettyAcceptorTransportConfiguration(final boolean live)
    {
       if (live)
       {

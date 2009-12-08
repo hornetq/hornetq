@@ -9,7 +9,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
  * implied.  See the License for the specific language governing
  * permissions and limitations under the License.
- */ 
+ */
 
 package org.hornetq.tests.performance.journal;
 
@@ -29,21 +29,20 @@ import org.hornetq.core.logging.Logger;
  */
 public class RealJournalImplNIOTest extends JournalImplTestUnit
 {
-	private static final Logger log = Logger.getLogger(RealJournalImplNIOTest.class);
-		
-	protected SequentialFileFactory getFileFactory() throws Exception
-	{
-		File file = new File(getTestDir());
-		
-		log.debug("deleting directory " + getTestDir());
-		
-		deleteDirectory(file);
-		
-		file.mkdir();		
-		
-		return new NIOSequentialFileFactory(getTestDir());
-	}
-	
-	
-}
+   private static final Logger log = Logger.getLogger(RealJournalImplNIOTest.class);
 
+   @Override
+   protected SequentialFileFactory getFileFactory() throws Exception
+   {
+      File file = new File(getTestDir());
+
+      RealJournalImplNIOTest.log.debug("deleting directory " + getTestDir());
+
+      deleteDirectory(file);
+
+      file.mkdir();
+
+      return new NIOSequentialFileFactory(getTestDir());
+   }
+
+}

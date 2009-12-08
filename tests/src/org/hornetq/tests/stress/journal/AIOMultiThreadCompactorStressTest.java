@@ -16,6 +16,7 @@ package org.hornetq.tests.stress.journal;
 import junit.framework.TestSuite;
 
 import org.hornetq.core.server.JournalType;
+import org.hornetq.tests.util.UnitTestCase;
 
 /**
  * A AIOMultiThreadCompactorStressTest
@@ -27,16 +28,15 @@ import org.hornetq.core.server.JournalType;
 public class AIOMultiThreadCompactorStressTest extends NIOMultiThreadCompactorStressTest
 {
 
-   
    public static TestSuite suite()
    {
-      return createAIOTestSuite(AIOMultiThreadCompactorStressTest.class);
+      return UnitTestCase.createAIOTestSuite(AIOMultiThreadCompactorStressTest.class);
    }
-   
 
    /**
     * @return
     */
+   @Override
    protected JournalType getJournalType()
    {
       return JournalType.ASYNCIO;

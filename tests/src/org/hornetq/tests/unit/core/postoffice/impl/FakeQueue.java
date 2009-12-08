@@ -29,9 +29,9 @@ import org.hornetq.utils.SimpleString;
 
 public class FakeQueue implements Queue
 {
-   private SimpleString name;
+   private final SimpleString name;
 
-   public FakeQueue(SimpleString name)
+   public FakeQueue(final SimpleString name)
    {
       this.name = name;
    }
@@ -39,7 +39,7 @@ public class FakeQueue implements Queue
    /* (non-Javadoc)
     * @see org.hornetq.core.server.Queue#acknowledge(org.hornetq.core.server.MessageReference)
     */
-   public void acknowledge(MessageReference ref) throws Exception
+   public void acknowledge(final MessageReference ref) throws Exception
    {
       // TODO Auto-generated method stub
 
@@ -48,7 +48,7 @@ public class FakeQueue implements Queue
    /* (non-Javadoc)
     * @see org.hornetq.core.server.Queue#acknowledge(org.hornetq.core.transaction.Transaction, org.hornetq.core.server.MessageReference)
     */
-   public void acknowledge(Transaction tx, MessageReference ref) throws Exception
+   public void acknowledge(final Transaction tx, final MessageReference ref) throws Exception
    {
       // TODO Auto-generated method stub
 
@@ -57,7 +57,7 @@ public class FakeQueue implements Queue
    /* (non-Javadoc)
     * @see org.hornetq.core.server.Queue#addConsumer(org.hornetq.core.server.Consumer)
     */
-   public void addConsumer(Consumer consumer) throws Exception
+   public void addConsumer(final Consumer consumer) throws Exception
    {
       // TODO Auto-generated method stub
 
@@ -66,7 +66,7 @@ public class FakeQueue implements Queue
    /* (non-Javadoc)
     * @see org.hornetq.core.server.Queue#addFirst(org.hornetq.core.server.MessageReference)
     */
-   public void addFirst(MessageReference ref)
+   public void addFirst(final MessageReference ref)
    {
       // TODO Auto-generated method stub
 
@@ -75,7 +75,7 @@ public class FakeQueue implements Queue
    /* (non-Javadoc)
     * @see org.hornetq.core.server.Queue#addLast(org.hornetq.core.server.MessageReference)
     */
-   public void addLast(MessageReference ref)
+   public void addLast(final MessageReference ref)
    {
       // TODO Auto-generated method stub
 
@@ -84,7 +84,7 @@ public class FakeQueue implements Queue
    /* (non-Javadoc)
     * @see org.hornetq.core.server.Queue#addRedistributor(long, java.util.concurrent.Executor)
     */
-   public void addRedistributor(long delay, Executor executor)
+   public void addRedistributor(final long delay, final Executor executor)
    {
       // TODO Auto-generated method stub
 
@@ -93,7 +93,7 @@ public class FakeQueue implements Queue
    /* (non-Javadoc)
     * @see org.hornetq.core.server.Queue#cancel(org.hornetq.core.server.MessageReference)
     */
-   public void cancel(MessageReference reference) throws Exception
+   public void cancel(final MessageReference reference) throws Exception
    {
       // TODO Auto-generated method stub
 
@@ -102,7 +102,7 @@ public class FakeQueue implements Queue
    /* (non-Javadoc)
     * @see org.hornetq.core.server.Queue#cancel(org.hornetq.core.transaction.Transaction, org.hornetq.core.server.MessageReference)
     */
-   public void cancel(Transaction tx, MessageReference ref) throws Exception
+   public void cancel(final Transaction tx, final MessageReference ref) throws Exception
    {
       // TODO Auto-generated method stub
 
@@ -120,7 +120,7 @@ public class FakeQueue implements Queue
    /* (non-Javadoc)
     * @see org.hornetq.core.server.Queue#changeReferencePriority(long, byte)
     */
-   public boolean changeReferencePriority(long messageID, byte newPriority) throws Exception
+   public boolean changeReferencePriority(final long messageID, final byte newPriority) throws Exception
    {
       // TODO Auto-generated method stub
       return false;
@@ -129,7 +129,7 @@ public class FakeQueue implements Queue
    /* (non-Javadoc)
     * @see org.hornetq.core.server.Queue#checkDLQ(org.hornetq.core.server.MessageReference)
     */
-   public boolean checkDLQ(MessageReference ref) throws Exception
+   public boolean checkDLQ(final MessageReference ref) throws Exception
    {
       // TODO Auto-generated method stub
       return false;
@@ -147,7 +147,7 @@ public class FakeQueue implements Queue
    /* (non-Javadoc)
     * @see org.hornetq.core.server.Queue#deleteMatchingReferences(org.hornetq.core.filter.Filter)
     */
-   public int deleteMatchingReferences(Filter filter) throws Exception
+   public int deleteMatchingReferences(final Filter filter) throws Exception
    {
       // TODO Auto-generated method stub
       return 0;
@@ -156,7 +156,7 @@ public class FakeQueue implements Queue
    /* (non-Javadoc)
     * @see org.hornetq.core.server.Queue#deleteReference(long)
     */
-   public boolean deleteReference(long messageID) throws Exception
+   public boolean deleteReference(final long messageID) throws Exception
    {
       // TODO Auto-generated method stub
       return false;
@@ -165,7 +165,7 @@ public class FakeQueue implements Queue
    /* (non-Javadoc)
     * @see org.hornetq.core.server.Queue#deliverAsync(java.util.concurrent.Executor)
     */
-   public void deliverAsync(Executor executor)
+   public void deliverAsync(final Executor executor)
    {
       // TODO Auto-generated method stub
 
@@ -183,7 +183,7 @@ public class FakeQueue implements Queue
    /* (non-Javadoc)
     * @see org.hornetq.core.server.Queue#expire(org.hornetq.core.server.MessageReference)
     */
-   public void expire(MessageReference ref) throws Exception
+   public void expire(final MessageReference ref) throws Exception
    {
       // TODO Auto-generated method stub
 
@@ -192,7 +192,7 @@ public class FakeQueue implements Queue
    /* (non-Javadoc)
     * @see org.hornetq.core.server.Queue#expireReference(long)
     */
-   public boolean expireReference(long messageID) throws Exception
+   public boolean expireReference(final long messageID) throws Exception
    {
       // TODO Auto-generated method stub
       return false;
@@ -210,7 +210,7 @@ public class FakeQueue implements Queue
    /* (non-Javadoc)
     * @see org.hornetq.core.server.Queue#expireReferences(org.hornetq.core.filter.Filter)
     */
-   public int expireReferences(Filter filter) throws Exception
+   public int expireReferences(final Filter filter) throws Exception
    {
       // TODO Auto-generated method stub
       return 0;
@@ -290,7 +290,7 @@ public class FakeQueue implements Queue
    /* (non-Javadoc)
     * @see org.hornetq.core.server.Queue#getReference(long)
     */
-   public MessageReference getReference(long id)
+   public MessageReference getReference(final long id)
    {
       // TODO Auto-generated method stub
       return null;
@@ -353,7 +353,7 @@ public class FakeQueue implements Queue
    /* (non-Javadoc)
     * @see org.hornetq.core.server.Queue#list(org.hornetq.core.filter.Filter)
     */
-   public List<MessageReference> list(Filter filter)
+   public List<MessageReference> list(final Filter filter)
    {
       // TODO Auto-generated method stub
       return null;
@@ -371,7 +371,7 @@ public class FakeQueue implements Queue
    /* (non-Javadoc)
     * @see org.hornetq.core.server.Queue#moveReference(long, org.hornetq.utils.SimpleString)
     */
-   public boolean moveReference(long messageID, SimpleString toAddress) throws Exception
+   public boolean moveReference(final long messageID, final SimpleString toAddress) throws Exception
    {
       // TODO Auto-generated method stub
       return false;
@@ -380,7 +380,7 @@ public class FakeQueue implements Queue
    /* (non-Javadoc)
     * @see org.hornetq.core.server.Queue#moveReferences(org.hornetq.core.filter.Filter, org.hornetq.utils.SimpleString)
     */
-   public int moveReferences(Filter filter, SimpleString toAddress) throws Exception
+   public int moveReferences(final Filter filter, final SimpleString toAddress) throws Exception
    {
       // TODO Auto-generated method stub
       return 0;
@@ -398,7 +398,7 @@ public class FakeQueue implements Queue
    /* (non-Javadoc)
     * @see org.hornetq.core.server.Queue#reacknowledge(org.hornetq.core.transaction.Transaction, org.hornetq.core.server.MessageReference)
     */
-   public void reacknowledge(Transaction tx, MessageReference ref) throws Exception
+   public void reacknowledge(final Transaction tx, final MessageReference ref) throws Exception
    {
       // TODO Auto-generated method stub
 
@@ -416,7 +416,7 @@ public class FakeQueue implements Queue
    /* (non-Javadoc)
     * @see org.hornetq.core.server.Queue#removeConsumer(org.hornetq.core.server.Consumer)
     */
-   public boolean removeConsumer(Consumer consumer) throws Exception
+   public boolean removeConsumer(final Consumer consumer) throws Exception
    {
       // TODO Auto-generated method stub
       return false;
@@ -425,7 +425,7 @@ public class FakeQueue implements Queue
    /* (non-Javadoc)
     * @see org.hornetq.core.server.Queue#removeFirstReference(long)
     */
-   public MessageReference removeFirstReference(long id) throws Exception
+   public MessageReference removeFirstReference(final long id) throws Exception
    {
       // TODO Auto-generated method stub
       return null;
@@ -434,7 +434,7 @@ public class FakeQueue implements Queue
    /* (non-Javadoc)
     * @see org.hornetq.core.server.Queue#removeReferenceWithID(long)
     */
-   public MessageReference removeReferenceWithID(long id) throws Exception
+   public MessageReference removeReferenceWithID(final long id) throws Exception
    {
       // TODO Auto-generated method stub
       return null;
@@ -452,7 +452,7 @@ public class FakeQueue implements Queue
    /* (non-Javadoc)
     * @see org.hornetq.core.server.Queue#sendMessageToDeadLetterAddress(long)
     */
-   public boolean sendMessageToDeadLetterAddress(long messageID) throws Exception
+   public boolean sendMessageToDeadLetterAddress(final long messageID) throws Exception
    {
       // TODO Auto-generated method stub
       return false;
@@ -461,7 +461,7 @@ public class FakeQueue implements Queue
    /* (non-Javadoc)
     * @see org.hornetq.core.server.Queue#setExpiryAddress(org.hornetq.utils.SimpleString)
     */
-   public void setExpiryAddress(SimpleString expiryAddress)
+   public void setExpiryAddress(final SimpleString expiryAddress)
    {
       // TODO Auto-generated method stub
 
@@ -481,13 +481,13 @@ public class FakeQueue implements Queue
    /* (non-Javadoc)
     * @see org.hornetq.core.server.Bindable#route(org.hornetq.core.server.ServerMessage, org.hornetq.core.server.RoutingContext)
     */
-   public void route(ServerMessage message, RoutingContext context) throws Exception
+   public void route(final ServerMessage message, final RoutingContext context) throws Exception
    {
       // TODO Auto-generated method stub
 
    }
 
-   public boolean hasMatchingConsumer(ServerMessage message)
+   public boolean hasMatchingConsumer(final ServerMessage message)
    {
       // TODO Auto-generated method stub
       return false;
@@ -496,7 +496,7 @@ public class FakeQueue implements Queue
    /* (non-Javadoc)
     * @see org.hornetq.core.server.Queue#checkDLQ(org.hornetq.core.server.MessageReference, java.util.concurrent.Executor)
     */
-   public boolean checkDLQ(MessageReference ref, Executor ioExecutor) throws Exception
+   public boolean checkDLQ(final MessageReference ref, final Executor ioExecutor) throws Exception
    {
       // TODO Auto-generated method stub
       return false;

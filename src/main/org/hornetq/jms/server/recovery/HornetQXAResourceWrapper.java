@@ -53,7 +53,7 @@ public class HornetQXAResourceWrapper implements XAResource, SessionFailureListe
    /** The JNDI lookup for the XA connection factory */
    private final String connectorFactoryClassName;
 
-   private Map<String, Object> connectorConfig;
+   private final Map<String, Object> connectorConfig;
 
    private final String username;
 
@@ -64,9 +64,9 @@ public class HornetQXAResourceWrapper implements XAResource, SessionFailureListe
    private XAResource delegate;
 
    public HornetQXAResourceWrapper(final String connectorFactoryClassName,
-                                     final Map<String, Object> connectorConfig,
-                                     final String username, 
-                                     final String password)
+                                   final Map<String, Object> connectorConfig,
+                                   final String username,
+                                   final String password)
    {
       this.connectorFactoryClassName = connectorFactoryClassName;
       this.connectorConfig = connectorConfig;
@@ -74,9 +74,9 @@ public class HornetQXAResourceWrapper implements XAResource, SessionFailureListe
       this.password = password;
    }
 
-   public Xid[] recover(int flag) throws XAException
+   public Xid[] recover(final int flag) throws XAException
    {
-      log.debug("Recover " + connectorFactoryClassName);
+      HornetQXAResourceWrapper.log.debug("Recover " + connectorFactoryClassName);
       XAResource xaResource = getDelegate();
       try
       {
@@ -88,9 +88,9 @@ public class HornetQXAResourceWrapper implements XAResource, SessionFailureListe
       }
    }
 
-   public void commit(Xid xid, boolean onePhase) throws XAException
+   public void commit(final Xid xid, final boolean onePhase) throws XAException
    {
-      log.debug("Commit " + connectorFactoryClassName + " xid " + " onePhase=" + onePhase);
+      HornetQXAResourceWrapper.log.debug("Commit " + connectorFactoryClassName + " xid " + " onePhase=" + onePhase);
       XAResource xaResource = getDelegate();
       try
       {
@@ -102,9 +102,9 @@ public class HornetQXAResourceWrapper implements XAResource, SessionFailureListe
       }
    }
 
-   public void rollback(Xid xid) throws XAException
+   public void rollback(final Xid xid) throws XAException
    {
-      log.debug("Rollback " + connectorFactoryClassName + " xid ");
+      HornetQXAResourceWrapper.log.debug("Rollback " + connectorFactoryClassName + " xid ");
       XAResource xaResource = getDelegate();
       try
       {
@@ -116,9 +116,9 @@ public class HornetQXAResourceWrapper implements XAResource, SessionFailureListe
       }
    }
 
-   public void forget(Xid xid) throws XAException
+   public void forget(final Xid xid) throws XAException
    {
-      log.debug("Forget " + connectorFactoryClassName + " xid ");
+      HornetQXAResourceWrapper.log.debug("Forget " + connectorFactoryClassName + " xid ");
       XAResource xaResource = getDelegate();
       try
       {
@@ -133,7 +133,9 @@ public class HornetQXAResourceWrapper implements XAResource, SessionFailureListe
    public boolean isSameRM(XAResource xaRes) throws XAException
    {
       if (xaRes instanceof HornetQXAResourceWrapper)
+      {
          xaRes = ((HornetQXAResourceWrapper)xaRes).getDelegate();
+      }
 
       XAResource xaResource = getDelegate();
       try
@@ -146,7 +148,7 @@ public class HornetQXAResourceWrapper implements XAResource, SessionFailureListe
       }
    }
 
-   public int prepare(Xid xid) throws XAException
+   public int prepare(final Xid xid) throws XAException
    {
       XAResource xaResource = getDelegate();
       try
@@ -159,7 +161,7 @@ public class HornetQXAResourceWrapper implements XAResource, SessionFailureListe
       }
    }
 
-   public void start(Xid xid, int flags) throws XAException
+   public void start(final Xid xid, final int flags) throws XAException
    {
       XAResource xaResource = getDelegate();
       try
@@ -172,7 +174,7 @@ public class HornetQXAResourceWrapper implements XAResource, SessionFailureListe
       }
    }
 
-   public void end(Xid xid, int flags) throws XAException
+   public void end(final Xid xid, final int flags) throws XAException
    {
       XAResource xaResource = getDelegate();
       try
@@ -198,7 +200,7 @@ public class HornetQXAResourceWrapper implements XAResource, SessionFailureListe
       }
    }
 
-   public boolean setTransactionTimeout(int seconds) throws XAException
+   public boolean setTransactionTimeout(final int seconds) throws XAException
    {
       XAResource xaResource = getDelegate();
       try
@@ -211,14 +213,15 @@ public class HornetQXAResourceWrapper implements XAResource, SessionFailureListe
       }
    }
 
-   public void connectionFailed(HornetQException me)
+   public void connectionFailed(final HornetQException me)
    {
-      log.warn("Notified of connection failure in recovery connectionFactory for provider " + connectorFactoryClassName, me);
+      HornetQXAResourceWrapper.log.warn("Notified of connection failure in recovery connectionFactory for provider " + connectorFactoryClassName,
+                                        me);
       close();
    }
-   
-   public void beforeReconnect(HornetQException me)
-   {            
+
+   public void beforeReconnect(final HornetQException me)
+   {
    }
 
    /**
@@ -237,7 +240,7 @@ public class HornetQXAResourceWrapper implements XAResource, SessionFailureListe
       }
       catch (Exception e)
       {
-         log.error("********************************Failed to connect to server", e);
+         HornetQXAResourceWrapper.log.error("********************************Failed to connect to server", e);
          error = e;
       }
 
@@ -246,8 +249,10 @@ public class HornetQXAResourceWrapper implements XAResource, SessionFailureListe
          XAException xae = new XAException("Error trying to connect to provider " + connectorFactoryClassName);
          xae.errorCode = XAException.XAER_RMERR;
          if (error != null)
+         {
             xae.initCause(error);
-         log.debug("Cannot get connectionFactory XAResource", xae);
+         }
+         HornetQXAResourceWrapper.log.debug("Cannot get connectionFactory XAResource", xae);
          throw xae;
       }
 
@@ -263,10 +268,12 @@ public class HornetQXAResourceWrapper implements XAResource, SessionFailureListe
    protected XAResource connect() throws Exception
    {
       // Do we already have a valid connectionFactory?
-      synchronized (lock)
+      synchronized (HornetQXAResourceWrapper.lock)
       {
          if (delegate != null)
+         {
             return delegate;
+         }
       }
 
       TransportConfiguration config = new TransportConfiguration(connectorFactoryClassName, connectorConfig);
@@ -283,11 +290,11 @@ public class HornetQXAResourceWrapper implements XAResource, SessionFailureListe
       }
       cs.addFailureListener(this);
 
-      synchronized (lock)
+      synchronized (HornetQXAResourceWrapper.lock)
       {
          delegate = cs;
       }
-      
+
       return delegate;
    }
 
@@ -299,18 +306,20 @@ public class HornetQXAResourceWrapper implements XAResource, SessionFailureListe
       try
       {
          ClientSessionFactory oldCSF = null;
-         synchronized (lock)
+         synchronized (HornetQXAResourceWrapper.lock)
          {
             oldCSF = csf;
             csf = null;
             delegate = null;
          }
          if (oldCSF != null)
+         {
             oldCSF.close();
+         }
       }
       catch (Exception ignored)
       {
-         log.trace("Ignored error during close", ignored);
+         HornetQXAResourceWrapper.log.trace("Ignored error during close", ignored);
       }
    }
 
@@ -322,16 +331,17 @@ public class HornetQXAResourceWrapper implements XAResource, SessionFailureListe
     * @return never
     * @throws XAException always
     */
-   protected XAException check(XAException e) throws XAException
+   protected XAException check(final XAException e) throws XAException
    {
       if (e.errorCode == XAException.XA_RETRY)
       {
-         log.debug("Fatal error in provider " + connectorFactoryClassName, e);
+         HornetQXAResourceWrapper.log.debug("Fatal error in provider " + connectorFactoryClassName, e);
          close();
       }
       throw new XAException(XAException.XAER_RMFAIL);
    }
 
+   @Override
    protected void finalize() throws Throwable
    {
       close();

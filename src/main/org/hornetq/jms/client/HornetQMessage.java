@@ -34,7 +34,6 @@ import javax.jms.MessageNotReadableException;
 import javax.jms.MessageNotWriteableException;
 
 import org.hornetq.core.buffers.HornetQBuffer;
-import org.hornetq.core.buffers.HornetQBuffers;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.client.impl.ClientMessageImpl;
@@ -141,17 +140,17 @@ public class HornetQMessage implements javax.jms.Message
    private static final HashSet<String> reservedIdentifiers = new HashSet<String>();
    static
    {
-      reservedIdentifiers.add("NULL");
-      reservedIdentifiers.add("TRUE");
-      reservedIdentifiers.add("FALSE");
-      reservedIdentifiers.add("NOT");
-      reservedIdentifiers.add("AND");
-      reservedIdentifiers.add("OR");
-      reservedIdentifiers.add("BETWEEN");
-      reservedIdentifiers.add("LIKE");
-      reservedIdentifiers.add("IN");
-      reservedIdentifiers.add("IS");
-      reservedIdentifiers.add("ESCAPE");
+      HornetQMessage.reservedIdentifiers.add("NULL");
+      HornetQMessage.reservedIdentifiers.add("TRUE");
+      HornetQMessage.reservedIdentifiers.add("FALSE");
+      HornetQMessage.reservedIdentifiers.add("NOT");
+      HornetQMessage.reservedIdentifiers.add("AND");
+      HornetQMessage.reservedIdentifiers.add("OR");
+      HornetQMessage.reservedIdentifiers.add("BETWEEN");
+      HornetQMessage.reservedIdentifiers.add("LIKE");
+      HornetQMessage.reservedIdentifiers.add("IN");
+      HornetQMessage.reservedIdentifiers.add("IS");
+      HornetQMessage.reservedIdentifiers.add("ESCAPE");
    }
 
    private static final Logger log = Logger.getLogger(HornetQMessage.class);
@@ -232,7 +231,7 @@ public class HornetQMessage implements javax.jms.Message
    private String jmsType;
 
    // Constructors --------------------------------------------------
-   
+
    /*
     * Create a new message prior to sending
     */
@@ -268,7 +267,7 @@ public class HornetQMessage implements javax.jms.Message
    {
       this(foreign, HornetQMessage.TYPE, session);
    }
-   
+
    public HornetQMessage()
    {
    }
@@ -318,7 +317,7 @@ public class HornetQMessage implements javax.jms.Message
    {
       if (msgID == null)
       {
-         SimpleString id = message.getSimpleStringProperty(HORNETQ_MESSAGE_ID);
+         SimpleString id = message.getSimpleStringProperty(HornetQMessage.HORNETQ_MESSAGE_ID);
 
          msgID = id == null ? null : id.toString();
       }
@@ -331,19 +330,19 @@ public class HornetQMessage implements javax.jms.Message
       {
          throw new JMSException("JMSMessageID must start with ID:");
       }
-      
+
       if (jmsMessageID == null)
       {
-         message.removeProperty(HORNETQ_MESSAGE_ID);
+         message.removeProperty(HornetQMessage.HORNETQ_MESSAGE_ID);
       }
       else
       {
-         message.putStringProperty(HORNETQ_MESSAGE_ID, new SimpleString(jmsMessageID));
+         message.putStringProperty(HornetQMessage.HORNETQ_MESSAGE_ID, new SimpleString(jmsMessageID));
       }
-      
+
       msgID = jmsMessageID;
    }
-   
+
    public long getJMSTimestamp() throws JMSException
    {
       return message.getTimestamp();
@@ -356,7 +355,7 @@ public class HornetQMessage implements javax.jms.Message
 
    public byte[] getJMSCorrelationIDAsBytes() throws JMSException
    {
-      Object obj = message.getObjectProperty(CORRELATIONID_HEADER_NAME);
+      Object obj = message.getObjectProperty(HornetQMessage.CORRELATIONID_HEADER_NAME);
 
       if (obj instanceof byte[])
       {
@@ -374,20 +373,20 @@ public class HornetQMessage implements javax.jms.Message
       {
          throw new JMSException("Please specify a non-zero length byte[]");
       }
-      message.putBytesProperty(CORRELATIONID_HEADER_NAME, correlationID);
+      message.putBytesProperty(HornetQMessage.CORRELATIONID_HEADER_NAME, correlationID);
    }
 
    public void setJMSCorrelationID(final String correlationID) throws JMSException
    {
       if (correlationID == null)
       {
-         message.removeProperty(CORRELATIONID_HEADER_NAME);
+         message.removeProperty(HornetQMessage.CORRELATIONID_HEADER_NAME);
 
          jmsCorrelationID = null;
       }
       else
       {
-         message.putStringProperty(CORRELATIONID_HEADER_NAME, new SimpleString(correlationID));
+         message.putStringProperty(HornetQMessage.CORRELATIONID_HEADER_NAME, new SimpleString(correlationID));
 
          jmsCorrelationID = correlationID;
       }
@@ -397,7 +396,7 @@ public class HornetQMessage implements javax.jms.Message
    {
       if (jmsCorrelationID == null)
       {
-         jmsCorrelationID = message.getStringProperty(CORRELATIONID_HEADER_NAME);
+         jmsCorrelationID = message.getStringProperty(HornetQMessage.CORRELATIONID_HEADER_NAME);
       }
 
       return jmsCorrelationID;
@@ -407,7 +406,7 @@ public class HornetQMessage implements javax.jms.Message
    {
       if (replyTo == null)
       {
-         SimpleString repl = message.getSimpleStringProperty(REPLYTO_HEADER_NAME);
+         SimpleString repl = message.getSimpleStringProperty(HornetQMessage.REPLYTO_HEADER_NAME);
 
          if (repl != null)
          {
@@ -421,7 +420,7 @@ public class HornetQMessage implements javax.jms.Message
    {
       if (dest == null)
       {
-         message.removeProperty(REPLYTO_HEADER_NAME);
+         message.removeProperty(HornetQMessage.REPLYTO_HEADER_NAME);
 
          replyTo = null;
       }
@@ -434,7 +433,7 @@ public class HornetQMessage implements javax.jms.Message
 
          HornetQDestination jbd = (HornetQDestination)dest;
 
-         message.putStringProperty(REPLYTO_HEADER_NAME, jbd.getSimpleAddress());
+         message.putStringProperty(HornetQMessage.REPLYTO_HEADER_NAME, jbd.getSimpleAddress());
 
          replyTo = jbd;
       }
@@ -506,7 +505,7 @@ public class HornetQMessage implements javax.jms.Message
    {
       if (type != null)
       {
-         message.putStringProperty(TYPE_HEADER_NAME, new SimpleString(type));
+         message.putStringProperty(HornetQMessage.TYPE_HEADER_NAME, new SimpleString(type));
 
          jmsType = type;
       }
@@ -516,7 +515,7 @@ public class HornetQMessage implements javax.jms.Message
    {
       if (jmsType == null)
       {
-         SimpleString ss = message.getSimpleStringProperty(TYPE_HEADER_NAME);
+         SimpleString ss = message.getSimpleStringProperty(HornetQMessage.TYPE_HEADER_NAME);
 
          if (ss != null)
          {
@@ -554,7 +553,8 @@ public class HornetQMessage implements javax.jms.Message
 
       for (SimpleString propName : message.getPropertyNames())
       {
-         if (!propName.startsWith(JMS) || propName.startsWith(JMSX) || propName.startsWith(JMS_))
+         if (!propName.startsWith(HornetQMessage.JMS) || propName.startsWith(HornetQMessage.JMSX) ||
+             propName.startsWith(HornetQMessage.JMS_))
          {
             toRemove.add(propName);
          }
@@ -575,8 +575,8 @@ public class HornetQMessage implements javax.jms.Message
 
    public boolean propertyExists(final String name) throws JMSException
    {
-      return message.containsProperty(new SimpleString(name)) || name.equals(JMSXDELIVERYCOUNT) ||
-             JMSXGROUPID.equals(name) &&
+      return message.containsProperty(new SimpleString(name)) || name.equals(HornetQMessage.JMSXDELIVERYCOUNT) ||
+             HornetQMessage.JMSXGROUPID.equals(name) &&
              message.containsProperty(MessageImpl.HDR_GROUP_ID);
    }
 
@@ -618,7 +618,7 @@ public class HornetQMessage implements javax.jms.Message
 
    public int getIntProperty(final String name) throws JMSException
    {
-      if (JMSXDELIVERYCOUNT.equals(name))
+      if (HornetQMessage.JMSXDELIVERYCOUNT.equals(name))
       {
          return message.getDeliveryCount();
       }
@@ -635,7 +635,7 @@ public class HornetQMessage implements javax.jms.Message
 
    public long getLongProperty(final String name) throws JMSException
    {
-      if (JMSXDELIVERYCOUNT.equals(name))
+      if (HornetQMessage.JMSXDELIVERYCOUNT.equals(name))
       {
          return message.getDeliveryCount();
       }
@@ -676,14 +676,14 @@ public class HornetQMessage implements javax.jms.Message
 
    public String getStringProperty(final String name) throws JMSException
    {
-      if (JMSXDELIVERYCOUNT.equals(name))
+      if (HornetQMessage.JMSXDELIVERYCOUNT.equals(name))
       {
          return String.valueOf(message.getDeliveryCount());
       }
 
       try
       {
-         if (JMSXGROUPID.equals(name))
+         if (HornetQMessage.JMSXGROUPID.equals(name))
          {
             return message.getStringProperty(MessageImpl.HDR_GROUP_ID);
          }
@@ -700,11 +700,11 @@ public class HornetQMessage implements javax.jms.Message
 
    public Object getObjectProperty(final String name) throws JMSException
    {
-      if (JMS_HORNETQ_INPUT_STREAM.equals(name))
+      if (HornetQMessage.JMS_HORNETQ_INPUT_STREAM.equals(name))
       {
          return message.getBodyInputStream();
       }
-      else if (JMSXDELIVERYCOUNT.equals(name))
+      else if (HornetQMessage.JMSXDELIVERYCOUNT.equals(name))
       {
          return String.valueOf(message.getDeliveryCount());
       }
@@ -723,13 +723,14 @@ public class HornetQMessage implements javax.jms.Message
 
       for (SimpleString propName : message.getPropertyNames())
       {
-         if (!propName.startsWith(JMS) || propName.startsWith(JMSX) || propName.startsWith(JMS_))
+         if (!propName.startsWith(HornetQMessage.JMS) || propName.startsWith(HornetQMessage.JMSX) ||
+             propName.startsWith(HornetQMessage.JMS_))
          {
             set.add(propName.toString());
          }
       }
 
-      set.add(JMSXDELIVERYCOUNT);
+      set.add(HornetQMessage.JMSXDELIVERYCOUNT);
 
       return Collections.enumeration(set);
    }
@@ -737,7 +738,7 @@ public class HornetQMessage implements javax.jms.Message
    public void setBooleanProperty(final String name, final boolean value) throws JMSException
    {
       checkProperty(name, value);
-      
+
       message.putBooleanProperty(new SimpleString(name), value);
    }
 
@@ -787,7 +788,7 @@ public class HornetQMessage implements javax.jms.Message
          return;
       }
 
-      if (JMSXGROUPID.equals(name))
+      if (HornetQMessage.JMSXGROUPID.equals(name))
       {
          message.putStringProperty(MessageImpl.HDR_GROUP_ID, new SimpleString(value));
       }
@@ -799,13 +800,13 @@ public class HornetQMessage implements javax.jms.Message
 
    public void setObjectProperty(final String name, final Object value) throws JMSException
    {
-      if (JMS_HORNETQ_OUTPUT_STREAM.equals(name))
+      if (HornetQMessage.JMS_HORNETQ_OUTPUT_STREAM.equals(name))
       {
          setOutputStream((OutputStream)value);
 
          return;
       }
-      else if (JMS_HORNETQ_SAVE_STREAM.equals(name))
+      else if (HornetQMessage.JMS_HORNETQ_SAVE_STREAM.equals(name))
       {
          saveToOutputStream((OutputStream)value);
 
@@ -820,7 +821,7 @@ public class HornetQMessage implements javax.jms.Message
          return;
       }
 
-      if (JMS_HORNETQ_INPUT_STREAM.equals(name))
+      if (HornetQMessage.JMS_HORNETQ_INPUT_STREAM.equals(name))
       {
          setInputStream((InputStream)value);
 
@@ -854,11 +855,11 @@ public class HornetQMessage implements javax.jms.Message
 
    // Public --------------------------------------------------------
 
-   public void resetMessageID(String msgID)
+   public void resetMessageID(final String msgID)
    {
       this.msgID = msgID;
    }
-   
+
    public ClientMessage getCoreMessage()
    {
       return message;
@@ -872,7 +873,7 @@ public class HornetQMessage implements javax.jms.Message
    public void doBeforeReceive() throws Exception
    {
       HornetQBuffer body = message.getBodyBuffer();
-      
+
       if (body != null)
       {
          body.resetReaderIndex();
@@ -988,11 +989,11 @@ public class HornetQMessage implements javax.jms.Message
    {
       if (propertiesReadOnly)
       {
-         if (name.equals(JMS_HORNETQ_INPUT_STREAM))
+         if (name.equals(HornetQMessage.JMS_HORNETQ_INPUT_STREAM))
          {
-            throw new MessageNotWriteableException("You cannot set the Input Stream on received messages. Did you mean " + JMS_HORNETQ_OUTPUT_STREAM +
+            throw new MessageNotWriteableException("You cannot set the Input Stream on received messages. Did you mean " + HornetQMessage.JMS_HORNETQ_OUTPUT_STREAM +
                                                    " or " +
-                                                   JMS_HORNETQ_SAVE_STREAM +
+                                                   HornetQMessage.JMS_HORNETQ_SAVE_STREAM +
                                                    "?");
          }
          else
@@ -1016,7 +1017,7 @@ public class HornetQMessage implements javax.jms.Message
          throw new IllegalArgumentException("The property name '" + name + "' is not a valid java identifier.");
       }
 
-      if (reservedIdentifiers.contains(name))
+      if (HornetQMessage.reservedIdentifiers.contains(name))
       {
          throw new IllegalArgumentException("The property name '" + name + "' is reserved due to selector syntax.");
       }

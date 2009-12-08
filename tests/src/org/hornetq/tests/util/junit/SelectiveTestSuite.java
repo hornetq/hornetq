@@ -9,7 +9,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
  * implied.  See the License for the specific language governing
  * permissions and limitations under the License.
- */ 
+ */
 
 package org.hornetq.tests.util.junit;
 
@@ -18,11 +18,10 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
 
+import junit.framework.Assert;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
-
-
 
 /**
  * A TestSuite that filters tests.
@@ -40,18 +39,19 @@ public class SelectiveTestSuite extends TestSuite
 
    // Attributes ----------------------------------------------------
 
-   private List methods;
-   private List tests;
+   private final List methods;
+
+   private final List tests;
 
    // Constructors --------------------------------------------------
 
-   public SelectiveTestSuite(TestSuite original, List methods)
+   public SelectiveTestSuite(final TestSuite original, final List methods)
    {
       tests = new ArrayList();
       this.methods = new ArrayList(methods);
       this.methods.add("warning");
 
-      for(Enumeration e = original.tests(); e.hasMoreElements();)
+      for (Enumeration e = original.tests(); e.hasMoreElements();)
       {
          TestCase tc = (TestCase)e.nextElement();
          if (methods.contains(tc.getName()))
@@ -64,27 +64,30 @@ public class SelectiveTestSuite extends TestSuite
       {
          tests.add(new TestCase("warning")
          {
+            @Override
             protected void runTest()
             {
-               fail("The SelectiveTestSuite did not select any test.");
+               Assert.fail("The SelectiveTestSuite did not select any test.");
             }
          });
       }
    }
 
-
    // TestSuite overrides -------------------------------------------
 
-   public Test testAt(int index)
+   @Override
+   public Test testAt(final int index)
    {
       return (Test)tests.get(index);
    }
 
+   @Override
    public int testCount()
    {
       return tests.size();
    }
 
+   @Override
    public Enumeration tests()
    {
       return Collections.enumeration(tests);
@@ -93,7 +96,7 @@ public class SelectiveTestSuite extends TestSuite
    // Public --------------------------------------------------------
 
    // Package protected ---------------------------------------------
-   
+
    // Protected -----------------------------------------------------
 
    // Private -------------------------------------------------------

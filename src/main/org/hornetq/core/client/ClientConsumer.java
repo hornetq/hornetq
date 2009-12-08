@@ -33,8 +33,8 @@ public interface ClientConsumer
    void setMessageHandler(MessageHandler handler) throws HornetQException;
 
    void close() throws HornetQException;
-   
-   boolean isClosed();   
-   
+
+   boolean isClosed();
+
    Exception getLastException();
 }

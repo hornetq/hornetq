@@ -12,6 +12,7 @@
  */
 
 package org.hornetq.jms.tests.tools;
+
 import java.net.UnknownHostException;
 
 import org.hornetq.core.logging.Logger;
@@ -38,54 +39,54 @@ import org.jnp.server.NamingBean;
 public class WrappedJNDIServer
 {
    private static final Logger log = Logger.getLogger(WrappedJNDIServer.class);
-   
-   private Main main;
-   
+
+   private final Main main;
+
    public WrappedJNDIServer()
    {
-      this.main = new Main();
+      main = new Main();
    }
-   
+
    public void start() throws Exception
    {
       main.start();
    }
-   
+
    public void stop()
    {
       main.stop();
-      
+
       try
       {
          Thread.sleep(500);
       }
       catch (Exception e)
-      {      
+      {
       }
    }
-   
-   public void setNamingInfo(NamingBean naming)
+
+   public void setNamingInfo(final NamingBean naming)
    {
       main.setNamingInfo(naming);
    }
-   
-   public void setPort(int port)
+
+   public void setPort(final int port)
    {
       main.setPort(port);
    }
-   
-   public void setBindAddress(String bindAddress) throws UnknownHostException
+
+   public void setBindAddress(final String bindAddress) throws UnknownHostException
    {
       main.setBindAddress(bindAddress);
    }
-   
-   public void setRmiPort(int port)
+
+   public void setRmiPort(final int port)
    {
       main.setRmiPort(port);
    }
-   
-   public void setRmiBindAddress(String address) throws UnknownHostException
+
+   public void setRmiBindAddress(final String address) throws UnknownHostException
    {
       main.setRmiBindAddress(address);
-   }     
+   }
 }

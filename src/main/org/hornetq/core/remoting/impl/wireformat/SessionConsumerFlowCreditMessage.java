@@ -14,7 +14,6 @@
 package org.hornetq.core.remoting.impl.wireformat;
 
 import org.hornetq.core.buffers.HornetQBuffer;
-import org.hornetq.utils.DataConstants;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -38,7 +37,7 @@ public class SessionConsumerFlowCreditMessage extends PacketImpl
 
    public SessionConsumerFlowCreditMessage(final long consumerID, final int credits)
    {
-      super(SESS_FLOWTOKEN);
+      super(PacketImpl.SESS_FLOWTOKEN);
 
       this.consumerID = consumerID;
 
@@ -47,7 +46,7 @@ public class SessionConsumerFlowCreditMessage extends PacketImpl
 
    public SessionConsumerFlowCreditMessage()
    {
-      super(SESS_FLOWTOKEN);
+      super(PacketImpl.SESS_FLOWTOKEN);
    }
 
    // Public --------------------------------------------------------

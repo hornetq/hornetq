@@ -27,6 +27,7 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 
 import org.hornetq.jms.tests.HornetQServerTestCase;
+import org.hornetq.jms.tests.util.ProxyAssertSupport;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -60,47 +61,47 @@ public class SelectorTest extends HornetQServerTestCase
 
       try
       {
-	      conn = getConnectionFactory().createConnection();
-	      conn.start();
+         conn = getConnectionFactory().createConnection();
+         conn.start();
 
-	      Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-	      MessageProducer prod = session.createProducer(queue1);
-	      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+         Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageProducer prod = session.createProducer(HornetQServerTestCase.queue1);
+         prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
 
-	      String selector = "color = 'red'";
-	      MessageConsumer redConsumer = session.createConsumer(queue1, selector);
-	      conn.start();
+         String selector = "color = 'red'";
+         MessageConsumer redConsumer = session.createConsumer(HornetQServerTestCase.queue1, selector);
+         conn.start();
 
-	      Message redMessage = session.createMessage();
-	      redMessage.setStringProperty("color", "red");
+         Message redMessage = session.createMessage();
+         redMessage.setStringProperty("color", "red");
 
-	      Message blueMessage = session.createMessage();
-	      blueMessage.setStringProperty("color", "blue");
+         Message blueMessage = session.createMessage();
+         blueMessage.setStringProperty("color", "blue");
 
-	      prod.send(redMessage);
-	      prod.send(blueMessage);
+         prod.send(redMessage);
+         prod.send(blueMessage);
 
-	      Message rec = redConsumer.receive();
-	      assertEquals(redMessage.getJMSMessageID(), rec.getJMSMessageID());
-	      assertEquals("red", rec.getStringProperty("color"));
+         Message rec = redConsumer.receive();
+         ProxyAssertSupport.assertEquals(redMessage.getJMSMessageID(), rec.getJMSMessageID());
+         ProxyAssertSupport.assertEquals("red", rec.getStringProperty("color"));
 
-	      assertNull(redConsumer.receive(3000));
+         ProxyAssertSupport.assertNull(redConsumer.receive(3000));
 
-	      redConsumer.close();
+         redConsumer.close();
 
-	      MessageConsumer universalConsumer = session.createConsumer(queue1);
+         MessageConsumer universalConsumer = session.createConsumer(HornetQServerTestCase.queue1);
 
-	      rec = universalConsumer.receive();
+         rec = universalConsumer.receive();
 
-	      assertEquals(rec.getJMSMessageID(), blueMessage.getJMSMessageID());
-	      assertEquals("blue", rec.getStringProperty("color"));
+         ProxyAssertSupport.assertEquals(rec.getJMSMessageID(), blueMessage.getJMSMessageID());
+         ProxyAssertSupport.assertEquals("blue", rec.getStringProperty("color"));
       }
       finally
       {
-      	if (conn != null)
-      	{
-      		conn.close();
-      	}
+         if (conn != null)
+         {
+            conn.close();
+         }
       }
    }
 
@@ -112,49 +113,49 @@ public class SelectorTest extends HornetQServerTestCase
 
       try
       {
-	      conn = getConnectionFactory().createConnection();
-	      conn.start();
+         conn = getConnectionFactory().createConnection();
+         conn.start();
 
-	      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-	      MessageConsumer cons1 = sess.createConsumer(topic1, selector1);
+         MessageConsumer cons1 = sess.createConsumer(HornetQServerTestCase.topic1, selector1);
 
-	      MessageProducer prod = sess.createProducer(topic1);
+         MessageProducer prod = sess.createProducer(HornetQServerTestCase.topic1);
 
-	      for (int j = 0; j < 100; j++)
-	      {
-	         Message m = sess.createMessage();
+         for (int j = 0; j < 100; j++)
+         {
+            Message m = sess.createMessage();
 
-	         m.setStringProperty("beatle", "john");
+            m.setStringProperty("beatle", "john");
 
-	         prod.send(m);
+            prod.send(m);
 
-	         m = sess.createMessage();
+            m = sess.createMessage();
 
-	         m.setStringProperty("beatle", "kermit the frog");
+            m.setStringProperty("beatle", "kermit the frog");
 
-	         prod.send(m);
-	      }
+            prod.send(m);
+         }
 
-	      for (int j = 0; j < 100; j++)
-	      {
-	         Message m = cons1.receive(1000);
+         for (int j = 0; j < 100; j++)
+         {
+            Message m = cons1.receive(1000);
 
-	         assertNotNull(m);
-	      }
+            ProxyAssertSupport.assertNotNull(m);
+         }
 
-	      Thread.sleep(500);
+         Thread.sleep(500);
 
-	      Message m = cons1.receiveNoWait();
+         Message m = cons1.receiveNoWait();
 
-	      assertNull(m);
+         ProxyAssertSupport.assertNull(m);
       }
       finally
       {
-      	if (conn != null)
-      	{
-      		conn.close();
-      	}
+         if (conn != null)
+         {
+            conn.close();
+         }
       }
    }
 
@@ -166,66 +167,66 @@ public class SelectorTest extends HornetQServerTestCase
 
       try
       {
-	      conn = getConnectionFactory().createConnection();
-	      conn.start();
+         conn = getConnectionFactory().createConnection();
+         conn.start();
 
-	      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-	      MessageConsumer cons1 = sess.createConsumer(queue1, selector1);
+         MessageConsumer cons1 = sess.createConsumer(HornetQServerTestCase.queue1, selector1);
 
-	      MessageProducer prod = sess.createProducer(queue1);
+         MessageProducer prod = sess.createProducer(HornetQServerTestCase.queue1);
 
-	      for (int j = 0; j < 100; j++)
-	      {
-	         Message m = sess.createMessage();
+         for (int j = 0; j < 100; j++)
+         {
+            Message m = sess.createMessage();
 
-	         m.setStringProperty("beatle", "john");
+            m.setStringProperty("beatle", "john");
 
-	         prod.send(m);
+            prod.send(m);
 
-	         m = sess.createMessage();
+            m = sess.createMessage();
 
-	         m.setStringProperty("beatle", "kermit the frog");
+            m.setStringProperty("beatle", "kermit the frog");
 
-	         prod.send(m);
-	      }
+            prod.send(m);
+         }
 
-	      for (int j = 0; j < 100; j++)
-	      {
-	         Message m = cons1.receive(1000);
+         for (int j = 0; j < 100; j++)
+         {
+            Message m = cons1.receive(1000);
 
-	         assertNotNull(m);
+            ProxyAssertSupport.assertNotNull(m);
 
-	         assertEquals("john", m.getStringProperty("beatle"));
-	      }
+            ProxyAssertSupport.assertEquals("john", m.getStringProperty("beatle"));
+         }
 
-	      Message m = cons1.receiveNoWait();
+         Message m = cons1.receiveNoWait();
 
-	      assertNull(m);
+         ProxyAssertSupport.assertNull(m);
 
-	      String selector2 = "beatle = 'kermit the frog'";
+         String selector2 = "beatle = 'kermit the frog'";
 
-	      MessageConsumer cons2 = sess.createConsumer(queue1, selector2);
+         MessageConsumer cons2 = sess.createConsumer(HornetQServerTestCase.queue1, selector2);
 
-	      for (int j = 0; j < 100; j++)
-	      {
-	         m = cons2.receive(1000);
+         for (int j = 0; j < 100; j++)
+         {
+            m = cons2.receive(1000);
 
-	         assertNotNull(m);
+            ProxyAssertSupport.assertNotNull(m);
 
-	         assertEquals("kermit the frog", m.getStringProperty("beatle"));
-	      }
+            ProxyAssertSupport.assertEquals("kermit the frog", m.getStringProperty("beatle"));
+         }
 
-	      m = cons2.receiveNoWait();
+         m = cons2.receiveNoWait();
 
-	      assertNull(m);
+         ProxyAssertSupport.assertNull(m);
       }
       finally
       {
-      	if (conn != null)
-      	{
-      		conn.close();
-      	}
+         if (conn != null)
+         {
+            conn.close();
+         }
       }
 
    }
@@ -240,90 +241,90 @@ public class SelectorTest extends HornetQServerTestCase
 
       try
       {
-	      conn = getConnectionFactory().createConnection();
-	      conn.start();
+         conn = getConnectionFactory().createConnection();
+         conn.start();
 
-	      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-	      int NUM_MESSAGES = 2;
+         int NUM_MESSAGES = 2;
 
-	      MessageProducer prod = sess.createProducer(queue1);
+         MessageProducer prod = sess.createProducer(HornetQServerTestCase.queue1);
 
-	      for (int j = 0; j < NUM_MESSAGES; j++)
-	      {
-	         Message m = sess.createMessage();
+         for (int j = 0; j < NUM_MESSAGES; j++)
+         {
+            Message m = sess.createMessage();
 
-	         m.setStringProperty("beatle", "john");
+            m.setStringProperty("beatle", "john");
 
-	         prod.setTimeToLive(0);
+            prod.setTimeToLive(0);
 
-	         prod.send(m);
+            prod.send(m);
 
-	         m = sess.createMessage();
+            m = sess.createMessage();
 
-	         m.setStringProperty("beatle", "john");
+            m.setStringProperty("beatle", "john");
 
-	         prod.setTimeToLive(1);
+            prod.setTimeToLive(1);
 
-	         prod.send(m);
+            prod.send(m);
 
-	         m = sess.createMessage();
+            m = sess.createMessage();
 
-	         m.setStringProperty("beatle", "kermit the frog");
+            m.setStringProperty("beatle", "kermit the frog");
 
-	         prod.setTimeToLive(0);
+            prod.setTimeToLive(0);
 
-	         prod.send(m);
+            prod.send(m);
 
-	         m = sess.createMessage();
+            m = sess.createMessage();
 
-	         m.setStringProperty("beatle", "kermit the frog");
+            m.setStringProperty("beatle", "kermit the frog");
 
-	         m.setJMSExpiration(System.currentTimeMillis());
+            m.setJMSExpiration(System.currentTimeMillis());
 
-	         prod.setTimeToLive(1);
+            prod.setTimeToLive(1);
 
-	         prod.send(m);
-	      }
+            prod.send(m);
+         }
 
-	      MessageConsumer cons1 = sess.createConsumer(queue1, selector1);
+         MessageConsumer cons1 = sess.createConsumer(HornetQServerTestCase.queue1, selector1);
 
-	      for (int j = 0; j < NUM_MESSAGES; j++)
-	      {
-	         Message m = cons1.receive(1000);
+         for (int j = 0; j < NUM_MESSAGES; j++)
+         {
+            Message m = cons1.receive(1000);
 
-	         assertNotNull(m);
+            ProxyAssertSupport.assertNotNull(m);
 
-	         assertEquals("john", m.getStringProperty("beatle"));
-	      }
+            ProxyAssertSupport.assertEquals("john", m.getStringProperty("beatle"));
+         }
 
-	      Message m = cons1.receiveNoWait();
+         Message m = cons1.receiveNoWait();
 
-	      assertNull(m);
+         ProxyAssertSupport.assertNull(m);
 
-	      String selector2 = "beatle = 'kermit the frog'";
+         String selector2 = "beatle = 'kermit the frog'";
 
-	      MessageConsumer cons2 = sess.createConsumer(queue1, selector2);
+         MessageConsumer cons2 = sess.createConsumer(HornetQServerTestCase.queue1, selector2);
 
-	      for (int j = 0; j < NUM_MESSAGES; j++)
-	      {
-	         m = cons2.receive(1000);
+         for (int j = 0; j < NUM_MESSAGES; j++)
+         {
+            m = cons2.receive(1000);
 
-	         assertNotNull(m);
+            ProxyAssertSupport.assertNotNull(m);
 
-	         assertEquals("kermit the frog", m.getStringProperty("beatle"));
-	      }
+            ProxyAssertSupport.assertEquals("kermit the frog", m.getStringProperty("beatle"));
+         }
 
-	      m = cons1.receiveNoWait();
+         m = cons1.receiveNoWait();
 
-	      assertNull(m);
+         ProxyAssertSupport.assertNull(m);
       }
       finally
       {
-      	if (conn != null)
-      	{
-      		conn.close();
-      	}
+         if (conn != null)
+         {
+            conn.close();
+         }
       }
    }
 
@@ -335,52 +336,52 @@ public class SelectorTest extends HornetQServerTestCase
 
       try
       {
-	      conn = getConnectionFactory().createConnection();
-	      conn.start();
+         conn = getConnectionFactory().createConnection();
+         conn.start();
 
-	      for (int i = 0; i < 5; i++)
-	      {
-	         Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         for (int i = 0; i < 5; i++)
+         {
+            Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-	         MessageConsumer cons1 = sess.createConsumer(topic1, selector1);
+            MessageConsumer cons1 = sess.createConsumer(HornetQServerTestCase.topic1, selector1);
 
-	         MessageProducer prod = sess.createProducer(topic1);
+            MessageProducer prod = sess.createProducer(HornetQServerTestCase.topic1);
 
-	         for (int j = 0; j < 10; j++)
-	         {
-	            Message m = sess.createMessage();
+            for (int j = 0; j < 10; j++)
+            {
+               Message m = sess.createMessage();
 
-	            m.setStringProperty("beatle", "john");
+               m.setStringProperty("beatle", "john");
 
-	            prod.send(m);
+               prod.send(m);
 
-	            m = sess.createMessage();
+               m = sess.createMessage();
 
-	            m.setStringProperty("beatle", "kermit the frog");
+               m.setStringProperty("beatle", "kermit the frog");
 
-	            prod.send(m);
-	         }
+               prod.send(m);
+            }
 
-	         for (int j = 0; j < 10; j++)
-	         {
-	            Message m = cons1.receive(1000);
+            for (int j = 0; j < 10; j++)
+            {
+               Message m = cons1.receive(1000);
 
-	            assertNotNull(m);
-	         }
+               ProxyAssertSupport.assertNotNull(m);
+            }
 
-	         Message m = cons1.receiveNoWait();
+            Message m = cons1.receiveNoWait();
 
-	         assertNull(m);
+            ProxyAssertSupport.assertNull(m);
 
-	         sess.close();
-	      }
+            sess.close();
+         }
       }
       finally
       {
-      	if (conn != null)
-      	{
-      		conn.close();
-      	}
+         if (conn != null)
+         {
+            conn.close();
+         }
       }
    }
 
@@ -394,53 +395,53 @@ public class SelectorTest extends HornetQServerTestCase
       {
          conn = getConnectionFactory().createConnection();
 
-	      conn.start();
+         conn.start();
 
-	      for (int i = 0; i < 5; i++)
-	      {
-	         Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         for (int i = 0; i < 5; i++)
+         {
+            Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-	         MessageConsumer cons1 = sess.createConsumer(queue1, selector1);
+            MessageConsumer cons1 = sess.createConsumer(HornetQServerTestCase.queue1, selector1);
 
-	         MessageProducer prod = sess.createProducer(queue1);
+            MessageProducer prod = sess.createProducer(HornetQServerTestCase.queue1);
 
-	         for (int j = 0; j < 10; j++)
-	         {
-	            TextMessage m = sess.createTextMessage("message-a-" + j);
+            for (int j = 0; j < 10; j++)
+            {
+               TextMessage m = sess.createTextMessage("message-a-" + j);
 
-	            m.setStringProperty("beatle", "john");
+               m.setStringProperty("beatle", "john");
 
-	            prod.send(m);
+               prod.send(m);
 
-	            m = sess.createTextMessage("messag-b-" + j);
+               m = sess.createTextMessage("messag-b-" + j);
 
-	            m.setStringProperty("beatle", "kermit the frog");
+               m.setStringProperty("beatle", "kermit the frog");
 
-	            prod.send(m);
-	         }
+               prod.send(m);
+            }
 
-	         for (int j = 0; j < 10; j++)
-	         {
-	            Message m = cons1.receive(1000);
-	            
-	            assertNotNull(m);
-	         }
+            for (int j = 0; j < 10; j++)
+            {
+               Message m = cons1.receive(1000);
 
-	         Message m = cons1.receiveNoWait();
+               ProxyAssertSupport.assertNotNull(m);
+            }
 
-	         assertNull(m);
+            Message m = cons1.receiveNoWait();
 
-	         sess.close();
-	      }
+            ProxyAssertSupport.assertNull(m);
+
+            sess.close();
+         }
       }
       finally
       {
-      	if (conn != null)
-      	{
-      		conn.close();
-      	}
+         if (conn != null)
+         {
+            conn.close();
+         }
 
-      	removeAllMessages(queue1.getQueueName(), true);
+         removeAllMessages(HornetQServerTestCase.queue1.getQueueName(), true);
       }
    }
 
@@ -456,75 +457,75 @@ public class SelectorTest extends HornetQServerTestCase
 
       try
       {
-	      conn = getConnectionFactory().createConnection();
-	      conn.start();
-	      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-	      MessageConsumer cons1 = sess.createConsumer(topic1, selector1);
-	      MessageConsumer cons2 = sess.createConsumer(topic1, selector2);
-	      MessageConsumer cons3 = sess.createConsumer(topic1, selector3);
-	      MessageConsumer cons4 = sess.createConsumer(topic1, selector4);
-	      MessageConsumer cons5 = sess.createConsumer(topic1, selector5);
+         conn = getConnectionFactory().createConnection();
+         conn.start();
+         Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageConsumer cons1 = sess.createConsumer(HornetQServerTestCase.topic1, selector1);
+         MessageConsumer cons2 = sess.createConsumer(HornetQServerTestCase.topic1, selector2);
+         MessageConsumer cons3 = sess.createConsumer(HornetQServerTestCase.topic1, selector3);
+         MessageConsumer cons4 = sess.createConsumer(HornetQServerTestCase.topic1, selector4);
+         MessageConsumer cons5 = sess.createConsumer(HornetQServerTestCase.topic1, selector5);
 
-	      Message m1 = sess.createMessage();
-	      m1.setStringProperty("beatle", "john");
+         Message m1 = sess.createMessage();
+         m1.setStringProperty("beatle", "john");
 
-	      Message m2 = sess.createMessage();
-	      m2.setStringProperty("beatle", "paul");
+         Message m2 = sess.createMessage();
+         m2.setStringProperty("beatle", "paul");
 
-	      Message m3 = sess.createMessage();
-	      m3.setStringProperty("beatle", "george");
+         Message m3 = sess.createMessage();
+         m3.setStringProperty("beatle", "george");
 
-	      Message m4 = sess.createMessage();
-	      m4.setStringProperty("beatle", "ringo");
+         Message m4 = sess.createMessage();
+         m4.setStringProperty("beatle", "ringo");
 
-	      Message m5 = sess.createMessage();
-	      m5.setStringProperty("beatle", "jesus");
+         Message m5 = sess.createMessage();
+         m5.setStringProperty("beatle", "jesus");
 
-	      MessageProducer prod = sess.createProducer(topic1);
+         MessageProducer prod = sess.createProducer(HornetQServerTestCase.topic1);
 
-	      prod.send(m1);
-	      prod.send(m2);
-	      prod.send(m3);
-	      prod.send(m4);
-	      prod.send(m5);
+         prod.send(m1);
+         prod.send(m2);
+         prod.send(m3);
+         prod.send(m4);
+         prod.send(m5);
 
-	      Message r1 = cons1.receive(500);
-	      assertNotNull(r1);
-	      Message n = cons1.receive(500);
-	      assertNull(n);
+         Message r1 = cons1.receive(500);
+         ProxyAssertSupport.assertNotNull(r1);
+         Message n = cons1.receive(500);
+         ProxyAssertSupport.assertNull(n);
 
-	      Message r2 = cons2.receive(500);
-	      assertNotNull(r2);
-	      n = cons2.receive(500);
-	      assertNull(n);
+         Message r2 = cons2.receive(500);
+         ProxyAssertSupport.assertNotNull(r2);
+         n = cons2.receive(500);
+         ProxyAssertSupport.assertNull(n);
 
-	      Message r3 = cons3.receive(500);
-	      assertNotNull(r3);
-	      n = cons3.receive(500);
-	      assertNull(n);
+         Message r3 = cons3.receive(500);
+         ProxyAssertSupport.assertNotNull(r3);
+         n = cons3.receive(500);
+         ProxyAssertSupport.assertNull(n);
 
-	      Message r4 = cons4.receive(500);
-	      assertNotNull(r4);
-	      n = cons4.receive(500);
-	      assertNull(n);
+         Message r4 = cons4.receive(500);
+         ProxyAssertSupport.assertNotNull(r4);
+         n = cons4.receive(500);
+         ProxyAssertSupport.assertNull(n);
 
-	      Message r5 = cons5.receive(500);
-	      assertNotNull(r5);
-	      n = cons5.receive(500);
-	      assertNull(n);
+         Message r5 = cons5.receive(500);
+         ProxyAssertSupport.assertNotNull(r5);
+         n = cons5.receive(500);
+         ProxyAssertSupport.assertNull(n);
 
-	      assertEquals("john", r1.getStringProperty("beatle"));
-	      assertEquals("paul", r2.getStringProperty("beatle"));
-	      assertEquals("george", r3.getStringProperty("beatle"));
-	      assertEquals("ringo", r4.getStringProperty("beatle"));
-	      assertEquals("jesus", r5.getStringProperty("beatle"));
+         ProxyAssertSupport.assertEquals("john", r1.getStringProperty("beatle"));
+         ProxyAssertSupport.assertEquals("paul", r2.getStringProperty("beatle"));
+         ProxyAssertSupport.assertEquals("george", r3.getStringProperty("beatle"));
+         ProxyAssertSupport.assertEquals("ringo", r4.getStringProperty("beatle"));
+         ProxyAssertSupport.assertEquals("jesus", r5.getStringProperty("beatle"));
       }
       finally
       {
-      	if (conn != null)
-      	{
-      		conn.close();
-      	}
+         if (conn != null)
+         {
+            conn.close();
+         }
       }
    }
 
@@ -534,109 +535,109 @@ public class SelectorTest extends HornetQServerTestCase
 
       try
       {
-	      conn = getConnectionFactory().createConnection();
-	      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-	      MessageProducer p = sess.createProducer(queue1);
+         conn = getConnectionFactory().createConnection();
+         Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageProducer p = sess.createProducer(HornetQServerTestCase.queue1);
 
-	      Session cs = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-	      final MessageConsumer c = cs.createConsumer(queue1, "weight = 1");
+         Session cs = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         final MessageConsumer c = cs.createConsumer(HornetQServerTestCase.queue1, "weight = 1");
 
-	      Session cs2 = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-	      final MessageConsumer c2 = cs2.createConsumer(queue1, "weight = 2");
+         Session cs2 = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         final MessageConsumer c2 = cs2.createConsumer(HornetQServerTestCase.queue1, "weight = 2");
 
-	      for(int i = 0; i < 10; i++)
-	      {
-	         Message m = sess.createTextMessage("message" + i);
-	         m.setIntProperty("weight", i % 2 + 1);
-	         p.send(m);
-	      }
+         for (int i = 0; i < 10; i++)
+         {
+            Message m = sess.createTextMessage("message" + i);
+            m.setIntProperty("weight", i % 2 + 1);
+            p.send(m);
+         }
 
-	      conn.start();
+         conn.start();
 
-	      final List received = new ArrayList();
-	      final List received2 = new ArrayList();
-	      final CountDownLatch latch = new CountDownLatch(1);
-	      final CountDownLatch latch2 = new CountDownLatch(1);
+         final List received = new ArrayList();
+         final List received2 = new ArrayList();
+         final CountDownLatch latch = new CountDownLatch(1);
+         final CountDownLatch latch2 = new CountDownLatch(1);
 
-	      new Thread(new Runnable()
-	      {
-	         public void run()
-	         {
-	            try
-	            {
-	               while(true)
-	               {
-	                  Message m = c.receive(1000);
-	                  if (m != null)
-	                  {
-	                     received.add(m);
-	                  }
-	                  else
-	                  {
-	                     latch.countDown();
-	                     return;
-	                  }
-	               }
-	            }
-	            catch(Exception e)
-	            {
-	               log.error("receive failed", e);
-	            }
-	         }
-	      }, "consumer thread 1").start();
+         new Thread(new Runnable()
+         {
+            public void run()
+            {
+               try
+               {
+                  while (true)
+                  {
+                     Message m = c.receive(1000);
+                     if (m != null)
+                     {
+                        received.add(m);
+                     }
+                     else
+                     {
+                        latch.countDown();
+                        return;
+                     }
+                  }
+               }
+               catch (Exception e)
+               {
+                  log.error("receive failed", e);
+               }
+            }
+         }, "consumer thread 1").start();
 
-	      new Thread(new Runnable()
-	      {
-	         public void run()
-	         {
-	            try
-	            {
-	               while(true)
-	               {
-	                  Message m = c2.receive(1000);
-	                  if (m != null)
-	                  {
-	                     received2.add(m);
-	                  }
-	                  else
-	                  {
-	                     latch2.countDown();
-	                     return;
-	                  }
-	               }
-	            }
-	            catch(Exception e)
-	            {
-	               log.error("receive failed", e);
-	            }
-	         }
-	      }, "consumer thread 2").start();
+         new Thread(new Runnable()
+         {
+            public void run()
+            {
+               try
+               {
+                  while (true)
+                  {
+                     Message m = c2.receive(1000);
+                     if (m != null)
+                     {
+                        received2.add(m);
+                     }
+                     else
+                     {
+                        latch2.countDown();
+                        return;
+                     }
+                  }
+               }
+               catch (Exception e)
+               {
+                  log.error("receive failed", e);
+               }
+            }
+         }, "consumer thread 2").start();
 
-	      latch.await();
-	      latch2.await();
+         latch.await();
+         latch2.await();
 
-	      assertEquals(5, received.size());
-	      for(Iterator i = received.iterator(); i.hasNext(); )
-	      {
-	         Message m = (Message)i.next();
-	         int value = m.getIntProperty("weight");
-	         assertEquals(value, 1);
-	      }
+         ProxyAssertSupport.assertEquals(5, received.size());
+         for (Iterator i = received.iterator(); i.hasNext();)
+         {
+            Message m = (Message)i.next();
+            int value = m.getIntProperty("weight");
+            ProxyAssertSupport.assertEquals(value, 1);
+         }
 
-	      assertEquals(5, received2.size());
-	      for(Iterator i = received2.iterator(); i.hasNext(); )
-	      {
-	         Message m = (Message)i.next();
-	         int value = m.getIntProperty("weight");
-	         assertEquals(value, 2);
-	      }
+         ProxyAssertSupport.assertEquals(5, received2.size());
+         for (Iterator i = received2.iterator(); i.hasNext();)
+         {
+            Message m = (Message)i.next();
+            int value = m.getIntProperty("weight");
+            ProxyAssertSupport.assertEquals(value, 2);
+         }
       }
       finally
       {
-      	if (conn != null)
-      	{
-      		conn.close();
-      	}
+         if (conn != null)
+         {
+            conn.close();
+         }
       }
    }
 
@@ -646,49 +647,49 @@ public class SelectorTest extends HornetQServerTestCase
 
       try
       {
-	      conn = getConnectionFactory().createConnection();
-	      conn.start();
+         conn = getConnectionFactory().createConnection();
+         conn.start();
 
-	      Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-	      MessageProducer prodNonPersistent = session.createProducer(queue1);
-	      prodNonPersistent.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+         Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageProducer prodNonPersistent = session.createProducer(HornetQServerTestCase.queue1);
+         prodNonPersistent.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
 
-         MessageProducer prodPersistent = session.createProducer(queue1);
+         MessageProducer prodPersistent = session.createProducer(HornetQServerTestCase.queue1);
          prodPersistent.setDeliveryMode(DeliveryMode.PERSISTENT);
 
-	      String selector = "JMSDeliveryMode = 'PERSISTENT'";
-	      MessageConsumer persistentConsumer = session.createConsumer(queue1, selector);
-	      conn.start();
+         String selector = "JMSDeliveryMode = 'PERSISTENT'";
+         MessageConsumer persistentConsumer = session.createConsumer(HornetQServerTestCase.queue1, selector);
+         conn.start();
 
-	      TextMessage msg = session.createTextMessage("NonPersistent");
+         TextMessage msg = session.createTextMessage("NonPersistent");
          prodNonPersistent.send(msg);
 
          msg = session.createTextMessage("Persistent");
          prodPersistent.send(msg);
 
          msg = (TextMessage)persistentConsumer.receive(2000);
-         assertNotNull(msg);
-         assertEquals(DeliveryMode.PERSISTENT, msg.getJMSDeliveryMode());
-         assertEquals("Persistent", msg.getText());
+         ProxyAssertSupport.assertNotNull(msg);
+         ProxyAssertSupport.assertEquals(DeliveryMode.PERSISTENT, msg.getJMSDeliveryMode());
+         ProxyAssertSupport.assertEquals("Persistent", msg.getText());
 
-         assertNull(persistentConsumer.receive(1000));
+         ProxyAssertSupport.assertNull(persistentConsumer.receive(1000));
 
          persistentConsumer.close();
 
-         MessageConsumer genericConsumer = session.createConsumer(queue1);
+         MessageConsumer genericConsumer = session.createConsumer(HornetQServerTestCase.queue1);
          msg = (TextMessage)genericConsumer.receive(1000);
 
-         assertNotNull(msg);
+         ProxyAssertSupport.assertNotNull(msg);
 
-         assertEquals("NonPersistent", msg.getText());
-         assertEquals(DeliveryMode.NON_PERSISTENT, msg.getJMSDeliveryMode());
+         ProxyAssertSupport.assertEquals("NonPersistent", msg.getText());
+         ProxyAssertSupport.assertEquals(DeliveryMode.NON_PERSISTENT, msg.getJMSDeliveryMode());
       }
       finally
       {
-      	if (conn != null)
-      	{
-      		conn.close();
-      	}
+         if (conn != null)
+         {
+            conn.close();
+         }
       }
    }
 

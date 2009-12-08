@@ -34,7 +34,7 @@ import org.hornetq.utils.SimpleString;
 public interface PagingStore extends HornetQComponent
 {
    SimpleString getAddress();
-   
+
    int getNumberOfPages();
 
    SimpleString getStoreName();
@@ -50,9 +50,9 @@ public interface PagingStore extends HornetQComponent
    void sync() throws Exception;
 
    boolean page(ServerMessage message, long transactionId, boolean duplicateDetection) throws Exception;
-   
+
    boolean page(ServerMessage message, boolean duplicateDetection) throws Exception;
-   
+
    Page createPage(final int page) throws Exception;
 
    /**
@@ -62,12 +62,12 @@ public interface PagingStore extends HornetQComponent
    boolean startDepaging();
 
    void addSize(ServerMessage message, boolean add);
-   
+
    void addSize(MessageReference reference, boolean add);
-   
+
    int getAvailableProducerCredits(int desired);
-   
+
    void returnProducerCredits(int credits);
-   
+
    ServerProducerCreditManager getProducerCreditManager();
 }

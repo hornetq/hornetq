@@ -35,14 +35,14 @@ public class SessionDeleteQueueMessage extends PacketImpl
 
    public SessionDeleteQueueMessage(final SimpleString queueName)
    {
-      super(DELETE_QUEUE);
+      super(PacketImpl.DELETE_QUEUE);
 
       this.queueName = queueName;
    }
 
    public SessionDeleteQueueMessage()
    {
-      super(DELETE_QUEUE);
+      super(PacketImpl.DELETE_QUEUE);
    }
 
    // Public --------------------------------------------------------
@@ -61,17 +61,20 @@ public class SessionDeleteQueueMessage extends PacketImpl
       return queueName;
    }
 
+   @Override
    public void encodeRest(final HornetQBuffer buffer)
    {
       buffer.writeSimpleString(queueName);
    }
 
+   @Override
    public void decodeRest(final HornetQBuffer buffer)
    {
       queueName = buffer.readSimpleString();
    }
 
-   public boolean equals(Object other)
+   @Override
+   public boolean equals(final Object other)
    {
       if (other instanceof SessionDeleteQueueMessage == false)
       {
@@ -80,7 +83,7 @@ public class SessionDeleteQueueMessage extends PacketImpl
 
       SessionDeleteQueueMessage r = (SessionDeleteQueueMessage)other;
 
-      return super.equals(other) && r.queueName.equals(this.queueName);
+      return super.equals(other) && r.queueName.equals(queueName);
    }
 
    // Package protected ---------------------------------------------

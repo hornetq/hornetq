@@ -41,14 +41,14 @@ public class HornetQSecurityManagerImpl implements HornetQSecurityManager
    /**
     * the current valid users
     */
-   private Map<String, User> users = new HashMap<String, User>();
+   private final Map<String, User> users = new HashMap<String, User>();
 
    private String defaultUser = null;
 
    /**
     * the roles for the users
     */
-   private Map<String, List<String>> roles = new HashMap<String, List<String>>();
+   private final Map<String, List<String>> roles = new HashMap<String, List<String>>();
 
    // HornetQComponent implementation ------------------------------------------
 
@@ -82,7 +82,7 @@ public class HornetQSecurityManagerImpl implements HornetQSecurityManager
       User theUser = users.get(user == null ? defaultUser : user);
 
       boolean ok = theUser != null && theUser.isValid(user == null ? defaultUser : user, password == null ? defaultUser
-                                                                                                   : password);
+                                                                                                         : password);
       return ok;
    }
 
@@ -90,16 +90,16 @@ public class HornetQSecurityManagerImpl implements HornetQSecurityManager
                                       final String password,
                                       final Set<Role> roles,
                                       final CheckType checkType)
-   {      
+   {
       if (validateUser(user, password))
       {
          List<String> availableRoles = this.roles.get(user == null ? defaultUser : user);
-         
+
          if (availableRoles == null)
-         {         
+         {
             return false;
          }
-         
+
          for (String availableRole : availableRoles)
          {
             if (roles != null)
@@ -107,7 +107,7 @@ public class HornetQSecurityManagerImpl implements HornetQSecurityManager
                for (Role role : roles)
                {
                   if (role.getName().equals(availableRole) && checkType.hasRole(role))
-                  {                    
+                  {
                      return true;
                   }
                }
@@ -158,7 +158,7 @@ public class HornetQSecurityManagerImpl implements HornetQSecurityManager
    /*
    * set the default user for null users
    */
-   public void setDefaultUser(String username)
+   public void setDefaultUser(final String username)
    {
       defaultUser = username;
    }
@@ -175,21 +175,29 @@ public class HornetQSecurityManagerImpl implements HornetQSecurityManager
          this.password = password;
       }
 
-      public boolean equals(Object o)
+      @Override
+      public boolean equals(final Object o)
       {
          if (this == o)
+         {
             return true;
+         }
          if (o == null || getClass() != o.getClass())
+         {
             return false;
+         }
 
          User user1 = (User)o;
 
          if (!user.equals(user1.user))
+         {
             return false;
+         }
 
          return true;
       }
 
+      @Override
       public int hashCode()
       {
          return user.hashCode();

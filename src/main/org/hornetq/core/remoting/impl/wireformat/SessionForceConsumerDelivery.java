@@ -14,7 +14,6 @@
 package org.hornetq.core.remoting.impl.wireformat;
 
 import org.hornetq.core.buffers.HornetQBuffer;
-import org.hornetq.utils.DataConstants;
 
 /**
  * 
@@ -30,6 +29,7 @@ public class SessionForceConsumerDelivery extends PacketImpl
    // Attributes ----------------------------------------------------
 
    private long consumerID;
+
    private long sequence;
 
    // Static --------------------------------------------------------
@@ -38,7 +38,7 @@ public class SessionForceConsumerDelivery extends PacketImpl
 
    public SessionForceConsumerDelivery(final long consumerID, final long sequence)
    {
-      super(SESS_FORCE_CONSUMER_DELIVERY);
+      super(PacketImpl.SESS_FORCE_CONSUMER_DELIVERY);
 
       this.consumerID = consumerID;
       this.sequence = sequence;
@@ -46,7 +46,7 @@ public class SessionForceConsumerDelivery extends PacketImpl
 
    public SessionForceConsumerDelivery()
    {
-      super(SESS_FORCE_CONSUMER_DELIVERY);
+      super(PacketImpl.SESS_FORCE_CONSUMER_DELIVERY);
    }
 
    // Public --------------------------------------------------------
@@ -55,18 +55,20 @@ public class SessionForceConsumerDelivery extends PacketImpl
    {
       return consumerID;
    }
-   
+
    public long getSequence()
    {
       return sequence;
    }
 
+   @Override
    public void encodeRest(final HornetQBuffer buffer)
    {
       buffer.writeLong(consumerID);
       buffer.writeLong(sequence);
    }
 
+   @Override
    public void decodeRest(final HornetQBuffer buffer)
    {
       consumerID = buffer.readLong();
@@ -83,7 +85,8 @@ public class SessionForceConsumerDelivery extends PacketImpl
       return buf.toString();
    }
 
-   public boolean equals(Object other)
+   @Override
+   public boolean equals(final Object other)
    {
       if (other instanceof SessionForceConsumerDelivery == false)
       {
@@ -92,7 +95,7 @@ public class SessionForceConsumerDelivery extends PacketImpl
 
       SessionForceConsumerDelivery r = (SessionForceConsumerDelivery)other;
 
-      return super.equals(other) && this.consumerID == r.consumerID && this.sequence == r.sequence;
+      return super.equals(other) && consumerID == r.consumerID && sequence == r.sequence;
    }
 
    // Package protected ---------------------------------------------

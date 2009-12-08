@@ -35,11 +35,12 @@ import org.hornetq.common.example.HornetQExample;
  */
 public class LastValueQueueExample extends HornetQExample
 {
-   public static void main(String[] args)
+   public static void main(final String[] args)
    {
       new LastValueQueueExample().run(args);
    }
 
+   @Override
    public boolean runExample() throws Exception
    {
       Connection connection = null;
@@ -106,7 +107,7 @@ public class LastValueQueueExample extends HornetQExample
          System.out.format("Received message: %s\n", messageReceived);
 
          initialContext.close();
-         
+
          return true;
       }
       finally

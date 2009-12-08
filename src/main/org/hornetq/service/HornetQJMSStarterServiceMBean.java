@@ -1,6 +1,5 @@
 package org.hornetq.service;
 
-
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  */

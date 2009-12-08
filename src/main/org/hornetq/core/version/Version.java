@@ -9,7 +9,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
  * implied.  See the License for the specific language governing
  * permissions and limitations under the License.
- */ 
+ */
 
 package org.hornetq.core.version;
 
@@ -22,19 +22,19 @@ package org.hornetq.core.version;
  */
 public interface Version
 {
-	String getFullVersion();
-	
-	String getVersionName();
-	
-	int getMajorVersion();
-	
-	int getMinorVersion();
-	
-	int getMicroVersion();
-	
-	String getVersionSuffix();
-	
-	int getIncrementingVersion();
+   String getFullVersion();
+
+   String getVersionName();
+
+   int getMajorVersion();
+
+   int getMinorVersion();
+
+   int getMicroVersion();
+
+   String getVersionSuffix();
+
+   int getIncrementingVersion();
 
    String getNettyVersion();
 }

@@ -9,7 +9,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
  * implied.  See the License for the specific language governing
  * permissions and limitations under the License.
- */ 
+ */
 
 package org.hornetq.core.transaction;
 
@@ -19,7 +19,6 @@ import java.util.Map;
 import javax.transaction.xa.Xid;
 
 import org.hornetq.core.server.HornetQComponent;
-
 
 /**
  * 
@@ -31,13 +30,13 @@ import org.hornetq.core.server.HornetQComponent;
 public interface ResourceManager extends HornetQComponent
 {
    boolean putTransaction(Xid xid, Transaction tx);
-   
+
    Transaction getTransaction(Xid xid);
-   
+
    Transaction removeTransaction(Xid xid);
-   
+
    int getTimeoutSeconds();
-   
+
    boolean setTimeoutSeconds(int timeoutSeconds);
 
    List<Xid> getPreparedTransactions();

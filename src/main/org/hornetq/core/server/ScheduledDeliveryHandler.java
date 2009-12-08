@@ -28,6 +28,6 @@ public interface ScheduledDeliveryHandler
    List<MessageReference> getScheduledReferences();
 
    List<MessageReference> cancel();
-   
+
    MessageReference removeReferenceWithID(long id);
 }

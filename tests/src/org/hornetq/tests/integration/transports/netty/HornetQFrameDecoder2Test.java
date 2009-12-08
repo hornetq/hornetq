@@ -17,6 +17,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import junit.framework.Assert;
+
 import org.hornetq.integration.transports.netty.HornetQFrameDecoder2;
 import org.hornetq.tests.util.UnitTestCase;
 import org.jboss.netty.buffer.ChannelBuffer;
@@ -33,80 +35,85 @@ import org.jboss.netty.handler.codec.embedder.DecoderEmbedder;
 public class HornetQFrameDecoder2Test extends UnitTestCase
 {
    private static final int MSG_CNT = 10000;
+
    private static final int MSG_LEN = 1000;
+
    private static final int FRAGMENT_MAX_LEN = 1500;
-   
+
    private static final Random rand = new Random();
 
    public void testOrdinaryFragmentation() throws Exception
    {
-      final DecoderEmbedder<ChannelBuffer> decoder =
-         new DecoderEmbedder<ChannelBuffer>(new HornetQFrameDecoder2());
+      final DecoderEmbedder<ChannelBuffer> decoder = new DecoderEmbedder<ChannelBuffer>(new HornetQFrameDecoder2());
 
-      ChannelBuffer src = ChannelBuffers.buffer(MSG_CNT * (MSG_LEN + 4));
-      while (src.writerIndex() < src.capacity()) {
-         src.writeInt(MSG_LEN);
-         byte[] data = new byte[MSG_LEN];
-         rand.nextBytes(data);
+      ChannelBuffer src = ChannelBuffers.buffer(HornetQFrameDecoder2Test.MSG_CNT * (HornetQFrameDecoder2Test.MSG_LEN + 4));
+      while (src.writerIndex() < src.capacity())
+      {
+         src.writeInt(HornetQFrameDecoder2Test.MSG_LEN);
+         byte[] data = new byte[HornetQFrameDecoder2Test.MSG_LEN];
+         HornetQFrameDecoder2Test.rand.nextBytes(data);
          src.writeBytes(data);
       }
 
       List<ChannelBuffer> packets = new ArrayList<ChannelBuffer>();
-      for (int i = 0; i < src.capacity();) {
-         int length = Math.min(rand.nextInt(FRAGMENT_MAX_LEN), src.capacity() - i);
+      for (int i = 0; i < src.capacity();)
+      {
+         int length = Math.min(HornetQFrameDecoder2Test.rand.nextInt(HornetQFrameDecoder2Test.FRAGMENT_MAX_LEN),
+                               src.capacity() - i);
          packets.add(src.copy(i, length));
          i += length;
       }
-      
+
       int cnt = 0;
-      for (int i = 0; i < packets.size(); i ++) {
+      for (int i = 0; i < packets.size(); i++)
+      {
          ChannelBuffer p = packets.get(i);
          decoder.offer(p.duplicate());
-         for (;;) {
+         for (;;)
+         {
             ChannelBuffer frame = decoder.poll();
-            if (frame == null) {
+            if (frame == null)
+            {
                break;
             }
-            assertTrue("Produced frame must be a dynamic buffer",
-                       frame instanceof DynamicChannelBuffer);
-            assertEquals(4, frame.readerIndex());
-            assertEquals(MSG_LEN, frame.readableBytes());
-            assertEquals(src.slice(cnt * (MSG_LEN + 4) + 4, MSG_LEN), frame);
-            cnt ++;
+            Assert.assertTrue("Produced frame must be a dynamic buffer", frame instanceof DynamicChannelBuffer);
+            Assert.assertEquals(4, frame.readerIndex());
+            Assert.assertEquals(HornetQFrameDecoder2Test.MSG_LEN, frame.readableBytes());
+            Assert.assertEquals(src.slice(cnt * (HornetQFrameDecoder2Test.MSG_LEN + 4) + 4,
+                                          HornetQFrameDecoder2Test.MSG_LEN), frame);
+            cnt++;
          }
       }
-      assertEquals(MSG_CNT, cnt);
+      Assert.assertEquals(HornetQFrameDecoder2Test.MSG_CNT, cnt);
    }
 
    public void testExtremeFragmentation() throws Exception
    {
-      final DecoderEmbedder<ChannelBuffer> decoder =
-         new DecoderEmbedder<ChannelBuffer>(new HornetQFrameDecoder2());
+      final DecoderEmbedder<ChannelBuffer> decoder = new DecoderEmbedder<ChannelBuffer>(new HornetQFrameDecoder2());
 
       decoder.offer(ChannelBuffers.wrappedBuffer(new byte[] { 0 }));
-      assertNull(decoder.poll());
+      Assert.assertNull(decoder.poll());
       decoder.offer(ChannelBuffers.wrappedBuffer(new byte[] { 0 }));
-      assertNull(decoder.poll());
+      Assert.assertNull(decoder.poll());
       decoder.offer(ChannelBuffers.wrappedBuffer(new byte[] { 0 }));
-      assertNull(decoder.poll());
+      Assert.assertNull(decoder.poll());
       decoder.offer(ChannelBuffers.wrappedBuffer(new byte[] { 4 }));
-      assertNull(decoder.poll());
+      Assert.assertNull(decoder.poll());
       decoder.offer(ChannelBuffers.wrappedBuffer(new byte[] { 5 }));
-      assertNull(decoder.poll());
+      Assert.assertNull(decoder.poll());
       decoder.offer(ChannelBuffers.wrappedBuffer(new byte[] { 6 }));
-      assertNull(decoder.poll());
+      Assert.assertNull(decoder.poll());
       decoder.offer(ChannelBuffers.wrappedBuffer(new byte[] { 7 }));
-      assertNull(decoder.poll());
+      Assert.assertNull(decoder.poll());
       decoder.offer(ChannelBuffers.wrappedBuffer(new byte[] { 8 }));
 
       ChannelBuffer frame = decoder.poll();
-      assertTrue("Produced frame must be a dynamic buffer",
-                 frame instanceof DynamicChannelBuffer);
-      assertEquals(4, frame.readerIndex());
-      assertEquals(4, frame.readableBytes());
-      assertEquals(5, frame.getByte(4));
-      assertEquals(6, frame.getByte(5));
-      assertEquals(7, frame.getByte(6));
-      assertEquals(8, frame.getByte(7));
+      Assert.assertTrue("Produced frame must be a dynamic buffer", frame instanceof DynamicChannelBuffer);
+      Assert.assertEquals(4, frame.readerIndex());
+      Assert.assertEquals(4, frame.readableBytes());
+      Assert.assertEquals(5, frame.getByte(4));
+      Assert.assertEquals(6, frame.getByte(5));
+      Assert.assertEquals(7, frame.getByte(6));
+      Assert.assertEquals(8, frame.getByte(7));
    }
 }

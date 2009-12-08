@@ -14,7 +14,6 @@ package org.hornetq.jms.example;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
-import javax.jms.JMSException;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Queue;
@@ -34,11 +33,12 @@ import org.hornetq.core.message.impl.MessageImpl;
  */
 public class TransactionFailoverExample extends HornetQExample
 {
-   public static void main(String[] args)
+   public static void main(final String[] args)
    {
       new TransactionFailoverExample().run(args);
    }
 
+   @Override
    public boolean runExample() throws Exception
    {
       final int numMessages = 10;
@@ -83,10 +83,10 @@ public class TransactionFailoverExample extends HornetQExample
          {
             System.err.println("transaction has been rolled back: " + e.getMessage());
          }
-         
+
          // Step 10. We resend all the messages
          sendMessages(session, producer, numMessages, false);
-         
+
          // Step 11. We commit the session succesfully: the messages will be all delivered to the activated backup
          // server
          session.commit();
@@ -96,19 +96,19 @@ public class TransactionFailoverExample extends HornetQExample
          for (int i = 0; i < numMessages; i++)
          {
             TextMessage message0 = (TextMessage)consumer.receive(5000);
-            
+
             if (message0 == null)
             {
                System.err.println("Example failed - message wasn't received");
-               
+
                return false;
             }
-            
+
             System.out.println("Got message: " + message0.getText());
          }
-         
+
          session.commit();
-         
+
          System.out.println("Other message on the server? " + consumer.receive(5000));
 
          return true;
@@ -129,42 +129,45 @@ public class TransactionFailoverExample extends HornetQExample
       }
    }
 
-   private void sendMessages(Session session, MessageProducer producer, int numMessages, boolean killServer) throws Exception
+   private void sendMessages(final Session session,
+                             final MessageProducer producer,
+                             final int numMessages,
+                             final boolean killServer) throws Exception
    {
       // We send half of messages
       for (int i = 0; i < numMessages / 2; i++)
       {
          TextMessage message = session.createTextMessage("This is text message " + i);
-         
-         //We set the duplicate detection header - so the server will ignore the same message
-         //if sent again after failover
-         
+
+         // We set the duplicate detection header - so the server will ignore the same message
+         // if sent again after failover
+
          message.setStringProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID.toString(), "uniqueid" + i);
-         
+
          producer.send(message);
-         
+
          System.out.println("Sent message: " + message.getText());
       }
-      
+
       if (killServer)
       {
          killServer(1);
-         
+
          Thread.sleep(2000);
       }
-      
+
       // We send the remaining half of messages
       for (int i = numMessages / 2; i < numMessages; i++)
       {
          TextMessage message = session.createTextMessage("This is text message " + i);
-         
-         //We set the duplicate detection header - so the server will ignore the same message
-         //if sent again after failover
-         
+
+         // We set the duplicate detection header - so the server will ignore the same message
+         // if sent again after failover
+
          message.setStringProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID.toString(), "uniqueid" + i);
-         
+
          producer.send(message);
-         
+
          System.out.println("Sent message: " + message.getText());
       }
    }

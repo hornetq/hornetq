@@ -42,7 +42,7 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
    private static final Logger log = Logger.getLogger(HornetQActivationSpec.class);
 
    /** Whether trace is enabled */
-   private static boolean trace = log.isTraceEnabled();
+   private static boolean trace = HornetQActivationSpec.log.isTraceEnabled();
 
    /** The transport config, changing the default configured from the RA */
    private Map<String, Object> connectionParameters = new HashMap<String, Object>();
@@ -98,9 +98,9 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
     */
    public HornetQActivationSpec()
    {
-      if (trace)
+      if (HornetQActivationSpec.trace)
       {
-         log.trace("constructor()");
+         HornetQActivationSpec.log.trace("constructor()");
       }
 
       ra = null;
@@ -124,9 +124,9 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
     */
    public ResourceAdapter getResourceAdapter()
    {
-      if (trace)
+      if (HornetQActivationSpec.trace)
       {
-         log.trace("getResourceAdapter()");
+         HornetQActivationSpec.log.trace("getResourceAdapter()");
       }
 
       return ra;
@@ -155,9 +155,9 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
     */
    public void setResourceAdapter(final ResourceAdapter ra) throws ResourceException
    {
-      if (trace)
+      if (HornetQActivationSpec.trace)
       {
-         log.trace("setResourceAdapter(" + ra + ")");
+         HornetQActivationSpec.log.trace("setResourceAdapter(" + ra + ")");
       }
 
       if (ra == null || !(ra instanceof HornetQResourceAdapter))
@@ -174,9 +174,9 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
     */
    public String getDestination()
    {
-      if (trace)
+      if (HornetQActivationSpec.trace)
       {
-         log.trace("getDestination()");
+         HornetQActivationSpec.log.trace("getDestination()");
       }
 
       return destination;
@@ -188,9 +188,9 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
     */
    public void setDestination(final String value)
    {
-      if (trace)
+      if (HornetQActivationSpec.trace)
       {
-         log.trace("setDestination(" + value + ")");
+         HornetQActivationSpec.log.trace("setDestination(" + value + ")");
       }
 
       destination = value;
@@ -202,9 +202,9 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
     */
    public String getDestinationType()
    {
-      if (trace)
+      if (HornetQActivationSpec.trace)
       {
-         log.trace("getDestinationType()");
+         HornetQActivationSpec.log.trace("getDestinationType()");
       }
 
       return destinationType;
@@ -216,9 +216,9 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
     */
    public void setDestinationType(final String value)
    {
-      if (trace)
+      if (HornetQActivationSpec.trace)
       {
-         log.trace("setDestinationType(" + value + ")");
+         HornetQActivationSpec.log.trace("setDestinationType(" + value + ")");
       }
 
       destinationType = value;
@@ -230,9 +230,9 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
     */
    public String getMessageSelector()
    {
-      if (trace)
+      if (HornetQActivationSpec.trace)
       {
-         log.trace("getMessageSelector()");
+         HornetQActivationSpec.log.trace("getMessageSelector()");
       }
 
       return messageSelector;
@@ -244,9 +244,9 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
     */
    public void setMessageSelector(final String value)
    {
-      if (trace)
+      if (HornetQActivationSpec.trace)
       {
-         log.trace("setMessageSelector(" + value + ")");
+         HornetQActivationSpec.log.trace("setMessageSelector(" + value + ")");
       }
 
       messageSelector = value;
@@ -258,9 +258,9 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
     */
    public String getAcknowledgeMode()
    {
-      if (trace)
+      if (HornetQActivationSpec.trace)
       {
-         log.trace("getAcknowledgeMode()");
+         HornetQActivationSpec.log.trace("getAcknowledgeMode()");
       }
 
       if (Session.DUPS_OK_ACKNOWLEDGE == acknowledgeMode)
@@ -279,9 +279,9 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
     */
    public void setAcknowledgeMode(final String value)
    {
-      if (trace)
+      if (HornetQActivationSpec.trace)
       {
-         log.trace("setAcknowledgeMode(" + value + ")");
+         HornetQActivationSpec.log.trace("setAcknowledgeMode(" + value + ")");
       }
 
       if ("DUPS_OK_ACKNOWLEDGE".equalsIgnoreCase(value) || "Dups-ok-acknowledge".equalsIgnoreCase(value))
@@ -303,9 +303,9 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
     */
    public int getAcknowledgeModeInt()
    {
-      if (trace)
+      if (HornetQActivationSpec.trace)
       {
-         log.trace("getAcknowledgeMode()");
+         HornetQActivationSpec.log.trace("getAcknowledgeMode()");
       }
 
       return acknowledgeMode;
@@ -317,9 +317,9 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
     */
    public String getSubscriptionDurability()
    {
-      if (trace)
+      if (HornetQActivationSpec.trace)
       {
-         log.trace("getSubscriptionDurability()");
+         HornetQActivationSpec.log.trace("getSubscriptionDurability()");
       }
 
       if (subscriptionDurability)
@@ -338,9 +338,9 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
     */
    public void setSubscriptionDurability(final String value)
    {
-      if (trace)
+      if (HornetQActivationSpec.trace)
       {
-         log.trace("setSubscriptionDurability(" + value + ")");
+         HornetQActivationSpec.log.trace("setSubscriptionDurability(" + value + ")");
       }
 
       subscriptionDurability = "Durable".equals(value);
@@ -352,9 +352,9 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
     */
    public boolean isSubscriptionDurable()
    {
-      if (trace)
+      if (HornetQActivationSpec.trace)
       {
-         log.trace("isSubscriptionDurable()");
+         HornetQActivationSpec.log.trace("isSubscriptionDurable()");
       }
 
       return subscriptionDurability;
@@ -366,9 +366,9 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
     */
    public String getSubscriptionName()
    {
-      if (trace)
+      if (HornetQActivationSpec.trace)
       {
-         log.trace("getSubscriptionName()");
+         HornetQActivationSpec.log.trace("getSubscriptionName()");
       }
 
       return subscriptionName;
@@ -380,9 +380,9 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
     */
    public void setSubscriptionName(final String value)
    {
-      if (trace)
+      if (HornetQActivationSpec.trace)
       {
-         log.trace("setSubscriptionName(" + value + ")");
+         HornetQActivationSpec.log.trace("setSubscriptionName(" + value + ")");
       }
 
       subscriptionName = value;
@@ -394,9 +394,9 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
     */
    public String getUser()
    {
-      if (trace)
+      if (HornetQActivationSpec.trace)
       {
-         log.trace("getUser()");
+         HornetQActivationSpec.log.trace("getUser()");
       }
 
       if (user == null)
@@ -415,9 +415,9 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
     */
    public void setUser(final String value)
    {
-      if (trace)
+      if (HornetQActivationSpec.trace)
       {
-         log.trace("setUser(" + value + ")");
+         HornetQActivationSpec.log.trace("setUser(" + value + ")");
       }
 
       user = value;
@@ -429,9 +429,9 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
     */
    public String getPassword()
    {
-      if (trace)
+      if (HornetQActivationSpec.trace)
       {
-         log.trace("getPassword()");
+         HornetQActivationSpec.log.trace("getPassword()");
       }
 
       if (password == null)
@@ -450,9 +450,9 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
     */
    public void setPassword(final String value)
    {
-      if (trace)
+      if (HornetQActivationSpec.trace)
       {
-         log.trace("setPassword(" + value + ")");
+         HornetQActivationSpec.log.trace("setPassword(" + value + ")");
       }
 
       password = value;
@@ -464,9 +464,9 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
     */
    public Integer getMaxMessages()
    {
-      if (trace)
+      if (HornetQActivationSpec.trace)
       {
-         log.trace("getMaxMessages()");
+         HornetQActivationSpec.log.trace("getMaxMessages()");
       }
 
       return maxMessages;
@@ -478,9 +478,9 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
     */
    public void setMaxMessages(final Integer value)
    {
-      if (trace)
+      if (HornetQActivationSpec.trace)
       {
-         log.trace("setMaxMessages(" + value + ")");
+         HornetQActivationSpec.log.trace("setMaxMessages(" + value + ")");
       }
 
       maxMessages = value;
@@ -492,9 +492,9 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
     */
    public int getMaxMessagesInt()
    {
-      if (trace)
+      if (HornetQActivationSpec.trace)
       {
-         log.trace("getMaxMessagesInt()");
+         HornetQActivationSpec.log.trace("getMaxMessagesInt()");
       }
 
       if (maxMessages == null)
@@ -511,9 +511,9 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
     */
    public Integer getMinSession()
    {
-      if (trace)
+      if (HornetQActivationSpec.trace)
       {
-         log.trace("getMinSession()");
+         HornetQActivationSpec.log.trace("getMinSession()");
       }
 
       return minSession;
@@ -525,9 +525,9 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
     */
    public void setMinSession(final Integer value)
    {
-      if (trace)
+      if (HornetQActivationSpec.trace)
       {
-         log.trace("setMinSession(" + value + ")");
+         HornetQActivationSpec.log.trace("setMinSession(" + value + ")");
       }
 
       minSession = value;
@@ -539,9 +539,9 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
     */
    public int getMinSessionInt()
    {
-      if (trace)
+      if (HornetQActivationSpec.trace)
       {
-         log.trace("getMinSessionInt()");
+         HornetQActivationSpec.log.trace("getMinSessionInt()");
       }
 
       if (minSession == null)
@@ -558,9 +558,9 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
     */
    public Integer getMaxSession()
    {
-      if (trace)
+      if (HornetQActivationSpec.trace)
       {
-         log.trace("getMaxSession()");
+         HornetQActivationSpec.log.trace("getMaxSession()");
       }
 
       return maxSession;
@@ -572,9 +572,9 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
     */
    public void setMaxSession(final Integer value)
    {
-      if (trace)
+      if (HornetQActivationSpec.trace)
       {
-         log.trace("setMaxSession(" + value + ")");
+         HornetQActivationSpec.log.trace("setMaxSession(" + value + ")");
       }
 
       maxSession = value;
@@ -586,9 +586,9 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
     */
    public int getMaxSessionInt()
    {
-      if (trace)
+      if (HornetQActivationSpec.trace)
       {
-         log.trace("getMaxSessionInt()");
+         HornetQActivationSpec.log.trace("getMaxSessionInt()");
       }
 
       if (maxSession == null)
@@ -605,9 +605,9 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
     */
    public Integer getTransactionTimeout()
    {
-      if (trace)
+      if (HornetQActivationSpec.trace)
       {
-         log.trace("getTransactionTimeout()");
+         HornetQActivationSpec.log.trace("getTransactionTimeout()");
       }
 
       return transactionTimeout;
@@ -619,9 +619,9 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
     */
    public void setTransactionTimeout(final Integer value)
    {
-      if (trace)
+      if (HornetQActivationSpec.trace)
       {
-         log.trace("setTransactionTimeout(" + value + ")");
+         HornetQActivationSpec.log.trace("setTransactionTimeout(" + value + ")");
       }
 
       transactionTimeout = value;
@@ -629,7 +629,7 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
 
    public Boolean isUseLocalTx()
    {
-      if(localTx == null)
+      if (localTx == null)
       {
          return ra.getUseLocalTx();
       }
@@ -639,7 +639,7 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
       }
    }
 
-   public void setUseLocalTx(Boolean localTx)
+   public void setUseLocalTx(final Boolean localTx)
    {
       this.localTx = localTx;
    }
@@ -650,9 +650,9 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
     */
    public void validate() throws InvalidPropertyException
    {
-      if (trace)
+      if (HornetQActivationSpec.trace)
       {
-         log.trace("validate()");
+         HornetQActivationSpec.log.trace("validate()");
       }
 
       if (destination == null || destination.trim().equals(""))
@@ -669,6 +669,7 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
       return strConnectionParameters;
    }
 
+   @Override
    public Map<String, Object> getParsedConnectionParameters()
    {
       return connectionParameters;
@@ -684,6 +685,7 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
     * Get a string representation
     * @return The value
     */
+   @Override
    public String toString()
    {
       StringBuffer buffer = new StringBuffer();

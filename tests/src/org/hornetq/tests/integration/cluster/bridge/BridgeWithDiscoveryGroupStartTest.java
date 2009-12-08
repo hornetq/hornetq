@@ -13,12 +13,12 @@
 
 package org.hornetq.tests.integration.cluster.bridge;
 
-import static org.hornetq.core.remoting.impl.invm.TransportConstants.SERVER_ID_PROP_NAME;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import junit.framework.Assert;
 
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
@@ -34,7 +34,6 @@ import org.hornetq.core.config.cluster.QueueConfiguration;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.cluster.Bridge;
-import org.hornetq.integration.transports.netty.NettyAcceptorFactory;
 import org.hornetq.integration.transports.netty.NettyConnectorFactory;
 import org.hornetq.integration.transports.netty.TransportConstants;
 import org.hornetq.tests.util.ServiceTestBase;
@@ -48,15 +47,15 @@ import org.hornetq.utils.SimpleString;
  * 
  */
 public class BridgeWithDiscoveryGroupStartTest extends ServiceTestBase
-{      
-   
+{
+
    private static final int TIMEOUT = 2000;
-   
+
    protected boolean isNetty()
    {
       return false;
    }
-   
+
    public void testStartStop() throws Exception
    {
       Map<String, Object> server0Params = new HashMap<String, Object>();
@@ -69,7 +68,7 @@ public class BridgeWithDiscoveryGroupStartTest extends ServiceTestBase
       }
       else
       {
-         server1Params.put(SERVER_ID_PROP_NAME, 1);
+         server1Params.put(org.hornetq.core.remoting.impl.invm.TransportConstants.SERVER_ID_PROP_NAME, 1);
       }
       HornetQServer server1 = createClusteredServerWithParams(isNetty(), 1, true, server1Params);
 
@@ -167,16 +166,16 @@ public class BridgeWithDiscoveryGroupStartTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = consumer1.receive(TIMEOUT);
+         ClientMessage message = consumer1.receive(BridgeWithDiscoveryGroupStartTest.TIMEOUT);
 
-         assertNotNull(message);
+         Assert.assertNotNull(message);
 
-         assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
+         Assert.assertEquals(i, message.getObjectProperty(propKey));
 
          message.acknowledge();
       }
 
-      assertNull(consumer1.receiveImmediate());
+      Assert.assertNull(consumer1.receiveImmediate());
 
       Bridge bridge = server0.getClusterManager().getBridges().get(bridgeName);
 
@@ -191,22 +190,22 @@ public class BridgeWithDiscoveryGroupStartTest extends ServiceTestBase
          producer0.send(message);
       }
 
-      assertNull(consumer1.receiveImmediate());
+      Assert.assertNull(consumer1.receiveImmediate());
 
       bridge.start();
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = consumer1.receive(TIMEOUT);
+         ClientMessage message = consumer1.receive(BridgeWithDiscoveryGroupStartTest.TIMEOUT);
 
-         assertNotNull(message);
+         Assert.assertNotNull(message);
 
-         assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
+         Assert.assertEquals(i, message.getObjectProperty(propKey));
 
          message.acknowledge();
       }
 
-      assertNull(consumer1.receiveImmediate());
+      Assert.assertNull(consumer1.receiveImmediate());
 
       session0.close();
 

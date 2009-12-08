@@ -9,7 +9,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
  * implied.  See the License for the specific language governing
  * permissions and limitations under the License.
- */ 
+ */
 
 package org.hornetq.core.deployers.impl;
 
@@ -37,13 +37,13 @@ import org.w3c.dom.NodeList;
 public abstract class XmlDeployer implements Deployer, HornetQComponent
 {
    private static Logger log = Logger.getLogger(XmlDeployer.class);
-   
+
    protected static final String NAME_ATTR = "name";
 
    private final Map<URL, Map<String, Node>> configuration = new HashMap<URL, Map<String, Node>>();
 
    private final DeploymentManager deploymentManager;
-   
+
    private boolean started;
 
    private String[] configFileNames;
@@ -53,7 +53,7 @@ public abstract class XmlDeployer implements Deployer, HornetQComponent
       this.deploymentManager = deploymentManager;
       configFileNames = getDefaultConfigFileNames();
    }
-   
+
    /**
     * adds a URL to the already configured set of url's this deployer is handling
     * @param url The URL to add
@@ -62,12 +62,12 @@ public abstract class XmlDeployer implements Deployer, HornetQComponent
     */
    public synchronized void addToConfiguration(final URL url, final String name, final Node e)
    {
-      Map<String, Node> map = configuration.get(url);      
+      Map<String, Node> map = configuration.get(url);
       if (map == null)
       {
-         map = new HashMap<String, Node>();         
+         map = new HashMap<String, Node>();
          configuration.put(url, map);
-      }      
+      }
       map.put(name, e);
    }
 
@@ -81,7 +81,7 @@ public abstract class XmlDeployer implements Deployer, HornetQComponent
    {
       Element e = getRootElement(url);
       List<String> added = new ArrayList<String>();
-      //pull out the elements that need deploying
+      // pull out the elements that need deploying
       String elements[] = getElementTagName();
       for (String element : elements)
       {
@@ -91,22 +91,22 @@ public abstract class XmlDeployer implements Deployer, HornetQComponent
             Node node = children.item(i);
             String name = node.getAttributes().getNamedItem(getKeyAttribute()).getNodeValue();
             added.add(name);
-            //if this has never been deployed deploy
-            Map<String, Node> map = configuration.get(url); 
-            if (map == null || (map != null && map.get(name) == null))
-            {              
+            // if this has never been deployed deploy
+            Map<String, Node> map = configuration.get(url);
+            if (map == null || map != null && map.get(name) == null)
+            {
                deploy(node);
             }
-            //or if it has changed redeploy
+            // or if it has changed redeploy
             else if (hasNodeChanged(url, node, name))
-            {             
+            {
                undeploy(node);
                deploy(node);
                addToConfiguration(url, name, node);
             }
          }
       }
-      //now check for anything that has been removed and undeploy
+      // now check for anything that has been removed and undeploy
       if (configuration.get(url) != null)
       {
          Set<String> keys = configuration.get(url).keySet();
@@ -151,7 +151,7 @@ public abstract class XmlDeployer implements Deployer, HornetQComponent
    public synchronized void deploy(final URL url) throws Exception
    {
       Element e = getRootElement(url);
-      
+
       validate(e);
 
       Map<String, Node> map = configuration.get(url);
@@ -160,8 +160,8 @@ public abstract class XmlDeployer implements Deployer, HornetQComponent
          map = new HashMap<String, Node>();
          configuration.put(url, map);
       }
-      
-      //find all thenodes to deploy
+
+      // find all thenodes to deploy
       String elements[] = getElementTagName();
       for (String element : elements)
       {
@@ -170,19 +170,19 @@ public abstract class XmlDeployer implements Deployer, HornetQComponent
          {
             Node node = children.item(i);
             Node keyNode = node.getAttributes().getNamedItem(getKeyAttribute());
-            if(keyNode == null)
+            if (keyNode == null)
             {
-               log.error("key attribute missing for configuration " + node);
+               XmlDeployer.log.error("key attribute missing for configuration " + node);
                continue;
             }
-            String name = keyNode.getNodeValue();           
+            String name = keyNode.getNodeValue();
             try
             {
                deploy(node);
             }
             catch (Exception e1)
             {
-               log.error(new StringBuilder("Unable to deploy node " + node + " " + name), e1);
+               XmlDeployer.log.error(new StringBuilder("Unable to deploy node " + node + " " + name), e1);
                continue;
             }
             addToConfiguration(url, name, node);
@@ -196,30 +196,30 @@ public abstract class XmlDeployer implements Deployer, HornetQComponent
     */
    public String getKeyAttribute()
    {
-      return NAME_ATTR;
+      return XmlDeployer.NAME_ATTR;
    }
 
-   //register with the deploymenmt manager
+   // register with the deploymenmt manager
    public synchronized void start() throws Exception
    {
       if (started)
       {
          return;
       }
-            
+
       deploymentManager.registerDeployer(this);
-      
+
       started = true;
    }
 
-   //undeploy everything
+   // undeploy everything
    public synchronized void stop() throws Exception
    {
       if (!started)
       {
          return;
       }
-      
+
       Collection<Map<String, Node>> urls = configuration.values();
       for (Map<String, Node> hashMap : urls)
       {
@@ -231,15 +231,15 @@ public abstract class XmlDeployer implements Deployer, HornetQComponent
             }
             catch (Exception e)
             {
-               log.warn("problem undeploying " + node, e);
+               XmlDeployer.log.warn("problem undeploying " + node, e);
             }
          }
       }
       deploymentManager.unregisterDeployer(this);
-      
+
       started = false;
    }
-   
+
    public synchronized boolean isStarted()
    {
       return started;
@@ -250,7 +250,7 @@ public abstract class XmlDeployer implements Deployer, HornetQComponent
       return configFileNames;
    }
 
-   public void setConfigFileNames(String[] configFileNames)
+   public void setConfigFileNames(final String[] configFileNames)
    {
       this.configFileNames = configFileNames;
    }
@@ -280,11 +280,9 @@ public abstract class XmlDeployer implements Deployer, HornetQComponent
     * @param node the element to undeploy
     * @throws Exception .
     */
-   public abstract void undeploy(final Node node)
-           throws Exception;
+   public abstract void undeploy(final Node node) throws Exception;
 
-   protected Element getRootElement(final URL url)
-           throws Exception
+   protected Element getRootElement(final URL url) throws Exception
    {
       Reader reader = new InputStreamReader(url.openStream());
       String xml = org.hornetq.utils.XMLUtil.readerToString(reader);

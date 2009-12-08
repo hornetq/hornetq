@@ -9,7 +9,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
  * implied.  See the License for the specific language governing
  * permissions and limitations under the License.
- */ 
+ */
 
 package org.hornetq.core.deployers.impl;
 
@@ -31,21 +31,32 @@ import org.w3c.dom.NodeList;
  */
 public class SecurityDeployer extends XmlDeployer
 {
-   private static final Logger log = Logger.getLogger(SecurityDeployer.class);  
-   
+   private static final Logger log = Logger.getLogger(SecurityDeployer.class);
+
    private static final String PERMISSION_ELEMENT_NAME = "permission";
+
    private static final String TYPE_ATTR_NAME = "type";
+
    private static final String ROLES_ATTR_NAME = "roles";
+
    private static final String QUEUES_XML = "hornetq-queues.xml";
+
    private static final String MATCH = "match";
+
    private static final String SECURITY_ELEMENT_NAME = "security-setting";
 
    public static final String SEND_NAME = "send";
+
    public static final String CONSUME_NAME = "consume";
+
    public static final String CREATEDURABLEQUEUE_NAME = "createDurableQueue";
+
    public static final String DELETEDURABLEQUEUE_NAME = "deleteDurableQueue";
+
    public static final String CREATETEMPQUEUE_NAME = "createTempQueue";
+
    public static final String DELETETEMPQUEUE_NAME = "deleteTempQueue";
+
    public static final String MANAGE_NAME = "manage";
 
    /**
@@ -53,11 +64,12 @@ public class SecurityDeployer extends XmlDeployer
     */
    private final HierarchicalRepository<Set<Role>> securityRepository;
 
-   public SecurityDeployer(final DeploymentManager deploymentManager, final HierarchicalRepository<Set<Role>> securityRepository)
+   public SecurityDeployer(final DeploymentManager deploymentManager,
+                           final HierarchicalRepository<Set<Role>> securityRepository)
    {
       super(deploymentManager);
-      
-      this.securityRepository = securityRepository;      
+
+      this.securityRepository = securityRepository;
    }
 
    /**
@@ -65,25 +77,27 @@ public class SecurityDeployer extends XmlDeployer
     *
     * @return the names of the elements todeploy
     */
+   @Override
    public String[] getElementTagName()
    {
-      return new String[]{SECURITY_ELEMENT_NAME};
+      return new String[] { SecurityDeployer.SECURITY_ELEMENT_NAME };
    }
 
    @Override
-   public void validate(Node rootNode) throws Exception
+   public void validate(final Node rootNode) throws Exception
    {
       org.hornetq.utils.XMLUtil.validate(rootNode, "schema/hornetq-configuration.xsd");
    }
-   
+
    /**
     * the key attribute for theelement, usually 'name' but can be overridden
     *
     * @return the key attribute
     */
+   @Override
    public String getKeyAttribute()
    {
-      return MATCH;
+      return SecurityDeployer.MATCH;
    }
 
    /**
@@ -92,6 +106,7 @@ public class SecurityDeployer extends XmlDeployer
     * @param node the element to deploy
     * @throws Exception .
     */
+   @Override
    public void deploy(final Node node) throws Exception
    {
       HashSet<Role> securityRoles = new HashSet<Role>();
@@ -109,38 +124,38 @@ public class SecurityDeployer extends XmlDeployer
       {
          Node child = children.item(i);
 
-         if (PERMISSION_ELEMENT_NAME.equalsIgnoreCase(child.getNodeName()))
+         if (SecurityDeployer.PERMISSION_ELEMENT_NAME.equalsIgnoreCase(child.getNodeName()))
          {
-            String type = child.getAttributes().getNamedItem(TYPE_ATTR_NAME).getNodeValue();
-            String roleString = child.getAttributes().getNamedItem(ROLES_ATTR_NAME).getNodeValue();
+            String type = child.getAttributes().getNamedItem(SecurityDeployer.TYPE_ATTR_NAME).getNodeValue();
+            String roleString = child.getAttributes().getNamedItem(SecurityDeployer.ROLES_ATTR_NAME).getNodeValue();
             String[] roles = roleString.split(",");
             for (String role : roles)
             {
-               if (SEND_NAME.equals(type))
+               if (SecurityDeployer.SEND_NAME.equals(type))
                {
                   send.add(role.trim());
                }
-               else if (CONSUME_NAME.equals(type))
+               else if (SecurityDeployer.CONSUME_NAME.equals(type))
                {
                   consume.add(role.trim());
                }
-               else if (CREATEDURABLEQUEUE_NAME.equals(type))
+               else if (SecurityDeployer.CREATEDURABLEQUEUE_NAME.equals(type))
                {
                   createDurableQueue.add(role);
                }
-               else if (DELETEDURABLEQUEUE_NAME.equals(type))
+               else if (SecurityDeployer.DELETEDURABLEQUEUE_NAME.equals(type))
                {
                   deleteDurableQueue.add(role);
                }
-               else if (CREATETEMPQUEUE_NAME.equals(type))
+               else if (SecurityDeployer.CREATETEMPQUEUE_NAME.equals(type))
                {
                   createTempQueue.add(role);
                }
-               else if (DELETETEMPQUEUE_NAME.equals(type))
+               else if (SecurityDeployer.DELETETEMPQUEUE_NAME.equals(type))
                {
                   deleteTempQueue.add(role);
                }
-               else if (MANAGE_NAME.equals(type))
+               else if (SecurityDeployer.MANAGE_NAME.equals(type))
                {
                   manageRoles.add(role);
                }
@@ -157,7 +172,7 @@ public class SecurityDeployer extends XmlDeployer
          securityRoles.add(new Role(role,
                                     send.contains(role),
                                     consume.contains(role),
-                                    createDurableQueue.contains(role), 
+                                    createDurableQueue.contains(role),
                                     deleteDurableQueue.contains(role),
                                     createTempQueue.contains(role),
                                     deleteTempQueue.contains(role),
@@ -172,6 +187,7 @@ public class SecurityDeployer extends XmlDeployer
     * @param node the element to undeploy
     * @throws Exception .
     */
+   @Override
    public void undeploy(final Node node) throws Exception
    {
       String match = node.getAttributes().getNamedItem(getKeyAttribute()).getNodeValue();
@@ -183,8 +199,9 @@ public class SecurityDeployer extends XmlDeployer
     *
     * @return The name of the config file
     */
+   @Override
    public String[] getDefaultConfigFileNames()
    {
-      return new String[] {"hornetq-configuration.xml", QUEUES_XML};
+      return new String[] { "hornetq-configuration.xml", SecurityDeployer.QUEUES_XML };
    }
 }

@@ -16,7 +16,6 @@ package org.hornetq.core.remoting.impl.wireformat;
 import javax.transaction.xa.Xid;
 
 import org.hornetq.core.buffers.HornetQBuffer;
-import org.hornetq.utils.DataConstants;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -39,7 +38,7 @@ public class SessionXACommitMessage extends PacketImpl
 
    public SessionXACommitMessage(final Xid xid, final boolean onePhase)
    {
-      super(SESS_XA_COMMIT);
+      super(PacketImpl.SESS_XA_COMMIT);
 
       this.xid = xid;
       this.onePhase = onePhase;
@@ -47,7 +46,7 @@ public class SessionXACommitMessage extends PacketImpl
 
    public SessionXACommitMessage()
    {
-      super(SESS_XA_COMMIT);
+      super(PacketImpl.SESS_XA_COMMIT);
    }
 
    // Public --------------------------------------------------------

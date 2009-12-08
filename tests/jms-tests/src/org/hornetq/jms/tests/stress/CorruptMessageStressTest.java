@@ -39,6 +39,7 @@ public class CorruptMessageStressTest extends HornetQServerTestCase
    private static Logger log = Logger.getLogger(CorruptMessageStressTest.class);
 
    public static int PRODUCER_COUNT = 30;
+
    public static int MESSAGE_COUNT = 10000;
 
    // Static --------------------------------------------------------
@@ -59,19 +60,19 @@ public class CorruptMessageStressTest extends HornetQServerTestCase
 
       Connection conn = cf.createConnection();
 
-      Session[] sessions = new Session[PRODUCER_COUNT];
-      MessageProducer[] producers = new MessageProducer[PRODUCER_COUNT];
+      Session[] sessions = new Session[CorruptMessageStressTest.PRODUCER_COUNT];
+      MessageProducer[] producers = new MessageProducer[CorruptMessageStressTest.PRODUCER_COUNT];
 
-      for(int i = 0; i < PRODUCER_COUNT; i++)
+      for (int i = 0; i < CorruptMessageStressTest.PRODUCER_COUNT; i++)
       {
          sessions[i] = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          producers[i] = sessions[i].createProducer(queue);
          producers[i].setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       }
 
-      Thread[] threads = new Thread[PRODUCER_COUNT];
+      Thread[] threads = new Thread[CorruptMessageStressTest.PRODUCER_COUNT];
 
-      for(int i = 0; i < PRODUCER_COUNT; i++)
+      for (int i = 0; i < CorruptMessageStressTest.PRODUCER_COUNT; i++)
       {
          threads[i] = new Thread(new Sender(sessions[i], producers[i]), "Sender Thread #" + i);
          threads[i].start();
@@ -79,7 +80,7 @@ public class CorruptMessageStressTest extends HornetQServerTestCase
 
       // wait for the threads to finish
 
-      for(int i = 0; i < PRODUCER_COUNT; i++)
+      for (int i = 0; i < CorruptMessageStressTest.PRODUCER_COUNT; i++)
       {
          threads[i].join();
       }
@@ -91,17 +92,19 @@ public class CorruptMessageStressTest extends HornetQServerTestCase
 
    // Protected -----------------------------------------------------
 
+   @Override
    protected void setUp() throws Exception
    {
       super.setUp();
 
-      //ServerManagement.start("all");
+      // ServerManagement.start("all");
       ic = getInitialContext();
       createQueue("StressTestQueue");
 
-      log.debug("setup done");
+      CorruptMessageStressTest.log.debug("setup done");
    }
 
+   @Override
    protected void tearDown() throws Exception
    {
       destroyQueue("StressTestQueue");
@@ -115,11 +118,13 @@ public class CorruptMessageStressTest extends HornetQServerTestCase
 
    private class Sender implements Runnable
    {
-      private Session session;
-      private MessageProducer producer;
+      private final Session session;
+
+      private final MessageProducer producer;
+
       private int count = 0;
 
-      public Sender(Session session, MessageProducer producer)
+      public Sender(final Session session, final MessageProducer producer)
       {
          this.session = session;
          this.producer = producer;
@@ -127,10 +132,10 @@ public class CorruptMessageStressTest extends HornetQServerTestCase
 
       public void run()
       {
-         while(true)
+         while (true)
          {
-            if (count == MESSAGE_COUNT)
-            {               
+            if (count == CorruptMessageStressTest.MESSAGE_COUNT)
+            {
                break;
             }
 
@@ -142,9 +147,9 @@ public class CorruptMessageStressTest extends HornetQServerTestCase
                producer.send(m);
                count++;
             }
-            catch(Exception e)
+            catch (Exception e)
             {
-               log.error("Sender thread failed", e);
+               CorruptMessageStressTest.log.error("Sender thread failed", e);
                break;
             }
          }

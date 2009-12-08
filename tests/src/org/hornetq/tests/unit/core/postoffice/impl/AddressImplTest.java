@@ -12,6 +12,8 @@
  */
 package org.hornetq.tests.unit.core.postoffice.impl;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.postoffice.Address;
 import org.hornetq.core.postoffice.impl.AddressImpl;
 import org.hornetq.tests.util.UnitTestCase;
@@ -20,7 +22,7 @@ import org.hornetq.utils.SimpleString;
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  */
-public class AddressImplTest  extends UnitTestCase
+public class AddressImplTest extends UnitTestCase
 {
    public void testNoDots()
    {
@@ -28,7 +30,7 @@ public class AddressImplTest  extends UnitTestCase
       SimpleString s2 = new SimpleString("abcde");
       Address a1 = new AddressImpl(s1);
       Address a2 = new AddressImpl(s2);
-      assertTrue(a1.matches(a2));
+      Assert.assertTrue(a1.matches(a2));
    }
 
    public void testDotsSameLength2()
@@ -37,7 +39,7 @@ public class AddressImplTest  extends UnitTestCase
       SimpleString s2 = new SimpleString("a.b");
       Address a1 = new AddressImpl(s1);
       Address a2 = new AddressImpl(s2);
-      assertTrue(a1.matches(a2));
+      Assert.assertTrue(a1.matches(a2));
    }
 
    public void testA()
@@ -46,7 +48,7 @@ public class AddressImplTest  extends UnitTestCase
       SimpleString s2 = new SimpleString("a.b.c.d.e.f.g.h.i.j.k.l.m.n.*");
       Address a1 = new AddressImpl(s1);
       Address a2 = new AddressImpl(s2);
-      assertFalse(a1.matches(a2));
+      Assert.assertFalse(a1.matches(a2));
    }
 
    public void testB()
@@ -57,8 +59,8 @@ public class AddressImplTest  extends UnitTestCase
       Address a1 = new AddressImpl(s1);
       Address a2 = new AddressImpl(s2);
       Address w = new AddressImpl(s3);
-      assertTrue(a1.matches(w));
-      assertFalse(a2.matches(w));
+      Assert.assertTrue(a1.matches(w));
+      Assert.assertFalse(a2.matches(w));
    }
 
    public void testC()
@@ -69,8 +71,8 @@ public class AddressImplTest  extends UnitTestCase
       Address a1 = new AddressImpl(s1);
       Address a2 = new AddressImpl(s2);
       Address w = new AddressImpl(s3);
-      assertTrue(a1.matches(w));
-      assertFalse(a2.matches(w));
+      Assert.assertTrue(a1.matches(w));
+      Assert.assertFalse(a2.matches(w));
    }
 
    public void testD()
@@ -81,8 +83,8 @@ public class AddressImplTest  extends UnitTestCase
       Address a1 = new AddressImpl(s1);
       Address a2 = new AddressImpl(s2);
       Address w = new AddressImpl(s3);
-      assertTrue(a1.matches(w));
-      assertFalse(a2.matches(w));
+      Assert.assertTrue(a1.matches(w));
+      Assert.assertFalse(a2.matches(w));
    }
 
    public void testE()
@@ -93,8 +95,8 @@ public class AddressImplTest  extends UnitTestCase
       Address a1 = new AddressImpl(s1);
       Address a2 = new AddressImpl(s2);
       Address w = new AddressImpl(s3);
-      assertTrue(a1.matches(w));
-      assertFalse(a2.matches(w));
+      Assert.assertTrue(a1.matches(w));
+      Assert.assertFalse(a2.matches(w));
    }
 
    public void testF()
@@ -105,8 +107,8 @@ public class AddressImplTest  extends UnitTestCase
       Address a1 = new AddressImpl(s1);
       Address a2 = new AddressImpl(s2);
       Address w = new AddressImpl(s3);
-      assertTrue(a1.matches(w));
-      assertTrue(a2.matches(w));
+      Assert.assertTrue(a1.matches(w));
+      Assert.assertTrue(a2.matches(w));
    }
 
    public void testG()
@@ -117,8 +119,8 @@ public class AddressImplTest  extends UnitTestCase
       Address a1 = new AddressImpl(s1);
       Address a2 = new AddressImpl(s2);
       Address w = new AddressImpl(s3);
-      assertTrue(a1.matches(w));
-      assertTrue(a2.matches(w));
+      Assert.assertTrue(a1.matches(w));
+      Assert.assertTrue(a2.matches(w));
    }
 
    public void testH()
@@ -129,8 +131,8 @@ public class AddressImplTest  extends UnitTestCase
       Address a1 = new AddressImpl(s1);
       Address a2 = new AddressImpl(s2);
       Address w = new AddressImpl(s3);
-      assertTrue(a1.matches(w));
-      assertTrue(a2.matches(w));
+      Assert.assertTrue(a1.matches(w));
+      Assert.assertTrue(a2.matches(w));
    }
 
    public void testI()
@@ -141,8 +143,8 @@ public class AddressImplTest  extends UnitTestCase
       Address a1 = new AddressImpl(s1);
       Address a2 = new AddressImpl(s2);
       Address w = new AddressImpl(s3);
-      assertTrue(a1.matches(w));
-      assertTrue(a2.matches(w));
+      Assert.assertTrue(a1.matches(w));
+      Assert.assertTrue(a2.matches(w));
    }
 
    public void testJ()
@@ -153,8 +155,8 @@ public class AddressImplTest  extends UnitTestCase
       Address a1 = new AddressImpl(s1);
       Address a2 = new AddressImpl(s2);
       Address w = new AddressImpl(s3);
-      assertTrue(a1.matches(w));
-      assertFalse(a2.matches(w));
+      Assert.assertTrue(a1.matches(w));
+      Assert.assertFalse(a2.matches(w));
    }
 
    public void testK()
@@ -165,8 +167,8 @@ public class AddressImplTest  extends UnitTestCase
       Address a1 = new AddressImpl(s1);
       Address a2 = new AddressImpl(s2);
       Address w = new AddressImpl(s3);
-      assertTrue(a1.matches(w));
-      assertTrue(a2.matches(w));
+      Assert.assertTrue(a1.matches(w));
+      Assert.assertTrue(a2.matches(w));
    }
 
    public void testL()
@@ -177,8 +179,8 @@ public class AddressImplTest  extends UnitTestCase
       Address a1 = new AddressImpl(s1);
       Address a2 = new AddressImpl(s2);
       Address w = new AddressImpl(s3);
-      assertTrue(a1.matches(w));
-      assertFalse(a2.matches(w));
+      Assert.assertTrue(a1.matches(w));
+      Assert.assertFalse(a2.matches(w));
    }
 
    public void testM()
@@ -189,8 +191,8 @@ public class AddressImplTest  extends UnitTestCase
       Address a1 = new AddressImpl(s1);
       Address a2 = new AddressImpl(s2);
       Address w = new AddressImpl(s3);
-      assertTrue(a1.matches(w));
-      assertFalse(a2.matches(w));
+      Assert.assertTrue(a1.matches(w));
+      Assert.assertFalse(a2.matches(w));
    }
 
    public void testN()
@@ -201,8 +203,8 @@ public class AddressImplTest  extends UnitTestCase
       Address a1 = new AddressImpl(s1);
       Address a2 = new AddressImpl(s2);
       Address w = new AddressImpl(s3);
-      assertTrue(a1.matches(w));
-      assertFalse(a2.matches(w));
+      Assert.assertTrue(a1.matches(w));
+      Assert.assertFalse(a2.matches(w));
    }
 
    public void testO()
@@ -213,8 +215,8 @@ public class AddressImplTest  extends UnitTestCase
       Address a1 = new AddressImpl(s1);
       Address a2 = new AddressImpl(s2);
       Address w = new AddressImpl(s3);
-      assertTrue(a1.matches(w));
-      assertFalse(a2.matches(w));
+      Assert.assertTrue(a1.matches(w));
+      Assert.assertFalse(a2.matches(w));
    }
 
    public void testP()
@@ -223,7 +225,7 @@ public class AddressImplTest  extends UnitTestCase
       SimpleString s3 = new SimpleString("a.b.c#");
       Address a1 = new AddressImpl(s1);
       Address w = new AddressImpl(s3);
-      assertFalse(a1.matches(w));
+      Assert.assertFalse(a1.matches(w));
    }
 
    public void testQ()
@@ -232,16 +234,16 @@ public class AddressImplTest  extends UnitTestCase
       SimpleString s3 = new SimpleString("#a.b.c");
       Address a1 = new AddressImpl(s1);
       Address w = new AddressImpl(s3);
-      assertFalse(a1.matches(w));
+      Assert.assertFalse(a1.matches(w));
    }
 
-    public void testR()
+   public void testR()
    {
       SimpleString s1 = new SimpleString("a.b.c.d");
       SimpleString s3 = new SimpleString("#*a.b.c");
       Address a1 = new AddressImpl(s1);
       Address w = new AddressImpl(s3);
-      assertFalse(a1.matches(w));
+      Assert.assertFalse(a1.matches(w));
    }
 
    public void testS()
@@ -250,7 +252,7 @@ public class AddressImplTest  extends UnitTestCase
       SimpleString s3 = new SimpleString("a.b.c*");
       Address a1 = new AddressImpl(s1);
       Address w = new AddressImpl(s3);
-      assertFalse(a1.matches(w));
+      Assert.assertFalse(a1.matches(w));
    }
 
    public void testT()
@@ -259,7 +261,7 @@ public class AddressImplTest  extends UnitTestCase
       SimpleString s3 = new SimpleString("*a.b.c");
       Address a1 = new AddressImpl(s1);
       Address w = new AddressImpl(s3);
-      assertFalse(a1.matches(w));
+      Assert.assertFalse(a1.matches(w));
    }
 
    public void testU()
@@ -268,7 +270,7 @@ public class AddressImplTest  extends UnitTestCase
       SimpleString s3 = new SimpleString("*a.b.c");
       Address a1 = new AddressImpl(s1);
       Address w = new AddressImpl(s3);
-      assertFalse(a1.matches(w));
+      Assert.assertFalse(a1.matches(w));
    }
 
 }

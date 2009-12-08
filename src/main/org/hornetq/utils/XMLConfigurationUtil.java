@@ -11,7 +11,6 @@
  * permissions and limitations under the License.
  */
 
-
 package org.hornetq.utils;
 
 import org.hornetq.core.config.impl.Validators;
@@ -28,7 +27,10 @@ import org.w3c.dom.NodeList;
 public class XMLConfigurationUtil
 {
 
-   public static Double getDouble(final Element e, final String name, final double def, final Validators.Validator validator)
+   public static Double getDouble(final Element e,
+                                  final String name,
+                                  final double def,
+                                  final Validators.Validator validator)
    {
       NodeList nl = e.getElementsByTagName(name);
       if (nl.getLength() > 0)
@@ -44,12 +46,15 @@ public class XMLConfigurationUtil
       }
    }
 
-   public static String getString(final Element e, final String name, final String def, final Validators.Validator validator)
+   public static String getString(final Element e,
+                                  final String name,
+                                  final String def,
+                                  final Validators.Validator validator)
    {
       NodeList nl = e.getElementsByTagName(name);
       if (nl.getLength() > 0)
       {
-         String val =  nl.item(0).getTextContent().trim();
+         String val = nl.item(0).getTextContent().trim();
          validator.validate(name, val);
          return val;
       }
@@ -76,7 +81,10 @@ public class XMLConfigurationUtil
       }
    }
 
-   public static Integer getInteger(final Element e, final String name, final int def, final Validators.Validator validator)
+   public static Integer getInteger(final Element e,
+                                    final String name,
+                                    final int def,
+                                    final Validators.Validator validator)
    {
       NodeList nl = e.getElementsByTagName(name);
       if (nl.getLength() > 0)

@@ -13,7 +13,7 @@
 
 package org.hornetq.tests.integration.client;
 
-import static org.hornetq.tests.util.RandomUtil.randomSimpleString;
+import junit.framework.Assert;
 
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
@@ -24,6 +24,7 @@ import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.settings.impl.AddressSettings;
+import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.utils.SimpleString;
 
@@ -46,7 +47,7 @@ public class MessageExpirationTest extends ServiceTestBase
    private HornetQServer server;
 
    private ClientSession session;
-   
+
    private ClientSessionFactory sf;
 
    // Static --------------------------------------------------------
@@ -57,79 +58,79 @@ public class MessageExpirationTest extends ServiceTestBase
 
    public void testMessageExpiredWithoutExpiryAddress() throws Exception
    {
-      SimpleString address = randomSimpleString();
-      SimpleString queue = randomSimpleString();
+      SimpleString address = RandomUtil.randomSimpleString();
+      SimpleString queue = RandomUtil.randomSimpleString();
 
       session.createQueue(address, queue, false);
 
       ClientProducer producer = session.createProducer(address);
       ClientMessage message = session.createClientMessage(false);
-      message.setExpiration(System.currentTimeMillis() + EXPIRATION);
+      message.setExpiration(System.currentTimeMillis() + MessageExpirationTest.EXPIRATION);
       producer.send(message);
 
-      Thread.sleep(EXPIRATION * 2);
+      Thread.sleep(MessageExpirationTest.EXPIRATION * 2);
 
       session.start();
 
       ClientConsumer consumer = session.createConsumer(queue);
       ClientMessage message2 = consumer.receiveImmediate();
-      assertNull(message2);
+      Assert.assertNull(message2);
 
       consumer.close();
       session.deleteQueue(queue);
    }
-   
+
    public void testMessageExpirationOnServer() throws Exception
    {
-      SimpleString address = randomSimpleString();
-      SimpleString queue = randomSimpleString();
+      SimpleString address = RandomUtil.randomSimpleString();
+      SimpleString queue = RandomUtil.randomSimpleString();
 
       session.createQueue(address, queue, false);
 
       ClientProducer producer = session.createProducer(address);
       ClientConsumer consumer = session.createConsumer(queue);
       ClientMessage message = session.createClientMessage(false);
-      message.setExpiration(System.currentTimeMillis() + EXPIRATION);
+      message.setExpiration(System.currentTimeMillis() + MessageExpirationTest.EXPIRATION);
       producer.send(message);
 
-      Thread.sleep(EXPIRATION * 2);
-           
+      Thread.sleep(MessageExpirationTest.EXPIRATION * 2);
+
       session.start();
-      
+
       Thread.sleep(500);
-      
-      assertEquals(0, ((Queue)server.getPostOffice().getBinding(queue).getBindable()).getDeliveringCount());
-      assertEquals(0, ((Queue)server.getPostOffice().getBinding(queue).getBindable()).getMessageCount());
-      
+
+      Assert.assertEquals(0, ((Queue)server.getPostOffice().getBinding(queue).getBindable()).getDeliveringCount());
+      Assert.assertEquals(0, ((Queue)server.getPostOffice().getBinding(queue).getBindable()).getMessageCount());
+
       ClientMessage message2 = consumer.receiveImmediate();
-      assertNull(message2);
+      Assert.assertNull(message2);
 
       consumer.close();
       session.deleteQueue(queue);
    }
-   
+
    public void testMessageExpirationOnClient() throws Exception
    {
-      SimpleString address = randomSimpleString();
-      SimpleString queue = randomSimpleString();
+      SimpleString address = RandomUtil.randomSimpleString();
+      SimpleString queue = RandomUtil.randomSimpleString();
 
       session.createQueue(address, queue, false);
 
       ClientProducer producer = session.createProducer(address);
       ClientMessage message = session.createClientMessage(false);
-      message.setExpiration(System.currentTimeMillis() + EXPIRATION);
+      message.setExpiration(System.currentTimeMillis() + MessageExpirationTest.EXPIRATION);
       producer.send(message);
-     
+
       session.start();
-      
-      Thread.sleep(EXPIRATION * 2);
+
+      Thread.sleep(MessageExpirationTest.EXPIRATION * 2);
 
       ClientConsumer consumer = session.createConsumer(queue);
       ClientMessage message2 = consumer.receiveImmediate();
-      assertNull(message2);
-                 
-      assertEquals(0, ((Queue)server.getPostOffice().getBinding(queue).getBindable()).getDeliveringCount());
-      assertEquals(0, ((Queue)server.getPostOffice().getBinding(queue).getBindable()).getMessageCount());
+      Assert.assertNull(message2);
+
+      Assert.assertEquals(0, ((Queue)server.getPostOffice().getBinding(queue).getBindable()).getDeliveringCount());
+      Assert.assertEquals(0, ((Queue)server.getPostOffice().getBinding(queue).getBindable()).getMessageCount());
 
       consumer.close();
       session.deleteQueue(queue);
@@ -137,11 +138,11 @@ public class MessageExpirationTest extends ServiceTestBase
 
    public void testMessageExpiredWithExpiryAddress() throws Exception
    {
-      SimpleString address = randomSimpleString();
-      SimpleString queue = randomSimpleString();
-      final SimpleString expiryAddress = randomSimpleString();
-      SimpleString expiryQueue = randomSimpleString();
-      
+      SimpleString address = RandomUtil.randomSimpleString();
+      SimpleString queue = RandomUtil.randomSimpleString();
+      final SimpleString expiryAddress = RandomUtil.randomSimpleString();
+      SimpleString expiryQueue = RandomUtil.randomSimpleString();
+
       server.getAddressSettingsRepository().addMatch(address.toString(), new AddressSettings()
       {
          @Override
@@ -153,26 +154,25 @@ public class MessageExpirationTest extends ServiceTestBase
 
       session.createQueue(address, queue, false);
       session.createQueue(expiryAddress, expiryQueue, false);
-      
 
       ClientProducer producer = session.createProducer(address);
       ClientMessage message = session.createClientMessage(false);
-      message.setExpiration(System.currentTimeMillis() + EXPIRATION);
+      message.setExpiration(System.currentTimeMillis() + MessageExpirationTest.EXPIRATION);
       producer.send(message);
 
-      Thread.sleep(EXPIRATION * 2);
+      Thread.sleep(MessageExpirationTest.EXPIRATION * 2);
 
       session.start();
 
       ClientConsumer consumer = session.createConsumer(queue);
       ClientMessage message2 = consumer.receiveImmediate();
-      assertNull(message2);
+      Assert.assertNull(message2);
 
       ClientConsumer expiryConsumer = session.createConsumer(expiryQueue);
       ClientMessage expiredMessage = expiryConsumer.receive(500);
-      assertNotNull(expiredMessage);
-      assertNotNull(expiredMessage.getObjectProperty(MessageImpl.HDR_ACTUAL_EXPIRY_TIME));
-      assertEquals(address, expiredMessage.getObjectProperty(MessageImpl.HDR_ORIGINAL_DESTINATION));
+      Assert.assertNotNull(expiredMessage);
+      Assert.assertNotNull(expiredMessage.getObjectProperty(MessageImpl.HDR_ACTUAL_EXPIRY_TIME));
+      Assert.assertEquals(address, expiredMessage.getObjectProperty(MessageImpl.HDR_ORIGINAL_DESTINATION));
       consumer.close();
       expiryConsumer.close();
       session.deleteQueue(queue);
@@ -199,15 +199,15 @@ public class MessageExpirationTest extends ServiceTestBase
    protected void tearDown() throws Exception
    {
       sf.close();
-      
+
       session.close();
 
       server.stop();
-      
+
       session = null;
-      
+
       server = null;
-      
+
       sf = null;
 
       super.tearDown();

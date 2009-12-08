@@ -101,28 +101,29 @@ public abstract class PubSubTestCase extends JMSTestCase
     * <br />
     * Start connections.
     */
+   @Override
    protected void setUp() throws Exception
    {
       super.setUp();
-      
+
       try
       {
          // ...and creates administrated objects and binds them
-         admin.createTopicConnectionFactory(TCF_NAME);
-         admin.createTopic(TOPIC_NAME);
+         admin.createTopicConnectionFactory(PubSubTestCase.TCF_NAME);
+         admin.createTopic(PubSubTestCase.TOPIC_NAME);
 
          // end of admin step, start of JMS client step
          ctx = admin.createContext();
 
-         publisherTCF = (TopicConnectionFactory) ctx.lookup(TCF_NAME);
-         publisherTopic = (Topic) ctx.lookup(TOPIC_NAME);
+         publisherTCF = (TopicConnectionFactory)ctx.lookup(PubSubTestCase.TCF_NAME);
+         publisherTopic = (Topic)ctx.lookup(PubSubTestCase.TOPIC_NAME);
          publisherConnection = publisherTCF.createTopicConnection();
          publisherConnection.setClientID("publisherConnection");
          publisherSession = publisherConnection.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
          publisher = publisherSession.createPublisher(publisherTopic);
 
-         subscriberTCF = (TopicConnectionFactory) ctx.lookup(TCF_NAME);
-         subscriberTopic = (Topic) ctx.lookup(TOPIC_NAME);
+         subscriberTCF = (TopicConnectionFactory)ctx.lookup(PubSubTestCase.TCF_NAME);
+         subscriberTopic = (Topic)ctx.lookup(PubSubTestCase.TOPIC_NAME);
          subscriberConnection = subscriberTCF.createTopicConnection();
          subscriberConnection.setClientID("subscriberConnection");
          subscriberSession = subscriberConnection.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -130,7 +131,7 @@ public abstract class PubSubTestCase extends JMSTestCase
 
          publisherConnection.start();
          subscriberConnection.start();
-         //end of client step
+         // end of client step
       }
       catch (Exception e)
       {
@@ -141,6 +142,7 @@ public abstract class PubSubTestCase extends JMSTestCase
    /**
     *  Close connections and delete administrated objects
     */
+   @Override
    protected void tearDown() throws Exception
    {
       try
@@ -148,8 +150,8 @@ public abstract class PubSubTestCase extends JMSTestCase
          publisherConnection.close();
          subscriberConnection.close();
 
-         admin.deleteTopicConnectionFactory(TCF_NAME);
-         admin.deleteTopic(TOPIC_NAME);
+         admin.deleteTopicConnectionFactory(PubSubTestCase.TCF_NAME);
+         admin.deleteTopic(PubSubTestCase.TOPIC_NAME);
       }
       catch (Exception ignored)
       {
@@ -168,11 +170,11 @@ public abstract class PubSubTestCase extends JMSTestCase
          subscriberSession = null;
          subscriberConnection = null;
       }
-      
+
       super.tearDown();
    }
 
-   public PubSubTestCase(String name)
+   public PubSubTestCase(final String name)
    {
       super(name);
    }

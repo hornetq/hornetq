@@ -34,21 +34,21 @@ public class InVMConnectorFactory implements ConnectorFactory
                                     final BufferHandler handler,
                                     final ConnectionLifeCycleListener listener,
                                     final Executor closExecutor,
-                                    final Executor threadPool, 
+                                    final Executor threadPool,
                                     final ScheduledExecutorService scheduledThreadPool)
-   {      
+   {
       InVMConnector connector = new InVMConnector(configuration, handler, listener, threadPool);
-      
+
       if (connector.getAcceptor() == null)
       {
          return null;
       }
       else
-      {         
+      {
          return connector;
       }
    }
-   
+
    public Set<String> getAllowableProperties()
    {
       return TransportConstants.ALLOWABLE_CONNECTOR_KEYS;

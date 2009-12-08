@@ -15,6 +15,8 @@ package org.hornetq.tests.stress.paging;
 
 import java.util.HashMap;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
@@ -51,7 +53,7 @@ public class PageStressTest extends ServiceTestBase
    public void testStopDuringDepage() throws Exception
    {
       Configuration config = createDefaultConfig();
-      
+
       config.setJournalSyncNonTransactional(false);
       config.setJournalSyncTransactional(false);
 
@@ -154,7 +156,7 @@ public class PageStressTest extends ServiceTestBase
 
          System.out.println("msgs second time: " + msgs);
 
-         assertEquals(NUMBER_OF_MESSAGES, msgs);
+         Assert.assertEquals(NUMBER_OF_MESSAGES, msgs);
       }
       finally
       {
@@ -227,7 +229,7 @@ public class PageStressTest extends ServiceTestBase
             int msgs1 = readMessages(session, consumers[0], queue[0]);
             if (reads++ == 0)
             {
-               assertTrue(msgs1 > 0 && msgs1 < NUMBER_OF_MESSAGES);
+               Assert.assertTrue(msgs1 > 0 && msgs1 < NUMBER_OF_MESSAGES);
             }
             int msgs2 = readMessages(session, consumers[1], queue[1]);
             counters[0] += msgs1;
@@ -244,8 +246,8 @@ public class PageStressTest extends ServiceTestBase
          consumers[0].close();
          consumers[1].close();
 
-         assertEquals(NUMBER_OF_MESSAGES, counters[0]);
-         assertEquals(NUMBER_OF_MESSAGES, counters[1]);
+         Assert.assertEquals(NUMBER_OF_MESSAGES, counters[0]);
+         Assert.assertEquals(NUMBER_OF_MESSAGES, counters[1]);
       }
       finally
       {
@@ -285,15 +287,16 @@ public class PageStressTest extends ServiceTestBase
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
+   @Override
    protected Configuration createDefaultConfig()
    {
       Configuration config = super.createDefaultConfig();
 
       config.setJournalFileSize(10 * 1024 * 1024);
       config.setJournalMinFiles(5);
-      
+
       config.setJournalType(JournalType.ASYNCIO);
-      
+
       return config;
    }
 

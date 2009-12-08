@@ -77,14 +77,14 @@ public interface Queue extends Bindable
 
    List<MessageReference> getScheduledMessages();
 
-//   Distributor getDistributionPolicy();
-//
-//   void setDistributionPolicy(Distributor policy);
+   // Distributor getDistributionPolicy();
+   //
+   // void setDistributionPolicy(Distributor policy);
 
    int getMessagesAdded();
 
    MessageReference removeReferenceWithID(long id) throws Exception;
-   
+
    MessageReference removeFirstReference(long id) throws Exception;
 
    MessageReference getReference(long id);
@@ -117,33 +117,36 @@ public interface Queue extends Bindable
    void addRedistributor(long delay, Executor executor);
 
    void cancelRedistributor() throws Exception;
-   
+
    boolean hasMatchingConsumer(ServerMessage message);
 
    void deliverNow();
-   
+
    Collection<Consumer> getConsumers();
-   
+
    boolean checkDLQ(MessageReference ref) throws Exception;
-      
+
    /**
     * @return an immutable iterator which does not allow to remove references
     */
    Iterator<MessageReference> iterator();
-   
+
    void setExpiryAddress(SimpleString expiryAddress);
+
    /**
     * Pauses the queue. It will receive messages but won't give them to the consumers until resumed.
     * If a queue is paused, pausing it again will only throw a warning. 
     * To check if a queue is paused, invoke <i>isPaused()</i>
     */
    void pause();
+
    /**
     * Resumes the delivery of message for the queue. 
     * If a queue is resumed, resuming it again will only throw a warning. 
     * To check if a queue is resumed, invoke <i>isPaused()</i>
     */
    void resume();
+
    /**
     * 
     * @return true if paused, false otherwise.

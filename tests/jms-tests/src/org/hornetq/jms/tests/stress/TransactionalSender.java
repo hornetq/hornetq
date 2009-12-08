@@ -37,23 +37,28 @@ import org.hornetq.core.logging.Logger;
 public class TransactionalSender extends Sender
 {
    private static final Logger log = Logger.getLogger(TransactionalSender.class);
-   
+
    protected int commitSize;
-   
+
    protected int rollbackSize;
-   
-   public TransactionalSender(String prodName, Session sess, MessageProducer prod, int numMessages,
-         int commitSize, int rollbackSize)
+
+   public TransactionalSender(final String prodName,
+                              final Session sess,
+                              final MessageProducer prod,
+                              final int numMessages,
+                              final int commitSize,
+                              final int rollbackSize)
    {
       super(prodName, sess, prod, numMessages);
 
       this.commitSize = commitSize;
       this.rollbackSize = rollbackSize;
-      
+
    }
-   
+
+   @Override
    public void run()
-   {    
+   {
       int iterations = numMessages / commitSize;
 
       try
@@ -64,7 +69,7 @@ public class TransactionalSender extends Sender
             {
                Message m = sess.createMessage();
                m.setStringProperty("PROD_NAME", prodName);
-               m.setIntProperty("MSG_NUMBER", outerCount * commitSize + innerCount);   
+               m.setIntProperty("MSG_NUMBER", outerCount * commitSize + innerCount);
                prod.send(m);
             }
             sess.commit();
@@ -72,15 +77,15 @@ public class TransactionalSender extends Sender
             {
                Message m = sess.createMessage();
                m.setStringProperty("PROD_NAME", prodName);
-               m.setIntProperty("MSG_NUMBER", (outerCount + 1) * commitSize + innerCount);          
+               m.setIntProperty("MSG_NUMBER", (outerCount + 1) * commitSize + innerCount);
                prod.send(m);
             }
-            sess.rollback();           
+            sess.rollback();
          }
       }
       catch (Exception e)
       {
-         log.error("Failed to send message", e);
+         TransactionalSender.log.error("Failed to send message", e);
          setFailed(true);
       }
    }

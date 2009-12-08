@@ -11,7 +11,6 @@
  * permissions and limitations under the License.
  */
 
-
 package org.hornetq.core.journal.impl;
 
 import org.hornetq.core.logging.Logger;
@@ -26,12 +25,12 @@ import org.hornetq.core.logging.Logger;
 class DummyCallback extends SyncIOCompletion
 {
    private static DummyCallback instance = new DummyCallback();
-   
+
    private static final Logger log = Logger.getLogger(SimpleWaitIOCallback.class);
-   
+
    public static DummyCallback getInstance()
    {
-      return instance;
+      return DummyCallback.instance;
    }
 
    public void done()
@@ -40,9 +39,11 @@ class DummyCallback extends SyncIOCompletion
 
    public void onError(final int errorCode, final String errorMessage)
    {
-      log.warn("Error on writing data!" + errorMessage + " code - " + errorCode, new Exception(errorMessage));
+      DummyCallback.log.warn("Error on writing data!" + errorMessage + " code - " + errorCode,
+                             new Exception(errorMessage));
    }
 
+   @Override
    public void waitCompletion() throws Exception
    {
    }
@@ -54,4 +55,3 @@ class DummyCallback extends SyncIOCompletion
    {
    }
 }
-

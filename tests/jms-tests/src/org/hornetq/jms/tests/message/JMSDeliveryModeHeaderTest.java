@@ -16,6 +16,8 @@ package org.hornetq.jms.tests.message;
 import javax.jms.DeliveryMode;
 import javax.jms.Message;
 
+import org.hornetq.jms.tests.util.ProxyAssertSupport;
+
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
@@ -25,7 +27,7 @@ public class JMSDeliveryModeHeaderTest extends MessageHeaderTestBase
    // Constants -----------------------------------------------------
 
    // Static --------------------------------------------------------
-   
+
    // Attributes ----------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -34,37 +36,37 @@ public class JMSDeliveryModeHeaderTest extends MessageHeaderTestBase
 
    public void testDefaultDeliveryMode() throws Exception
    {
-      assertEquals(DeliveryMode.PERSISTENT, queueProducer.getDeliveryMode());
+      ProxyAssertSupport.assertEquals(DeliveryMode.PERSISTENT, queueProducer.getDeliveryMode());
    }
 
    public void testNonPersistentDeliveryMode() throws Exception
    {
       queueProducer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-      assertEquals(DeliveryMode.NON_PERSISTENT, queueProducer.getDeliveryMode());
+      ProxyAssertSupport.assertEquals(DeliveryMode.NON_PERSISTENT, queueProducer.getDeliveryMode());
 
       Message m = queueProducerSession.createMessage();
       queueProducer.send(m);
 
-      assertEquals(DeliveryMode.NON_PERSISTENT, queueConsumer.receive().getJMSDeliveryMode());
+      ProxyAssertSupport.assertEquals(DeliveryMode.NON_PERSISTENT, queueConsumer.receive().getJMSDeliveryMode());
    }
 
    public void testPersistentDeliveryMode() throws Exception
    {
       queueProducer.setDeliveryMode(DeliveryMode.PERSISTENT);
-      assertEquals(DeliveryMode.PERSISTENT, queueProducer.getDeliveryMode());
+      ProxyAssertSupport.assertEquals(DeliveryMode.PERSISTENT, queueProducer.getDeliveryMode());
 
       Message m = queueProducerSession.createMessage();
       queueProducer.send(m);
 
-      assertEquals(DeliveryMode.PERSISTENT, queueConsumer.receive().getJMSDeliveryMode());
+      ProxyAssertSupport.assertEquals(DeliveryMode.PERSISTENT, queueConsumer.receive().getJMSDeliveryMode());
    }
 
    // Package protected ---------------------------------------------
-   
+
    // Protected -----------------------------------------------------
-   
+
    // Private -------------------------------------------------------
-   
+
    // Inner classes -------------------------------------------------
 
 }

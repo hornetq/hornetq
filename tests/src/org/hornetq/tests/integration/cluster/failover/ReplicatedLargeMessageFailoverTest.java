@@ -30,13 +30,13 @@ public class ReplicatedLargeMessageFailoverTest extends LargeMessageFailoverTest
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
-   
+
    public ReplicatedLargeMessageFailoverTest()
    {
       super();
    }
 
-   public ReplicatedLargeMessageFailoverTest(String name)
+   public ReplicatedLargeMessageFailoverTest(final String name)
    {
       super(name);
    }

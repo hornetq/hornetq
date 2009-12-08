@@ -19,6 +19,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.deployers.DeploymentManager;
 import org.hornetq.core.deployers.impl.BasicUserCredentialsDeployer;
 import org.hornetq.core.security.CheckType;
@@ -37,33 +39,31 @@ import org.w3c.dom.NodeList;
 public class BasicUserCredentialsDeployerTest extends UnitTestCase
 {
    private BasicUserCredentialsDeployer deployer;
-   
+
    FakeHornetQUpdateableSecurityManager securityManager;
 
-   private static final String simpleSecurityXml = "<configuration>\n" +
-                                                   "<defaultuser name=\"guest\" password=\"guest\">\n" +
-                                                   "      <role name=\"guest\"/>\n" +
-                                                   "   </defaultuser>" +
-                                                   "</configuration>";
+   private static final String simpleSecurityXml = "<configuration>\n" + "<defaultuser name=\"guest\" password=\"guest\">\n"
+                                                   + "      <role name=\"guest\"/>\n"
+                                                   + "   </defaultuser>"
+                                                   + "</configuration>";
 
-   private static final String singleUserXml = "<configuration>\n" +
-                                               "      <user name=\"guest\" password=\"guest\">\n" +
-                                               "         <role name=\"guest\"/>\n" +
-                                               "      </user>\n" +
-                                               "</configuration>";
+   private static final String singleUserXml = "<configuration>\n" + "      <user name=\"guest\" password=\"guest\">\n"
+                                               + "         <role name=\"guest\"/>\n"
+                                               + "      </user>\n"
+                                               + "</configuration>";
 
-   private static final String multipleUserXml = "<configuration>\n" +
-                                                 "      <user name=\"guest\" password=\"guest\">\n" +
-                                                 "         <role name=\"guest\"/>\n" +
-                                                 "         <role name=\"foo\"/>\n" +
-                                                 "      </user>\n" +
-                                                 "    <user name=\"anotherguest\" password=\"anotherguest\">\n" +
-                                                 "         <role name=\"anotherguest\"/>\n" +
-                                                 "         <role name=\"foo\"/>\n" +
-                                                 "         <role name=\"bar\"/>\n" +
-                                                 "      </user>\n" +
-                                                 "</configuration>";
+   private static final String multipleUserXml = "<configuration>\n" + "      <user name=\"guest\" password=\"guest\">\n"
+                                                 + "         <role name=\"guest\"/>\n"
+                                                 + "         <role name=\"foo\"/>\n"
+                                                 + "      </user>\n"
+                                                 + "    <user name=\"anotherguest\" password=\"anotherguest\">\n"
+                                                 + "         <role name=\"anotherguest\"/>\n"
+                                                 + "         <role name=\"foo\"/>\n"
+                                                 + "         <role name=\"bar\"/>\n"
+                                                 + "      </user>\n"
+                                                 + "</configuration>";
 
+   @Override
    protected void setUp() throws Exception
    {
       super.setUp();
@@ -72,6 +72,7 @@ public class BasicUserCredentialsDeployerTest extends UnitTestCase
       deployer = new BasicUserCredentialsDeployer(deploymentManager, securityManager);
    }
 
+   @Override
    protected void tearDown() throws Exception
    {
       deployer = null;
@@ -79,7 +80,7 @@ public class BasicUserCredentialsDeployerTest extends UnitTestCase
       super.tearDown();
    }
 
-   private void deploy(String xml) throws Exception
+   private void deploy(final String xml) throws Exception
    {
       NodeList children = XMLUtil.stringToElement(xml).getChildNodes();
       for (int i = 0; i < children.getLength(); i++)
@@ -92,7 +93,7 @@ public class BasicUserCredentialsDeployerTest extends UnitTestCase
       }
    }
 
-   private void undeploy(String xml) throws Exception
+   private void undeploy(final String xml) throws Exception
    {
       NodeList children = XMLUtil.stringToElement(xml).getChildNodes();
       for (int i = 0; i < children.getLength(); i++)
@@ -107,85 +108,85 @@ public class BasicUserCredentialsDeployerTest extends UnitTestCase
 
    public void testSimpleDefaultSecurity() throws Exception
    {
-      deploy(simpleSecurityXml);
-      assertEquals("guest", securityManager.defaultUser);
+      deploy(BasicUserCredentialsDeployerTest.simpleSecurityXml);
+      Assert.assertEquals("guest", securityManager.defaultUser);
       User user = securityManager.users.get("guest");
-      assertNotNull(user);
-      assertEquals("guest",user.user);
-      assertEquals("guest",user.password);
+      Assert.assertNotNull(user);
+      Assert.assertEquals("guest", user.user);
+      Assert.assertEquals("guest", user.password);
       List<String> roles = securityManager.roles.get("guest");
-      assertNotNull(roles);
-      assertEquals(1, roles.size());
-      assertEquals("guest", roles.get(0));
+      Assert.assertNotNull(roles);
+      Assert.assertEquals(1, roles.size());
+      Assert.assertEquals("guest", roles.get(0));
    }
 
    public void testSingleUserDeploySecurity() throws Exception
-   {      
-      deploy(singleUserXml);
-      assertNull(securityManager.defaultUser);
+   {
+      deploy(BasicUserCredentialsDeployerTest.singleUserXml);
+      Assert.assertNull(securityManager.defaultUser);
       User user = securityManager.users.get("guest");
-      assertNotNull(user);
-      assertEquals("guest",user.user);
-      assertEquals("guest",user.password);
+      Assert.assertNotNull(user);
+      Assert.assertEquals("guest", user.user);
+      Assert.assertEquals("guest", user.password);
       List<String> roles = securityManager.roles.get("guest");
-      assertNotNull(roles);
-      assertEquals(1, roles.size());
-      assertEquals("guest", roles.get(0));
+      Assert.assertNotNull(roles);
+      Assert.assertEquals(1, roles.size());
+      Assert.assertEquals("guest", roles.get(0));
    }
 
    public void testMultipleUserDeploySecurity() throws Exception
-   {            
-      deploy(multipleUserXml);
-      assertNull(securityManager.defaultUser);
+   {
+      deploy(BasicUserCredentialsDeployerTest.multipleUserXml);
+      Assert.assertNull(securityManager.defaultUser);
       User user = securityManager.users.get("guest");
-      assertNotNull(user);
-      assertEquals("guest",user.user);
-      assertEquals("guest",user.password);
+      Assert.assertNotNull(user);
+      Assert.assertEquals("guest", user.user);
+      Assert.assertEquals("guest", user.password);
       List<String> roles = securityManager.roles.get("guest");
-      assertNotNull(roles);
-      assertEquals(2, roles.size());
-      assertEquals("guest", roles.get(0));
-      assertEquals("foo", roles.get(1));
+      Assert.assertNotNull(roles);
+      Assert.assertEquals(2, roles.size());
+      Assert.assertEquals("guest", roles.get(0));
+      Assert.assertEquals("foo", roles.get(1));
       user = securityManager.users.get("anotherguest");
-      assertNotNull(user);
-      assertEquals("anotherguest",user.user);
-      assertEquals("anotherguest",user.password);
+      Assert.assertNotNull(user);
+      Assert.assertEquals("anotherguest", user.user);
+      Assert.assertEquals("anotherguest", user.password);
       roles = securityManager.roles.get("anotherguest");
-      assertNotNull(roles);
-      assertEquals(3, roles.size());
-      assertEquals("anotherguest", roles.get(0));
-      assertEquals("foo", roles.get(1));
-      assertEquals("bar", roles.get(2));
+      Assert.assertNotNull(roles);
+      Assert.assertEquals(3, roles.size());
+      Assert.assertEquals("anotherguest", roles.get(0));
+      Assert.assertEquals("foo", roles.get(1));
+      Assert.assertEquals("bar", roles.get(2));
    }
 
    public void testUndeploy() throws Exception
-   {      
-      deploy(multipleUserXml);
-      undeploy(singleUserXml);
-      assertNull(securityManager.defaultUser);
+   {
+      deploy(BasicUserCredentialsDeployerTest.multipleUserXml);
+      undeploy(BasicUserCredentialsDeployerTest.singleUserXml);
+      Assert.assertNull(securityManager.defaultUser);
       User user = securityManager.users.get("guest");
-      assertNull(user);
+      Assert.assertNull(user);
       List<String> roles = securityManager.roles.get("guest");
-      assertNull(roles);
+      Assert.assertNull(roles);
       user = securityManager.users.get("anotherguest");
-      assertNotNull(user);
-      assertEquals("anotherguest",user.user);
-      assertEquals("anotherguest",user.password);
+      Assert.assertNotNull(user);
+      Assert.assertEquals("anotherguest", user.user);
+      Assert.assertEquals("anotherguest", user.password);
       roles = securityManager.roles.get("anotherguest");
-      assertNotNull(roles);
-      assertEquals(3, roles.size());
-      assertEquals("anotherguest", roles.get(0));
-      assertEquals("foo", roles.get(1));
-      assertEquals("bar", roles.get(2));
+      Assert.assertNotNull(roles);
+      Assert.assertEquals(3, roles.size());
+      Assert.assertEquals("anotherguest", roles.get(0));
+      Assert.assertEquals("foo", roles.get(1));
+      Assert.assertEquals("bar", roles.get(2));
    }
 
    class FakeHornetQUpdateableSecurityManager implements HornetQSecurityManager
    {
       String defaultUser;
 
-      private Map<String, User> users = new HashMap<String, User>();
+      private final Map<String, User> users = new HashMap<String, User>();
 
-      private Map<String, List<String>> roles = new HashMap<String, List<String>>();
+      private final Map<String, List<String>> roles = new HashMap<String, List<String>>();
 
       public void addUser(final String user, final String password)
       {
@@ -224,29 +225,32 @@ public class BasicUserCredentialsDeployerTest extends UnitTestCase
          roles.get(user).remove(role);
       }
 
-      public void setDefaultUser(String username)
+      public void setDefaultUser(final String username)
       {
          defaultUser = username;
       }
 
-      public boolean validateUser(String user, String password)
+      public boolean validateUser(final String user, final String password)
       {
          return false;
       }
 
-      public boolean validateUserAndRole(String user, String password, Set<Role> roles, CheckType checkType)
+      public boolean validateUserAndRole(final String user,
+                                         final String password,
+                                         final Set<Role> roles,
+                                         final CheckType checkType)
       {
          return false;
       }
-      
+
       public void start()
-      {         
+      {
       }
-      
+
       public void stop()
-      {         
+      {
       }
-      
+
       public boolean isStarted()
       {
          return true;
@@ -265,7 +269,8 @@ public class BasicUserCredentialsDeployerTest extends UnitTestCase
          this.password = password;
       }
 
-      public boolean equals(Object o)
+      @Override
+      public boolean equals(final Object o)
       {
          if (this == o)
          {
@@ -276,7 +281,7 @@ public class BasicUserCredentialsDeployerTest extends UnitTestCase
             return false;
          }
 
-         User user1 = (User) o;
+         User user1 = (User)o;
 
          if (!user.equals(user1.user))
          {
@@ -286,6 +291,7 @@ public class BasicUserCredentialsDeployerTest extends UnitTestCase
          return true;
       }
 
+      @Override
       public int hashCode()
       {
          return user.hashCode();

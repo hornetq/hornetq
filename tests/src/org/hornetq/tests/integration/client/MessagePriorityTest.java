@@ -13,7 +13,7 @@
 
 package org.hornetq.tests.integration.client;
 
-import static org.hornetq.tests.util.RandomUtil.randomSimpleString;
+import junit.framework.Assert;
 
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
@@ -28,6 +28,7 @@ import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.server.HornetQ;
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.SimpleString;
 
@@ -46,7 +47,7 @@ public class MessagePriorityTest extends UnitTestCase
    private HornetQServer server;
 
    private ClientSession session;
-   
+
    private ClientSessionFactory sf;
 
    // Static --------------------------------------------------------
@@ -57,8 +58,8 @@ public class MessagePriorityTest extends UnitTestCase
 
    public void testMessagePriority() throws Exception
    {
-      SimpleString queue = randomSimpleString();
-      SimpleString address = randomSimpleString();
+      SimpleString queue = RandomUtil.randomSimpleString();
+      SimpleString address = RandomUtil.randomSimpleString();
 
       session.createQueue(address, queue, false);
 
@@ -67,7 +68,7 @@ public class MessagePriorityTest extends UnitTestCase
       for (int i = 0; i < 10; i++)
       {
          ClientMessage m = createTextMessage(Integer.toString(i), session);
-         m.setPriority((byte)i);         
+         m.setPriority((byte)i);
          producer.send(m);
       }
 
@@ -79,14 +80,14 @@ public class MessagePriorityTest extends UnitTestCase
       for (int i = 9; i >= 0; i--)
       {
          ClientMessage m = consumer.receive(500);
-         assertNotNull(m);
-         assertEquals(i, m.getPriority());
+         Assert.assertNotNull(m);
+         Assert.assertEquals(i, m.getPriority());
       }
 
       consumer.close();
       session.deleteQueue(queue);
    }
-   
+
    /**
     * in this tests, the session is started and the consumer created *before* the messages are sent.
     * each message which is sent will be received by the consumer in its buffer and the priority won't be taken
@@ -95,15 +96,14 @@ public class MessagePriorityTest extends UnitTestCase
     */
    public void testMessagePriorityWithClientSidePrioritization() throws Exception
    {
-      SimpleString queue = randomSimpleString();
-      SimpleString address = randomSimpleString();
+      SimpleString queue = RandomUtil.randomSimpleString();
+      SimpleString address = RandomUtil.randomSimpleString();
 
       session.createQueue(address, queue, false);
 
       ClientProducer producer = session.createProducer(address);
       session.start();
       ClientConsumer consumer = session.createConsumer(queue);
-
 
       for (int i = 0; i < 10; i++)
       {
@@ -116,8 +116,8 @@ public class MessagePriorityTest extends UnitTestCase
       for (int i = 9; i >= 0; i--)
       {
          ClientMessage m = consumer.receive(500);
-         assertNotNull(m);
-         assertEquals(i, m.getPriority());         
+         Assert.assertNotNull(m);
+         Assert.assertEquals(i, m.getPriority());
       }
 
       consumer.close();
@@ -126,8 +126,8 @@ public class MessagePriorityTest extends UnitTestCase
 
    public void testMessageOrderWithSamePriority() throws Exception
    {
-      SimpleString queue = randomSimpleString();
-      SimpleString address = randomSimpleString();
+      SimpleString queue = RandomUtil.randomSimpleString();
+      SimpleString address = RandomUtil.randomSimpleString();
 
       session.createQueue(address, queue, false);
 
@@ -136,9 +136,9 @@ public class MessagePriorityTest extends UnitTestCase
       ClientMessage[] messages = new ClientMessage[10];
 
       // send 3 messages with priority 0
-      //      3                        7
-      //      3                        3
-      //      1                        9
+      // 3 7
+      // 3 3
+      // 1 9
       messages[0] = createTextMessage("a", session);
       messages[0].setPriority((byte)0);
       messages[1] = createTextMessage("b", session);
@@ -173,19 +173,19 @@ public class MessagePriorityTest extends UnitTestCase
       session.start();
 
       // 1 message with priority 9
-      expectMessage((byte)9, "j", consumer);
+      MessagePriorityTest.expectMessage((byte)9, "j", consumer);
       // 3 messages with priority 7
-      expectMessage((byte)7, "d", consumer);
-      expectMessage((byte)7, "e", consumer);
-      expectMessage((byte)7, "f", consumer);
+      MessagePriorityTest.expectMessage((byte)7, "d", consumer);
+      MessagePriorityTest.expectMessage((byte)7, "e", consumer);
+      MessagePriorityTest.expectMessage((byte)7, "f", consumer);
       // 3 messages with priority 3
-      expectMessage((byte)3, "g", consumer);
-      expectMessage((byte)3, "h", consumer);
-      expectMessage((byte)3, "i", consumer);
+      MessagePriorityTest.expectMessage((byte)3, "g", consumer);
+      MessagePriorityTest.expectMessage((byte)3, "h", consumer);
+      MessagePriorityTest.expectMessage((byte)3, "i", consumer);
       // 3 messages with priority 0
-      expectMessage((byte)0, "a", consumer);
-      expectMessage((byte)0, "b", consumer);
-      expectMessage((byte)0, "c", consumer);
+      MessagePriorityTest.expectMessage((byte)0, "a", consumer);
+      MessagePriorityTest.expectMessage((byte)0, "b", consumer);
+      MessagePriorityTest.expectMessage((byte)0, "c", consumer);
 
       consumer.close();
       session.deleteQueue(queue);
@@ -217,15 +217,15 @@ public class MessagePriorityTest extends UnitTestCase
    protected void tearDown() throws Exception
    {
       sf.close();
-      
+
       session.close();
 
       server.stop();
-      
+
       sf = null;
-      
+
       session = null;
-      
+
       server = null;
 
       super.tearDown();
@@ -233,12 +233,14 @@ public class MessagePriorityTest extends UnitTestCase
 
    // Private -------------------------------------------------------
 
-   private static void expectMessage(byte expectedPriority, String expectedStringInBody, ClientConsumer consumer) throws Exception
+   private static void expectMessage(final byte expectedPriority,
+                                     final String expectedStringInBody,
+                                     final ClientConsumer consumer) throws Exception
    {
       ClientMessage m = consumer.receive(500);
-      assertNotNull(m);
-      assertEquals(expectedPriority, m.getPriority());
-      assertEquals(expectedStringInBody, m.getBodyBuffer().readString());
+      Assert.assertNotNull(m);
+      Assert.assertEquals(expectedPriority, m.getPriority());
+      Assert.assertEquals(expectedStringInBody, m.getBodyBuffer().readString());
    }
 
    // Inner classes -------------------------------------------------

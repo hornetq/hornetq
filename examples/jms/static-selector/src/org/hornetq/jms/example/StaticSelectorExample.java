@@ -35,43 +35,44 @@ public class StaticSelectorExample extends HornetQExample
 {
    private volatile boolean result = true;
 
-   public static void main(String[] args)
+   public static void main(final String[] args)
    {
       new StaticSelectorExample().run(args);
    }
 
+   @Override
    public boolean runExample() throws Exception
    {
       Connection connection = null;
       InitialContext initialContext = null;
       try
       {
-         //Step 1. Create an initial context to perform the JNDI lookup.
+         // Step 1. Create an initial context to perform the JNDI lookup.
          initialContext = getContext(0);
 
-         //Step 2. look-up the JMS queue object from JNDI, this is the queue that has filter configured with it.
-         Queue queue = (Queue) initialContext.lookup("/queue/selectorQueue");
+         // Step 2. look-up the JMS queue object from JNDI, this is the queue that has filter configured with it.
+         Queue queue = (Queue)initialContext.lookup("/queue/selectorQueue");
 
-         //Step 3. look-up the JMS connection factory object from JNDI
-         ConnectionFactory cf = (ConnectionFactory) initialContext.lookup("/ConnectionFactory");
+         // Step 3. look-up the JMS connection factory object from JNDI
+         ConnectionFactory cf = (ConnectionFactory)initialContext.lookup("/ConnectionFactory");
 
-         //Step 4. Create a JMS Connection
+         // Step 4. Create a JMS Connection
          connection = cf.createConnection();
-         
-         //Step 5. Start the connection
+
+         // Step 5. Start the connection
          connection.start();
 
-         //Step 6. Create a JMS Session
+         // Step 6. Create a JMS Session
          Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         //Step 7. Create a JMS Message Producer
+         // Step 7. Create a JMS Message Producer
          MessageProducer producer = session.createProducer(queue);
 
-         //Step 8. Create a JMS Message Consumer that receives 'red' messages
+         // Step 8. Create a JMS Message Consumer that receives 'red' messages
          MessageConsumer redConsumer = session.createConsumer(queue);
          redConsumer.setMessageListener(new SimpleMessageListener("red"));
-         
-         //Step 9. Create five messages with different 'color' properties
+
+         // Step 9. Create five messages with different 'color' properties
          TextMessage redMessage1 = session.createTextMessage("Red-1");
          redMessage1.setStringProperty("color", "red");
          TextMessage redMessage2 = session.createTextMessage("Red-2");
@@ -82,7 +83,7 @@ public class StaticSelectorExample extends HornetQExample
          blueMessage.setStringProperty("color", "blue");
          TextMessage normalMessage = session.createTextMessage("No color");
 
-         //Step 10. Send the Messages
+         // Step 10. Send the Messages
          producer.send(redMessage1);
          System.out.println("Message sent: " + redMessage1.getText());
          producer.send(greenMessage);
@@ -93,42 +94,46 @@ public class StaticSelectorExample extends HornetQExample
          System.out.println("Message sent: " + redMessage2.getText());
          producer.send(normalMessage);
          System.out.println("Message sent: " + normalMessage.getText());
-         
-         //Step 11. Waiting for the message listener to check the received messages.
+
+         // Step 11. Waiting for the message listener to check the received messages.
          Thread.sleep(5000);
-         
+
          return result;
       }
       finally
       {
-         //Step 12. Be sure to close our JMS resources!
+         // Step 12. Be sure to close our JMS resources!
          if (initialContext != null)
          {
             initialContext.close();
          }
-         if(connection != null)
+         if (connection != null)
          {
             connection.close();
          }
       }
    }
-   
+
    public class SimpleMessageListener implements MessageListener
    {
-      private String name;
-      
-      public SimpleMessageListener(String listener)
+      private final String name;
+
+      public SimpleMessageListener(final String listener)
       {
          name = listener;
       }
 
-      public void onMessage(Message msg)
+      public void onMessage(final Message msg)
       {
          TextMessage textMessage = (TextMessage)msg;
          try
          {
             String colorProp = msg.getStringProperty("color");
-            System.out.println("Receiver " + name + " receives message [" + textMessage.getText() + "] with color property: " + colorProp);
+            System.out.println("Receiver " + name +
+                               " receives message [" +
+                               textMessage.getText() +
+                               "] with color property: " +
+                               colorProp);
             if (!colorProp.equals(name))
             {
                result = false;

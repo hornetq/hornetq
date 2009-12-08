@@ -41,36 +41,37 @@ public class SelectiveTestRunner extends TestRunner
     */
    public static void main(String[] args)
    {
-		SelectiveTestRunner runner = new SelectiveTestRunner();
+      SelectiveTestRunner runner = new SelectiveTestRunner();
 
-		try
+      try
       {
          args = runner.preProcessCommandLine(args);
 
-			TestResult r = runner.start(args);
+         TestResult r = runner.start(args);
 
-			if (!r.wasSuccessful())
+         if (!r.wasSuccessful())
          {
-				System.exit(FAILURE_EXIT);
+            System.exit(TestRunner.FAILURE_EXIT);
          }
-			System.exit(SUCCESS_EXIT);
-		}
-      catch(Exception e)
+         System.exit(TestRunner.SUCCESS_EXIT);
+      }
+      catch (Exception e)
       {
          System.err.println(e.getMessage());
-			System.exit(EXCEPTION_EXIT);
-		}
+         System.exit(TestRunner.EXCEPTION_EXIT);
+      }
    }
 
    // Attributes ----------------------------------------------------
 
-   private List methods = new ArrayList();
+   private final List methods = new ArrayList();
 
    // Constructors --------------------------------------------------
 
    // TestRunner overrides ------------------------------------------
 
-   public Test getTest(String suiteClassName)
+   @Override
+   public Test getTest(final String suiteClassName)
    {
       Test t = super.getTest(suiteClassName);
       if (methods.isEmpty())
@@ -83,20 +84,18 @@ public class SelectiveTestRunner extends TestRunner
       }
    }
 
-
    // Public --------------------------------------------------------
 
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
 
-
    // Private -------------------------------------------------------
 
    /**
     * Scan command line for an argument of type "-t testMethod1,testMethod2,..." and processes it.
     */
-   private String[] preProcessCommandLine(String[] args)
+   private String[] preProcessCommandLine(final String[] args)
    {
       List l = new ArrayList();
       for (int i = 0; i < args.length; i++)
@@ -104,7 +103,7 @@ public class SelectiveTestRunner extends TestRunner
          if ("-t".equals(args[i]))
          {
             i++;
-            for(StringTokenizer st = new StringTokenizer(args[i], ","); st.hasMoreTokens(); )
+            for (StringTokenizer st = new StringTokenizer(args[i], ","); st.hasMoreTokens();)
             {
                methods.add(st.nextToken());
             }

@@ -12,7 +12,6 @@
  */
 package org.hornetq.core.remoting.spi;
 
-
 /**
  * 
  * A Connector
@@ -23,11 +22,11 @@ package org.hornetq.core.remoting.spi;
 public interface Connector
 {
    void start();
-   
+
    void close();
-   
+
    boolean isStarted();
-   
+
    /**
     * Create and return a connection from this connector.
     * 
@@ -36,5 +35,5 @@ public interface Connector
     * 
     * @return The connection, or null if unable to create a connection (e.g. network is unavailable)
     */
-   Connection createConnection();   
+   Connection createConnection();
 }

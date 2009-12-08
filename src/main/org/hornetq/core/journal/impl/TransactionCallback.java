@@ -11,7 +11,6 @@
  * permissions and limitations under the License.
  */
 
-
 package org.hornetq.core.journal.impl;
 
 import org.hornetq.core.journal.IOAsyncTask;
@@ -31,11 +30,11 @@ public class TransactionCallback implements IOAsyncTask
    private volatile String errorMessage = null;
 
    private volatile int errorCode = 0;
-   
+
    private volatile int up = 0;
-   
+
    private volatile int done = 0;
-   
+
    private volatile IOAsyncTask delegateCompletion;
 
    public void countUp()
@@ -74,7 +73,7 @@ public class TransactionCallback implements IOAsyncTask
       this.errorCode = errorCode;
 
       countLatch.down();
-      
+
       if (delegateCompletion != null)
       {
          delegateCompletion.onError(errorCode, errorMessage);
@@ -92,7 +91,7 @@ public class TransactionCallback implements IOAsyncTask
    /**
     * @param delegateCompletion the delegateCompletion to set
     */
-   public void setDelegateCompletion(IOAsyncTask delegateCompletion)
+   public void setDelegateCompletion(final IOAsyncTask delegateCompletion)
    {
       this.delegateCompletion = delegateCompletion;
    }
@@ -112,8 +111,5 @@ public class TransactionCallback implements IOAsyncTask
    {
       return errorCode;
    }
-   
-   
-   
 
 }

@@ -32,6 +32,7 @@ public class StaticClusterWithBackupFailoverTest extends ClusterWithBackupFailov
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
+   @Override
    protected void setupCluster(final boolean forwardWhenNoConsumers) throws Exception
    {
       setupClusterConnectionWithBackups("cluster0",
@@ -89,6 +90,7 @@ public class StaticClusterWithBackupFailoverTest extends ClusterWithBackupFailov
                                         new int[] { 3, 4 });
    }
 
+   @Override
    protected void setupServers() throws Exception
    {
       // The backups

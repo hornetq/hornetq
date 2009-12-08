@@ -31,11 +31,12 @@ import org.hornetq.common.example.HornetQExample;
  */
 public class TemporaryQueueExample extends HornetQExample
 {
-   public static void main(String[] args)
+   public static void main(final String[] args)
    {
       new TemporaryQueueExample().run(args);
    }
 
+   @Override
    public boolean runExample() throws Exception
    {
       Connection connection = null;
@@ -47,7 +48,7 @@ public class TemporaryQueueExample extends HornetQExample
 
          // Step 2. Look-up the JMS connection factory
          ConnectionFactory cf = (ConnectionFactory)initialContext.lookup("/ConnectionFactory");
-         
+
          // Step 3. Create a JMS Connection
          connection = cf.createConnection();
 
@@ -56,52 +57,52 @@ public class TemporaryQueueExample extends HornetQExample
 
          // Step 5. Create a JMS session with AUTO_ACKNOWLEDGE mode
          Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
+
          // Step 6. Create a Temporary Queue
          TemporaryQueue tempQueue = session.createTemporaryQueue();
-         
+
          System.out.println("Temporary queue is created: " + tempQueue);
-         
+
          // Step 7. Create a JMS message producer
          MessageProducer messageProducer = session.createProducer(tempQueue);
 
          // Step 8. Create a text message
          TextMessage message = session.createTextMessage("This is a text message");
-         
+
          // Step 9. Send the text message to the queue
          messageProducer.send(message);
 
          System.out.println("Sent message: " + message.getText());
-         
+
          // Step 11. Create a message consumer
          MessageConsumer messageConsumer = session.createConsumer(tempQueue);
 
          // Step 12. Receive the message from the queue
-         message = (TextMessage) messageConsumer.receive(5000);
+         message = (TextMessage)messageConsumer.receive(5000);
 
          System.out.println("Received message: " + message.getText());
-         
+
          // Step 13. Close the consumer and producer
          messageConsumer.close();
          messageProducer.close();
-         
+
          // Step 14. Delete the temporary queue
          tempQueue.delete();
-         
+
          // Step 15. Create another temporary queue.
          TemporaryQueue tempQueue2 = session.createTemporaryQueue();
-         
+
          System.out.println("Another temporary queue is created: " + tempQueue2);
-         
+
          // Step 16. Close the connection.
          connection.close();
-         
+
          // Step 17. Create a new connection.
          connection = cf.createConnection();
-         
+
          // Step 18. Create a new session.
          session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
+
          // Step 19. Try to access the tempQueue2 outside its lifetime
          try
          {
@@ -112,19 +113,19 @@ public class TemporaryQueueExample extends HornetQExample
          {
             System.out.println("Exception got when trying to access a temp queue outside its scope: " + e);
          }
-         
+
          return true;
       }
       finally
       {
-         if(connection != null)
+         if (connection != null)
          {
             // Step 20. Be sure to close our JMS resources!
             connection.close();
          }
          if (initialContext != null)
          {
-            //Step 21. Also close the initialContext!
+            // Step 21. Also close the initialContext!
             initialContext.close();
          }
       }

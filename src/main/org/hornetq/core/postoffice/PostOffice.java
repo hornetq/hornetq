@@ -49,24 +49,24 @@ public interface PostOffice extends HornetQComponent
    Bindings getBindingsForAddress(SimpleString address) throws Exception;
 
    Binding getBinding(SimpleString uniqueName);
-   
+
    Bindings getMatchingBindings(SimpleString address);
 
    void route(ServerMessage message) throws Exception;
-   
+
    void route(ServerMessage message, Transaction tx) throws Exception;
-   
+
    void route(ServerMessage message, RoutingContext context) throws Exception;
-   
+
    MessageReference reroute(ServerMessage message, Queue queue, Transaction tx) throws Exception;
-   
+
    boolean redistribute(ServerMessage message, final Queue originatingQueue, Transaction tx) throws Exception;
 
    PagingManager getPagingManager();
 
    DuplicateIDCache getDuplicateIDCache(SimpleString address);
-   
+
    void sendQueueInfoToQueue(SimpleString queueName, SimpleString address) throws Exception;
-   
-   Object getNotificationLock();     
+
+   Object getNotificationLock();
 }

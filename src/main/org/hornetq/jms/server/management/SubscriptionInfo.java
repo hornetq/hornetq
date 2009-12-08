@@ -42,7 +42,7 @@ public class SubscriptionInfo
 
    // Static --------------------------------------------------------
 
-   public static SubscriptionInfo[] from(String jsonString) throws Exception
+   public static SubscriptionInfo[] from(final String jsonString) throws Exception
    {
       JSONArray array = new JSONArray(jsonString);
       SubscriptionInfo[] infos = new SubscriptionInfo[array.length()];

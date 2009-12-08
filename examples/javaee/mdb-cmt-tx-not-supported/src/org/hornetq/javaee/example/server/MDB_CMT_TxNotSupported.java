@@ -12,8 +12,6 @@
  */
 package org.hornetq.javaee.example.server;
 
-import org.jboss.ejb3.annotation.ResourceAdapter;
-
 import javax.annotation.Resource;
 import javax.ejb.ActivationConfigProperty;
 import javax.ejb.MessageDriven;
@@ -27,40 +25,38 @@ import javax.jms.TextMessage;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 
+import org.jboss.ejb3.annotation.ResourceAdapter;
+
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  */
-@MessageDriven(name = "MDB_CMT_TxNotSupported",
-               activationConfig =
-                     {
-                        @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
-                        @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/testQueue"),
-                        @ActivationConfigProperty(propertyName = "acknowledgeMode", propertyValue = "Auto-acknowledge")
-                     })
-@TransactionManagement(value= TransactionManagementType.CONTAINER)
-@TransactionAttribute(value= TransactionAttributeType.NOT_SUPPORTED)
+@MessageDriven(name = "MDB_CMT_TxNotSupported", activationConfig = { @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
+                                                                    @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/testQueue"),
+                                                                    @ActivationConfigProperty(propertyName = "acknowledgeMode", propertyValue = "Auto-acknowledge") })
+@TransactionManagement(value = TransactionManagementType.CONTAINER)
+@TransactionAttribute(value = TransactionAttributeType.NOT_SUPPORTED)
 @ResourceAdapter("hornetq-ra.rar")
 public class MDB_CMT_TxNotSupported implements MessageListener
 {
    @Resource(mappedName = "java:/TransactionManager")
    private TransactionManager tm;
 
-   public void onMessage(Message message)
+   public void onMessage(final Message message)
    {
       try
       {
-         //Step 9. We know the client is sending a text message so we cast
+         // Step 9. We know the client is sending a text message so we cast
          TextMessage textMessage = (TextMessage)message;
 
-         //Step 10. get the text from the message.
+         // Step 10. get the text from the message.
          String text = textMessage.getText();
 
          System.out.println("message " + text + " received");
 
-         //Step 11. lets look at the transaction to make sure there isn't one.
+         // Step 11. lets look at the transaction to make sure there isn't one.
          Transaction tx = tm.getTransaction();
 
-         if(tx == null)
+         if (tx == null)
          {
             System.out.println("tx is null, just as expected");
          }

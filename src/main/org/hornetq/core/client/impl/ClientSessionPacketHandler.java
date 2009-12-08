@@ -41,13 +41,13 @@ public class ClientSessionPacketHandler implements ChannelHandler
    private static final Logger log = Logger.getLogger(ClientSessionPacketHandler.class);
 
    private final ClientSessionInternal clientSession;
-   
+
    private final Channel channel;
 
    public ClientSessionPacketHandler(final ClientSessionInternal clientSesssion, final Channel channel)
    {
-      this.clientSession = clientSesssion;
-      
+      clientSession = clientSesssion;
+
       this.channel = channel;
    }
 
@@ -62,44 +62,45 @@ public class ClientSessionPacketHandler implements ChannelHandler
             case SESS_RECEIVE_CONTINUATION:
             {
                SessionReceiveContinuationMessage continuation = (SessionReceiveContinuationMessage)packet;
-               
+
                clientSession.handleReceiveContinuation(continuation.getConsumerID(), continuation);
 
                break;
             }
             case SESS_RECEIVE_MSG:
-            {              
-               SessionReceiveMessage message = (SessionReceiveMessage) packet;
-               
-               clientSession.handleReceiveMessage(message.getConsumerID(), message);               
-               
+            {
+               SessionReceiveMessage message = (SessionReceiveMessage)packet;
+
+               clientSession.handleReceiveMessage(message.getConsumerID(), message);
+
                break;
             }
             case SESS_RECEIVE_LARGE_MSG:
             {
-               SessionReceiveLargeMessage message = (SessionReceiveLargeMessage) packet;
-               
+               SessionReceiveLargeMessage message = (SessionReceiveLargeMessage)packet;
+
                clientSession.handleReceiveLargeMessage(message.getConsumerID(), message);
-                              
+
                break;
             }
             case PacketImpl.SESS_PRODUCER_CREDITS:
             {
                SessionProducerCreditsMessage message = (SessionProducerCreditsMessage)packet;
-               
-               clientSession.handleReceiveProducerCredits(message.getAddress(), message.getCredits(),
+
+               clientSession.handleReceiveProducerCredits(message.getAddress(),
+                                                          message.getCredits(),
                                                           message.getOffset());
-               
+
                break;
             }
             case EXCEPTION:
             {
-               //TODO - we can provide a means for async exceptions to get back to to client
-               //For now we just log it
+               // TODO - we can provide a means for async exceptions to get back to to client
+               // For now we just log it
                HornetQExceptionMessage mem = (HornetQExceptionMessage)packet;
-               
-               log.error("Received exception asynchronously from server", mem.getException());
-               
+
+               ClientSessionPacketHandler.log.error("Received exception asynchronously from server", mem.getException());
+
                break;
             }
             default:
@@ -110,9 +111,9 @@ public class ClientSessionPacketHandler implements ChannelHandler
       }
       catch (Exception e)
       {
-         log.error("Failed to handle packet", e);
+         ClientSessionPacketHandler.log.error("Failed to handle packet", e);
       }
-      
+
       channel.confirm(packet);
    }
 }

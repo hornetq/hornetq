@@ -30,8 +30,8 @@ public class SessionReceiveContinuationMessage extends SessionContinuationMessag
 
    // Constants -----------------------------------------------------
 
-   public static final int SESSION_RECEIVE_CONTINUATION_BASE_SIZE = SESSION_CONTINUATION_BASE_SIZE + DataConstants.SIZE_LONG;
-   
+   public static final int SESSION_RECEIVE_CONTINUATION_BASE_SIZE = SessionContinuationMessage.SESSION_CONTINUATION_BASE_SIZE + DataConstants.SIZE_LONG;
+
    // Attributes ----------------------------------------------------
 
    private long consumerID;
@@ -42,7 +42,7 @@ public class SessionReceiveContinuationMessage extends SessionContinuationMessag
 
    public SessionReceiveContinuationMessage()
    {
-      super(SESS_RECEIVE_CONTINUATION);
+      super(PacketImpl.SESS_RECEIVE_CONTINUATION);
    }
 
    /**
@@ -56,7 +56,7 @@ public class SessionReceiveContinuationMessage extends SessionContinuationMessag
                                             final boolean continues,
                                             final boolean requiresResponse)
    {
-      super(SESS_RECEIVE_CONTINUATION, body, continues);
+      super(PacketImpl.SESS_RECEIVE_CONTINUATION, body, continues);
       this.consumerID = consumerID;
    }
 

@@ -13,7 +13,6 @@
 
 package org.hornetq.jms.tests.tools.ant;
 
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -31,18 +30,18 @@ public class FailOnSerializationDebugOutput
 
    // Static --------------------------------------------------------
 
-   public static void main(String[] args) throws Exception
+   public static void main(final String[] args) throws Exception
    {
       new FailOnSerializationDebugOutput(args).run();
    }
 
    // Attributes ----------------------------------------------------
 
-   private File file;
+   private final File file;
 
    // Constructors --------------------------------------------------
 
-   private FailOnSerializationDebugOutput(String[] args) throws Exception
+   private FailOnSerializationDebugOutput(final String[] args) throws Exception
    {
       if (args.length == 0)
       {
@@ -74,7 +73,7 @@ public class FailOnSerializationDebugOutput
       try
       {
          String line;
-         while((line = br.readLine()) != null)
+         while ((line = br.readLine()) != null)
          {
             if (line.indexOf("DEBUG") != -1 && line.indexOf("org.jboss.serial") != -1)
             {

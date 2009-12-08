@@ -9,12 +9,11 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
  * implied.  See the License for the specific language governing
  * permissions and limitations under the License.
- */ 
+ */
 
 package org.hornetq.core.remoting.impl.wireformat;
 
 import org.hornetq.core.buffers.HornetQBuffer;
-import org.hornetq.utils.DataConstants;
 
 /**
  * 
@@ -30,25 +29,25 @@ public class ReattachSessionResponseMessage extends PacketImpl
    // Attributes ----------------------------------------------------
 
    private int lastReceivedCommandID;
-      
+
    private boolean reattached;
-   
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
    public ReattachSessionResponseMessage(final int lastReceivedCommandID, final boolean reattached)
    {
-      super(REATTACH_SESSION_RESP);
+      super(PacketImpl.REATTACH_SESSION_RESP);
 
       this.lastReceivedCommandID = lastReceivedCommandID;
-      
+
       this.reattached = reattached;
    }
-   
+
    public ReattachSessionResponseMessage()
    {
-      super(REATTACH_SESSION_RESP);
+      super(PacketImpl.REATTACH_SESSION_RESP);
    }
 
    // Public --------------------------------------------------------
@@ -57,41 +56,46 @@ public class ReattachSessionResponseMessage extends PacketImpl
    {
       return lastReceivedCommandID;
    }
-   
+
    public boolean isReattached()
    {
       return reattached;
    }
-   
+
+   @Override
    public void encodeRest(final HornetQBuffer buffer)
-   { 
+   {
       buffer.writeInt(lastReceivedCommandID);
       buffer.writeBoolean(reattached);
    }
-   
+
+   @Override
    public void decodeRest(final HornetQBuffer buffer)
-   { 
+   {
       lastReceivedCommandID = buffer.readInt();
       reattached = buffer.readBoolean();
    }
-   
+
+   @Override
    public boolean isResponse()
-   {      
+   {
       return true;
    }
 
-   public boolean equals(Object other)
+   @Override
+   public boolean equals(final Object other)
    {
       if (other instanceof ReattachSessionResponseMessage == false)
       {
          return false;
       }
-            
+
       ReattachSessionResponseMessage r = (ReattachSessionResponseMessage)other;
-      
-      return super.equals(other) && this.lastReceivedCommandID == r.lastReceivedCommandID;
+
+      return super.equals(other) && lastReceivedCommandID == r.lastReceivedCommandID;
    }
-   
+
+   @Override
    public final boolean isRequiresConfirmations()
    {
       return false;
@@ -105,4 +109,3 @@ public class ReattachSessionResponseMessage extends PacketImpl
 
    // Inner classes -------------------------------------------------
 }
-

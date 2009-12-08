@@ -13,6 +13,8 @@
 
 package org.hornetq.tests.integration.largemessage;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
@@ -23,6 +25,7 @@ import org.hornetq.core.persistence.impl.journal.JournalStorageManager;
 import org.hornetq.core.persistence.impl.journal.LargeServerMessageImpl;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
+import org.hornetq.tests.util.UnitTestCase;
 
 /**
  * A ServerLargeMessageTest
@@ -43,60 +46,60 @@ public class ServerLargeMessageTest extends ServiceTestBase
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
-   
+
    // The ClientConsumer should be able to also send ServerLargeMessages as that's done by the CoreBridge
    public void testSendServerMessage() throws Exception
    {
       HornetQServer server = createServer(true);
-      
+
       server.start();
-      
+
       ClientSessionFactory sf = createFactory(false);
-      
+
       ClientSession session = sf.createSession(false, false);
-      
+
       try
       {
          LargeServerMessageImpl fileMessage = new LargeServerMessageImpl((JournalStorageManager)server.getStorageManager());
-         
+
          fileMessage.setMessageID(1005);
-         
-         for (int i = 0 ; i < 2 * ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE; i++)
+
+         for (int i = 0; i < 2 * ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE; i++)
          {
-            fileMessage.addBytes(new byte[]{getSamplebyte(i)});
+            fileMessage.addBytes(new byte[] { UnitTestCase.getSamplebyte(i) });
          }
-         
+
          fileMessage.releaseResources();
-         
+
          session.createQueue("A", "A");
-         
+
          ClientProducer prod = session.createProducer("A");
-         
+
          prod.send(fileMessage);
-         
+
          fileMessage.deleteFile();
-         
+
          session.commit();
-                  
+
          session.start();
-         
+
          ClientConsumer cons = session.createConsumer("A");
-         
+
          ClientMessage msg = cons.receive(5000);
-         
-         assertNotNull(msg);
-         
-         assertEquals(msg.getBodySize(), 2 * ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE);
-         
-         for (int i = 0 ; i < 2 * ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE; i++)
+
+         Assert.assertNotNull(msg);
+
+         Assert.assertEquals(msg.getBodySize(), 2 * ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE);
+
+         for (int i = 0; i < 2 * ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE; i++)
          {
-            assertEquals(getSamplebyte(i), msg.getBodyBuffer().readByte());
+            Assert.assertEquals(UnitTestCase.getSamplebyte(i), msg.getBodyBuffer().readByte());
          }
-         
+
          msg.acknowledge();
-         
+
          session.commit();
-         
+
       }
       finally
       {

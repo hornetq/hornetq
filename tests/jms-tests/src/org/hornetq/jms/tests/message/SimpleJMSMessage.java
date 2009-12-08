@@ -36,32 +36,31 @@ import org.hornetq.core.logging.Logger;
 public class SimpleJMSMessage implements Message
 {
    // Constants -----------------------------------------------------
-	
+
    private static final Logger log = Logger.getLogger(SimpleJMSMessage.class);
-   
+
    // Static --------------------------------------------------------
-   
+
    // Attributes ----------------------------------------------------
-   
+
    private boolean ignoreSetDestination;
-   
+
    // Constructors --------------------------------------------------
-   
+
    public SimpleJMSMessage()
    {
       properties.put("JMSXDeliveryCount", new Integer(0));
    }
-   
+
    /*
     * This constructor is used to simulate an activemq message in which the set of the destination is ignored after receipt.
     */
-   public SimpleJMSMessage(Destination dest)
+   public SimpleJMSMessage(final Destination dest)
    {
-   	this();
-   	this.ignoreSetDestination = true;
-   	this.destination = dest;
+      this();
+      ignoreSetDestination = true;
+      destination = dest;
    }
-      
 
    // Message implementation ----------------------------------------
 
@@ -72,8 +71,7 @@ public class SimpleJMSMessage implements Message
       return messageID;
    }
 
-
-   public void setJMSMessageID(String id) throws JMSException
+   public void setJMSMessageID(final String id) throws JMSException
    {
       messageID = id;
    }
@@ -85,8 +83,7 @@ public class SimpleJMSMessage implements Message
       return timestamp;
    }
 
-
-   public void setJMSTimestamp(long timestamp) throws JMSException
+   public void setJMSTimestamp(final long timestamp) throws JMSException
    {
       this.timestamp = timestamp;
    }
@@ -96,9 +93,10 @@ public class SimpleJMSMessage implements Message
    //
 
    private byte[] correlationIDBytes;
-   private String correlationIDString;
-   private boolean isCorrelationIDBytes;
 
+   private String correlationIDString;
+
+   private boolean isCorrelationIDBytes;
 
    public byte[] getJMSCorrelationIDAsBytes() throws JMSException
    {
@@ -109,7 +107,7 @@ public class SimpleJMSMessage implements Message
       return correlationIDBytes;
    }
 
-   public void setJMSCorrelationIDAsBytes(byte[] correlationID) throws JMSException
+   public void setJMSCorrelationIDAsBytes(final byte[] correlationID) throws JMSException
    {
       if (correlationID == null || correlationID.length == 0)
       {
@@ -119,9 +117,9 @@ public class SimpleJMSMessage implements Message
       isCorrelationIDBytes = true;
    }
 
-   public void setJMSCorrelationID(String correlationID) throws JMSException
+   public void setJMSCorrelationID(final String correlationID) throws JMSException
    {
-      this.correlationIDString = correlationID;
+      correlationIDString = correlationID;
       isCorrelationIDBytes = false;
    }
 
@@ -134,7 +132,6 @@ public class SimpleJMSMessage implements Message
       return correlationIDString;
    }
 
-
    private Destination replyTo;
 
    public Destination getJMSReplyTo() throws JMSException
@@ -142,12 +139,10 @@ public class SimpleJMSMessage implements Message
       return replyTo;
    }
 
-
-   public void setJMSReplyTo(Destination replyTo) throws JMSException
+   public void setJMSReplyTo(final Destination replyTo) throws JMSException
    {
       this.replyTo = replyTo;
    }
-
 
    private Destination destination;
 
@@ -156,15 +151,13 @@ public class SimpleJMSMessage implements Message
       return destination;
    }
 
-
-   public void setJMSDestination(Destination destination) throws JMSException
+   public void setJMSDestination(final Destination destination) throws JMSException
    {
-   	if (!this.ignoreSetDestination)
-   	{
-   		this.destination = destination;
-   	}
+      if (!ignoreSetDestination)
+      {
+         this.destination = destination;
+      }
    }
-
 
    private int deliveryMode = DeliveryMode.PERSISTENT;
 
@@ -173,8 +166,7 @@ public class SimpleJMSMessage implements Message
       return deliveryMode;
    }
 
-
-   public void setJMSDeliveryMode(int deliveryMode) throws JMSException
+   public void setJMSDeliveryMode(final int deliveryMode) throws JMSException
    {
       this.deliveryMode = deliveryMode;
    }
@@ -186,8 +178,7 @@ public class SimpleJMSMessage implements Message
       return redelivered;
    }
 
-
-   public void setJMSRedelivered(boolean redelivered) throws JMSException
+   public void setJMSRedelivered(final boolean redelivered) throws JMSException
    {
       this.redelivered = redelivered;
    }
@@ -199,8 +190,7 @@ public class SimpleJMSMessage implements Message
       return type;
    }
 
-
-   public void setJMSType(String type) throws JMSException
+   public void setJMSType(final String type) throws JMSException
    {
       this.type = type;
    }
@@ -212,7 +202,7 @@ public class SimpleJMSMessage implements Message
       return expiration;
    }
 
-   public void setJMSExpiration(long expiration) throws JMSException
+   public void setJMSExpiration(final long expiration) throws JMSException
    {
       this.expiration = expiration;
    }
@@ -224,25 +214,24 @@ public class SimpleJMSMessage implements Message
       return priority;
    }
 
-   public void setJMSPriority(int priority) throws JMSException
+   public void setJMSPriority(final int priority) throws JMSException
    {
       this.priority = priority;
    }
 
-   private Map properties = new HashMap();
+   private final Map properties = new HashMap();
 
    public void clearProperties() throws JMSException
    {
       properties.clear();
    }
 
-   public boolean propertyExists(String name) throws JMSException
+   public boolean propertyExists(final String name) throws JMSException
    {
       return properties.containsKey(name);
    }
 
-
-   public boolean getBooleanProperty(String name) throws JMSException
+   public boolean getBooleanProperty(final String name) throws JMSException
    {
       Object prop = properties.get(name);
       if (!(prop instanceof Boolean))
@@ -252,8 +241,7 @@ public class SimpleJMSMessage implements Message
       return ((Boolean)properties.get(name)).booleanValue();
    }
 
-
-   public byte getByteProperty(String name) throws JMSException
+   public byte getByteProperty(final String name) throws JMSException
    {
       Object prop = properties.get(name);
       if (!(prop instanceof Byte))
@@ -263,8 +251,7 @@ public class SimpleJMSMessage implements Message
       return ((Byte)properties.get(name)).byteValue();
    }
 
-
-   public short getShortProperty(String name) throws JMSException
+   public short getShortProperty(final String name) throws JMSException
    {
       Object prop = properties.get(name);
       if (!(prop instanceof Short))
@@ -274,8 +261,7 @@ public class SimpleJMSMessage implements Message
       return ((Short)properties.get(name)).shortValue();
    }
 
-
-   public int getIntProperty(String name) throws JMSException
+   public int getIntProperty(final String name) throws JMSException
    {
       Object prop = properties.get(name);
       if (!(prop instanceof Integer))
@@ -285,8 +271,7 @@ public class SimpleJMSMessage implements Message
       return ((Integer)properties.get(name)).intValue();
    }
 
-
-   public long getLongProperty(String name) throws JMSException
+   public long getLongProperty(final String name) throws JMSException
    {
       Object prop = properties.get(name);
       if (!(prop instanceof Long))
@@ -296,8 +281,7 @@ public class SimpleJMSMessage implements Message
       return ((Long)properties.get(name)).longValue();
    }
 
-
-   public float getFloatProperty(String name) throws JMSException
+   public float getFloatProperty(final String name) throws JMSException
    {
       Object prop = properties.get(name);
       if (!(prop instanceof Float))
@@ -307,8 +291,7 @@ public class SimpleJMSMessage implements Message
       return ((Float)properties.get(name)).floatValue();
    }
 
-
-   public double getDoubleProperty(String name) throws JMSException
+   public double getDoubleProperty(final String name) throws JMSException
    {
       Object prop = properties.get(name);
       if (!(prop instanceof Double))
@@ -318,8 +301,7 @@ public class SimpleJMSMessage implements Message
       return ((Double)properties.get(name)).doubleValue();
    }
 
-
-   public String getStringProperty(String name) throws JMSException
+   public String getStringProperty(final String name) throws JMSException
    {
       Object prop = properties.get(name);
       if (!(prop instanceof String))
@@ -329,90 +311,76 @@ public class SimpleJMSMessage implements Message
       return (String)properties.get(name);
    }
 
-
-   public Object getObjectProperty(String name) throws JMSException
+   public Object getObjectProperty(final String name) throws JMSException
    {
       return properties.get(name);
    }
-
 
    public Enumeration getPropertyNames() throws JMSException
    {
       return Collections.enumeration(properties.keySet());
    }
 
-
-   public void setBooleanProperty(String name, boolean value) throws JMSException
+   public void setBooleanProperty(final String name, final boolean value) throws JMSException
    {
       properties.put(name, new Boolean(value));
    }
 
-
-   public void setByteProperty(String name, byte value) throws JMSException
+   public void setByteProperty(final String name, final byte value) throws JMSException
    {
       properties.put(name, new Byte(value));
    }
 
-
-   public void setShortProperty(String name, short value) throws JMSException
+   public void setShortProperty(final String name, final short value) throws JMSException
    {
       properties.put(name, new Short(value));
    }
 
-
-   public void setIntProperty(String name, int value) throws JMSException
+   public void setIntProperty(final String name, final int value) throws JMSException
    {
       properties.put(name, new Integer(value));
    }
 
-
-   public void setLongProperty(String name, long value) throws JMSException
+   public void setLongProperty(final String name, final long value) throws JMSException
    {
       properties.put(name, new Long(value));
    }
 
-
-   public void setFloatProperty(String name, float value) throws JMSException
+   public void setFloatProperty(final String name, final float value) throws JMSException
    {
       properties.put(name, new Float(value));
    }
 
-
-   public void setDoubleProperty(String name, double value) throws JMSException
+   public void setDoubleProperty(final String name, final double value) throws JMSException
    {
       properties.put(name, new Double(value));
    }
 
-
-   public void setStringProperty(String name, String value) throws JMSException
+   public void setStringProperty(final String name, final String value) throws JMSException
    {
       properties.put(name, value);
    }
 
-
-   public void setObjectProperty(String name, Object value) throws JMSException
+   public void setObjectProperty(final String name, final Object value) throws JMSException
    {
       properties.put(name, value);
    }
-
 
    public void acknowledge() throws JMSException
    {
    }
 
-
    public void clearBody() throws JMSException
    {
    }
 
-
    // Public --------------------------------------------------------
 
    // Package protected ---------------------------------------------
-   
+
    // Protected -----------------------------------------------------
-   
+
    // Private -------------------------------------------------------
-   
+
    // Inner classes -------------------------------------------------
 }

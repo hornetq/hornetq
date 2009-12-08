@@ -9,7 +9,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
  * implied.  See the License for the specific language governing
  * permissions and limitations under the License.
- */ 
+ */
 
 package org.hornetq.tests.concurrent.server.impl;
 
@@ -20,7 +20,6 @@ import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HandleStatus;
 import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.Queue;
-import org.hornetq.core.server.QueueFactory;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.tests.unit.core.server.impl.fakes.FakeConsumer;
 import org.hornetq.tests.unit.core.server.impl.fakes.FakeQueueFactory;
@@ -39,175 +38,181 @@ import org.hornetq.utils.SimpleString;
 public class QueueTest extends UnitTestCase
 {
    private static final Logger log = Logger.getLogger(QueueTest.class);
-   
+
    private FakeQueueFactory queueFactory = new FakeQueueFactory();
-   
+
+   @Override
    protected void setUp() throws Exception
    {
       super.setUp();
       queueFactory = new FakeQueueFactory();
    }
-   
+
+   @Override
    protected void tearDown() throws Exception
    {
       queueFactory.stop();
       super.tearDown();
    }
-   
+
    /*
     * Concurrent set consumer not busy, busy then, call deliver while messages are being added and consumed
     */
    public void testConcurrentAddsDeliver() throws Exception
    {
-      Queue queue = queueFactory.createQueue(1, new SimpleString("address1"), new SimpleString("queue1"), null, false, false);
-      
+      Queue queue = queueFactory.createQueue(1,
+                                             new SimpleString("address1"),
+                                             new SimpleString("queue1"),
+                                             null,
+                                             false,
+                                             false);
+
       FakeConsumer consumer = new FakeConsumer();
-      
+
       queue.addConsumer(consumer);
-      
+
       final long testTime = 5000;
-      
+
       Sender sender = new Sender(queue, testTime);
-      
+
       Toggler toggler = new Toggler(queue, consumer, testTime);
-      
+
       sender.start();
-      
+
       toggler.start();
-      
+
       sender.join();
-      
+
       toggler.join();
-      
+
       consumer.setStatusImmediate(HandleStatus.HANDLED);
-      
+
       queue.deliverNow();
 
       if (sender.getException() != null)
       {
          throw sender.getException();
       }
-      
+
       if (toggler.getException() != null)
       {
          throw toggler.getException();
       }
-      
+
       assertRefListsIdenticalRefs(sender.getReferences(), consumer.getReferences());
-      
-      log.info("num refs: " + sender.getReferences().size());
-      
-      log.info("num toggles: " + toggler.getNumToggles());
-      
+
+      QueueTest.log.info("num refs: " + sender.getReferences().size());
+
+      QueueTest.log.info("num toggles: " + toggler.getNumToggles());
+
    }
-   
+
    // Inner classes ---------------------------------------------------------------
-   
+
    class Sender extends Thread
    {
       private volatile Exception e;
-      
-      private Queue queue;
-      
-      private long testTime;
-      
+
+      private final Queue queue;
+
+      private final long testTime;
+
       private volatile int i;
-      
+
       public Exception getException()
       {
          return e;
       }
-      
-      private List<MessageReference> refs = new ArrayList<MessageReference>();
-      
+
+      private final List<MessageReference> refs = new ArrayList<MessageReference>();
+
       public List<MessageReference> getReferences()
       {
          return refs;
       }
-      
-      Sender(Queue queue, long testTime)
+
+      Sender(final Queue queue, final long testTime)
       {
          this.testTime = testTime;
-         
+
          this.queue = queue;
       }
-      
+
+      @Override
       public void run()
       {
          long start = System.currentTimeMillis();
-         
+
          while (System.currentTimeMillis() - start < testTime)
          {
             ServerMessage message = generateMessage(i);
-            
+
             MessageReference ref = message.createReference(queue);
-            
+
             queue.addLast(ref);
-            
+
             refs.add(ref);
-            
+
             i++;
          }
       }
    }
-   
+
    class Toggler extends Thread
    {
       private volatile Exception e;
-      
-      private Queue queue;
-      
-      private FakeConsumer consumer;
-      
-      private long testTime;
-      
+
+      private final Queue queue;
+
+      private final FakeConsumer consumer;
+
+      private final long testTime;
+
       private boolean toggle;
-      
+
       private volatile int numToggles;
-      
+
       public int getNumToggles()
       {
          return numToggles;
       }
-      
+
       public Exception getException()
       {
          return e;
       }
-      
-      Toggler(Queue queue, FakeConsumer consumer, long testTime)
+
+      Toggler(final Queue queue, final FakeConsumer consumer, final long testTime)
       {
          this.testTime = testTime;
-         
+
          this.queue = queue;
-         
+
          this.consumer = consumer;
       }
-      
+
+      @Override
       public void run()
       {
          long start = System.currentTimeMillis();
-         
+
          while (System.currentTimeMillis() - start < testTime)
          {
             if (toggle)
             {
-               consumer.setStatusImmediate(HandleStatus.BUSY);              
+               consumer.setStatusImmediate(HandleStatus.BUSY);
             }
             else
             {
                consumer.setStatusImmediate(HandleStatus.HANDLED);
-               
+
                queue.deliverNow();
             }
             toggle = !toggle;
-            
+
             numToggles++;
          }
       }
    }
-      
+
 }
-
-
-

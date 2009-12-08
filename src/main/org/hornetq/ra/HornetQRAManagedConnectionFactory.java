@@ -52,7 +52,7 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
    /**
     * Trace enabled
     */
-   private static boolean trace = log.isTraceEnabled();
+   private static boolean trace = HornetQRAManagedConnectionFactory.log.isTraceEnabled();
 
    /**
     * The resource adapter
@@ -79,9 +79,9 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
     */
    public HornetQRAManagedConnectionFactory()
    {
-      if (trace)
+      if (HornetQRAManagedConnectionFactory.trace)
       {
-         log.trace("constructor()");
+         HornetQRAManagedConnectionFactory.log.trace("constructor()");
       }
 
       ra = null;
@@ -97,9 +97,9 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
     */
    public Object createConnectionFactory() throws ResourceException
    {
-      if (trace)
+      if (HornetQRAManagedConnectionFactory.trace)
       {
-         log.debug("createConnectionFactory()");
+         HornetQRAManagedConnectionFactory.log.debug("createConnectionFactory()");
       }
 
       return createConnectionFactory(new HornetQRAConnectionManager());
@@ -114,18 +114,20 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
     */
    public Object createConnectionFactory(final ConnectionManager cxManager) throws ResourceException
    {
-      if (trace)
+      if (HornetQRAManagedConnectionFactory.trace)
       {
-         log.trace("createConnectionFactory(" + cxManager + ")");
+         HornetQRAManagedConnectionFactory.log.trace("createConnectionFactory(" + cxManager + ")");
       }
 
       cm = cxManager;
 
       HornetQRAConnectionFactory cf = new HornetQRAConnectionFactoryImpl(this, cm);
 
-      if (trace)
+      if (HornetQRAManagedConnectionFactory.trace)
       {
-         log.trace("Created connection factory: " + cf + ", using connection manager: " + cm);
+         HornetQRAManagedConnectionFactory.log.trace("Created connection factory: " + cf +
+                                                     ", using connection manager: " +
+                                                     cm);
       }
 
       return cf;
@@ -141,25 +143,28 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
     */
    public ManagedConnection createManagedConnection(final Subject subject, final ConnectionRequestInfo cxRequestInfo) throws ResourceException
    {
-      if (trace)
+      if (HornetQRAManagedConnectionFactory.trace)
       {
-         log.trace("createManagedConnection(" + subject + ", " + cxRequestInfo + ")");
+         HornetQRAManagedConnectionFactory.log.trace("createManagedConnection(" + subject + ", " + cxRequestInfo + ")");
       }
 
-      HornetQRAConnectionRequestInfo cri = getCRI((HornetQRAConnectionRequestInfo) cxRequestInfo);
+      HornetQRAConnectionRequestInfo cri = getCRI((HornetQRAConnectionRequestInfo)cxRequestInfo);
 
       HornetQRACredential credential = HornetQRACredential.getCredential(this, subject, cri);
 
-      if (trace)
+      if (HornetQRAManagedConnectionFactory.trace)
       {
-         log.trace("jms credential: " + credential);
+         HornetQRAManagedConnectionFactory.log.trace("jms credential: " + credential);
       }
 
-      HornetQRAManagedConnection mc = new HornetQRAManagedConnection(this, cri, credential.getUserName(), credential.getPassword());
+      HornetQRAManagedConnection mc = new HornetQRAManagedConnection(this,
+                                                                     cri,
+                                                                     credential.getUserName(),
+                                                                     credential.getPassword());
 
-      if (trace)
+      if (HornetQRAManagedConnectionFactory.trace)
       {
-         log.trace("created new managed connection: " + mc);
+         HornetQRAManagedConnectionFactory.log.trace("created new managed connection: " + mc);
       }
 
       return mc;
@@ -178,17 +183,22 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
                                                     final Subject subject,
                                                     final ConnectionRequestInfo cxRequestInfo) throws ResourceException
    {
-      if (trace)
+      if (HornetQRAManagedConnectionFactory.trace)
       {
-         log.trace("matchManagedConnections(" + connectionSet + ", " + subject + ", " + cxRequestInfo + ")");
+         HornetQRAManagedConnectionFactory.log.trace("matchManagedConnections(" + connectionSet +
+                                                     ", " +
+                                                     subject +
+                                                     ", " +
+                                                     cxRequestInfo +
+                                                     ")");
       }
 
-      HornetQRAConnectionRequestInfo cri = getCRI((HornetQRAConnectionRequestInfo) cxRequestInfo);
+      HornetQRAConnectionRequestInfo cri = getCRI((HornetQRAConnectionRequestInfo)cxRequestInfo);
       HornetQRACredential credential = HornetQRACredential.getCredential(this, subject, cri);
 
-      if (trace)
+      if (HornetQRAManagedConnectionFactory.trace)
       {
-         log.trace("Looking for connection matching credentials: " + credential);
+         HornetQRAManagedConnectionFactory.log.trace("Looking for connection matching credentials: " + credential);
       }
 
       Iterator connections = connectionSet.iterator();
@@ -199,17 +209,17 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
 
          if (obj instanceof HornetQRAManagedConnection)
          {
-            HornetQRAManagedConnection mc = (HornetQRAManagedConnection) obj;
+            HornetQRAManagedConnection mc = (HornetQRAManagedConnection)obj;
             ManagedConnectionFactory mcf = mc.getManagedConnectionFactory();
 
             if ((mc.getUserName() == null || mc.getUserName() != null && mc.getUserName()
-                  .equals(credential.getUserName())) && mcf.equals(this))
+                                                                           .equals(credential.getUserName())) && mcf.equals(this))
             {
                if (cri.equals(mc.getCRI()))
                {
-                  if (trace)
+                  if (HornetQRAManagedConnectionFactory.trace)
                   {
-                     log.trace("Found matching connection: " + mc);
+                     HornetQRAManagedConnectionFactory.log.trace("Found matching connection: " + mc);
                   }
 
                   return mc;
@@ -218,9 +228,9 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
          }
       }
 
-      if (trace)
+      if (HornetQRAManagedConnectionFactory.trace)
       {
-         log.trace("No matching connection was found");
+         HornetQRAManagedConnectionFactory.log.trace("No matching connection was found");
       }
 
       return null;
@@ -234,9 +244,9 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
     */
    public void setLogWriter(final PrintWriter out) throws ResourceException
    {
-      if (trace)
+      if (HornetQRAManagedConnectionFactory.trace)
       {
-         log.trace("setLogWriter(" + out + ")");
+         HornetQRAManagedConnectionFactory.log.trace("setLogWriter(" + out + ")");
       }
    }
 
@@ -248,9 +258,9 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
     */
    public PrintWriter getLogWriter() throws ResourceException
    {
-      if (trace)
+      if (HornetQRAManagedConnectionFactory.trace)
       {
-         log.trace("getLogWriter()");
+         HornetQRAManagedConnectionFactory.log.trace("getLogWriter()");
       }
 
       return null;
@@ -263,9 +273,9 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
     */
    public ResourceAdapter getResourceAdapter()
    {
-      if (trace)
+      if (HornetQRAManagedConnectionFactory.trace)
       {
-         log.trace("getResourceAdapter()");
+         HornetQRAManagedConnectionFactory.log.trace("getResourceAdapter()");
       }
 
       return ra;
@@ -279,9 +289,9 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
     */
    public void setResourceAdapter(final ResourceAdapter ra) throws ResourceException
    {
-      if (trace)
+      if (HornetQRAManagedConnectionFactory.trace)
       {
-         log.trace("setResourceAdapter(" + ra + ")");
+         HornetQRAManagedConnectionFactory.log.trace("setResourceAdapter(" + ra + ")");
       }
 
       if (ra == null || !(ra instanceof HornetQResourceAdapter))
@@ -289,7 +299,7 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
          throw new ResourceException("Resource adapter is " + ra);
       }
 
-      this.ra = (HornetQResourceAdapter) ra;
+      this.ra = (HornetQResourceAdapter)ra;
    }
 
    /**
@@ -301,9 +311,9 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
    @Override
    public boolean equals(final Object obj)
    {
-      if (trace)
+      if (HornetQRAManagedConnectionFactory.trace)
       {
-         log.trace("equals(" + obj + ")");
+         HornetQRAManagedConnectionFactory.log.trace("equals(" + obj + ")");
       }
 
       if (obj == null)
@@ -313,7 +323,7 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
 
       if (obj instanceof HornetQRAManagedConnectionFactory)
       {
-         HornetQRAManagedConnectionFactory other = (HornetQRAManagedConnectionFactory) obj;
+         HornetQRAManagedConnectionFactory other = (HornetQRAManagedConnectionFactory)obj;
 
          return mcfProperties.equals(other.getProperties()) && ra.equals(other.getResourceAdapter());
       }
@@ -331,9 +341,9 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
    @Override
    public int hashCode()
    {
-      if (trace)
+      if (HornetQRAManagedConnectionFactory.trace)
       {
-         log.trace("hashCode()");
+         HornetQRAManagedConnectionFactory.log.trace("hashCode()");
       }
 
       int hash = mcfProperties.hashCode();
@@ -349,9 +359,9 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
     */
    public String getSessionDefaultType()
    {
-      if (trace)
+      if (HornetQRAManagedConnectionFactory.trace)
       {
-         log.trace("getSessionDefaultType()");
+         HornetQRAManagedConnectionFactory.log.trace("getSessionDefaultType()");
       }
 
       return mcfProperties.getSessionDefaultType();
@@ -364,9 +374,9 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
     */
    public void setSessionDefaultType(final String type)
    {
-      if (trace)
+      if (HornetQRAManagedConnectionFactory.trace)
       {
-         log.trace("setSessionDefaultType(" + type + ")");
+         HornetQRAManagedConnectionFactory.log.trace("setSessionDefaultType(" + type + ")");
       }
 
       mcfProperties.setSessionDefaultType(type);
@@ -385,16 +395,22 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
       mcfProperties.setConnectionParameters(configuration);
    }
 
-   public String getBackupConnectorClassName() {return mcfProperties.getBackupConnectorClassName();}
+   public String getBackupConnectorClassName()
+   {
+      return mcfProperties.getBackupConnectorClassName();
+   }
 
-   public void setBackupConnectorClassName(String backupConnectorClassName)
+   public void setBackupConnectorClassName(final String backupConnectorClassName)
    {
       mcfProperties.setBackupConnectorClassName(backupConnectorClassName);
    }
 
-   public String getBackupConnectionParameters() {return mcfProperties.getBackupConnectionParameters();}
+   public String getBackupConnectionParameters()
+   {
+      return mcfProperties.getBackupConnectionParameters();
+   }
 
-   public void setBackupConnectionParameters(String configuration)
+   public void setBackupConnectionParameters(final String configuration)
    {
       mcfProperties.setBackupConnectionParameters(configuration);
    }
@@ -417,14 +433,17 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
       return mcfProperties.getConnectionLoadBalancingPolicyClassName();
    }
 
-   public void setConnectionLoadBalancingPolicyClassName(String connectionLoadBalancingPolicyClassName)
+   public void setConnectionLoadBalancingPolicyClassName(final String connectionLoadBalancingPolicyClassName)
    {
       mcfProperties.setConnectionLoadBalancingPolicyClassName(connectionLoadBalancingPolicyClassName);
    }
 
-   public String getDiscoveryAddress() {return mcfProperties.getDiscoveryAddress();}
+   public String getDiscoveryAddress()
+   {
+      return mcfProperties.getDiscoveryAddress();
+   }
 
-   public void setDiscoveryAddress(String discoveryAddress)
+   public void setDiscoveryAddress(final String discoveryAddress)
    {
       mcfProperties.setDiscoveryAddress(discoveryAddress);
    }
@@ -434,7 +453,7 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
       return mcfProperties.getDiscoveryPort();
    }
 
-   public void setDiscoveryPort(Integer discoveryPort)
+   public void setDiscoveryPort(final Integer discoveryPort)
    {
       mcfProperties.setDiscoveryPort(discoveryPort);
    }
@@ -444,11 +463,9 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
       return mcfProperties.getDiscoveryRefreshTimeout();
    }
 
-   public void setDiscoveryRefreshTimeout(
-         Long discoveryRefreshTimeout)
+   public void setDiscoveryRefreshTimeout(final Long discoveryRefreshTimeout)
    {
-      mcfProperties.setDiscoveryRefreshTimeout(
-            discoveryRefreshTimeout);
+      mcfProperties.setDiscoveryRefreshTimeout(discoveryRefreshTimeout);
    }
 
    public Long getDiscoveryInitialWaitTimeout()
@@ -456,7 +473,7 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
       return mcfProperties.getDiscoveryInitialWaitTimeout();
    }
 
-   public void setDiscoveryInitialWaitTimeout(Long discoveryInitialWaitTimeout)
+   public void setDiscoveryInitialWaitTimeout(final Long discoveryInitialWaitTimeout)
    {
       mcfProperties.setDiscoveryInitialWaitTimeout(discoveryInitialWaitTimeout);
    }
@@ -466,7 +483,7 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
       return mcfProperties.getClientID();
    }
 
-   public void setClientID(String clientID)
+   public void setClientID(final String clientID)
    {
       mcfProperties.setClientID(clientID);
    }
@@ -476,7 +493,7 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
       return mcfProperties.getDupsOKBatchSize();
    }
 
-   public void setDupsOKBatchSize(Integer dupsOKBatchSize)
+   public void setDupsOKBatchSize(final Integer dupsOKBatchSize)
    {
       mcfProperties.setDupsOKBatchSize(dupsOKBatchSize);
    }
@@ -486,7 +503,7 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
       return mcfProperties.getTransactionBatchSize();
    }
 
-   public void setTransactionBatchSize(Integer transactionBatchSize)
+   public void setTransactionBatchSize(final Integer transactionBatchSize)
    {
       mcfProperties.setTransactionBatchSize(transactionBatchSize);
    }
@@ -496,7 +513,7 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
       return mcfProperties.getClientFailureCheckPeriod();
    }
 
-   public void setClientFailureCheckPeriod(Long clientFailureCheckPeriod)
+   public void setClientFailureCheckPeriod(final Long clientFailureCheckPeriod)
    {
       mcfProperties.setClientFailureCheckPeriod(clientFailureCheckPeriod);
    }
@@ -506,7 +523,7 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
       return mcfProperties.getConnectionTTL();
    }
 
-   public void setConnectionTTL(Long connectionTTL)
+   public void setConnectionTTL(final Long connectionTTL)
    {
       mcfProperties.setConnectionTTL(connectionTTL);
    }
@@ -516,7 +533,7 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
       return mcfProperties.getCallTimeout();
    }
 
-   public void setCallTimeout(Long callTimeout)
+   public void setCallTimeout(final Long callTimeout)
    {
       mcfProperties.setCallTimeout(callTimeout);
    }
@@ -526,7 +543,7 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
       return mcfProperties.getConsumerWindowSize();
    }
 
-   public void setConsumerWindowSize(Integer consumerWindowSize)
+   public void setConsumerWindowSize(final Integer consumerWindowSize)
    {
       mcfProperties.setConsumerWindowSize(consumerWindowSize);
    }
@@ -536,7 +553,7 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
       return mcfProperties.getConsumerMaxRate();
    }
 
-   public void setConsumerMaxRate(Integer consumerMaxRate)
+   public void setConsumerMaxRate(final Integer consumerMaxRate)
    {
       mcfProperties.setConsumerMaxRate(consumerMaxRate);
    }
@@ -546,7 +563,7 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
       return mcfProperties.getConfirmationWindowSize();
    }
 
-   public void setConfirmationWindowSize(Integer confirmationWindowSize)
+   public void setConfirmationWindowSize(final Integer confirmationWindowSize)
    {
       mcfProperties.setConfirmationWindowSize(confirmationWindowSize);
    }
@@ -556,7 +573,7 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
       return mcfProperties.getProducerMaxRate();
    }
 
-   public void setProducerMaxRate(Integer producerMaxRate)
+   public void setProducerMaxRate(final Integer producerMaxRate)
    {
       mcfProperties.setProducerMaxRate(producerMaxRate);
    }
@@ -566,7 +583,7 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
       return mcfProperties.getMinLargeMessageSize();
    }
 
-   public void setMinLargeMessageSize(Integer minLargeMessageSize)
+   public void setMinLargeMessageSize(final Integer minLargeMessageSize)
    {
       mcfProperties.setMinLargeMessageSize(minLargeMessageSize);
    }
@@ -576,21 +593,27 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
       return mcfProperties.isBlockOnAcknowledge();
    }
 
-   public void setBlockOnAcknowledge(Boolean blockOnAcknowledge)
+   public void setBlockOnAcknowledge(final Boolean blockOnAcknowledge)
    {
       mcfProperties.setBlockOnAcknowledge(blockOnAcknowledge);
    }
 
-   public Boolean isBlockOnNonPersistentSend() {return mcfProperties.isBlockOnNonPersistentSend();}
+   public Boolean isBlockOnNonPersistentSend()
+   {
+      return mcfProperties.isBlockOnNonPersistentSend();
+   }
 
-   public void setBlockOnNonPersistentSend(Boolean blockOnNonPersistentSend)
+   public void setBlockOnNonPersistentSend(final Boolean blockOnNonPersistentSend)
    {
       mcfProperties.setBlockOnNonPersistentSend(blockOnNonPersistentSend);
    }
 
-   public Boolean isBlockOnPersistentSend() {return mcfProperties.isBlockOnPersistentSend();}
+   public Boolean isBlockOnPersistentSend()
+   {
+      return mcfProperties.isBlockOnPersistentSend();
+   }
 
-   public void setBlockOnPersistentSend(Boolean blockOnPersistentSend)
+   public void setBlockOnPersistentSend(final Boolean blockOnPersistentSend)
    {
       mcfProperties.setBlockOnPersistentSend(blockOnPersistentSend);
    }
@@ -600,17 +623,17 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
       return mcfProperties.isAutoGroup();
    }
 
-   public void setAutoGroup(Boolean autoGroup)
+   public void setAutoGroup(final Boolean autoGroup)
    {
       mcfProperties.setAutoGroup(autoGroup);
    }
-   
+
    public Boolean isPreAcknowledge()
    {
       return mcfProperties.isPreAcknowledge();
    }
 
-   public void setPreAcknowledge(Boolean preAcknowledge)
+   public void setPreAcknowledge(final Boolean preAcknowledge)
    {
       mcfProperties.setPreAcknowledge(preAcknowledge);
    }
@@ -620,7 +643,7 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
       return mcfProperties.getRetryInterval();
    }
 
-   public void setRetryInterval(Long retryInterval)
+   public void setRetryInterval(final Long retryInterval)
    {
       mcfProperties.setRetryInterval(retryInterval);
    }
@@ -630,7 +653,7 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
       return mcfProperties.getRetryIntervalMultiplier();
    }
 
-   public void setRetryIntervalMultiplier(Double retryIntervalMultiplier)
+   public void setRetryIntervalMultiplier(final Double retryIntervalMultiplier)
    {
       mcfProperties.setRetryIntervalMultiplier(retryIntervalMultiplier);
    }
@@ -640,7 +663,7 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
       return mcfProperties.getReconnectAttempts();
    }
 
-   public void setReconnectAttempts(Integer reconnectAttempts)
+   public void setReconnectAttempts(final Integer reconnectAttempts)
    {
       mcfProperties.setReconnectAttempts(reconnectAttempts);
    }
@@ -650,7 +673,7 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
       return mcfProperties.isFailoverOnServerShutdown();
    }
 
-   public void setFailoverOnServerShutdown(Boolean failoverOnServerShutdown)
+   public void setFailoverOnServerShutdown(final Boolean failoverOnServerShutdown)
    {
       mcfProperties.setFailoverOnServerShutdown(failoverOnServerShutdown);
    }
@@ -660,7 +683,7 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
       return mcfProperties.isUseGlobalPools();
    }
 
-   public void setUseGlobalPools(Boolean useGlobalPools)
+   public void setUseGlobalPools(final Boolean useGlobalPools)
    {
       mcfProperties.setUseGlobalPools(useGlobalPools);
    }
@@ -670,7 +693,7 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
       return mcfProperties.getScheduledThreadPoolMaxSize();
    }
 
-   public void setScheduledThreadPoolMaxSize(Integer scheduledThreadPoolMaxSize)
+   public void setScheduledThreadPoolMaxSize(final Integer scheduledThreadPoolMaxSize)
    {
       mcfProperties.setScheduledThreadPoolMaxSize(scheduledThreadPoolMaxSize);
    }
@@ -680,7 +703,7 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
       return mcfProperties.getThreadPoolMaxSize();
    }
 
-   public void setThreadPoolMaxSize(Integer threadPoolMaxSize)
+   public void setThreadPoolMaxSize(final Integer threadPoolMaxSize)
    {
       mcfProperties.setThreadPoolMaxSize(threadPoolMaxSize);
    }
@@ -692,9 +715,9 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
     */
    public Integer getUseTryLock()
    {
-      if (trace)
+      if (HornetQRAManagedConnectionFactory.trace)
       {
-         log.trace("getUseTryLock()");
+         HornetQRAManagedConnectionFactory.log.trace("getUseTryLock()");
       }
 
       return mcfProperties.getUseTryLock();
@@ -707,9 +730,9 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
     */
    public void setUseTryLock(final Integer useTryLock)
    {
-      if (trace)
+      if (HornetQRAManagedConnectionFactory.trace)
       {
-         log.trace("setUseTryLock(" + useTryLock + ")");
+         HornetQRAManagedConnectionFactory.log.trace("setUseTryLock(" + useTryLock + ")");
       }
 
       mcfProperties.setUseTryLock(useTryLock);
@@ -722,9 +745,9 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
     */
    public ConnectionMetaData getMetaData()
    {
-      if (trace)
+      if (HornetQRAManagedConnectionFactory.trace)
       {
-         log.trace("getMetadata()");
+         HornetQRAManagedConnectionFactory.log.trace("getMetadata()");
       }
 
       return new HornetQRAConnectionMetaData();
@@ -738,7 +761,7 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
    protected synchronized org.hornetq.jms.client.HornetQConnectionFactory getHornetQConnectionFactory() throws ResourceException
    {
 
-      if(connectionFactory == null)
+      if (connectionFactory == null)
       {
          connectionFactory = ra.createHornetQConnectionFactory(mcfProperties);
       }
@@ -752,9 +775,9 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
     */
    protected HornetQRAMCFProperties getProperties()
    {
-      if (trace)
+      if (HornetQRAManagedConnectionFactory.trace)
       {
-         log.trace("getProperties()");
+         HornetQRAManagedConnectionFactory.log.trace("getProperties()");
       }
 
       return mcfProperties;
@@ -768,9 +791,9 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
     */
    private HornetQRAConnectionRequestInfo getCRI(final HornetQRAConnectionRequestInfo info)
    {
-      if (trace)
+      if (HornetQRAManagedConnectionFactory.trace)
       {
-         log.trace("getCRI(" + info + ")");
+         HornetQRAManagedConnectionFactory.log.trace("getCRI(" + info + ")");
       }
 
       if (info == null)

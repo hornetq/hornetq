@@ -12,6 +12,8 @@
  */
 package org.hornetq.tests.integration.client;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
@@ -33,7 +35,6 @@ public class RoutingTest extends ServiceTestBase
    public final SimpleString queueB = new SimpleString("queueB");
 
    public final SimpleString queueC = new SimpleString("queueC");
-
 
    public void testRouteToMultipleQueues() throws Exception
    {
@@ -61,18 +62,18 @@ public class RoutingTest extends ServiceTestBase
          for (int i = 0; i < numMessages; i++)
          {
             ClientMessage m = c1.receive(5000);
-            assertNotNull(m);
+            Assert.assertNotNull(m);
             m.acknowledge();
             c2.receive(5000);
-            assertNotNull(m);
+            Assert.assertNotNull(m);
             m.acknowledge();
             c3.receive(5000);
-            assertNotNull(m);
+            Assert.assertNotNull(m);
             m.acknowledge();
          }
-         assertNull(c1.receiveImmediate());
-         assertNull(c2.receiveImmediate());
-         assertNull(c3.receiveImmediate());
+         Assert.assertNull(c1.receiveImmediate());
+         Assert.assertNull(c2.receiveImmediate());
+         Assert.assertNull(c3.receiveImmediate());
          sendSession.close();
          session.close();
       }
@@ -107,10 +108,10 @@ public class RoutingTest extends ServiceTestBase
          for (int i = 0; i < numMessages; i++)
          {
             ClientMessage m = c1.receive(5000);
-            assertNotNull(m);
+            Assert.assertNotNull(m);
             m.acknowledge();
          }
-         assertNull(c1.receiveImmediate());
+         Assert.assertNull(c1.receiveImmediate());
          sendSession.close();
          session.close();
       }
@@ -145,10 +146,10 @@ public class RoutingTest extends ServiceTestBase
          for (int i = 0; i < numMessages; i++)
          {
             ClientMessage m = c1.receive(5000);
-            assertNotNull(m);
+            Assert.assertNotNull(m);
             m.acknowledge();
          }
-         assertNull(c1.receiveImmediate());
+         Assert.assertNull(c1.receiveImmediate());
          sendSession.close();
          session.close();
       }
@@ -185,10 +186,10 @@ public class RoutingTest extends ServiceTestBase
          for (int i = 0; i < numMessages; i++)
          {
             ClientMessage m = c1.receive(5000);
-            assertNotNull(m);
+            Assert.assertNotNull(m);
             m.acknowledge();
          }
-         assertNull(c1.receiveImmediate());
+         Assert.assertNull(c1.receiveImmediate());
          sendSession.close();
          session.close();
       }
@@ -240,18 +241,18 @@ public class RoutingTest extends ServiceTestBase
          for (int i = 0; i < numMessages / 3; i++)
          {
             ClientMessage m = c1.receive(5000);
-            assertNotNull(m);
+            Assert.assertNotNull(m);
             m.acknowledge();
             m = c2.receive(5000);
-            assertNotNull(m);
+            Assert.assertNotNull(m);
             m.acknowledge();
             m = c3.receive(5000);
-            assertNotNull(m);
+            Assert.assertNotNull(m);
             m.acknowledge();
          }
-         assertNull(c1.receiveImmediate());
-         assertNull(c2.receiveImmediate());
-         assertNull(c3.receiveImmediate());
+         Assert.assertNull(c1.receiveImmediate());
+         Assert.assertNull(c2.receiveImmediate());
+         Assert.assertNull(c3.receiveImmediate());
          sendSession.close();
          session.close();
       }
@@ -286,10 +287,10 @@ public class RoutingTest extends ServiceTestBase
          for (int i = 0; i < numMessages; i++)
          {
             ClientMessage m = c1.receive(5000);
-            assertNotNull(m);
+            Assert.assertNotNull(m);
             m.acknowledge();
          }
-         assertNull(c1.receiveImmediate());
+         Assert.assertNull(c1.receiveImmediate());
          sendSession.close();
          session.close();
       }

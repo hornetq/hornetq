@@ -13,8 +13,6 @@
 
 package org.hornetq.tests.integration.jms.server.management;
 
-import static org.hornetq.core.config.impl.ConfigurationImpl.DEFAULT_MANAGEMENT_ADDRESS;
-
 import java.util.Map;
 
 import javax.jms.QueueConnection;
@@ -22,6 +20,7 @@ import javax.jms.QueueSession;
 import javax.jms.Session;
 
 import org.hornetq.core.config.TransportConfiguration;
+import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.management.ResourceNames;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.jms.HornetQQueue;
@@ -69,44 +68,44 @@ public class JMSQueueControlUsingJMSTest extends JMSQueueControlTest
       connection.close();
 
       connection = null;
-      
+
       session = null;
-      
+
       super.tearDown();
    }
 
    @Override
    protected JMSQueueControl createManagementControl() throws Exception
    {
-      HornetQQueue managementQueue = new HornetQQueue(DEFAULT_MANAGEMENT_ADDRESS.toString(),
-                                                  DEFAULT_MANAGEMENT_ADDRESS.toString());
+      HornetQQueue managementQueue = new HornetQQueue(ConfigurationImpl.DEFAULT_MANAGEMENT_ADDRESS.toString(),
+                                                      ConfigurationImpl.DEFAULT_MANAGEMENT_ADDRESS.toString());
       final JMSMessagingProxy proxy = new JMSMessagingProxy(session,
                                                             managementQueue,
                                                             ResourceNames.JMS_QUEUE + queue.getQueueName());
 
       return new JMSQueueControl()
       {
-         public boolean changeMessagePriority(String messageID, int newPriority) throws Exception
+         public boolean changeMessagePriority(final String messageID, final int newPriority) throws Exception
          {
             return (Boolean)proxy.invokeOperation("changeMessagePriority", messageID, newPriority);
          }
-         
-         public int changeMessagesPriority(String filter, int newPriority) throws Exception
+
+         public int changeMessagesPriority(final String filter, final int newPriority) throws Exception
          {
             return (Integer)proxy.invokeOperation("changeMessagesPriority", filter, newPriority);
          }
 
-         public int countMessages(String filter) throws Exception
+         public int countMessages(final String filter) throws Exception
          {
             return (Integer)proxy.invokeOperation("countMessages", filter);
          }
 
-         public boolean expireMessage(String messageID) throws Exception
+         public boolean expireMessage(final String messageID) throws Exception
          {
             return (Boolean)proxy.invokeOperation("expireMessage", messageID);
          }
 
-         public int expireMessages(String filter) throws Exception
+         public int expireMessages(final String filter) throws Exception
          {
             return (Integer)proxy.invokeOperation("expireMessages", filter);
          }
@@ -165,7 +164,7 @@ public class JMSQueueControlUsingJMSTest extends JMSQueueControlTest
          {
             return (String)proxy.invokeOperation("listMessageCounter");
          }
-         
+
          public void resetMessageCounter() throws Exception
          {
             proxy.invokeOperation("resetMessageCounter");
@@ -186,7 +185,7 @@ public class JMSQueueControlUsingJMSTest extends JMSQueueControlTest
             return (String)proxy.invokeOperation("listMessageCounterHistoryAsHTML");
          }
 
-         public Map<String, Object>[] listMessages(String filter) throws Exception
+         public Map<String, Object>[] listMessages(final String filter) throws Exception
          {
             Object[] res = (Object[])proxy.invokeOperation("listMessages", filter);
             Map<String, Object>[] results = new Map[res.length];
@@ -197,47 +196,47 @@ public class JMSQueueControlUsingJMSTest extends JMSQueueControlTest
             return results;
          }
 
-         public String listMessagesAsJSON(String filter) throws Exception
+         public String listMessagesAsJSON(final String filter) throws Exception
          {
             return (String)proxy.invokeOperation("listMessagesAsJSON", filter);
          }
-         
-         public int moveMessages(String filter, String otherQueueName) throws Exception
+
+         public int moveMessages(final String filter, final String otherQueueName) throws Exception
          {
             return (Integer)proxy.invokeOperation("moveMessages", filter, otherQueueName);
          }
 
-         public boolean moveMessage(String messageID, String otherQueueName) throws Exception
+         public boolean moveMessage(final String messageID, final String otherQueueName) throws Exception
          {
             return (Boolean)proxy.invokeOperation("moveMessage", messageID, otherQueueName);
          }
 
-         public int removeMessages(String filter) throws Exception
+         public int removeMessages(final String filter) throws Exception
          {
             return (Integer)proxy.invokeOperation("removeMessages", filter);
          }
 
-         public boolean removeMessage(String messageID) throws Exception
+         public boolean removeMessage(final String messageID) throws Exception
          {
             return (Boolean)proxy.invokeOperation("removeMessage", messageID);
          }
 
-         public boolean sendMessageToDeadLetterAddress(String messageID) throws Exception
+         public boolean sendMessageToDeadLetterAddress(final String messageID) throws Exception
          {
             return (Boolean)proxy.invokeOperation("sendMessageToDeadLetterAddress", messageID);
          }
 
-         public int sendMessagesToDeadLetterAddress(String filterStr) throws Exception
+         public int sendMessagesToDeadLetterAddress(final String filterStr) throws Exception
          {
             return (Integer)proxy.invokeOperation("sendMessagesToDeadLetterAddress", filterStr);
          }
-         
-         public void setDeadLetterAddress(String deadLetterAddress) throws Exception
+
+         public void setDeadLetterAddress(final String deadLetterAddress) throws Exception
          {
             proxy.invokeOperation("setDeadLetterAddress", deadLetterAddress);
          }
 
-         public void setExpiryAddress(String expiryAddress) throws Exception
+         public void setExpiryAddress(final String expiryAddress) throws Exception
          {
             proxy.invokeOperation("setExpiryAddress", expiryAddress);
          }
@@ -259,7 +258,7 @@ public class JMSQueueControlUsingJMSTest extends JMSQueueControlTest
 
          public void pause() throws Exception
          {
-           proxy.invokeOperation("pause");
+            proxy.invokeOperation("pause");
          }
 
          public void resume() throws Exception

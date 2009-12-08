@@ -13,27 +13,6 @@
 
 package org.hornetq.tests.util;
 
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CACHE_LARGE_MESSAGE_CLIENT;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONFIRMATION_WINDOW_SIZE;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MAX_RETRY_INTERVAL;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_THREAD_POOL_MAX_SIZE;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_USE_GLOBAL_POOLS;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,6 +20,7 @@ import javax.jms.ConnectionFactory;
 import javax.jms.Queue;
 import javax.naming.NamingException;
 
+import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.server.HornetQ;
@@ -102,7 +82,7 @@ public class JMSTestBase extends ServiceTestBase
     * @throws Exception
     * @throws NamingException
     */
-   protected Queue createQueue(String name) throws Exception, NamingException
+   protected Queue createQueue(final String name) throws Exception, NamingException
    {
       jmsServer.createQueue(name, "/jms/" + name, null, true);
 
@@ -188,8 +168,8 @@ public class JMSTestBase extends ServiceTestBase
     * @param jndiBindings
     * @throws Exception
     */
-   protected void createCF(List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs,
-                           List<String> jndiBindings) throws Exception
+   protected void createCF(final List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs,
+                           final List<String> jndiBindings) throws Exception
    {
       int retryInterval = 1000;
       double retryIntervalMultiplier = 1.0;
@@ -200,30 +180,30 @@ public class JMSTestBase extends ServiceTestBase
       jmsServer.createConnectionFactory("ManualReconnectionToSingleServerTest",
                                         connectorConfigs,
                                         null,
-                                        DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
-                                        DEFAULT_CONNECTION_TTL,
+                                        ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
+                                        ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL,
                                         callTimeout,
-                                        DEFAULT_CACHE_LARGE_MESSAGE_CLIENT,
-                                        DEFAULT_MIN_LARGE_MESSAGE_SIZE,
-                                        DEFAULT_CONSUMER_WINDOW_SIZE,
-                                        DEFAULT_CONSUMER_MAX_RATE,
-                                        DEFAULT_CONFIRMATION_WINDOW_SIZE,
-                                        DEFAULT_PRODUCER_WINDOW_SIZE,
-                                        DEFAULT_PRODUCER_MAX_RATE,
-                                        DEFAULT_BLOCK_ON_ACKNOWLEDGE,
-                                        DEFAULT_BLOCK_ON_PERSISTENT_SEND,
-                                        DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND,
-                                        DEFAULT_AUTO_GROUP,
-                                        DEFAULT_PRE_ACKNOWLEDGE,
-                                        DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
-                                        DEFAULT_ACK_BATCH_SIZE,
-                                        DEFAULT_ACK_BATCH_SIZE,
-                                        DEFAULT_USE_GLOBAL_POOLS,
-                                        DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE,
-                                        DEFAULT_THREAD_POOL_MAX_SIZE,
+                                        ClientSessionFactoryImpl.DEFAULT_CACHE_LARGE_MESSAGE_CLIENT,
+                                        ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
+                                        ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE,
+                                        ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE,
+                                        ClientSessionFactoryImpl.DEFAULT_CONFIRMATION_WINDOW_SIZE,
+                                        ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE,
+                                        ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE,
+                                        ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE,
+                                        ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND,
+                                        ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND,
+                                        ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP,
+                                        ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE,
+                                        ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
+                                        ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE,
+                                        ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE,
+                                        ClientSessionFactoryImpl.DEFAULT_USE_GLOBAL_POOLS,
+                                        ClientSessionFactoryImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE,
+                                        ClientSessionFactoryImpl.DEFAULT_THREAD_POOL_MAX_SIZE,
                                         retryInterval,
                                         retryIntervalMultiplier,
-                                        DEFAULT_MAX_RETRY_INTERVAL,
+                                        ClientSessionFactoryImpl.DEFAULT_MAX_RETRY_INTERVAL,
                                         reconnectAttempts,
                                         failoverOnServerShutdown,
                                         null,

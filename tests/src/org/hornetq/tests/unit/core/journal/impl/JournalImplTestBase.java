@@ -21,6 +21,8 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.journal.EncodingSupport;
 import org.hornetq.core.journal.PreparedTransactionInfo;
 import org.hornetq.core.journal.RecordInfo;
@@ -69,7 +71,7 @@ public abstract class JournalImplTestBase extends UnitTestCase
       super.setUp();
 
       resetFileFactory();
-      
+
       fileFactory.start();
 
       transactions.clear();
@@ -90,7 +92,7 @@ public abstract class JournalImplTestBase extends UnitTestCase
          {
          }
       }
-      
+
       if (fileFactory != null)
       {
          fileFactory.stop();
@@ -168,7 +170,7 @@ public abstract class JournalImplTestBase extends UnitTestCase
       loadAndCheck(false);
    }
 
-   protected void loadAndCheck(boolean printDebugJournal) throws Exception
+   protected void loadAndCheck(final boolean printDebugJournal) throws Exception
    {
       List<RecordInfo> committedRecords = new ArrayList<RecordInfo>();
 
@@ -400,7 +402,7 @@ public abstract class JournalImplTestBase extends UnitTestCase
    protected void checkTransactionsEquivalent(final List<PreparedTransactionInfo> expected,
                                               final List<PreparedTransactionInfo> actual)
    {
-      assertEquals("Lists not same length", expected.size(), actual.size());
+      Assert.assertEquals("Lists not same length", expected.size(), actual.size());
 
       Iterator<PreparedTransactionInfo> iterExpected = expected.iterator();
 
@@ -412,11 +414,11 @@ public abstract class JournalImplTestBase extends UnitTestCase
 
          PreparedTransactionInfo ractual = iterActual.next();
 
-         assertEquals("ids not same", rexpected.id, ractual.id);
+         Assert.assertEquals("ids not same", rexpected.id, ractual.id);
 
          checkRecordsEquivalent(rexpected.records, ractual.records);
 
-         assertEquals("deletes size not same", rexpected.recordsToDelete.size(), ractual.recordsToDelete.size());
+         Assert.assertEquals("deletes size not same", rexpected.recordsToDelete.size(), ractual.recordsToDelete.size());
 
          Iterator<RecordInfo> iterDeletesExpected = rexpected.recordsToDelete.iterator();
 
@@ -428,7 +430,7 @@ public abstract class JournalImplTestBase extends UnitTestCase
 
             long lactual = iterDeletesActual.next().id;
 
-            assertEquals("Delete ids not same", lexpected, lactual);
+            Assert.assertEquals("Delete ids not same", lexpected, lactual);
          }
       }
    }
@@ -440,7 +442,7 @@ public abstract class JournalImplTestBase extends UnitTestCase
          printJournalLists(expected, actual);
       }
 
-      assertEquals("Lists not same length", expected.size(), actual.size());
+      Assert.assertEquals("Lists not same length", expected.size(), actual.size());
 
       Iterator<RecordInfo> iterExpected = expected.iterator();
 
@@ -457,11 +459,11 @@ public abstract class JournalImplTestBase extends UnitTestCase
             printJournalLists(expected, actual);
          }
 
-         assertEquals("ids not same", rexpected.id, ractual.id);
+         Assert.assertEquals("ids not same", rexpected.id, ractual.id);
 
-         assertEquals("type not same", rexpected.isUpdate, ractual.isUpdate);
+         Assert.assertEquals("type not same", rexpected.isUpdate, ractual.isUpdate);
 
-         assertEqualsByteArrays(rexpected.data, ractual.data);
+         UnitTestCase.assertEqualsByteArrays(rexpected.data, ractual.data);
       }
    }
 
@@ -495,7 +497,7 @@ public abstract class JournalImplTestBase extends UnitTestCase
       for (int i = 0; i < length; i++)
       {
          // record[i] = RandomUtil.randomByte();
-         record[i] = getSamplebyte(i);
+         record[i] = UnitTestCase.getSamplebyte(i);
       }
       return record;
    }

@@ -11,7 +11,6 @@
  * permissions and limitations under the License.
  */
 
-
 package org.hornetq.core.example;
 
 import java.util.HashSet;
@@ -43,7 +42,7 @@ public class EmbeddedServer
 
    // Public --------------------------------------------------------
 
-   public static void main(String arg[])
+   public static void main(final String arg[])
    {
       try
       {
@@ -51,14 +50,14 @@ public class EmbeddedServer
          Configuration configuration = new ConfigurationImpl();
          configuration.setPersistenceEnabled(false);
          configuration.setSecurityEnabled(false);
-         
+
          TransportConfiguration transpConf = new TransportConfiguration(NettyAcceptorFactory.class.getName());
-         
+
          HashSet<TransportConfiguration> setTransp = new HashSet<TransportConfiguration>();
          setTransp.add(transpConf);
-         
+
          configuration.setAcceptorConfigurations(setTransp);
-         
+
          // Step 3. Create and start the server
          HornetQServer server = HornetQ.newHornetQServer(configuration);
          server.start();
@@ -70,7 +69,6 @@ public class EmbeddedServer
          e.printStackTrace();
       }
 
-      
    }
    // Package protected ---------------------------------------------
 

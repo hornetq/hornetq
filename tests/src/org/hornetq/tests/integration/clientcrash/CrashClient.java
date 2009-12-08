@@ -13,8 +13,6 @@
 
 package org.hornetq.tests.integration.clientcrash;
 
-import static org.hornetq.tests.integration.clientcrash.ClientCrashTest.QUEUE;
-
 import java.util.Arrays;
 
 import org.hornetq.core.client.ClientMessage;
@@ -44,11 +42,11 @@ public class CrashClient
 
    // Static ---------------------------------------------------------------------------------------
 
-   public static void main(String[] args) throws Exception
+   public static void main(final String[] args) throws Exception
    {
       try
       {
-         log.debug("args = " + Arrays.asList(args));
+         CrashClient.log.debug("args = " + Arrays.asList(args));
 
          ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.hornetq.integration.transports.netty.NettyConnectorFactory"));
 
@@ -56,7 +54,7 @@ public class CrashClient
          sf.setConnectionTTL(ClientCrashTest.CONNECTION_TTL);
 
          ClientSession session = sf.createSession(false, true, true);
-         ClientProducer producer = session.createProducer(QUEUE);
+         ClientProducer producer = session.createProducer(ClientCrashTest.QUEUE);
 
          ClientMessage message = session.createClientMessage(HornetQTextMessage.TYPE,
                                                              false,
@@ -72,7 +70,7 @@ public class CrashClient
       }
       catch (Throwable t)
       {
-         log.error(t.getMessage(), t);
+         CrashClient.log.error(t.getMessage(), t);
          System.exit(1);
       }
    }

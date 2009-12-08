@@ -14,7 +14,6 @@
 package org.hornetq.tests.integration.largemessage.mock;
 
 import java.util.HashSet;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executor;
@@ -53,7 +52,8 @@ public class MockConnectorFactory implements ConnectorFactory
                                     final BufferHandler handler,
                                     final ConnectionLifeCycleListener listener,
                                     final Executor closeExecutor,
-                                    final Executor executor, ScheduledExecutorService scheduledThreadPool)
+                                    final Executor executor,
+                                    final ScheduledExecutorService scheduledThreadPool)
    {
       return new MockConnector(configuration, handler, listener);
    }
@@ -64,9 +64,9 @@ public class MockConnectorFactory implements ConnectorFactory
    public Set<String> getAllowableProperties()
    {
       Set<String> set = new HashSet<String>();
-      
+
       set.add("callback");
-      
+
       return set;
    }
 

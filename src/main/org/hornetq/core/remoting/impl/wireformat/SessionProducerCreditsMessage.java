@@ -14,7 +14,6 @@
 package org.hornetq.core.remoting.impl.wireformat;
 
 import org.hornetq.core.buffers.HornetQBuffer;
-import org.hornetq.utils.DataConstants;
 import org.hornetq.utils.SimpleString;
 
 /**
@@ -39,7 +38,7 @@ public class SessionProducerCreditsMessage extends PacketImpl
 
    public SessionProducerCreditsMessage(final int credits, final SimpleString address, final int offset)
    {
-      super(SESS_PRODUCER_CREDITS);
+      super(PacketImpl.SESS_PRODUCER_CREDITS);
 
       this.credits = credits;
 
@@ -50,7 +49,7 @@ public class SessionProducerCreditsMessage extends PacketImpl
 
    public SessionProducerCreditsMessage()
    {
-      super(SESS_PRODUCER_CREDITS);
+      super(PacketImpl.SESS_PRODUCER_CREDITS);
    }
 
    // Public --------------------------------------------------------
@@ -85,7 +84,6 @@ public class SessionProducerCreditsMessage extends PacketImpl
       address = buffer.readSimpleString();
       offset = buffer.readInt();
    }
-
 
    // Package protected ---------------------------------------------
 

@@ -36,7 +36,6 @@ import org.jboss.security.SecurityAssociation;
 import org.jboss.security.SimpleGroup;
 import org.jboss.security.SimplePrincipal;
 
-
 /**
  * Mock Security manager for testing JMS security.
  *
@@ -47,26 +46,29 @@ import org.jboss.security.SimplePrincipal;
 public class MockJBossSecurityManager implements AuthenticationManager, RealmMapping
 {
    public static final String TEST_SECURITY_DOMAIN = "java:/jaas/messaging";
-   
+
    private static final Logger log = Logger.getLogger(MockJBossSecurityManager.class);
 
    private boolean simulateJBossJaasSecurityManager;
-   
-   //Authentication Manager Implementation
-   
+
+   // Authentication Manager Implementation
+
    public String getSecurityDomain()
    {
-      return TEST_SECURITY_DOMAIN;
+      return MockJBossSecurityManager.TEST_SECURITY_DOMAIN;
    }
 
-   public boolean isValid(Principal principal, Object credential)
+   public boolean isValid(final Principal principal, final Object credential)
    {
       throw new UnsupportedOperationException();
    }
 
-   public boolean isValid(Principal principal, Object credential, Subject activeSubject)
+   public boolean isValid(final Principal principal, final Object credential, final Subject activeSubject)
    {
-      if (log.isTraceEnabled()) { log.trace("principal:" + principal + " credential:" + credential); }
+      if (MockJBossSecurityManager.log.isTraceEnabled())
+      {
+         MockJBossSecurityManager.log.trace("principal:" + principal + " credential:" + credential);
+      }
 
       boolean isValid = false;
 
@@ -82,7 +84,7 @@ public class MockJBossSecurityManager implements AuthenticationManager, RealmMap
          {
             // modify the activeSubject, need to add to it its current roles
             // TODO: this is currently impmented in a messy way, this and doesUserHaveRole()
-            //       implementation must be coalesced
+            // implementation must be coalesced
             addRole(activeSubject, "guest");
          }
       }
@@ -94,7 +96,7 @@ public class MockJBossSecurityManager implements AuthenticationManager, RealmMap
          {
             // modify the activeSubject, need to add to it its current roles
             // TODO: this is currently impmented in a messy way, this and doesUserHaveRole()
-            //       implementation must be coalesced
+            // implementation must be coalesced
             addRole(activeSubject, "guest");
          }
       }
@@ -106,7 +108,7 @@ public class MockJBossSecurityManager implements AuthenticationManager, RealmMap
          {
             // modify the activeSubject, need to add to it its current roles
             // TODO: this is currently impmented in a messy way, this and doesUserHaveRole()
-            //       implementation must be coalesced
+            // implementation must be coalesced
             addRole(activeSubject, "publisher");
             addRole(activeSubject, "durpublisher");
             addRole(activeSubject, "def");
@@ -132,7 +134,7 @@ public class MockJBossSecurityManager implements AuthenticationManager, RealmMap
          {
             // modify the activeSubject, need to add to it its current roles
             // TODO: this is currently impmented in a messy way, this and doesUserHaveRole()
-            //       implementation must be coalesced
+            // implementation must be coalesced
             addRole(activeSubject, "noacc");
          }
       }
@@ -144,7 +146,7 @@ public class MockJBossSecurityManager implements AuthenticationManager, RealmMap
          {
             // modify the activeSubject, need to add to it its current roles
             // TODO: this is currently impmented in a messy way, this and doesUserHaveRole()
-            //       implementation must be coalesced
+            // implementation must be coalesced
             addRole(activeSubject, "publisher");
             addRole(activeSubject, "durpublisher");
          }
@@ -162,14 +164,14 @@ public class MockJBossSecurityManager implements AuthenticationManager, RealmMap
       throw new UnsupportedOperationException();
    }
 
-   //RealmMapping implementation
-   
-   public Principal getPrincipal(Principal principal)
+   // RealmMapping implementation
+
+   public Principal getPrincipal(final Principal principal)
    {
       throw new UnsupportedOperationException();
    }
 
-   private boolean containsRole(String roleName, Set roles)
+   private boolean containsRole(final String roleName, final Set roles)
    {
       Iterator iter = roles.iterator();
       while (iter.hasNext())
@@ -182,8 +184,8 @@ public class MockJBossSecurityManager implements AuthenticationManager, RealmMap
       }
       return false;
    }
-   
-   public boolean doesUserHaveRole(Principal principal, Set roles)
+
+   public boolean doesUserHaveRole(final Principal principal, final Set roles)
    {
       // introduced the possiblity to "simulate" JaasSecurityManager behavior, which is ingnoring
       // the principal passed as argument and looking at thread context for active subject; this
@@ -220,9 +222,9 @@ public class MockJBossSecurityManager implements AuthenticationManager, RealmMap
 
          String username = principal == null ? "guest" : principal.getName();
 
-         if (log.isTraceEnabled())
+         if (MockJBossSecurityManager.log.isTraceEnabled())
          {
-            log.trace("doesUserHaveRole:" + username);
+            MockJBossSecurityManager.log.trace("doesUserHaveRole:" + username);
          }
 
          if ("guest".equals(username))
@@ -231,14 +233,12 @@ public class MockJBossSecurityManager implements AuthenticationManager, RealmMap
          }
          else if ("john".equals(username))
          {
-            return containsRole("publisher", roles) ||
-               containsRole("durpublisher", roles) ||
-               containsRole("def", roles);
+            return containsRole("publisher", roles) || containsRole("durpublisher", roles) ||
+                   containsRole("def", roles);
          }
          else if ("dynsub".equals(username))
          {
-            return containsRole("publisher", roles)||
-               containsRole("durpublisher", roles);
+            return containsRole("publisher", roles) || containsRole("durpublisher", roles);
          }
          else if ("nobody".equals(username))
          {
@@ -246,9 +246,8 @@ public class MockJBossSecurityManager implements AuthenticationManager, RealmMap
          }
          else if ("dilbert".equals(username))
          {
-            return containsRole("publisher", roles) ||
-               containsRole("durpublisher", roles) ||
-               containsRole("def", roles);
+            return containsRole("publisher", roles) || containsRole("durpublisher", roles) ||
+                   containsRole("def", roles);
          }
          else
          {
@@ -257,23 +256,22 @@ public class MockJBossSecurityManager implements AuthenticationManager, RealmMap
       }
    }
 
-   public Set getUserRoles(Principal principal)
+   public Set getUserRoles(final Principal principal)
    {
       throw new UnsupportedOperationException();
    }
 
-
-   public boolean isValid(MessageInfo messageInfo, Subject subject, String string)
+   public boolean isValid(final MessageInfo messageInfo, final Subject subject, final String string)
    {
-      return false;  //To change body of implemented methods use File | Settings | File Templates.
+      return false; // To change body of implemented methods use File | Settings | File Templates.
    }
 
-   public Principal getTargetPrincipal(Principal principal, Map<String, Object> map)
+   public Principal getTargetPrincipal(final Principal principal, final Map<String, Object> map)
    {
-      return null;  //To change body of implemented methods use File | Settings | File Templates.
+      return null; // To change body of implemented methods use File | Settings | File Templates.
    }
 
-   public void setSimulateJBossJaasSecurityManager(boolean b)
+   public void setSimulateJBossJaasSecurityManager(final boolean b)
    {
       simulateJBossJaasSecurityManager = b;
    }
@@ -286,7 +284,7 @@ public class MockJBossSecurityManager implements AuthenticationManager, RealmMap
    /**
     * Copied from JaasSecurityManager.
     */
-   private Group getSubjectRoles(Subject subject)
+   private Group getSubjectRoles(final Subject subject)
    {
       Set subjectGroups = subject.getPrincipals(Group.class);
       Iterator iter = subjectGroups.iterator();
@@ -306,7 +304,7 @@ public class MockJBossSecurityManager implements AuthenticationManager, RealmMap
    /**
     * Copied from JaasSecurityManager.
     */
-   private boolean doesRoleGroupHaveRole(Principal role, Group userRoles)
+   private boolean doesRoleGroupHaveRole(final Principal role, final Group userRoles)
    {
       // First check that role is not a NobodyPrincipal
       if (role instanceof NobodyPrincipal)
@@ -319,17 +317,17 @@ public class MockJBossSecurityManager implements AuthenticationManager, RealmMap
       if (!isMember)
       {
          // Check the AnybodyPrincipal special cases
-         isMember = (role instanceof AnybodyPrincipal);
+         isMember = role instanceof AnybodyPrincipal;
       }
 
       return isMember;
    }
 
-   private void addRole(Subject subject, String role)
+   private void addRole(final Subject subject, final String role)
    {
       Set groups = subject.getPrincipals(Group.class);
 
-      if(groups == null || groups.isEmpty())
+      if (groups == null || groups.isEmpty())
       {
          Group g = new SimpleGroup("Roles");
          subject.getPrincipals().add(g);
@@ -339,7 +337,7 @@ public class MockJBossSecurityManager implements AuthenticationManager, RealmMap
 
       Group roles = null;
 
-      for(Iterator i = groups.iterator(); i.hasNext(); )
+      for (Iterator i = groups.iterator(); i.hasNext();)
       {
          Group g = (Group)i.next();
          if ("Roles".equals(g.getName()))
@@ -350,7 +348,7 @@ public class MockJBossSecurityManager implements AuthenticationManager, RealmMap
 
       if (roles == null)
       {
-         roles =  new SimpleGroup("Roles");
+         roles = new SimpleGroup("Roles");
          subject.getPrincipals().add(roles);
       }
 
@@ -382,7 +380,7 @@ public class MockJBossSecurityManager implements AuthenticationManager, RealmMap
       {
          initialContext.lookup(jndiName);
 
-         log.warn("Binding for " + jndiName + " already exists");
+         MockJBossSecurityManager.log.warn("Binding for " + jndiName + " already exists");
          return false;
       }
       catch (Throwable e)

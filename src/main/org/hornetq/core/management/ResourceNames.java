@@ -11,7 +11,6 @@
  * permissions and limitations under the License.
  */
 
-
 package org.hornetq.core.management;
 
 /**
@@ -43,7 +42,7 @@ public class ResourceNames
    public static final String CORE_BROADCAST_GROUP = "core.broadcastgroup.";
 
    public static final String CORE_DISCOVERY_GROUP = "core.discovery.";
-   
+
    public static final String JMS_SERVER = "jms.server";
 
    public static final String JMS_QUEUE = "jms.queue.";
@@ -51,7 +50,6 @@ public class ResourceNames
    public static final String JMS_TOPIC = "jms.address.";
 
    public static final String JMS_CONNECTION_FACTORY = "jms.connectionfactory.";
-
 
    // Attributes ----------------------------------------------------
 

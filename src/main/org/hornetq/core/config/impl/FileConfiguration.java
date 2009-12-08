@@ -13,22 +13,6 @@
 
 package org.hornetq.core.config.impl;
 
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER;
-import static org.hornetq.core.config.impl.Validators.GE_ZERO;
-import static org.hornetq.core.config.impl.Validators.GT_ZERO;
-import static org.hornetq.core.config.impl.Validators.MINUS_ONE_OR_GE_ZERO;
-import static org.hornetq.core.config.impl.Validators.MINUS_ONE_OR_GT_ZERO;
-import static org.hornetq.core.config.impl.Validators.NOT_NULL_OR_EMPTY;
-import static org.hornetq.core.config.impl.Validators.NO_CHECK;
-import static org.hornetq.core.config.impl.Validators.PERCENTAGE;
-import static org.hornetq.core.config.impl.Validators.THREAD_PRIORITY_RANGE;
-import static org.hornetq.utils.XMLConfigurationUtil.getBoolean;
-import static org.hornetq.utils.XMLConfigurationUtil.getDouble;
-import static org.hornetq.utils.XMLConfigurationUtil.getInteger;
-import static org.hornetq.utils.XMLConfigurationUtil.getLong;
-import static org.hornetq.utils.XMLConfigurationUtil.getString;
-
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URL;
@@ -49,6 +33,7 @@ import org.hornetq.core.server.JournalType;
 import org.hornetq.core.server.group.impl.GroupingHandlerConfiguration;
 import org.hornetq.utils.Pair;
 import org.hornetq.utils.SimpleString;
+import org.hornetq.utils.XMLConfigurationUtil;
 import org.hornetq.utils.XMLUtil;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -82,7 +67,7 @@ public class FileConfiguration extends ConfigurationImpl
 
    // Attributes ----------------------------------------------------------------------
 
-   private String configurationUrl = DEFAULT_CONFIGURATION_URL;
+   private String configurationUrl = FileConfiguration.DEFAULT_CONFIGURATION_URL;
 
    private boolean started;
 
@@ -96,90 +81,114 @@ public class FileConfiguration extends ConfigurationImpl
       }
 
       URL url = getClass().getClassLoader().getResource(configurationUrl);
-      log.debug("Loading server configuration from " + url);
+      FileConfiguration.log.debug("Loading server configuration from " + url);
 
       Reader reader = new InputStreamReader(url.openStream());
       String xml = org.hornetq.utils.XMLUtil.readerToString(reader);
       xml = XMLUtil.replaceSystemProps(xml);
       Element e = org.hornetq.utils.XMLUtil.stringToElement(xml);
-      org.hornetq.utils.XMLUtil.validate(e, CONFIGURATION_SCHEMA_URL);
+      org.hornetq.utils.XMLUtil.validate(e, FileConfiguration.CONFIGURATION_SCHEMA_URL);
 
-      clustered = getBoolean(e, "clustered", clustered);
+      clustered = XMLConfigurationUtil.getBoolean(e, "clustered", clustered);
 
-      backup = getBoolean(e, "backup", backup);
+      backup = XMLConfigurationUtil.getBoolean(e, "backup", backup);
 
-      sharedStore = getBoolean(e, "shared-store", sharedStore);
+      sharedStore = XMLConfigurationUtil.getBoolean(e, "shared-store", sharedStore);
 
       // Defaults to true when using FileConfiguration
-      fileDeploymentEnabled = getBoolean(e, "file-deployment-enabled", true);
+      fileDeploymentEnabled = XMLConfigurationUtil.getBoolean(e, "file-deployment-enabled", true);
 
-      persistenceEnabled = getBoolean(e, "persistence-enabled", persistenceEnabled);
+      persistenceEnabled = XMLConfigurationUtil.getBoolean(e, "persistence-enabled", persistenceEnabled);
 
-      persistDeliveryCountBeforeDelivery = getBoolean(e,
-                                                      "persist-delivery-count-before-delivery",
-                                                      persistDeliveryCountBeforeDelivery);
+      persistDeliveryCountBeforeDelivery = XMLConfigurationUtil.getBoolean(e,
+                                                                           "persist-delivery-count-before-delivery",
+                                                                           persistDeliveryCountBeforeDelivery);
 
       // NOTE! All the defaults come from the super class
 
-      scheduledThreadPoolMaxSize = getInteger(e, "scheduled-thread-pool-max-size", scheduledThreadPoolMaxSize, GT_ZERO);
+      scheduledThreadPoolMaxSize = XMLConfigurationUtil.getInteger(e,
+                                                                   "scheduled-thread-pool-max-size",
+                                                                   scheduledThreadPoolMaxSize,
+                                                                   Validators.GT_ZERO);
 
-      threadPoolMaxSize = getInteger(e, "thread-pool-max-size", threadPoolMaxSize, MINUS_ONE_OR_GT_ZERO);
+      threadPoolMaxSize = XMLConfigurationUtil.getInteger(e,
+                                                          "thread-pool-max-size",
+                                                          threadPoolMaxSize,
+                                                          Validators.MINUS_ONE_OR_GT_ZERO);
 
-      securityEnabled = getBoolean(e, "security-enabled", securityEnabled);
+      securityEnabled = XMLConfigurationUtil.getBoolean(e, "security-enabled", securityEnabled);
 
-      jmxManagementEnabled = getBoolean(e, "jmx-management-enabled", jmxManagementEnabled);
+      jmxManagementEnabled = XMLConfigurationUtil.getBoolean(e, "jmx-management-enabled", jmxManagementEnabled);
 
-      jmxDomain = getString(e, "jmx-domain", jmxDomain, NOT_NULL_OR_EMPTY);
+      jmxDomain = XMLConfigurationUtil.getString(e, "jmx-domain", jmxDomain, Validators.NOT_NULL_OR_EMPTY);
 
-      securityInvalidationInterval = getLong(e, "security-invalidation-interval", securityInvalidationInterval, GT_ZERO);
+      securityInvalidationInterval = XMLConfigurationUtil.getLong(e,
+                                                                  "security-invalidation-interval",
+                                                                  securityInvalidationInterval,
+                                                                  Validators.GT_ZERO);
 
-      connectionTTLOverride = getLong(e, "connection-ttl-override", connectionTTLOverride, MINUS_ONE_OR_GT_ZERO);
+      connectionTTLOverride = XMLConfigurationUtil.getLong(e,
+                                                           "connection-ttl-override",
+                                                           connectionTTLOverride,
+                                                           Validators.MINUS_ONE_OR_GT_ZERO);
 
-      asyncConnectionExecutionEnabled = getBoolean(e,
-                                                   "async-connection-execution-enabled",
-                                                   asyncConnectionExecutionEnabled);
+      asyncConnectionExecutionEnabled = XMLConfigurationUtil.getBoolean(e,
+                                                                        "async-connection-execution-enabled",
+                                                                        asyncConnectionExecutionEnabled);
 
-      transactionTimeout = getLong(e, "transaction-timeout", transactionTimeout, GT_ZERO);
+      transactionTimeout = XMLConfigurationUtil.getLong(e,
+                                                        "transaction-timeout",
+                                                        transactionTimeout,
+                                                        Validators.GT_ZERO);
 
-      transactionTimeoutScanPeriod = getLong(e,
-                                             "transaction-timeout-scan-period",
-                                             transactionTimeoutScanPeriod,
-                                             GT_ZERO);
+      transactionTimeoutScanPeriod = XMLConfigurationUtil.getLong(e,
+                                                                  "transaction-timeout-scan-period",
+                                                                  transactionTimeoutScanPeriod,
+                                                                  Validators.GT_ZERO);
 
-      messageExpiryScanPeriod = getLong(e, "message-expiry-scan-period", messageExpiryScanPeriod, GT_ZERO);
+      messageExpiryScanPeriod = XMLConfigurationUtil.getLong(e,
+                                                             "message-expiry-scan-period",
+                                                             messageExpiryScanPeriod,
+                                                             Validators.GT_ZERO);
 
-      messageExpiryThreadPriority = getInteger(e,
-                                               "message-expiry-thread-priority",
-                                               messageExpiryThreadPriority,
-                                               THREAD_PRIORITY_RANGE);
+      messageExpiryThreadPriority = XMLConfigurationUtil.getInteger(e,
+                                                                    "message-expiry-thread-priority",
+                                                                    messageExpiryThreadPriority,
+                                                                    Validators.THREAD_PRIORITY_RANGE);
 
-      idCacheSize = getInteger(e, "id-cache-size", idCacheSize, GT_ZERO);
+      idCacheSize = XMLConfigurationUtil.getInteger(e, "id-cache-size", idCacheSize, Validators.GT_ZERO);
 
-      persistIDCache = getBoolean(e, "persist-id-cache", persistIDCache);
+      persistIDCache = XMLConfigurationUtil.getBoolean(e, "persist-id-cache", persistIDCache);
 
-      managementAddress = new SimpleString(getString(e,
-                                                     "management-address",
-                                                     managementAddress.toString(),
-                                                     NOT_NULL_OR_EMPTY));
+      managementAddress = new SimpleString(XMLConfigurationUtil.getString(e,
+                                                                          "management-address",
+                                                                          managementAddress.toString(),
+                                                                          Validators.NOT_NULL_OR_EMPTY));
 
-      managementNotificationAddress = new SimpleString(getString(e,
-                                                                 "management-notification-address",
-                                                                 managementNotificationAddress.toString(),
-                                                                 NOT_NULL_OR_EMPTY));
+      managementNotificationAddress = new SimpleString(XMLConfigurationUtil.getString(e,
+                                                                                      "management-notification-address",
+                                                                                      managementNotificationAddress.toString(),
+                                                                                      Validators.NOT_NULL_OR_EMPTY));
 
-      managementClusterPassword = getString(e,
-                                            "management-cluster-password",
-                                            managementClusterPassword,
-                                            NOT_NULL_OR_EMPTY);
+      managementClusterPassword = XMLConfigurationUtil.getString(e,
+                                                                 "management-cluster-password",
+                                                                 managementClusterPassword,
+                                                                 Validators.NOT_NULL_OR_EMPTY);
 
-      managementClusterUser = getString(e, "management-cluster-user", managementClusterUser, NOT_NULL_OR_EMPTY);
+      managementClusterUser = XMLConfigurationUtil.getString(e,
+                                                             "management-cluster-user",
+                                                             managementClusterUser,
+                                                             Validators.NOT_NULL_OR_EMPTY);
 
-      managementRequestTimeout = getLong(e, "management-request-timeout", managementRequestTimeout, GT_ZERO);
+      managementRequestTimeout = XMLConfigurationUtil.getLong(e,
+                                                              "management-request-timeout",
+                                                              managementRequestTimeout,
+                                                              Validators.GT_ZERO);
 
-      logDelegateFactoryClassName = getString(e,
-                                              "log-delegate-factory-class-name",
-                                              logDelegateFactoryClassName,
-                                              NOT_NULL_OR_EMPTY);
+      logDelegateFactoryClassName = XMLConfigurationUtil.getString(e,
+                                                                   "log-delegate-factory-class-name",
+                                                                   logDelegateFactoryClassName,
+                                                                   Validators.NOT_NULL_OR_EMPTY);
 
       NodeList interceptorNodes = e.getElementsByTagName("remoting-interceptors");
 
@@ -223,15 +232,15 @@ public class FileConfiguration extends ConfigurationImpl
 
          if (connectorConfig.getName() == null)
          {
-            log.warn("Cannot deploy a connector with no name specified.");
+            FileConfiguration.log.warn("Cannot deploy a connector with no name specified.");
 
             continue;
          }
 
          if (connectorConfigs.containsKey(connectorConfig.getName()))
          {
-            log.warn("There is already a connector with name " + connectorConfig.getName() +
-                     " deployed. This one will not be deployed.");
+            FileConfiguration.log.warn("There is already a connector with name " + connectorConfig.getName() +
+                                       " deployed. This one will not be deployed.");
 
             continue;
          }
@@ -306,19 +315,31 @@ public class FileConfiguration extends ConfigurationImpl
 
       // Persistence config
 
-      largeMessagesDirectory = getString(e, "large-messages-directory", largeMessagesDirectory, NOT_NULL_OR_EMPTY);
+      largeMessagesDirectory = XMLConfigurationUtil.getString(e,
+                                                              "large-messages-directory",
+                                                              largeMessagesDirectory,
+                                                              Validators.NOT_NULL_OR_EMPTY);
 
-      bindingsDirectory = getString(e, "bindings-directory", bindingsDirectory, NOT_NULL_OR_EMPTY);
+      bindingsDirectory = XMLConfigurationUtil.getString(e,
+                                                         "bindings-directory",
+                                                         bindingsDirectory,
+                                                         Validators.NOT_NULL_OR_EMPTY);
 
-      createBindingsDir = getBoolean(e, "create-bindings-dir", createBindingsDir);
+      createBindingsDir = XMLConfigurationUtil.getBoolean(e, "create-bindings-dir", createBindingsDir);
 
-      journalDirectory = getString(e, "journal-directory", journalDirectory, NOT_NULL_OR_EMPTY);
+      journalDirectory = XMLConfigurationUtil.getString(e,
+                                                        "journal-directory",
+                                                        journalDirectory,
+                                                        Validators.NOT_NULL_OR_EMPTY);
 
-      pagingDirectory = getString(e, "paging-directory", pagingDirectory, NOT_NULL_OR_EMPTY);
+      pagingDirectory = XMLConfigurationUtil.getString(e,
+                                                       "paging-directory",
+                                                       pagingDirectory,
+                                                       Validators.NOT_NULL_OR_EMPTY);
 
-      createJournalDir = getBoolean(e, "create-journal-dir", createJournalDir);
+      createJournalDir = XMLConfigurationUtil.getBoolean(e, "create-journal-dir", createJournalDir);
 
-      String s = getString(e, "journal-type", journalType.toString(), Validators.JOURNAL_TYPE);
+      String s = XMLConfigurationUtil.getString(e, "journal-type", journalType.toString(), Validators.JOURNAL_TYPE);
 
       if (s.equals(JournalType.NIO.toString()))
       {
@@ -329,30 +350,34 @@ public class FileConfiguration extends ConfigurationImpl
          journalType = JournalType.ASYNCIO;
       }
 
-      journalSyncTransactional = getBoolean(e, "journal-sync-transactional", journalSyncTransactional);
+      journalSyncTransactional = XMLConfigurationUtil.getBoolean(e,
+                                                                 "journal-sync-transactional",
+                                                                 journalSyncTransactional);
 
-      journalSyncNonTransactional = getBoolean(e, "journal-sync-non-transactional", journalSyncNonTransactional);
+      journalSyncNonTransactional = XMLConfigurationUtil.getBoolean(e,
+                                                                    "journal-sync-non-transactional",
+                                                                    journalSyncNonTransactional);
 
-      journalFileSize = getInteger(e, "journal-file-size", journalFileSize, GT_ZERO);
+      journalFileSize = XMLConfigurationUtil.getInteger(e, "journal-file-size", journalFileSize, Validators.GT_ZERO);
 
-      int journalBufferTimeout = getInteger(e,
-                                        "journal-buffer-timeout",
-                                        journalType == JournalType.ASYNCIO ? DEFAULT_JOURNAL_BUFFER_TIMEOUT_AIO
-                                                                          : DEFAULT_JOURNAL_BUFFER_TIMEOUT_NIO,
-                                        GT_ZERO);
+      int journalBufferTimeout = XMLConfigurationUtil.getInteger(e,
+                                                                 "journal-buffer-timeout",
+                                                                 journalType == JournalType.ASYNCIO ? ConfigurationImpl.DEFAULT_JOURNAL_BUFFER_TIMEOUT_AIO
+                                                                                                   : ConfigurationImpl.DEFAULT_JOURNAL_BUFFER_TIMEOUT_NIO,
+                                                                 Validators.GT_ZERO);
 
-      int journalBufferSize = getInteger(e,
-                                     "journal-buffer-size",
-                                     journalType == JournalType.ASYNCIO ? DEFAULT_JOURNAL_BUFFER_SIZE_AIO
-                                                                       : DEFAULT_JOURNAL_BUFFER_SIZE_NIO,
-                                     GT_ZERO);
+      int journalBufferSize = XMLConfigurationUtil.getInteger(e,
+                                                              "journal-buffer-size",
+                                                              journalType == JournalType.ASYNCIO ? ConfigurationImpl.DEFAULT_JOURNAL_BUFFER_SIZE_AIO
+                                                                                                : ConfigurationImpl.DEFAULT_JOURNAL_BUFFER_SIZE_NIO,
+                                                              Validators.GT_ZERO);
 
-      int journalMaxIO = getInteger(e,
-                                "journal-max-io",
-                                journalType == JournalType.ASYNCIO ? DEFAULT_JOURNAL_MAX_IO_AIO
-                                                                  : DEFAULT_JOURNAL_MAX_IO_NIO,
-                                GT_ZERO);
-      
+      int journalMaxIO = XMLConfigurationUtil.getInteger(e,
+                                                         "journal-max-io",
+                                                         journalType == JournalType.ASYNCIO ? ConfigurationImpl.DEFAULT_JOURNAL_MAX_IO_AIO
+                                                                                           : ConfigurationImpl.DEFAULT_JOURNAL_MAX_IO_NIO,
+                                                         Validators.GT_ZERO);
+
       if (journalType == JournalType.ASYNCIO)
       {
          journalBufferTimeout_AIO = journalBufferTimeout;
@@ -363,38 +388,61 @@ public class FileConfiguration extends ConfigurationImpl
       {
          journalBufferTimeout_NIO = journalBufferTimeout;
          journalBufferSize_NIO = journalBufferSize;
-         journalMaxIO_NIO = journalMaxIO;  
+         journalMaxIO_NIO = journalMaxIO;
       }
 
-      journalMinFiles = getInteger(e, "journal-min-files", journalMinFiles, GT_ZERO);
+      journalMinFiles = XMLConfigurationUtil.getInteger(e, "journal-min-files", journalMinFiles, Validators.GT_ZERO);
 
-      journalCompactMinFiles = getInteger(e, "journal-compact-min-files", journalCompactMinFiles, GE_ZERO);
+      journalCompactMinFiles = XMLConfigurationUtil.getInteger(e,
+                                                               "journal-compact-min-files",
+                                                               journalCompactMinFiles,
+                                                               Validators.GE_ZERO);
 
-      journalCompactPercentage = getInteger(e, "journal-compact-percentage", journalCompactPercentage, PERCENTAGE);
+      journalCompactPercentage = XMLConfigurationUtil.getInteger(e,
+                                                                 "journal-compact-percentage",
+                                                                 journalCompactPercentage,
+                                                                 Validators.PERCENTAGE);
 
-      logJournalWriteRate = getBoolean(e, "log-journal-write-rate", DEFAULT_JOURNAL_LOG_WRITE_RATE);
+      logJournalWriteRate = XMLConfigurationUtil.getBoolean(e,
+                                                            "log-journal-write-rate",
+                                                            ConfigurationImpl.DEFAULT_JOURNAL_LOG_WRITE_RATE);
 
-      journalPerfBlastPages = getInteger(e, "perf-blast-pages", DEFAULT_JOURNAL_PERF_BLAST_PAGES, MINUS_ONE_OR_GT_ZERO);
+      journalPerfBlastPages = XMLConfigurationUtil.getInteger(e,
+                                                              "perf-blast-pages",
+                                                              ConfigurationImpl.DEFAULT_JOURNAL_PERF_BLAST_PAGES,
+                                                              Validators.MINUS_ONE_OR_GT_ZERO);
 
-      runSyncSpeedTest = getBoolean(e, "run-sync-speed-test", runSyncSpeedTest);
+      runSyncSpeedTest = XMLConfigurationUtil.getBoolean(e, "run-sync-speed-test", runSyncSpeedTest);
 
-      wildcardRoutingEnabled = getBoolean(e, "wild-card-routing-enabled", wildcardRoutingEnabled);
+      wildcardRoutingEnabled = XMLConfigurationUtil.getBoolean(e, "wild-card-routing-enabled", wildcardRoutingEnabled);
 
-      messageCounterEnabled = getBoolean(e, "message-counter-enabled", messageCounterEnabled);
+      messageCounterEnabled = XMLConfigurationUtil.getBoolean(e, "message-counter-enabled", messageCounterEnabled);
 
-      messageCounterSamplePeriod = getLong(e, "message-counter-sample-period", messageCounterSamplePeriod, GT_ZERO);
+      messageCounterSamplePeriod = XMLConfigurationUtil.getLong(e,
+                                                                "message-counter-sample-period",
+                                                                messageCounterSamplePeriod,
+                                                                Validators.GT_ZERO);
 
-      messageCounterMaxDayHistory = getInteger(e,
-                                               "message-counter-max-day-history",
-                                               messageCounterMaxDayHistory,
-                                               GT_ZERO);
+      messageCounterMaxDayHistory = XMLConfigurationUtil.getInteger(e,
+                                                                    "message-counter-max-day-history",
+                                                                    messageCounterMaxDayHistory,
+                                                                    Validators.GT_ZERO);
 
-      serverDumpInterval = getLong(e, "server-dump-interval", serverDumpInterval, MINUS_ONE_OR_GT_ZERO); // in
+      serverDumpInterval = XMLConfigurationUtil.getLong(e,
+                                                        "server-dump-interval",
+                                                        serverDumpInterval,
+                                                        Validators.MINUS_ONE_OR_GT_ZERO); // in
       // milliseconds
 
-      memoryWarningThreshold = getInteger(e, "memory-warning-threshold", memoryWarningThreshold, PERCENTAGE);
+      memoryWarningThreshold = XMLConfigurationUtil.getInteger(e,
+                                                               "memory-warning-threshold",
+                                                               memoryWarningThreshold,
+                                                               Validators.PERCENTAGE);
 
-      memoryMeasureInterval = getLong(e, "memory-measure-interval", memoryMeasureInterval, MINUS_ONE_OR_GT_ZERO); // in
+      memoryMeasureInterval = XMLConfigurationUtil.getLong(e,
+                                                           "memory-measure-interval",
+                                                           memoryMeasureInterval,
+                                                           Validators.MINUS_ONE_OR_GT_ZERO); // in
 
       started = true;
    }
@@ -424,7 +472,7 @@ public class FileConfiguration extends ConfigurationImpl
 
       String name = nameNode != null ? nameNode.getNodeValue() : null;
 
-      String clazz = getString(e, "factory-class", null, NOT_NULL_OR_EMPTY);
+      String clazz = XMLConfigurationUtil.getString(e, "factory-class", null, Validators.NOT_NULL_OR_EMPTY);
 
       Map<String, Object> params = new HashMap<String, Object>();
 
@@ -451,15 +499,18 @@ public class FileConfiguration extends ConfigurationImpl
    {
       String name = e.getAttribute("name");
 
-      String localAddress = getString(e, "local-bind-address", null, NO_CHECK);
+      String localAddress = XMLConfigurationUtil.getString(e, "local-bind-address", null, Validators.NO_CHECK);
 
-      int localBindPort = getInteger(e, "local-bind-port", -1, MINUS_ONE_OR_GT_ZERO);
+      int localBindPort = XMLConfigurationUtil.getInteger(e, "local-bind-port", -1, Validators.MINUS_ONE_OR_GT_ZERO);
 
-      String groupAddress = getString(e, "group-address", null, NOT_NULL_OR_EMPTY);
+      String groupAddress = XMLConfigurationUtil.getString(e, "group-address", null, Validators.NOT_NULL_OR_EMPTY);
 
-      int groupPort = getInteger(e, "group-port", -1, GT_ZERO);
+      int groupPort = XMLConfigurationUtil.getInteger(e, "group-port", -1, Validators.GT_ZERO);
 
-      long broadcastPeriod = getLong(e, "broadcast-period", DEFAULT_BROADCAST_PERIOD, GT_ZERO);
+      long broadcastPeriod = XMLConfigurationUtil.getLong(e,
+                                                          "broadcast-period",
+                                                          ConfigurationImpl.DEFAULT_BROADCAST_PERIOD,
+                                                          Validators.GT_ZERO);
 
       NodeList children = e.getChildNodes();
 
@@ -503,11 +554,14 @@ public class FileConfiguration extends ConfigurationImpl
    {
       String name = e.getAttribute("name");
 
-      String groupAddress = getString(e, "group-address", null, NOT_NULL_OR_EMPTY);
+      String groupAddress = XMLConfigurationUtil.getString(e, "group-address", null, Validators.NOT_NULL_OR_EMPTY);
 
-      int groupPort = getInteger(e, "group-port", -1, MINUS_ONE_OR_GT_ZERO);
+      int groupPort = XMLConfigurationUtil.getInteger(e, "group-port", -1, Validators.MINUS_ONE_OR_GT_ZERO);
 
-      long refreshTimeout = getLong(e, "refresh-timeout", DEFAULT_BROADCAST_REFRESH_TIMEOUT, GT_ZERO);
+      long refreshTimeout = XMLConfigurationUtil.getLong(e,
+                                                         "refresh-timeout",
+                                                         ConfigurationImpl.DEFAULT_BROADCAST_REFRESH_TIMEOUT,
+                                                         Validators.GT_ZERO);
 
       DiscoveryGroupConfiguration config = new DiscoveryGroupConfiguration(name,
                                                                            groupAddress,
@@ -516,7 +570,8 @@ public class FileConfiguration extends ConfigurationImpl
 
       if (discoveryGroupConfigurations.containsKey(name))
       {
-         log.warn("There is already a discovery group with name " + name + " deployed. This one will not be deployed.");
+         FileConfiguration.log.warn("There is already a discovery group with name " + name +
+                                    " deployed. This one will not be deployed.");
 
          return;
       }
@@ -530,19 +585,30 @@ public class FileConfiguration extends ConfigurationImpl
    {
       String name = e.getAttribute("name");
 
-      String address = getString(e, "address", null, NOT_NULL_OR_EMPTY);
+      String address = XMLConfigurationUtil.getString(e, "address", null, Validators.NOT_NULL_OR_EMPTY);
 
-      boolean duplicateDetection = getBoolean(e, "use-duplicate-detection", DEFAULT_CLUSTER_DUPLICATE_DETECTION);
+      boolean duplicateDetection = XMLConfigurationUtil.getBoolean(e,
+                                                                   "use-duplicate-detection",
+                                                                   ConfigurationImpl.DEFAULT_CLUSTER_DUPLICATE_DETECTION);
 
-      boolean forwardWhenNoConsumers = getBoolean(e,
-                                                  "forward-when-no-consumers",
-                                                  DEFAULT_CLUSTER_FORWARD_WHEN_NO_CONSUMERS);
+      boolean forwardWhenNoConsumers = XMLConfigurationUtil.getBoolean(e,
+                                                                       "forward-when-no-consumers",
+                                                                       ConfigurationImpl.DEFAULT_CLUSTER_FORWARD_WHEN_NO_CONSUMERS);
 
-      int maxHops = getInteger(e, "max-hops", DEFAULT_CLUSTER_MAX_HOPS, GE_ZERO);
+      int maxHops = XMLConfigurationUtil.getInteger(e,
+                                                    "max-hops",
+                                                    ConfigurationImpl.DEFAULT_CLUSTER_MAX_HOPS,
+                                                    Validators.GE_ZERO);
 
-      long retryInterval = getLong(e, "retry-interval", DEFAULT_CLUSTER_RETRY_INTERVAL, GT_ZERO);
+      long retryInterval = XMLConfigurationUtil.getLong(e,
+                                                        "retry-interval",
+                                                        ConfigurationImpl.DEFAULT_CLUSTER_RETRY_INTERVAL,
+                                                        Validators.GT_ZERO);
 
-      int confirmationWindowSize = getInteger(e, "confirmation-window-size", DEFAULT_CONFIRMATION_WINDOW_SIZE, GT_ZERO);
+      int confirmationWindowSize = XMLConfigurationUtil.getInteger(e,
+                                                                   "confirmation-window-size",
+                                                                   FileConfiguration.DEFAULT_CONFIRMATION_WINDOW_SIZE,
+                                                                   Validators.GT_ZERO);
 
       String discoveryGroupName = null;
 
@@ -608,9 +674,12 @@ public class FileConfiguration extends ConfigurationImpl
    private void parseGroupingHandlerConfiguration(final Element node)
    {
       String name = node.getAttribute("name");
-      String type = getString(node, "type", null, NOT_NULL_OR_EMPTY);
-      String address = getString(node, "address", null, NOT_NULL_OR_EMPTY);
-      Integer timeout = getInteger(node, "timeout", GroupingHandlerConfiguration.DEFAULT_TIMEOUT, GT_ZERO);
+      String type = XMLConfigurationUtil.getString(node, "type", null, Validators.NOT_NULL_OR_EMPTY);
+      String address = XMLConfigurationUtil.getString(node, "address", null, Validators.NOT_NULL_OR_EMPTY);
+      Integer timeout = XMLConfigurationUtil.getInteger(node,
+                                                        "timeout",
+                                                        GroupingHandlerConfiguration.DEFAULT_TIMEOUT,
+                                                        Validators.GT_ZERO);
       groupingHandlerConfiguration = new GroupingHandlerConfiguration(new SimpleString(name),
                                                                       type.equals(GroupingHandlerConfiguration.TYPE.LOCAL.getType()) ? GroupingHandlerConfiguration.TYPE.LOCAL
                                                                                                                                     : GroupingHandlerConfiguration.TYPE.REMOTE,
@@ -622,35 +691,46 @@ public class FileConfiguration extends ConfigurationImpl
    {
       String name = brNode.getAttribute("name");
 
-      String queueName = getString(brNode, "queue-name", null, NOT_NULL_OR_EMPTY);
+      String queueName = XMLConfigurationUtil.getString(brNode, "queue-name", null, Validators.NOT_NULL_OR_EMPTY);
 
-      String forwardingAddress = getString(brNode, "forwarding-address", null, NOT_NULL_OR_EMPTY);
+      String forwardingAddress = XMLConfigurationUtil.getString(brNode,
+                                                                "forwarding-address",
+                                                                null,
+                                                                Validators.NOT_NULL_OR_EMPTY);
 
-      String transformerClassName = getString(brNode, "transformer-class-name", null, NO_CHECK);
+      String transformerClassName = XMLConfigurationUtil.getString(brNode,
+                                                                   "transformer-class-name",
+                                                                   null,
+                                                                   Validators.NO_CHECK);
 
-      long retryInterval = getLong(brNode, "retry-interval", DEFAULT_RETRY_INTERVAL, GT_ZERO);
+      long retryInterval = XMLConfigurationUtil.getLong(brNode,
+                                                        "retry-interval",
+                                                        ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL,
+                                                        Validators.GT_ZERO);
 
       // Default bridge conf
-      int confirmationWindowSize = getInteger(brNode,
-                                              "confirmation-window-size",
-                                              DEFAULT_CONFIRMATION_WINDOW_SIZE,
-                                              GT_ZERO);
+      int confirmationWindowSize = XMLConfigurationUtil.getInteger(brNode,
+                                                                   "confirmation-window-size",
+                                                                   FileConfiguration.DEFAULT_CONFIRMATION_WINDOW_SIZE,
+                                                                   Validators.GT_ZERO);
 
-      double retryIntervalMultiplier = getDouble(brNode,
-                                                 "retry-interval-multiplier",
-                                                 DEFAULT_RETRY_INTERVAL_MULTIPLIER,
-                                                 GT_ZERO);
+      double retryIntervalMultiplier = XMLConfigurationUtil.getDouble(brNode,
+                                                                      "retry-interval-multiplier",
+                                                                      ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER,
+                                                                      Validators.GT_ZERO);
 
-      int reconnectAttempts = getInteger(brNode,
-                                         "reconnect-attempts",
-                                         DEFAULT_BRIDGE_RECONNECT_ATTEMPTS,
-                                         MINUS_ONE_OR_GE_ZERO);
+      int reconnectAttempts = XMLConfigurationUtil.getInteger(brNode,
+                                                              "reconnect-attempts",
+                                                              ConfigurationImpl.DEFAULT_BRIDGE_RECONNECT_ATTEMPTS,
+                                                              Validators.MINUS_ONE_OR_GE_ZERO);
 
-      boolean failoverOnServerShutdown = getBoolean(brNode,
-                                                    "failover-on-server-shutdown",
-                                                    ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN);
+      boolean failoverOnServerShutdown = XMLConfigurationUtil.getBoolean(brNode,
+                                                                         "failover-on-server-shutdown",
+                                                                         ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN);
 
-      boolean useDuplicateDetection = getBoolean(brNode, "use-duplicate-detection", DEFAULT_BRIDGE_DUPLICATE_DETECTION);
+      boolean useDuplicateDetection = XMLConfigurationUtil.getBoolean(brNode,
+                                                                      "use-duplicate-detection",
+                                                                      ConfigurationImpl.DEFAULT_BRIDGE_DUPLICATE_DETECTION);
 
       String filterString = null;
 
@@ -731,15 +811,21 @@ public class FileConfiguration extends ConfigurationImpl
    {
       String name = e.getAttribute("name");
 
-      String routingName = getString(e, "routing-name", null, NO_CHECK);
+      String routingName = XMLConfigurationUtil.getString(e, "routing-name", null, Validators.NO_CHECK);
 
-      String address = getString(e, "address", null, NOT_NULL_OR_EMPTY);
+      String address = XMLConfigurationUtil.getString(e, "address", null, Validators.NOT_NULL_OR_EMPTY);
 
-      String forwardingAddress = getString(e, "forwarding-address", null, NOT_NULL_OR_EMPTY);
+      String forwardingAddress = XMLConfigurationUtil.getString(e,
+                                                                "forwarding-address",
+                                                                null,
+                                                                Validators.NOT_NULL_OR_EMPTY);
 
-      boolean exclusive = getBoolean(e, "exclusive", DEFAULT_DIVERT_EXCLUSIVE);
+      boolean exclusive = XMLConfigurationUtil.getBoolean(e, "exclusive", ConfigurationImpl.DEFAULT_DIVERT_EXCLUSIVE);
 
-      String transformerClassName = getString(e, "transformer-class-name", null, NO_CHECK);
+      String transformerClassName = XMLConfigurationUtil.getString(e,
+                                                                   "transformer-class-name",
+                                                                   null,
+                                                                   Validators.NO_CHECK);
 
       String filterString = null;
 

@@ -9,7 +9,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
  * implied.  See the License for the specific language governing
  * permissions and limitations under the License.
- */ 
+ */
 
 package org.hornetq.core.version.impl;
 
@@ -35,25 +35,29 @@ public class VersionImpl implements Version, Serializable
 
    // Attributes ----------------------------------------------------
 
-   private String versionName;
+   private final String versionName;
 
-   private int majorVersion;
+   private final int majorVersion;
 
-   private int minorVersion;
+   private final int minorVersion;
 
-   private int microVersion;
+   private final int microVersion;
 
-   private int incrementingVersion;
+   private final int incrementingVersion;
 
-   private String versionSuffix;
+   private final String versionSuffix;
 
-   private String nettyVersion;
+   private final String nettyVersion;
 
    // Constructors --------------------------------------------------
 
-
-   public VersionImpl(final String versionName, final int majorVersion, final int minorVersion,
-                      final int microVersion, final int incrementingVersion, final String versionSuffix, String nettyVersion)
+   public VersionImpl(final String versionName,
+                      final int majorVersion,
+                      final int minorVersion,
+                      final int microVersion,
+                      final int incrementingVersion,
+                      final String versionSuffix,
+                      final String nettyVersion)
    {
       this.versionName = versionName;
 
@@ -74,8 +78,17 @@ public class VersionImpl implements Version, Serializable
 
    public String getFullVersion()
    {
-      return majorVersion + "." + minorVersion + "." + microVersion + "." + versionSuffix +
-              " (" + versionName + ", " + incrementingVersion + ")";
+      return majorVersion + "." +
+             minorVersion +
+             "." +
+             microVersion +
+             "." +
+             versionSuffix +
+             " (" +
+             versionName +
+             ", " +
+             incrementingVersion +
+             ")";
    }
 
    public String getVersionName()
@@ -114,8 +127,9 @@ public class VersionImpl implements Version, Serializable
    }
 
    // Public -------------------------------------------------------
-   
-   public boolean equals(Object other)
+
+   @Override
+   public boolean equals(final Object other)
    {
       if (other == this)
       {
@@ -126,13 +140,12 @@ public class VersionImpl implements Version, Serializable
          return false;
       }
       Version v = (Version)other;
-      
-      return this.versionName.equals(v.getVersionName()) &&
-             this.majorVersion == v.getMajorVersion() &&
-             this.minorVersion == v.getMinorVersion() &&
-             this.microVersion == v.getMicroVersion() &&
-             this.versionSuffix.equals(v.getVersionSuffix()) &&
-             this.incrementingVersion == v.getIncrementingVersion();
+
+      return versionName.equals(v.getVersionName()) && majorVersion == v.getMajorVersion() &&
+             minorVersion == v.getMinorVersion() &&
+             microVersion == v.getMicroVersion() &&
+             versionSuffix.equals(v.getVersionSuffix()) &&
+             incrementingVersion == v.getIncrementingVersion();
    }
 
    // Package protected ---------------------------------------------

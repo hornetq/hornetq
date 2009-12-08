@@ -58,25 +58,25 @@ public class ClusterWithBackupTest extends ClusterTestBase
    {
       return false;
    }
-   
+
    public void testBasicRoundRobin() throws Exception
    {
       setupCluster();
 
       startServers(0, 1, 2, 3, 4, 5);
-      
+
       setupSessionFactory(3, isNetty());
       setupSessionFactory(4, isNetty());
       setupSessionFactory(5, isNetty());
-      
+
       createQueue(3, "queues.testaddress", "queue0", null, false);
       createQueue(4, "queues.testaddress", "queue0", null, false);
       createQueue(5, "queues.testaddress", "queue0", null, false);
-      
+
       addConsumer(0, 3, "queue0", null);
       addConsumer(1, 4, "queue0", null);
       addConsumer(2, 5, "queue0", null);
-      
+
       waitForBindings(3, "queues.testaddress", 1, 1, true);
       waitForBindings(4, "queues.testaddress", 1, 1, true);
       waitForBindings(5, "queues.testaddress", 1, 1, true);
@@ -91,7 +91,7 @@ public class ClusterWithBackupTest extends ClusterTestBase
 
       verifyNotReceive(0, 0, 1, 2);
    }
-   
+
    protected void setupCluster() throws Exception
    {
       setupCluster(false);
@@ -104,8 +104,7 @@ public class ClusterWithBackupTest extends ClusterTestBase
       setupClusterConnection("cluster1", "queues", forwardWhenNoConsumers, 1, isNetty(), 4, 3, 5);
 
       setupClusterConnection("cluster2", "queues", forwardWhenNoConsumers, 1, isNetty(), 5, 3, 4);
-      
-      
+
       setupClusterConnection("cluster0", "queues", forwardWhenNoConsumers, 1, isNetty(), 0, 4, 5);
 
       setupClusterConnection("cluster1", "queues", forwardWhenNoConsumers, 1, isNetty(), 1, 3, 5);
@@ -115,16 +114,16 @@ public class ClusterWithBackupTest extends ClusterTestBase
 
    protected void setupServers() throws Exception
    {
-      //The backups
+      // The backups
       setupServer(0, isFileStorage(), isNetty(), true);
       setupServer(1, isFileStorage(), isNetty(), true);
       setupServer(2, isFileStorage(), isNetty(), true);
-      
-      //The lives
+
+      // The lives
       setupServer(3, isFileStorage(), isNetty(), 0);
       setupServer(4, isFileStorage(), isNetty(), 1);
-      setupServer(5, isFileStorage(), isNetty(), 2);      
-      
+      setupServer(5, isFileStorage(), isNetty(), 2);
+
    }
 
    protected void stopServers() throws Exception

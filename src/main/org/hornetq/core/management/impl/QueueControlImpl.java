@@ -16,8 +16,6 @@ package org.hornetq.core.management.impl;
 import java.util.List;
 import java.util.Map;
 
-import javax.management.StandardMBean;
-
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.filter.impl.FilterImpl;
@@ -345,7 +343,7 @@ public class QueueControlImpl extends AbstractControl implements QueueControl
       clearIO();
       try
       {
-         return toJSON(listScheduledMessages());
+         return QueueControlImpl.toJSON(listScheduledMessages());
       }
       finally
       {
@@ -384,7 +382,7 @@ public class QueueControlImpl extends AbstractControl implements QueueControl
       clearIO();
       try
       {
-         return toJSON(listMessages(filter));
+         return QueueControlImpl.toJSON(listMessages(filter));
       }
       finally
       {

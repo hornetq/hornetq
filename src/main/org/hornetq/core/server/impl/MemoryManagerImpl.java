@@ -62,9 +62,9 @@ public class MemoryManagerImpl implements MemoryManager
 
    public synchronized void start()
    {
-      log.debug("Starting MemoryManager with MEASURE_INTERVAL: " + measureInterval +
-                " FREE_MEMORY_PERCENT: " +
-                memoryWarningThreshold);
+      MemoryManagerImpl.log.debug("Starting MemoryManager with MEASURE_INTERVAL: " + measureInterval +
+                                  " FREE_MEMORY_PERCENT: " +
+                                  memoryWarningThreshold);
 
       if (started)
       {
@@ -141,18 +141,18 @@ public class MemoryManagerImpl implements MemoryManager
             info += String.format("total memory:     %s\n", SizeFormatterUtil.sizeof(totalMemory));
             info += String.format("available memory: %.2f%%\n", availableMemoryPercent);
 
-            if (log.isDebugEnabled())
+            if (MemoryManagerImpl.log.isDebugEnabled())
             {
-               log.debug(info);
+               MemoryManagerImpl.log.debug(info);
             }
 
             if (availableMemoryPercent <= memoryWarningThreshold)
             {
-               log.warn("Less than " + memoryWarningThreshold +
-                        "%\n" +
-                        info +
-                        "\nYou are in danger of running out of RAM. Have you set paging parameters " +
-                        "on your addresses? (See user manual \"Paging\" chapter)");
+               MemoryManagerImpl.log.warn("Less than " + memoryWarningThreshold +
+                                          "%\n" +
+                                          info +
+                                          "\nYou are in danger of running out of RAM. Have you set paging parameters " +
+                                          "on your addresses? (See user manual \"Paging\" chapter)");
 
                low = true;
             }

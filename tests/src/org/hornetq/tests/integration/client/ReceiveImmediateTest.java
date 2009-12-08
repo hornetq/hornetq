@@ -12,6 +12,8 @@
  */
 package org.hornetq.tests.integration.client;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
@@ -38,9 +40,9 @@ public class ReceiveImmediateTest extends ServiceTestBase
    private HornetQServer server;
 
    private final SimpleString QUEUE = new SimpleString("ReceiveImmediateTest.queue");
-   
+
    private final SimpleString ADDRESS = new SimpleString("ReceiveImmediateTest.address");
-   
+
    @Override
    protected void setUp() throws Exception
    {
@@ -83,31 +85,31 @@ public class ReceiveImmediateTest extends ServiceTestBase
    {
       doConsumerReceiveImmediate(true);
    }
-   
+
    public void testConsumerReceiveImmediateWithSessionStop() throws Exception
    {
       sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
       sf.setBlockOnNonPersistentSend(true);
       sf.setBlockOnAcknowledge(true);
       sf.setAckBatchSize(0);
-      
+
       ClientSession session = sf.createSession(false, true, true);
 
       session.createQueue(ADDRESS, QUEUE, null, false);
 
       ClientConsumer consumer = session.createConsumer(QUEUE, null, false);
       session.start();
-            
+
       session.stop();
-      assertNull(consumer.receiveImmediate());
-      
+      Assert.assertNull(consumer.receiveImmediate());
+
       session.start();
       long start = System.currentTimeMillis();
       ClientMessage msg = consumer.receive(2000);
       long end = System.currentTimeMillis();
-      assertNull(msg);
+      Assert.assertNull(msg);
       // we waited for at least 2000ms
-      assertTrue("waited only " + (end - start), end - start >= 2000);
+      Assert.assertTrue("waited only " + (end - start), end - start >= 2000);
 
       consumer.close();
 
@@ -117,13 +119,13 @@ public class ReceiveImmediateTest extends ServiceTestBase
 
    }
 
-   private void doConsumerReceiveImmediateWithNoMessages(boolean browser) throws Exception
+   private void doConsumerReceiveImmediateWithNoMessages(final boolean browser) throws Exception
    {
       sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
       sf.setBlockOnNonPersistentSend(true);
       sf.setBlockOnAcknowledge(true);
       sf.setAckBatchSize(0);
-      
+
       ClientSession session = sf.createSession(false, true, false);
 
       session.createQueue(ADDRESS, QUEUE, null, false);
@@ -132,20 +134,20 @@ public class ReceiveImmediateTest extends ServiceTestBase
       session.start();
 
       ClientMessage message = consumer.receiveImmediate();
-      assertNull(message);
+      Assert.assertNull(message);
 
       session.close();
 
       sf.close();
    }
 
-   private void doConsumerReceiveImmediate(boolean browser) throws Exception
+   private void doConsumerReceiveImmediate(final boolean browser) throws Exception
    {
       sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
       sf.setBlockOnNonPersistentSend(true);
       sf.setBlockOnAcknowledge(true);
       sf.setAckBatchSize(0);
-      
+
       ClientSession session = sf.createSession(false, true, true);
 
       session.createQueue(ADDRESS, QUEUE, null, false);
@@ -166,21 +168,22 @@ public class ReceiveImmediateTest extends ServiceTestBase
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message2 = consumer.receiveImmediate();
-         assertNotNull("did not receive message " + i, message2);
-         assertEquals("m" + i, message2.getBodyBuffer().readString());
+         Assert.assertNotNull("did not receive message " + i, message2);
+         Assert.assertEquals("m" + i, message2.getBodyBuffer().readString());
          if (!browser)
          {
             message2.acknowledge();
          }
       }
 
-      assertEquals(0, ((Queue)server.getPostOffice().getBinding(QUEUE).getBindable()).getDeliveringCount());
+      Assert.assertEquals(0, ((Queue)server.getPostOffice().getBinding(QUEUE).getBindable()).getDeliveringCount());
 
-      assertNull(consumer.receiveImmediate());
+      Assert.assertNull(consumer.receiveImmediate());
 
-      assertEquals(0, ((Queue)server.getPostOffice().getBinding(QUEUE).getBindable()).getDeliveringCount());
-      int messagesOnServer = (browser ? numMessages : 0);
-      assertEquals(messagesOnServer, ((Queue)server.getPostOffice().getBinding(QUEUE).getBindable()).getMessageCount());
+      Assert.assertEquals(0, ((Queue)server.getPostOffice().getBinding(QUEUE).getBindable()).getDeliveringCount());
+      int messagesOnServer = browser ? numMessages : 0;
+      Assert.assertEquals(messagesOnServer,
+                          ((Queue)server.getPostOffice().getBinding(QUEUE).getBindable()).getMessageCount());
 
       consumer.close();
 

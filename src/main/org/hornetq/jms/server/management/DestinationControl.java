@@ -13,7 +13,7 @@
 
 package org.hornetq.jms.server.management;
 
-import static javax.management.MBeanOperationInfo.ACTION;
+import javax.management.MBeanOperationInfo;
 
 import org.hornetq.core.management.Operation;
 import org.hornetq.core.management.Parameter;
@@ -40,7 +40,7 @@ public interface DestinationControl
 
    // Operations ----------------------------------------------------
 
-   @Operation(desc = "Remove messages matching the given filter from the destination", impact = ACTION)
+   @Operation(desc = "Remove messages matching the given filter from the destination", impact = MBeanOperationInfo.ACTION)
    int removeMessages(@Parameter(name = "filter", desc = "A JMS message filter (can be empty)") String filter) throws Exception;
 
 }

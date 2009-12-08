@@ -42,15 +42,16 @@ import org.hornetq.jms.server.management.impl.JMSManagementHelper;
  */
 public class PreacknowledgeExample extends HornetQExample
 {
-   public static void main(String[] args)
+   public static void main(final String[] args)
    {
       new PreacknowledgeExample().run(args);
    }
 
+   @Override
    public boolean runExample() throws Exception
    {
       Connection connection = null;
-      
+
       InitialContext initialContext = null;
       try
       {
@@ -68,7 +69,7 @@ public class PreacknowledgeExample extends HornetQExample
          Session session = connection.createSession(false, HornetQSession.PRE_ACKNOWLEDGE);
 
          MessageProducer producer = session.createProducer(queue);
-         
+
          MessageConsumer messageConsumer = session.createConsumer(queue);
 
          // Step 4. Create and send a message
@@ -81,7 +82,7 @@ public class PreacknowledgeExample extends HornetQExample
          // Step 5. Print out the message count of the queue. The queue contains one message as expected
          // delivery has not yet started on the queue
          int count = getMessageCount(connection);
-         
+
          System.out.println("Queue message count is " + count);
 
          // Step 6. Start the Connection, delivery will now start. Give a little time for delivery to occur.
@@ -92,9 +93,9 @@ public class PreacknowledgeExample extends HornetQExample
          // Step 7. Print out the message countof the queue. It should now be zero, since the message has
          // already been acknowledged even before the consumer has received it.
          count = getMessageCount(connection);
-         
+
          System.out.println("Queue message count is now " + count);
-         
+
          if (count != 0)
          {
             return false;
@@ -104,7 +105,7 @@ public class PreacknowledgeExample extends HornetQExample
          TextMessage messageReceived = (TextMessage)messageConsumer.receive(5000);
 
          System.out.println("Received message: " + messageReceived.getText());
-       
+
          return true;
       }
       finally
@@ -128,9 +129,9 @@ public class PreacknowledgeExample extends HornetQExample
       QueueSession session = ((QueueConnection)connection).createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
 
       Queue managementQueue = new HornetQQueue("hornetq.management", "hornetq.management");
-      
+
       QueueRequestor requestor = new QueueRequestor(session, managementQueue);
-      
+
       connection.start();
 
       Message m = session.createMessage();
@@ -140,7 +141,7 @@ public class PreacknowledgeExample extends HornetQExample
       Message response = requestor.request(m);
 
       int messageCount = (Integer)JMSManagementHelper.getResult(response);
-      
+
       return messageCount;
    }
 

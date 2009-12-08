@@ -20,6 +20,7 @@ import junit.framework.TestSuite;
 import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.journal.impl.AIOSequentialFileFactory;
 import org.hornetq.core.logging.Logger;
+import org.hornetq.tests.util.UnitTestCase;
 
 /**
  * 
@@ -34,7 +35,7 @@ public class AIOJournalImplTest extends JournalImplTestUnit
 
    public static TestSuite suite()
    {
-      return createAIOTestSuite(AIOJournalImplTest.class);
+      return UnitTestCase.createAIOTestSuite(AIOJournalImplTest.class);
    }
 
    @Override

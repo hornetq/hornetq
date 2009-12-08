@@ -24,14 +24,14 @@ import org.hornetq.core.journal.SequentialFile;
  */
 public interface JournalFile
 {
-   
+
    /** Used during compacting (clearing counters) */
    void clearCounts();
-   
+
    int getNegCount(JournalFile file);
 
    void incNegCount(JournalFile file);
-   
+
    boolean resetNegCount(JournalFile file);
 
    int getPosCount();
@@ -39,23 +39,23 @@ public interface JournalFile
    void incPosCount();
 
    void decPosCount();
-   
+
    void addSize(int bytes);
-   
+
    void decSize(int bytes);
-   
+
    int getLiveSize();
-   
+
    void setCanReclaim(boolean canDelete);
 
    boolean isCanReclaim();
-   
+
    void setNeedCleanup(boolean needCleanup);
-   
+
    boolean isNeedCleanup();
 
    long getOffset();
-   
+
    int getFileID();
 
    SequentialFile getFile();

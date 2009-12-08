@@ -14,7 +14,6 @@
 package org.hornetq.core.remoting.impl.wireformat;
 
 import org.hornetq.core.buffers.HornetQBuffer;
-import org.hornetq.utils.DataConstants;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -35,14 +34,14 @@ public class SessionConsumerCloseMessage extends PacketImpl
 
    public SessionConsumerCloseMessage(final long objectID)
    {
-      super(SESS_CONSUMER_CLOSE);
+      super(PacketImpl.SESS_CONSUMER_CLOSE);
 
       consumerID = objectID;
    }
 
    public SessionConsumerCloseMessage()
    {
-      super(SESS_CONSUMER_CLOSE);
+      super(PacketImpl.SESS_CONSUMER_CLOSE);
    }
 
    // Public --------------------------------------------------------

@@ -144,7 +144,7 @@ public class HornetQConnection implements Connection, QueueConnection, TopicConn
 
       this.transactionBatchSize = transactionBatchSize;
 
-      this.creationStack = new Exception();
+      creationStack = new Exception();
    }
 
    // Connection implementation --------------------------------------------------------------------
@@ -153,7 +153,7 @@ public class HornetQConnection implements Connection, QueueConnection, TopicConn
    {
       checkClosed();
 
-      return createSessionInternal(transacted, acknowledgeMode, false, TYPE_GENERIC_CONNECTION);
+      return createSessionInternal(transacted, acknowledgeMode, false, HornetQConnection.TYPE_GENERIC_CONNECTION);
    }
 
    public String getClientID() throws JMSException
@@ -251,7 +251,7 @@ public class HornetQConnection implements Connection, QueueConnection, TopicConn
       try
       {
          for (HornetQSession session : new HashSet<HornetQSession>(sessions))
-         {            
+         {
             session.close();
          }
 
@@ -277,11 +277,11 @@ public class HornetQConnection implements Connection, QueueConnection, TopicConn
          finally
          {
             if (initialSession != null)
-            {               
+            {
                initialSession.close();
             }
          }
-         
+
          sessionFactory.close();
 
          closed = true;
@@ -309,7 +309,7 @@ public class HornetQConnection implements Connection, QueueConnection, TopicConn
    {
       checkClosed();
       // As spec. section 4.11
-      if (connectionType == TYPE_QUEUE_CONNECTION)
+      if (connectionType == HornetQConnection.TYPE_QUEUE_CONNECTION)
       {
          String msg = "Cannot create a durable connection consumer on a QueueConnection";
          throw new javax.jms.IllegalStateException(msg);
@@ -405,7 +405,7 @@ public class HornetQConnection implements Connection, QueueConnection, TopicConn
 
    public void setHasNoLocal()
    {
-      this.hasNoLocal = true;
+      hasNoLocal = true;
    }
 
    public SimpleString getUID()
@@ -429,13 +429,14 @@ public class HornetQConnection implements Connection, QueueConnection, TopicConn
 
    // In case the user forgets to close the connection manually
 
+   @Override
    protected void finalize() throws Throwable
    {
       if (!closed)
       {
-         log.warn("I'm closing a JMS connection you left open. Please make sure you close all JMS connections explicitly " + "before letting them go out of scope!");
+         HornetQConnection.log.warn("I'm closing a JMS connection you left open. Please make sure you close all JMS connections explicitly " + "before letting them go out of scope!");
 
-         log.warn("The JMS connection you didn't close was created here:", creationStack);
+         HornetQConnection.log.warn("The JMS connection you didn't close was created here:", creationStack);
 
          close();
       }
@@ -555,7 +556,7 @@ public class HornetQConnection implements Connection, QueueConnection, TopicConn
 
    private static class JMSFailureListener implements SessionFailureListener
    {
-      private WeakReference<HornetQConnection> connectionRef;
+      private final WeakReference<HornetQConnection> connectionRef;
 
       JMSFailureListener(final HornetQConnection connection)
       {
@@ -596,14 +597,14 @@ public class HornetQConnection implements Connection, QueueConnection, TopicConn
             {
                if (!conn.closed)
                {
-                  log.error("Failed to get exception listener", e);
+                  HornetQConnection.log.error("Failed to get exception listener", e);
                }
             }
          }
       }
-      
+
       public void beforeReconnect(final HornetQException me)
-      {            
+      {
       }
 
    }

@@ -11,7 +11,6 @@
  * permissions and limitations under the License.
  */
 
-
 package org.hornetq.core.cluster;
 
 import java.util.Map;
@@ -34,16 +33,16 @@ public interface DiscoveryGroup
    String getName();
 
    Map<String, DiscoveryEntry> getDiscoveryEntryMap();
-   
+
    void start() throws Exception;
-   
+
    void stop() throws Exception;
-   
+
    boolean isStarted();
 
    boolean waitForBroadcast(long timeout);
-   
+
    void registerListener(final DiscoveryListener listener);
-   
+
    void unregisterListener(final DiscoveryListener listener);
 }

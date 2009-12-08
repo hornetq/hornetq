@@ -25,7 +25,7 @@ import java.util.Set;
 public class TransportConstants
 {
    public static final String SERVER_ID_PROP_NAME = "serverid";
-   
+
    public static final Set<String> ALLOWABLE_CONNECTOR_KEYS;
 
    public static final Set<String> ALLOWABLE_ACCEPTOR_KEYS;
@@ -33,13 +33,13 @@ public class TransportConstants
    static
    {
       Set<String> allowableAcceptorKeys = new HashSet<String>();
-      allowableAcceptorKeys.add(SERVER_ID_PROP_NAME);   
-      
+      allowableAcceptorKeys.add(TransportConstants.SERVER_ID_PROP_NAME);
+
       ALLOWABLE_CONNECTOR_KEYS = Collections.unmodifiableSet(allowableAcceptorKeys);
-      
+
       Set<String> allowableConnectorKeys = new HashSet<String>();
-      allowableConnectorKeys.add(SERVER_ID_PROP_NAME);
-            
+      allowableConnectorKeys.add(TransportConstants.SERVER_ID_PROP_NAME);
+
       ALLOWABLE_ACCEPTOR_KEYS = Collections.unmodifiableSet(allowableConnectorKeys);
    }
 }

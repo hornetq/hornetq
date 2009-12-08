@@ -13,16 +13,6 @@
 
 package org.hornetq.jms.server.impl;
 
-import static org.hornetq.core.config.impl.Validators.GE_ZERO;
-import static org.hornetq.core.config.impl.Validators.GT_ZERO;
-import static org.hornetq.core.config.impl.Validators.MINUS_ONE_OR_GE_ZERO;
-import static org.hornetq.core.config.impl.Validators.MINUS_ONE_OR_GT_ZERO;
-import static org.hornetq.utils.XMLConfigurationUtil.getBoolean;
-import static org.hornetq.utils.XMLConfigurationUtil.getDouble;
-import static org.hornetq.utils.XMLConfigurationUtil.getInteger;
-import static org.hornetq.utils.XMLConfigurationUtil.getLong;
-import static org.hornetq.utils.XMLConfigurationUtil.getString;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,6 +26,7 @@ import org.hornetq.core.deployers.impl.XmlDeployer;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.jms.server.JMSServerManager;
 import org.hornetq.utils.Pair;
+import org.hornetq.utils.XMLConfigurationUtil;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -52,7 +43,7 @@ public class JMSServerDeployer extends XmlDeployer
 
    private final Configuration configuration;
 
-   private JMSServerManager jmsServerControl;
+   private final JMSServerManager jmsServerControl;
 
    private static final String CONNECTOR_REF_ELEMENT = "connector-ref";
 
@@ -80,9 +71,9 @@ public class JMSServerDeployer extends XmlDeployer
    {
       super(deploymentManager);
 
-      this.jmsServerControl = jmsServerManager;
+      jmsServerControl = jmsServerManager;
 
-      this.configuration = config;
+      configuration = config;
    }
 
    /**
@@ -93,11 +84,13 @@ public class JMSServerDeployer extends XmlDeployer
    @Override
    public String[] getElementTagName()
    {
-      return new String[] { QUEUE_NODE_NAME, TOPIC_NODE_NAME, CONNECTION_FACTORY_NODE_NAME };
+      return new String[] { JMSServerDeployer.QUEUE_NODE_NAME,
+                           JMSServerDeployer.TOPIC_NODE_NAME,
+                           JMSServerDeployer.CONNECTION_FACTORY_NODE_NAME };
    }
 
    @Override
-   public void validate(Node rootNode) throws Exception
+   public void validate(final Node rootNode) throws Exception
    {
       org.hornetq.utils.XMLUtil.validate(rootNode, "schema/hornetq-jms.xsd");
    }
@@ -122,39 +115,112 @@ public class JMSServerDeployer extends XmlDeployer
     */
    private void createAndBindObject(final Node node) throws Exception
    {
-      if (node.getNodeName().equals(CONNECTION_FACTORY_NODE_NAME))
+      if (node.getNodeName().equals(JMSServerDeployer.CONNECTION_FACTORY_NODE_NAME))
       {
          Element e = (Element)node;
 
-         long clientFailureCheckPeriod = getLong(e, "client-failure-check-period", ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD, MINUS_ONE_OR_GT_ZERO);
-         long connectionTTL = getLong(e, "connection-ttl", ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL, MINUS_ONE_OR_GE_ZERO);
-         long callTimeout = getLong(e, "call-timeout", ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT, GE_ZERO);
-         String clientID = getString(e, "client-id", null, Validators.NO_CHECK);
-         int dupsOKBatchSize = getInteger(e, "dups-ok-batch-size", ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE, GT_ZERO);
-         int transactionBatchSize = getInteger(e, "transaction-batch-size", ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE, GT_ZERO);
-         int consumerWindowSize = getInteger(e, "consumer-window-size", ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE, MINUS_ONE_OR_GE_ZERO);
-         int producerWindowSize = getInteger(e, "producer-window-size", ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE, MINUS_ONE_OR_GT_ZERO);
-         int consumerMaxRate = getInteger(e, "consumer-max-rate", ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE, MINUS_ONE_OR_GT_ZERO);
-         int confirmationWindowSize = getInteger(e, "confirmation-window-size", ClientSessionFactoryImpl.DEFAULT_CONFIRMATION_WINDOW_SIZE, MINUS_ONE_OR_GT_ZERO);
-         int producerMaxRate = getInteger(e, "producer-max-rate", ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE, MINUS_ONE_OR_GT_ZERO);
-         boolean cacheLargeMessagesClient = getBoolean(e, "cache-large-message-client", ClientSessionFactoryImpl.DEFAULT_CACHE_LARGE_MESSAGE_CLIENT);
-         int minLargeMessageSize = getInteger(e, "min-large-message-size", ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE, GT_ZERO);
-         boolean blockOnAcknowledge = getBoolean(e, "block-on-acknowledge", ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE);
-         boolean blockOnNonPersistentSend = getBoolean(e, "block-on-non-persistent-send", ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND);
-         boolean blockOnPersistentSend = getBoolean(e, "block-on-persistent-send", ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND);
-         boolean autoGroup = getBoolean(e, "auto-group", ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP);        
-         boolean preAcknowledge = getBoolean(e, "pre-acknowledge", ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE);
-         long retryInterval = getLong(e, "retry-interval", ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL, GT_ZERO);
-         double retryIntervalMultiplier = getDouble(e, "retry-interval-multiplier", ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER, GT_ZERO);
-         long maxRetryInterval = getLong(e, "max-retry-interval", ClientSessionFactoryImpl.DEFAULT_MAX_RETRY_INTERVAL, GT_ZERO);
-         int reconnectAttempts = getInteger(e, "reconnect-attempts", ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS, MINUS_ONE_OR_GE_ZERO);
-         boolean failoverOnServerShutdown = getBoolean(e, "failover-on-server-shutdown", ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN);
-         boolean useGlobalPools = getBoolean(e, "use-global-pools", ClientSessionFactoryImpl.DEFAULT_USE_GLOBAL_POOLS);
-         int scheduledThreadPoolMaxSize = getInteger(e, "scheduled-thread-pool-max-size", ClientSessionFactoryImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE, MINUS_ONE_OR_GT_ZERO);
-         int threadPoolMaxSize = getInteger(e, "thread-pool-max-size", ClientSessionFactoryImpl.DEFAULT_THREAD_POOL_MAX_SIZE, MINUS_ONE_OR_GT_ZERO);
-         String connectionLoadBalancingPolicyClassName = getString(e, "connection-load-balancing-policy-class-name", ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME, Validators.NOT_NULL_OR_EMPTY);
-         long discoveryInitialWaitTimeout = getLong(e, "discovery-initial-wait-timeout", ClientSessionFactoryImpl.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT, GT_ZERO);
-         String groupid = getString(e, "group-id", null,  Validators.NO_CHECK);
+         long clientFailureCheckPeriod = XMLConfigurationUtil.getLong(e,
+                                                                      "client-failure-check-period",
+                                                                      ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
+                                                                      Validators.MINUS_ONE_OR_GT_ZERO);
+         long connectionTTL = XMLConfigurationUtil.getLong(e,
+                                                           "connection-ttl",
+                                                           ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL,
+                                                           Validators.MINUS_ONE_OR_GE_ZERO);
+         long callTimeout = XMLConfigurationUtil.getLong(e,
+                                                         "call-timeout",
+                                                         ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,
+                                                         Validators.GE_ZERO);
+         String clientID = XMLConfigurationUtil.getString(e, "client-id", null, Validators.NO_CHECK);
+         int dupsOKBatchSize = XMLConfigurationUtil.getInteger(e,
+                                                               "dups-ok-batch-size",
+                                                               ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE,
+                                                               Validators.GT_ZERO);
+         int transactionBatchSize = XMLConfigurationUtil.getInteger(e,
+                                                                    "transaction-batch-size",
+                                                                    ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE,
+                                                                    Validators.GT_ZERO);
+         int consumerWindowSize = XMLConfigurationUtil.getInteger(e,
+                                                                  "consumer-window-size",
+                                                                  ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE,
+                                                                  Validators.MINUS_ONE_OR_GE_ZERO);
+         int producerWindowSize = XMLConfigurationUtil.getInteger(e,
+                                                                  "producer-window-size",
+                                                                  ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE,
+                                                                  Validators.MINUS_ONE_OR_GT_ZERO);
+         int consumerMaxRate = XMLConfigurationUtil.getInteger(e,
+                                                               "consumer-max-rate",
+                                                               ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE,
+                                                               Validators.MINUS_ONE_OR_GT_ZERO);
+         int confirmationWindowSize = XMLConfigurationUtil.getInteger(e,
+                                                                      "confirmation-window-size",
+                                                                      ClientSessionFactoryImpl.DEFAULT_CONFIRMATION_WINDOW_SIZE,
+                                                                      Validators.MINUS_ONE_OR_GT_ZERO);
+         int producerMaxRate = XMLConfigurationUtil.getInteger(e,
+                                                               "producer-max-rate",
+                                                               ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE,
+                                                               Validators.MINUS_ONE_OR_GT_ZERO);
+         boolean cacheLargeMessagesClient = XMLConfigurationUtil.getBoolean(e,
+                                                                            "cache-large-message-client",
+                                                                            ClientSessionFactoryImpl.DEFAULT_CACHE_LARGE_MESSAGE_CLIENT);
+         int minLargeMessageSize = XMLConfigurationUtil.getInteger(e,
+                                                                   "min-large-message-size",
+                                                                   ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
+                                                                   Validators.GT_ZERO);
+         boolean blockOnAcknowledge = XMLConfigurationUtil.getBoolean(e,
+                                                                      "block-on-acknowledge",
+                                                                      ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE);
+         boolean blockOnNonPersistentSend = XMLConfigurationUtil.getBoolean(e,
+                                                                            "block-on-non-persistent-send",
+                                                                            ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND);
+         boolean blockOnPersistentSend = XMLConfigurationUtil.getBoolean(e,
+                                                                         "block-on-persistent-send",
+                                                                         ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND);
+         boolean autoGroup = XMLConfigurationUtil.getBoolean(e,
+                                                             "auto-group",
+                                                             ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP);
+         boolean preAcknowledge = XMLConfigurationUtil.getBoolean(e,
+                                                                  "pre-acknowledge",
+                                                                  ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE);
+         long retryInterval = XMLConfigurationUtil.getLong(e,
+                                                           "retry-interval",
+                                                           ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL,
+                                                           Validators.GT_ZERO);
+         double retryIntervalMultiplier = XMLConfigurationUtil.getDouble(e,
+                                                                         "retry-interval-multiplier",
+                                                                         ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER,
+                                                                         Validators.GT_ZERO);
+         long maxRetryInterval = XMLConfigurationUtil.getLong(e,
+                                                              "max-retry-interval",
+                                                              ClientSessionFactoryImpl.DEFAULT_MAX_RETRY_INTERVAL,
+                                                              Validators.GT_ZERO);
+         int reconnectAttempts = XMLConfigurationUtil.getInteger(e,
+                                                                 "reconnect-attempts",
+                                                                 ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS,
+                                                                 Validators.MINUS_ONE_OR_GE_ZERO);
+         boolean failoverOnServerShutdown = XMLConfigurationUtil.getBoolean(e,
+                                                                            "failover-on-server-shutdown",
+                                                                            ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN);
+         boolean useGlobalPools = XMLConfigurationUtil.getBoolean(e,
+                                                                  "use-global-pools",
+                                                                  ClientSessionFactoryImpl.DEFAULT_USE_GLOBAL_POOLS);
+         int scheduledThreadPoolMaxSize = XMLConfigurationUtil.getInteger(e,
+                                                                          "scheduled-thread-pool-max-size",
+                                                                          ClientSessionFactoryImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE,
+                                                                          Validators.MINUS_ONE_OR_GT_ZERO);
+         int threadPoolMaxSize = XMLConfigurationUtil.getInteger(e,
+                                                                 "thread-pool-max-size",
+                                                                 ClientSessionFactoryImpl.DEFAULT_THREAD_POOL_MAX_SIZE,
+                                                                 Validators.MINUS_ONE_OR_GT_ZERO);
+         String connectionLoadBalancingPolicyClassName = XMLConfigurationUtil.getString(e,
+                                                                                        "connection-load-balancing-policy-class-name",
+                                                                                        ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
+                                                                                        Validators.NOT_NULL_OR_EMPTY);
+         long discoveryInitialWaitTimeout = XMLConfigurationUtil.getLong(e,
+                                                                         "discovery-initial-wait-timeout",
+                                                                         ClientSessionFactoryImpl.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT,
+                                                                         Validators.GT_ZERO);
+         String groupid = XMLConfigurationUtil.getString(e, "group-id", null, Validators.NO_CHECK);
          List<String> jndiBindings = new ArrayList<String>();
          List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs = new ArrayList<Pair<TransportConfiguration, TransportConfiguration>>();
          DiscoveryGroupConfiguration discoveryGroupConfiguration = null;
@@ -165,13 +231,13 @@ public class JMSServerDeployer extends XmlDeployer
          {
             Node child = children.item(j);
 
-            if (ENTRIES_NODE_NAME.equals(child.getNodeName()))
+            if (JMSServerDeployer.ENTRIES_NODE_NAME.equals(child.getNodeName()))
             {
                NodeList entries = child.getChildNodes();
                for (int i = 0; i < entries.getLength(); i++)
                {
                   Node entry = entries.item(i);
-                  if (ENTRY_NODE_NAME.equals(entry.getNodeName()))
+                  if (JMSServerDeployer.ENTRY_NODE_NAME.equals(entry.getNodeName()))
                   {
                      String jndiName = entry.getAttributes().getNamedItem("name").getNodeValue();
 
@@ -179,20 +245,20 @@ public class JMSServerDeployer extends XmlDeployer
                   }
                }
             }
-            else if (CONNECTORS_NODE_NAME.equals(child.getNodeName()))
+            else if (JMSServerDeployer.CONNECTORS_NODE_NAME.equals(child.getNodeName()))
             {
                NodeList entries = child.getChildNodes();
                for (int i = 0; i < entries.getLength(); i++)
                {
                   Node entry = entries.item(i);
-                  if (CONNECTOR_REF_ELEMENT.equals(entry.getNodeName()))
+                  if (JMSServerDeployer.CONNECTOR_REF_ELEMENT.equals(entry.getNodeName()))
                   {
                      String connectorName = entry.getAttributes().getNamedItem("connector-name").getNodeValue();
                      TransportConfiguration connector = configuration.getConnectorConfigurations().get(connectorName);
 
                      if (connector == null)
                      {
-                        log.warn("There is no connector with name '" + connectorName + "' deployed.");
+                        JMSServerDeployer.log.warn("There is no connector with name '" + connectorName + "' deployed.");
                         return;
                      }
 
@@ -205,16 +271,18 @@ public class JMSServerDeployer extends XmlDeployer
 
                         if (backupConnector == null)
                         {
-                           log.warn("There is no backup connector with name '" + connectorName + "' deployed.");
+                           JMSServerDeployer.log.warn("There is no backup connector with name '" + connectorName +
+                                                      "' deployed.");
                            return;
                         }
                      }
 
-                     connectorConfigs.add(new Pair<TransportConfiguration, TransportConfiguration>(connector, backupConnector));
+                     connectorConfigs.add(new Pair<TransportConfiguration, TransportConfiguration>(connector,
+                                                                                                   backupConnector));
                   }
                }
             }
-            else if (DISCOVERY_GROUP_ELEMENT.equals(child.getNodeName()))
+            else if (JMSServerDeployer.DISCOVERY_GROUP_ELEMENT.equals(child.getNodeName()))
             {
                String discoveryGroupName = child.getAttributes().getNamedItem("discovery-group-name").getNodeValue();
 
@@ -222,7 +290,8 @@ public class JMSServerDeployer extends XmlDeployer
 
                if (discoveryGroupConfiguration == null)
                {
-                  log.warn("There is no discovery group with name '" + discoveryGroupName + "' deployed.");
+                  JMSServerDeployer.log.warn("There is no discovery group with name '" + discoveryGroupName +
+                                             "' deployed.");
 
                   return;
                }
@@ -240,7 +309,7 @@ public class JMSServerDeployer extends XmlDeployer
                                                      discoveryGroupConfiguration.getRefreshTimeout(),
                                                      clientFailureCheckPeriod,
                                                      connectionTTL,
-                                                     callTimeout,                                                
+                                                     callTimeout,
                                                      cacheLargeMessagesClient,
                                                      minLargeMessageSize,
                                                      consumerWindowSize,
@@ -259,7 +328,7 @@ public class JMSServerDeployer extends XmlDeployer
                                                      discoveryInitialWaitTimeout,
                                                      useGlobalPools,
                                                      scheduledThreadPoolMaxSize,
-                                                     threadPoolMaxSize,                                               
+                                                     threadPoolMaxSize,
                                                      retryInterval,
                                                      retryIntervalMultiplier,
                                                      maxRetryInterval,
@@ -275,7 +344,7 @@ public class JMSServerDeployer extends XmlDeployer
                                                      clientID,
                                                      clientFailureCheckPeriod,
                                                      connectionTTL,
-                                                     callTimeout,                                            
+                                                     callTimeout,
                                                      cacheLargeMessagesClient,
                                                      minLargeMessageSize,
                                                      consumerWindowSize,
@@ -293,7 +362,7 @@ public class JMSServerDeployer extends XmlDeployer
                                                      dupsOKBatchSize,
                                                      useGlobalPools,
                                                      scheduledThreadPoolMaxSize,
-                                                     threadPoolMaxSize,                                               
+                                                     threadPoolMaxSize,
                                                      retryInterval,
                                                      retryIntervalMultiplier,
                                                      maxRetryInterval,
@@ -303,25 +372,25 @@ public class JMSServerDeployer extends XmlDeployer
                                                      jndiBindings);
          }
       }
-      else if (node.getNodeName().equals(QUEUE_NODE_NAME))
+      else if (node.getNodeName().equals(JMSServerDeployer.QUEUE_NODE_NAME))
       {
          Element e = (Element)node;
          NamedNodeMap atts = node.getAttributes();
          String queueName = atts.getNamedItem(getKeyAttribute()).getNodeValue();
          String selectorString = null;
-         boolean durable = getBoolean(e, "durable", DEFAULT_QUEUE_DURABILITY);
+         boolean durable = XMLConfigurationUtil.getBoolean(e, "durable", JMSServerDeployer.DEFAULT_QUEUE_DURABILITY);
          NodeList children = node.getChildNodes();
          ArrayList<String> jndiNames = new ArrayList<String>();
          for (int i = 0; i < children.getLength(); i++)
          {
             Node child = children.item(i);
 
-            if (ENTRY_NODE_NAME.equals(children.item(i).getNodeName()))
+            if (JMSServerDeployer.ENTRY_NODE_NAME.equals(children.item(i).getNodeName()))
             {
                String jndiName = child.getAttributes().getNamedItem("name").getNodeValue();
                jndiNames.add(jndiName);
             }
-            else if (QUEUE_SELECTOR_NODE_NAME.equals(children.item(i).getNodeName()))
+            else if (JMSServerDeployer.QUEUE_SELECTOR_NODE_NAME.equals(children.item(i).getNodeName()))
             {
                Node selectorNode = children.item(i);
                Node attNode = selectorNode.getAttributes().getNamedItem("string");
@@ -333,17 +402,17 @@ public class JMSServerDeployer extends XmlDeployer
             jmsServerControl.createQueue(queueName, jndiName, selectorString, durable);
          }
       }
-      else if (node.getNodeName().equals(TOPIC_NODE_NAME))
-      {        
+      else if (node.getNodeName().equals(JMSServerDeployer.TOPIC_NODE_NAME))
+      {
          String topicName = node.getAttributes().getNamedItem(getKeyAttribute()).getNodeValue();
          NodeList children = node.getChildNodes();
          for (int i = 0; i < children.getLength(); i++)
          {
             Node child = children.item(i);
 
-            if (ENTRY_NODE_NAME.equals(children.item(i).getNodeName()))
+            if (JMSServerDeployer.ENTRY_NODE_NAME.equals(children.item(i).getNodeName()))
             {
-               String jndiName = child.getAttributes().getNamedItem("name").getNodeValue();               
+               String jndiName = child.getAttributes().getNamedItem("name").getNodeValue();
                jmsServerControl.createTopic(topicName, jndiName);
             }
          }
@@ -359,23 +428,24 @@ public class JMSServerDeployer extends XmlDeployer
    @Override
    public void undeploy(final Node node) throws Exception
    {
-      if (node.getNodeName().equals(CONNECTION_FACTORY_NODE_NAME))
+      if (node.getNodeName().equals(JMSServerDeployer.CONNECTION_FACTORY_NODE_NAME))
       {
          String cfName = node.getAttributes().getNamedItem(getKeyAttribute()).getNodeValue();
          jmsServerControl.destroyConnectionFactory(cfName);
       }
-      else if (node.getNodeName().equals(QUEUE_NODE_NAME))
+      else if (node.getNodeName().equals(JMSServerDeployer.QUEUE_NODE_NAME))
       {
          String queueName = node.getAttributes().getNamedItem(getKeyAttribute()).getNodeValue();
          jmsServerControl.undeployDestination(queueName);
       }
-      else if (node.getNodeName().equals(TOPIC_NODE_NAME))
+      else if (node.getNodeName().equals(JMSServerDeployer.TOPIC_NODE_NAME))
       {
          String topicName = node.getAttributes().getNamedItem(getKeyAttribute()).getNodeValue();
          jmsServerControl.undeployDestination(topicName);
       }
    }
 
+   @Override
    public String[] getDefaultConfigFileNames()
    {
       return new String[] { "hornetq-jms.xml" };

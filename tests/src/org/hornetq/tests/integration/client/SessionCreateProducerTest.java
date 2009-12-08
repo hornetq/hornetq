@@ -12,6 +12,8 @@
  */
 package org.hornetq.tests.integration.client;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.client.ClientProducer;
 import org.hornetq.core.client.ClientSessionFactory;
 import org.hornetq.core.client.impl.ClientSessionInternal;
@@ -36,11 +38,11 @@ public class SessionCreateProducerTest extends ServiceTestBase
          cf.setBlockOnNonPersistentSend(true);
          ClientSessionInternal clientSession = (ClientSessionInternal)cf.createSession(false, true, true);
          ClientProducer producer = clientSession.createProducer();
-         assertNull(producer.getAddress());
-         assertEquals(cf.getProducerMaxRate(), producer.getMaxRate());
-         assertEquals(cf.isBlockOnNonPersistentSend(), producer.isBlockOnNonPersistentSend());
-         assertEquals(cf.isBlockOnPersistentSend(), producer.isBlockOnPersistentSend());
-         assertFalse(producer.isClosed());
+         Assert.assertNull(producer.getAddress());
+         Assert.assertEquals(cf.getProducerMaxRate(), producer.getMaxRate());
+         Assert.assertEquals(cf.isBlockOnNonPersistentSend(), producer.isBlockOnNonPersistentSend());
+         Assert.assertEquals(cf.isBlockOnPersistentSend(), producer.isBlockOnPersistentSend());
+         Assert.assertFalse(producer.isClosed());
          clientSession.close();
       }
       finally
@@ -61,11 +63,11 @@ public class SessionCreateProducerTest extends ServiceTestBase
          cf.setBlockOnNonPersistentSend(true);
          ClientSessionInternal clientSession = (ClientSessionInternal)cf.createSession(false, true, true);
          ClientProducer producer = clientSession.createProducer("testAddress");
-         assertNotNull(producer.getAddress());
-         assertEquals(cf.getProducerMaxRate(), producer.getMaxRate());
-         assertEquals(cf.isBlockOnNonPersistentSend(), producer.isBlockOnNonPersistentSend());
-         assertEquals(cf.isBlockOnPersistentSend(), producer.isBlockOnPersistentSend());
-         assertFalse(producer.isClosed());
+         Assert.assertNotNull(producer.getAddress());
+         Assert.assertEquals(cf.getProducerMaxRate(), producer.getMaxRate());
+         Assert.assertEquals(cf.isBlockOnNonPersistentSend(), producer.isBlockOnNonPersistentSend());
+         Assert.assertEquals(cf.isBlockOnPersistentSend(), producer.isBlockOnPersistentSend());
+         Assert.assertFalse(producer.isClosed());
          clientSession.close();
       }
       finally
@@ -89,11 +91,11 @@ public class SessionCreateProducerTest extends ServiceTestBase
          try
          {
             clientSession.createProducer();
-            fail("should throw exception");
+            Assert.fail("should throw exception");
          }
          catch (HornetQException e)
          {
-            assertEquals(e.getCode(), HornetQException.OBJECT_CLOSED);
+            Assert.assertEquals(e.getCode(), HornetQException.OBJECT_CLOSED);
          }
       }
       finally

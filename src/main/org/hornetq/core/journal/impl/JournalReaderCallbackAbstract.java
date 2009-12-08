@@ -11,7 +11,6 @@
  * permissions and limitations under the License.
  */
 
-
 package org.hornetq.core.journal.impl;
 
 import org.hornetq.core.journal.RecordInfo;
@@ -26,43 +25,43 @@ import org.hornetq.core.journal.RecordInfo;
 public class JournalReaderCallbackAbstract implements JournalReaderCallback
 {
 
-   public void markAsDataFile(JournalFile file)
+   public void markAsDataFile(final JournalFile file)
    {
    }
 
-   public void onReadAddRecord(RecordInfo info) throws Exception
+   public void onReadAddRecord(final RecordInfo info) throws Exception
    {
    }
 
-   public void onReadAddRecordTX(long transactionID, RecordInfo recordInfo) throws Exception
+   public void onReadAddRecordTX(final long transactionID, final RecordInfo recordInfo) throws Exception
    {
    }
 
-   public void onReadCommitRecord(long transactionID, int numberOfRecords) throws Exception
+   public void onReadCommitRecord(final long transactionID, final int numberOfRecords) throws Exception
    {
    }
 
-   public void onReadDeleteRecord(long recordID) throws Exception
+   public void onReadDeleteRecord(final long recordID) throws Exception
    {
    }
 
-   public void onReadDeleteRecordTX(long transactionID, RecordInfo recordInfo) throws Exception
+   public void onReadDeleteRecordTX(final long transactionID, final RecordInfo recordInfo) throws Exception
    {
    }
 
-   public void onReadPrepareRecord(long transactionID, byte[] extraData, int numberOfRecords) throws Exception
+   public void onReadPrepareRecord(final long transactionID, final byte[] extraData, final int numberOfRecords) throws Exception
    {
    }
 
-   public void onReadRollbackRecord(long transactionID) throws Exception
+   public void onReadRollbackRecord(final long transactionID) throws Exception
    {
    }
 
-   public void onReadUpdateRecord(RecordInfo recordInfo) throws Exception
+   public void onReadUpdateRecord(final RecordInfo recordInfo) throws Exception
    {
    }
 
-   public void onReadUpdateRecordTX(long transactionID, RecordInfo recordInfo) throws Exception
+   public void onReadUpdateRecordTX(final long transactionID, final RecordInfo recordInfo) throws Exception
    {
    }
 

@@ -34,7 +34,6 @@ import org.hornetq.core.journal.impl.dataformat.JournalCompleteRecordTX;
 import org.hornetq.core.journal.impl.dataformat.JournalDeleteRecordTX;
 import org.hornetq.core.journal.impl.dataformat.JournalInternalRecord;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.utils.DataConstants;
 import org.hornetq.utils.Pair;
 
 /**
@@ -48,7 +47,7 @@ public class JournalCompactor extends AbstractJournalUpdateTask
 {
 
    private static final Logger log = Logger.getLogger(JournalCompactor.class);
-   
+
    // Snapshot of transactions that were pending when the compactor started
    private final Map<Long, PendingTransaction> pendingTransactions = new ConcurrentHashMap<Long, PendingTransaction>();
 
@@ -66,7 +65,7 @@ public class JournalCompactor extends AbstractJournalUpdateTask
                                                 final List<String> newFiles,
                                                 final List<Pair<String, String>> renameFile) throws Exception
    {
-      SequentialFile controlFile = fileFactory.createSequentialFile(FILE_COMPACT_CONTROL, 1);
+      SequentialFile controlFile = fileFactory.createSequentialFile(AbstractJournalUpdateTask.FILE_COMPACT_CONTROL, 1);
 
       if (controlFile.exists())
       {
@@ -222,6 +221,7 @@ public class JournalCompactor extends AbstractJournalUpdateTask
          }
       }
    }
+
    /**
     * Replay pending counts that happened during compacting
     */
@@ -235,7 +235,7 @@ public class JournalCompactor extends AbstractJournalUpdateTask
          }
          catch (Exception e)
          {
-            log.warn("Error replaying pending commands after compacting", e);
+            JournalCompactor.log.warn("Error replaying pending commands after compacting", e);
          }
       }
 
@@ -249,10 +249,10 @@ public class JournalCompactor extends AbstractJournalUpdateTask
       if (lookupRecord(info.id))
       {
          JournalInternalRecord addRecord = new JournalAddRecord(true,
-                                                          info.id,
-                                                          info.getUserRecordType(),
-                                                          new ByteArrayEncoding(info.data));
-         
+                                                                info.id,
+                                                                info.getUserRecordType(),
+                                                                new ByteArrayEncoding(info.data));
+
          checkSize(addRecord.getEncodeSize());
 
          writeEncoder(addRecord);
@@ -268,11 +268,11 @@ public class JournalCompactor extends AbstractJournalUpdateTask
          JournalTransaction newTransaction = getNewJournalTransaction(transactionID);
 
          JournalInternalRecord record = new JournalAddRecordTX(true,
-                                                         transactionID,
-                                                         info.id,
-                                                         info.getUserRecordType(),
-                                                         new ByteArrayEncoding(info.data));
-         
+                                                               transactionID,
+                                                               info.id,
+                                                               info.getUserRecordType(),
+                                                               new ByteArrayEncoding(info.data));
+
          checkSize(record.getEncodeSize());
 
          newTransaction.addPositive(currentFile, info.id, record.getEncodeSize());
@@ -288,7 +288,7 @@ public class JournalCompactor extends AbstractJournalUpdateTask
 
    public void onReadCommitRecord(final long transactionID, final int numberOfRecords) throws Exception
    {
-      
+
       if (pendingTransactions.get(transactionID) != null)
       {
          // Sanity check, this should never happen
@@ -314,11 +314,11 @@ public class JournalCompactor extends AbstractJournalUpdateTask
          JournalTransaction newTransaction = getNewJournalTransaction(transactionID);
 
          JournalInternalRecord record = new JournalDeleteRecordTX(transactionID,
-                                                            info.id,
-                                                            new ByteArrayEncoding(info.data));
+                                                                  info.id,
+                                                                  new ByteArrayEncoding(info.data));
 
          checkSize(record.getEncodeSize());
-         
+
          writeEncoder(record);
 
          newTransaction.addNegative(currentFile, info.id);
@@ -339,8 +339,8 @@ public class JournalCompactor extends AbstractJournalUpdateTask
          JournalTransaction newTransaction = getNewJournalTransaction(transactionID);
 
          JournalInternalRecord prepareRecord = new JournalCompleteRecordTX(false,
-                                                                     transactionID,
-                                                                     new ByteArrayEncoding(extraData));
+                                                                           transactionID,
+                                                                           new ByteArrayEncoding(extraData));
 
          checkSize(prepareRecord.getEncodeSize());
 
@@ -366,9 +366,9 @@ public class JournalCompactor extends AbstractJournalUpdateTask
       if (lookupRecord(info.id))
       {
          JournalInternalRecord updateRecord = new JournalAddRecord(false,
-                                                             info.id,
-                                                             info.userRecordType,
-                                                             new ByteArrayEncoding(info.data));
+                                                                   info.id,
+                                                                   info.userRecordType,
+                                                                   new ByteArrayEncoding(info.data));
 
          checkSize(updateRecord.getEncodeSize());
 
@@ -376,13 +376,14 @@ public class JournalCompactor extends AbstractJournalUpdateTask
 
          if (newRecord == null)
          {
-            log.warn("Couldn't find addRecord information for record " + info.id + " during compacting");
+            JournalCompactor.log.warn("Couldn't find addRecord information for record " + info.id +
+                                      " during compacting");
          }
          else
          {
             newRecord.addUpdateFile(currentFile, updateRecord.getEncodeSize());
          }
-         
+
          writeEncoder(updateRecord);
       }
    }
@@ -394,16 +395,15 @@ public class JournalCompactor extends AbstractJournalUpdateTask
          JournalTransaction newTransaction = getNewJournalTransaction(transactionID);
 
          JournalInternalRecord updateRecordTX = new JournalAddRecordTX(false,
-                                                                 transactionID,
-                                                                 info.id,
-                                                                 info.userRecordType,
-                                                                 new ByteArrayEncoding(info.data));
+                                                                       transactionID,
+                                                                       info.id,
+                                                                       info.userRecordType,
+                                                                       new ByteArrayEncoding(info.data));
 
-            
          checkSize(updateRecordTX.getEncodeSize());
 
          writeEncoder(updateRecordTX);
-         
+
          newTransaction.addPositive(currentFile, info.id, updateRecordTX.getEncodeSize());
       }
       else
@@ -412,8 +412,6 @@ public class JournalCompactor extends AbstractJournalUpdateTask
       }
    }
 
-
-   
    /**
     * @param transactionID
     * @return
@@ -467,9 +465,9 @@ public class JournalCompactor extends AbstractJournalUpdateTask
 
    private class UpdateCompactCommand extends CompactCommand
    {
-      private long id;
+      private final long id;
 
-      private JournalFile usedFile;
+      private final JournalFile usedFile;
 
       private final int size;
 

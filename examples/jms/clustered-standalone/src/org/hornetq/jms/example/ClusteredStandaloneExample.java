@@ -45,11 +45,12 @@ import org.hornetq.common.example.HornetQExample;
  */
 public class ClusteredStandaloneExample extends HornetQExample
 {
-   public static void main(String[] args)
+   public static void main(final String[] args)
    {
       new ClusteredStandaloneExample().run(args);
    }
 
+   @Override
    public boolean runExample() throws Exception
    {
       Connection connection0 = null;
@@ -69,25 +70,24 @@ public class ClusteredStandaloneExample extends HornetQExample
          initialContext1 = getContext(1);
 
          initialContext2 = getContext(2);
-         
+
          // First we demonstrate a distributed topic.
          // We create a connection on each node, create a consumer on each connection and send some
          // messages at a node and verify they are all received by all consumers
 
          ConnectionFactory cf0 = (ConnectionFactory)initialContext0.lookup("/ConnectionFactory");
-         
+
          System.out.println("Got cf " + cf0);
 
          ConnectionFactory cf1 = (ConnectionFactory)initialContext1.lookup("/ConnectionFactory");
-         
+
          System.out.println("Got cf " + cf1);
 
          ConnectionFactory cf2 = (ConnectionFactory)initialContext2.lookup("/ConnectionFactory");
-         
-         System.out.println("Got cf " + cf2);
-         
-         Topic topic = (Topic)initialContext0.lookup("/topic/ExampleTopic");
 
+         System.out.println("Got cf " + cf2);
+
+         Topic topic = (Topic)initialContext0.lookup("/topic/ExampleTopic");
 
          connection0 = cf0.createConnection();
 
@@ -153,15 +153,15 @@ public class ClusteredStandaloneExample extends HornetQExample
 
             System.out.println("Received message " + message2.getText());
          }
-         
+
          producer.close();
-         
+
          messageConsumer0.close();
-         
+
          messageConsumer1.close();
-         
+
          messageConsumer2.close();
-                  
+
          return true;
       }
       finally

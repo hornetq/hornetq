@@ -36,12 +36,12 @@ public class HornetQServerControlUsingCoreTest extends HornetQServerControlTest
 
    // Static --------------------------------------------------------
 
-   private static String[] toStringArray(Object[] res)
+   private static String[] toStringArray(final Object[] res)
    {
       String[] names = new String[res.length];
       for (int i = 0; i < res.length; i++)
       {
-         names[i] = res[i].toString();               
+         names[i] = res[i].toString();
       }
       return names;
    }
@@ -69,7 +69,7 @@ public class HornetQServerControlUsingCoreTest extends HornetQServerControlTest
    protected void tearDown() throws Exception
    {
       session.close();
-      
+
       session = null;
 
       super.tearDown();
@@ -79,51 +79,50 @@ public class HornetQServerControlUsingCoreTest extends HornetQServerControlTest
    protected HornetQServerControl createManagementControl() throws Exception
    {
       return new HornetQServerControl()
-      {         
-         private final CoreMessagingProxy proxy = new CoreMessagingProxy(session,
-                                                                         ResourceNames.CORE_SERVER);
-         
+      {
+         private final CoreMessagingProxy proxy = new CoreMessagingProxy(session, ResourceNames.CORE_SERVER);
+
          public boolean isSharedStore()
          {
             return (Boolean)proxy.retrieveAttributeValue("sharedStore");
          }
-         
-         public boolean closeConnectionsForAddress(String ipAddress) throws Exception
+
+         public boolean closeConnectionsForAddress(final String ipAddress) throws Exception
          {
             return (Boolean)proxy.invokeOperation("closeConnectionsForAddress", ipAddress);
          }
 
-         public boolean commitPreparedTransaction(String transactionAsBase64) throws Exception
+         public boolean commitPreparedTransaction(final String transactionAsBase64) throws Exception
          {
             return (Boolean)proxy.invokeOperation("commitPreparedTransaction", transactionAsBase64);
          }
 
-         public void createQueue(String address, String name) throws Exception
+         public void createQueue(final String address, final String name) throws Exception
          {
             proxy.invokeOperation("createQueue", address, name);
          }
 
-         public void createQueue(String address, String name, String filter, boolean durable) throws Exception
+         public void createQueue(final String address, final String name, final String filter, final boolean durable) throws Exception
          {
             proxy.invokeOperation("createQueue", address, name, filter, durable);
          }
-         
-         public void createQueue(String address, String name, boolean durable) throws Exception
+
+         public void createQueue(final String address, final String name, final boolean durable) throws Exception
          {
             proxy.invokeOperation("createQueue", address, name, durable);
          }
-         
-         public void deployQueue(String address, String name, String filter, boolean durable) throws Exception
+
+         public void deployQueue(final String address, final String name, final String filter, final boolean durable) throws Exception
          {
             proxy.invokeOperation("deployQueue", address, name, filter, durable);
          }
 
-         public void deployQueue(String address, String name, String filterString) throws Exception
+         public void deployQueue(final String address, final String name, final String filterString) throws Exception
          {
             proxy.invokeOperation("deployQueue", address, name);
          }
 
-         public void destroyQueue(String name) throws Exception
+         public void destroyQueue(final String name) throws Exception
          {
             proxy.invokeOperation("destroyQueue", name);
          }
@@ -167,20 +166,20 @@ public class HornetQServerControlUsingCoreTest extends HornetQServerControlTest
          {
             return (Object[])proxy.retrieveAttributeValue("connectors");
          }
-         
+
          public String getConnectorsAsJSON() throws Exception
          {
             return (String)proxy.retrieveAttributeValue("connectorsAsJSON");
          }
-         
+
          public String[] getAddressNames()
          {
-            return toStringArray((Object[])proxy.retrieveAttributeValue("addressNames"));
+            return HornetQServerControlUsingCoreTest.toStringArray((Object[])proxy.retrieveAttributeValue("addressNames"));
          }
-         
+
          public String[] getQueueNames()
          {
-            return toStringArray((Object[])proxy.retrieveAttributeValue("queueNames"));
+            return HornetQServerControlUsingCoreTest.toStringArray((Object[])proxy.retrieveAttributeValue("queueNames"));
          }
 
          public int getIDCacheSize()
@@ -190,7 +189,7 @@ public class HornetQServerControlUsingCoreTest extends HornetQServerControlTest
 
          public String[] getInterceptorClassNames()
          {
-            return toStringArray((Object[])proxy.retrieveAttributeValue("interceptorClassNames"));
+            return HornetQServerControlUsingCoreTest.toStringArray((Object[])proxy.retrieveAttributeValue("interceptorClassNames"));
          }
 
          public String getJournalDirectory()
@@ -263,16 +262,11 @@ public class HornetQServerControlUsingCoreTest extends HornetQServerControlTest
             return (String)proxy.retrieveAttributeValue("pagingDirectory");
          }
 
-         public long getQueueActivationTimeout()
-         {
-            return (Long)proxy.retrieveAttributeValue("queueActivationTimeout", Long.class);
-         }
-
          public int getScheduledThreadPoolMaxSize()
          {
             return (Integer)proxy.retrieveAttributeValue("scheduledThreadPoolMaxSize");
          }
-         
+
          public int getThreadPoolMaxSize()
          {
             return (Integer)proxy.retrieveAttributeValue("threadPoolMaxSize");
@@ -367,12 +361,12 @@ public class HornetQServerControlUsingCoreTest extends HornetQServerControlTest
          {
             return (String[])proxy.invokeOperation("listPreparedTransactions");
          }
-         
+
          public String[] listHeuristicCommittedTransactions() throws Exception
          {
             return (String[])proxy.invokeOperation("listHeuristicCommittedTransactions");
          }
-         
+
          public String[] listHeuristicRolledBackTransactions() throws Exception
          {
             return (String[])proxy.invokeOperation("listHeuristicRolledBackTransactions");
@@ -383,12 +377,12 @@ public class HornetQServerControlUsingCoreTest extends HornetQServerControlTest
             return (String[])proxy.invokeOperation("listRemoteAddresses");
          }
 
-         public String[] listRemoteAddresses(String ipAddress) throws Exception
+         public String[] listRemoteAddresses(final String ipAddress) throws Exception
          {
             return (String[])proxy.invokeOperation("listRemoteAddresses", ipAddress);
          }
 
-         public String[] listSessions(String connectionID) throws Exception
+         public String[] listSessions(final String connectionID) throws Exception
          {
             return (String[])proxy.invokeOperation("listSessions", connectionID);
          }
@@ -403,22 +397,22 @@ public class HornetQServerControlUsingCoreTest extends HornetQServerControlTest
             proxy.invokeOperation("resetAllMessageCounters");
          }
 
-         public boolean rollbackPreparedTransaction(String transactionAsBase64) throws Exception
+         public boolean rollbackPreparedTransaction(final String transactionAsBase64) throws Exception
          {
             return (Boolean)proxy.invokeOperation("rollbackPreparedTransaction", transactionAsBase64);
          }
 
-         public void sendQueueInfoToQueue(String queueName, String address) throws Exception
+         public void sendQueueInfoToQueue(final String queueName, final String address) throws Exception
          {
             proxy.invokeOperation("sendQueueInfoToQueue", queueName, address);
          }
 
-         public void setMessageCounterMaxDayCount(int count) throws Exception
+         public void setMessageCounterMaxDayCount(final int count) throws Exception
          {
             proxy.invokeOperation("setMessageCounterMaxDayCount", count);
          }
 
-         public void setMessageCounterSamplePeriod(long newPeriod) throws Exception
+         public void setMessageCounterSamplePeriod(final long newPeriod) throws Exception
          {
             proxy.invokeOperation("setMessageCounterSamplePeriod", newPeriod);
          }

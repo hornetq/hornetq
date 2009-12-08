@@ -9,14 +9,13 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
  * implied.  See the License for the specific language governing
  * permissions and limitations under the License.
- */ 
+ */
 
 package org.hornetq.core.remoting.impl.wireformat;
 
 import javax.transaction.xa.Xid;
 
 import org.hornetq.core.buffers.HornetQBuffer;
-
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -28,54 +27,57 @@ public class SessionXAForgetMessage extends PacketImpl
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
-   
+
    private Xid xid;
-      
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
    public SessionXAForgetMessage(final Xid xid)
    {
-      super(SESS_XA_FORGET);
-      
+      super(PacketImpl.SESS_XA_FORGET);
+
       this.xid = xid;
    }
-   
+
    public SessionXAForgetMessage()
    {
-      super(SESS_XA_FORGET);
+      super(PacketImpl.SESS_XA_FORGET);
    }
 
    // Public --------------------------------------------------------
-   
+
    public Xid getXid()
    {
       return xid;
    }
 
+   @Override
    public void encodeRest(final HornetQBuffer buffer)
    {
       XidCodecSupport.encodeXid(xid, buffer);
    }
-   
+
+   @Override
    public void decodeRest(final HornetQBuffer buffer)
    {
       xid = XidCodecSupport.decodeXid(buffer);
    }
-   
-   public boolean equals(Object other)
+
+   @Override
+   public boolean equals(final Object other)
    {
       if (other instanceof SessionXAForgetMessage == false)
       {
          return false;
       }
-            
+
       SessionXAForgetMessage r = (SessionXAForgetMessage)other;
-      
-      return super.equals(other) && this.xid.equals(r.xid);
+
+      return super.equals(other) && xid.equals(r.xid);
    }
-   
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
@@ -84,5 +86,3 @@ public class SessionXAForgetMessage extends PacketImpl
 
    // Inner classes -------------------------------------------------
 }
-
-

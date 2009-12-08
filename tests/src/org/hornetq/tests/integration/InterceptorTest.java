@@ -12,6 +12,8 @@
  */
 package org.hornetq.tests.integration;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
@@ -66,185 +68,185 @@ public class InterceptorTest extends ServiceTestBase
 
       super.tearDown();
    }
-   
+
    private static final String key = "fruit";
-   
+
    private class MyInterceptor1 implements Interceptor
    {
-      public boolean intercept(Packet packet, RemotingConnection connection) throws HornetQException
+      public boolean intercept(final Packet packet, final RemotingConnection connection) throws HornetQException
       {
          if (packet.getType() == PacketImpl.SESS_SEND)
          {
             SessionSendMessage p = (SessionSendMessage)packet;
-            
+
             ServerMessage sm = (ServerMessage)p.getMessage();
-            
-            sm.putStringProperty(key, "orange");
+
+            sm.putStringProperty(InterceptorTest.key, "orange");
          }
-         
+
          return true;
       }
-      
+
    }
-   
+
    private class MyInterceptor2 implements Interceptor
    {
-      public boolean intercept(Packet packet, RemotingConnection connection) throws HornetQException
+      public boolean intercept(final Packet packet, final RemotingConnection connection) throws HornetQException
       {
          if (packet.getType() == PacketImpl.SESS_SEND)
          {
             return false;
          }
-         
+
          return true;
       }
-      
+
    }
-   
+
    private class MyInterceptor3 implements Interceptor
    {
-      public boolean intercept(Packet packet, RemotingConnection connection) throws HornetQException
+      public boolean intercept(final Packet packet, final RemotingConnection connection) throws HornetQException
       {
          if (packet.getType() == PacketImpl.SESS_RECEIVE_MSG)
          {
             SessionReceiveMessage p = (SessionReceiveMessage)packet;
-            
+
             ClientMessage cm = (ClientMessage)p.getMessage();
-            
-            cm.putStringProperty(key, "orange");
+
+            cm.putStringProperty(InterceptorTest.key, "orange");
          }
-         
+
          return true;
       }
-      
+
    }
-   
+
    private class MyInterceptor4 implements Interceptor
    {
-      public boolean intercept(Packet packet, RemotingConnection connection) throws HornetQException
+      public boolean intercept(final Packet packet, final RemotingConnection connection) throws HornetQException
       {
          if (packet.getType() == PacketImpl.SESS_RECEIVE_MSG)
          {
             return false;
          }
-         
+
          return true;
       }
-      
+
    }
-   
+
    private class MyInterceptor5 implements Interceptor
    {
       private final String key;
-      
+
       private final int num;
-      
+
       private volatile boolean reject;
-      
+
       private volatile boolean wasCalled;
-      
+
       MyInterceptor5(final String key, final int num)
       {
          this.key = key;
-         
+
          this.num = num;
       }
-      
+
       public void setReject(final boolean reject)
       {
          this.reject = reject;
       }
-      
+
       public boolean wasCalled()
       {
          return wasCalled;
       }
-      
+
       public void setWasCalled(final boolean wasCalled)
       {
          this.wasCalled = wasCalled;
       }
-      
-      public boolean intercept(Packet packet, RemotingConnection connection) throws HornetQException
+
+      public boolean intercept(final Packet packet, final RemotingConnection connection) throws HornetQException
       {
          if (packet.getType() == PacketImpl.SESS_SEND)
          {
             SessionSendMessage p = (SessionSendMessage)packet;
-            
+
             ServerMessage sm = (ServerMessage)p.getMessage();
-            
+
             sm.putIntProperty(key, num);
-            
+
             wasCalled = true;
-            
+
             return !reject;
          }
-         
+
          return true;
-         
+
       }
-      
+
    }
-   
+
    private class MyInterceptor6 implements Interceptor
    {
       private final String key;
-      
+
       private final int num;
-      
+
       private volatile boolean reject;
-      
+
       private volatile boolean wasCalled;
-      
+
       MyInterceptor6(final String key, final int num)
       {
          this.key = key;
-         
+
          this.num = num;
       }
-      
+
       public void setReject(final boolean reject)
       {
          this.reject = reject;
       }
-      
+
       public boolean wasCalled()
       {
          return wasCalled;
       }
-      
+
       public void setWasCalled(final boolean wasCalled)
       {
          this.wasCalled = wasCalled;
       }
-      
-      public boolean intercept(Packet packet, RemotingConnection connection) throws HornetQException
+
+      public boolean intercept(final Packet packet, final RemotingConnection connection) throws HornetQException
       {
          if (packet.getType() == PacketImpl.SESS_RECEIVE_MSG)
          {
             SessionReceiveMessage p = (SessionReceiveMessage)packet;
-            
+
             Message sm = p.getMessage();
-            
+
             sm.putIntProperty(key, num);
-            
+
             wasCalled = true;
-            
+
             return !reject;
          }
-         
+
          return true;
-         
+
       }
-      
+
    }
-   
+
    public void testServerInterceptorChangeProperty() throws Exception
    {
       MyInterceptor1 interceptor = new MyInterceptor1();
-      
+
       server.getRemotingService().addInterceptor(interceptor);
-      
+
       ClientSessionFactory sf = createInVMFactory();
 
       ClientSession session = sf.createSession(false, true, true, true);
@@ -254,56 +256,56 @@ public class InterceptorTest extends ServiceTestBase
       ClientProducer producer = session.createProducer(QUEUE);
 
       final int numMessages = 10;
-            
+
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = session.createClientMessage(false);
-         
-         message.putStringProperty(key, "apple");
-         
+
+         message.putStringProperty(InterceptorTest.key, "apple");
+
          producer.send(message);
       }
 
       ClientConsumer consumer = session.createConsumer(QUEUE);
-      
+
       session.start();
-      
+
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = consumer.receive(1000);
-         
-         assertEquals("orange", message.getStringProperty(key));
+
+         Assert.assertEquals("orange", message.getStringProperty(InterceptorTest.key));
       }
-      
+
       server.getRemotingService().removeInterceptor(interceptor);
-      
+
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = session.createClientMessage(false);
-         
-         message.putStringProperty(key, "apple");
-         
+
+         message.putStringProperty(InterceptorTest.key, "apple");
+
          producer.send(message);
       }
 
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = consumer.receive(1000);
-         
-         assertEquals("apple", message.getStringProperty(key));
+
+         Assert.assertEquals("apple", message.getStringProperty(InterceptorTest.key));
       }
-     
+
       session.close();
    }
-   
+
    public void testServerInterceptorRejectPacket() throws Exception
    {
       MyInterceptor2 interceptor = new MyInterceptor2();
-      
+
       server.getRemotingService().addInterceptor(interceptor);
-      
+
       ClientSessionFactory sf = createInVMFactory();
-      
+
       sf.setBlockOnNonPersistentSend(false);
 
       ClientSession session = sf.createSession(false, true, true, true);
@@ -313,33 +315,33 @@ public class InterceptorTest extends ServiceTestBase
       ClientProducer producer = session.createProducer(QUEUE);
 
       final int numMessages = 10;
-            
+
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = session.createClientMessage(false);
-         
+
          producer.send(message);
       }
 
       ClientConsumer consumer = session.createConsumer(QUEUE);
-      
+
       session.start();
-      
+
       ClientMessage message = consumer.receiveImmediate();
 
-      assertNull(message);
-     
+      Assert.assertNull(message);
+
       session.close();
    }
-   
+
    public void testClientInterceptorChangeProperty() throws Exception
-   {          
+   {
       ClientSessionFactory sf = createInVMFactory();
-      
+
       MyInterceptor3 interceptor = new MyInterceptor3();
-      
+
       sf.addInterceptor(interceptor);
- 
+
       ClientSession session = sf.createSession(false, true, true, true);
 
       session.createQueue(QUEUE, QUEUE, null, false);
@@ -347,56 +349,56 @@ public class InterceptorTest extends ServiceTestBase
       ClientProducer producer = session.createProducer(QUEUE);
 
       final int numMessages = 10;
-            
+
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = session.createClientMessage(false);
-         
-         message.putStringProperty(key, "apple");
-         
+
+         message.putStringProperty(InterceptorTest.key, "apple");
+
          producer.send(message);
       }
 
       ClientConsumer consumer = session.createConsumer(QUEUE);
-      
+
       session.start();
-      
+
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = consumer.receive(1000);
-         
-         assertEquals("orange", message.getStringProperty(key));
+
+         Assert.assertEquals("orange", message.getStringProperty(InterceptorTest.key));
       }
-      
+
       sf.removeInterceptor(interceptor);
-      
+
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = session.createClientMessage(false);
-         
-         message.putStringProperty(key, "apple");
-         
+
+         message.putStringProperty(InterceptorTest.key, "apple");
+
          producer.send(message);
       }
 
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = consumer.receive(1000);
-         
-         assertEquals("apple", message.getStringProperty(key));
+
+         Assert.assertEquals("apple", message.getStringProperty(InterceptorTest.key));
       }
-     
+
       session.close();
    }
-   
+
    public void testClientInterceptorRejectPacket() throws Exception
-   {          
+   {
       ClientSessionFactory sf = createInVMFactory();
-      
+
       MyInterceptor4 interceptor = new MyInterceptor4();
-      
+
       sf.addInterceptor(interceptor);
-      
+
       ClientSession session = sf.createSession(false, true, true, true);
 
       session.createQueue(QUEUE, QUEUE, null, false);
@@ -404,37 +406,37 @@ public class InterceptorTest extends ServiceTestBase
       ClientProducer producer = session.createProducer(QUEUE);
 
       final int numMessages = 10;
-            
+
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = session.createClientMessage(false);
-         
+
          producer.send(message);
       }
 
       ClientConsumer consumer = session.createConsumer(QUEUE);
-      
+
       session.start();
-      
+
       ClientMessage message = consumer.receive(100);
 
-      assertNull(message);
-     
+      Assert.assertNull(message);
+
       session.close();
    }
-   
+
    public void testServerMultipleInterceptors() throws Exception
    {
       MyInterceptor5 interceptor1 = new MyInterceptor5("a", 1);
       MyInterceptor5 interceptor2 = new MyInterceptor5("b", 2);
       MyInterceptor5 interceptor3 = new MyInterceptor5("c", 3);
       MyInterceptor5 interceptor4 = new MyInterceptor5("d", 4);
-      
+
       server.getRemotingService().addInterceptor(interceptor1);
       server.getRemotingService().addInterceptor(interceptor2);
       server.getRemotingService().addInterceptor(interceptor3);
       server.getRemotingService().addInterceptor(interceptor4);
-      
+
       ClientSessionFactory sf = createInVMFactory();
 
       ClientSession session = sf.createSession(false, true, true, true);
@@ -444,88 +446,88 @@ public class InterceptorTest extends ServiceTestBase
       ClientProducer producer = session.createProducer(QUEUE);
 
       final int numMessages = 10;
-            
+
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = session.createClientMessage(false);
-         
+
          producer.send(message);
       }
 
       ClientConsumer consumer = session.createConsumer(QUEUE);
-      
+
       session.start();
-      
+
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = consumer.receive(1000);
-         
-         assertEquals(1, message.getIntProperty("a").intValue());
-         assertEquals(2, message.getIntProperty("b").intValue());
-         assertEquals(3, message.getIntProperty("c").intValue());
-         assertEquals(4, message.getIntProperty("d").intValue());
+
+         Assert.assertEquals(1, message.getIntProperty("a").intValue());
+         Assert.assertEquals(2, message.getIntProperty("b").intValue());
+         Assert.assertEquals(3, message.getIntProperty("c").intValue());
+         Assert.assertEquals(4, message.getIntProperty("d").intValue());
       }
-      
+
       server.getRemotingService().removeInterceptor(interceptor2);
-      
+
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = session.createClientMessage(false);
-         
+
          producer.send(message);
       }
 
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = consumer.receive(1000);
-         
-         assertEquals(1, message.getIntProperty("a").intValue());
-         assertFalse(message.containsProperty("b"));
-         assertEquals(3, message.getIntProperty("c").intValue());
-         assertEquals(4, message.getIntProperty("d").intValue());
-        
+
+         Assert.assertEquals(1, message.getIntProperty("a").intValue());
+         Assert.assertFalse(message.containsProperty("b"));
+         Assert.assertEquals(3, message.getIntProperty("c").intValue());
+         Assert.assertEquals(4, message.getIntProperty("d").intValue());
+
       }
-      
+
       interceptor3.setReject(true);
-      
+
       interceptor1.setWasCalled(false);
       interceptor2.setWasCalled(false);
       interceptor3.setWasCalled(false);
       interceptor4.setWasCalled(false);
-      
+
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = session.createClientMessage(false);
-         
+
          producer.send(message);
       }
 
       ClientMessage message = consumer.receiveImmediate();
-         
-      assertNull(message);
-      
-      assertTrue(interceptor1.wasCalled());
-      assertFalse(interceptor2.wasCalled());
-      assertTrue(interceptor3.wasCalled());
-      assertFalse(interceptor4.wasCalled());
-           
+
+      Assert.assertNull(message);
+
+      Assert.assertTrue(interceptor1.wasCalled());
+      Assert.assertFalse(interceptor2.wasCalled());
+      Assert.assertTrue(interceptor3.wasCalled());
+      Assert.assertFalse(interceptor4.wasCalled());
+
       session.close();
    }
-   
+
    public void testClientMultipleInterceptors() throws Exception
    {
       MyInterceptor6 interceptor1 = new MyInterceptor6("a", 1);
       MyInterceptor6 interceptor2 = new MyInterceptor6("b", 2);
       MyInterceptor6 interceptor3 = new MyInterceptor6("c", 3);
       MyInterceptor6 interceptor4 = new MyInterceptor6("d", 4);
-      
+
       ClientSessionFactory sf = createInVMFactory();
-      
+
       sf.addInterceptor(interceptor1);
       sf.addInterceptor(interceptor2);
       sf.addInterceptor(interceptor3);
       sf.addInterceptor(interceptor4);
-      
+
       ClientSession session = sf.createSession(false, true, true, true);
 
       session.createQueue(QUEUE, QUEUE, null, false);
@@ -533,73 +535,72 @@ public class InterceptorTest extends ServiceTestBase
       ClientProducer producer = session.createProducer(QUEUE);
 
       final int numMessages = 10;
-            
+
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = session.createClientMessage(false);
-         
+
          producer.send(message);
       }
 
       ClientConsumer consumer = session.createConsumer(QUEUE);
-      
+
       session.start();
-      
+
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = consumer.receive(1000);
-         
-         assertEquals(1, message.getIntProperty("a").intValue());
-         assertEquals(2, message.getIntProperty("b").intValue());
-         assertEquals(3, message.getIntProperty("c").intValue());
-         assertEquals(4, message.getIntProperty("d").intValue());
+
+         Assert.assertEquals(1, message.getIntProperty("a").intValue());
+         Assert.assertEquals(2, message.getIntProperty("b").intValue());
+         Assert.assertEquals(3, message.getIntProperty("c").intValue());
+         Assert.assertEquals(4, message.getIntProperty("d").intValue());
       }
-      
+
       sf.removeInterceptor(interceptor2);
-      
+
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = session.createClientMessage(false);
-         
+
          producer.send(message);
       }
 
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = consumer.receive(1000);
-         
-         assertEquals(1, message.getIntProperty("a").intValue());
-         assertFalse(message.containsProperty("b"));
-         assertEquals(3, message.getIntProperty("c").intValue());
-         assertEquals(4, message.getIntProperty("d").intValue());
-        
+
+         Assert.assertEquals(1, message.getIntProperty("a").intValue());
+         Assert.assertFalse(message.containsProperty("b"));
+         Assert.assertEquals(3, message.getIntProperty("c").intValue());
+         Assert.assertEquals(4, message.getIntProperty("d").intValue());
+
       }
-      
+
       interceptor3.setReject(true);
-      
+
       interceptor1.setWasCalled(false);
       interceptor2.setWasCalled(false);
       interceptor3.setWasCalled(false);
       interceptor4.setWasCalled(false);
-      
+
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = session.createClientMessage(false);
-         
+
          producer.send(message);
       }
 
       ClientMessage message = consumer.receive(100);
-         
-      assertNull(message);
-      
-      assertTrue(interceptor1.wasCalled());
-      assertFalse(interceptor2.wasCalled());
-      assertTrue(interceptor3.wasCalled());
-      assertFalse(interceptor4.wasCalled());
-           
+
+      Assert.assertNull(message);
+
+      Assert.assertTrue(interceptor1.wasCalled());
+      Assert.assertFalse(interceptor2.wasCalled());
+      Assert.assertTrue(interceptor3.wasCalled());
+      Assert.assertFalse(interceptor4.wasCalled());
+
       session.close();
    }
-
 
 }

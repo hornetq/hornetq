@@ -42,7 +42,7 @@ public interface ServerMessage extends Message, EncodingSupport
    ServerMessage copy(long newID);
 
    ServerMessage copy();
-   
+
    int getMemoryEstimate();
 
    int getRefCount();
@@ -60,6 +60,6 @@ public interface ServerMessage extends Message, EncodingSupport
    boolean page(long transactionID, boolean duplicateDetection) throws Exception;
 
    boolean storeIsPaging();
-            
+
    void encodeMessageIDToBuffer();
 }

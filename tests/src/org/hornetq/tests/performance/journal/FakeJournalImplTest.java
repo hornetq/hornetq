@@ -9,7 +9,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
  * implied.  See the License for the specific language governing
  * permissions and limitations under the License.
- */ 
+ */
 
 package org.hornetq.tests.performance.journal;
 
@@ -25,9 +25,9 @@ import org.hornetq.tests.unit.core.journal.impl.fakes.FakeSequentialFileFactory;
  */
 public class FakeJournalImplTest extends JournalImplTestUnit
 {
-	protected SequentialFileFactory getFileFactory() throws Exception
-	{
-		return new FakeSequentialFileFactory();
-	}
+   @Override
+   protected SequentialFileFactory getFileFactory() throws Exception
+   {
+      return new FakeSequentialFileFactory();
+   }
 }
-

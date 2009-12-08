@@ -58,9 +58,9 @@ public abstract class UnifiedTestCase extends JMSTestCase
 
    private static final String TOPIC_NAME = "testJoramTopic";
 
-   ////////////////////
+   // //////////////////
    // Unified Domain //
-   ////////////////////
+   // //////////////////
 
    /**
     * Destination used by a producer
@@ -112,9 +112,9 @@ public abstract class UnifiedTestCase extends JMSTestCase
     */
    protected Session consumerSession;
 
-   ////////////////
+   // //////////////
    // PTP Domain //
-   ////////////////
+   // //////////////
 
    /**
     * QueueConnectionFactory
@@ -126,9 +126,9 @@ public abstract class UnifiedTestCase extends JMSTestCase
     */
    protected Queue queue;
 
-   ////////////////////
+   // //////////////////
    // Pub/Sub Domain //
-   ////////////////////
+   // //////////////////
 
    /**
     * TopicConnectionFactory
@@ -145,49 +145,50 @@ public abstract class UnifiedTestCase extends JMSTestCase
     * <br />
     * Start connections.
     */
+   @Override
    protected void setUp() throws Exception
    {
       super.setUp();
-      
+
       try
       {
          // ...and creates administrated objects and binds them
-         admin.createConnectionFactory(CF_NAME);
-         admin.createQueueConnectionFactory(QCF_NAME);
-         admin.createTopicConnectionFactory(TCF_NAME);
+         admin.createConnectionFactory(UnifiedTestCase.CF_NAME);
+         admin.createQueueConnectionFactory(UnifiedTestCase.QCF_NAME);
+         admin.createTopicConnectionFactory(UnifiedTestCase.TCF_NAME);
          // destination for unified domain is a queue
-         admin.createQueue(DESTINATION_NAME);
-         admin.createQueue(QUEUE_NAME);
-         admin.createTopic(TOPIC_NAME);
+         admin.createQueue(UnifiedTestCase.DESTINATION_NAME);
+         admin.createQueue(UnifiedTestCase.QUEUE_NAME);
+         admin.createTopic(UnifiedTestCase.TOPIC_NAME);
 
          // end of admin step, start of JMS client step
          ctx = admin.createContext();
 
-         producerCF = (ConnectionFactory) ctx.lookup(CF_NAME);
+         producerCF = (ConnectionFactory)ctx.lookup(UnifiedTestCase.CF_NAME);
          // we see destination of the unified domain as a javax.jms.Destination
          // instead of a javax.jms.Queue to be more generic
-         producerDestination = (Destination) ctx.lookup(DESTINATION_NAME);
+         producerDestination = (Destination)ctx.lookup(UnifiedTestCase.DESTINATION_NAME);
          producerConnection = producerCF.createConnection();
          producerSession = producerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
          producer = producerSession.createProducer(producerDestination);
 
-         consumerCF = (ConnectionFactory) ctx.lookup(CF_NAME);
+         consumerCF = (ConnectionFactory)ctx.lookup(UnifiedTestCase.CF_NAME);
          // we see destination of the unified domain as a javax.jms.Destination
          // instead of a javax.jms.Queue to be more generic
-         consumerDestination = (Destination) ctx.lookup(DESTINATION_NAME);
+         consumerDestination = (Destination)ctx.lookup(UnifiedTestCase.DESTINATION_NAME);
          consumerConnection = consumerCF.createConnection();
          consumerSession = consumerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
          consumer = consumerSession.createConsumer(consumerDestination);
 
-         queueConnectionFactory = (QueueConnectionFactory) ctx.lookup(QCF_NAME);
-         queue = (Queue) ctx.lookup(QUEUE_NAME);
+         queueConnectionFactory = (QueueConnectionFactory)ctx.lookup(UnifiedTestCase.QCF_NAME);
+         queue = (Queue)ctx.lookup(UnifiedTestCase.QUEUE_NAME);
 
-         topicConnectionFactory = (TopicConnectionFactory) ctx.lookup(TCF_NAME);
-         topic = (Topic) ctx.lookup(TOPIC_NAME);
+         topicConnectionFactory = (TopicConnectionFactory)ctx.lookup(UnifiedTestCase.TCF_NAME);
+         topic = (Topic)ctx.lookup(UnifiedTestCase.TOPIC_NAME);
 
          producerConnection.start();
          consumerConnection.start();
-         //end of client step
+         // end of client step
       }
       catch (Exception e)
       {
@@ -198,6 +199,7 @@ public abstract class UnifiedTestCase extends JMSTestCase
    /**
     *  Close connections and delete administrated objects
     */
+   @Override
    protected void tearDown() throws Exception
    {
       try
@@ -205,12 +207,12 @@ public abstract class UnifiedTestCase extends JMSTestCase
          consumerConnection.close();
          producerConnection.close();
 
-         admin.deleteConnectionFactory(CF_NAME);
-         admin.deleteQueueConnectionFactory(QCF_NAME);
-         admin.deleteTopicConnectionFactory(TCF_NAME);
-         admin.deleteQueue(DESTINATION_NAME);
-         admin.deleteQueue(QUEUE_NAME);
-         admin.deleteTopic(TOPIC_NAME);
+         admin.deleteConnectionFactory(UnifiedTestCase.CF_NAME);
+         admin.deleteQueueConnectionFactory(UnifiedTestCase.QCF_NAME);
+         admin.deleteTopicConnectionFactory(UnifiedTestCase.TCF_NAME);
+         admin.deleteQueue(UnifiedTestCase.DESTINATION_NAME);
+         admin.deleteQueue(UnifiedTestCase.QUEUE_NAME);
+         admin.deleteTopic(UnifiedTestCase.TOPIC_NAME);
       }
       catch (Exception ignored)
       {
@@ -235,11 +237,11 @@ public abstract class UnifiedTestCase extends JMSTestCase
          topicConnectionFactory = null;
          topic = null;
       }
-      
+
       super.tearDown();
    }
 
-   public UnifiedTestCase(String name)
+   public UnifiedTestCase(final String name)
    {
       super(name);
    }

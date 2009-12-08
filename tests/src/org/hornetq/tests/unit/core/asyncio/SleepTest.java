@@ -11,10 +11,9 @@
  * permissions and limitations under the License.
  */
 
-
 package org.hornetq.tests.unit.core.asyncio;
 
-import junit.framework.TestCase;
+import junit.framework.Assert;
 import junit.framework.TestSuite;
 
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
@@ -35,41 +34,41 @@ public class SleepTest extends UnitTestCase
    // Attributes ----------------------------------------------------
 
    // Static --------------------------------------------------------
-   
+
    public static TestSuite suite()
    {
-      return createAIOTestSuite(SleepTest.class);
+      return UnitTestCase.createAIOTestSuite(SleepTest.class);
    }
 
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
-   
+
    public void testNanoSleep() throws Exception
    {
       AsynchronousFileImpl.setNanoSleepInterval(1);
       AsynchronousFileImpl.nanoSleep();
-      
+
       long timeInterval = 1000000;
       long nloops = 1000;
-      
+
       AsynchronousFileImpl.setNanoSleepInterval((int)timeInterval);
 
       long time = System.currentTimeMillis();
-      
-      for (long i = 0 ; i < nloops; i++)
+
+      for (long i = 0; i < nloops; i++)
       {
          AsynchronousFileImpl.nanoSleep();
       }
-      
+
       long end = System.currentTimeMillis();
-      
-      long expectedTime = (timeInterval * nloops / 1000000l);
-      
-      System.out.println("TotalTime = " +  (end - time) + " expected = " + expectedTime);
-      
-      assertTrue((end - time) >= expectedTime);
-      
+
+      long expectedTime = timeInterval * nloops / 1000000l;
+
+      System.out.println("TotalTime = " + (end - time) + " expected = " + expectedTime);
+
+      Assert.assertTrue(end - time >= expectedTime);
+
    }
 
    // Package protected ---------------------------------------------
@@ -83,13 +82,13 @@ public class SleepTest extends UnitTestCase
 
       if (!AsynchronousFileImpl.isLoaded())
       {
-         fail(String.format("libAIO is not loaded on %s %s %s",
-                            System.getProperty("os.name"),
-                            System.getProperty("os.arch"),
-                            System.getProperty("os.version")));
+         Assert.fail(String.format("libAIO is not loaded on %s %s %s",
+                                   System.getProperty("os.name"),
+                                   System.getProperty("os.arch"),
+                                   System.getProperty("os.version")));
       }
    }
-   
+
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------

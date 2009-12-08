@@ -33,7 +33,7 @@ public class HornetQRAQueueSender extends HornetQRAMessageProducer implements Qu
    private static final Logger log = Logger.getLogger(HornetQRAQueueSender.class);
 
    /** Whether trace is enabled */
-   private static boolean trace = log.isTraceEnabled();
+   private static boolean trace = HornetQRAQueueSender.log.isTraceEnabled();
 
    /**
     * Create a new wrapper
@@ -44,9 +44,9 @@ public class HornetQRAQueueSender extends HornetQRAMessageProducer implements Qu
    {
       super(producer, session);
 
-      if (trace)
+      if (HornetQRAQueueSender.trace)
       {
-         log.trace("constructor(" + producer + ", " + session + ")");
+         HornetQRAQueueSender.log.trace("constructor(" + producer + ", " + session + ")");
       }
    }
 
@@ -57,9 +57,9 @@ public class HornetQRAQueueSender extends HornetQRAMessageProducer implements Qu
     */
    public Queue getQueue() throws JMSException
    {
-      if (trace)
+      if (HornetQRAQueueSender.trace)
       {
-         log.trace("getQueue()");
+         HornetQRAQueueSender.log.trace("getQueue()");
       }
 
       return ((QueueSender)producer).getQueue();
@@ -83,27 +83,27 @@ public class HornetQRAQueueSender extends HornetQRAMessageProducer implements Qu
       session.lock();
       try
       {
-         if (trace)
+         if (HornetQRAQueueSender.trace)
          {
-            log.trace("send " + this +
-                      " destination=" +
-                      destination +
-                      " message=" +
-                      message +
-                      " deliveryMode=" +
-                      deliveryMode +
-                      " priority=" +
-                      priority +
-                      " ttl=" +
-                      timeToLive);
+            HornetQRAQueueSender.log.trace("send " + this +
+                                           " destination=" +
+                                           destination +
+                                           " message=" +
+                                           message +
+                                           " deliveryMode=" +
+                                           deliveryMode +
+                                           " priority=" +
+                                           priority +
+                                           " ttl=" +
+                                           timeToLive);
          }
 
          checkState();
          producer.send(destination, message, deliveryMode, priority, timeToLive);
 
-         if (trace)
+         if (HornetQRAQueueSender.trace)
          {
-            log.trace("sent " + this + " result=" + message);
+            HornetQRAQueueSender.log.trace("sent " + this + " result=" + message);
          }
       }
       finally
@@ -123,17 +123,17 @@ public class HornetQRAQueueSender extends HornetQRAMessageProducer implements Qu
       session.lock();
       try
       {
-         if (trace)
+         if (HornetQRAQueueSender.trace)
          {
-            log.trace("send " + this + " destination=" + destination + " message=" + message);
+            HornetQRAQueueSender.log.trace("send " + this + " destination=" + destination + " message=" + message);
          }
 
          checkState();
          producer.send(destination, message);
 
-         if (trace)
+         if (HornetQRAQueueSender.trace)
          {
-            log.trace("sent " + this + " result=" + message);
+            HornetQRAQueueSender.log.trace("sent " + this + " result=" + message);
          }
       }
       finally

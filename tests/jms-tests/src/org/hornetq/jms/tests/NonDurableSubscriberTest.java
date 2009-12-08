@@ -19,6 +19,7 @@ import javax.jms.TopicConnection;
 import javax.jms.TopicSession;
 import javax.naming.InitialContext;
 
+import org.hornetq.jms.tests.util.ProxyAssertSupport;
 
 /**
  * Non-durable subscriber tests.
@@ -32,7 +33,7 @@ public class NonDurableSubscriberTest extends JMSTestCase
    // Constants -----------------------------------------------------
 
    // Static --------------------------------------------------------
-   
+
    // Attributes ----------------------------------------------------
 
    protected InitialContext ic;
@@ -40,36 +41,36 @@ public class NonDurableSubscriberTest extends JMSTestCase
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
-  
+
    /**
     * Test introduced as a result of a TCK failure.
     */
    public void testNonDurableSubscriberOnNullTopic() throws Exception
    {
       TopicConnection conn = null;
-      
+
       try
-      {      
-	      conn = cf.createTopicConnection();
-	
-	      TopicSession ts = conn.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
-	
-	      try
-	      {
-	         ts.createSubscriber(null);
-	         fail("this should fail");
-	      }
-	      catch(javax.jms.InvalidDestinationException e)
-	      {
-	         // OK
-	      }
+      {
+         conn = JMSTestCase.cf.createTopicConnection();
+
+         TopicSession ts = conn.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
+
+         try
+         {
+            ts.createSubscriber(null);
+            ProxyAssertSupport.fail("this should fail");
+         }
+         catch (javax.jms.InvalidDestinationException e)
+         {
+            // OK
+         }
       }
       finally
       {
-      	if (conn != null)
-      	{
-      		conn.close();
-      	}
+         if (conn != null)
+         {
+            conn.close();
+         }
       }
    }
 
@@ -79,30 +80,30 @@ public class NonDurableSubscriberTest extends JMSTestCase
    public void testNonDurableSubscriberInvalidUnsubscribe() throws Exception
    {
       TopicConnection conn = null;
-      
+
       try
-      {	      
-	      conn = cf.createTopicConnection();
-	      conn.setClientID("sofiavergara");
-	
-	      TopicSession ts = conn.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
-	
-	      try
-	      {
-	         ts.unsubscribe("invalid-subscription-name");
-	         fail("this should fail");
-	      }
-	      catch(javax.jms.InvalidDestinationException e)
-	      {
-	         // OK
-	      }
+      {
+         conn = JMSTestCase.cf.createTopicConnection();
+         conn.setClientID("sofiavergara");
+
+         TopicSession ts = conn.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
+
+         try
+         {
+            ts.unsubscribe("invalid-subscription-name");
+            ProxyAssertSupport.fail("this should fail");
+         }
+         catch (javax.jms.InvalidDestinationException e)
+         {
+            // OK
+         }
       }
       finally
       {
-      	if (conn != null)
-      	{
-      		conn.close();
-      	}
+         if (conn != null)
+         {
+            conn.close();
+         }
       }
    }
 
@@ -111,15 +112,15 @@ public class NonDurableSubscriberTest extends JMSTestCase
       TopicConnection c = null;
       try
       {
-         c = cf.createTopicConnection();
+         c = JMSTestCase.cf.createTopicConnection();
          c.setClientID("something");
 
          TopicSession s = c.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
 
          try
          {
-            s.createSubscriber(topic1, "=TEST 'test'", false);
-            fail("this should fail");
+            s.createSubscriber(HornetQServerTestCase.topic1, "=TEST 'test'", false);
+            ProxyAssertSupport.fail("this should fail");
          }
          catch (InvalidSelectorException e)
          {

@@ -20,6 +20,8 @@ import java.util.TimerTask;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
@@ -71,6 +73,7 @@ public class RandomReattachTest extends UnitTestCase
    {
       runTest(new RunnableT()
       {
+         @Override
          public void run(final ClientSessionFactory sf) throws Exception
          {
             doTestA(sf);
@@ -82,6 +85,7 @@ public class RandomReattachTest extends UnitTestCase
    {
       runTest(new RunnableT()
       {
+         @Override
          public void run(final ClientSessionFactory sf) throws Exception
          {
             doTestB(sf);
@@ -93,6 +97,7 @@ public class RandomReattachTest extends UnitTestCase
    {
       runTest(new RunnableT()
       {
+         @Override
          public void run(final ClientSessionFactory sf) throws Exception
          {
             doTestC(sf);
@@ -104,6 +109,7 @@ public class RandomReattachTest extends UnitTestCase
    {
       runTest(new RunnableT()
       {
+         @Override
          public void run(final ClientSessionFactory sf) throws Exception
          {
             doTestD(sf);
@@ -115,6 +121,7 @@ public class RandomReattachTest extends UnitTestCase
    {
       runTest(new RunnableT()
       {
+         @Override
          public void run(final ClientSessionFactory sf) throws Exception
          {
             doTestE(sf);
@@ -126,6 +133,7 @@ public class RandomReattachTest extends UnitTestCase
    {
       runTest(new RunnableT()
       {
+         @Override
          public void run(final ClientSessionFactory sf) throws Exception
          {
             doTestF(sf);
@@ -137,6 +145,7 @@ public class RandomReattachTest extends UnitTestCase
    {
       runTest(new RunnableT()
       {
+         @Override
          public void run(final ClientSessionFactory sf) throws Exception
          {
             doTestG(sf);
@@ -148,6 +157,7 @@ public class RandomReattachTest extends UnitTestCase
    {
       runTest(new RunnableT()
       {
+         @Override
          public void run(final ClientSessionFactory sf) throws Exception
          {
             doTestH(sf);
@@ -159,6 +169,7 @@ public class RandomReattachTest extends UnitTestCase
    {
       runTest(new RunnableT()
       {
+         @Override
          public void run(final ClientSessionFactory sf) throws Exception
          {
             doTestI(sf);
@@ -170,6 +181,7 @@ public class RandomReattachTest extends UnitTestCase
    {
       runTest(new RunnableT()
       {
+         @Override
          public void run(final ClientSessionFactory sf) throws Exception
          {
             doTestJ(sf);
@@ -181,6 +193,7 @@ public class RandomReattachTest extends UnitTestCase
    {
       runTest(new RunnableT()
       {
+         @Override
          public void run(final ClientSessionFactory sf) throws Exception
          {
             doTestK(sf);
@@ -192,6 +205,7 @@ public class RandomReattachTest extends UnitTestCase
    {
       runTest(new RunnableT()
       {
+         @Override
          public void run(final ClientSessionFactory sf) throws Exception
          {
             doTestL(sf);
@@ -203,6 +217,7 @@ public class RandomReattachTest extends UnitTestCase
    {
       runTest(new RunnableT()
       {
+         @Override
          public void run(final ClientSessionFactory sf) throws Exception
          {
             doTestN(sf);
@@ -216,29 +231,29 @@ public class RandomReattachTest extends UnitTestCase
 
       for (int its = 0; its < numIts; its++)
       {
-         log.info("####" + this.getName() + " iteration #" + its);
+         RandomReattachTest.log.info("####" + getName() + " iteration #" + its);
          start();
 
          ClientSessionFactoryImpl sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
 
          sf.setReconnectAttempts(-1);
          sf.setConfirmationWindowSize(1024 * 1024);
-         
+
          ClientSession session = sf.createSession(false, false, false);
 
          Failer failer = startFailer(1000, session);
-         
+
          do
          {
             runnable.run(sf);
          }
          while (!failer.isExecuted());
-         
+
          session.close();
 
-         assertEquals(0, sf.numSessions());
+         Assert.assertEquals(0, sf.numSessions());
 
-         assertEquals(0, sf.numConnections());
+         Assert.assertEquals(0, sf.numConnections());
 
          stop();
       }
@@ -269,7 +284,7 @@ public class RandomReattachTest extends UnitTestCase
 
          sessConsume.start();
 
-         sessConsume.createQueue(ADDRESS, subName, null, false);
+         sessConsume.createQueue(RandomReattachTest.ADDRESS, subName, null, false);
 
          ClientConsumer consumer = sessConsume.createConsumer(subName);
 
@@ -280,7 +295,7 @@ public class RandomReattachTest extends UnitTestCase
 
       ClientSession sessSend = sf.createSession(false, true, true);
 
-      ClientProducer producer = sessSend.createProducer(ADDRESS);
+      ClientProducer producer = sessSend.createProducer(RandomReattachTest.ADDRESS);
 
       for (int i = 0; i < numMessages; i++)
       {
@@ -299,14 +314,14 @@ public class RandomReattachTest extends UnitTestCase
 
          volatile int count;
 
-         public void onMessage(ClientMessage message)
+         public void onMessage(final ClientMessage message)
          {
             if (count == numMessages)
             {
-               fail("Too many messages");
+               Assert.fail("Too many messages");
             }
 
-            assertEquals(count, message.getObjectProperty(new SimpleString("count")));
+            Assert.assertEquals(count, message.getObjectProperty(new SimpleString("count")));
 
             count++;
 
@@ -316,7 +331,7 @@ public class RandomReattachTest extends UnitTestCase
             }
             catch (HornetQException me)
             {
-               log.error("Failed to process", me);
+               RandomReattachTest.log.error("Failed to process", me);
             }
 
             if (count == numMessages)
@@ -341,7 +356,7 @@ public class RandomReattachTest extends UnitTestCase
       {
          boolean ok = handler.latch.await(5000, TimeUnit.MILLISECONDS);
 
-         assertTrue("Didn't receive all messages", ok);
+         Assert.assertTrue("Didn't receive all messages", ok);
       }
 
       sessSend.close();
@@ -361,7 +376,7 @@ public class RandomReattachTest extends UnitTestCase
 
       long end = System.currentTimeMillis();
 
-      log.info("duration " + (end - start));
+      RandomReattachTest.log.info("duration " + (end - start));
    }
 
    protected void doTestB(final ClientSessionFactory sf) throws Exception
@@ -383,7 +398,7 @@ public class RandomReattachTest extends UnitTestCase
 
          ClientSession sessConsume = sf.createSession(false, true, true);
 
-         sessConsume.createQueue(ADDRESS, subName, null, false);
+         sessConsume.createQueue(RandomReattachTest.ADDRESS, subName, null, false);
 
          ClientConsumer consumer = sessConsume.createConsumer(subName);
 
@@ -394,7 +409,7 @@ public class RandomReattachTest extends UnitTestCase
 
       ClientSession sessSend = sf.createSession(false, true, true);
 
-      ClientProducer producer = sessSend.createProducer(ADDRESS);
+      ClientProducer producer = sessSend.createProducer(RandomReattachTest.ADDRESS);
 
       for (int i = 0; i < numMessages; i++)
       {
@@ -418,14 +433,14 @@ public class RandomReattachTest extends UnitTestCase
 
          volatile int count;
 
-         public void onMessage(ClientMessage message)
+         public void onMessage(final ClientMessage message)
          {
             if (count == numMessages)
             {
-               fail("Too many messages");
+               Assert.fail("Too many messages");
             }
 
-            assertEquals(count, message.getObjectProperty(new SimpleString("count")));
+            Assert.assertEquals(count, message.getObjectProperty(new SimpleString("count")));
 
             count++;
 
@@ -451,7 +466,7 @@ public class RandomReattachTest extends UnitTestCase
       {
          boolean ok = handler.latch.await(10000, TimeUnit.MILLISECONDS);
 
-         assertTrue(ok);
+         Assert.assertTrue(ok);
       }
 
       sessSend.close();
@@ -472,7 +487,7 @@ public class RandomReattachTest extends UnitTestCase
 
       long end = System.currentTimeMillis();
 
-      log.info("duration " + (end - start));
+      RandomReattachTest.log.info("duration " + (end - start));
 
    }
 
@@ -497,7 +512,7 @@ public class RandomReattachTest extends UnitTestCase
 
          sessConsume.start();
 
-         sessConsume.createQueue(ADDRESS, subName, null, false);
+         sessConsume.createQueue(RandomReattachTest.ADDRESS, subName, null, false);
 
          ClientConsumer consumer = sessConsume.createConsumer(subName);
 
@@ -508,7 +523,7 @@ public class RandomReattachTest extends UnitTestCase
 
       ClientSession sessSend = sf.createSession(false, true, true);
 
-      ClientProducer producer = sessSend.createProducer(ADDRESS);
+      ClientProducer producer = sessSend.createProducer(RandomReattachTest.ADDRESS);
 
       for (int i = 0; i < numMessages; i++)
       {
@@ -542,14 +557,14 @@ public class RandomReattachTest extends UnitTestCase
 
          volatile int count;
 
-         public void onMessage(ClientMessage message)
+         public void onMessage(final ClientMessage message)
          {
             if (count == numMessages)
             {
-               fail("Too many messages");
+               Assert.fail("Too many messages");
             }
 
-            assertEquals(count, message.getObjectProperty(new SimpleString("count")));
+            Assert.assertEquals(count, message.getObjectProperty(new SimpleString("count")));
 
             count++;
 
@@ -575,7 +590,7 @@ public class RandomReattachTest extends UnitTestCase
       {
          boolean ok = handler.latch.await(10000, TimeUnit.MILLISECONDS);
 
-         assertTrue(ok);
+         Assert.assertTrue(ok);
       }
 
       handlers.clear();
@@ -599,7 +614,7 @@ public class RandomReattachTest extends UnitTestCase
       {
          boolean ok = handler.latch.await(10000, TimeUnit.MILLISECONDS);
 
-         assertTrue(ok);
+         Assert.assertTrue(ok);
       }
 
       for (ClientSession session : sessions)
@@ -624,7 +639,7 @@ public class RandomReattachTest extends UnitTestCase
 
       long end = System.currentTimeMillis();
 
-      log.info("duration " + (end - start));
+      RandomReattachTest.log.info("duration " + (end - start));
    }
 
    protected void doTestD(final ClientSessionFactory sf) throws Exception
@@ -646,7 +661,7 @@ public class RandomReattachTest extends UnitTestCase
 
          ClientSession sessConsume = sf.createSession(false, false, false);
 
-         sessConsume.createQueue(ADDRESS, subName, null, false);
+         sessConsume.createQueue(RandomReattachTest.ADDRESS, subName, null, false);
 
          ClientConsumer consumer = sessConsume.createConsumer(subName);
 
@@ -657,7 +672,7 @@ public class RandomReattachTest extends UnitTestCase
 
       ClientSession sessSend = sf.createSession(false, true, true);
 
-      ClientProducer producer = sessSend.createProducer(ADDRESS);
+      ClientProducer producer = sessSend.createProducer(RandomReattachTest.ADDRESS);
 
       for (int i = 0; i < numMessages; i++)
       {
@@ -696,14 +711,14 @@ public class RandomReattachTest extends UnitTestCase
 
          volatile int count;
 
-         public void onMessage(ClientMessage message)
+         public void onMessage(final ClientMessage message)
          {
             if (count == numMessages)
             {
-               fail("Too many messages");
+               Assert.fail("Too many messages");
             }
 
-            assertEquals(count, message.getObjectProperty(new SimpleString("count")));
+            Assert.assertEquals(count, message.getObjectProperty(new SimpleString("count")));
 
             count++;
 
@@ -729,7 +744,7 @@ public class RandomReattachTest extends UnitTestCase
       {
          boolean ok = handler.latch.await(10000, TimeUnit.MILLISECONDS);
 
-         assertTrue(ok);
+         Assert.assertTrue(ok);
       }
 
       handlers.clear();
@@ -753,7 +768,7 @@ public class RandomReattachTest extends UnitTestCase
       {
          boolean ok = handler.latch.await(10000, TimeUnit.MILLISECONDS);
 
-         assertTrue(ok);
+         Assert.assertTrue(ok);
       }
 
       for (ClientSession session : sessions)
@@ -778,7 +793,7 @@ public class RandomReattachTest extends UnitTestCase
 
       long end = System.currentTimeMillis();
 
-      log.info("duration " + (end - start));
+      RandomReattachTest.log.info("duration " + (end - start));
    }
 
    // Now with synchronous receive()
@@ -804,7 +819,7 @@ public class RandomReattachTest extends UnitTestCase
 
          sessConsume.start();
 
-         sessConsume.createQueue(ADDRESS, subName, null, false);
+         sessConsume.createQueue(RandomReattachTest.ADDRESS, subName, null, false);
 
          ClientConsumer consumer = sessConsume.createConsumer(subName);
 
@@ -815,7 +830,7 @@ public class RandomReattachTest extends UnitTestCase
 
       ClientSession sessSend = sf.createSession(false, true, true);
 
-      ClientProducer producer = sessSend.createProducer(ADDRESS);
+      ClientProducer producer = sessSend.createProducer(RandomReattachTest.ADDRESS);
 
       for (int i = 0; i < numMessages; i++)
       {
@@ -832,11 +847,11 @@ public class RandomReattachTest extends UnitTestCase
       {
          for (ClientConsumer consumer : consumers)
          {
-            ClientMessage msg = consumer.receive(RECEIVE_TIMEOUT);
+            ClientMessage msg = consumer.receive(RandomReattachTest.RECEIVE_TIMEOUT);
 
-            assertNotNull(msg);
+            Assert.assertNotNull(msg);
 
-            assertEquals(i, msg.getObjectProperty(new SimpleString("count")));
+            Assert.assertEquals(i, msg.getObjectProperty(new SimpleString("count")));
 
             msg.acknowledge();
          }
@@ -848,7 +863,7 @@ public class RandomReattachTest extends UnitTestCase
          {
             ClientMessage msg = consumer.receiveImmediate();
 
-            assertNull(msg);
+            Assert.assertNull(msg);
          }
       }
 
@@ -869,7 +884,7 @@ public class RandomReattachTest extends UnitTestCase
 
       long end = System.currentTimeMillis();
 
-      log.info("duration " + (end - start));
+      RandomReattachTest.log.info("duration " + (end - start));
    }
 
    protected void doTestF(final ClientSessionFactory sf) throws Exception
@@ -891,7 +906,7 @@ public class RandomReattachTest extends UnitTestCase
 
          ClientSession sessConsume = sf.createSession(false, true, true);
 
-         sessConsume.createQueue(ADDRESS, subName, null, false);
+         sessConsume.createQueue(RandomReattachTest.ADDRESS, subName, null, false);
 
          ClientConsumer consumer = sessConsume.createConsumer(subName);
 
@@ -902,7 +917,7 @@ public class RandomReattachTest extends UnitTestCase
 
       ClientSession sessSend = sf.createSession(false, true, true);
 
-      ClientProducer producer = sessSend.createProducer(ADDRESS);
+      ClientProducer producer = sessSend.createProducer(RandomReattachTest.ADDRESS);
 
       for (int i = 0; i < numMessages; i++)
       {
@@ -924,16 +939,16 @@ public class RandomReattachTest extends UnitTestCase
       {
          for (ClientConsumer consumer : consumers)
          {
-            ClientMessage msg = consumer.receive(RECEIVE_TIMEOUT);
+            ClientMessage msg = consumer.receive(RandomReattachTest.RECEIVE_TIMEOUT);
 
             if (msg == null)
             {
                throw new IllegalStateException("Failed to receive message " + i);
             }
 
-            assertNotNull(msg);
+            Assert.assertNotNull(msg);
 
-            assertEquals(i, msg.getObjectProperty(new SimpleString("count")));
+            Assert.assertEquals(i, msg.getObjectProperty(new SimpleString("count")));
 
             msg.acknowledge();
          }
@@ -945,7 +960,7 @@ public class RandomReattachTest extends UnitTestCase
          {
             ClientMessage msg = consumer.receiveImmediate();
 
-            assertNull(msg);
+            Assert.assertNull(msg);
          }
       }
 
@@ -964,11 +979,11 @@ public class RandomReattachTest extends UnitTestCase
 
       s.close();
 
-      assertEquals(1, ((ClientSessionFactoryImpl)sf).numSessions());
+      Assert.assertEquals(1, ((ClientSessionFactoryImpl)sf).numSessions());
 
       long end = System.currentTimeMillis();
 
-      log.info("duration " + (end - start));
+      RandomReattachTest.log.info("duration " + (end - start));
    }
 
    protected void doTestG(final ClientSessionFactory sf) throws Exception
@@ -992,7 +1007,7 @@ public class RandomReattachTest extends UnitTestCase
 
          sessConsume.start();
 
-         sessConsume.createQueue(ADDRESS, subName, null, false);
+         sessConsume.createQueue(RandomReattachTest.ADDRESS, subName, null, false);
 
          ClientConsumer consumer = sessConsume.createConsumer(subName);
 
@@ -1003,7 +1018,7 @@ public class RandomReattachTest extends UnitTestCase
 
       ClientSession sessSend = sf.createSession(false, false, false);
 
-      ClientProducer producer = sessSend.createProducer(ADDRESS);
+      ClientProducer producer = sessSend.createProducer(RandomReattachTest.ADDRESS);
 
       for (int i = 0; i < numMessages; i++)
       {
@@ -1035,11 +1050,11 @@ public class RandomReattachTest extends UnitTestCase
       {
          for (ClientConsumer consumer : consumers)
          {
-            ClientMessage msg = consumer.receive(RECEIVE_TIMEOUT);
+            ClientMessage msg = consumer.receive(RandomReattachTest.RECEIVE_TIMEOUT);
 
-            assertNotNull(msg);
+            Assert.assertNotNull(msg);
 
-            assertEquals(i, msg.getObjectProperty(new SimpleString("count")));
+            Assert.assertEquals(i, msg.getObjectProperty(new SimpleString("count")));
 
             msg.acknowledge();
          }
@@ -1049,7 +1064,7 @@ public class RandomReattachTest extends UnitTestCase
       {
          ClientMessage msg = consumer.receiveImmediate();
 
-         assertNull(msg);
+         Assert.assertNull(msg);
       }
 
       for (ClientSession session : sessions)
@@ -1061,11 +1076,11 @@ public class RandomReattachTest extends UnitTestCase
       {
          for (ClientConsumer consumer : consumers)
          {
-            ClientMessage msg = consumer.receive(RECEIVE_TIMEOUT);
+            ClientMessage msg = consumer.receive(RandomReattachTest.RECEIVE_TIMEOUT);
 
-            assertNotNull(msg);
+            Assert.assertNotNull(msg);
 
-            assertEquals(i, msg.getObjectProperty(new SimpleString("count")));
+            Assert.assertEquals(i, msg.getObjectProperty(new SimpleString("count")));
 
             msg.acknowledge();
          }
@@ -1077,7 +1092,7 @@ public class RandomReattachTest extends UnitTestCase
          {
             ClientMessage msg = consumer.receiveImmediate();
 
-            assertNull(msg);
+            Assert.assertNull(msg);
          }
       }
 
@@ -1103,7 +1118,7 @@ public class RandomReattachTest extends UnitTestCase
 
       long end = System.currentTimeMillis();
 
-      log.info("duration " + (end - start));
+      RandomReattachTest.log.info("duration " + (end - start));
    }
 
    protected void doTestH(final ClientSessionFactory sf) throws Exception
@@ -1125,7 +1140,7 @@ public class RandomReattachTest extends UnitTestCase
 
          ClientSession sessConsume = sf.createSession(false, false, false);
 
-         sessConsume.createQueue(ADDRESS, subName, null, false);
+         sessConsume.createQueue(RandomReattachTest.ADDRESS, subName, null, false);
 
          ClientConsumer consumer = sessConsume.createConsumer(subName);
 
@@ -1136,7 +1151,7 @@ public class RandomReattachTest extends UnitTestCase
 
       ClientSession sessSend = sf.createSession(false, false, false);
 
-      ClientProducer producer = sessSend.createProducer(ADDRESS);
+      ClientProducer producer = sessSend.createProducer(RandomReattachTest.ADDRESS);
 
       for (int i = 0; i < numMessages; i++)
       {
@@ -1173,11 +1188,11 @@ public class RandomReattachTest extends UnitTestCase
       {
          for (ClientConsumer consumer : consumers)
          {
-            ClientMessage msg = consumer.receive(RECEIVE_TIMEOUT);
+            ClientMessage msg = consumer.receive(RandomReattachTest.RECEIVE_TIMEOUT);
 
-            assertNotNull(msg);
+            Assert.assertNotNull(msg);
 
-            assertEquals(i, msg.getObjectProperty(new SimpleString("count")));
+            Assert.assertEquals(i, msg.getObjectProperty(new SimpleString("count")));
 
             msg.acknowledge();
          }
@@ -1189,7 +1204,7 @@ public class RandomReattachTest extends UnitTestCase
          {
             ClientMessage msg = consumer.receiveImmediate();
 
-            assertNull(msg);
+            Assert.assertNull(msg);
          }
       }
 
@@ -1202,11 +1217,11 @@ public class RandomReattachTest extends UnitTestCase
       {
          for (ClientConsumer consumer : consumers)
          {
-            ClientMessage msg = consumer.receive(RECEIVE_TIMEOUT);
+            ClientMessage msg = consumer.receive(RandomReattachTest.RECEIVE_TIMEOUT);
 
-            assertNotNull(msg);
+            Assert.assertNotNull(msg);
 
-            assertEquals(i, msg.getObjectProperty(new SimpleString("count")));
+            Assert.assertEquals(i, msg.getObjectProperty(new SimpleString("count")));
 
             msg.acknowledge();
          }
@@ -1218,7 +1233,7 @@ public class RandomReattachTest extends UnitTestCase
          {
             ClientMessage msg = consumer.receiveImmediate();
 
-            assertNull(msg);
+            Assert.assertNull(msg);
          }
       }
 
@@ -1244,22 +1259,22 @@ public class RandomReattachTest extends UnitTestCase
 
       long end = System.currentTimeMillis();
 
-      log.info("duration " + (end - start));
+      RandomReattachTest.log.info("duration " + (end - start));
    }
 
    protected void doTestI(final ClientSessionFactory sf) throws Exception
    {
       ClientSession sessCreate = sf.createSession(false, true, true);
 
-      sessCreate.createQueue(ADDRESS, ADDRESS, null, false);
+      sessCreate.createQueue(RandomReattachTest.ADDRESS, RandomReattachTest.ADDRESS, null, false);
 
       ClientSession sess = sf.createSession(false, true, true);
 
       sess.start();
 
-      ClientConsumer consumer = sess.createConsumer(ADDRESS);
+      ClientConsumer consumer = sess.createConsumer(RandomReattachTest.ADDRESS);
 
-      ClientProducer producer = sess.createProducer(ADDRESS);
+      ClientProducer producer = sess.createProducer(RandomReattachTest.ADDRESS);
 
       ClientMessage message = sess.createClientMessage(HornetQTextMessage.TYPE,
                                                        false,
@@ -1268,15 +1283,15 @@ public class RandomReattachTest extends UnitTestCase
                                                        (byte)1);
       producer.send(message);
 
-      ClientMessage message2 = consumer.receive(RECEIVE_TIMEOUT);
+      ClientMessage message2 = consumer.receive(RandomReattachTest.RECEIVE_TIMEOUT);
 
-      assertNotNull(message2);
+      Assert.assertNotNull(message2);
 
       message2.acknowledge();
 
       sess.close();
 
-      sessCreate.deleteQueue(ADDRESS);
+      sessCreate.deleteQueue(RandomReattachTest.ADDRESS);
 
       sessCreate.close();
    }
@@ -1285,15 +1300,15 @@ public class RandomReattachTest extends UnitTestCase
    {
       ClientSession sessCreate = sf.createSession(false, true, true);
 
-      sessCreate.createQueue(ADDRESS, ADDRESS, null, false);
+      sessCreate.createQueue(RandomReattachTest.ADDRESS, RandomReattachTest.ADDRESS, null, false);
 
       ClientSession sess = sf.createSession(false, true, true);
 
       sess.start();
 
-      ClientConsumer consumer = sess.createConsumer(ADDRESS);
+      ClientConsumer consumer = sess.createConsumer(RandomReattachTest.ADDRESS);
 
-      ClientProducer producer = sess.createProducer(ADDRESS);
+      ClientProducer producer = sess.createProducer(RandomReattachTest.ADDRESS);
 
       ClientMessage message = sess.createClientMessage(HornetQTextMessage.TYPE,
                                                        false,
@@ -1302,15 +1317,15 @@ public class RandomReattachTest extends UnitTestCase
                                                        (byte)1);
       producer.send(message);
 
-      ClientMessage message2 = consumer.receive(RECEIVE_TIMEOUT);
+      ClientMessage message2 = consumer.receive(RandomReattachTest.RECEIVE_TIMEOUT);
 
-      assertNotNull(message2);
+      Assert.assertNotNull(message2);
 
       message2.acknowledge();
 
       sess.close();
 
-      sessCreate.deleteQueue(ADDRESS);
+      sessCreate.deleteQueue(RandomReattachTest.ADDRESS);
 
       sessCreate.close();
    }
@@ -1319,24 +1334,24 @@ public class RandomReattachTest extends UnitTestCase
    {
       ClientSession s = sf.createSession(false, false, false);
 
-      s.createQueue(ADDRESS, ADDRESS, null, false);
+      s.createQueue(RandomReattachTest.ADDRESS, RandomReattachTest.ADDRESS, null, false);
 
       final int numConsumers = 100;
 
       for (int i = 0; i < numConsumers; i++)
       {
-         ClientConsumer consumer = s.createConsumer(ADDRESS);
+         ClientConsumer consumer = s.createConsumer(RandomReattachTest.ADDRESS);
 
          consumer.close();
       }
 
-      s.deleteQueue(ADDRESS);
+      s.deleteQueue(RandomReattachTest.ADDRESS);
 
       s.close();
    }
 
    protected void doTestL(final ClientSessionFactory sf) throws Exception
-   {     
+   {
       final int numSessions = 10;
 
       for (int i = 0; i < numSessions; i++)
@@ -1344,14 +1359,17 @@ public class RandomReattachTest extends UnitTestCase
          ClientSession session = sf.createSession(false, false, false);
 
          session.close();
-      }   
+      }
    }
 
    protected void doTestN(final ClientSessionFactory sf) throws Exception
    {
       ClientSession sessCreate = sf.createSession(false, true, true);
 
-      sessCreate.createQueue(ADDRESS, new SimpleString(ADDRESS.toString()), null, false);
+      sessCreate.createQueue(RandomReattachTest.ADDRESS,
+                             new SimpleString(RandomReattachTest.ADDRESS.toString()),
+                             null,
+                             false);
 
       ClientSession sess = sf.createSession(false, true, true);
 
@@ -1361,9 +1379,9 @@ public class RandomReattachTest extends UnitTestCase
 
       sess.stop();
 
-      ClientConsumer consumer = sess.createConsumer(new SimpleString(ADDRESS.toString()));
+      ClientConsumer consumer = sess.createConsumer(new SimpleString(RandomReattachTest.ADDRESS.toString()));
 
-      ClientProducer producer = sess.createProducer(ADDRESS);
+      ClientProducer producer = sess.createProducer(RandomReattachTest.ADDRESS);
 
       ClientMessage message = sess.createClientMessage(HornetQTextMessage.TYPE,
                                                        false,
@@ -1374,9 +1392,9 @@ public class RandomReattachTest extends UnitTestCase
 
       sess.start();
 
-      ClientMessage message2 = consumer.receive(RECEIVE_TIMEOUT);
+      ClientMessage message2 = consumer.receive(RandomReattachTest.RECEIVE_TIMEOUT);
 
-      assertNotNull(message2);
+      Assert.assertNotNull(message2);
 
       message2.acknowledge();
 
@@ -1386,7 +1404,7 @@ public class RandomReattachTest extends UnitTestCase
 
       sess.close();
 
-      sessCreate.deleteQueue(new SimpleString(ADDRESS.toString()));
+      sessCreate.deleteQueue(new SimpleString(RandomReattachTest.ADDRESS.toString()));
 
       sessCreate.close();
    }
@@ -1396,13 +1414,15 @@ public class RandomReattachTest extends UnitTestCase
       return 2;
    }
 
+   @Override
    protected void setUp() throws Exception
    {
       super.setUp();
 
-      timer = new Timer(true);     
+      timer = new Timer(true);
    }
 
+   @Override
    protected void tearDown() throws Exception
    {
       timer.cancel();
@@ -1424,11 +1444,11 @@ public class RandomReattachTest extends UnitTestCase
    }
 
    private void start() throws Exception
-   {    
+   {
       Configuration liveConf = new ConfigurationImpl();
       liveConf.setSecurityEnabled(false);
       liveConf.getAcceptorConfigurations()
-              .add(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory"));      
+              .add(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory"));
       liveService = HornetQ.newHornetQServer(liveConf, false);
       liveService.start();
    }
@@ -1437,8 +1457,8 @@ public class RandomReattachTest extends UnitTestCase
    {
       liveService.stop();
 
-      assertEquals(0, InVMRegistry.instance.size());
-      
+      Assert.assertEquals(0, InVMRegistry.instance.size());
+
       liveService = null;
    }
 
@@ -1455,13 +1475,14 @@ public class RandomReattachTest extends UnitTestCase
          this.session = session;
       }
 
+      @Override
       public synchronized void run()
       {
-         log.info("** Failing connection");
+         RandomReattachTest.log.info("** Failing connection");
 
          session.getConnection().fail(new HornetQException(HornetQException.NOT_CONNECTED, "oops"));
 
-         log.info("** Fail complete");
+         RandomReattachTest.log.info("** Fail complete");
 
          cancel();
 

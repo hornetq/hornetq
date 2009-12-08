@@ -14,7 +14,6 @@
 package org.hornetq.core.remoting.impl.wireformat;
 
 import org.hornetq.core.buffers.HornetQBuffer;
-import org.hornetq.utils.DataConstants;
 
 /**
  * A ReplicationLargeMessageBeingMessage
@@ -44,7 +43,7 @@ public class ReplicationLargeMessageBeingMessage extends PacketImpl
 
    public ReplicationLargeMessageBeingMessage()
    {
-      super(REPLICATION_LARGE_MESSAGE_BEGIN);
+      super(PacketImpl.REPLICATION_LARGE_MESSAGE_BEGIN);
    }
 
    // Public --------------------------------------------------------
@@ -58,7 +57,7 @@ public class ReplicationLargeMessageBeingMessage extends PacketImpl
    @Override
    public void decodeRest(final HornetQBuffer buffer)
    {
-      this.messageId = buffer.readLong();
+      messageId = buffer.readLong();
    }
 
    /**
@@ -68,7 +67,6 @@ public class ReplicationLargeMessageBeingMessage extends PacketImpl
    {
       return messageId;
    }
-
 
    // Package protected ---------------------------------------------
 

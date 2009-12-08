@@ -9,7 +9,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
  * implied.  See the License for the specific language governing
  * permissions and limitations under the License.
- */ 
+ */
 
 package org.hornetq.jms.client;
 
@@ -32,24 +32,27 @@ import org.hornetq.core.logging.Logger;
 public class JMSMessageListenerWrapper implements MessageHandler
 {
    private static final Logger log = Logger.getLogger(JMSMessageListenerWrapper.class);
-      
+
    private final HornetQSession session;
-   
+
    private final MessageListener listener;
-   
+
    private final ClientConsumer consumer;
-   
+
    private final boolean transactedOrClientAck;
-   
-   public JMSMessageListenerWrapper(final HornetQSession session, final ClientConsumer consumer, final MessageListener listener, final int ackMode)
+
+   public JMSMessageListenerWrapper(final HornetQSession session,
+                                    final ClientConsumer consumer,
+                                    final MessageListener listener,
+                                    final int ackMode)
    {
       this.session = session;
-      
+
       this.consumer = consumer;
-      
+
       this.listener = listener;
-      
-      this.transactedOrClientAck = ackMode == Session.SESSION_TRANSACTED || ackMode == Session.CLIENT_ACKNOWLEDGE;
+
+      transactedOrClientAck = ackMode == Session.SESSION_TRANSACTED || ackMode == Session.CLIENT_ACKNOWLEDGE;
    }
 
    /**
@@ -59,18 +62,18 @@ public class JMSMessageListenerWrapper implements MessageHandler
    public void onMessage(final ClientMessage message)
    {
       HornetQMessage msg = HornetQMessage.createMessage(message, session.getCoreSession());
-      
+
       try
       {
          msg.doBeforeReceive();
       }
       catch (Exception e)
       {
-         log.error("Failed to prepare message for receipt", e);
-         
+         JMSMessageListenerWrapper.log.error("Failed to prepare message for receipt", e);
+
          return;
       }
-      
+
       if (transactedOrClientAck)
       {
          try
@@ -79,51 +82,51 @@ public class JMSMessageListenerWrapper implements MessageHandler
          }
          catch (HornetQException e)
          {
-            log.error("Failed to process message", e);
+            JMSMessageListenerWrapper.log.error("Failed to process message", e);
          }
       }
-      
+
       try
-      {         
+      {
          listener.onMessage(msg);
       }
       catch (RuntimeException e)
       {
-         //See JMS 1.1 spec, section 4.5.2
-         
-         log.warn("Unhandled exception thrown from onMessage", e);
-         
+         // See JMS 1.1 spec, section 4.5.2
+
+         JMSMessageListenerWrapper.log.warn("Unhandled exception thrown from onMessage", e);
+
          if (!transactedOrClientAck)
-         {            
+         {
             try
-            {                              
+            {
                session.getCoreSession().rollback(true);
-               
+
                session.setRecoverCalled(true);
             }
             catch (Exception e2)
             {
-               log.error("Failed to recover session", e2);
+               JMSMessageListenerWrapper.log.error("Failed to recover session", e2);
             }
          }
-      }            
-      
+      }
+
       if (!session.isRecoverCalled())
       {
          try
          {
-            //We don't want to call this if the consumer was closed from inside onMessage
-            if (!consumer.isClosed() && !this.transactedOrClientAck)
+            // We don't want to call this if the consumer was closed from inside onMessage
+            if (!consumer.isClosed() && !transactedOrClientAck)
             {
                message.acknowledge();
-            }            
+            }
          }
          catch (HornetQException e)
          {
-            log.error("Failed to process message", e);
+            JMSMessageListenerWrapper.log.error("Failed to process message", e);
          }
       }
-      
-      session.setRecoverCalled(false);     
+
+      session.setRecoverCalled(false);
    }
 }

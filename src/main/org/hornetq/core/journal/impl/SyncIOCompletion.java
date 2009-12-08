@@ -34,7 +34,7 @@ public abstract class SyncIOCompletion implements IOCompletion
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
-   
+
    public abstract void waitCompletion() throws Exception;
 
    // Package protected ---------------------------------------------

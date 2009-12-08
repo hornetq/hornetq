@@ -116,7 +116,7 @@ public class LocalGroupingHandler implements GroupingHandler
 
    public Response receive(final Proposal proposal, final int distance) throws Exception
    {
-      log.trace("received proposal " + proposal);
+      LocalGroupingHandler.log.trace("received proposal " + proposal);
       return propose(proposal);
    }
 
@@ -142,7 +142,8 @@ public class LocalGroupingHandler implements GroupingHandler
    {
       if (notification.getType() == NotificationType.BINDING_REMOVED)
       {
-         SimpleString clusterName = notification.getProperties().getSimpleStringProperty(ManagementHelper.HDR_CLUSTER_NAME);
+         SimpleString clusterName = notification.getProperties()
+                                                .getSimpleStringProperty(ManagementHelper.HDR_CLUSTER_NAME);
 
          List<GroupBinding> list = groupMap.remove(clusterName);
          if (list != null)
@@ -158,7 +159,7 @@ public class LocalGroupingHandler implements GroupingHandler
                   }
                   catch (Exception e)
                   {
-                     log.warn("Unable to delete group binding info " + val.getGroupId(), e);
+                     LocalGroupingHandler.log.warn("Unable to delete group binding info " + val.getGroupId(), e);
                   }
                }
             }

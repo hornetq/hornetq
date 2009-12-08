@@ -15,6 +15,8 @@ package org.hornetq.jms.tests.message;
 
 import javax.jms.Message;
 
+import org.hornetq.jms.tests.util.ProxyAssertSupport;
+
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
@@ -24,7 +26,7 @@ public class JMSTimestampHeaderTest extends MessageHeaderTestBase
    // Constants -----------------------------------------------------
 
    // Static --------------------------------------------------------
-   
+
    // Attributes ----------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -40,8 +42,8 @@ public class JMSTimestampHeaderTest extends MessageHeaderTestBase
       long t2 = System.currentTimeMillis();
       long timestamp = queueConsumer.receive().getJMSTimestamp();
 
-      assertTrue(timestamp >= t1);
-      assertTrue(timestamp <= t2);
+      ProxyAssertSupport.assertTrue(timestamp >= t1);
+      ProxyAssertSupport.assertTrue(timestamp <= t2);
    }
 
    public void testDisabledTimestamp() throws Exception
@@ -50,16 +52,15 @@ public class JMSTimestampHeaderTest extends MessageHeaderTestBase
 
       queueProducer.setDisableMessageTimestamp(true);
       queueProducer.send(m);
-      assertEquals(0l, queueConsumer.receive().getJMSTimestamp());
+      ProxyAssertSupport.assertEquals(0l, queueConsumer.receive().getJMSTimestamp());
    }
 
-
    // Package protected ---------------------------------------------
-   
+
    // Protected -----------------------------------------------------
-   
+
    // Private -------------------------------------------------------
-   
+
    // Inner classes -------------------------------------------------
 
 }

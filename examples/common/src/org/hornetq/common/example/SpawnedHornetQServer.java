@@ -20,7 +20,7 @@ import org.hornetq.integration.bootstrap.HornetQBootstrapServer;
  */
 public class SpawnedHornetQServer
 {
-   public static void main(String[] args)
+   public static void main(final String[] args)
    {
       HornetQBootstrapServer bootstrap;
       try
@@ -28,9 +28,9 @@ public class SpawnedHornetQServer
          Thread killChecker = new KillChecker(".");
          killChecker.setDaemon(true);
          killChecker.start();
-         
+
          System.setProperty("java.naming.factory.initial", "org.jnp.interfaces.NamingContextFactory");
-         System.setProperty("java.naming.factory.url.pkgs", "org.jboss.naming:org.jnp.interfaces");         
+         System.setProperty("java.naming.factory.url.pkgs", "org.jboss.naming:org.jnp.interfaces");
          bootstrap = new HornetQBootstrapServer(args);
          bootstrap.run();
          System.out.println("STARTED::");

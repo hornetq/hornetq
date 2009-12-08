@@ -12,12 +12,6 @@
  */
 package org.hornetq.core.postoffice.impl;
 
-import static org.hornetq.core.postoffice.impl.WildcardAddressManager.ANY_WORDS;
-import static org.hornetq.core.postoffice.impl.WildcardAddressManager.ANY_WORDS_SIMPLESTRING;
-import static org.hornetq.core.postoffice.impl.WildcardAddressManager.DELIM;
-import static org.hornetq.core.postoffice.impl.WildcardAddressManager.SINGLE_WORD;
-import static org.hornetq.core.postoffice.impl.WildcardAddressManager.SINGLE_WORD_SIMPLESTRING;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,13 +31,13 @@ public class AddressImpl implements Address
 
    private boolean containsWildCard;
 
-   private List<Address> linkedAddresses = new ArrayList<Address>();
+   private final List<Address> linkedAddresses = new ArrayList<Address>();
 
    public AddressImpl(final SimpleString address)
    {
       this.address = address;
-      this.addressParts = address.split(DELIM);
-      containsWildCard = address.contains(SINGLE_WORD) || address.contains(ANY_WORDS);
+      addressParts = address.split(WildcardAddressManager.DELIM);
+      containsWildCard = address.contains(WildcardAddressManager.SINGLE_WORD) || address.contains(WildcardAddressManager.ANY_WORDS);
    }
 
    public SimpleString getAddress()
@@ -66,12 +60,12 @@ public class AddressImpl implements Address
       return linkedAddresses;
    }
 
-   public void addLinkedAddress(Address address)
+   public void addLinkedAddress(final Address address)
    {
       linkedAddresses.add(address);
    }
 
-   public void removeLinkedAddress(Address actualAddress)
+   public void removeLinkedAddress(final Address actualAddress)
    {
       linkedAddresses.remove(actualAddress);
    }
@@ -93,9 +87,9 @@ public class AddressImpl implements Address
             started = true;
          }
       }
-      this.address = newAddress;
-      this.addressParts = address.split(DELIM);
-      containsWildCard = address.contains(SINGLE_WORD);
+      address = newAddress;
+      addressParts = address.split(WildcardAddressManager.DELIM);
+      containsWildCard = address.contains(WildcardAddressManager.SINGLE_WORD);
    }
 
    public boolean matches(final Address add)
@@ -110,20 +104,20 @@ public class AddressImpl implements Address
       SimpleString nextToMatch;
       for (; matchPos < add.getAddressParts().length;)
       {
-         if(pos >= addressParts.length)
+         if (pos >= addressParts.length)
          {
-            //test for # as last address part
-            return pos + 1 == add.getAddressParts().length && add.getAddressParts()[pos].equals(ANY_WORDS_SIMPLESTRING);
+            // test for # as last address part
+            return pos + 1 == add.getAddressParts().length && add.getAddressParts()[pos].equals(WildcardAddressManager.ANY_WORDS_SIMPLESTRING);
          }
          SimpleString curr = addressParts[pos];
          SimpleString next = addressParts.length > pos + 1 ? addressParts[pos + 1] : null;
          SimpleString currMatch = add.getAddressParts()[matchPos];
-         if (currMatch.equals(SINGLE_WORD_SIMPLESTRING))
+         if (currMatch.equals(WildcardAddressManager.SINGLE_WORD_SIMPLESTRING))
          {
             pos++;
             matchPos++;
          }
-         else if (currMatch.equals(ANY_WORDS_SIMPLESTRING))
+         else if (currMatch.equals(WildcardAddressManager.ANY_WORDS_SIMPLESTRING))
          {
             if (matchPos == addressParts.length - 1)
             {
@@ -171,7 +165,8 @@ public class AddressImpl implements Address
       return pos == addressParts.length;
    }
 
-   public boolean equals(Object o)
+   @Override
+   public boolean equals(final Object o)
    {
       if (this == o)
       {
@@ -182,7 +177,7 @@ public class AddressImpl implements Address
          return false;
       }
 
-      AddressImpl address1 = (AddressImpl) o;
+      AddressImpl address1 = (AddressImpl)o;
 
       if (!address.equals(address1.address))
       {
@@ -192,6 +187,7 @@ public class AddressImpl implements Address
       return true;
    }
 
+   @Override
    public int hashCode()
    {
       return address.hashCode();

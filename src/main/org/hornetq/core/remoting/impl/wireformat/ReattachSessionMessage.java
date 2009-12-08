@@ -9,12 +9,11 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
  * implied.  See the License for the specific language governing
  * permissions and limitations under the License.
- */ 
+ */
 
 package org.hornetq.core.remoting.impl.wireformat;
 
 import org.hornetq.core.buffers.HornetQBuffer;
-import org.hornetq.utils.DataConstants;
 
 /**
  * 
@@ -30,25 +29,25 @@ public class ReattachSessionMessage extends PacketImpl
    // Attributes ----------------------------------------------------
 
    private String name;
-   
+
    private int lastReceivedCommandID;
-   
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
    public ReattachSessionMessage(final String name, final int lastReceivedCommandID)
    {
-      super(REATTACH_SESSION);
+      super(PacketImpl.REATTACH_SESSION);
 
       this.name = name;
-      
+
       this.lastReceivedCommandID = lastReceivedCommandID;
    }
-   
+
    public ReattachSessionMessage()
    {
-      super(REATTACH_SESSION);
+      super(PacketImpl.REATTACH_SESSION);
    }
 
    // Public --------------------------------------------------------
@@ -57,36 +56,40 @@ public class ReattachSessionMessage extends PacketImpl
    {
       return name;
    }
-   
+
    public int getLastReceivedCommandID()
    {
       return lastReceivedCommandID;
    }
-   
+
+   @Override
    public void encodeRest(final HornetQBuffer buffer)
    {
       buffer.writeString(name);
       buffer.writeInt(lastReceivedCommandID);
    }
-   
+
+   @Override
    public void decodeRest(final HornetQBuffer buffer)
    {
       name = buffer.readString();
       lastReceivedCommandID = buffer.readInt();
    }
 
-   public boolean equals(Object other)
+   @Override
+   public boolean equals(final Object other)
    {
       if (other instanceof ReattachSessionMessage == false)
       {
          return false;
       }
-            
+
       ReattachSessionMessage r = (ReattachSessionMessage)other;
-      
-      return super.equals(other) && this.name.equals(r.name);
+
+      return super.equals(other) && name.equals(r.name);
    }
-   
+
+   @Override
    public final boolean isRequiresConfirmations()
    {
       return false;
@@ -100,4 +103,3 @@ public class ReattachSessionMessage extends PacketImpl
 
    // Inner classes -------------------------------------------------
 }
-

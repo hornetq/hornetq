@@ -11,7 +11,6 @@
  * permissions and limitations under the License.
  */
 
-
 package org.hornetq.jms.client;
 
 import javax.jms.BytesMessage;
@@ -46,9 +45,9 @@ public class HornetQBytesMessage extends HornetQMessage implements BytesMessage
    public static final byte TYPE = 4;
 
    // Attributes ----------------------------------------------------
-   
+
    private int bodyLength;
-   
+
    // Constructor ---------------------------------------------------
 
    /*
@@ -241,12 +240,14 @@ public class HornetQBytesMessage extends HornetQMessage implements BytesMessage
       return readBytes(value, value.length);
    }
 
-   public int readBytes(final byte[] value, final int length)
-         throws JMSException
+   public int readBytes(final byte[] value, final int length) throws JMSException
    {
       checkRead();
 
-      if (!getBuffer().readable()) { return -1; }
+      if (!getBuffer().readable())
+      {
+         return -1;
+      }
 
       int read = Math.min(length, getBuffer().readableBytes());
 
@@ -327,8 +328,7 @@ public class HornetQBytesMessage extends HornetQMessage implements BytesMessage
       getBuffer().writeBytes(value);
    }
 
-   public void writeBytes(final byte[] value, final int offset, final int length)
-         throws JMSException
+   public void writeBytes(final byte[] value, final int offset, final int length) throws JMSException
    {
       checkWrite();
       getBuffer().writeBytes(value, offset, length);
@@ -336,47 +336,49 @@ public class HornetQBytesMessage extends HornetQMessage implements BytesMessage
 
    public void writeObject(final Object value) throws JMSException
    {
-      if (value == null) { throw new NullPointerException(
-            "Attempt to write a null value"); }
+      if (value == null)
+      {
+         throw new NullPointerException("Attempt to write a null value");
+      }
       if (value instanceof String)
       {
-         writeUTF((String) value);
+         writeUTF((String)value);
       }
       else if (value instanceof Boolean)
       {
-         writeBoolean((Boolean) value);
+         writeBoolean((Boolean)value);
       }
       else if (value instanceof Character)
       {
-         writeChar((Character) value);
+         writeChar((Character)value);
       }
       else if (value instanceof Byte)
       {
-         writeByte((Byte) value);
+         writeByte((Byte)value);
       }
       else if (value instanceof Short)
       {
-         writeShort((Short) value);
+         writeShort((Short)value);
       }
       else if (value instanceof Integer)
       {
-         writeInt((Integer) value);
+         writeInt((Integer)value);
       }
       else if (value instanceof Long)
       {
-         writeLong((Long) value);
+         writeLong((Long)value);
       }
       else if (value instanceof Float)
       {
-         writeFloat((Float) value);
+         writeFloat((Float)value);
       }
       else if (value instanceof Double)
       {
-         writeDouble((Double) value);
+         writeDouble((Double)value);
       }
       else if (value instanceof byte[])
       {
-         writeBytes((byte[]) value);
+         writeBytes((byte[])value);
       }
       else
       {
@@ -389,7 +391,7 @@ public class HornetQBytesMessage extends HornetQMessage implements BytesMessage
       if (!readOnly)
       {
          readOnly = true;
-         
+
          bodyLength = message.getBodySize();
 
          getBuffer().resetReaderIndex();
@@ -399,30 +401,33 @@ public class HornetQBytesMessage extends HornetQMessage implements BytesMessage
          getBuffer().resetReaderIndex();
       }
    }
-   
+
+   @Override
    public void doBeforeReceive() throws Exception
    {
       bodyLength = message.getBodySize();
-      
+
       super.doBeforeReceive();
    }
 
    // HornetQRAMessage overrides ----------------------------------------
 
+   @Override
    public void clearBody() throws JMSException
    {
       super.clearBody();
-      
+
       getBuffer().clear();
    }
 
    public long getBodyLength() throws JMSException
    {
       checkRead();
-      
+
       return bodyLength;
    }
 
+   @Override
    public void doBeforeSend() throws Exception
    {
       reset();
@@ -430,6 +435,7 @@ public class HornetQBytesMessage extends HornetQMessage implements BytesMessage
 
    // Public --------------------------------------------------------
 
+   @Override
    public byte getType()
    {
       return HornetQBytesMessage.TYPE;
@@ -440,11 +446,11 @@ public class HornetQBytesMessage extends HornetQMessage implements BytesMessage
    // Protected -----------------------------------------------------
 
    // Private -------------------------------------------------------
-   
+
    private HornetQBuffer getBuffer()
    {
       return message.getBodyBuffer();
    }
-   
+
    // Inner classes -------------------------------------------------
 }

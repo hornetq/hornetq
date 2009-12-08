@@ -159,7 +159,10 @@ public class MeasurePagingMultiThreadTest extends ServiceTestBase
 
          System.out.println("Total Time: " + (timeEnd - timeStart) +
                             " milliseconds what represented " +
-                            (NUMBER_OF_MESSAGES * NUMBER_OF_THREADS * 1000 / (timeEnd - timeStart)) +
+                            NUMBER_OF_MESSAGES *
+                            NUMBER_OF_THREADS *
+                            1000 /
+                            (timeEnd - timeStart) +
                             " per second");
 
          for (Sender s : senders)

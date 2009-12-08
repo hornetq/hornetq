@@ -83,7 +83,7 @@ public class PagingManagerImpl implements PagingManager
    public SimpleString[] getStoreNames()
    {
       Set<SimpleString> names = stores.keySet();
-      return (SimpleString[])names.toArray(new SimpleString[names.size()]);
+      return names.toArray(new SimpleString[names.size()]);
    }
 
    /* (non-Javadoc)

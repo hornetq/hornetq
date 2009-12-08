@@ -29,6 +29,8 @@ import javax.resource.spi.work.WorkListener;
 import javax.resource.spi.work.WorkManager;
 import javax.transaction.xa.XAResource;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.client.ClientSessionFactory;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
@@ -69,34 +71,43 @@ public class ResourceAdapterTest extends ServiceTestBase
       HornetQResourceAdapter ra = new HornetQResourceAdapter();
       ra.setConnectorClassName(InVMConnector.class.getName());
       HornetQConnectionFactory factory = ra.getDefaultHornetQConnectionFactory();
-      assertEquals(factory.getCallTimeout(), ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT);
-      assertEquals(factory.getClientFailureCheckPeriod(), ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD);
-      assertEquals(factory.getClientID(), null);
-      assertEquals(factory.getConnectionLoadBalancingPolicyClassName(), ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME);
-      assertEquals(factory.getConnectionTTL(), ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL);
-      assertEquals(factory.getConsumerMaxRate(), ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE);
-      assertEquals(factory.getConsumerWindowSize(), ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE);
-      assertEquals(factory.getDiscoveryAddress(), null);
-      assertEquals(factory.getDiscoveryInitialWaitTimeout(), ClientSessionFactoryImpl.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT);
-      assertEquals(factory.getDiscoveryPort(), 0);
-      assertEquals(factory.getDiscoveryRefreshTimeout(), ClientSessionFactoryImpl.DEFAULT_DISCOVERY_REFRESH_TIMEOUT);
-      assertEquals(factory.getDupsOKBatchSize(), ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE);     
-      assertEquals(factory.getMinLargeMessageSize(), ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE);
-      assertEquals(factory.getProducerMaxRate(), ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE);
-      assertEquals(factory.getConfirmationWindowSize(), ClientSessionFactoryImpl.DEFAULT_CONFIRMATION_WINDOW_SIZE);
-      assertEquals(factory.getReconnectAttempts(), ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS);
-      assertEquals(factory.getRetryInterval(), ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL);
-      assertEquals(factory.getRetryIntervalMultiplier(), ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER);
-      assertEquals(factory.getScheduledThreadPoolMaxSize(), ClientSessionFactoryImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE);
-      assertEquals(factory.getThreadPoolMaxSize(), ClientSessionFactoryImpl.DEFAULT_THREAD_POOL_MAX_SIZE);
-      assertEquals(factory.getTransactionBatchSize(), ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE);
-      assertEquals(factory.isAutoGroup(), ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP);
-      assertEquals(factory.isBlockOnAcknowledge(), ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE);
-      assertEquals(factory.isBlockOnNonPersistentSend(), ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND);
-      assertEquals(factory.isBlockOnPersistentSend(), ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND);
-      assertEquals(factory.isFailoverOnServerShutdown(), ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN);
-      assertEquals(factory.isPreAcknowledge(), ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE);
-      assertEquals(factory.isUseGlobalPools(), ClientSessionFactoryImpl.DEFAULT_USE_GLOBAL_POOLS);
+      Assert.assertEquals(factory.getCallTimeout(), ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT);
+      Assert.assertEquals(factory.getClientFailureCheckPeriod(),
+                          ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD);
+      Assert.assertEquals(factory.getClientID(), null);
+      Assert.assertEquals(factory.getConnectionLoadBalancingPolicyClassName(),
+                          ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME);
+      Assert.assertEquals(factory.getConnectionTTL(), ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL);
+      Assert.assertEquals(factory.getConsumerMaxRate(), ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE);
+      Assert.assertEquals(factory.getConsumerWindowSize(), ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE);
+      Assert.assertEquals(factory.getDiscoveryAddress(), null);
+      Assert.assertEquals(factory.getDiscoveryInitialWaitTimeout(),
+                          ClientSessionFactoryImpl.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT);
+      Assert.assertEquals(factory.getDiscoveryPort(), 0);
+      Assert.assertEquals(factory.getDiscoveryRefreshTimeout(),
+                          ClientSessionFactoryImpl.DEFAULT_DISCOVERY_REFRESH_TIMEOUT);
+      Assert.assertEquals(factory.getDupsOKBatchSize(), ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE);
+      Assert.assertEquals(factory.getMinLargeMessageSize(), ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE);
+      Assert.assertEquals(factory.getProducerMaxRate(), ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE);
+      Assert.assertEquals(factory.getConfirmationWindowSize(),
+                          ClientSessionFactoryImpl.DEFAULT_CONFIRMATION_WINDOW_SIZE);
+      Assert.assertEquals(factory.getReconnectAttempts(), ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS);
+      Assert.assertEquals(factory.getRetryInterval(), ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL);
+      Assert.assertEquals(factory.getRetryIntervalMultiplier(),
+                          ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER);
+      Assert.assertEquals(factory.getScheduledThreadPoolMaxSize(),
+                          ClientSessionFactoryImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE);
+      Assert.assertEquals(factory.getThreadPoolMaxSize(), ClientSessionFactoryImpl.DEFAULT_THREAD_POOL_MAX_SIZE);
+      Assert.assertEquals(factory.getTransactionBatchSize(), ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE);
+      Assert.assertEquals(factory.isAutoGroup(), ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP);
+      Assert.assertEquals(factory.isBlockOnAcknowledge(), ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE);
+      Assert.assertEquals(factory.isBlockOnNonPersistentSend(),
+                          ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND);
+      Assert.assertEquals(factory.isBlockOnPersistentSend(), ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND);
+      Assert.assertEquals(factory.isFailoverOnServerShutdown(),
+                          ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN);
+      Assert.assertEquals(factory.isPreAcknowledge(), ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE);
+      Assert.assertEquals(factory.isUseGlobalPools(), ClientSessionFactoryImpl.DEFAULT_USE_GLOBAL_POOLS);
    }
 
    public void test2DefaultConnectionFactorySame() throws Exception
@@ -105,7 +116,7 @@ public class ResourceAdapterTest extends ServiceTestBase
       ra.setConnectorClassName(InVMConnector.class.getName());
       HornetQConnectionFactory factory = ra.getDefaultHornetQConnectionFactory();
       HornetQConnectionFactory factory2 = ra.getDefaultHornetQConnectionFactory();
-      assertEquals(factory, factory2);
+      Assert.assertEquals(factory, factory2);
    }
 
    public void testCreateConnectionFactoryNoOverrides() throws Exception
@@ -113,34 +124,43 @@ public class ResourceAdapterTest extends ServiceTestBase
       HornetQResourceAdapter ra = new HornetQResourceAdapter();
       ra.setConnectorClassName(InVMConnector.class.getName());
       HornetQConnectionFactory factory = ra.createHornetQConnectionFactory(new ConnectionFactoryProperties());
-      assertEquals(factory.getCallTimeout(), ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT);
-      assertEquals(factory.getClientFailureCheckPeriod(), ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD);
-      assertEquals(factory.getClientID(), null);
-      assertEquals(factory.getConnectionLoadBalancingPolicyClassName(), ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME);
-      assertEquals(factory.getConnectionTTL(), ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL);
-      assertEquals(factory.getConsumerMaxRate(), ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE);
-      assertEquals(factory.getConsumerWindowSize(), ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE);
-      assertEquals(factory.getDiscoveryAddress(), null);
-      assertEquals(factory.getDiscoveryInitialWaitTimeout(), ClientSessionFactoryImpl.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT);
-      assertEquals(factory.getDiscoveryPort(), 0);
-      assertEquals(factory.getDiscoveryRefreshTimeout(), ClientSessionFactoryImpl.DEFAULT_DISCOVERY_REFRESH_TIMEOUT);
-      assertEquals(factory.getDupsOKBatchSize(), ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE);     
-      assertEquals(factory.getMinLargeMessageSize(), ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE);
-      assertEquals(factory.getProducerMaxRate(), ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE);
-      assertEquals(factory.getConfirmationWindowSize(), ClientSessionFactoryImpl.DEFAULT_CONFIRMATION_WINDOW_SIZE);
-      assertEquals(factory.getReconnectAttempts(), ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS);
-      assertEquals(factory.getRetryInterval(), ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL);
-      assertEquals(factory.getRetryIntervalMultiplier(), ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER);
-      assertEquals(factory.getScheduledThreadPoolMaxSize(), ClientSessionFactoryImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE);
-      assertEquals(factory.getThreadPoolMaxSize(), ClientSessionFactoryImpl.DEFAULT_THREAD_POOL_MAX_SIZE);
-      assertEquals(factory.getTransactionBatchSize(), ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE);
-      assertEquals(factory.isAutoGroup(), ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP);
-      assertEquals(factory.isBlockOnAcknowledge(), ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE);
-      assertEquals(factory.isBlockOnNonPersistentSend(), ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND);
-      assertEquals(factory.isBlockOnPersistentSend(), ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND);
-      assertEquals(factory.isFailoverOnServerShutdown(), ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN);
-      assertEquals(factory.isPreAcknowledge(), ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE);
-      assertEquals(factory.isUseGlobalPools(), ClientSessionFactoryImpl.DEFAULT_USE_GLOBAL_POOLS);
+      Assert.assertEquals(factory.getCallTimeout(), ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT);
+      Assert.assertEquals(factory.getClientFailureCheckPeriod(),
+                          ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD);
+      Assert.assertEquals(factory.getClientID(), null);
+      Assert.assertEquals(factory.getConnectionLoadBalancingPolicyClassName(),
+                          ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME);
+      Assert.assertEquals(factory.getConnectionTTL(), ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL);
+      Assert.assertEquals(factory.getConsumerMaxRate(), ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE);
+      Assert.assertEquals(factory.getConsumerWindowSize(), ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE);
+      Assert.assertEquals(factory.getDiscoveryAddress(), null);
+      Assert.assertEquals(factory.getDiscoveryInitialWaitTimeout(),
+                          ClientSessionFactoryImpl.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT);
+      Assert.assertEquals(factory.getDiscoveryPort(), 0);
+      Assert.assertEquals(factory.getDiscoveryRefreshTimeout(),
+                          ClientSessionFactoryImpl.DEFAULT_DISCOVERY_REFRESH_TIMEOUT);
+      Assert.assertEquals(factory.getDupsOKBatchSize(), ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE);
+      Assert.assertEquals(factory.getMinLargeMessageSize(), ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE);
+      Assert.assertEquals(factory.getProducerMaxRate(), ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE);
+      Assert.assertEquals(factory.getConfirmationWindowSize(),
+                          ClientSessionFactoryImpl.DEFAULT_CONFIRMATION_WINDOW_SIZE);
+      Assert.assertEquals(factory.getReconnectAttempts(), ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS);
+      Assert.assertEquals(factory.getRetryInterval(), ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL);
+      Assert.assertEquals(factory.getRetryIntervalMultiplier(),
+                          ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER);
+      Assert.assertEquals(factory.getScheduledThreadPoolMaxSize(),
+                          ClientSessionFactoryImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE);
+      Assert.assertEquals(factory.getThreadPoolMaxSize(), ClientSessionFactoryImpl.DEFAULT_THREAD_POOL_MAX_SIZE);
+      Assert.assertEquals(factory.getTransactionBatchSize(), ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE);
+      Assert.assertEquals(factory.isAutoGroup(), ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP);
+      Assert.assertEquals(factory.isBlockOnAcknowledge(), ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE);
+      Assert.assertEquals(factory.isBlockOnNonPersistentSend(),
+                          ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND);
+      Assert.assertEquals(factory.isBlockOnPersistentSend(), ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND);
+      Assert.assertEquals(factory.isFailoverOnServerShutdown(),
+                          ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN);
+      Assert.assertEquals(factory.isPreAcknowledge(), ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE);
+      Assert.assertEquals(factory.isUseGlobalPools(), ClientSessionFactoryImpl.DEFAULT_USE_GLOBAL_POOLS);
    }
 
    public void testDefaultConnectionFactoryOverrides() throws Exception
@@ -161,7 +181,7 @@ public class ResourceAdapterTest extends ServiceTestBase
       ra.setDiscoveryInitialWaitTimeout(6l);
       ra.setDiscoveryRefreshTimeout(7l);
       ra.setDupsOKBatchSize(8);
-      ra.setFailoverOnServerShutdown(!ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN);    
+      ra.setFailoverOnServerShutdown(!ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN);
       ra.setMinLargeMessageSize(10);
       ra.setPreAcknowledge(!ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE);
       ra.setProducerMaxRate(11);
@@ -174,34 +194,36 @@ public class ResourceAdapterTest extends ServiceTestBase
       ra.setTransactionBatchSize(18);
       ra.setUseGlobalPools(!ClientSessionFactoryImpl.DEFAULT_USE_GLOBAL_POOLS);
       HornetQConnectionFactory factory = ra.getDefaultHornetQConnectionFactory();
-      assertEquals(factory.getCallTimeout(), 1);
-      assertEquals(factory.getClientFailureCheckPeriod(), 2);
-      assertEquals(factory.getClientID(), "myid");
-      assertEquals(factory.getConnectionLoadBalancingPolicyClassName(), "mlbcn");
-      assertEquals(factory.getConnectionTTL(), 3);
-      assertEquals(factory.getConsumerMaxRate(), 4);
-      assertEquals(factory.getConsumerWindowSize(), 5);
-      assertEquals(factory.getDiscoveryAddress(), null);
-      assertEquals(factory.getDiscoveryInitialWaitTimeout(), 6);
-      assertEquals(factory.getDiscoveryPort(), 0);
-      assertEquals(factory.getDiscoveryRefreshTimeout(), 7);
-      assertEquals(factory.getDupsOKBatchSize(), 8);     
-      assertEquals(factory.getMinLargeMessageSize(), 10);
-      assertEquals(factory.getProducerMaxRate(), 11);
-      assertEquals(factory.getConfirmationWindowSize(), 12);
-      assertEquals(factory.getReconnectAttempts(), 13);
-      assertEquals(factory.getRetryInterval(), 14);
-      assertEquals(factory.getRetryIntervalMultiplier(), 15d);
-      assertEquals(factory.getScheduledThreadPoolMaxSize(), 16);
-      assertEquals(factory.getThreadPoolMaxSize(), 17);
-      assertEquals(factory.getTransactionBatchSize(), 18);
-      assertEquals(factory.isAutoGroup(), !ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP);
-      assertEquals(factory.isBlockOnAcknowledge(), !ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE);
-      assertEquals(factory.isBlockOnNonPersistentSend(), !ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND);
-      assertEquals(factory.isBlockOnPersistentSend(), !ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND);
-      assertEquals(factory.isFailoverOnServerShutdown(), !ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN);
-      assertEquals(factory.isPreAcknowledge(), !ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE);
-      assertEquals(factory.isUseGlobalPools(), !ClientSessionFactoryImpl.DEFAULT_USE_GLOBAL_POOLS);
+      Assert.assertEquals(factory.getCallTimeout(), 1);
+      Assert.assertEquals(factory.getClientFailureCheckPeriod(), 2);
+      Assert.assertEquals(factory.getClientID(), "myid");
+      Assert.assertEquals(factory.getConnectionLoadBalancingPolicyClassName(), "mlbcn");
+      Assert.assertEquals(factory.getConnectionTTL(), 3);
+      Assert.assertEquals(factory.getConsumerMaxRate(), 4);
+      Assert.assertEquals(factory.getConsumerWindowSize(), 5);
+      Assert.assertEquals(factory.getDiscoveryAddress(), null);
+      Assert.assertEquals(factory.getDiscoveryInitialWaitTimeout(), 6);
+      Assert.assertEquals(factory.getDiscoveryPort(), 0);
+      Assert.assertEquals(factory.getDiscoveryRefreshTimeout(), 7);
+      Assert.assertEquals(factory.getDupsOKBatchSize(), 8);
+      Assert.assertEquals(factory.getMinLargeMessageSize(), 10);
+      Assert.assertEquals(factory.getProducerMaxRate(), 11);
+      Assert.assertEquals(factory.getConfirmationWindowSize(), 12);
+      Assert.assertEquals(factory.getReconnectAttempts(), 13);
+      Assert.assertEquals(factory.getRetryInterval(), 14);
+      Assert.assertEquals(factory.getRetryIntervalMultiplier(), 15d);
+      Assert.assertEquals(factory.getScheduledThreadPoolMaxSize(), 16);
+      Assert.assertEquals(factory.getThreadPoolMaxSize(), 17);
+      Assert.assertEquals(factory.getTransactionBatchSize(), 18);
+      Assert.assertEquals(factory.isAutoGroup(), !ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP);
+      Assert.assertEquals(factory.isBlockOnAcknowledge(), !ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE);
+      Assert.assertEquals(factory.isBlockOnNonPersistentSend(),
+                          !ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND);
+      Assert.assertEquals(factory.isBlockOnPersistentSend(), !ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND);
+      Assert.assertEquals(factory.isFailoverOnServerShutdown(),
+                          !ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN);
+      Assert.assertEquals(factory.isPreAcknowledge(), !ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE);
+      Assert.assertEquals(factory.isUseGlobalPools(), !ClientSessionFactoryImpl.DEFAULT_USE_GLOBAL_POOLS);
    }
 
    public void testCreateConnectionFactoryOverrides() throws Exception
@@ -223,7 +245,7 @@ public class ResourceAdapterTest extends ServiceTestBase
       connectionFactoryProperties.setDiscoveryInitialWaitTimeout(6l);
       connectionFactoryProperties.setDiscoveryRefreshTimeout(7l);
       connectionFactoryProperties.setDupsOKBatchSize(8);
-      connectionFactoryProperties.setFailoverOnServerShutdown(!ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN);     
+      connectionFactoryProperties.setFailoverOnServerShutdown(!ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN);
       connectionFactoryProperties.setMinLargeMessageSize(10);
       connectionFactoryProperties.setPreAcknowledge(!ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE);
       connectionFactoryProperties.setProducerMaxRate(11);
@@ -236,34 +258,36 @@ public class ResourceAdapterTest extends ServiceTestBase
       connectionFactoryProperties.setTransactionBatchSize(18);
       connectionFactoryProperties.setUseGlobalPools(!ClientSessionFactoryImpl.DEFAULT_USE_GLOBAL_POOLS);
       HornetQConnectionFactory factory = ra.createHornetQConnectionFactory(connectionFactoryProperties);
-      assertEquals(factory.getCallTimeout(), 1);
-      assertEquals(factory.getClientFailureCheckPeriod(), 2);
-      assertEquals(factory.getClientID(), "myid");
-      assertEquals(factory.getConnectionLoadBalancingPolicyClassName(), "mlbcn");
-      assertEquals(factory.getConnectionTTL(), 3);
-      assertEquals(factory.getConsumerMaxRate(), 4);
-      assertEquals(factory.getConsumerWindowSize(), 5);
-      assertEquals(factory.getDiscoveryAddress(), null);
-      assertEquals(factory.getDiscoveryInitialWaitTimeout(), 6);
-      assertEquals(factory.getDiscoveryPort(), 0);
-      assertEquals(factory.getDiscoveryRefreshTimeout(), 7);
-      assertEquals(factory.getDupsOKBatchSize(), 8);      
-      assertEquals(factory.getMinLargeMessageSize(), 10);
-      assertEquals(factory.getProducerMaxRate(), 11);
-      assertEquals(factory.getConfirmationWindowSize(), 12);
-      assertEquals(factory.getReconnectAttempts(), 13);
-      assertEquals(factory.getRetryInterval(), 14);
-      assertEquals(factory.getRetryIntervalMultiplier(), 15d);
-      assertEquals(factory.getScheduledThreadPoolMaxSize(), 16);
-      assertEquals(factory.getThreadPoolMaxSize(), 17);
-      assertEquals(factory.getTransactionBatchSize(), 18);
-      assertEquals(factory.isAutoGroup(), !ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP);
-      assertEquals(factory.isBlockOnAcknowledge(), !ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE);
-      assertEquals(factory.isBlockOnNonPersistentSend(), !ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND);
-      assertEquals(factory.isBlockOnPersistentSend(), !ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND);
-      assertEquals(factory.isFailoverOnServerShutdown(), !ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN);
-      assertEquals(factory.isPreAcknowledge(), !ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE);
-      assertEquals(factory.isUseGlobalPools(), !ClientSessionFactoryImpl.DEFAULT_USE_GLOBAL_POOLS);
+      Assert.assertEquals(factory.getCallTimeout(), 1);
+      Assert.assertEquals(factory.getClientFailureCheckPeriod(), 2);
+      Assert.assertEquals(factory.getClientID(), "myid");
+      Assert.assertEquals(factory.getConnectionLoadBalancingPolicyClassName(), "mlbcn");
+      Assert.assertEquals(factory.getConnectionTTL(), 3);
+      Assert.assertEquals(factory.getConsumerMaxRate(), 4);
+      Assert.assertEquals(factory.getConsumerWindowSize(), 5);
+      Assert.assertEquals(factory.getDiscoveryAddress(), null);
+      Assert.assertEquals(factory.getDiscoveryInitialWaitTimeout(), 6);
+      Assert.assertEquals(factory.getDiscoveryPort(), 0);
+      Assert.assertEquals(factory.getDiscoveryRefreshTimeout(), 7);
+      Assert.assertEquals(factory.getDupsOKBatchSize(), 8);
+      Assert.assertEquals(factory.getMinLargeMessageSize(), 10);
+      Assert.assertEquals(factory.getProducerMaxRate(), 11);
+      Assert.assertEquals(factory.getConfirmationWindowSize(), 12);
+      Assert.assertEquals(factory.getReconnectAttempts(), 13);
+      Assert.assertEquals(factory.getRetryInterval(), 14);
+      Assert.assertEquals(factory.getRetryIntervalMultiplier(), 15d);
+      Assert.assertEquals(factory.getScheduledThreadPoolMaxSize(), 16);
+      Assert.assertEquals(factory.getThreadPoolMaxSize(), 17);
+      Assert.assertEquals(factory.getTransactionBatchSize(), 18);
+      Assert.assertEquals(factory.isAutoGroup(), !ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP);
+      Assert.assertEquals(factory.isBlockOnAcknowledge(), !ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE);
+      Assert.assertEquals(factory.isBlockOnNonPersistentSend(),
+                          !ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND);
+      Assert.assertEquals(factory.isBlockOnPersistentSend(), !ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND);
+      Assert.assertEquals(factory.isFailoverOnServerShutdown(),
+                          !ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN);
+      Assert.assertEquals(factory.isPreAcknowledge(), !ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE);
+      Assert.assertEquals(factory.isUseGlobalPools(), !ClientSessionFactoryImpl.DEFAULT_USE_GLOBAL_POOLS);
    }
 
    public void testCreateConnectionFactoryOverrideConnector() throws Exception
@@ -274,7 +298,7 @@ public class ResourceAdapterTest extends ServiceTestBase
       connectionFactoryProperties.setConnectorClassName(NettyConnector.class.getName());
       HornetQConnectionFactory factory = ra.createHornetQConnectionFactory(connectionFactoryProperties);
       HornetQConnectionFactory defaultFactory = ra.getDefaultHornetQConnectionFactory();
-      assertNotSame(factory, defaultFactory);
+      Assert.assertNotSame(factory, defaultFactory);
    }
 
    public void testCreateConnectionFactoryOverrideDiscovery() throws Exception
@@ -286,28 +310,31 @@ public class ResourceAdapterTest extends ServiceTestBase
       connectionFactoryProperties.setDiscoveryPort(5678);
       HornetQConnectionFactory factory = ra.createHornetQConnectionFactory(connectionFactoryProperties);
       HornetQConnectionFactory defaultFactory = ra.getDefaultHornetQConnectionFactory();
-      assertNotSame(factory, defaultFactory);
+      Assert.assertNotSame(factory, defaultFactory);
    }
 
-    public void testCreateConnectionFactoryThrowsException() throws Exception
+   public void testCreateConnectionFactoryThrowsException() throws Exception
    {
       HornetQResourceAdapter ra = new HornetQResourceAdapter();
       ConnectionFactoryProperties connectionFactoryProperties = new ConnectionFactoryProperties();
       try
       {
          HornetQConnectionFactory factory = ra.createHornetQConnectionFactory(connectionFactoryProperties);
-         fail("should throw exception");
+         Assert.fail("should throw exception");
       }
       catch (IllegalArgumentException e)
       {
-         //pass
+         // pass
       }
    }
 
    public void testValidateProperties() throws Exception
    {
       validateGettersAndSetters(new HornetQResourceAdapter(), "backupTransportConfiguration");
-      validateGettersAndSetters(new HornetQRAManagedConnectionFactory(), "connectionParameters", "sessionDefaultType", "backupConnectionParameters");
+      validateGettersAndSetters(new HornetQRAManagedConnectionFactory(),
+                                "connectionParameters",
+                                "sessionDefaultType",
+                                "backupConnectionParameters");
       validateGettersAndSetters(new HornetQActivationSpec(),
                                 "connectionParameters",
                                 "acknowledgeMode",
@@ -316,37 +343,34 @@ public class ResourceAdapterTest extends ServiceTestBase
       HornetQActivationSpec spec = new HornetQActivationSpec();
 
       spec.setAcknowledgeMode("DUPS_OK_ACKNOWLEDGE");
-      assertEquals("Dups-ok-acknowledge", spec.getAcknowledgeMode());
+      Assert.assertEquals("Dups-ok-acknowledge", spec.getAcknowledgeMode());
 
       spec.setSubscriptionDurability("Durable");
-      assertEquals("Durable", spec.getSubscriptionDurability());
+      Assert.assertEquals("Durable", spec.getSubscriptionDurability());
 
       spec.setSubscriptionDurability("NonDurable");
-      assertEquals("NonDurable", spec.getSubscriptionDurability());
-      
-      
+      Assert.assertEquals("NonDurable", spec.getSubscriptionDurability());
+
       spec = new HornetQActivationSpec();
       HornetQResourceAdapter adapter = new HornetQResourceAdapter();
 
       adapter.setUserName("us1");
       adapter.setPassword("ps1");
       adapter.setClientID("cl1");
-      
+
       spec.setResourceAdapter(adapter);
-      
-      assertEquals("us1", spec.getUser());
-      assertEquals("ps1", spec.getPassword());
-      
+
+      Assert.assertEquals("us1", spec.getUser());
+      Assert.assertEquals("ps1", spec.getPassword());
+
       spec.setUser("us2");
       spec.setPassword("ps2");
       spec.setClientID("cl2");
 
-      
-      assertEquals("us2", spec.getUser());
-      assertEquals("ps2", spec.getPassword());
-      assertEquals("cl2", spec.getClientID());
-      
-      
+      Assert.assertEquals("us2", spec.getUser());
+      Assert.assertEquals("ps2", spec.getPassword());
+      Assert.assertEquals("cl2", spec.getClientID());
+
    }
 
    public void testStartActivation() throws Exception
@@ -357,44 +381,44 @@ public class ResourceAdapterTest extends ServiceTestBase
       {
 
          server.start();
-         
+
          ClientSessionFactory factory = createInVMFactory();
          ClientSession session = factory.createSession(false, false, false);
          HornetQQueue queue = new HornetQQueue("test");
          session.createQueue(queue.getSimpleAddress(), queue.getSimpleAddress(), true);
          session.close();
-         
+
          HornetQResourceAdapter ra = new HornetQResourceAdapter();
 
-         ra.setConnectorClassName("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory");        
+         ra.setConnectorClassName("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory");
          ra.setUserName("userGlobal");
          ra.setPassword("passwordGlobal");
          ra.start(fakeCTX);
 
          Connection conn = ra.getDefaultHornetQConnectionFactory().createConnection();
-         
+
          conn.close();
-         
+
          HornetQActivationSpec spec = new HornetQActivationSpec();
-         
+
          spec.setResourceAdapter(ra);
-         
+
          spec.setUseJNDI(false);
-         
+
          spec.setUser("user");
          spec.setPassword("password");
-         
+
          spec.setDestinationType("Topic");
          spec.setDestination("test");
 
          spec.setMinSession(1);
          spec.setMaxSession(1);
-         
+
          HornetQActivation activation = new HornetQActivation(ra, new FakeMessageEndpointFactory(), spec);
-         
+
          activation.start();
          activation.stop();
-         
+
       }
       finally
       {
@@ -412,6 +436,11 @@ public class ResourceAdapterTest extends ServiceTestBase
 
    class MockHornetQResourceAdapter extends HornetQResourceAdapter
    {
+
+      /**
+       * 
+       */
+      private static final long serialVersionUID = 2893126091158533715L;
       /*public HornetQRAConnectionFactory createRemoteFactory(String connectorClassName,
                                                         Map<String, Object> connectionParameters)
       {
@@ -433,30 +462,39 @@ public class ResourceAdapterTest extends ServiceTestBase
       {
          return new WorkManager()
          {
-            public void doWork(Work work) throws WorkException
+            public void doWork(final Work work) throws WorkException
             {
             }
 
-            public void doWork(Work work, long l, ExecutionContext executionContext, WorkListener workListener) throws WorkException
+            public void doWork(final Work work,
+                               final long l,
+                               final ExecutionContext executionContext,
+                               final WorkListener workListener) throws WorkException
             {
             }
 
-            public long startWork(Work work) throws WorkException
-            {
-               return 0;
-            }
-
-            public long startWork(Work work, long l, ExecutionContext executionContext, WorkListener workListener) throws WorkException
+            public long startWork(final Work work) throws WorkException
             {
                return 0;
             }
 
-            public void scheduleWork(Work work) throws WorkException
+            public long startWork(final Work work,
+                                  final long l,
+                                  final ExecutionContext executionContext,
+                                  final WorkListener workListener) throws WorkException
+            {
+               return 0;
+            }
+
+            public void scheduleWork(final Work work) throws WorkException
             {
                work.run();
             }
 
-            public void scheduleWork(Work work, long l, ExecutionContext executionContext, WorkListener workListener) throws WorkException
+            public void scheduleWork(final Work work,
+                                     final long l,
+                                     final ExecutionContext executionContext,
+                                     final WorkListener workListener) throws WorkException
             {
             }
          };
@@ -468,15 +506,14 @@ public class ResourceAdapterTest extends ServiceTestBase
       }
 
    };
-   
-   
+
    class FakeMessageEndpointFactory implements MessageEndpointFactory
    {
 
       /* (non-Javadoc)
        * @see javax.resource.spi.endpoint.MessageEndpointFactory#createEndpoint(javax.transaction.xa.XAResource)
        */
-      public MessageEndpoint createEndpoint(XAResource arg0) throws UnavailableException
+      public MessageEndpoint createEndpoint(final XAResource arg0) throws UnavailableException
       {
          return null;
       }
@@ -484,10 +521,10 @@ public class ResourceAdapterTest extends ServiceTestBase
       /* (non-Javadoc)
        * @see javax.resource.spi.endpoint.MessageEndpointFactory#isDeliveryTransacted(java.lang.reflect.Method)
        */
-      public boolean isDeliveryTransacted(Method arg0) throws NoSuchMethodException
+      public boolean isDeliveryTransacted(final Method arg0) throws NoSuchMethodException
       {
          return false;
       }
-      
+
    }
 }

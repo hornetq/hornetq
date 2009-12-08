@@ -11,7 +11,6 @@
  * permissions and limitations under the License.
  */
 
-
 package org.hornetq.tests.integration.cluster.distribution;
 
 import org.hornetq.core.logging.Logger;
@@ -29,6 +28,7 @@ public class NettyOneWayChainClusterTest extends OneWayChainClusterTest
 {
    private static final Logger log = Logger.getLogger(NettyOneWayChainClusterTest.class);
 
+   @Override
    protected boolean isNetty()
    {
       return true;

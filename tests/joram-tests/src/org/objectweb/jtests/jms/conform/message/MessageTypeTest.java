@@ -24,6 +24,7 @@ import javax.jms.ObjectMessage;
 import javax.jms.StreamMessage;
 import javax.jms.TextMessage;
 
+import junit.framework.Assert;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
@@ -68,10 +69,10 @@ public class MessageTypeTest extends PTPTestCase
          sender.send(message);
 
          Message m = receiver.receive(TestConfig.TIMEOUT);
-         assertTrue("The message should be an instance of StreamMessage.\n", m instanceof StreamMessage);
-         StreamMessage msg = (StreamMessage) m;
-         assertEquals("pi", msg.readString());
-         assertEquals(3.14159, msg.readDouble(), 0);
+         Assert.assertTrue("The message should be an instance of StreamMessage.\n", m instanceof StreamMessage);
+         StreamMessage msg = (StreamMessage)m;
+         Assert.assertEquals("pi", msg.readString());
+         Assert.assertEquals(3.14159, msg.readDouble(), 0);
       }
       catch (JMSException e)
       {
@@ -93,7 +94,7 @@ public class MessageTypeTest extends PTPTestCase
          sender.send(message);
 
          Message msg = receiver.receive(TestConfig.TIMEOUT);
-         assertTrue("The message should be an instance of StreamMessage.\n", msg instanceof StreamMessage);
+         Assert.assertTrue("The message should be an instance of StreamMessage.\n", msg instanceof StreamMessage);
       }
       catch (JMSException e)
       {
@@ -114,11 +115,11 @@ public class MessageTypeTest extends PTPTestCase
          sender.send(message);
 
          Message m = receiver.receive(TestConfig.TIMEOUT);
-         assertTrue("The message should be an instance of MapMessage.\n", m instanceof MapMessage);
-         MapMessage msg = (MapMessage) m;
-         assertTrue(msg.getObject("pi") instanceof Double);
-         assertEquals(3.14159, ((Double) msg.getObject("pi")).doubleValue(), 0);
-         assertEquals(3.14159, msg.getDouble("pi"), 0);
+         Assert.assertTrue("The message should be an instance of MapMessage.\n", m instanceof MapMessage);
+         MapMessage msg = (MapMessage)m;
+         Assert.assertTrue(msg.getObject("pi") instanceof Double);
+         Assert.assertEquals(3.14159, ((Double)msg.getObject("pi")).doubleValue(), 0);
+         Assert.assertEquals(3.14159, msg.getDouble("pi"), 0);
       }
       catch (JMSException e)
       {
@@ -138,14 +139,14 @@ public class MessageTypeTest extends PTPTestCase
       {
          MapMessage message = senderSession.createMapMessage();
          message.setBoolean(null, true);
-         fail("Should throw an IllegalArgumentException");
+         Assert.fail("Should throw an IllegalArgumentException");
       }
       catch (IllegalArgumentException e)
       {
       }
       catch (JMSException e)
       {
-         fail("Should throw an IllegalArgumentException, not a" + e);
+         Assert.fail("Should throw an IllegalArgumentException, not a" + e);
       }
    }
 
@@ -161,14 +162,14 @@ public class MessageTypeTest extends PTPTestCase
       {
          MapMessage message = senderSession.createMapMessage();
          message.setBoolean("", true);
-         fail("Should throw an IllegalArgumentException");
+         Assert.fail("Should throw an IllegalArgumentException");
       }
       catch (IllegalArgumentException e)
       {
       }
       catch (JMSException e)
       {
-         fail("Should throw an IllegalArgumentException, not a" + e);
+         Assert.fail("Should throw an IllegalArgumentException, not a" + e);
       }
    }
 
@@ -184,10 +185,10 @@ public class MessageTypeTest extends PTPTestCase
       {
          MapMessage message = senderSession.createMapMessage();
          Enumeration e = message.getMapNames();
-         assertTrue("No map yet defined.\n", !e.hasMoreElements());
+         Assert.assertTrue("No map yet defined.\n", !e.hasMoreElements());
          message.setDouble("pi", 3.14159);
          e = message.getMapNames();
-         assertEquals("pi", (String) (e.nextElement()));
+         Assert.assertEquals("pi", (String)e.nextElement());
       }
       catch (JMSException e)
       {
@@ -211,10 +212,10 @@ public class MessageTypeTest extends PTPTestCase
          sender.send(message);
 
          Message m = receiver.receive(TestConfig.TIMEOUT);
-         assertTrue("The message should be an instance of MapMessage.\n", m instanceof MapMessage);
-         MapMessage msg = (MapMessage) m;
-         assertEquals("pi", msg.getString("name"));
-         assertEquals(3.14159, msg.getDouble("value"), 0);
+         Assert.assertTrue("The message should be an instance of MapMessage.\n", m instanceof MapMessage);
+         MapMessage msg = (MapMessage)m;
+         Assert.assertEquals("pi", msg.getString("name"));
+         Assert.assertEquals(3.14159, msg.getDouble("value"), 0);
       }
       catch (JMSException e)
       {
@@ -236,7 +237,7 @@ public class MessageTypeTest extends PTPTestCase
          sender.send(message);
 
          Message msg = receiver.receive(TestConfig.TIMEOUT);
-         assertTrue("The message should be an instance of MapMessage.\n", msg instanceof MapMessage);
+         Assert.assertTrue("The message should be an instance of MapMessage.\n", msg instanceof MapMessage);
       }
       catch (JMSException e)
       {
@@ -263,9 +264,9 @@ public class MessageTypeTest extends PTPTestCase
          sender.send(message);
 
          Message m = receiver.receive(TestConfig.TIMEOUT);
-         assertTrue("The message should be an instance of ObjectMessage.\n", m instanceof ObjectMessage);
-         ObjectMessage msg = (ObjectMessage) m;
-         assertEquals(vector, msg.getObject());
+         Assert.assertTrue("The message should be an instance of ObjectMessage.\n", m instanceof ObjectMessage);
+         ObjectMessage msg = (ObjectMessage)m;
+         Assert.assertEquals(vector, msg.getObject());
       }
       catch (JMSException e)
       {
@@ -287,7 +288,7 @@ public class MessageTypeTest extends PTPTestCase
          sender.send(message);
 
          Message msg = receiver.receive(TestConfig.TIMEOUT);
-         assertTrue("The message should be an instance of ObjectMessage.\n", msg instanceof ObjectMessage);
+         Assert.assertTrue("The message should be an instance of ObjectMessage.\n", msg instanceof ObjectMessage);
       }
       catch (JMSException e)
       {
@@ -312,12 +313,12 @@ public class MessageTypeTest extends PTPTestCase
          sender.send(message);
 
          Message m = receiver.receive(TestConfig.TIMEOUT);
-         assertTrue("The message should be an instance of BytesMessage.\n", m instanceof BytesMessage);
-         BytesMessage msg = (BytesMessage) m;
+         Assert.assertTrue("The message should be an instance of BytesMessage.\n", m instanceof BytesMessage);
+         BytesMessage msg = (BytesMessage)m;
          byte[] receivedBytes = new byte[bytes.length];
          msg.readBytes(receivedBytes);
-         assertEquals(new String(bytes), new String(receivedBytes));
-         assertEquals(3.14159, msg.readDouble(), 0);
+         Assert.assertEquals(new String(bytes), new String(receivedBytes));
+         Assert.assertEquals(3.14159, msg.readDouble(), 0);
       }
       catch (JMSException e)
       {
@@ -339,7 +340,7 @@ public class MessageTypeTest extends PTPTestCase
          sender.send(message);
 
          Message msg = receiver.receive(TestConfig.TIMEOUT);
-         assertTrue("The message should be an instance of BytesMessage.\n", msg instanceof BytesMessage);
+         Assert.assertTrue("The message should be an instance of BytesMessage.\n", msg instanceof BytesMessage);
       }
       catch (JMSException e)
       {
@@ -362,9 +363,9 @@ public class MessageTypeTest extends PTPTestCase
          sender.send(message);
 
          Message m = receiver.receive(TestConfig.TIMEOUT);
-         assertTrue("The message should be an instance of TextMessage.\n", m instanceof TextMessage);
-         TextMessage msg = (TextMessage) m;
-         assertEquals("testTextMessage_2", msg.getText());
+         Assert.assertTrue("The message should be an instance of TextMessage.\n", m instanceof TextMessage);
+         TextMessage msg = (TextMessage)m;
+         Assert.assertEquals("testTextMessage_2", msg.getText());
       }
       catch (JMSException e)
       {
@@ -386,7 +387,7 @@ public class MessageTypeTest extends PTPTestCase
          sender.send(message);
 
          Message msg = receiver.receive(TestConfig.TIMEOUT);
-         assertTrue("The message should be an instance of TextMessage.\n", msg instanceof TextMessage);
+         Assert.assertTrue("The message should be an instance of TextMessage.\n", msg instanceof TextMessage);
       }
       catch (JMSException e)
       {
@@ -402,7 +403,7 @@ public class MessageTypeTest extends PTPTestCase
       return new TestSuite(MessageTypeTest.class);
    }
 
-   public MessageTypeTest(String name)
+   public MessageTypeTest(final String name)
    {
       super(name);
    }

@@ -18,6 +18,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.impl.JournalFile;
 import org.hornetq.core.journal.impl.Reclaimer;
@@ -354,20 +356,20 @@ public class ReclaimerTest extends UnitTestCase
       assertCanDelete(1);
       assertCantDelete(2);
    }
-   
+
    public void testCleanup() throws Exception
    {
       setup(3);
       setupPosNeg(0, 11, 0, 0, 0);
       setupPosNeg(1, 1, 10, 0, 0);
       setupPosNeg(2, 1, 0, 1, 0);
-      
+
       reclaimer.scan(files);
-      
+
       debugFiles();
-      
+
       assertCantDelete(0);
-      assertTrue(files[0].isNeedCleanup());
+      Assert.assertTrue(files[0].isNeedCleanup());
       assertCantDelete(1);
       assertCantDelete(2);
    }
@@ -725,13 +727,19 @@ public class ReclaimerTest extends UnitTestCase
          }
       }
    }
-   
+
    private void debugFiles()
    {
-      for (int i = 0 ; i < files.length; i++)
+      for (int i = 0; i < files.length; i++)
       {
-         System.out.println("[" + i + "]=" + files[i].getPosCount() + ", canDelete = " + files[i].isCanReclaim() + ", cleanup = " + files[i].isNeedCleanup());
-         for (int j = 0 ; j <= i; j++)
+         System.out.println("[" + i +
+                            "]=" +
+                            files[i].getPosCount() +
+                            ", canDelete = " +
+                            files[i].isCanReclaim() +
+                            ", cleanup = " +
+                            files[i].isNeedCleanup());
+         for (int j = 0; j <= i; j++)
          {
             System.out.println("..." + files[i].getNegCount(files[j]));
          }
@@ -742,7 +750,7 @@ public class ReclaimerTest extends UnitTestCase
    {
       for (int num : fileNumber)
       {
-         assertTrue(files[num].isCanReclaim());
+         Assert.assertTrue(files[num].isCanReclaim());
       }
    }
 
@@ -750,7 +758,7 @@ public class ReclaimerTest extends UnitTestCase
    {
       for (int num : fileNumber)
       {
-         assertFalse(files[num].isCanReclaim());
+         Assert.assertFalse(files[num].isCanReclaim());
       }
    }
 
@@ -767,9 +775,8 @@ public class ReclaimerTest extends UnitTestCase
       private int posCount;
 
       private boolean canDelete;
-      
-      private boolean needCleanup;
 
+      private boolean needCleanup;
 
       public void extendOffset(final int delta)
       {
@@ -927,14 +934,14 @@ public class ReclaimerTest extends UnitTestCase
       /* (non-Javadoc)
        * @see org.hornetq.core.journal.impl.JournalFile#addSize(int)
        */
-      public void addSize(int bytes)
+      public void addSize(final int bytes)
       {
       }
 
       /* (non-Javadoc)
        * @see org.hornetq.core.journal.impl.JournalFile#decSize(int)
        */
-      public void decSize(int bytes)
+      public void decSize(final int bytes)
       {
       }
 
@@ -951,13 +958,13 @@ public class ReclaimerTest extends UnitTestCase
        */
       public boolean isNeedCleanup()
       {
-         return this.needCleanup;
+         return needCleanup;
       }
 
       /* (non-Javadoc)
        * @see org.hornetq.core.journal.impl.JournalFile#resetNegCount(org.hornetq.core.journal.impl.JournalFile)
        */
-      public boolean resetNegCount(JournalFile file)
+      public boolean resetNegCount(final JournalFile file)
       {
          return false;
       }
@@ -965,10 +972,10 @@ public class ReclaimerTest extends UnitTestCase
       /* (non-Javadoc)
        * @see org.hornetq.core.journal.impl.JournalFile#setNeedCleanup(boolean)
        */
-      public void setNeedCleanup(boolean needCleanup)
+      public void setNeedCleanup(final boolean needCleanup)
       {
          this.needCleanup = needCleanup;
-         
+
       }
    }
 }

@@ -13,9 +13,9 @@
 
 package org.hornetq.jms.server.management;
 
-import static javax.management.MBeanOperationInfo.ACTION;
-
 import java.util.Map;
+
+import javax.management.MBeanOperationInfo;
 
 import org.hornetq.core.management.Operation;
 import org.hornetq.core.management.Parameter;
@@ -71,10 +71,10 @@ public interface TopicControl extends DestinationControl
                                            @Parameter(name = "subscriptionName", desc = "the name of the durable subscription") String subscriptionName,
                                            @Parameter(name = "filter", desc = "a JMS filter (can be empty)") String filter) throws Exception;
 
-   @Operation(desc = "Drop a durable subscription", impact = ACTION)
+   @Operation(desc = "Drop a durable subscription", impact = MBeanOperationInfo.ACTION)
    void dropDurableSubscription(@Parameter(name = "clientID", desc = "the client ID") String clientID,
                                 @Parameter(name = "subscriptionName", desc = "the name of the durable subscription") String subscriptionName) throws Exception;
 
-   @Operation(desc = "Drop all subscriptions from this topic", impact = ACTION)
+   @Operation(desc = "Drop all subscriptions from this topic", impact = MBeanOperationInfo.ACTION)
    void dropAllSubscriptions() throws Exception;
 }

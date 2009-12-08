@@ -29,36 +29,51 @@ public class SomeObject implements Serializable
 
    // Attributes -----------------------------------------------------------------------------------
 
-	private static final long serialVersionUID = -2939720794544432834L;
-	
-	int i;
+   private static final long serialVersionUID = -2939720794544432834L;
+
+   int i;
+
    int j;
 
    // Static ---------------------------------------------------------------------------------------
 
    // Constructors ---------------------------------------------------------------------------------
 
-   public SomeObject(int i, int j)
+   public SomeObject(final int i, final int j)
    {
-      this.i=i;
-      this.j=j;
+      this.i = i;
+      this.j = j;
    }
 
    // Public ---------------------------------------------------------------------------------------
 
-   public boolean equals(Object o)
+   @Override
+   public boolean equals(final Object o)
    {
-      if (this == o) return true;
-      if (o == null || getClass() != o.getClass()) return false;
+      if (this == o)
+      {
+         return true;
+      }
+      if (o == null || getClass() != o.getClass())
+      {
+         return false;
+      }
 
-      SomeObject that = (SomeObject) o;
+      SomeObject that = (SomeObject)o;
 
-      if (i != that.i) return false;
-      if (j != that.j) return false;
+      if (i != that.i)
+      {
+         return false;
+      }
+      if (j != that.j)
+      {
+         return false;
+      }
 
       return true;
    }
 
+   @Override
    public int hashCode()
    {
       int result;

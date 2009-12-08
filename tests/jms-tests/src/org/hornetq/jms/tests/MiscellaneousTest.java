@@ -25,6 +25,8 @@ import javax.jms.QueueBrowser;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
+import org.hornetq.jms.tests.util.ProxyAssertSupport;
+
 /**
  * Various use cases, added here while trying things or fixing forum issues.
  *
@@ -43,10 +45,11 @@ public class MiscellaneousTest extends JMSTestCase
 
    // Constructors --------------------------------------------------
 
+   @Override
    protected void tearDown() throws Exception
    {
-      removeAllMessages(queue1.getQueueName(), true);
-      
+      removeAllMessages(HornetQServerTestCase.queue1.getQueueName(), true);
+
       super.tearDown();
    }
 
@@ -55,38 +58,38 @@ public class MiscellaneousTest extends JMSTestCase
    public void testBrowser() throws Exception
    {
       Connection conn = null;
-      
+
       try
-      {	      
-	      conn = cf.createConnection();
-	      Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-	      MessageProducer prod = session.createProducer(queue1);
-	
-	      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-	
-	      TextMessage m = session.createTextMessage("message one");
-	
-	      prod.send(m);
-	      
-	      //Give the message time to reach the queue
-	      Thread.sleep(2000);
-	
-	      QueueBrowser browser = session.createBrowser(queue1);
-	
-	      Enumeration e = browser.getEnumeration();
-	
-	      TextMessage bm = (TextMessage)e.nextElement();
-	
-	      assertEquals("message one", bm.getText());
+      {
+         conn = JMSTestCase.cf.createConnection();
+         Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageProducer prod = session.createProducer(HornetQServerTestCase.queue1);
+
+         prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+
+         TextMessage m = session.createTextMessage("message one");
+
+         prod.send(m);
+
+         // Give the message time to reach the queue
+         Thread.sleep(2000);
+
+         QueueBrowser browser = session.createBrowser(HornetQServerTestCase.queue1);
+
+         Enumeration e = browser.getEnumeration();
+
+         TextMessage bm = (TextMessage)e.nextElement();
+
+         ProxyAssertSupport.assertEquals("message one", bm.getText());
       }
       finally
       {
-      	if (conn != null)
-      	{
-      		conn.close();
-      	}
-      	
-      	removeAllMessages(queue1.getQueueName(), true);
+         if (conn != null)
+         {
+            conn.close();
+         }
+
+         removeAllMessages(HornetQServerTestCase.queue1.getQueueName(), true);
       }
    }
 
@@ -96,30 +99,30 @@ public class MiscellaneousTest extends JMSTestCase
    public void testClosingConsumerFromMessageListenerAutoAck() throws Exception
    {
       Connection c = null;
-      
+
       try
-      {	      
-	      c = cf.createConnection();
-	      Session s = c.createSession(false, Session.AUTO_ACKNOWLEDGE);
-	      MessageProducer prod = s.createProducer(queue1);
-	      Message m = s.createMessage();
-	      prod.send(m);
+      {
+         c = JMSTestCase.cf.createConnection();
+         Session s = c.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageProducer prod = s.createProducer(HornetQServerTestCase.queue1);
+         Message m = s.createMessage();
+         prod.send(m);
       }
       finally
       {
-      	if (c != null)
-      	{
-      		c.close();
-      	}
+         if (c != null)
+         {
+            c.close();
+         }
       }
-	
+
       final Result result = new Result();
-      Connection conn = cf.createConnection();
+      Connection conn = JMSTestCase.cf.createConnection();
       Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      final MessageConsumer cons = s.createConsumer(queue1);
+      final MessageConsumer cons = s.createConsumer(HornetQServerTestCase.queue1);
       cons.setMessageListener(new MessageListener()
       {
-         public void onMessage(Message m)
+         public void onMessage(final Message m)
          {
             // close the connection on the same thread that processed the message
             try
@@ -127,7 +130,7 @@ public class MiscellaneousTest extends JMSTestCase
                cons.close();
                result.setSuccess();
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                result.setFailure(e);
             }
@@ -138,14 +141,14 @@ public class MiscellaneousTest extends JMSTestCase
 
       result.waitForResult();
 
-      assertTrue(result.isSuccess());
-      assertNull(result.getFailure());
+      ProxyAssertSupport.assertTrue(result.isSuccess());
+      ProxyAssertSupport.assertNull(result.getFailure());
 
       // it's auto _ack so message *should not* be acked (auto ack acks after successfully completion of onMessage
 
       Thread.sleep(1000);
       assertRemainingMessages(1);
-      
+
       conn.close();
 
    }
@@ -156,30 +159,30 @@ public class MiscellaneousTest extends JMSTestCase
    public void testClosingSessionFromMessageListenerAutoAck() throws Exception
    {
       Connection c = null;
-      
+
       try
-      {	      
-	      c = cf.createConnection();
-	      Session s = c.createSession(false, Session.AUTO_ACKNOWLEDGE);
-	      MessageProducer prod = s.createProducer(queue1);
-	      Message m = s.createMessage();
-	      prod.send(m);
+      {
+         c = JMSTestCase.cf.createConnection();
+         Session s = c.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageProducer prod = s.createProducer(HornetQServerTestCase.queue1);
+         Message m = s.createMessage();
+         prod.send(m);
       }
       finally
       {
-      	if (c != null)
-      	{
-      		c.close();
-      	}
+         if (c != null)
+         {
+            c.close();
+         }
       }
-	
+
       final Result result = new Result();
-      Connection conn = cf.createConnection();
+      Connection conn = JMSTestCase.cf.createConnection();
       final Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      MessageConsumer cons = session.createConsumer(queue1);
+      MessageConsumer cons = session.createConsumer(HornetQServerTestCase.queue1);
       cons.setMessageListener(new MessageListener()
       {
-         public void onMessage(Message m)
+         public void onMessage(final Message m)
          {
             // close the connection on the same thread that processed the message
             try
@@ -187,7 +190,7 @@ public class MiscellaneousTest extends JMSTestCase
                session.close();
                result.setSuccess();
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                result.setFailure(e);
             }
@@ -198,8 +201,8 @@ public class MiscellaneousTest extends JMSTestCase
 
       result.waitForResult();
 
-      assertTrue(result.isSuccess());
-      assertNull(result.getFailure());
+      ProxyAssertSupport.assertTrue(result.isSuccess());
+      ProxyAssertSupport.assertNull(result.getFailure());
 
       Thread.sleep(1000);
       assertRemainingMessages(1);
@@ -212,30 +215,30 @@ public class MiscellaneousTest extends JMSTestCase
    public void testClosingConnectionFromMessageListenerAutoAck() throws Exception
    {
       Connection c = null;
-      
+
       try
-      {      
-	      c = cf.createConnection();
-	      Session s = c.createSession(false, Session.AUTO_ACKNOWLEDGE);
-	      MessageProducer prod = s.createProducer(queue1);
-	      Message m = s.createMessage();
-	      prod.send(m);
+      {
+         c = JMSTestCase.cf.createConnection();
+         Session s = c.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageProducer prod = s.createProducer(HornetQServerTestCase.queue1);
+         Message m = s.createMessage();
+         prod.send(m);
       }
       finally
       {
-      	if (c != null)
-      	{
-      		c.close();
-      	}
+         if (c != null)
+         {
+            c.close();
+         }
       }
-	
+
       final Result result = new Result();
-      final Connection conn = cf.createConnection();
+      final Connection conn = JMSTestCase.cf.createConnection();
       Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      MessageConsumer cons = s.createConsumer(queue1);
+      MessageConsumer cons = s.createConsumer(HornetQServerTestCase.queue1);
       cons.setMessageListener(new MessageListener()
       {
-         public void onMessage(Message m)
+         public void onMessage(final Message m)
          {
             // close the connection on the same thread that processed the message
             try
@@ -243,7 +246,7 @@ public class MiscellaneousTest extends JMSTestCase
                conn.close();
                result.setSuccess();
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                e.printStackTrace();
                result.setFailure(e);
@@ -255,30 +258,28 @@ public class MiscellaneousTest extends JMSTestCase
 
       result.waitForResult();
 
-      assertTrue(result.isSuccess());
-      assertNull(result.getFailure());
+      ProxyAssertSupport.assertTrue(result.isSuccess());
+      ProxyAssertSupport.assertNull(result.getFailure());
 
       Thread.sleep(1000);
       assertRemainingMessages(1);
-      
+
       conn.close();
-      
+
    }
-   
-   
-   
+
    /**
     * Test case for http://jira.jboss.org/jira/browse/JBMESSAGING-542
     */
    public void testClosingConsumerFromMessageListenerTransacted() throws Exception
    {
       Connection c = null;
-      
+
       try
-      {        
-         c = cf.createConnection();
+      {
+         c = JMSTestCase.cf.createConnection();
          Session s = c.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer prod = s.createProducer(queue1);
+         MessageProducer prod = s.createProducer(HornetQServerTestCase.queue1);
          Message m = s.createMessage();
          prod.send(m);
       }
@@ -289,14 +290,14 @@ public class MiscellaneousTest extends JMSTestCase
             c.close();
          }
       }
-      
+
       final Result result = new Result();
-      Connection conn = cf.createConnection();
+      Connection conn = JMSTestCase.cf.createConnection();
       Session s = conn.createSession(true, Session.SESSION_TRANSACTED);
-      final MessageConsumer cons = s.createConsumer(queue1);
+      final MessageConsumer cons = s.createConsumer(HornetQServerTestCase.queue1);
       cons.setMessageListener(new MessageListener()
       {
-         public void onMessage(Message m)
+         public void onMessage(final Message m)
          {
             // close the connection on the same thread that processed the message
             try
@@ -304,7 +305,7 @@ public class MiscellaneousTest extends JMSTestCase
                cons.close();
                result.setSuccess();
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                result.setFailure(e);
             }
@@ -315,12 +316,12 @@ public class MiscellaneousTest extends JMSTestCase
 
       result.waitForResult();
 
-      assertTrue(result.isSuccess());
-      assertNull(result.getFailure());
+      ProxyAssertSupport.assertTrue(result.isSuccess());
+      ProxyAssertSupport.assertNull(result.getFailure());
 
       Thread.sleep(1000);
       assertRemainingMessages(1);
-      
+
       conn.close();
 
    }
@@ -331,12 +332,12 @@ public class MiscellaneousTest extends JMSTestCase
    public void testClosingSessionFromMessageListenerTransacted() throws Exception
    {
       Connection c = null;
-      
+
       try
-      {        
-         c = cf.createConnection();
+      {
+         c = JMSTestCase.cf.createConnection();
          Session s = c.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer prod = s.createProducer(queue1);
+         MessageProducer prod = s.createProducer(HornetQServerTestCase.queue1);
          Message m = s.createMessage();
          prod.send(m);
       }
@@ -347,14 +348,14 @@ public class MiscellaneousTest extends JMSTestCase
             c.close();
          }
       }
-   
+
       final Result result = new Result();
-      Connection conn = cf.createConnection();
+      Connection conn = JMSTestCase.cf.createConnection();
       final Session session = conn.createSession(true, Session.SESSION_TRANSACTED);
-      MessageConsumer cons = session.createConsumer(queue1);
+      MessageConsumer cons = session.createConsumer(HornetQServerTestCase.queue1);
       cons.setMessageListener(new MessageListener()
       {
-         public void onMessage(Message m)
+         public void onMessage(final Message m)
          {
             // close the connection on the same thread that processed the message
             try
@@ -362,7 +363,7 @@ public class MiscellaneousTest extends JMSTestCase
                session.close();
                result.setSuccess();
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                result.setFailure(e);
             }
@@ -373,8 +374,8 @@ public class MiscellaneousTest extends JMSTestCase
 
       result.waitForResult();
 
-      assertTrue(result.isSuccess());
-      assertNull(result.getFailure());
+      ProxyAssertSupport.assertTrue(result.isSuccess());
+      ProxyAssertSupport.assertNull(result.getFailure());
 
       Thread.sleep(1000);
       assertRemainingMessages(1);
@@ -387,12 +388,12 @@ public class MiscellaneousTest extends JMSTestCase
    public void testClosingConnectionFromMessageListenerTransacted() throws Exception
    {
       Connection c = null;
-      
+
       try
-      {      
-         c = cf.createConnection();
+      {
+         c = JMSTestCase.cf.createConnection();
          Session s = c.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer prod = s.createProducer(queue1);
+         MessageProducer prod = s.createProducer(HornetQServerTestCase.queue1);
          Message m = s.createMessage();
          prod.send(m);
       }
@@ -403,14 +404,14 @@ public class MiscellaneousTest extends JMSTestCase
             c.close();
          }
       }
-   
+
       final Result result = new Result();
-      final Connection conn = cf.createConnection();
+      final Connection conn = JMSTestCase.cf.createConnection();
       Session s = conn.createSession(true, Session.SESSION_TRANSACTED);
-      MessageConsumer cons = s.createConsumer(queue1);
+      MessageConsumer cons = s.createConsumer(HornetQServerTestCase.queue1);
       cons.setMessageListener(new MessageListener()
       {
-         public void onMessage(Message m)
+         public void onMessage(final Message m)
          {
             // close the connection on the same thread that processed the message
             try
@@ -418,7 +419,7 @@ public class MiscellaneousTest extends JMSTestCase
                conn.close();
                result.setSuccess();
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                e.printStackTrace();
                result.setFailure(e);
@@ -430,37 +431,37 @@ public class MiscellaneousTest extends JMSTestCase
 
       result.waitForResult();
 
-      assertTrue(result.isSuccess());
-      assertNull(result.getFailure());
+      ProxyAssertSupport.assertTrue(result.isSuccess());
+      ProxyAssertSupport.assertNull(result.getFailure());
 
       Thread.sleep(1000);
       assertRemainingMessages(1);
-      
+
       conn.close();
-      
+
    }
-   
+
    // Test case for http://jira.jboss.com/jira/browse/JBMESSAGING-788
    public void testGetDeliveriesForSession() throws Exception
    {
       Connection conn = null;
-      
+
       try
       {
-         conn = cf.createConnection();
-         
+         conn = JMSTestCase.cf.createConnection();
+
          Session session1 = conn.createSession(true, Session.SESSION_TRANSACTED);
-         
+
          Session session2 = conn.createSession(true, Session.SESSION_TRANSACTED);
-         
-         MessageProducer prod = session2.createProducer(queue1);
-         
+
+         MessageProducer prod = session2.createProducer(HornetQServerTestCase.queue1);
+
          Message msg = session2.createMessage();
-         
+
          prod.send(msg);
-         
+
          session1.close();
-         
+
          session2.commit();
       }
       finally
@@ -469,8 +470,8 @@ public class MiscellaneousTest extends JMSTestCase
          {
             conn.close();
          }
-         
-         removeAllMessages(queue1.getQueueName(), true);
+
+         removeAllMessages(HornetQServerTestCase.queue1.getQueueName(), true);
       }
    }
 
@@ -485,8 +486,9 @@ public class MiscellaneousTest extends JMSTestCase
    private class Result
    {
       private boolean success;
+
       private Exception e;
-      
+
       private boolean resultSet;
 
       public Result()
@@ -498,10 +500,10 @@ public class MiscellaneousTest extends JMSTestCase
       public synchronized void setSuccess()
       {
          success = true;
-         
-         this.resultSet = true;
-         
-         this.notify();
+
+         resultSet = true;
+
+         notify();
       }
 
       public synchronized boolean isSuccess()
@@ -509,26 +511,26 @@ public class MiscellaneousTest extends JMSTestCase
          return success;
       }
 
-      public synchronized void setFailure(Exception e)
+      public synchronized void setFailure(final Exception e)
       {
          this.e = e;
-         
-         this.resultSet = true;
-         
-         this.notify();
+
+         resultSet = true;
+
+         notify();
       }
 
       public synchronized Exception getFailure()
       {
          return e;
       }
-      
+
       public synchronized void waitForResult() throws Exception
       {
-      	while (!resultSet)
-      	{
-      		this.wait();
-      	}
+         while (!resultSet)
+         {
+            this.wait();
+         }
       }
    }
 

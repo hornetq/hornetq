@@ -14,7 +14,6 @@
 package org.hornetq.core.remoting.impl.wireformat;
 
 import org.hornetq.core.buffers.HornetQBuffer;
-import org.hornetq.utils.DataConstants;
 
 /**
  * A ReplicationLargeMessageWriteMessage
@@ -39,7 +38,7 @@ public class ReplicationLargeMessageWriteMessage extends PacketImpl
    // Constructors --------------------------------------------------
    public ReplicationLargeMessageWriteMessage()
    {
-      super(REPLICATION_LARGE_MESSAGE_WRITE);
+      super(PacketImpl.REPLICATION_LARGE_MESSAGE_WRITE);
    }
 
    /**

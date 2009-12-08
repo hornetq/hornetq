@@ -15,7 +15,6 @@ package org.hornetq.core.server.cluster.impl;
 
 import static org.hornetq.core.management.NotificationType.CONSUMER_CLOSED;
 import static org.hornetq.core.management.NotificationType.CONSUMER_CREATED;
-import static org.hornetq.core.postoffice.impl.PostOfficeImpl.HDR_RESET_QUEUE_DATA;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -38,14 +37,15 @@ import org.hornetq.core.management.NotificationType;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.Bindings;
 import org.hornetq.core.postoffice.PostOffice;
+import org.hornetq.core.postoffice.impl.PostOfficeImpl;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
-import org.hornetq.core.server.group.impl.Response;
-import org.hornetq.core.server.group.impl.Proposal;
 import org.hornetq.core.server.cluster.Bridge;
 import org.hornetq.core.server.cluster.ClusterConnection;
 import org.hornetq.core.server.cluster.MessageFlowRecord;
 import org.hornetq.core.server.cluster.RemoteQueueBinding;
+import org.hornetq.core.server.group.impl.Proposal;
+import org.hornetq.core.server.group.impl.Response;
 import org.hornetq.utils.ExecutorFactory;
 import org.hornetq.utils.Pair;
 import org.hornetq.utils.SimpleString;
@@ -81,12 +81,12 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
    private final long retryInterval;
 
    private final boolean useDuplicateDetection;
-   
+
    private final int confirmationWindowSize;
 
    private final boolean routeWhenNoConsumers;
 
-   private Map<String, MessageFlowRecord> records = new HashMap<String, MessageFlowRecord>();
+   private final Map<String, MessageFlowRecord> records = new HashMap<String, MessageFlowRecord>();
 
    private final DiscoveryGroup discoveryGroup;
 
@@ -130,7 +130,7 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
       this.useDuplicateDetection = useDuplicateDetection;
 
       this.routeWhenNoConsumers = routeWhenNoConsumers;
-      
+
       this.confirmationWindowSize = confirmationWindowSize;
 
       this.executorFactory = executorFactory;
@@ -141,7 +141,7 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
 
       this.managementService = managementService;
 
-      this.discoveryGroup = null;
+      discoveryGroup = null;
 
       this.scheduledExecutor = scheduledExecutor;
 
@@ -156,11 +156,11 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
 
       this.backup = backup;
 
-      this.staticConnectors = connectors;
+      staticConnectors = connectors;
 
       if (!backup)
       {
-         this.updateFromStaticConnectors(connectors);
+         updateFromStaticConnectors(connectors);
       }
    }
 
@@ -204,7 +204,7 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
       this.useDuplicateDetection = useDuplicateDetection;
 
       this.routeWhenNoConsumers = routeWhenNoConsumers;
-      
+
       this.confirmationWindowSize = confirmationWindowSize;
 
       this.maxHops = maxHops;
@@ -213,7 +213,7 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
 
       this.backup = backup;
 
-      this.staticConnectors = null;
+      staticConnectors = null;
    }
 
    public synchronized void start() throws Exception
@@ -326,7 +326,7 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
          }
          catch (Exception e)
          {
-            log.error("Failed to update connectors", e);
+            ClusterConnectionImpl.log.error("Failed to update connectors", e);
          }
       }
    }
@@ -348,7 +348,7 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
       }
       catch (Exception e)
       {
-         log.error("Failed to update connectors", e);
+         ClusterConnectionImpl.log.error("Failed to update connectors", e);
       }
    }
 
@@ -466,7 +466,7 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
    {
       private Bridge bridge;
 
-      private Queue queue;
+      private final Queue queue;
 
       private final Map<SimpleString, RemoteQueueBinding> bindings = new HashMap<SimpleString, RemoteQueueBinding>();
 
@@ -493,7 +493,7 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
 
          clearBindings();
       }
-      
+
       public void reset() throws Exception
       {
          clearBindings();
@@ -514,7 +514,7 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
          try
          {
             // Reset the bindings
-            if (message.containsProperty(HDR_RESET_QUEUE_DATA))
+            if (message.containsProperty(PostOfficeImpl.HDR_RESET_QUEUE_DATA))
             {
                clearBindings();
 
@@ -574,7 +574,7 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
          }
          catch (Exception e)
          {
-            log.error("Failed to handle message", e);
+            ClusterConnectionImpl.log.error("Failed to handle message", e);
          }
       }
 
@@ -679,22 +679,21 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
                                                                  bridge.getName(),
                                                                  distance + 1);
 
-
          if (postOffice.getBinding(clusterName) != null)
          {
             // Sanity check - this means the binding has already been added via another bridge, probably max
             // hops is too high
             // or there are multiple cluster connections for the same address
 
-            log.warn("Remote queue binding " + clusterName +
-                     " has already been bound in the post office. Most likely cause for this is you have a loop " +
-                     "in your cluster due to cluster max-hops being too large or you have multiple cluster connections to the same nodes using overlapping addresses");
+            ClusterConnectionImpl.log.warn("Remote queue binding " + clusterName +
+                                           " has already been bound in the post office. Most likely cause for this is you have a loop " +
+                                           "in your cluster due to cluster max-hops being too large or you have multiple cluster connections to the same nodes using overlapping addresses");
 
             return;
          }
 
          bindings.put(clusterName, binding);
-         
+
          try
          {
             postOffice.addBinding(binding);
@@ -834,9 +833,9 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
 
       if (postOffice.getBinding(uniqueName) != null)
       {
-         log.warn("Remoting queue binding " + uniqueName +
-                  " has already been bound in the post office. Most likely cause for this is you have a loop " +
-                  "in your cluster due to cluster max-hops being too large or you have multiple cluster connections to the same nodes using overlapping addresses");
+         ClusterConnectionImpl.log.warn("Remoting queue binding " + uniqueName +
+                                        " has already been bound in the post office. Most likely cause for this is you have a loop " +
+                                        "in your cluster due to cluster max-hops being too large or you have multiple cluster connections to the same nodes using overlapping addresses");
 
          return;
       }

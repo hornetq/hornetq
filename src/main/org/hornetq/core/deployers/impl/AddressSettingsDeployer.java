@@ -66,13 +66,14 @@ public class AddressSettingsDeployer extends XmlDeployer
     * the names of the elements to deploy
     * @return the names of the elements todeploy
     */
+   @Override
    public String[] getElementTagName()
    {
       return new String[] { "address-setting" };
    }
 
    @Override
-   public void validate(Node rootNode) throws Exception
+   public void validate(final Node rootNode) throws Exception
    {
       org.hornetq.utils.XMLUtil.validate(rootNode, "schema/hornetq-configuration.xsd");
    }
@@ -82,7 +83,8 @@ public class AddressSettingsDeployer extends XmlDeployer
     * @param node the element to deploy
     * @throws Exception .
     */
-   public void deploy(Node node) throws Exception
+   @Override
+   public void deploy(final Node node) throws Exception
    {
       String match = node.getAttributes().getNamedItem(getKeyAttribute()).getNodeValue();
 
@@ -94,36 +96,37 @@ public class AddressSettingsDeployer extends XmlDeployer
       {
          Node child = children.item(i);
 
-         if (DEAD_LETTER_ADDRESS_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
+         if (AddressSettingsDeployer.DEAD_LETTER_ADDRESS_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
          {
             SimpleString queueName = new SimpleString(child.getTextContent());
             addressSettings.setDeadLetterAddress(queueName);
          }
-         else if (EXPIRY_ADDRESS_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
+         else if (AddressSettingsDeployer.EXPIRY_ADDRESS_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
          {
             SimpleString queueName = new SimpleString(child.getTextContent());
             addressSettings.setExpiryAddress(queueName);
          }
-         else if (REDELIVERY_DELAY_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
+         else if (AddressSettingsDeployer.REDELIVERY_DELAY_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
          {
             addressSettings.setRedeliveryDelay(Long.valueOf(child.getTextContent()));
          }
-         else if (MAX_SIZE_BYTES_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
+         else if (AddressSettingsDeployer.MAX_SIZE_BYTES_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
          {
             addressSettings.setMaxSizeBytes(Integer.valueOf(child.getTextContent()));
          }
-         else if (PAGE_SIZE_BYTES_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
+         else if (AddressSettingsDeployer.PAGE_SIZE_BYTES_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
          {
             addressSettings.setPageSizeBytes(Integer.valueOf(child.getTextContent()));
          }
-         else if (MESSAGE_COUNTER_HISTORY_DAY_LIMIT_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
+         else if (AddressSettingsDeployer.MESSAGE_COUNTER_HISTORY_DAY_LIMIT_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
          {
             addressSettings.setMessageCounterHistoryDayLimit(Integer.valueOf(child.getTextContent()));
          }
-         else if (ADDRESS_FULL_MESSAGE_POLICY_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
+         else if (AddressSettingsDeployer.ADDRESS_FULL_MESSAGE_POLICY_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
          {
             String value = child.getTextContent().trim();
-            Validators.ADDRESS_FULL_MESSAGE_POLICY_TYPE.validate(ADDRESS_FULL_MESSAGE_POLICY_NODE_NAME, value);
+            Validators.ADDRESS_FULL_MESSAGE_POLICY_TYPE.validate(AddressSettingsDeployer.ADDRESS_FULL_MESSAGE_POLICY_NODE_NAME,
+                                                                 value);
             AddressFullMessagePolicy policy = null;
             if (value.equals(AddressFullMessagePolicy.BLOCK.toString()))
             {
@@ -139,19 +142,19 @@ public class AddressSettingsDeployer extends XmlDeployer
             }
             addressSettings.setAddressFullMessagePolicy(policy);
          }
-         else if (LVQ_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
+         else if (AddressSettingsDeployer.LVQ_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
          {
             addressSettings.setLastValueQueue(Boolean.valueOf(child.getTextContent().trim()));
          }
-         else if (MAX_DELIVERY_ATTEMPTS.equalsIgnoreCase(child.getNodeName()))
+         else if (AddressSettingsDeployer.MAX_DELIVERY_ATTEMPTS.equalsIgnoreCase(child.getNodeName()))
          {
             addressSettings.setMaxDeliveryAttempts(Integer.valueOf(child.getTextContent().trim()));
          }
-         else if (REDISTRIBUTION_DELAY_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
+         else if (AddressSettingsDeployer.REDISTRIBUTION_DELAY_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
          {
             addressSettings.setRedistributionDelay(Long.valueOf(child.getTextContent().trim()));
          }
-         else if (SEND_TO_DLA_ON_NO_ROUTE.equalsIgnoreCase(child.getNodeName()))
+         else if (AddressSettingsDeployer.SEND_TO_DLA_ON_NO_ROUTE.equalsIgnoreCase(child.getNodeName()))
          {
             addressSettings.setSendToDLAOnNoRoute(Boolean.valueOf(child.getTextContent().trim()));
          }
@@ -160,6 +163,7 @@ public class AddressSettingsDeployer extends XmlDeployer
       addressSettingsRepository.addMatch(match, addressSettings);
    }
 
+   @Override
    public String[] getDefaultConfigFileNames()
    {
       return new String[] { "hornetq-configuration.xml", "hornetq-queues.xml" };
@@ -170,7 +174,8 @@ public class AddressSettingsDeployer extends XmlDeployer
     * @param node the element to undeploy
     * @throws Exception .
     */
-   public void undeploy(Node node) throws Exception
+   @Override
+   public void undeploy(final Node node) throws Exception
    {
       String match = node.getAttributes().getNamedItem(getKeyAttribute()).getNodeValue();
 
@@ -181,6 +186,7 @@ public class AddressSettingsDeployer extends XmlDeployer
     * the key attribute for theelement, usually 'name' but can be overridden
     * @return the key attribute
     */
+   @Override
    public String getKeyAttribute()
    {
       return "match";

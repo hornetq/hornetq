@@ -13,7 +13,6 @@
 
 package org.hornetq.core.management;
 
-
 /**
  * A BroadcastGroupControlMBean
  *
@@ -31,7 +30,7 @@ public interface BroadcastGroupControl extends HornetQComponentControl
    int getGroupPort();
 
    long getBroadcastPeriod();
-   
+
    Object[] getConnectorPairs();
 
    String getConnectorPairsAsJSON() throws Exception;

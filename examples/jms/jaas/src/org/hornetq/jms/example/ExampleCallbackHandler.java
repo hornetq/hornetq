@@ -11,7 +11,6 @@
  * permissions and limitations under the License.
  */
 
-
 package org.hornetq.jms.example;
 
 import java.io.IOException;
@@ -28,9 +27,9 @@ import javax.security.auth.callback.UnsupportedCallbackException;
 public class ExampleCallbackHandler implements CallbackHandler
 {
 
-   public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException
+   public void handle(final Callback[] callbacks) throws IOException, UnsupportedCallbackException
    {
-      // do nothing, authentication is done 
+      // do nothing, authentication is done
       // by passing credentials directly to the ExampleLoginModule
    }
 }

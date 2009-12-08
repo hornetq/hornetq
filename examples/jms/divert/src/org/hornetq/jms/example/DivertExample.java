@@ -35,11 +35,12 @@ import org.hornetq.common.example.HornetQExample;
  */
 public class DivertExample extends HornetQExample
 {
-   public static void main(String[] args)
+   public static void main(final String[] args)
    {
       new DivertExample().run(args);
    }
 
+   @Override
    public boolean runExample() throws Exception
    {
       Connection connectionLondon = null;
@@ -57,7 +58,8 @@ public class DivertExample extends HornetQExample
          // Step 2. Look-up the queue orderQueue on the London server - this is the queue any orders are sent to
          Queue orderQueue = (Queue)initialContextLondon.lookup("/queue/orders");
 
-         // Step 3. Look-up the topic priceUpdates on the London server- this is the topic that any price updates are sent to
+         // Step 3. Look-up the topic priceUpdates on the London server- this is the topic that any price updates are
+         // sent to
          Topic priceUpdates = (Topic)initialContextLondon.lookup("/topic/priceUpdates");
 
          // Step 4. Look-up the spy topic on the London server- this is what we will use to snoop on any orders
@@ -66,9 +68,12 @@ public class DivertExample extends HornetQExample
          // Step 6. Create an initial context to perform the JNDI lookup on the New York server
          initialContextNewYork = getContext(1);
 
-         // Step 7. Look-up the topic newYorkPriceUpdates on the New York server - any price updates sent to priceUpdates on the London server will
-         // be diverted to the queue priceForward on the London server, and a bridge will consume from that queue and forward
-         // them to the address newYorkPriceUpdates on the New York server where they will be distributed to the topic subscribers on
+         // Step 7. Look-up the topic newYorkPriceUpdates on the New York server - any price updates sent to
+         // priceUpdates on the London server will
+         // be diverted to the queue priceForward on the London server, and a bridge will consume from that queue and
+         // forward
+         // them to the address newYorkPriceUpdates on the New York server where they will be distributed to the topic
+         // subscribers on
          // the New York server
          Topic newYorkPriceUpdates = (Topic)initialContextNewYork.lookup("/topic/newYorkPriceUpdates");
 
@@ -93,7 +98,8 @@ public class DivertExample extends HornetQExample
          // Step 14. Create a JMS MessageProducer orderProducer that sends to the queue orderQueue on the London server
          MessageProducer orderProducer = sessionLondon.createProducer(orderQueue);
 
-         // Step 15. Create a JMS MessageProducer priceProducer that sends to the topic priceUpdates on the London server
+         // Step 15. Create a JMS MessageProducer priceProducer that sends to the topic priceUpdates on the London
+         // server
          MessageProducer priceProducer = sessionLondon.createProducer(priceUpdates);
 
          // Step 15. Create a JMS subscriber which subscribes to the spyTopic on the London server
@@ -111,7 +117,8 @@ public class DivertExample extends HornetQExample
          // Step 19. Create a JMS subscriber which subscribes to the newYorkPriceUpdates topic on the New York server
          MessageConsumer newYorkPriceUpdatesSubscriberA = sessionNewYork.createConsumer(newYorkPriceUpdates);
 
-         // Step 20. Create another JMS subscriber which also subscribes to the newYorkPriceUpdates topic on the New York server
+         // Step 20. Create another JMS subscriber which also subscribes to the newYorkPriceUpdates topic on the New
+         // York server
          MessageConsumer newYorkPriceUpdatesSubscriberB = sessionNewYork.createConsumer(newYorkPriceUpdates);
 
          // Step 21. Start the connections
@@ -144,43 +151,43 @@ public class DivertExample extends HornetQExample
 
          // Step 26. Create and send a price update message, destined for London
          TextMessage priceUpdateMessageLondon = sessionLondon.createTextMessage("This is a price update for London");
-                 
+
          priceUpdateMessageLondon.setStringProperty("office", "London");
-         
+
          priceProducer.send(priceUpdateMessageLondon);
-         
+
          // Step 27. The price update *should* be received by the local subscriber since we only divert messages
          // where office = New York
          TextMessage receivedUpdate = (TextMessage)priceUpdatesSubscriberLondon.receive(2000);
 
          System.out.println("Received price update locally: " + receivedUpdate.getText());
-         
+
          // Step 28. The price update *should not* be received in New York
-         
+
          TextMessage priceUpdate1 = (TextMessage)newYorkPriceUpdatesSubscriberA.receive(1000);
 
          if (priceUpdate1 != null)
          {
             return false;
          }
-         
+
          System.out.println("Did not received price update in New York, look it's: " + priceUpdate1);
-         
+
          TextMessage priceUpdate2 = (TextMessage)newYorkPriceUpdatesSubscriberB.receive(1000);
 
          if (priceUpdate2 != null)
          {
             return false;
          }
-         
+
          System.out.println("Did not received price update in New York, look it's: " + priceUpdate2);
 
          // Step 29. Create a price update message, destined for New York
-         
+
          TextMessage priceUpdateMessageNewYork = sessionLondon.createTextMessage("This is a price update for New York");
-         
+
          priceUpdateMessageNewYork.setStringProperty("office", "New York");
-      
+
          // Step 30. Send the price update message to the priceUpdates topic on the London server
          priceProducer.send(priceUpdateMessageNewYork);
 

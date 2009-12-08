@@ -14,6 +14,8 @@ package org.hornetq.tests.integration.http;
 
 import java.util.HashMap;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
@@ -45,26 +47,30 @@ public class CoreClientOverHttpTest extends UnitTestCase
 
       HashMap<String, Object> params = new HashMap<String, Object>();
       params.put(TransportConstants.HTTP_ENABLED_PROP_NAME, true);
-      conf.getAcceptorConfigurations().add(new TransportConfiguration(NETTY_ACCEPTOR_FACTORY, params));
+      conf.getAcceptorConfigurations().add(new TransportConfiguration(UnitTestCase.NETTY_ACCEPTOR_FACTORY, params));
 
       HornetQServer server = HornetQ.newHornetQServer(conf, false);
-      
+
       server.start();
 
-      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(NETTY_CONNECTOR_FACTORY, params));
+      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(UnitTestCase.NETTY_CONNECTOR_FACTORY,
+                                                                                        params));
 
       ClientSession session = sf.createSession(false, true, true);
 
       session.createQueue(QUEUE, QUEUE, null, false);
-      
+
       ClientProducer producer = session.createProducer(QUEUE);
 
       final int numMessages = 100;
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = session.createClientMessage(HornetQTextMessage.TYPE, false, 0,
-               System.currentTimeMillis(), (byte) 1);
+         ClientMessage message = session.createClientMessage(HornetQTextMessage.TYPE,
+                                                             false,
+                                                             0,
+                                                             System.currentTimeMillis(),
+                                                             (byte)1);
          message.getBodyBuffer().writeString("CoreClientOverHttpTest");
          producer.send(message);
       }
@@ -77,7 +83,7 @@ public class CoreClientOverHttpTest extends UnitTestCase
       {
          ClientMessage message2 = consumer.receive();
 
-         assertEquals("CoreClientOverHttpTest", message2.getBodyBuffer().readString());
+         Assert.assertEquals("CoreClientOverHttpTest", message2.getBodyBuffer().readString());
 
          message2.acknowledge();
       }
@@ -97,15 +103,16 @@ public class CoreClientOverHttpTest extends UnitTestCase
 
       HashMap<String, Object> params = new HashMap<String, Object>();
       params.put(TransportConstants.HTTP_ENABLED_PROP_NAME, true);
-      conf.getAcceptorConfigurations().add(new TransportConfiguration(NETTY_ACCEPTOR_FACTORY, params));
+      conf.getAcceptorConfigurations().add(new TransportConfiguration(UnitTestCase.NETTY_ACCEPTOR_FACTORY, params));
 
       HornetQServer server = HornetQ.newHornetQServer(conf, false);
-      
+
       server.start();
 
-      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(NETTY_CONNECTOR_FACTORY, params));
+      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(UnitTestCase.NETTY_CONNECTOR_FACTORY,
+                                                                                        params));
       sf.setConnectionTTL(500);
-      
+
       ClientSession session = sf.createSession(false, true, true);
 
       session.createQueue(QUEUE, QUEUE, null, false);
@@ -117,5 +124,5 @@ public class CoreClientOverHttpTest extends UnitTestCase
       session.close();
 
       server.stop();
-   }   
+   }
 }

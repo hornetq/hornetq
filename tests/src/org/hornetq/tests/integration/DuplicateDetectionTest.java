@@ -16,6 +16,8 @@ package org.hornetq.tests.integration;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
@@ -71,26 +73,26 @@ public class DuplicateDetectionTest extends ServiceTestBase
       ClientMessage message = createMessage(session, 0);
       producer.send(message);
       ClientMessage message2 = consumer.receive(1000);
-      assertEquals(0, message2.getObjectProperty(propKey));
+      Assert.assertEquals(0, message2.getObjectProperty(propKey));
 
       message = createMessage(session, 1);
       SimpleString dupID = new SimpleString("abcdefg");
       message.putBytesProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID.getData());
       producer.send(message);
       message2 = consumer.receive(1000);
-      assertEquals(1, message2.getObjectProperty(propKey));
+      Assert.assertEquals(1, message2.getObjectProperty(propKey));
 
       message = createMessage(session, 2);
       message.putBytesProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID.getData());
       producer.send(message);
       message2 = consumer.receiveImmediate();
-      assertNull(message2);
+      Assert.assertNull(message2);
 
       message = createMessage(session, 3);
       message.putBytesProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID.getData());
       producer.send(message);
       message2 = consumer.receiveImmediate();
-      assertNull(message2);
+      Assert.assertNull(message2);
 
       // Now try with a different id
 
@@ -99,25 +101,25 @@ public class DuplicateDetectionTest extends ServiceTestBase
       message.putBytesProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID2.getData());
       producer.send(message);
       message2 = consumer.receive(1000);
-      assertEquals(4, message2.getObjectProperty(propKey));
+      Assert.assertEquals(4, message2.getObjectProperty(propKey));
 
       message = createMessage(session, 5);
       message.putBytesProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID2.getData());
       producer.send(message);
       message2 = consumer.receiveImmediate();
-      assertNull(message2);
+      Assert.assertNull(message2);
 
       message = createMessage(session, 6);
       message.putBytesProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID.getData());
       producer.send(message);
       message2 = consumer.receiveImmediate();
-      assertNull(message2);
+      Assert.assertNull(message2);
 
       session.close();
 
       sf.close();
    }
-   
+
    public void testSimpleDuplicateDetectionWithString() throws Exception
    {
       ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
@@ -137,26 +139,26 @@ public class DuplicateDetectionTest extends ServiceTestBase
       ClientMessage message = createMessage(session, 0);
       producer.send(message);
       ClientMessage message2 = consumer.receive(1000);
-      assertEquals(0, message2.getObjectProperty(propKey));
+      Assert.assertEquals(0, message2.getObjectProperty(propKey));
 
       message = createMessage(session, 1);
       SimpleString dupID = new SimpleString("abcdefg");
       message.putStringProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID);
       producer.send(message);
       message2 = consumer.receive(1000);
-      assertEquals(1, message2.getObjectProperty(propKey));
+      Assert.assertEquals(1, message2.getObjectProperty(propKey));
 
       message = createMessage(session, 2);
       message.putStringProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID);
       producer.send(message);
       message2 = consumer.receiveImmediate();
-      assertNull(message2);
+      Assert.assertNull(message2);
 
       message = createMessage(session, 3);
       message.putStringProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID);
       producer.send(message);
       message2 = consumer.receiveImmediate();
-      assertNull(message2);
+      Assert.assertNull(message2);
 
       // Now try with a different id
 
@@ -165,19 +167,19 @@ public class DuplicateDetectionTest extends ServiceTestBase
       message.putStringProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID2);
       producer.send(message);
       message2 = consumer.receive(1000);
-      assertEquals(4, message2.getObjectProperty(propKey));
+      Assert.assertEquals(4, message2.getObjectProperty(propKey));
 
       message = createMessage(session, 5);
       message.putStringProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID2);
       producer.send(message);
       message2 = consumer.receiveImmediate();
-      assertNull(message2);
+      Assert.assertNull(message2);
 
       message = createMessage(session, 6);
       message.putStringProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID);
       producer.send(message);
       message2 = consumer.receiveImmediate();
-      assertNull(message2);
+      Assert.assertNull(message2);
 
       session.close();
 
@@ -229,17 +231,17 @@ public class DuplicateDetectionTest extends ServiceTestBase
       for (int i = 0; i < cacheSize; i++)
       {
          ClientMessage message = consumer1.receive(1000);
-         assertNotNull(message);
-         assertEquals(i, message.getObjectProperty(propKey));
+         Assert.assertNotNull(message);
+         Assert.assertEquals(i, message.getObjectProperty(propKey));
          message = consumer2.receive(1000);
-         assertNotNull(message);
-         assertEquals(i, message.getObjectProperty(propKey));
+         Assert.assertNotNull(message);
+         Assert.assertEquals(i, message.getObjectProperty(propKey));
          message = consumer3.receive(1000);
-         assertNotNull(message);
-         assertEquals(i, message.getObjectProperty(propKey));
+         Assert.assertNotNull(message);
+         Assert.assertEquals(i, message.getObjectProperty(propKey));
       }
 
-      log.info("Now sending more");
+      DuplicateDetectionTest.log.info("Now sending more");
       for (int i = 0; i < cacheSize; i++)
       {
          SimpleString dupID = new SimpleString("dupID" + i);
@@ -254,11 +256,11 @@ public class DuplicateDetectionTest extends ServiceTestBase
       }
 
       ClientMessage message = consumer1.receiveImmediate();
-      assertNull(message);
+      Assert.assertNull(message);
       message = consumer2.receiveImmediate();
-      assertNull(message);
+      Assert.assertNull(message);
       message = consumer3.receiveImmediate();
-      assertNull(message);
+      Assert.assertNull(message);
 
       for (int i = 0; i < cacheSize; i++)
       {
@@ -276,14 +278,14 @@ public class DuplicateDetectionTest extends ServiceTestBase
       for (int i = 0; i < cacheSize; i++)
       {
          message = consumer1.receive(1000);
-         assertNotNull(message);
-         assertEquals(i, message.getObjectProperty(propKey));
+         Assert.assertNotNull(message);
+         Assert.assertEquals(i, message.getObjectProperty(propKey));
          message = consumer2.receive(1000);
-         assertNotNull(message);
-         assertEquals(i, message.getObjectProperty(propKey));
+         Assert.assertNotNull(message);
+         Assert.assertEquals(i, message.getObjectProperty(propKey));
          message = consumer3.receive(1000);
-         assertNotNull(message);
-         assertEquals(i, message.getObjectProperty(propKey));
+         Assert.assertNotNull(message);
+         Assert.assertEquals(i, message.getObjectProperty(propKey));
       }
 
       for (int i = 0; i < cacheSize; i++)
@@ -300,11 +302,11 @@ public class DuplicateDetectionTest extends ServiceTestBase
       }
 
       message = consumer1.receiveImmediate();
-      assertNull(message);
+      Assert.assertNull(message);
       message = consumer2.receiveImmediate();
-      assertNull(message);
+      Assert.assertNull(message);
       message = consumer3.receiveImmediate();
-      assertNull(message);
+      Assert.assertNull(message);
 
       // Should be able to send the first lot again now - since the second lot pushed the
       // first lot out of the cache
@@ -324,14 +326,14 @@ public class DuplicateDetectionTest extends ServiceTestBase
       for (int i = 0; i < cacheSize; i++)
       {
          message = consumer1.receive(1000);
-         assertNotNull(message);
-         assertEquals(i, message.getObjectProperty(propKey));
+         Assert.assertNotNull(message);
+         Assert.assertEquals(i, message.getObjectProperty(propKey));
          message = consumer2.receive(1000);
-         assertNotNull(message);
-         assertEquals(i, message.getObjectProperty(propKey));
+         Assert.assertNotNull(message);
+         Assert.assertEquals(i, message.getObjectProperty(propKey));
          message = consumer3.receive(1000);
-         assertNotNull(message);
-         assertEquals(i, message.getObjectProperty(propKey));
+         Assert.assertNotNull(message);
+         Assert.assertEquals(i, message.getObjectProperty(propKey));
       }
 
       session.close();
@@ -377,10 +379,10 @@ public class DuplicateDetectionTest extends ServiceTestBase
       session.commit();
 
       message = consumer.receive(250);
-      assertEquals(1, message.getObjectProperty(propKey));
+      Assert.assertEquals(1, message.getObjectProperty(propKey));
 
       message = consumer.receiveImmediate();
-      assertNull(message);
+      Assert.assertNull(message);
 
       session.close();
 
@@ -419,10 +421,10 @@ public class DuplicateDetectionTest extends ServiceTestBase
       session.commit();
 
       message = consumer.receive(250);
-      assertEquals(1, message.getObjectProperty(propKey));
+      Assert.assertEquals(1, message.getObjectProperty(propKey));
 
       message = consumer.receiveImmediate();
-      assertNull(message);
+      Assert.assertNull(message);
 
       session.close();
 
@@ -470,19 +472,19 @@ public class DuplicateDetectionTest extends ServiceTestBase
       session.commit();
 
       message = consumer.receive(250);
-      assertEquals(0, message.getObjectProperty(propKey));
+      Assert.assertEquals(0, message.getObjectProperty(propKey));
 
       message = consumer.receive(250);
-      assertEquals(1, message.getObjectProperty(propKey));
+      Assert.assertEquals(1, message.getObjectProperty(propKey));
 
       message = consumer.receiveImmediate();
-      assertNull(message);
+      Assert.assertNull(message);
 
       session.close();
 
       sf.close();
    }
-   
+
    /*
     * Entire transaction should be rejected on duplicate detection
     * Even if not all entries have dupl id header
@@ -505,7 +507,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
       SimpleString dupID = new SimpleString("abcdefg");
       message.putBytesProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID.getData());
       producer.send(message);
-            
+
       session.commit();
 
       session.close();
@@ -519,43 +521,43 @@ public class DuplicateDetectionTest extends ServiceTestBase
       message = createMessage(session, 1);
       message.putBytesProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID.getData());
       producer.send(message);
-      
+
       message = createMessage(session, 2);
       producer.send(message);
-      
+
       message = createMessage(session, 3);
       producer.send(message);
-      
+
       message = createMessage(session, 4);
       producer.send(message);
-      
+
       session.commit();
-      
+
       ClientConsumer consumer = session.createConsumer(queueName);
 
       message = consumer.receive(250);
-      assertEquals(0, message.getObjectProperty(propKey));
+      Assert.assertEquals(0, message.getObjectProperty(propKey));
 
       message = consumer.receiveImmediate();
-      assertNull(message);
+      Assert.assertNull(message);
 
       session.close();
 
       sf.close();
    }
-   
+
    public void testXADuplicateDetection1() throws Exception
    {
       ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
 
       ClientSession session = sf.createSession(true, false, false);
-      
+
       Xid xid = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
 
       session.start(xid, XAResource.TMNOFLAGS);
-      
+
       session.start();
-      
+
       final SimpleString queueName = new SimpleString("DuplicateDetectionTestQueue");
 
       session.createQueue(queueName, queueName, null, false);
@@ -566,15 +568,15 @@ public class DuplicateDetectionTest extends ServiceTestBase
       SimpleString dupID = new SimpleString("abcdefg");
       message.putBytesProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID.getData());
       producer.send(message);
-      
+
       session.end(xid, XAResource.TMSUCCESS);
 
       session.close();
-      
+
       Xid xid2 = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
 
       session = sf.createSession(true, false, false);
-      
+
       session.start(xid2, XAResource.TMNOFLAGS);
 
       session.start();
@@ -588,49 +590,49 @@ public class DuplicateDetectionTest extends ServiceTestBase
       message = createMessage(session, 1);
       message.putBytesProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID.getData());
       producer.send(message);
-      
+
       session.end(xid2, XAResource.TMSUCCESS);
-      
+
       session.prepare(xid2);
 
       session.commit(xid2, false);
-      
+
       Xid xid3 = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
 
       session.start(xid3, XAResource.TMNOFLAGS);
 
       message = consumer.receive(250);
-      assertEquals(1, message.getObjectProperty(propKey));
+      Assert.assertEquals(1, message.getObjectProperty(propKey));
 
       message = consumer.receiveImmediate();
-      assertNull(message);
-      
-      log.info("ending session");
+      Assert.assertNull(message);
+
+      DuplicateDetectionTest.log.info("ending session");
       session.end(xid3, XAResource.TMSUCCESS);
-      
-      log.info("preparing session");
+
+      DuplicateDetectionTest.log.info("preparing session");
       session.prepare(xid3);
 
-      log.info("committing session");
+      DuplicateDetectionTest.log.info("committing session");
       session.commit(xid3, false);
 
       session.close();
 
       sf.close();
    }
-   
+
    public void testXADuplicateDetection2() throws Exception
    {
       ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
 
       ClientSession session = sf.createSession(true, false, false);
-      
+
       Xid xid = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
 
       session.start(xid, XAResource.TMNOFLAGS);
-      
+
       session.start();
-      
+
       final SimpleString queueName = new SimpleString("DuplicateDetectionTestQueue");
 
       session.createQueue(queueName, queueName, null, false);
@@ -641,17 +643,17 @@ public class DuplicateDetectionTest extends ServiceTestBase
       SimpleString dupID = new SimpleString("abcdefg");
       message.putBytesProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID.getData());
       producer.send(message);
-      
+
       session.end(xid, XAResource.TMSUCCESS);
-      
+
       session.rollback(xid);
 
       session.close();
-      
+
       Xid xid2 = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
 
       session = sf.createSession(true, false, false);
-      
+
       session.start(xid2, XAResource.TMNOFLAGS);
 
       session.start();
@@ -665,49 +667,49 @@ public class DuplicateDetectionTest extends ServiceTestBase
       message = createMessage(session, 1);
       message.putBytesProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID.getData());
       producer.send(message);
-      
+
       session.end(xid2, XAResource.TMSUCCESS);
-      
+
       session.prepare(xid2);
 
       session.commit(xid2, false);
-      
+
       Xid xid3 = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
 
       session.start(xid3, XAResource.TMNOFLAGS);
 
       message = consumer.receive(250);
-      assertEquals(1, message.getObjectProperty(propKey));
+      Assert.assertEquals(1, message.getObjectProperty(propKey));
 
       message = consumer.receiveImmediate();
-      assertNull(message);
-      
-      log.info("ending session");
+      Assert.assertNull(message);
+
+      DuplicateDetectionTest.log.info("ending session");
       session.end(xid3, XAResource.TMSUCCESS);
-      
-      log.info("preparing session");
+
+      DuplicateDetectionTest.log.info("preparing session");
       session.prepare(xid3);
 
-      log.info("committing session");
+      DuplicateDetectionTest.log.info("committing session");
       session.commit(xid3, false);
 
       session.close();
 
       sf.close();
    }
-   
+
    public void testXADuplicateDetection3() throws Exception
    {
       ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
 
       ClientSession session = sf.createSession(true, false, false);
-      
+
       Xid xid = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
 
       session.start(xid, XAResource.TMNOFLAGS);
-      
+
       session.start();
-      
+
       final SimpleString queueName = new SimpleString("DuplicateDetectionTestQueue");
 
       session.createQueue(queueName, queueName, null, false);
@@ -718,17 +720,17 @@ public class DuplicateDetectionTest extends ServiceTestBase
       SimpleString dupID = new SimpleString("abcdefg");
       message.putBytesProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID.getData());
       producer.send(message);
-      
+
       session.end(xid, XAResource.TMSUCCESS);
-      
+
       session.prepare(xid);
 
       session.close();
-      
+
       Xid xid2 = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
 
       session = sf.createSession(true, false, false);
-      
+
       session.start(xid2, XAResource.TMNOFLAGS);
 
       session.start();
@@ -737,18 +739,18 @@ public class DuplicateDetectionTest extends ServiceTestBase
 
       ClientConsumer consumer = session.createConsumer(queueName);
 
-      // Should NOT be able to resend it 
+      // Should NOT be able to resend it
 
       message = createMessage(session, 1);
       message.putBytesProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID.getData());
       producer.send(message);
-      
+
       session.end(xid2, XAResource.TMSUCCESS);
-      
+
       session.prepare(xid2);
 
       session.commit(xid2, false);
-      
+
       Xid xid3 = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
 
       session.start(xid3, XAResource.TMNOFLAGS);
@@ -756,34 +758,34 @@ public class DuplicateDetectionTest extends ServiceTestBase
       message = consumer.receive(250);
 
       message = consumer.receiveImmediate();
-      assertNull(message);
-      
-      log.info("ending session");
+      Assert.assertNull(message);
+
+      DuplicateDetectionTest.log.info("ending session");
       session.end(xid3, XAResource.TMSUCCESS);
-      
-      log.info("preparing session");
+
+      DuplicateDetectionTest.log.info("preparing session");
       session.prepare(xid3);
 
-      log.info("committing session");
+      DuplicateDetectionTest.log.info("committing session");
       session.commit(xid3, false);
 
       session.close();
 
       sf.close();
    }
-   
+
    public void testXADuplicateDetection4() throws Exception
    {
       ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
 
       ClientSession session = sf.createSession(true, false, false);
-      
+
       Xid xid = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
 
       session.start(xid, XAResource.TMNOFLAGS);
-      
+
       session.start();
-      
+
       final SimpleString queueName = new SimpleString("DuplicateDetectionTestQueue");
 
       session.createQueue(queueName, queueName, null, false);
@@ -794,19 +796,19 @@ public class DuplicateDetectionTest extends ServiceTestBase
       SimpleString dupID = new SimpleString("abcdefg");
       message.putBytesProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID.getData());
       producer.send(message);
-      
+
       session.end(xid, XAResource.TMSUCCESS);
-      
+
       session.prepare(xid);
-      
+
       session.commit(xid, false);
 
       session.close();
-      
+
       Xid xid2 = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
 
       session = sf.createSession(true, false, false);
-      
+
       session.start(xid2, XAResource.TMNOFLAGS);
 
       session.start();
@@ -815,18 +817,18 @@ public class DuplicateDetectionTest extends ServiceTestBase
 
       ClientConsumer consumer = session.createConsumer(queueName);
 
-      // Should NOT be able to resend it 
+      // Should NOT be able to resend it
 
       message = createMessage(session, 1);
       message.putBytesProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID.getData());
       producer.send(message);
-      
+
       session.end(xid2, XAResource.TMSUCCESS);
-      
+
       session.prepare(xid2);
 
       session.commit(xid2, false);
-      
+
       Xid xid3 = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
 
       session.start(xid3, XAResource.TMNOFLAGS);
@@ -834,15 +836,15 @@ public class DuplicateDetectionTest extends ServiceTestBase
       message = consumer.receive(250);
 
       message = consumer.receiveImmediate();
-      assertNull(message);
-      
-      log.info("ending session");
+      Assert.assertNull(message);
+
+      DuplicateDetectionTest.log.info("ending session");
       session.end(xid3, XAResource.TMSUCCESS);
-      
-      log.info("preparing session");
+
+      DuplicateDetectionTest.log.info("preparing session");
       session.prepare(xid3);
 
-      log.info("committing session");
+      DuplicateDetectionTest.log.info("committing session");
       session.commit(xid3, false);
 
       session.close();
@@ -862,11 +864,11 @@ public class DuplicateDetectionTest extends ServiceTestBase
    public void testDuplicateCachePersisted() throws Exception
    {
       messagingService.stop();
-      
+
       Configuration conf = createDefaultConfig();
 
       conf.setIDCacheSize(cacheSize);
-      
+
       HornetQServer messagingService2 = HornetQ.newHornetQServer(conf);
 
       messagingService2.start();
@@ -890,21 +892,21 @@ public class DuplicateDetectionTest extends ServiceTestBase
       message.putBytesProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID.getData());
       producer.send(message);
       ClientMessage message2 = consumer.receive(1000);
-      assertEquals(1, message2.getObjectProperty(propKey));
-      
+      Assert.assertEquals(1, message2.getObjectProperty(propKey));
+
       message = createMessage(session, 2);
       SimpleString dupID2 = new SimpleString("hijklmnopqr");
       message.putBytesProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID2.getData());
       producer.send(message);
       message2 = consumer.receive(1000);
-      assertEquals(2, message2.getObjectProperty(propKey));
-      
+      Assert.assertEquals(2, message2.getObjectProperty(propKey));
+
       session.close();
 
       sf.close();
-      
+
       messagingService2.stop();
-      
+
       messagingService2 = HornetQ.newHornetQServer(conf);
 
       messagingService2.start();
@@ -925,31 +927,31 @@ public class DuplicateDetectionTest extends ServiceTestBase
       message.putBytesProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID.getData());
       producer.send(message);
       message2 = consumer.receiveImmediate();
-      assertNull(message2);
-      
+      Assert.assertNull(message2);
+
       message = createMessage(session, 2);
       message.putBytesProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID2.getData());
       producer.send(message);
       message2 = consumer.receiveImmediate();
-      assertNull(message2);
+      Assert.assertNull(message2);
 
       session.close();
 
       sf.close();
-      
+
       messagingService2.stop();
    }
-   
+
    public void testDuplicateCachePersisted2() throws Exception
    {
       messagingService.stop();
-      
+
       Configuration conf = createDefaultConfig();
 
       final int theCacheSize = 5;
-      
+
       conf.setIDCacheSize(theCacheSize);
-      
+
       HornetQServer messagingService2 = HornetQ.newHornetQServer(conf);
 
       messagingService2.start();
@@ -967,7 +969,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
       ClientProducer producer = session.createProducer(queueName);
 
       ClientConsumer consumer = session.createConsumer(queueName);
-      
+
       for (int i = 0; i < theCacheSize; i++)
       {
          ClientMessage message = createMessage(session, i);
@@ -975,15 +977,15 @@ public class DuplicateDetectionTest extends ServiceTestBase
          message.putBytesProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID.getData());
          producer.send(message);
          ClientMessage message2 = consumer.receive(1000);
-         assertEquals(i, message2.getObjectProperty(propKey));
+         Assert.assertEquals(i, message2.getObjectProperty(propKey));
       }
-      
+
       session.close();
 
       sf.close();
-      
+
       messagingService2.stop();
-      
+
       messagingService2 = HornetQ.newHornetQServer(conf);
 
       messagingService2.start();
@@ -1007,27 +1009,27 @@ public class DuplicateDetectionTest extends ServiceTestBase
          message.putBytesProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID.getData());
          producer.send(message);
          ClientMessage message2 = consumer.receiveImmediate();
-         assertNull(message2);
+         Assert.assertNull(message2);
       }
 
       session.close();
 
       sf.close();
-      
+
       messagingService2.stop();
    }
-   
+
    public void testDuplicateCachePersistedRestartWithSmallerCache() throws Exception
    {
       messagingService.stop();
-      
+
       Configuration conf = createDefaultConfig();
 
       final int initialCacheSize = 10;
       final int subsequentCacheSize = 5;
-      
+
       conf.setIDCacheSize(initialCacheSize);
-      
+
       HornetQServer messagingService2 = HornetQ.newHornetQServer(conf);
 
       messagingService2.start();
@@ -1045,7 +1047,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
       ClientProducer producer = session.createProducer(queueName);
 
       ClientConsumer consumer = session.createConsumer(queueName);
-      
+
       for (int i = 0; i < initialCacheSize; i++)
       {
          ClientMessage message = createMessage(session, i);
@@ -1053,17 +1055,17 @@ public class DuplicateDetectionTest extends ServiceTestBase
          message.putBytesProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID.getData());
          producer.send(message);
          ClientMessage message2 = consumer.receive(1000);
-         assertEquals(i, message2.getObjectProperty(propKey));
+         Assert.assertEquals(i, message2.getObjectProperty(propKey));
       }
-      
+
       session.close();
 
       sf.close();
-      
+
       messagingService2.stop();
-      
+
       conf.setIDCacheSize(subsequentCacheSize);
-      
+
       messagingService2 = HornetQ.newHornetQServer(conf);
 
       messagingService2.start();
@@ -1088,35 +1090,35 @@ public class DuplicateDetectionTest extends ServiceTestBase
          producer.send(message);
          if (i >= subsequentCacheSize)
          {
-            //Message should get through
+            // Message should get through
             ClientMessage message2 = consumer.receive(1000);
-            assertEquals(i, message2.getObjectProperty(propKey));
+            Assert.assertEquals(i, message2.getObjectProperty(propKey));
          }
          else
          {
             ClientMessage message2 = consumer.receiveImmediate();
-            assertNull(message2);
+            Assert.assertNull(message2);
          }
       }
 
       session.close();
 
       sf.close();
-      
-      messagingService2.stop();           
+
+      messagingService2.stop();
    }
-   
+
    public void testDuplicateCachePersistedRestartWithSmallerCacheEnsureDeleted() throws Exception
    {
       messagingService.stop();
-      
+
       Configuration conf = createDefaultConfig();
 
       final int initialCacheSize = 10;
       final int subsequentCacheSize = 5;
-      
+
       conf.setIDCacheSize(initialCacheSize);
-      
+
       HornetQServer messagingService2 = HornetQ.newHornetQServer(conf);
 
       messagingService2.start();
@@ -1134,7 +1136,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
       ClientProducer producer = session.createProducer(queueName);
 
       ClientConsumer consumer = session.createConsumer(queueName);
-      
+
       for (int i = 0; i < initialCacheSize; i++)
       {
          ClientMessage message = createMessage(session, i);
@@ -1142,31 +1144,30 @@ public class DuplicateDetectionTest extends ServiceTestBase
          message.putBytesProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID.getData());
          producer.send(message);
          ClientMessage message2 = consumer.receive(1000);
-         assertEquals(i, message2.getObjectProperty(propKey));
+         Assert.assertEquals(i, message2.getObjectProperty(propKey));
       }
-      
+
       session.close();
 
       sf.close();
-      
+
       messagingService2.stop();
-      
+
       conf.setIDCacheSize(subsequentCacheSize);
-      
+
       messagingService2 = HornetQ.newHornetQServer(conf);
 
       messagingService2.start();
-      
-      //Now stop and set back to original cache size and restart
-      
+
+      // Now stop and set back to original cache size and restart
+
       messagingService2.stop();
-      
+
       conf.setIDCacheSize(initialCacheSize);
-      
+
       messagingService2 = HornetQ.newHornetQServer(conf);
 
       messagingService2.start();
-      
 
       sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
 
@@ -1188,34 +1189,34 @@ public class DuplicateDetectionTest extends ServiceTestBase
          producer.send(message);
          if (i >= subsequentCacheSize)
          {
-            //Message should get through
+            // Message should get through
             ClientMessage message2 = consumer.receive(1000);
-            assertEquals(i, message2.getObjectProperty(propKey));
+            Assert.assertEquals(i, message2.getObjectProperty(propKey));
          }
          else
          {
             ClientMessage message2 = consumer.receiveImmediate();
-            assertNull(message2);
+            Assert.assertNull(message2);
          }
       }
 
       session.close();
 
       sf.close();
-      
-      messagingService2.stop();           
+
+      messagingService2.stop();
    }
-   
+
    public void testNoPersist() throws Exception
    {
       messagingService.stop();
-      
+
       Configuration conf = createDefaultConfig();
 
       conf.setIDCacheSize(cacheSize);
-      
+
       conf.setPersistIDCache(false);
-      
+
       HornetQServer messagingService2 = HornetQ.newHornetQServer(conf);
 
       messagingService2.start();
@@ -1239,21 +1240,21 @@ public class DuplicateDetectionTest extends ServiceTestBase
       message.putBytesProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID.getData());
       producer.send(message);
       ClientMessage message2 = consumer.receive(1000);
-      assertEquals(1, message2.getObjectProperty(propKey));
-      
+      Assert.assertEquals(1, message2.getObjectProperty(propKey));
+
       message = createMessage(session, 2);
       SimpleString dupID2 = new SimpleString("hijklmnopqr");
       message.putBytesProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID2.getData());
       producer.send(message);
       message2 = consumer.receive(1000);
-      assertEquals(2, message2.getObjectProperty(propKey));
-      
+      Assert.assertEquals(2, message2.getObjectProperty(propKey));
+
       session.close();
 
       sf.close();
-      
+
       messagingService2.stop();
-      
+
       messagingService2 = HornetQ.newHornetQServer(conf);
 
       messagingService2.start();
@@ -1274,31 +1275,31 @@ public class DuplicateDetectionTest extends ServiceTestBase
       message.putBytesProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID.getData());
       producer.send(message);
       message2 = consumer.receive(200);
-      assertEquals(1, message2.getObjectProperty(propKey));
-      
+      Assert.assertEquals(1, message2.getObjectProperty(propKey));
+
       message = createMessage(session, 2);
       message.putBytesProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID2.getData());
       producer.send(message);
       message2 = consumer.receive(200);
-      assertEquals(2, message2.getObjectProperty(propKey));
+      Assert.assertEquals(2, message2.getObjectProperty(propKey));
 
       session.close();
 
       sf.close();
-      
+
       messagingService2.stop();
    }
-   
+
    public void testNoPersistTransactional() throws Exception
    {
       messagingService.stop();
-      
+
       Configuration conf = createDefaultConfig();
 
       conf.setIDCacheSize(cacheSize);
-      
+
       conf.setPersistIDCache(false);
-      
+
       HornetQServer messagingService2 = HornetQ.newHornetQServer(conf);
 
       messagingService2.start();
@@ -1323,22 +1324,22 @@ public class DuplicateDetectionTest extends ServiceTestBase
       producer.send(message);
       session.commit();
       ClientMessage message2 = consumer.receive(1000);
-      assertEquals(1, message2.getObjectProperty(propKey));
-      
+      Assert.assertEquals(1, message2.getObjectProperty(propKey));
+
       message = createMessage(session, 2);
       SimpleString dupID2 = new SimpleString("hijklmnopqr");
       message.putBytesProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID2.getData());
       producer.send(message);
       session.commit();
       message2 = consumer.receive(1000);
-      assertEquals(2, message2.getObjectProperty(propKey));
-      
+      Assert.assertEquals(2, message2.getObjectProperty(propKey));
+
       session.close();
 
       sf.close();
-      
+
       messagingService2.stop();
-      
+
       messagingService2 = HornetQ.newHornetQServer(conf);
 
       messagingService2.start();
@@ -1360,30 +1361,30 @@ public class DuplicateDetectionTest extends ServiceTestBase
       producer.send(message);
       session.commit();
       message2 = consumer.receive(200);
-      assertEquals(1, message2.getObjectProperty(propKey));
-      
+      Assert.assertEquals(1, message2.getObjectProperty(propKey));
+
       message = createMessage(session, 2);
       message.putBytesProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID2.getData());
       producer.send(message);
       session.commit();
       message2 = consumer.receive(200);
-      assertEquals(2, message2.getObjectProperty(propKey));
+      Assert.assertEquals(2, message2.getObjectProperty(propKey));
 
       session.close();
 
       sf.close();
-      
+
       messagingService2.stop();
    }
-   
+
    public void testPersistTransactional() throws Exception
    {
       messagingService.stop();
-      
+
       Configuration conf = createDefaultConfig();
 
       conf.setIDCacheSize(cacheSize);
-      
+
       HornetQServer messagingService2 = HornetQ.newHornetQServer(conf);
 
       messagingService2.start();
@@ -1410,8 +1411,8 @@ public class DuplicateDetectionTest extends ServiceTestBase
       ClientMessage message2 = consumer.receive(1000);
       message2.acknowledge();
       session.commit();
-      assertEquals(1, message2.getObjectProperty(propKey));
-      
+      Assert.assertEquals(1, message2.getObjectProperty(propKey));
+
       message = createMessage(session, 2);
       SimpleString dupID2 = new SimpleString("hijklmnopqr");
       message.putBytesProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID2.getData());
@@ -1420,14 +1421,14 @@ public class DuplicateDetectionTest extends ServiceTestBase
       message2 = consumer.receive(1000);
       message2.acknowledge();
       session.commit();
-      assertEquals(2, message2.getObjectProperty(propKey));
-      
+      Assert.assertEquals(2, message2.getObjectProperty(propKey));
+
       session.close();
 
       sf.close();
-      
+
       messagingService2.stop();
-      
+
       messagingService2 = HornetQ.newHornetQServer(conf);
 
       messagingService2.start();
@@ -1449,32 +1450,32 @@ public class DuplicateDetectionTest extends ServiceTestBase
       producer.send(message);
       session.commit();
       message2 = consumer.receiveImmediate();
-      assertNull(message2);
-      
+      Assert.assertNull(message2);
+
       message = createMessage(session, 2);
       message.putBytesProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID2.getData());
       producer.send(message);
       session.commit();
       message2 = consumer.receiveImmediate();
-      assertNull(message2);
+      Assert.assertNull(message2);
 
       session.close();
 
       sf.close();
-      
+
       messagingService2.stop();
    }
-   
+
    public void testNoPersistXA1() throws Exception
    {
       messagingService.stop();
-      
+
       Configuration conf = createDefaultConfig();
 
       conf.setIDCacheSize(cacheSize);
-      
+
       conf.setPersistIDCache(false);
-      
+
       HornetQServer messagingService2 = HornetQ.newHornetQServer(conf);
 
       messagingService2.start();
@@ -1482,11 +1483,11 @@ public class DuplicateDetectionTest extends ServiceTestBase
       ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
 
       ClientSession session = sf.createSession(true, false, false);
-      
+
       Xid xid = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
 
       session.start(xid, XAResource.TMNOFLAGS);
- 
+
       session.start();
 
       final SimpleString queueName = new SimpleString("DuplicateDetectionTestQueue");
@@ -1501,22 +1502,22 @@ public class DuplicateDetectionTest extends ServiceTestBase
       SimpleString dupID = new SimpleString("abcdefg");
       message.putBytesProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID.getData());
       producer.send(message);
-                
+
       message = createMessage(session, 2);
       SimpleString dupID2 = new SimpleString("hijklmnopqr");
       message.putBytesProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID2.getData());
       producer.send(message);
-      
+
       session.end(xid, XAResource.TMSUCCESS);
       session.prepare(xid);
       session.commit(xid, false);
-             
+
       session.close();
 
       sf.close();
-      
+
       messagingService2.stop();
-      
+
       messagingService2 = HornetQ.newHornetQServer(conf);
 
       messagingService2.start();
@@ -1524,11 +1525,11 @@ public class DuplicateDetectionTest extends ServiceTestBase
       sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
 
       session = sf.createSession(true, false, false);
-      
+
       Xid xid2 = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
 
       session.start(xid2, XAResource.TMNOFLAGS);
- 
+
       session.start();
 
       session.createQueue(queueName, queueName, null, false);
@@ -1540,40 +1541,40 @@ public class DuplicateDetectionTest extends ServiceTestBase
       message = createMessage(session, 1);
       message.putBytesProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID.getData());
       producer.send(message);
-            
+
       message = createMessage(session, 2);
       message.putBytesProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID2.getData());
       producer.send(message);
-      
+
       session.end(xid2, XAResource.TMSUCCESS);
       session.prepare(xid2);
       session.commit(xid2, false);
-      
+
       Xid xid3 = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
 
       session.start(xid3, XAResource.TMNOFLAGS);
-      
+
       ClientMessage message2 = consumer.receive(200);
-      assertEquals(1, message2.getObjectProperty(propKey));
-      
+      Assert.assertEquals(1, message2.getObjectProperty(propKey));
+
       message2 = consumer.receive(200);
-      assertEquals(2, message2.getObjectProperty(propKey));
+      Assert.assertEquals(2, message2.getObjectProperty(propKey));
 
       session.close();
 
       sf.close();
-      
+
       messagingService2.stop();
    }
-   
+
    public void testNoPersistXA2() throws Exception
    {
       messagingService.stop();
-      
+
       Configuration conf = createDefaultConfig();
 
       conf.setIDCacheSize(cacheSize);
-      
+
       HornetQServer messagingService2 = HornetQ.newHornetQServer(conf);
 
       messagingService2.start();
@@ -1581,11 +1582,11 @@ public class DuplicateDetectionTest extends ServiceTestBase
       ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
 
       ClientSession session = sf.createSession(true, false, false);
-      
+
       Xid xid = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
 
       session.start(xid, XAResource.TMNOFLAGS);
- 
+
       session.start();
 
       final SimpleString queueName = new SimpleString("DuplicateDetectionTestQueue");
@@ -1600,20 +1601,20 @@ public class DuplicateDetectionTest extends ServiceTestBase
       SimpleString dupID = new SimpleString("abcdefg");
       message.putBytesProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID.getData());
       producer.send(message);
-                
+
       message = createMessage(session, 2);
       SimpleString dupID2 = new SimpleString("hijklmnopqr");
       message.putBytesProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID2.getData());
       producer.send(message);
-      
+
       session.end(xid, XAResource.TMSUCCESS);
-                  
+
       session.close();
 
       sf.close();
-      
+
       messagingService2.stop();
-      
+
       messagingService2 = HornetQ.newHornetQServer(conf);
 
       messagingService2.start();
@@ -1621,11 +1622,11 @@ public class DuplicateDetectionTest extends ServiceTestBase
       sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
 
       session = sf.createSession(true, false, false);
-      
+
       Xid xid2 = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
 
       session.start(xid2, XAResource.TMNOFLAGS);
- 
+
       session.start();
 
       session.createQueue(queueName, queueName, null, false);
@@ -1637,40 +1638,40 @@ public class DuplicateDetectionTest extends ServiceTestBase
       message = createMessage(session, 1);
       message.putBytesProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID.getData());
       producer.send(message);
-            
+
       message = createMessage(session, 2);
       message.putBytesProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID2.getData());
       producer.send(message);
-      
+
       session.end(xid2, XAResource.TMSUCCESS);
       session.prepare(xid2);
       session.commit(xid2, false);
-      
+
       Xid xid3 = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
 
       session.start(xid3, XAResource.TMNOFLAGS);
-      
+
       ClientMessage message2 = consumer.receive(200);
-      assertEquals(1, message2.getObjectProperty(propKey));
-      
+      Assert.assertEquals(1, message2.getObjectProperty(propKey));
+
       message2 = consumer.receive(200);
-      assertEquals(2, message2.getObjectProperty(propKey));
+      Assert.assertEquals(2, message2.getObjectProperty(propKey));
 
       session.close();
 
       sf.close();
-      
+
       messagingService2.stop();
    }
-   
+
    public void testPersistXA1() throws Exception
    {
       messagingService.stop();
-      
+
       Configuration conf = createDefaultConfig();
 
       conf.setIDCacheSize(cacheSize);
-      
+
       HornetQServer messagingService2 = HornetQ.newHornetQServer(conf);
 
       messagingService2.start();
@@ -1678,11 +1679,11 @@ public class DuplicateDetectionTest extends ServiceTestBase
       ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
 
       ClientSession session = sf.createSession(true, false, false);
-      
+
       Xid xid = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
 
       session.start(xid, XAResource.TMNOFLAGS);
- 
+
       session.start();
 
       final SimpleString queueName = new SimpleString("DuplicateDetectionTestQueue");
@@ -1697,22 +1698,22 @@ public class DuplicateDetectionTest extends ServiceTestBase
       SimpleString dupID = new SimpleString("abcdefg");
       message.putBytesProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID.getData());
       producer.send(message);
-                
+
       message = createMessage(session, 2);
       SimpleString dupID2 = new SimpleString("hijklmnopqr");
       message.putBytesProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID2.getData());
       producer.send(message);
-      
+
       session.end(xid, XAResource.TMSUCCESS);
       session.prepare(xid);
       session.commit(xid, false);
-             
+
       session.close();
 
       sf.close();
-      
+
       messagingService2.stop();
-      
+
       messagingService2 = HornetQ.newHornetQServer(conf);
 
       messagingService2.start();
@@ -1720,11 +1721,11 @@ public class DuplicateDetectionTest extends ServiceTestBase
       sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
 
       session = sf.createSession(true, false, false);
-      
+
       Xid xid2 = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
 
       session.start(xid2, XAResource.TMNOFLAGS);
- 
+
       session.start();
 
       session.createQueue(queueName, queueName, null, false);
@@ -1736,40 +1737,40 @@ public class DuplicateDetectionTest extends ServiceTestBase
       message = createMessage(session, 1);
       message.putBytesProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID.getData());
       producer.send(message);
-            
+
       message = createMessage(session, 2);
       message.putBytesProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID2.getData());
       producer.send(message);
-      
+
       session.end(xid2, XAResource.TMSUCCESS);
       session.prepare(xid2);
       session.commit(xid2, false);
-      
+
       Xid xid3 = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
 
       session.start(xid3, XAResource.TMNOFLAGS);
-      
+
       ClientMessage message2 = consumer.receiveImmediate();
-      assertNull(message2);
-      
+      Assert.assertNull(message2);
+
       message2 = consumer.receiveImmediate();
-      assertNull(message2);
+      Assert.assertNull(message2);
 
       session.close();
 
       sf.close();
-      
+
       messagingService2.stop();
    }
-   
+
    public void testPersistXA2() throws Exception
    {
       messagingService.stop();
-      
+
       Configuration conf = createDefaultConfig();
 
       conf.setIDCacheSize(cacheSize);
-      
+
       HornetQServer messagingService2 = HornetQ.newHornetQServer(conf);
 
       messagingService2.start();
@@ -1777,11 +1778,11 @@ public class DuplicateDetectionTest extends ServiceTestBase
       ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
 
       ClientSession session = sf.createSession(true, false, false);
-      
+
       Xid xid = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
 
       session.start(xid, XAResource.TMNOFLAGS);
- 
+
       session.start();
 
       final SimpleString queueName = new SimpleString("DuplicateDetectionTestQueue");
@@ -1796,21 +1797,21 @@ public class DuplicateDetectionTest extends ServiceTestBase
       SimpleString dupID = new SimpleString("abcdefg");
       message.putBytesProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID.getData());
       producer.send(message);
-                
+
       message = createMessage(session, 2);
       SimpleString dupID2 = new SimpleString("hijklmnopqr");
       message.putBytesProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID2.getData());
       producer.send(message);
-      
+
       session.end(xid, XAResource.TMSUCCESS);
       session.prepare(xid);
-             
+
       session.close();
 
       sf.close();
-      
+
       messagingService2.stop();
-      
+
       messagingService2 = HornetQ.newHornetQServer(conf);
 
       messagingService2.start();
@@ -1818,11 +1819,11 @@ public class DuplicateDetectionTest extends ServiceTestBase
       sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
 
       session = sf.createSession(true, false, false);
-      
+
       Xid xid2 = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
 
       session.start(xid2, XAResource.TMNOFLAGS);
- 
+
       session.start();
 
       session.createQueue(queueName, queueName, null, false);
@@ -1834,29 +1835,29 @@ public class DuplicateDetectionTest extends ServiceTestBase
       message = createMessage(session, 1);
       message.putBytesProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID.getData());
       producer.send(message);
-            
+
       message = createMessage(session, 2);
       message.putBytesProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID2.getData());
       producer.send(message);
-      
+
       session.end(xid2, XAResource.TMSUCCESS);
       session.prepare(xid2);
       session.commit(xid2, false);
-      
+
       Xid xid3 = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
 
       session.start(xid3, XAResource.TMNOFLAGS);
-      
+
       ClientMessage message2 = consumer.receiveImmediate();
-      assertNull(message2);
-      
+      Assert.assertNull(message2);
+
       message2 = consumer.receiveImmediate();
-      assertNull(message2);
+      Assert.assertNull(message2);
 
       session.close();
 
       sf.close();
-      
+
       messagingService2.stop();
    }
 
@@ -1864,9 +1865,9 @@ public class DuplicateDetectionTest extends ServiceTestBase
    protected void setUp() throws Exception
    {
       super.setUp();
-      
+
       clearData();
-      
+
       Configuration conf = createDefaultConfig();
 
       conf.setIDCacheSize(cacheSize);
@@ -1883,9 +1884,9 @@ public class DuplicateDetectionTest extends ServiceTestBase
       {
          messagingService.stop();
       }
-      
+
       messagingService = null;
-            
+
       super.tearDown();
    }
 }

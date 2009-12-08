@@ -29,7 +29,7 @@ public class ReplicationResponseMessage extends PacketImpl
 
    public ReplicationResponseMessage()
    {
-      super(REPLICATION_RESPONSE);
+      super(PacketImpl.REPLICATION_RESPONSE);
    }
 
    // Public --------------------------------------------------------

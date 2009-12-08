@@ -54,7 +54,7 @@ public class DiscoveryGroupControlUsingCoreTest extends DiscoveryGroupControlTes
       {
          private final CoreMessagingProxy proxy = new CoreMessagingProxy(session,
                                                                          ResourceNames.CORE_DISCOVERY_GROUP + name);
-         
+
          public String getGroupAddress()
          {
             return (String)proxy.retrieveAttributeValue("groupAddress");

@@ -65,7 +65,7 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
    private int confirmationWindowSize = ClientSessionFactoryImpl.DEFAULT_CONFIRMATION_WINDOW_SIZE;
 
    private int producerWindowSize = ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE;
-   
+
    private int producerMaxRate = ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE;
 
    private boolean blockOnAcknowledge = ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE;
@@ -91,7 +91,7 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
    private int scheduledThreadPoolMaxSize = ClientSessionFactoryImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE;
 
    private int threadPoolMaxSize = ClientSessionFactoryImpl.DEFAULT_THREAD_POOL_MAX_SIZE;
-   
+
    private long retryInterval = ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL;
 
    private double retryIntervalMultiplier = ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER;
@@ -108,33 +108,44 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
 
    // Constructors --------------------------------------------------
 
-   public ConnectionFactoryConfigurationImpl(String name, String discoveryAddress, int discoveryPort, String... bindings)
+   public ConnectionFactoryConfigurationImpl(final String name,
+                                             final String discoveryAddress,
+                                             final int discoveryPort,
+                                             final String... bindings)
    {
       this(name, bindings);
       this.discoveryAddress = discoveryAddress;
       this.discoveryPort = discoveryPort;
    }
 
-   public ConnectionFactoryConfigurationImpl(String name, TransportConfiguration liveConfig, String... bindings)
+   public ConnectionFactoryConfigurationImpl(final String name,
+                                             final TransportConfiguration liveConfig,
+                                             final String... bindings)
    {
       this(name, liveConfig, null, bindings);
    }
 
-   public ConnectionFactoryConfigurationImpl(String name, TransportConfiguration liveConfig, TransportConfiguration backupConfig, String... bindings)
+   public ConnectionFactoryConfigurationImpl(final String name,
+                                             final TransportConfiguration liveConfig,
+                                             final TransportConfiguration backupConfig,
+                                             final String... bindings)
    {
       this(name, bindings);
-      connectorConfigs = new ArrayList<Pair<TransportConfiguration,TransportConfiguration>>();
+      connectorConfigs = new ArrayList<Pair<TransportConfiguration, TransportConfiguration>>();
       connectorConfigs.add(new Pair<TransportConfiguration, TransportConfiguration>(liveConfig, backupConfig));
    }
 
-   public ConnectionFactoryConfigurationImpl(String name, List<Pair<TransportConfiguration,TransportConfiguration>> transportConfigs, TransportConfiguration backupConfig, String... bindings)
+   public ConnectionFactoryConfigurationImpl(final String name,
+                                             final List<Pair<TransportConfiguration, TransportConfiguration>> transportConfigs,
+                                             final TransportConfiguration backupConfig,
+                                             final String... bindings)
    {
       this(name, bindings);
-      connectorConfigs = new ArrayList<Pair<TransportConfiguration,TransportConfiguration>>();
+      connectorConfigs = new ArrayList<Pair<TransportConfiguration, TransportConfiguration>>();
       connectorConfigs.addAll(transportConfigs);
    }
 
-   private ConnectionFactoryConfigurationImpl(String name, String... bindings)
+   private ConnectionFactoryConfigurationImpl(final String name, final String... bindings)
    {
       this.name = name;
       this.bindings = new String[bindings.length];
@@ -158,7 +169,7 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
       return discoveryAddress;
    }
 
-   public void setDiscoveryAddress(String discoveryAddress)
+   public void setDiscoveryAddress(final String discoveryAddress)
    {
       this.discoveryAddress = discoveryAddress;
    }
@@ -168,7 +179,7 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
       return discoveryPort;
    }
 
-   public void setDiscoveryPort(int discoveryPort)
+   public void setDiscoveryPort(final int discoveryPort)
    {
       this.discoveryPort = discoveryPort;
    }
@@ -178,7 +189,7 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
       return connectorConfigs;
    }
 
-   public void setConnectorConfigs(List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs)
+   public void setConnectorConfigs(final List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs)
    {
       this.connectorConfigs = connectorConfigs;
    }
@@ -188,7 +199,7 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
       return clientID;
    }
 
-   public void setClientID(String clientID)
+   public void setClientID(final String clientID)
    {
       this.clientID = clientID;
    }
@@ -198,7 +209,7 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
       return discoveryRefreshTimeout;
    }
 
-   public void setDiscoveryRefreshTimeout(long discoveryRefreshTimeout)
+   public void setDiscoveryRefreshTimeout(final long discoveryRefreshTimeout)
    {
       this.discoveryRefreshTimeout = discoveryRefreshTimeout;
    }
@@ -208,7 +219,7 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
       return clientFailureCheckPeriod;
    }
 
-   public void setClientFailureCheckPeriod(long clientFailureCheckPeriod)
+   public void setClientFailureCheckPeriod(final long clientFailureCheckPeriod)
    {
       this.clientFailureCheckPeriod = clientFailureCheckPeriod;
    }
@@ -218,7 +229,7 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
       return connectionTTL;
    }
 
-   public void setConnectionTTL(long connectionTTL)
+   public void setConnectionTTL(final long connectionTTL)
    {
       this.connectionTTL = connectionTTL;
    }
@@ -228,7 +239,7 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
       return callTimeout;
    }
 
-   public void setCallTimeout(long callTimeout)
+   public void setCallTimeout(final long callTimeout)
    {
       this.callTimeout = callTimeout;
    }
@@ -238,7 +249,7 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
       return cacheLargeMessagesClient;
    }
 
-   public void setCacheLargeMessagesClient(boolean cacheLargeMessagesClient)
+   public void setCacheLargeMessagesClient(final boolean cacheLargeMessagesClient)
    {
       this.cacheLargeMessagesClient = cacheLargeMessagesClient;
    }
@@ -248,7 +259,7 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
       return minLargeMessageSize;
    }
 
-   public void setMinLargeMessageSize(int minLargeMessageSize)
+   public void setMinLargeMessageSize(final int minLargeMessageSize)
    {
       this.minLargeMessageSize = minLargeMessageSize;
    }
@@ -258,7 +269,7 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
       return consumerWindowSize;
    }
 
-   public void setConsumerWindowSize(int consumerWindowSize)
+   public void setConsumerWindowSize(final int consumerWindowSize)
    {
       this.consumerWindowSize = consumerWindowSize;
    }
@@ -268,7 +279,7 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
       return consumerMaxRate;
    }
 
-   public void setConsumerMaxRate(int consumerMaxRate)
+   public void setConsumerMaxRate(final int consumerMaxRate)
    {
       this.consumerMaxRate = consumerMaxRate;
    }
@@ -278,7 +289,7 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
       return confirmationWindowSize;
    }
 
-   public void setConfirmationWindowSize(int confirmationWindowSize)
+   public void setConfirmationWindowSize(final int confirmationWindowSize)
    {
       this.confirmationWindowSize = confirmationWindowSize;
    }
@@ -288,27 +299,27 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
       return producerMaxRate;
    }
 
-   public void setProducerMaxRate(int producerMaxRate)
+   public void setProducerMaxRate(final int producerMaxRate)
    {
       this.producerMaxRate = producerMaxRate;
    }
-   
+
    public int getProducerWindowSize()
    {
       return producerWindowSize;
    }
 
-   public void setProducerWindowSize(int producerWindowSize)
+   public void setProducerWindowSize(final int producerWindowSize)
    {
       this.producerWindowSize = producerWindowSize;
    }
-   
+
    public boolean isBlockOnAcknowledge()
    {
       return blockOnAcknowledge;
    }
 
-   public void setBlockOnAcknowledge(boolean blockOnAcknowledge)
+   public void setBlockOnAcknowledge(final boolean blockOnAcknowledge)
    {
       this.blockOnAcknowledge = blockOnAcknowledge;
    }
@@ -318,7 +329,7 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
       return blockOnPersistentSend;
    }
 
-   public void setBlockOnPersistentSend(boolean blockOnPersistentSend)
+   public void setBlockOnPersistentSend(final boolean blockOnPersistentSend)
    {
       this.blockOnPersistentSend = blockOnPersistentSend;
    }
@@ -328,7 +339,7 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
       return blockOnNonPersistentSend;
    }
 
-   public void setBlockOnNonPersistentSend(boolean blockOnNonPersistentSend)
+   public void setBlockOnNonPersistentSend(final boolean blockOnNonPersistentSend)
    {
       this.blockOnNonPersistentSend = blockOnNonPersistentSend;
    }
@@ -338,7 +349,7 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
       return autoGroup;
    }
 
-   public void setAutoGroup(boolean autoGroup)
+   public void setAutoGroup(final boolean autoGroup)
    {
       this.autoGroup = autoGroup;
    }
@@ -348,7 +359,7 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
       return preAcknowledge;
    }
 
-   public void setPreAcknowledge(boolean preAcknowledge)
+   public void setPreAcknowledge(final boolean preAcknowledge)
    {
       this.preAcknowledge = preAcknowledge;
    }
@@ -358,7 +369,7 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
       return loadBalancingPolicyClassName;
    }
 
-   public void setLoadBalancingPolicyClassName(String loadBalancingPolicyClassName)
+   public void setLoadBalancingPolicyClassName(final String loadBalancingPolicyClassName)
    {
       this.loadBalancingPolicyClassName = loadBalancingPolicyClassName;
    }
@@ -368,7 +379,7 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
       return transactionBatchSize;
    }
 
-   public void setTransactionBatchSize(int transactionBatchSize)
+   public void setTransactionBatchSize(final int transactionBatchSize)
    {
       this.transactionBatchSize = transactionBatchSize;
    }
@@ -378,7 +389,7 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
       return dupsOKBatchSize;
    }
 
-   public void setDupsOKBatchSize(int dupsOKBatchSize)
+   public void setDupsOKBatchSize(final int dupsOKBatchSize)
    {
       this.dupsOKBatchSize = dupsOKBatchSize;
    }
@@ -388,7 +399,7 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
       return initialWaitTimeout;
    }
 
-   public void setInitialWaitTimeout(long initialWaitTimeout)
+   public void setInitialWaitTimeout(final long initialWaitTimeout)
    {
       this.initialWaitTimeout = initialWaitTimeout;
    }
@@ -398,7 +409,7 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
       return useGlobalPools;
    }
 
-   public void setUseGlobalPools(boolean useGlobalPools)
+   public void setUseGlobalPools(final boolean useGlobalPools)
    {
       this.useGlobalPools = useGlobalPools;
    }
@@ -408,7 +419,7 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
       return scheduledThreadPoolMaxSize;
    }
 
-   public void setScheduledThreadPoolMaxSize(int scheduledThreadPoolMaxSize)
+   public void setScheduledThreadPoolMaxSize(final int scheduledThreadPoolMaxSize)
    {
       this.scheduledThreadPoolMaxSize = scheduledThreadPoolMaxSize;
    }
@@ -418,7 +429,7 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
       return threadPoolMaxSize;
    }
 
-   public void setThreadPoolMaxSize(int threadPoolMaxSize)
+   public void setThreadPoolMaxSize(final int threadPoolMaxSize)
    {
       this.threadPoolMaxSize = threadPoolMaxSize;
    }
@@ -428,7 +439,7 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
       return retryInterval;
    }
 
-   public void setRetryInterval(long retryInterval)
+   public void setRetryInterval(final long retryInterval)
    {
       this.retryInterval = retryInterval;
    }
@@ -438,7 +449,7 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
       return retryIntervalMultiplier;
    }
 
-   public void setRetryIntervalMultiplier(double retryIntervalMultiplier)
+   public void setRetryIntervalMultiplier(final double retryIntervalMultiplier)
    {
       this.retryIntervalMultiplier = retryIntervalMultiplier;
    }
@@ -448,7 +459,7 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
       return maxRetryInterval;
    }
 
-   public void setMaxRetryInterval(long maxRetryInterval)
+   public void setMaxRetryInterval(final long maxRetryInterval)
    {
       this.maxRetryInterval = maxRetryInterval;
    }
@@ -458,7 +469,7 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
       return reconnectAttempts;
    }
 
-   public void setReconnectAttempts(int reconnectAttempts)
+   public void setReconnectAttempts(final int reconnectAttempts)
    {
       this.reconnectAttempts = reconnectAttempts;
    }
@@ -468,7 +479,7 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
       return failoverOnServerShutdown;
    }
 
-   public void setFailoverOnServerShutdown(boolean failoverOnServerShutdown)
+   public void setFailoverOnServerShutdown(final boolean failoverOnServerShutdown)
    {
       this.failoverOnServerShutdown = failoverOnServerShutdown;
    }
@@ -478,7 +489,7 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
       return groupID;
    }
 
-   public void setGroupID(String groupID)
+   public void setGroupID(final String groupID)
    {
       this.groupID = groupID;
    }

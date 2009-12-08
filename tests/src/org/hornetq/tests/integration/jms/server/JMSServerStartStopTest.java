@@ -20,6 +20,8 @@ import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.config.impl.FileConfiguration;
 import org.hornetq.core.logging.Logger;
@@ -48,63 +50,61 @@ public class JMSServerStartStopTest extends UnitTestCase
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
-   
+
    private JMSServerManager liveJMSServer;
-   
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
-   
+
    public void testStopStart1() throws Exception
    {
-      final int numMessages = 5 ;
-      
+      final int numMessages = 5;
+
       for (int j = 0; j < numMessages; j++)
       {
-         log.info("Iteration " + j);
-         
+         JMSServerStartStopTest.log.info("Iteration " + j);
+
          start();
-         
+
          HornetQConnectionFactory jbcf = new HornetQConnectionFactory(new TransportConfiguration(NettyConnectorFactory.class.getCanonicalName()));
-                                                                  
-         
+
          jbcf.setBlockOnPersistentSend(true);
          jbcf.setBlockOnNonPersistentSend(true);
-         
+
          Connection conn = jbcf.createConnection();
-   
-         
+
          Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-               
+
          Queue queue = sess.createQueue("myJMSQueue");
-   
+
          MessageProducer producer = sess.createProducer(queue);
-    
+
          TextMessage tm = sess.createTextMessage("message" + j);
-   
+
          producer.send(tm);
-                                 
+
          conn.close();
-         
+
          jbcf.close();
-         
+
          stop();
-         
+
       }
-      
+
       start();
-      
+
       HornetQConnectionFactory jbcf = new HornetQConnectionFactory(new TransportConfiguration(NettyConnectorFactory.class.getCanonicalName()));
-      
+
       jbcf.setBlockOnPersistentSend(true);
       jbcf.setBlockOnNonPersistentSend(true);
-      
+
       Connection conn = jbcf.createConnection();
-      
+
       Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-            
+
       Queue queue = sess.createQueue("myJMSQueue");
 
       MessageConsumer consumer = sess.createConsumer(queue);
@@ -115,22 +115,22 @@ public class JMSServerStartStopTest extends UnitTestCase
       {
          TextMessage tm = (TextMessage)consumer.receive(1000);
 
-         assertNotNull(tm);
+         Assert.assertNotNull(tm);
 
-         assertEquals("message" + i, tm.getText());
+         Assert.assertEquals("message" + i, tm.getText());
       }
-            
+
       conn.close();
-      
+
       jbcf.close();
-      
+
       stop();
    }
 
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
-   
+
    @Override
    protected void setUp() throws Exception
    {
@@ -146,31 +146,30 @@ public class JMSServerStartStopTest extends UnitTestCase
    }
 
    // Private -------------------------------------------------------
-   
+
    private void stop() throws Exception
    {
       liveJMSServer.stop();
    }
-   
+
    private void start() throws Exception
    {
       FileConfiguration fc = new FileConfiguration();
-      
+
       fc.setConfigurationUrl("server-start-stop-config1.xml");
-      
+
       fc.start();
-      
+
       HornetQSecurityManager sm = new HornetQSecurityManagerImpl();
-      
-      HornetQServer liveServer = new HornetQServerImpl(fc, sm);     
-      
+
+      HornetQServer liveServer = new HornetQServerImpl(fc, sm);
+
       liveJMSServer = new JMSServerManagerImpl(liveServer, "server-start-stop-jms-config1.xml");
-      
+
       liveJMSServer.setContext(null);
-      
+
       liveJMSServer.start();
    }
-   
 
    // Inner classes -------------------------------------------------
 

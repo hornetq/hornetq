@@ -57,7 +57,7 @@ public class PagingStoreFactoryNIO implements PagingStoreFactory
    private final String directory;
 
    private final ExecutorFactory executorFactory;
-   
+
    protected final boolean syncNonTransactional;
 
    private PagingManager pagingManager;
@@ -70,13 +70,14 @@ public class PagingStoreFactoryNIO implements PagingStoreFactory
 
    // Constructors --------------------------------------------------
 
-   public PagingStoreFactoryNIO(final String directory, final ExecutorFactory executorFactory,
+   public PagingStoreFactoryNIO(final String directory,
+                                final ExecutorFactory executorFactory,
                                 final boolean syncNonTransactional)
    {
       this.directory = directory;
 
       this.executorFactory = executorFactory;
-      
+
       this.syncNonTransactional = syncNonTransactional;
    }
 
@@ -110,7 +111,10 @@ public class PagingStoreFactoryNIO implements PagingStoreFactory
 
       factory.createDirs();
 
-      File fileWithID = new File(directory + File.separatorChar + guid + File.separatorChar + ADDRESS_FILE);
+      File fileWithID = new File(directory + File.separatorChar +
+                                 guid +
+                                 File.separatorChar +
+                                 PagingStoreFactoryNIO.ADDRESS_FILE);
 
       BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(fileWithID)));
 
@@ -160,19 +164,21 @@ public class PagingStoreFactoryNIO implements PagingStoreFactory
          {
 
             final String guid = file.getName();
-            
-            final File addressFile = new File(file, ADDRESS_FILE);
+
+            final File addressFile = new File(file, PagingStoreFactoryNIO.ADDRESS_FILE);
 
             if (!addressFile.exists())
             {
-               log.warn("Directory " + file.toString() + " didn't have an identification file " + ADDRESS_FILE);
+               PagingStoreFactoryNIO.log.warn("Directory " + file.toString() +
+                                              " didn't have an identification file " +
+                                              PagingStoreFactoryNIO.ADDRESS_FILE);
                continue;
             }
 
             BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(addressFile)));
 
             String addressString;
-            
+
             try
             {
                addressString = reader.readLine();

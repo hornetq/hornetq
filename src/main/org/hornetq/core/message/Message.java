@@ -9,7 +9,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
  * implied.  See the License for the specific language governing
  * permissions and limitations under the License.
- */ 
+ */
 
 package org.hornetq.core.message;
 
@@ -65,26 +65,25 @@ public interface Message
    int getEncodeSize();
 
    boolean isLargeMessage();
-   
+
    HornetQBuffer getBodyBuffer();
-   
-   
-   //Should the following methods really be on the public API?
-   
+
+   // Should the following methods really be on the public API?
+
    void decodeFromBuffer(HornetQBuffer buffer);
-   
+
    int getEndOfMessagePosition();
-   
+
    int getEndOfBodyPosition();
-   
+
    void checkCopy();
-   
+
    void bodyChanged();
-   
+
    void resetCopied();
-   
+
    HornetQBuffer getEncodedBuffer();
-   
+
    // Properties
    // ------------------------------------------------------------------
 
@@ -188,22 +187,20 @@ public interface Message
 
    Map<String, Object> toMap();
 
-      
-   // FIXME - All this stuff is only necessary here for large messages - it should be refactored to be put in a better place
-      
+   // FIXME - All this stuff is only necessary here for large messages - it should be refactored to be put in a better
+   // place
+
    int getHeadersAndPropertiesEncodeSize();
-   
+
    HornetQBuffer getWholeBuffer();
-   
+
    void encodeHeadersAndProperties(HornetQBuffer buffer);
-   
+
    void decodeHeadersAndProperties(HornetQBuffer buffer);
-   
+
    BodyEncoder getBodyEncoder() throws HornetQException;
-   
+
    /** Get the InputStream used on a message that will be sent over a producer */
    InputStream getBodyInputStream();
-   
-   
-   
+
 }

@@ -27,17 +27,17 @@ import org.hornetq.core.transaction.Transaction;
 public interface RoutingContext
 {
    Transaction getTransaction();
-   
+
    void setTransaction(Transaction transaction);
-   
+
    void addQueue(Queue queue);
-   
+
    List<Queue> getNonDurableQueues();
-   
+
    List<Queue> getDurableQueues();
-   
+
    int getQueueCount();
-   
+
    void clear();
 
 }

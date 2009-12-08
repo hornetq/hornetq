@@ -83,15 +83,15 @@ public class ManagementHelper
 
    public static void putAttribute(final Message message, final String resourceName, final String attribute)
    {
-      message.putStringProperty(HDR_RESOURCE_NAME, new SimpleString(resourceName));
-      message.putStringProperty(HDR_ATTRIBUTE, new SimpleString(attribute));
+      message.putStringProperty(ManagementHelper.HDR_RESOURCE_NAME, new SimpleString(resourceName));
+      message.putStringProperty(ManagementHelper.HDR_ATTRIBUTE, new SimpleString(attribute));
    }
 
    public static void putOperationInvocation(final Message message,
                                              final String resourceName,
                                              final String operationName) throws Exception
    {
-      putOperationInvocation(message, resourceName, operationName, (Object[])null);
+      ManagementHelper.putOperationInvocation(message, resourceName, operationName, (Object[])null);
    }
 
    public static void putOperationInvocation(final Message message,
@@ -100,8 +100,8 @@ public class ManagementHelper
                                              final Object... parameters) throws Exception
    {
       // store the name of the operation in the headers
-      message.putStringProperty(HDR_RESOURCE_NAME, new SimpleString(resourceName));
-      message.putStringProperty(HDR_OPERATION_NAME, new SimpleString(operationName));
+      message.putStringProperty(ManagementHelper.HDR_RESOURCE_NAME, new SimpleString(resourceName));
+      message.putStringProperty(ManagementHelper.HDR_OPERATION_NAME, new SimpleString(operationName));
 
       // and the params go in the body, since might be too large for header
 
@@ -109,7 +109,7 @@ public class ManagementHelper
 
       if (parameters != null)
       {
-         JSONArray jsonArray = toJSONArray(parameters);
+         JSONArray jsonArray = ManagementHelper.toJSONArray(parameters);
 
          paramString = jsonArray.toString();
       }
@@ -124,11 +124,9 @@ public class ManagementHelper
    private static JSONArray toJSONArray(final Object[] array) throws Exception
    {
       JSONArray jsonArray = new JSONArray();
-      
-      for (int i = 0; i < array.length; i++)
+
+      for (Object parameter : array)
       {
-         Object parameter = array[i];
-         
          if (parameter instanceof Map)
          {
             Map<String, Object> map = (Map<String, Object>)parameter;
@@ -144,12 +142,12 @@ public class ManagementHelper
                if (val != null)
                {
                   if (val.getClass().isArray())
-                  {                   
-                     val = toJSONArray((Object[])val);
+                  {
+                     val = ManagementHelper.toJSONArray((Object[])val);
                   }
                   else
                   {
-                     checkType(val);
+                     ManagementHelper.checkType(val);
                   }
                }
 
@@ -163,17 +161,17 @@ public class ManagementHelper
             if (parameter != null)
             {
                Class clz = parameter.getClass();
-   
+
                if (clz.isArray())
                {
                   Object[] innerArray = (Object[])parameter;
-   
-                  jsonArray.put(toJSONArray(innerArray));
+
+                  jsonArray.put(ManagementHelper.toJSONArray(innerArray));
                }
                else
                {
-                  checkType(parameter);
-   
+                  ManagementHelper.checkType(parameter);
+
                   jsonArray.put(parameter);
                }
             }
@@ -197,7 +195,7 @@ public class ManagementHelper
 
          if (val instanceof JSONArray)
          {
-            Object[] inner = fromJSONArray((JSONArray)val);
+            Object[] inner = ManagementHelper.fromJSONArray((JSONArray)val);
 
             array[i] = inner;
          }
@@ -208,33 +206,34 @@ public class ManagementHelper
             Map<String, Object> map = new HashMap<String, Object>();
 
             Iterator<String> iter = jsonObject.keys();
-            
+
             while (iter.hasNext())
             {
                String key = iter.next();
-               
+
                Object innerVal = jsonObject.get(key);
-               
+
                if (innerVal instanceof JSONArray)
                {
-                  innerVal = fromJSONArray(((JSONArray)innerVal));
-               } 
+                  innerVal = ManagementHelper.fromJSONArray(((JSONArray)innerVal));
+               }
                else if (innerVal instanceof JSONObject)
                {
                   Map<String, Object> innerMap = new HashMap<String, Object>();
-                  JSONObject o = ((JSONObject)innerVal);
+                  JSONObject o = (JSONObject)innerVal;
                   Iterator it = o.keys();
                   while (it.hasNext())
                   {
                      String k = (String)it.next();
-                     innerMap.put(k, o.get(k));                     
+                     innerMap.put(k, o.get(k));
                   }
                   innerVal = innerMap;
-               } else if (innerVal instanceof Integer)
+               }
+               else if (innerVal instanceof Integer)
                {
                   innerVal = ((Integer)innerVal).longValue();
                }
-               
+
                map.put(key, innerVal);
             }
 
@@ -267,7 +266,8 @@ public class ManagementHelper
           param instanceof Short == false)
       {
          throw new IllegalArgumentException("Params for management operations must be of the following type: " + "int long double String boolean Map or array thereof " +
-                                            " but found " + param.getClass().getName());
+                                            " but found " +
+                                            param.getClass().getName());
       }
    }
 
@@ -279,7 +279,7 @@ public class ManagementHelper
       {
          JSONArray jsonArray = new JSONArray(jsonString);
 
-         return fromJSONArray(jsonArray);
+         return ManagementHelper.fromJSONArray(jsonArray);
       }
       else
       {
@@ -289,12 +289,12 @@ public class ManagementHelper
 
    public static boolean isOperationResult(final Message message)
    {
-      return message.containsProperty(HDR_OPERATION_SUCCEEDED);
+      return message.containsProperty(ManagementHelper.HDR_OPERATION_SUCCEEDED);
    }
 
    public static boolean isAttributesResult(final Message message)
    {
-      return !(isOperationResult(message));
+      return !ManagementHelper.isOperationResult(message);
    }
 
    public static void storeResult(final Message message, final Object result) throws Exception
@@ -305,9 +305,9 @@ public class ManagementHelper
       {
          // Result is stored in body, also encoded as JSON array of length 1
 
-         JSONArray jsonArray = toJSONArray(new Object[] { result });
+         JSONArray jsonArray = ManagementHelper.toJSONArray(new Object[] { result });
 
-         resultString = jsonArray.toString();                  
+         resultString = jsonArray.toString();
       }
       else
       {
@@ -320,12 +320,12 @@ public class ManagementHelper
    public static Object[] getResults(final Message message) throws Exception
    {
       String jsonString = message.getBodyBuffer().readNullableString();
-      
+
       if (jsonString != null)
       {
          JSONArray jsonArray = new JSONArray(jsonString);
 
-         Object[] res = fromJSONArray(jsonArray);
+         Object[] res = ManagementHelper.fromJSONArray(jsonArray);
 
          return res;
       }
@@ -337,7 +337,7 @@ public class ManagementHelper
 
    public static Object getResult(final Message message) throws Exception
    {
-      Object[] res = getResults(message);
+      Object[] res = ManagementHelper.getResults(message);
 
       if (res != null)
       {
@@ -351,13 +351,13 @@ public class ManagementHelper
 
    public static boolean hasOperationSucceeded(final Message message)
    {
-      if (!isOperationResult(message))
+      if (!ManagementHelper.isOperationResult(message))
       {
          return false;
       }
-      if (message.containsProperty(HDR_OPERATION_SUCCEEDED))
+      if (message.containsProperty(ManagementHelper.HDR_OPERATION_SUCCEEDED))
       {
-         return message.getBooleanProperty(HDR_OPERATION_SUCCEEDED);
+         return message.getBooleanProperty(ManagementHelper.HDR_OPERATION_SUCCEEDED);
       }
       return false;
    }
@@ -368,10 +368,10 @@ public class ManagementHelper
       {
          return Collections.emptyMap();
       }
-      
+
       // create a JSON array with 1 object:
       JSONArray array = new JSONArray("[{" + str + "}]");
-      Map<String, Object> params = (Map<String, Object>)fromJSONArray(array)[0];
+      Map<String, Object> params = (Map<String, Object>)ManagementHelper.fromJSONArray(array)[0];
       return params;
    }
 
@@ -381,16 +381,16 @@ public class ManagementHelper
       {
          return new Object[0];
       }
-    
+
       String s = str;
-      
+
       // if there is a single item, we wrap it in to make it a JSON object
       if (!s.trim().startsWith("{"))
       {
          s = "{" + s + "}";
       }
       JSONArray array = new JSONArray("[" + s + "]");
-      return fromJSONArray(array);
+      return ManagementHelper.fromJSONArray(array);
    }
 
    // Constructors --------------------------------------------------

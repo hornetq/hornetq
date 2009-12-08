@@ -33,16 +33,16 @@ public class HornetQRAConnectionMetaData implements ConnectionMetaData
    private static final Logger log = Logger.getLogger(HornetQRAConnectionMetaData.class);
 
    /** Trace enabled */
-   private static boolean trace = log.isTraceEnabled();
+   private static boolean trace = HornetQRAConnectionMetaData.log.isTraceEnabled();
 
    /**
     * Constructor
     */
    public HornetQRAConnectionMetaData()
    {
-      if (trace)
+      if (HornetQRAConnectionMetaData.trace)
       {
-         log.trace("constructor()");
+         HornetQRAConnectionMetaData.log.trace("constructor()");
       }
    }
 
@@ -52,9 +52,9 @@ public class HornetQRAConnectionMetaData implements ConnectionMetaData
     */
    public String getJMSVersion()
    {
-      if (trace)
+      if (HornetQRAConnectionMetaData.trace)
       {
-         log.trace("getJMSVersion()");
+         HornetQRAConnectionMetaData.log.trace("getJMSVersion()");
       }
 
       return "1.1";
@@ -66,9 +66,9 @@ public class HornetQRAConnectionMetaData implements ConnectionMetaData
     */
    public int getJMSMajorVersion()
    {
-      if (trace)
+      if (HornetQRAConnectionMetaData.trace)
       {
-         log.trace("getJMSMajorVersion()");
+         HornetQRAConnectionMetaData.log.trace("getJMSMajorVersion()");
       }
 
       return 1;
@@ -80,9 +80,9 @@ public class HornetQRAConnectionMetaData implements ConnectionMetaData
     */
    public int getJMSMinorVersion()
    {
-      if (trace)
+      if (HornetQRAConnectionMetaData.trace)
       {
-         log.trace("getJMSMinorVersion()");
+         HornetQRAConnectionMetaData.log.trace("getJMSMinorVersion()");
       }
 
       return 1;
@@ -94,9 +94,9 @@ public class HornetQRAConnectionMetaData implements ConnectionMetaData
     */
    public String getJMSProviderName()
    {
-      if (trace)
+      if (HornetQRAConnectionMetaData.trace)
       {
-         log.trace("getJMSProviderName()");
+         HornetQRAConnectionMetaData.log.trace("getJMSProviderName()");
       }
 
       return "HornetQ";
@@ -108,9 +108,9 @@ public class HornetQRAConnectionMetaData implements ConnectionMetaData
     */
    public String getProviderVersion()
    {
-      if (trace)
+      if (HornetQRAConnectionMetaData.trace)
       {
-         log.trace("getJMSProviderName()");
+         HornetQRAConnectionMetaData.log.trace("getJMSProviderName()");
       }
 
       return "2.0";
@@ -122,9 +122,9 @@ public class HornetQRAConnectionMetaData implements ConnectionMetaData
     */
    public int getProviderMajorVersion()
    {
-      if (trace)
+      if (HornetQRAConnectionMetaData.trace)
       {
-         log.trace("getProviderMajorVersion()");
+         HornetQRAConnectionMetaData.log.trace("getProviderMajorVersion()");
       }
 
       return 2;
@@ -136,9 +136,9 @@ public class HornetQRAConnectionMetaData implements ConnectionMetaData
     */
    public int getProviderMinorVersion()
    {
-      if (trace)
+      if (HornetQRAConnectionMetaData.trace)
       {
-         log.trace("getProviderMinorVersion()");
+         HornetQRAConnectionMetaData.log.trace("getProviderMinorVersion()");
       }
 
       return 0;

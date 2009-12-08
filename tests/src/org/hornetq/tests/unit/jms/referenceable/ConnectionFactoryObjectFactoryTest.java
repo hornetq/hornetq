@@ -9,7 +9,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
  * implied.  See the License for the specific language governing
  * permissions and limitations under the License.
- */ 
+ */
 
 package org.hornetq.tests.unit.jms.referenceable;
 
@@ -34,22 +34,22 @@ public class ConnectionFactoryObjectFactoryTest extends UnitTestCase
    // Public --------------------------------------------------------
 
    public void testDummy()
-   {      
+   {
    }
-   
-//   public void testReference() throws Exception
-//   {
-//      HornetQRAConnectionFactory cf =
-//         new HornetQRAConnectionFactory(null, null, 123, 123, randomString(), 1, 1, 1, 1, 1, true, true, true);
-//      Reference reference = cf.getReference();
-//
-//      ConnectionFactoryObjectFactory factory = new ConnectionFactoryObjectFactory();
-//      
-//      Object object = factory.getObjectInstance(reference, null, null, null);
-//      assertNotNull(object);
-//      assertTrue(object instanceof HornetQRAConnectionFactory);
-//   }
-   
+
+   // public void testReference() throws Exception
+   // {
+   // HornetQRAConnectionFactory cf =
+   // new HornetQRAConnectionFactory(null, null, 123, 123, randomString(), 1, 1, 1, 1, 1, true, true, true);
+   // Reference reference = cf.getReference();
+   //
+   // ConnectionFactoryObjectFactory factory = new ConnectionFactoryObjectFactory();
+   //      
+   // Object object = factory.getObjectInstance(reference, null, null, null);
+   // assertNotNull(object);
+   // assertTrue(object instanceof HornetQRAConnectionFactory);
+   // }
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

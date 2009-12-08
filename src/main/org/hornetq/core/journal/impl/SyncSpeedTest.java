@@ -68,7 +68,7 @@ public class SyncSpeedTest
       }
    }
 
-   protected SequentialFile createSequentialFile(String fileName)
+   protected SequentialFile createSequentialFile(final String fileName)
    {
       if (AIO)
       {
@@ -138,7 +138,7 @@ public class SyncSpeedTest
 
          long end = System.currentTimeMillis();
 
-         double rate = 1000 * ((double)its) / (end - start);
+         double rate = 1000 * (double)its / (end - start);
 
          double throughput = recordSize * rate;
 
@@ -203,7 +203,7 @@ public class SyncSpeedTest
 
          long end = System.currentTimeMillis();
 
-         double rate = 1000 * ((double)its) / (end - start);
+         double rate = 1000 * (double)its / (end - start);
 
          double throughput = recordSize * rate;
 
@@ -254,7 +254,7 @@ public class SyncSpeedTest
                latch.countDown();
             }
 
-            public void onError(int errorCode, String errorMessage)
+            public void onError(final int errorCode, final String errorMessage)
             {
 
             }
@@ -264,7 +264,7 @@ public class SyncSpeedTest
 
          class MyRunner implements Runnable
          {
-            private ByteBuffer bb1;
+            private final ByteBuffer bb1;
 
             MyRunner()
             {
@@ -278,14 +278,14 @@ public class SyncSpeedTest
                   bb1.rewind();
 
                   file.writeDirect(bb1, true, task);
-//                  try
-//                  {
-//                     file.writeDirect(bb1, true);
-//                  }
-//                  catch (Exception e)
-//                  {
-//                     e.printStackTrace();
-//                  }
+                  // try
+                  // {
+                  // file.writeDirect(bb1, true);
+                  // }
+                  // catch (Exception e)
+                  // {
+                  // e.printStackTrace();
+                  // }
                }
             }
          }
@@ -305,7 +305,7 @@ public class SyncSpeedTest
 
          for (Thread t : threads)
          {
-            log.info("starting thread");
+            SyncSpeedTest.log.info("starting thread");
             t.start();
          }
 
@@ -318,7 +318,7 @@ public class SyncSpeedTest
 
          long end = System.currentTimeMillis();
 
-         double rate = 1000 * ((double)its * numThreads) / (end - start);
+         double rate = 1000 * (double)its * numThreads / (end - start);
 
          double throughput = recordSize * rate;
 

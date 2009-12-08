@@ -38,7 +38,7 @@ public class AIOSequentialFileFactory extends AbstractSequentialFileFactory
 
    private static final Logger log = Logger.getLogger(AIOSequentialFileFactory.class);
 
-   private static final boolean trace = log.isTraceEnabled();
+   private static final boolean trace = AIOSequentialFileFactory.log.isTraceEnabled();
 
    private final ReuseBuffersController buffersControl = new ReuseBuffersController();
 
@@ -49,20 +49,20 @@ public class AIOSequentialFileFactory extends AbstractSequentialFileFactory
    // Journal
    private static final void trace(final String message)
    {
-      log.trace(message);
+      AIOSequentialFileFactory.log.trace(message);
    }
 
    public AIOSequentialFileFactory(final String journalDir)
    {
       this(journalDir,
            ConfigurationImpl.DEFAULT_JOURNAL_BUFFER_SIZE_AIO,
-           ConfigurationImpl.DEFAULT_JOURNAL_BUFFER_TIMEOUT_AIO,          
+           ConfigurationImpl.DEFAULT_JOURNAL_BUFFER_TIMEOUT_AIO,
            false);
    }
 
    public AIOSequentialFileFactory(final String journalDir,
                                    final int bufferSize,
-                                   final int bufferTimeout,                                  
+                                   final int bufferTimeout,
                                    final boolean logRates)
    {
       super(journalDir, true, bufferSize, bufferTimeout, logRates);
@@ -158,9 +158,10 @@ public class AIOSequentialFileFactory extends AbstractSequentialFileFactory
 
          try
          {
-            if (!pollerExecutor.awaitTermination(EXECUTOR_TIMEOUT, TimeUnit.SECONDS))
+            if (!pollerExecutor.awaitTermination(AbstractSequentialFileFactory.EXECUTOR_TIMEOUT, TimeUnit.SECONDS))
             {
-               log.warn("Timed out on AIO poller shutdown", new Exception("Timed out on AIO writer shutdown"));
+               AIOSequentialFileFactory.log.warn("Timed out on AIO poller shutdown",
+                                                 new Exception("Timed out on AIO writer shutdown"));
             }
          }
          catch (InterruptedException e)
@@ -198,9 +199,10 @@ public class AIOSequentialFileFactory extends AbstractSequentialFileFactory
          // just to cleanup this
          if (bufferSize > 0 && System.currentTimeMillis() - bufferReuseLastTime > 10000)
          {
-            if (trace)
+            if (AIOSequentialFileFactory.trace)
             {
-               trace("Clearing reuse buffers queue with " + reuseBuffersQueue.size() + " elements");
+               AIOSequentialFileFactory.trace("Clearing reuse buffers queue with " + reuseBuffersQueue.size() +
+                                              " elements");
             }
 
             bufferReuseLastTime = System.currentTimeMillis();

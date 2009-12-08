@@ -113,9 +113,9 @@ public class InVMConnection implements Connection
    public void write(final HornetQBuffer buffer, final boolean flush)
    {
       final HornetQBuffer copied = buffer.copy(0, buffer.capacity());
-      
+
       copied.setIndex(buffer.readerIndex(), buffer.writerIndex());
-      
+
       try
       {
          executor.execute(new Runnable()
@@ -127,14 +127,14 @@ public class InVMConnection implements Connection
                   if (!closed)
                   {
                      copied.readInt(); // read and discard
-                                         
+
                      handler.bufferReceived(id, copied);
                   }
                }
                catch (Exception e)
                {
                   final String msg = "Failed to write to handler";
-                  log.error(msg, e);
+                  InVMConnection.log.error(msg, e);
                   throw new IllegalStateException(msg, e);
                }
             }

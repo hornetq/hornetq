@@ -9,7 +9,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
  * implied.  See the License for the specific language governing
  * permissions and limitations under the License.
- */ 
+ */
 
 package org.hornetq.core.remoting;
 
@@ -25,25 +25,22 @@ import org.hornetq.core.buffers.HornetQBuffer;
 public interface Packet
 {
    void setChannelID(long channelID);
-   
+
    long getChannelID();
-   
+
    boolean isResponse();
-   
+
    byte getType();
 
    HornetQBuffer encode(RemotingConnection connection);
-      
+
    void decode(HornetQBuffer buffer);
-   
+
    /**
     * 
     * @return The size of the entire packet including headers, and extra data
     */
    int getPacketSize();
-   
+
    boolean isRequiresConfirmations();
 }
-
-
-

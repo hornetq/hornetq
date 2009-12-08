@@ -31,11 +31,12 @@ import org.hornetq.common.example.HornetQExample;
  */
 public class QueueRequestorExample extends HornetQExample
 {
-   public static void main(String[] args)
+   public static void main(final String[] args)
    {
       new QueueRequestorExample().run(args);
    }
 
+   @Override
    public boolean runExample() throws Exception
    {
       QueueConnection connection = null;
@@ -51,7 +52,8 @@ public class QueueRequestorExample extends HornetQExample
          // Step 3. Look-up the JMS queue connection factory
          QueueConnectionFactory cf = (QueueConnectionFactory)initialContext.lookup("/ConnectionFactory");
 
-         // Step 4. Create a TextReverserService which consumes messages from the queue and sends message with reversed text
+         // Step 4. Create a TextReverserService which consumes messages from the queue and sends message with reversed
+         // text
          TextReverserService reverserService = new TextReverserService(cf, queue);
 
          // Step 5. Create a JMS QueueConnection
@@ -81,7 +83,7 @@ public class QueueRequestorExample extends HornetQExample
 
          // Step 13. close the text reverser service
          reverserService.close();
-         
+
          return true;
       }
       finally
@@ -98,7 +100,7 @@ public class QueueRequestorExample extends HornetQExample
                e.printStackTrace();
             }
          }
-         
+
          if (initialContext != null)
          {
             // Also the InitialContext

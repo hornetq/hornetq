@@ -25,48 +25,48 @@ import javax.naming.InitialContext;
  */
 public class MDB_BMTClientExample
 {
-   public static void main(String[] args) throws Exception
+   public static void main(final String[] args) throws Exception
    {
       Connection connection = null;
       InitialContext initialContext = null;
       try
       {
-         //Step 1. Create an initial context to perform the JNDI lookup.
+         // Step 1. Create an initial context to perform the JNDI lookup.
          initialContext = new InitialContext();
 
-         //Step 2. Perfom a lookup on the queue
-         Queue queue = (Queue) initialContext.lookup("/queue/testQueue");
+         // Step 2. Perfom a lookup on the queue
+         Queue queue = (Queue)initialContext.lookup("/queue/testQueue");
 
-         //Step 3. Perform a lookup on the Connection Factory
-         ConnectionFactory cf = (ConnectionFactory) initialContext.lookup("/ConnectionFactory");
+         // Step 3. Perform a lookup on the Connection Factory
+         ConnectionFactory cf = (ConnectionFactory)initialContext.lookup("/ConnectionFactory");
 
-         //Step 4.Create a JMS Connection
+         // Step 4.Create a JMS Connection
          connection = cf.createConnection();
 
-         //Step 5. Create a JMS Session
+         // Step 5. Create a JMS Session
          Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         //Step 6. Create a JMS Message Producer
+         // Step 6. Create a JMS Message Producer
          MessageProducer producer = session.createProducer(queue);
 
-         //Step 7. Create a Text Message
+         // Step 7. Create a Text Message
          TextMessage message = session.createTextMessage("This is a text message");
 
          System.out.println("Sent message: " + message.getText());
 
-         //Step 8. Send the Message
+         // Step 8. Send the Message
          producer.send(message);
 
-          //Step 9, 10 and 11 in MDB_BMPExample
+         // Step 9, 10 and 11 in MDB_BMPExample
       }
       finally
       {
-         //Step 12. Be sure to close our JMS resources!
+         // Step 12. Be sure to close our JMS resources!
          if (initialContext != null)
          {
             initialContext.close();
          }
-         if(connection != null)
+         if (connection != null)
          {
             connection.close();
          }

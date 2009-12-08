@@ -15,7 +15,6 @@
 
 package org.hornetq.utils;
 
-
 /**
  * UUID represents Universally Unique Identifiers (aka Global UID in Windows
  * world). UUIDs are usually generated via UUIDGenerator (or in case of 'Null
@@ -45,26 +44,37 @@ public final class UUID
    private final static String kHexChars = "0123456789abcdefABCDEF";
 
    public final static byte INDEX_CLOCK_HI = 6;
+
    public final static byte INDEX_CLOCK_MID = 4;
+
    public final static byte INDEX_CLOCK_LO = 0;
 
    public final static byte INDEX_TYPE = 6;
+
    // Clock seq. & variant are multiplexed...
    public final static byte INDEX_CLOCK_SEQUENCE = 8;
+
    public final static byte INDEX_VARIATION = 8;
 
    public final static byte TYPE_NULL = 0;
+
    public final static byte TYPE_TIME_BASED = 1;
+
    public final static byte TYPE_DCE = 2; // Not used
+
    public final static byte TYPE_NAME_BASED = 3;
+
    public final static byte TYPE_RANDOM_BASED = 4;
 
    /*
     * 'Standard' namespaces defined (suggested) by UUID specs:
     */
    public final static String NAMESPACE_DNS = "6ba7b810-9dad-11d1-80b4-00c04fd430c8";
+
    public final static String NAMESPACE_URL = "6ba7b811-9dad-11d1-80b4-00c04fd430c8";
+
    public final static String NAMESPACE_OID = "6ba7b812-9dad-11d1-80b4-00c04fd430c8";
+
    public final static String NAMESPACE_X500 = "6ba7b814-9dad-11d1-80b4-00c04fd430c8";
 
    /*
@@ -76,8 +86,10 @@ public final class UUID
    private static boolean sDescCaching = true;
 
    private final byte[] mId = new byte[16];
+
    // Both string presentation and hash value may be cached...
    private transient String mDesc = null;
+
    private transient int mHashCode = 0;
 
    /**
@@ -88,20 +100,20 @@ public final class UUID
     * @param data
     *           16 byte UUID contents
     */
-   public UUID(int type, byte[] data)
+   public UUID(final int type, final byte[] data)
    {
       for (int i = 0; i < 16; ++i)
       {
          mId[i] = data[i];
       }
       // Type is multiplexed with time_hi:
-      mId[INDEX_TYPE] &= (byte) 0x0F;
-      mId[INDEX_TYPE] |= (byte) (type << 4);
+      mId[UUID.INDEX_TYPE] &= (byte)0x0F;
+      mId[UUID.INDEX_TYPE] |= (byte)(type << 4);
       // Variant masks first two bits of the clock_seq_hi:
-      mId[INDEX_VARIATION] &= (byte) 0x3F;
-      mId[INDEX_VARIATION] |= (byte) 0x80;
+      mId[UUID.INDEX_VARIATION] &= (byte)0x3F;
+      mId[UUID.INDEX_VARIATION] |= (byte)0x80;
    }
-   
+
    public final byte[] asBytes()
    {
       return mId;
@@ -121,6 +133,7 @@ public final class UUID
     */
    private final static int[] kShifts = { 3, 7, 17, 21, 29, 4, 9 };
 
+   @Override
    public final int hashCode()
    {
       if (mHashCode == 0)
@@ -128,34 +141,36 @@ public final class UUID
          // Let's handle first and last byte separately:
          int result = mId[0] & 0xFF;
 
-         result |= (result << 16);
-         result |= (result << 8);
+         result |= result << 16;
+         result |= result << 8;
 
          for (int i = 1; i < 15; i += 2)
          {
-            int curr = (mId[i] & 0xFF) << 8 | (mId[i + 1] & 0xFF);
-            int shift = kShifts[i >> 1];
+            int curr = (mId[i] & 0xFF) << 8 | mId[i + 1] & 0xFF;
+            int shift = UUID.kShifts[i >> 1];
 
             if (shift > 16)
             {
-               result ^= (curr << shift) | (curr >>> (32 - shift));
-            } else
+               result ^= curr << shift | curr >>> 32 - shift;
+            }
+            else
             {
-               result ^= (curr << shift);
+               result ^= curr << shift;
             }
          }
 
          // and then the last byte:
          int last = mId[15] & 0xFF;
-         result ^= (last << 3);
-         result ^= (last << 13);
+         result ^= last << 3;
+         result ^= last << 13;
 
-         result ^= (last << 27);
+         result ^= last << 27;
          // Let's not accept hash 0 as it indicates 'not hashed yet':
          if (result == 0)
          {
             mHashCode = -1;
-         } else
+         }
+         else
          {
             mHashCode = result;
          }
@@ -163,6 +178,7 @@ public final class UUID
       return mHashCode;
    }
 
+   @Override
    public final String toString()
    {
       /*
@@ -180,17 +196,17 @@ public final class UUID
             // Need to bypass hyphens:
             switch (i)
             {
-            case 4:
-            case 6:
-            case 8:
-            case 10:
-               b.append('-');
+               case 4:
+               case 6:
+               case 8:
+               case 10:
+                  b.append('-');
             }
             int hex = mId[i] & 0xFF;
-            b.append(kHexChars.charAt(hex >> 4));
-            b.append(kHexChars.charAt(hex & 0x0f));
+            b.append(UUID.kHexChars.charAt(hex >> 4));
+            b.append(UUID.kHexChars.charAt(hex & 0x0f));
          }
-         if (!sDescCaching)
+         if (!UUID.sDescCaching)
          {
             return b.toString();
          }
@@ -202,13 +218,14 @@ public final class UUID
    /**
     * Checking equality of UUIDs is easy; just compare the 128-bit number.
     */
-   public final boolean equals(Object o)
+   @Override
+   public final boolean equals(final Object o)
    {
       if (!(o instanceof UUID))
       {
          return false;
       }
-      byte[] otherId = ((UUID) o).mId;
+      byte[] otherId = ((UUID)o).mId;
       byte[] thisId = mId;
       for (int i = 0; i < 16; ++i)
       {

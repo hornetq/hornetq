@@ -11,7 +11,6 @@
  * permissions and limitations under the License.
  */
 
-
 package org.hornetq.core.config.cluster;
 
 import java.io.Serializable;
@@ -30,15 +29,15 @@ public class QueueConfiguration implements Serializable
    private static final long serialVersionUID = 650404974977490254L;
 
    private String address;
-   
+
    private String name;
-   
+
    private String filterString;
-   
+
    private boolean durable;
 
    public QueueConfiguration(final String address, final String name, final String filterString, final boolean durable)
-   {      
+   {
       this.address = address;
       this.name = name;
       this.filterString = filterString;
@@ -54,12 +53,12 @@ public class QueueConfiguration implements Serializable
    {
       return name;
    }
-   
+
    public String getFilterString()
    {
       return filterString;
    }
-   
+
    public boolean isDurable()
    {
       return durable;
@@ -68,7 +67,7 @@ public class QueueConfiguration implements Serializable
    /**
     * @param address the address to set
     */
-   public void setAddress(String address)
+   public void setAddress(final String address)
    {
       this.address = address;
    }
@@ -76,7 +75,7 @@ public class QueueConfiguration implements Serializable
    /**
     * @param name the name to set
     */
-   public void setName(String name)
+   public void setName(final String name)
    {
       this.name = name;
    }
@@ -84,7 +83,7 @@ public class QueueConfiguration implements Serializable
    /**
     * @param filterString the filterString to set
     */
-   public void setFilterString(String filterString)
+   public void setFilterString(final String filterString)
    {
       this.filterString = filterString;
    }
@@ -92,7 +91,7 @@ public class QueueConfiguration implements Serializable
    /**
     * @param durable the durable to set
     */
-   public void setDurable(boolean durable)
+   public void setDurable(final boolean durable)
    {
       this.durable = durable;
    }

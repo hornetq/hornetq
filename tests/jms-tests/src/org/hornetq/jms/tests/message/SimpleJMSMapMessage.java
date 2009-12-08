@@ -36,6 +36,7 @@ public class SimpleJMSMapMessage extends SimpleJMSMessage implements MapMessage
    // Attributes ----------------------------------------------------
 
    protected Map content;
+
    protected boolean bodyReadOnly = false;
 
    // Static --------------------------------------------------------
@@ -46,10 +47,10 @@ public class SimpleJMSMapMessage extends SimpleJMSMessage implements MapMessage
    {
       content = new HashMap();
    }
-   
+
    // MapMessage implementation -------------------------------------
 
-   public void setBoolean(String name, boolean value) throws JMSException
+   public void setBoolean(final String name, final boolean value) throws JMSException
    {
       checkName(name);
       if (bodyReadOnly)
@@ -61,7 +62,7 @@ public class SimpleJMSMapMessage extends SimpleJMSMessage implements MapMessage
 
    }
 
-   public void setByte(String name, byte value) throws JMSException
+   public void setByte(final String name, final byte value) throws JMSException
    {
       checkName(name);
       if (bodyReadOnly)
@@ -73,7 +74,7 @@ public class SimpleJMSMapMessage extends SimpleJMSMessage implements MapMessage
 
    }
 
-   public void setShort(String name, short value) throws JMSException
+   public void setShort(final String name, final short value) throws JMSException
    {
       checkName(name);
       if (bodyReadOnly)
@@ -85,7 +86,7 @@ public class SimpleJMSMapMessage extends SimpleJMSMessage implements MapMessage
 
    }
 
-   public void setChar(String name, char value) throws JMSException
+   public void setChar(final String name, final char value) throws JMSException
    {
       checkName(name);
       if (bodyReadOnly)
@@ -97,7 +98,7 @@ public class SimpleJMSMapMessage extends SimpleJMSMessage implements MapMessage
 
    }
 
-   public void setInt(String name, int value) throws JMSException
+   public void setInt(final String name, final int value) throws JMSException
    {
       checkName(name);
       if (bodyReadOnly)
@@ -109,7 +110,7 @@ public class SimpleJMSMapMessage extends SimpleJMSMessage implements MapMessage
 
    }
 
-   public void setLong(String name, long value) throws JMSException
+   public void setLong(final String name, final long value) throws JMSException
    {
       checkName(name);
       if (bodyReadOnly)
@@ -121,7 +122,7 @@ public class SimpleJMSMapMessage extends SimpleJMSMessage implements MapMessage
 
    }
 
-   public void setFloat(String name, float value) throws JMSException
+   public void setFloat(final String name, final float value) throws JMSException
    {
       checkName(name);
       if (bodyReadOnly)
@@ -133,7 +134,7 @@ public class SimpleJMSMapMessage extends SimpleJMSMessage implements MapMessage
 
    }
 
-   public void setDouble(String name, double value) throws JMSException
+   public void setDouble(final String name, final double value) throws JMSException
    {
       checkName(name);
       if (bodyReadOnly)
@@ -145,7 +146,7 @@ public class SimpleJMSMapMessage extends SimpleJMSMessage implements MapMessage
 
    }
 
-   public void setString(String name, String value) throws JMSException
+   public void setString(final String name, final String value) throws JMSException
    {
       checkName(name);
       if (bodyReadOnly)
@@ -157,7 +158,7 @@ public class SimpleJMSMapMessage extends SimpleJMSMessage implements MapMessage
 
    }
 
-   public void setBytes(String name, byte[] value) throws JMSException
+   public void setBytes(final String name, final byte[] value) throws JMSException
    {
       checkName(name);
       if (bodyReadOnly)
@@ -169,7 +170,7 @@ public class SimpleJMSMapMessage extends SimpleJMSMessage implements MapMessage
 
    }
 
-   public void setBytes(String name, byte[] value, int offset, int length) throws JMSException
+   public void setBytes(final String name, final byte[] value, final int offset, final int length) throws JMSException
    {
       checkName(name);
       if (bodyReadOnly)
@@ -191,7 +192,7 @@ public class SimpleJMSMapMessage extends SimpleJMSMessage implements MapMessage
 
    }
 
-   public void setObject(String name, Object value) throws JMSException
+   public void setObject(final String name, final Object value) throws JMSException
    {
       checkName(name);
       if (bodyReadOnly)
@@ -237,7 +238,7 @@ public class SimpleJMSMapMessage extends SimpleJMSMessage implements MapMessage
       }
       else if (value instanceof byte[])
       {
-         content.put(name, ((byte[]) value).clone());
+         content.put(name, ((byte[])value).clone());
       }
       else
       {
@@ -246,7 +247,7 @@ public class SimpleJMSMapMessage extends SimpleJMSMessage implements MapMessage
 
    }
 
-   public boolean getBoolean(String name) throws JMSException
+   public boolean getBoolean(final String name) throws JMSException
    {
       Object value;
 
@@ -259,11 +260,11 @@ public class SimpleJMSMapMessage extends SimpleJMSMessage implements MapMessage
 
       if (value instanceof Boolean)
       {
-         return ((Boolean) value).booleanValue();
+         return ((Boolean)value).booleanValue();
       }
       else if (value instanceof String)
       {
-         return Boolean.valueOf((String) value).booleanValue();
+         return Boolean.valueOf((String)value).booleanValue();
       }
       else
       {
@@ -271,7 +272,7 @@ public class SimpleJMSMapMessage extends SimpleJMSMessage implements MapMessage
       }
    }
 
-   public byte getByte(String name) throws JMSException
+   public byte getByte(final String name) throws JMSException
    {
       Object value;
 
@@ -284,11 +285,11 @@ public class SimpleJMSMapMessage extends SimpleJMSMessage implements MapMessage
 
       if (value instanceof Byte)
       {
-         return ((Byte) value).byteValue();
+         return ((Byte)value).byteValue();
       }
       else if (value instanceof String)
       {
-         return Byte.parseByte((String) value);
+         return Byte.parseByte((String)value);
       }
       else
       {
@@ -296,7 +297,7 @@ public class SimpleJMSMapMessage extends SimpleJMSMessage implements MapMessage
       }
    }
 
-   public short getShort(String name) throws JMSException
+   public short getShort(final String name) throws JMSException
    {
       Object value;
 
@@ -309,15 +310,15 @@ public class SimpleJMSMapMessage extends SimpleJMSMessage implements MapMessage
 
       if (value instanceof Byte)
       {
-         return ((Byte) value).shortValue();
+         return ((Byte)value).shortValue();
       }
       else if (value instanceof Short)
       {
-         return ((Short) value).shortValue();
+         return ((Short)value).shortValue();
       }
       else if (value instanceof String)
       {
-         return Short.parseShort((String) value);
+         return Short.parseShort((String)value);
       }
       else
       {
@@ -325,7 +326,7 @@ public class SimpleJMSMapMessage extends SimpleJMSMessage implements MapMessage
       }
    }
 
-   public char getChar(String name) throws JMSException
+   public char getChar(final String name) throws JMSException
    {
       Object value;
 
@@ -338,7 +339,7 @@ public class SimpleJMSMapMessage extends SimpleJMSMessage implements MapMessage
 
       if (value instanceof Character)
       {
-         return ((Character) value).charValue();
+         return ((Character)value).charValue();
       }
       else
       {
@@ -346,7 +347,7 @@ public class SimpleJMSMapMessage extends SimpleJMSMessage implements MapMessage
       }
    }
 
-   public int getInt(String name) throws JMSException
+   public int getInt(final String name) throws JMSException
    {
       Object value;
 
@@ -359,19 +360,19 @@ public class SimpleJMSMapMessage extends SimpleJMSMessage implements MapMessage
 
       if (value instanceof Byte)
       {
-         return ((Byte) value).intValue();
+         return ((Byte)value).intValue();
       }
       else if (value instanceof Short)
       {
-         return ((Short) value).intValue();
+         return ((Short)value).intValue();
       }
       else if (value instanceof Integer)
       {
-         return ((Integer) value).intValue();
+         return ((Integer)value).intValue();
       }
       else if (value instanceof String)
       {
-         return Integer.parseInt((String) value);
+         return Integer.parseInt((String)value);
       }
       else
       {
@@ -379,7 +380,7 @@ public class SimpleJMSMapMessage extends SimpleJMSMessage implements MapMessage
       }
    }
 
-   public long getLong(String name) throws JMSException
+   public long getLong(final String name) throws JMSException
    {
       Object value;
 
@@ -392,23 +393,23 @@ public class SimpleJMSMapMessage extends SimpleJMSMessage implements MapMessage
 
       if (value instanceof Byte)
       {
-         return ((Byte) value).longValue();
+         return ((Byte)value).longValue();
       }
       else if (value instanceof Short)
       {
-         return ((Short) value).longValue();
+         return ((Short)value).longValue();
       }
       else if (value instanceof Integer)
       {
-         return ((Integer) value).longValue();
+         return ((Integer)value).longValue();
       }
       else if (value instanceof Long)
       {
-         return ((Long) value).longValue();
+         return ((Long)value).longValue();
       }
       else if (value instanceof String)
       {
-         return Long.parseLong((String) value);
+         return Long.parseLong((String)value);
       }
       else
       {
@@ -416,7 +417,7 @@ public class SimpleJMSMapMessage extends SimpleJMSMessage implements MapMessage
       }
    }
 
-   public float getFloat(String name) throws JMSException
+   public float getFloat(final String name) throws JMSException
    {
       Object value;
 
@@ -429,11 +430,11 @@ public class SimpleJMSMapMessage extends SimpleJMSMessage implements MapMessage
 
       if (value instanceof Float)
       {
-         return ((Float) value).floatValue();
+         return ((Float)value).floatValue();
       }
       else if (value instanceof String)
       {
-         return Float.parseFloat((String) value);
+         return Float.parseFloat((String)value);
       }
       else
       {
@@ -441,7 +442,7 @@ public class SimpleJMSMapMessage extends SimpleJMSMessage implements MapMessage
       }
    }
 
-   public double getDouble(String name) throws JMSException
+   public double getDouble(final String name) throws JMSException
    {
       Object value;
 
@@ -454,15 +455,15 @@ public class SimpleJMSMapMessage extends SimpleJMSMessage implements MapMessage
 
       if (value instanceof Float)
       {
-         return ((Float) value).doubleValue();
+         return ((Float)value).doubleValue();
       }
       else if (value instanceof Double)
       {
-         return ((Double) value).doubleValue();
+         return ((Double)value).doubleValue();
       }
       else if (value instanceof String)
       {
-         return Double.parseDouble((String) value);
+         return Double.parseDouble((String)value);
       }
       else
       {
@@ -470,7 +471,7 @@ public class SimpleJMSMapMessage extends SimpleJMSMessage implements MapMessage
       }
    }
 
-   public String getString(String name) throws JMSException
+   public String getString(final String name) throws JMSException
    {
       Object value;
 
@@ -483,39 +484,39 @@ public class SimpleJMSMapMessage extends SimpleJMSMessage implements MapMessage
 
       if (value instanceof Boolean)
       {
-         return ((Boolean) value).toString();
+         return ((Boolean)value).toString();
       }
       else if (value instanceof Byte)
       {
-         return ((Byte) value).toString();
+         return ((Byte)value).toString();
       }
       else if (value instanceof Short)
       {
-         return ((Short) value).toString();
+         return ((Short)value).toString();
       }
       else if (value instanceof Character)
       {
-         return ((Character) value).toString();
+         return ((Character)value).toString();
       }
       else if (value instanceof Integer)
       {
-         return ((Integer) value).toString();
+         return ((Integer)value).toString();
       }
       else if (value instanceof Long)
       {
-         return ((Long) value).toString();
+         return ((Long)value).toString();
       }
       else if (value instanceof Float)
       {
-         return ((Float) value).toString();
+         return ((Float)value).toString();
       }
       else if (value instanceof Double)
       {
-         return ((Double) value).toString();
+         return ((Double)value).toString();
       }
       else if (value instanceof String)
       {
-         return (String) value;
+         return (String)value;
       }
       else
       {
@@ -523,7 +524,7 @@ public class SimpleJMSMapMessage extends SimpleJMSMessage implements MapMessage
       }
    }
 
-   public byte[] getBytes(String name) throws JMSException
+   public byte[] getBytes(final String name) throws JMSException
    {
       Object value;
 
@@ -535,7 +536,7 @@ public class SimpleJMSMapMessage extends SimpleJMSMessage implements MapMessage
       }
       if (value instanceof byte[])
       {
-         return (byte[]) value;
+         return (byte[])value;
       }
       else
       {
@@ -543,7 +544,7 @@ public class SimpleJMSMapMessage extends SimpleJMSMessage implements MapMessage
       }
    }
 
-   public Object getObject(String name) throws JMSException
+   public Object getObject(final String name) throws JMSException
    {
 
       return content.get(name);
@@ -557,7 +558,7 @@ public class SimpleJMSMapMessage extends SimpleJMSMessage implements MapMessage
 
    }
 
-   public boolean itemExists(String name) throws JMSException
+   public boolean itemExists(final String name) throws JMSException
    {
 
       return content.containsKey(name);
@@ -575,7 +576,7 @@ public class SimpleJMSMapMessage extends SimpleJMSMessage implements MapMessage
     * 
     * @param name the name
     */
-   private void checkName(String name)
+   private void checkName(final String name)
    {
       if (name == null)
       {
@@ -591,4 +592,3 @@ public class SimpleJMSMapMessage extends SimpleJMSMessage implements MapMessage
    // Inner classes -------------------------------------------------
 
 }
-

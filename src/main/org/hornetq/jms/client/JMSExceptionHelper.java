@@ -9,7 +9,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
  * implied.  See the License for the specific language governing
  * permissions and limitations under the License.
- */ 
+ */
 
 package org.hornetq.jms.client;
 
@@ -30,9 +30,9 @@ import org.hornetq.core.exception.HornetQException;
 public class JMSExceptionHelper
 {
    // Constants -----------------------------------------------------
-   
+
    // Static --------------------------------------------------------
-   
+
    public static JMSException convertFromHornetQException(final HornetQException me)
    {
       JMSException je;
@@ -45,65 +45,65 @@ public class JMSExceptionHelper
          case HornetQException.ILLEGAL_STATE:
             je = new javax.jms.IllegalStateException(me.getMessage());
             break;
-         
+
          case HornetQException.INTERNAL_ERROR:
-            je =  new JMSException(me.getMessage());
+            je = new JMSException(me.getMessage());
             break;
-            
+
          case HornetQException.INVALID_FILTER_EXPRESSION:
             je = new InvalidSelectorException(me.getMessage());
             break;
-            
+
          case HornetQException.NOT_CONNECTED:
             je = new JMSException(me.getMessage());
             break;
-            
+
          case HornetQException.OBJECT_CLOSED:
             je = new javax.jms.IllegalStateException(me.getMessage());
             break;
-            
+
          case HornetQException.QUEUE_DOES_NOT_EXIST:
             je = new InvalidDestinationException(me.getMessage());
             break;
-            
+
          case HornetQException.QUEUE_EXISTS:
             je = new InvalidDestinationException(me.getMessage());
             break;
-            
+
          case HornetQException.SECURITY_EXCEPTION:
             je = new JMSSecurityException(me.getMessage());
             break;
-            
+
          case HornetQException.UNSUPPORTED_PACKET:
-            je =  new javax.jms.IllegalStateException(me.getMessage());
+            je = new javax.jms.IllegalStateException(me.getMessage());
             break;
-            
+
          case HornetQException.TRANSACTION_ROLLED_BACK:
-            je =  new javax.jms.TransactionRolledBackException(me.getMessage());
+            je = new javax.jms.TransactionRolledBackException(me.getMessage());
             break;
-            
+
          default:
             je = new JMSException(me.getMessage());
       }
-      
+
       je.setStackTrace(me.getStackTrace());
-      
+
       je.initCause(me);
-      
+
       return je;
    }
-   
+
    // Attributes ----------------------------------------------------
 
    // Constructors --------------------------------------------------
-  
+
    // Public --------------------------------------------------------
 
    // Package protected ---------------------------------------------
-   
+
    // Protected -----------------------------------------------------
-   
+
    // Private -------------------------------------------------------
-   
-   // Inner classes -------------------------------------------------   
+
+   // Inner classes -------------------------------------------------
 }

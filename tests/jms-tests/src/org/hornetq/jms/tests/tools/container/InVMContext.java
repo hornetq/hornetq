@@ -35,7 +35,6 @@ import javax.naming.Reference;
 
 import org.hornetq.core.logging.Logger;
 
-
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @version <tt>$Revision: 2868 $</tt>
@@ -50,13 +49,14 @@ public class InVMContext implements Context, Serializable
 
    private static final Logger log = Logger.getLogger(InVMContext.class);
 
-
    // Static --------------------------------------------------------
 
    // Attributes ----------------------------------------------------
 
    protected Map map;
+
    protected NameParser parser = new InVMNameParser();
+
    private String nameInNamespace = "";
 
    // Constructors --------------------------------------------------
@@ -66,14 +66,15 @@ public class InVMContext implements Context, Serializable
       map = Collections.synchronizedMap(new HashMap());
    }
 
-   public InVMContext(String nameInNamespace)
+   public InVMContext(final String nameInNamespace)
    {
       this();
       this.nameInNamespace = nameInNamespace;
    }
+
    // Context implementation ----------------------------------------
 
-   public Object lookup(Name name) throws NamingException
+   public Object lookup(final Name name) throws NamingException
    {
       throw new UnsupportedOperationException();
    }
@@ -107,27 +108,27 @@ public class InVMContext implements Context, Serializable
       }
    }
 
-   public void bind(Name name, Object obj) throws NamingException
+   public void bind(final Name name, final Object obj) throws NamingException
    {
       throw new UnsupportedOperationException();
    }
 
-   public void bind(String name, Object obj) throws NamingException
+   public void bind(final String name, final Object obj) throws NamingException
    {
       internalBind(name, obj, false);
    }
 
-   public void rebind(Name name, Object obj) throws NamingException
+   public void rebind(final Name name, final Object obj) throws NamingException
    {
       throw new UnsupportedOperationException();
    }
 
-   public void rebind(String name, Object obj) throws NamingException
+   public void rebind(final String name, final Object obj) throws NamingException
    {
       internalBind(name, obj, true);
    }
 
-   public void unbind(Name name) throws NamingException
+   public void unbind(final Name name) throws NamingException
    {
       unbind(name.toString());
    }
@@ -153,27 +154,27 @@ public class InVMContext implements Context, Serializable
       }
    }
 
-   public void rename(Name oldName, Name newName) throws NamingException
+   public void rename(final Name oldName, final Name newName) throws NamingException
    {
       throw new UnsupportedOperationException();
    }
 
-   public void rename(String oldName, String newName) throws NamingException
+   public void rename(final String oldName, final String newName) throws NamingException
    {
       throw new UnsupportedOperationException();
    }
 
-   public NamingEnumeration list(Name name) throws NamingException
+   public NamingEnumeration list(final Name name) throws NamingException
    {
       throw new UnsupportedOperationException();
    }
 
-   public NamingEnumeration list(String name) throws NamingException
+   public NamingEnumeration list(final String name) throws NamingException
    {
       throw new UnsupportedOperationException();
    }
 
-   public NamingEnumeration listBindings(Name name) throws NamingException
+   public NamingEnumeration listBindings(final Name name) throws NamingException
    {
       throw new UnsupportedOperationException();
    }
@@ -187,14 +188,14 @@ public class InVMContext implements Context, Serializable
          {
             return ((InVMContext)lookup(contextName)).listBindings("");
          }
-         catch(Throwable t)
+         catch (Throwable t)
          {
             throw new NamingException(t.getMessage());
          }
       }
 
       List l = new ArrayList();
-      for(Iterator i = map.keySet().iterator(); i.hasNext(); )
+      for (Iterator i = map.keySet().iterator(); i.hasNext();)
       {
          String name = (String)i.next();
          Object object = map.get(name);
@@ -203,17 +204,17 @@ public class InVMContext implements Context, Serializable
       return new NamingEnumerationImpl(l.iterator());
    }
 
-   public void destroySubcontext(Name name) throws NamingException
+   public void destroySubcontext(final Name name) throws NamingException
    {
       destroySubcontext(name.toString());
    }
 
-   public void destroySubcontext(String name) throws NamingException
+   public void destroySubcontext(final String name) throws NamingException
    {
-       map.remove(trimSlashes(name));
+      map.remove(trimSlashes(name));
    }
 
-   public Context createSubcontext(Name name) throws NamingException
+   public Context createSubcontext(final Name name) throws NamingException
    {
       throw new UnsupportedOperationException();
    }
@@ -230,42 +231,42 @@ public class InVMContext implements Context, Serializable
       return c;
    }
 
-   public Object lookupLink(Name name) throws NamingException
+   public Object lookupLink(final Name name) throws NamingException
    {
       throw new UnsupportedOperationException();
    }
 
-   public Object lookupLink(String name) throws NamingException
+   public Object lookupLink(final String name) throws NamingException
    {
       throw new UnsupportedOperationException();
    }
 
-   public NameParser getNameParser(Name name) throws NamingException
+   public NameParser getNameParser(final Name name) throws NamingException
    {
       return getNameParser(name.toString());
    }
 
-   public NameParser getNameParser(String name) throws NamingException
+   public NameParser getNameParser(final String name) throws NamingException
    {
       return parser;
    }
 
-   public Name composeName(Name name, Name prefix) throws NamingException
+   public Name composeName(final Name name, final Name prefix) throws NamingException
    {
       throw new UnsupportedOperationException();
    }
 
-   public String composeName(String name, String prefix) throws NamingException
+   public String composeName(final String name, final String prefix) throws NamingException
    {
       throw new UnsupportedOperationException();
    }
 
-   public Object addToEnvironment(String propName, Object propVal) throws NamingException
+   public Object addToEnvironment(final String propName, final Object propVal) throws NamingException
    {
       throw new UnsupportedOperationException();
    }
 
-   public Object removeFromEnvironment(String propName) throws NamingException
+   public Object removeFromEnvironment(final String propName) throws NamingException
    {
       throw new UnsupportedOperationException();
    }
@@ -273,8 +274,7 @@ public class InVMContext implements Context, Serializable
    public Hashtable getEnvironment() throws NamingException
    {
       Hashtable env = new Hashtable();
-      env.put("java.naming.factory.initial",
-              "org.hornetq.jms.tests.tools.container.InVMInitialContextFactory");
+      env.put("java.naming.factory.initial", "org.hornetq.jms.tests.tools.container.InVMInitialContextFactory");
       env.put("java.naming.provider.url", "org.jboss.naming:org.jnp.interface");
       return env;
    }
@@ -299,7 +299,7 @@ public class InVMContext implements Context, Serializable
    private String trimSlashes(String s)
    {
       int i = 0;
-      while(true)
+      while (true)
       {
          if (i == s.length() || s.charAt(i) != '/')
          {
@@ -309,7 +309,7 @@ public class InVMContext implements Context, Serializable
       }
       s = s.substring(i);
       i = s.length() - 1;
-      while(true)
+      while (true)
       {
          if (i == -1 || s.charAt(i) != '/')
          {
@@ -320,9 +320,9 @@ public class InVMContext implements Context, Serializable
       return s.substring(0, i + 1);
    }
 
-   private void internalBind(String name, Object obj, boolean rebind) throws NamingException
+   private void internalBind(String name, final Object obj, final boolean rebind) throws NamingException
    {
-   	log.debug("Binding " + name + " obj " + obj + " rebind " + rebind);
+      InVMContext.log.debug("Binding " + name + " obj " + obj + " rebind " + rebind);
       name = trimSlashes(name);
       int i = name.lastIndexOf("/");
       InVMContext c = this;
@@ -343,11 +343,11 @@ public class InVMContext implements Context, Serializable
 
    private class NamingEnumerationImpl implements NamingEnumeration
    {
-      private Iterator iterator;
+      private final Iterator iterator;
 
-      NamingEnumerationImpl(Iterator bindingIterator)
+      NamingEnumerationImpl(final Iterator bindingIterator)
       {
-         this.iterator = bindingIterator;
+         iterator = bindingIterator;
       }
 
       public void close() throws NamingException
@@ -376,4 +376,3 @@ public class InVMContext implements Context, Serializable
       }
    }
 }
-

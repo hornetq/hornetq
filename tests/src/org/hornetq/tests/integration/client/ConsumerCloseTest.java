@@ -12,7 +12,7 @@
  */
 package org.hornetq.tests.integration.client;
 
-import static org.hornetq.tests.util.RandomUtil.randomSimpleString;
+import junit.framework.Assert;
 
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
@@ -30,7 +30,9 @@ import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.server.HornetQ;
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.ServiceTestBase;
+import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.SimpleString;
 
 /**
@@ -40,9 +42,8 @@ import org.hornetq.utils.SimpleString;
 public class ConsumerCloseTest extends ServiceTestBase
 {
    // Constants -----------------------------------------------------
-   
-   private static final Logger log = Logger.getLogger(ConsumerCloseTest.class);
 
+   private static final Logger log = Logger.getLogger(ConsumerCloseTest.class);
 
    // Attributes ----------------------------------------------------
 
@@ -66,9 +67,9 @@ public class ConsumerCloseTest extends ServiceTestBase
 
       consumer.close();
 
-      assertTrue(consumer.isClosed());
+      Assert.assertTrue(consumer.isClosed());
 
-      expectHornetQException(HornetQException.OBJECT_CLOSED, new HornetQAction()
+      UnitTestCase.expectHornetQException(HornetQException.OBJECT_CLOSED, new HornetQAction()
       {
          public void run() throws HornetQException
          {
@@ -76,7 +77,7 @@ public class ConsumerCloseTest extends ServiceTestBase
          }
       });
 
-      expectHornetQException(HornetQException.OBJECT_CLOSED, new HornetQAction()
+      UnitTestCase.expectHornetQException(HornetQException.OBJECT_CLOSED, new HornetQAction()
       {
          public void run() throws HornetQException
          {
@@ -84,13 +85,13 @@ public class ConsumerCloseTest extends ServiceTestBase
          }
       });
 
-      expectHornetQException(HornetQException.OBJECT_CLOSED, new HornetQAction()
+      UnitTestCase.expectHornetQException(HornetQException.OBJECT_CLOSED, new HornetQAction()
       {
          public void run() throws HornetQException
          {
             consumer.setMessageHandler(new MessageHandler()
             {
-               public void onMessage(ClientMessage message)
+               public void onMessage(final ClientMessage message)
                {
                }
             });
@@ -116,7 +117,7 @@ public class ConsumerCloseTest extends ServiceTestBase
 
       class MyHandler implements MessageHandler
       {
-         public void onMessage(ClientMessage message)
+         public void onMessage(final ClientMessage message)
          {
             try
             {
@@ -127,19 +128,19 @@ public class ConsumerCloseTest extends ServiceTestBase
             }
          }
       }
-      
+
       consumer.setMessageHandler(new MyHandler());
-      
+
       session.start();
-      
+
       Thread.sleep(1000);
-      
-      //Close shouldn't wait for all messages to be processed before closing
-      long start= System.currentTimeMillis();
+
+      // Close shouldn't wait for all messages to be processed before closing
+      long start = System.currentTimeMillis();
       consumer.close();
       long end = System.currentTimeMillis();
-      
-      assertTrue(end - start <= 1500);
+
+      Assert.assertTrue(end - start <= 1500);
 
    }
 
@@ -158,16 +159,14 @@ public class ConsumerCloseTest extends ServiceTestBase
       server = HornetQ.newHornetQServer(config, false);
       server.start();
 
-      address = randomSimpleString();
-      queue = randomSimpleString();
+      address = RandomUtil.randomSimpleString();
+      queue = RandomUtil.randomSimpleString();
 
       sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
       session = sf.createSession(false, true, true);
       session.createQueue(address, queue, false);
 
    }
-   
-   
 
    private ClientSessionFactory sf;
 
@@ -181,7 +180,7 @@ public class ConsumerCloseTest extends ServiceTestBase
       sf.close();
 
       server.stop();
-      
+
       session = null;
       sf = null;
       server = null;

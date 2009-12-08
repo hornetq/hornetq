@@ -52,9 +52,8 @@ public class DivertControlUsingCoreTest extends DivertControlTest
 
       return new DivertControl()
       {
-         private final CoreMessagingProxy proxy = new CoreMessagingProxy(session,
-                                                                         ResourceNames.CORE_DIVERT + name);
-         
+         private final CoreMessagingProxy proxy = new CoreMessagingProxy(session, ResourceNames.CORE_DIVERT + name);
+
          public String getAddress()
          {
             return (String)proxy.retrieveAttributeValue("address");

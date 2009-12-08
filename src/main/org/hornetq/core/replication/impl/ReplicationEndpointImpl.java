@@ -13,11 +13,6 @@
 
 package org.hornetq.core.replication.impl;
 
-import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.REPLICATION_LARGE_MESSAGE_BEGIN;
-import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.REPLICATION_LARGE_MESSAGE_END;
-import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.REPLICATION_LARGE_MESSAGE_WRITE;
-import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.REPLICATION_COMPARE_DATA;
-
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -71,11 +66,11 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
 
    // Attributes ----------------------------------------------------
 
-   private static final boolean trace = log.isTraceEnabled();
+   private static final boolean trace = ReplicationEndpointImpl.log.isTraceEnabled();
 
-   private static void trace(String msg)
+   private static void trace(final String msg)
    {
-      log.trace(msg);
+      ReplicationEndpointImpl.log.trace(msg);
    }
 
    private final HornetQServer server;
@@ -95,7 +90,7 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
    private final ConcurrentMap<SimpleString, ConcurrentMap<Integer, Page>> pageIndex = new ConcurrentHashMap<SimpleString, ConcurrentMap<Integer, Page>>();
 
    private final ConcurrentMap<Long, LargeServerMessage> largeMessages = new ConcurrentHashMap<Long, LargeServerMessage>();
-   
+
    // Used on tests, to simulate failures on delete pages
    private boolean deletePages = true;
 
@@ -148,34 +143,34 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
          {
             handlePageEvent((ReplicationPageEventMessage)packet);
          }
-         else if (packet.getType() == REPLICATION_LARGE_MESSAGE_BEGIN)
+         else if (packet.getType() == PacketImpl.REPLICATION_LARGE_MESSAGE_BEGIN)
          {
             handleLargeMessageBegin((ReplicationLargeMessageBeingMessage)packet);
          }
-         else if (packet.getType() == REPLICATION_LARGE_MESSAGE_WRITE)
+         else if (packet.getType() == PacketImpl.REPLICATION_LARGE_MESSAGE_WRITE)
          {
             handleLargeMessageWrite((ReplicationLargeMessageWriteMessage)packet);
          }
-         else if (packet.getType() == REPLICATION_LARGE_MESSAGE_END)
+         else if (packet.getType() == PacketImpl.REPLICATION_LARGE_MESSAGE_END)
          {
             handleLargeMessageEnd((ReplicationLargemessageEndMessage)packet);
          }
-         else if (packet.getType() == REPLICATION_COMPARE_DATA)
+         else if (packet.getType() == PacketImpl.REPLICATION_COMPARE_DATA)
          {
             handleCompareDataMessage((ReplicationCompareDataMessage)packet);
             response = new NullResponseMessage();
          }
          else
          {
-            log.warn("Packet " + packet + " can't be processed by the ReplicationEndpoint");
+            ReplicationEndpointImpl.log.warn("Packet " + packet + " can't be processed by the ReplicationEndpoint");
          }
       }
       catch (Exception e)
       {
-         log.warn(e.getMessage(), e);
+         ReplicationEndpointImpl.log.warn(e.getMessage(), e);
          response = new HornetQExceptionMessage((HornetQException)e);
       }
-      
+
       channel.send(response);
    }
 
@@ -196,7 +191,7 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
 
       storage = new JournalStorageManager(config, server.getExecutorFactory());
       storage.start();
-      
+
       server.getManagementService().setStorageManager(storage);
 
       bindingsJournal = storage.getBindingsJournal();
@@ -238,7 +233,7 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
             }
             catch (Exception e)
             {
-               log.warn("Error while closing the page on backup", e);
+               ReplicationEndpointImpl.log.warn("Error while closing the page on backup", e);
             }
          }
       }
@@ -269,9 +264,9 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
       this.channel = channel;
    }
 
-   public void compareJournalInformation(JournalLoadInformation[] journalInformation) throws HornetQException
+   public void compareJournalInformation(final JournalLoadInformation[] journalInformation) throws HornetQException
    {
-      if (this.journalLoadInformation == null || this.journalLoadInformation.length != journalInformation.length)
+      if (journalLoadInformation == null || journalLoadInformation.length != journalInformation.length)
       {
          throw new HornetQException(HornetQException.INTERNAL_ERROR,
                                     "Live Node contains more journals than the backup node. Probably a version match error");
@@ -279,16 +274,16 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
 
       for (int i = 0; i < journalInformation.length; i++)
       {
-         if (!journalInformation[i].equals(this.journalLoadInformation[i]))
+         if (!journalInformation[i].equals(journalLoadInformation[i]))
          {
-            log.warn("Journal comparisson mismatch:\n" + journalParametersToString(journalInformation));
+            ReplicationEndpointImpl.log.warn("Journal comparisson mismatch:\n" + journalParametersToString(journalInformation));
             throw new HornetQException(HornetQException.ILLEGAL_STATE,
                                        "Backup node can't connect to the live node as the data differs");
          }
       }
 
    }
-   
+
    /** Used on tests only. To simulate missing page deletes*/
    public void setDeletePages(final boolean deletePages)
    {
@@ -298,27 +293,26 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
    /**
     * @param journalInformation
     */
-   private String journalParametersToString(JournalLoadInformation[] journalInformation)
+   private String journalParametersToString(final JournalLoadInformation[] journalInformation)
    {
-      return "**********************************************************\n" +
-               "parameters:\n" +
-               "Bindings = " +
-               journalInformation[0] +
-               "\n" +
-               "Messaging = " +
-               journalInformation[1] +
-               "\n" +
-               "**********************************************************" +
-               "\n" +
-               "Expected:" +
-               "\n" +
-               "Bindings = " +
-               this.journalLoadInformation[0] +
-               "\n" +
-               "Messaging = " +
-               this.journalLoadInformation[1] +
-               "\n" +
-               "**********************************************************";
+      return "**********************************************************\n" + "parameters:\n" +
+             "Bindings = " +
+             journalInformation[0] +
+             "\n" +
+             "Messaging = " +
+             journalInformation[1] +
+             "\n" +
+             "**********************************************************" +
+             "\n" +
+             "Expected:" +
+             "\n" +
+             "Bindings = " +
+             journalLoadInformation[0] +
+             "\n" +
+             "Messaging = " +
+             journalLoadInformation[1] +
+             "\n" +
+             "**********************************************************";
    }
 
    // Package protected ---------------------------------------------
@@ -329,10 +323,10 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
    /**
     * @param packet
     */
-   private void handleLargeMessageEnd(ReplicationLargemessageEndMessage packet)
+   private void handleLargeMessageEnd(final ReplicationLargemessageEndMessage packet)
    {
       LargeServerMessage message = lookupLargeMessage(packet.getMessageId(), true);
-      
+
       if (message != null)
       {
          try
@@ -341,7 +335,7 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
          }
          catch (Exception e)
          {
-            log.warn("Error deleting large message ID = " + packet.getMessageId(), e);
+            ReplicationEndpointImpl.log.warn("Error deleting large message ID = " + packet.getMessageId(), e);
          }
       }
    }
@@ -349,7 +343,7 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
    /**
     * @param packet
     */
-   private void handleLargeMessageWrite(ReplicationLargeMessageWriteMessage packet) throws Exception
+   private void handleLargeMessageWrite(final ReplicationLargeMessageWriteMessage packet) throws Exception
    {
       LargeServerMessage message = lookupLargeMessage(packet.getMessageId(), false);
       if (message != null)
@@ -357,17 +351,16 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
          message.addBytes(packet.getBody());
       }
    }
-   
-      /**
-    * @param request
-    */
-   private void handleCompareDataMessage(ReplicationCompareDataMessage request) throws HornetQException
+
+   /**
+   * @param request
+   */
+   private void handleCompareDataMessage(final ReplicationCompareDataMessage request) throws HornetQException
    {
       compareJournalInformation(request.getJournalInformation());
    }
-   
 
-   private LargeServerMessage lookupLargeMessage(long messageId, boolean delete)
+   private LargeServerMessage lookupLargeMessage(final long messageId, final boolean delete)
    {
       LargeServerMessage message;
 
@@ -382,21 +375,23 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
 
       if (message == null)
       {
-         log.warn("Large MessageID " + messageId + "  is not available on backup server. Ignoring replication message");
+         ReplicationEndpointImpl.log.warn("Large MessageID " + messageId +
+                                          "  is not available on backup server. Ignoring replication message");
       }
 
       return message;
 
    }
+
    /**
     * @param packet
     */
-   private void handleLargeMessageBegin(ReplicationLargeMessageBeingMessage packet)
+   private void handleLargeMessageBegin(final ReplicationLargeMessageBeingMessage packet)
    {
       LargeServerMessage largeMessage = storage.createLargeMessage();
       largeMessage.setMessageID(packet.getMessageId());
-      trace("Receiving Large Message " + largeMessage.getMessageID() + " on backup");
-      this.largeMessages.put(largeMessage.getMessageID(), largeMessage);
+      ReplicationEndpointImpl.trace("Receiving Large Message " + largeMessage.getMessageID() + " on backup");
+      largeMessages.put(largeMessage.getMessageID(), largeMessage);
    }
 
    /**
@@ -479,17 +474,17 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
 
       if (packet.isUpdate())
       {
-         if (trace)
+         if (ReplicationEndpointImpl.trace)
          {
-            trace("Endpoint appendUpdate id = " + packet.getId());
+            ReplicationEndpointImpl.trace("Endpoint appendUpdate id = " + packet.getId());
          }
          journalToUse.appendUpdateRecord(packet.getId(), packet.getRecordType(), packet.getRecordData(), false);
       }
       else
       {
-         if (trace)
+         if (ReplicationEndpointImpl.trace)
          {
-            trace("Endpoint append id = " + packet.getId());
+            ReplicationEndpointImpl.trace("Endpoint append id = " + packet.getId());
          }
          journalToUse.appendAddRecord(packet.getId(), packet.getRecordType(), packet.getRecordData(), false);
       }

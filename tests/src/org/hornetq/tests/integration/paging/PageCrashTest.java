@@ -21,6 +21,8 @@ import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
@@ -85,14 +87,14 @@ public class PageCrashTest extends ServiceTestBase
 
       File directories[] = pageDir.listFiles();
 
-      assertEquals(1, directories.length);
+      Assert.assertEquals(1, directories.length);
 
       if (!transacted)
       {
          // When depage happened, a new empty page was supposed to be opened, what will create 3 files
-         assertEquals("Missing a file, supposed to have address.txt, 1st page and 2nd page",
-                      3,
-                      directories[0].list().length);
+         Assert.assertEquals("Missing a file, supposed to have address.txt, 1st page and 2nd page",
+                             3,
+                             directories[0].list().length);
       }
 
       Configuration config = createDefaultConfig();
@@ -113,9 +115,9 @@ public class PageCrashTest extends ServiceTestBase
 
          session.start();
 
-         ClientConsumer consumer = session.createConsumer(ADDRESS);
+         ClientConsumer consumer = session.createConsumer(PageCrashTest.ADDRESS);
 
-         assertNull(consumer.receiveImmediate());
+         Assert.assertNull(consumer.receiveImmediate());
 
          session.close();
       }
@@ -157,14 +159,14 @@ public class PageCrashTest extends ServiceTestBase
 
          ClientSession session = sf.createSession(null, null, false, !transacted, !transacted, false, 0);
 
-         session.createQueue(ADDRESS, ADDRESS, null, true);
+         session.createQueue(PageCrashTest.ADDRESS, PageCrashTest.ADDRESS, null, true);
 
-         ClientProducer producer = session.createProducer(ADDRESS);
+         ClientProducer producer = session.createProducer(PageCrashTest.ADDRESS);
 
          ClientMessage message = session.createClientMessage(true);
          message.getBodyBuffer().writeBytes(new byte[1024]);
 
-         PagingStore store = server.getPostOffice().getPagingManager().getPageStore(ADDRESS);
+         PagingStore store = server.getPostOffice().getPagingManager().getPageStore(PageCrashTest.ADDRESS);
 
          int messages = 0;
          while (!store.isPaging())
@@ -187,11 +189,11 @@ public class PageCrashTest extends ServiceTestBase
 
          session.close();
 
-         assertTrue(server.getPostOffice().getPagingManager().getTotalMemory() > 0);
+         Assert.assertTrue(server.getPostOffice().getPagingManager().getTotalMemory() > 0);
 
          session = sf.createSession(null, null, false, true, true, false, 0);
 
-         ClientConsumer consumer = session.createConsumer(ADDRESS);
+         ClientConsumer consumer = session.createConsumer(PageCrashTest.ADDRESS);
 
          session.start();
 
@@ -199,7 +201,7 @@ public class PageCrashTest extends ServiceTestBase
          {
             ClientMessage message2 = consumer.receive(10000);
 
-            assertNotNull(message2);
+            Assert.assertNotNull(message2);
 
             message2.acknowledge();
          }
@@ -208,7 +210,7 @@ public class PageCrashTest extends ServiceTestBase
 
          session.close();
 
-         assertEquals(0, server.getPostOffice().getPagingManager().getTotalMemory());
+         Assert.assertEquals(0, server.getPostOffice().getPagingManager().getTotalMemory());
 
       }
       finally

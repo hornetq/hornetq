@@ -32,7 +32,7 @@ public interface ReplicationEndpoint extends ChannelHandler, HornetQComponent
    void setChannel(Channel channel);
 
    Channel getChannel();
-   
+
    void compareJournalInformation(JournalLoadInformation[] journalInformation) throws HornetQException;
 
 }

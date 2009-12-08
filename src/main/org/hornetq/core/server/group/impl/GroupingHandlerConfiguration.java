@@ -33,7 +33,7 @@ public class GroupingHandlerConfiguration
 
    public GroupingHandlerConfiguration(final SimpleString name, final TYPE type, final SimpleString address)
    {
-      this(name, type, address, DEFAULT_TIMEOUT);
+      this(name, type, address, GroupingHandlerConfiguration.DEFAULT_TIMEOUT);
    }
 
    public GroupingHandlerConfiguration(final SimpleString name,

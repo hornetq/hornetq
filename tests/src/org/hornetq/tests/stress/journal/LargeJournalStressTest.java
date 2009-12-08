@@ -16,6 +16,8 @@ package org.hornetq.tests.stress.journal;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
@@ -59,7 +61,7 @@ public class LargeJournalStressTest extends ServiceTestBase
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
- 
+
    public void testMultiProducerAndCompactAIO() throws Throwable
    {
       internalTestMultiProducer(JournalType.ASYNCIO);
@@ -70,7 +72,7 @@ public class LargeJournalStressTest extends ServiceTestBase
       internalTestMultiProducer(JournalType.NIO);
    }
 
-   public void internalTestMultiProducer(JournalType journalType) throws Throwable
+   public void internalTestMultiProducer(final JournalType journalType) throws Throwable
    {
 
       setupServer(journalType);
@@ -91,6 +93,7 @@ public class LargeJournalStressTest extends ServiceTestBase
             super("Fast-Thread");
          }
 
+         @Override
          public void run()
          {
             ClientSession session = null;
@@ -101,21 +104,23 @@ public class LargeJournalStressTest extends ServiceTestBase
                latchStart.await();
                session = sf.createSession(true, true);
                sessionSlow = sf.createSession(false, false);
-               ClientProducer prod = session.createProducer(AD2);
-               ClientProducer slowProd = sessionSlow.createProducer(AD1);
+               ClientProducer prod = session.createProducer(LargeJournalStressTest.AD2);
+               ClientProducer slowProd = sessionSlow.createProducer(LargeJournalStressTest.AD1);
                for (int i = 0; i < NUMBER_OF_FAST_MESSAGES; i++)
                {
                   if (i % SLOW_INTERVAL == 0)
                   {
-                     System.out.println("Sending slow message, msgs = " + i + " slowMessages = " + numberOfMessages.get());
-                     
+                     System.out.println("Sending slow message, msgs = " + i +
+                                        " slowMessages = " +
+                                        numberOfMessages.get());
+
                      if (numberOfMessages.incrementAndGet() % 5 == 0)
                      {
                         sessionSlow.commit();
                      }
                      slowProd.send(session.createClientMessage(true));
                   }
-                  ClientMessage msg = session.createClientMessage(true);                  
+                  ClientMessage msg = session.createClientMessage(true);
                   prod.send(msg);
                }
                sessionSlow.commit();
@@ -155,6 +160,7 @@ public class LargeJournalStressTest extends ServiceTestBase
             super("Fast-Consumer");
          }
 
+         @Override
          public void run()
          {
             ClientSession session = null;
@@ -164,14 +170,14 @@ public class LargeJournalStressTest extends ServiceTestBase
                latchStart.await();
                session = sf.createSession(true, true);
                session.start();
-               ClientConsumer cons = session.createConsumer(Q2);
+               ClientConsumer cons = session.createConsumer(LargeJournalStressTest.Q2);
                for (int i = 0; i < NUMBER_OF_FAST_MESSAGES; i++)
                {
                   ClientMessage msg = cons.receive(60 * 1000);
                   msg.acknowledge();
                }
 
-               assertNull(cons.receiveImmediate());
+               Assert.assertNull(cons.receiveImmediate());
             }
             catch (Throwable e)
             {
@@ -222,24 +228,24 @@ public class LargeJournalStressTest extends ServiceTestBase
 
       ClientSession sess = sf.createSession(true, true);
 
-      ClientConsumer cons = sess.createConsumer(Q1);
+      ClientConsumer cons = sess.createConsumer(LargeJournalStressTest.Q1);
 
       sess.start();
 
       for (int i = 0; i < numberOfMessages.intValue(); i++)
       {
          ClientMessage msg = cons.receive(10000);
-         assertNotNull(msg);
+         Assert.assertNotNull(msg);
          msg.acknowledge();
       }
 
-      assertNull(cons.receiveImmediate());
+      Assert.assertNull(cons.receiveImmediate());
 
       cons.close();
 
-      cons = sess.createConsumer(Q2);
+      cons = sess.createConsumer(LargeJournalStressTest.Q2);
 
-      assertNull(cons.receiveImmediate());
+      Assert.assertNull(cons.receiveImmediate());
 
       sess.close();
 
@@ -257,7 +263,7 @@ public class LargeJournalStressTest extends ServiceTestBase
     * @throws Exception
     * @throws HornetQException
     */
-   private void setupServer(JournalType journalType) throws Exception, HornetQException
+   private void setupServer(final JournalType journalType) throws Exception, HornetQException
    {
       Configuration config = createDefaultConfig();
       config.setJournalSyncNonTransactional(false);
@@ -276,13 +282,12 @@ public class LargeJournalStressTest extends ServiceTestBase
       sf.setBlockOnAcknowledge(false);
       sf.setBlockOnNonPersistentSend(false);
       sf.setBlockOnPersistentSend(false);
-      
 
       ClientSession sess = sf.createSession();
 
       try
       {
-         sess.createQueue(AD1, Q1, true);
+         sess.createQueue(LargeJournalStressTest.AD1, LargeJournalStressTest.Q1, true);
       }
       catch (Exception ignored)
       {
@@ -290,7 +295,7 @@ public class LargeJournalStressTest extends ServiceTestBase
 
       try
       {
-         sess.createQueue(AD2, Q2, true);
+         sess.createQueue(LargeJournalStressTest.AD2, LargeJournalStressTest.Q2, true);
       }
       catch (Exception ignored)
       {

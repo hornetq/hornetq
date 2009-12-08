@@ -51,16 +51,16 @@ public interface FailoverManager
                                final String groupID) throws HornetQException;
 
    void removeSession(final ClientSessionInternal session);
-   
+
    public RemotingConnection getConnection();
-   
+
    int numConnections();
 
    int numSessions();
-   
+
    void addFailureListener(SessionFailureListener listener);
 
    boolean removeFailureListener(SessionFailureListener listener);
-   
+
    void causeExit();
 }

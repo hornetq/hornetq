@@ -25,10 +25,10 @@ package org.hornetq.core.transaction;
 public class TransactionPropertyIndexes
 {
    public static final int IS_DEPAGE = 3;
-   
+
    public static final int PAGE_TRANSACTION = 5;
-   
+
    public static final int REFS_OPERATION = 6;
-   
+
    public static final int PAGE_MESSAGES_OPERATION = 7;
 }

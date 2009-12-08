@@ -9,7 +9,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
  * implied.  See the License for the specific language governing
  * permissions and limitations under the License.
- */ 
+ */
 
 package org.hornetq.tests.performance.journal;
 
@@ -17,10 +17,10 @@ import java.io.File;
 
 import junit.framework.TestSuite;
 
-import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
 import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.journal.impl.AIOSequentialFileFactory;
 import org.hornetq.core.logging.Logger;
+import org.hornetq.tests.util.UnitTestCase;
 
 /**
  * 
@@ -33,32 +33,30 @@ import org.hornetq.core.logging.Logger;
 public class RealJournalImplAIOTest extends JournalImplTestUnit
 {
    private static final Logger log = Logger.getLogger(RealJournalImplAIOTest.class);
-   
-   
+
    public static TestSuite suite()
    {
-      return createAIOTestSuite(RealJournalImplAIOTest.class);
+      return UnitTestCase.createAIOTestSuite(RealJournalImplAIOTest.class);
    }
-
 
    @Override
    protected void setUp() throws Exception
    {
       super.setUp();
    }
-   
+
+   @Override
    protected SequentialFileFactory getFileFactory() throws Exception
    {
       File file = new File(getTestDir());
-      
-      log.debug("deleting directory " + file);
-      
+
+      RealJournalImplAIOTest.log.debug("deleting directory " + file);
+
       deleteDirectory(file);
-      
-      file.mkdir();     
-      
+
+      file.mkdir();
+
       return new AIOSequentialFileFactory(getTestDir());
    }
-   
-}
 
+}

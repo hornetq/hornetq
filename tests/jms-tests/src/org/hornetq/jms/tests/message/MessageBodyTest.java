@@ -32,6 +32,7 @@ import javax.jms.StreamMessage;
 import javax.jms.TextMessage;
 
 import org.hornetq.jms.tests.HornetQServerTestCase;
+import org.hornetq.jms.tests.util.ProxyAssertSupport;
 
 /**
  * 
@@ -73,8 +74,8 @@ public class MessageBodyTest extends HornetQServerTestCase
       queueProducerSession = producerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
       queueConsumerSession = consumerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-      queueProducer = queueProducerSession.createProducer(queue1);
-      queueConsumer = queueConsumerSession.createConsumer(queue1);
+      queueProducer = queueProducerSession.createProducer(HornetQServerTestCase.queue1);
+      queueConsumer = queueConsumerSession.createConsumer(HornetQServerTestCase.queue1);
 
       consumerConnection.start();
    }
@@ -141,7 +142,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m.writeObject(new Object());
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageFormatException e)
       {
@@ -152,7 +153,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m.readBoolean();
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (javax.jms.MessageNotReadableException e)
       {
@@ -161,7 +162,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m.readShort();
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (javax.jms.MessageNotReadableException e)
       {
@@ -170,7 +171,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m.readChar();
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (javax.jms.MessageNotReadableException e)
       {
@@ -179,7 +180,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m.readInt();
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (javax.jms.MessageNotReadableException e)
       {
@@ -188,7 +189,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m.readLong();
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (javax.jms.MessageNotReadableException e)
       {
@@ -197,7 +198,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m.readFloat();
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (javax.jms.MessageNotReadableException e)
       {
@@ -206,7 +207,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m.readDouble();
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (javax.jms.MessageNotReadableException e)
       {
@@ -215,7 +216,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m.readUTF();
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (javax.jms.MessageNotReadableException e)
       {
@@ -224,7 +225,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m.readUnsignedByte();
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (javax.jms.MessageNotReadableException e)
       {
@@ -233,7 +234,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m.readUnsignedShort();
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (javax.jms.MessageNotReadableException e)
       {
@@ -243,7 +244,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       {
          byte[] bytes = new byte[333];
          m.readBytes(bytes);
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (javax.jms.MessageNotReadableException e)
       {
@@ -253,7 +254,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       {
          byte[] bytes = new byte[333];
          m.readBytes(bytes, 111);
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (javax.jms.MessageNotReadableException e)
       {
@@ -262,66 +263,66 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m.getBodyLength();
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (javax.jms.MessageNotReadableException e)
       {
          // OK
       }
 
-      queueProducer.send(queue1, m);
+      queueProducer.send(HornetQServerTestCase.queue1, m);
 
       BytesMessage m2 = (BytesMessage)queueConsumer.receive(2000);
 
-      assertNotNull(m2);
+      ProxyAssertSupport.assertNotNull(m2);
 
-      assertEquals(myBool, m2.readBoolean());
-      assertEquals(myByte, m2.readByte());
-      assertEquals(myShort, m2.readShort());
-      assertEquals(myChar, m2.readChar());
-      assertEquals(myInt, m2.readInt());
-      assertEquals(myLong, m2.readLong());
-      assertEquals(myFloat, m2.readFloat(), 0);
-      assertEquals(myDouble, m2.readDouble(), 0);
-      assertEquals(myString, m2.readUTF());
+      ProxyAssertSupport.assertEquals(myBool, m2.readBoolean());
+      ProxyAssertSupport.assertEquals(myByte, m2.readByte());
+      ProxyAssertSupport.assertEquals(myShort, m2.readShort());
+      ProxyAssertSupport.assertEquals(myChar, m2.readChar());
+      ProxyAssertSupport.assertEquals(myInt, m2.readInt());
+      ProxyAssertSupport.assertEquals(myLong, m2.readLong());
+      ProxyAssertSupport.assertEquals(myFloat, m2.readFloat(), 0);
+      ProxyAssertSupport.assertEquals(myDouble, m2.readDouble(), 0);
+      ProxyAssertSupport.assertEquals(myString, m2.readUTF());
 
       byte[] bytes = new byte[6];
       int ret = m2.readBytes(bytes);
-      assertEquals(6, ret);
+      ProxyAssertSupport.assertEquals(6, ret);
 
       assertByteArraysEqual(myBytes, bytes);
 
       byte[] bytes2 = new byte[3];
       ret = m2.readBytes(bytes2);
 
-      assertEquals(3, ret);
+      ProxyAssertSupport.assertEquals(3, ret);
 
-      assertEquals(myBytes[2], bytes2[0]);
-      assertEquals(myBytes[3], bytes2[1]);
-      assertEquals(myBytes[4], bytes2[2]);
+      ProxyAssertSupport.assertEquals(myBytes[2], bytes2[0]);
+      ProxyAssertSupport.assertEquals(myBytes[3], bytes2[1]);
+      ProxyAssertSupport.assertEquals(myBytes[4], bytes2[2]);
 
-      assertEquals(myBool, m2.readBoolean());
-      assertEquals(myByte, m2.readByte());
-      assertEquals(myShort, m2.readShort());
-      assertEquals(myInt, m2.readInt());
-      assertEquals(myLong, m2.readLong());
-      assertEquals(myFloat, m2.readFloat(), 0);
-      assertEquals(myDouble, m2.readDouble(), 0);
-      assertEquals(myString, m2.readUTF());
+      ProxyAssertSupport.assertEquals(myBool, m2.readBoolean());
+      ProxyAssertSupport.assertEquals(myByte, m2.readByte());
+      ProxyAssertSupport.assertEquals(myShort, m2.readShort());
+      ProxyAssertSupport.assertEquals(myInt, m2.readInt());
+      ProxyAssertSupport.assertEquals(myLong, m2.readLong());
+      ProxyAssertSupport.assertEquals(myFloat, m2.readFloat(), 0);
+      ProxyAssertSupport.assertEquals(myDouble, m2.readDouble(), 0);
+      ProxyAssertSupport.assertEquals(myString, m2.readUTF());
 
       bytes = new byte[6];
       ret = m2.readBytes(bytes);
-      assertEquals(6, ret);
+      ProxyAssertSupport.assertEquals(6, ret);
       assertByteArraysEqual(myBytes, bytes);
 
       ret = m2.readBytes(bytes);
-      assertEquals(-1, ret);
+      ProxyAssertSupport.assertEquals(-1, ret);
 
       // Try and read past the end of the stream
       try
       {
          m2.readBoolean();
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageEOFException e)
       {
@@ -331,7 +332,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m2.readByte();
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageEOFException e)
       {
@@ -341,7 +342,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m2.readChar();
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageEOFException e)
       {
@@ -351,7 +352,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m2.readDouble();
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageEOFException e)
       {
@@ -361,7 +362,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m2.readFloat();
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageEOFException e)
       {
@@ -371,7 +372,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m2.readInt();
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageEOFException e)
       {
@@ -381,7 +382,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m2.readLong();
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageEOFException e)
       {
@@ -391,7 +392,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m2.readShort();
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageEOFException e)
       {
@@ -401,7 +402,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m2.readUnsignedByte();
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageEOFException e)
       {
@@ -411,7 +412,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m2.readUnsignedShort();
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageEOFException e)
       {
@@ -421,7 +422,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m2.readUTF();
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageEOFException e)
       {
@@ -432,7 +433,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m2.writeBoolean(myBool);
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (javax.jms.MessageNotWriteableException e)
       {
@@ -441,7 +442,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m2.writeByte(myByte);
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (javax.jms.MessageNotWriteableException e)
       {
@@ -450,7 +451,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m2.writeShort(myShort);
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (javax.jms.MessageNotWriteableException e)
       {
@@ -459,7 +460,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m2.writeChar(myChar);
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (javax.jms.MessageNotWriteableException e)
       {
@@ -469,7 +470,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m2.writeInt(myInt);
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (javax.jms.MessageNotWriteableException e)
       {
@@ -478,7 +479,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m2.writeLong(myLong);
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (javax.jms.MessageNotWriteableException e)
       {
@@ -487,7 +488,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m2.writeFloat(myFloat);
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (javax.jms.MessageNotWriteableException e)
       {
@@ -496,7 +497,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m2.writeDouble(myDouble);
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (javax.jms.MessageNotWriteableException e)
       {
@@ -505,7 +506,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m2.writeUTF(myString);
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (javax.jms.MessageNotWriteableException e)
       {
@@ -515,7 +516,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m2.writeBytes(myBytes);
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (javax.jms.MessageNotWriteableException e)
       {
@@ -525,7 +526,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m2.writeObject(myString);
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (javax.jms.MessageNotWriteableException e)
       {
@@ -534,7 +535,7 @@ public class MessageBodyTest extends HornetQServerTestCase
 
       long bodyLength = m2.getBodyLength();
 
-      assertEquals(161, bodyLength);
+      ProxyAssertSupport.assertEquals(161, bodyLength);
 
       m2.reset();
 
@@ -543,18 +544,18 @@ public class MessageBodyTest extends HornetQServerTestCase
       m2.readBoolean();
       int unsignedByte = m2.readUnsignedByte();
 
-      assertEquals((int)(myByte & 0xFF), unsignedByte);
+      ProxyAssertSupport.assertEquals((int)(myByte & 0xFF), unsignedByte);
 
       int unsignedShort = m2.readUnsignedShort();
 
-      assertEquals((int)(myShort & 0xFFFF), unsignedShort);
+      ProxyAssertSupport.assertEquals((int)(myShort & 0xFFFF), unsignedShort);
 
       m2.clearBody();
 
       try
       {
          m2.getBodyLength();
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageNotReadableException e)
       {
@@ -563,14 +564,14 @@ public class MessageBodyTest extends HornetQServerTestCase
 
       m2.reset();
 
-      assertEquals(0, m2.getBodyLength());
+      ProxyAssertSupport.assertEquals(0, m2.getBodyLength());
 
       // Test that changing the received message doesn't affect the sent message
       m.reset();
-      assertEquals(161, m.getBodyLength());
+      ProxyAssertSupport.assertEquals(161, m.getBodyLength());
 
       // Should be diffent object instances after sending *even* if in same JVM
-      assertFalse(m == m2);
+      ProxyAssertSupport.assertFalse(m == m2);
 
    }
 
@@ -609,32 +610,32 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m1.setObject("myIllegal", new Object());
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (javax.jms.MessageFormatException e)
       {
       }
 
-      queueProducer.send(queue1, m1);
+      queueProducer.send(HornetQServerTestCase.queue1, m1);
 
       MapMessage m2 = (MapMessage)queueConsumer.receive(2000);
 
-      assertNotNull(m2);
+      ProxyAssertSupport.assertNotNull(m2);
 
-      assertEquals(myBool, m2.getBoolean("myBool"));
-      assertEquals(myByte, m2.getByte("myByte"));
-      assertEquals(myShort, m2.getShort("myShort"));
-      assertEquals(myInt, m2.getInt("myInt"));
-      assertEquals(myLong, m2.getLong("myLong"));
-      assertEquals(myFloat, m2.getFloat("myFloat"), 0);
-      assertEquals(myDouble, m2.getDouble("myDouble"), 0);
-      assertEquals(myString, m2.getString("myString"));
+      ProxyAssertSupport.assertEquals(myBool, m2.getBoolean("myBool"));
+      ProxyAssertSupport.assertEquals(myByte, m2.getByte("myByte"));
+      ProxyAssertSupport.assertEquals(myShort, m2.getShort("myShort"));
+      ProxyAssertSupport.assertEquals(myInt, m2.getInt("myInt"));
+      ProxyAssertSupport.assertEquals(myLong, m2.getLong("myLong"));
+      ProxyAssertSupport.assertEquals(myFloat, m2.getFloat("myFloat"), 0);
+      ProxyAssertSupport.assertEquals(myDouble, m2.getDouble("myDouble"), 0);
+      ProxyAssertSupport.assertEquals(myString, m2.getString("myString"));
 
       // Properties should now be read-only
       try
       {
          m2.setBoolean("myBool", myBool);
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageNotWriteableException e)
       {
@@ -643,7 +644,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m2.setByte("myByte", myByte);
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageNotWriteableException e)
       {
@@ -652,7 +653,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m2.setShort("myShort", myShort);
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageNotWriteableException e)
       {
@@ -661,7 +662,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m2.setInt("myInt", myInt);
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageNotWriteableException e)
       {
@@ -670,7 +671,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m2.setLong("myLong", myLong);
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageNotWriteableException e)
       {
@@ -679,7 +680,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m2.setFloat("myFloat", myFloat);
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageNotWriteableException e)
       {
@@ -688,7 +689,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m2.setDouble("myDouble", myDouble);
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageNotWriteableException e)
       {
@@ -697,22 +698,22 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m2.setString("myString", myString);
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageNotWriteableException e)
       {
       }
 
-      assertTrue(m2.itemExists("myBool"));
-      assertTrue(m2.itemExists("myByte"));
-      assertTrue(m2.itemExists("myShort"));
-      assertTrue(m2.itemExists("myInt"));
-      assertTrue(m2.itemExists("myLong"));
-      assertTrue(m2.itemExists("myFloat"));
-      assertTrue(m2.itemExists("myDouble"));
-      assertTrue(m2.itemExists("myString"));
+      ProxyAssertSupport.assertTrue(m2.itemExists("myBool"));
+      ProxyAssertSupport.assertTrue(m2.itemExists("myByte"));
+      ProxyAssertSupport.assertTrue(m2.itemExists("myShort"));
+      ProxyAssertSupport.assertTrue(m2.itemExists("myInt"));
+      ProxyAssertSupport.assertTrue(m2.itemExists("myLong"));
+      ProxyAssertSupport.assertTrue(m2.itemExists("myFloat"));
+      ProxyAssertSupport.assertTrue(m2.itemExists("myDouble"));
+      ProxyAssertSupport.assertTrue(m2.itemExists("myString"));
 
-      assertFalse(m2.itemExists("sausages"));
+      ProxyAssertSupport.assertFalse(m2.itemExists("sausages"));
 
       HashSet itemNames = new HashSet();
       Enumeration en = m2.getMapNames();
@@ -722,27 +723,27 @@ public class MessageBodyTest extends HornetQServerTestCase
          itemNames.add(propName);
       }
 
-      assertEquals(8, itemNames.size());
+      ProxyAssertSupport.assertEquals(8, itemNames.size());
 
-      assertTrue(itemNames.contains("myBool"));
-      assertTrue(itemNames.contains("myByte"));
-      assertTrue(itemNames.contains("myShort"));
-      assertTrue(itemNames.contains("myInt"));
-      assertTrue(itemNames.contains("myLong"));
-      assertTrue(itemNames.contains("myFloat"));
-      assertTrue(itemNames.contains("myDouble"));
-      assertTrue(itemNames.contains("myString"));
+      ProxyAssertSupport.assertTrue(itemNames.contains("myBool"));
+      ProxyAssertSupport.assertTrue(itemNames.contains("myByte"));
+      ProxyAssertSupport.assertTrue(itemNames.contains("myShort"));
+      ProxyAssertSupport.assertTrue(itemNames.contains("myInt"));
+      ProxyAssertSupport.assertTrue(itemNames.contains("myLong"));
+      ProxyAssertSupport.assertTrue(itemNames.contains("myFloat"));
+      ProxyAssertSupport.assertTrue(itemNames.contains("myDouble"));
+      ProxyAssertSupport.assertTrue(itemNames.contains("myString"));
 
       // Check property conversions
 
       // Boolean property can be read as String but not anything else
 
-      assertEquals(String.valueOf(myBool), m2.getString("myBool"));
+      ProxyAssertSupport.assertEquals(String.valueOf(myBool), m2.getString("myBool"));
 
       try
       {
          m2.getByte("myBool");
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageFormatException e)
       {
@@ -751,7 +752,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m2.getShort("myBool");
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageFormatException e)
       {
@@ -760,7 +761,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m2.getInt("myBool");
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageFormatException e)
       {
@@ -769,7 +770,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m2.getLong("myBool");
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageFormatException e)
       {
@@ -778,7 +779,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m2.getFloat("myBool");
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageFormatException e)
       {
@@ -787,7 +788,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m2.getDouble("myBool");
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageFormatException e)
       {
@@ -795,15 +796,15 @@ public class MessageBodyTest extends HornetQServerTestCase
 
       // byte item can be read as short, int, long or String
 
-      assertEquals((short)myByte, m2.getShort("myByte"));
-      assertEquals((int)myByte, m2.getInt("myByte"));
-      assertEquals((long)myByte, m2.getLong("myByte"));
-      assertEquals(String.valueOf(myByte), m2.getString("myByte"));
+      ProxyAssertSupport.assertEquals((short)myByte, m2.getShort("myByte"));
+      ProxyAssertSupport.assertEquals((int)myByte, m2.getInt("myByte"));
+      ProxyAssertSupport.assertEquals((long)myByte, m2.getLong("myByte"));
+      ProxyAssertSupport.assertEquals(String.valueOf(myByte), m2.getString("myByte"));
 
       try
       {
          m2.getBoolean("myByte");
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageFormatException e)
       {
@@ -812,7 +813,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m2.getFloat("myByte");
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageFormatException e)
       {
@@ -821,7 +822,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m2.getDouble("myByte");
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageFormatException e)
       {
@@ -829,14 +830,14 @@ public class MessageBodyTest extends HornetQServerTestCase
 
       // short item can be read as int, long or String
 
-      assertEquals((int)myShort, m2.getInt("myShort"));
-      assertEquals((long)myShort, m2.getLong("myShort"));
-      assertEquals(String.valueOf(myShort), m2.getString("myShort"));
+      ProxyAssertSupport.assertEquals((int)myShort, m2.getInt("myShort"));
+      ProxyAssertSupport.assertEquals((long)myShort, m2.getLong("myShort"));
+      ProxyAssertSupport.assertEquals(String.valueOf(myShort), m2.getString("myShort"));
 
       try
       {
          m2.getByte("myShort");
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageFormatException e)
       {
@@ -845,7 +846,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m2.getBoolean("myShort");
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageFormatException e)
       {
@@ -854,7 +855,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m2.getFloat("myShort");
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageFormatException e)
       {
@@ -863,7 +864,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m2.getDouble("myShort");
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageFormatException e)
       {
@@ -871,13 +872,13 @@ public class MessageBodyTest extends HornetQServerTestCase
 
       // int item can be read as long or String
 
-      assertEquals((long)myInt, m2.getLong("myInt"));
-      assertEquals(String.valueOf(myInt), m2.getString("myInt"));
+      ProxyAssertSupport.assertEquals((long)myInt, m2.getLong("myInt"));
+      ProxyAssertSupport.assertEquals(String.valueOf(myInt), m2.getString("myInt"));
 
       try
       {
          m2.getShort("myInt");
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageFormatException e)
       {
@@ -886,7 +887,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m2.getByte("myInt");
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageFormatException e)
       {
@@ -895,7 +896,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m2.getBoolean("myInt");
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageFormatException e)
       {
@@ -904,7 +905,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m2.getFloat("myInt");
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageFormatException e)
       {
@@ -913,7 +914,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m2.getDouble("myInt");
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageFormatException e)
       {
@@ -921,12 +922,12 @@ public class MessageBodyTest extends HornetQServerTestCase
 
       // long item can be read as String
 
-      assertEquals(String.valueOf(myLong), m2.getString("myLong"));
+      ProxyAssertSupport.assertEquals(String.valueOf(myLong), m2.getString("myLong"));
 
       try
       {
          m2.getInt("myLong");
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageFormatException e)
       {
@@ -935,7 +936,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m2.getShort("myLong");
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageFormatException e)
       {
@@ -944,7 +945,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m2.getByte("myLong");
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageFormatException e)
       {
@@ -953,7 +954,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m2.getBoolean("myLong");
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageFormatException e)
       {
@@ -962,7 +963,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m2.getFloat("myLong");
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageFormatException e)
       {
@@ -971,7 +972,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m2.getDouble("myLong");
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageFormatException e)
       {
@@ -979,13 +980,13 @@ public class MessageBodyTest extends HornetQServerTestCase
 
       // float can be read as double or String
 
-      assertEquals(String.valueOf(myFloat), m2.getString("myFloat"));
-      assertEquals((double)myFloat, m2.getDouble("myFloat"), 0);
+      ProxyAssertSupport.assertEquals(String.valueOf(myFloat), m2.getString("myFloat"));
+      ProxyAssertSupport.assertEquals((double)myFloat, m2.getDouble("myFloat"), 0);
 
       try
       {
          m2.getInt("myFloat");
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageFormatException e)
       {
@@ -994,7 +995,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m2.getShort("myFloat");
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageFormatException e)
       {
@@ -1003,7 +1004,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m2.getLong("myFloat");
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageFormatException e)
       {
@@ -1012,7 +1013,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m2.getByte("myFloat");
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageFormatException e)
       {
@@ -1021,7 +1022,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m2.getBoolean("myFloat");
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageFormatException e)
       {
@@ -1029,12 +1030,12 @@ public class MessageBodyTest extends HornetQServerTestCase
 
       // double can be read as String
 
-      assertEquals(String.valueOf(myDouble), m2.getString("myDouble"));
+      ProxyAssertSupport.assertEquals(String.valueOf(myDouble), m2.getString("myDouble"));
 
       try
       {
          m2.getFloat("myDouble");
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageFormatException e)
       {
@@ -1043,7 +1044,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m2.getInt("myDouble");
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageFormatException e)
       {
@@ -1052,7 +1053,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m2.getShort("myDouble");
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageFormatException e)
       {
@@ -1061,7 +1062,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m2.getByte("myDouble");
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageFormatException e)
       {
@@ -1070,7 +1071,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m2.getBoolean("myDouble");
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageFormatException e)
       {
@@ -1079,7 +1080,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m2.getFloat("myDouble");
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageFormatException e)
       {
@@ -1087,7 +1088,7 @@ public class MessageBodyTest extends HornetQServerTestCase
 
       m2.clearBody();
 
-      assertFalse(m2.getMapNames().hasMoreElements());
+      ProxyAssertSupport.assertFalse(m2.getMapNames().hasMoreElements());
 
       // Test String -> Numeric and bool conversions
       MapMessage m3 = (MapMessage)queueProducerSession.createMapMessage();
@@ -1101,20 +1102,20 @@ public class MessageBodyTest extends HornetQServerTestCase
       m3.setString("myDouble", String.valueOf(myDouble));
       m3.setString("myIllegal", "xyz123");
 
-      assertEquals(myBool, m3.getBoolean("myBool"));
-      assertEquals(myByte, m3.getByte("myByte"));
-      assertEquals(myShort, m3.getShort("myShort"));
-      assertEquals(myInt, m3.getInt("myInt"));
-      assertEquals(myLong, m3.getLong("myLong"));
-      assertEquals(myFloat, m3.getFloat("myFloat"), 0);
-      assertEquals(myDouble, m3.getDouble("myDouble"), 0);
+      ProxyAssertSupport.assertEquals(myBool, m3.getBoolean("myBool"));
+      ProxyAssertSupport.assertEquals(myByte, m3.getByte("myByte"));
+      ProxyAssertSupport.assertEquals(myShort, m3.getShort("myShort"));
+      ProxyAssertSupport.assertEquals(myInt, m3.getInt("myInt"));
+      ProxyAssertSupport.assertEquals(myLong, m3.getLong("myLong"));
+      ProxyAssertSupport.assertEquals(myFloat, m3.getFloat("myFloat"), 0);
+      ProxyAssertSupport.assertEquals(myDouble, m3.getDouble("myDouble"), 0);
 
       m3.getBoolean("myIllegal");
 
       try
       {
          m3.getByte("myIllegal");
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (NumberFormatException e)
       {
@@ -1122,7 +1123,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m3.getShort("myIllegal");
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (NumberFormatException e)
       {
@@ -1130,7 +1131,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m3.getInt("myIllegal");
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (NumberFormatException e)
       {
@@ -1138,7 +1139,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m3.getLong("myIllegal");
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (NumberFormatException e)
       {
@@ -1146,7 +1147,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m3.getFloat("myIllegal");
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (NumberFormatException e)
       {
@@ -1154,7 +1155,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m3.getDouble("myIllegal");
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (NumberFormatException e)
       {
@@ -1177,36 +1178,36 @@ public class MessageBodyTest extends HornetQServerTestCase
 
       ObjectMessage m1 = queueProducerSession.createObjectMessage(obj);
 
-      queueProducer.send(queue1, m1);
+      queueProducer.send(HornetQServerTestCase.queue1, m1);
 
       ObjectMessage m2 = (ObjectMessage)queueConsumer.receive(2000);
 
-      assertNotNull(m2);
+      ProxyAssertSupport.assertNotNull(m2);
 
       TestSerializable obj2 = (TestSerializable)m2.getObject();
 
-      assertEquals(obj.str, obj2.str);
+      ProxyAssertSupport.assertEquals(obj.str, obj2.str);
 
       ObjectMessage m3 = queueProducerSession.createObjectMessage();
 
       m3.setObject(obj);
 
-      queueProducer.send(queue1, m3);
+      queueProducer.send(HornetQServerTestCase.queue1, m3);
 
       obj.str = "xyz123";
 
       ObjectMessage m4 = (ObjectMessage)queueConsumer.receive(2000);
 
-      assertNotNull(m4);
+      ProxyAssertSupport.assertNotNull(m4);
 
       TestSerializable obj3 = (TestSerializable)m4.getObject();
 
-      assertEquals("abcdefg", obj3.str);
+      ProxyAssertSupport.assertEquals("abcdefg", obj3.str);
 
       try
       {
          m4.setObject(obj);
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageNotWriteableException e)
       {
@@ -1218,7 +1219,7 @@ public class MessageBodyTest extends HornetQServerTestCase
 
       TestSerializable obj4 = (TestSerializable)m4.getObject();
 
-      assertNotNull(obj4);
+      ProxyAssertSupport.assertNotNull(obj4);
 
    }
 
@@ -1263,7 +1264,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m.writeObject(new Object());
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageFormatException e)
       {
@@ -1273,7 +1274,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m.readBoolean();
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (javax.jms.MessageNotReadableException e)
       {
@@ -1281,7 +1282,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m.readShort();
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (javax.jms.MessageNotReadableException e)
       {
@@ -1289,7 +1290,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m.readChar();
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (javax.jms.MessageNotReadableException e)
       {
@@ -1297,7 +1298,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m.readInt();
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (javax.jms.MessageNotReadableException e)
       {
@@ -1305,7 +1306,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m.readLong();
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (javax.jms.MessageNotReadableException e)
       {
@@ -1313,7 +1314,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m.readFloat();
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (javax.jms.MessageNotReadableException e)
       {
@@ -1321,7 +1322,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m.readDouble();
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (javax.jms.MessageNotReadableException e)
       {
@@ -1330,69 +1331,69 @@ public class MessageBodyTest extends HornetQServerTestCase
       {
          byte[] bytes = new byte[333];
          m.readBytes(bytes);
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (javax.jms.MessageNotReadableException e)
       {
       }
 
-      queueProducer.send(queue1, m);
+      queueProducer.send(HornetQServerTestCase.queue1, m);
 
       StreamMessage m2 = (StreamMessage)queueConsumer.receive(2000);
 
-      assertEquals(myBool, m2.readBoolean());
-      assertEquals(myByte, m2.readByte());
-      assertEquals(myShort, m2.readShort());
-      assertEquals(myChar, m2.readChar());
-      assertEquals(myInt, m2.readInt());
-      assertEquals(myLong, m2.readLong());
-      assertEquals(myFloat, m2.readFloat(), 0);
-      assertEquals(myDouble, m2.readDouble(), 0);
-      assertEquals(myString, m2.readString());
+      ProxyAssertSupport.assertEquals(myBool, m2.readBoolean());
+      ProxyAssertSupport.assertEquals(myByte, m2.readByte());
+      ProxyAssertSupport.assertEquals(myShort, m2.readShort());
+      ProxyAssertSupport.assertEquals(myChar, m2.readChar());
+      ProxyAssertSupport.assertEquals(myInt, m2.readInt());
+      ProxyAssertSupport.assertEquals(myLong, m2.readLong());
+      ProxyAssertSupport.assertEquals(myFloat, m2.readFloat(), 0);
+      ProxyAssertSupport.assertEquals(myDouble, m2.readDouble(), 0);
+      ProxyAssertSupport.assertEquals(myString, m2.readString());
 
       byte[] bytes = new byte[6];
       int ret = m2.readBytes(bytes);
-      assertEquals(6, ret);
+      ProxyAssertSupport.assertEquals(6, ret);
 
       assertByteArraysEqual(myBytes, bytes);
 
       ret = m2.readBytes(bytes);
-      assertEquals(-1, ret);
+      ProxyAssertSupport.assertEquals(-1, ret);
 
       byte[] bytes2 = new byte[3];
       ret = m2.readBytes(bytes2);
 
-      assertEquals(3, ret);
+      ProxyAssertSupport.assertEquals(3, ret);
 
-      assertEquals(myBytes[2], bytes2[0]);
-      assertEquals(myBytes[3], bytes2[1]);
-      assertEquals(myBytes[4], bytes2[2]);
+      ProxyAssertSupport.assertEquals(myBytes[2], bytes2[0]);
+      ProxyAssertSupport.assertEquals(myBytes[3], bytes2[1]);
+      ProxyAssertSupport.assertEquals(myBytes[4], bytes2[2]);
 
       ret = m2.readBytes(bytes2);
-      assertEquals(-1, ret);
+      ProxyAssertSupport.assertEquals(-1, ret);
 
-      assertEquals(myBool, m2.readBoolean());
-      assertEquals(myByte, m2.readByte());
-      assertEquals(myShort, m2.readShort());
-      assertEquals(myInt, m2.readInt());
-      assertEquals(myLong, m2.readLong());
-      assertEquals(myFloat, m2.readFloat(), 0);
-      assertEquals(myDouble, m2.readDouble(), 0);
-      assertEquals(myString, m2.readString());
+      ProxyAssertSupport.assertEquals(myBool, m2.readBoolean());
+      ProxyAssertSupport.assertEquals(myByte, m2.readByte());
+      ProxyAssertSupport.assertEquals(myShort, m2.readShort());
+      ProxyAssertSupport.assertEquals(myInt, m2.readInt());
+      ProxyAssertSupport.assertEquals(myLong, m2.readLong());
+      ProxyAssertSupport.assertEquals(myFloat, m2.readFloat(), 0);
+      ProxyAssertSupport.assertEquals(myDouble, m2.readDouble(), 0);
+      ProxyAssertSupport.assertEquals(myString, m2.readString());
 
       bytes = new byte[6];
       ret = m2.readBytes(bytes);
-      assertEquals(6, ret);
+      ProxyAssertSupport.assertEquals(6, ret);
       assertByteArraysEqual(myBytes, bytes);
 
       ret = m2.readBytes(bytes);
-      assertEquals(-1, ret);
+      ProxyAssertSupport.assertEquals(-1, ret);
 
       // Try and read past the end of the stream
       try
       {
          m2.readBoolean();
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageEOFException e)
       {
@@ -1401,7 +1402,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m2.readByte();
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageEOFException e)
       {
@@ -1410,7 +1411,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m2.readChar();
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageEOFException e)
       {
@@ -1419,7 +1420,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m2.readDouble();
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageEOFException e)
       {
@@ -1428,7 +1429,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m2.readFloat();
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageEOFException e)
       {
@@ -1437,7 +1438,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m2.readInt();
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageEOFException e)
       {
@@ -1446,7 +1447,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m2.readLong();
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageEOFException e)
       {
@@ -1455,7 +1456,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m2.readShort();
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageEOFException e)
       {
@@ -1465,7 +1466,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m2.writeBoolean(myBool);
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (javax.jms.MessageNotWriteableException e)
       {
@@ -1473,7 +1474,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m2.writeByte(myByte);
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (javax.jms.MessageNotWriteableException e)
       {
@@ -1481,7 +1482,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m2.writeShort(myShort);
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (javax.jms.MessageNotWriteableException e)
       {
@@ -1489,7 +1490,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m2.writeChar(myChar);
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (javax.jms.MessageNotWriteableException e)
       {
@@ -1498,7 +1499,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m2.writeInt(myInt);
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (javax.jms.MessageNotWriteableException e)
       {
@@ -1506,7 +1507,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m2.writeLong(myLong);
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (javax.jms.MessageNotWriteableException e)
       {
@@ -1514,7 +1515,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m2.writeFloat(myFloat);
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (javax.jms.MessageNotWriteableException e)
       {
@@ -1522,7 +1523,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m2.writeDouble(myDouble);
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (javax.jms.MessageNotWriteableException e)
       {
@@ -1531,7 +1532,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m2.writeBytes(myBytes);
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (javax.jms.MessageNotWriteableException e)
       {
@@ -1540,7 +1541,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       try
       {
          m2.writeObject(myString);
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (javax.jms.MessageNotWriteableException e)
       {
@@ -1549,15 +1550,15 @@ public class MessageBodyTest extends HornetQServerTestCase
       m2.reset();
 
       // check we go back to the beginning
-      assertEquals(myBool, m2.readBoolean());
-      assertEquals(myByte, m2.readByte());
-      assertEquals(myShort, m2.readShort());
-      assertEquals(myChar, m2.readChar());
-      assertEquals(myInt, m2.readInt());
-      assertEquals(myLong, m2.readLong());
-      assertEquals(myFloat, m2.readFloat(), 0);
-      assertEquals(myDouble, m2.readDouble(), 0);
-      assertEquals(myString, m2.readString());
+      ProxyAssertSupport.assertEquals(myBool, m2.readBoolean());
+      ProxyAssertSupport.assertEquals(myByte, m2.readByte());
+      ProxyAssertSupport.assertEquals(myShort, m2.readShort());
+      ProxyAssertSupport.assertEquals(myChar, m2.readChar());
+      ProxyAssertSupport.assertEquals(myInt, m2.readInt());
+      ProxyAssertSupport.assertEquals(myLong, m2.readLong());
+      ProxyAssertSupport.assertEquals(myFloat, m2.readFloat(), 0);
+      ProxyAssertSupport.assertEquals(myDouble, m2.readDouble(), 0);
+      ProxyAssertSupport.assertEquals(myString, m2.readString());
 
       m2.clearBody();
 
@@ -1565,7 +1566,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       {
          // Should now be write only
          m2.readBoolean();
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageNotReadableException e)
       {
@@ -1575,11 +1576,11 @@ public class MessageBodyTest extends HornetQServerTestCase
 
       m2.reset();
 
-      assertEquals(myBool, m2.readBoolean());
+      ProxyAssertSupport.assertEquals(myBool, m2.readBoolean());
       try
       {
          m2.readBoolean();
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageEOFException e)
       {
@@ -1587,18 +1588,18 @@ public class MessageBodyTest extends HornetQServerTestCase
 
       // Test that changing the received message doesn't affect the sent message
       m.reset();
-      assertEquals(myBool, m.readBoolean());
-      assertEquals(myByte, m.readByte());
-      assertEquals(myShort, m.readShort());
-      assertEquals(myChar, m.readChar());
-      assertEquals(myInt, m.readInt());
-      assertEquals(myLong, m.readLong());
-      assertEquals(myFloat, m.readFloat(), 0);
-      assertEquals(myDouble, m.readDouble(), 0);
-      assertEquals(myString, m.readString());
+      ProxyAssertSupport.assertEquals(myBool, m.readBoolean());
+      ProxyAssertSupport.assertEquals(myByte, m.readByte());
+      ProxyAssertSupport.assertEquals(myShort, m.readShort());
+      ProxyAssertSupport.assertEquals(myChar, m.readChar());
+      ProxyAssertSupport.assertEquals(myInt, m.readInt());
+      ProxyAssertSupport.assertEquals(myLong, m.readLong());
+      ProxyAssertSupport.assertEquals(myFloat, m.readFloat(), 0);
+      ProxyAssertSupport.assertEquals(myDouble, m.readDouble(), 0);
+      ProxyAssertSupport.assertEquals(myString, m.readString());
 
       // Should be diffent object instances after sending *even* if in same JVM
-      assertFalse(m == m2);
+      ProxyAssertSupport.assertFalse(m == m2);
    }
 
    public void testTextMessage() throws Exception
@@ -1611,30 +1612,30 @@ public class MessageBodyTest extends HornetQServerTestCase
 
       m.setText(myString);
 
-      queueProducer.send(queue1, m);
+      queueProducer.send(HornetQServerTestCase.queue1, m);
 
       TextMessage m2 = (TextMessage)queueConsumer.receive(2000);
 
-      assertEquals(myString, m2.getText());
+      ProxyAssertSupport.assertEquals(myString, m2.getText());
 
       m = queueProducerSession.createTextMessage(myString);
-      queueProducer.send(queue1, m);
+      queueProducer.send(HornetQServerTestCase.queue1, m);
 
       m2 = (TextMessage)queueConsumer.receive(2000);
 
-      assertEquals(myString, m2.getText());
+      ProxyAssertSupport.assertEquals(myString, m2.getText());
 
       try
       {
          m2.setText("Should be read-only");
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageNotWriteableException e)
       {
       }
 
       m2.clearBody();
-      assertNull(m2.getText());
+      ProxyAssertSupport.assertNull(m2.getText());
       m2.setText("Now it is read-write");
    }
 
@@ -1644,21 +1645,21 @@ public class MessageBodyTest extends HornetQServerTestCase
 
    // Private -------------------------------------------------------
 
-   private void assertByteArraysEqual(byte[] bytes1, byte[] bytes2)
+   private void assertByteArraysEqual(final byte[] bytes1, final byte[] bytes2)
    {
       if (bytes1 == null | bytes2 == null)
       {
-         fail();
+         ProxyAssertSupport.fail();
       }
 
       if (bytes1.length != bytes2.length)
       {
-         fail();
+         ProxyAssertSupport.fail();
       }
 
       for (int i = 0; i < bytes1.length; i++)
       {
-         assertEquals(bytes1[i], bytes2[i]);
+         ProxyAssertSupport.assertEquals(bytes1[i], bytes2[i]);
       }
 
    }

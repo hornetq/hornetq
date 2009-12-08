@@ -13,13 +13,13 @@
 
 package org.hornetq.tests.integration.jms.server.config;
 
-import static org.hornetq.tests.util.RandomUtil.randomString;
-
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.Queue;
 import javax.jms.Topic;
 import javax.naming.Context;
+
+import junit.framework.Assert;
 
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.TransportConfiguration;
@@ -36,6 +36,7 @@ import org.hornetq.jms.server.config.impl.QueueConfigurationImpl;
 import org.hornetq.jms.server.config.impl.TopicConfigurationImpl;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.hornetq.tests.unit.util.InVMContext;
+import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.ServiceTestBase;
 
 /**
@@ -66,18 +67,20 @@ public class JMSConfigurationTest extends ServiceTestBase
       JMSConfiguration jmsConfiguration = new JMSConfigurationImpl();
       jmsConfiguration.setContext(context);
       TransportConfiguration connectorConfig = new TransportConfiguration(InVMConnectorFactory.class.getName());
-      ConnectionFactoryConfiguration cfConfig = new ConnectionFactoryConfigurationImpl(randomString(),
+      ConnectionFactoryConfiguration cfConfig = new ConnectionFactoryConfigurationImpl(RandomUtil.randomString(),
                                                                                        connectorConfig,
                                                                                        "/cf/binding1",
                                                                                        "/cf/binding2");
       jmsConfiguration.getConnectionFactoryConfigurations().add(cfConfig);
-      QueueConfigurationImpl queueConfig = new QueueConfigurationImpl(randomString(),
+      QueueConfigurationImpl queueConfig = new QueueConfigurationImpl(RandomUtil.randomString(),
                                                                       null,
                                                                       false,
                                                                       "/queue/binding1",
                                                                       "/queue/binding2");
       jmsConfiguration.getQueueConfigurations().add(queueConfig);
-      TopicConfiguration topicConfig = new TopicConfigurationImpl(randomString(), "/topic/binding1", "/topic/binding2");
+      TopicConfiguration topicConfig = new TopicConfigurationImpl(RandomUtil.randomString(),
+                                                                  "/topic/binding1",
+                                                                  "/topic/binding2");
       jmsConfiguration.getTopicConfigurations().add(topicConfig);
 
       JMSServerManager server = new JMSServerManagerImpl(coreServer, jmsConfiguration);
@@ -86,8 +89,8 @@ public class JMSConfigurationTest extends ServiceTestBase
       for (String binding : cfConfig.getBindings())
       {
          Object o = context.lookup(binding);
-         assertNotNull(o);
-         assertTrue(o instanceof ConnectionFactory);
+         Assert.assertNotNull(o);
+         Assert.assertTrue(o instanceof ConnectionFactory);
          ConnectionFactory cf = (ConnectionFactory)o;
          Connection connection = cf.createConnection();
          connection.close();
@@ -96,19 +99,19 @@ public class JMSConfigurationTest extends ServiceTestBase
       for (String binding : queueConfig.getBindings())
       {
          Object o = context.lookup(binding);
-         assertNotNull(o);
-         assertTrue(o instanceof Queue);
+         Assert.assertNotNull(o);
+         Assert.assertTrue(o instanceof Queue);
          Queue queue = (Queue)o;
-         assertEquals(queueConfig.getName(), queue.getQueueName());
+         Assert.assertEquals(queueConfig.getName(), queue.getQueueName());
       }
 
       for (String binding : topicConfig.getBindings())
       {
          Object o = context.lookup(binding);
-         assertNotNull(o);
-         assertTrue(o instanceof Topic);
+         Assert.assertNotNull(o);
+         Assert.assertTrue(o instanceof Topic);
          Topic topic = (Topic)o;
-         assertEquals(topicConfig.getName(), topic.getTopicName());
+         Assert.assertEquals(topicConfig.getName(), topic.getTopicName());
       }
 
       server.stop();

@@ -13,8 +13,6 @@
 
 package org.hornetq.tests.integration.replication;
 
-import static org.hornetq.tests.util.RandomUtil.randomString;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -28,6 +26,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.buffers.HornetQBuffer;
 import org.hornetq.core.buffers.HornetQBuffers;
 import org.hornetq.core.client.ClientSessionFactory;
@@ -36,7 +36,6 @@ import org.hornetq.core.client.impl.FailoverManager;
 import org.hornetq.core.client.impl.FailoverManagerImpl;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.TransportConfiguration;
-import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.journal.EncodingSupport;
 import org.hornetq.core.journal.IOAsyncTask;
@@ -69,6 +68,7 @@ import org.hornetq.core.server.impl.HornetQServerImpl;
 import org.hornetq.core.server.impl.ServerMessageImpl;
 import org.hornetq.core.settings.HierarchicalRepository;
 import org.hornetq.core.settings.impl.AddressSettings;
+import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.utils.ExecutorFactory;
 import org.hornetq.utils.HornetQThreadFactory;
@@ -92,7 +92,7 @@ public class ReplicationTest extends ServiceTestBase
    private ThreadFactory tFactory;
 
    private ExecutorService executor;
-   
+
    private ExecutorFactory factory;
 
    private ScheduledExecutorService scheduledExecutor;
@@ -118,8 +118,7 @@ public class ReplicationTest extends ServiceTestBase
 
       try
       {
-         ReplicationManagerImpl manager = new ReplicationManagerImpl(failoverManager,
-                                                                     this.factory);
+         ReplicationManagerImpl manager = new ReplicationManagerImpl(failoverManager, factory);
          manager.start();
          manager.stop();
       }
@@ -144,19 +143,18 @@ public class ReplicationTest extends ServiceTestBase
 
       try
       {
-         ReplicationManagerImpl manager = new ReplicationManagerImpl(failoverManager,
-                                                                     this.factory);
+         ReplicationManagerImpl manager = new ReplicationManagerImpl(failoverManager, factory);
          manager.start();
          try
          {
             manager.compareJournals(new JournalLoadInformation[] { new JournalLoadInformation(2, 2),
                                                                   new JournalLoadInformation(2, 2) });
-            fail("Exception was expected");
+            Assert.fail("Exception was expected");
          }
          catch (HornetQException e)
          {
             e.printStackTrace();
-            assertEquals(HornetQException.ILLEGAL_STATE, e.getCode());
+            Assert.assertEquals(HornetQException.ILLEGAL_STATE, e.getCode());
          }
 
          manager.compareJournals(new JournalLoadInformation[] { new JournalLoadInformation(),
@@ -186,18 +184,16 @@ public class ReplicationTest extends ServiceTestBase
 
       try
       {
-         ReplicationManagerImpl manager = new ReplicationManagerImpl(failoverManager,
-                                                                     this.factory);
+         ReplicationManagerImpl manager = new ReplicationManagerImpl(failoverManager, factory);
 
          manager.start();
 
          try
          {
-            ReplicationManagerImpl manager2 = new ReplicationManagerImpl(failoverManager,
-                                                                         this.factory);
+            ReplicationManagerImpl manager2 = new ReplicationManagerImpl(failoverManager, factory);
 
             manager2.start();
-            fail("Exception was expected");
+            Assert.fail("Exception was expected");
          }
          catch (Exception e)
          {
@@ -227,13 +223,12 @@ public class ReplicationTest extends ServiceTestBase
 
       try
       {
-         ReplicationManagerImpl manager = new ReplicationManagerImpl(failoverManager,
-                                                                     this.factory);
+         ReplicationManagerImpl manager = new ReplicationManagerImpl(failoverManager, factory);
 
          try
          {
             manager.start();
-            fail("Exception was expected");
+            Assert.fail("Exception was expected");
          }
          catch (HornetQException expected)
          {
@@ -246,7 +241,7 @@ public class ReplicationTest extends ServiceTestBase
          server.stop();
       }
    }
-   
+
    public void testSendPackets() throws Exception
    {
 
@@ -263,9 +258,8 @@ public class ReplicationTest extends ServiceTestBase
       try
       {
          StorageManager storage = getStorage();
-         
-         ReplicationManagerImpl manager = new ReplicationManagerImpl(failoverManager,
-                                                                     this.factory);
+
+         ReplicationManagerImpl manager = new ReplicationManagerImpl(failoverManager, factory);
          manager.start();
 
          Journal replicatedJournal = new ReplicatedJournal((byte)1, new FakeJournal(), manager);
@@ -285,13 +279,13 @@ public class ReplicationTest extends ServiceTestBase
 
          blockOnReplication(storage, manager);
 
-         assertEquals(0, manager.getActiveTokens().size());
+         Assert.assertEquals(0, manager.getActiveTokens().size());
 
          ServerMessage msg = new ServerMessageImpl(1, 1024);
 
          SimpleString dummy = new SimpleString("dummy");
          msg.setDestination(dummy);
-         
+
          replicatedJournal.appendAddRecordTransactional(23, 24, (byte)1, new FakeData());
 
          PagedMessage pgmsg = new PagedMessageImpl(msg, -1);
@@ -309,7 +303,7 @@ public class ReplicationTest extends ServiceTestBase
 
          PagingStore store = pagingManager.getPageStore(dummy);
          store.start();
-         assertEquals(5, store.getNumberOfPages());
+         Assert.assertEquals(5, store.getNumberOfPages());
          store.stop();
 
          manager.pageDeleted(dummy, 1);
@@ -338,7 +332,7 @@ public class ReplicationTest extends ServiceTestBase
 
          store.start();
 
-         assertEquals(0, store.getNumberOfPages());
+         Assert.assertEquals(0, store.getNumberOfPages());
 
          manager.stop();
       }
@@ -370,8 +364,7 @@ public class ReplicationTest extends ServiceTestBase
       try
       {
          StorageManager storage = getStorage();
-         ReplicationManagerImpl manager = new ReplicationManagerImpl(failoverManager,
-                                                                     this.factory);
+         ReplicationManagerImpl manager = new ReplicationManagerImpl(failoverManager, factory);
          manager.start();
 
          Journal replicatedJournal = new ReplicatedJournal((byte)1, new FakeJournal(), manager);
@@ -387,7 +380,7 @@ public class ReplicationTest extends ServiceTestBase
          storage.afterCompleteOperations(new IOAsyncTask()
          {
 
-            public void onError(int errorCode, String errorMessage)
+            public void onError(final int errorCode, final String errorMessage)
             {
             }
 
@@ -399,101 +392,96 @@ public class ReplicationTest extends ServiceTestBase
 
          server.stop();
 
-         assertTrue(latch.await(50, TimeUnit.SECONDS));
+         Assert.assertTrue(latch.await(50, TimeUnit.SECONDS));
       }
       finally
       {
          server.stop();
       }
    }
-   
+
    public void testExceptionSettingActionBefore() throws Exception
    {
       OperationContext ctx = OperationContextImpl.getContext(factory);
-      
+
       ctx.storeLineUp();
-      
+
       String msg = "I'm an exception";
-      
+
       ctx.onError(5, msg);
-      
+
       final AtomicInteger lastError = new AtomicInteger(0);
-      
+
       final List<String> msgsResult = new ArrayList<String>();
-      
+
       final CountDownLatch latch = new CountDownLatch(1);
-      
+
       ctx.executeOnCompletion(new IOAsyncTask()
       {
-         public void onError(int errorCode, String errorMessage)
+         public void onError(final int errorCode, final String errorMessage)
          {
             lastError.set(errorCode);
             msgsResult.add(errorMessage);
             latch.countDown();
          }
-         
+
          public void done()
          {
          }
       });
-      
-      assertTrue(latch.await(5, TimeUnit.SECONDS));
-      
-      assertEquals(5, lastError.get());
-      
-      assertEquals(1, msgsResult.size());
-      
-      assertEquals(msg, msgsResult.get(0));
-      
+
+      Assert.assertTrue(latch.await(5, TimeUnit.SECONDS));
+
+      Assert.assertEquals(5, lastError.get());
+
+      Assert.assertEquals(1, msgsResult.size());
+
+      Assert.assertEquals(msg, msgsResult.get(0));
+
       final CountDownLatch latch2 = new CountDownLatch(1);
-      
+
       // Adding the Task after the exception should still throw an exception
       ctx.executeOnCompletion(new IOAsyncTask()
       {
-         public void onError(int errorCode, String errorMessage)
+         public void onError(final int errorCode, final String errorMessage)
          {
             lastError.set(errorCode);
             msgsResult.add(errorMessage);
             latch2.countDown();
          }
-         
+
          public void done()
          {
          }
       });
-      
-      assertTrue(latch2.await(5, TimeUnit.SECONDS));
-      
-      assertEquals(2, msgsResult.size());
 
-      assertEquals(msg, msgsResult.get(0));
-      
-      assertEquals(msg, msgsResult.get(1));
-      
+      Assert.assertTrue(latch2.await(5, TimeUnit.SECONDS));
+
+      Assert.assertEquals(2, msgsResult.size());
+
+      Assert.assertEquals(msg, msgsResult.get(0));
+
+      Assert.assertEquals(msg, msgsResult.get(1));
+
       // Clearing any exception from the Context, so we can use the context again
       ctx.complete();
-      
 
       final CountDownLatch latch3 = new CountDownLatch(1);
-      
+
       ctx.executeOnCompletion(new IOAsyncTask()
       {
-         public void onError(int errorCode, String errorMessage)
+         public void onError(final int errorCode, final String errorMessage)
          {
          }
-         
+
          public void done()
          {
             latch3.countDown();
          }
       });
-      
-      
-      assertTrue(latch2.await(5, TimeUnit.SECONDS));
-      
-      
-      
-      
+
+      Assert.assertTrue(latch2.await(5, TimeUnit.SECONDS));
+
    }
 
    /**
@@ -508,13 +496,13 @@ public class ReplicationTest extends ServiceTestBase
     * @param manager
     * @return
     */
-   private void blockOnReplication(StorageManager storage, ReplicationManagerImpl manager) throws Exception
+   private void blockOnReplication(final StorageManager storage, final ReplicationManagerImpl manager) throws Exception
    {
       final CountDownLatch latch = new CountDownLatch(1);
       storage.afterCompleteOperations(new IOAsyncTask()
       {
 
-         public void onError(int errorCode, String errorMessage)
+         public void onError(final int errorCode, final String errorMessage)
          {
          }
 
@@ -524,7 +512,7 @@ public class ReplicationTest extends ServiceTestBase
          }
       });
 
-      assertTrue(latch.await(30, TimeUnit.SECONDS));
+      Assert.assertTrue(latch.await(30, TimeUnit.SECONDS));
    }
 
    public void testNoServer() throws Exception
@@ -533,14 +521,13 @@ public class ReplicationTest extends ServiceTestBase
 
       try
       {
-         ReplicationManagerImpl manager = new ReplicationManagerImpl(failoverManager,
-                                                                     this.factory);
+         ReplicationManagerImpl manager = new ReplicationManagerImpl(failoverManager, factory);
          manager.start();
-         fail("Exception expected");
+         Assert.fail("Exception expected");
       }
       catch (HornetQException expected)
       {
-         assertEquals(HornetQException.ILLEGAL_STATE, expected.getCode());
+         Assert.assertEquals(HornetQException.ILLEGAL_STATE, expected.getCode());
       }
    }
 
@@ -560,8 +547,7 @@ public class ReplicationTest extends ServiceTestBase
       try
       {
          StorageManager storage = getStorage();
-         ReplicationManagerImpl manager = new ReplicationManagerImpl(failoverManager,
-                                                                     this.factory);
+         ReplicationManagerImpl manager = new ReplicationManagerImpl(failoverManager, factory);
          manager.start();
 
          Journal replicatedJournal = new ReplicatedJournal((byte)1, new FakeJournal(), manager);
@@ -572,7 +558,7 @@ public class ReplicationTest extends ServiceTestBase
          storage.afterCompleteOperations(new IOAsyncTask()
          {
 
-            public void onError(int errorCode, String errorMessage)
+            public void onError(final int errorCode, final String errorMessage)
             {
             }
 
@@ -582,9 +568,9 @@ public class ReplicationTest extends ServiceTestBase
             }
          });
 
-         assertTrue(latch.await(1, TimeUnit.SECONDS));
+         Assert.assertTrue(latch.await(1, TimeUnit.SECONDS));
 
-         assertEquals(0, manager.getActiveTokens().size());
+         Assert.assertEquals(0, manager.getActiveTokens().size());
          manager.stop();
       }
       finally
@@ -611,8 +597,7 @@ public class ReplicationTest extends ServiceTestBase
       try
       {
          StorageManager storage = getStorage();
-         ReplicationManagerImpl manager = new ReplicationManagerImpl(failoverManager,
-                                                                     this.factory);
+         ReplicationManagerImpl manager = new ReplicationManagerImpl(failoverManager, factory);
          manager.start();
 
          Journal replicatedJournal = new ReplicatedJournal((byte)1, new FakeJournal(), manager);
@@ -622,7 +607,7 @@ public class ReplicationTest extends ServiceTestBase
          final CountDownLatch latch = new CountDownLatch(numberOfAdds);
 
          OperationContext ctx = storage.getContext();
-         
+
          for (int i = 0; i < numberOfAdds; i++)
          {
             final int nAdd = i;
@@ -635,7 +620,7 @@ public class ReplicationTest extends ServiceTestBase
             ctx.executeOnCompletion(new IOAsyncTask()
             {
 
-               public void onError(int errorCode, String errorMessage)
+               public void onError(final int errorCode, final String errorMessage)
                {
                }
 
@@ -648,14 +633,14 @@ public class ReplicationTest extends ServiceTestBase
             });
          }
 
-         assertTrue(latch.await(10, TimeUnit.SECONDS));
+         Assert.assertTrue(latch.await(10, TimeUnit.SECONDS));
 
          for (int i = 0; i < numberOfAdds; i++)
          {
-            assertEquals(i, executions.get(i).intValue());
+            Assert.assertEquals(i, executions.get(i).intValue());
          }
 
-         assertEquals(0, manager.getActiveTokens().size());
+         Assert.assertEquals(0, manager.getActiveTokens().size());
          manager.stop();
       }
       finally
@@ -667,11 +652,11 @@ public class ReplicationTest extends ServiceTestBase
    class FakeData implements EncodingSupport
    {
 
-      public void decode(HornetQBuffer buffer)
+      public void decode(final HornetQBuffer buffer)
       {
       }
 
-      public void encode(HornetQBuffer buffer)
+      public void encode(final HornetQBuffer buffer)
       {
          buffer.writeBytes(new byte[5]);
       }
@@ -690,6 +675,7 @@ public class ReplicationTest extends ServiceTestBase
 
    // Protected -----------------------------------------------------
 
+   @Override
    protected void setUp() throws Exception
    {
       super.setUp();
@@ -699,10 +685,11 @@ public class ReplicationTest extends ServiceTestBase
       executor = Executors.newCachedThreadPool(tFactory);
 
       scheduledExecutor = new ScheduledThreadPoolExecutor(10, tFactory);
-      
+
       factory = new OrderedExecutorFactory(executor);
    }
 
+   @Override
    protected void tearDown() throws Exception
    {
 
@@ -718,17 +705,16 @@ public class ReplicationTest extends ServiceTestBase
 
    }
 
-
    private FailoverManagerImpl createFailoverManager()
    {
       return createFailoverManager(null);
    }
 
-   private FailoverManagerImpl createFailoverManager(List<Interceptor> interceptors)
+   private FailoverManagerImpl createFailoverManager(final List<Interceptor> interceptors)
    {
       TransportConfiguration connectorConfig = new TransportConfiguration(InVMConnectorFactory.class.getName(),
                                                                           new HashMap<String, Object>(),
-                                                                          randomString());
+                                                                          RandomUtil.randomString());
 
       return new FailoverManagerImpl((ClientSessionFactory)null,
                                      connectorConfig,
@@ -745,10 +731,11 @@ public class ReplicationTest extends ServiceTestBase
                                      scheduledExecutor,
                                      interceptors);
    }
-   protected PagingManager createPageManager(StorageManager storageManager,
-                                             Configuration configuration,
-                                             ExecutorFactory executorFactory,
-                                             HierarchicalRepository<AddressSettings> addressSettingsRepository) throws Exception
+
+   protected PagingManager createPageManager(final StorageManager storageManager,
+                                             final Configuration configuration,
+                                             final ExecutorFactory executorFactory,
+                                             final HierarchicalRepository<AddressSettings> addressSettingsRepository) throws Exception
    {
 
       PagingManager paging = new PagingManagerImpl(new PagingStoreFactoryNIO(configuration.getPagingDirectory(),
@@ -768,9 +755,9 @@ public class ReplicationTest extends ServiceTestBase
    {
       static AtomicBoolean value = new AtomicBoolean(true);
 
-      public boolean intercept(Packet packet, RemotingConnection connection) throws HornetQException
+      public boolean intercept(final Packet packet, final RemotingConnection connection) throws HornetQException
       {
-         return value.get();
+         return TestInterceptor.value.get();
       }
 
    };
@@ -781,7 +768,7 @@ public class ReplicationTest extends ServiceTestBase
       /* (non-Javadoc)
        * @see org.hornetq.core.journal.Journal#appendAddRecord(long, byte, byte[], boolean)
        */
-      public void appendAddRecord(long id, byte recordType, byte[] record, boolean sync) throws Exception
+      public void appendAddRecord(final long id, final byte recordType, final byte[] record, final boolean sync) throws Exception
       {
 
       }
@@ -789,7 +776,7 @@ public class ReplicationTest extends ServiceTestBase
       /* (non-Javadoc)
        * @see org.hornetq.core.journal.Journal#appendAddRecord(long, byte, org.hornetq.core.journal.EncodingSupport, boolean)
        */
-      public void appendAddRecord(long id, byte recordType, EncodingSupport record, boolean sync) throws Exception
+      public void appendAddRecord(final long id, final byte recordType, final EncodingSupport record, final boolean sync) throws Exception
       {
 
       }
@@ -797,7 +784,10 @@ public class ReplicationTest extends ServiceTestBase
       /* (non-Javadoc)
        * @see org.hornetq.core.journal.Journal#appendAddRecordTransactional(long, long, byte, byte[])
        */
-      public void appendAddRecordTransactional(long txID, long id, byte recordType, byte[] record) throws Exception
+      public void appendAddRecordTransactional(final long txID,
+                                               final long id,
+                                               final byte recordType,
+                                               final byte[] record) throws Exception
       {
 
       }
@@ -805,7 +795,10 @@ public class ReplicationTest extends ServiceTestBase
       /* (non-Javadoc)
        * @see org.hornetq.core.journal.Journal#appendAddRecordTransactional(long, long, byte, org.hornetq.core.journal.EncodingSupport)
        */
-      public void appendAddRecordTransactional(long txID, long id, byte recordType, EncodingSupport record) throws Exception
+      public void appendAddRecordTransactional(final long txID,
+                                               final long id,
+                                               final byte recordType,
+                                               final EncodingSupport record) throws Exception
       {
 
       }
@@ -813,7 +806,7 @@ public class ReplicationTest extends ServiceTestBase
       /* (non-Javadoc)
        * @see org.hornetq.core.journal.Journal#appendCommitRecord(long, boolean)
        */
-      public void appendCommitRecord(long txID, boolean sync) throws Exception
+      public void appendCommitRecord(final long txID, final boolean sync) throws Exception
       {
 
       }
@@ -821,7 +814,7 @@ public class ReplicationTest extends ServiceTestBase
       /* (non-Javadoc)
        * @see org.hornetq.core.journal.Journal#appendDeleteRecord(long, boolean)
        */
-      public void appendDeleteRecord(long id, boolean sync) throws Exception
+      public void appendDeleteRecord(final long id, final boolean sync) throws Exception
       {
 
       }
@@ -829,7 +822,7 @@ public class ReplicationTest extends ServiceTestBase
       /* (non-Javadoc)
        * @see org.hornetq.core.journal.Journal#appendDeleteRecordTransactional(long, long, byte[])
        */
-      public void appendDeleteRecordTransactional(long txID, long id, byte[] record) throws Exception
+      public void appendDeleteRecordTransactional(final long txID, final long id, final byte[] record) throws Exception
       {
 
       }
@@ -837,7 +830,7 @@ public class ReplicationTest extends ServiceTestBase
       /* (non-Javadoc)
        * @see org.hornetq.core.journal.Journal#appendDeleteRecordTransactional(long, long, org.hornetq.core.journal.EncodingSupport)
        */
-      public void appendDeleteRecordTransactional(long txID, long id, EncodingSupport record) throws Exception
+      public void appendDeleteRecordTransactional(final long txID, final long id, final EncodingSupport record) throws Exception
       {
 
       }
@@ -845,7 +838,7 @@ public class ReplicationTest extends ServiceTestBase
       /* (non-Javadoc)
        * @see org.hornetq.core.journal.Journal#appendDeleteRecordTransactional(long, long)
        */
-      public void appendDeleteRecordTransactional(long txID, long id) throws Exception
+      public void appendDeleteRecordTransactional(final long txID, final long id) throws Exception
       {
 
       }
@@ -853,7 +846,7 @@ public class ReplicationTest extends ServiceTestBase
       /* (non-Javadoc)
        * @see org.hornetq.core.journal.Journal#appendPrepareRecord(long, org.hornetq.core.journal.EncodingSupport, boolean)
        */
-      public void appendPrepareRecord(long txID, EncodingSupport transactionData, boolean sync) throws Exception
+      public void appendPrepareRecord(final long txID, final EncodingSupport transactionData, final boolean sync) throws Exception
       {
 
       }
@@ -861,7 +854,7 @@ public class ReplicationTest extends ServiceTestBase
       /* (non-Javadoc)
        * @see org.hornetq.core.journal.Journal#appendPrepareRecord(long, byte[], boolean)
        */
-      public void appendPrepareRecord(long txID, byte[] transactionData, boolean sync) throws Exception
+      public void appendPrepareRecord(final long txID, final byte[] transactionData, final boolean sync) throws Exception
       {
 
       }
@@ -869,7 +862,7 @@ public class ReplicationTest extends ServiceTestBase
       /* (non-Javadoc)
        * @see org.hornetq.core.journal.Journal#appendRollbackRecord(long, boolean)
        */
-      public void appendRollbackRecord(long txID, boolean sync) throws Exception
+      public void appendRollbackRecord(final long txID, final boolean sync) throws Exception
       {
 
       }
@@ -877,7 +870,7 @@ public class ReplicationTest extends ServiceTestBase
       /* (non-Javadoc)
        * @see org.hornetq.core.journal.Journal#appendUpdateRecord(long, byte, byte[], boolean)
        */
-      public void appendUpdateRecord(long id, byte recordType, byte[] record, boolean sync) throws Exception
+      public void appendUpdateRecord(final long id, final byte recordType, final byte[] record, final boolean sync) throws Exception
       {
 
       }
@@ -885,7 +878,10 @@ public class ReplicationTest extends ServiceTestBase
       /* (non-Javadoc)
        * @see org.hornetq.core.journal.Journal#appendUpdateRecord(long, byte, org.hornetq.core.journal.EncodingSupport, boolean)
        */
-      public void appendUpdateRecord(long id, byte recordType, EncodingSupport record, boolean sync) throws Exception
+      public void appendUpdateRecord(final long id,
+                                     final byte recordType,
+                                     final EncodingSupport record,
+                                     final boolean sync) throws Exception
       {
 
       }
@@ -893,7 +889,10 @@ public class ReplicationTest extends ServiceTestBase
       /* (non-Javadoc)
        * @see org.hornetq.core.journal.Journal#appendUpdateRecordTransactional(long, long, byte, byte[])
        */
-      public void appendUpdateRecordTransactional(long txID, long id, byte recordType, byte[] record) throws Exception
+      public void appendUpdateRecordTransactional(final long txID,
+                                                  final long id,
+                                                  final byte recordType,
+                                                  final byte[] record) throws Exception
       {
 
       }
@@ -901,7 +900,10 @@ public class ReplicationTest extends ServiceTestBase
       /* (non-Javadoc)
        * @see org.hornetq.core.journal.Journal#appendUpdateRecordTransactional(long, long, byte, org.hornetq.core.journal.EncodingSupport)
        */
-      public void appendUpdateRecordTransactional(long txID, long id, byte recordType, EncodingSupport record) throws Exception
+      public void appendUpdateRecordTransactional(final long txID,
+                                                  final long id,
+                                                  final byte recordType,
+                                                  final EncodingSupport record) throws Exception
       {
 
       }
@@ -918,7 +920,7 @@ public class ReplicationTest extends ServiceTestBase
       /* (non-Javadoc)
        * @see org.hornetq.core.journal.Journal#load(org.hornetq.core.journal.LoaderCallback)
        */
-      public JournalLoadInformation load(LoaderCallback reloadManager) throws Exception
+      public JournalLoadInformation load(final LoaderCallback reloadManager) throws Exception
       {
 
          return new JournalLoadInformation();
@@ -927,9 +929,9 @@ public class ReplicationTest extends ServiceTestBase
       /* (non-Javadoc)
        * @see org.hornetq.core.journal.Journal#load(java.util.List, java.util.List, org.hornetq.core.journal.TransactionFailureCallback)
        */
-      public JournalLoadInformation load(List<RecordInfo> committedRecords,
-                                         List<PreparedTransactionInfo> preparedTransactions,
-                                         TransactionFailureCallback transactionFailure) throws Exception
+      public JournalLoadInformation load(final List<RecordInfo> committedRecords,
+                                         final List<PreparedTransactionInfo> preparedTransactions,
+                                         final TransactionFailureCallback transactionFailure) throws Exception
       {
 
          return new JournalLoadInformation();
@@ -938,7 +940,7 @@ public class ReplicationTest extends ServiceTestBase
       /* (non-Javadoc)
        * @see org.hornetq.core.journal.Journal#perfBlast(int)
        */
-      public void perfBlast(int pages) throws Exception
+      public void perfBlast(final int pages) throws Exception
       {
 
       }
@@ -987,89 +989,99 @@ public class ReplicationTest extends ServiceTestBase
       /* (non-Javadoc)
        * @see org.hornetq.core.journal.Journal#appendAddRecord(long, byte, byte[], boolean, org.hornetq.core.journal.IOCompletion)
        */
-      public void appendAddRecord(long id, byte recordType, byte[] record, boolean sync, IOCompletion completionCallback) throws Exception
+      public void appendAddRecord(final long id,
+                                  final byte recordType,
+                                  final byte[] record,
+                                  final boolean sync,
+                                  final IOCompletion completionCallback) throws Exception
       {
       }
 
       /* (non-Javadoc)
        * @see org.hornetq.core.journal.Journal#appendAddRecord(long, byte, org.hornetq.core.journal.EncodingSupport, boolean, org.hornetq.core.journal.IOCompletion)
        */
-      public void appendAddRecord(long id,
-                                  byte recordType,
-                                  EncodingSupport record,
-                                  boolean sync,
-                                  IOCompletion completionCallback) throws Exception
+      public void appendAddRecord(final long id,
+                                  final byte recordType,
+                                  final EncodingSupport record,
+                                  final boolean sync,
+                                  final IOCompletion completionCallback) throws Exception
       {
       }
 
       /* (non-Javadoc)
        * @see org.hornetq.core.journal.Journal#appendCommitRecord(long, boolean, org.hornetq.core.journal.IOCompletion)
        */
-      public void appendCommitRecord(long txID, boolean sync, IOCompletion callback) throws Exception
+      public void appendCommitRecord(final long txID, final boolean sync, final IOCompletion callback) throws Exception
       {
       }
 
       /* (non-Javadoc)
        * @see org.hornetq.core.journal.Journal#appendDeleteRecord(long, boolean, org.hornetq.core.journal.IOCompletion)
        */
-      public void appendDeleteRecord(long id, boolean sync, IOCompletion completionCallback) throws Exception
+      public void appendDeleteRecord(final long id, final boolean sync, final IOCompletion completionCallback) throws Exception
       {
       }
 
       /* (non-Javadoc)
        * @see org.hornetq.core.journal.Journal#appendPrepareRecord(long, org.hornetq.core.journal.EncodingSupport, boolean, org.hornetq.core.journal.IOCompletion)
        */
-      public void appendPrepareRecord(long txID, EncodingSupport transactionData, boolean sync, IOCompletion callback) throws Exception
+      public void appendPrepareRecord(final long txID,
+                                      final EncodingSupport transactionData,
+                                      final boolean sync,
+                                      final IOCompletion callback) throws Exception
       {
       }
 
       /* (non-Javadoc)
        * @see org.hornetq.core.journal.Journal#appendPrepareRecord(long, byte[], boolean, org.hornetq.core.journal.IOCompletion)
        */
-      public void appendPrepareRecord(long txID, byte[] transactionData, boolean sync, IOCompletion callback) throws Exception
+      public void appendPrepareRecord(final long txID,
+                                      final byte[] transactionData,
+                                      final boolean sync,
+                                      final IOCompletion callback) throws Exception
       {
       }
 
       /* (non-Javadoc)
        * @see org.hornetq.core.journal.Journal#appendRollbackRecord(long, boolean, org.hornetq.core.journal.IOCompletion)
        */
-      public void appendRollbackRecord(long txID, boolean sync, IOCompletion callback) throws Exception
+      public void appendRollbackRecord(final long txID, final boolean sync, final IOCompletion callback) throws Exception
       {
       }
 
       /* (non-Javadoc)
        * @see org.hornetq.core.journal.Journal#appendUpdateRecord(long, byte, byte[], boolean, org.hornetq.core.journal.IOCompletion)
        */
-      public void appendUpdateRecord(long id,
-                                     byte recordType,
-                                     byte[] record,
-                                     boolean sync,
-                                     IOCompletion completionCallback) throws Exception
+      public void appendUpdateRecord(final long id,
+                                     final byte recordType,
+                                     final byte[] record,
+                                     final boolean sync,
+                                     final IOCompletion completionCallback) throws Exception
       {
       }
 
       /* (non-Javadoc)
        * @see org.hornetq.core.journal.Journal#appendUpdateRecord(long, byte, org.hornetq.core.journal.EncodingSupport, boolean, org.hornetq.core.journal.IOCompletion)
        */
-      public void appendUpdateRecord(long id,
-                                     byte recordType,
-                                     EncodingSupport record,
-                                     boolean sync,
-                                     IOCompletion completionCallback) throws Exception
+      public void appendUpdateRecord(final long id,
+                                     final byte recordType,
+                                     final EncodingSupport record,
+                                     final boolean sync,
+                                     final IOCompletion completionCallback) throws Exception
       {
       }
 
       /* (non-Javadoc)
        * @see org.hornetq.core.journal.Journal#sync(org.hornetq.core.journal.IOCompletion)
        */
-      public void sync(IOCompletion callback)
+      public void sync(final IOCompletion callback)
       {
       }
 
       public void runDirectJournalBlast() throws Exception
       {
          // TODO Auto-generated method stub
-         
+
       }
 
    }

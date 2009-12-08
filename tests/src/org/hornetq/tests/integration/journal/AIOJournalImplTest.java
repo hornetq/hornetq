@@ -15,6 +15,7 @@ package org.hornetq.tests.integration.journal;
 
 import java.io.File;
 
+import junit.framework.Assert;
 import junit.framework.TestSuite;
 
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
@@ -23,6 +24,7 @@ import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.journal.impl.AIOSequentialFileFactory;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.tests.unit.core.journal.impl.JournalImplTestUnit;
+import org.hornetq.tests.util.UnitTestCase;
 
 /**
  * 
@@ -40,11 +42,11 @@ import org.hornetq.tests.unit.core.journal.impl.JournalImplTestUnit;
 public class AIOJournalImplTest extends JournalImplTestUnit
 {
    private static final Logger log = Logger.getLogger(AIOJournalImplTest.class);
-   
+
    public static TestSuite suite()
    {
       // Ignore tests if AIO is not installed
-      return createAIOTestSuite(AIOJournalImplTest.class);
+      return UnitTestCase.createAIOTestSuite(AIOJournalImplTest.class);
    }
 
    @Override
@@ -53,10 +55,10 @@ public class AIOJournalImplTest extends JournalImplTestUnit
       super.setUp();
       if (!AsynchronousFileImpl.isLoaded())
       {
-         fail(String.format("libAIO is not loaded on %s %s %s",
-                            System.getProperty("os.name"),
-                            System.getProperty("os.arch"),
-                            System.getProperty("os.version")));
+         Assert.fail(String.format("libAIO is not loaded on %s %s %s",
+                                   System.getProperty("os.name"),
+                                   System.getProperty("os.arch"),
+                                   System.getProperty("os.version")));
       }
    }
 
@@ -71,11 +73,9 @@ public class AIOJournalImplTest extends JournalImplTestUnit
 
       return new AIOSequentialFileFactory(getTestDir(),
                                           ConfigurationImpl.DEFAULT_JOURNAL_BUFFER_SIZE_AIO,
-                                          1000000,                                          
-                                          false      
-      );
+                                          1000000,
+                                          false);
    }
-
 
    @Override
    protected int getAlignment()

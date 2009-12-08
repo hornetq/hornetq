@@ -11,7 +11,6 @@
  * permissions and limitations under the License.
  */
 
-
 package org.hornetq.core.postoffice;
 
 import org.hornetq.core.server.Queue;
@@ -28,6 +27,6 @@ import org.hornetq.core.server.Queue;
 public interface QueueBinding extends Binding
 {
    int consumerCount();
-   
+
    Queue getQueue();
 }

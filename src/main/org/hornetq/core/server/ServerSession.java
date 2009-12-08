@@ -127,17 +127,16 @@ public interface ServerSession
    void handleSendLargeMessage(SessionSendLargeMessage packet);
 
    void handleForceConsumerDelivery(SessionForceConsumerDelivery message);
-   
-   void handleRequestProducerCredits(SessionRequestProducerCreditsMessage message)
-      throws Exception;
+
+   void handleRequestProducerCredits(SessionRequestProducerCreditsMessage message) throws Exception;
 
    void handleClose(Packet packet);
 
    int transferConnection(RemotingConnection newConnection, int lastReceivedCommandID);
 
    Channel getChannel();
-   
+
    ServerSessionPacketHandler getHandler();
-   
+
    void setHandler(ServerSessionPacketHandler handler);
 }

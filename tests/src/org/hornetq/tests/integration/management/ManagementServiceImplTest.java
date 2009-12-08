@@ -13,11 +13,8 @@
 
 package org.hornetq.tests.integration.management;
 
-import static org.hornetq.tests.util.RandomUtil.randomSimpleString;
-import static org.hornetq.tests.util.RandomUtil.randomString;
+import junit.framework.Assert;
 
-import org.hornetq.core.buffers.HornetQBuffer;
-import org.hornetq.core.buffers.HornetQBuffers;
 import org.hornetq.core.client.management.impl.ManagementHelper;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
@@ -34,6 +31,7 @@ import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.impl.ServerMessageImpl;
 import org.hornetq.tests.integration.server.FakeStorageManager;
 import org.hornetq.tests.unit.core.postoffice.impl.FakeQueue;
+import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.SimpleString;
 
@@ -58,26 +56,22 @@ public class ManagementServiceImplTest extends UnitTestCase
 
    public void testHandleManagementMessageWithOperation() throws Exception
    {
-      String queue = randomString();
-      String address = randomString();
-      
+      String queue = RandomUtil.randomString();
+      String address = RandomUtil.randomString();
+
       Configuration conf = new ConfigurationImpl();
       conf.setJMXManagementEnabled(false);
-      
+
       HornetQServer server = HornetQ.newHornetQServer(conf, false);
       server.start();
 
       // invoke attribute and operation on the server
       ServerMessage message = new ServerMessageImpl(1, 100);
-      ManagementHelper.putOperationInvocation(message,
-                                              ResourceNames.CORE_SERVER,
-                                              "createQueue",
-                                              queue,
-                                              address);
-      
+      ManagementHelper.putOperationInvocation(message, ResourceNames.CORE_SERVER, "createQueue", queue, address);
+
       ServerMessage reply = server.getManagementService().handleMessage(message);
-      
-      assertTrue(ManagementHelper.hasOperationSucceeded(reply));
+
+      Assert.assertTrue(ManagementHelper.hasOperationSucceeded(reply));
 
       server.stop();
    }
@@ -86,43 +80,37 @@ public class ManagementServiceImplTest extends UnitTestCase
    {
       Configuration conf = new ConfigurationImpl();
       conf.setJMXManagementEnabled(false);
-      
+
       HornetQServer server = HornetQ.newHornetQServer(conf, false);
       server.start();
 
       // invoke attribute and operation on the server
       ServerMessage message = new ServerMessageImpl(1, 100);
-      ManagementHelper.putOperationInvocation(message,
-                                              ResourceNames.CORE_SERVER,
-                                              "thereIsNoSuchOperation");
-      
+      ManagementHelper.putOperationInvocation(message, ResourceNames.CORE_SERVER, "thereIsNoSuchOperation");
+
       ServerMessage reply = server.getManagementService().handleMessage(message);
 
-      
-      assertFalse(ManagementHelper.hasOperationSucceeded(reply));
-      assertNotNull(ManagementHelper.getResult(reply));
+      Assert.assertFalse(ManagementHelper.hasOperationSucceeded(reply));
+      Assert.assertNotNull(ManagementHelper.getResult(reply));
       server.stop();
    }
-   
+
    public void testHandleManagementMessageWithUnknowResource() throws Exception
    {
       Configuration conf = new ConfigurationImpl();
       conf.setJMXManagementEnabled(false);
-      
+
       HornetQServer server = HornetQ.newHornetQServer(conf, false);
       server.start();
 
       // invoke attribute and operation on the server
       ServerMessage message = new ServerMessageImpl(1, 100);
-      ManagementHelper.putOperationInvocation(message,
-                                              "Resouce.Does.Not.Exist",
-                                              "toString");
-      
+      ManagementHelper.putOperationInvocation(message, "Resouce.Does.Not.Exist", "toString");
+
       ServerMessage reply = server.getManagementService().handleMessage(message);
 
-      
-      assertFalse(ManagementHelper.hasOperationSucceeded(reply));
-      assertNotNull(ManagementHelper.getResult(reply));
+      Assert.assertFalse(ManagementHelper.hasOperationSucceeded(reply));
+      Assert.assertNotNull(ManagementHelper.getResult(reply));
       server.stop();
    }
 
@@ -130,7 +118,7 @@ public class ManagementServiceImplTest extends UnitTestCase
    {
       Configuration conf = new ConfigurationImpl();
       conf.setJMXManagementEnabled(false);
-      
+
       HornetQServer server = HornetQ.newHornetQServer(conf, false);
       server.start();
 
@@ -138,38 +126,37 @@ public class ManagementServiceImplTest extends UnitTestCase
       ServerMessage message = new ServerMessageImpl(1, 100);
 
       ManagementHelper.putAttribute(message, ResourceNames.CORE_SERVER, "attribute.Does.Not.Exist");
-      
+
       ServerMessage reply = server.getManagementService().handleMessage(message);
 
-      
-      assertFalse(ManagementHelper.hasOperationSucceeded(reply));
-      assertNotNull(ManagementHelper.getResult(reply));
+      Assert.assertFalse(ManagementHelper.hasOperationSucceeded(reply));
+      Assert.assertNotNull(ManagementHelper.getResult(reply));
       server.stop();
    }
-   
+
    public void testGetResources() throws Exception
    {
-      Configuration conf  = new ConfigurationImpl();
+      Configuration conf = new ConfigurationImpl();
       conf.setJMXManagementEnabled(false);
       ManagementServiceImpl managementService = new ManagementServiceImpl(null, conf);
       managementService.setStorageManager(new NullStorageManager());
-      
-      SimpleString address = randomSimpleString();
+
+      SimpleString address = RandomUtil.randomSimpleString();
       managementService.registerAddress(address);
-      Queue queue = new FakeQueue(randomSimpleString());
-      managementService.registerQueue(queue, randomSimpleString(), new FakeStorageManager());
+      Queue queue = new FakeQueue(RandomUtil.randomSimpleString());
+      managementService.registerQueue(queue, RandomUtil.randomSimpleString(), new FakeStorageManager());
 
       Object[] addresses = managementService.getResources(AddressControl.class);
-      assertEquals(1, addresses.length);
-      assertTrue(addresses[0] instanceof AddressControl);
+      Assert.assertEquals(1, addresses.length);
+      Assert.assertTrue(addresses[0] instanceof AddressControl);
       AddressControl addressControl = (AddressControl)addresses[0];
-      assertEquals(address.toString(), addressControl.getAddress());
+      Assert.assertEquals(address.toString(), addressControl.getAddress());
 
       Object[] queues = managementService.getResources(QueueControl.class);
-      assertEquals(1, queues.length);
-      assertTrue(queues[0] instanceof QueueControl);
+      Assert.assertEquals(1, queues.length);
+      Assert.assertTrue(queues[0] instanceof QueueControl);
       QueueControl queueControl = (QueueControl)queues[0];
-      assertEquals(queue.getName().toString(), queueControl.getName());
+      Assert.assertEquals(queue.getName().toString(), queueControl.getName());
    }
 
    // Package protected ---------------------------------------------

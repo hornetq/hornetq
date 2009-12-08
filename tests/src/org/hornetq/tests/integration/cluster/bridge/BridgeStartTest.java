@@ -13,12 +13,12 @@
 
 package org.hornetq.tests.integration.cluster.bridge;
 
-import static org.hornetq.core.remoting.impl.invm.TransportConstants.SERVER_ID_PROP_NAME;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import junit.framework.Assert;
 
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
@@ -30,6 +30,7 @@ import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.config.cluster.BridgeConfiguration;
 import org.hornetq.core.config.cluster.QueueConfiguration;
 import org.hornetq.core.logging.Logger;
+import org.hornetq.core.remoting.impl.invm.TransportConstants;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.cluster.Bridge;
 import org.hornetq.integration.transports.netty.NettyConnectorFactory;
@@ -79,7 +80,7 @@ public class BridgeStartTest extends ServiceTestBase
       }
       else
       {
-         server1Params.put(SERVER_ID_PROP_NAME, 1);
+         server1Params.put(TransportConstants.SERVER_ID_PROP_NAME, 1);
       }
       HornetQServer server1 = createClusteredServerWithParams(isNetty(), 1, true, server1Params);
 
@@ -161,14 +162,14 @@ public class BridgeStartTest extends ServiceTestBase
       {
          ClientMessage message = consumer1.receive(200);
 
-         assertNotNull(message);
+         Assert.assertNotNull(message);
 
-         assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
+         Assert.assertEquals(i, message.getObjectProperty(propKey));
 
          message.acknowledge();
       }
 
-      assertNull(consumer1.receiveImmediate());
+      Assert.assertNull(consumer1.receiveImmediate());
 
       Bridge bridge = server0.getClusterManager().getBridges().get(bridgeName);
 
@@ -183,7 +184,7 @@ public class BridgeStartTest extends ServiceTestBase
          producer0.send(message);
       }
 
-      assertNull(consumer1.receiveImmediate());
+      Assert.assertNull(consumer1.receiveImmediate());
 
       bridge.start();
 
@@ -191,14 +192,14 @@ public class BridgeStartTest extends ServiceTestBase
       {
          ClientMessage message = consumer1.receive(1000);
 
-         assertNotNull(message);
+         Assert.assertNotNull(message);
 
-         assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
+         Assert.assertEquals(i, message.getObjectProperty(propKey));
 
          message.acknowledge();
       }
 
-      assertNull(consumer1.receiveImmediate());
+      Assert.assertNull(consumer1.receiveImmediate());
 
       session0.close();
 
@@ -229,7 +230,7 @@ public class BridgeStartTest extends ServiceTestBase
       }
       else
       {
-         server1Params.put(SERVER_ID_PROP_NAME, 1);
+         server1Params.put(TransportConstants.SERVER_ID_PROP_NAME, 1);
       }
       HornetQServer server1 = createClusteredServerWithParams(isNetty(), 1, true, server1Params);
 
@@ -319,14 +320,14 @@ public class BridgeStartTest extends ServiceTestBase
          {
             ClientMessage message = consumer1.receive(1000);
 
-            assertNotNull(message);
+            Assert.assertNotNull(message);
 
-            assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
+            Assert.assertEquals(i, message.getObjectProperty(propKey));
 
             message.acknowledge();
          }
 
-         assertNull(consumer1.receiveImmediate());
+         Assert.assertNull(consumer1.receiveImmediate());
 
          for (int i = 0; i < numMessages; i++)
          {
@@ -341,24 +342,24 @@ public class BridgeStartTest extends ServiceTestBase
          {
             ClientMessage message = consumer1.receive(1000);
 
-            assertNotNull(message);
+            Assert.assertNotNull(message);
 
-            assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
+            Assert.assertEquals(i, message.getObjectProperty(propKey));
 
             message.acknowledge();
          }
 
-         assertNull(consumer1.receiveImmediate());
+         Assert.assertNull(consumer1.receiveImmediate());
 
          session1.close();
 
          sf1.close();
 
-         log.info("stopping server 1");
+         BridgeStartTest.log.info("stopping server 1");
 
          server1.stop();
 
-         log.info("stopped server 1");
+         BridgeStartTest.log.info("stopped server 1");
 
          for (int i = 0; i < numMessages; i++)
          {
@@ -369,11 +370,11 @@ public class BridgeStartTest extends ServiceTestBase
             producer0.send(message);
          }
 
-         log.info("sent some more messages");
+         BridgeStartTest.log.info("sent some more messages");
 
          server1.start();
 
-         log.info("started server1");
+         BridgeStartTest.log.info("started server1");
 
          sf1 = new ClientSessionFactoryImpl(server1tc);
 
@@ -383,20 +384,20 @@ public class BridgeStartTest extends ServiceTestBase
 
          session1.start();
 
-         log.info("started session");
+         BridgeStartTest.log.info("started session");
 
          for (int i = 0; i < numMessages; i++)
          {
             ClientMessage message = consumer1.receive(1000);
 
-            assertNotNull(message);
+            Assert.assertNotNull(message);
 
-            assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
+            Assert.assertEquals(i, message.getObjectProperty(propKey));
 
             message.acknowledge();
          }
 
-         assertNull(consumer1.receiveImmediate());
+         Assert.assertNull(consumer1.receiveImmediate());
 
          session1.close();
 
@@ -426,7 +427,7 @@ public class BridgeStartTest extends ServiceTestBase
       }
       else
       {
-         server1Params.put(SERVER_ID_PROP_NAME, 1);
+         server1Params.put(TransportConstants.SERVER_ID_PROP_NAME, 1);
       }
       HornetQServer server1 = createClusteredServerWithParams(isNetty(), 1, false, server1Params);
 
@@ -513,7 +514,7 @@ public class BridgeStartTest extends ServiceTestBase
       session1.start();
 
       // Won't be received since the bridge was deactivated
-      assertNull(consumer1.receiveImmediate());
+      Assert.assertNull(consumer1.receiveImmediate());
 
       // Now start the bridge manually
 
@@ -527,14 +528,14 @@ public class BridgeStartTest extends ServiceTestBase
       {
          ClientMessage message = consumer1.receive(1000);
 
-         assertNotNull(message);
+         Assert.assertNotNull(message);
 
-         assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
+         Assert.assertEquals(i, message.getObjectProperty(propKey));
 
          message.acknowledge();
       }
 
-      assertNull(consumer1.receiveImmediate());
+      Assert.assertNull(consumer1.receiveImmediate());
 
       session1.close();
 
@@ -561,7 +562,7 @@ public class BridgeStartTest extends ServiceTestBase
       }
       else
       {
-         server1Params.put(SERVER_ID_PROP_NAME, 1);
+         server1Params.put(TransportConstants.SERVER_ID_PROP_NAME, 1);
       }
       HornetQServer server1 = createClusteredServerWithParams(isNetty(), 1, false, server1Params);
 
@@ -644,20 +645,20 @@ public class BridgeStartTest extends ServiceTestBase
       {
          ClientMessage message = consumer1.receive(1000);
 
-         assertNotNull(message);
+         Assert.assertNotNull(message);
 
-         assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
+         Assert.assertEquals(i, message.getObjectProperty(propKey));
 
          message.acknowledge();
       }
 
-      assertNull(consumer1.receiveImmediate());
+      Assert.assertNull(consumer1.receiveImmediate());
 
       // Now stop the bridge manually
 
       Bridge bridge = server0.getClusterManager().getBridges().get(bridgeName);
 
-      log.info("stopping bridge manually");
+      BridgeStartTest.log.info("stopping bridge manually");
 
       bridge.stop();
 
@@ -670,11 +671,11 @@ public class BridgeStartTest extends ServiceTestBase
          producer0.send(message);
       }
 
-      assertNull(consumer1.receiveImmediate());
+      Assert.assertNull(consumer1.receiveImmediate());
 
       bridge.start();
 
-      log.info("started bridge");
+      BridgeStartTest.log.info("started bridge");
 
       // The previous messages will get resent, but with duplicate detection they will be rejected
       // at the target
@@ -683,14 +684,14 @@ public class BridgeStartTest extends ServiceTestBase
       {
          ClientMessage message = consumer1.receive(1000);
 
-         assertNotNull(message);
+         Assert.assertNotNull(message);
 
-         assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
+         Assert.assertEquals(i, message.getObjectProperty(propKey));
 
          message.acknowledge();
       }
 
-      assertNull(consumer1.receiveImmediate());
+      Assert.assertNull(consumer1.receiveImmediate());
 
       bridge.stop();
 
@@ -703,7 +704,7 @@ public class BridgeStartTest extends ServiceTestBase
          producer0.send(message);
       }
 
-      assertNull(consumer1.receiveImmediate());
+      Assert.assertNull(consumer1.receiveImmediate());
 
       bridge.start();
 
@@ -711,14 +712,14 @@ public class BridgeStartTest extends ServiceTestBase
       {
          ClientMessage message = consumer1.receive(1000);
 
-         assertNotNull(message);
+         Assert.assertNotNull(message);
 
-         assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
+         Assert.assertEquals(i, message.getObjectProperty(propKey));
 
          message.acknowledge();
       }
 
-      assertNull(consumer1.receiveImmediate());
+      Assert.assertNull(consumer1.receiveImmediate());
 
       session1.close();
 
@@ -733,12 +734,14 @@ public class BridgeStartTest extends ServiceTestBase
       server1.stop();
    }
 
+   @Override
    protected void setUp() throws Exception
    {
       super.setUp();
       clearData();
    }
 
+   @Override
    protected void tearDown() throws Exception
    {
       clearData();

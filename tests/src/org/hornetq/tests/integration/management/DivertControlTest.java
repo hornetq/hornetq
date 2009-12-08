@@ -13,8 +13,7 @@
 
 package org.hornetq.tests.integration.management;
 
-import static org.hornetq.tests.util.RandomUtil.randomBoolean;
-import static org.hornetq.tests.util.RandomUtil.randomString;
+import junit.framework.Assert;
 
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.TransportConfiguration;
@@ -27,6 +26,7 @@ import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.server.HornetQ;
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.utils.SimpleString;
 
 /**
@@ -55,22 +55,22 @@ public class DivertControlTest extends ManagementTestBase
    public void testAttributes() throws Exception
    {
       checkResource(ObjectNameBuilder.DEFAULT.getDivertObjectName(new SimpleString(divertConfig.getName())));
-      
+
       DivertControl divertControl = createManagementControl(divertConfig.getName());
 
-      assertEquals(divertConfig.getFilterString(), divertControl.getFilter());
+      Assert.assertEquals(divertConfig.getFilterString(), divertControl.getFilter());
 
-      assertEquals(divertConfig.isExclusive(), divertControl.isExclusive());
+      Assert.assertEquals(divertConfig.isExclusive(), divertControl.isExclusive());
 
-      assertEquals(divertConfig.getName(), divertControl.getUniqueName());
+      Assert.assertEquals(divertConfig.getName(), divertControl.getUniqueName());
 
-      assertEquals(divertConfig.getRoutingName(), divertControl.getRoutingName());
+      Assert.assertEquals(divertConfig.getRoutingName(), divertControl.getRoutingName());
 
-      assertEquals(divertConfig.getAddress(), divertControl.getAddress());
+      Assert.assertEquals(divertConfig.getAddress(), divertControl.getAddress());
 
-      assertEquals(divertConfig.getForwardingAddress(), divertControl.getForwardingAddress());
+      Assert.assertEquals(divertConfig.getForwardingAddress(), divertControl.getForwardingAddress());
 
-      assertEquals(divertConfig.getTransformerClassName(), divertControl.getTransformerClassName());
+      Assert.assertEquals(divertConfig.getTransformerClassName(), divertControl.getTransformerClassName());
    }
 
    // Package protected ---------------------------------------------
@@ -84,14 +84,20 @@ public class DivertControlTest extends ManagementTestBase
 
       TransportConfiguration connectorConfig = new TransportConfiguration(InVMConnectorFactory.class.getName());
 
-      QueueConfiguration queueConfig = new QueueConfiguration(randomString(), randomString(), null, false);
-      QueueConfiguration fowardQueueConfig = new QueueConfiguration(randomString(), randomString(), null, false);
+      QueueConfiguration queueConfig = new QueueConfiguration(RandomUtil.randomString(),
+                                                              RandomUtil.randomString(),
+                                                              null,
+                                                              false);
+      QueueConfiguration fowardQueueConfig = new QueueConfiguration(RandomUtil.randomString(),
+                                                                    RandomUtil.randomString(),
+                                                                    null,
+                                                                    false);
 
-      divertConfig = new DivertConfiguration(randomString(),
-                                             randomString(),
+      divertConfig = new DivertConfiguration(RandomUtil.randomString(),
+                                             RandomUtil.randomString(),
                                              queueConfig.getAddress(),
                                              fowardQueueConfig.getAddress(),
-                                             randomBoolean(),
+                                             RandomUtil.randomBoolean(),
                                              null,
                                              null);
       Configuration conf = new ConfigurationImpl();
@@ -115,15 +121,15 @@ public class DivertControlTest extends ManagementTestBase
       service.stop();
 
       checkNoResource(ObjectNameBuilder.DEFAULT.getDivertObjectName(new SimpleString(divertConfig.getName())));
-      
+
       service = null;
-      
+
       divertConfig = null;
 
       super.tearDown();
    }
 
-   protected DivertControl createManagementControl(String name) throws Exception
+   protected DivertControl createManagementControl(final String name) throws Exception
    {
       return ManagementControlHelper.createDivertControl(name, mbeanServer);
    }

@@ -16,8 +16,9 @@ package org.hornetq.tests.stress.journal;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
-import org.hornetq.core.buffers.HornetQBuffers;
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
@@ -86,13 +87,13 @@ public class CompactingStressTest extends ServiceTestBase
       setUp();
    }
 
-   private void internalTestCleanup(JournalType journalType) throws Throwable
+   private void internalTestCleanup(final JournalType journalType) throws Throwable
    {
       setupServer(journalType);
 
       ClientSession session = sf.createSession(false, true, true);
 
-      ClientProducer prod = session.createProducer(AD1);
+      ClientProducer prod = session.createProducer(CompactingStressTest.AD1);
 
       for (int i = 0; i < 500; i++)
       {
@@ -103,8 +104,8 @@ public class CompactingStressTest extends ServiceTestBase
 
       prod.close();
 
-      ClientConsumer cons = session.createConsumer(Q2);
-      prod = session.createProducer(AD2);
+      ClientConsumer cons = session.createConsumer(CompactingStressTest.Q2);
+      prod = session.createProducer(CompactingStressTest.AD2);
 
       session.start();
 
@@ -126,7 +127,7 @@ public class CompactingStressTest extends ServiceTestBase
          for (int j = 0; j < 1000; j++)
          {
             ClientMessage msg = cons.receive(2000);
-            assertNotNull(msg);
+            Assert.assertNotNull(msg);
             msg.acknowledge();
          }
 
@@ -135,7 +136,7 @@ public class CompactingStressTest extends ServiceTestBase
 
       }
 
-      assertNull(cons.receiveImmediate());
+      Assert.assertNull(cons.receiveImmediate());
 
       session.close();
 
@@ -144,19 +145,19 @@ public class CompactingStressTest extends ServiceTestBase
       server.start();
 
       session = sf.createSession(false, true, true);
-      cons = session.createConsumer(Q1);
+      cons = session.createConsumer(CompactingStressTest.Q1);
       session.start();
 
       for (int i = 0; i < 500; i++)
       {
          ClientMessage msg = cons.receive(1000);
-         assertNotNull(msg);
+         Assert.assertNotNull(msg);
          msg.acknowledge();
       }
 
-      assertNull(cons.receiveImmediate());
+      Assert.assertNull(cons.receiveImmediate());
 
-      prod = session.createProducer(AD2);
+      prod = session.createProducer(CompactingStressTest.AD2);
 
       session.close();
 
@@ -172,7 +173,7 @@ public class CompactingStressTest extends ServiceTestBase
       internalTestMultiProducer(JournalType.NIO);
    }
 
-   public void internalTestMultiProducer(JournalType journalType) throws Throwable
+   public void internalTestMultiProducer(final JournalType journalType) throws Throwable
    {
 
       setupServer(journalType);
@@ -181,13 +182,13 @@ public class CompactingStressTest extends ServiceTestBase
 
       try
       {
-         ClientProducer producer = session.createProducer(AD3);
+         ClientProducer producer = session.createProducer(CompactingStressTest.AD3);
 
          byte[] buffer = new byte[10 * 1024];
 
          ClientMessage msg = session.createClientMessage(true);
 
-         for (int i = 0; i < TOT_AD3; i++)
+         for (int i = 0; i < CompactingStressTest.TOT_AD3; i++)
          {
             producer.send(msg);
             if (i % 100 == 0)
@@ -223,6 +224,7 @@ public class CompactingStressTest extends ServiceTestBase
             super("Fast-Thread");
          }
 
+         @Override
          public void run()
          {
             ClientSession session = null;
@@ -233,8 +235,8 @@ public class CompactingStressTest extends ServiceTestBase
                latchStart.await();
                session = sf.createSession(true, true);
                sessionSlow = sf.createSession(false, false);
-               ClientProducer prod = session.createProducer(AD2);
-               ClientProducer slowProd = sessionSlow.createProducer(AD1);
+               ClientProducer prod = session.createProducer(CompactingStressTest.AD2);
+               ClientProducer slowProd = sessionSlow.createProducer(CompactingStressTest.AD1);
                for (int i = 0; i < NUMBER_OF_FAST_MESSAGES; i++)
                {
                   if (i % SLOW_INTERVAL == 0)
@@ -286,6 +288,7 @@ public class CompactingStressTest extends ServiceTestBase
             super("Fast-Consumer");
          }
 
+         @Override
          public void run()
          {
             ClientSession session = null;
@@ -295,14 +298,14 @@ public class CompactingStressTest extends ServiceTestBase
                latchStart.await();
                session = sf.createSession(true, true);
                session.start();
-               ClientConsumer cons = session.createConsumer(Q2);
+               ClientConsumer cons = session.createConsumer(CompactingStressTest.Q2);
                for (int i = 0; i < NUMBER_OF_FAST_MESSAGES; i++)
                {
                   ClientMessage msg = cons.receive(60 * 1000);
                   msg.acknowledge();
                }
 
-               assertNull(cons.receiveImmediate());
+               Assert.assertNull(cons.receiveImmediate());
             }
             catch (Throwable e)
             {
@@ -358,37 +361,37 @@ public class CompactingStressTest extends ServiceTestBase
 
          sess = sf.createSession(true, true);
 
-         ClientConsumer cons = sess.createConsumer(Q1);
+         ClientConsumer cons = sess.createConsumer(CompactingStressTest.Q1);
 
          sess.start();
 
          for (int i = 0; i < numberOfMessages.intValue(); i++)
          {
             ClientMessage msg = cons.receive(60000);
-            assertNotNull(msg);
+            Assert.assertNotNull(msg);
             msg.acknowledge();
          }
 
-         assertNull(cons.receiveImmediate());
+         Assert.assertNull(cons.receiveImmediate());
 
          cons.close();
 
-         cons = sess.createConsumer(Q2);
+         cons = sess.createConsumer(CompactingStressTest.Q2);
 
-         assertNull(cons.receiveImmediate());
+         Assert.assertNull(cons.receiveImmediate());
 
          cons.close();
 
-         cons = sess.createConsumer(Q3);
+         cons = sess.createConsumer(CompactingStressTest.Q3);
 
-         for (int i = 0; i < TOT_AD3; i++)
+         for (int i = 0; i < CompactingStressTest.TOT_AD3; i++)
          {
             ClientMessage msg = cons.receive(60000);
-            assertNotNull(msg);
+            Assert.assertNotNull(msg);
             msg.acknowledge();
          }
 
-         assertNull(cons.receiveImmediate());
+         Assert.assertNull(cons.receiveImmediate());
 
       }
       finally
@@ -415,7 +418,7 @@ public class CompactingStressTest extends ServiceTestBase
     * @throws Exception
     * @throws HornetQException
     */
-   private void setupServer(JournalType journalType) throws Exception, HornetQException
+   private void setupServer(final JournalType journalType) throws Exception, HornetQException
    {
       Configuration config = createDefaultConfig();
       config.setJournalSyncNonTransactional(false);
@@ -438,7 +441,7 @@ public class CompactingStressTest extends ServiceTestBase
 
       try
       {
-         sess.createQueue(AD1, Q1, true);
+         sess.createQueue(CompactingStressTest.AD1, CompactingStressTest.Q1, true);
       }
       catch (Exception ignored)
       {
@@ -446,7 +449,7 @@ public class CompactingStressTest extends ServiceTestBase
 
       try
       {
-         sess.createQueue(AD2, Q2, true);
+         sess.createQueue(CompactingStressTest.AD2, CompactingStressTest.Q2, true);
       }
       catch (Exception ignored)
       {
@@ -454,7 +457,7 @@ public class CompactingStressTest extends ServiceTestBase
 
       try
       {
-         sess.createQueue(AD3, Q3, true);
+         sess.createQueue(CompactingStressTest.AD3, CompactingStressTest.Q3, true);
       }
       catch (Exception ignored)
       {

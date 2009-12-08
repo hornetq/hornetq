@@ -10,13 +10,13 @@
  * implied.  See the License for the specific language governing
  * permissions and limitations under the License.
  */
- 
 
 package org.hornetq.tests.unit.jms;
 
-import static org.hornetq.tests.util.RandomUtil.randomString;
+import junit.framework.Assert;
 
 import org.hornetq.jms.HornetQTopic;
+import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.Pair;
 
@@ -38,48 +38,50 @@ public class HornetQTopicTest extends UnitTestCase
 
    // Public --------------------------------------------------------
 
-
    public void testIsTemporary() throws Exception
    {
-      HornetQTopic topic = new HornetQTopic(randomString());
-      assertFalse(topic.isTemporary());
+      HornetQTopic topic = new HornetQTopic(RandomUtil.randomString());
+      Assert.assertFalse(topic.isTemporary());
    }
-   
+
    public void testGetTopicName() throws Exception
    {
-      String topicName = randomString();
+      String topicName = RandomUtil.randomString();
       HornetQTopic queue = new HornetQTopic(topicName);
-      assertEquals(topicName, queue.getTopicName());
+      Assert.assertEquals(topicName, queue.getTopicName());
    }
-   
+
    public void testDecomposeQueueNameForDurableSubscription() throws Exception
    {
-      String clientID = randomString();
-      String subscriptionName = randomString();
-      
-      Pair<String, String> pair = HornetQTopic.decomposeQueueNameForDurableSubscription(clientID + '.' + subscriptionName);
-      assertEquals(clientID, pair.a);
-      assertEquals(subscriptionName, pair.b);
+      String clientID = RandomUtil.randomString();
+      String subscriptionName = RandomUtil.randomString();
+
+      Pair<String, String> pair = HornetQTopic.decomposeQueueNameForDurableSubscription(clientID + '.' +
+                                                                                        subscriptionName);
+      Assert.assertEquals(clientID, pair.a);
+      Assert.assertEquals(subscriptionName, pair.b);
    }
-   
+
    public void testdDecomposeQueueNameForDurableSubscriptionWithInvalidQueueName() throws Exception
    {
       try
       {
          HornetQTopic.decomposeQueueNameForDurableSubscription("queueNameHasNoDot");
-         fail("IllegalArgumentException");
-      } catch (IllegalArgumentException e)
+         Assert.fail("IllegalArgumentException");
+      }
+      catch (IllegalArgumentException e)
       {
       }
    }
-   
+
    public void testdDcomposeQueueNameForDurableSubscriptionWithInvalidQueueName_2() throws Exception
    {
       try
       {
          HornetQTopic.decomposeQueueNameForDurableSubscription("queueName.HasTooMany.Dots");
-         fail("IllegalArgumentException");
-      } catch (IllegalArgumentException e)
+         Assert.fail("IllegalArgumentException");
+      }
+      catch (IllegalArgumentException e)
       {
       }
    }

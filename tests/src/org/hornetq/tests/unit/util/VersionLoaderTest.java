@@ -9,13 +9,13 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
  * implied.  See the License for the specific language governing
  * permissions and limitations under the License.
- */ 
+ */
 
 package org.hornetq.tests.unit.util;
 
-import static java.lang.Integer.parseInt;
-
 import java.util.Properties;
+
+import junit.framework.Assert;
 
 import org.hornetq.core.version.Version;
 import org.hornetq.tests.util.UnitTestCase;
@@ -44,17 +44,20 @@ public class VersionLoaderTest extends UnitTestCase
       Version version = VersionLoader.getVersion();
       Properties props = new Properties();
       props.load(ClassLoader.getSystemResourceAsStream(VersionLoader.PROP_FILE_NAME));
-   
-      assertEquals(props.get("hornetq.version.versionName"), version.getVersionName());
-      assertEquals(props.get("hornetq.version.versionSuffix"), version.getVersionSuffix());
 
-      assertEquals(parseInt((String) props.get("hornetq.version.majorVersion")), version.getMajorVersion());
-      assertEquals(parseInt((String) props.get("hornetq.version.minorVersion")), version.getMinorVersion());
-      assertEquals(parseInt((String) props.get("hornetq.version.microVersion")), version.getMicroVersion());
-      assertEquals(parseInt((String) props.get("hornetq.version.incrementingVersion")), version.getIncrementingVersion());
+      Assert.assertEquals(props.get("hornetq.version.versionName"), version.getVersionName());
+      Assert.assertEquals(props.get("hornetq.version.versionSuffix"), version.getVersionSuffix());
+
+      Assert.assertEquals(Integer.parseInt((String)props.get("hornetq.version.majorVersion")),
+                          version.getMajorVersion());
+      Assert.assertEquals(Integer.parseInt((String)props.get("hornetq.version.minorVersion")),
+                          version.getMinorVersion());
+      Assert.assertEquals(Integer.parseInt((String)props.get("hornetq.version.microVersion")),
+                          version.getMicroVersion());
+      Assert.assertEquals(Integer.parseInt((String)props.get("hornetq.version.incrementingVersion")),
+                          version.getIncrementingVersion());
    }
-   
-   
+
    // Z implementation ----------------------------------------------
 
    // Y overrides ---------------------------------------------------

@@ -16,12 +16,14 @@ package org.hornetq.tests.integration.journal;
 import java.io.File;
 import java.nio.ByteBuffer;
 
+import junit.framework.Assert;
 import junit.framework.TestSuite;
 
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.journal.impl.AIOSequentialFileFactory;
 import org.hornetq.tests.unit.core.journal.impl.SequentialFileFactoryTestBase;
+import org.hornetq.tests.util.UnitTestCase;
 
 /**
  * 
@@ -32,12 +34,12 @@ import org.hornetq.tests.unit.core.journal.impl.SequentialFileFactoryTestBase;
  */
 public class AIOSequentialFileFactoryTest extends SequentialFileFactoryTestBase
 {
-   
+
    public static TestSuite suite()
    {
-      return createAIOTestSuite(AIOSequentialFileFactoryTest.class);
+      return UnitTestCase.createAIOTestSuite(AIOSequentialFileFactoryTest.class);
    }
-   
+
    @Override
    protected void setUp() throws Exception
    {
@@ -61,7 +63,7 @@ public class AIOSequentialFileFactoryTest extends SequentialFileFactoryTestBase
       SequentialFile file = factory.createSequentialFile("filtetmp.log", 10);
       file.open();
       ByteBuffer buff = factory.newBuffer(10);
-      assertEquals(512, buff.limit());
+      Assert.assertEquals(512, buff.limit());
       file.close();
       factory.releaseBuffer(buff);
    }

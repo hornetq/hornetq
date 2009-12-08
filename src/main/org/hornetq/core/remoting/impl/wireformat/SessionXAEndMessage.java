@@ -9,15 +9,13 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
  * implied.  See the License for the specific language governing
  * permissions and limitations under the License.
- */ 
+ */
 
 package org.hornetq.core.remoting.impl.wireformat;
 
 import javax.transaction.xa.Xid;
 
 import org.hornetq.core.buffers.HornetQBuffer;
-import org.hornetq.utils.DataConstants;
-
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -29,47 +27,49 @@ public class SessionXAEndMessage extends PacketImpl
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
-   
+
    private Xid xid;
-   
+
    private boolean failed;
-   
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
    public SessionXAEndMessage(final Xid xid, final boolean failed)
    {
-      super(SESS_XA_END);
-      
+      super(PacketImpl.SESS_XA_END);
+
       this.xid = xid;
-      
+
       this.failed = failed;
    }
-   
+
    public SessionXAEndMessage()
    {
-      super(SESS_XA_END);
+      super(PacketImpl.SESS_XA_END);
    }
 
    // Public --------------------------------------------------------
-   
+
    public boolean isFailed()
    {
       return failed;
    }
-   
+
    public Xid getXid()
    {
       return xid;
    }
 
+   @Override
    public void encodeRest(final HornetQBuffer buffer)
    {
       XidCodecSupport.encodeXid(xid, buffer);
       buffer.writeBoolean(failed);
    }
-   
+
+   @Override
    public void decodeRest(final HornetQBuffer buffer)
    {
       xid = XidCodecSupport.decodeXid(buffer);
@@ -81,18 +81,18 @@ public class SessionXAEndMessage extends PacketImpl
    {
       return getParentString() + ", xid=" + xid + ", failed=" + failed + "]";
    }
-   
-   public boolean equals(Object other)
+
+   @Override
+   public boolean equals(final Object other)
    {
       if (other instanceof SessionXAEndMessage == false)
       {
          return false;
       }
-            
+
       SessionXAEndMessage r = (SessionXAEndMessage)other;
-      
-      return super.equals(other) && this.xid.equals(r.xid) &&
-             this.failed == r.failed;
+
+      return super.equals(other) && xid.equals(r.xid) && failed == r.failed;
    }
 
    // Package protected ---------------------------------------------
@@ -103,4 +103,3 @@ public class SessionXAEndMessage extends PacketImpl
 
    // Inner classes -------------------------------------------------
 }
-

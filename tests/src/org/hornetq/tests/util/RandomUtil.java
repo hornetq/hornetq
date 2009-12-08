@@ -9,13 +9,12 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
  * implied.  See the License for the specific language governing
  * permissions and limitations under the License.
- */ 
+ */
 
 package org.hornetq.tests.util;
 
-import static java.util.UUID.randomUUID;
-
 import java.util.Random;
+import java.util.UUID;
 
 import javax.transaction.xa.Xid;
 
@@ -40,87 +39,87 @@ public class RandomUtil
 
    public static String randomString()
    {
-      return randomUUID().toString();
+      return UUID.randomUUID().toString();
    }
-   
+
    public static SimpleString randomSimpleString()
    {
-      return new SimpleString(randomString());
+      return new SimpleString(RandomUtil.randomString());
    }
-   
+
    public static char randomChar()
    {
-      return randomString().charAt(0);
+      return RandomUtil.randomString().charAt(0);
    }
 
    public static long randomLong()
    {
-      return random.nextLong();
+      return RandomUtil.random.nextLong();
    }
 
    public static long randomPositiveLong()
    {
-      return Math.abs(randomLong());
+      return Math.abs(RandomUtil.randomLong());
    }
 
    public static int randomInt()
    {
-      return random.nextInt();
+      return RandomUtil.random.nextInt();
    }
-   
+
    public static int randomPositiveInt()
    {
-      return Math.abs(randomInt());
+      return Math.abs(RandomUtil.randomInt());
    }
-   
+
    public static int randomPort()
    {
-      return random.nextInt(65536);
+      return RandomUtil.random.nextInt(65536);
    }
 
    public static short randomShort()
    {
-      return (short) random.nextInt(Short.MAX_VALUE);
+      return (short)RandomUtil.random.nextInt(Short.MAX_VALUE);
    }
 
    public static byte randomByte()
    {
-      return Integer.valueOf(random.nextInt()).byteValue();
+      return Integer.valueOf(RandomUtil.random.nextInt()).byteValue();
    }
-   
+
    public static boolean randomBoolean()
    {
-      return random.nextBoolean();
+      return RandomUtil.random.nextBoolean();
    }
 
    public static byte[] randomBytes()
    {
-      return randomString().getBytes();
+      return RandomUtil.randomString().getBytes();
    }
-   
-   public static byte[] randomBytes(int length)
+
+   public static byte[] randomBytes(final int length)
    {
       byte[] bytes = new byte[length];
       for (int i = 0; i < bytes.length; i++)
       {
-        bytes[i] = randomByte();
+         bytes[i] = RandomUtil.randomByte();
       }
       return bytes;
    }
-   
+
    public static double randomDouble()
    {
-      return random.nextDouble();
+      return RandomUtil.random.nextDouble();
    }
-   
+
    public static float randomFloat()
    {
-      return random.nextFloat();
+      return RandomUtil.random.nextFloat();
    }
-   
+
    public static Xid randomXid()
-   {      
-      return new XidImpl(randomBytes(), randomInt(), randomBytes());
+   {
+      return new XidImpl(RandomUtil.randomBytes(), RandomUtil.randomInt(), RandomUtil.randomBytes());
    }
 
    // Constructors --------------------------------------------------

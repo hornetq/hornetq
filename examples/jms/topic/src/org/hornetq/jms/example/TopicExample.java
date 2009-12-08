@@ -30,72 +30,73 @@ import org.hornetq.common.example.HornetQExample;
  */
 public class TopicExample extends HornetQExample
 {
-   public static void main(String[] args)
+   public static void main(final String[] args)
    {
       new TopicExample().run(args);
    }
 
+   @Override
    public boolean runExample() throws Exception
    {
       Connection connection = null;
       InitialContext initialContext = null;
       try
       {
-         ///Step 1. Create an initial context to perform the JNDI lookup.
+         // /Step 1. Create an initial context to perform the JNDI lookup.
          initialContext = getContext(0);
 
-         //Step 2. perform a lookup on the topic
-         Topic topic = (Topic) initialContext.lookup("/topic/exampleTopic");
+         // Step 2. perform a lookup on the topic
+         Topic topic = (Topic)initialContext.lookup("/topic/exampleTopic");
 
-         //Step 3. perform a lookup on the Connection Factory
-         ConnectionFactory cf = (ConnectionFactory) initialContext.lookup("/ConnectionFactory");
+         // Step 3. perform a lookup on the Connection Factory
+         ConnectionFactory cf = (ConnectionFactory)initialContext.lookup("/ConnectionFactory");
 
-         //Step 4. Create a JMS Connection
+         // Step 4. Create a JMS Connection
          connection = cf.createConnection();
 
-         //Step 5. Create a JMS Session
+         // Step 5. Create a JMS Session
          Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         //Step 6. Create a Message Producer
+         // Step 6. Create a Message Producer
          MessageProducer producer = session.createProducer(topic);
 
-         //Step 7. Create a JMS Message Consumer
+         // Step 7. Create a JMS Message Consumer
          MessageConsumer messageConsumer1 = session.createConsumer(topic);
 
-         //Step 8. Create a JMS Message Consumer
+         // Step 8. Create a JMS Message Consumer
          MessageConsumer messageConsumer2 = session.createConsumer(topic);
-         
-         //Step 9. Create a Text Message
+
+         // Step 9. Create a Text Message
          TextMessage message = session.createTextMessage("This is a text message");
 
          System.out.println("Sent message: " + message.getText());
 
-         //Step 10. Send the Message
+         // Step 10. Send the Message
          producer.send(message);
-         
-         //Step 11. Start the Connection
+
+         // Step 11. Start the Connection
          connection.start();
 
-         //Step 12. Receive the message
-         TextMessage messageReceived = (TextMessage) messageConsumer1.receive();
+         // Step 12. Receive the message
+         TextMessage messageReceived = (TextMessage)messageConsumer1.receive();
 
          System.out.println("Consumer 1 Received message: " + messageReceived.getText());
 
-         //Step 13. Receive the message
-         messageReceived = (TextMessage) messageConsumer2.receive();
+         // Step 13. Receive the message
+         messageReceived = (TextMessage)messageConsumer2.receive();
 
          System.out.println("Consumer 2 Received message: " + messageReceived.getText());
-         
+
          return true;
       }
       finally
       {
-         //Step 14. Be sure to close our JMS resources!
+         // Step 14. Be sure to close our JMS resources!
          if (connection != null)
          {
             connection.close();
          }
-         
+
          // Also the initialContext
          if (initialContext != null)
          {

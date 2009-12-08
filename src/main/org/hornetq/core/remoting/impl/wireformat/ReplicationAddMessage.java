@@ -28,9 +28,8 @@ public class ReplicationAddMessage extends PacketImpl
 {
 
    // Constants -----------------------------------------------------
-   
-   private static final Logger log = Logger.getLogger(ReplicationAddMessage.class);
 
+   private static final Logger log = Logger.getLogger(ReplicationAddMessage.class);
 
    // Attributes ----------------------------------------------------
 
@@ -53,7 +52,7 @@ public class ReplicationAddMessage extends PacketImpl
 
    public ReplicationAddMessage()
    {
-      super(REPLICATION_APPEND);
+      super(PacketImpl.REPLICATION_APPEND);
    }
 
    public ReplicationAddMessage(final byte journalID,
@@ -78,7 +77,7 @@ public class ReplicationAddMessage extends PacketImpl
       buffer.writeByte(journalID);
       buffer.writeBoolean(isUpdate);
       buffer.writeLong(id);
-      buffer.writeByte(recordType);     
+      buffer.writeByte(recordType);
       buffer.writeInt(encodingData.getEncodeSize());
       encodingData.encode(buffer);
    }

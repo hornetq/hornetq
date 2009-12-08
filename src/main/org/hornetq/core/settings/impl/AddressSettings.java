@@ -74,7 +74,7 @@ public class AddressSettings implements Mergeable<AddressSettings>
 
    public boolean isLastValueQueue()
    {
-      return lastValueQueue != null ? lastValueQueue : DEFAULT_LAST_VALUE_QUEUE;
+      return lastValueQueue != null ? lastValueQueue : AddressSettings.DEFAULT_LAST_VALUE_QUEUE;
    }
 
    public void setLastValueQueue(final boolean lastValueQueue)
@@ -84,7 +84,8 @@ public class AddressSettings implements Mergeable<AddressSettings>
 
    public AddressFullMessagePolicy getAddressFullMessagePolicy()
    {
-      return addressFullMessagePolicy != null ? addressFullMessagePolicy : DEFAULT_ADDRESS_FULL_MESSAGE_POLICY;
+      return addressFullMessagePolicy != null ? addressFullMessagePolicy
+                                             : AddressSettings.DEFAULT_ADDRESS_FULL_MESSAGE_POLICY;
    }
 
    public void setAddressFullMessagePolicy(final AddressFullMessagePolicy addressFullMessagePolicy)
@@ -94,7 +95,7 @@ public class AddressSettings implements Mergeable<AddressSettings>
 
    public int getPageSizeBytes()
    {
-      return pageSizeBytes != null ? pageSizeBytes : DEFAULT_PAGE_SIZE;
+      return pageSizeBytes != null ? pageSizeBytes : AddressSettings.DEFAULT_PAGE_SIZE;
    }
 
    public void setPageSizeBytes(final int pageSize)
@@ -104,7 +105,7 @@ public class AddressSettings implements Mergeable<AddressSettings>
 
    public long getMaxSizeBytes()
    {
-      return maxSizeBytes != null ? maxSizeBytes : DEFAULT_MAX_SIZE_BYTES;
+      return maxSizeBytes != null ? maxSizeBytes : AddressSettings.DEFAULT_MAX_SIZE_BYTES;
    }
 
    public void setMaxSizeBytes(final long maxSizeBytes)
@@ -114,7 +115,7 @@ public class AddressSettings implements Mergeable<AddressSettings>
 
    public int getMaxDeliveryAttempts()
    {
-      return maxDeliveryAttempts != null ? maxDeliveryAttempts : DEFAULT_MAX_DELIVERY_ATTEMPTS;
+      return maxDeliveryAttempts != null ? maxDeliveryAttempts : AddressSettings.DEFAULT_MAX_DELIVERY_ATTEMPTS;
    }
 
    public void setMaxDeliveryAttempts(final int maxDeliveryAttempts)
@@ -125,7 +126,7 @@ public class AddressSettings implements Mergeable<AddressSettings>
    public int getMessageCounterHistoryDayLimit()
    {
       return messageCounterHistoryDayLimit != null ? messageCounterHistoryDayLimit
-                                                  : DEFAULT_MESSAGE_COUNTER_HISTORY_DAY_LIMIT;
+                                                  : AddressSettings.DEFAULT_MESSAGE_COUNTER_HISTORY_DAY_LIMIT;
    }
 
    public void setMessageCounterHistoryDayLimit(final int messageCounterHistoryDayLimit)
@@ -135,7 +136,7 @@ public class AddressSettings implements Mergeable<AddressSettings>
 
    public long getRedeliveryDelay()
    {
-      return redeliveryDelay != null ? redeliveryDelay : DEFAULT_REDELIVER_DELAY;
+      return redeliveryDelay != null ? redeliveryDelay : AddressSettings.DEFAULT_REDELIVER_DELAY;
    }
 
    public void setRedeliveryDelay(final long redeliveryDelay)
@@ -165,7 +166,7 @@ public class AddressSettings implements Mergeable<AddressSettings>
 
    public boolean isSendToDLAOnNoRoute()
    {
-      return sendToDLAOnNoRoute != null ? sendToDLAOnNoRoute : DEFAULT_SEND_TO_DLA_ON_NO_ROUTE;
+      return sendToDLAOnNoRoute != null ? sendToDLAOnNoRoute : AddressSettings.DEFAULT_SEND_TO_DLA_ON_NO_ROUTE;
    }
 
    public void setSendToDLAOnNoRoute(final boolean value)
@@ -175,7 +176,7 @@ public class AddressSettings implements Mergeable<AddressSettings>
 
    public long getRedistributionDelay()
    {
-      return redistributionDelay != null ? redistributionDelay : DEFAULT_REDISTRIBUTION_DELAY;
+      return redistributionDelay != null ? redistributionDelay : AddressSettings.DEFAULT_REDISTRIBUTION_DELAY;
    }
 
    public void setRedistributionDelay(final long redistributionDelay)

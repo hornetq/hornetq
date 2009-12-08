@@ -20,6 +20,7 @@ import javax.jms.Message;
 import javax.jms.QueueBrowser;
 import javax.jms.TextMessage;
 
+import junit.framework.Assert;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
@@ -57,13 +58,13 @@ public class QueueBrowserTest extends PTPTestCase
          message_1.setText("testBrowser:message_1");
          TextMessage message_2 = senderSession.createTextMessage();
          message_2.setText("testBrowser:message_2");
-         
+
          receiver.close();
 
          // send two messages...
          sender.send(message_1);
          sender.send(message_2);
-         
+
          // ask the browser to browse the sender's session
          Enumeration enumeration = senderBrowser.getEnumeration();
          int count = 0;
@@ -73,35 +74,34 @@ public class QueueBrowserTest extends PTPTestCase
             count++;
             // check that the message in the queue is one of the two which where sent
             Object obj = enumeration.nextElement();
-            assertTrue(obj instanceof TextMessage);
-            TextMessage msg = (TextMessage) obj;
-            assertTrue(msg.getText().startsWith("testBrowser:message_"));
+            Assert.assertTrue(obj instanceof TextMessage);
+            TextMessage msg = (TextMessage)obj;
+            Assert.assertTrue(msg.getText().startsWith("testBrowser:message_"));
          }
          // check that there is effectively 2 messages in the queue
-         assertEquals(2, count);
+         Assert.assertEquals(2, count);
 
-         
          receiver = receiverSession.createReceiver(receiverQueue);
          // receive the first message...
          Message m = receiver.receive(TestConfig.TIMEOUT);
          // ... and check it is the first which was sent.
-         assertTrue(m instanceof TextMessage);
-         TextMessage msg = (TextMessage) m;
-         assertEquals("testBrowser:message_1", msg.getText());
+         Assert.assertTrue(m instanceof TextMessage);
+         TextMessage msg = (TextMessage)m;
+         Assert.assertEquals("testBrowser:message_1", msg.getText());
 
          // receive the second message...
          m = receiver.receive(TestConfig.TIMEOUT);
          // ... and check it is the second which was sent.
-         assertTrue(m instanceof TextMessage);
-         msg = (TextMessage) m;
-         assertEquals("testBrowser:message_2", msg.getText());
+         Assert.assertTrue(m instanceof TextMessage);
+         msg = (TextMessage)m;
+         Assert.assertEquals("testBrowser:message_2", msg.getText());
 
          // ask the browser to browse the sender's session
          enumeration = receiverBrowser.getEnumeration();
          // check that there is no messages in the queue
          // (the two messages have been acknowledged and so removed
          // from the queue)
-         assertTrue(!enumeration.hasMoreElements());
+         Assert.assertTrue(!enumeration.hasMoreElements());
       }
       catch (JMSException e)
       {
@@ -120,7 +120,7 @@ public class QueueBrowserTest extends PTPTestCase
          senderBrowser = senderSession.createBrowser(senderQueue, "pi = 3.14159");
 
          receiver.close();
-         
+
          TextMessage message_1 = senderSession.createTextMessage();
          message_1.setText("testBrowserWithMessageSelector:message_1");
          TextMessage message_2 = senderSession.createTextMessage();
@@ -136,11 +136,11 @@ public class QueueBrowserTest extends PTPTestCase
          {
             count++;
             Object obj = enumeration.nextElement();
-            assertTrue(obj instanceof TextMessage);
-            TextMessage msg = (TextMessage) obj;
-            assertEquals("testBrowserWithMessageSelector:message_2", msg.getText());
+            Assert.assertTrue(obj instanceof TextMessage);
+            TextMessage msg = (TextMessage)obj;
+            Assert.assertEquals("testBrowserWithMessageSelector:message_2", msg.getText());
          }
-         assertEquals(1, count);
+         Assert.assertEquals(1, count);
       }
       catch (JMSException e)
       {
@@ -148,6 +148,7 @@ public class QueueBrowserTest extends PTPTestCase
       }
    }
 
+   @Override
    public void setUp() throws Exception
    {
       try
@@ -162,6 +163,7 @@ public class QueueBrowserTest extends PTPTestCase
       }
    }
 
+   @Override
    public void tearDown() throws Exception
    {
       try
@@ -188,7 +190,7 @@ public class QueueBrowserTest extends PTPTestCase
       return new TestSuite(QueueBrowserTest.class);
    }
 
-   public QueueBrowserTest(String name)
+   public QueueBrowserTest(final String name)
    {
       super(name);
    }

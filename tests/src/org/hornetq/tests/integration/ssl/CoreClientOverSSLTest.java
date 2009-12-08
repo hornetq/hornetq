@@ -16,6 +16,8 @@ package org.hornetq.tests.integration.ssl;
 import java.util.HashMap;
 import java.util.Map;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
@@ -32,7 +34,6 @@ import org.hornetq.core.server.HornetQServer;
 import org.hornetq.integration.transports.netty.NettyAcceptorFactory;
 import org.hornetq.integration.transports.netty.NettyConnectorFactory;
 import org.hornetq.integration.transports.netty.TransportConstants;
-import org.hornetq.jms.client.HornetQTextMessage;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.SimpleString;
@@ -68,7 +69,7 @@ public class CoreClientOverSSLTest extends UnitTestCase
    public void testSSL() throws Exception
    {
       String text = RandomUtil.randomString();
-      
+
       TransportConfiguration tc = new TransportConfiguration(NettyConnectorFactory.class.getName());
       tc.getParams().put(TransportConstants.SSL_ENABLED_PROP_NAME, true);
       tc.getParams().put(TransportConstants.KEYSTORE_PATH_PROP_NAME, TransportConstants.DEFAULT_KEYSTORE_PATH);
@@ -76,18 +77,18 @@ public class CoreClientOverSSLTest extends UnitTestCase
 
       ClientSessionFactory sf = new ClientSessionFactoryImpl(tc);
       ClientSession session = sf.createSession(false, true, true);
-      session.createQueue(QUEUE, QUEUE, false);
-      ClientProducer producer = session.createProducer(QUEUE);
+      session.createQueue(CoreClientOverSSLTest.QUEUE, CoreClientOverSSLTest.QUEUE, false);
+      ClientProducer producer = session.createProducer(CoreClientOverSSLTest.QUEUE);
 
       ClientMessage message = createTextMessage(text, session);
       producer.send(message);
 
-      ClientConsumer consumer = session.createConsumer(QUEUE);
+      ClientConsumer consumer = session.createConsumer(CoreClientOverSSLTest.QUEUE);
       session.start();
-      
+
       Message m = consumer.receive(1000);
-      assertNotNull(m);
-      assertEquals(text, m.getBodyBuffer().readString());
+      Assert.assertNotNull(m);
+      Assert.assertEquals(text, m.getBodyBuffer().readString());
    }
 
    public void testSSLWithIncorrectKeyStorePassword() throws Exception
@@ -101,11 +102,11 @@ public class CoreClientOverSSLTest extends UnitTestCase
       try
       {
          sf.createSession(false, true, true);
-         fail();
+         Assert.fail();
       }
       catch (HornetQException e)
       {
-         assertEquals(HornetQException.NOT_CONNECTED, e.getCode());
+         Assert.assertEquals(HornetQException.NOT_CONNECTED, e.getCode());
       }
    }
 
@@ -114,17 +115,17 @@ public class CoreClientOverSSLTest extends UnitTestCase
    {
       TransportConfiguration tc = new TransportConfiguration(NettyConnectorFactory.class.getName());
       tc.getParams().put(TransportConstants.SSL_ENABLED_PROP_NAME, false);
-      
+
       ClientSessionFactory sf = new ClientSessionFactoryImpl(tc);
       sf.setCallTimeout(2000);
       try
       {
          sf.createSession(false, true, true);
-         fail();
+         Assert.fail();
       }
       catch (HornetQException e)
       {
-         assertEquals(HornetQException.CONNECTION_TIMEDOUT, e.getCode());
+         Assert.assertEquals(HornetQException.CONNECTION_TIMEDOUT, e.getCode());
       }
    }
 

@@ -23,7 +23,6 @@ import org.jboss.security.SecurityContext;
 import org.jboss.security.SecurityContextAssociation;
 import org.jboss.security.SecurityContextFactory;
 
-
 /** A collection of privileged actions for this package
  * @author Scott.Stark@jboss.org
  * @author <a href="mailto:alex@jboss.org">Alexey Loubyansky</a>
@@ -36,63 +35,65 @@ class SecurityActions
    {
       PrincipalInfoAction PRIVILEGED = new PrincipalInfoAction()
       {
-         public void push(final Principal principal, final Object credential,
-            final Subject subject, final String securityDomain)
+         public void push(final Principal principal,
+                          final Object credential,
+                          final Subject subject,
+                          final String securityDomain)
          {
-            AccessController.doPrivileged(
-               new PrivilegedAction<Object>()
+            AccessController.doPrivileged(new PrivilegedAction<Object>()
+            {
+               public Object run()
                {
-                  public Object run()
+                  // SecurityAssociation.pushSubjectContext(subject, principal, credential);
+                  SecurityContext sc = SecurityContextAssociation.getSecurityContext();
+                  if (sc == null)
                   {
-                     //SecurityAssociation.pushSubjectContext(subject, principal, credential);
-                     SecurityContext sc = SecurityContextAssociation.getSecurityContext();
-                     if(sc == null)
+                     try
                      {
-                        try
-                        {
-                           sc = SecurityContextFactory.createSecurityContext(principal, credential,
-                                 subject, securityDomain);
-                        }
-                        catch (Exception e)
-                        {
-                           throw new RuntimeException(e);
-                        }
+                        sc = SecurityContextFactory.createSecurityContext(principal,
+                                                                          credential,
+                                                                          subject,
+                                                                          securityDomain);
                      }
-                     SecurityContextAssociation.setSecurityContext(sc);
-                     return null;
+                     catch (Exception e)
+                     {
+                        throw new RuntimeException(e);
+                     }
                   }
+                  SecurityContextAssociation.setSecurityContext(sc);
+                  return null;
                }
-            );
+            });
          }
+
          public void pop()
          {
-            AccessController.doPrivileged(
-               new PrivilegedAction<Object>()
+            AccessController.doPrivileged(new PrivilegedAction<Object>()
+            {
+               public Object run()
                {
-                  public Object run()
-                  {
-                     //SecurityAssociation.popSubjectContext();
-                     SecurityContextAssociation.clearSecurityContext();
-                     return null;
-                  }
+                  // SecurityAssociation.popSubjectContext();
+                  SecurityContextAssociation.clearSecurityContext();
+                  return null;
                }
-            );
+            });
          }
       };
 
       PrincipalInfoAction NON_PRIVILEGED = new PrincipalInfoAction()
       {
-         public void push(Principal principal, Object credential, Subject subject,
-               String securityDomain)
+         public void push(final Principal principal,
+                          final Object credential,
+                          final Subject subject,
+                          final String securityDomain)
          {
-            //SecurityAssociation.pushSubjectContext(subject, principal, credential);
+            // SecurityAssociation.pushSubjectContext(subject, principal, credential);
             SecurityContext sc = SecurityContextAssociation.getSecurityContext();
-            if(sc == null)
+            if (sc == null)
             {
                try
                {
-                  sc = SecurityContextFactory.createSecurityContext(principal, credential,
-                        subject, securityDomain);
+                  sc = SecurityContextFactory.createSecurityContext(principal, credential, subject, securityDomain);
                }
                catch (Exception e)
                {
@@ -105,40 +106,43 @@ class SecurityActions
             }
             SecurityContextAssociation.setSecurityContext(sc);
          }
+
          public void pop()
          {
-            //SecurityAssociation.popSubjectContext();
+            // SecurityAssociation.popSubjectContext();
             SecurityContextAssociation.clearSecurityContext();
          }
       };
 
+      void push(Principal principal, Object credential, Subject subject, String securityDomain);
 
-		void push(Principal principal, Object credential, Subject subject, String securityDomain);
       void pop();
-	}
+   }
 
-	static void pushSubjectContext(final Principal principal, final Object credential,
-                                  final Subject subject, String securityDomainName)
-	{
-		if(System.getSecurityManager() == null)
-		{
-			PrincipalInfoAction.NON_PRIVILEGED.push(principal, credential, subject, securityDomainName);
-		}
-		else
-		{
-			PrincipalInfoAction.PRIVILEGED.push(principal, credential, subject, securityDomainName);
-		}
-	}
-	
-	static void popSubjectContext()
-	{
-		if (System.getSecurityManager() == null)
-		{
-			PrincipalInfoAction.NON_PRIVILEGED.pop();
-		}
-		else
-		{
-			PrincipalInfoAction.PRIVILEGED.pop();
-		}
-	}
+   static void pushSubjectContext(final Principal principal,
+                                  final Object credential,
+                                  final Subject subject,
+                                  final String securityDomainName)
+   {
+      if (System.getSecurityManager() == null)
+      {
+         PrincipalInfoAction.NON_PRIVILEGED.push(principal, credential, subject, securityDomainName);
+      }
+      else
+      {
+         PrincipalInfoAction.PRIVILEGED.push(principal, credential, subject, securityDomainName);
+      }
+   }
+
+   static void popSubjectContext()
+   {
+      if (System.getSecurityManager() == null)
+      {
+         PrincipalInfoAction.NON_PRIVILEGED.pop();
+      }
+      else
+      {
+         PrincipalInfoAction.PRIVILEGED.pop();
+      }
+   }
 }

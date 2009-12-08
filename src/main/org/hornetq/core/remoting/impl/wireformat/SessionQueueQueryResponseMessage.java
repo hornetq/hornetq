@@ -14,7 +14,6 @@
 package org.hornetq.core.remoting.impl.wireformat;
 
 import org.hornetq.core.buffers.HornetQBuffer;
-import org.hornetq.utils.DataConstants;
 import org.hornetq.utils.SimpleString;
 
 /**
@@ -59,7 +58,7 @@ public class SessionQueueQueryResponseMessage extends PacketImpl
                                             final SimpleString address,
                                             final boolean exists)
    {
-      super(SESS_QUEUEQUERY_RESP);
+      super(PacketImpl.SESS_QUEUEQUERY_RESP);
 
       this.durable = durable;
 
@@ -74,6 +73,7 @@ public class SessionQueueQueryResponseMessage extends PacketImpl
       this.exists = exists;
    }
 
+   @Override
    public boolean isResponse()
    {
       return true;
@@ -108,7 +108,8 @@ public class SessionQueueQueryResponseMessage extends PacketImpl
    {
       return address;
    }
-   
+
+   @Override
    public void encodeRest(final HornetQBuffer buffer)
    {
       buffer.writeBoolean(exists);
@@ -119,6 +120,7 @@ public class SessionQueueQueryResponseMessage extends PacketImpl
       buffer.writeNullableSimpleString(address);
    }
 
+   @Override
    public void decodeRest(final HornetQBuffer buffer)
    {
       exists = buffer.readBoolean();
@@ -129,7 +131,8 @@ public class SessionQueueQueryResponseMessage extends PacketImpl
       address = buffer.readNullableSimpleString();
    }
 
-   public boolean equals(Object other)
+   @Override
+   public boolean equals(final Object other)
    {
       if (other instanceof SessionQueueQueryResponseMessage == false)
       {
@@ -138,13 +141,13 @@ public class SessionQueueQueryResponseMessage extends PacketImpl
 
       SessionQueueQueryResponseMessage r = (SessionQueueQueryResponseMessage)other;
 
-      return super.equals(other) && this.exists == r.exists &&
-             this.durable == r.durable &&
-             this.consumerCount == r.consumerCount &&
-             this.messageCount == r.messageCount &&
-             this.filterString == null ? r.filterString == null
-                                      : this.filterString.equals(r.filterString) && this.address == null ? r.address == null
-                                                                                                        : this.address.equals(r.address);
+      return super.equals(other) && exists == r.exists &&
+             durable == r.durable &&
+             consumerCount == r.consumerCount &&
+             messageCount == r.messageCount &&
+             filterString == null ? r.filterString == null
+                                 : filterString.equals(r.filterString) && address == null ? r.address == null
+                                                                                         : address.equals(r.address);
    }
 
 }

@@ -41,7 +41,7 @@ public class SimpleAddressManager implements AddressManager
 
    private final BindingsFactory bindingsFactory;
 
-   public SimpleAddressManager(BindingsFactory bindingsFactory)
+   public SimpleAddressManager(final BindingsFactory bindingsFactory)
    {
       this.bindingsFactory = bindingsFactory;
    }
@@ -50,9 +50,9 @@ public class SimpleAddressManager implements AddressManager
    {
       if (nameMap.putIfAbsent(binding.getUniqueName(), binding) != null)
       {
-         throw new IllegalStateException("Binding already exists " + binding);         
+         throw new IllegalStateException("Binding already exists " + binding);
       }
-      
+
       return addMappingInternal(binding.getAddress(), binding);
    }
 
@@ -66,7 +66,7 @@ public class SimpleAddressManager implements AddressManager
       }
 
       removeBindingInternal(binding.getAddress(), uniqueName);
-      
+
       return binding;
    }
 
@@ -84,27 +84,26 @@ public class SimpleAddressManager implements AddressManager
    {
       return nameMap;
    }
-   
+
    public Bindings getMatchingBindings(final SimpleString address)
    {
       Address add = new AddressImpl(address);
-      
+
       Bindings bindings = bindingsFactory.createBindings();
-      
-      for (Binding binding: nameMap.values())
+
+      for (Binding binding : nameMap.values())
       {
          Address addCheck = new AddressImpl(binding.getAddress());
-         
+
          if (addCheck.matches(add))
          {
             bindings.addBinding(binding);
          }
       }
-      
+
       return bindings;
    }
-   
-   
+
    public void clear()
    {
       nameMap.clear();
@@ -130,7 +129,7 @@ public class SimpleAddressManager implements AddressManager
    {
       Binding theBinding = null;
 
-      for (Binding binding: bindings.getBindings())
+      for (Binding binding : bindings.getBindings())
       {
          if (binding.getUniqueName().equals(bindableName))
          {
@@ -155,8 +154,6 @@ public class SimpleAddressManager implements AddressManager
       Bindings bindings = mappings.get(address);
 
       Bindings prevBindings = null;
-      
-      
 
       if (bindings == null)
       {

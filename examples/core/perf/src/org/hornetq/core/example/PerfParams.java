@@ -23,34 +23,53 @@ import java.io.Serializable;
 public class PerfParams implements Serializable
 {
    private static final long serialVersionUID = -4336539641012356002L;
-   
+
    private int noOfMessagesToSend = 1000;
+
    private int noOfWarmupMessages;
+
    private int messageSize = 1024; // in bytes
+
    private boolean durable = false;
+
    private boolean isSessionTransacted = false;
+
    private int batchSize = 5000;
+
    private boolean drainQueue = true;
+
    private String queueName;
+
    private String address;
+
    private int throttleRate;
+
    private String host;
+
    private int port;
+
    private int tcpBufferSize;
+
    private boolean tcpNoDelay;
+
    private boolean preAck;
+
    private int confirmationWindow;
+
    private int producerWindow;
+
    private int consumerWindow;
+
    private boolean blockOnPersistent = true;
+
    private boolean blockOnACK = true;
-     
+
    public boolean isBlockOnPersistent()
    {
       return blockOnPersistent;
    }
 
-   public void setBlockOnPersistent(boolean blockOnPersistent)
+   public void setBlockOnPersistent(final boolean blockOnPersistent)
    {
       this.blockOnPersistent = blockOnPersistent;
    }
@@ -60,7 +79,7 @@ public class PerfParams implements Serializable
       return blockOnACK;
    }
 
-   public void setBlockOnACK(boolean blockOnACK)
+   public void setBlockOnACK(final boolean blockOnACK)
    {
       this.blockOnACK = blockOnACK;
    }
@@ -89,12 +108,12 @@ public class PerfParams implements Serializable
    {
       return messageSize;
    }
-   
-   public void setMessageSize(int messageSize)
+
+   public void setMessageSize(final int messageSize)
    {
       this.messageSize = messageSize;
    }
-   
+
    public boolean isDurable()
    {
       return durable;
@@ -144,7 +163,7 @@ public class PerfParams implements Serializable
    {
       this.queueName = queueName;
    }
-   
+
    public String getAddress()
    {
       return address;
@@ -154,24 +173,36 @@ public class PerfParams implements Serializable
    {
       this.address = address;
    }
-   
+
    public int getThrottleRate()
    {
       return throttleRate;
    }
-   
+
    public void setThrottleRate(final int throttleRate)
    {
       this.throttleRate = throttleRate;
    }
 
+   @Override
    public String toString()
    {
-      return "message to send = " + noOfMessagesToSend + ", Durable = " +
-              durable + ", session transacted = " + isSessionTransacted +
-              (isSessionTransacted ? ", transaction batch size = " + batchSize : "") + ", drain queue = " + drainQueue +
-              ", queue name = " + queueName + 
-              ", Throttle rate = " + throttleRate + ", blockOnPersistent = " + blockOnPersistent + ". blockOnACK = " + blockOnACK;
+      return "message to send = " + noOfMessagesToSend +
+             ", Durable = " +
+             durable +
+             ", session transacted = " +
+             isSessionTransacted +
+             (isSessionTransacted ? ", transaction batch size = " + batchSize : "") +
+             ", drain queue = " +
+             drainQueue +
+             ", queue name = " +
+             queueName +
+             ", Throttle rate = " +
+             throttleRate +
+             ", blockOnPersistent = " +
+             blockOnPersistent +
+             ". blockOnACK = " +
+             blockOnACK;
    }
 
    public synchronized String getHost()
@@ -179,7 +210,7 @@ public class PerfParams implements Serializable
       return host;
    }
 
-   public synchronized void setHost(String host)
+   public synchronized void setHost(final String host)
    {
       this.host = host;
    }
@@ -189,7 +220,7 @@ public class PerfParams implements Serializable
       return port;
    }
 
-   public synchronized void setPort(int port)
+   public synchronized void setPort(final int port)
    {
       this.port = port;
    }
@@ -199,7 +230,7 @@ public class PerfParams implements Serializable
       return tcpBufferSize;
    }
 
-   public synchronized void setTcpBufferSize(int tcpBufferSize)
+   public synchronized void setTcpBufferSize(final int tcpBufferSize)
    {
       this.tcpBufferSize = tcpBufferSize;
    }
@@ -209,7 +240,7 @@ public class PerfParams implements Serializable
       return tcpNoDelay;
    }
 
-   public synchronized void setTcpNoDelay(boolean tcpNoDelay)
+   public synchronized void setTcpNoDelay(final boolean tcpNoDelay)
    {
       this.tcpNoDelay = tcpNoDelay;
    }
@@ -219,7 +250,7 @@ public class PerfParams implements Serializable
       return preAck;
    }
 
-   public synchronized void setPreAck(boolean preAck)
+   public synchronized void setPreAck(final boolean preAck)
    {
       this.preAck = preAck;
    }
@@ -229,7 +260,7 @@ public class PerfParams implements Serializable
       return confirmationWindow;
    }
 
-   public synchronized void setConfirmationWindow(int confirmationWindow)
+   public synchronized void setConfirmationWindow(final int confirmationWindow)
    {
       this.confirmationWindow = confirmationWindow;
    }
@@ -239,7 +270,7 @@ public class PerfParams implements Serializable
       return producerWindow;
    }
 
-   public void setProducerWindow(int producerWindow)
+   public void setProducerWindow(final int producerWindow)
    {
       this.producerWindow = producerWindow;
    }
@@ -249,7 +280,7 @@ public class PerfParams implements Serializable
       return consumerWindow;
    }
 
-   public void setConsumerWindow(int consumerWindow)
+   public void setConsumerWindow(final int consumerWindow)
    {
       this.consumerWindow = consumerWindow;
    }

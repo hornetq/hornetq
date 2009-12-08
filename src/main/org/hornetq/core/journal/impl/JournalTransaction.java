@@ -21,10 +21,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.hornetq.core.buffers.HornetQBuffer;
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.journal.impl.dataformat.JournalInternalRecord;
-import org.hornetq.utils.DataConstants;
 
 /**
  * A JournalTransaction
@@ -110,7 +108,7 @@ public class JournalTransaction
    }
 
    /** This is used to merge transactions from compacting */
-   public void merge(JournalTransaction other)
+   public void merge(final JournalTransaction other)
    {
       if (other.pos != null)
       {
@@ -142,7 +140,7 @@ public class JournalTransaction
          pendingFiles.addAll(other.pendingFiles);
       }
 
-      this.compacting = false;
+      compacting = false;
    }
 
    /**
@@ -419,9 +417,10 @@ public class JournalTransaction
 
    }
 
+   @Override
    public String toString()
    {
-      return "JournalTransaction(" + this.id + ")";
+      return "JournalTransaction(" + id + ")";
    }
 
    private AtomicInteger internalgetCounter(final JournalFile file)
@@ -466,7 +465,7 @@ public class JournalTransaction
        * @param id
        * @param size
        */
-      public JournalUpdate(JournalFile file, long id, int size)
+      public JournalUpdate(final JournalFile file, final long id, final int size)
       {
          super();
          this.file = file;

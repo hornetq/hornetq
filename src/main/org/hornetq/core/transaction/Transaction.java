@@ -44,7 +44,7 @@ public interface Transaction
    void resume();
 
    State getState();
-   
+
    void setState(State state);
 
    void markAsRollbackOnly(HornetQException exception);
@@ -54,13 +54,13 @@ public interface Transaction
    void addOperation(TransactionOperation sync);
 
    void removeOperation(TransactionOperation sync);
-   
+
    void putProperty(int index, Object property);
-   
+
    Object getProperty(int index);
-   
+
    void setContainsPersistent();
-   
+
    static enum State
    {
       ACTIVE, PREPARED, COMMITTED, ROLLEDBACK, SUSPENDED, ROLLBACK_ONLY

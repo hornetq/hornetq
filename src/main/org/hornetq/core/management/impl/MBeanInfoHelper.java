@@ -42,17 +42,16 @@ public class MBeanInfoHelper
 
    // Public --------------------------------------------------------
 
-   public static MBeanOperationInfo[] getMBeanOperationsInfo(
-         final Class mbeanInterface)
+   public static MBeanOperationInfo[] getMBeanOperationsInfo(final Class mbeanInterface)
    {
       List<MBeanOperationInfo> operations = new ArrayList<MBeanOperationInfo>();
 
       for (Method method : mbeanInterface.getMethods())
       {
-         if (!isGetterMethod(method) && !isSetterMethod(method)
-               && !isIsBooleanMethod(method))
+         if (!MBeanInfoHelper.isGetterMethod(method) && !MBeanInfoHelper.isSetterMethod(method) &&
+             !MBeanInfoHelper.isIsBooleanMethod(method))
          {
-            operations.add(getOperationInfo(method));
+            operations.add(MBeanInfoHelper.getOperationInfo(method));
          }
       }
 
@@ -67,10 +66,9 @@ public class MBeanInfoHelper
 
    private static boolean isGetterMethod(final Method method)
    {
-      if (!(method.getName().equals("get"))
-            && method.getName().startsWith("get")
-            && method.getParameterTypes().length == 0
-            && !method.getReturnType().equals(void.class))
+      if (!method.getName().equals("get") && method.getName().startsWith("get") &&
+          method.getParameterTypes().length == 0 &&
+          !method.getReturnType().equals(void.class))
       {
          return true;
       }
@@ -80,13 +78,13 @@ public class MBeanInfoHelper
 
    private static boolean isSetterMethod(final Method method)
    {
-      if (!(method.getName().equals("set"))
-            && method.getName().startsWith("set")
-            && method.getParameterTypes().length == 1
-            && method.getReturnType().equals(void.class))
+      if (!method.getName().equals("set") && method.getName().startsWith("set") &&
+          method.getParameterTypes().length == 1 &&
+          method.getReturnType().equals(void.class))
       {
          return true;
-      } else
+      }
+      else
       {
          return false;
       }
@@ -94,12 +92,13 @@ public class MBeanInfoHelper
 
    private static boolean isIsBooleanMethod(final Method method)
    {
-      if (!(method.getName().equals("is")) && method.getName().startsWith("is")
-            && method.getParameterTypes().length == 0
-            && method.getReturnType().equals(boolean.class))
+      if (!method.getName().equals("is") && method.getName().startsWith("is") &&
+          method.getParameterTypes().length == 0 &&
+          method.getReturnType().equals(boolean.class))
       {
          return true;
-      } else
+      }
+      else
       {
          return false;
       }
@@ -110,8 +109,8 @@ public class MBeanInfoHelper
       MBeanOperationInfo info = null;
       Class<?> returnType = operation.getReturnType();
 
-      MBeanParameterInfo[] paramsInfo = getParametersInfo(operation
-            .getParameterAnnotations(), operation.getParameterTypes());
+      MBeanParameterInfo[] paramsInfo = MBeanInfoHelper.getParametersInfo(operation.getParameterAnnotations(),
+                                                                          operation.getParameterTypes());
 
       String description = operation.getName();
       int impact = MBeanOperationInfo.UNKNOWN;
@@ -121,14 +120,12 @@ public class MBeanInfoHelper
          description = operation.getAnnotation(Operation.class).desc();
          impact = operation.getAnnotation(Operation.class).impact();
       }
-      info = new MBeanOperationInfo(operation.getName(), description,
-            paramsInfo, returnType.getName(), impact);
+      info = new MBeanOperationInfo(operation.getName(), description, paramsInfo, returnType.getName(), impact);
 
       return info;
    }
 
-   private static MBeanParameterInfo[] getParametersInfo(
-         final Annotation[][] params, final Class<?>[] paramTypes)
+   private static MBeanParameterInfo[] getParametersInfo(final Annotation[][] params, final Class<?>[] paramTypes)
    {
       MBeanParameterInfo[] paramsInfo = new MBeanParameterInfo[params.length];
 
@@ -148,8 +145,7 @@ public class MBeanInfoHelper
 
          if (paramInfo == null)
          {
-            paramInfo = new MBeanParameterInfo("p " + (i + 1), type,
-                  "parameter " + (i + 1));
+            paramInfo = new MBeanParameterInfo("p " + (i + 1), type, "parameter " + (i + 1));
          }
 
          paramsInfo[i] = paramInfo;

@@ -56,7 +56,7 @@ public class SendTest
 {
    private static final Logger log = Logger.getLogger(SendTest.class);
 
-   public static void main(String[] args)
+   public static void main(final String[] args)
    {
       try
       {
@@ -72,39 +72,38 @@ public class SendTest
 
    private void startServer() throws Exception
    {
-      log.info("*** Starting server");
+      SendTest.log.info("*** Starting server");
 
-      //System.setProperty("org.hornetq.opt.dontadd", "true");
-     // System.setProperty("org.hornetq.opt.routeblast", "true");
-      //System.setProperty("org.hornetq.opt.generatemessages", "true");
+      // System.setProperty("org.hornetq.opt.dontadd", "true");
+      // System.setProperty("org.hornetq.opt.routeblast", "true");
+      // System.setProperty("org.hornetq.opt.generatemessages", "true");
       System.setProperty("org.hornetq.opt.directblast", "true");
 
       Configuration configuration = new ConfigurationImpl();
       configuration.setSecurityEnabled(false);
       configuration.setJMXManagementEnabled(false);
       configuration.setJournalMinFiles(10);
-      
+
       configuration.setPersistenceEnabled(true);
       configuration.setFileDeploymentEnabled(false);
-      //configuration.setJournalFlushOnSync(true);
-     // configuration.setRunSyncSpeedTest(true);
-      //configuration.setJournalPerfBlastPages(10000);
+      // configuration.setJournalFlushOnSync(true);
+      // configuration.setRunSyncSpeedTest(true);
+      // configuration.setJournalPerfBlastPages(10000);
 
       configuration.setJournalType(JournalType.ASYNCIO);
-      
-      configuration.setJournalBufferTimeout_NIO(1000000000 / 100); // this is in nanoseconds    
+
+      configuration.setJournalBufferTimeout_NIO(1000000000 / 100); // this is in nanoseconds
       configuration.setJournalBufferSize_NIO(490 * 1024);
       configuration.setJournalMaxIO_NIO(1);
-      
-      configuration.setJournalBufferTimeout_AIO(1000000000 / 1000); // this is in nanoseconds    
+
+      configuration.setJournalBufferTimeout_AIO(1000000000 / 1000); // this is in nanoseconds
       configuration.setJournalBufferSize_AIO(490 * 1024);
       configuration.setJournalMaxIO_AIO(500);
-      
+
       configuration.setLogJournalWriteRate(true);
-      
-      
-     // configuration.setRunSyncSpeedTest(true);
-      
+
+      // configuration.setRunSyncSpeedTest(true);
+
       Map<String, Object> params = new HashMap<String, Object>();
       params.put(TransportConstants.USE_NIO_PROP_NAME, Boolean.FALSE);
 
@@ -119,34 +118,34 @@ public class SendTest
 
       server.start();
 
-      log.info("Started server");
+      SendTest.log.info("Started server");
 
    }
-   
+
    public void runRouteBlast() throws Exception
    {
-      this.startServer();
+      startServer();
    }
 
    public void runTextMessage() throws Exception
    {
       startServer();
-      
+
       Map<String, Object> params = new HashMap<String, Object>();
 
       // params.put(TransportConstants.HOST_PROP_NAME, "localhost");
 
       // params.put(TransportConstants.PORT_PROP_NAME, 5445);
-      
+
       params.put(TransportConstants.TCP_NODELAY_PROPNAME, Boolean.FALSE);
-      //params.put(TransportConstants.USE_NIO_PROP_NAME, Boolean.FALSE);
+      // params.put(TransportConstants.USE_NIO_PROP_NAME, Boolean.FALSE);
 
-       TransportConfiguration tc = new TransportConfiguration(NettyConnectorFactory.class.getCanonicalName(), params);
+      TransportConfiguration tc = new TransportConfiguration(NettyConnectorFactory.class.getCanonicalName(), params);
 
-      //TransportConfiguration tc = new TransportConfiguration(InVMConnectorFactory.class.getCanonicalName(), params);
+      // TransportConfiguration tc = new TransportConfiguration(InVMConnectorFactory.class.getCanonicalName(), params);
 
       HornetQConnectionFactory cf = new HornetQConnectionFactory(tc);
-      
+
       cf.setProducerWindowSize(1024 * 1024);
 
       Connection conn = cf.createConnection();
@@ -160,49 +159,49 @@ public class SendTest
       Queue queue = new HornetQQueue("test_queue");
 
       MessageProducer prod = sess.createProducer(queue);
-      
+
       prod.setDisableMessageID(true);
-      
+
       prod.setDisableMessageTimestamp(true);
 
       prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
 
-      byte[] bytes1 = new byte[] { (byte)'A', (byte)'B',(byte)'C',(byte)'D'};
-      
+      byte[] bytes1 = new byte[] { (byte)'A', (byte)'B', (byte)'C', (byte)'D' };
+
       String s = new String(bytes1);
-      
+
       System.out.println("Str is " + s);
-      
+
       byte[] bytes = RandomUtil.randomBytes(512);
 
       String str = new String(bytes);
-      
+
       final int warmup = 500000;
-      
-      log.info("Warming up");
-      
+
+      SendTest.log.info("Warming up");
+
       TextMessage tm = sess.createTextMessage();
-      
+
       tm.setText(str);
-                             
+
       for (int i = 0; i < warmup; i++)
-      {                  
+      {
          prod.send(tm);
 
          if (i % 10000 == 0)
          {
-            log.info("sent " + i);
+            SendTest.log.info("sent " + i);
          }
       }
-      
-      log.info("** WARMUP DONE");
-      
+
+      SendTest.log.info("** WARMUP DONE");
+
       final int numMessages = 2000000;
-      
+
       tm = sess.createTextMessage();
 
       tm.setText(str);
-      
+
       long start = System.currentTimeMillis();
 
       for (int i = 0; i < numMessages; i++)
@@ -211,10 +210,10 @@ public class SendTest
 
          if (i % 10000 == 0)
          {
-            log.info("sent " + i);
+            SendTest.log.info("sent " + i);
          }
       }
-      
+
       sess.close();
 
       long end = System.currentTimeMillis();
@@ -225,26 +224,26 @@ public class SendTest
 
       server.stop();
    }
-   
+
    public void runSendConsume() throws Exception
    {
       startServer();
-      
+
       Map<String, Object> params = new HashMap<String, Object>();
 
       // params.put(TransportConstants.HOST_PROP_NAME, "localhost");
 
       // params.put(TransportConstants.PORT_PROP_NAME, 5445);
-      
+
       params.put(TransportConstants.TCP_NODELAY_PROPNAME, Boolean.FALSE);
-      //params.put(TransportConstants.USE_NIO_PROP_NAME, Boolean.FALSE);
+      // params.put(TransportConstants.USE_NIO_PROP_NAME, Boolean.FALSE);
 
-       TransportConfiguration tc = new TransportConfiguration(NettyConnectorFactory.class.getCanonicalName(), params);
+      TransportConfiguration tc = new TransportConfiguration(NettyConnectorFactory.class.getCanonicalName(), params);
 
-      //TransportConfiguration tc = new TransportConfiguration(InVMConnectorFactory.class.getCanonicalName(), params);
+      // TransportConfiguration tc = new TransportConfiguration(InVMConnectorFactory.class.getCanonicalName(), params);
 
       HornetQConnectionFactory cf = new HornetQConnectionFactory(tc);
-      
+
       cf.setProducerWindowSize(1024 * 1024);
 
       Connection conn = cf.createConnection();
@@ -254,44 +253,45 @@ public class SendTest
       ClientSession coreSession = ((HornetQSession)sess).getCoreSession();
 
       coreSession.createQueue("jms.queue.test_queue", "jms.queue.test_queue");
-            
+
       Queue queue = new HornetQQueue("test_queue");
-      
+
       MessageConsumer cons = sess.createConsumer(queue);
-      
+
       conn.start();
-      
+
       final CountDownLatch latch = new CountDownLatch(1);
-      
+
       final int warmup = 500000;
-            
+
       final int numMessages = 2000000;
-      
+
       MessageListener listener = new MessageListener()
       {
          int count;
-         public void onMessage(Message message)
+
+         public void onMessage(final Message message)
          {
             count++;
-            
+
             if (count % 10000 == 0)
             {
-               log.info("received " + count);
+               SendTest.log.info("received " + count);
             }
-            
+
             if (count == numMessages + warmup)
             {
                latch.countDown();
             }
          }
       };
-      
+
       cons.setMessageListener(listener);
 
       MessageProducer prod = sess.createProducer(queue);
-      
+
       prod.setDisableMessageID(true);
-      
+
       prod.setDisableMessageTimestamp(true);
 
       prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
@@ -299,29 +299,25 @@ public class SendTest
       byte[] bytes = RandomUtil.randomBytes(1024);
 
       String str = new String(bytes);
-      
-      
-      log.info("Warming up");
-      
-                                  
+
+      SendTest.log.info("Warming up");
+
       for (int i = 0; i < warmup; i++)
-      {                  
+      {
          TextMessage tm = sess.createTextMessage();
-         
+
          tm.setText(str);
-         
+
          prod.send(tm);
 
          if (i % 10000 == 0)
          {
-            log.info("sent " + i);
+            SendTest.log.info("sent " + i);
          }
       }
-      
-      log.info("** WARMUP DONE");
-       
-      
-      
+
+      SendTest.log.info("** WARMUP DONE");
+
       long start = System.currentTimeMillis();
 
       for (int i = 0; i < numMessages; i++)
@@ -333,12 +329,12 @@ public class SendTest
 
          if (i % 10000 == 0)
          {
-            log.info("sent " + i);
+            SendTest.log.info("sent " + i);
          }
       }
-      
+
       latch.countDown();
-      
+
       sess.close();
 
       long end = System.currentTimeMillis();
@@ -349,26 +345,26 @@ public class SendTest
 
       server.stop();
    }
-   
+
    public void runObjectMessage() throws Exception
    {
       startServer();
-      
+
       Map<String, Object> params = new HashMap<String, Object>();
 
       // params.put(TransportConstants.HOST_PROP_NAME, "localhost");
 
       // params.put(TransportConstants.PORT_PROP_NAME, 5445);
-      
+
       params.put(TransportConstants.TCP_NODELAY_PROPNAME, Boolean.FALSE);
-      //params.put(TransportConstants.USE_NIO_PROP_NAME, Boolean.FALSE);
+      // params.put(TransportConstants.USE_NIO_PROP_NAME, Boolean.FALSE);
 
-       TransportConfiguration tc = new TransportConfiguration(NettyConnectorFactory.class.getCanonicalName(), params);
+      TransportConfiguration tc = new TransportConfiguration(NettyConnectorFactory.class.getCanonicalName(), params);
 
-      //TransportConfiguration tc = new TransportConfiguration(InVMConnectorFactory.class.getCanonicalName(), params);
+      // TransportConfiguration tc = new TransportConfiguration(InVMConnectorFactory.class.getCanonicalName(), params);
 
       HornetQConnectionFactory cf = new HornetQConnectionFactory(tc);
-      
+
       cf.setProducerWindowSize(1024 * 1024);
 
       Connection conn = cf.createConnection();
@@ -382,67 +378,63 @@ public class SendTest
       Queue queue = new HornetQQueue("test_queue");
 
       MessageProducer prod = sess.createProducer(queue);
-      
+
       prod.setDisableMessageID(true);
-      
+
       prod.setDisableMessageTimestamp(true);
 
       prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-      
+
       byte[] bytes = RandomUtil.randomBytes(512);
 
       String str = new String(bytes);
-      
-      log.info("str length " + str.length());
+
+      SendTest.log.info("str length " + str.length());
 
       final int warmup = 50000;
-      
-      log.info("sending messages");
-                             
-      
-      
+
+      SendTest.log.info("sending messages");
+
       for (int i = 0; i < warmup; i++)
       {
-//         ObjectMessage om = sess.createObjectMessage(str);
-//         
-//         prod.send(om);
-         
+         // ObjectMessage om = sess.createObjectMessage(str);
+         //         
+         // prod.send(om);
+
          TextMessage tm = sess.createTextMessage(str);
-         
+
          prod.send(tm);
 
          if (i % 10000 == 0)
          {
-            log.info("sent " + i);
+            SendTest.log.info("sent " + i);
          }
-         
-         //om.setObject(str);
+
+         // om.setObject(str);
       }
-      
-      log.info("** WARMUP DONE");
-      
+
+      SendTest.log.info("** WARMUP DONE");
+
       final int numMessages = 500000;
-            
+
       long start = System.currentTimeMillis();
 
-      
-      
       for (int i = 0; i < numMessages; i++)
-      {                 
-//         ObjectMessage om = sess.createObjectMessage(str);
-//         
-//         prod.send(om);
-         
+      {
+         // ObjectMessage om = sess.createObjectMessage(str);
+         //         
+         // prod.send(om);
+
          TextMessage tm = sess.createTextMessage(str);
-         
+
          prod.send(tm);
 
          if (i % 10000 == 0)
          {
-            log.info("sent " + i);
+            SendTest.log.info("sent " + i);
          }
-         
-         //om.setObject(str);
+
+         // om.setObject(str);
       }
 
       long end = System.currentTimeMillis();
@@ -453,26 +445,26 @@ public class SendTest
 
       server.stop();
    }
-   
+
    public void runConsume() throws Exception
    {
       startServer();
-      
+
       Map<String, Object> params = new HashMap<String, Object>();
 
       // params.put(TransportConstants.HOST_PROP_NAME, "localhost");
 
       // params.put(TransportConstants.PORT_PROP_NAME, 5445);
-      
+
       params.put(TransportConstants.TCP_NODELAY_PROPNAME, Boolean.FALSE);
-      //params.put(TransportConstants.USE_NIO_PROP_NAME, Boolean.FALSE);
+      // params.put(TransportConstants.USE_NIO_PROP_NAME, Boolean.FALSE);
 
-       TransportConfiguration tc = new TransportConfiguration(NettyConnectorFactory.class.getCanonicalName(), params);
+      TransportConfiguration tc = new TransportConfiguration(NettyConnectorFactory.class.getCanonicalName(), params);
 
-      //TransportConfiguration tc = new TransportConfiguration(InVMConnectorFactory.class.getCanonicalName(), params);
+      // TransportConfiguration tc = new TransportConfiguration(InVMConnectorFactory.class.getCanonicalName(), params);
 
       HornetQConnectionFactory cf = new HornetQConnectionFactory(tc);
-      
+
       Connection conn = cf.createConnection();
 
       Session sess = conn.createSession(false, Session.DUPS_OK_ACKNOWLEDGE);
@@ -480,39 +472,41 @@ public class SendTest
       ClientSession coreSession = ((HornetQSession)sess).getCoreSession();
 
       coreSession.createQueue("jms.queue.test_queue", "jms.queue.test_queue");
-            
+
       Queue queue = new HornetQQueue("test_queue");
-      
+
       MessageConsumer cons = sess.createConsumer(queue);
-                  
+
       final CountDownLatch latch = new CountDownLatch(1);
-      
+
       final int warmup = 50000;
-            
+
       final int numMessages = 2000000;
-      
+
       MessageListener listener = new MessageListener()
       {
          int count;
+
          long start;
-         public void onMessage(Message message)
+
+         public void onMessage(final Message message)
          {
             count++;
-            
-            log.info("got message " + ((HornetQMessage)message).getCoreMessage().getMessageID());
-            
+
+            SendTest.log.info("got message " + ((HornetQMessage)message).getCoreMessage().getMessageID());
+
             if (count == warmup)
             {
-               log.info("** WARMED UP");
-               
+               SendTest.log.info("** WARMED UP");
+
                start = System.currentTimeMillis();
             }
-            
+
             if (count % 10000 == 0)
             {
-               log.info("received " + count);
+               SendTest.log.info("received " + count);
             }
-            
+
             if (count == numMessages + warmup)
             {
                long end = System.currentTimeMillis();
@@ -525,13 +519,13 @@ public class SendTest
             }
          }
       };
-      
+
       cons.setMessageListener(listener);
 
       MessageProducer prod = sess.createProducer(queue);
-      
+
       prod.setDisableMessageID(true);
-      
+
       prod.setDisableMessageTimestamp(true);
 
       prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
@@ -539,35 +533,34 @@ public class SendTest
       byte[] bytes = RandomUtil.randomBytes(1);
 
       String str = new String(bytes);
-            
-      
-      //Load up the queue with messages
-      
+
+      // Load up the queue with messages
+
       TextMessage tm = sess.createTextMessage();
-      
+
       tm.setText(str);
-      
-      log.info("loading queue with messages");
-      
+
+      SendTest.log.info("loading queue with messages");
+
       for (int i = 0; i < numMessages + warmup; i++)
-      {        
+      {
          prod.send(tm);
-         
+
          if (i % 10000 == 0)
          {
-            log.info("sent " + i);
+            SendTest.log.info("sent " + i);
          }
       }
-      
-      log.info("** loaded queue");
-      
+
+      SendTest.log.info("** loaded queue");
+
       conn.start();
-      
+
       latch.await();
-      
+
       sess.close();
-      
+
       server.stop();
    }
-   
+
 }

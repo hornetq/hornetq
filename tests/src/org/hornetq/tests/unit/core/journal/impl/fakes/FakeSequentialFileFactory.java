@@ -20,9 +20,9 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.hornetq.core.asyncio.BufferCallback;
-import org.hornetq.core.journal.EncodingSupport;
 import org.hornetq.core.buffers.HornetQBuffer;
 import org.hornetq.core.buffers.HornetQBuffers;
+import org.hornetq.core.journal.EncodingSupport;
 import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.SequentialFileFactory;
@@ -335,7 +335,7 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
             data.position(0);
          }
 
-         this.notifyAll();
+         notifyAll();
       }
 
       public synchronized void waitForClose() throws Exception
@@ -563,17 +563,17 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
       /* (non-Javadoc)
        * @see org.hornetq.core.journal.SequentialFile#renameTo(org.hornetq.core.journal.SequentialFile)
        */
-      public void renameTo(String newFileName) throws Exception
+      public void renameTo(final String newFileName) throws Exception
       {
-         fileMap.remove(this.fileName);
-         this.fileName = newFileName;
+         fileMap.remove(fileName);
+         fileName = newFileName;
          fileMap.put(newFileName, this);
       }
 
       /* (non-Javadoc)
        * @see org.hornetq.core.journal.SequentialFile#fits(int)
        */
-      public boolean fits(int size)
+      public boolean fits(final int size)
       {
          return data.position() + size <= data.limit();
       }
@@ -581,7 +581,7 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
       /* (non-Javadoc)
        * @see org.hornetq.core.journal.SequentialFile#setBuffering(boolean)
        */
-      public void setBuffering(boolean buffering)
+      public void setBuffering(final boolean buffering)
       {
       }
 
@@ -601,13 +601,13 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
 
       public SequentialFile copy()
       {
-         return null;  //To change body of implemented methods use File | Settings | File Templates.
+         return null; // To change body of implemented methods use File | Settings | File Templates.
       }
 
       /* (non-Javadoc)
        * @see org.hornetq.core.journal.SequentialFile#write(org.hornetq.core.remoting.spi.HornetQBuffer, boolean, org.hornetq.core.journal.IOCallback)
        */
-      public void write(HornetQBuffer bytes, boolean sync, IOAsyncTask callback) throws Exception
+      public void write(final HornetQBuffer bytes, final boolean sync, final IOAsyncTask callback) throws Exception
       {
          bytes.writerIndex(bytes.capacity());
          bytes.readerIndex(0);
@@ -618,17 +618,17 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
       /* (non-Javadoc)
        * @see org.hornetq.core.journal.SequentialFile#write(org.hornetq.core.remoting.spi.HornetQBuffer, boolean)
        */
-      public void write(HornetQBuffer bytes, boolean sync) throws Exception
+      public void write(final HornetQBuffer bytes, final boolean sync) throws Exception
       {
          bytes.writerIndex(bytes.capacity());
          bytes.readerIndex(0);
          writeDirect(bytes.toByteBuffer(), sync);
       }
-      
+
       /* (non-Javadoc)
        * @see org.hornetq.core.journal.SequentialFile#write(org.hornetq.core.journal.EncodingSupport, boolean, org.hornetq.core.journal.IOCompletion)
        */
-      public void write(EncodingSupport bytes, boolean sync, IOAsyncTask callback) throws Exception
+      public void write(final EncodingSupport bytes, final boolean sync, final IOAsyncTask callback) throws Exception
       {
          ByteBuffer buffer = newBuffer(bytes.getEncodeSize());
          HornetQBuffer outbuffer = HornetQBuffers.wrappedBuffer(buffer);
@@ -639,7 +639,7 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
       /* (non-Javadoc)
        * @see org.hornetq.core.journal.SequentialFile#write(org.hornetq.core.journal.EncodingSupport, boolean)
        */
-      public void write(EncodingSupport bytes, boolean sync) throws Exception
+      public void write(final EncodingSupport bytes, final boolean sync) throws Exception
       {
          ByteBuffer buffer = newBuffer(bytes.getEncodeSize());
          HornetQBuffer outbuffer = HornetQBuffers.wrappedBuffer(buffer);
@@ -647,25 +647,23 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
          write(outbuffer, sync);
       }
 
-      
-
       /* (non-Javadoc)
        * @see org.hornetq.core.journal.SequentialFile#exists()
        */
       public boolean exists()
       {
          FakeSequentialFile file = fileMap.get(fileName);
-         
+
          return file != null && file.data != null && file.data.capacity() > 0;
       }
 
       /* (non-Javadoc)
        * @see org.hornetq.core.journal.SequentialFile#setTimedBuffer(org.hornetq.core.journal.impl.TimedBuffer)
        */
-      public void setTimedBuffer(TimedBuffer buffer)
+      public void setTimedBuffer(final TimedBuffer buffer)
       {
          // TODO Auto-generated method stub
-         
+
       }
 
    }
@@ -681,7 +679,7 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
    /* (non-Javadoc)
     * @see org.hornetq.core.journal.SequentialFileFactory#releaseBuffer(java.nio.ByteBuffer)
     */
-   public void releaseBuffer(ByteBuffer buffer)
+   public void releaseBuffer(final ByteBuffer buffer)
    {
    }
 
@@ -696,14 +694,14 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
    /* (non-Javadoc)
     * @see org.hornetq.core.journal.SequentialFileFactory#setBufferCallback(org.hornetq.core.journal.BufferCallback)
     */
-   public void setBufferCallback(BufferCallback bufferCallback)
+   public void setBufferCallback(final BufferCallback bufferCallback)
    {
    }
 
    /* (non-Javadoc)
     * @see org.hornetq.core.journal.SequentialFileFactory#controlBuffersLifeCycle(boolean)
     */
-   public void controlBuffersLifeCycle(boolean value)
+   public void controlBuffersLifeCycle(final boolean value)
    {
    }
 
@@ -717,7 +715,7 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
    /* (non-Javadoc)
     * @see org.hornetq.core.journal.SequentialFileFactory#activate(org.hornetq.core.journal.SequentialFile)
     */
-   public void activateBuffer(SequentialFile file)
+   public void activateBuffer(final SequentialFile file)
    {
    }
 
@@ -741,6 +739,5 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
    public void flush()
    {
    }
-
 
 }

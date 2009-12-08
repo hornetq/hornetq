@@ -14,6 +14,8 @@ package org.hornetq.tests.integration.client;
 
 import java.util.concurrent.CountDownLatch;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
@@ -43,8 +45,8 @@ public class AutogroupIdTest extends ServiceTestBase
    /* auto group id tests*/
 
    /*
-  * tests when the autogroupid is set only 1 consumer (out of 2) gets all the messages from a single producer
-  * */
+   * tests when the autogroupid is set only 1 consumer (out of 2) gets all the messages from a single producer
+   * */
 
    public void testGroupIdAutomaticallySet() throws Exception
    {
@@ -83,8 +85,8 @@ public class AutogroupIdTest extends ServiceTestBase
 
          session.close();
 
-         assertEquals(myMessageHandler.messagesReceived, 100);
-         assertEquals(myMessageHandler2.messagesReceived, 0);
+         Assert.assertEquals(myMessageHandler.messagesReceived, 100);
+         Assert.assertEquals(myMessageHandler2.messagesReceived, 0);
       }
       finally
       {
@@ -97,8 +99,8 @@ public class AutogroupIdTest extends ServiceTestBase
    }
 
    /*
-  * tests when the autogroupid is set only 2 consumers (out of 3) gets all the messages from 2 producers
-  * */
+   * tests when the autogroupid is set only 2 consumers (out of 3) gets all the messages from 2 producers
+   * */
    public void testGroupIdAutomaticallySetMultipleProducers() throws Exception
    {
       HornetQServer server = createServer(false);
@@ -144,9 +146,9 @@ public class AutogroupIdTest extends ServiceTestBase
 
          session.close();
 
-         assertEquals(myMessageHandler.messagesReceived, 100);
-         assertEquals(myMessageHandler2.messagesReceived, 100);
-         assertEquals(myMessageHandler3.messagesReceived, 0);
+         Assert.assertEquals(myMessageHandler.messagesReceived, 100);
+         Assert.assertEquals(myMessageHandler2.messagesReceived, 100);
+         Assert.assertEquals(myMessageHandler3.messagesReceived, 0);
       }
       finally
       {
@@ -159,8 +161,8 @@ public class AutogroupIdTest extends ServiceTestBase
    }
 
    /*
-  * tests that even tho we have an grouping round robin distributor we don't pin the consumer as autogroup is false
-  * */
+   * tests that even tho we have an grouping round robin distributor we don't pin the consumer as autogroup is false
+   * */
    public void testGroupIdAutomaticallyNotSet() throws Exception
    {
       HornetQServer server = createServer(false);
@@ -198,8 +200,8 @@ public class AutogroupIdTest extends ServiceTestBase
 
          session.close();
 
-         assertEquals(myMessageHandler.messagesReceived, 50);
-         assertEquals(myMessageHandler2.messagesReceived, 50);
+         Assert.assertEquals(myMessageHandler.messagesReceived, 50);
+         Assert.assertEquals(myMessageHandler2.messagesReceived, 50);
       }
       finally
       {
@@ -217,12 +219,12 @@ public class AutogroupIdTest extends ServiceTestBase
 
       private final CountDownLatch latch;
 
-      public MyMessageHandler(CountDownLatch latch)
+      public MyMessageHandler(final CountDownLatch latch)
       {
          this.latch = latch;
       }
 
-      public void onMessage(ClientMessage message)
+      public void onMessage(final ClientMessage message)
       {
          messagesReceived++;
          try

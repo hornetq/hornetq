@@ -14,7 +14,6 @@
 package org.hornetq.core.remoting.impl.wireformat;
 
 import org.hornetq.core.buffers.HornetQBuffer;
-import org.hornetq.utils.DataConstants;
 import org.hornetq.utils.SimpleString;
 
 /**
@@ -29,13 +28,13 @@ public class SessionCreateConsumerMessage extends PacketImpl
    // Attributes ----------------------------------------------------
 
    private long id;
-   
+
    private SimpleString queueName;
 
    private SimpleString filterString;
 
    private boolean browseOnly;
-   
+
    private boolean requiresResponse;
 
    // Static --------------------------------------------------------
@@ -48,7 +47,7 @@ public class SessionCreateConsumerMessage extends PacketImpl
                                        final boolean browseOnly,
                                        final boolean requiresResponse)
    {
-      super(SESS_CREATECONSUMER);
+      super(PacketImpl.SESS_CREATECONSUMER);
 
       this.id = id;
       this.queueName = queueName;
@@ -59,7 +58,7 @@ public class SessionCreateConsumerMessage extends PacketImpl
 
    public SessionCreateConsumerMessage()
    {
-      super(SESS_CREATECONSUMER);
+      super(PacketImpl.SESS_CREATECONSUMER);
    }
 
    // Public --------------------------------------------------------
@@ -73,7 +72,7 @@ public class SessionCreateConsumerMessage extends PacketImpl
       buff.append("]");
       return buff.toString();
    }
-   
+
    public long getID()
    {
       return id;
@@ -93,7 +92,7 @@ public class SessionCreateConsumerMessage extends PacketImpl
    {
       return browseOnly;
    }
-   
+
    public boolean isRequiresResponse()
    {
       return requiresResponse;

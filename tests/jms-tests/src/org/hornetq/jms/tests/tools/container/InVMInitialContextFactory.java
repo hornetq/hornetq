@@ -39,24 +39,23 @@ public class InVMInitialContextFactory implements InitialContextFactory
 
    static
    {
-      reset();
+      InVMInitialContextFactory.reset();
    }
 
    public static Hashtable getJNDIEnvironment()
    {
-      return getJNDIEnvironment(0);
+      return InVMInitialContextFactory.getJNDIEnvironment(0);
    }
 
    /**
     * @return the JNDI environment to use to get this InitialContextFactory.
     */
-   public static Hashtable getJNDIEnvironment(int serverIndex)
+   public static Hashtable getJNDIEnvironment(final int serverIndex)
    {
       Hashtable env = new Hashtable();
-      env.put("java.naming.factory.initial",
-              "org.hornetq.jms.tests.tools.container.InVMInitialContextFactory");
+      env.put("java.naming.factory.initial", "org.hornetq.jms.tests.tools.container.InVMInitialContextFactory");
       env.put("java.naming.provider.url", "org.jboss.naming:org.jnp.interface");
-      //env.put("java.naming.factory.url.pkgs", "");
+      // env.put("java.naming.factory.url.pkgs", "");
       env.put(Constants.SERVER_INDEX_PROPERTY_NAME, Integer.toString(serverIndex));
       return env;
    }
@@ -67,7 +66,7 @@ public class InVMInitialContextFactory implements InitialContextFactory
 
    // Public --------------------------------------------------------
 
-   public Context getInitialContext(Hashtable environment) throws NamingException      
+   public Context getInitialContext(final Hashtable environment) throws NamingException
    {
       // try first in the environment passed as argument ...
       String s = (String)environment.get(Constants.SERVER_INDEX_PROPERTY_NAME);
@@ -79,14 +78,16 @@ public class InVMInitialContextFactory implements InitialContextFactory
 
          if (s == null)
          {
-            //try the thread name
+            // try the thread name
             String tName = Thread.currentThread().getName();
-            if(tName.contains("server"))
+            if (tName.contains("server"))
             {
                s = tName.substring(6);
             }
-            if(s == null)
+            if (s == null)
+            {
                throw new NamingException("Cannot figure out server index!");
+            }
          }
       }
 
@@ -96,33 +97,34 @@ public class InVMInitialContextFactory implements InitialContextFactory
       {
          serverIndex = Integer.parseInt(s);
       }
-      catch(Exception e)
+      catch (Exception e)
       {
-         throw new NamingException("Failure parsing \"" +
-                                   Constants.SERVER_INDEX_PROPERTY_NAME +"\". " +
-                                   s + " is not an integer");
+         throw new NamingException("Failure parsing \"" + Constants.SERVER_INDEX_PROPERTY_NAME +
+                                   "\". " +
+                                   s +
+                                   " is not an integer");
       }
 
-   	//Note! This MUST be synchronized
-   	synchronized (initialContexts)
-   	{
-	   	      
-	      InVMContext ic = (InVMContext)initialContexts.get(new Integer(serverIndex));
-	
-	      if (ic == null)
-	      {
-	         ic = new InVMContext(s);
-	         ic.bind("java:/", new InVMContext(s));
-	         initialContexts.put(new Integer(serverIndex), ic);
-	      }
-	
-	      return ic;
-   	}
+      // Note! This MUST be synchronized
+      synchronized (InVMInitialContextFactory.initialContexts)
+      {
+
+         InVMContext ic = (InVMContext)InVMInitialContextFactory.initialContexts.get(new Integer(serverIndex));
+
+         if (ic == null)
+         {
+            ic = new InVMContext(s);
+            ic.bind("java:/", new InVMContext(s));
+            InVMInitialContextFactory.initialContexts.put(new Integer(serverIndex), ic);
+         }
+
+         return ic;
+      }
    }
-   
+
    public static void reset()
    {
-       initialContexts = new HashMap();
+      InVMInitialContextFactory.initialContexts = new HashMap();
    }
 
    // Package protected ---------------------------------------------
@@ -131,5 +133,5 @@ public class InVMInitialContextFactory implements InitialContextFactory
 
    // Private -------------------------------------------------------
 
-   // Inner classes -------------------------------------------------   
+   // Inner classes -------------------------------------------------
 }

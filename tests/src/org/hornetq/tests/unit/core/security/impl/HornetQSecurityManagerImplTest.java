@@ -9,11 +9,13 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
  * implied.  See the License for the specific language governing
  * permissions and limitations under the License.
- */ 
+ */
 
 package org.hornetq.tests.unit.core.security.impl;
 
 import java.util.HashSet;
+
+import junit.framework.Assert;
 
 import org.hornetq.core.security.CheckType;
 import org.hornetq.core.security.Role;
@@ -29,17 +31,19 @@ public class HornetQSecurityManagerImplTest extends UnitTestCase
 {
    private HornetQSecurityManagerImpl securityManager;
 
+   @Override
    protected void setUp() throws Exception
    {
       super.setUp();
-      
+
       securityManager = new HornetQSecurityManagerImpl();
    }
 
+   @Override
    protected void tearDown() throws Exception
    {
       securityManager = null;
-      
+
       super.tearDown();
    }
 
@@ -48,70 +52,70 @@ public class HornetQSecurityManagerImplTest extends UnitTestCase
       securityManager.addUser("guest", "guest");
       securityManager.addRole("guest", "guest");
       securityManager.setDefaultUser("guest");
-      assertTrue(securityManager.validateUser(null, null));
-      assertTrue(securityManager.validateUser("guest", "guest"));
+      Assert.assertTrue(securityManager.validateUser(null, null));
+      Assert.assertTrue(securityManager.validateUser("guest", "guest"));
       HashSet<Role> roles = new HashSet<Role>();
       roles.add(new Role("guest", true, true, true, true, true, true, true));
-      assertTrue(securityManager.validateUserAndRole(null, null, roles, CheckType.CREATE_DURABLE_QUEUE));
-      assertTrue(securityManager.validateUserAndRole(null, null, roles, CheckType.SEND));
-      assertTrue(securityManager.validateUserAndRole(null, null, roles, CheckType.CONSUME));
+      Assert.assertTrue(securityManager.validateUserAndRole(null, null, roles, CheckType.CREATE_DURABLE_QUEUE));
+      Assert.assertTrue(securityManager.validateUserAndRole(null, null, roles, CheckType.SEND));
+      Assert.assertTrue(securityManager.validateUserAndRole(null, null, roles, CheckType.CONSUME));
       roles = new HashSet<Role>();
       roles.add(new Role("guest", true, true, false, true, true, true, true));
-      assertFalse(securityManager.validateUserAndRole(null, null, roles, CheckType.CREATE_DURABLE_QUEUE));
-      assertTrue(securityManager.validateUserAndRole(null, null, roles, CheckType.SEND));
-      assertTrue(securityManager.validateUserAndRole(null, null, roles, CheckType.CONSUME));
+      Assert.assertFalse(securityManager.validateUserAndRole(null, null, roles, CheckType.CREATE_DURABLE_QUEUE));
+      Assert.assertTrue(securityManager.validateUserAndRole(null, null, roles, CheckType.SEND));
+      Assert.assertTrue(securityManager.validateUserAndRole(null, null, roles, CheckType.CONSUME));
       roles = new HashSet<Role>();
       roles.add(new Role("guest", true, false, false, true, true, true, true));
-      assertFalse(securityManager.validateUserAndRole(null, null, roles, CheckType.CREATE_DURABLE_QUEUE));
-      assertTrue(securityManager.validateUserAndRole(null, null, roles, CheckType.SEND));
-      assertFalse(securityManager.validateUserAndRole(null, null, roles, CheckType.CONSUME));
+      Assert.assertFalse(securityManager.validateUserAndRole(null, null, roles, CheckType.CREATE_DURABLE_QUEUE));
+      Assert.assertTrue(securityManager.validateUserAndRole(null, null, roles, CheckType.SEND));
+      Assert.assertFalse(securityManager.validateUserAndRole(null, null, roles, CheckType.CONSUME));
       roles = new HashSet<Role>();
       roles.add(new Role("guest", false, false, false, true, true, true, true));
-      assertFalse(securityManager.validateUserAndRole(null, null, roles, CheckType.CREATE_DURABLE_QUEUE));
-      assertFalse(securityManager.validateUserAndRole(null, null, roles, CheckType.SEND));
-      assertFalse(securityManager.validateUserAndRole(null, null, roles, CheckType.CONSUME));
+      Assert.assertFalse(securityManager.validateUserAndRole(null, null, roles, CheckType.CREATE_DURABLE_QUEUE));
+      Assert.assertFalse(securityManager.validateUserAndRole(null, null, roles, CheckType.SEND));
+      Assert.assertFalse(securityManager.validateUserAndRole(null, null, roles, CheckType.CONSUME));
    }
 
    public void testAddingUsers()
    {
       securityManager.addUser("newuser1", "newpassword1");
-      assertTrue(securityManager.validateUser("newuser1", "newpassword1"));
-      assertFalse(securityManager.validateUser("newuser1", "guest"));
-      assertFalse(securityManager.validateUser("newuser1", null));
+      Assert.assertTrue(securityManager.validateUser("newuser1", "newpassword1"));
+      Assert.assertFalse(securityManager.validateUser("newuser1", "guest"));
+      Assert.assertFalse(securityManager.validateUser("newuser1", null));
       try
       {
          securityManager.addUser("newuser2", null);
-         fail("password cannot be null");
+         Assert.fail("password cannot be null");
       }
       catch (IllegalArgumentException e)
       {
-         //pass
+         // pass
       }
       try
       {
          securityManager.addUser(null, "newpassword2");
-         fail("password cannot be null");
+         Assert.fail("password cannot be null");
       }
       catch (IllegalArgumentException e)
       {
-         //pass
+         // pass
       }
    }
 
    public void testRemovingUsers()
    {
       securityManager.addUser("newuser1", "newpassword1");
-      assertTrue(securityManager.validateUser("newuser1", "newpassword1"));
+      Assert.assertTrue(securityManager.validateUser("newuser1", "newpassword1"));
       securityManager.removeUser("newuser1");
-      assertFalse(securityManager.validateUser("newuser1", "newpassword1"));
+      Assert.assertFalse(securityManager.validateUser("newuser1", "newpassword1"));
    }
 
    public void testRemovingInvalidUsers()
    {
       securityManager.addUser("newuser1", "newpassword1");
-      assertTrue(securityManager.validateUser("newuser1", "newpassword1"));
+      Assert.assertTrue(securityManager.validateUser("newuser1", "newpassword1"));
       securityManager.removeUser("nonuser");
-      assertTrue(securityManager.validateUser("newuser1", "newpassword1"));
+      Assert.assertTrue(securityManager.validateUser("newuser1", "newpassword1"));
    }
 
    public void testAddingRoles()
@@ -123,19 +127,19 @@ public class HornetQSecurityManagerImplTest extends UnitTestCase
       securityManager.addRole("newuser1", "role4");
       HashSet<Role> roles = new HashSet<Role>();
       roles.add(new Role("role1", true, true, true, true, true, true, true));
-      assertTrue(securityManager.validateUserAndRole("newuser1", "newpassword1", roles, CheckType.SEND));
+      Assert.assertTrue(securityManager.validateUserAndRole("newuser1", "newpassword1", roles, CheckType.SEND));
       roles = new HashSet<Role>();
       roles.add(new Role("role2", true, true, true, true, true, true, true));
-      assertTrue(securityManager.validateUserAndRole("newuser1", "newpassword1", roles, CheckType.SEND));
+      Assert.assertTrue(securityManager.validateUserAndRole("newuser1", "newpassword1", roles, CheckType.SEND));
       roles = new HashSet<Role>();
       roles.add(new Role("role3", true, true, true, true, true, true, true));
-      assertTrue(securityManager.validateUserAndRole("newuser1", "newpassword1", roles, CheckType.SEND));
+      Assert.assertTrue(securityManager.validateUserAndRole("newuser1", "newpassword1", roles, CheckType.SEND));
       roles = new HashSet<Role>();
       roles.add(new Role("role4", true, true, true, true, true, true, true));
-      assertTrue(securityManager.validateUserAndRole("newuser1", "newpassword1", roles, CheckType.SEND));
+      Assert.assertTrue(securityManager.validateUserAndRole("newuser1", "newpassword1", roles, CheckType.SEND));
       roles = new HashSet<Role>();
       roles.add(new Role("role5", true, true, true, true, true, true, true));
-      assertFalse(securityManager.validateUserAndRole("newuser1", "newpassword1", roles, CheckType.SEND));
+      Assert.assertFalse(securityManager.validateUserAndRole("newuser1", "newpassword1", roles, CheckType.SEND));
    }
 
    public void testRemovingRoles()
@@ -149,18 +153,18 @@ public class HornetQSecurityManagerImplTest extends UnitTestCase
       securityManager.removeRole("newuser1", "role4");
       HashSet<Role> roles = new HashSet<Role>();
       roles.add(new Role("role1", true, true, true, true, true, true, true));
-      assertTrue(securityManager.validateUserAndRole("newuser1", "newpassword1", roles, CheckType.SEND));
+      Assert.assertTrue(securityManager.validateUserAndRole("newuser1", "newpassword1", roles, CheckType.SEND));
       roles = new HashSet<Role>();
       roles.add(new Role("role2", true, true, true, true, true, true, true));
-      assertFalse(securityManager.validateUserAndRole("newuser1", "newpassword1", roles, CheckType.SEND));
+      Assert.assertFalse(securityManager.validateUserAndRole("newuser1", "newpassword1", roles, CheckType.SEND));
       roles = new HashSet<Role>();
       roles.add(new Role("role3", true, true, true, true, true, true, true));
-      assertTrue(securityManager.validateUserAndRole("newuser1", "newpassword1", roles, CheckType.SEND));
+      Assert.assertTrue(securityManager.validateUserAndRole("newuser1", "newpassword1", roles, CheckType.SEND));
       roles = new HashSet<Role>();
       roles.add(new Role("role4", true, true, true, true, true, true, true));
-      assertFalse(securityManager.validateUserAndRole("newuser1", "newpassword1", roles, CheckType.SEND));
+      Assert.assertFalse(securityManager.validateUserAndRole("newuser1", "newpassword1", roles, CheckType.SEND));
       roles = new HashSet<Role>();
       roles.add(new Role("role5", true, true, true, true, true, true, true));
-      assertFalse(securityManager.validateUserAndRole("newuser1", "newpassword1", roles, CheckType.SEND));
+      Assert.assertFalse(securityManager.validateUserAndRole("newuser1", "newpassword1", roles, CheckType.SEND));
    }
 }

@@ -16,6 +16,8 @@ package org.hornetq.tests.stress.journal;
 import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
@@ -53,12 +55,13 @@ public class MultiThreadConsumerStressTest extends ServiceTestBase
 
    private ClientSessionFactory sf;
 
+   @Override
    protected void setUp() throws Exception
    {
       super.setUp();
       setupServer(JournalType.ASYNCIO);
    }
-   
+
    public void testProduceAndConsume() throws Throwable
    {
       int numberOfConsumers = 60;
@@ -66,28 +69,28 @@ public class MultiThreadConsumerStressTest extends ServiceTestBase
       int numberOfProducers = numberOfConsumers;
       int produceMessage = 10000;
       int commitIntervalProduce = 100;
-      int consumeMessage = (int) (produceMessage * 0.9);
+      int consumeMessage = (int)(produceMessage * 0.9);
       int commitIntervalConsume = 100;
-      
+
       ClientSession session = sf.createSession(false, false);
       session.createQueue("compact", "compact-queue", true);
-      
+
       ClientProducer producer = session.createProducer("compact");
-      
-      for (int i = 0 ; i < 100; i++)
+
+      for (int i = 0; i < 100; i++)
       {
          producer.send(session.createClientMessage(true));
       }
-      
+
       session.commit();
-      
+
       // Number of messages expected to be received after restart
       int numberOfMessagesExpected = (produceMessage - consumeMessage) * numberOfConsumers;
 
       CountDownLatch latchReady = new CountDownLatch(numberOfConsumers + numberOfProducers);
 
       CountDownLatch latchStart = new CountDownLatch(1);
-      
+
       ArrayList<BaseThread> threads = new ArrayList<BaseThread>();
 
       ProducerThread[] prod = new ProducerThread[numberOfProducers];
@@ -97,7 +100,7 @@ public class MultiThreadConsumerStressTest extends ServiceTestBase
          prod[i].start();
          threads.add(prod[i]);
       }
-      
+
       ConsumerThread[] cons = new ConsumerThread[numberOfConsumers];
 
       for (int i = 0; i < numberOfConsumers; i++)
@@ -106,10 +109,10 @@ public class MultiThreadConsumerStressTest extends ServiceTestBase
          cons[i].start();
          threads.add(cons[i]);
       }
-      
+
       latchReady.await();
       latchStart.countDown();
-      
+
       for (BaseThread t : threads)
       {
          t.join();
@@ -118,37 +121,36 @@ public class MultiThreadConsumerStressTest extends ServiceTestBase
             throw t.e;
          }
       }
-      
+
       server.stop();
-      
+
       setupServer(JournalType.ASYNCIO);
-      
+
       ClientSession sess = sf.createSession(true, true);
-      
+
       ClientConsumer consumer = sess.createConsumer(QUEUE);
-      
+
       sess.start();
-      
-      
-      for (int i = 0 ; i < numberOfMessagesExpected; i++)
+
+      for (int i = 0; i < numberOfMessagesExpected; i++)
       {
          ClientMessage msg = consumer.receive(5000);
-         assertNotNull(msg);
-         
+         Assert.assertNotNull(msg);
+
          if (i % 1000 == 0)
          {
             System.out.println("Received #" + i + "  on thread before end");
          }
          msg.acknowledge();
       }
-      
-      assertNull(consumer.receiveImmediate());
-      
+
+      Assert.assertNull(consumer.receiveImmediate());
+
       sess.close();
-      
-      
+
    }
 
+   @Override
    protected void tearDown() throws Exception
    {
       try
@@ -167,7 +169,7 @@ public class MultiThreadConsumerStressTest extends ServiceTestBase
       sf = null;
    }
 
-   private void setupServer(JournalType journalType) throws Exception, HornetQException
+   private void setupServer(final JournalType journalType) throws Exception, HornetQException
    {
       Configuration config = createDefaultConfig(true);
 
@@ -185,11 +187,11 @@ public class MultiThreadConsumerStressTest extends ServiceTestBase
       server.start();
 
       sf = createNettyFactory();
-      
+
       sf.setBlockOnPersistentSend(false);
-      
+
       sf.setBlockOnNonPersistentSend(false);
-      
+
       sf.setBlockOnAcknowledge(false);
 
       ClientSession sess = sf.createSession();
@@ -225,11 +227,11 @@ public class MultiThreadConsumerStressTest extends ServiceTestBase
 
       final int commitInterval;
 
-      BaseThread(String name,
-                CountDownLatch latchReady,
-                CountDownLatch latchStart,
-                int numberOfMessages,
-                int commitInterval)
+      BaseThread(final String name,
+                 final CountDownLatch latchReady,
+                 final CountDownLatch latchStart,
+                 final int numberOfMessages,
+                 final int commitInterval)
       {
          super(name);
          this.latchReady = latchReady;
@@ -242,15 +244,16 @@ public class MultiThreadConsumerStressTest extends ServiceTestBase
 
    class ProducerThread extends BaseThread
    {
-      ProducerThread(int id,
-                     CountDownLatch latchReady,
-                     CountDownLatch latchStart,
-                     int numberOfMessages,
-                     int commitInterval)
+      ProducerThread(final int id,
+                     final CountDownLatch latchReady,
+                     final CountDownLatch latchStart,
+                     final int numberOfMessages,
+                     final int commitInterval)
       {
          super("ClientProducer:" + id, latchReady, latchStart, numberOfMessages, commitInterval);
       }
 
+      @Override
       public void run()
       {
          ClientSession session = null;
@@ -268,15 +271,18 @@ public class MultiThreadConsumerStressTest extends ServiceTestBase
                }
                if (i % 1000 == 0)
                {
-                  //System.out.println(Thread.currentThread().getName() + "::received #" + i);
+                  // System.out.println(Thread.currentThread().getName() + "::received #" + i);
                }
-               ClientMessage msg = session.createClientMessage(true);               
+               ClientMessage msg = session.createClientMessage(true);
                prod.send(msg);
             }
 
             session.commit();
-            
-            System.out.println("Thread " + Thread.currentThread().getName() + " sent " + numberOfMessages + "  messages");
+
+            System.out.println("Thread " + Thread.currentThread().getName() +
+                               " sent " +
+                               numberOfMessages +
+                               "  messages");
          }
          catch (Throwable e)
          {
@@ -299,15 +305,16 @@ public class MultiThreadConsumerStressTest extends ServiceTestBase
 
    class ConsumerThread extends BaseThread
    {
-      ConsumerThread(int id,
-                     CountDownLatch latchReady,
-                     CountDownLatch latchStart,
-                     int numberOfMessages,
-                     int commitInterval)
+      ConsumerThread(final int id,
+                     final CountDownLatch latchReady,
+                     final CountDownLatch latchStart,
+                     final int numberOfMessages,
+                     final int commitInterval)
       {
          super("ClientConsumer:" + id, latchReady, latchStart, numberOfMessages, commitInterval);
       }
 
+      @Override
       public void run()
       {
          ClientSession session = null;
@@ -328,12 +335,15 @@ public class MultiThreadConsumerStressTest extends ServiceTestBase
                }
                if (i % 1000 == 0)
                {
-                  //System.out.println(Thread.currentThread().getName() + "::sent #" + i);
+                  // System.out.println(Thread.currentThread().getName() + "::sent #" + i);
                }
             }
-            
-            System.out.println("Thread " + Thread.currentThread().getName() + " received " + numberOfMessages + " messages");
-            
+
+            System.out.println("Thread " + Thread.currentThread().getName() +
+                               " received " +
+                               numberOfMessages +
+                               " messages");
+
             session.commit();
          }
          catch (Throwable e)

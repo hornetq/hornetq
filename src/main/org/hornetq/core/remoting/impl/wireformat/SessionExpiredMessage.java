@@ -14,7 +14,6 @@
 package org.hornetq.core.remoting.impl.wireformat;
 
 import org.hornetq.core.buffers.HornetQBuffer;
-import org.hornetq.utils.DataConstants;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -36,7 +35,7 @@ public class SessionExpiredMessage extends PacketImpl
 
    public SessionExpiredMessage(final long consumerID, final long messageID)
    {
-      super(SESS_EXPIRED);
+      super(PacketImpl.SESS_EXPIRED);
 
       this.consumerID = consumerID;
 
@@ -45,7 +44,7 @@ public class SessionExpiredMessage extends PacketImpl
 
    public SessionExpiredMessage()
    {
-      super(SESS_EXPIRED);
+      super(PacketImpl.SESS_EXPIRED);
    }
 
    // Public --------------------------------------------------------

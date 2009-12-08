@@ -12,8 +12,6 @@
  */
 package org.hornetq.javaee.example.server;
 
-import org.jboss.ejb3.annotation.ResourceAdapter;
-
 import javax.annotation.Resource;
 import javax.ejb.ActivationConfigProperty;
 import javax.ejb.MessageDriven;
@@ -29,16 +27,14 @@ import javax.transaction.SystemException;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 
+import org.jboss.ejb3.annotation.ResourceAdapter;
+
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  */
-@MessageDriven(name = "MDB_CMT_TxLocalExample",
-               activationConfig =
-                     {
-                           @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
-                           @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/testQueue"),
-                           @ActivationConfigProperty(propertyName = "useLocalTx", propertyValue = "true")
-                     })
+@MessageDriven(name = "MDB_CMT_TxLocalExample", activationConfig = { @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
+                                                                    @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/testQueue"),
+                                                                    @ActivationConfigProperty(propertyName = "useLocalTx", propertyValue = "true") })
 @TransactionManagement(value = TransactionManagementType.CONTAINER)
 @TransactionAttribute(value = TransactionAttributeType.NOT_SUPPORTED)
 @ResourceAdapter("hornetq-ra.rar")
@@ -47,21 +43,21 @@ public class MDB_CMT_TxLocalExample implements MessageListener
    @Resource(mappedName = "java:/TransactionManager")
    private TransactionManager tm;
 
-   public void onMessage(Message message)
+   public void onMessage(final Message message)
    {
       try
       {
-         //Step 9. We know the client is sending a text message so we cast
-         TextMessage textMessage = (TextMessage) message;
+         // Step 9. We know the client is sending a text message so we cast
+         TextMessage textMessage = (TextMessage)message;
 
-         //Step 10. get the text from the message.
+         // Step 10. get the text from the message.
          String text = textMessage.getText();
 
          System.out.println("message " + text + " received");
 
          if (!textMessage.getJMSRedelivered())
          {
-            //Step 11. On first delivery get the transaction, take a look, and throw an exception
+            // Step 11. On first delivery get the transaction, take a look, and throw an exception
             Transaction tx = tm.getTransaction();
 
             if (tx != null)
@@ -77,7 +73,7 @@ public class MDB_CMT_TxLocalExample implements MessageListener
          }
          else
          {
-            //Step 12. Print the message
+            // Step 12. Print the message
             System.out.println("The message was redelivered since the message delivery used a local transaction");
          }
 
@@ -86,7 +82,7 @@ public class MDB_CMT_TxLocalExample implements MessageListener
       {
          e.printStackTrace();
       }
-      catch(SystemException e)
+      catch (SystemException e)
       {
          e.printStackTrace();
       }

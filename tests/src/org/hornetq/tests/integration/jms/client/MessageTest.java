@@ -20,6 +20,8 @@ import javax.jms.MessageProducer;
 import javax.jms.Queue;
 import javax.jms.Session;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.logging.Logger;
 import org.hornetq.tests.util.JMSTestBase;
 
@@ -34,15 +36,17 @@ import org.hornetq.tests.util.JMSTestBase;
 public class MessageTest extends JMSTestBase
 {
    // Constants -----------------------------------------------------
-   
+
    private static final Logger log = Logger.getLogger(MessageTest.class);
-   
+
    private static final long TIMEOUT = 1000;
 
    private static final String propName1 = "myprop1";
+
    private static final String propName2 = "myprop2";
+
    private static final String propName3 = "myprop3";
-   
+
    // Attributes ----------------------------------------------------
 
    // Static --------------------------------------------------------
@@ -64,20 +68,20 @@ public class MessageTest extends JMSTestBase
          MessageProducer prod = sess.createProducer(queue);
 
          MessageConsumer cons = sess.createConsumer(queue);
-         
+
          conn.start();
 
          Message msg = sess.createMessage();
-                  
-         msg.setObjectProperty(propName1, null);
-         msg.setStringProperty(propName2, null);
-         
+
+         msg.setObjectProperty(MessageTest.propName1, null);
+         msg.setStringProperty(MessageTest.propName2, null);
+
          checkProperties(msg);
-         
+
          Message received = sendAndConsumeMessage(msg, prod, cons);
-         
-         assertNotNull(received);
-         
+
+         Assert.assertNotNull(received);
+
          checkProperties(received);
       }
       finally
@@ -100,71 +104,71 @@ public class MessageTest extends JMSTestBase
 
    private void checkProperties(final Message message) throws Exception
    {
-      assertNull(message.getObjectProperty(propName1));
-      assertNull(message.getStringProperty(propName1));
-      assertNull(message.getStringProperty(propName2));
-      assertNull(message.getObjectProperty(propName2));
-      assertNull(message.getStringProperty(propName3));
-      assertNull(message.getObjectProperty(propName3));
-      
+      Assert.assertNull(message.getObjectProperty(MessageTest.propName1));
+      Assert.assertNull(message.getStringProperty(MessageTest.propName1));
+      Assert.assertNull(message.getStringProperty(MessageTest.propName2));
+      Assert.assertNull(message.getObjectProperty(MessageTest.propName2));
+      Assert.assertNull(message.getStringProperty(MessageTest.propName3));
+      Assert.assertNull(message.getObjectProperty(MessageTest.propName3));
+
       try
       {
-         log.info(message.getIntProperty(propName1));
-         fail("Should throw exception");
+         MessageTest.log.info(message.getIntProperty(MessageTest.propName1));
+         Assert.fail("Should throw exception");
       }
       catch (NumberFormatException e)
       {
-         //Ok
+         // Ok
       }
-      
+
       try
       {
-         log.info(message.getShortProperty(propName1));
+         MessageTest.log.info(message.getShortProperty(MessageTest.propName1));
       }
       catch (NumberFormatException e)
       {
-         //Ok
+         // Ok
       }
       try
       {
-         log.info(message.getByteProperty(propName1));
+         MessageTest.log.info(message.getByteProperty(MessageTest.propName1));
       }
       catch (NumberFormatException e)
       {
-         //Ok
+         // Ok
       }
-      assertEquals(false, message.getBooleanProperty(propName1));
+      Assert.assertEquals(false, message.getBooleanProperty(MessageTest.propName1));
       try
       {
-         log.info(message.getLongProperty(propName1));
+         MessageTest.log.info(message.getLongProperty(MessageTest.propName1));
       }
       catch (NumberFormatException e)
       {
-         //Ok
+         // Ok
       }
       try
       {
-         log.info(message.getFloatProperty(propName1));
+         MessageTest.log.info(message.getFloatProperty(MessageTest.propName1));
       }
       catch (NullPointerException e)
       {
-         //Ok
+         // Ok
       }
       try
       {
-         log.info(message.getDoubleProperty(propName1));
+         MessageTest.log.info(message.getDoubleProperty(MessageTest.propName1));
       }
       catch (NullPointerException e)
       {
-         //Ok
+         // Ok
       }
    }
-   
+
    private Message sendAndConsumeMessage(final Message msg, final MessageProducer prod, final MessageConsumer cons) throws Exception
    {
       prod.send(msg);
 
-      Message received = cons.receive(TIMEOUT);
+      Message received = cons.receive(MessageTest.TIMEOUT);
 
       return received;
    }

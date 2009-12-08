@@ -12,6 +12,8 @@
  */
 package org.hornetq.tests.integration.client;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
@@ -57,8 +59,8 @@ public class NewDeadLetterAddressTest extends UnitTestCase
       ClientConsumer clientConsumer = clientSession.createConsumer(dlq);
       ClientMessage m = clientConsumer.receive(500);
       m.acknowledge();
-      assertNotNull(m);
-      assertEquals(m.getBodyBuffer().readString(), "heyho!");      
+      Assert.assertNotNull(m);
+      Assert.assertEquals(m.getBodyBuffer().readString(), "heyho!");
    }
 
    @Override
@@ -68,16 +70,16 @@ public class NewDeadLetterAddressTest extends UnitTestCase
 
       ConfigurationImpl configuration = new ConfigurationImpl();
       configuration.setSecurityEnabled(false);
-      TransportConfiguration transportConfig = new TransportConfiguration(INVM_ACCEPTOR_FACTORY);
+      TransportConfiguration transportConfig = new TransportConfiguration(UnitTestCase.INVM_ACCEPTOR_FACTORY);
       configuration.getAcceptorConfigurations().add(transportConfig);
       server = HornetQ.newHornetQServer(configuration, false);
       // start the server
       server.start();
       // then we create a client as normal
-      ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(INVM_CONNECTOR_FACTORY));
+      ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
       clientSession = sessionFactory.createSession(false, true, false);
    }
-     
+
    @Override
    protected void tearDown() throws Exception
    {

@@ -35,7 +35,7 @@ public class QueueControlUsingCoreTest extends QueueControlTest
 {
 
    // Constants -----------------------------------------------------
-   
+
    private static final Logger log = Logger.getLogger(QueueControlUsingCoreTest.class);
 
    // Attributes ----------------------------------------------------
@@ -53,30 +53,29 @@ public class QueueControlUsingCoreTest extends QueueControlTest
    {
       return new QueueControl()
       {
-         private final CoreMessagingProxy proxy = new CoreMessagingProxy(session,
-                                                                         ResourceNames.CORE_QUEUE + queue);
+         private final CoreMessagingProxy proxy = new CoreMessagingProxy(session, ResourceNames.CORE_QUEUE + queue);
 
-         public boolean changeMessagePriority(long messageID, int newPriority) throws Exception
+         public boolean changeMessagePriority(final long messageID, final int newPriority) throws Exception
          {
             return (Boolean)proxy.invokeOperation("changeMessagePriority", messageID, newPriority);
          }
 
-         public int changeMessagesPriority(String filter, int newPriority) throws Exception
+         public int changeMessagesPriority(final String filter, final int newPriority) throws Exception
          {
             return (Integer)proxy.invokeOperation("changeMessagesPriority", filter, newPriority);
          }
 
-         public int countMessages(String filter) throws Exception
+         public int countMessages(final String filter) throws Exception
          {
             return (Integer)proxy.invokeOperation("countMessages", filter);
          }
 
-         public boolean expireMessage(long messageID) throws Exception
+         public boolean expireMessage(final long messageID) throws Exception
          {
             return (Boolean)proxy.invokeOperation("expireMessage", messageID);
          }
 
-         public int expireMessages(String filter) throws Exception
+         public int expireMessages(final String filter) throws Exception
          {
             return (Integer)proxy.invokeOperation("expireMessages", filter);
          }
@@ -136,11 +135,6 @@ public class QueueControlUsingCoreTest extends QueueControlTest
             return (Long)proxy.retrieveAttributeValue("scheduledCount", Long.class);
          }
 
-         public boolean isBackup()
-         {
-            return (Boolean)proxy.retrieveAttributeValue("backup");
-         }
-
          public boolean isDurable()
          {
             return (Boolean)proxy.retrieveAttributeValue("durable");
@@ -171,7 +165,7 @@ public class QueueControlUsingCoreTest extends QueueControlTest
             return (String)proxy.invokeOperation("listMessageCounterHistoryAsHTML");
          }
 
-         public Map<String, Object>[] listMessages(String filter) throws Exception
+         public Map<String, Object>[] listMessages(final String filter) throws Exception
          {
             Object[] res = (Object[])proxy.invokeOperation("listMessages", filter);
             Map<String, Object>[] results = new Map[res.length];
@@ -182,7 +176,7 @@ public class QueueControlUsingCoreTest extends QueueControlTest
             return results;
          }
 
-         public String listMessagesAsJSON(String filter) throws Exception
+         public String listMessagesAsJSON(final String filter) throws Exception
          {
             return (String)proxy.invokeOperation("listMessagesAsJSON", filter);
          }
@@ -203,22 +197,22 @@ public class QueueControlUsingCoreTest extends QueueControlTest
             return (String)proxy.invokeOperation("listScheduledMessagesAsJSON");
          }
 
-         public int moveMessages(String filter, String otherQueueName) throws Exception
+         public int moveMessages(final String filter, final String otherQueueName) throws Exception
          {
             return (Integer)proxy.invokeOperation("moveMessages", filter, otherQueueName);
          }
 
-         public boolean moveMessage(long messageID, String otherQueueName) throws Exception
+         public boolean moveMessage(final long messageID, final String otherQueueName) throws Exception
          {
             return (Boolean)proxy.invokeOperation("moveMessage", messageID, otherQueueName);
          }
 
-         public int removeMessages(String filter) throws Exception
+         public int removeMessages(final String filter) throws Exception
          {
             return (Integer)proxy.invokeOperation("removeMessages", filter);
          }
 
-         public boolean removeMessage(long messageID) throws Exception
+         public boolean removeMessage(final long messageID) throws Exception
          {
             return (Boolean)proxy.invokeOperation("removeMessage", messageID);
          }
@@ -228,22 +222,22 @@ public class QueueControlUsingCoreTest extends QueueControlTest
             proxy.invokeOperation("resetMessageCounter");
          }
 
-         public boolean sendMessageToDeadLetterAddress(long messageID) throws Exception
+         public boolean sendMessageToDeadLetterAddress(final long messageID) throws Exception
          {
             return (Boolean)proxy.invokeOperation("sendMessageToDeadLetterAddress", messageID);
          }
 
-         public int sendMessagesToDeadLetterAddress(String filterStr) throws Exception
+         public int sendMessagesToDeadLetterAddress(final String filterStr) throws Exception
          {
             return (Integer)proxy.invokeOperation("sendMessagesToDeadLetterAddress", filterStr);
          }
 
-         public void setDeadLetterAddress(String deadLetterAddress) throws Exception
+         public void setDeadLetterAddress(final String deadLetterAddress) throws Exception
          {
             proxy.invokeOperation("setDeadLetterAddress", deadLetterAddress);
          }
 
-         public void setExpiryAddress(String expiryAddres) throws Exception
+         public void setExpiryAddress(final String expiryAddres) throws Exception
          {
             proxy.invokeOperation("setExpiryAddress", expiryAddres);
          }
@@ -287,12 +281,12 @@ public class QueueControlUsingCoreTest extends QueueControlTest
       {
          session.close();
       }
-      
+
       session = null;
-      
+
       super.tearDown();
    }
-   
+
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------

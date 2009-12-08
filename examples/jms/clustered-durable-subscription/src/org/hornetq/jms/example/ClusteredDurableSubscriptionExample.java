@@ -33,21 +33,22 @@ import org.hornetq.common.example.HornetQExample;
  */
 public class ClusteredDurableSubscriptionExample extends HornetQExample
 {
-   public static void main(String[] args)
+   public static void main(final String[] args)
    {
       new ClusteredDurableSubscriptionExample().run(args);
    }
 
+   @Override
    public boolean runExample() throws Exception
    {
       Connection connection0 = null;
 
       Connection connection1 = null;
-      
+
       InitialContext ic0 = null;
 
       InitialContext ic1 = null;
-      
+
       try
       {
          // Step 1. Get an initial context for looking up JNDI from server 0
@@ -68,15 +69,15 @@ public class ClusteredDurableSubscriptionExample extends HornetQExample
          // Step 6. We create a JMS Connection connection0 which is a connection to server 0
          // and set the client-id
          connection0 = cf0.createConnection();
-         
+
          final String clientID = "my-client-id";
-         
+
          connection0.setClientID(clientID);
 
          // Step 7. We create a JMS Connection connection1 which is a connection to server 1
          // and set the same client-id
          connection1 = cf1.createConnection();
-         
+
          connection1.setClientID(clientID);
 
          // Step 8. We create a JMS Session on server 0
@@ -92,9 +93,9 @@ public class ClusteredDurableSubscriptionExample extends HornetQExample
 
          // Step 11. We create JMS durable subscriptions with the same name and client-id on both nodes
          // of the cluster
-         
+
          final String subscriptionName = "my-subscription";
-         
+
          MessageConsumer subscriber0 = session0.createDurableSubscriber(topic, subscriptionName);
 
          MessageConsumer subscriber1 = session1.createDurableSubscriber(topic, subscriptionName);
@@ -120,9 +121,10 @@ public class ClusteredDurableSubscriptionExample extends HornetQExample
          // Step 14. We now consume those messages on *both* server 0 and server 1.
          // Note that the messages have been load-balanced between the two nodes, with some
          // messages on node 0 and others on node 1.
-         // The "logical" subscription is distributed across the cluster an contains exactly one copy of all the messages
+         // The "logical" subscription is distributed across the cluster an contains exactly one copy of all the
+         // messages
 
-         for (int i = 0; i < numMessages; i +=2)
+         for (int i = 0; i < numMessages; i += 2)
          {
             TextMessage message0 = (TextMessage)subscriber0.receive(5000);
 
@@ -147,7 +149,7 @@ public class ClusteredDurableSubscriptionExample extends HornetQExample
          {
             connection1.close();
          }
-         
+
          if (ic0 != null)
          {
             ic0.close();

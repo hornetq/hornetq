@@ -30,6 +30,8 @@ import javax.jms.TopicSession;
 import javax.jms.XAConnection;
 import javax.jms.XASession;
 
+import org.hornetq.jms.tests.util.ProxyAssertSupport;
+
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -53,7 +55,7 @@ public class SessionTest extends HornetQServerTestCase
    {
       Connection conn = getConnectionFactory().createConnection();
       Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      sess.createProducer(topic1);
+      sess.createProducer(HornetQServerTestCase.topic1);
       conn.close();
    }
 
@@ -65,15 +67,15 @@ public class SessionTest extends HornetQServerTestCase
 
       MessageProducer p = sess.createProducer(null);
 
-      p.send(queue1, m);
+      p.send(HornetQServerTestCase.queue1, m);
 
-      MessageConsumer c = sess.createConsumer(queue1);
+      MessageConsumer c = sess.createConsumer(HornetQServerTestCase.queue1);
       conn.start();
 
       // receiveNoWait is not guaranteed to return message immediately
       TextMessage rm = (TextMessage)c.receive(1000);
 
-      assertEquals("something", rm.getText());
+      ProxyAssertSupport.assertEquals("something", rm.getText());
 
       conn.close();
    }
@@ -83,7 +85,7 @@ public class SessionTest extends HornetQServerTestCase
       Connection conn = getConnectionFactory().createConnection();
       Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-      sess.createConsumer(topic1);
+      sess.createConsumer(HornetQServerTestCase.topic1);
       conn.close();
    }
 
@@ -95,7 +97,7 @@ public class SessionTest extends HornetQServerTestCase
       try
       {
          ((XASession)sess).getSession();
-         fail("Should throw IllegalStateException");
+         ProxyAssertSupport.fail("Should throw IllegalStateException");
       }
       catch (javax.jms.IllegalStateException e)
       {
@@ -123,7 +125,7 @@ public class SessionTest extends HornetQServerTestCase
       try
       {
          sess.createQueue("QueueThatDoesNotExist");
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (JMSException e)
       {
@@ -139,7 +141,7 @@ public class SessionTest extends HornetQServerTestCase
       try
       {
          s.createQueue("TestQueue");
-         fail("should throw IllegalStateException");
+         ProxyAssertSupport.fail("should throw IllegalStateException");
       }
       catch (javax.jms.IllegalStateException e)
       {
@@ -155,7 +157,7 @@ public class SessionTest extends HornetQServerTestCase
       try
       {
          sess.createQueue("TestTopic");
-         fail("should throw JMSException");
+         ProxyAssertSupport.fail("should throw JMSException");
       }
       catch (JMSException e)
       {
@@ -179,7 +181,7 @@ public class SessionTest extends HornetQServerTestCase
 
       Message m2 = consumer.receive(3000);
 
-      assertNotNull(m2);
+      ProxyAssertSupport.assertNotNull(m2);
       conn.close();
    }
 
@@ -190,7 +192,7 @@ public class SessionTest extends HornetQServerTestCase
       try
       {
          sess.createTopic("TopicThatDoesNotExist");
-         fail("should throw JMSException");
+         ProxyAssertSupport.fail("should throw JMSException");
       }
       catch (JMSException e)
       {
@@ -207,7 +209,7 @@ public class SessionTest extends HornetQServerTestCase
       try
       {
          s.createTopic("TestTopic");
-         fail("should throw IllegalStateException");
+         ProxyAssertSupport.fail("should throw IllegalStateException");
       }
       catch (javax.jms.IllegalStateException e)
       {
@@ -223,7 +225,7 @@ public class SessionTest extends HornetQServerTestCase
       try
       {
          sess.createTopic("TestQueue");
-         fail("should throw JMSException");
+         ProxyAssertSupport.fail("should throw JMSException");
       }
       catch (JMSException e)
       {
@@ -253,7 +255,7 @@ public class SessionTest extends HornetQServerTestCase
 
          MessageConsumer consumer;
 
-         TestRunnable(MessageConsumer consumer)
+         TestRunnable(final MessageConsumer consumer)
          {
             this.consumer = consumer;
          }
@@ -280,8 +282,8 @@ public class SessionTest extends HornetQServerTestCase
 
       t1.join();
 
-      assertFalse(tr1.exceptionThrown);
-      assertNotNull(tr1.m);
+      ProxyAssertSupport.assertFalse(tr1.exceptionThrown);
+      ProxyAssertSupport.assertNotNull(tr1.m);
 
       conn.close();
    }
@@ -311,7 +313,7 @@ public class SessionTest extends HornetQServerTestCase
       Connection conn = getConnectionFactory().createConnection();
       Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-      MessageProducer prod = sess.createProducer(queue1);
+      MessageProducer prod = sess.createProducer(HornetQServerTestCase.queue1);
       prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       Message m = sess.createTextMessage("hello");
       prod.send(m);
@@ -319,7 +321,7 @@ public class SessionTest extends HornetQServerTestCase
       try
       {
          sess.rollback();
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (javax.jms.IllegalStateException e)
       {
@@ -328,7 +330,7 @@ public class SessionTest extends HornetQServerTestCase
       try
       {
          sess.commit();
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (javax.jms.IllegalStateException e)
       {
@@ -336,7 +338,7 @@ public class SessionTest extends HornetQServerTestCase
 
       conn.close();
 
-      removeAllMessages(queue1.getQueueName(), true);
+      removeAllMessages(HornetQServerTestCase.queue1.getQueueName(), true);
    }
 
    //
@@ -347,13 +349,13 @@ public class SessionTest extends HornetQServerTestCase
    {
       Connection conn = getConnectionFactory().createConnection();
       Session sessionOne = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
-      assertFalse(sessionOne.getTransacted());
+      ProxyAssertSupport.assertFalse(sessionOne.getTransacted());
       Session sessionTwo = conn.createSession(true, -1);
-      assertTrue(sessionTwo.getTransacted());
+      ProxyAssertSupport.assertTrue(sessionTwo.getTransacted());
 
       // this test whether session's transacted state is correctly scoped per instance (by an
       // interceptor or othewise)
-      assertFalse(sessionOne.getTransacted());
+      ProxyAssertSupport.assertFalse(sessionOne.getTransacted());
 
       conn.close();
    }
@@ -378,16 +380,16 @@ public class SessionTest extends HornetQServerTestCase
 
       Connection conn = getConnectionFactory().createConnection();
       Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      s.createProducer(queue1).send(s.createTextMessage("wont_ack"));
+      s.createProducer(HornetQServerTestCase.queue1).send(s.createTextMessage("wont_ack"));
       conn.close();
 
       conn = getConnectionFactory().createConnection();
       s = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
       conn.start();
 
-      TextMessage m = (TextMessage)s.createConsumer(queue1).receive(1000);
+      TextMessage m = (TextMessage)s.createConsumer(HornetQServerTestCase.queue1).receive(1000);
 
-      assertEquals("wont_ack", m.getText());
+      ProxyAssertSupport.assertEquals("wont_ack", m.getText());
 
       // Do NOT ACK
 
@@ -395,9 +397,9 @@ public class SessionTest extends HornetQServerTestCase
 
       // get the message again
       s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      m = (TextMessage)s.createConsumer(queue1).receive(1000);
+      m = (TextMessage)s.createConsumer(HornetQServerTestCase.queue1).receive(1000);
 
-      assertEquals("wont_ack", m.getText());
+      ProxyAssertSupport.assertEquals("wont_ack", m.getText());
 
       conn.close();
    }
@@ -408,16 +410,16 @@ public class SessionTest extends HornetQServerTestCase
 
       Connection conn = getConnectionFactory().createConnection();
       Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      s.createProducer(queue1).send(s.createTextMessage("bex"));
+      s.createProducer(HornetQServerTestCase.queue1).send(s.createTextMessage("bex"));
       conn.close();
 
       conn = getConnectionFactory().createConnection();
       Session session = conn.createSession(true, -1);
       conn.start();
 
-      TextMessage m = (TextMessage)session.createConsumer(queue1).receive(1000);
+      TextMessage m = (TextMessage)session.createConsumer(HornetQServerTestCase.queue1).receive(1000);
 
-      assertEquals("bex", m.getText());
+      ProxyAssertSupport.assertEquals("bex", m.getText());
 
       // make sure the acknowledment hasn't been sent to the channel
       assertRemainingMessages(1);
@@ -436,9 +438,9 @@ public class SessionTest extends HornetQServerTestCase
       conn = getConnectionFactory().createConnection();
       s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       conn.start();
-      TextMessage rm = (TextMessage)s.createConsumer(queue1).receive(1000);
+      TextMessage rm = (TextMessage)s.createConsumer(HornetQServerTestCase.queue1).receive(1000);
 
-      assertEquals("bex", rm.getText());
+      ProxyAssertSupport.assertEquals("bex", rm.getText());
 
       conn.close();
    }

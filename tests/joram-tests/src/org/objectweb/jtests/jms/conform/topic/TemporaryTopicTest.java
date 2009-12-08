@@ -19,6 +19,7 @@ import javax.jms.TemporaryTopic;
 import javax.jms.TextMessage;
 import javax.jms.TopicSubscriber;
 
+import junit.framework.Assert;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
@@ -50,7 +51,7 @@ public class TemporaryTopicTest extends PubSubTestCase
          subscriberConnection.stop();
          // we create a temporary topic to receive messages
          tempTopic = subscriberSession.createTemporaryTopic();
-         // we recreate the sender because it has been 
+         // we recreate the sender because it has been
          // already created with another Destination as parameter
          publisher = publisherSession.createPublisher(tempTopic);
          // we create a temporary subscriber on the temporary topic
@@ -63,9 +64,9 @@ public class TemporaryTopicTest extends PubSubTestCase
          publisher.publish(message);
 
          Message m = tempSubscriber.receive(TestConfig.TIMEOUT);
-         assertTrue(m instanceof TextMessage);
-         TextMessage msg = (TextMessage) m;
-         assertEquals("testTemporaryTopic", msg.getText());
+         Assert.assertTrue(m instanceof TextMessage);
+         TextMessage msg = (TextMessage)m;
+         Assert.assertEquals("testTemporaryTopic", msg.getText());
       }
       catch (JMSException e)
       {
@@ -81,7 +82,7 @@ public class TemporaryTopicTest extends PubSubTestCase
       return new TestSuite(TemporaryTopicTest.class);
    }
 
-   public TemporaryTopicTest(String name)
+   public TemporaryTopicTest(final String name)
    {
       super(name);
    }

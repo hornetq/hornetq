@@ -37,45 +37,47 @@ import org.hornetq.jms.client.HornetQMessage;
  */
 public class MessageGroupExample extends HornetQExample
 {
-   private Map<String, String> messageReceiverMap = new ConcurrentHashMap<String, String>();
+   private final Map<String, String> messageReceiverMap = new ConcurrentHashMap<String, String>();
+
    private boolean result = true;
-   
-   public static void main(String[] args)
+
+   public static void main(final String[] args)
    {
       new MessageGroupExample().run(args);
    }
 
+   @Override
    public boolean runExample() throws Exception
    {
       Connection connection = null;
       InitialContext initialContext = null;
       try
       {
-         //Step 1. Create an initial context to perform the JNDI lookup.
+         // Step 1. Create an initial context to perform the JNDI lookup.
          initialContext = getContext(0);
 
-         //Step 2. Perform a lookup on the queue
-         Queue queue = (Queue) initialContext.lookup("/queue/exampleQueue");
+         // Step 2. Perform a lookup on the queue
+         Queue queue = (Queue)initialContext.lookup("/queue/exampleQueue");
 
-         //Step 3. Perform a lookup on the Connection Factory
-         ConnectionFactory cf = (ConnectionFactory) initialContext.lookup("/ConnectionFactory");
+         // Step 3. Perform a lookup on the Connection Factory
+         ConnectionFactory cf = (ConnectionFactory)initialContext.lookup("/ConnectionFactory");
 
-         //Step 4. Create a JMS Connection
+         // Step 4. Create a JMS Connection
          connection = cf.createConnection();
-         
-         //Step 5. Create a JMS Session
+
+         // Step 5. Create a JMS Session
          Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         //Step 6. Create a JMS Message Producer
+         // Step 6. Create a JMS Message Producer
          MessageProducer producer = session.createProducer(queue);
-         
-         //Step 7. Create two consumers
+
+         // Step 7. Create two consumers
          MessageConsumer consumer1 = session.createConsumer(queue);
          consumer1.setMessageListener(new SimpleMessageListener("consumer-1"));
          MessageConsumer consumer2 = session.createConsumer(queue);
          consumer2.setMessageListener(new SimpleMessageListener("consumer-2"));
-         
-         //Step 8. Create and send 10 text messages with group id 'Group-0'
+
+         // Step 8. Create and send 10 text messages with group id 'Group-0'
          int msgCount = 10;
          TextMessage[] groupMessages = new TextMessage[msgCount];
          for (int i = 0; i < msgCount; i++)
@@ -87,13 +89,13 @@ public class MessageGroupExample extends HornetQExample
          }
 
          System.out.println("all messages are sent");
-         
-         //Step 9. Start the connection
+
+         // Step 9. Start the connection
          connection.start();
-         
+
          Thread.sleep(2000);
-         
-         //Step 10. check the group messages are received by only one consumer
+
+         // Step 10. check the group messages are received by only one consumer
          String trueReceiver = messageReceiverMap.get(groupMessages[0].getText());
          for (TextMessage grpMsg : groupMessages)
          {
@@ -109,35 +111,33 @@ public class MessageGroupExample extends HornetQExample
       }
       finally
       {
-         //Step 11. Be sure to close our JMS resources!
+         // Step 11. Be sure to close our JMS resources!
          if (initialContext != null)
          {
             initialContext.close();
          }
-         if(connection != null)
+         if (connection != null)
          {
             connection.close();
          }
       }
    }
-   
+
    private class SimpleMessageListener implements MessageListener
    {
-      private String name;
-      
-      public SimpleMessageListener(String listenerName)
+      private final String name;
+
+      public SimpleMessageListener(final String listenerName)
       {
          name = listenerName;
       }
 
-      public void onMessage(Message message)
+      public void onMessage(final Message message)
       {
          try
          {
             TextMessage msg = (TextMessage)message;
-            System.out.format("Message: [%s] received by %s\n",
-                              msg.getText(),
-                              name);
+            System.out.format("Message: [%s] received by %s\n", msg.getText(), name);
             messageReceiverMap.put(msg.getText(), name);
          }
          catch (JMSException e)

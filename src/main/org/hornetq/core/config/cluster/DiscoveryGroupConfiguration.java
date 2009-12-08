@@ -11,7 +11,6 @@
  * permissions and limitations under the License.
  */
 
-
 package org.hornetq.core.config.cluster;
 
 import java.io.Serializable;
@@ -30,14 +29,14 @@ public class DiscoveryGroupConfiguration implements Serializable
    private static final long serialVersionUID = 8657206421727863400L;
 
    private String name;
-   
+
    private String groupAddress;
-   
+
    private int groupPort;
-   
+
    private long refreshTimeout;
 
-   public DiscoveryGroupConfiguration(final String name,                      
+   public DiscoveryGroupConfiguration(final String name,
                                       final String groupAddress,
                                       final int groupPort,
                                       final long refreshTimeout)
@@ -71,7 +70,7 @@ public class DiscoveryGroupConfiguration implements Serializable
    /**
     * @param name the name to set
     */
-   public void setName(String name)
+   public void setName(final String name)
    {
       this.name = name;
    }
@@ -79,7 +78,7 @@ public class DiscoveryGroupConfiguration implements Serializable
    /**
     * @param groupAddress the groupAddress to set
     */
-   public void setGroupAddress(String groupAddress)
+   public void setGroupAddress(final String groupAddress)
    {
       this.groupAddress = groupAddress;
    }
@@ -87,7 +86,7 @@ public class DiscoveryGroupConfiguration implements Serializable
    /**
     * @param groupPort the groupPort to set
     */
-   public void setGroupPort(int groupPort)
+   public void setGroupPort(final int groupPort)
    {
       this.groupPort = groupPort;
    }
@@ -95,7 +94,7 @@ public class DiscoveryGroupConfiguration implements Serializable
    /**
     * @param refreshTimeout the refreshTimeout to set
     */
-   public void setRefreshTimeout(long refreshTimeout)
+   public void setRefreshTimeout(final long refreshTimeout)
    {
       this.refreshTimeout = refreshTimeout;
    }

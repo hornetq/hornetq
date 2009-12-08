@@ -35,11 +35,12 @@ import org.hornetq.jms.server.management.impl.JMSManagementHelper;
  */
 public class ReattachExample extends HornetQExample
 {
-   public static void main(String[] args)
+   public static void main(final String[] args)
    {
       new ReattachExample().run(args);
    }
 
+   @Override
    public boolean runExample() throws Exception
    {
       Connection connection = null;
@@ -116,20 +117,20 @@ public class ReattachExample extends HornetQExample
       }
    }
 
-   private void stopAcceptor(InitialContext ic) throws Exception
+   private void stopAcceptor(final InitialContext ic) throws Exception
    {
-      this.stopStartAcceptor(ic, true);
+      stopStartAcceptor(ic, true);
    }
 
-   private void startAcceptor(InitialContext ic) throws Exception
+   private void startAcceptor(final InitialContext ic) throws Exception
    {
-      this.stopStartAcceptor(ic, false);
+      stopStartAcceptor(ic, false);
    }
 
    // To do this we send a management message to close the acceptor, we do this on a different
    // connection factory which uses a different remoting connection so we can still send messages
    // when the main connection has been stopped
-   private void stopStartAcceptor(InitialContext initialContext, boolean stop) throws Exception
+   private void stopStartAcceptor(final InitialContext initialContext, final boolean stop) throws Exception
    {
       ConnectionFactory cf = (ConnectionFactory)initialContext.lookup("/ConnectionFactory2");
 

@@ -13,6 +13,8 @@
 
 package org.hornetq.tests.integration.client;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.buffers.HornetQBuffer;
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
@@ -71,7 +73,7 @@ public class CoreClientTest extends UnitTestCase
       server.start();
 
       ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(connectorFactoryClassName));
-     // sf.setConsumerWindowSize(0);
+      // sf.setConsumerWindowSize(0);
 
       ClientSession session = sf.createSession(false, true, true);
 
@@ -82,7 +84,7 @@ public class CoreClientTest extends UnitTestCase
       final int numMessages = 1000;
 
       for (int i = 0; i < numMessages; i++)
-      {         
+      {
          ClientMessage message = session.createClientMessage(HornetQTextMessage.TYPE,
                                                              false,
                                                              0,
@@ -91,32 +93,32 @@ public class CoreClientTest extends UnitTestCase
 
          message.putStringProperty("foo", "bar");
 
-         //One way around the setting destination problem is as follows -
-         //Remove destination as an attribute from client producer.
-         //The destination always has to be set explicity before sending a message
-         
+         // One way around the setting destination problem is as follows -
+         // Remove destination as an attribute from client producer.
+         // The destination always has to be set explicity before sending a message
+
          message.setDestination(QUEUE);
-         
+
          message.getBodyBuffer().writeString("testINVMCoreClient");
 
          producer.send(message);
       }
 
-      log.info("sent messages");
-      
+      CoreClientTest.log.info("sent messages");
+
       ClientConsumer consumer = session.createConsumer(QUEUE);
-      
+
       session.start();
 
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message2 = consumer.receive();
-         
-        // log.info("got message " + i);
-         
+
+         // log.info("got message " + i);
+
          HornetQBuffer buffer = message2.getBodyBuffer();
-         
-         assertEquals("testINVMCoreClient", buffer.readString());
+
+         Assert.assertEquals("testINVMCoreClient", buffer.readString());
 
          message2.acknowledge();
       }

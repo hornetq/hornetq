@@ -9,7 +9,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
  * implied.  See the License for the specific language governing
  * permissions and limitations under the License.
- */ 
+ */
 
 package org.hornetq.jms.bridge;
 
@@ -25,5 +25,5 @@ import javax.jms.Destination;
  */
 public interface DestinationFactory
 {
-	Destination createDestination() throws Exception;
+   Destination createDestination() throws Exception;
 }

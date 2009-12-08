@@ -11,7 +11,6 @@
  * permissions and limitations under the License.
  */
 
-
 package org.hornetq.jms.client;
 
 import java.util.Enumeration;
@@ -45,23 +44,23 @@ public class HornetQQueueBrowser implements QueueBrowser
 
    // Attributes -----------------------------------------------------------------------------------
 
-   private ClientSession session;
+   private final ClientSession session;
 
    private ClientConsumer consumer;
 
-   private HornetQQueue queue;
+   private final HornetQQueue queue;
 
    private SimpleString filterString;
 
    // Constructors ---------------------------------------------------------------------------------
 
-   public HornetQQueueBrowser(HornetQQueue queue, String messageSelector, ClientSession session) throws JMSException
+   public HornetQQueueBrowser(final HornetQQueue queue, final String messageSelector, final ClientSession session) throws JMSException
    {
       this.session = session;
       this.queue = queue;
       if (messageSelector != null)
       {
-         this.filterString = new SimpleString(SelectorTranslator.convertToHornetQFilterString(messageSelector));
+         filterString = new SimpleString(SelectorTranslator.convertToHornetQFilterString(messageSelector));
       }
    }
 
@@ -111,6 +110,7 @@ public class HornetQQueueBrowser implements QueueBrowser
 
    // Public ---------------------------------------------------------------------------------------
 
+   @Override
    public String toString()
    {
       return "HornetQQueueBrowser->" + consumer;
@@ -158,7 +158,7 @@ public class HornetQQueueBrowser implements QueueBrowser
             }
             catch (Exception e)
             {
-               log.error("Failed to create message", e);
+               HornetQQueueBrowser.log.error("Failed to create message", e);
 
                return null;
             }

@@ -13,6 +13,8 @@
 
 package org.hornetq.tests.unit.core.config.impl;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.config.impl.FileConfiguration;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.XMLUtil;
@@ -42,22 +44,21 @@ public class ConfigurationValidationTest extends UnitTestCase
 
    public void testMinimalConfiguration() throws Exception
    {
-      String xml = "<configuration xmlns='urn:hornetq'>" 
-                 + "</configuration>";
+      String xml = "<configuration xmlns='urn:hornetq'>" + "</configuration>";
       Element element = org.hornetq.utils.XMLUtil.stringToElement(xml);
-      assertNotNull(element);
+      Assert.assertNotNull(element);
       element = XMLUtil.stringToElement(xml);
-      assertNotNull(element);
+      Assert.assertNotNull(element);
       XMLUtil.validate(element, "hornetq-configuration.xsd");
    }
 
    public void testFullConfiguration() throws Exception
    {
-      FileConfiguration fc = new FileConfiguration();      
-      fc.setConfigurationUrl("ConfigurationTest-full-config.xml");      
+      FileConfiguration fc = new FileConfiguration();
+      fc.setConfigurationUrl("ConfigurationTest-full-config.xml");
       fc.start();
-      
-      assertEquals(true, fc.isPersistDeliveryCountBeforeDelivery());
+
+      Assert.assertEquals(true, fc.isPersistDeliveryCountBeforeDelivery());
    }
 
    // Package protected ---------------------------------------------

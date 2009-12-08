@@ -13,7 +13,6 @@
 
 package org.hornetq.tests.integration.client;
 
-
 /**
  * A NettyConsumerWindowSizeTest
  *
@@ -27,12 +26,13 @@ public class NettyConsumerWindowSizeTest extends ConsumerWindowSizeTest
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
-   
+
+   @Override
    protected boolean isNetty()
    {
       return true;
    }
-   
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------

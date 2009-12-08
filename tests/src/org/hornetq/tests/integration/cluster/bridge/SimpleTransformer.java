@@ -11,7 +11,6 @@
  * permissions and limitations under the License.
  */
 
-
 package org.hornetq.tests.integration.cluster.bridge;
 
 import org.hornetq.core.buffers.HornetQBuffer;
@@ -32,35 +31,35 @@ import org.hornetq.utils.SimpleString;
 public class SimpleTransformer implements Transformer
 {
    private static final Logger log = Logger.getLogger(SimpleTransformer.class);
-   
+
    public ServerMessage transform(final ServerMessage message)
    {
       SimpleString oldProp = (SimpleString)message.getObjectProperty(new SimpleString("wibble"));
-      
+
       if (!oldProp.equals(new SimpleString("bing")))
       {
          throw new IllegalStateException("Wrong property value!!");
       }
-      
-      //Change a property
+
+      // Change a property
       message.putStringProperty(new SimpleString("wibble"), new SimpleString("bong"));
-      
-      //Change the body
+
+      // Change the body
       HornetQBuffer buffer = message.getBodyBuffer();
-      
+
       buffer.readerIndex(0);
-      
+
       String str = buffer.readString();
-      
+
       if (!str.equals("doo be doo be doo be doo"))
       {
          throw new IllegalStateException("Wrong body!!");
       }
-      
+
       buffer.clear();
-      
+
       buffer.writeString("dee be dee be dee be dee");
-      
+
       return message;
    }
 

@@ -33,7 +33,7 @@ import javax.naming.InitialContext;
  */
 public class JMSBridgeExample
 {
-   public static void main(String[] args) throws Exception
+   public static void main(final String[] args) throws Exception
    {
       if (args.length != 2)
       {
@@ -47,8 +47,8 @@ public class JMSBridgeExample
                          targetServer);
 
       // Step 1. Create JNDI contexts for source and target servers
-      InitialContext sourceContext = createContext(sourceServer);
-      InitialContext targetContext = createContext(targetServer);
+      InitialContext sourceContext = JMSBridgeExample.createContext(sourceServer);
+      InitialContext targetContext = JMSBridgeExample.createContext(targetServer);
 
       Connection sourceConnection = null;
       Connection targetConnection = null;
@@ -118,7 +118,7 @@ public class JMSBridgeExample
       }
    }
 
-   private static InitialContext createContext(String server) throws Exception
+   private static InitialContext createContext(final String server) throws Exception
    {
       String jndiURL = "jnp://" + server + ":1099";
       Hashtable<String, String> jndiProps = new Hashtable<String, String>();

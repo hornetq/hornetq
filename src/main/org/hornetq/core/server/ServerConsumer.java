@@ -9,7 +9,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
  * implied.  See the License for the specific language governing
  * permissions and limitations under the License.
- */ 
+ */
 
 package org.hornetq.core.server;
 
@@ -26,21 +26,21 @@ import org.hornetq.core.transaction.Transaction;
  */
 public interface ServerConsumer extends Consumer
 {
-	long getID();
-	
-	void close() throws Exception;
-	
-	List<MessageReference> cancelRefs(boolean lastConsumedAsDelivered, Transaction tx) throws Exception;
-	
-	void setStarted(boolean started);
-	
-	void receiveCredits(int credits) throws Exception;
-	
-	Queue getQueue();
+   long getID();
 
-	MessageReference getExpired(long messageID) throws Exception;
-	
-	void acknowledge(boolean autoCommitAcks, Transaction tx, long messageID) throws Exception;
+   void close() throws Exception;
+
+   List<MessageReference> cancelRefs(boolean lastConsumedAsDelivered, Transaction tx) throws Exception;
+
+   void setStarted(boolean started);
+
+   void receiveCredits(int credits) throws Exception;
+
+   Queue getQueue();
+
+   MessageReference getExpired(long messageID) throws Exception;
+
+   void acknowledge(boolean autoCommitAcks, Transaction tx, long messageID) throws Exception;
 
    void forceDelivery(long sequence);
 }

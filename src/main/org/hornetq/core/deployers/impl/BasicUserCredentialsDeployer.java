@@ -47,26 +47,30 @@ public class BasicUserCredentialsDeployer extends XmlDeployer
       this.hornetQSecurityManager = hornetQSecurityManager;
    }
 
+   @Override
    public String[] getElementTagName()
    {
-      return new String[] { DEFAULT_USER, USER };
+      return new String[] { BasicUserCredentialsDeployer.DEFAULT_USER, BasicUserCredentialsDeployer.USER };
    }
 
    @Override
-   public void validate(Node rootNode) throws Exception
+   public void validate(final Node rootNode) throws Exception
    {
       org.hornetq.utils.XMLUtil.validate(rootNode, "schema/hornetq-users.xsd");
    }
 
+   @Override
    public void deploy(final Node node) throws Exception
    {
       String username = node.getAttributes().getNamedItem(getKeyAttribute()).getNodeValue();
-      String password = node.getAttributes().getNamedItem(PASSWORD_ATTRIBUTE).getNodeValue();
+      String password = node.getAttributes()
+                            .getNamedItem(BasicUserCredentialsDeployer.PASSWORD_ATTRIBUTE)
+                            .getNodeValue();
 
       // add the user
       hornetQSecurityManager.addUser(username, password);
       String nodeName = node.getNodeName();
-      if (DEFAULT_USER.equalsIgnoreCase(nodeName))
+      if (BasicUserCredentialsDeployer.DEFAULT_USER.equalsIgnoreCase(nodeName))
       {
          hornetQSecurityManager.setDefaultUser(username);
       }
@@ -75,20 +79,24 @@ public class BasicUserCredentialsDeployer extends XmlDeployer
       {
          Node child = children.item(i);
          // and add any roles
-         if (ROLES_NODE.equalsIgnoreCase(child.getNodeName()))
+         if (BasicUserCredentialsDeployer.ROLES_NODE.equalsIgnoreCase(child.getNodeName()))
          {
-            String role = child.getAttributes().getNamedItem(ROLE_ATTR_NAME).getNodeValue();
+            String role = child.getAttributes()
+                               .getNamedItem(BasicUserCredentialsDeployer.ROLE_ATTR_NAME)
+                               .getNodeValue();
             hornetQSecurityManager.addRole(username, role);
          }
       }
    }
 
+   @Override
    public void undeploy(final Node node) throws Exception
    {
       String username = node.getAttributes().getNamedItem(getKeyAttribute()).getNodeValue();
       hornetQSecurityManager.removeUser(username);
    }
 
+   @Override
    public String[] getDefaultConfigFileNames()
    {
       return new String[] { "hornetq-users.xml" };

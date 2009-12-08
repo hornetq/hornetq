@@ -210,8 +210,6 @@ public class TimedBuffer
 
          if (sizeChecked > remainingInFile)
          {
-            // Need to move to a new file -not enough space in file for this size
-
             return false;
          }
          else
@@ -257,14 +255,14 @@ public class TimedBuffer
       {
          pendingSync = true;
 
-//         if (System.nanoTime() - lastFlushTime.get() > timeout)
-//         {
-//            // This might happen if there is low activity in the buffer - the timer hasn't fired because no sync records
-//            // have been recently added, and suddenly a sync record is added
-//            // In this case we do a flush immediately, which can reduce latency in this case
-//
-//            flush();
-//         }
+         // if (System.nanoTime() - lastFlushTime.get() > timeout)
+         // {
+         // // This might happen if there is low activity in the buffer - the timer hasn't fired because no sync records
+         // // have been recently added, and suddenly a sync record is added
+         // // In this case we do a flush immediately, which can reduce latency in this case
+         //
+         // flush();
+         // }
       }
 
    }
@@ -360,9 +358,12 @@ public class TimedBuffer
             if (lastExecution != 0)
             {
                double rate = 1000 * (double)(bytesF - lastBytesFlushed) / (now - lastExecution);
-               log.info("Write rate = " + rate + " bytes / sec or " + (long)(rate / (1024 * 1024)) + " MiB / sec");
+               TimedBuffer.log.info("Write rate = " + rate +
+                                    " bytes / sec or " +
+                                    (long)(rate / (1024 * 1024)) +
+                                    " MiB / sec");
                double flushRate = 1000 * (double)(flushesD - lastFlushesDone) / (now - lastExecution);
-               log.info("Flush rate = " + flushRate + " flushes / sec");
+               TimedBuffer.log.info("Flush rate = " + flushRate + " flushes / sec");
             }
 
             lastExecution = now;
@@ -394,7 +395,7 @@ public class TimedBuffer
             // timeout since the time of the last flush
             // Effectively flushing "resets" the timer
 
-            if (pendingSync && bufferObserver != null && (System.nanoTime() > lastFlushTime.get() + timeout))
+            if (pendingSync && bufferObserver != null && System.nanoTime() > lastFlushTime.get() + timeout)
             {
                flush();
             }

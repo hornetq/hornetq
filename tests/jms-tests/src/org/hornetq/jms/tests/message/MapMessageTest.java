@@ -13,10 +13,11 @@
 
 package org.hornetq.jms.tests.message;
 
-
 import javax.jms.JMSException;
 import javax.jms.MapMessage;
 import javax.jms.Message;
+
+import org.hornetq.jms.tests.util.ProxyAssertSupport;
 
 /**
  * A test that sends/receives map messages to the JMS provider and verifies their integrity.
@@ -38,6 +39,7 @@ public class MapMessageTest extends MessageTestBase
 
    // Public --------------------------------------------------------
 
+   @Override
    public void setUp() throws Exception
    {
       super.setUp();
@@ -45,10 +47,11 @@ public class MapMessageTest extends MessageTestBase
       message = session.createMapMessage();
    }
 
+   @Override
    public void tearDown() throws Exception
    {
       message = null;
-      
+
       super.tearDown();
    }
 
@@ -61,15 +64,16 @@ public class MapMessageTest extends MessageTestBase
       queueProd.send(m);
 
       MapMessage rm = (MapMessage)queueCons.receive(2000);
-      
-      assertNotNull(rm);
-      
-      assertNull(rm.getString("nullValue"));
+
+      ProxyAssertSupport.assertNotNull(rm);
+
+      ProxyAssertSupport.assertNull(rm.getString("nullValue"));
    }
 
    // Protected -----------------------------------------------------
 
-   protected void prepareMessage(Message m) throws JMSException
+   @Override
+   protected void prepareMessage(final Message m) throws JMSException
    {
       super.prepareMessage(m);
 
@@ -88,25 +92,26 @@ public class MapMessageTest extends MessageTestBase
       mm.setString("string", "this is a string");
    }
 
-   protected void assertEquivalent(Message m, int mode, boolean redelivery) throws JMSException
+   @Override
+   protected void assertEquivalent(final Message m, final int mode, final boolean redelivery) throws JMSException
    {
       super.assertEquivalent(m, mode, redelivery);
 
       MapMessage mm = (MapMessage)m;
 
-      assertEquals(true, mm.getBoolean("boolean"));
-      assertEquals((byte)3, mm.getByte("byte"));
+      ProxyAssertSupport.assertEquals(true, mm.getBoolean("boolean"));
+      ProxyAssertSupport.assertEquals((byte)3, mm.getByte("byte"));
       byte[] bytes = mm.getBytes("bytes");
-      assertEquals((byte)3, bytes[0]);
-      assertEquals((byte)4, bytes[1]);
-      assertEquals((byte)5, bytes[2]);
-      assertEquals((char)6, mm.getChar("char"));
-      assertEquals(new Double(7.0), new Double(mm.getDouble("double")));
-      assertEquals(new Float(8.0f), new Float(mm.getFloat("float")));
-      assertEquals(9, mm.getInt("int"));
-      assertEquals(10l, mm.getLong("long"));
-      assertEquals("this is an object", mm.getObject("object"));
-      assertEquals((short)11, mm.getShort("short"));
-      assertEquals("this is a string", mm.getString("string"));
+      ProxyAssertSupport.assertEquals((byte)3, bytes[0]);
+      ProxyAssertSupport.assertEquals((byte)4, bytes[1]);
+      ProxyAssertSupport.assertEquals((byte)5, bytes[2]);
+      ProxyAssertSupport.assertEquals((char)6, mm.getChar("char"));
+      ProxyAssertSupport.assertEquals(new Double(7.0), new Double(mm.getDouble("double")));
+      ProxyAssertSupport.assertEquals(new Float(8.0f), new Float(mm.getFloat("float")));
+      ProxyAssertSupport.assertEquals(9, mm.getInt("int"));
+      ProxyAssertSupport.assertEquals(10l, mm.getLong("long"));
+      ProxyAssertSupport.assertEquals("this is an object", mm.getObject("object"));
+      ProxyAssertSupport.assertEquals((short)11, mm.getShort("short"));
+      ProxyAssertSupport.assertEquals("this is a string", mm.getString("string"));
    }
 }

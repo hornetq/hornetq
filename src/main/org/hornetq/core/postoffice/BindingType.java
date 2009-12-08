@@ -11,7 +11,6 @@
  * permissions and limitations under the License.
  */
 
-
 package org.hornetq.core.postoffice;
 
 /**
@@ -24,15 +23,15 @@ package org.hornetq.core.postoffice;
  *
  */
 public enum BindingType
-{   
+{
    LOCAL_QUEUE, REMOTE_QUEUE, DIVERT;
-     
+
    public static final int LOCAL_QUEUE_INDEX = 0;
-   
+
    public static final int REMOTE_QUEUE_INDEX = 1;
-   
+
    public static final int DIVERT_INDEX = 2;
-   
+
    public static BindingType fromOrdinal(final int index)
    {
       switch (index)
@@ -55,26 +54,25 @@ public enum BindingType
          }
       }
    }
-   
+
    public int toInt()
    {
-      if (this.equals(BindingType.LOCAL_QUEUE))
+      if (equals(BindingType.LOCAL_QUEUE))
       {
-         return LOCAL_QUEUE_INDEX;
+         return BindingType.LOCAL_QUEUE_INDEX;
       }
-      else if (this.equals(BindingType.REMOTE_QUEUE))
+      else if (equals(BindingType.REMOTE_QUEUE))
       {
-         return REMOTE_QUEUE_INDEX;
+         return BindingType.REMOTE_QUEUE_INDEX;
       }
-      else if (this.equals(BindingType.DIVERT))
+      else if (equals(BindingType.DIVERT))
       {
-         return DIVERT_INDEX;
+         return BindingType.DIVERT_INDEX;
       }
       else
       {
          throw new IllegalArgumentException("Cannot convert");
       }
    }
-   
-  
+
 }

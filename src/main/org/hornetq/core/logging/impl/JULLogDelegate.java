@@ -9,7 +9,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
  * implied.  See the License for the specific language governing
  * permissions and limitations under the License.
- */ 
+ */
 
 package org.hornetq.core.logging.impl;
 
@@ -27,85 +27,85 @@ import org.hornetq.core.logging.LogDelegate;
 public class JULLogDelegate implements LogDelegate
 {
    private final java.util.logging.Logger logger;
-   
+
    JULLogDelegate(final Class<?> clazz)
    {
       logger = java.util.logging.Logger.getLogger(clazz.getName());
    }
-   
+
    public boolean isInfoEnabled()
    {
       return logger.isLoggable(Level.INFO);
    }
-   
+
    public boolean isDebugEnabled()
    {
       return logger.isLoggable(Level.FINE);
    }
-   
+
    public boolean isTraceEnabled()
    {
       return logger.isLoggable(Level.FINEST);
    }
-   
+
    public void fatal(final Object message)
    {
-     logger.log(Level.SEVERE, message==null?"NULL":message.toString());
+      logger.log(Level.SEVERE, message == null ? "NULL" : message.toString());
    }
-   
+
    public void fatal(final Object message, final Throwable t)
    {
-      logger.log(Level.SEVERE, message==null?"NULL":message.toString(), t);
+      logger.log(Level.SEVERE, message == null ? "NULL" : message.toString(), t);
    }
-   
+
    public void error(final Object message)
    {
-      logger.log(Level.SEVERE, message==null?"NULL":message.toString());
+      logger.log(Level.SEVERE, message == null ? "NULL" : message.toString());
    }
-   
+
    public void error(final Object message, final Throwable t)
    {
-      logger.log(Level.SEVERE, message==null?"NULL":message.toString(), t);
+      logger.log(Level.SEVERE, message == null ? "NULL" : message.toString(), t);
    }
-   
+
    public void warn(final Object message)
    {
-      logger.log(Level.WARNING, message==null?"NULL":message.toString());
+      logger.log(Level.WARNING, message == null ? "NULL" : message.toString());
    }
-   
+
    public void warn(final Object message, final Throwable t)
    {
-      logger.log(Level.WARNING, message==null?"NULL":message.toString(), t);
+      logger.log(Level.WARNING, message == null ? "NULL" : message.toString(), t);
    }
-   
+
    public void info(final Object message)
    {
-      logger.log(Level.INFO, message==null?"NULL":message.toString());
+      logger.log(Level.INFO, message == null ? "NULL" : message.toString());
    }
-   
+
    public void info(final Object message, final Throwable t)
    {
-      logger.log(Level.INFO, message==null?"NULL":message.toString(), t);
+      logger.log(Level.INFO, message == null ? "NULL" : message.toString(), t);
    }
-   
+
    public void debug(final Object message)
    {
-      logger.log(Level.FINE, message==null?"NULL":message.toString());
+      logger.log(Level.FINE, message == null ? "NULL" : message.toString());
    }
-   
+
    public void debug(final Object message, final Throwable t)
    {
-      logger.log(Level.FINE, message==null?"NULL":message.toString(), t);
+      logger.log(Level.FINE, message == null ? "NULL" : message.toString(), t);
    }
-   
+
    public void trace(final Object message)
    {
-      logger.log(Level.FINEST, message==null?"NULL":message.toString());
+      logger.log(Level.FINEST, message == null ? "NULL" : message.toString());
    }
-   
+
    public void trace(final Object message, final Throwable t)
    {
-      logger.log(Level.FINEST, message==null?"NULL":message.toString(), t);
+      logger.log(Level.FINEST, message == null ? "NULL" : message.toString(), t);
    }
-   
+
 }

@@ -38,11 +38,12 @@ import org.hornetq.jms.client.HornetQSession;
  */
 public class SendAcknowledgementsExample extends HornetQExample
 {
-   public static void main(String[] args)
+   public static void main(final String[] args)
    {
       new SendAcknowledgementsExample().run(args);
    }
 
+   @Override
    public boolean runExample() throws Exception
    {
       Connection connection = null;

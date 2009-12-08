@@ -14,6 +14,7 @@
 package org.hornetq.tests.integration.cluster.distribution;
 
 import org.hornetq.core.logging.Logger;
+import org.hornetq.tests.util.UnitTestCase;
 
 /**
  * A SymmetricClusterTest
@@ -42,8 +43,8 @@ public class SymmetricClusterTest extends ClusterTestBase
    protected void tearDown() throws Exception
    {
       stopServers();
-      
-      super.tearDown();           
+
+      super.tearDown();
    }
 
    protected boolean isNetty()
@@ -93,15 +94,15 @@ public class SymmetricClusterTest extends ClusterTestBase
 
          verifyReceiveRoundRobinInSomeOrder(10, 0, 1, 2, 3, 4);
 
-         this.verifyNotReceive(0, 1, 2, 3, 4);
+         verifyNotReceive(0, 1, 2, 3, 4);
 
-         this.removeConsumer(0);
-         this.removeConsumer(1);
-         this.removeConsumer(2);
-         this.removeConsumer(3);
-         this.removeConsumer(4);
+         removeConsumer(0);
+         removeConsumer(1);
+         removeConsumer(2);
+         removeConsumer(3);
+         removeConsumer(4);
 
-         this.closeAllSessionFactories();
+         closeAllSessionFactories();
 
          stopServers(0, 1, 2, 3, 4);
 
@@ -141,12 +142,12 @@ public class SymmetricClusterTest extends ClusterTestBase
 
          verifyReceiveRoundRobinInSomeOrder(10, 0, 1, 2, 3, 4);
 
-         this.verifyNotReceive(0, 1, 2, 3, 4);
+         verifyNotReceive(0, 1, 2, 3, 4);
 
       }
       catch (Throwable e)
       {
-         System.out.println(threadDump("SymmetricClusterTest::testStopAllStartAll"));
+         System.out.println(UnitTestCase.threadDump("SymmetricClusterTest::testStopAllStartAll"));
          throw e;
       }
 
@@ -157,25 +158,25 @@ public class SymmetricClusterTest extends ClusterTestBase
       setupCluster();
 
       startServers();
-      
+
       setupSessionFactory(0, isNetty());
       setupSessionFactory(1, isNetty());
       setupSessionFactory(2, isNetty());
       setupSessionFactory(3, isNetty());
       setupSessionFactory(4, isNetty());
-      
-      createQueue(0, "queues.testaddress", "queue0", null, false);           
+
+      createQueue(0, "queues.testaddress", "queue0", null, false);
       createQueue(1, "queues.testaddress", "queue0", null, false);
       createQueue(2, "queues.testaddress", "queue0", null, false);
       createQueue(3, "queues.testaddress", "queue0", null, false);
       createQueue(4, "queues.testaddress", "queue0", null, false);
-      
+
       addConsumer(0, 0, "queue0", null);
       addConsumer(1, 1, "queue0", null);
       addConsumer(2, 2, "queue0", null);
       addConsumer(3, 3, "queue0", null);
       addConsumer(4, 4, "queue0", null);
-      
+
       waitForBindings(0, "queues.testaddress", 1, 1, true);
       waitForBindings(1, "queues.testaddress", 1, 1, true);
       waitForBindings(2, "queues.testaddress", 1, 1, true);
@@ -189,30 +190,30 @@ public class SymmetricClusterTest extends ClusterTestBase
       waitForBindings(4, "queues.testaddress", 4, 4, false);
 
       send(0, "queues.testaddress", 10, false, null);
-      
+
       verifyReceiveRoundRobinInSomeOrder(10, 0, 1, 2, 3, 4);
 
-      this.verifyNotReceive(0, 1, 2, 3, 4);
+      verifyNotReceive(0, 1, 2, 3, 4);
    }
 
    public void testRoundRobinMultipleQueues() throws Exception
    {
-      log.info("starting");
+      SymmetricClusterTest.log.info("starting");
       setupCluster();
 
-      log.info("setup cluster");
-      
+      SymmetricClusterTest.log.info("setup cluster");
+
       startServers();
 
-      log.info("started servers");
-      
+      SymmetricClusterTest.log.info("started servers");
+
       setupSessionFactory(0, isNetty());
       setupSessionFactory(1, isNetty());
       setupSessionFactory(2, isNetty());
       setupSessionFactory(3, isNetty());
       setupSessionFactory(4, isNetty());
-      
-      log.info("Set up session factories");
+
+      SymmetricClusterTest.log.info("Set up session factories");
 
       createQueue(0, "queues.testaddress", "queue0", null, false);
       createQueue(1, "queues.testaddress", "queue0", null, false);
@@ -231,8 +232,8 @@ public class SymmetricClusterTest extends ClusterTestBase
       createQueue(2, "queues.testaddress", "queue2", null, false);
       createQueue(3, "queues.testaddress", "queue2", null, false);
       createQueue(4, "queues.testaddress", "queue2", null, false);
-      
-      log.info("created queues");
+
+      SymmetricClusterTest.log.info("created queues");
 
       addConsumer(0, 0, "queue0", null);
       addConsumer(1, 1, "queue0", null);
@@ -251,8 +252,8 @@ public class SymmetricClusterTest extends ClusterTestBase
       addConsumer(12, 2, "queue2", null);
       addConsumer(13, 3, "queue2", null);
       addConsumer(14, 4, "queue2", null);
-      
-      log.info("added consumers");
+
+      SymmetricClusterTest.log.info("added consumers");
 
       waitForBindings(0, "queues.testaddress", 3, 3, true);
       waitForBindings(1, "queues.testaddress", 3, 3, true);
@@ -265,24 +266,24 @@ public class SymmetricClusterTest extends ClusterTestBase
       waitForBindings(2, "queues.testaddress", 12, 12, false);
       waitForBindings(3, "queues.testaddress", 12, 12, false);
       waitForBindings(4, "queues.testaddress", 12, 12, false);
-      
-      log.info("waited for bindings");
+
+      SymmetricClusterTest.log.info("waited for bindings");
 
       send(0, "queues.testaddress", 10, false, null);
-      
-      log.info("sent messages");
+
+      SymmetricClusterTest.log.info("sent messages");
 
       verifyReceiveRoundRobinInSomeOrder(10, 0, 1, 2, 3, 4);
-      
-      log.info("verified 1");
-      
+
+      SymmetricClusterTest.log.info("verified 1");
+
       verifyReceiveRoundRobinInSomeOrder(10, 5, 6, 7, 8, 9);
-      
-      log.info("verified 2");
-      
+
+      SymmetricClusterTest.log.info("verified 2");
+
       verifyReceiveRoundRobinInSomeOrder(10, 10, 11, 12, 13, 14);
-      
-      log.info("verified 3");
+
+      SymmetricClusterTest.log.info("verified 3");
    }
 
    public void testMultipleNonLoadBalancedQueues() throws Exception
@@ -1180,10 +1181,10 @@ public class SymmetricClusterTest extends ClusterTestBase
       waitForBindings(2, "queues.testaddress", 4, 4, false);
       waitForBindings(3, "queues.testaddress", 4, 4, false);
       waitForBindings(4, "queues.testaddress", 4, 4, false);
-      
-     // this.checkReceive(0, 1, 2, 3, 4);
-      
-      //Thread.sleep(300000);
+
+      // this.checkReceive(0, 1, 2, 3, 4);
+
+      // Thread.sleep(300000);
 
       verifyReceiveAll(10, 0, 1, 2, 3, 4);
    }
@@ -1316,7 +1317,7 @@ public class SymmetricClusterTest extends ClusterTestBase
 
       verifyReceiveRoundRobinInSomeOrder(10, 1, 2, 3, 4);
    }
-   
+
    public void testStartStopServers() throws Exception
    {
       setupCluster();
@@ -1441,7 +1442,7 @@ public class SymmetricClusterTest extends ClusterTestBase
       stopServers(0, 3);
 
       startServers(3, 0);
-       
+
       Thread.sleep(3000);
 
       setupSessionFactory(0, isNetty());

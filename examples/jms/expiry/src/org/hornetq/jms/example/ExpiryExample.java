@@ -31,11 +31,12 @@ import org.hornetq.common.example.HornetQExample;
  */
 public class ExpiryExample extends HornetQExample
 {
-   public static void main(String[] args)
+   public static void main(final String[] args)
    {
       new ExpiryExample().run(args);
    }
 
+   @Override
    public boolean runExample() throws Exception
    {
       Connection connection = null;
@@ -97,17 +98,18 @@ public class ExpiryExample extends HornetQExample
          // Step 17. The message sent to the queue was moved to the expiry queue when it expired.
          System.out.println("Received message from " + expiryQueue.getQueueName() + ": " + messageReceived.getText());
 
-         // The message received from the expiry queue has the same content than the expired message but its JMS headers differ
+         // The message received from the expiry queue has the same content than the expired message but its JMS headers
+         // differ
          // (from JMS point of view, it's not the same message).
-         // HornetQ defines additional properties to correlate the message received from the expiry queue with the 
+         // HornetQ defines additional properties to correlate the message received from the expiry queue with the
          // message expired from the queue
-         
+
          System.out.println();
          // Step 18. the messageReceived's destination is now the expiry queue.
          System.out.println("Destination of the expired message: " + ((Queue)messageReceived.getJMSDestination()).getQueueName());
          // Step 19. and its own expiration (the time to live in the *expiry* queue)
          System.out.println("Expiration time of the expired message (relative to the expiry queue): " + messageReceived.getJMSExpiration());
-         
+
          System.out.println();
          // Step 20. the *origin* destination is stored in the _HQ_ORIG_DESTINATION property
          System.out.println("*Origin destination* of the expired message: " + messageReceived.getStringProperty("_HQ_ORIG_DESTINATION"));

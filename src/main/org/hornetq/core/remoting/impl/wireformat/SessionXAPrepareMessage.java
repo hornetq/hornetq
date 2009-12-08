@@ -36,14 +36,14 @@ public class SessionXAPrepareMessage extends PacketImpl
 
    public SessionXAPrepareMessage(final Xid xid)
    {
-      super(SESS_XA_PREPARE);
+      super(PacketImpl.SESS_XA_PREPARE);
 
       this.xid = xid;
    }
 
    public SessionXAPrepareMessage()
    {
-      super(SESS_XA_PREPARE);
+      super(PacketImpl.SESS_XA_PREPARE);
    }
 
    // Public --------------------------------------------------------
@@ -53,17 +53,20 @@ public class SessionXAPrepareMessage extends PacketImpl
       return xid;
    }
 
+   @Override
    public void encodeRest(final HornetQBuffer buffer)
    {
       XidCodecSupport.encodeXid(xid, buffer);
    }
 
+   @Override
    public void decodeRest(final HornetQBuffer buffer)
    {
       xid = XidCodecSupport.decodeXid(buffer);
    }
 
-   public boolean equals(Object other)
+   @Override
+   public boolean equals(final Object other)
    {
       if (other instanceof SessionXAPrepareMessage == false)
       {
@@ -72,7 +75,7 @@ public class SessionXAPrepareMessage extends PacketImpl
 
       SessionXAPrepareMessage r = (SessionXAPrepareMessage)other;
 
-      return super.equals(other) && this.xid.equals(r.xid);
+      return super.equals(other) && xid.equals(r.xid);
    }
 
    // Package protected ---------------------------------------------

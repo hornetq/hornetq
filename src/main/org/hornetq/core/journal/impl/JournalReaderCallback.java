@@ -11,7 +11,6 @@
  * permissions and limitations under the License.
  */
 
-
 package org.hornetq.core.journal.impl;
 
 import org.hornetq.core.journal.RecordInfo;
@@ -77,6 +76,5 @@ public interface JournalReaderCallback
    void onReadRollbackRecord(long transactionID) throws Exception;
 
    public void markAsDataFile(JournalFile file);
-
 
 }

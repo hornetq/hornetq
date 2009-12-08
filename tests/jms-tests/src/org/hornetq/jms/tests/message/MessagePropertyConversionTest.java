@@ -21,6 +21,7 @@ import javax.jms.MessageProducer;
 import javax.jms.Session;
 
 import org.hornetq.jms.tests.HornetQServerTestCase;
+import org.hornetq.jms.tests.util.ProxyAssertSupport;
 
 /**
  * 
@@ -36,14 +37,18 @@ public class MessagePropertyConversionTest extends HornetQServerTestCase
    // Attributes ----------------------------------------------------
 
    private Connection producerConnection, consumerConnection;
+
    private Session queueProducerSession, queueConsumerSession;
+
    private MessageProducer queueProducer;
+
    private MessageConsumer queueConsumer;
 
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
 
+   @Override
    public void setUp() throws Exception
    {
       super.setUp();
@@ -51,17 +56,16 @@ public class MessagePropertyConversionTest extends HornetQServerTestCase
       producerConnection = getConnectionFactory().createConnection();
       consumerConnection = getConnectionFactory().createConnection();
 
-      queueProducerSession = producerConnection.createSession(false,
-            Session.AUTO_ACKNOWLEDGE);
-      queueConsumerSession = consumerConnection.createSession(false,
-            Session.AUTO_ACKNOWLEDGE);
+      queueProducerSession = producerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      queueConsumerSession = consumerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-      queueProducer = queueProducerSession.createProducer(queue1);
-      queueConsumer = queueConsumerSession.createConsumer(queue1);
+      queueProducer = queueProducerSession.createProducer(HornetQServerTestCase.queue1);
+      queueConsumer = queueConsumerSession.createConsumer(HornetQServerTestCase.queue1);
 
       consumerConnection.start();
    }
 
+   @Override
    public void tearDown() throws Exception
    {
       producerConnection.close();
@@ -77,19 +81,19 @@ public class MessagePropertyConversionTest extends HornetQServerTestCase
       boolean myBool = true;
       m1.setBooleanProperty("myBool", myBool);
 
-      queueProducer.send(queue1, m1);
+      queueProducer.send(HornetQServerTestCase.queue1, m1);
       Message m2 = queueConsumer.receive(2000);
 
       // Boolean property can be read as boolean and String but not anything
       // else
 
-      assertEquals(myBool, m2.getBooleanProperty("myBool"));
-      assertEquals(String.valueOf(myBool), m2.getStringProperty("myBool"));
+      ProxyAssertSupport.assertEquals(myBool, m2.getBooleanProperty("myBool"));
+      ProxyAssertSupport.assertEquals(String.valueOf(myBool), m2.getStringProperty("myBool"));
 
       try
       {
          m2.getByteProperty("myBool");
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageFormatException e)
       {
@@ -98,7 +102,7 @@ public class MessagePropertyConversionTest extends HornetQServerTestCase
       try
       {
          m2.getShortProperty("myBool");
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageFormatException e)
       {
@@ -107,7 +111,7 @@ public class MessagePropertyConversionTest extends HornetQServerTestCase
       try
       {
          m2.getIntProperty("myBool");
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageFormatException e)
       {
@@ -116,7 +120,7 @@ public class MessagePropertyConversionTest extends HornetQServerTestCase
       try
       {
          m2.getLongProperty("myBool");
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageFormatException e)
       {
@@ -125,7 +129,7 @@ public class MessagePropertyConversionTest extends HornetQServerTestCase
       try
       {
          m2.getFloatProperty("myBool");
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageFormatException e)
       {
@@ -134,7 +138,7 @@ public class MessagePropertyConversionTest extends HornetQServerTestCase
       try
       {
          m2.getDoubleProperty("myBool");
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageFormatException e)
       {
@@ -148,21 +152,21 @@ public class MessagePropertyConversionTest extends HornetQServerTestCase
       byte myByte = 13;
       m1.setByteProperty("myByte", myByte);
 
-      queueProducer.send(queue1, m1);
+      queueProducer.send(HornetQServerTestCase.queue1, m1);
       Message m2 = queueConsumer.receive(2000);
 
       // Byte property can be read as byte, short, int, long or String
 
-      assertEquals(myByte, m2.getByteProperty("myByte"));
-      assertEquals((short) myByte, m2.getShortProperty("myByte"));
-      assertEquals((int) myByte, m2.getIntProperty("myByte"));
-      assertEquals((long) myByte, m2.getLongProperty("myByte"));
-      assertEquals(String.valueOf(myByte), m2.getStringProperty("myByte"));
+      ProxyAssertSupport.assertEquals(myByte, m2.getByteProperty("myByte"));
+      ProxyAssertSupport.assertEquals(myByte, m2.getShortProperty("myByte"));
+      ProxyAssertSupport.assertEquals(myByte, m2.getIntProperty("myByte"));
+      ProxyAssertSupport.assertEquals(myByte, m2.getLongProperty("myByte"));
+      ProxyAssertSupport.assertEquals(String.valueOf(myByte), m2.getStringProperty("myByte"));
 
       try
       {
          m2.getBooleanProperty("myByte");
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageFormatException e)
       {
@@ -171,7 +175,7 @@ public class MessagePropertyConversionTest extends HornetQServerTestCase
       try
       {
          m2.getFloatProperty("myByte");
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageFormatException e)
       {
@@ -180,7 +184,7 @@ public class MessagePropertyConversionTest extends HornetQServerTestCase
       try
       {
          m2.getDoubleProperty("myByte");
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageFormatException e)
       {
@@ -194,20 +198,20 @@ public class MessagePropertyConversionTest extends HornetQServerTestCase
       short myShort = 15321;
       m1.setShortProperty("myShort", myShort);
 
-      queueProducer.send(queue1, m1);
+      queueProducer.send(HornetQServerTestCase.queue1, m1);
       Message m2 = queueConsumer.receive(2000);
 
       // Short property can be read as short, int, long or String
 
-      assertEquals(myShort, m2.getShortProperty("myShort"));
-      assertEquals((int) myShort, m2.getIntProperty("myShort"));
-      assertEquals((long) myShort, m2.getLongProperty("myShort"));
-      assertEquals(String.valueOf(myShort), m2.getStringProperty("myShort"));
+      ProxyAssertSupport.assertEquals(myShort, m2.getShortProperty("myShort"));
+      ProxyAssertSupport.assertEquals(myShort, m2.getIntProperty("myShort"));
+      ProxyAssertSupport.assertEquals(myShort, m2.getLongProperty("myShort"));
+      ProxyAssertSupport.assertEquals(String.valueOf(myShort), m2.getStringProperty("myShort"));
 
       try
       {
          m2.getByteProperty("myShort");
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageFormatException e)
       {
@@ -216,7 +220,7 @@ public class MessagePropertyConversionTest extends HornetQServerTestCase
       try
       {
          m2.getBooleanProperty("myShort");
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageFormatException e)
       {
@@ -225,7 +229,7 @@ public class MessagePropertyConversionTest extends HornetQServerTestCase
       try
       {
          m2.getFloatProperty("myShort");
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageFormatException e)
       {
@@ -234,7 +238,7 @@ public class MessagePropertyConversionTest extends HornetQServerTestCase
       try
       {
          m2.getDoubleProperty("myShort");
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageFormatException e)
       {
@@ -248,19 +252,19 @@ public class MessagePropertyConversionTest extends HornetQServerTestCase
       int myInt = 0x71ab6c80;
       m1.setIntProperty("myInt", myInt);
 
-      queueProducer.send(queue1, m1);
+      queueProducer.send(HornetQServerTestCase.queue1, m1);
       Message m2 = queueConsumer.receive(2000);
 
       // Int property can be read as int, long or String
 
-      assertEquals(myInt, m2.getIntProperty("myInt"));
-      assertEquals((long) myInt, m2.getLongProperty("myInt"));
-      assertEquals(String.valueOf(myInt), m2.getStringProperty("myInt"));
+      ProxyAssertSupport.assertEquals(myInt, m2.getIntProperty("myInt"));
+      ProxyAssertSupport.assertEquals(myInt, m2.getLongProperty("myInt"));
+      ProxyAssertSupport.assertEquals(String.valueOf(myInt), m2.getStringProperty("myInt"));
 
       try
       {
          m2.getShortProperty("myInt");
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageFormatException e)
       {
@@ -269,7 +273,7 @@ public class MessagePropertyConversionTest extends HornetQServerTestCase
       try
       {
          m2.getByteProperty("myInt");
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageFormatException e)
       {
@@ -278,7 +282,7 @@ public class MessagePropertyConversionTest extends HornetQServerTestCase
       try
       {
          m2.getBooleanProperty("myInt");
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageFormatException e)
       {
@@ -287,7 +291,7 @@ public class MessagePropertyConversionTest extends HornetQServerTestCase
       try
       {
          m2.getFloatProperty("myInt");
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageFormatException e)
       {
@@ -296,7 +300,7 @@ public class MessagePropertyConversionTest extends HornetQServerTestCase
       try
       {
          m2.getDoubleProperty("myInt");
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageFormatException e)
       {
@@ -310,18 +314,18 @@ public class MessagePropertyConversionTest extends HornetQServerTestCase
       long myLong = 0x20bf1e3fb6fa31dfL;
       m1.setLongProperty("myLong", myLong);
 
-      queueProducer.send(queue1, m1);
+      queueProducer.send(HornetQServerTestCase.queue1, m1);
       Message m2 = queueConsumer.receive(2000);
 
       // Long property can be read as long and String
 
-      assertEquals(myLong, m2.getLongProperty("myLong"));
-      assertEquals(String.valueOf(myLong), m2.getStringProperty("myLong"));
+      ProxyAssertSupport.assertEquals(myLong, m2.getLongProperty("myLong"));
+      ProxyAssertSupport.assertEquals(String.valueOf(myLong), m2.getStringProperty("myLong"));
 
       try
       {
          m2.getIntProperty("myLong");
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageFormatException e)
       {
@@ -330,7 +334,7 @@ public class MessagePropertyConversionTest extends HornetQServerTestCase
       try
       {
          m2.getShortProperty("myLong");
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageFormatException e)
       {
@@ -339,7 +343,7 @@ public class MessagePropertyConversionTest extends HornetQServerTestCase
       try
       {
          m2.getByteProperty("myLong");
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageFormatException e)
       {
@@ -348,7 +352,7 @@ public class MessagePropertyConversionTest extends HornetQServerTestCase
       try
       {
          m2.getBooleanProperty("myLong");
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageFormatException e)
       {
@@ -357,7 +361,7 @@ public class MessagePropertyConversionTest extends HornetQServerTestCase
       try
       {
          m2.getFloatProperty("myLong");
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageFormatException e)
       {
@@ -366,7 +370,7 @@ public class MessagePropertyConversionTest extends HornetQServerTestCase
       try
       {
          m2.getDoubleProperty("myLong");
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageFormatException e)
       {
@@ -380,19 +384,19 @@ public class MessagePropertyConversionTest extends HornetQServerTestCase
       float myFloat = Float.MAX_VALUE - 23465;
       m1.setFloatProperty("myFloat", myFloat);
 
-      queueProducer.send(queue1, m1);
+      queueProducer.send(HornetQServerTestCase.queue1, m1);
       Message m2 = queueConsumer.receive(2000);
 
       // Float property can be read as float, double or String
 
-      assertEquals(myFloat, m2.getFloatProperty("myFloat"), 0);
-      assertEquals(String.valueOf(myFloat), m2.getStringProperty("myFloat"));
-      assertEquals((double) myFloat, m2.getDoubleProperty("myFloat"), 0);
+      ProxyAssertSupport.assertEquals(myFloat, m2.getFloatProperty("myFloat"), 0);
+      ProxyAssertSupport.assertEquals(String.valueOf(myFloat), m2.getStringProperty("myFloat"));
+      ProxyAssertSupport.assertEquals(myFloat, m2.getDoubleProperty("myFloat"), 0);
 
       try
       {
          m2.getIntProperty("myFloat");
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageFormatException e)
       {
@@ -401,7 +405,7 @@ public class MessagePropertyConversionTest extends HornetQServerTestCase
       try
       {
          m2.getShortProperty("myFloat");
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageFormatException e)
       {
@@ -410,7 +414,7 @@ public class MessagePropertyConversionTest extends HornetQServerTestCase
       try
       {
          m2.getLongProperty("myFloat");
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageFormatException e)
       {
@@ -419,7 +423,7 @@ public class MessagePropertyConversionTest extends HornetQServerTestCase
       try
       {
          m2.getByteProperty("myFloat");
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageFormatException e)
       {
@@ -428,7 +432,7 @@ public class MessagePropertyConversionTest extends HornetQServerTestCase
       try
       {
          m2.getBooleanProperty("myFloat");
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageFormatException e)
       {
@@ -442,18 +446,18 @@ public class MessagePropertyConversionTest extends HornetQServerTestCase
       double myDouble = Double.MAX_VALUE - 72387633;
       m1.setDoubleProperty("myDouble", myDouble);
 
-      queueProducer.send(queue1, m1);
+      queueProducer.send(HornetQServerTestCase.queue1, m1);
       Message m2 = queueConsumer.receive(2000);
 
       // Double property can be read as double and String
 
-      assertEquals(myDouble, m2.getDoubleProperty("myDouble"), 0);
-      assertEquals(String.valueOf(myDouble), m2.getStringProperty("myDouble"));
+      ProxyAssertSupport.assertEquals(myDouble, m2.getDoubleProperty("myDouble"), 0);
+      ProxyAssertSupport.assertEquals(String.valueOf(myDouble), m2.getStringProperty("myDouble"));
 
       try
       {
          m2.getFloatProperty("myDouble");
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageFormatException e)
       {
@@ -462,7 +466,7 @@ public class MessagePropertyConversionTest extends HornetQServerTestCase
       try
       {
          m2.getIntProperty("myDouble");
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageFormatException e)
       {
@@ -471,7 +475,7 @@ public class MessagePropertyConversionTest extends HornetQServerTestCase
       try
       {
          m2.getShortProperty("myDouble");
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageFormatException e)
       {
@@ -480,7 +484,7 @@ public class MessagePropertyConversionTest extends HornetQServerTestCase
       try
       {
          m2.getByteProperty("myDouble");
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageFormatException e)
       {
@@ -489,7 +493,7 @@ public class MessagePropertyConversionTest extends HornetQServerTestCase
       try
       {
          m2.getBooleanProperty("myDouble");
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageFormatException e)
       {
@@ -498,7 +502,7 @@ public class MessagePropertyConversionTest extends HornetQServerTestCase
       try
       {
          m2.getFloatProperty("myDouble");
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (MessageFormatException e)
       {
@@ -520,10 +524,10 @@ public class MessagePropertyConversionTest extends HornetQServerTestCase
 
       m1.setStringProperty("myString", myString);
 
-      queueProducer.send(queue1, m1);
+      queueProducer.send(HornetQServerTestCase.queue1, m1);
       Message m2 = queueConsumer.receive(2000);
 
-      assertEquals(myString, m2.getStringProperty("myString"));
+      ProxyAssertSupport.assertEquals(myString, m2.getStringProperty("myString"));
 
       // Test String -> Numeric and bool conversions.
 
@@ -543,24 +547,24 @@ public class MessagePropertyConversionTest extends HornetQServerTestCase
       m3.setStringProperty("myDouble", String.valueOf(myDouble));
       m3.setStringProperty("myIllegal", "xyz123");
 
-      queueProducer.send(queue1, m3);
+      queueProducer.send(HornetQServerTestCase.queue1, m3);
 
       Message m4 = queueConsumer.receive(2000);
 
-      assertEquals(myBool, m4.getBooleanProperty("myBool"));
-      assertEquals(myByte, m4.getByteProperty("myByte"));
-      assertEquals(myShort, m4.getShortProperty("myShort"));
-      assertEquals(myInt, m4.getIntProperty("myInt"));
-      assertEquals(myLong, m4.getLongProperty("myLong"));
-      assertEquals(myFloat, m4.getFloatProperty("myFloat"), 0);
-      assertEquals(myDouble, m4.getDoubleProperty("myDouble"), 0);
+      ProxyAssertSupport.assertEquals(myBool, m4.getBooleanProperty("myBool"));
+      ProxyAssertSupport.assertEquals(myByte, m4.getByteProperty("myByte"));
+      ProxyAssertSupport.assertEquals(myShort, m4.getShortProperty("myShort"));
+      ProxyAssertSupport.assertEquals(myInt, m4.getIntProperty("myInt"));
+      ProxyAssertSupport.assertEquals(myLong, m4.getLongProperty("myLong"));
+      ProxyAssertSupport.assertEquals(myFloat, m4.getFloatProperty("myFloat"), 0);
+      ProxyAssertSupport.assertEquals(myDouble, m4.getDoubleProperty("myDouble"), 0);
 
-      assertEquals(false, m4.getBooleanProperty("myIllegal"));
+      ProxyAssertSupport.assertEquals(false, m4.getBooleanProperty("myIllegal"));
 
       try
       {
          m4.getByteProperty("myIllegal");
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (NumberFormatException e)
       {
@@ -568,7 +572,7 @@ public class MessagePropertyConversionTest extends HornetQServerTestCase
       try
       {
          m4.getShortProperty("myIllegal");
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (NumberFormatException e)
       {
@@ -576,7 +580,7 @@ public class MessagePropertyConversionTest extends HornetQServerTestCase
       try
       {
          m4.getIntProperty("myIllegal");
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (NumberFormatException e)
       {
@@ -584,7 +588,7 @@ public class MessagePropertyConversionTest extends HornetQServerTestCase
       try
       {
          m4.getLongProperty("myIllegal");
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (NumberFormatException e)
       {
@@ -592,7 +596,7 @@ public class MessagePropertyConversionTest extends HornetQServerTestCase
       try
       {
          m4.getFloatProperty("myIllegal");
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (NumberFormatException e)
       {
@@ -600,7 +604,7 @@ public class MessagePropertyConversionTest extends HornetQServerTestCase
       try
       {
          m4.getDoubleProperty("myIllegal");
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (NumberFormatException e)
       {
@@ -610,13 +614,12 @@ public class MessagePropertyConversionTest extends HornetQServerTestCase
    public void testJMSXDeliveryCountConversion() throws Exception
    {
       Message m1 = queueProducerSession.createMessage();
-      queueProducer.send(queue1, m1);
+      queueProducer.send(HornetQServerTestCase.queue1, m1);
 
       Message m2 = queueConsumer.receive(2000);
 
       int count = m2.getIntProperty("JMSXDeliveryCount");
-      assertEquals(String.valueOf(count), m2
-            .getStringProperty("JMSXDeliveryCount"));
-      assertEquals((long) count, m2.getLongProperty("JMSXDeliveryCount"));
+      ProxyAssertSupport.assertEquals(String.valueOf(count), m2.getStringProperty("JMSXDeliveryCount"));
+      ProxyAssertSupport.assertEquals(count, m2.getLongProperty("JMSXDeliveryCount"));
    }
 }

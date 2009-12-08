@@ -11,7 +11,6 @@
  * permissions and limitations under the License.
  */
 
-
 package org.hornetq.tests.integration.remoting;
 
 import org.hornetq.integration.transports.netty.NettyAcceptorFactory;
@@ -52,7 +51,7 @@ public class NettyNetworkAddressTest extends NetworkAddressTestBase
    {
       return NettyConnectorFactory.class.getName();
    }
-   
+
    @Override
    protected String getHostPropertyKey()
    {

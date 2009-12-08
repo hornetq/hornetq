@@ -38,7 +38,7 @@ public class HornetQRAMessageConsumer implements MessageConsumer
    private static final Logger log = Logger.getLogger(HornetQRAMessageConsumer.class);
 
    /** Whether trace is enabled */
-   private static boolean trace = log.isTraceEnabled();
+   private static boolean trace = HornetQRAMessageConsumer.log.isTraceEnabled();
 
    /** The wrapped message consumer */
    protected MessageConsumer consumer;
@@ -56,9 +56,13 @@ public class HornetQRAMessageConsumer implements MessageConsumer
       this.consumer = consumer;
       this.session = session;
 
-      if (trace)
+      if (HornetQRAMessageConsumer.trace)
       {
-         log.trace("new HornetQMessageConsumer " + this + " consumer=" + consumer + " session=" + session);
+         HornetQRAMessageConsumer.log.trace("new HornetQMessageConsumer " + this +
+                                            " consumer=" +
+                                            consumer +
+                                            " session=" +
+                                            session);
       }
    }
 
@@ -68,9 +72,9 @@ public class HornetQRAMessageConsumer implements MessageConsumer
     */
    public void close() throws JMSException
    {
-      if (trace)
+      if (HornetQRAMessageConsumer.trace)
       {
-         log.trace("close " + this);
+         HornetQRAMessageConsumer.log.trace("close " + this);
       }
       try
       {
@@ -88,9 +92,9 @@ public class HornetQRAMessageConsumer implements MessageConsumer
     */
    void checkState() throws JMSException
    {
-      if (trace)
+      if (HornetQRAMessageConsumer.trace)
       {
-         log.trace("checkState()");
+         HornetQRAMessageConsumer.log.trace("checkState()");
       }
    }
 
@@ -101,9 +105,9 @@ public class HornetQRAMessageConsumer implements MessageConsumer
     */
    public MessageListener getMessageListener() throws JMSException
    {
-      if (trace)
+      if (HornetQRAMessageConsumer.trace)
       {
-         log.trace("getMessageListener()");
+         HornetQRAMessageConsumer.log.trace("getMessageListener()");
       }
 
       checkState();
@@ -145,9 +149,9 @@ public class HornetQRAMessageConsumer implements MessageConsumer
     */
    public String getMessageSelector() throws JMSException
    {
-      if (trace)
+      if (HornetQRAMessageConsumer.trace)
       {
-         log.trace("getMessageSelector()");
+         HornetQRAMessageConsumer.log.trace("getMessageSelector()");
       }
 
       checkState();
@@ -164,17 +168,17 @@ public class HornetQRAMessageConsumer implements MessageConsumer
       session.lock();
       try
       {
-         if (trace)
+         if (HornetQRAMessageConsumer.trace)
          {
-            log.trace("receive " + this);
+            HornetQRAMessageConsumer.log.trace("receive " + this);
          }
 
          checkState();
          Message message = consumer.receive();
 
-         if (trace)
+         if (HornetQRAMessageConsumer.trace)
          {
-            log.trace("received " + this + " result=" + message);
+            HornetQRAMessageConsumer.log.trace("received " + this + " result=" + message);
          }
 
          if (message == null)
@@ -203,17 +207,17 @@ public class HornetQRAMessageConsumer implements MessageConsumer
       session.lock();
       try
       {
-         if (trace)
+         if (HornetQRAMessageConsumer.trace)
          {
-            log.trace("receive " + this + " timeout=" + timeout);
+            HornetQRAMessageConsumer.log.trace("receive " + this + " timeout=" + timeout);
          }
 
          checkState();
          Message message = consumer.receive(timeout);
 
-         if (trace)
+         if (HornetQRAMessageConsumer.trace)
          {
-            log.trace("received " + this + " result=" + message);
+            HornetQRAMessageConsumer.log.trace("received " + this + " result=" + message);
          }
 
          if (message == null)
@@ -241,17 +245,17 @@ public class HornetQRAMessageConsumer implements MessageConsumer
       session.lock();
       try
       {
-         if (trace)
+         if (HornetQRAMessageConsumer.trace)
          {
-            log.trace("receiveNoWait " + this);
+            HornetQRAMessageConsumer.log.trace("receiveNoWait " + this);
          }
 
          checkState();
          Message message = consumer.receiveNoWait();
 
-         if (trace)
+         if (HornetQRAMessageConsumer.trace)
          {
-            log.trace("received " + this + " result=" + message);
+            HornetQRAMessageConsumer.log.trace("received " + this + " result=" + message);
          }
 
          if (message == null)
@@ -275,9 +279,9 @@ public class HornetQRAMessageConsumer implements MessageConsumer
     */
    void closeConsumer() throws JMSException
    {
-      if (trace)
+      if (HornetQRAMessageConsumer.trace)
       {
-         log.trace("closeConsumer()");
+         HornetQRAMessageConsumer.log.trace("closeConsumer()");
       }
 
       consumer.close();
@@ -290,9 +294,9 @@ public class HornetQRAMessageConsumer implements MessageConsumer
     */
    Message wrapMessage(final Message message)
    {
-      if (trace)
+      if (HornetQRAMessageConsumer.trace)
       {
-         log.trace("wrapMessage(" + message + ")");
+         HornetQRAMessageConsumer.log.trace("wrapMessage(" + message + ")");
       }
 
       if (message instanceof BytesMessage)
@@ -325,9 +329,9 @@ public class HornetQRAMessageConsumer implements MessageConsumer
     */
    MessageListener wrapMessageListener(final MessageListener listener)
    {
-      if (trace)
+      if (HornetQRAMessageConsumer.trace)
       {
-         log.trace("getMessageSelector()");
+         HornetQRAMessageConsumer.log.trace("getMessageSelector()");
       }
 
       return new HornetQRAMessageListener(listener, this);

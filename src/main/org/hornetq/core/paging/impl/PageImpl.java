@@ -13,9 +13,6 @@
 
 package org.hornetq.core.paging.impl;
 
-import static org.hornetq.utils.DataConstants.SIZE_BYTE;
-import static org.hornetq.utils.DataConstants.SIZE_INT;
-
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +26,7 @@ import org.hornetq.core.logging.Logger;
 import org.hornetq.core.paging.Page;
 import org.hornetq.core.paging.PagedMessage;
 import org.hornetq.core.persistence.StorageManager;
+import org.hornetq.utils.DataConstants;
 import org.hornetq.utils.SimpleString;
 
 /**
@@ -42,7 +40,7 @@ public class PageImpl implements Page
 
    private static final Logger log = Logger.getLogger(PageImpl.class);
 
-   public static final int SIZE_RECORD = SIZE_BYTE + SIZE_INT + SIZE_BYTE;
+   public static final int SIZE_RECORD = DataConstants.SIZE_BYTE + DataConstants.SIZE_INT + DataConstants.SIZE_BYTE;
 
    private static final byte START_BYTE = (byte)'{';
 
@@ -61,20 +59,24 @@ public class PageImpl implements Page
    private final SequentialFileFactory fileFactory;
 
    private final AtomicInteger size = new AtomicInteger(0);
-   
+
    private final StorageManager storageManager;
-   
+
    private final SimpleString storeName;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public PageImpl(final SimpleString storeName, final StorageManager storageManager, final SequentialFileFactory factory, final SequentialFile file, final int pageId) throws Exception
+   public PageImpl(final SimpleString storeName,
+                   final StorageManager storageManager,
+                   final SequentialFileFactory factory,
+                   final SequentialFile file,
+                   final int pageId) throws Exception
    {
       this.pageId = pageId;
       this.file = file;
-      this.fileFactory = factory;
+      fileFactory = factory;
       this.storageManager = storageManager;
       this.storeName = storeName;
    }
@@ -95,10 +97,10 @@ public class PageImpl implements Page
       ByteBuffer buffer2 = fileFactory.newBuffer((int)file.size());
       file.position(0);
       file.read(buffer2);
-      
+
       buffer2.rewind();
 
-      HornetQBuffer fileBuffer = HornetQBuffers.wrappedBuffer(buffer2); 
+      HornetQBuffer fileBuffer = HornetQBuffers.wrappedBuffer(buffer2);
       fileBuffer.writerIndex(fileBuffer.capacity());
 
       while (fileBuffer.readable())
@@ -107,24 +109,24 @@ public class PageImpl implements Page
 
          byte byteRead = fileBuffer.readByte();
 
-         if (byteRead == START_BYTE)
+         if (byteRead == PageImpl.START_BYTE)
          {
-            if (fileBuffer.readerIndex() + SIZE_INT < fileBuffer.capacity())
+            if (fileBuffer.readerIndex() + DataConstants.SIZE_INT < fileBuffer.capacity())
             {
                int messageSize = fileBuffer.readInt();
                int oldPos = fileBuffer.readerIndex();
-               if (fileBuffer.readerIndex() + messageSize < fileBuffer.capacity() && fileBuffer.getByte(oldPos + messageSize) == END_BYTE)
+               if (fileBuffer.readerIndex() + messageSize < fileBuffer.capacity() && fileBuffer.getByte(oldPos + messageSize) == PageImpl.END_BYTE)
                {
-                  PagedMessage msg = new PagedMessageImpl();                  
+                  PagedMessage msg = new PagedMessageImpl();
                   msg.decode(fileBuffer);
                   byte b = fileBuffer.readByte();
-                  if (b != END_BYTE)
+                  if (b != PageImpl.END_BYTE)
                   {
                      // Sanity Check: This would only happen if there is a bug on decode or any internal code, as this
                      // constraint was already checked
                      throw new IllegalStateException("Internal error, it wasn't possible to locate END_BYTE " + b);
                   }
-                  messages.add(msg);                  
+                  messages.add(msg);
                }
                else
                {
@@ -147,26 +149,26 @@ public class PageImpl implements Page
 
    public void write(final PagedMessage message) throws Exception
    {
-      ByteBuffer buffer = fileFactory.newBuffer(message.getEncodeSize() + SIZE_RECORD);
-      
+      ByteBuffer buffer = fileFactory.newBuffer(message.getEncodeSize() + PageImpl.SIZE_RECORD);
+
       HornetQBuffer wrap = HornetQBuffers.wrappedBuffer(buffer);
       wrap.clear();
-      
-      wrap.writeByte(START_BYTE);
+
+      wrap.writeByte(PageImpl.START_BYTE);
       wrap.writeInt(0);
       int startIndex = wrap.writerIndex();
       message.encode(wrap);
       int endIndex = wrap.writerIndex();
-      wrap.setInt(1, endIndex - startIndex); // The encoded length    
-      wrap.writeByte(END_BYTE);
-      
+      wrap.setInt(1, endIndex - startIndex); // The encoded length
+      wrap.writeByte(PageImpl.END_BYTE);
+
       buffer.rewind();
 
       file.writeDirect(buffer, false);
 
       numberOfMessages.incrementAndGet();
       size.addAndGet(buffer.limit());
-      
+
       storageManager.pageWrite(message, pageId);
    }
 
@@ -197,13 +199,13 @@ public class PageImpl implements Page
       {
          storageManager.pageDeleted(storeName, pageId);
       }
-      
+
       if (suspiciousRecords)
       {
-         log.warn("File " + file.getFileName() +
-                  " being renamed to " +
-                  file.getFileName() +
-                  ".invalidPage as it was loaded partially. Please verify your data.");
+         PageImpl.log.warn("File " + file.getFileName() +
+                           " being renamed to " +
+                           file.getFileName() +
+                           ".invalidPage as it was loaded partially. Please verify your data.");
          file.renameTo(file.getFileName() + ".invalidPage");
       }
       else
@@ -234,7 +236,7 @@ public class PageImpl implements Page
     */
    private void markFileAsSuspect(final int position, final int msgNumber)
    {
-      log.warn("Page file had incomplete records at position " + position + " at record number " + msgNumber);
+      PageImpl.log.warn("Page file had incomplete records at position " + position + " at record number " + msgNumber);
       suspiciousRecords = true;
    }
 

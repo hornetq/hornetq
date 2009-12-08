@@ -4,7 +4,8 @@
  * at http://creativecommons.org/licenses/publicdomain
  */
 
-package org.hornetq.utils.concurrent;     // XXX This belongs in java.util!!! XXX
+package org.hornetq.utils.concurrent; // XXX This belongs in java.util!!! XXX
+
 import java.util.Collection;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -84,156 +85,150 @@ import java.util.concurrent.TimeUnit;
  * @author Doug Lea
  * @param <E> the type of elements held in this collection
  */
-public interface BlockingDeque<E> extends Deque<E>, BlockingQueue<E> {
+public interface BlockingDeque<E> extends Deque<E>, BlockingQueue<E>
+{
 
-    /**
-     * Adds the specified element as the first element of this deque,
-     * waiting if necessary for space to become available.
-     * @param o the element to add
-     * @throws InterruptedException if interrupted while waiting.
-     * @throws NullPointerException if the specified element is <tt>null</tt>.
-     */
-    void putFirst(E o) throws InterruptedException;
+   /**
+    * Adds the specified element as the first element of this deque,
+    * waiting if necessary for space to become available.
+    * @param o the element to add
+    * @throws InterruptedException if interrupted while waiting.
+    * @throws NullPointerException if the specified element is <tt>null</tt>.
+    */
+   void putFirst(E o) throws InterruptedException;
 
-    /**
-     * Adds the specified element as the last element of this deque,
-     * waiting if necessary for space to become available.
-     * @param o the element to add
-     * @throws InterruptedException if interrupted while waiting.
-     * @throws NullPointerException if the specified element is <tt>null</tt>.
-     */
-    void putLast(E o) throws InterruptedException;
+   /**
+    * Adds the specified element as the last element of this deque,
+    * waiting if necessary for space to become available.
+    * @param o the element to add
+    * @throws InterruptedException if interrupted while waiting.
+    * @throws NullPointerException if the specified element is <tt>null</tt>.
+    */
+   void putLast(E o) throws InterruptedException;
 
-    /**
-     * Retrieves and removes the first element of this deque, waiting
-     * if no elements are present on this deque.
-     * @return the head of this deque
-     * @throws InterruptedException if interrupted while waiting.
-     */
-    E takeFirst() throws InterruptedException;
+   /**
+    * Retrieves and removes the first element of this deque, waiting
+    * if no elements are present on this deque.
+    * @return the head of this deque
+    * @throws InterruptedException if interrupted while waiting.
+    */
+   E takeFirst() throws InterruptedException;
 
-    /**
-     * Retrieves and removes the last element of this deque, waiting
-     * if no elements are present on this deque.
-     * @return the head of this deque
-     * @throws InterruptedException if interrupted while waiting.
-     */
-    E takeLast() throws InterruptedException;
+   /**
+    * Retrieves and removes the last element of this deque, waiting
+    * if no elements are present on this deque.
+    * @return the head of this deque
+    * @throws InterruptedException if interrupted while waiting.
+    */
+   E takeLast() throws InterruptedException;
 
-    /**
-     * Inserts the specified element as the first element of this deque,
-     * waiting if necessary up to the specified wait time for space to
-     * become available.
-     * @param o the element to add
-     * @param timeout how long to wait before giving up, in units of
-     * <tt>unit</tt>
-     * @param unit a <tt>TimeUnit</tt> determining how to interpret the
-     * <tt>timeout</tt> parameter
-     * @return <tt>true</tt> if successful, or <tt>false</tt> if
-     * the specified waiting time elapses before space is available.
-     * @throws InterruptedException if interrupted while waiting.
-     * @throws NullPointerException if the specified element is <tt>null</tt>.
-     */
-    boolean offerFirst(E o, long timeout, TimeUnit unit)
-        throws InterruptedException;
+   /**
+    * Inserts the specified element as the first element of this deque,
+    * waiting if necessary up to the specified wait time for space to
+    * become available.
+    * @param o the element to add
+    * @param timeout how long to wait before giving up, in units of
+    * <tt>unit</tt>
+    * @param unit a <tt>TimeUnit</tt> determining how to interpret the
+    * <tt>timeout</tt> parameter
+    * @return <tt>true</tt> if successful, or <tt>false</tt> if
+    * the specified waiting time elapses before space is available.
+    * @throws InterruptedException if interrupted while waiting.
+    * @throws NullPointerException if the specified element is <tt>null</tt>.
+    */
+   boolean offerFirst(E o, long timeout, TimeUnit unit) throws InterruptedException;
 
-    /**
-     * Inserts the specified element as the last element of this deque,
-     * waiting if necessary up to the specified wait time for space to
-     * become available.
-     * @param o the element to add
-     * @param timeout how long to wait before giving up, in units of
-     * <tt>unit</tt>
-     * @param unit a <tt>TimeUnit</tt> determining how to interpret the
-     * <tt>timeout</tt> parameter
-     * @return <tt>true</tt> if successful, or <tt>false</tt> if
-     * the specified waiting time elapses before space is available.
-     * @throws InterruptedException if interrupted while waiting.
-     * @throws NullPointerException if the specified element is <tt>null</tt>.
-     */
-    boolean offerLast(E o, long timeout, TimeUnit unit)
-        throws InterruptedException;
+   /**
+    * Inserts the specified element as the last element of this deque,
+    * waiting if necessary up to the specified wait time for space to
+    * become available.
+    * @param o the element to add
+    * @param timeout how long to wait before giving up, in units of
+    * <tt>unit</tt>
+    * @param unit a <tt>TimeUnit</tt> determining how to interpret the
+    * <tt>timeout</tt> parameter
+    * @return <tt>true</tt> if successful, or <tt>false</tt> if
+    * the specified waiting time elapses before space is available.
+    * @throws InterruptedException if interrupted while waiting.
+    * @throws NullPointerException if the specified element is <tt>null</tt>.
+    */
+   boolean offerLast(E o, long timeout, TimeUnit unit) throws InterruptedException;
 
+   /**
+    * Retrieves and removes the first element of this deque, waiting
+    * if necessary up to the specified wait time if no elements are
+    * present on this deque.
+    * @param timeout how long to wait before giving up, in units of
+    * <tt>unit</tt>
+    * @param unit a <tt>TimeUnit</tt> determining how to interpret the
+    * <tt>timeout</tt> parameter
+    * @return the head of this deque, or <tt>null</tt> if the
+    * specified waiting time elapses before an element is present.
+    * @throws InterruptedException if interrupted while waiting.
+    */
+   E pollFirst(long timeout, TimeUnit unit) throws InterruptedException;
 
-    /**
-     * Retrieves and removes the first element of this deque, waiting
-     * if necessary up to the specified wait time if no elements are
-     * present on this deque.
-     * @param timeout how long to wait before giving up, in units of
-     * <tt>unit</tt>
-     * @param unit a <tt>TimeUnit</tt> determining how to interpret the
-     * <tt>timeout</tt> parameter
-     * @return the head of this deque, or <tt>null</tt> if the
-     * specified waiting time elapses before an element is present.
-     * @throws InterruptedException if interrupted while waiting.
-     */
-    E pollFirst(long timeout, TimeUnit unit)
-        throws InterruptedException;
+   /**
+    * Retrieves and removes the last element of this deque, waiting
+    * if necessary up to the specified wait time if no elements are
+    * present on this deque.
+    * @param timeout how long to wait before giving up, in units of
+    * <tt>unit</tt>
+    * @param unit a <tt>TimeUnit</tt> determining how to interpret the
+    * <tt>timeout</tt> parameter
+    * @return the head of this deque, or <tt>null</tt> if the
+    * specified waiting time elapses before an element is present.
+    * @throws InterruptedException if interrupted while waiting.
+    */
+   E pollLast(long timeout, TimeUnit unit) throws InterruptedException;
 
-    /**
-     * Retrieves and removes the last element of this deque, waiting
-     * if necessary up to the specified wait time if no elements are
-     * present on this deque.
-     * @param timeout how long to wait before giving up, in units of
-     * <tt>unit</tt>
-     * @param unit a <tt>TimeUnit</tt> determining how to interpret the
-     * <tt>timeout</tt> parameter
-     * @return the head of this deque, or <tt>null</tt> if the
-     * specified waiting time elapses before an element is present.
-     * @throws InterruptedException if interrupted while waiting.
-     */
-    E pollLast(long timeout, TimeUnit unit)
-        throws InterruptedException;
+   /**
+    * Adds the specified element as the last element of this deque,
+    * waiting if necessary for space to become available.  This
+    * method is equivalent to to putLast
+    * @param o the element to add
+    * @throws InterruptedException if interrupted while waiting.
+    * @throws NullPointerException if the specified element is <tt>null</tt>.
+    */
+   void put(E o) throws InterruptedException;
 
-    /**
-     * Adds the specified element as the last element of this deque,
-     * waiting if necessary for space to become available.  This
-     * method is equivalent to to putLast
-     * @param o the element to add
-     * @throws InterruptedException if interrupted while waiting.
-     * @throws NullPointerException if the specified element is <tt>null</tt>.
-     */
-    void put(E o) throws InterruptedException;
+   /** 
+    * Inserts the specified element as the lest element of this
+    * deque, if possible.  When using deques that may impose
+    * insertion restrictions (for example capacity bounds), method
+    * <tt>offer</tt> is generally preferable to method {@link
+    * Collection#add}, which can fail to insert an element only by
+    * throwing an exception.  This method is equivalent to to
+    * offerLast
+    *
+    * @param o the element to add.
+    * @return <tt>true</tt> if it was possible to add the element to
+    *         this deque, else <tt>false</tt>
+    * @throws NullPointerException if the specified element is <tt>null</tt>
+    */
+   boolean offer(E o, long timeout, TimeUnit unit) throws InterruptedException;
 
-    /** 
-     * Inserts the specified element as the lest element of this
-     * deque, if possible.  When using deques that may impose
-     * insertion restrictions (for example capacity bounds), method
-     * <tt>offer</tt> is generally preferable to method {@link
-     * Collection#add}, which can fail to insert an element only by
-     * throwing an exception.  This method is equivalent to to
-     * offerLast
-     *
-     * @param o the element to add.
-     * @return <tt>true</tt> if it was possible to add the element to
-     *         this deque, else <tt>false</tt>
-     * @throws NullPointerException if the specified element is <tt>null</tt>
-     */
-    boolean offer(E o, long timeout, TimeUnit unit)
-        throws InterruptedException;
+   /**
+    * Retrieves and removes the first element of this deque, waiting
+    * if no elements are present on this deque.
+    * This method is equivalent to to takeFirst 
+    * @return the head of this deque
+    * @throws InterruptedException if interrupted while waiting.
+    */
+   E take() throws InterruptedException;
 
-    /**
-     * Retrieves and removes the first element of this deque, waiting
-     * if no elements are present on this deque.
-     * This method is equivalent to to takeFirst 
-     * @return the head of this deque
-     * @throws InterruptedException if interrupted while waiting.
-     */
-    E take() throws InterruptedException;
-
-    /**
-     * Retrieves and removes the first element of this deque, waiting
-     * if necessary up to the specified wait time if no elements are
-     * present on this deque.  This method is equivalent to to
-     * pollFirst
-     * @param timeout how long to wait before giving up, in units of
-     * <tt>unit</tt>
-     * @param unit a <tt>TimeUnit</tt> determining how to interpret the
-     * <tt>timeout</tt> parameter
-     * @return the head of this deque, or <tt>null</tt> if the
-     * specified waiting time elapses before an element is present.
-     * @throws InterruptedException if interrupted while waiting.
-     */
-    E poll(long timeout, TimeUnit unit)
-        throws InterruptedException;
+   /**
+    * Retrieves and removes the first element of this deque, waiting
+    * if necessary up to the specified wait time if no elements are
+    * present on this deque.  This method is equivalent to to
+    * pollFirst
+    * @param timeout how long to wait before giving up, in units of
+    * <tt>unit</tt>
+    * @param unit a <tt>TimeUnit</tt> determining how to interpret the
+    * <tt>timeout</tt> parameter
+    * @return the head of this deque, or <tt>null</tt> if the
+    * specified waiting time elapses before an element is present.
+    * @throws InterruptedException if interrupted while waiting.
+    */
+   E poll(long timeout, TimeUnit unit) throws InterruptedException;
 }

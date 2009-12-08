@@ -43,8 +43,8 @@ public interface ClusterConnection extends HornetQComponent
                                    SimpleString routingName,
                                    long queueID,
                                    SimpleString filterString,
-                                   SimpleString queueName,                 
+                                   SimpleString queueName,
                                    int distance) throws Exception;
-   
+
    void activate();
 }

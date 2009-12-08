@@ -30,7 +30,7 @@ public interface Connection
    Object getID();
 
    void write(HornetQBuffer buffer);
-   
+
    void write(HornetQBuffer buffer, boolean flush);
 
    void close();

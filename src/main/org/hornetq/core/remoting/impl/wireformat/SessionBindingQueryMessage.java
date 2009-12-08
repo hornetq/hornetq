@@ -29,14 +29,14 @@ public class SessionBindingQueryMessage extends PacketImpl
 
    public SessionBindingQueryMessage(final SimpleString address)
    {
-      super(SESS_BINDINGQUERY);
+      super(PacketImpl.SESS_BINDINGQUERY);
 
       this.address = address;
    }
 
    public SessionBindingQueryMessage()
    {
-      super(SESS_BINDINGQUERY);
+      super(PacketImpl.SESS_BINDINGQUERY);
    }
 
    public SimpleString getAddress()

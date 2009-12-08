@@ -18,7 +18,6 @@ import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.remoting.impl.wireformat.SessionReceiveContinuationMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionReceiveLargeMessage;
-import org.hornetq.core.remoting.impl.wireformat.SessionReceiveMessage;
 import org.hornetq.utils.SimpleString;
 
 /**
@@ -31,23 +30,23 @@ import org.hornetq.utils.SimpleString;
 public interface ClientConsumerInternal extends ClientConsumer
 {
    long getID();
-   
+
    SimpleString getQueueName();
-   
+
    SimpleString getFilterString();
-   
+
    boolean isBrowseOnly();
 
    void handleMessage(ClientMessageInternal message) throws Exception;
 
    void handleLargeMessage(SessionReceiveLargeMessage largeMessageHeader) throws Exception;
-   
+
    void handleLargeMessageContinuation(SessionReceiveContinuationMessage continuation) throws Exception;
-   
+
    void flowControl(final int messageBytes, final boolean discountSlowConsumer) throws HornetQException;
 
    void clear() throws HornetQException;
-   
+
    void clearAtFailover();
 
    int getClientWindowSize();
@@ -55,9 +54,9 @@ public interface ClientConsumerInternal extends ClientConsumer
    int getBufferSize();
 
    void cleanUp() throws HornetQException;
-   
+
    void acknowledge(ClientMessage message) throws HornetQException;
-   
+
    void flushAcks() throws HornetQException;
 
    void stop() throws HornetQException;

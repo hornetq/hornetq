@@ -29,7 +29,12 @@ import org.hornetq.utils.SimpleString;
  */
 public interface QueueFactory
 {
-   Queue createQueue(long persistenceID, final SimpleString address, SimpleString name, Filter filter, boolean durable, boolean temporary);
+   Queue createQueue(long persistenceID,
+                     final SimpleString address,
+                     SimpleString name,
+                     Filter filter,
+                     boolean durable,
+                     boolean temporary);
 
    /**
     * This is required for delete-all-reference to work correctly with paging

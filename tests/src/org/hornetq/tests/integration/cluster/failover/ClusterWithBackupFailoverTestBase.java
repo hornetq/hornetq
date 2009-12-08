@@ -30,6 +30,7 @@ import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.cluster.BroadcastGroup;
 import org.hornetq.tests.integration.cluster.distribution.ClusterTestBase;
+import org.hornetq.tests.util.ServiceTestBase;
 
 /**
  * 
@@ -45,7 +46,6 @@ public abstract class ClusterWithBackupFailoverTestBase extends ClusterTestBase
 {
    private static final Logger log = Logger.getLogger(ClusterWithBackupFailoverTestBase.class);
 
-
    protected abstract void setupCluster(final boolean forwardWhenNoConsumers) throws Exception;
 
    protected abstract void setupServers() throws Exception;
@@ -56,7 +56,7 @@ public abstract class ClusterWithBackupFailoverTestBase extends ClusterTestBase
       super.setUp();
 
       FailoverManagerImpl.enableDebug();
-      
+
       setupServers();
    }
 
@@ -66,7 +66,7 @@ public abstract class ClusterWithBackupFailoverTestBase extends ClusterTestBase
       stopServers();
 
       FailoverManagerImpl.disableDebug();
-      
+
       super.tearDown();
    }
 
@@ -106,12 +106,12 @@ public abstract class ClusterWithBackupFailoverTestBase extends ClusterTestBase
 
       send(1, "queues.testaddress", 10, false, null);
       verifyReceiveRoundRobinInSomeOrder(true, 10, 0, 1, 2);
-            
+
       send(2, "queues.testaddress", 10, false, null);
       verifyReceiveRoundRobinInSomeOrder(true, 10, 0, 1, 2);
-      
+
       failNode(0);
-      
+
       // live nodes
       waitForBindings(1, "queues.testaddress", 1, 1, true);
       waitForBindings(2, "queues.testaddress", 1, 1, true);
@@ -123,15 +123,15 @@ public abstract class ClusterWithBackupFailoverTestBase extends ClusterTestBase
       waitForBindings(2, "queues.testaddress", 2, 2, false);
       // activated backup nodes
       waitForBindings(3, "queues.testaddress", 2, 2, false);
-      
-      log.info("** now sending");
+
+      ClusterWithBackupFailoverTestBase.log.info("** now sending");
 
       send(0, "queues.testaddress", 10, false, null);
       verifyReceiveRoundRobinInSomeOrder(true, 10, 0, 1, 2);
 
       send(1, "queues.testaddress", 10, false, null);
       verifyReceiveRoundRobinInSomeOrder(true, 10, 0, 1, 2);
-            
+
       send(2, "queues.testaddress", 10, false, null);
       verifyReceiveRoundRobinInSomeOrder(true, 10, 0, 1, 2);
 
@@ -178,14 +178,14 @@ public abstract class ClusterWithBackupFailoverTestBase extends ClusterTestBase
 
       send(2, "queues.testaddress", 10, false, null);
       verifyReceiveRoundRobinInSomeOrder(true, 10, 0, 1, 2);
-      
+
       removeConsumer(0);
       removeConsumer(1);
       removeConsumer(2);
-      
+
       stopServers();
-      
-      log.info("*** test done");
+
+      ClusterWithBackupFailoverTestBase.log.info("*** test done");
    }
 
    protected void setupCluster() throws Exception
@@ -202,9 +202,9 @@ public abstract class ClusterWithBackupFailoverTestBase extends ClusterTestBase
       stopServers(0, 1, 2, 3, 4, 5);
    }
 
-   protected void failNode(int node) throws Exception
+   protected void failNode(final int node) throws Exception
    {
-      log.info("*** failing node " + node);
+      ClusterWithBackupFailoverTestBase.log.info("*** failing node " + node);
 
       Map<String, Object> params = generateParams(node, isNetty());
 
@@ -212,26 +212,26 @@ public abstract class ClusterWithBackupFailoverTestBase extends ClusterTestBase
 
       if (isNetty())
       {
-         serverTC = new TransportConfiguration(NETTY_CONNECTOR_FACTORY, params);
+         serverTC = new TransportConfiguration(ServiceTestBase.NETTY_CONNECTOR_FACTORY, params);
       }
       else
       {
-         serverTC = new TransportConfiguration(INVM_CONNECTOR_FACTORY, params);
+         serverTC = new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY, params);
       }
-      
+
       HornetQServer server = getServer(node);
 
-      //Prevent remoting service taking any more connections
+      // Prevent remoting service taking any more connections
       server.getRemotingService().freeze();
-      
-      //Stop it broadcasting
-      for (BroadcastGroup group: server.getClusterManager().getBroadcastGroups())
+
+      // Stop it broadcasting
+      for (BroadcastGroup group : server.getClusterManager().getBroadcastGroups())
       {
          group.stop();
       }
-      
+
       FailoverManagerImpl.failAllConnectionsForConnector(serverTC);
-      
+
       server.stop();
    }
 

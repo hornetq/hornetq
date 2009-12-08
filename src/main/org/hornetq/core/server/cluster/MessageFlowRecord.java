@@ -11,7 +11,6 @@
  * permissions and limitations under the License.
  */
 
-
 package org.hornetq.core.server.cluster;
 
 import org.hornetq.core.client.MessageHandler;
@@ -28,13 +27,13 @@ import org.hornetq.core.client.MessageHandler;
 public interface MessageFlowRecord extends MessageHandler
 {
    String getAddress();
-   
+
    int getMaxHops();
-   
+
    Bridge getBridge();
 
    void close() throws Exception;
-   
+
    void reset() throws Exception;
 
 }

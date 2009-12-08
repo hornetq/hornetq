@@ -13,7 +13,6 @@
 
 package org.hornetq.core.persistence.impl.nullpm;
 
-import org.hornetq.core.buffers.HornetQBuffer;
 import org.hornetq.core.buffers.HornetQBuffers;
 import org.hornetq.core.server.LargeServerMessage;
 import org.hornetq.core.server.impl.ServerMessageImpl;
@@ -100,7 +99,7 @@ public class NullStorageLargeServerMessage extends ServerMessageImpl implements 
    /* (non-Javadoc)
     * @see org.hornetq.core.server.LargeServerMessage#setLinkedMessage(org.hornetq.core.server.LargeServerMessage)
     */
-   public void setLinkedMessage(LargeServerMessage message)
+   public void setLinkedMessage(final LargeServerMessage message)
    {
    }
 
@@ -116,7 +115,7 @@ public class NullStorageLargeServerMessage extends ServerMessageImpl implements 
    /* (non-Javadoc)
     * @see org.hornetq.core.server.LargeServerMessage#setComplete(boolean)
     */
-   public void setComplete(boolean isComplete)
+   public void setComplete(final boolean isComplete)
    {
       // nothing to be done on null persistence
    }
@@ -145,7 +144,7 @@ public class NullStorageLargeServerMessage extends ServerMessageImpl implements 
    {
 
    }
-   
+
    @Override
    public synchronized int getEncodeSize()
    {

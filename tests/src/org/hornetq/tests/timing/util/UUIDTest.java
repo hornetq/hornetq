@@ -11,8 +11,8 @@
  * permissions and limitations under the License.
  */
 
-
 package org.hornetq.tests.timing.util;
+
 /**
  * 
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
@@ -22,17 +22,17 @@ public class UUIDTest extends org.hornetq.tests.unit.util.UUIDTest
 {
 
    // Constants -----------------------------------------------------
-   
+
    // Attributes ----------------------------------------------------
-   
+
    // Static --------------------------------------------------------
-   
+
    // Constructors --------------------------------------------------
-   
+
    // Public --------------------------------------------------------
-   
+
    // Package protected ---------------------------------------------
-   
+
    // Protected -----------------------------------------------------
 
    @Override
@@ -40,11 +40,9 @@ public class UUIDTest extends org.hornetq.tests.unit.util.UUIDTest
    {
       return 1000000;
    }
-   
-  
-   
+
    // Private -------------------------------------------------------
-   
+
    // Inner classes -------------------------------------------------
-   
+
 }

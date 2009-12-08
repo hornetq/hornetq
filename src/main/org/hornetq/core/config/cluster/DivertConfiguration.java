@@ -30,7 +30,7 @@ import org.hornetq.utils.UUIDGenerator;
 public class DivertConfiguration implements Serializable
 {
    private static final long serialVersionUID = 6910543740464269629L;
-   
+
    private static final Logger log = Logger.getLogger(DivertConfiguration.class);
 
    private String name;
@@ -67,7 +67,7 @@ public class DivertConfiguration implements Serializable
       this.address = address;
       this.forwardingAddress = forwardingAddress;
       this.exclusive = exclusive;
-      this.filterString = filterString;      
+      this.filterString = filterString;
       this.transformerClassName = transformerClassName;
    }
 
@@ -109,7 +109,7 @@ public class DivertConfiguration implements Serializable
    /**
     * @param name the name to set
     */
-   public void setName(String name)
+   public void setName(final String name)
    {
       this.name = name;
    }
@@ -117,7 +117,7 @@ public class DivertConfiguration implements Serializable
    /**
     * @param routingName the routingName to set
     */
-   public void setRoutingName(String routingName)
+   public void setRoutingName(final String routingName)
    {
       this.routingName = routingName;
    }
@@ -125,7 +125,7 @@ public class DivertConfiguration implements Serializable
    /**
     * @param address the address to set
     */
-   public void setAddress(String address)
+   public void setAddress(final String address)
    {
       this.address = address;
    }
@@ -133,7 +133,7 @@ public class DivertConfiguration implements Serializable
    /**
     * @param forwardingAddress the forwardingAddress to set
     */
-   public void setForwardingAddress(String forwardingAddress)
+   public void setForwardingAddress(final String forwardingAddress)
    {
       this.forwardingAddress = forwardingAddress;
    }
@@ -141,7 +141,7 @@ public class DivertConfiguration implements Serializable
    /**
     * @param exclusive the exclusive to set
     */
-   public void setExclusive(boolean exclusive)
+   public void setExclusive(final boolean exclusive)
    {
       this.exclusive = exclusive;
    }
@@ -149,7 +149,7 @@ public class DivertConfiguration implements Serializable
    /**
     * @param filterString the filterString to set
     */
-   public void setFilterString(String filterString)
+   public void setFilterString(final String filterString)
    {
       this.filterString = filterString;
    }
@@ -157,7 +157,7 @@ public class DivertConfiguration implements Serializable
    /**
     * @param transformerClassName the transformerClassName to set
     */
-   public void setTransformerClassName(String transformerClassName)
+   public void setTransformerClassName(final String transformerClassName)
    {
       this.transformerClassName = transformerClassName;
    }

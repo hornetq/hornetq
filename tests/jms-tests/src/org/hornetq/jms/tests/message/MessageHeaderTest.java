@@ -49,6 +49,8 @@ import org.hornetq.jms.client.HornetQMessage;
 import org.hornetq.jms.client.HornetQObjectMessage;
 import org.hornetq.jms.client.HornetQStreamMessage;
 import org.hornetq.jms.client.HornetQTextMessage;
+import org.hornetq.jms.tests.HornetQServerTestCase;
+import org.hornetq.jms.tests.util.ProxyAssertSupport;
 import org.hornetq.utils.SimpleString;
 
 /**
@@ -69,8 +71,7 @@ public class MessageHeaderTest extends MessageHeaderTestBase
 
    // Constructors --------------------------------------------------
 
-    // Public --------------------------------------------------------
-
+   // Public --------------------------------------------------------
 
    public void testClearMessage() throws Exception
    {
@@ -82,18 +83,18 @@ public class MessageHeaderTest extends MessageHeaderTestBase
 
       message = queueConsumer.receive(1000);
 
-      assertNotNull(message);
+      ProxyAssertSupport.assertNotNull(message);
 
       message.clearProperties();
 
-      assertNotNull(message.getJMSDestination());
+      ProxyAssertSupport.assertNotNull(message.getJMSDestination());
 
    }
 
    public void testMessageOrderQueue() throws Exception
    {
       final int NUM_MESSAGES = 10;
-      
+
       queueProducer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       for (int i = 0; i < NUM_MESSAGES; i++)
       {
@@ -101,15 +102,15 @@ public class MessageHeaderTest extends MessageHeaderTestBase
          m.setIntProperty("count", i);
          queueProducer.send(m);
       }
-      
+
       for (int i = 0; i < NUM_MESSAGES; i++)
       {
          Message m = queueConsumer.receive(3000);
-         assertNotNull(m);
+         ProxyAssertSupport.assertNotNull(m);
          int count = m.getIntProperty("count");
-         assertEquals(i, count);
+         ProxyAssertSupport.assertEquals(i, count);
       }
-      
+
       queueProducer.setDeliveryMode(DeliveryMode.PERSISTENT);
       for (int i = 0; i < NUM_MESSAGES; i++)
       {
@@ -117,20 +118,20 @@ public class MessageHeaderTest extends MessageHeaderTestBase
          m.setIntProperty("count2", i);
          queueProducer.send(m);
       }
-      
+
       for (int i = 0; i < NUM_MESSAGES; i++)
       {
          Message m = queueConsumer.receive(3000);
-         assertNotNull(m);
+         ProxyAssertSupport.assertNotNull(m);
          int count = m.getIntProperty("count2");
-         assertEquals(i, count);
+         ProxyAssertSupport.assertEquals(i, count);
       }
    }
-   
+
    public void testMessageOrderTopic() throws Exception
    {
       final int NUM_MESSAGES = 10;
-      
+
       topicProducer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       for (int i = 0; i < NUM_MESSAGES; i++)
       {
@@ -138,15 +139,15 @@ public class MessageHeaderTest extends MessageHeaderTestBase
          m.setIntProperty("count", i);
          topicProducer.send(m);
       }
-      
+
       for (int i = 0; i < NUM_MESSAGES; i++)
       {
          Message m = topicConsumer.receive(3000);
-         assertNotNull(m);
+         ProxyAssertSupport.assertNotNull(m);
          int count = m.getIntProperty("count");
-         assertEquals(i, count);
+         ProxyAssertSupport.assertEquals(i, count);
       }
-      
+
       topicProducer.setDeliveryMode(DeliveryMode.PERSISTENT);
       for (int i = 0; i < NUM_MESSAGES; i++)
       {
@@ -154,22 +155,21 @@ public class MessageHeaderTest extends MessageHeaderTestBase
          m.setIntProperty("count2", i);
          topicProducer.send(m);
       }
-      
+
       for (int i = 0; i < NUM_MESSAGES; i++)
       {
          Message m = topicConsumer.receive(3000);
-         assertNotNull(m);
+         ProxyAssertSupport.assertNotNull(m);
          int count = m.getIntProperty("count2");
-         assertEquals(i, count);
+         ProxyAssertSupport.assertEquals(i, count);
       }
    }
-   
 
    public void testProperties() throws Exception
    {
       Message m1 = queueProducerSession.createMessage();
 
-      //Some arbitrary values
+      // Some arbitrary values
       boolean myBool = true;
       byte myByte = 13;
       short myShort = 15321;
@@ -200,380 +200,489 @@ public class MessageHeaderTest extends MessageHeaderTestBase
       try
       {
          m1.setObjectProperty("myIllegal", new Object());
-         fail();
+         ProxyAssertSupport.fail();
       }
       catch (javax.jms.MessageFormatException e)
-      {}
+      {
+      }
 
-
-      queueProducer.send(queue1, m1);
+      queueProducer.send(HornetQServerTestCase.queue1, m1);
 
       Message m2 = queueConsumer.receive(2000);
 
-      assertNotNull(m2);
+      ProxyAssertSupport.assertNotNull(m2);
 
-      assertEquals(myBool, m2.getBooleanProperty("myBool"));
-      assertEquals(myByte, m2.getByteProperty("myByte"));
-      assertEquals(myShort, m2.getShortProperty("myShort"));
-      assertEquals(myInt, m2.getIntProperty("myInt"));
-      assertEquals(myLong, m2.getLongProperty("myLong"));
-      assertEquals(myFloat, m2.getFloatProperty("myFloat"), 0);
-      assertEquals(myDouble, m2.getDoubleProperty("myDouble"), 0);
-      assertEquals(myString, m2.getStringProperty("myString"));
+      ProxyAssertSupport.assertEquals(myBool, m2.getBooleanProperty("myBool"));
+      ProxyAssertSupport.assertEquals(myByte, m2.getByteProperty("myByte"));
+      ProxyAssertSupport.assertEquals(myShort, m2.getShortProperty("myShort"));
+      ProxyAssertSupport.assertEquals(myInt, m2.getIntProperty("myInt"));
+      ProxyAssertSupport.assertEquals(myLong, m2.getLongProperty("myLong"));
+      ProxyAssertSupport.assertEquals(myFloat, m2.getFloatProperty("myFloat"), 0);
+      ProxyAssertSupport.assertEquals(myDouble, m2.getDoubleProperty("myDouble"), 0);
+      ProxyAssertSupport.assertEquals(myString, m2.getStringProperty("myString"));
 
-
-      //Properties should now be read-only
+      // Properties should now be read-only
       try
       {
          m2.setBooleanProperty("myBool", myBool);
-         fail();
+         ProxyAssertSupport.fail();
       }
-      catch (MessageNotWriteableException e) {}
+      catch (MessageNotWriteableException e)
+      {
+      }
 
       try
       {
          m2.setByteProperty("myByte", myByte);
-         fail();
+         ProxyAssertSupport.fail();
       }
-      catch (MessageNotWriteableException e) {}
+      catch (MessageNotWriteableException e)
+      {
+      }
 
       try
       {
          m2.setShortProperty("myShort", myShort);
-         fail();
+         ProxyAssertSupport.fail();
       }
-      catch (MessageNotWriteableException e) {}
+      catch (MessageNotWriteableException e)
+      {
+      }
 
       try
       {
          m2.setIntProperty("myInt", myInt);
-         fail();
+         ProxyAssertSupport.fail();
       }
-      catch (MessageNotWriteableException e) {}
+      catch (MessageNotWriteableException e)
+      {
+      }
 
       try
       {
          m2.setLongProperty("myLong", myLong);
-         fail();
+         ProxyAssertSupport.fail();
       }
-      catch (MessageNotWriteableException e) {}
+      catch (MessageNotWriteableException e)
+      {
+      }
 
       try
       {
          m2.setFloatProperty("myFloat", myFloat);
-         fail();
+         ProxyAssertSupport.fail();
       }
-      catch (MessageNotWriteableException e) {}
+      catch (MessageNotWriteableException e)
+      {
+      }
 
       try
       {
          m2.setDoubleProperty("myDouble", myDouble);
-         fail();
+         ProxyAssertSupport.fail();
       }
-      catch (MessageNotWriteableException e) {}
+      catch (MessageNotWriteableException e)
+      {
+      }
 
       try
       {
          m2.setStringProperty("myString", myString);
-         fail();
+         ProxyAssertSupport.fail();
       }
-      catch (MessageNotWriteableException e) {}
+      catch (MessageNotWriteableException e)
+      {
+      }
 
-      assertTrue(m2.propertyExists("myBool"));
-      assertTrue(m2.propertyExists("myByte"));
-      assertTrue(m2.propertyExists("myShort"));
-      assertTrue(m2.propertyExists("myInt"));
-      assertTrue(m2.propertyExists("myLong"));
-      assertTrue(m2.propertyExists("myFloat"));
-      assertTrue(m2.propertyExists("myDouble"));
-      assertTrue(m2.propertyExists("myString"));
+      ProxyAssertSupport.assertTrue(m2.propertyExists("myBool"));
+      ProxyAssertSupport.assertTrue(m2.propertyExists("myByte"));
+      ProxyAssertSupport.assertTrue(m2.propertyExists("myShort"));
+      ProxyAssertSupport.assertTrue(m2.propertyExists("myInt"));
+      ProxyAssertSupport.assertTrue(m2.propertyExists("myLong"));
+      ProxyAssertSupport.assertTrue(m2.propertyExists("myFloat"));
+      ProxyAssertSupport.assertTrue(m2.propertyExists("myDouble"));
+      ProxyAssertSupport.assertTrue(m2.propertyExists("myString"));
 
-      assertFalse(m2.propertyExists("sausages"));
+      ProxyAssertSupport.assertFalse(m2.propertyExists("sausages"));
 
       HashSet propNames = new HashSet();
       Enumeration en = m2.getPropertyNames();
       while (en.hasMoreElements())
       {
          String propName = (String)en.nextElement();
-         
+
          propNames.add(propName);
       }
 
-      assertEquals(9, propNames.size());
+      ProxyAssertSupport.assertEquals(9, propNames.size());
 
-      assertTrue(propNames.contains("myBool"));
-      assertTrue(propNames.contains("myByte"));
-      assertTrue(propNames.contains("myShort"));
-      assertTrue(propNames.contains("myInt"));
-      assertTrue(propNames.contains("myLong"));
-      assertTrue(propNames.contains("myFloat"));
-      assertTrue(propNames.contains("myDouble"));
-      assertTrue(propNames.contains("myString"));
-
+      ProxyAssertSupport.assertTrue(propNames.contains("myBool"));
+      ProxyAssertSupport.assertTrue(propNames.contains("myByte"));
+      ProxyAssertSupport.assertTrue(propNames.contains("myShort"));
+      ProxyAssertSupport.assertTrue(propNames.contains("myInt"));
+      ProxyAssertSupport.assertTrue(propNames.contains("myLong"));
+      ProxyAssertSupport.assertTrue(propNames.contains("myFloat"));
+      ProxyAssertSupport.assertTrue(propNames.contains("myDouble"));
+      ProxyAssertSupport.assertTrue(propNames.contains("myString"));
 
       // Check property conversions
 
-      //Boolean property can be read as String but not anything else
+      // Boolean property can be read as String but not anything else
 
-      assertEquals(String.valueOf(myBool), m2.getStringProperty("myBool"));
+      ProxyAssertSupport.assertEquals(String.valueOf(myBool), m2.getStringProperty("myBool"));
 
       try
       {
          m2.getByteProperty("myBool");
-         fail();
-      } catch (MessageFormatException e) {}
+         ProxyAssertSupport.fail();
+      }
+      catch (MessageFormatException e)
+      {
+      }
 
       try
       {
          m2.getShortProperty("myBool");
-         fail();
-      } catch (MessageFormatException e) {}
+         ProxyAssertSupport.fail();
+      }
+      catch (MessageFormatException e)
+      {
+      }
 
       try
       {
          m2.getIntProperty("myBool");
-         fail();
-      } catch (MessageFormatException e) {}
+         ProxyAssertSupport.fail();
+      }
+      catch (MessageFormatException e)
+      {
+      }
 
       try
       {
          m2.getLongProperty("myBool");
-         fail();
-      } catch (MessageFormatException e) {}
+         ProxyAssertSupport.fail();
+      }
+      catch (MessageFormatException e)
+      {
+      }
 
       try
       {
          m2.getFloatProperty("myBool");
-         fail();
-      } catch (MessageFormatException e) {}
+         ProxyAssertSupport.fail();
+      }
+      catch (MessageFormatException e)
+      {
+      }
 
       try
       {
          m2.getDoubleProperty("myBool");
-         fail();
-      } catch (MessageFormatException e) {}
-
+         ProxyAssertSupport.fail();
+      }
+      catch (MessageFormatException e)
+      {
+      }
 
       // byte property can be read as short, int, long or String
 
-      assertEquals((short)myByte, m2.getShortProperty("myByte"));
-      assertEquals((int)myByte, m2.getIntProperty("myByte"));
-      assertEquals((long)myByte, m2.getLongProperty("myByte"));
-      assertEquals(String.valueOf(myByte), m2.getStringProperty("myByte"));
+      ProxyAssertSupport.assertEquals((short)myByte, m2.getShortProperty("myByte"));
+      ProxyAssertSupport.assertEquals((int)myByte, m2.getIntProperty("myByte"));
+      ProxyAssertSupport.assertEquals((long)myByte, m2.getLongProperty("myByte"));
+      ProxyAssertSupport.assertEquals(String.valueOf(myByte), m2.getStringProperty("myByte"));
 
       try
       {
          m2.getBooleanProperty("myByte");
-         fail();
-      } catch (MessageFormatException e) {}
+         ProxyAssertSupport.fail();
+      }
+      catch (MessageFormatException e)
+      {
+      }
 
       try
       {
          m2.getFloatProperty("myByte");
-         fail();
-      } catch (MessageFormatException e) {}
+         ProxyAssertSupport.fail();
+      }
+      catch (MessageFormatException e)
+      {
+      }
 
       try
       {
          m2.getDoubleProperty("myByte");
-         fail();
-      } catch (MessageFormatException e) {}
-
+         ProxyAssertSupport.fail();
+      }
+      catch (MessageFormatException e)
+      {
+      }
 
       // short property can be read as int, long or String
 
-      assertEquals((int)myShort, m2.getIntProperty("myShort"));
-      assertEquals((long)myShort, m2.getLongProperty("myShort"));
-      assertEquals(String.valueOf(myShort), m2.getStringProperty("myShort"));
+      ProxyAssertSupport.assertEquals((int)myShort, m2.getIntProperty("myShort"));
+      ProxyAssertSupport.assertEquals((long)myShort, m2.getLongProperty("myShort"));
+      ProxyAssertSupport.assertEquals(String.valueOf(myShort), m2.getStringProperty("myShort"));
 
       try
       {
          m2.getByteProperty("myShort");
-         fail();
-      } catch (MessageFormatException e) {}
+         ProxyAssertSupport.fail();
+      }
+      catch (MessageFormatException e)
+      {
+      }
 
       try
       {
          m2.getBooleanProperty("myShort");
-         fail();
-      } catch (MessageFormatException e) {}
+         ProxyAssertSupport.fail();
+      }
+      catch (MessageFormatException e)
+      {
+      }
 
       try
       {
          m2.getFloatProperty("myShort");
-         fail();
-      } catch (MessageFormatException e) {}
+         ProxyAssertSupport.fail();
+      }
+      catch (MessageFormatException e)
+      {
+      }
 
       try
       {
          m2.getDoubleProperty("myShort");
-         fail();
-      } catch (MessageFormatException e) {}
+         ProxyAssertSupport.fail();
+      }
+      catch (MessageFormatException e)
+      {
+      }
 
       // int property can be read as long or String
 
-      assertEquals((long)myInt, m2.getLongProperty("myInt"));
-      assertEquals(String.valueOf(myInt), m2.getStringProperty("myInt"));
+      ProxyAssertSupport.assertEquals((long)myInt, m2.getLongProperty("myInt"));
+      ProxyAssertSupport.assertEquals(String.valueOf(myInt), m2.getStringProperty("myInt"));
 
       try
       {
          m2.getShortProperty("myInt");
-         fail();
-      } catch (MessageFormatException e) {}
+         ProxyAssertSupport.fail();
+      }
+      catch (MessageFormatException e)
+      {
+      }
 
       try
       {
          m2.getByteProperty("myInt");
-         fail();
-      } catch (MessageFormatException e) {}
+         ProxyAssertSupport.fail();
+      }
+      catch (MessageFormatException e)
+      {
+      }
 
       try
       {
          m2.getBooleanProperty("myInt");
-         fail();
-      } catch (MessageFormatException e) {}
+         ProxyAssertSupport.fail();
+      }
+      catch (MessageFormatException e)
+      {
+      }
 
       try
       {
          m2.getFloatProperty("myInt");
-         fail();
-      } catch (MessageFormatException e) {}
+         ProxyAssertSupport.fail();
+      }
+      catch (MessageFormatException e)
+      {
+      }
 
       try
       {
          m2.getDoubleProperty("myInt");
-         fail();
-      } catch (MessageFormatException e) {}
-
+         ProxyAssertSupport.fail();
+      }
+      catch (MessageFormatException e)
+      {
+      }
 
       // long property can be read as String
 
-      assertEquals(String.valueOf(myLong), m2.getStringProperty("myLong"));
+      ProxyAssertSupport.assertEquals(String.valueOf(myLong), m2.getStringProperty("myLong"));
 
       try
       {
          m2.getIntProperty("myLong");
-         fail();
-      } catch (MessageFormatException e) {}
+         ProxyAssertSupport.fail();
+      }
+      catch (MessageFormatException e)
+      {
+      }
 
       try
       {
          m2.getShortProperty("myLong");
-         fail();
-      } catch (MessageFormatException e) {}
+         ProxyAssertSupport.fail();
+      }
+      catch (MessageFormatException e)
+      {
+      }
 
       try
       {
          m2.getByteProperty("myLong");
-         fail();
-      } catch (MessageFormatException e) {}
+         ProxyAssertSupport.fail();
+      }
+      catch (MessageFormatException e)
+      {
+      }
 
       try
       {
          m2.getBooleanProperty("myLong");
-         fail();
-      } catch (MessageFormatException e) {}
+         ProxyAssertSupport.fail();
+      }
+      catch (MessageFormatException e)
+      {
+      }
 
       try
       {
          m2.getFloatProperty("myLong");
-         fail();
-      } catch (MessageFormatException e) {}
+         ProxyAssertSupport.fail();
+      }
+      catch (MessageFormatException e)
+      {
+      }
 
       try
       {
          m2.getDoubleProperty("myLong");
-         fail();
-      } catch (MessageFormatException e) {}
-
+         ProxyAssertSupport.fail();
+      }
+      catch (MessageFormatException e)
+      {
+      }
 
       // float property can be read as double or String
 
-      assertEquals(String.valueOf(myFloat), m2.getStringProperty("myFloat"));
-      assertEquals((double)myFloat, m2.getDoubleProperty("myFloat"), 0);
+      ProxyAssertSupport.assertEquals(String.valueOf(myFloat), m2.getStringProperty("myFloat"));
+      ProxyAssertSupport.assertEquals((double)myFloat, m2.getDoubleProperty("myFloat"), 0);
 
       try
       {
          m2.getIntProperty("myFloat");
-         fail();
-      } catch (MessageFormatException e) {}
+         ProxyAssertSupport.fail();
+      }
+      catch (MessageFormatException e)
+      {
+      }
 
       try
       {
          m2.getShortProperty("myFloat");
-         fail();
-      } catch (MessageFormatException e) {}
+         ProxyAssertSupport.fail();
+      }
+      catch (MessageFormatException e)
+      {
+      }
 
       try
       {
          m2.getLongProperty("myFloat");
-         fail();
-      } catch (MessageFormatException e) {}
+         ProxyAssertSupport.fail();
+      }
+      catch (MessageFormatException e)
+      {
+      }
 
       try
       {
          m2.getByteProperty("myFloat");
-         fail();
-      } catch (MessageFormatException e) {}
+         ProxyAssertSupport.fail();
+      }
+      catch (MessageFormatException e)
+      {
+      }
 
       try
       {
          m2.getBooleanProperty("myFloat");
-         fail();
-      } catch (MessageFormatException e) {}
-
-
+         ProxyAssertSupport.fail();
+      }
+      catch (MessageFormatException e)
+      {
+      }
 
       // double property can be read as String
 
-      assertEquals(String.valueOf(myDouble), m2.getStringProperty("myDouble"));
-
+      ProxyAssertSupport.assertEquals(String.valueOf(myDouble), m2.getStringProperty("myDouble"));
 
       try
       {
          m2.getFloatProperty("myDouble");
-         fail();
-      } catch (MessageFormatException e) {}
+         ProxyAssertSupport.fail();
+      }
+      catch (MessageFormatException e)
+      {
+      }
 
       try
       {
          m2.getIntProperty("myDouble");
-         fail();
-      } catch (MessageFormatException e) {}
+         ProxyAssertSupport.fail();
+      }
+      catch (MessageFormatException e)
+      {
+      }
 
       try
       {
          m2.getShortProperty("myDouble");
-         fail();
-      } catch (MessageFormatException e) {}
+         ProxyAssertSupport.fail();
+      }
+      catch (MessageFormatException e)
+      {
+      }
 
       try
       {
          m2.getByteProperty("myDouble");
-         fail();
-      } catch (MessageFormatException e) {}
+         ProxyAssertSupport.fail();
+      }
+      catch (MessageFormatException e)
+      {
+      }
 
       try
       {
          m2.getBooleanProperty("myDouble");
-         fail();
-      } catch (MessageFormatException e) {}
+         ProxyAssertSupport.fail();
+      }
+      catch (MessageFormatException e)
+      {
+      }
 
       try
       {
          m2.getFloatProperty("myDouble");
-         fail();
-      } catch (MessageFormatException e) {}
+         ProxyAssertSupport.fail();
+      }
+      catch (MessageFormatException e)
+      {
+      }
 
       m2.clearProperties();
 
       Enumeration en2 = m2.getPropertyNames();
-      assertTrue(en2.hasMoreElements());
+      ProxyAssertSupport.assertTrue(en2.hasMoreElements());
       en2.nextElement();
-      assertFalse(en2.hasMoreElements());
-
-
-
+      ProxyAssertSupport.assertFalse(en2.hasMoreElements());
 
       // Test String -> Numeric and bool conversions
       Message m3 = queueProducerSession.createMessage();
@@ -587,81 +696,91 @@ public class MessageHeaderTest extends MessageHeaderTestBase
       m3.setStringProperty("myDouble", String.valueOf(myDouble));
       m3.setStringProperty("myIllegal", "xyz123");
 
-      assertEquals(myBool, m3.getBooleanProperty("myBool"));
-      assertEquals(myByte, m3.getByteProperty("myByte"));
-      assertEquals(myShort, m3.getShortProperty("myShort"));
-      assertEquals(myInt, m3.getIntProperty("myInt"));
-      assertEquals(myLong, m3.getLongProperty("myLong"));
-      assertEquals(myFloat, m3.getFloatProperty("myFloat"), 0);
-      assertEquals(myDouble, m3.getDoubleProperty("myDouble"), 0);
+      ProxyAssertSupport.assertEquals(myBool, m3.getBooleanProperty("myBool"));
+      ProxyAssertSupport.assertEquals(myByte, m3.getByteProperty("myByte"));
+      ProxyAssertSupport.assertEquals(myShort, m3.getShortProperty("myShort"));
+      ProxyAssertSupport.assertEquals(myInt, m3.getIntProperty("myInt"));
+      ProxyAssertSupport.assertEquals(myLong, m3.getLongProperty("myLong"));
+      ProxyAssertSupport.assertEquals(myFloat, m3.getFloatProperty("myFloat"), 0);
+      ProxyAssertSupport.assertEquals(myDouble, m3.getDoubleProperty("myDouble"), 0);
 
       m3.getBooleanProperty("myIllegal");
 
       try
       {
          m3.getByteProperty("myIllegal");
-         fail();
+         ProxyAssertSupport.fail();
       }
-      catch (NumberFormatException e) {}
+      catch (NumberFormatException e)
+      {
+      }
       try
       {
          m3.getShortProperty("myIllegal");
-         fail();
+         ProxyAssertSupport.fail();
       }
-      catch (NumberFormatException e) {}
+      catch (NumberFormatException e)
+      {
+      }
       try
       {
          m3.getIntProperty("myIllegal");
-         fail();
+         ProxyAssertSupport.fail();
       }
-      catch (NumberFormatException e) {}
+      catch (NumberFormatException e)
+      {
+      }
       try
       {
          m3.getLongProperty("myIllegal");
-         fail();
+         ProxyAssertSupport.fail();
       }
-      catch (NumberFormatException e) {}
+      catch (NumberFormatException e)
+      {
+      }
       try
       {
          m3.getFloatProperty("myIllegal");
-         fail();
+         ProxyAssertSupport.fail();
       }
-      catch (NumberFormatException e) {}
+      catch (NumberFormatException e)
+      {
+      }
       try
       {
          m3.getDoubleProperty("myIllegal");
-         fail();
+         ProxyAssertSupport.fail();
       }
-      catch (NumberFormatException e) {}
+      catch (NumberFormatException e)
+      {
+      }
    }
-
-
 
    public void testSendReceiveForeignMessage() throws JMSException
    {
-      
+
       log.trace("Starting da test");
-      
+
       SimpleJMSMessage foreignMessage = new SimpleJMSMessage();
-      
+
       foreignMessage.setStringProperty("animal", "aardvark");
-      
-      //foreign messages don't have to be serializable
-      assertFalse(foreignMessage instanceof Serializable);
-      
+
+      // foreign messages don't have to be serializable
+      ProxyAssertSupport.assertFalse(foreignMessage instanceof Serializable);
+
       log.trace("Sending message");
-      
+
       queueProducer.send(foreignMessage);
-      
+
       log.trace("Sent message");
 
       Message m2 = queueConsumer.receive(3000);
       log.trace("The message is " + m2);
-      
-      assertNotNull(m2);
-      
-      assertEquals("aardvark", m2.getStringProperty("animal"));
-      
+
+      ProxyAssertSupport.assertNotNull(m2);
+
+      ProxyAssertSupport.assertEquals("aardvark", m2.getStringProperty("animal"));
+
       log.trace("Received message");
 
       log.trace("Done that test");
@@ -669,39 +788,53 @@ public class MessageHeaderTest extends MessageHeaderTestBase
 
    public void testCopyOnJBossMessage() throws JMSException
    {
-      ClientMessage clientMessage = new ClientMessageImpl(HornetQTextMessage.TYPE, true, 0, System.currentTimeMillis(), (byte)4, 1000);
+      ClientMessage clientMessage = new ClientMessageImpl(HornetQTextMessage.TYPE,
+                                                          true,
+                                                          0,
+                                                          System.currentTimeMillis(),
+                                                          (byte)4,
+                                                          1000);
       ClientSession session = new FakeSession(clientMessage);
       HornetQMessage jbossMessage = HornetQMessage.createMessage(clientMessage, session);
       jbossMessage.clearProperties();
 
-      configureMessage(jbossMessage);
+      MessageHeaderTestBase.configureMessage(jbossMessage);
 
       HornetQMessage copy = new HornetQMessage(jbossMessage, session);
 
-      ensureEquivalent(jbossMessage, copy);
+      MessageHeaderTestBase.ensureEquivalent(jbossMessage, copy);
    }
-
 
    public void testCopyOnForeignMessage() throws JMSException
    {
-      ClientMessage clientMessage = new ClientMessageImpl(HornetQTextMessage.TYPE, true, 0, System.currentTimeMillis(), (byte)4, 1000);
+      ClientMessage clientMessage = new ClientMessageImpl(HornetQTextMessage.TYPE,
+                                                          true,
+                                                          0,
+                                                          System.currentTimeMillis(),
+                                                          (byte)4,
+                                                          1000);
       ClientSession session = new FakeSession(clientMessage);
 
       Message foreignMessage = new SimpleJMSMessage();
 
       HornetQMessage copy = new HornetQMessage(foreignMessage, session);
 
-      ensureEquivalent(foreignMessage, copy);
+      MessageHeaderTestBase.ensureEquivalent(foreignMessage, copy);
 
    }
-   
+
    public void testCopyOnForeignBytesMessage() throws JMSException
    {
-      ClientMessage clientMessage = new ClientMessageImpl(HornetQTextMessage.TYPE, true, 0, System.currentTimeMillis(), (byte)4, 1000);
+      ClientMessage clientMessage = new ClientMessageImpl(HornetQTextMessage.TYPE,
+                                                          true,
+                                                          0,
+                                                          System.currentTimeMillis(),
+                                                          (byte)4,
+                                                          1000);
       ClientSession session = new FakeSession(clientMessage);
 
       BytesMessage foreignBytesMessage = new SimpleJMSBytesMessage();
-      for(int i = 0; i < 20; i++)
+      for (int i = 0; i < 20; i++)
       {
          foreignBytesMessage.writeByte((byte)i);
       }
@@ -711,12 +844,17 @@ public class MessageHeaderTest extends MessageHeaderTestBase
       foreignBytesMessage.reset();
       copy.reset();
 
-      ensureEquivalent(foreignBytesMessage, copy);
+      MessageHeaderTestBase.ensureEquivalent(foreignBytesMessage, copy);
    }
-  
+
    public void testCopyOnForeignMapMessage() throws JMSException
    {
-      ClientMessage clientMessage = new ClientMessageImpl(HornetQTextMessage.TYPE, true, 0, System.currentTimeMillis(), (byte)4, 1000);
+      ClientMessage clientMessage = new ClientMessageImpl(HornetQTextMessage.TYPE,
+                                                          true,
+                                                          0,
+                                                          System.currentTimeMillis(),
+                                                          (byte)4,
+                                                          1000);
       ClientSession session = new FakeSession(clientMessage);
       MapMessage foreignMapMessage = new SimpleJMSMapMessage();
       foreignMapMessage.setInt("int", 1);
@@ -724,26 +862,34 @@ public class MessageHeaderTest extends MessageHeaderTestBase
 
       HornetQMapMessage copy = new HornetQMapMessage(foreignMapMessage, session);
 
-      ensureEquivalent(foreignMapMessage, copy);
+      MessageHeaderTestBase.ensureEquivalent(foreignMapMessage, copy);
    }
 
-
    public void testCopyOnForeignObjectMessage() throws JMSException
-   {      
-      ClientMessage clientMessage = new ClientMessageImpl(HornetQTextMessage.TYPE, true, 0, System.currentTimeMillis(), (byte)4, 1000);
+   {
+      ClientMessage clientMessage = new ClientMessageImpl(HornetQTextMessage.TYPE,
+                                                          true,
+                                                          0,
+                                                          System.currentTimeMillis(),
+                                                          (byte)4,
+                                                          1000);
       ClientSession session = new FakeSession(clientMessage);
 
       ObjectMessage foreignObjectMessage = new SimpleJMSObjectMessage();
 
       HornetQObjectMessage copy = new HornetQObjectMessage(foreignObjectMessage, session);
 
-      ensureEquivalent(foreignObjectMessage, copy);
+      MessageHeaderTestBase.ensureEquivalent(foreignObjectMessage, copy);
    }
-
 
    public void testCopyOnForeignStreamMessage() throws JMSException
    {
-      ClientMessage clientMessage = new ClientMessageImpl(HornetQTextMessage.TYPE, true, 0, System.currentTimeMillis(), (byte)4, 1000);
+      ClientMessage clientMessage = new ClientMessageImpl(HornetQTextMessage.TYPE,
+                                                          true,
+                                                          0,
+                                                          System.currentTimeMillis(),
+                                                          (byte)4,
+                                                          1000);
       ClientSession session = new FakeSession(clientMessage);
 
       StreamMessage foreignStreamMessage = new SimpleJMSStreamMessage();
@@ -753,40 +899,44 @@ public class MessageHeaderTest extends MessageHeaderTestBase
 
       HornetQStreamMessage copy = new HornetQStreamMessage(foreignStreamMessage, session);
 
-      ensureEquivalent(foreignStreamMessage, copy);
+      MessageHeaderTestBase.ensureEquivalent(foreignStreamMessage, copy);
    }
-
 
    public void testCopyOnForeignTextMessage() throws JMSException
    {
-      ClientMessage clientMessage = new ClientMessageImpl(HornetQTextMessage.TYPE, true, 0, System.currentTimeMillis(), (byte)4, 1000);
+      ClientMessage clientMessage = new ClientMessageImpl(HornetQTextMessage.TYPE,
+                                                          true,
+                                                          0,
+                                                          System.currentTimeMillis(),
+                                                          (byte)4,
+                                                          1000);
       ClientSession session = new FakeSession(clientMessage);
       TextMessage foreignTextMessage = new SimpleJMSTextMessage();
 
       HornetQTextMessage copy = new HornetQTextMessage(foreignTextMessage, session);
 
-      ensureEquivalent(foreignTextMessage, copy);
+      MessageHeaderTestBase.ensureEquivalent(foreignTextMessage, copy);
    }
-   
+
    public void testForeignJMSDestination() throws JMSException
    {
       Message message = queueProducerSession.createMessage();
-      
+
       Destination foreignDestination = new ForeignDestination();
-      
+
       message.setJMSDestination(foreignDestination);
-      
-      assertSame(foreignDestination, message.getJMSDestination());
-      
+
+      ProxyAssertSupport.assertSame(foreignDestination, message.getJMSDestination());
+
       queueProducer.send(message);
-      
-      assertSame(queue1, message.getJMSDestination());
-      
+
+      ProxyAssertSupport.assertSame(HornetQServerTestCase.queue1, message.getJMSDestination());
+
       Message receivedMessage = queueConsumer.receive(2000);
-      
-      ensureEquivalent(receivedMessage, (HornetQMessage)message);
+
+      MessageHeaderTestBase.ensureEquivalent(receivedMessage, (HornetQMessage)message);
    }
-   
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
@@ -797,14 +947,14 @@ public class MessageHeaderTest extends MessageHeaderTestBase
 
    private static class ForeignDestination implements Destination, Serializable
    {
-		private static final long serialVersionUID = 5545509674580823610L;
+      private static final long serialVersionUID = 5545509674580823610L;
 
-		// A ForeignDestination equals any other ForeignDestination, for simplicity
-      public boolean equals(Object obj)
+      // A ForeignDestination equals any other ForeignDestination, for simplicity
+      public boolean equals(final Object obj)
       {
          return obj instanceof ForeignDestination;
       }
-      
+
       public int hashCode()
       {
          return 157;
@@ -813,155 +963,197 @@ public class MessageHeaderTest extends MessageHeaderTestBase
 
    class FakeSession implements ClientSession
    {
-      public ClientConsumer createConsumer(SimpleString queueName, boolean browseOnly) throws HornetQException
+      public ClientConsumer createConsumer(final SimpleString queueName, final boolean browseOnly) throws HornetQException
       {
          // TODO Auto-generated method stub
          return null;
       }
 
-      public ClientConsumer createConsumer(String queueName, boolean browseOnly) throws HornetQException
+      public ClientConsumer createConsumer(final String queueName, final boolean browseOnly) throws HornetQException
       {
          // TODO Auto-generated method stub
          return null;
       }
 
-      public void createQueue(String address, String queueName) throws HornetQException
+      public void createQueue(final String address, final String queueName) throws HornetQException
       {
          // TODO Auto-generated method stub
-         
+
       }
 
       private final ClientMessage message;
 
-      public FakeSession(ClientMessage message)
+      public FakeSession(final ClientMessage message)
       {
          this.message = message;
       }
 
-      public void createQueue(SimpleString address, SimpleString queueName, SimpleString filterString, boolean durable) throws HornetQException
-      {
-      }
-      
-      public void createQueue(SimpleString address, SimpleString queueName, boolean durable) throws HornetQException
-      {
-      }
-
-      public void createQueue(String address, String queueName, boolean durable) throws HornetQException
+      public void createQueue(final SimpleString address,
+                              final SimpleString queueName,
+                              final SimpleString filterString,
+                              final boolean durable) throws HornetQException
       {
       }
 
-      public void createQueue(SimpleString address, SimpleString queueName, boolean durable, boolean temporary) throws HornetQException
+      public void createQueue(final SimpleString address, final SimpleString queueName, final boolean durable) throws HornetQException
       {
       }
 
-      public void createQueue(String address, String queueName, boolean durable, boolean temporary) throws HornetQException
+      public void createQueue(final String address, final String queueName, final boolean durable) throws HornetQException
       {
       }
 
-      public void createQueue(String address, String queueName, String filterString, boolean durable) throws HornetQException
+      public void createQueue(final SimpleString address,
+                              final SimpleString queueName,
+                              final boolean durable,
+                              final boolean temporary) throws HornetQException
       {
       }
 
-      public void createTemporaryQueue(SimpleString address, SimpleString queueName) throws HornetQException
+      public void createQueue(final String address,
+                              final String queueName,
+                              final boolean durable,
+                              final boolean temporary) throws HornetQException
       {
       }
 
-      public void createTemporaryQueue(String address, String queueName) throws HornetQException
+      public void createQueue(final String address,
+                              final String queueName,
+                              final String filterString,
+                              final boolean durable) throws HornetQException
       {
       }
 
-      public void createTemporaryQueue(SimpleString address, SimpleString queueName, SimpleString filter) throws HornetQException
+      public void createTemporaryQueue(final SimpleString address, final SimpleString queueName) throws HornetQException
       {
       }
 
-      public void createTemporaryQueue(String address, String queueName, String filter) throws HornetQException
+      public void createTemporaryQueue(final String address, final String queueName) throws HornetQException
       {
       }
 
-      public void deleteQueue(SimpleString queueName) throws HornetQException
+      public void createTemporaryQueue(final SimpleString address,
+                                       final SimpleString queueName,
+                                       final SimpleString filter) throws HornetQException
       {
       }
 
-      public void deleteQueue(String queueName) throws HornetQException
+      public void createTemporaryQueue(final String address, final String queueName, final String filter) throws HornetQException
       {
       }
 
-      public ClientConsumer createConsumer(SimpleString queueName) throws HornetQException
+      public void deleteQueue(final SimpleString queueName) throws HornetQException
+      {
+      }
+
+      public void deleteQueue(final String queueName) throws HornetQException
+      {
+      }
+
+      public ClientConsumer createConsumer(final SimpleString queueName) throws HornetQException
       {
          return null;
       }
 
-      public ClientConsumer createConsumer(SimpleString queueName, SimpleString filterString) throws HornetQException
+      public ClientConsumer createConsumer(final SimpleString queueName, final SimpleString filterString) throws HornetQException
       {
          return null;
       }
 
-      public ClientConsumer createConsumer(SimpleString queueName, SimpleString filterString, boolean browseOnly) throws HornetQException
+      public ClientConsumer createConsumer(final SimpleString queueName,
+                                           final SimpleString filterString,
+                                           final boolean browseOnly) throws HornetQException
       {
          return null;
       }
 
-      public ClientConsumer createConsumer(SimpleString queueName, SimpleString filterString, int windowSize, int maxRate, boolean browseOnly) throws HornetQException
+      public ClientConsumer createConsumer(final SimpleString queueName,
+                                           final SimpleString filterString,
+                                           final int windowSize,
+                                           final int maxRate,
+                                           final boolean browseOnly) throws HornetQException
       {
          return null;
       }
 
-      public ClientConsumer createConsumer(String queueName) throws HornetQException
+      public ClientConsumer createConsumer(final String queueName) throws HornetQException
       {
          return null;
       }
 
-      public ClientConsumer createConsumer(String queueName, String filterString) throws HornetQException
+      public ClientConsumer createConsumer(final String queueName, final String filterString) throws HornetQException
       {
          return null;
       }
 
-      public ClientConsumer createConsumer(String queueName, String filterString, boolean browseOnly) throws HornetQException
+      public ClientConsumer createConsumer(final String queueName, final String filterString, final boolean browseOnly) throws HornetQException
       {
          return null;
       }
 
-      public ClientConsumer createConsumer(String queueName, String filterString, int windowSize, int maxRate, boolean browseOnly) throws HornetQException
+      public ClientConsumer createConsumer(final String queueName,
+                                           final String filterString,
+                                           final int windowSize,
+                                           final int maxRate,
+                                           final boolean browseOnly) throws HornetQException
       {
          return null;
       }
 
-      public ClientConsumer createFileConsumer(File directory, SimpleString queueName) throws HornetQException
+      public ClientConsumer createFileConsumer(final File directory, final SimpleString queueName) throws HornetQException
       {
          return null;
       }
 
-      public ClientConsumer createFileConsumer(File directory, SimpleString queueName, SimpleString filterString) throws HornetQException
+      public ClientConsumer createFileConsumer(final File directory,
+                                               final SimpleString queueName,
+                                               final SimpleString filterString) throws HornetQException
       {
          return null;
       }
 
-      public ClientConsumer createFileConsumer(File directory, SimpleString queueName, SimpleString filterString, boolean browseOnly) throws HornetQException
+      public ClientConsumer createFileConsumer(final File directory,
+                                               final SimpleString queueName,
+                                               final SimpleString filterString,
+                                               final boolean browseOnly) throws HornetQException
       {
          return null;
       }
 
-      public ClientConsumer createFileConsumer(File directory, SimpleString queueName, SimpleString filterString, int windowSize, int maxRate, boolean browseOnly) throws HornetQException
+      public ClientConsumer createFileConsumer(final File directory,
+                                               final SimpleString queueName,
+                                               final SimpleString filterString,
+                                               final int windowSize,
+                                               final int maxRate,
+                                               final boolean browseOnly) throws HornetQException
       {
          return null;
       }
 
-      public ClientConsumer createFileConsumer(File directory, String queueName) throws HornetQException
+      public ClientConsumer createFileConsumer(final File directory, final String queueName) throws HornetQException
       {
          return null;
       }
 
-      public ClientConsumer createFileConsumer(File directory, String queueName, String filterString) throws HornetQException
+      public ClientConsumer createFileConsumer(final File directory, final String queueName, final String filterString) throws HornetQException
       {
          return null;
       }
 
-      public ClientConsumer createFileConsumer(File directory, String queueName, String filterString, boolean browseOnly) throws HornetQException
+      public ClientConsumer createFileConsumer(final File directory,
+                                               final String queueName,
+                                               final String filterString,
+                                               final boolean browseOnly) throws HornetQException
       {
          return null;
       }
 
-      public ClientConsumer createFileConsumer(File directory, String queueName, String filterString, int windowSize, int maxRate, boolean browseOnly) throws HornetQException
+      public ClientConsumer createFileConsumer(final File directory,
+                                               final String queueName,
+                                               final String filterString,
+                                               final int windowSize,
+                                               final int maxRate,
+                                               final boolean browseOnly) throws HornetQException
       {
          return null;
       }
@@ -971,42 +1163,48 @@ public class MessageHeaderTest extends MessageHeaderTestBase
          return null;
       }
 
-      public ClientProducer createProducer(SimpleString address) throws HornetQException
+      public ClientProducer createProducer(final SimpleString address) throws HornetQException
       {
          return null;
       }
 
-      public ClientProducer createProducer(SimpleString address, int rate) throws HornetQException
+      public ClientProducer createProducer(final SimpleString address, final int rate) throws HornetQException
       {
          return null;
       }
 
-      public ClientProducer createProducer(SimpleString address, int maxRate, boolean blockOnNonPersistentSend, boolean blockOnPersistentSend) throws HornetQException
+      public ClientProducer createProducer(final SimpleString address,
+                                           final int maxRate,
+                                           final boolean blockOnNonPersistentSend,
+                                           final boolean blockOnPersistentSend) throws HornetQException
       {
          return null;
       }
 
-      public ClientProducer createProducer(String address) throws HornetQException
+      public ClientProducer createProducer(final String address) throws HornetQException
       {
          return null;
       }
 
-      public ClientProducer createProducer(String address, int rate) throws HornetQException
+      public ClientProducer createProducer(final String address, final int rate) throws HornetQException
       {
          return null;
       }
 
-      public ClientProducer createProducer(String address, int maxRate, boolean blockOnNonPersistentSend, boolean blockOnPersistentSend) throws HornetQException
+      public ClientProducer createProducer(final String address,
+                                           final int maxRate,
+                                           final boolean blockOnNonPersistentSend,
+                                           final boolean blockOnPersistentSend) throws HornetQException
       {
          return null;
       }
 
-      public QueueQuery queueQuery(SimpleString queueName) throws HornetQException
+      public QueueQuery queueQuery(final SimpleString queueName) throws HornetQException
       {
          return null;
       }
 
-      public BindingQuery bindingQuery(SimpleString address) throws HornetQException
+      public BindingQuery bindingQuery(final SimpleString address) throws HornetQException
       {
          return null;
       }
@@ -1030,7 +1228,7 @@ public class MessageHeaderTest extends MessageHeaderTestBase
       {
       }
 
-      public void rollback(boolean considerLastMessageAsDelivered) throws HornetQException
+      public void rollback(final boolean considerLastMessageAsDelivered) throws HornetQException
       {
       }
 
@@ -1063,17 +1261,21 @@ public class MessageHeaderTest extends MessageHeaderTestBase
          return false;
       }
 
-      public ClientMessage createClientMessage(byte type, boolean durable, long expiration, long timestamp, byte priority)
+      public ClientMessage createClientMessage(final byte type,
+                                               final boolean durable,
+                                               final long expiration,
+                                               final long timestamp,
+                                               final byte priority)
       {
          return message;
       }
 
-      public ClientMessage createClientMessage(byte type, boolean durable)
+      public ClientMessage createClientMessage(final byte type, final boolean durable)
       {
          return message;
       }
 
-      public ClientMessage createClientMessage(boolean durable)
+      public ClientMessage createClientMessage(final boolean durable)
       {
          return message;
       }
@@ -1086,11 +1288,11 @@ public class MessageHeaderTest extends MessageHeaderTestBase
       {
       }
 
-      public void addFailureListener(FailureListener listener)
+      public void addFailureListener(final FailureListener listener)
       {
       }
 
-      public boolean removeFailureListener(FailureListener listener)
+      public boolean removeFailureListener(final FailureListener listener)
       {
          return false;
       }
@@ -1100,19 +1302,19 @@ public class MessageHeaderTest extends MessageHeaderTestBase
          return 0;
       }
 
-      public void setSendAcknowledgementHandler(SendAcknowledgementHandler handler)
+      public void setSendAcknowledgementHandler(final SendAcknowledgementHandler handler)
       {
       }
 
-      public void commit(Xid xid, boolean b) throws XAException
+      public void commit(final Xid xid, final boolean b) throws XAException
       {
       }
 
-      public void end(Xid xid, int i) throws XAException
+      public void end(final Xid xid, final int i) throws XAException
       {
       }
 
-      public void forget(Xid xid) throws XAException
+      public void forget(final Xid xid) throws XAException
       {
       }
 
@@ -1121,38 +1323,38 @@ public class MessageHeaderTest extends MessageHeaderTestBase
          return 0;
       }
 
-      public boolean isSameRM(XAResource xaResource) throws XAException
+      public boolean isSameRM(final XAResource xaResource) throws XAException
       {
          return false;
       }
 
-      public int prepare(Xid xid) throws XAException
+      public int prepare(final Xid xid) throws XAException
       {
          return 0;
       }
 
-      public Xid[] recover(int i) throws XAException
+      public Xid[] recover(final int i) throws XAException
       {
          return new Xid[0];
       }
 
-      public void rollback(Xid xid) throws XAException
+      public void rollback(final Xid xid) throws XAException
       {
       }
 
-      public boolean setTransactionTimeout(int i) throws XAException
+      public boolean setTransactionTimeout(final int i) throws XAException
       {
          return false;
       }
 
-      public void start(Xid xid, int i) throws XAException
+      public void start(final Xid xid, final int i) throws XAException
       {
       }
 
       /* (non-Javadoc)
        * @see org.hornetq.core.client.ClientSession#createBuffer(byte[])
        */
-      public HornetQBuffer createBuffer(byte[] bytes)
+      public HornetQBuffer createBuffer(final byte[] bytes)
       {
          // TODO Auto-generated method stub
          return null;
@@ -1161,7 +1363,7 @@ public class MessageHeaderTest extends MessageHeaderTestBase
       /* (non-Javadoc)
        * @see org.hornetq.core.client.ClientSession#createBuffer(int)
        */
-      public HornetQBuffer createBuffer(int size)
+      public HornetQBuffer createBuffer(final int size)
       {
          // TODO Auto-generated method stub
          return null;
@@ -1170,23 +1372,23 @@ public class MessageHeaderTest extends MessageHeaderTestBase
       /* (non-Javadoc)
        * @see org.hornetq.core.client.ClientSession#createClientMessage(boolean, org.hornetq.core.remoting.spi.HornetQBuffer)
        */
-      public ClientMessage createClientMessage(boolean durable, HornetQBuffer buffer)
+      public ClientMessage createClientMessage(final boolean durable, final HornetQBuffer buffer)
       {
          // TODO Auto-generated method stub
          return null;
       }
 
-      public void addFailureListener(SessionFailureListener listener)
+      public void addFailureListener(final SessionFailureListener listener)
       {
          // TODO Auto-generated method stub
-         
+
       }
 
-      public boolean removeFailureListener(SessionFailureListener listener)
+      public boolean removeFailureListener(final SessionFailureListener listener)
       {
          // TODO Auto-generated method stub
          return false;
       }
    }
-   
+
 }

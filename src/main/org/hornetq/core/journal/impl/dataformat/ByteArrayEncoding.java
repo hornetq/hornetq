@@ -50,4 +50,3 @@ public class ByteArrayEncoding implements EncodingSupport
       return data.length;
    }
 }
-

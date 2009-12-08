@@ -65,7 +65,7 @@ public class HornetQRASession implements Session, QueueSession, TopicSession, XA
    private static final Logger log = Logger.getLogger(HornetQRASession.class);
 
    /** Trace enabled */
-   private static boolean trace = log.isTraceEnabled();
+   private static boolean trace = HornetQRASession.log.isTraceEnabled();
 
    /** The managed connection */
    private HornetQRAManagedConnection mc;
@@ -89,9 +89,9 @@ public class HornetQRASession implements Session, QueueSession, TopicSession, XA
     */
    public HornetQRASession(final HornetQRAManagedConnection mc, final HornetQRAConnectionRequestInfo cri)
    {
-      if (trace)
+      if (HornetQRASession.trace)
       {
-         log.trace("constructor(" + mc + ", " + cri + ")");
+         HornetQRASession.log.trace("constructor(" + mc + ", " + cri + ")");
       }
 
       this.mc = mc;
@@ -107,9 +107,9 @@ public class HornetQRASession implements Session, QueueSession, TopicSession, XA
     */
    public void setHornetQSessionFactory(final HornetQRASessionFactory sf)
    {
-      if (trace)
+      if (HornetQRASession.trace)
       {
-         log.trace("setHornetQSessionFactory(" + sf + ")");
+         HornetQRASession.log.trace("setHornetQSessionFactory(" + sf + ")");
       }
 
       this.sf = sf;
@@ -122,9 +122,9 @@ public class HornetQRASession implements Session, QueueSession, TopicSession, XA
     */
    protected void lock() throws JMSException
    {
-      if (trace)
+      if (HornetQRASession.trace)
       {
-         log.trace("lock()");
+         HornetQRASession.log.trace("lock()");
       }
 
       HornetQRAManagedConnection mc = this.mc;
@@ -143,9 +143,9 @@ public class HornetQRASession implements Session, QueueSession, TopicSession, XA
     */
    protected void unlock()
    {
-      if (trace)
+      if (HornetQRASession.trace)
       {
-         log.trace("unlock()");
+         HornetQRASession.log.trace("unlock()");
       }
 
       HornetQRAManagedConnection mc = this.mc;
@@ -167,9 +167,9 @@ public class HornetQRASession implements Session, QueueSession, TopicSession, XA
    {
       Session session = getSessionInternal();
 
-      if (trace)
+      if (HornetQRASession.trace)
       {
-         log.trace("createBytesMessage" + session);
+         HornetQRASession.log.trace("createBytesMessage" + session);
       }
 
       return session.createBytesMessage();
@@ -184,9 +184,9 @@ public class HornetQRASession implements Session, QueueSession, TopicSession, XA
    {
       Session session = getSessionInternal();
 
-      if (trace)
+      if (HornetQRASession.trace)
       {
-         log.trace("createMapMessage" + session);
+         HornetQRASession.log.trace("createMapMessage" + session);
       }
 
       return session.createMapMessage();
@@ -201,9 +201,9 @@ public class HornetQRASession implements Session, QueueSession, TopicSession, XA
    {
       Session session = getSessionInternal();
 
-      if (trace)
+      if (HornetQRASession.trace)
       {
-         log.trace("createMessage" + session);
+         HornetQRASession.log.trace("createMessage" + session);
       }
 
       return session.createMessage();
@@ -218,9 +218,9 @@ public class HornetQRASession implements Session, QueueSession, TopicSession, XA
    {
       Session session = getSessionInternal();
 
-      if (trace)
+      if (HornetQRASession.trace)
       {
-         log.trace("createObjectMessage" + session);
+         HornetQRASession.log.trace("createObjectMessage" + session);
       }
 
       return session.createObjectMessage();
@@ -236,9 +236,9 @@ public class HornetQRASession implements Session, QueueSession, TopicSession, XA
    {
       Session session = getSessionInternal();
 
-      if (trace)
+      if (HornetQRASession.trace)
       {
-         log.trace("createObjectMessage(" + object + ")" + session);
+         HornetQRASession.log.trace("createObjectMessage(" + object + ")" + session);
       }
 
       return session.createObjectMessage(object);
@@ -253,9 +253,9 @@ public class HornetQRASession implements Session, QueueSession, TopicSession, XA
    {
       Session session = getSessionInternal();
 
-      if (trace)
+      if (HornetQRASession.trace)
       {
-         log.trace("createStreamMessage" + session);
+         HornetQRASession.log.trace("createStreamMessage" + session);
       }
 
       return session.createStreamMessage();
@@ -270,9 +270,9 @@ public class HornetQRASession implements Session, QueueSession, TopicSession, XA
    {
       Session session = getSessionInternal();
 
-      if (trace)
+      if (HornetQRASession.trace)
       {
-         log.trace("createTextMessage" + session);
+         HornetQRASession.log.trace("createTextMessage" + session);
       }
 
       return session.createTextMessage();
@@ -288,9 +288,9 @@ public class HornetQRASession implements Session, QueueSession, TopicSession, XA
    {
       Session session = getSessionInternal();
 
-      if (trace)
+      if (HornetQRASession.trace)
       {
-         log.trace("createTextMessage(" + string + ")" + session);
+         HornetQRASession.log.trace("createTextMessage(" + string + ")" + session);
       }
 
       return session.createTextMessage(string);
@@ -303,9 +303,9 @@ public class HornetQRASession implements Session, QueueSession, TopicSession, XA
     */
    public boolean getTransacted() throws JMSException
    {
-      if (trace)
+      if (HornetQRASession.trace)
       {
-         log.trace("getTransacted()");
+         HornetQRASession.log.trace("getTransacted()");
       }
 
       getSessionInternal();
@@ -319,9 +319,9 @@ public class HornetQRASession implements Session, QueueSession, TopicSession, XA
     */
    public MessageListener getMessageListener() throws JMSException
    {
-      if (trace)
+      if (HornetQRASession.trace)
       {
-         log.trace("getMessageListener()");
+         HornetQRASession.log.trace("getMessageListener()");
       }
 
       throw new IllegalStateException("Method not allowed");
@@ -334,9 +334,9 @@ public class HornetQRASession implements Session, QueueSession, TopicSession, XA
     */
    public void setMessageListener(final MessageListener listener) throws JMSException
    {
-      if (trace)
+      if (HornetQRASession.trace)
       {
-         log.trace("setMessageListener(" + listener + ")");
+         HornetQRASession.log.trace("setMessageListener(" + listener + ")");
       }
 
       throw new IllegalStateException("Method not allowed");
@@ -348,9 +348,9 @@ public class HornetQRASession implements Session, QueueSession, TopicSession, XA
     */
    public void run()
    {
-      if (trace)
+      if (HornetQRASession.trace)
       {
-         log.trace("run()");
+         HornetQRASession.log.trace("run()");
       }
 
       throw new Error("Method not allowed");
@@ -363,9 +363,9 @@ public class HornetQRASession implements Session, QueueSession, TopicSession, XA
     */
    public void close() throws JMSException
    {
-      if (trace)
+      if (HornetQRASession.trace)
       {
-         log.trace("close()");
+         HornetQRASession.log.trace("close()");
       }
 
       sf.closeSession(this);
@@ -394,9 +394,9 @@ public class HornetQRASession implements Session, QueueSession, TopicSession, XA
             throw new IllegalStateException("Session is not transacted");
          }
 
-         if (trace)
+         if (HornetQRASession.trace)
          {
-            log.trace("Commit session " + this);
+            HornetQRASession.log.trace("Commit session " + this);
          }
 
          session.commit();
@@ -429,9 +429,9 @@ public class HornetQRASession implements Session, QueueSession, TopicSession, XA
             throw new IllegalStateException("Session is not transacted");
          }
 
-         if (trace)
+         if (HornetQRASession.trace)
          {
-            log.trace("Rollback session " + this);
+            HornetQRASession.log.trace("Rollback session " + this);
          }
 
          session.rollback();
@@ -458,9 +458,9 @@ public class HornetQRASession implements Session, QueueSession, TopicSession, XA
             throw new IllegalStateException("Session is transacted");
          }
 
-         if (trace)
+         if (HornetQRASession.trace)
          {
-            log.trace("Recover session " + this);
+            HornetQRASession.log.trace("Recover session " + this);
          }
 
          session.recover();
@@ -486,16 +486,16 @@ public class HornetQRASession implements Session, QueueSession, TopicSession, XA
 
       Session session = getSessionInternal();
 
-      if (trace)
+      if (HornetQRASession.trace)
       {
-         log.trace("createTopic " + session + " topicName=" + topicName);
+         HornetQRASession.log.trace("createTopic " + session + " topicName=" + topicName);
       }
 
       Topic result = session.createTopic(topicName);
 
-      if (trace)
+      if (HornetQRASession.trace)
       {
-         log.trace("createdTopic " + session + " topic=" + result);
+         HornetQRASession.log.trace("createdTopic " + session + " topic=" + result);
       }
 
       return result;
@@ -514,17 +514,17 @@ public class HornetQRASession implements Session, QueueSession, TopicSession, XA
       {
          TopicSession session = getTopicSessionInternal();
 
-         if (trace)
+         if (HornetQRASession.trace)
          {
-            log.trace("createSubscriber " + session + " topic=" + topic);
+            HornetQRASession.log.trace("createSubscriber " + session + " topic=" + topic);
          }
 
          TopicSubscriber result = session.createSubscriber(topic);
          result = new HornetQRATopicSubscriber(result, this);
 
-         if (trace)
+         if (HornetQRASession.trace)
          {
-            log.trace("createdSubscriber " + session + " HornetQTopicSubscriber=" + result);
+            HornetQRASession.log.trace("createdSubscriber " + session + " HornetQTopicSubscriber=" + result);
          }
 
          addConsumer(result);
@@ -552,23 +552,23 @@ public class HornetQRASession implements Session, QueueSession, TopicSession, XA
       {
          TopicSession session = getTopicSessionInternal();
 
-         if (trace)
+         if (HornetQRASession.trace)
          {
-            log.trace("createSubscriber " + session +
-                      " topic=" +
-                      topic +
-                      " selector=" +
-                      messageSelector +
-                      " noLocal=" +
-                      noLocal);
+            HornetQRASession.log.trace("createSubscriber " + session +
+                                       " topic=" +
+                                       topic +
+                                       " selector=" +
+                                       messageSelector +
+                                       " noLocal=" +
+                                       noLocal);
          }
 
          TopicSubscriber result = session.createSubscriber(topic, messageSelector, noLocal);
          result = new HornetQRATopicSubscriber(result, this);
 
-         if (trace)
+         if (HornetQRASession.trace)
          {
-            log.trace("createdSubscriber " + session + " HornetQTopicSubscriber=" + result);
+            HornetQRASession.log.trace("createdSubscriber " + session + " HornetQTopicSubscriber=" + result);
          }
 
          addConsumer(result);
@@ -600,17 +600,17 @@ public class HornetQRASession implements Session, QueueSession, TopicSession, XA
       {
          Session session = getSessionInternal();
 
-         if (trace)
+         if (HornetQRASession.trace)
          {
-            log.trace("createDurableSubscriber " + session + " topic=" + topic + " name=" + name);
+            HornetQRASession.log.trace("createDurableSubscriber " + session + " topic=" + topic + " name=" + name);
          }
 
          TopicSubscriber result = session.createDurableSubscriber(topic, name);
          result = new HornetQRATopicSubscriber(result, this);
 
-         if (trace)
+         if (HornetQRASession.trace)
          {
-            log.trace("createdDurableSubscriber " + session + " HornetQTopicSubscriber=" + result);
+            HornetQRASession.log.trace("createdDurableSubscriber " + session + " HornetQTopicSubscriber=" + result);
          }
 
          addConsumer(result);
@@ -642,25 +642,25 @@ public class HornetQRASession implements Session, QueueSession, TopicSession, XA
       {
          Session session = getSessionInternal();
 
-         if (trace)
+         if (HornetQRASession.trace)
          {
-            log.trace("createDurableSubscriber " + session +
-                      " topic=" +
-                      topic +
-                      " name=" +
-                      name +
-                      " selector=" +
-                      messageSelector +
-                      " noLocal=" +
-                      noLocal);
+            HornetQRASession.log.trace("createDurableSubscriber " + session +
+                                       " topic=" +
+                                       topic +
+                                       " name=" +
+                                       name +
+                                       " selector=" +
+                                       messageSelector +
+                                       " noLocal=" +
+                                       noLocal);
          }
 
          TopicSubscriber result = session.createDurableSubscriber(topic, name, messageSelector, noLocal);
          result = new HornetQRATopicSubscriber(result, this);
 
-         if (trace)
+         if (HornetQRASession.trace)
          {
-            log.trace("createdDurableSubscriber " + session + " HornetQTopicSubscriber=" + result);
+            HornetQRASession.log.trace("createdDurableSubscriber " + session + " HornetQTopicSubscriber=" + result);
          }
 
          addConsumer(result);
@@ -686,17 +686,17 @@ public class HornetQRASession implements Session, QueueSession, TopicSession, XA
       {
          TopicSession session = getTopicSessionInternal();
 
-         if (trace)
+         if (HornetQRASession.trace)
          {
-            log.trace("createPublisher " + session + " topic=" + topic);
+            HornetQRASession.log.trace("createPublisher " + session + " topic=" + topic);
          }
 
          TopicPublisher result = session.createPublisher(topic);
          result = new HornetQRATopicPublisher(result, this);
 
-         if (trace)
+         if (HornetQRASession.trace)
          {
-            log.trace("createdPublisher " + session + " publisher=" + result);
+            HornetQRASession.log.trace("createdPublisher " + session + " publisher=" + result);
          }
 
          addProducer(result);
@@ -726,16 +726,16 @@ public class HornetQRASession implements Session, QueueSession, TopicSession, XA
       {
          Session session = getSessionInternal();
 
-         if (trace)
+         if (HornetQRASession.trace)
          {
-            log.trace("createTemporaryTopic " + session);
+            HornetQRASession.log.trace("createTemporaryTopic " + session);
          }
 
          TemporaryTopic temp = session.createTemporaryTopic();
 
-         if (trace)
+         if (HornetQRASession.trace)
          {
-            log.trace("createdTemporaryTopic " + session + " temp=" + temp);
+            HornetQRASession.log.trace("createdTemporaryTopic " + session + " temp=" + temp);
          }
 
          sf.addTemporaryTopic(temp);
@@ -765,9 +765,9 @@ public class HornetQRASession implements Session, QueueSession, TopicSession, XA
       {
          Session session = getSessionInternal();
 
-         if (trace)
+         if (HornetQRASession.trace)
          {
-            log.trace("unsubscribe " + session + " name=" + name);
+            HornetQRASession.log.trace("unsubscribe " + session + " name=" + name);
          }
 
          session.unsubscribe(name);
@@ -793,16 +793,16 @@ public class HornetQRASession implements Session, QueueSession, TopicSession, XA
 
       Session session = getSessionInternal();
 
-      if (trace)
+      if (HornetQRASession.trace)
       {
-         log.trace("createBrowser " + session + " queue=" + queue);
+         HornetQRASession.log.trace("createBrowser " + session + " queue=" + queue);
       }
 
       QueueBrowser result = session.createBrowser(queue);
 
-      if (trace)
+      if (HornetQRASession.trace)
       {
-         log.trace("createdBrowser " + session + " browser=" + result);
+         HornetQRASession.log.trace("createdBrowser " + session + " browser=" + result);
       }
 
       return result;
@@ -824,16 +824,16 @@ public class HornetQRASession implements Session, QueueSession, TopicSession, XA
 
       Session session = getSessionInternal();
 
-      if (trace)
+      if (HornetQRASession.trace)
       {
-         log.trace("createBrowser " + session + " queue=" + queue + " selector=" + messageSelector);
+         HornetQRASession.log.trace("createBrowser " + session + " queue=" + queue + " selector=" + messageSelector);
       }
 
       QueueBrowser result = session.createBrowser(queue, messageSelector);
 
-      if (trace)
+      if (HornetQRASession.trace)
       {
-         log.trace("createdBrowser " + session + " browser=" + result);
+         HornetQRASession.log.trace("createdBrowser " + session + " browser=" + result);
       }
 
       return result;
@@ -854,16 +854,16 @@ public class HornetQRASession implements Session, QueueSession, TopicSession, XA
 
       Session session = getSessionInternal();
 
-      if (trace)
+      if (HornetQRASession.trace)
       {
-         log.trace("createQueue " + session + " queueName=" + queueName);
+         HornetQRASession.log.trace("createQueue " + session + " queueName=" + queueName);
       }
 
       Queue result = session.createQueue(queueName);
 
-      if (trace)
+      if (HornetQRASession.trace)
       {
-         log.trace("createdQueue " + session + " queue=" + result);
+         HornetQRASession.log.trace("createdQueue " + session + " queue=" + result);
       }
 
       return result;
@@ -882,17 +882,17 @@ public class HornetQRASession implements Session, QueueSession, TopicSession, XA
       {
          QueueSession session = getQueueSessionInternal();
 
-         if (trace)
+         if (HornetQRASession.trace)
          {
-            log.trace("createReceiver " + session + " queue=" + queue);
+            HornetQRASession.log.trace("createReceiver " + session + " queue=" + queue);
          }
 
          QueueReceiver result = session.createReceiver(queue);
          result = new HornetQRAQueueReceiver(result, this);
 
-         if (trace)
+         if (HornetQRASession.trace)
          {
-            log.trace("createdReceiver " + session + " receiver=" + result);
+            HornetQRASession.log.trace("createdReceiver " + session + " receiver=" + result);
          }
 
          addConsumer(result);
@@ -919,17 +919,17 @@ public class HornetQRASession implements Session, QueueSession, TopicSession, XA
       {
          QueueSession session = getQueueSessionInternal();
 
-         if (trace)
+         if (HornetQRASession.trace)
          {
-            log.trace("createReceiver " + session + " queue=" + queue + " selector=" + messageSelector);
+            HornetQRASession.log.trace("createReceiver " + session + " queue=" + queue + " selector=" + messageSelector);
          }
 
          QueueReceiver result = session.createReceiver(queue, messageSelector);
          result = new HornetQRAQueueReceiver(result, this);
 
-         if (trace)
+         if (HornetQRASession.trace)
          {
-            log.trace("createdReceiver " + session + " receiver=" + result);
+            HornetQRASession.log.trace("createdReceiver " + session + " receiver=" + result);
          }
 
          addConsumer(result);
@@ -955,17 +955,17 @@ public class HornetQRASession implements Session, QueueSession, TopicSession, XA
       {
          QueueSession session = getQueueSessionInternal();
 
-         if (trace)
+         if (HornetQRASession.trace)
          {
-            log.trace("createSender " + session + " queue=" + queue);
+            HornetQRASession.log.trace("createSender " + session + " queue=" + queue);
          }
 
          QueueSender result = session.createSender(queue);
          result = new HornetQRAQueueSender(result, this);
 
-         if (trace)
+         if (HornetQRASession.trace)
          {
-            log.trace("createdSender " + session + " sender=" + result);
+            HornetQRASession.log.trace("createdSender " + session + " sender=" + result);
          }
 
          addProducer(result);
@@ -995,16 +995,16 @@ public class HornetQRASession implements Session, QueueSession, TopicSession, XA
       {
          Session session = getSessionInternal();
 
-         if (trace)
+         if (HornetQRASession.trace)
          {
-            log.trace("createTemporaryQueue " + session);
+            HornetQRASession.log.trace("createTemporaryQueue " + session);
          }
 
          TemporaryQueue temp = session.createTemporaryQueue();
 
-         if (trace)
+         if (HornetQRASession.trace)
          {
-            log.trace("createdTemporaryQueue " + session + " temp=" + temp);
+            HornetQRASession.log.trace("createdTemporaryQueue " + session + " temp=" + temp);
          }
 
          sf.addTemporaryQueue(temp);
@@ -1030,17 +1030,17 @@ public class HornetQRASession implements Session, QueueSession, TopicSession, XA
       {
          Session session = getSessionInternal();
 
-         if (trace)
+         if (HornetQRASession.trace)
          {
-            log.trace("createConsumer " + session + " dest=" + destination);
+            HornetQRASession.log.trace("createConsumer " + session + " dest=" + destination);
          }
 
          MessageConsumer result = session.createConsumer(destination);
          result = new HornetQRAMessageConsumer(result, this);
 
-         if (trace)
+         if (HornetQRASession.trace)
          {
-            log.trace("createdConsumer " + session + " consumer=" + result);
+            HornetQRASession.log.trace("createdConsumer " + session + " consumer=" + result);
          }
 
          addConsumer(result);
@@ -1067,17 +1067,21 @@ public class HornetQRASession implements Session, QueueSession, TopicSession, XA
       {
          Session session = getSessionInternal();
 
-         if (trace)
+         if (HornetQRASession.trace)
          {
-            log.trace("createConsumer " + session + " dest=" + destination + " messageSelector=" + messageSelector);
+            HornetQRASession.log.trace("createConsumer " + session +
+                                       " dest=" +
+                                       destination +
+                                       " messageSelector=" +
+                                       messageSelector);
          }
 
          MessageConsumer result = session.createConsumer(destination, messageSelector);
          result = new HornetQRAMessageConsumer(result, this);
 
-         if (trace)
+         if (HornetQRASession.trace)
          {
-            log.trace("createdConsumer " + session + " consumer=" + result);
+            HornetQRASession.log.trace("createdConsumer " + session + " consumer=" + result);
          }
 
          addConsumer(result);
@@ -1107,23 +1111,23 @@ public class HornetQRASession implements Session, QueueSession, TopicSession, XA
       {
          Session session = getSessionInternal();
 
-         if (trace)
+         if (HornetQRASession.trace)
          {
-            log.trace("createConsumer " + session +
-                      " dest=" +
-                      destination +
-                      " messageSelector=" +
-                      messageSelector +
-                      " noLocal=" +
-                      noLocal);
+            HornetQRASession.log.trace("createConsumer " + session +
+                                       " dest=" +
+                                       destination +
+                                       " messageSelector=" +
+                                       messageSelector +
+                                       " noLocal=" +
+                                       noLocal);
          }
 
          MessageConsumer result = session.createConsumer(destination, messageSelector, noLocal);
          result = new HornetQRAMessageConsumer(result, this);
 
-         if (trace)
+         if (HornetQRASession.trace)
          {
-            log.trace("createdConsumer " + session + " consumer=" + result);
+            HornetQRASession.log.trace("createdConsumer " + session + " consumer=" + result);
          }
 
          addConsumer(result);
@@ -1149,17 +1153,17 @@ public class HornetQRASession implements Session, QueueSession, TopicSession, XA
       {
          Session session = getSessionInternal();
 
-         if (trace)
+         if (HornetQRASession.trace)
          {
-            log.trace("createProducer " + session + " dest=" + destination);
+            HornetQRASession.log.trace("createProducer " + session + " dest=" + destination);
          }
 
          MessageProducer result = session.createProducer(destination);
          result = new HornetQRAMessageProducer(result, this);
 
-         if (trace)
+         if (HornetQRASession.trace)
          {
-            log.trace("createdProducer " + session + " producer=" + result);
+            HornetQRASession.log.trace("createdProducer " + session + " producer=" + result);
          }
 
          addProducer(result);
@@ -1179,9 +1183,9 @@ public class HornetQRASession implements Session, QueueSession, TopicSession, XA
     */
    public int getAcknowledgeMode() throws JMSException
    {
-      if (trace)
+      if (HornetQRASession.trace)
       {
-         log.trace("getAcknowledgeMode()");
+         HornetQRASession.log.trace("getAcknowledgeMode()");
       }
 
       getSessionInternal();
@@ -1195,9 +1199,9 @@ public class HornetQRASession implements Session, QueueSession, TopicSession, XA
     */
    public XAResource getXAResource()
    {
-      if (trace)
+      if (HornetQRASession.trace)
       {
-         log.trace("getXAResource()");
+         HornetQRASession.log.trace("getXAResource()");
       }
 
       if (cri.getType() == HornetQRAConnectionFactory.CONNECTION || cri.getType() == HornetQRAConnectionFactory.QUEUE_CONNECTION ||
@@ -1231,9 +1235,9 @@ public class HornetQRASession implements Session, QueueSession, TopicSession, XA
     */
    public Session getSession() throws JMSException
    {
-      if (trace)
+      if (HornetQRASession.trace)
       {
-         log.trace("getSession()");
+         HornetQRASession.log.trace("getSession()");
       }
 
       if (cri.getType() == HornetQRAConnectionFactory.CONNECTION || cri.getType() == HornetQRAConnectionFactory.QUEUE_CONNECTION ||
@@ -1260,9 +1264,9 @@ public class HornetQRASession implements Session, QueueSession, TopicSession, XA
     */
    public QueueSession getQueueSession() throws JMSException
    {
-      if (trace)
+      if (HornetQRASession.trace)
       {
-         log.trace("getQueueSession()");
+         HornetQRASession.log.trace("getQueueSession()");
       }
 
       if (cri.getType() == HornetQRAConnectionFactory.CONNECTION || cri.getType() == HornetQRAConnectionFactory.QUEUE_CONNECTION ||
@@ -1289,9 +1293,9 @@ public class HornetQRASession implements Session, QueueSession, TopicSession, XA
     */
    public TopicSession getTopicSession() throws JMSException
    {
-      if (trace)
+      if (HornetQRASession.trace)
       {
-         log.trace("getTopicSession()");
+         HornetQRASession.log.trace("getTopicSession()");
       }
 
       if (cri.getType() == HornetQRAConnectionFactory.CONNECTION || cri.getType() == HornetQRAConnectionFactory.QUEUE_CONNECTION ||
@@ -1317,9 +1321,9 @@ public class HornetQRASession implements Session, QueueSession, TopicSession, XA
     */
    void setManagedConnection(final HornetQRAManagedConnection managedConnection)
    {
-      if (trace)
+      if (HornetQRASession.trace)
       {
-         log.trace("setManagedConnection(" + managedConnection + ")");
+         HornetQRASession.log.trace("setManagedConnection(" + managedConnection + ")");
       }
 
       if (mc != null)
@@ -1335,9 +1339,9 @@ public class HornetQRASession implements Session, QueueSession, TopicSession, XA
     */
    void destroy()
    {
-      if (trace)
+      if (HornetQRASession.trace)
       {
-         log.trace("destroy()");
+         HornetQRASession.log.trace("destroy()");
       }
 
       mc = null;
@@ -1349,9 +1353,9 @@ public class HornetQRASession implements Session, QueueSession, TopicSession, XA
     */
    void start() throws JMSException
    {
-      if (trace)
+      if (HornetQRASession.trace)
       {
-         log.trace("start()");
+         HornetQRASession.log.trace("start()");
       }
 
       if (mc != null)
@@ -1366,9 +1370,9 @@ public class HornetQRASession implements Session, QueueSession, TopicSession, XA
     */
    void stop() throws JMSException
    {
-      if (trace)
+      if (HornetQRASession.trace)
       {
-         log.trace("stop()");
+         HornetQRASession.log.trace("stop()");
       }
 
       if (mc != null)
@@ -1383,9 +1387,9 @@ public class HornetQRASession implements Session, QueueSession, TopicSession, XA
     */
    void checkStrict() throws JMSException
    {
-      if (trace)
+      if (HornetQRASession.trace)
       {
-         log.trace("checkStrict()");
+         HornetQRASession.log.trace("checkStrict()");
       }
 
       if (mc != null)
@@ -1402,7 +1406,7 @@ public class HornetQRASession implements Session, QueueSession, TopicSession, XA
    {
       if (mc != null)
       {
-         log.trace("Closing session");
+         HornetQRASession.log.trace("Closing session");
 
          try
          {
@@ -1410,7 +1414,7 @@ public class HornetQRASession implements Session, QueueSession, TopicSession, XA
          }
          catch (Throwable t)
          {
-            log.trace("Error stopping managed connection", t);
+            HornetQRASession.log.trace("Error stopping managed connection", t);
          }
 
          synchronized (consumers)
@@ -1424,7 +1428,7 @@ public class HornetQRASession implements Session, QueueSession, TopicSession, XA
                }
                catch (Throwable t)
                {
-                  log.trace("Error closing consumer", t);
+                  HornetQRASession.log.trace("Error closing consumer", t);
                }
                i.remove();
             }
@@ -1441,7 +1445,7 @@ public class HornetQRASession implements Session, QueueSession, TopicSession, XA
                }
                catch (Throwable t)
                {
-                  log.trace("Error closing producer", t);
+                  HornetQRASession.log.trace("Error closing producer", t);
                }
                i.remove();
             }
@@ -1461,9 +1465,9 @@ public class HornetQRASession implements Session, QueueSession, TopicSession, XA
     */
    void addConsumer(final MessageConsumer consumer)
    {
-      if (trace)
+      if (HornetQRASession.trace)
       {
-         log.trace("addConsumer(" + consumer + ")");
+         HornetQRASession.log.trace("addConsumer(" + consumer + ")");
       }
 
       synchronized (consumers)
@@ -1478,9 +1482,9 @@ public class HornetQRASession implements Session, QueueSession, TopicSession, XA
     */
    void removeConsumer(final MessageConsumer consumer)
    {
-      if (trace)
+      if (HornetQRASession.trace)
       {
-         log.trace("removeConsumer(" + consumer + ")");
+         HornetQRASession.log.trace("removeConsumer(" + consumer + ")");
       }
 
       synchronized (consumers)
@@ -1495,9 +1499,9 @@ public class HornetQRASession implements Session, QueueSession, TopicSession, XA
     */
    void addProducer(final MessageProducer producer)
    {
-      if (trace)
+      if (HornetQRASession.trace)
       {
-         log.trace("addProducer(" + producer + ")");
+         HornetQRASession.log.trace("addProducer(" + producer + ")");
       }
 
       synchronized (producers)
@@ -1512,9 +1516,9 @@ public class HornetQRASession implements Session, QueueSession, TopicSession, XA
     */
    void removeProducer(final MessageProducer producer)
    {
-      if (trace)
+      if (HornetQRASession.trace)
       {
-         log.trace("removeProducer(" + producer + ")");
+         HornetQRASession.log.trace("removeProducer(" + producer + ")");
       }
 
       synchronized (producers)
@@ -1538,9 +1542,9 @@ public class HornetQRASession implements Session, QueueSession, TopicSession, XA
 
       Session session = mc.getSession();
 
-      if (trace)
+      if (HornetQRASession.trace)
       {
-         log.trace("getSessionInternal " + session + " for " + this);
+         HornetQRASession.log.trace("getSessionInternal " + session + " for " + this);
       }
 
       return session;
@@ -1561,9 +1565,9 @@ public class HornetQRASession implements Session, QueueSession, TopicSession, XA
 
       XASession session = mc.getXASession();
 
-      if (trace)
+      if (HornetQRASession.trace)
       {
-         log.trace("getXASessionInternal " + session + " for " + this);
+         HornetQRASession.log.trace("getXASessionInternal " + session + " for " + this);
       }
 
       return session;

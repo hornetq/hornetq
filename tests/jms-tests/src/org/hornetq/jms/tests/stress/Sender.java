@@ -33,20 +33,21 @@ import org.hornetq.core.logging.Logger;
 public class Sender extends Runner
 {
    private static final Logger log = Logger.getLogger(Sender.class);
-   
+
    protected MessageProducer prod;
-   
+
    protected String prodName;
-   
+
    protected int count;
-   
-   public Sender(String prodName, Session sess, MessageProducer prod, int numMessages)
+
+   public Sender(final String prodName, final Session sess, final MessageProducer prod, final int numMessages)
    {
       super(sess, numMessages);
       this.prod = prod;
       this.prodName = prodName;
    }
-   
+
+   @Override
    public void run()
    {
       try
@@ -62,7 +63,7 @@ public class Sender extends Runner
       }
       catch (Exception e)
       {
-         log.error("Failed to send message", e);
+         Sender.log.error("Failed to send message", e);
          setFailed(true);
       }
    }

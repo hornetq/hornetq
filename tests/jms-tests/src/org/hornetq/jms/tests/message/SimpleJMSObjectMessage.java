@@ -29,7 +29,7 @@ public class SimpleJMSObjectMessage extends SimpleJMSMessage implements ObjectMe
    // Constants -----------------------------------------------------
 
    // Static --------------------------------------------------------
-   
+
    // Attributes ----------------------------------------------------
 
    private Serializable object;
@@ -38,11 +38,10 @@ public class SimpleJMSObjectMessage extends SimpleJMSMessage implements ObjectMe
 
    // ObjectMessage implementation ----------------------------------
 
-   public void setObject(Serializable object) throws JMSException
+   public void setObject(final Serializable object) throws JMSException
    {
       this.object = object;
    }
-
 
    public Serializable getObject() throws JMSException
    {
@@ -52,10 +51,10 @@ public class SimpleJMSObjectMessage extends SimpleJMSMessage implements ObjectMe
    // Public --------------------------------------------------------
 
    // Package protected ---------------------------------------------
-   
+
    // Protected -----------------------------------------------------
-   
+
    // Private -------------------------------------------------------
-   
+
    // Inner classes -------------------------------------------------
 }

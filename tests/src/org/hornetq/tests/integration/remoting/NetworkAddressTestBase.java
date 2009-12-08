@@ -24,6 +24,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.client.ClientSessionFactory;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
@@ -54,7 +56,7 @@ public abstract class NetworkAddressTestBase extends ServiceTestBase
    {
       try
       {
-         Map<NetworkInterface, InetAddress> map = getAddressForEachNetworkInterface();
+         Map<NetworkInterface, InetAddress> map = NetworkAddressTestBase.getAddressForEachNetworkInterface();
          StringBuilder s = new StringBuilder("using network settings:\n");
          Set<Entry<NetworkInterface, InetAddress>> set = map.entrySet();
          for (Entry<NetworkInterface, InetAddress> entry : set)
@@ -76,11 +78,11 @@ public abstract class NetworkAddressTestBase extends ServiceTestBase
       Enumeration<NetworkInterface> ifaces = NetworkInterface.getNetworkInterfaces();
       while (ifaces.hasMoreElements())
       {
-         NetworkInterface iface = (NetworkInterface)ifaces.nextElement();
+         NetworkInterface iface = ifaces.nextElement();
          Enumeration<InetAddress> enumeration = iface.getInetAddresses();
          while (enumeration.hasMoreElements())
          {
-            InetAddress inetAddress = (InetAddress)enumeration.nextElement();
+            InetAddress inetAddress = enumeration.nextElement();
             if (inetAddress instanceof Inet4Address)
             {
                map.put(iface, inetAddress);
@@ -98,7 +100,7 @@ public abstract class NetworkAddressTestBase extends ServiceTestBase
 
    public void testConnectToServerWithSameHost() throws Exception
    {
-      Map<NetworkInterface, InetAddress> map = getAddressForEachNetworkInterface();
+      Map<NetworkInterface, InetAddress> map = NetworkAddressTestBase.getAddressForEachNetworkInterface();
       if (map.size() > 0)
       {
          Set<Entry<NetworkInterface, InetAddress>> set = map.entrySet();
@@ -108,9 +110,10 @@ public abstract class NetworkAddressTestBase extends ServiceTestBase
          testConnection(host, host, true);
       }
    }
+
    public void testConnectToServerAcceptingAllHosts() throws Exception
    {
-      Map<NetworkInterface, InetAddress> map = getAddressForEachNetworkInterface();
+      Map<NetworkInterface, InetAddress> map = NetworkAddressTestBase.getAddressForEachNetworkInterface();
       Set<Entry<NetworkInterface, InetAddress>> set = map.entrySet();
       for (Entry<NetworkInterface, InetAddress> entry : set)
       {
@@ -121,7 +124,7 @@ public abstract class NetworkAddressTestBase extends ServiceTestBase
 
    public void testConnectToServerAcceptingOnlyAnotherHost() throws Exception
    {
-      Map<NetworkInterface, InetAddress> map = getAddressForEachNetworkInterface();
+      Map<NetworkInterface, InetAddress> map = NetworkAddressTestBase.getAddressForEachNetworkInterface();
       if (map.size() <= 1)
       {
          System.err.println("There must be at least 1 network interfaces: test will not be executed");
@@ -138,7 +141,7 @@ public abstract class NetworkAddressTestBase extends ServiceTestBase
 
    public void testConnectorToServerAcceptingAListOfHosts() throws Exception
    {
-      Map<NetworkInterface, InetAddress> map = getAddressForEachNetworkInterface();
+      Map<NetworkInterface, InetAddress> map = NetworkAddressTestBase.getAddressForEachNetworkInterface();
       if (map.size() <= 1)
       {
          System.err.println("There must be at least 2 network interfaces: test will not be executed");
@@ -158,7 +161,7 @@ public abstract class NetworkAddressTestBase extends ServiceTestBase
 
    public void testConnectorToServerAcceptingAListOfHosts_2() throws Exception
    {
-      Map<NetworkInterface, InetAddress> map = getAddressForEachNetworkInterface();
+      Map<NetworkInterface, InetAddress> map = NetworkAddressTestBase.getAddressForEachNetworkInterface();
       if (map.size() <= 2)
       {
          System.err.println("There must be at least 3 network interfaces: test will not be executed");
@@ -178,10 +181,10 @@ public abstract class NetworkAddressTestBase extends ServiceTestBase
       testConnection(listOfHosts, entry3.getValue().getHostAddress(), false);
    }
 
-   public void testConnection(String acceptorHost, String connectorHost, boolean mustConnect) throws Exception
+   public void testConnection(final String acceptorHost, final String connectorHost, final boolean mustConnect) throws Exception
    {
       System.out.println("acceptor=" + acceptorHost + ", connector=" + connectorHost + ", mustConnect=" + mustConnect);
-      
+
       Map<String, Object> params = new HashMap<String, Object>();
       params.put(getHostPropertyKey(), acceptorHost);
       TransportConfiguration acceptorConfig = new TransportConfiguration(getAcceptorFactoryClassName(), params);
@@ -212,7 +215,7 @@ public abstract class NetworkAddressTestBase extends ServiceTestBase
             try
             {
                sf.createSession(false, true, true);
-               fail("session creation must fail because connector must not be able to connect to the server bound to another network interface");
+               Assert.fail("session creation must fail because connector must not be able to connect to the server bound to another network interface");
             }
             catch (Exception e)
             {
@@ -227,7 +230,7 @@ public abstract class NetworkAddressTestBase extends ServiceTestBase
          }
       }
    }
-   
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

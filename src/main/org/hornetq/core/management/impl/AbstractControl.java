@@ -38,7 +38,7 @@ public abstract class AbstractControl extends StandardMBean
 
    // Constructors --------------------------------------------------
 
-   public AbstractControl(Class<?> clazz, StorageManager storageManager) throws NotCompliantMBeanException
+   public AbstractControl(final Class<?> clazz, final StorageManager storageManager) throws NotCompliantMBeanException
    {
       super(clazz);
       this.storageManager = storageManager;

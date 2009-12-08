@@ -16,6 +16,8 @@ package org.hornetq.tests.integration.cluster.failover;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
@@ -58,11 +60,11 @@ public class ReplicatedDistributionTest extends ClusterTestBase
 
       ClientSession sessionThree = sfs[3].createSession(false, false);
 
-      sessionOne.createQueue(ADDRESS, ADDRESS, true);
+      sessionOne.createQueue(ReplicatedDistributionTest.ADDRESS, ReplicatedDistributionTest.ADDRESS, true);
 
-      sessionThree.createQueue(ADDRESS, ADDRESS, true);
+      sessionThree.createQueue(ReplicatedDistributionTest.ADDRESS, ReplicatedDistributionTest.ADDRESS, true);
 
-      ClientConsumer consThree = sessionThree.createConsumer(ADDRESS);
+      ClientConsumer consThree = sessionThree.createConsumer(ReplicatedDistributionTest.ADDRESS);
 
       sessionThree.start();
 
@@ -70,14 +72,14 @@ public class ReplicatedDistributionTest extends ClusterTestBase
       waitForBindings(1, "test.SomeAddress", 1, 1, false);
       try
       {
-         ClientProducer producer = sessionOne.createProducer(ADDRESS);
+         ClientProducer producer = sessionOne.createProducer(ReplicatedDistributionTest.ADDRESS);
 
          for (int i = 0; i < 100; i++)
          {
             ClientMessage msg = sessionOne.createClientMessage(true);
-            
+
             msg.putIntProperty(new SimpleString("key"), i);
-            
+
             producer.send(msg);
          }
 
@@ -87,13 +89,13 @@ public class ReplicatedDistributionTest extends ClusterTestBase
          {
             ClientMessage msg = consThree.receive(15000);
 
-            assertNotNull(msg);
+            Assert.assertNotNull(msg);
 
             System.out.println(i + " msg = " + msg);
 
             int received = msg.getIntProperty("key");
 
-            assertEquals(i, received);
+            Assert.assertEquals(i, received);
 
             msg.acknowledge();
          }
@@ -122,26 +124,26 @@ public class ReplicatedDistributionTest extends ClusterTestBase
          {
             ClientMessage msg = consThree.receive(15000);
 
-            assertNotNull(msg);
+            Assert.assertNotNull(msg);
 
             System.out.println(i + " msg = " + msg);
 
             int received = (Integer)msg.getObjectProperty(new SimpleString("key"));
 
-            assertEquals(i, received);
+            Assert.assertEquals(i, received);
 
             msg.acknowledge();
          }
 
-         assertNull(consThree.receiveImmediate());
+         Assert.assertNull(consThree.receiveImmediate());
 
          sessionThree.commit();
 
          sessionOne.start();
 
-         ClientConsumer consOne = sessionOne.createConsumer(ADDRESS);
+         ClientConsumer consOne = sessionOne.createConsumer(ReplicatedDistributionTest.ADDRESS);
 
-         assertNull(consOne.receiveImmediate());
+         Assert.assertNull(consOne.receiveImmediate());
 
       }
       finally
@@ -160,11 +162,11 @@ public class ReplicatedDistributionTest extends ClusterTestBase
 
       ClientSession sessionThree = sfs[3].createSession(false, false);
 
-      sessionOne.createQueue(ADDRESS, ADDRESS, true);
+      sessionOne.createQueue(ReplicatedDistributionTest.ADDRESS, ReplicatedDistributionTest.ADDRESS, true);
 
-      sessionThree.createQueue(ADDRESS, ADDRESS, true);
+      sessionThree.createQueue(ReplicatedDistributionTest.ADDRESS, ReplicatedDistributionTest.ADDRESS, true);
 
-      ClientConsumer consThree = sessionThree.createConsumer(ADDRESS);
+      ClientConsumer consThree = sessionThree.createConsumer(ReplicatedDistributionTest.ADDRESS);
 
       sessionThree.start();
 
@@ -173,11 +175,11 @@ public class ReplicatedDistributionTest extends ClusterTestBase
 
       try
       {
-         ClientProducer producer = sessionOne.createProducer(ADDRESS);
+         ClientProducer producer = sessionOne.createProducer(ReplicatedDistributionTest.ADDRESS);
 
          for (int i = 0; i < 100; i++)
          {
-            ClientMessage msg = sessionOne.createClientMessage(true);           
+            ClientMessage msg = sessionOne.createClientMessage(true);
             msg.putIntProperty(new SimpleString("key"), i);
             producer.send(msg);
          }
@@ -188,7 +190,7 @@ public class ReplicatedDistributionTest extends ClusterTestBase
          {
             ClientMessage msg = consThree.receive(15000);
 
-            assertNotNull(msg);
+            Assert.assertNotNull(msg);
 
             System.out.println(i + " msg = " + msg);
 
@@ -206,9 +208,9 @@ public class ReplicatedDistributionTest extends ClusterTestBase
 
          sessionOne.start();
 
-         ClientConsumer consOne = sessionOne.createConsumer(ADDRESS);
+         ClientConsumer consOne = sessionOne.createConsumer(ReplicatedDistributionTest.ADDRESS);
 
-         assertNull(consOne.receiveImmediate());
+         Assert.assertNull(consOne.receiveImmediate());
 
       }
       finally
@@ -257,7 +259,7 @@ public class ReplicatedDistributionTest extends ClusterTestBase
 
       boolean ok = latch.await(1000, TimeUnit.MILLISECONDS);
 
-      assertTrue(ok);
+      Assert.assertTrue(ok);
    }
 
    @Override
@@ -267,7 +269,7 @@ public class ReplicatedDistributionTest extends ClusterTestBase
 
       setupServer(1, true, isShared(), true, false, -1);
       setupServer(2, true, isShared(), true, true, -1);
-      setupServer(3, true, isShared(), true, true,  2);
+      setupServer(3, true, isShared(), true, true, 2);
 
       setupClusterConnectionWithBackups("test", "test", false, 1, true, 1, new int[] { 3 }, new int[] { 2 });
 

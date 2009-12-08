@@ -13,6 +13,8 @@
 
 package org.hornetq.tests.integration.client;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientProducer;
 import org.hornetq.core.client.ClientSession;
@@ -60,44 +62,44 @@ public class SessionClosedOnRemotingConnectionFailureTest extends UnitTestCase
 
          prod.send(session.createClientMessage(false));
 
-         assertNotNull(cons.receive());
+         Assert.assertNotNull(cons.receive());
 
          // Now fail the underlying connection
 
          RemotingConnection connection = ((ClientSessionInternal)session).getConnection();
 
          connection.fail(new HornetQException(HornetQException.NOT_CONNECTED));
-         
-         assertTrue(session.isClosed());
-         
-         assertTrue(prod.isClosed());
-         
-         assertTrue(cons.isClosed());
-         
-         //Now try and use the producer
-         
+
+         Assert.assertTrue(session.isClosed());
+
+         Assert.assertTrue(prod.isClosed());
+
+         Assert.assertTrue(cons.isClosed());
+
+         // Now try and use the producer
+
          try
          {
             prod.send(session.createClientMessage(false));
-            
-            fail("Should throw exception");
+
+            Assert.fail("Should throw exception");
          }
          catch (HornetQException e)
          {
-            assertEquals(HornetQException.OBJECT_CLOSED, e.getCode());
+            Assert.assertEquals(HornetQException.OBJECT_CLOSED, e.getCode());
          }
-         
+
          try
          {
             cons.receive();
-            
-            fail("Should throw exception");
+
+            Assert.fail("Should throw exception");
          }
          catch (HornetQException e)
          {
-            assertEquals(HornetQException.OBJECT_CLOSED, e.getCode());            
-         }        
-         
+            Assert.assertEquals(HornetQException.OBJECT_CLOSED, e.getCode());
+         }
+
          session.close();
       }
       finally

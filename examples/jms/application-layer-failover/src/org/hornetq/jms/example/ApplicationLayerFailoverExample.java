@@ -36,7 +36,7 @@ import org.hornetq.common.example.HornetQExample;
  */
 public class ApplicationLayerFailoverExample extends HornetQExample
 {
-   public static void main(String[] args)
+   public static void main(final String[] args)
    {
       new ApplicationLayerFailoverExample().run(args);
    }
@@ -53,6 +53,7 @@ public class ApplicationLayerFailoverExample extends HornetQExample
 
    private final CountDownLatch failoverLatch = new CountDownLatch(1);
 
+   @Override
    public boolean runExample() throws Exception
    {
       try
@@ -178,7 +179,7 @@ public class ApplicationLayerFailoverExample extends HornetQExample
 
    private class ExampleListener implements ExceptionListener
    {
-      public void onException(JMSException exception)
+      public void onException(final JMSException exception)
       {
          try
          {

@@ -20,6 +20,8 @@ import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
+import org.hornetq.jms.tests.util.ProxyAssertSupport;
+
 /**
  *
  * A PersistenceTest
@@ -54,48 +56,48 @@ public class PersistenceTest extends JMSTestCase
 
       try
       {
-	      conn = cf.createConnection();
-	      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-	      MessageProducer prod = sess.createProducer(queue1);
-	      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
+         conn = JMSTestCase.cf.createConnection();
+         Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageProducer prod = sess.createProducer(HornetQServerTestCase.queue1);
+         prod.setDeliveryMode(DeliveryMode.PERSISTENT);
 
-	      for (int i = 0; i < 10; i++)
-	      {
-	         TextMessage tm = sess.createTextMessage("message" + i);
-	         prod.send(tm);
-	      }
+         for (int i = 0; i < 10; i++)
+         {
+            TextMessage tm = sess.createTextMessage("message" + i);
+            prod.send(tm);
+         }
 
-	      conn.close();
+         conn.close();
 
-	      stop();
+         stop();
 
-	      startNoDelete();
-	      
-	      // HornetQ server restart implies new ConnectionFactory lookup
-	      deployAndLookupAdministeredObjects();
+         startNoDelete();
 
-	      conn = cf.createConnection();
-	      sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-	      conn.start();
-	      MessageConsumer cons = sess.createConsumer(queue1);
-	      for (int i = 0; i < 10; i++)
-	      {
-	         TextMessage tm = (TextMessage)cons.receive(3000);
-  
-	         assertNotNull(tm);
-	         if (tm == null)
-	         {
-	            break;
-	         }
-	         assertEquals("message" + i, tm.getText());
-	      }
+         // HornetQ server restart implies new ConnectionFactory lookup
+         deployAndLookupAdministeredObjects();
+
+         conn = JMSTestCase.cf.createConnection();
+         sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         conn.start();
+         MessageConsumer cons = sess.createConsumer(HornetQServerTestCase.queue1);
+         for (int i = 0; i < 10; i++)
+         {
+            TextMessage tm = (TextMessage)cons.receive(3000);
+
+            ProxyAssertSupport.assertNotNull(tm);
+            if (tm == null)
+            {
+               break;
+            }
+            ProxyAssertSupport.assertEquals("message" + i, tm.getText());
+         }
       }
       finally
       {
-      	if (conn != null)
-      	{
-      		conn.close();
-      	}
+         if (conn != null)
+         {
+            conn.close();
+         }
       }
    }
 
@@ -109,87 +111,86 @@ public class PersistenceTest extends JMSTestCase
 
       try
       {
-	      conn = cf.createConnection();
-	      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-	      MessageProducer prod = sess.createProducer(queue1);
-	      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
+         conn = JMSTestCase.cf.createConnection();
+         Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageProducer prod = sess.createProducer(HornetQServerTestCase.queue1);
+         prod.setDeliveryMode(DeliveryMode.PERSISTENT);
 
-	      for (int i = 0; i < 10; i++)
-	      {
-	         TextMessage tm = sess.createTextMessage("message" + i);
-	         prod.send(tm);
-	      }
-	      
-	      Session sess2 = conn.createSession(true, Session.SESSION_TRANSACTED);
+         for (int i = 0; i < 10; i++)
+         {
+            TextMessage tm = sess.createTextMessage("message" + i);
+            prod.send(tm);
+         }
 
-	      MessageConsumer cons = sess2.createConsumer(queue1);
+         Session sess2 = conn.createSession(true, Session.SESSION_TRANSACTED);
 
-	      conn.start();
-	      
-	      for (int i = 0; i < 10; i++)
-	      {
-	         TextMessage tm = (TextMessage)cons.receive(1000);
+         MessageConsumer cons = sess2.createConsumer(HornetQServerTestCase.queue1);
 
-	         assertNotNull(tm);
+         conn.start();
 
-	         assertEquals("message" + i, tm.getText());
+         for (int i = 0; i < 10; i++)
+         {
+            TextMessage tm = (TextMessage)cons.receive(1000);
 
-	         assertFalse(tm.getJMSRedelivered());
+            ProxyAssertSupport.assertNotNull(tm);
 
-	         assertEquals(1, tm.getIntProperty("JMSXDeliveryCount"));
-	      }
-	      
-	      //rollback
-	      sess2.rollback();
+            ProxyAssertSupport.assertEquals("message" + i, tm.getText());
 
-	      for (int i = 0; i < 10; i++)
-	      {
-	         TextMessage tm = (TextMessage)cons.receive(1000);
+            ProxyAssertSupport.assertFalse(tm.getJMSRedelivered());
 
-	         assertNotNull(tm);
+            ProxyAssertSupport.assertEquals(1, tm.getIntProperty("JMSXDeliveryCount"));
+         }
 
-	         assertEquals("message" + i, tm.getText());
+         // rollback
+         sess2.rollback();
 
-	         assertTrue(tm.getJMSRedelivered());
+         for (int i = 0; i < 10; i++)
+         {
+            TextMessage tm = (TextMessage)cons.receive(1000);
 
-	         assertEquals(2, tm.getIntProperty("JMSXDeliveryCount"));
-	      }
+            ProxyAssertSupport.assertNotNull(tm);
 
-	      conn.close();
+            ProxyAssertSupport.assertEquals("message" + i, tm.getText());
 
-	      stop();
+            ProxyAssertSupport.assertTrue(tm.getJMSRedelivered());
 
-	      startNoDelete();
+            ProxyAssertSupport.assertEquals(2, tm.getIntProperty("JMSXDeliveryCount"));
+         }
 
-	      // HornetQ server restart implies new ConnectionFactory lookup
-	      deployAndLookupAdministeredObjects();
+         conn.close();
 
-	      conn = cf.createConnection();
-	      sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-	      conn.start();
-	      cons = sess.createConsumer(queue1);
-	      for (int i = 0; i < 10; i++)
-	      {
-	         TextMessage tm = (TextMessage)cons.receive(3000);
+         stop();
 
-	         assertNotNull(tm);
+         startNoDelete();
 
-	         assertEquals("message" + i, tm.getText());
+         // HornetQ server restart implies new ConnectionFactory lookup
+         deployAndLookupAdministeredObjects();
 
-	         assertTrue(tm.getJMSRedelivered());
+         conn = JMSTestCase.cf.createConnection();
+         sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         conn.start();
+         cons = sess.createConsumer(HornetQServerTestCase.queue1);
+         for (int i = 0; i < 10; i++)
+         {
+            TextMessage tm = (TextMessage)cons.receive(3000);
 
-	         assertEquals(3, tm.getIntProperty("JMSXDeliveryCount"));
-	      }
+            ProxyAssertSupport.assertNotNull(tm);
+
+            ProxyAssertSupport.assertEquals("message" + i, tm.getText());
+
+            ProxyAssertSupport.assertTrue(tm.getJMSRedelivered());
+
+            ProxyAssertSupport.assertEquals(3, tm.getIntProperty("JMSXDeliveryCount"));
+         }
       }
       finally
       {
-      	if (conn != null)
-      	{
-      		conn.close();
-      	}
+         if (conn != null)
+         {
+            conn.close();
+         }
       }
    }
-
 
    /**
     * First test that message order survives a restart
@@ -200,110 +201,109 @@ public class PersistenceTest extends JMSTestCase
 
       try
       {
-	      conn = cf.createConnection();
-	      Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-	      MessageProducer prod = sessSend.createProducer(queue1);
+         conn = JMSTestCase.cf.createConnection();
+         Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageProducer prod = sessSend.createProducer(HornetQServerTestCase.queue1);
 
-	      TextMessage m0 = sessSend.createTextMessage("a");
-	      TextMessage m1 = sessSend.createTextMessage("b");
-	      TextMessage m2 = sessSend.createTextMessage("c");
-	      TextMessage m3 = sessSend.createTextMessage("d");
-	      TextMessage m4 = sessSend.createTextMessage("e");
-	      TextMessage m5 = sessSend.createTextMessage("f");
-	      TextMessage m6 = sessSend.createTextMessage("g");
-	      TextMessage m7 = sessSend.createTextMessage("h");
-	      TextMessage m8 = sessSend.createTextMessage("i");
-	      TextMessage m9 = sessSend.createTextMessage("j");
+         TextMessage m0 = sessSend.createTextMessage("a");
+         TextMessage m1 = sessSend.createTextMessage("b");
+         TextMessage m2 = sessSend.createTextMessage("c");
+         TextMessage m3 = sessSend.createTextMessage("d");
+         TextMessage m4 = sessSend.createTextMessage("e");
+         TextMessage m5 = sessSend.createTextMessage("f");
+         TextMessage m6 = sessSend.createTextMessage("g");
+         TextMessage m7 = sessSend.createTextMessage("h");
+         TextMessage m8 = sessSend.createTextMessage("i");
+         TextMessage m9 = sessSend.createTextMessage("j");
 
-	      prod.send(m0, DeliveryMode.PERSISTENT, 0, 0);
-	      prod.send(m1, DeliveryMode.PERSISTENT, 1, 0);
-	      prod.send(m2, DeliveryMode.PERSISTENT, 2, 0);
-	      prod.send(m3, DeliveryMode.PERSISTENT, 3, 0);
-	      prod.send(m4, DeliveryMode.PERSISTENT, 4, 0);
-	      prod.send(m5, DeliveryMode.PERSISTENT, 5, 0);
-	      prod.send(m6, DeliveryMode.PERSISTENT, 6, 0);
-	      prod.send(m7, DeliveryMode.PERSISTENT, 7, 0);
-	      prod.send(m8, DeliveryMode.PERSISTENT, 8, 0);
-	      prod.send(m9, DeliveryMode.PERSISTENT, 9, 0);
+         prod.send(m0, DeliveryMode.PERSISTENT, 0, 0);
+         prod.send(m1, DeliveryMode.PERSISTENT, 1, 0);
+         prod.send(m2, DeliveryMode.PERSISTENT, 2, 0);
+         prod.send(m3, DeliveryMode.PERSISTENT, 3, 0);
+         prod.send(m4, DeliveryMode.PERSISTENT, 4, 0);
+         prod.send(m5, DeliveryMode.PERSISTENT, 5, 0);
+         prod.send(m6, DeliveryMode.PERSISTENT, 6, 0);
+         prod.send(m7, DeliveryMode.PERSISTENT, 7, 0);
+         prod.send(m8, DeliveryMode.PERSISTENT, 8, 0);
+         prod.send(m9, DeliveryMode.PERSISTENT, 9, 0);
 
-	      conn.close();
+         conn.close();
 
-	      stop();
+         stop();
 
-	      startNoDelete();
+         startNoDelete();
 
-	      // HornetQ server restart implies new ConnectionFactory lookup
-	      deployAndLookupAdministeredObjects();
+         // HornetQ server restart implies new ConnectionFactory lookup
+         deployAndLookupAdministeredObjects();
 
-	      conn = cf.createConnection();
-	      Session sessReceive = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-	      conn.start();
-	      MessageConsumer cons = sessReceive.createConsumer(queue1);
+         conn = JMSTestCase.cf.createConnection();
+         Session sessReceive = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         conn.start();
+         MessageConsumer cons = sessReceive.createConsumer(HornetQServerTestCase.queue1);
 
-	      {
-	         TextMessage t = (TextMessage)cons.receive(1000);
-	         assertNotNull(t);
-	         assertEquals("j", t.getText());
-	      }
-	      {
-	         TextMessage t = (TextMessage)cons.receive(1000);
-	         assertNotNull(t);
-	         assertEquals("i", t.getText());
-	      }
-	      {
-	         TextMessage t = (TextMessage)cons.receive(1000);
-	         assertNotNull(t);
-	         assertEquals("h", t.getText());
-	      }
-	      {
-	         TextMessage t = (TextMessage)cons.receive(1000);
-	         assertNotNull(t);
-	         assertEquals("g", t.getText());
-	      }
-	      {
-	         TextMessage t = (TextMessage)cons.receive(1000);
-	         assertNotNull(t);
-	         assertEquals("f", t.getText());
-	      }
-	      {
-	         TextMessage t = (TextMessage)cons.receive(1000);
-	         assertNotNull(t);
-	         assertEquals("e", t.getText());
-	      }
-	      {
-	         TextMessage t = (TextMessage)cons.receive(1000);
-	         assertNotNull(t);
-	         assertEquals("d", t.getText());
-	      }
-	      {
-	         TextMessage t = (TextMessage)cons.receive(1000);
-	         assertNotNull(t);
-	         assertEquals("c", t.getText());
-	      }
-	      {
-	         TextMessage t = (TextMessage)cons.receive(1000);
-	         assertNotNull(t);
-	         assertEquals("b", t.getText());
-	      }
-	      {
-	         TextMessage t = (TextMessage)cons.receive(1000);
-	         assertNotNull(t);
-	         assertEquals("a", t.getText());
-	      }
-	      {
-	         TextMessage t = (TextMessage)cons.receive(500);
-	         assertNull(t);
-	      }
+         {
+            TextMessage t = (TextMessage)cons.receive(1000);
+            ProxyAssertSupport.assertNotNull(t);
+            ProxyAssertSupport.assertEquals("j", t.getText());
+         }
+         {
+            TextMessage t = (TextMessage)cons.receive(1000);
+            ProxyAssertSupport.assertNotNull(t);
+            ProxyAssertSupport.assertEquals("i", t.getText());
+         }
+         {
+            TextMessage t = (TextMessage)cons.receive(1000);
+            ProxyAssertSupport.assertNotNull(t);
+            ProxyAssertSupport.assertEquals("h", t.getText());
+         }
+         {
+            TextMessage t = (TextMessage)cons.receive(1000);
+            ProxyAssertSupport.assertNotNull(t);
+            ProxyAssertSupport.assertEquals("g", t.getText());
+         }
+         {
+            TextMessage t = (TextMessage)cons.receive(1000);
+            ProxyAssertSupport.assertNotNull(t);
+            ProxyAssertSupport.assertEquals("f", t.getText());
+         }
+         {
+            TextMessage t = (TextMessage)cons.receive(1000);
+            ProxyAssertSupport.assertNotNull(t);
+            ProxyAssertSupport.assertEquals("e", t.getText());
+         }
+         {
+            TextMessage t = (TextMessage)cons.receive(1000);
+            ProxyAssertSupport.assertNotNull(t);
+            ProxyAssertSupport.assertEquals("d", t.getText());
+         }
+         {
+            TextMessage t = (TextMessage)cons.receive(1000);
+            ProxyAssertSupport.assertNotNull(t);
+            ProxyAssertSupport.assertEquals("c", t.getText());
+         }
+         {
+            TextMessage t = (TextMessage)cons.receive(1000);
+            ProxyAssertSupport.assertNotNull(t);
+            ProxyAssertSupport.assertEquals("b", t.getText());
+         }
+         {
+            TextMessage t = (TextMessage)cons.receive(1000);
+            ProxyAssertSupport.assertNotNull(t);
+            ProxyAssertSupport.assertEquals("a", t.getText());
+         }
+         {
+            TextMessage t = (TextMessage)cons.receive(500);
+            ProxyAssertSupport.assertNull(t);
+         }
       }
       finally
       {
-      	if (conn != null)
-      	{
-      		conn.close();
-      	}
+         if (conn != null)
+         {
+            conn.close();
+         }
       }
    }
-
 
    /**
     * Second test that message order survives a restart
@@ -314,107 +314,106 @@ public class PersistenceTest extends JMSTestCase
 
       try
       {
-	      conn = cf.createConnection();
-	      Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-	      MessageProducer prod = sessSend.createProducer(queue1);
+         conn = JMSTestCase.cf.createConnection();
+         Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageProducer prod = sessSend.createProducer(HornetQServerTestCase.queue1);
 
-	      TextMessage m0 = sessSend.createTextMessage("a");
-	      TextMessage m1 = sessSend.createTextMessage("b");
-	      TextMessage m2 = sessSend.createTextMessage("c");
-	      TextMessage m3 = sessSend.createTextMessage("d");
-	      TextMessage m4 = sessSend.createTextMessage("e");
-	      TextMessage m5 = sessSend.createTextMessage("f");
-	      TextMessage m6 = sessSend.createTextMessage("g");
-	      TextMessage m7 = sessSend.createTextMessage("h");
-	      TextMessage m8 = sessSend.createTextMessage("i");
-	      TextMessage m9 = sessSend.createTextMessage("j");
+         TextMessage m0 = sessSend.createTextMessage("a");
+         TextMessage m1 = sessSend.createTextMessage("b");
+         TextMessage m2 = sessSend.createTextMessage("c");
+         TextMessage m3 = sessSend.createTextMessage("d");
+         TextMessage m4 = sessSend.createTextMessage("e");
+         TextMessage m5 = sessSend.createTextMessage("f");
+         TextMessage m6 = sessSend.createTextMessage("g");
+         TextMessage m7 = sessSend.createTextMessage("h");
+         TextMessage m8 = sessSend.createTextMessage("i");
+         TextMessage m9 = sessSend.createTextMessage("j");
 
+         prod.send(m0, DeliveryMode.PERSISTENT, 0, 0);
+         prod.send(m1, DeliveryMode.PERSISTENT, 0, 0);
+         prod.send(m2, DeliveryMode.PERSISTENT, 0, 0);
+         prod.send(m3, DeliveryMode.PERSISTENT, 3, 0);
+         prod.send(m4, DeliveryMode.PERSISTENT, 3, 0);
+         prod.send(m5, DeliveryMode.PERSISTENT, 4, 0);
+         prod.send(m6, DeliveryMode.PERSISTENT, 4, 0);
+         prod.send(m7, DeliveryMode.PERSISTENT, 5, 0);
+         prod.send(m8, DeliveryMode.PERSISTENT, 5, 0);
+         prod.send(m9, DeliveryMode.PERSISTENT, 6, 0);
 
-	      prod.send(m0, DeliveryMode.PERSISTENT, 0, 0);
-	      prod.send(m1, DeliveryMode.PERSISTENT, 0, 0);
-	      prod.send(m2, DeliveryMode.PERSISTENT, 0, 0);
-	      prod.send(m3, DeliveryMode.PERSISTENT, 3, 0);
-	      prod.send(m4, DeliveryMode.PERSISTENT, 3, 0);
-	      prod.send(m5, DeliveryMode.PERSISTENT, 4, 0);
-	      prod.send(m6, DeliveryMode.PERSISTENT, 4, 0);
-	      prod.send(m7, DeliveryMode.PERSISTENT, 5, 0);
-	      prod.send(m8, DeliveryMode.PERSISTENT, 5, 0);
-	      prod.send(m9, DeliveryMode.PERSISTENT, 6, 0);
+         conn.close();
 
-	      conn.close();
+         stop();
 
-	      stop();
+         startNoDelete();
 
-	      startNoDelete();
+         deployAndLookupAdministeredObjects();
 
-	      deployAndLookupAdministeredObjects();
+         conn = JMSTestCase.cf.createConnection();
+         Session sessReceive = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         conn.start();
+         MessageConsumer cons = sessReceive.createConsumer(HornetQServerTestCase.queue1);
 
-	      conn = cf.createConnection();
-	      Session sessReceive = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-	      conn.start();
-	      MessageConsumer cons = sessReceive.createConsumer(queue1);
-
-	      {
-	         TextMessage t = (TextMessage)cons.receive(1000);
-	         assertNotNull(t);
-	         assertEquals("j", t.getText());
-	      }
-	      {
-	         TextMessage t = (TextMessage)cons.receive(1000);
-	         assertNotNull(t);
-	         assertEquals("h", t.getText());
-	      }
-	      {
-	         TextMessage t = (TextMessage)cons.receive(1000);
-	         assertNotNull(t);
-	         assertEquals("i", t.getText());
-	      }
-	      {
-	         TextMessage t = (TextMessage)cons.receive(1000);
-	         assertNotNull(t);
-	         assertEquals("f", t.getText());
-	      }
-	      {
-	         TextMessage t = (TextMessage)cons.receive(1000);
-	         assertNotNull(t);
-	         assertEquals("g", t.getText());
-	      }
-	      {
-	         TextMessage t = (TextMessage)cons.receive(1000);
-	         assertNotNull(t);
-	         assertEquals("d", t.getText());
-	      }
-	      {
-	         TextMessage t = (TextMessage)cons.receive(1000);
-	         assertNotNull(t);
-	         assertEquals("e", t.getText());
-	      }
-	      {
-	         TextMessage t = (TextMessage)cons.receive(1000);
-	         assertNotNull(t);
-	         assertEquals("a", t.getText());
-	      }
-	      {
-	         TextMessage t = (TextMessage)cons.receive(1000);
-	         assertNotNull(t);
-	         assertEquals("b", t.getText());
-	      }
-	      {
-	         TextMessage t = (TextMessage)cons.receive(1000);
-	         assertNotNull(t);
-	         assertEquals("c", t.getText());
-	      }
-	      {
-	         TextMessage t = (TextMessage)cons.receiveNoWait();
-	         assertNull(t);
-	      }
+         {
+            TextMessage t = (TextMessage)cons.receive(1000);
+            ProxyAssertSupport.assertNotNull(t);
+            ProxyAssertSupport.assertEquals("j", t.getText());
+         }
+         {
+            TextMessage t = (TextMessage)cons.receive(1000);
+            ProxyAssertSupport.assertNotNull(t);
+            ProxyAssertSupport.assertEquals("h", t.getText());
+         }
+         {
+            TextMessage t = (TextMessage)cons.receive(1000);
+            ProxyAssertSupport.assertNotNull(t);
+            ProxyAssertSupport.assertEquals("i", t.getText());
+         }
+         {
+            TextMessage t = (TextMessage)cons.receive(1000);
+            ProxyAssertSupport.assertNotNull(t);
+            ProxyAssertSupport.assertEquals("f", t.getText());
+         }
+         {
+            TextMessage t = (TextMessage)cons.receive(1000);
+            ProxyAssertSupport.assertNotNull(t);
+            ProxyAssertSupport.assertEquals("g", t.getText());
+         }
+         {
+            TextMessage t = (TextMessage)cons.receive(1000);
+            ProxyAssertSupport.assertNotNull(t);
+            ProxyAssertSupport.assertEquals("d", t.getText());
+         }
+         {
+            TextMessage t = (TextMessage)cons.receive(1000);
+            ProxyAssertSupport.assertNotNull(t);
+            ProxyAssertSupport.assertEquals("e", t.getText());
+         }
+         {
+            TextMessage t = (TextMessage)cons.receive(1000);
+            ProxyAssertSupport.assertNotNull(t);
+            ProxyAssertSupport.assertEquals("a", t.getText());
+         }
+         {
+            TextMessage t = (TextMessage)cons.receive(1000);
+            ProxyAssertSupport.assertNotNull(t);
+            ProxyAssertSupport.assertEquals("b", t.getText());
+         }
+         {
+            TextMessage t = (TextMessage)cons.receive(1000);
+            ProxyAssertSupport.assertNotNull(t);
+            ProxyAssertSupport.assertEquals("c", t.getText());
+         }
+         {
+            TextMessage t = (TextMessage)cons.receiveNoWait();
+            ProxyAssertSupport.assertNull(t);
+         }
       }
       finally
       {
-      	if (conn != null)
-      	{
-      		conn.close();
-      	}
+         if (conn != null)
+         {
+            conn.close();
+         }
       }
    }
 
@@ -427,50 +426,50 @@ public class PersistenceTest extends JMSTestCase
 
       try
       {
-	      conn = cf.createConnection();
-	      conn.setClientID("five");
+         conn = JMSTestCase.cf.createConnection();
+         conn.setClientID("five");
 
-	      Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-	      MessageConsumer ds = s.createDurableSubscriber(topic1, "sub", null, false);
+         MessageConsumer ds = s.createDurableSubscriber(HornetQServerTestCase.topic1, "sub", null, false);
 
-	      MessageProducer p = s.createProducer(topic1);
-	      p.setDeliveryMode(DeliveryMode.PERSISTENT);
-	      TextMessage tm = s.createTextMessage("thebody");
+         MessageProducer p = s.createProducer(HornetQServerTestCase.topic1);
+         p.setDeliveryMode(DeliveryMode.PERSISTENT);
+         TextMessage tm = s.createTextMessage("thebody");
 
-	      p.send(tm);
-	      log.debug("message sent");
+         p.send(tm);
+         log.debug("message sent");
 
-	      conn.close();
+         conn.close();
 
-	      stop();
+         stop();
 
-	      startNoDelete();
+         startNoDelete();
 
-	      deployAndLookupAdministeredObjects();
+         deployAndLookupAdministeredObjects();
 
-	      conn = cf.createConnection();
-	      conn.setClientID("five");
+         conn = JMSTestCase.cf.createConnection();
+         conn.setClientID("five");
 
-	      s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-	      conn.start();
+         s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         conn.start();
 
-	      ds = s.createDurableSubscriber(topic1, "sub", null, false);
+         ds = s.createDurableSubscriber(HornetQServerTestCase.topic1, "sub", null, false);
 
-	      TextMessage rm = (TextMessage)ds.receive(3000);
-	      assertNotNull(rm);
-	      assertEquals("thebody", rm.getText());
+         TextMessage rm = (TextMessage)ds.receive(3000);
+         ProxyAssertSupport.assertNotNull(rm);
+         ProxyAssertSupport.assertEquals("thebody", rm.getText());
 
-	      ds.close();
+         ds.close();
 
-	      s.unsubscribe("sub");
+         s.unsubscribe("sub");
       }
       finally
       {
-      	if (conn != null)
-      	{
-      		conn.close();
-      	}
+         if (conn != null)
+         {
+            conn.close();
+         }
       }
    }
 
@@ -483,89 +482,87 @@ public class PersistenceTest extends JMSTestCase
 
       try
       {
-	      conn = cf.createConnection();
-	      conn.setClientID("Sausages");
+         conn = JMSTestCase.cf.createConnection();
+         conn.setClientID("Sausages");
 
-	      Session sessConsume = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         Session sessConsume = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-	      MessageConsumer sub1 = sessConsume.createDurableSubscriber(topic1, "sub1", null, false);
-	      MessageConsumer sub2 = sessConsume.createDurableSubscriber(topic1, "sub2", null, false);
-	      MessageConsumer sub3 = sessConsume.createDurableSubscriber(topic1, "sub3", null, false);
+         MessageConsumer sub1 = sessConsume.createDurableSubscriber(HornetQServerTestCase.topic1, "sub1", null, false);
+         MessageConsumer sub2 = sessConsume.createDurableSubscriber(HornetQServerTestCase.topic1, "sub2", null, false);
+         MessageConsumer sub3 = sessConsume.createDurableSubscriber(HornetQServerTestCase.topic1, "sub3", null, false);
 
+         Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageProducer prod = sessSend.createProducer(HornetQServerTestCase.topic1);
+         prod.setDeliveryMode(DeliveryMode.PERSISTENT);
 
-	      Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-	      MessageProducer prod = sessSend.createProducer(topic1);
-	      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
+         for (int i = 0; i < 10; i++)
+         {
+            TextMessage tm = sessSend.createTextMessage("message" + i);
+            prod.send(tm);
+         }
 
-	      for (int i = 0; i < 10; i++)
-	      {
-	         TextMessage tm = sessSend.createTextMessage("message" + i);
-	         prod.send(tm);
-	      }
+         conn.close();
 
-	      conn.close();
+         stop();
 
-	      stop();
-
-	      startNoDelete();
+         startNoDelete();
 
          // HornetQ server restart implies new ConnectionFactory lookup
-	      deployAndLookupAdministeredObjects();
+         deployAndLookupAdministeredObjects();
 
-	      conn = cf.createConnection();
-	      conn.setClientID("Sausages");
+         conn = JMSTestCase.cf.createConnection();
+         conn.setClientID("Sausages");
 
-	      sessConsume = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-	      conn.start();
+         sessConsume = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         conn.start();
 
-	      sub1 = sessConsume.createDurableSubscriber(topic1, "sub1", null, false);
-	      sub2 = sessConsume.createDurableSubscriber(topic1, "sub2", null, false);
-	      sub3 = sessConsume.createDurableSubscriber(topic1, "sub3", null, false);
+         sub1 = sessConsume.createDurableSubscriber(HornetQServerTestCase.topic1, "sub1", null, false);
+         sub2 = sessConsume.createDurableSubscriber(HornetQServerTestCase.topic1, "sub2", null, false);
+         sub3 = sessConsume.createDurableSubscriber(HornetQServerTestCase.topic1, "sub3", null, false);
 
-	      for (int i = 0; i < 10; i++)
-	      {
-	         TextMessage tm1 = (TextMessage)sub1.receive(3000);
-	         assertNotNull(tm1);
-	         if (tm1 == null)
-	         {
-	            break;
-	         }
-	         assertEquals("message" + i, tm1.getText());
+         for (int i = 0; i < 10; i++)
+         {
+            TextMessage tm1 = (TextMessage)sub1.receive(3000);
+            ProxyAssertSupport.assertNotNull(tm1);
+            if (tm1 == null)
+            {
+               break;
+            }
+            ProxyAssertSupport.assertEquals("message" + i, tm1.getText());
 
-	         TextMessage tm2 = (TextMessage)sub2.receive(3000);
-	         assertNotNull(tm2);
-	         if (tm2 == null)
-	         {
-	            break;
-	         }
-	         assertEquals("message" + i, tm2.getText());
+            TextMessage tm2 = (TextMessage)sub2.receive(3000);
+            ProxyAssertSupport.assertNotNull(tm2);
+            if (tm2 == null)
+            {
+               break;
+            }
+            ProxyAssertSupport.assertEquals("message" + i, tm2.getText());
 
-	         TextMessage tm3 = (TextMessage)sub3.receive(3000);
-	         assertNotNull(tm3);
-	         if (tm3 == null)
-	         {
-	            break;
-	         }
-	         assertEquals("message" + i, tm3.getText());
-	      }
+            TextMessage tm3 = (TextMessage)sub3.receive(3000);
+            ProxyAssertSupport.assertNotNull(tm3);
+            if (tm3 == null)
+            {
+               break;
+            }
+            ProxyAssertSupport.assertEquals("message" + i, tm3.getText());
+         }
 
-	      sub1.close();
-	      sub2.close();
-	      sub3.close();
+         sub1.close();
+         sub2.close();
+         sub3.close();
 
-	      sessConsume.unsubscribe("sub1");
-	      sessConsume.unsubscribe("sub2");
-	      sessConsume.unsubscribe("sub3");
+         sessConsume.unsubscribe("sub1");
+         sessConsume.unsubscribe("sub2");
+         sessConsume.unsubscribe("sub3");
       }
       finally
       {
-      	if (conn != null)
-      	{
-      		conn.close();
-      	}
+         if (conn != null)
+         {
+            conn.close();
+         }
       }
    }
-
 
    // Package protected ---------------------------------------------
 

@@ -23,6 +23,8 @@ import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
@@ -49,10 +51,10 @@ import org.hornetq.utils.UUIDGenerator;
 public class XaTimeoutTest extends UnitTestCase
 {
 
-   private Map<String, AddressSettings> addressSettings = new HashMap<String, AddressSettings>();
+   private final Map<String, AddressSettings> addressSettings = new HashMap<String, AddressSettings>();
 
    private HornetQServer messagingService;
-   
+
    private ClientSession clientSession;
 
    private ClientProducer clientProducer;
@@ -63,29 +65,31 @@ public class XaTimeoutTest extends UnitTestCase
 
    private ConfigurationImpl configuration;
 
-   private SimpleString atestq = new SimpleString("atestq");
+   private final SimpleString atestq = new SimpleString("atestq");
 
+   @Override
    protected void setUp() throws Exception
    {
       super.setUp();
-      
+
       addressSettings.clear();
       configuration = new ConfigurationImpl();
       configuration.setSecurityEnabled(false);
       configuration.setTransactionTimeoutScanPeriod(500);
-      TransportConfiguration transportConfig = new TransportConfiguration(INVM_ACCEPTOR_FACTORY);
+      TransportConfiguration transportConfig = new TransportConfiguration(UnitTestCase.INVM_ACCEPTOR_FACTORY);
       configuration.getAcceptorConfigurations().add(transportConfig);
       messagingService = HornetQ.newHornetQServer(configuration, false);
-      //start the server
+      // start the server
       messagingService.start();
-      //then we create a client as normal
-      sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(INVM_CONNECTOR_FACTORY));
+      // then we create a client as normal
+      sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
       clientSession = sessionFactory.createSession(true, false, false);
       clientSession.createQueue(atestq, atestq, null, true);
       clientProducer = clientSession.createProducer(atestq);
       clientConsumer = clientSession.createConsumer(atestq);
    }
 
+   @Override
    protected void tearDown() throws Exception
    {
       if (clientSession != null)
@@ -112,7 +116,6 @@ public class XaTimeoutTest extends UnitTestCase
       }
       messagingService = null;
       clientSession = null;
-      
 
       clientProducer = null;;
 
@@ -121,8 +124,7 @@ public class XaTimeoutTest extends UnitTestCase
       sessionFactory = null;
 
       configuration = null;;
-      
-      
+
       super.tearDown();
    }
 
@@ -143,18 +145,18 @@ public class XaTimeoutTest extends UnitTestCase
       clientSession.end(xid, XAResource.TMSUCCESS);
       CountDownLatch latch = new CountDownLatch(1);
       messagingService.getResourceManager().getTransaction(xid).addOperation(new RollbackCompleteOperation(latch));
-      assertTrue(latch.await(5, TimeUnit.SECONDS));
+      Assert.assertTrue(latch.await(5, TimeUnit.SECONDS));
       try
       {
          clientSession.commit(xid, true);
       }
       catch (XAException e)
       {
-         assertTrue(e.errorCode == XAException.XAER_NOTA);
+         Assert.assertTrue(e.errorCode == XAException.XAER_NOTA);
       }
       clientSession.start();
       ClientMessage m = clientConsumer.receiveImmediate();
-      assertNull(m);
+      Assert.assertNull(m);
    }
 
    public void testSimpleTimeoutOnReceive() throws Exception
@@ -177,31 +179,31 @@ public class XaTimeoutTest extends UnitTestCase
       clientSession.start();
       ClientMessage m = clientConsumer.receive(500);
       m.acknowledge();
-      assertNotNull(m);
-      assertEquals(m.getBodyBuffer().readString(), "m1");
+      Assert.assertNotNull(m);
+      Assert.assertEquals(m.getBodyBuffer().readString(), "m1");
       m = clientConsumer.receive(500);
-      assertNotNull(m);
+      Assert.assertNotNull(m);
       m.acknowledge();
-      assertEquals(m.getBodyBuffer().readString(), "m2");
-      m = clientConsumer.receive(500);
-      m.acknowledge();
-      assertNotNull(m);
-      assertEquals(m.getBodyBuffer().readString(), "m3");
+      Assert.assertEquals(m.getBodyBuffer().readString(), "m2");
       m = clientConsumer.receive(500);
       m.acknowledge();
-      assertNotNull(m);
-      assertEquals(m.getBodyBuffer().readString(), "m4");
+      Assert.assertNotNull(m);
+      Assert.assertEquals(m.getBodyBuffer().readString(), "m3");
+      m = clientConsumer.receive(500);
+      m.acknowledge();
+      Assert.assertNotNull(m);
+      Assert.assertEquals(m.getBodyBuffer().readString(), "m4");
       clientSession.end(xid, XAResource.TMSUCCESS);
       CountDownLatch latch = new CountDownLatch(1);
       messagingService.getResourceManager().getTransaction(xid).addOperation(new RollbackCompleteOperation(latch));
-      assertTrue(latch.await(5, TimeUnit.SECONDS));
+      Assert.assertTrue(latch.await(5, TimeUnit.SECONDS));
       try
       {
          clientSession.commit(xid, true);
       }
       catch (XAException e)
       {
-         assertTrue(e.errorCode == XAException.XAER_NOTA);
+         Assert.assertTrue(e.errorCode == XAException.XAER_NOTA);
       }
       clientSession.setTransactionTimeout(0);
       clientConsumer.close();
@@ -210,20 +212,20 @@ public class XaTimeoutTest extends UnitTestCase
       clientSession2.start();
       m = consumer.receive(500);
       m.acknowledge();
-      assertNotNull(m);
-      assertEquals(m.getBodyBuffer().readString(), "m1");
+      Assert.assertNotNull(m);
+      Assert.assertEquals(m.getBodyBuffer().readString(), "m1");
       m = consumer.receive(500);
-      assertNotNull(m);
+      Assert.assertNotNull(m);
       m.acknowledge();
-      assertEquals(m.getBodyBuffer().readString(), "m2");
-      m = consumer.receive(500);
-      m.acknowledge();
-      assertNotNull(m);
-      assertEquals(m.getBodyBuffer().readString(), "m3");
+      Assert.assertEquals(m.getBodyBuffer().readString(), "m2");
       m = consumer.receive(500);
       m.acknowledge();
-      assertNotNull(m);
-      assertEquals(m.getBodyBuffer().readString(), "m4");
+      Assert.assertNotNull(m);
+      Assert.assertEquals(m.getBodyBuffer().readString(), "m3");
+      m = consumer.receive(500);
+      m.acknowledge();
+      Assert.assertNotNull(m);
+      Assert.assertEquals(m.getBodyBuffer().readString(), "m4");
       clientSession2.close();
    }
 
@@ -255,31 +257,31 @@ public class XaTimeoutTest extends UnitTestCase
       clientProducer.send(m8);
       ClientMessage m = clientConsumer.receive(500);
       m.acknowledge();
-      assertNotNull(m);
-      assertEquals(m.getBodyBuffer().readString(), "m1");
+      Assert.assertNotNull(m);
+      Assert.assertEquals(m.getBodyBuffer().readString(), "m1");
       m = clientConsumer.receive(500);
-      assertNotNull(m);
+      Assert.assertNotNull(m);
       m.acknowledge();
-      assertEquals(m.getBodyBuffer().readString(), "m2");
-      m = clientConsumer.receive(500);
-      m.acknowledge();
-      assertNotNull(m);
-      assertEquals(m.getBodyBuffer().readString(), "m3");
+      Assert.assertEquals(m.getBodyBuffer().readString(), "m2");
       m = clientConsumer.receive(500);
       m.acknowledge();
-      assertNotNull(m);
-      assertEquals(m.getBodyBuffer().readString(), "m4");
+      Assert.assertNotNull(m);
+      Assert.assertEquals(m.getBodyBuffer().readString(), "m3");
+      m = clientConsumer.receive(500);
+      m.acknowledge();
+      Assert.assertNotNull(m);
+      Assert.assertEquals(m.getBodyBuffer().readString(), "m4");
       clientSession.end(xid, XAResource.TMSUCCESS);
       CountDownLatch latch = new CountDownLatch(1);
       messagingService.getResourceManager().getTransaction(xid).addOperation(new RollbackCompleteOperation(latch));
-      assertTrue(latch.await(5, TimeUnit.SECONDS));
+      Assert.assertTrue(latch.await(5, TimeUnit.SECONDS));
       try
       {
          clientSession.commit(xid, true);
       }
       catch (XAException e)
       {
-         assertTrue(e.errorCode == XAException.XAER_NOTA);
+         Assert.assertTrue(e.errorCode == XAException.XAER_NOTA);
       }
       clientSession.setTransactionTimeout(0);
       clientConsumer.close();
@@ -288,22 +290,22 @@ public class XaTimeoutTest extends UnitTestCase
       clientSession2.start();
       m = consumer.receive(500);
       m.acknowledge();
-      assertNotNull(m);
-      assertEquals(m.getBodyBuffer().readString(), "m1");
+      Assert.assertNotNull(m);
+      Assert.assertEquals(m.getBodyBuffer().readString(), "m1");
       m = consumer.receive(500);
-      assertNotNull(m);
+      Assert.assertNotNull(m);
       m.acknowledge();
-      assertEquals(m.getBodyBuffer().readString(), "m2");
-      m = consumer.receive(500);
-      m.acknowledge();
-      assertNotNull(m);
-      assertEquals(m.getBodyBuffer().readString(), "m3");
+      Assert.assertEquals(m.getBodyBuffer().readString(), "m2");
       m = consumer.receive(500);
       m.acknowledge();
-      assertNotNull(m);
-      assertEquals(m.getBodyBuffer().readString(), "m4");
+      Assert.assertNotNull(m);
+      Assert.assertEquals(m.getBodyBuffer().readString(), "m3");
+      m = consumer.receive(500);
+      m.acknowledge();
+      Assert.assertNotNull(m);
+      Assert.assertEquals(m.getBodyBuffer().readString(), "m4");
       m = consumer.receiveImmediate();
-      assertNull(m);
+      Assert.assertNull(m);
       clientSession2.close();
    }
 
@@ -335,25 +337,25 @@ public class XaTimeoutTest extends UnitTestCase
       clientProducer.send(m8);
       ClientMessage m = clientConsumer.receive(500);
       m.acknowledge();
-      assertNotNull(m);
-      assertEquals(m.getBodyBuffer().readString(), "m1");
+      Assert.assertNotNull(m);
+      Assert.assertEquals(m.getBodyBuffer().readString(), "m1");
       m = clientConsumer.receive(500);
-      assertNotNull(m);
+      Assert.assertNotNull(m);
       m.acknowledge();
-      assertEquals(m.getBodyBuffer().readString(), "m2");
-      m = clientConsumer.receive(500);
-      m.acknowledge();
-      assertNotNull(m);
-      assertEquals(m.getBodyBuffer().readString(), "m3");
+      Assert.assertEquals(m.getBodyBuffer().readString(), "m2");
       m = clientConsumer.receive(500);
       m.acknowledge();
-      assertNotNull(m);
-      assertEquals(m.getBodyBuffer().readString(), "m4");
+      Assert.assertNotNull(m);
+      Assert.assertEquals(m.getBodyBuffer().readString(), "m3");
+      m = clientConsumer.receive(500);
+      m.acknowledge();
+      Assert.assertNotNull(m);
+      Assert.assertEquals(m.getBodyBuffer().readString(), "m4");
       clientSession.end(xid, XAResource.TMSUCCESS);
       clientSession.prepare(xid);
       CountDownLatch latch = new CountDownLatch(1);
       messagingService.getResourceManager().getTransaction(xid).addOperation(new RollbackCompleteOperation(latch));
-      assertFalse(latch.await(2600, TimeUnit.MILLISECONDS));
+      Assert.assertFalse(latch.await(2600, TimeUnit.MILLISECONDS));
       clientSession.commit(xid, false);
 
       clientSession.setTransactionTimeout(0);
@@ -363,22 +365,22 @@ public class XaTimeoutTest extends UnitTestCase
       clientSession2.start();
       m = consumer.receive(500);
       m.acknowledge();
-      assertNotNull(m);
-      assertEquals(m.getBodyBuffer().readString(), "m5");
+      Assert.assertNotNull(m);
+      Assert.assertEquals(m.getBodyBuffer().readString(), "m5");
       m = consumer.receive(500);
-      assertNotNull(m);
+      Assert.assertNotNull(m);
       m.acknowledge();
-      assertEquals(m.getBodyBuffer().readString(), "m6");
-      m = consumer.receive(500);
-      m.acknowledge();
-      assertNotNull(m);
-      assertEquals(m.getBodyBuffer().readString(), "m7");
+      Assert.assertEquals(m.getBodyBuffer().readString(), "m6");
       m = consumer.receive(500);
       m.acknowledge();
-      assertNotNull(m);
-      assertEquals(m.getBodyBuffer().readString(), "m8");
+      Assert.assertNotNull(m);
+      Assert.assertEquals(m.getBodyBuffer().readString(), "m7");
+      m = consumer.receive(500);
+      m.acknowledge();
+      Assert.assertNotNull(m);
+      Assert.assertEquals(m.getBodyBuffer().readString(), "m8");
       m = consumer.receiveImmediate();
-      assertNull(m);
+      Assert.assertNull(m);
       clientSession2.close();
    }
 
@@ -399,7 +401,7 @@ public class XaTimeoutTest extends UnitTestCase
       clientSession.setTransactionTimeout(1);
       CountDownLatch latch = new CountDownLatch(1);
       messagingService.getResourceManager().getTransaction(xid).addOperation(new RollbackCompleteOperation(latch));
-      assertTrue(latch.await(5, TimeUnit.SECONDS));
+      Assert.assertTrue(latch.await(5, TimeUnit.SECONDS));
 
       try
       {
@@ -407,11 +409,11 @@ public class XaTimeoutTest extends UnitTestCase
       }
       catch (XAException e)
       {
-         assertTrue(e.errorCode == XAException.XAER_NOTA);
+         Assert.assertTrue(e.errorCode == XAException.XAER_NOTA);
       }
       clientSession.start();
       ClientMessage m = clientConsumer.receiveImmediate();
-      assertNull(m);
+      Assert.assertNull(m);
    }
 
    public void testChangingTimeoutGetsPickedUpCommit() throws Exception
@@ -432,27 +434,27 @@ public class XaTimeoutTest extends UnitTestCase
       clientSession.setTransactionTimeout(10000);
       CountDownLatch latch = new CountDownLatch(1);
       messagingService.getResourceManager().getTransaction(xid).addOperation(new RollbackCompleteOperation(latch));
-      assertFalse(latch.await(2600, TimeUnit.MILLISECONDS));
+      Assert.assertFalse(latch.await(2600, TimeUnit.MILLISECONDS));
       clientSession.prepare(xid);
       clientSession.commit(xid, false);
       ClientSession clientSession2 = sessionFactory.createSession(false, true, true);
       ClientConsumer consumer = clientSession2.createConsumer(atestq);
       clientSession2.start();
       ClientMessage m = consumer.receive(500);
-      assertNotNull(m);
-      assertEquals(m.getBodyBuffer().readString(), "m1");
+      Assert.assertNotNull(m);
+      Assert.assertEquals(m.getBodyBuffer().readString(), "m1");
       m = consumer.receive(500);
-      assertNotNull(m);
+      Assert.assertNotNull(m);
       m.acknowledge();
-      assertEquals(m.getBodyBuffer().readString(), "m2");
-      m = consumer.receive(500);
-      m.acknowledge();
-      assertNotNull(m);
-      assertEquals(m.getBodyBuffer().readString(), "m3");
+      Assert.assertEquals(m.getBodyBuffer().readString(), "m2");
       m = consumer.receive(500);
       m.acknowledge();
-      assertNotNull(m);
-      assertEquals(m.getBodyBuffer().readString(), "m4");
+      Assert.assertNotNull(m);
+      Assert.assertEquals(m.getBodyBuffer().readString(), "m3");
+      m = consumer.receive(500);
+      m.acknowledge();
+      Assert.assertNotNull(m);
+      Assert.assertEquals(m.getBodyBuffer().readString(), "m4");
       clientSession2.close();
    }
 
@@ -495,8 +497,10 @@ public class XaTimeoutTest extends UnitTestCase
          clientSessions[i].end(xids[i], XAResource.TMSUCCESS);
       }
       CountDownLatch latch = new CountDownLatch(1);
-      messagingService.getResourceManager().getTransaction(xids[clientSessions.length - 1]).addOperation(new RollbackCompleteOperation(latch));
-      assertTrue(latch.await(5, TimeUnit.SECONDS));
+      messagingService.getResourceManager()
+                      .getTransaction(xids[clientSessions.length - 1])
+                      .addOperation(new RollbackCompleteOperation(latch));
+      Assert.assertTrue(latch.await(5, TimeUnit.SECONDS));
       for (int i = 0; i < clientSessions.length; i++)
       {
          try
@@ -505,7 +509,7 @@ public class XaTimeoutTest extends UnitTestCase
          }
          catch (XAException e)
          {
-            assertTrue(e.errorCode == XAException.XAER_NOTA);
+            Assert.assertTrue(e.errorCode == XAException.XAER_NOTA);
          }
       }
       for (ClientSession session : clientSessions)
@@ -514,39 +518,39 @@ public class XaTimeoutTest extends UnitTestCase
       }
       clientSession.start();
       ClientMessage m = clientConsumer.receiveImmediate();
-      assertNull(m);
+      Assert.assertNull(m);
    }
 
    class RollbackCompleteOperation implements TransactionOperation
    {
       final CountDownLatch latch;
 
-      public RollbackCompleteOperation(CountDownLatch latch)
+      public RollbackCompleteOperation(final CountDownLatch latch)
       {
          this.latch = latch;
       }
 
-      public void beforePrepare(Transaction tx) throws Exception
+      public void beforePrepare(final Transaction tx) throws Exception
       {
       }
 
-      public void beforeCommit(Transaction tx) throws Exception
+      public void beforeCommit(final Transaction tx) throws Exception
       {
       }
 
-      public void beforeRollback(Transaction tx) throws Exception
+      public void beforeRollback(final Transaction tx) throws Exception
       {
       }
 
-      public void afterPrepare(Transaction tx)
+      public void afterPrepare(final Transaction tx)
       {
       }
 
-      public void afterCommit(Transaction tx)
+      public void afterCommit(final Transaction tx)
       {
       }
 
-      public void afterRollback(Transaction tx)
+      public void afterRollback(final Transaction tx)
       {
          latch.countDown();
       }

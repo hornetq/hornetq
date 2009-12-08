@@ -34,28 +34,28 @@ public class SessionSendMessage extends MessagePacket
    // Attributes ----------------------------------------------------
 
    private boolean requiresResponse;
-   
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
    public SessionSendMessage(final Message message, final boolean requiresResponse)
    {
-      super(SESS_SEND, message);
-      
+      super(PacketImpl.SESS_SEND, message);
+
       this.requiresResponse = requiresResponse;
-      
-      //If the message hasn't already been copied when the headers/properties/body was changed since last send
-      //(which will prompt an invalidate(), which will cause a copy if not copied already)
-      //Then the message needs to be copied before sending - the previous send may be in the Netty write queue
-      //so we can't just use the same buffer. Also we can't just duplicate, since the extra data (requiresResponse)
-      //may be different on different calls
+
+      // If the message hasn't already been copied when the headers/properties/body was changed since last send
+      // (which will prompt an invalidate(), which will cause a copy if not copied already)
+      // Then the message needs to be copied before sending - the previous send may be in the Netty write queue
+      // so we can't just use the same buffer. Also we can't just duplicate, since the extra data (requiresResponse)
+      // may be different on different calls
       message.checkCopy();
    }
-   
+
    public SessionSendMessage()
    {
-      super(SESS_SEND, new ServerMessageImpl());
+      super(PacketImpl.SESS_SEND, new ServerMessageImpl());
    }
 
    // Public --------------------------------------------------------
@@ -68,52 +68,52 @@ public class SessionSendMessage extends MessagePacket
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
-   
+
    @Override
    public HornetQBuffer encode(final RemotingConnection connection)
    {
       HornetQBuffer buffer = message.getEncodedBuffer();
-      
-      //Sanity check
+
+      // Sanity check
       if (buffer.writerIndex() != message.getEndOfMessagePosition())
       {
          throw new IllegalStateException("Wrong encode position");
       }
-      
+
       buffer.writeBoolean(requiresResponse);
-  
+
       size = buffer.writerIndex();
-                       
-      //Write standard headers
-      
+
+      // Write standard headers
+
       int len = size - DataConstants.SIZE_INT;
       buffer.setInt(0, len);
       buffer.setByte(DataConstants.SIZE_INT, type);
       buffer.setLong(DataConstants.SIZE_INT + DataConstants.SIZE_BYTE, channelID);
-      
-      //Position reader for reading by Netty
+
+      // Position reader for reading by Netty
       buffer.readerIndex(0);
-      
+
       message.resetCopied();
-      
+
       return buffer;
    }
-   
+
    @Override
-   public void decodeRest(HornetQBuffer buffer)
+   public void decodeRest(final HornetQBuffer buffer)
    {
-      //Buffer comes in after having read standard headers and positioned at Beginning of body part
-      
+      // Buffer comes in after having read standard headers and positioned at Beginning of body part
+
       message.decodeFromBuffer(buffer);
 
       int ri = buffer.readerIndex();
 
-      requiresResponse = buffer.readBoolean(); 
-            
+      requiresResponse = buffer.readBoolean();
+
       buffer.readerIndex(ri);
-            
+
    }
-   
+
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------

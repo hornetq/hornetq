@@ -67,11 +67,11 @@ public class ServerConsumerImpl implements ServerConsumer
 
    // Static ---------------------------------------------------------------------------------------
 
-   private static final boolean trace = log.isTraceEnabled();
+   private static final boolean trace = ServerConsumerImpl.log.isTraceEnabled();
 
    private static void trace(final String message)
    {
-      log.trace(message);
+      ServerConsumerImpl.log.trace(message);
    }
 
    // Attributes -----------------------------------------------------------------------------------
@@ -170,7 +170,7 @@ public class ServerConsumerImpl implements ServerConsumer
          browserDeliverer = new BrowserDeliverer(messageQueue.iterator());
       }
       else
-      {       
+      {
          messageQueue.addConsumer(this);
       }
    }
@@ -184,9 +184,9 @@ public class ServerConsumerImpl implements ServerConsumer
    }
 
    public HandleStatus handle(final MessageReference ref) throws Exception
-   {      
+   {
       if (availableCredits != null && availableCredits.get() <= 0)
-      {                 
+      {
          return HandleStatus.BUSY;
       }
 
@@ -345,7 +345,7 @@ public class ServerConsumerImpl implements ServerConsumer
          public void run()
          {
             try
-            {            
+            {
                promptDelivery(false);
 
                ServerMessage forcedDeliveryMessage = new ServerMessageImpl(storageManager.generateUniqueID(), 50);
@@ -359,7 +359,7 @@ public class ServerConsumerImpl implements ServerConsumer
             }
             catch (Exception e)
             {
-               log.error("Failed to send forced delivery message", e);
+               ServerConsumerImpl.log.error("Failed to send forced delivery message", e);
             }
          }
       });
@@ -416,8 +416,7 @@ public class ServerConsumerImpl implements ServerConsumer
 
    public void receiveCredits(final int credits) throws Exception
    {
-      
-      
+
       if (credits == -1)
       {
          // No flow control
@@ -427,17 +426,17 @@ public class ServerConsumerImpl implements ServerConsumer
       {
          int previous = availableCredits.getAndAdd(credits);
 
-         if (trace)
+         if (ServerConsumerImpl.trace)
          {
-            trace("Received " + credits +
-                  " credits, previous value = " +
-                  previous +
-                  " currentValue = " +
-                  availableCredits.get());
+            ServerConsumerImpl.trace("Received " + credits +
+                                     " credits, previous value = " +
+                                     previous +
+                                     " currentValue = " +
+                                     availableCredits.get());
          }
-         
+
          if (previous <= 0 && previous + credits > 0)
-         {       
+         {
             promptDelivery(true);
          }
       }
@@ -584,7 +583,7 @@ public class ServerConsumerImpl implements ServerConsumer
     * @param message
     */
    private void deliverStandardMessage(final MessageReference ref, final ServerMessage message)
-   {     
+   {
       final SessionReceiveMessage packet = new SessionReceiveMessage(id, message, ref.getDeliveryCount());
 
       channel.send(packet);
@@ -593,7 +592,7 @@ public class ServerConsumerImpl implements ServerConsumer
       {
          availableCredits.addAndGet(-packet.getPacketSize());
       }
-      
+
    }
 
    // Inner classes
@@ -621,7 +620,7 @@ public class ServerConsumerImpl implements ServerConsumer
          }
          catch (Exception e)
          {
-            log.error("Failed to run large message deliverer", e);
+            ServerConsumerImpl.log.error("Failed to run large message deliverer", e);
          }
          finally
          {
@@ -710,9 +709,9 @@ public class ServerConsumerImpl implements ServerConsumer
             {
                if (availableCredits != null && availableCredits.get() <= 0)
                {
-                  if (trace)
+                  if (ServerConsumerImpl.trace)
                   {
-                     trace("deliverLargeMessage: Leaving loop of send LargeMessage because of credits");
+                     ServerConsumerImpl.trace("deliverLargeMessage: Leaving loop of send LargeMessage because of credits");
                   }
 
                   return false;
@@ -724,11 +723,11 @@ public class ServerConsumerImpl implements ServerConsumer
 
                channel.send(chunk);
 
-               if (trace)
+               if (ServerConsumerImpl.trace)
                {
-                  trace("deliverLargeMessage: Sending " + chunk.getPacketSize() +
-                        " availableCredits now is " +
-                        availableCredits);
+                  ServerConsumerImpl.trace("deliverLargeMessage: Sending " + chunk.getPacketSize() +
+                                           " availableCredits now is " +
+                                           availableCredits);
                }
 
                if (availableCredits != null)
@@ -746,9 +745,9 @@ public class ServerConsumerImpl implements ServerConsumer
                }
             }
 
-            if (trace)
+            if (ServerConsumerImpl.trace)
             {
-               trace("Finished deliverLargeMessage");
+               ServerConsumerImpl.trace("Finished deliverLargeMessage");
             }
 
             finish();
@@ -847,7 +846,7 @@ public class ServerConsumerImpl implements ServerConsumer
             }
             catch (Exception e)
             {
-               log.error("Exception while browser handled from " + messageQueue + ": " + current, e);
+               ServerConsumerImpl.log.error("Exception while browser handled from " + messageQueue + ": " + current, e);
                return;
             }
          }
@@ -856,7 +855,7 @@ public class ServerConsumerImpl implements ServerConsumer
          {
             MessageReference ref = iterator.next();
             try
-            {              
+            {
                HandleStatus status = handle(ref);
                if (status == HandleStatus.BUSY)
                {
@@ -868,7 +867,7 @@ public class ServerConsumerImpl implements ServerConsumer
             }
             catch (Exception e)
             {
-               log.error("Exception while browser handled from " + messageQueue + ": " + ref, e);
+               ServerConsumerImpl.log.error("Exception while browser handled from " + messageQueue + ": " + ref, e);
                break;
             }
          }

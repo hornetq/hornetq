@@ -101,34 +101,35 @@ public abstract class PTPTestCase extends JMSTestCase
     * <br />
     * Start connections.
     */
+   @Override
    protected void setUp() throws Exception
    {
       super.setUp();
-      
+
       try
       {
          // ...and creates administrated objects and binds them
-         admin.createQueueConnectionFactory(QCF_NAME);
-         admin.createQueue(QUEUE_NAME);
+         admin.createQueueConnectionFactory(PTPTestCase.QCF_NAME);
+         admin.createQueue(PTPTestCase.QUEUE_NAME);
 
          // end of admin step, start of JMS client step
          ctx = admin.createContext();
 
-         senderQCF = (QueueConnectionFactory) ctx.lookup(QCF_NAME);
-         senderQueue = (Queue) ctx.lookup(QUEUE_NAME);
+         senderQCF = (QueueConnectionFactory)ctx.lookup(PTPTestCase.QCF_NAME);
+         senderQueue = (Queue)ctx.lookup(PTPTestCase.QUEUE_NAME);
          senderConnection = senderQCF.createQueueConnection();
          senderSession = senderConnection.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
          sender = senderSession.createSender(senderQueue);
 
-         receiverQCF = (QueueConnectionFactory) ctx.lookup(QCF_NAME);
-         receiverQueue = (Queue) ctx.lookup(QUEUE_NAME);
+         receiverQCF = (QueueConnectionFactory)ctx.lookup(PTPTestCase.QCF_NAME);
+         receiverQueue = (Queue)ctx.lookup(PTPTestCase.QUEUE_NAME);
          receiverConnection = receiverQCF.createQueueConnection();
          receiverSession = receiverConnection.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
          receiver = receiverSession.createReceiver(receiverQueue);
 
          senderConnection.start();
          receiverConnection.start();
-         //end of client step
+         // end of client step
       }
       catch (Exception e)
       {
@@ -139,6 +140,7 @@ public abstract class PTPTestCase extends JMSTestCase
    /**
     *  Close connections and delete administrated objects
     */
+   @Override
    protected void tearDown() throws Exception
    {
       try
@@ -146,8 +148,8 @@ public abstract class PTPTestCase extends JMSTestCase
          senderConnection.close();
          receiverConnection.close();
 
-         admin.deleteQueueConnectionFactory(QCF_NAME);
-         admin.deleteQueue(QUEUE_NAME);
+         admin.deleteQueueConnectionFactory(PTPTestCase.QCF_NAME);
+         admin.deleteQueue(PTPTestCase.QUEUE_NAME);
       }
       catch (Exception ignored)
       {
@@ -167,11 +169,11 @@ public abstract class PTPTestCase extends JMSTestCase
          receiverSession = null;
          receiverConnection = null;
       }
-      
+
       super.tearDown();
    }
 
-   public PTPTestCase(String name)
+   public PTPTestCase(final String name)
    {
       super(name);
    }

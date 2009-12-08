@@ -13,8 +13,6 @@
 
 package org.hornetq.tests.timing.jms.bridge.impl;
 
-import static org.hornetq.tests.util.RandomUtil.randomString;
-
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -40,6 +38,8 @@ import javax.transaction.SystemException;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
@@ -56,6 +56,7 @@ import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.server.JMSServerManager;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.hornetq.tests.unit.util.InVMContext;
+import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
 
 /**
@@ -70,12 +71,11 @@ public class JMSBridgeImplTest extends UnitTestCase
 
    private static final Logger log = Logger.getLogger(JMSBridgeImplTest.class);
 
-   
    // Attributes ----------------------------------------------------
 
-   private static final String SOURCE = randomString();
+   private static final String SOURCE = RandomUtil.randomString();
 
-   private static final String TARGET = randomString();
+   private static final String TARGET = RandomUtil.randomString();
 
    private JMSServerManager jmsServer;
 
@@ -90,7 +90,7 @@ public class JMSBridgeImplTest extends UnitTestCase
             return null;
          }
 
-         public void setTransactionTimeout(int arg0) throws SystemException
+         public void setTransactionTimeout(final int arg0) throws SystemException
          {
          }
 
@@ -102,9 +102,9 @@ public class JMSBridgeImplTest extends UnitTestCase
          {
          }
 
-         public void resume(Transaction arg0) throws InvalidTransactionException,
-                                             IllegalStateException,
-                                             SystemException
+         public void resume(final Transaction arg0) throws InvalidTransactionException,
+                                                   IllegalStateException,
+                                                   SystemException
          {
          }
 
@@ -180,11 +180,11 @@ public class JMSBridgeImplTest extends UnitTestCase
          }
       };
 
-      ConnectionFactoryFactory sourceCFF = newConnectionFactoryFactory(failingSourceCF);
-      ConnectionFactoryFactory targetCFF = newConnectionFactoryFactory(createConnectionFactory());
-      DestinationFactory sourceDF = newDestinationFactory(new HornetQQueue(SOURCE));
-      DestinationFactory targetDF = newDestinationFactory(new HornetQQueue(TARGET));
-      TransactionManager tm = newTransactionManager();
+      ConnectionFactoryFactory sourceCFF = JMSBridgeImplTest.newConnectionFactoryFactory(failingSourceCF);
+      ConnectionFactoryFactory targetCFF = JMSBridgeImplTest.newConnectionFactoryFactory(JMSBridgeImplTest.createConnectionFactory());
+      DestinationFactory sourceDF = JMSBridgeImplTest.newDestinationFactory(new HornetQQueue(JMSBridgeImplTest.SOURCE));
+      DestinationFactory targetDF = JMSBridgeImplTest.newDestinationFactory(new HornetQQueue(JMSBridgeImplTest.TARGET));
+      TransactionManager tm = JMSBridgeImplTest.newTransactionManager();
 
       JMSBridgeImpl bridge = new JMSBridgeImpl();
 
@@ -201,12 +201,12 @@ public class JMSBridgeImplTest extends UnitTestCase
       bridge.setTransactionManager(tm);
       bridge.setQualityOfServiceMode(QualityOfServiceMode.AT_MOST_ONCE);
 
-      assertFalse(bridge.isStarted());
+      Assert.assertFalse(bridge.isStarted());
       bridge.start();
 
       Thread.sleep(50);
-      assertFalse(bridge.isStarted());
-      assertTrue(bridge.isFailed());
+      Assert.assertFalse(bridge.isStarted());
+      Assert.assertTrue(bridge.isFailed());
 
    }
 
@@ -235,11 +235,11 @@ public class JMSBridgeImplTest extends UnitTestCase
       failingSourceCF.setBlockOnNonPersistentSend(true);
       failingSourceCF.setBlockOnPersistentSend(true);
 
-      ConnectionFactoryFactory sourceCFF = newConnectionFactoryFactory(failingSourceCF);
-      ConnectionFactoryFactory targetCFF = newConnectionFactoryFactory(createConnectionFactory());
-      DestinationFactory sourceDF = newDestinationFactory(new HornetQQueue(SOURCE));
-      DestinationFactory targetDF = newDestinationFactory(new HornetQQueue(TARGET));
-      TransactionManager tm = newTransactionManager();
+      ConnectionFactoryFactory sourceCFF = JMSBridgeImplTest.newConnectionFactoryFactory(failingSourceCF);
+      ConnectionFactoryFactory targetCFF = JMSBridgeImplTest.newConnectionFactoryFactory(JMSBridgeImplTest.createConnectionFactory());
+      DestinationFactory sourceDF = JMSBridgeImplTest.newDestinationFactory(new HornetQQueue(JMSBridgeImplTest.SOURCE));
+      DestinationFactory targetDF = JMSBridgeImplTest.newDestinationFactory(new HornetQQueue(JMSBridgeImplTest.TARGET));
+      TransactionManager tm = JMSBridgeImplTest.newTransactionManager();
 
       JMSBridgeImpl bridge = new JMSBridgeImpl();
 
@@ -256,12 +256,12 @@ public class JMSBridgeImplTest extends UnitTestCase
       bridge.setTransactionManager(tm);
       bridge.setQualityOfServiceMode(QualityOfServiceMode.AT_MOST_ONCE);
 
-      assertFalse(bridge.isStarted());
+      Assert.assertFalse(bridge.isStarted());
       bridge.start();
 
       Thread.sleep(500);
-      assertTrue(bridge.isStarted());
-      assertFalse(bridge.isFailed());
+      Assert.assertTrue(bridge.isStarted());
+      Assert.assertFalse(bridge.isFailed());
 
       bridge.stop();
    }
@@ -275,14 +275,14 @@ public class JMSBridgeImplTest extends UnitTestCase
       int maxBatchSize = 2;
       long maxBatchTime = 500;
 
-      ConnectionFactoryFactory sourceCFF = newConnectionFactoryFactory(createConnectionFactory());
-      ConnectionFactoryFactory targetCFF = newConnectionFactoryFactory(createConnectionFactory());
-      DestinationFactory sourceDF = newDestinationFactory(new HornetQQueue(SOURCE));
-      DestinationFactory targetDF = newDestinationFactory(new HornetQQueue(TARGET));
-      TransactionManager tm = newTransactionManager();
+      ConnectionFactoryFactory sourceCFF = JMSBridgeImplTest.newConnectionFactoryFactory(JMSBridgeImplTest.createConnectionFactory());
+      ConnectionFactoryFactory targetCFF = JMSBridgeImplTest.newConnectionFactoryFactory(JMSBridgeImplTest.createConnectionFactory());
+      DestinationFactory sourceDF = JMSBridgeImplTest.newDestinationFactory(new HornetQQueue(JMSBridgeImplTest.SOURCE));
+      DestinationFactory targetDF = JMSBridgeImplTest.newDestinationFactory(new HornetQQueue(JMSBridgeImplTest.TARGET));
+      TransactionManager tm = JMSBridgeImplTest.newTransactionManager();
 
       JMSBridgeImpl bridge = new JMSBridgeImpl();
-      assertNotNull(bridge);
+      Assert.assertNotNull(bridge);
 
       bridge.setSourceConnectionFactoryFactory(sourceCFF);
       bridge.setSourceDestinationFactory(sourceDF);
@@ -295,18 +295,18 @@ public class JMSBridgeImplTest extends UnitTestCase
       bridge.setTransactionManager(tm);
       bridge.setQualityOfServiceMode(QualityOfServiceMode.AT_MOST_ONCE);
 
-      assertFalse(bridge.isStarted());
+      Assert.assertFalse(bridge.isStarted());
       bridge.start();
-      assertTrue(bridge.isStarted());
+      Assert.assertTrue(bridge.isStarted());
 
-      Connection targetConn = createConnectionFactory().createConnection();
+      Connection targetConn = JMSBridgeImplTest.createConnectionFactory().createConnection();
       Session targetSess = targetConn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       MessageConsumer consumer = targetSess.createConsumer(targetDF.createDestination());
       final List<Message> messages = new LinkedList<Message>();
       MessageListener listener = new MessageListener()
       {
 
-         public void onMessage(Message message)
+         public void onMessage(final Message message)
          {
             messages.add(message);
          }
@@ -314,35 +314,35 @@ public class JMSBridgeImplTest extends UnitTestCase
       consumer.setMessageListener(listener);
       targetConn.start();
 
-      Connection sourceConn = createConnectionFactory().createConnection();
+      Connection sourceConn = JMSBridgeImplTest.createConnectionFactory().createConnection();
       Session sourceSess = sourceConn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       MessageProducer producer = sourceSess.createProducer(sourceDF.createDestination());
       producer.send(sourceSess.createTextMessage());
       sourceConn.close();
 
-      assertEquals(0, messages.size());
+      Assert.assertEquals(0, messages.size());
       Thread.sleep(3 * maxBatchTime);
 
-      assertEquals(1, messages.size());
+      Assert.assertEquals(1, messages.size());
 
       bridge.stop();
-      assertFalse(bridge.isStarted());
+      Assert.assertFalse(bridge.isStarted());
 
       targetConn.close();
    }
-   
+
    public void testSendMessagesWithMaxBatchSize() throws Exception
    {
       final int numMessages = 10;
-      
-      ConnectionFactoryFactory sourceCFF = newConnectionFactoryFactory(createConnectionFactory());
-      ConnectionFactoryFactory targetCFF = newConnectionFactoryFactory(createConnectionFactory());
-      DestinationFactory sourceDF = newDestinationFactory(new HornetQQueue(SOURCE));
-      DestinationFactory targetDF = newDestinationFactory(new HornetQQueue(TARGET));
-      TransactionManager tm = newTransactionManager();
+
+      ConnectionFactoryFactory sourceCFF = JMSBridgeImplTest.newConnectionFactoryFactory(JMSBridgeImplTest.createConnectionFactory());
+      ConnectionFactoryFactory targetCFF = JMSBridgeImplTest.newConnectionFactoryFactory(JMSBridgeImplTest.createConnectionFactory());
+      DestinationFactory sourceDF = JMSBridgeImplTest.newDestinationFactory(new HornetQQueue(JMSBridgeImplTest.SOURCE));
+      DestinationFactory targetDF = JMSBridgeImplTest.newDestinationFactory(new HornetQQueue(JMSBridgeImplTest.TARGET));
+      TransactionManager tm = JMSBridgeImplTest.newTransactionManager();
 
       JMSBridgeImpl bridge = new JMSBridgeImpl();
-      assertNotNull(bridge);
+      Assert.assertNotNull(bridge);
 
       bridge.setSourceConnectionFactoryFactory(sourceCFF);
       bridge.setSourceDestinationFactory(sourceDF);
@@ -355,18 +355,18 @@ public class JMSBridgeImplTest extends UnitTestCase
       bridge.setTransactionManager(tm);
       bridge.setQualityOfServiceMode(QualityOfServiceMode.AT_MOST_ONCE);
 
-      assertFalse(bridge.isStarted());
+      Assert.assertFalse(bridge.isStarted());
       bridge.start();
-      assertTrue(bridge.isStarted());
+      Assert.assertTrue(bridge.isStarted());
 
-      Connection targetConn = createConnectionFactory().createConnection();
+      Connection targetConn = JMSBridgeImplTest.createConnectionFactory().createConnection();
       Session targetSess = targetConn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       MessageConsumer consumer = targetSess.createConsumer(targetDF.createDestination());
       final List<Message> messages = new LinkedList<Message>();
       final CountDownLatch latch = new CountDownLatch(numMessages);
       MessageListener listener = new MessageListener()
       {
-         public void onMessage(Message message)
+         public void onMessage(final Message message)
          {
             messages.add(message);
             latch.countDown();
@@ -375,34 +375,34 @@ public class JMSBridgeImplTest extends UnitTestCase
       consumer.setMessageListener(listener);
       targetConn.start();
 
-      Connection sourceConn = createConnectionFactory().createConnection();
+      Connection sourceConn = JMSBridgeImplTest.createConnectionFactory().createConnection();
       Session sourceSess = sourceConn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      
+
       MessageProducer producer = sourceSess.createProducer(sourceDF.createDestination());
-      
+
       for (int i = 0; i < numMessages - 1; i++)
-      {         
+      {
          TextMessage msg = sourceSess.createTextMessage();
          producer.send(msg);
-         log.info("sent message " + i);
+         JMSBridgeImplTest.log.info("sent message " + i);
       }
-      
+
       Thread.sleep(1000);
-      
-      assertEquals(0, messages.size());
-                 
+
+      Assert.assertEquals(0, messages.size());
+
       TextMessage msg = sourceSess.createTextMessage();
-      
+
       producer.send(msg);
-      
-      assertTrue(latch.await(10000, TimeUnit.MILLISECONDS));
-      
+
+      Assert.assertTrue(latch.await(10000, TimeUnit.MILLISECONDS));
+
       sourceConn.close();
 
-      assertEquals(numMessages, messages.size());
-      
+      Assert.assertEquals(numMessages, messages.size());
+
       bridge.stop();
-      assertFalse(bridge.isStarted());
+      Assert.assertFalse(bridge.isStarted());
 
       targetConn.close();
    }
@@ -424,14 +424,14 @@ public class JMSBridgeImplTest extends UnitTestCase
       failingSourceCF.setBlockOnNonPersistentSend(true);
       failingSourceCF.setBlockOnPersistentSend(true);
 
-      ConnectionFactoryFactory sourceCFF = newConnectionFactoryFactory(failingSourceCF);
-      ConnectionFactoryFactory targetCFF = newConnectionFactoryFactory(createConnectionFactory());
-      DestinationFactory sourceDF = newDestinationFactory(new HornetQQueue(SOURCE));
-      DestinationFactory targetDF = newDestinationFactory(new HornetQQueue(TARGET));
-      TransactionManager tm = newTransactionManager();
+      ConnectionFactoryFactory sourceCFF = JMSBridgeImplTest.newConnectionFactoryFactory(failingSourceCF);
+      ConnectionFactoryFactory targetCFF = JMSBridgeImplTest.newConnectionFactoryFactory(JMSBridgeImplTest.createConnectionFactory());
+      DestinationFactory sourceDF = JMSBridgeImplTest.newDestinationFactory(new HornetQQueue(JMSBridgeImplTest.SOURCE));
+      DestinationFactory targetDF = JMSBridgeImplTest.newDestinationFactory(new HornetQQueue(JMSBridgeImplTest.TARGET));
+      TransactionManager tm = JMSBridgeImplTest.newTransactionManager();
 
       JMSBridgeImpl bridge = new JMSBridgeImpl();
-      assertNotNull(bridge);
+      Assert.assertNotNull(bridge);
 
       bridge.setSourceConnectionFactoryFactory(sourceCFF);
       bridge.setSourceDestinationFactory(sourceDF);
@@ -444,17 +444,17 @@ public class JMSBridgeImplTest extends UnitTestCase
       bridge.setTransactionManager(tm);
       bridge.setQualityOfServiceMode(QualityOfServiceMode.AT_MOST_ONCE);
 
-      assertFalse(bridge.isStarted());
+      Assert.assertFalse(bridge.isStarted());
       bridge.start();
-      assertTrue(bridge.isStarted());
+      Assert.assertTrue(bridge.isStarted());
 
       sourceConn.get().getExceptionListener().onException(new JMSException("exception on the source"));
       Thread.sleep(4 * bridge.getFailureRetryInterval());
       // reconnection must have succeeded
-      assertTrue(bridge.isStarted());
+      Assert.assertTrue(bridge.isStarted());
 
       bridge.stop();
-      assertFalse(bridge.isStarted());
+      Assert.assertFalse(bridge.isStarted());
    }
 
    public void testExceptionOnSourceAndRetryFails() throws Exception
@@ -484,14 +484,14 @@ public class JMSBridgeImplTest extends UnitTestCase
       failingSourceCF.setBlockOnNonPersistentSend(true);
       failingSourceCF.setBlockOnPersistentSend(true);
 
-      ConnectionFactoryFactory sourceCFF = newConnectionFactoryFactory(failingSourceCF);
-      ConnectionFactoryFactory targetCFF = newConnectionFactoryFactory(createConnectionFactory());
-      DestinationFactory sourceDF = newDestinationFactory(new HornetQQueue(SOURCE));
-      DestinationFactory targetDF = newDestinationFactory(new HornetQQueue(TARGET));
-      TransactionManager tm = newTransactionManager();
+      ConnectionFactoryFactory sourceCFF = JMSBridgeImplTest.newConnectionFactoryFactory(failingSourceCF);
+      ConnectionFactoryFactory targetCFF = JMSBridgeImplTest.newConnectionFactoryFactory(JMSBridgeImplTest.createConnectionFactory());
+      DestinationFactory sourceDF = JMSBridgeImplTest.newDestinationFactory(new HornetQQueue(JMSBridgeImplTest.SOURCE));
+      DestinationFactory targetDF = JMSBridgeImplTest.newDestinationFactory(new HornetQQueue(JMSBridgeImplTest.TARGET));
+      TransactionManager tm = JMSBridgeImplTest.newTransactionManager();
 
       JMSBridgeImpl bridge = new JMSBridgeImpl();
-      assertNotNull(bridge);
+      Assert.assertNotNull(bridge);
 
       bridge.setSourceConnectionFactoryFactory(sourceCFF);
       bridge.setSourceDestinationFactory(sourceDF);
@@ -504,14 +504,14 @@ public class JMSBridgeImplTest extends UnitTestCase
       bridge.setTransactionManager(tm);
       bridge.setQualityOfServiceMode(QualityOfServiceMode.AT_MOST_ONCE);
 
-      assertFalse(bridge.isStarted());
+      Assert.assertFalse(bridge.isStarted());
       bridge.start();
-      assertTrue(bridge.isStarted());
+      Assert.assertTrue(bridge.isStarted());
 
       sourceConn.get().getExceptionListener().onException(new JMSException("exception on the source"));
       Thread.sleep(4 * bridge.getFailureRetryInterval());
       // reconnection must have failed
-      assertFalse(bridge.isStarted());
+      Assert.assertFalse(bridge.isStarted());
 
    }
 
@@ -533,8 +533,8 @@ public class JMSBridgeImplTest extends UnitTestCase
       jmsServer.setContext(context);
       jmsServer.start();
 
-      jmsServer.createQueue(SOURCE, "/queue/" + SOURCE, null, true);
-      jmsServer.createQueue(TARGET, "/queue/" + TARGET, null, true);
+      jmsServer.createQueue(JMSBridgeImplTest.SOURCE, "/queue/" + JMSBridgeImplTest.SOURCE, null, true);
+      jmsServer.createQueue(JMSBridgeImplTest.TARGET, "/queue/" + JMSBridgeImplTest.TARGET, null, true);
 
    }
 

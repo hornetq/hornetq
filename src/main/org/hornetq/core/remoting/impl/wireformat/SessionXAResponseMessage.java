@@ -14,7 +14,6 @@
 package org.hornetq.core.remoting.impl.wireformat;
 
 import org.hornetq.core.buffers.HornetQBuffer;
-import org.hornetq.utils.DataConstants;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -39,7 +38,7 @@ public class SessionXAResponseMessage extends PacketImpl
 
    public SessionXAResponseMessage(final boolean isError, final int responseCode, final String message)
    {
-      super(SESS_XA_RESP);
+      super(PacketImpl.SESS_XA_RESP);
 
       error = isError;
 
@@ -50,7 +49,7 @@ public class SessionXAResponseMessage extends PacketImpl
 
    public SessionXAResponseMessage()
    {
-      super(SESS_XA_RESP);
+      super(PacketImpl.SESS_XA_RESP);
    }
 
    // Public --------------------------------------------------------

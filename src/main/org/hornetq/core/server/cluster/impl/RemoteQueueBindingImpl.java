@@ -51,7 +51,7 @@ public class RemoteQueueBindingImpl implements RemoteQueueBinding
    private final SimpleString uniqueName;
 
    private final SimpleString routingName;
-   
+
    private final long remoteQueueID;
 
    private final Filter queueFilter;
@@ -63,11 +63,11 @@ public class RemoteQueueBindingImpl implements RemoteQueueBinding
    private int consumerCount;
 
    private final SimpleString idsHeaderName;
-   
+
    private final long id;
-      
+
    private final int distance;
-   
+
    public RemoteQueueBindingImpl(final long id,
                                  final SimpleString address,
                                  final SimpleString uniqueName,
@@ -87,21 +87,21 @@ public class RemoteQueueBindingImpl implements RemoteQueueBinding
       this.uniqueName = uniqueName;
 
       this.routingName = routingName;
-      
+
       this.remoteQueueID = remoteQueueID;
 
       queueFilter = FilterImpl.createFilter(filterString);
-      
-      this.idsHeaderName = MessageImpl.HDR_ROUTE_TO_IDS.concat(bridgeName);
-      
+
+      idsHeaderName = MessageImpl.HDR_ROUTE_TO_IDS.concat(bridgeName);
+
       this.distance = distance;
    }
-   
+
    public long getID()
    {
       return id;
    }
-   
+
    public SimpleString getAddress()
    {
       return address;
@@ -111,7 +111,7 @@ public class RemoteQueueBindingImpl implements RemoteQueueBinding
    {
       return storeAndForwardQueue;
    }
-   
+
    public Queue getQueue()
    {
       return storeAndForwardQueue;
@@ -126,7 +126,7 @@ public class RemoteQueueBindingImpl implements RemoteQueueBinding
    {
       return uniqueName;
    }
-   
+
    public SimpleString getClusterName()
    {
       return uniqueName;
@@ -136,24 +136,24 @@ public class RemoteQueueBindingImpl implements RemoteQueueBinding
    {
       return false;
    }
-   
+
    public BindingType getType()
    {
       return BindingType.REMOTE_QUEUE;
    }
-   
+
    public Filter getFilter()
    {
       return queueFilter;
    }
-   
+
    public int getDistance()
    {
       return distance;
    }
 
    public synchronized boolean isHighAcceptPriority(final ServerMessage message)
-   {      
+   {
       if (consumerCount == 0)
       {
          return false;
@@ -176,11 +176,11 @@ public class RemoteQueueBindingImpl implements RemoteQueueBinding
 
       return false;
    }
-   
+
    public void route(final ServerMessage message, final RoutingContext context)
-   { 
+   {
       byte[] ids = message.getBytesProperty(idsHeaderName);
-      
+
       if (ids == null)
       {
          ids = new byte[8];
@@ -188,26 +188,26 @@ public class RemoteQueueBindingImpl implements RemoteQueueBinding
       else
       {
          byte[] newIds = new byte[ids.length + 8];
-         
+
          System.arraycopy(ids, 0, newIds, 8, ids.length);
-                          
+
          ids = newIds;
       }
-      
+
       ByteBuffer buff = ByteBuffer.wrap(ids);
-      
+
       buff.putLong(remoteQueueID);
-      
+
       message.putBytesProperty(idsHeaderName, ids);
-      
-      if (!context.getDurableQueues().contains(this.storeAndForwardQueue))
+
+      if (!context.getDurableQueues().contains(storeAndForwardQueue))
       {
-         //There can be many remote bindings for the same node, we only want to add the message once to 
-         //the s & f queue for that node
+         // There can be many remote bindings for the same node, we only want to add the message once to
+         // the s & f queue for that node
          context.addQueue(storeAndForwardQueue);
       }
    }
-   
+
    public synchronized void addConsumer(final SimpleString filterString) throws Exception
    {
       if (filterString != null)
@@ -257,12 +257,12 @@ public class RemoteQueueBindingImpl implements RemoteQueueBinding
 
       consumerCount--;
    }
-   
+
    public synchronized int consumerCount()
    {
       return consumerCount;
    }
-   
+
    @Override
    public String toString()
    {
@@ -289,6 +289,5 @@ public class RemoteQueueBindingImpl implements RemoteQueueBinding
              uniqueName +
              "]";
    }
-
 
 }

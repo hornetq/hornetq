@@ -13,8 +13,6 @@
 
 package org.hornetq.core.persistence.impl.journal;
 
-import static org.hornetq.utils.DataConstants.SIZE_INT;
-
 import java.nio.ByteBuffer;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -27,6 +25,7 @@ import org.hornetq.core.server.LargeServerMessage;
 import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.impl.ServerMessageImpl;
+import org.hornetq.utils.DataConstants;
 
 /**
  * A LargeServerMessageImpl
@@ -43,7 +42,7 @@ public class LargeServerMessageImpl extends ServerMessageImpl implements LargeSe
 
    private static final Logger log = Logger.getLogger(LargeServerMessageImpl.class);
 
-   private static boolean isTrace = log.isTraceEnabled();
+   private static boolean isTrace = LargeServerMessageImpl.log.isTraceEnabled();
 
    // Attributes ----------------------------------------------------
 
@@ -75,7 +74,7 @@ public class LargeServerMessageImpl extends ServerMessageImpl implements LargeSe
    private LargeServerMessageImpl(final LargeServerMessageImpl copy, final SequentialFile fileCopy, final long newID)
    {
       super(copy);
-      this.linkMessage = copy;
+      linkMessage = copy;
       storageManager = copy.storageManager;
       file = fileCopy;
       bodySize = copy.bodySize;
@@ -96,12 +95,12 @@ public class LargeServerMessageImpl extends ServerMessageImpl implements LargeSe
          file.open();
       }
 
-      storageManager.addBytesToLargeMessage(file, this.getMessageID(), bytes);
+      storageManager.addBytesToLargeMessage(file, getMessageID(), bytes);
 
       bodySize += bytes.length;
    }
 
-   public void encodeBody(final HornetQBuffer bufferOut, BodyEncoder context, int size)
+   public void encodeBody(final HornetQBuffer bufferOut, final BodyEncoder context, final int size)
    {
       try
       {
@@ -146,12 +145,12 @@ public class LargeServerMessageImpl extends ServerMessageImpl implements LargeSe
 
    public synchronized void incrementDelayDeletionCount()
    {
-      this.delayDeletionCount.incrementAndGet();
+      delayDeletionCount.incrementAndGet();
    }
 
    public synchronized void decrementDelayDeletionCount() throws Exception
    {
-      int count = this.delayDeletionCount.decrementAndGet();
+      int count = delayDeletionCount.decrementAndGet();
 
       if (count == 0)
       {
@@ -177,9 +176,9 @@ public class LargeServerMessageImpl extends ServerMessageImpl implements LargeSe
          }
          else
          {
-            if (isTrace)
+            if (LargeServerMessageImpl.isTrace)
             {
-               log.trace("Deleting file " + file + " as the usage was complete");
+               LargeServerMessageImpl.log.trace("Deleting file " + file + " as the usage was complete");
             }
 
             try
@@ -188,13 +187,14 @@ public class LargeServerMessageImpl extends ServerMessageImpl implements LargeSe
             }
             catch (Exception e)
             {
-               log.error(e.getMessage(), e);
+               LargeServerMessageImpl.log.error(e.getMessage(), e);
             }
          }
       }
    }
 
-   public synchronized int decrementRefCount(MessageReference reference) throws Exception
+   @Override
+   public synchronized int decrementRefCount(final MessageReference reference) throws Exception
    {
       int currentRefCount = super.decrementRefCount(reference);
 
@@ -237,7 +237,11 @@ public class LargeServerMessageImpl extends ServerMessageImpl implements LargeSe
       if (memoryEstimate == -1)
       {
          // The body won't be on memory (aways on-file), so we don't consider this for paging
-         memoryEstimate = getHeadersAndPropertiesEncodeSize() + SIZE_INT + getEncodeSize() + (16 + 4) * 2 + 1;
+         memoryEstimate = getHeadersAndPropertiesEncodeSize() + DataConstants.SIZE_INT +
+                          getEncodeSize() +
+                          (16 + 4) *
+                          2 +
+                          1;
       }
 
       return memoryEstimate;
@@ -253,7 +257,7 @@ public class LargeServerMessageImpl extends ServerMessageImpl implements LargeSe
          }
          catch (Exception e)
          {
-            log.error(e.getMessage(), e);
+            LargeServerMessageImpl.log.error(e.getMessage(), e);
          }
       }
    }
@@ -308,13 +312,13 @@ public class LargeServerMessageImpl extends ServerMessageImpl implements LargeSe
             {
                throw new RuntimeException("MessageID not set on LargeMessage");
             }
-   
+
             file = storageManager.createFileForLargeMessage(getMessageID(), durable);
-   
+
             file.open();
-   
+
             bodySize = file.size();
-   
+
          }
       }
       catch (Exception e)
@@ -327,7 +331,7 @@ public class LargeServerMessageImpl extends ServerMessageImpl implements LargeSe
    /* (non-Javadoc)
     * @see org.hornetq.core.server.LargeServerMessage#setLinkedMessage(org.hornetq.core.server.LargeServerMessage)
     */
-   public void setLinkedMessage(LargeServerMessage message)
+   public void setLinkedMessage(final LargeServerMessage message)
    {
       if (file != null)
       {
@@ -335,13 +339,13 @@ public class LargeServerMessageImpl extends ServerMessageImpl implements LargeSe
          throw new IllegalStateException("LargeMessage file was already set");
       }
 
-      this.linkMessage = message;
+      linkMessage = message;
 
       file = storageManager.createFileForLargeMessage(message.getMessageID(), durable);
       try
       {
          file.open();
-         this.bodySize = file.size();
+         bodySize = file.size();
          file.close();
       }
       catch (Exception e)
@@ -381,7 +385,7 @@ public class LargeServerMessageImpl extends ServerMessageImpl implements LargeSe
          }
       }
 
-      public int encode(ByteBuffer bufferRead) throws HornetQException
+      public int encode(final ByteBuffer bufferRead) throws HornetQException
       {
          try
          {
@@ -393,7 +397,7 @@ public class LargeServerMessageImpl extends ServerMessageImpl implements LargeSe
          }
       }
 
-      public int encode(HornetQBuffer bufferOut, int size) throws HornetQException
+      public int encode(final HornetQBuffer bufferOut, final int size) throws HornetQException
       {
          // This could maybe be optimized (maybe reading directly into bufferOut)
          ByteBuffer bufferRead = ByteBuffer.allocate(size);

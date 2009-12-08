@@ -9,7 +9,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
  * implied.  See the License for the specific language governing
  * permissions and limitations under the License.
- */ 
+ */
 
 package org.hornetq.core.security;
 
@@ -47,9 +47,9 @@ public class Role implements Serializable
                final boolean deleteDurableQueue,
                final boolean createNonDurableQueue,
                final boolean deleteNonDurableQueue,
-               boolean manage)
+               final boolean manage)
    {
-      if(name == null)
+      if (name == null)
       {
          throw new NullPointerException("name is null");
       }
@@ -63,12 +63,10 @@ public class Role implements Serializable
       this.manage = manage;
    }
 
-
    public String getName()
    {
       return name;
    }
-
 
    public boolean isSend()
    {
@@ -100,10 +98,11 @@ public class Role implements Serializable
       return deleteNonDurableQueue;
    }
 
+   @Override
    public String toString()
    {
       StringBuffer stringReturn = new StringBuffer("Role {name=" + name + "; allows=[");
-      
+
       if (send)
       {
          stringReturn.append(" send ");
@@ -128,13 +127,14 @@ public class Role implements Serializable
       {
          stringReturn.append(" deleteNonDurableQueue ");
       }
-      
+
       stringReturn.append("]}");
-      
-      return  stringReturn.toString();
+
+      return stringReturn.toString();
    }
 
-   public boolean equals(Object o)
+   @Override
+   public boolean equals(final Object o)
    {
       if (this == o)
       {
@@ -145,7 +145,7 @@ public class Role implements Serializable
          return false;
       }
 
-      Role role = (Role) o;
+      Role role = (Role)o;
 
       if (consume != role.consume)
       {
@@ -179,6 +179,7 @@ public class Role implements Serializable
       return true;
    }
 
+   @Override
    public int hashCode()
    {
       int result;

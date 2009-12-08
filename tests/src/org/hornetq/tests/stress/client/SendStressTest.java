@@ -13,6 +13,8 @@
 
 package org.hornetq.tests.stress.client;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
@@ -101,7 +103,7 @@ public class SendStressTest extends ServiceTestBase
          for (int i = 0; i < numberOfMessages; i++)
          {
             ClientMessage msg = consumer.receive(5000);
-            assertNotNull(msg);
+            Assert.assertNotNull(msg);
             msg.acknowledge();
 
             if (i % batchSize == 0)

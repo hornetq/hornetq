@@ -53,29 +53,29 @@ public class JMSTopicControlImpl extends StandardMBean implements TopicControl
 
    private final String binding;
 
-   private AddressControl addressControl;
+   private final AddressControl addressControl;
 
-   private ManagementService managementService;
+   private final ManagementService managementService;
 
    // Static --------------------------------------------------------
 
    public static String createFilterFromJMSSelector(final String selectorStr) throws HornetQException
    {
-      return (selectorStr == null || selectorStr.trim().length() == 0) ? null
-                                                                      : SelectorTranslator.convertToHornetQFilterString(selectorStr);
+      return selectorStr == null || selectorStr.trim().length() == 0 ? null
+                                                                    : SelectorTranslator.convertToHornetQFilterString(selectorStr);
    }
 
    // Constructors --------------------------------------------------
 
    public JMSTopicControlImpl(final HornetQTopic topic,
-                           final AddressControl addressControl,
-                           final String jndiBinding,
-                           final ManagementService managementService) throws Exception
+                              final AddressControl addressControl,
+                              final String jndiBinding,
+                              final ManagementService managementService) throws Exception
    {
       super(TopicControl.class);
-      this.managedTopic = topic;
+      managedTopic = topic;
       this.addressControl = addressControl;
-      this.binding = jndiBinding;
+      binding = jndiBinding;
       this.managementService = managementService;
    }
 
@@ -182,7 +182,7 @@ public class JMSTopicControlImpl extends StandardMBean implements TopicControl
       return jmsMessages;
    }
 
-   public String listMessagesForSubscriptionAsJSON(String queueName) throws Exception
+   public String listMessagesForSubscriptionAsJSON(final String queueName) throws Exception
    {
       return JMSQueueControlImpl.toJSON(listMessagesForSubscription(queueName));
    }
@@ -195,13 +195,13 @@ public class JMSTopicControlImpl extends StandardMBean implements TopicControl
       {
          throw new IllegalArgumentException("No subscriptions with name " + queueName + " for clientID " + clientID);
       }
-      String filter = createFilterFromJMSSelector(filterStr);
+      String filter = JMSTopicControlImpl.createFilterFromJMSSelector(filterStr);
       return coreQueueControl.listMessages(filter).length;
    }
 
-   public int removeMessages(String filterStr) throws Exception
+   public int removeMessages(final String filterStr) throws Exception
    {
-      String filter = createFilterFromJMSSelector(filterStr);
+      String filter = JMSTopicControlImpl.createFilterFromJMSSelector(filterStr);
       int count = 0;
       String[] queues = addressControl.getQueueNames();
       for (String queue : queues)
@@ -213,7 +213,7 @@ public class JMSTopicControlImpl extends StandardMBean implements TopicControl
       return count;
    }
 
-   public void dropDurableSubscription(String clientID, String subscriptionName) throws Exception
+   public void dropDurableSubscription(final String clientID, final String subscriptionName) throws Exception
    {
       String queueName = HornetQTopic.createQueueNameForDurableSubscription(clientID, subscriptionName);
       QueueControl coreQueueControl = (QueueControl)managementService.getResource(ResourceNames.CORE_QUEUE + queueName);
@@ -330,8 +330,10 @@ public class JMSTopicControlImpl extends StandardMBean implements TopicControl
             // Ignore the "special" subscription
             if (!coreQueueControl.getName().equals(addressControl.getAddress()))
             {
-               if (durability == DurabilityType.ALL || (durability == DurabilityType.DURABLE && coreQueueControl.isDurable()) ||
-                   (durability == DurabilityType.NON_DURABLE && !coreQueueControl.isDurable()))
+               if (durability == DurabilityType.ALL || durability == DurabilityType.DURABLE &&
+                   coreQueueControl.isDurable() ||
+                   durability == DurabilityType.NON_DURABLE &&
+                   !coreQueueControl.isDurable())
                {
                   matchingQueues.add(coreQueueControl);
                }

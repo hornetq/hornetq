@@ -11,8 +11,9 @@
  * permissions and limitations under the License.
  */
 
-
 package org.hornetq.tests.unit.core.config.impl;
+
+import junit.framework.Assert;
 
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.tests.util.UnitTestCase;
@@ -42,31 +43,31 @@ public class TransportConfigurationTest extends UnitTestCase
    public void testSplitNullAddress() throws Exception
    {
       String[] addresses = TransportConfiguration.splitHosts(null);
-      
-      assertNotNull(addresses);
-      assertEquals(0, addresses.length);
+
+      Assert.assertNotNull(addresses);
+      Assert.assertEquals(0, addresses.length);
    }
 
    public void testSplitSingleAddress() throws Exception
    {
       String[] addresses = TransportConfiguration.splitHosts("localhost");
-      
-      assertNotNull(addresses);
-      assertEquals(1, addresses.length);
-      assertEquals("localhost", addresses[0]);
+
+      Assert.assertNotNull(addresses);
+      Assert.assertEquals(1, addresses.length);
+      Assert.assertEquals("localhost", addresses[0]);
    }
-   
+
    public void testSplitManyAddresses() throws Exception
    {
       String[] addresses = TransportConfiguration.splitHosts("localhost, 127.0.0.1, 192.168.0.10");
-      
-      assertNotNull(addresses);
-      assertEquals(3, addresses.length);
-      assertEquals("localhost", addresses[0]);
-      assertEquals("127.0.0.1", addresses[1]);
-      assertEquals("192.168.0.10", addresses[2]);
+
+      Assert.assertNotNull(addresses);
+      Assert.assertEquals(3, addresses.length);
+      Assert.assertEquals("localhost", addresses[0]);
+      Assert.assertEquals("127.0.0.1", addresses[1]);
+      Assert.assertEquals("192.168.0.10", addresses[2]);
    }
-   
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

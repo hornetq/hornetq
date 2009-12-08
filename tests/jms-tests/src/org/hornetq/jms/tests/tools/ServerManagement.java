@@ -22,7 +22,6 @@ import org.hornetq.jms.tests.tools.container.InVMInitialContextFactory;
 import org.hornetq.jms.tests.tools.container.LocalTestServer;
 import org.hornetq.jms.tests.tools.container.Server;
 
-
 /**
  * Collection of static methods to use to start/stop and interact with the in-memory JMS server. It
  * is also use to start/stop a remote server.
@@ -39,13 +38,19 @@ public class ServerManagement
 
    // logging levels used by the remote client to forward log output on a remote server
    public static int FATAL = 0;
+
    public static int ERROR = 1;
+
    public static int WARN = 2;
+
    public static int INFO = 3;
+
    public static int DEBUG = 4;
+
    public static int TRACE = 5;
 
    public static final String DEFAULT_QUEUE_CONTEXT = "/queue";
+
    public static final String DEFAULT_TOPIC_CONTEXT = "/topic";
 
    // Static --------------------------------------------------------
@@ -63,44 +68,46 @@ public class ServerManagement
       return new LocalTestServer();
    }
 
-   public static void start(int i, String config, boolean clearDatabase) throws Exception
+   public static void start(final int i, final String config, final boolean clearDatabase) throws Exception
    {
-      start(i, config, clearDatabase, true);
+      ServerManagement.start(i, config, clearDatabase, true);
    }
 
    /**
     * When this method correctly completes, the server (local or remote) is started and fully
     * operational (the server container and the server peer are created and started).
     */
-   public static void start(int i, String config,
-                             boolean clearDatabase,
-                             boolean startHornetQServer) throws Exception
+   public static void start(final int i,
+                            final String config,
+                            final boolean clearDatabase,
+                            final boolean startHornetQServer) throws Exception
    {
       throw new IllegalStateException("Method to start a server is not implemented");
    }
 
-   public static synchronized void kill(int i) throws Exception
+   public static synchronized void kill(final int i) throws Exception
    {
       if (i == 0)
       {
-         //Cannot kill server 0 if there are any other servers since it has the rmi registry in it
-         for (int j = 1; j < servers.size(); j++)
+         // Cannot kill server 0 if there are any other servers since it has the rmi registry in it
+         for (int j = 1; j < ServerManagement.servers.size(); j++)
          {
-            if (servers.get(j) != null)
+            if (ServerManagement.servers.get(j) != null)
             {
                throw new IllegalStateException("Cannot kill server 0, since server[" + j + "] still exists");
             }
          }
       }
 
-      if (i > servers.size())
+      if (i > ServerManagement.servers.size())
       {
-         log.error("server " + i + " has not been created or has already been killed, so it cannot be killed");
+         ServerManagement.log.error("server " + i +
+                                    " has not been created or has already been killed, so it cannot be killed");
       }
       else
       {
-         Server server = servers.get(i);
-         log.info("invoking kill() on server " + i);
+         Server server = ServerManagement.servers.get(i);
+         ServerManagement.log.info("invoking kill() on server " + i);
          try
          {
             server.kill();
@@ -110,30 +117,30 @@ public class ServerManagement
             // This is likely to throw an exception since the server dies before the response is received
          }
 
-         log.info("Waiting for server to die");
+         ServerManagement.log.info("Waiting for server to die");
 
          try
          {
             while (true)
             {
                server.ping();
-               log.debug("server " + i + " still alive ...");
+               ServerManagement.log.debug("server " + i + " still alive ...");
                Thread.sleep(100);
             }
          }
          catch (Throwable e)
          {
-            //Ok
+            // Ok
          }
 
          Thread.sleep(300);
 
-         log.info("server " + i + " killed and dead");
+         ServerManagement.log.info("server " + i + " killed and dead");
       }
 
    }
 
-   public static Hashtable getJNDIEnvironment(int serverIndex)
+   public static Hashtable getJNDIEnvironment(final int serverIndex)
    {
       return InVMInitialContextFactory.getJNDIEnvironment(serverIndex);
    }

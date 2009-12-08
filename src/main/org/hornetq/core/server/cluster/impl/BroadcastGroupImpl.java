@@ -64,11 +64,11 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
    private boolean started;
 
    private ScheduledFuture<?> future;
-   
+
    private boolean active;
-   
-   //Each broadcast group has a unique id - we use this to detect when more than one group broadcasts the same node id
-   //on the network which would be an error
+
+   // Each broadcast group has a unique id - we use this to detect when more than one group broadcasts the same node id
+   // on the network which would be an error
    private final String uniqueID;
 
    private NotificationService notificationService;
@@ -87,7 +87,7 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
       this.nodeID = nodeID;
 
       this.name = name;
-      
+
       this.localAddress = localAddress;
 
       this.localPort = localPort;
@@ -95,10 +95,10 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
       this.groupAddress = groupAddress;
 
       this.groupPort = groupPort;
-      
+
       this.active = active;
-           
-      this.uniqueID = UUIDGenerator.getInstance().generateStringUUID();
+
+      uniqueID = UUIDGenerator.getInstance().generateStringUUID();
    }
 
    public void setNotificationService(final NotificationService notificationService)
@@ -123,13 +123,13 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
       }
 
       started = true;
-      
+
       if (notificationService != null)
       {
          TypedProperties props = new TypedProperties();
          props.putSimpleStringProperty(new SimpleString("name"), new SimpleString(name));
          Notification notification = new Notification(nodeID, NotificationType.BROADCAST_GROUP_STARTED, props);
-         notificationService.sendNotification(notification );
+         notificationService.sendNotification(notification);
       }
    }
 
@@ -148,7 +148,7 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
       socket.close();
 
       started = false;
-      
+
       if (notificationService != null)
       {
          TypedProperties props = new TypedProperties();
@@ -156,11 +156,11 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
          Notification notification = new Notification(nodeID, NotificationType.BROADCAST_GROUP_STOPPED, props);
          try
          {
-            notificationService.sendNotification(notification );
+            notificationService.sendNotification(notification);
          }
          catch (Exception e)
          {
-            log.warn("unable to send notification when broadcast group is stopped", e);
+            BroadcastGroupImpl.log.warn("unable to send notification when broadcast group is stopped", e);
          }
       }
 
@@ -177,7 +177,7 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
    }
 
    public synchronized void addConnectorPair(final Pair<TransportConfiguration, TransportConfiguration> connectorPair)
-   { 
+   {
       connectorPairs.add(connectorPair);
    }
 
@@ -190,7 +190,7 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
    {
       return connectorPairs.size();
    }
-   
+
    public synchronized void activate()
    {
       active = true;
@@ -202,11 +202,11 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
       {
          return;
       }
-      
+
       HornetQBuffer buff = HornetQBuffers.dynamicBuffer(4096);
-     
+
       buff.writeString(nodeID);
-      
+
       buff.writeString(uniqueID);
 
       buff.writeInt(connectorPairs.size());
@@ -226,9 +226,9 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
             buff.writeBoolean(false);
          }
       }
-      
+
       byte[] data = buff.toByteBuffer().array();
-            
+
       DatagramPacket packet = new DatagramPacket(data, data.length, groupAddress, groupPort);
 
       socket.send(packet);
@@ -247,7 +247,7 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
       }
       catch (Exception e)
       {
-         log.error("Failed to broadcast connector configs", e);
+         BroadcastGroupImpl.log.error("Failed to broadcast connector configs", e);
       }
    }
 

@@ -35,11 +35,10 @@ public class HornetQException extends Exception
    public static final int CONNECTION_TIMEDOUT = 003;
 
    public static final int DISCONNECTED = 004;
-   
+
    public static final int UNBLOCKED = 005;
 
    public static final int IO_ERROR = 006;
-
 
    public static final int QUEUE_DOES_NOT_EXIST = 100;
 
@@ -60,16 +59,15 @@ public class HornetQException extends Exception
    public static final int INCOMPATIBLE_CLIENT_SERVER_VERSIONS = 108;
 
    public static final int SESSION_EXISTS = 109;
-   
+
    public static final int LARGE_MESSAGE_ERROR_BODY = 110;
-   
+
    public static final int TRANSACTION_ROLLED_BACK = 111;
-   
+
    public static final int SESSION_CREATION_REJECTED = 112;
 
-   
    // Native Error codes ----------------------------------------------
-   
+
    public static final int NATIVE_ERROR_INTERNAL = 200;
 
    public static final int NATIVE_ERROR_INVALID_BUFFER = 201;
@@ -89,8 +87,6 @@ public class HornetQException extends Exception
    public static final int NATIVE_ERROR_ALLOCATE_MEMORY = 209;
 
    public static final int NATIVE_ERROR_AIO_FULL = 211;
-   
-   
 
    private int code;
 
@@ -98,19 +94,19 @@ public class HornetQException extends Exception
    {
    }
 
-   public HornetQException(int code)
+   public HornetQException(final int code)
    {
       this.code = code;
    }
 
-   public HornetQException(int code, String msg)
+   public HornetQException(final int code, final String msg)
    {
       super(msg);
 
       this.code = code;
    }
 
-   public HornetQException(int code, String msg, Throwable cause)
+   public HornetQException(final int code, final String msg, final Throwable cause)
    {
       super(msg, cause);
 
@@ -122,6 +118,7 @@ public class HornetQException extends Exception
       return code;
    }
 
+   @Override
    public String toString()
    {
       return "HornetQException[errorCode=" + code + " message=" + getMessage() + "]";

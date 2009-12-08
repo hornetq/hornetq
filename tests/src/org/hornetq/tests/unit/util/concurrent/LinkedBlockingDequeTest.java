@@ -15,6 +15,8 @@ package org.hornetq.tests.unit.util.concurrent;
 
 import java.util.Iterator;
 
+import junit.framework.Assert;
+
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.concurrent.LinkedBlockingDeque;
 
@@ -47,17 +49,17 @@ public class LinkedBlockingDequeTest extends UnitTestCase
 
       System.out.println(deque);
 
-      assertTrue(iter.hasNext());
-      assertEquals("b", iter.next());
+      Assert.assertTrue(iter.hasNext());
+      Assert.assertEquals("b", iter.next());
 
       deque.addFirst("c");
 
       System.out.println(deque);
 
-      assertTrue(iter.hasNext());
-      assertEquals("a", iter.next());
+      Assert.assertTrue(iter.hasNext());
+      Assert.assertEquals("a", iter.next());
 
-      assertFalse(iter.hasNext());
+      Assert.assertFalse(iter.hasNext());
    }
 
    public void testAddLastWhileIterating() throws Exception
@@ -71,20 +73,20 @@ public class LinkedBlockingDequeTest extends UnitTestCase
 
       Iterator<String> iter = deque.iterator();
 
-      assertTrue(iter.hasNext());
-      assertEquals("a", iter.next());
+      Assert.assertTrue(iter.hasNext());
+      Assert.assertEquals("a", iter.next());
 
       deque.addLast("c");
 
       System.out.println(deque);
 
-      assertTrue(iter.hasNext());
-      assertEquals("b", iter.next());
+      Assert.assertTrue(iter.hasNext());
+      Assert.assertEquals("b", iter.next());
 
-      assertTrue(iter.hasNext());
-      assertEquals("c", iter.next());
+      Assert.assertTrue(iter.hasNext());
+      Assert.assertEquals("c", iter.next());
 
-      assertFalse(iter.hasNext());
+      Assert.assertFalse(iter.hasNext());
    }
 
    public void testRemoveFromHeadWhileIterating() throws Exception
@@ -99,23 +101,23 @@ public class LinkedBlockingDequeTest extends UnitTestCase
 
       Iterator<String> iter = deque.iterator();
 
-      assertTrue(iter.hasNext());
-      assertEquals("a", iter.next());
+      Assert.assertTrue(iter.hasNext());
+      Assert.assertEquals("a", iter.next());
 
-      assertEquals("a", deque.removeFirst());
-      assertEquals("b", deque.removeFirst());
-      
+      Assert.assertEquals("a", deque.removeFirst());
+      Assert.assertEquals("b", deque.removeFirst());
+
       System.out.println(deque);
-      
-      assertTrue(iter.hasNext());
-      assertEquals("b", iter.next());
 
-      assertTrue(iter.hasNext());
-      assertEquals("c", iter.next());
+      Assert.assertTrue(iter.hasNext());
+      Assert.assertEquals("b", iter.next());
 
-      assertFalse(iter.hasNext());
+      Assert.assertTrue(iter.hasNext());
+      Assert.assertEquals("c", iter.next());
+
+      Assert.assertFalse(iter.hasNext());
    }
-   
+
    public void testRemoveFromHeadWhileIterating_2() throws Exception
    {
       LinkedBlockingDeque<String> deque = new LinkedBlockingDeque<String>();
@@ -128,24 +130,24 @@ public class LinkedBlockingDequeTest extends UnitTestCase
 
       Iterator<String> iter = deque.iterator();
 
-      assertTrue(iter.hasNext());
-      assertEquals("a", iter.next());
+      Assert.assertTrue(iter.hasNext());
+      Assert.assertEquals("a", iter.next());
 
-      assertEquals("a", deque.removeFirst());
-      assertEquals("b", deque.removeFirst());
-      assertEquals("c", deque.removeFirst());
-      
-      assertEquals(0, deque.size());
-      
-      assertTrue(iter.hasNext());
-      assertEquals("b", iter.next());
+      Assert.assertEquals("a", deque.removeFirst());
+      Assert.assertEquals("b", deque.removeFirst());
+      Assert.assertEquals("c", deque.removeFirst());
 
-      assertTrue(iter.hasNext());
-      assertEquals("c", iter.next());
+      Assert.assertEquals(0, deque.size());
 
-      assertFalse(iter.hasNext());
+      Assert.assertTrue(iter.hasNext());
+      Assert.assertEquals("b", iter.next());
+
+      Assert.assertTrue(iter.hasNext());
+      Assert.assertEquals("c", iter.next());
+
+      Assert.assertFalse(iter.hasNext());
    }
-   
+
    public void testRemoveFromHeadAndAddLastWhileIterating_2() throws Exception
    {
       LinkedBlockingDeque<String> deque = new LinkedBlockingDeque<String>();
@@ -158,25 +160,25 @@ public class LinkedBlockingDequeTest extends UnitTestCase
 
       Iterator<String> iter = deque.iterator();
 
-      assertTrue(iter.hasNext());
-      assertEquals("a", iter.next());
+      Assert.assertTrue(iter.hasNext());
+      Assert.assertEquals("a", iter.next());
 
-      assertEquals("a", deque.removeFirst());
-      assertEquals("b", deque.removeFirst());
-      
-      assertEquals(1, deque.size());
-      
-      assertTrue(iter.hasNext());
-      assertEquals("b", iter.next());
+      Assert.assertEquals("a", deque.removeFirst());
+      Assert.assertEquals("b", deque.removeFirst());
 
-      assertTrue(iter.hasNext());
-      assertEquals("c", iter.next());
+      Assert.assertEquals(1, deque.size());
+
+      Assert.assertTrue(iter.hasNext());
+      Assert.assertEquals("b", iter.next());
+
+      Assert.assertTrue(iter.hasNext());
+      Assert.assertEquals("c", iter.next());
 
       deque.addLast("d");
-      
-      assertFalse(iter.hasNext());
+
+      Assert.assertFalse(iter.hasNext());
    }
-   
+
    public void testRemoveFromHeadAndAddFirstWhileIterating() throws Exception
    {
       LinkedBlockingDeque<String> deque = new LinkedBlockingDeque<String>();
@@ -189,27 +191,27 @@ public class LinkedBlockingDequeTest extends UnitTestCase
 
       Iterator<String> iter = deque.iterator();
 
-      assertTrue(iter.hasNext());
-      assertEquals("a", iter.next());
+      Assert.assertTrue(iter.hasNext());
+      Assert.assertEquals("a", iter.next());
 
-      assertEquals("a", deque.removeFirst());
-      assertEquals("b", deque.removeFirst());
-     
+      Assert.assertEquals("a", deque.removeFirst());
+      Assert.assertEquals("b", deque.removeFirst());
+
       deque.addFirst("d");
-      
+
       System.out.println(deque);
-      
-      assertEquals(2, deque.size());
-      
-      assertTrue(iter.hasNext());
-      assertEquals("b", iter.next());
 
-      assertTrue(iter.hasNext());
-      assertEquals("c", iter.next());
+      Assert.assertEquals(2, deque.size());
 
-      assertFalse(iter.hasNext());
+      Assert.assertTrue(iter.hasNext());
+      Assert.assertEquals("b", iter.next());
+
+      Assert.assertTrue(iter.hasNext());
+      Assert.assertEquals("c", iter.next());
+
+      Assert.assertFalse(iter.hasNext());
    }
-   
+
    public void test3() throws Exception
    {
       LinkedBlockingDeque<String> deque = new LinkedBlockingDeque<String>();
@@ -221,28 +223,28 @@ public class LinkedBlockingDequeTest extends UnitTestCase
 
       Iterator<String> iter = deque.iterator();
 
-      assertEquals("a", deque.removeFirst());
-      assertEquals("b", deque.removeFirst());
-      assertEquals("c", deque.removeFirst());
-      assertEquals("d", deque.removeFirst());
-      
+      Assert.assertEquals("a", deque.removeFirst());
+      Assert.assertEquals("b", deque.removeFirst());
+      Assert.assertEquals("c", deque.removeFirst());
+      Assert.assertEquals("d", deque.removeFirst());
+
       deque.addFirst("e");
 
-      assertTrue(iter.hasNext());
-      assertEquals("a", iter.next());
+      Assert.assertTrue(iter.hasNext());
+      Assert.assertEquals("a", iter.next());
 
-      assertTrue(iter.hasNext());
-      assertEquals("b", iter.next());
+      Assert.assertTrue(iter.hasNext());
+      Assert.assertEquals("b", iter.next());
 
-      assertTrue(iter.hasNext());
-      assertEquals("c", iter.next());
+      Assert.assertTrue(iter.hasNext());
+      Assert.assertEquals("c", iter.next());
 
-      assertTrue(iter.hasNext());
-      assertEquals("d", iter.next());
+      Assert.assertTrue(iter.hasNext());
+      Assert.assertEquals("d", iter.next());
 
-      assertFalse(iter.hasNext());
+      Assert.assertFalse(iter.hasNext());
    }
-   
+
    public void test4() throws Exception
    {
       LinkedBlockingDeque<String> deque = new LinkedBlockingDeque<String>();
@@ -251,11 +253,11 @@ public class LinkedBlockingDequeTest extends UnitTestCase
 
       Iterator<String> iter = deque.iterator();
 
-      assertEquals("a", deque.removeFirst());
+      Assert.assertEquals("a", deque.removeFirst());
       deque.addLast("b");
 
-      assertTrue(iter.hasNext());
-      assertEquals("a", iter.next());
+      Assert.assertTrue(iter.hasNext());
+      Assert.assertEquals("a", iter.next());
    }
 
    // Package protected ---------------------------------------------

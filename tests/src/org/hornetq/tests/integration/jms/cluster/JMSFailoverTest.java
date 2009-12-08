@@ -27,6 +27,8 @@ import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.config.Configuration;
@@ -87,17 +89,16 @@ public class JMSFailoverTest extends UnitTestCase
 
       jbcf.setBlockOnPersistentSend(true);
       jbcf.setBlockOnNonPersistentSend(true);
-      
-      //Note we set consumer window size to a value so we can verify that consumer credit re-sending
-      //works properly on failover
-      //The value is small enough that credits will have to be resent several time
-      
-      final int numMessages = 10;
-      
-      final int bodySize = 1000;
-      
-      jbcf.setConsumerWindowSize(numMessages * bodySize / 10);
 
+      // Note we set consumer window size to a value so we can verify that consumer credit re-sending
+      // works properly on failover
+      // The value is small enough that credits will have to be resent several time
+
+      final int numMessages = 10;
+
+      final int bodySize = 1000;
+
+      jbcf.setConsumerWindowSize(numMessages * bodySize / 10);
 
       Connection conn = jbcf.createConnection();
 
@@ -117,7 +118,6 @@ public class JMSFailoverTest extends UnitTestCase
 
       Queue queue = sess.createQueue("myqueue");
 
-      
       MessageProducer producer = sess.createProducer(queue);
 
       producer.setDeliveryMode(DeliveryMode.PERSISTENT);
@@ -125,20 +125,20 @@ public class JMSFailoverTest extends UnitTestCase
       MessageConsumer consumer = sess.createConsumer(queue);
 
       byte[] body = RandomUtil.randomBytes(bodySize);
-      
+
       for (int i = 0; i < numMessages; i++)
       {
          BytesMessage bm = sess.createBytesMessage();
-         
+
          bm.writeBytes(body);
 
          producer.send(bm);
       }
 
       conn.start();
-      
-      log.info("sent messages and started connection");
-      
+
+      JMSFailoverTest.log.info("sent messages and started connection");
+
       Thread.sleep(2000);
 
       HornetQException me = new HornetQException(HornetQException.NOT_CONNECTED);
@@ -147,24 +147,24 @@ public class JMSFailoverTest extends UnitTestCase
 
       for (int i = 0; i < numMessages; i++)
       {
-         log.info("got message " + i);
-         
+         JMSFailoverTest.log.info("got message " + i);
+
          BytesMessage bm = (BytesMessage)consumer.receive(1000);
 
-         assertNotNull(bm);
+         Assert.assertNotNull(bm);
 
-         assertEquals(body.length, bm.getBodyLength());
+         Assert.assertEquals(body.length, bm.getBodyLength());
       }
 
       TextMessage tm = (TextMessage)consumer.receiveNoWait();
 
-      assertNull(tm);
+      Assert.assertNull(tm);
 
       conn.close();
 
-      assertNotNull(listener.e);
-      
-      assertTrue(me == listener.e.getCause());
+      Assert.assertNotNull(listener.e);
+
+      Assert.assertTrue(me == listener.e.getCause());
    }
 
    public void testManualFailover() throws Exception
@@ -214,11 +214,11 @@ public class JMSFailoverTest extends UnitTestCase
 
       coreConnLive.fail(me);
 
-      assertNotNull(listener.e);
+      Assert.assertNotNull(listener.e);
 
       JMSException je = listener.e;
 
-      assertEquals(me, je.getCause());
+      Assert.assertEquals(me, je.getCause());
 
       connLive.close();
 
@@ -236,14 +236,14 @@ public class JMSFailoverTest extends UnitTestCase
       {
          TextMessage tm = (TextMessage)consumerBackup.receive(1000);
 
-         assertNotNull(tm);
+         Assert.assertNotNull(tm);
 
-         assertEquals("message" + i, tm.getText());
+         Assert.assertEquals("message" + i, tm.getText());
       }
 
       TextMessage tm = (TextMessage)consumerBackup.receiveNoWait();
 
-      assertNull(tm);
+      Assert.assertNull(tm);
 
       connBackup.close();
    }
@@ -294,7 +294,7 @@ public class JMSFailoverTest extends UnitTestCase
 
       liveService.stop();
 
-      assertEquals(0, InVMRegistry.instance.size());
+      Assert.assertEquals(0, InVMRegistry.instance.size());
 
       liveService = null;
 

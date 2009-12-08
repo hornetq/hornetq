@@ -25,5 +25,5 @@ import java.util.Set;
  */
 public interface ConcurrentSet<E> extends Set<E>
 {
-	boolean addIfAbsent(E o);
+   boolean addIfAbsent(E o);
 }

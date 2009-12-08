@@ -49,7 +49,7 @@ public class HornetQMessageHandler implements MessageHandler
    /**
     * Trace enabled
     */
-   private static boolean trace = log.isTraceEnabled();
+   private static boolean trace = HornetQMessageHandler.log.isTraceEnabled();
 
    /**
     * The session
@@ -73,9 +73,9 @@ public class HornetQMessageHandler implements MessageHandler
 
    public void setup() throws Exception
    {
-      if (trace)
+      if (HornetQMessageHandler.trace)
       {
-         log.trace("setup()");
+         HornetQMessageHandler.log.trace("setup()");
       }
 
       HornetQActivationSpec spec = activation.getActivationSpec();
@@ -171,9 +171,9 @@ public class HornetQMessageHandler implements MessageHandler
     */
    public void teardown()
    {
-      if (trace)
+      if (HornetQMessageHandler.trace)
       {
-         log.trace("teardown()");
+         HornetQMessageHandler.log.trace("teardown()");
       }
 
       try
@@ -185,7 +185,7 @@ public class HornetQMessageHandler implements MessageHandler
       }
       catch (Throwable t)
       {
-         log.debug("Error releasing endpoint " + endpoint, t);
+         HornetQMessageHandler.log.debug("Error releasing endpoint " + endpoint, t);
       }
 
       try
@@ -197,15 +197,15 @@ public class HornetQMessageHandler implements MessageHandler
       }
       catch (Throwable t)
       {
-         log.debug("Error releasing session " + session, t);
+         HornetQMessageHandler.log.debug("Error releasing session " + session, t);
       }
    }
 
    public void onMessage(final ClientMessage message)
    {
-      if (trace)
+      if (HornetQMessageHandler.trace)
       {
-         log.trace("onMessage(" + message + ")");
+         HornetQMessageHandler.log.trace("onMessage(" + message + ")");
       }
 
       HornetQMessage msg = HornetQMessage.createMessage(message, session);
@@ -225,7 +225,7 @@ public class HornetQMessageHandler implements MessageHandler
       }
       catch (Throwable e)
       {
-         log.error("Failed to deliver message", e);
+         HornetQMessageHandler.log.error("Failed to deliver message", e);
          // we need to call before/afterDelivery as a pair
          if (beforeDelivery)
          {
@@ -235,7 +235,7 @@ public class HornetQMessageHandler implements MessageHandler
             }
             catch (ResourceException e1)
             {
-               log.warn("Unable to call after delivery");
+               HornetQMessageHandler.log.warn("Unable to call after delivery");
             }
          }
          if (useLocalTx)
@@ -246,7 +246,7 @@ public class HornetQMessageHandler implements MessageHandler
             }
             catch (HornetQException e1)
             {
-               log.warn("Unable to roll local transaction back");
+               HornetQMessageHandler.log.warn("Unable to roll local transaction back");
             }
          }
       }

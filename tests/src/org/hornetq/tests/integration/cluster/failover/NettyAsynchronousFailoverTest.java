@@ -25,11 +25,11 @@ import org.hornetq.core.config.TransportConfiguration;
 public class NettyAsynchronousFailoverTest extends AsynchronousFailoverTest
 {
    @Override
-   protected TransportConfiguration getAcceptorTransportConfiguration(boolean live)
+   protected TransportConfiguration getAcceptorTransportConfiguration(final boolean live)
    {
       return getNettyAcceptorTransportConfiguration(live);
    }
-   
+
    @Override
    protected TransportConfiguration getConnectorTransportConfiguration(final boolean live)
    {

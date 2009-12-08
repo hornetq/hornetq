@@ -36,11 +36,11 @@ public interface ClientSessionFactory
    ClientSession createSession(boolean autoCommitSends, boolean autoCommitAcks) throws HornetQException;
 
    ClientSession createSession(boolean autoCommitSends, boolean autoCommitAcks, int ackBatchSize) throws HornetQException;
-   
+
    ClientSession createSession(boolean xa, boolean autoCommitSends, boolean autoCommitAcks) throws HornetQException;
 
    ClientSession createSession(boolean xa, boolean autoCommitSends, boolean autoCommitAcks, boolean preAcknowledge) throws HornetQException;
-   
+
    ClientSession createSession(String username,
                                String password,
                                boolean xa,
@@ -48,7 +48,6 @@ public interface ClientSessionFactory
                                boolean autoCommitAcks,
                                boolean preAcknowledge,
                                int ackBatchSize) throws HornetQException;
-
 
    List<Pair<TransportConfiguration, TransportConfiguration>> getStaticConnectors();
 
@@ -89,7 +88,7 @@ public interface ClientSessionFactory
    int getProducerWindowSize();
 
    void setProducerWindowSize(int producerWindowSize);
-   
+
    int getProducerMaxRate();
 
    void setProducerMaxRate(int producerMaxRate);
@@ -141,7 +140,7 @@ public interface ClientSessionFactory
    double getRetryIntervalMultiplier();
 
    void setRetryIntervalMultiplier(double retryIntervalMultiplier);
-   
+
    long getMaxRetryInterval();
 
    void setMaxRetryInterval(long maxRetryInterval);
@@ -149,7 +148,7 @@ public interface ClientSessionFactory
    int getReconnectAttempts();
 
    void setReconnectAttempts(int reconnectAttempts);
-   
+
    boolean isFailoverOnServerShutdown();
 
    void setFailoverOnServerShutdown(boolean failoverOnServerShutdown);
@@ -169,17 +168,17 @@ public interface ClientSessionFactory
    long getDiscoveryRefreshTimeout();
 
    void setDiscoveryRefreshTimeout(long discoveryRefreshTimeout);
-   
+
    int getInitialMessagePacketSize();
-   
+
    void setInitialMessagePacketSize(int size);
-   
+
    void addInterceptor(Interceptor interceptor);
 
    boolean removeInterceptor(Interceptor interceptor);
 
    void close();
-   
+
    ClientSessionFactory copy();
 
    void setGroupID(String groupID);

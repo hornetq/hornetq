@@ -13,14 +13,13 @@
 
 package org.hornetq.tests.integration.cluster.bridge;
 
-import static org.hornetq.core.remoting.impl.invm.TransportConstants.SERVER_ID_PROP_NAME;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.hornetq.core.buffers.HornetQBuffers;
+import junit.framework.Assert;
+
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
@@ -31,9 +30,11 @@ import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.config.cluster.BridgeConfiguration;
 import org.hornetq.core.config.cluster.QueueConfiguration;
 import org.hornetq.core.logging.Logger;
+import org.hornetq.core.remoting.impl.invm.TransportConstants;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.integration.transports.netty.NettyConnectorFactory;
 import org.hornetq.tests.util.ServiceTestBase;
+import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.Pair;
 import org.hornetq.utils.SimpleString;
 
@@ -49,7 +50,7 @@ import org.hornetq.utils.SimpleString;
 public class BridgeTest extends ServiceTestBase
 {
    private static final Logger log = Logger.getLogger(BridgeTest.class);
-   
+
    protected boolean isNetty()
    {
       return false;
@@ -66,7 +67,6 @@ public class BridgeTest extends ServiceTestBase
          return "org.hornetq.core.remoting.impl.invm.InVMConnectorFactory";
       }
    }
-
 
    public void testSimpleBridge() throws Exception
    {
@@ -88,7 +88,7 @@ public class BridgeTest extends ServiceTestBase
       internaltestSimpleBridge(true, true);
    }
 
-   public void internaltestSimpleBridge(boolean largeMessage, boolean useFiles) throws Exception
+   public void internaltestSimpleBridge(final boolean largeMessage, final boolean useFiles) throws Exception
    {
       HornetQServer server0 = null;
       HornetQServer server1 = null;
@@ -108,11 +108,9 @@ public class BridgeTest extends ServiceTestBase
          final String queueName1 = "queue1";
 
          Map<String, TransportConfiguration> connectors = new HashMap<String, TransportConfiguration>();
-         TransportConfiguration server0tc = new TransportConfiguration(getConnector(),
-                                                                       server0Params);
+         TransportConfiguration server0tc = new TransportConfiguration(getConnector(), server0Params);
 
-         TransportConfiguration server1tc = new TransportConfiguration(getConnector(),
-                                                                       server1Params);
+         TransportConfiguration server1tc = new TransportConfiguration(getConnector(), server1Params);
          connectors.put(server1tc.getName(), server1tc);
 
          server0.getConfiguration().setConnectorConfigurations(connectors);
@@ -180,7 +178,7 @@ public class BridgeTest extends ServiceTestBase
 
             if (largeMessage)
             {
-               message.setBodyInputStream(createFakeLargeStream(1024 * 1024));
+               message.setBodyInputStream(UnitTestCase.createFakeLargeStream(1024 * 1024));
             }
 
             message.putIntProperty(propKey, i);
@@ -194,9 +192,9 @@ public class BridgeTest extends ServiceTestBase
          {
             ClientMessage message = consumer1.receive(200);
 
-            assertNotNull(message);
+            Assert.assertNotNull(message);
 
-            assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
+            Assert.assertEquals(i, message.getObjectProperty(propKey));
 
             if (largeMessage)
             {
@@ -206,7 +204,7 @@ public class BridgeTest extends ServiceTestBase
             message.acknowledge();
          }
 
-         assertNull(consumer1.receiveImmediate());
+         Assert.assertNull(consumer1.receiveImmediate());
 
          session0.close();
 
@@ -241,7 +239,7 @@ public class BridgeTest extends ServiceTestBase
    /**
     * @param server1Params
     */
-   private void addTargetParameters(Map<String, Object> server1Params)
+   private void addTargetParameters(final Map<String, Object> server1Params)
    {
       if (isNetty())
       {
@@ -249,14 +247,14 @@ public class BridgeTest extends ServiceTestBase
       }
       else
       {
-         server1Params.put(SERVER_ID_PROP_NAME, 1);
+         server1Params.put(TransportConstants.SERVER_ID_PROP_NAME, 1);
       }
    }
 
    /**
     * @param message
     */
-   private void readMessages(ClientMessage message)
+   private void readMessages(final ClientMessage message)
    {
       byte byteRead[] = new byte[1024];
 
@@ -307,10 +305,8 @@ public class BridgeTest extends ServiceTestBase
          final String queueName1 = "queue1";
 
          Map<String, TransportConfiguration> connectors = new HashMap<String, TransportConfiguration>();
-         TransportConfiguration server0tc = new TransportConfiguration(getConnector(),
-                                                                       server0Params);
-         TransportConfiguration server1tc = new TransportConfiguration(getConnector(),
-                                                                       server1Params);
+         TransportConfiguration server0tc = new TransportConfiguration(getConnector(), server0Params);
+         TransportConfiguration server1tc = new TransportConfiguration(getConnector(), server1Params);
          connectors.put(server1tc.getName(), server1tc);
 
          server0.getConfiguration().setConnectorConfigurations(connectors);
@@ -380,13 +376,13 @@ public class BridgeTest extends ServiceTestBase
 
             if (largeMessage)
             {
-               message.setBodyInputStream(createFakeLargeStream(1024 * 1024));
+               message.setBodyInputStream(UnitTestCase.createFakeLargeStream(1024 * 1024));
             }
 
             producer0.send(message);
          }
 
-         assertNull(consumer1.receiveImmediate());
+         Assert.assertNull(consumer1.receiveImmediate());
 
          for (int i = 0; i < numMessages; i++)
          {
@@ -398,7 +394,7 @@ public class BridgeTest extends ServiceTestBase
 
             if (largeMessage)
             {
-               message.setBodyInputStream(createFakeLargeStream(1024 * 1024));
+               message.setBodyInputStream(UnitTestCase.createFakeLargeStream(1024 * 1024));
             }
 
             producer0.send(message);
@@ -408,9 +404,9 @@ public class BridgeTest extends ServiceTestBase
          {
             ClientMessage message = consumer1.receive(200);
 
-            assertNotNull(message);
+            Assert.assertNotNull(message);
 
-            assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
+            Assert.assertEquals(i, message.getObjectProperty(propKey));
 
             message.acknowledge();
 
@@ -420,7 +416,7 @@ public class BridgeTest extends ServiceTestBase
             }
          }
 
-         assertNull(consumer1.receiveImmediate());
+         Assert.assertNull(consumer1.receiveImmediate());
 
          session0.close();
 
@@ -463,7 +459,7 @@ public class BridgeTest extends ServiceTestBase
       internaltestWithTransformer(true);
    }
 
-   public void internaltestWithTransformer(boolean useFiles) throws Exception
+   public void internaltestWithTransformer(final boolean useFiles) throws Exception
    {
       Map<String, Object> server0Params = new HashMap<String, Object>();
       HornetQServer server0 = createClusteredServerWithParams(isNetty(), 0, false, server0Params);
@@ -478,10 +474,8 @@ public class BridgeTest extends ServiceTestBase
       final String queueName1 = "queue1";
 
       Map<String, TransportConfiguration> connectors = new HashMap<String, TransportConfiguration>();
-      TransportConfiguration server0tc = new TransportConfiguration(getConnector(),
-                                                                    server0Params);
-      TransportConfiguration server1tc = new TransportConfiguration(getConnector(),
-                                                                    server1Params);
+      TransportConfiguration server0tc = new TransportConfiguration(getConnector(), server0Params);
+      TransportConfiguration server1tc = new TransportConfiguration(getConnector(), server1Params);
       connectors.put(server1tc.getName(), server1tc);
 
       server0.getConfiguration().setConnectorConfigurations(connectors);
@@ -552,21 +546,21 @@ public class BridgeTest extends ServiceTestBase
       {
          ClientMessage message = consumer1.receive(200);
 
-         assertNotNull(message);
+         Assert.assertNotNull(message);
 
          SimpleString val = (SimpleString)message.getObjectProperty(propKey);
 
-         assertEquals(new SimpleString("bong"), val);
+         Assert.assertEquals(new SimpleString("bong"), val);
 
          String sval = message.getBodyBuffer().readString();
 
-         assertEquals("dee be dee be dee be dee", sval);
+         Assert.assertEquals("dee be dee be dee be dee", sval);
 
          message.acknowledge();
 
       }
 
-      assertNull(consumer1.receiveImmediate());
+      Assert.assertNull(consumer1.receiveImmediate());
 
       session0.close();
 
@@ -606,11 +600,9 @@ public class BridgeTest extends ServiceTestBase
          final String queueName1 = "queue1";
 
          Map<String, TransportConfiguration> connectors = new HashMap<String, TransportConfiguration>();
-         TransportConfiguration server0tc = new TransportConfiguration(getConnector(),
-                                                                       server0Params);
+         TransportConfiguration server0tc = new TransportConfiguration(getConnector(), server0Params);
 
-         TransportConfiguration server1tc = new TransportConfiguration(getConnector(),
-                                                                       server1Params);
+         TransportConfiguration server1tc = new TransportConfiguration(getConnector(), server1Params);
          connectors.put(server1tc.getName(), server1tc);
 
          server0.getConfiguration().setConnectorConfigurations(connectors);
@@ -679,14 +671,14 @@ public class BridgeTest extends ServiceTestBase
          {
             ClientMessage message = consumer1.receive(5000);
 
-            assertNotNull(message);
+            Assert.assertNotNull(message);
 
-            assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
+            Assert.assertEquals(i, message.getObjectProperty(propKey));
 
             message.acknowledge();
          }
 
-         assertNull(consumer1.receiveImmediate());
+         Assert.assertNull(consumer1.receiveImmediate());
 
          session0.close();
 
@@ -718,12 +710,14 @@ public class BridgeTest extends ServiceTestBase
 
    }
 
+   @Override
    protected void setUp() throws Exception
    {
       super.setUp();
       clearData();
    }
 
+   @Override
    protected void tearDown() throws Exception
    {
       clearData();

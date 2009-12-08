@@ -15,8 +15,6 @@ package org.hornetq.core.management.impl;
 
 import java.util.Map;
 
-import javax.management.StandardMBean;
-
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.management.AcceptorControl;
 import org.hornetq.core.persistence.StorageManager;

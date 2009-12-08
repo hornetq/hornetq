@@ -12,8 +12,6 @@
  */
 package org.hornetq.javaee.example.server;
 
-import org.jboss.ejb3.annotation.ResourceAdapter;
-
 import javax.annotation.Resource;
 import javax.ejb.ActivationConfigProperty;
 import javax.ejb.MessageDriven;
@@ -27,45 +25,42 @@ import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.TextMessage;
 
+import org.jboss.ejb3.annotation.ResourceAdapter;
+
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  */
-@MessageDriven(name = "MDB_CMT_SetRollbackOnlyExample",
-               activationConfig =
-                     {
-                        @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
-                        @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/testQueue")
-                     })
-@TransactionManagement(value= TransactionManagementType.CONTAINER)
-@TransactionAttribute(value= TransactionAttributeType.REQUIRED)
+@MessageDriven(name = "MDB_CMT_SetRollbackOnlyExample", activationConfig = { @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
+                                                                            @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/testQueue") })
+@TransactionManagement(value = TransactionManagementType.CONTAINER)
+@TransactionAttribute(value = TransactionAttributeType.REQUIRED)
 @ResourceAdapter("hornetq-ra.rar")
 public class MDB_CMT_SetRollbackOnlyExample implements MessageListener
 {
    @Resource
    MessageDrivenContext ctx;
 
-   public void onMessage(Message message)
+   public void onMessage(final Message message)
    {
       try
       {
-         //Step 9. We know the client is sending a text message so we cast
+         // Step 9. We know the client is sending a text message so we cast
          TextMessage textMessage = (TextMessage)message;
 
-         //Step 10. get the text from the message.
+         // Step 10. get the text from the message.
          String text = textMessage.getText();
 
-         if(!textMessage.getJMSRedelivered())
+         if (!textMessage.getJMSRedelivered())
          {
-            //Step 11. rollback delivery of message if the first time
+            // Step 11. rollback delivery of message if the first time
             System.out.println("message " + text + " received for the first time");
             ctx.setRollbackOnly();
          }
          else
          {
-            //Step 12. read the message
-            System.out.println("message " + text + " received for the second time");  
+            // Step 12. read the message
+            System.out.println("message " + text + " received for the second time");
          }
-
 
       }
       catch (JMSException e)

@@ -24,7 +24,7 @@ import java.util.List;
  */
 public interface TransactionFailureCallback
 {
-   
+
    /** To be used to inform about transactions without commit records.
     *  This could be used to remove extra resources associated with the transactions (such as external files received during the transaction) */
    void failedTransaction(long transactionID, List<RecordInfo> records, List<RecordInfo> recordsToDelete);

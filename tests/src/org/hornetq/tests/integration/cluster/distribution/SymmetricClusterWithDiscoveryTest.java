@@ -27,9 +27,9 @@ import org.hornetq.core.logging.Logger;
 public class SymmetricClusterWithDiscoveryTest extends SymmetricClusterTest
 {
    private static final Logger log = Logger.getLogger(SymmetricClusterWithDiscoveryTest.class);
-   
+
    protected static final String groupAddress = "230.1.2.3";
-   
+
    protected static final int groupPort = 6745;
 
    protected boolean isNetty()
@@ -47,26 +47,51 @@ public class SymmetricClusterWithDiscoveryTest extends SymmetricClusterTest
    protected void setupCluster(final boolean forwardWhenNoConsumers) throws Exception
    {
       setupDiscoveryClusterConnection("cluster0", 0, "dg1", "queues", forwardWhenNoConsumers, 1, isNetty());
-      
+
       setupDiscoveryClusterConnection("cluster1", 1, "dg1", "queues", forwardWhenNoConsumers, 1, isNetty());
-      
+
       setupDiscoveryClusterConnection("cluster2", 2, "dg1", "queues", forwardWhenNoConsumers, 1, isNetty());
-      
+
       setupDiscoveryClusterConnection("cluster3", 3, "dg1", "queues", forwardWhenNoConsumers, 1, isNetty());
-      
-      setupDiscoveryClusterConnection("cluster4", 4, "dg1", "queues", forwardWhenNoConsumers, 1, isNetty());            
+
+      setupDiscoveryClusterConnection("cluster4", 4, "dg1", "queues", forwardWhenNoConsumers, 1, isNetty());
    }
-   
+
    @Override
    protected void setupServers() throws Exception
    {
-      setupServerWithDiscovery(0, groupAddress, groupPort, isFileStorage(), isNetty(), false);
-      setupServerWithDiscovery(1, groupAddress, groupPort, isFileStorage(), isNetty(), false);
-      setupServerWithDiscovery(2, groupAddress, groupPort, isFileStorage(), isNetty(), false);
-      setupServerWithDiscovery(3, groupAddress, groupPort, isFileStorage(), isNetty(), false);
-      setupServerWithDiscovery(4, groupAddress, groupPort, isFileStorage(), isNetty(), false); 
+      setupServerWithDiscovery(0,
+                               SymmetricClusterWithDiscoveryTest.groupAddress,
+                               SymmetricClusterWithDiscoveryTest.groupPort,
+                               isFileStorage(),
+                               isNetty(),
+                               false);
+      setupServerWithDiscovery(1,
+                               SymmetricClusterWithDiscoveryTest.groupAddress,
+                               SymmetricClusterWithDiscoveryTest.groupPort,
+                               isFileStorage(),
+                               isNetty(),
+                               false);
+      setupServerWithDiscovery(2,
+                               SymmetricClusterWithDiscoveryTest.groupAddress,
+                               SymmetricClusterWithDiscoveryTest.groupPort,
+                               isFileStorage(),
+                               isNetty(),
+                               false);
+      setupServerWithDiscovery(3,
+                               SymmetricClusterWithDiscoveryTest.groupAddress,
+                               SymmetricClusterWithDiscoveryTest.groupPort,
+                               isFileStorage(),
+                               isNetty(),
+                               false);
+      setupServerWithDiscovery(4,
+                               SymmetricClusterWithDiscoveryTest.groupAddress,
+                               SymmetricClusterWithDiscoveryTest.groupPort,
+                               isFileStorage(),
+                               isNetty(),
+                               false);
    }
-     
+
    /*
     * This is like testStopStartServers but we make sure we pause longer than discovery group timeout
     * before restarting (5 seconds)
@@ -76,7 +101,7 @@ public class SymmetricClusterWithDiscoveryTest extends SymmetricClusterTest
       setupCluster();
 
       startServers();
-      
+
       setupSessionFactory(0, isNetty());
       setupSessionFactory(1, isNetty());
       setupSessionFactory(2, isNetty());
@@ -160,7 +185,7 @@ public class SymmetricClusterWithDiscoveryTest extends SymmetricClusterTest
       waitForBindings(4, "queues.testaddress", 7, 7, true);
 
       waitForBindings(0, "queues.testaddress", 23, 23, false);
-      waitForBindings(1, "queues.testaddress", 23, 23, false); 
+      waitForBindings(1, "queues.testaddress", 23, 23, false);
       waitForBindings(2, "queues.testaddress", 23, 23, false);
       waitForBindings(3, "queues.testaddress", 22, 22, false);
       waitForBindings(4, "queues.testaddress", 21, 21, false);
@@ -188,16 +213,16 @@ public class SymmetricClusterWithDiscoveryTest extends SymmetricClusterTest
       removeConsumer(18);
       removeConsumer(21);
       removeConsumer(26);
-  
+
       closeSessionFactory(0);
       closeSessionFactory(3);
 
       stopServers(0, 3);
-      
+
       Thread.sleep(10000);
-      
+
       startServers(3, 0);
-      
+
       setupSessionFactory(0, isNetty());
       setupSessionFactory(3, isNetty());
 

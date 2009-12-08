@@ -19,6 +19,8 @@ import java.util.concurrent.TimeUnit;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
@@ -48,7 +50,7 @@ public class MessageGroupingTest extends UnitTestCase
 
    private ClientSession clientSession;
 
-   private SimpleString qName = new SimpleString("MessageGroupingTestQueue");
+   private final SimpleString qName = new SimpleString("MessageGroupingTestQueue");
 
    public void testBasicGroupingWithDirectDelivery() throws Exception
    {
@@ -59,22 +61,22 @@ public class MessageGroupingTest extends UnitTestCase
    {
       doTestBasicGrouping(false);
    }
-   
+
    public void testMultipleGroupingWithDirectDelivery() throws Exception
    {
       doTestMultipleGrouping(true);
    }
-   
+
    public void testMultipleGroupingWithoutDirectDelivery() throws Exception
    {
       doTestMultipleGrouping(false);
    }
-   
+
    public void testMultipleGroupingSingleConsumerWithDirectDelivery() throws Exception
    {
       doTestMultipleGroupingSingleConsumer(true);
    }
-   
+
    public void testMultipleGroupingSingleConsumerWithoutDirectDelivery() throws Exception
    {
       doTestMultipleGroupingSingleConsumer(false);
@@ -84,32 +86,32 @@ public class MessageGroupingTest extends UnitTestCase
    {
       doTestMultipleGroupingTXCommit(true);
    }
-   
+
    public void testMultipleGroupingTXCommitWithoutDirectDelivery() throws Exception
    {
       doTestMultipleGroupingTXCommit(false);
    }
-   
+
    public void testMultipleGroupingTXRollbackWithDirectDelivery() throws Exception
    {
       doTestMultipleGroupingTXRollback(true);
-   }  
+   }
 
    public void testMultipleGroupingTXRollbackWithoutDirectDelivery() throws Exception
    {
       doTestMultipleGroupingTXRollback(false);
-   }  
+   }
 
    public void testMultipleGroupingXACommitWithDirectDelivery() throws Exception
    {
       dotestMultipleGroupingXACommit(true);
    }
-   
+
    public void testMultipleGroupingXACommitWithoutDirectDelivery() throws Exception
    {
       dotestMultipleGroupingXACommit(false);
    }
-   
+
    public void testMultipleGroupingXARollbackWithDirectDelivery() throws Exception
    {
       doTestMultipleGroupingXARollback(true);
@@ -120,7 +122,7 @@ public class MessageGroupingTest extends UnitTestCase
       doTestMultipleGroupingXARollback(false);
    }
 
-   private void doTestBasicGrouping(boolean directDelivery) throws Exception
+   private void doTestBasicGrouping(final boolean directDelivery) throws Exception
    {
       ClientProducer clientProducer = clientSession.createProducer(qName);
       ClientConsumer consumer = clientSession.createConsumer(qName);
@@ -146,42 +148,9 @@ public class MessageGroupingTest extends UnitTestCase
       consumer.setMessageHandler(dummyMessageHandler);
       DummyMessageHandler dummyMessageHandler2 = new DummyMessageHandler(latch, true);
       consumer2.setMessageHandler(dummyMessageHandler2);
-      assertTrue(latch.await(10, TimeUnit.SECONDS));
-      assertEquals(100, dummyMessageHandler.list.size());
-      assertEquals(0, dummyMessageHandler2.list.size());
-      consumer.close();
-      consumer2.close();
-   }
-
-   private void doTestBasicGroupingUsingConnectionFactory(boolean directDelivery) throws Exception
-   {
-      ClientProducer clientProducer = clientSession.createProducer(qName);
-      ClientConsumer consumer = clientSession.createConsumer(qName);
-      ClientConsumer consumer2 = clientSession.createConsumer(qName);
-      if (directDelivery)
-      {
-         clientSession.start();
-      }
-      SimpleString groupId = new SimpleString("grp1");
-      int numMessages = 100;
-      for (int i = 0; i < numMessages; i++)
-      {
-         ClientMessage message = createTextMessage("m" + i, clientSession);
-         message.putStringProperty(MessageImpl.HDR_GROUP_ID, groupId);
-         clientProducer.send(message);
-      }
-      if (!directDelivery)
-      {
-         clientSession.start();
-      }
-      CountDownLatch latch = new CountDownLatch(numMessages);
-      DummyMessageHandler dummyMessageHandler = new DummyMessageHandler(latch, true);
-      consumer.setMessageHandler(dummyMessageHandler);
-      DummyMessageHandler dummyMessageHandler2 = new DummyMessageHandler(latch, true);
-      consumer2.setMessageHandler(dummyMessageHandler2);
-      assertTrue(latch.await(10, TimeUnit.SECONDS));
-      assertEquals(100, dummyMessageHandler.list.size());
-      assertEquals(0, dummyMessageHandler2.list.size());
+      Assert.assertTrue(latch.await(10, TimeUnit.SECONDS));
+      Assert.assertEquals(100, dummyMessageHandler.list.size());
+      Assert.assertEquals(0, dummyMessageHandler2.list.size());
       consumer.close();
       consumer2.close();
    }
@@ -212,41 +181,41 @@ public class MessageGroupingTest extends UnitTestCase
       for (int i = 0; i < numMessages / 2; i++)
       {
          ClientMessage cm = consumer.receive(500);
-         assertNotNull(cm);
-         assertEquals(cm.getBodyBuffer().readString(), "m" + i);
+         Assert.assertNotNull(cm);
+         Assert.assertEquals(cm.getBodyBuffer().readString(), "m" + i);
          i++;
          cm = consumer2.receive(500);
-         assertNotNull(cm);
-         assertEquals(cm.getBodyBuffer().readString(), "m" + i);
+         Assert.assertNotNull(cm);
+         Assert.assertEquals(cm.getBodyBuffer().readString(), "m" + i);
       }
-      
-      log.info("closing consumers");
-      
+
+      MessageGroupingTest.log.info("closing consumers");
+
       consumer2.close();
-      
-      log.info("closed consumer 2");
-      
+
+      MessageGroupingTest.log.info("closed consumer 2");
+
       consumer.close();
-      
-      log.info("closed consuemrs");
+
+      MessageGroupingTest.log.info("closed consuemrs");
       // check that within their groups the messages are still in the correct order
       consumer = clientSession.createConsumer(qName);
       for (int i = 0; i < numMessages; i += 2)
       {
          ClientMessage cm = consumer.receive(500);
-         assertNotNull(cm);
-         assertEquals(cm.getBodyBuffer().readString(), "m" + i);
+         Assert.assertNotNull(cm);
+         Assert.assertEquals(cm.getBodyBuffer().readString(), "m" + i);
       }
       for (int i = 1; i < numMessages; i += 2)
       {
          ClientMessage cm = consumer.receive(500);
-         assertNotNull(cm);
-         assertEquals(cm.getBodyBuffer().readString(), "m" + i);
+         Assert.assertNotNull(cm);
+         Assert.assertEquals(cm.getBodyBuffer().readString(), "m" + i);
       }
       consumer.close();
    }
 
-   private void doTestMultipleGroupingSingleConsumer(boolean directDelivery) throws Exception
+   private void doTestMultipleGroupingSingleConsumer(final boolean directDelivery) throws Exception
    {
       ClientProducer clientProducer = clientSession.createProducer(qName);
       ClientConsumer consumer = clientSession.createConsumer(qName);
@@ -277,20 +246,20 @@ public class MessageGroupingTest extends UnitTestCase
       CountDownLatch latch = new CountDownLatch(numMessages);
       DummyMessageHandler dummyMessageHandler = new DummyMessageHandler(latch, true);
       consumer.setMessageHandler(dummyMessageHandler);
-      assertTrue(latch.await(10, TimeUnit.SECONDS));
-      assertEquals(dummyMessageHandler.list.size(), 100);
+      Assert.assertTrue(latch.await(10, TimeUnit.SECONDS));
+      Assert.assertEquals(dummyMessageHandler.list.size(), 100);
       int i = 0;
       for (ClientMessage message : dummyMessageHandler.list)
       {
-         assertEquals(message.getBodyBuffer().readString(), "m" + i);
+         Assert.assertEquals(message.getBodyBuffer().readString(), "m" + i);
          i += 1;
       }
       consumer.close();
    }
 
-   private void doTestMultipleGroupingTXCommit(boolean directDelivery) throws Exception
+   private void doTestMultipleGroupingTXCommit(final boolean directDelivery) throws Exception
    {
-      ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(INVM_CONNECTOR_FACTORY));
+      ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
       ClientSession clientSession = sessionFactory.createSession(false, false, false);
       ClientProducer clientProducer = this.clientSession.createProducer(qName);
       if (directDelivery)
@@ -325,32 +294,32 @@ public class MessageGroupingTest extends UnitTestCase
       consumer.setMessageHandler(dummyMessageHandler);
       DummyMessageHandler dummyMessageHandler2 = new DummyMessageHandler(latch, true);
       consumer2.setMessageHandler(dummyMessageHandler2);
-      assertTrue(latch.await(10, TimeUnit.SECONDS));
+      Assert.assertTrue(latch.await(10, TimeUnit.SECONDS));
       clientSession.commit();
-      assertEquals(dummyMessageHandler.list.size(), 50);
+      Assert.assertEquals(dummyMessageHandler.list.size(), 50);
       int i = 0;
       for (ClientMessage message : dummyMessageHandler.list)
       {
-         assertEquals(message.getBodyBuffer().readString(), "m" + i);
+         Assert.assertEquals(message.getBodyBuffer().readString(), "m" + i);
          i += 2;
       }
-      assertEquals(dummyMessageHandler2.list.size(), 50);
+      Assert.assertEquals(dummyMessageHandler2.list.size(), 50);
       i = 1;
       for (ClientMessage message : dummyMessageHandler2.list)
       {
-         assertEquals(message.getBodyBuffer().readString(), "m" + i);
+         Assert.assertEquals(message.getBodyBuffer().readString(), "m" + i);
          i += 2;
       }
       consumer.close();
       consumer2.close();
       consumer = this.clientSession.createConsumer(qName);
-      assertNull(consumer.receiveImmediate());
+      Assert.assertNull(consumer.receiveImmediate());
       clientSession.close();
    }
 
-   private void doTestMultipleGroupingTXRollback(boolean directDelivery) throws Exception
+   private void doTestMultipleGroupingTXRollback(final boolean directDelivery) throws Exception
    {
-      ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(INVM_CONNECTOR_FACTORY));
+      ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
       sessionFactory.setBlockOnAcknowledge(true);
       ClientSession clientSession = sessionFactory.createSession(false, false, false);
       ClientProducer clientProducer = this.clientSession.createProducer(qName);
@@ -385,48 +354,48 @@ public class MessageGroupingTest extends UnitTestCase
       consumer.setMessageHandler(dummyMessageHandler);
       DummyMessageHandler dummyMessageHandler2 = new DummyMessageHandler(latch, true);
       consumer2.setMessageHandler(dummyMessageHandler2);
-      assertTrue(latch.await(10, TimeUnit.SECONDS));
-      assertEquals(dummyMessageHandler.list.size(), 50);
+      Assert.assertTrue(latch.await(10, TimeUnit.SECONDS));
+      Assert.assertEquals(dummyMessageHandler.list.size(), 50);
       int i = 0;
       for (ClientMessage message : dummyMessageHandler.list)
       {
-         assertEquals(message.getBodyBuffer().readString(), "m" + i);
+         Assert.assertEquals(message.getBodyBuffer().readString(), "m" + i);
          i += 2;
       }
-      assertEquals(dummyMessageHandler2.list.size(), 50);
+      Assert.assertEquals(dummyMessageHandler2.list.size(), 50);
       i = 1;
       for (ClientMessage message : dummyMessageHandler2.list)
       {
-         assertEquals(message.getBodyBuffer().readString(), "m" + i);
+         Assert.assertEquals(message.getBodyBuffer().readString(), "m" + i);
          i += 2;
       }
       latch = new CountDownLatch(numMessages);
       dummyMessageHandler.reset(latch);
       dummyMessageHandler2.reset(latch);
       clientSession.rollback();
-      assertTrue(latch.await(10, TimeUnit.SECONDS));
-      assertEquals(dummyMessageHandler.list.size(), 50);
+      Assert.assertTrue(latch.await(10, TimeUnit.SECONDS));
+      Assert.assertEquals(dummyMessageHandler.list.size(), 50);
       i = 0;
       for (ClientMessage message : dummyMessageHandler.list)
       {
-         assertEquals(message.getBodyBuffer().readString(), "m" + i);
+         Assert.assertEquals(message.getBodyBuffer().readString(), "m" + i);
          i += 2;
       }
-      assertEquals(dummyMessageHandler2.list.size(), 50);
+      Assert.assertEquals(dummyMessageHandler2.list.size(), 50);
       i = 1;
       for (ClientMessage message : dummyMessageHandler2.list)
       {
-         assertEquals(message.getBodyBuffer().readString(), "m" + i);
+         Assert.assertEquals(message.getBodyBuffer().readString(), "m" + i);
          i += 2;
       }
       consumer = this.clientSession.createConsumer(qName);
-      assertNull(consumer.receiveImmediate());
+      Assert.assertNull(consumer.receiveImmediate());
       clientSession.close();
    }
 
-   private void dotestMultipleGroupingXACommit(boolean directDelivery) throws Exception
+   private void dotestMultipleGroupingXACommit(final boolean directDelivery) throws Exception
    {
-      ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(INVM_CONNECTOR_FACTORY));
+      ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
       ClientSession clientSession = sessionFactory.createSession(true, false, false);
       ClientProducer clientProducer = this.clientSession.createProducer(qName);
       ClientConsumer consumer = clientSession.createConsumer(qName);
@@ -463,34 +432,34 @@ public class MessageGroupingTest extends UnitTestCase
       consumer.setMessageHandler(dummyMessageHandler);
       DummyMessageHandler dummyMessageHandler2 = new DummyMessageHandler(latch, true);
       consumer2.setMessageHandler(dummyMessageHandler2);
-      assertTrue(latch.await(10, TimeUnit.SECONDS));
+      Assert.assertTrue(latch.await(10, TimeUnit.SECONDS));
       clientSession.end(xid, XAResource.TMSUCCESS);
       clientSession.prepare(xid);
       clientSession.commit(xid, false);
-      assertEquals(dummyMessageHandler.list.size(), 50);
+      Assert.assertEquals(dummyMessageHandler.list.size(), 50);
       int i = 0;
       for (ClientMessage message : dummyMessageHandler.list)
       {
-         assertEquals(message.getBodyBuffer().readString(), "m" + i);
+         Assert.assertEquals(message.getBodyBuffer().readString(), "m" + i);
          i += 2;
       }
-      assertEquals(dummyMessageHandler2.list.size(), 50);
+      Assert.assertEquals(dummyMessageHandler2.list.size(), 50);
       i = 1;
       for (ClientMessage message : dummyMessageHandler2.list)
       {
-         assertEquals(message.getBodyBuffer().readString(), "m" + i);
+         Assert.assertEquals(message.getBodyBuffer().readString(), "m" + i);
          i += 2;
       }
       consumer.close();
       consumer2.close();
       consumer = this.clientSession.createConsumer(qName);
-      assertNull(consumer.receiveImmediate());
+      Assert.assertNull(consumer.receiveImmediate());
       clientSession.close();
    }
 
-   private void doTestMultipleGroupingXARollback(boolean directDelivery) throws Exception
+   private void doTestMultipleGroupingXARollback(final boolean directDelivery) throws Exception
    {
-      ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(INVM_CONNECTOR_FACTORY));
+      ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
       sessionFactory.setBlockOnAcknowledge(true);
       ClientSession clientSession = sessionFactory.createSession(true, false, false);
       ClientProducer clientProducer = this.clientSession.createProducer(qName);
@@ -528,20 +497,20 @@ public class MessageGroupingTest extends UnitTestCase
       consumer.setMessageHandler(dummyMessageHandler);
       DummyMessageHandler dummyMessageHandler2 = new DummyMessageHandler(latch, true);
       consumer2.setMessageHandler(dummyMessageHandler2);
-      assertTrue(latch.await(10, TimeUnit.SECONDS));
+      Assert.assertTrue(latch.await(10, TimeUnit.SECONDS));
       clientSession.end(xid, XAResource.TMSUCCESS);
-      assertEquals(dummyMessageHandler.list.size(), 50);
+      Assert.assertEquals(dummyMessageHandler.list.size(), 50);
       int i = 0;
       for (ClientMessage message : dummyMessageHandler.list)
       {
-         assertEquals(message.getBodyBuffer().readString(), "m" + i);
+         Assert.assertEquals(message.getBodyBuffer().readString(), "m" + i);
          i += 2;
       }
-      assertEquals(dummyMessageHandler2.list.size(), 50);
+      Assert.assertEquals(dummyMessageHandler2.list.size(), 50);
       i = 1;
       for (ClientMessage message : dummyMessageHandler2.list)
       {
-         assertEquals(message.getBodyBuffer().readString(), "m" + i);
+         Assert.assertEquals(message.getBodyBuffer().readString(), "m" + i);
          i += 2;
       }
       latch = new CountDownLatch(numMessages);
@@ -549,30 +518,30 @@ public class MessageGroupingTest extends UnitTestCase
       dummyMessageHandler2.reset(latch);
       clientSession.rollback(xid);
       clientSession.start(xid, XAResource.TMNOFLAGS);
-      assertTrue(latch.await(10, TimeUnit.SECONDS));
+      Assert.assertTrue(latch.await(10, TimeUnit.SECONDS));
       clientSession.end(xid, XAResource.TMSUCCESS);
       clientSession.prepare(xid);
       clientSession.commit(xid, false);
-      assertEquals(dummyMessageHandler.list.size(), 50);
+      Assert.assertEquals(dummyMessageHandler.list.size(), 50);
       i = 0;
       for (ClientMessage message : dummyMessageHandler.list)
       {
-         assertEquals(message.getBodyBuffer().readString(), "m" + i);
+         Assert.assertEquals(message.getBodyBuffer().readString(), "m" + i);
          i += 2;
       }
-      assertEquals(dummyMessageHandler2.list.size(), 50);
+      Assert.assertEquals(dummyMessageHandler2.list.size(), 50);
       i = 1;
       for (ClientMessage message : dummyMessageHandler2.list)
       {
-         assertEquals(message.getBodyBuffer().readString(), "m" + i);
+         Assert.assertEquals(message.getBodyBuffer().readString(), "m" + i);
          i += 2;
       }
       consumer = this.clientSession.createConsumer(qName);
-      assertNull(consumer.receiveImmediate());
+      Assert.assertNull(consumer.receiveImmediate());
       clientSession.close();
    }
-   
-   private void doTestMultipleGrouping(boolean directDelivery) throws Exception
+
+   private void doTestMultipleGrouping(final boolean directDelivery) throws Exception
    {
       ClientProducer clientProducer = clientSession.createProducer(qName);
       ClientConsumer consumer = clientSession.createConsumer(qName);
@@ -606,25 +575,26 @@ public class MessageGroupingTest extends UnitTestCase
       consumer.setMessageHandler(dummyMessageHandler);
       DummyMessageHandler dummyMessageHandler2 = new DummyMessageHandler(latch, true);
       consumer2.setMessageHandler(dummyMessageHandler2);
-      assertTrue(latch.await(10, TimeUnit.SECONDS));
-      assertEquals(50, dummyMessageHandler.list.size());
+      Assert.assertTrue(latch.await(10, TimeUnit.SECONDS));
+      Assert.assertEquals(50, dummyMessageHandler.list.size());
       int i = 0;
       for (ClientMessage message : dummyMessageHandler.list)
       {
-         assertEquals(message.getBodyBuffer().readString(), "m" + i);
+         Assert.assertEquals(message.getBodyBuffer().readString(), "m" + i);
          i += 2;
       }
-      assertEquals(50, dummyMessageHandler2.list.size());
+      Assert.assertEquals(50, dummyMessageHandler2.list.size());
       i = 1;
       for (ClientMessage message : dummyMessageHandler2.list)
       {
-         assertEquals(message.getBodyBuffer().readString(), "m" + i);
+         Assert.assertEquals(message.getBodyBuffer().readString(), "m" + i);
          i += 2;
       }
       consumer.close();
       consumer2.close();
    }
 
+   @Override
    protected void tearDown() throws Exception
    {
       if (clientSession != null)
@@ -655,20 +625,21 @@ public class MessageGroupingTest extends UnitTestCase
       super.tearDown();
    }
 
+   @Override
    protected void setUp() throws Exception
    {
       super.setUp();
 
       ConfigurationImpl configuration = new ConfigurationImpl();
       configuration.setSecurityEnabled(false);
-      TransportConfiguration transportConfig = new TransportConfiguration(INVM_ACCEPTOR_FACTORY);
+      TransportConfiguration transportConfig = new TransportConfiguration(UnitTestCase.INVM_ACCEPTOR_FACTORY);
       configuration.getAcceptorConfigurations().add(transportConfig);
       server = HornetQ.newHornetQServer(configuration, false);
       // start the server
       server.start();
 
       // then we create a client as normal
-      ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(INVM_CONNECTOR_FACTORY));
+      ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
       clientSession = sessionFactory.createSession(false, true, true);
       clientSession.createQueue(qName, qName, null, false);
    }
@@ -681,13 +652,13 @@ public class MessageGroupingTest extends UnitTestCase
 
       private final boolean acknowledge;
 
-      public DummyMessageHandler(CountDownLatch latch, boolean acknowledge)
+      public DummyMessageHandler(final CountDownLatch latch, final boolean acknowledge)
       {
          this.latch = latch;
          this.acknowledge = acknowledge;
       }
 
-      public void onMessage(ClientMessage message)
+      public void onMessage(final ClientMessage message)
       {
          list.add(message);
          if (acknowledge)
@@ -704,7 +675,7 @@ public class MessageGroupingTest extends UnitTestCase
          latch.countDown();
       }
 
-      public void reset(CountDownLatch latch)
+      public void reset(final CountDownLatch latch)
       {
          list.clear();
          this.latch = latch;

@@ -38,10 +38,10 @@ public class InVMNameParser implements NameParser, Serializable
 
    static
    {
-      syntax = new Properties();
-      syntax.put("jndi.syntax.direction", "left_to_right");
-      syntax.put("jndi.syntax.ignorecase", "false");
-      syntax.put("jndi.syntax.separator", "/");
+      InVMNameParser.syntax = new Properties();
+      InVMNameParser.syntax.put("jndi.syntax.direction", "left_to_right");
+      InVMNameParser.syntax.put("jndi.syntax.ignorecase", "false");
+      InVMNameParser.syntax.put("jndi.syntax.separator", "/");
    }
 
    // Attributes ----------------------------------------------------
@@ -52,14 +52,13 @@ public class InVMNameParser implements NameParser, Serializable
 
    public static Properties getSyntax()
    {
-      return syntax;
+      return InVMNameParser.syntax;
    }
 
-   public Name parse(String name) throws NamingException
+   public Name parse(final String name) throws NamingException
    {
-      return new CompoundName(name, syntax);
+      return new CompoundName(name, InVMNameParser.syntax);
    }
-
 
    // Package protected ---------------------------------------------
 

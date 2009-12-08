@@ -20,7 +20,6 @@ import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQ;
 
-
 /**
  * 
  * A MultiThreadRandomReattachTest
@@ -32,14 +31,14 @@ import org.hornetq.core.server.HornetQ;
 public class MultiThreadRandomReattachTest extends MultiThreadRandomReattachTestBase
 {
    private static final Logger log = Logger.getLogger(MultiThreadRandomReattachTest.class);
-   
+
    @Override
    protected void start() throws Exception
-   {      
+   {
       Configuration liveConf = new ConfigurationImpl();
       liveConf.setSecurityEnabled(false);
       liveConf.getAcceptorConfigurations()
-              .add(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory"));      
+              .add(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory"));
       liveServer = HornetQ.newHornetQServer(liveConf, false);
       liveServer.start();
    }
@@ -50,7 +49,7 @@ public class MultiThreadRandomReattachTest extends MultiThreadRandomReattachTest
    @Override
    protected void setBody(final ClientMessage message) throws Exception
    {
-      //Give each msg a body
+      // Give each msg a body
       message.getBodyBuffer().writeBytes(new byte[250]);
    }
 

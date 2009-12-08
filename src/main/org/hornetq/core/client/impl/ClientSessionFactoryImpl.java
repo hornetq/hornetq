@@ -115,7 +115,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
    public static final int DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE = 5;
 
    public static final boolean DEFAULT_CACHE_LARGE_MESSAGE_CLIENT = false;
-   
+
    public static final int DEFAULT_INITIAL_MESSAGE_PACKET_SIZE = 1500;
 
    // Attributes
@@ -139,7 +139,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
 
    // Settable attributes:
 
-   private boolean cacheLargeMessagesClient = DEFAULT_CACHE_LARGE_MESSAGE_CLIENT;
+   private boolean cacheLargeMessagesClient = ClientSessionFactoryImpl.DEFAULT_CACHE_LARGE_MESSAGE_CLIENT;
 
    private List<Pair<TransportConfiguration, TransportConfiguration>> staticConnectors;
 
@@ -196,7 +196,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
    private long maxRetryInterval;
 
    private int reconnectAttempts;
-      
+
    private int initialMessagePacketSize;
 
    private volatile boolean closed;
@@ -213,35 +213,36 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
 
    private static synchronized ExecutorService getGlobalThreadPool()
    {
-      if (globalThreadPool == null)
+      if (ClientSessionFactoryImpl.globalThreadPool == null)
       {
          ThreadFactory factory = new HornetQThreadFactory("HornetQ-client-global-threads", true);
 
-         globalThreadPool = Executors.newCachedThreadPool(factory);
+         ClientSessionFactoryImpl.globalThreadPool = Executors.newCachedThreadPool(factory);
       }
 
-      return globalThreadPool;
+      return ClientSessionFactoryImpl.globalThreadPool;
    }
 
    private static synchronized ScheduledExecutorService getGlobalScheduledThreadPool()
    {
-      if (globalScheduledThreadPool == null)
+      if (ClientSessionFactoryImpl.globalScheduledThreadPool == null)
       {
          ThreadFactory factory = new HornetQThreadFactory("HornetQ-client-global-scheduled-threads", true);
 
-         globalScheduledThreadPool = Executors.newScheduledThreadPool(DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE, factory);
+         ClientSessionFactoryImpl.globalScheduledThreadPool = Executors.newScheduledThreadPool(ClientSessionFactoryImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE,
+                                                                                               factory);
       }
 
-      return globalScheduledThreadPool;
+      return ClientSessionFactoryImpl.globalScheduledThreadPool;
    }
 
    private void setThreadPools()
    {
       if (useGlobalPools)
       {
-         threadPool = getGlobalThreadPool();
+         threadPool = ClientSessionFactoryImpl.getGlobalThreadPool();
 
-         scheduledThreadPool = getGlobalScheduledThreadPool();
+         scheduledThreadPool = ClientSessionFactoryImpl.getGlobalScheduledThreadPool();
       }
       else
       {
@@ -267,7 +268,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
    private synchronized void initialise() throws Exception
    {
       if (!readOnly)
-      {                 
+      {
          setThreadPools();
 
          instantiateLoadBalancingPolicy();
@@ -327,11 +328,11 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
    public ClientSessionFactoryImpl(final ClientSessionFactory other)
    {
       discoveryAddress = other.getDiscoveryAddress();
-      
+
       discoveryPort = other.getDiscoveryPort();
-      
+
       staticConnectors = other.getStaticConnectors();
-      
+
       discoveryRefreshTimeout = other.getDiscoveryRefreshTimeout();
 
       clientFailureCheckPeriod = other.getClientFailureCheckPeriod();
@@ -347,7 +348,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       consumerMaxRate = other.getConsumerMaxRate();
 
       confirmationWindowSize = other.getConfirmationWindowSize();
-      
+
       producerWindowSize = other.getProducerWindowSize();
 
       producerMaxRate = other.getProducerMaxRate();
@@ -383,71 +384,71 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       reconnectAttempts = other.getReconnectAttempts();
 
       failoverOnServerShutdown = other.isFailoverOnServerShutdown();
-      
+
       cacheLargeMessagesClient = other.isCacheLargeMessagesClient();
-      
+
       initialMessagePacketSize = other.getInitialMessagePacketSize();
 
       groupID = other.getGroupID();
    }
-   
+
    public ClientSessionFactoryImpl()
    {
-      discoveryRefreshTimeout = DEFAULT_DISCOVERY_REFRESH_TIMEOUT;
+      discoveryRefreshTimeout = ClientSessionFactoryImpl.DEFAULT_DISCOVERY_REFRESH_TIMEOUT;
 
-      clientFailureCheckPeriod = DEFAULT_CLIENT_FAILURE_CHECK_PERIOD;
+      clientFailureCheckPeriod = ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD;
 
-      connectionTTL = DEFAULT_CONNECTION_TTL;
+      connectionTTL = ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL;
 
-      callTimeout = DEFAULT_CALL_TIMEOUT;
+      callTimeout = ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT;
 
-      minLargeMessageSize = DEFAULT_MIN_LARGE_MESSAGE_SIZE;
+      minLargeMessageSize = ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE;
 
-      consumerWindowSize = DEFAULT_CONSUMER_WINDOW_SIZE;
+      consumerWindowSize = ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE;
 
-      consumerMaxRate = DEFAULT_CONSUMER_MAX_RATE;
+      consumerMaxRate = ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE;
 
-      confirmationWindowSize = DEFAULT_CONFIRMATION_WINDOW_SIZE;
+      confirmationWindowSize = ClientSessionFactoryImpl.DEFAULT_CONFIRMATION_WINDOW_SIZE;
 
-      producerWindowSize = DEFAULT_PRODUCER_WINDOW_SIZE;
+      producerWindowSize = ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE;
 
-      producerMaxRate = DEFAULT_PRODUCER_MAX_RATE;
+      producerMaxRate = ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE;
 
-      blockOnAcknowledge = DEFAULT_BLOCK_ON_ACKNOWLEDGE;
+      blockOnAcknowledge = ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE;
 
-      blockOnPersistentSend = DEFAULT_BLOCK_ON_PERSISTENT_SEND;
+      blockOnPersistentSend = ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND;
 
-      blockOnNonPersistentSend = DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND;
+      blockOnNonPersistentSend = ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND;
 
-      autoGroup = DEFAULT_AUTO_GROUP;
+      autoGroup = ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP;
 
-      preAcknowledge = DEFAULT_PRE_ACKNOWLEDGE;
+      preAcknowledge = ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE;
 
-      ackBatchSize = DEFAULT_ACK_BATCH_SIZE;
+      ackBatchSize = ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE;
 
-      connectionLoadBalancingPolicyClassName = DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME;
+      connectionLoadBalancingPolicyClassName = ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME;
 
-      discoveryInitialWaitTimeout = DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT;
+      discoveryInitialWaitTimeout = ClientSessionFactoryImpl.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT;
 
-      useGlobalPools = DEFAULT_USE_GLOBAL_POOLS;
+      useGlobalPools = ClientSessionFactoryImpl.DEFAULT_USE_GLOBAL_POOLS;
 
-      scheduledThreadPoolMaxSize = DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE;
+      scheduledThreadPoolMaxSize = ClientSessionFactoryImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE;
 
-      threadPoolMaxSize = DEFAULT_THREAD_POOL_MAX_SIZE;
+      threadPoolMaxSize = ClientSessionFactoryImpl.DEFAULT_THREAD_POOL_MAX_SIZE;
 
-      retryInterval = DEFAULT_RETRY_INTERVAL;
+      retryInterval = ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL;
 
-      retryIntervalMultiplier = DEFAULT_RETRY_INTERVAL_MULTIPLIER;
+      retryIntervalMultiplier = ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER;
 
-      maxRetryInterval = DEFAULT_MAX_RETRY_INTERVAL;
+      maxRetryInterval = ClientSessionFactoryImpl.DEFAULT_MAX_RETRY_INTERVAL;
 
-      reconnectAttempts = DEFAULT_RECONNECT_ATTEMPTS;
+      reconnectAttempts = ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS;
 
-      failoverOnServerShutdown = DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN;
-      
-      cacheLargeMessagesClient = DEFAULT_CACHE_LARGE_MESSAGE_CLIENT;
-      
-      initialMessagePacketSize = DEFAULT_INITIAL_MESSAGE_PACKET_SIZE;
+      failoverOnServerShutdown = ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN;
+
+      cacheLargeMessagesClient = ClientSessionFactoryImpl.DEFAULT_CACHE_LARGE_MESSAGE_CLIENT;
+
+      initialMessagePacketSize = ClientSessionFactoryImpl.DEFAULT_INITIAL_MESSAGE_PACKET_SIZE;
    }
 
    public ClientSessionFactoryImpl(final String discoveryAddress, final int discoveryPort)
@@ -489,9 +490,9 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       return cacheLargeMessagesClient;
    }
 
-   public synchronized void setCacheLargeMessagesClient(boolean cached)
+   public synchronized void setCacheLargeMessagesClient(final boolean cached)
    {
-      this.cacheLargeMessagesClient = cached;
+      cacheLargeMessagesClient = cached;
    }
 
    public synchronized List<Pair<TransportConfiguration, TransportConfiguration>> getStaticConnectors()
@@ -499,7 +500,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       return staticConnectors;
    }
 
-   public synchronized void setStaticConnectors(List<Pair<TransportConfiguration, TransportConfiguration>> staticConnectors)
+   public synchronized void setStaticConnectors(final List<Pair<TransportConfiguration, TransportConfiguration>> staticConnectors)
    {
       checkWrite();
 
@@ -511,7 +512,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       return clientFailureCheckPeriod;
    }
 
-   public synchronized void setClientFailureCheckPeriod(long clientFailureCheckPeriod)
+   public synchronized void setClientFailureCheckPeriod(final long clientFailureCheckPeriod)
    {
       checkWrite();
       this.clientFailureCheckPeriod = clientFailureCheckPeriod;
@@ -522,7 +523,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       return connectionTTL;
    }
 
-   public synchronized void setConnectionTTL(long connectionTTL)
+   public synchronized void setConnectionTTL(final long connectionTTL)
    {
       checkWrite();
       this.connectionTTL = connectionTTL;
@@ -533,7 +534,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       return callTimeout;
    }
 
-   public synchronized void setCallTimeout(long callTimeout)
+   public synchronized void setCallTimeout(final long callTimeout)
    {
       checkWrite();
       this.callTimeout = callTimeout;
@@ -544,7 +545,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       return minLargeMessageSize;
    }
 
-   public synchronized void setMinLargeMessageSize(int minLargeMessageSize)
+   public synchronized void setMinLargeMessageSize(final int minLargeMessageSize)
    {
       checkWrite();
       this.minLargeMessageSize = minLargeMessageSize;
@@ -555,7 +556,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       return consumerWindowSize;
    }
 
-   public synchronized void setConsumerWindowSize(int consumerWindowSize)
+   public synchronized void setConsumerWindowSize(final int consumerWindowSize)
    {
       checkWrite();
       this.consumerWindowSize = consumerWindowSize;
@@ -566,7 +567,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       return consumerMaxRate;
    }
 
-   public synchronized void setConsumerMaxRate(int consumerMaxRate)
+   public synchronized void setConsumerMaxRate(final int consumerMaxRate)
    {
       checkWrite();
       this.consumerMaxRate = consumerMaxRate;
@@ -577,7 +578,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       return confirmationWindowSize;
    }
 
-   public synchronized void setConfirmationWindowSize(int confirmationWindowSize)
+   public synchronized void setConfirmationWindowSize(final int confirmationWindowSize)
    {
       checkWrite();
       this.confirmationWindowSize = confirmationWindowSize;
@@ -599,7 +600,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       return producerMaxRate;
    }
 
-   public synchronized void setProducerMaxRate(int producerMaxRate)
+   public synchronized void setProducerMaxRate(final int producerMaxRate)
    {
       checkWrite();
       this.producerMaxRate = producerMaxRate;
@@ -610,7 +611,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       return blockOnAcknowledge;
    }
 
-   public synchronized void setBlockOnAcknowledge(boolean blockOnAcknowledge)
+   public synchronized void setBlockOnAcknowledge(final boolean blockOnAcknowledge)
    {
       checkWrite();
       this.blockOnAcknowledge = blockOnAcknowledge;
@@ -621,7 +622,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       return blockOnPersistentSend;
    }
 
-   public synchronized void setBlockOnPersistentSend(boolean blockOnPersistentSend)
+   public synchronized void setBlockOnPersistentSend(final boolean blockOnPersistentSend)
    {
       checkWrite();
       this.blockOnPersistentSend = blockOnPersistentSend;
@@ -632,7 +633,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       return blockOnNonPersistentSend;
    }
 
-   public synchronized void setBlockOnNonPersistentSend(boolean blockOnNonPersistentSend)
+   public synchronized void setBlockOnNonPersistentSend(final boolean blockOnNonPersistentSend)
    {
       checkWrite();
       this.blockOnNonPersistentSend = blockOnNonPersistentSend;
@@ -643,7 +644,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       return autoGroup;
    }
 
-   public synchronized void setAutoGroup(boolean autoGroup)
+   public synchronized void setAutoGroup(final boolean autoGroup)
    {
       checkWrite();
       this.autoGroup = autoGroup;
@@ -654,7 +655,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       return preAcknowledge;
    }
 
-   public synchronized void setPreAcknowledge(boolean preAcknowledge)
+   public synchronized void setPreAcknowledge(final boolean preAcknowledge)
    {
       checkWrite();
       this.preAcknowledge = preAcknowledge;
@@ -665,7 +666,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       return ackBatchSize;
    }
 
-   public synchronized void setAckBatchSize(int ackBatchSize)
+   public synchronized void setAckBatchSize(final int ackBatchSize)
    {
       checkWrite();
       this.ackBatchSize = ackBatchSize;
@@ -676,10 +677,10 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       return discoveryInitialWaitTimeout;
    }
 
-   public synchronized void setDiscoveryInitialWaitTimeout(long initialWaitTimeout)
+   public synchronized void setDiscoveryInitialWaitTimeout(final long initialWaitTimeout)
    {
       checkWrite();
-      this.discoveryInitialWaitTimeout = initialWaitTimeout;
+      discoveryInitialWaitTimeout = initialWaitTimeout;
    }
 
    public synchronized boolean isUseGlobalPools()
@@ -687,7 +688,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       return useGlobalPools;
    }
 
-   public synchronized void setUseGlobalPools(boolean useGlobalPools)
+   public synchronized void setUseGlobalPools(final boolean useGlobalPools)
    {
       checkWrite();
       this.useGlobalPools = useGlobalPools;
@@ -698,7 +699,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       return scheduledThreadPoolMaxSize;
    }
 
-   public synchronized void setScheduledThreadPoolMaxSize(int scheduledThreadPoolMaxSize)
+   public synchronized void setScheduledThreadPoolMaxSize(final int scheduledThreadPoolMaxSize)
    {
       checkWrite();
       this.scheduledThreadPoolMaxSize = scheduledThreadPoolMaxSize;
@@ -709,7 +710,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       return threadPoolMaxSize;
    }
 
-   public synchronized void setThreadPoolMaxSize(int threadPoolMaxSize)
+   public synchronized void setThreadPoolMaxSize(final int threadPoolMaxSize)
    {
       checkWrite();
       this.threadPoolMaxSize = threadPoolMaxSize;
@@ -720,7 +721,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       return retryInterval;
    }
 
-   public synchronized void setRetryInterval(long retryInterval)
+   public synchronized void setRetryInterval(final long retryInterval)
    {
       checkWrite();
       this.retryInterval = retryInterval;
@@ -731,10 +732,10 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       return maxRetryInterval;
    }
 
-   public synchronized void setMaxRetryInterval(long retryInterval)
+   public synchronized void setMaxRetryInterval(final long retryInterval)
    {
       checkWrite();
-      this.maxRetryInterval = retryInterval;
+      maxRetryInterval = retryInterval;
    }
 
    public synchronized double getRetryIntervalMultiplier()
@@ -742,7 +743,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       return retryIntervalMultiplier;
    }
 
-   public synchronized void setRetryIntervalMultiplier(double retryIntervalMultiplier)
+   public synchronized void setRetryIntervalMultiplier(final double retryIntervalMultiplier)
    {
       checkWrite();
       this.retryIntervalMultiplier = retryIntervalMultiplier;
@@ -753,7 +754,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       return reconnectAttempts;
    }
 
-   public synchronized void setReconnectAttempts(int reconnectAttempts)
+   public synchronized void setReconnectAttempts(final int reconnectAttempts)
    {
       checkWrite();
       this.reconnectAttempts = reconnectAttempts;
@@ -764,7 +765,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       return failoverOnServerShutdown;
    }
 
-   public synchronized void setFailoverOnServerShutdown(boolean failoverOnServerShutdown)
+   public synchronized void setFailoverOnServerShutdown(final boolean failoverOnServerShutdown)
    {
       checkWrite();
       this.failoverOnServerShutdown = failoverOnServerShutdown;
@@ -775,10 +776,10 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       return connectionLoadBalancingPolicyClassName;
    }
 
-   public synchronized void setConnectionLoadBalancingPolicyClassName(String loadBalancingPolicyClassName)
+   public synchronized void setConnectionLoadBalancingPolicyClassName(final String loadBalancingPolicyClassName)
    {
       checkWrite();
-      this.connectionLoadBalancingPolicyClassName = loadBalancingPolicyClassName;
+      connectionLoadBalancingPolicyClassName = loadBalancingPolicyClassName;
    }
 
    public synchronized String getDiscoveryAddress()
@@ -786,7 +787,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       return discoveryAddress;
    }
 
-   public synchronized void setDiscoveryAddress(String discoveryAddress)
+   public synchronized void setDiscoveryAddress(final String discoveryAddress)
    {
       checkWrite();
       this.discoveryAddress = discoveryAddress;
@@ -797,7 +798,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       return discoveryPort;
    }
 
-   public synchronized void setDiscoveryPort(int discoveryPort)
+   public synchronized void setDiscoveryPort(final int discoveryPort)
    {
       checkWrite();
       this.discoveryPort = discoveryPort;
@@ -818,21 +819,21 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       return interceptors.remove(interceptor);
    }
 
-   public synchronized void setDiscoveryRefreshTimeout(long discoveryRefreshTimeout)
+   public synchronized void setDiscoveryRefreshTimeout(final long discoveryRefreshTimeout)
    {
       checkWrite();
       this.discoveryRefreshTimeout = discoveryRefreshTimeout;
    }
-   
+
    public synchronized int getInitialMessagePacketSize()
    {
       return initialMessagePacketSize;
    }
-   
+
    public synchronized void setInitialMessagePacketSize(final int size)
    {
       checkWrite();
-      this.initialMessagePacketSize = size;
+      initialMessagePacketSize = size;
    }
 
    public ClientSession createSession(final String username,
@@ -852,40 +853,36 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
                                    ackBatchSize);
    }
 
-   public ClientSession createSession(boolean autoCommitSends, boolean autoCommitAcks, int ackBatchSize) throws HornetQException
+   public ClientSession createSession(final boolean autoCommitSends,
+                                      final boolean autoCommitAcks,
+                                      final int ackBatchSize) throws HornetQException
    {
       return createSessionInternal(null, null, false, autoCommitSends, autoCommitAcks, preAcknowledge, ackBatchSize);
    }
 
    public ClientSession createXASession() throws HornetQException
    {
-      return createSessionInternal(null, null, true, false, false, preAcknowledge, this.ackBatchSize);
+      return createSessionInternal(null, null, true, false, false, preAcknowledge, ackBatchSize);
    }
 
    public ClientSession createTransactedSession() throws HornetQException
    {
-      return createSessionInternal(null, null, false, false, false, preAcknowledge, this.ackBatchSize);
+      return createSessionInternal(null, null, false, false, false, preAcknowledge, ackBatchSize);
    }
 
    public ClientSession createSession() throws HornetQException
    {
-      return createSessionInternal(null, null, false, true, true, preAcknowledge, this.ackBatchSize);
+      return createSessionInternal(null, null, false, true, true, preAcknowledge, ackBatchSize);
    }
 
    public ClientSession createSession(final boolean autoCommitSends, final boolean autoCommitAcks) throws HornetQException
    {
-      return createSessionInternal(null,
-                                   null,
-                                   false,
-                                   autoCommitSends,
-                                   autoCommitAcks,
-                                   preAcknowledge,
-                                   this.ackBatchSize);
+      return createSessionInternal(null, null, false, autoCommitSends, autoCommitAcks, preAcknowledge, ackBatchSize);
    }
 
    public ClientSession createSession(final boolean xa, final boolean autoCommitSends, final boolean autoCommitAcks) throws HornetQException
    {
-      return createSessionInternal(null, null, xa, autoCommitSends, autoCommitAcks, preAcknowledge, this.ackBatchSize);
+      return createSessionInternal(null, null, xa, autoCommitSends, autoCommitAcks, preAcknowledge, ackBatchSize);
    }
 
    public ClientSession createSession(final boolean xa,
@@ -893,7 +890,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
                                       final boolean autoCommitAcks,
                                       final boolean preAcknowledge) throws HornetQException
    {
-      return createSessionInternal(null, null, xa, autoCommitSends, autoCommitAcks, preAcknowledge, this.ackBatchSize);
+      return createSessionInternal(null, null, xa, autoCommitSends, autoCommitAcks, preAcknowledge, ackBatchSize);
    }
 
    public int numSessions()
@@ -935,7 +932,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
          }
          catch (Exception e)
          {
-            log.error("Failed to stop discovery group", e);
+            ClientSessionFactoryImpl.log.error("Failed to stop discovery group", e);
          }
       }
 
@@ -956,7 +953,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
             {
                if (!threadPool.awaitTermination(10000, TimeUnit.MILLISECONDS))
                {
-                  log.warn("Timed out waiting for pool to terminate");
+                  ClientSessionFactoryImpl.log.warn("Timed out waiting for pool to terminate");
                }
             }
             catch (InterruptedException ignore)
@@ -972,7 +969,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
             {
                if (!scheduledThreadPool.awaitTermination(10000, TimeUnit.MILLISECONDS))
                {
-                  log.warn("Timed out waiting for scheduled pool to terminate");
+                  ClientSessionFactoryImpl.log.warn("Timed out waiting for scheduled pool to terminate");
                }
             }
             catch (InterruptedException ignore)
@@ -983,7 +980,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
 
       closed = true;
    }
-   
+
    public ClientSessionFactory copy()
    {
       return new ClientSessionFactoryImpl(this);
@@ -1093,7 +1090,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       {
          throw new IllegalStateException("Cannot create session, factory is closed (maybe it has been garbage collected)");
       }
-      
+
       try
       {
          initialise();
@@ -1102,7 +1099,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       {
          throw new HornetQException(HornetQException.INTERNAL_ERROR, "Failed to initialise session factory", e);
       }
-      
+
       if (discoveryGroup != null && !receivedBroadcast)
       {
          boolean ok = discoveryGroup.waitForBroadcast(discoveryInitialWaitTimeout);
@@ -1172,7 +1169,5 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
 
       failoverManagerMap.values().toArray(failoverManagerArray);
    }
-
-   
 
 }

@@ -26,6 +26,8 @@ import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
+import org.hornetq.jms.tests.util.ProxyAssertSupport;
+
 /**
  * 
  * A DeliveryOrderTest
@@ -44,15 +46,15 @@ public class DeliveryOrderTest extends JMSTestCase
       Connection conn = null;
       try
       {
-         conn = cf.createConnection();
+         conn = JMSTestCase.cf.createConnection();
 
          Session sess = conn.createSession(true, Session.SESSION_TRANSACTED);
 
          Session sess2 = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         MessageProducer prod = sess.createProducer(queue1);
+         MessageProducer prod = sess.createProducer(HornetQServerTestCase.queue1);
 
-         MessageConsumer cons = sess2.createConsumer(queue1);
+         MessageConsumer cons = sess2.createConsumer(HornetQServerTestCase.queue1);
 
          CountDownLatch latch = new CountDownLatch(1);
 
@@ -83,7 +85,7 @@ public class DeliveryOrderTest extends JMSTestCase
 
          if (listener.failed)
          {
-            fail("listener failed: " + listener.getError());
+            ProxyAssertSupport.fail("listener failed: " + listener.getError());
          }
 
       }
@@ -100,21 +102,21 @@ public class DeliveryOrderTest extends JMSTestCase
    {
       private int c;
 
-      private int num;
+      private final int num;
 
-      private CountDownLatch latch;
+      private final CountDownLatch latch;
 
       private volatile boolean failed;
 
       private String error;
 
-      MyListener(CountDownLatch latch, int num)
+      MyListener(final CountDownLatch latch, final int num)
       {
          this.latch = latch;
          this.num = num;
       }
 
-      public void onMessage(Message msg)
+      public void onMessage(final Message msg)
       {
          // preserve the first error
          if (failed)
@@ -130,7 +132,7 @@ public class DeliveryOrderTest extends JMSTestCase
             {
                // Failed
                failed = true;
-               setError("Listener was supposed to get " + ("message" + c) + " but got " + tm.getText());
+               setError("Listener was supposed to get " + "message" + c + " but got " + tm.getText());
                latch.countDown();
             }
 
@@ -165,7 +167,7 @@ public class DeliveryOrderTest extends JMSTestCase
          return error;
       }
 
-      private synchronized void setError(String s)
+      private synchronized void setError(final String s)
       {
          error = s;
       }

@@ -36,102 +36,107 @@ import org.hornetq.utils.UUIDGenerator;
 public class XAReceiveExample extends HornetQExample
 {
    private volatile boolean result = true;
-   
-   public static void main(String[] args)
+
+   public static void main(final String[] args)
    {
       new XAReceiveExample().run(args);
    }
 
+   @Override
    public boolean runExample() throws Exception
    {
       XAConnection connection = null;
       InitialContext initialContext = null;
       try
       {
-         //Step 1. Create an initial context to perform the JNDI lookup.
+         // Step 1. Create an initial context to perform the JNDI lookup.
          initialContext = getContext(0);
 
-         //Step 2. Lookup on the queue
-         Queue queue = (Queue) initialContext.lookup("/queue/exampleQueue");
+         // Step 2. Lookup on the queue
+         Queue queue = (Queue)initialContext.lookup("/queue/exampleQueue");
 
-         //Step 3. Perform a lookup on the XA Connection Factory
-         XAConnectionFactory cf = (XAConnectionFactory) initialContext.lookup("/XAConnectionFactory");
+         // Step 3. Perform a lookup on the XA Connection Factory
+         XAConnectionFactory cf = (XAConnectionFactory)initialContext.lookup("/XAConnectionFactory");
 
-         //Step 4.Create a JMS XAConnection
+         // Step 4.Create a JMS XAConnection
          connection = cf.createXAConnection();
-         
-         //Step 5. Start the connection
+
+         // Step 5. Start the connection
          connection.start();
 
-         //Step 6. Create a JMS XASession
+         // Step 6. Create a JMS XASession
          XASession xaSession = connection.createXASession();
-         
-         //Step 7. Create a normal session
+
+         // Step 7. Create a normal session
          Session normalSession = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
-         //Step 8. Create a normal Message Producer
+
+         // Step 8. Create a normal Message Producer
          MessageProducer normalProducer = normalSession.createProducer(queue);
 
-         //Step 9. Get the JMS Session
+         // Step 9. Get the JMS Session
          Session session = xaSession.getSession();
-         
-         //Step 10. Create a message consumer
+
+         // Step 10. Create a message consumer
          MessageConsumer xaConsumer = session.createConsumer(queue);
-         
-         //Step 11. Create two Text Messages
+
+         // Step 11. Create two Text Messages
          TextMessage helloMessage = session.createTextMessage("hello");
          TextMessage worldMessage = session.createTextMessage("world");
-         
-         //Step 12. create a transaction
-         Xid xid1 = new DummyXid("xa-example1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
-         
-         //Step 13. Get the JMS XAResource
+
+         // Step 12. create a transaction
+         Xid xid1 = new DummyXid("xa-example1".getBytes(), 1, UUIDGenerator.getInstance()
+                                                                           .generateStringUUID()
+                                                                           .getBytes());
+
+         // Step 13. Get the JMS XAResource
          XAResource xaRes = xaSession.getXAResource();
-         
-         //Step 14. Begin the Transaction work
+
+         // Step 14. Begin the Transaction work
          xaRes.start(xid1, XAResource.TMNOFLAGS);
-         
-         //Step 15. Send two messages.
+
+         // Step 15. Send two messages.
          normalProducer.send(helloMessage);
          normalProducer.send(worldMessage);
 
-         //Step 16. Receive the message
+         // Step 16. Receive the message
          TextMessage rm1 = (TextMessage)xaConsumer.receive();
          System.out.println("Message received: " + rm1.getText());
          TextMessage rm2 = (TextMessage)xaConsumer.receive();
          System.out.println("Message received: " + rm2.getText());
-         
-         //Step 17. Stop the work
+
+         // Step 17. Stop the work
          xaRes.end(xid1, XAResource.TMSUCCESS);
-         
-         //Step 18. Prepare
+
+         // Step 18. Prepare
          xaRes.prepare(xid1);
-         
-         //Step 19. Roll back the transaction
+
+         // Step 19. Roll back the transaction
          xaRes.rollback(xid1);
-         
-         //Step 20. Create another transaction
-         Xid xid2 = new DummyXid("xa-example2".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
-         
-         //Step 21. Start the transaction
+
+         // Step 20. Create another transaction
+         Xid xid2 = new DummyXid("xa-example2".getBytes(), 1, UUIDGenerator.getInstance()
+                                                                           .generateStringUUID()
+                                                                           .getBytes());
+
+         // Step 21. Start the transaction
          xaRes.start(xid2, XAResource.TMNOFLAGS);
-         
-         //Step 22. receive those messages again
+
+         // Step 22. receive those messages again
          rm1 = (TextMessage)xaConsumer.receive();
          System.out.println("Message received again: " + rm1.getText());
          rm2 = (TextMessage)xaConsumer.receive();
          System.out.println("Message received again: " + rm2.getText());
-         
-         //Step 23. Stop the work
+
+         // Step 23. Stop the work
          xaRes.end(xid2, XAResource.TMSUCCESS);
-         
-         //Step 24. Prepare
+
+         // Step 24. Prepare
          xaRes.prepare(xid2);
-         
-         //Step 25. Commit!
+
+         // Step 25. Commit!
          xaRes.commit(xid2, false);
-         
-         //Step 26. Check no more messages are received.
+
+         // Step 26. Check no more messages are received.
          TextMessage rm3 = (TextMessage)xaConsumer.receive(2000);
          if (rm3 == null)
          {
@@ -141,17 +146,17 @@ public class XAReceiveExample extends HornetQExample
          {
             result = false;
          }
-         
+
          return result;
       }
       finally
       {
-         //Step 27. Be sure to close our JMS resources!
+         // Step 27. Be sure to close our JMS resources!
          if (initialContext != null)
          {
             initialContext.close();
          }
-         if(connection != null)
+         if (connection != null)
          {
             connection.close();
          }

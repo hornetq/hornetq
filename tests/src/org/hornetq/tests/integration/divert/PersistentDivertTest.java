@@ -11,11 +11,12 @@
  * permissions and limitations under the License.
  */
 
-
 package org.hornetq.tests.integration.divert;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import junit.framework.Assert;
 
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
@@ -30,6 +31,7 @@ import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQ;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
+import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.SimpleString;
 
 /**
@@ -44,51 +46,69 @@ import org.hornetq.utils.SimpleString;
 public class PersistentDivertTest extends ServiceTestBase
 {
    private static final Logger log = Logger.getLogger(DivertTest.class);
-   
+
    final int minLargeMessageSize = ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE * 2;
-   
+
    public void testPersistentDivert() throws Exception
    {
       doTestPersistentDivert(false);
    }
-   
+
    public void testPersistentDiverLargeMessage() throws Exception
    {
       doTestPersistentDivert(true);
    }
-   
-   public void doTestPersistentDivert(boolean largeMessage) throws Exception
+
+   public void doTestPersistentDivert(final boolean largeMessage) throws Exception
    {
       Configuration conf = createDefaultConfig();
-      
+
       conf.setClustered(true);
-      
+
       final String testAddress = "testAddress";
-      
+
       final String forwardAddress1 = "forwardAddress1";
-      
+
       final String forwardAddress2 = "forwardAddress2";
-      
+
       final String forwardAddress3 = "forwardAddress3";
-      
-      DivertConfiguration divertConf1 = new DivertConfiguration("divert1", "divert1", testAddress, forwardAddress1, false, null, null);
-      
-      DivertConfiguration divertConf2 = new DivertConfiguration("divert2", "divert2", testAddress, forwardAddress2, false, null, null);
-      
-      DivertConfiguration divertConf3 = new DivertConfiguration("divert3", "divert3", testAddress, forwardAddress3, false, null, null);
-      
+
+      DivertConfiguration divertConf1 = new DivertConfiguration("divert1",
+                                                                "divert1",
+                                                                testAddress,
+                                                                forwardAddress1,
+                                                                false,
+                                                                null,
+                                                                null);
+
+      DivertConfiguration divertConf2 = new DivertConfiguration("divert2",
+                                                                "divert2",
+                                                                testAddress,
+                                                                forwardAddress2,
+                                                                false,
+                                                                null,
+                                                                null);
+
+      DivertConfiguration divertConf3 = new DivertConfiguration("divert3",
+                                                                "divert3",
+                                                                testAddress,
+                                                                forwardAddress3,
+                                                                false,
+                                                                null,
+                                                                null);
+
       List<DivertConfiguration> divertConfs = new ArrayList<DivertConfiguration>();
-      
+
       divertConfs.add(divertConf1);
       divertConfs.add(divertConf2);
       divertConfs.add(divertConf3);
-      
+
       conf.setDivertConfigurations(divertConfs);
-      
+
       HornetQServer messagingService = HornetQ.newHornetQServer(conf);
-           
+
       messagingService.start();
-      
+
       ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
 
       sf.setBlockOnAcknowledge(true);
@@ -96,21 +116,21 @@ public class PersistentDivertTest extends ServiceTestBase
       sf.setBlockOnPersistentSend(true);
 
       ClientSession session = sf.createSession(true, true, 0);
-      
+
       final SimpleString queueName1 = new SimpleString("queue1");
-      
+
       final SimpleString queueName2 = new SimpleString("queue2");
-      
+
       final SimpleString queueName3 = new SimpleString("queue3");
-      
+
       final SimpleString queueName4 = new SimpleString("queue4");
-      
+
       session.createQueue(new SimpleString(forwardAddress1), queueName1, null, true);
-      
+
       session.createQueue(new SimpleString(forwardAddress2), queueName2, null, true);
-      
+
       session.createQueue(new SimpleString(forwardAddress3), queueName3, null, true);
-      
+
       session.createQueue(new SimpleString(testAddress), queueName4, null, true);
 
       session.start();
@@ -118,57 +138,57 @@ public class PersistentDivertTest extends ServiceTestBase
       ClientProducer producer = session.createProducer(new SimpleString(testAddress));
 
       ClientConsumer consumer1 = session.createConsumer(queueName1);
-      
+
       ClientConsumer consumer2 = session.createConsumer(queueName2);
-      
+
       ClientConsumer consumer3 = session.createConsumer(queueName3);
-      
+
       ClientConsumer consumer4 = session.createConsumer(queueName4);
-      
+
       final int numMessages = 10;
-      
+
       final SimpleString propKey = new SimpleString("testkey");
-      
+
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = session.createClientMessage(true);
-         
+
          if (largeMessage)
          {
-            message.setBodyInputStream(createFakeLargeStream(minLargeMessageSize));
+            message.setBodyInputStream(UnitTestCase.createFakeLargeStream(minLargeMessageSize));
          }
-         
+
          message.putIntProperty(propKey, i);
-         
+
          producer.send(message);
       }
-      
+
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = consumer1.receive(5000);
-         
-         assertNotNull(message);
-         
-         assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
-         
+
+         Assert.assertNotNull(message);
+
+         Assert.assertEquals(i, message.getObjectProperty(propKey));
+
          if (largeMessage)
          {
             checkLargeMessage(message);
          }
-         
+
          message.acknowledge();
       }
-      
-      assertNull(consumer1.receiveImmediate());
-      
+
+      Assert.assertNull(consumer1.receiveImmediate());
+
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = consumer2.receive(5000);
-         
-         assertNotNull(message);
-         
-         assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
-         
+
+         Assert.assertNotNull(message);
+
+         Assert.assertEquals(i, message.getObjectProperty(propKey));
+
          if (largeMessage)
          {
             checkLargeMessage(message);
@@ -176,17 +196,17 @@ public class PersistentDivertTest extends ServiceTestBase
 
          message.acknowledge();
       }
-      
-      assertNull(consumer2.receiveImmediate());
-      
+
+      Assert.assertNull(consumer2.receiveImmediate());
+
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = consumer3.receive(5000);
-         
-         assertNotNull(message);
-         
-         assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
-         
+
+         Assert.assertNotNull(message);
+
+         Assert.assertEquals(i, message.getObjectProperty(propKey));
+
          if (largeMessage)
          {
             checkLargeMessage(message);
@@ -194,17 +214,17 @@ public class PersistentDivertTest extends ServiceTestBase
 
          message.acknowledge();
       }
-      
-      assertNull(consumer3.receiveImmediate());
-      
+
+      Assert.assertNull(consumer3.receiveImmediate());
+
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = consumer4.receive(5000);
-         
-         assertNotNull(message);
-         
-         assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
-         
+
+         Assert.assertNotNull(message);
+
+         Assert.assertEquals(i, message.getObjectProperty(propKey));
+
          if (largeMessage)
          {
             checkLargeMessage(message);
@@ -212,68 +232,86 @@ public class PersistentDivertTest extends ServiceTestBase
 
          message.acknowledge();
       }
-      
-      assertNull(consumer4.receiveImmediate());
+
+      Assert.assertNull(consumer4.receiveImmediate());
       session.close();
-      
+
       sf.close();
-      
+
       messagingService.stop();
    }
 
    /**
     * @param message
     */
-   private void checkLargeMessage(ClientMessage message)
+   private void checkLargeMessage(final ClientMessage message)
    {
-      for (int j = 0 ; j < minLargeMessageSize; j++)
+      for (int j = 0; j < minLargeMessageSize; j++)
       {
-         assertEquals(getSamplebyte(j), message.getBodyBuffer().readByte());
+         Assert.assertEquals(UnitTestCase.getSamplebyte(j), message.getBodyBuffer().readByte());
       }
    }
-   
+
    public void testPersistentDivertRestartBeforeConsume() throws Exception
    {
       doTestPersistentDivertRestartBeforeConsume(false);
    }
-   
+
    public void testPersistentDivertRestartBeforeConsumeLargeMessage() throws Exception
    {
       doTestPersistentDivertRestartBeforeConsume(true);
    }
-   
-   public void doTestPersistentDivertRestartBeforeConsume(boolean largeMessage) throws Exception
+
+   public void doTestPersistentDivertRestartBeforeConsume(final boolean largeMessage) throws Exception
    {
       Configuration conf = createDefaultConfig();
-      
+
       conf.setClustered(true);
-      
+
       final String testAddress = "testAddress";
-      
+
       final String forwardAddress1 = "forwardAddress1";
-      
+
       final String forwardAddress2 = "forwardAddress2";
-      
+
       final String forwardAddress3 = "forwardAddress3";
-      
-      DivertConfiguration divertConf1 = new DivertConfiguration("divert1", "divert1", testAddress, forwardAddress1, false, null, null);
-      
-      DivertConfiguration divertConf2 = new DivertConfiguration("divert2", "divert2", testAddress, forwardAddress2, false, null, null);
-      
-      DivertConfiguration divertConf3 = new DivertConfiguration("divert3", "divert3", testAddress, forwardAddress3, false, null, null);
-      
+
+      DivertConfiguration divertConf1 = new DivertConfiguration("divert1",
+                                                                "divert1",
+                                                                testAddress,
+                                                                forwardAddress1,
+                                                                false,
+                                                                null,
+                                                                null);
+
+      DivertConfiguration divertConf2 = new DivertConfiguration("divert2",
+                                                                "divert2",
+                                                                testAddress,
+                                                                forwardAddress2,
+                                                                false,
+                                                                null,
+                                                                null);
+
+      DivertConfiguration divertConf3 = new DivertConfiguration("divert3",
+                                                                "divert3",
+                                                                testAddress,
+                                                                forwardAddress3,
+                                                                false,
+                                                                null,
+                                                                null);
+
       List<DivertConfiguration> divertConfs = new ArrayList<DivertConfiguration>();
-      
+
       divertConfs.add(divertConf1);
       divertConfs.add(divertConf2);
       divertConfs.add(divertConf3);
-      
+
       conf.setDivertConfigurations(divertConfs);
-      
+
       HornetQServer messagingService = HornetQ.newHornetQServer(conf);
-           
+
       messagingService.start();
-      
+
       ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
 
       sf.setBlockOnAcknowledge(true);
@@ -281,179 +319,176 @@ public class PersistentDivertTest extends ServiceTestBase
       sf.setBlockOnPersistentSend(true);
 
       ClientSession session = sf.createSession(true, true, 0);
-      
+
       final SimpleString queueName1 = new SimpleString("queue1");
-      
+
       final SimpleString queueName2 = new SimpleString("queue2");
-      
+
       final SimpleString queueName3 = new SimpleString("queue3");
-      
+
       final SimpleString queueName4 = new SimpleString("queue4");
-      
+
       session.createQueue(new SimpleString(forwardAddress1), queueName1, null, true);
-      
+
       session.createQueue(new SimpleString(forwardAddress2), queueName2, null, true);
-      
+
       session.createQueue(new SimpleString(forwardAddress3), queueName3, null, true);
-      
+
       session.createQueue(new SimpleString(testAddress), queueName4, null, true);
 
       ClientProducer producer = session.createProducer(new SimpleString(testAddress));
-           
+
       final int numMessages = 10;
-      
+
       final SimpleString propKey = new SimpleString("testkey");
-      
+
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = session.createClientMessage(true);
-         
+
          message.putIntProperty(propKey, i);
 
          if (largeMessage)
          {
-            message.setBodyInputStream(createFakeLargeStream(minLargeMessageSize));
+            message.setBodyInputStream(UnitTestCase.createFakeLargeStream(minLargeMessageSize));
          }
 
-         
          producer.send(message);
       }
-      
+
       session.close();
-      
+
       sf.close();
-      
+
       messagingService.stop();
-      
+
       messagingService.start();
-      
+
       sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
-      
+
       sf.setBlockOnPersistentSend(true);
 
       session = sf.createSession(false, true, true);
-      
+
       session.start();
-      
+
       ClientConsumer consumer1 = session.createConsumer(queueName1);
-      
+
       ClientConsumer consumer2 = session.createConsumer(queueName2);
-      
+
       ClientConsumer consumer3 = session.createConsumer(queueName3);
-      
+
       ClientConsumer consumer4 = session.createConsumer(queueName4);
-      
+
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = consumer1.receive(5000);
-         
-         assertNotNull(message);
-         
+
+         Assert.assertNotNull(message);
+
          if (largeMessage)
          {
             checkLargeMessage(message);
          }
 
-         assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
-         
+         Assert.assertEquals(i, message.getObjectProperty(propKey));
+
          message.acknowledge();
       }
-      
-      assertNull(consumer1.receiveImmediate());
-      
+
+      Assert.assertNull(consumer1.receiveImmediate());
+
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = consumer2.receive(5000);
-         
-         assertNotNull(message);
-         
+
+         Assert.assertNotNull(message);
+
          if (largeMessage)
          {
             checkLargeMessage(message);
          }
 
-         assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
-         
+         Assert.assertEquals(i, message.getObjectProperty(propKey));
+
          message.acknowledge();
       }
-      
-      assertNull(consumer2.receiveImmediate());
-      
+
+      Assert.assertNull(consumer2.receiveImmediate());
+
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = consumer3.receive(5000);
-         
-         assertNotNull(message);
-         
+
+         Assert.assertNotNull(message);
+
          if (largeMessage)
          {
             checkLargeMessage(message);
          }
 
-         assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
-         
+         Assert.assertEquals(i, message.getObjectProperty(propKey));
+
          message.acknowledge();
       }
-      
-      assertNull(consumer3.receiveImmediate());
-      
+
+      Assert.assertNull(consumer3.receiveImmediate());
+
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = consumer4.receive(5000);
-         
-         assertNotNull(message);
-         
+
+         Assert.assertNotNull(message);
+
          if (largeMessage)
          {
             checkLargeMessage(message);
          }
 
-         assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
-         
+         Assert.assertEquals(i, message.getObjectProperty(propKey));
+
          message.acknowledge();
       }
-      
-      assertNull(consumer4.receiveImmediate());
-                 
+
+      Assert.assertNull(consumer4.receiveImmediate());
+
       session.close();
-      
+
       sf.close();
-      
+
       messagingService.stop();
-      
+
       messagingService.start();
-      
+
       sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
-      
+
       sf.setBlockOnPersistentSend(true);
 
       session = sf.createSession(false, true, true);
-      
+
       consumer1 = session.createConsumer(queueName1);
-      
+
       consumer2 = session.createConsumer(queueName2);
-      
+
       consumer3 = session.createConsumer(queueName3);
-      
+
       consumer4 = session.createConsumer(queueName4);
-            
-      assertNull(consumer1.receiveImmediate());
-      
-      assertNull(consumer2.receiveImmediate());
-      
-      assertNull(consumer3.receiveImmediate());
-      
-      assertNull(consumer4.receiveImmediate());
-      
+
+      Assert.assertNull(consumer1.receiveImmediate());
+
+      Assert.assertNull(consumer2.receiveImmediate());
+
+      Assert.assertNull(consumer3.receiveImmediate());
+
+      Assert.assertNull(consumer4.receiveImmediate());
+
       session.close();
-      
+
       sf.close();
-      
-      assertEquals(0, messagingService.getPostOffice().getPagingManager().getTotalMemory());
-      
+
+      Assert.assertEquals(0, messagingService.getPostOffice().getPagingManager().getTotalMemory());
+
       messagingService.stop();
    }
-   
 
 }
-

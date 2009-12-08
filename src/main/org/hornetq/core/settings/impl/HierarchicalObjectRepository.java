@@ -9,7 +9,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
  * implied.  See the License for the specific language governing
  * permissions and limitations under the License.
- */ 
+ */
 
 package org.hornetq.core.settings.impl;
 
@@ -26,7 +26,6 @@ import org.hornetq.core.settings.HierarchicalRepository;
 import org.hornetq.core.settings.HierarchicalRepositoryChangeListener;
 import org.hornetq.core.settings.Mergeable;
 
-
 /**
  * allows objects to be mapped against a regex pattern and held in order in a list
  *
@@ -36,6 +35,7 @@ import org.hornetq.core.settings.Mergeable;
 public class HierarchicalObjectRepository<T> implements HierarchicalRepository<T>
 {
    Logger log = Logger.getLogger(HierarchicalObjectRepository.class);
+
    /**
     * The default Match to fall back to
     */
@@ -54,13 +54,12 @@ public class HierarchicalObjectRepository<T> implements HierarchicalRepository<T
    /**
     * a cache
     */
-   private final Map<String, T> cache = new ConcurrentHashMap<String,T>();
-   
+   private final Map<String, T> cache = new ConcurrentHashMap<String, T>();
 
    /**
     * any registered listeners, these get fired on changes to the repository
     */
-   private ArrayList<HierarchicalRepositoryChangeListener> listeners = new ArrayList<HierarchicalRepositoryChangeListener>();
+   private final ArrayList<HierarchicalRepositoryChangeListener> listeners = new ArrayList<HierarchicalRepositoryChangeListener>();
 
    /**
     * Add a new match to the repository
@@ -86,7 +85,7 @@ public class HierarchicalObjectRepository<T> implements HierarchicalRepository<T
     */
    public T getMatch(final String match)
    {
-      if(cache.get(match) != null)
+      if (cache.get(match) != null)
       {
          return cache.get(match);
       }
@@ -95,8 +94,10 @@ public class HierarchicalObjectRepository<T> implements HierarchicalRepository<T
       List<Match<T>> orderedMatches = sort(possibleMatches);
       actualMatch = merge(orderedMatches);
       T value = actualMatch != null ? actualMatch : defaultmatch;
-      if(value != null)
+      if (value != null)
+      {
          cache.put(match, value);
+      }
       return value;
    }
 
@@ -113,12 +114,14 @@ public class HierarchicalObjectRepository<T> implements HierarchicalRepository<T
          if (actualMatch == null || !Mergeable.class.isAssignableFrom(actualMatch.getClass()))
          {
             actualMatch = match.getValue();
-            if(!Mergeable.class.isAssignableFrom(actualMatch.getClass()))
+            if (!Mergeable.class.isAssignableFrom(actualMatch.getClass()))
+            {
                break;
+            }
          }
          else
          {
-            ((Mergeable) actualMatch).merge(match.getValue());
+            ((Mergeable)actualMatch).merge(match.getValue());
 
          }
       }
@@ -154,12 +157,12 @@ public class HierarchicalObjectRepository<T> implements HierarchicalRepository<T
       onChange();
    }
 
-   public void registerListener(HierarchicalRepositoryChangeListener listener)
+   public void registerListener(final HierarchicalRepositoryChangeListener listener)
    {
       listeners.add(listener);
    }
 
-   public void unRegisterListener(HierarchicalRepositoryChangeListener listener)
+   public void unRegisterListener(final HierarchicalRepositoryChangeListener listener)
    {
       listeners.remove(listener);
    }
@@ -205,7 +208,7 @@ public class HierarchicalObjectRepository<T> implements HierarchicalRepository<T
    private HashMap<String, Match<T>> getPossibleMatches(final String match)
    {
       HashMap<String, Match<T>> possibleMatches = new HashMap<String, Match<T>>();
-      
+
       for (String key : matches.keySet())
       {
          if (matches.get(key).getPattern().matcher(match).matches())

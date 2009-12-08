@@ -29,7 +29,6 @@ public class JournalLoadInformation
    private int numberOfRecords = 0;
 
    private long maxID = -1;
-   
 
    // Static --------------------------------------------------------
 
@@ -50,12 +49,8 @@ public class JournalLoadInformation
       this.numberOfRecords = numberOfRecords;
       this.maxID = maxID;
    }
-   
-   
-   
 
    // Public --------------------------------------------------------
-
 
    /**
     * @return the numberOfRecords
@@ -89,7 +84,6 @@ public class JournalLoadInformation
       this.maxID = maxID;
    }
 
-
    /* (non-Javadoc)
     * @see java.lang.Object#hashCode()
     */
@@ -98,7 +92,7 @@ public class JournalLoadInformation
    {
       final int prime = 31;
       int result = 1;
-      result = prime * result + (int)(maxID ^ (maxID >>> 32));
+      result = prime * result + (int)(maxID ^ maxID >>> 32);
       result = prime * result + numberOfRecords;
       return result;
    }
@@ -107,23 +101,32 @@ public class JournalLoadInformation
     * @see java.lang.Object#equals(java.lang.Object)
     */
    @Override
-   public boolean equals(Object obj)
+   public boolean equals(final Object obj)
    {
       if (this == obj)
+      {
          return true;
+      }
       if (obj == null)
+      {
          return false;
+      }
       if (getClass() != obj.getClass())
+      {
          return false;
+      }
       JournalLoadInformation other = (JournalLoadInformation)obj;
       if (maxID != other.maxID)
+      {
          return false;
+      }
       if (numberOfRecords != other.numberOfRecords)
+      {
          return false;
+      }
       return true;
    }
 
-   
    /* (non-Javadoc)
     * @see java.lang.Object#toString()
     */

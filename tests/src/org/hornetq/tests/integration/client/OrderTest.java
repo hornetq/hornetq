@@ -13,6 +13,8 @@
 
 package org.hornetq.tests.integration.client;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
@@ -37,11 +39,13 @@ public class OrderTest extends ServiceTestBase
 
    private HornetQServer server;
 
+   @Override
    protected void setUp() throws Exception
    {
       super.setUp();
    }
 
+   @Override
    protected void tearDown() throws Exception
    {
       server.stop();
@@ -115,7 +119,7 @@ public class OrderTest extends ServiceTestBase
                if (!started || started && i % 2 == 0)
                {
                   ClientMessage msg = cons.receive(10000);
-                  assertEquals(i, msg.getIntProperty("id").intValue());
+                  Assert.assertEquals(i, msg.getIntProperty("id").intValue());
                }
             }
 
@@ -128,7 +132,7 @@ public class OrderTest extends ServiceTestBase
                if (!started || started && i % 2 == 0)
                {
                   ClientMessage msg = cons.receive(10000);
-                  assertEquals(i, msg.getIntProperty("id").intValue());
+                  Assert.assertEquals(i, msg.getIntProperty("id").intValue());
                }
             }
 
@@ -183,28 +187,28 @@ public class OrderTest extends ServiceTestBase
          }
 
          session.close();
-         
-         for (int i = 0 ; i < numberOfMessages;)
+
+         for (int i = 0; i < numberOfMessages;)
          {
             session = sf.createSession();
-            
+
             session.start();
-            
+
             ClientConsumer consumer = session.createConsumer("queue");
-            
+
             int max = i + 10;
-            
-            for (;i < max; i++)
+
+            for (; i < max; i++)
             {
                ClientMessage msg = consumer.receive(1000);
-               
+
                msg.acknowledge();
-               
-               assertEquals(i, msg.getIntProperty("id").intValue());
+
+               Assert.assertEquals(i, msg.getIntProperty("id").intValue());
             }
-            
+
             // Receive a few more messages but don't consume them
-            for (int j = 0 ; j < 10 && i < numberOfMessages; j++)
+            for (int j = 0; j < 10 && i < numberOfMessages; j++)
             {
                ClientMessage msg = consumer.receiveImmediate();
                if (msg == null)
@@ -213,7 +217,7 @@ public class OrderTest extends ServiceTestBase
                }
             }
             session.close();
-            
+
          }
       }
       finally

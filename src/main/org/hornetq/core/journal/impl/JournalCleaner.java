@@ -78,10 +78,7 @@ public class JournalCleaner extends AbstractJournalUpdateTask
    {
       if (lookupRecord(info.id))
       {
-         writeEncoder(new JournalAddRecord(true,
-                                           info.id,
-                                           info.getUserRecordType(),
-                                           new ByteArrayEncoding(info.data)));
+         writeEncoder(new JournalAddRecord(true, info.id, info.getUserRecordType(), new ByteArrayEncoding(info.data)));
       }
    }
 
@@ -127,9 +124,7 @@ public class JournalCleaner extends AbstractJournalUpdateTask
    {
       incrementTransactionCounter(transactionID);
 
-      writeEncoder(new JournalDeleteRecordTX(transactionID,
-                                             recordInfo.id,
-                                             new ByteArrayEncoding(recordInfo.data)));
+      writeEncoder(new JournalDeleteRecordTX(transactionID, recordInfo.id, new ByteArrayEncoding(recordInfo.data)));
    }
 
    /* (non-Javadoc)
@@ -139,8 +134,7 @@ public class JournalCleaner extends AbstractJournalUpdateTask
    {
       int txcounter = getTransactionCounter(transactionID);
 
-      writeEncoder(new JournalCompleteRecordTX(false, transactionID, new ByteArrayEncoding(extraData)),
-                   txcounter);
+      writeEncoder(new JournalCompleteRecordTX(false, transactionID, new ByteArrayEncoding(extraData)), txcounter);
    }
 
    /* (non-Javadoc)
@@ -173,7 +167,7 @@ public class JournalCleaner extends AbstractJournalUpdateTask
       if (lookupRecord(recordInfo.id))
       {
          incrementTransactionCounter(transactionID);
-         
+
          writeEncoder(new JournalAddRecordTX(false,
                                              transactionID,
                                              recordInfo.id,

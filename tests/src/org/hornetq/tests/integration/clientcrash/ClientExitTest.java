@@ -9,11 +9,11 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
  * implied.  See the License for the specific language governing
  * permissions and limitations under the License.
- */ 
+ */
 
 package org.hornetq.tests.integration.clientcrash;
 
-import static org.hornetq.tests.util.RandomUtil.randomString;
+import junit.framework.Assert;
 
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientSession;
@@ -23,6 +23,7 @@ import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.Message;
 import org.hornetq.integration.transports.netty.NettyConnectorFactory;
+import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.SpawnedVMSupport;
 import org.hornetq.utils.SimpleString;
 
@@ -42,10 +43,10 @@ public class ClientExitTest extends ClientTestBase
 {
    // Constants ------------------------------------------------------------------------------------
 
-   private static final String MESSAGE_TEXT = randomString();
-   
+   private static final String MESSAGE_TEXT = RandomUtil.randomString();
+
    private static final SimpleString QUEUE = new SimpleString("ClientExitTestQueue");
-      
+
    // Static ---------------------------------------------------------------------------------------
 
    private static final Logger log = Logger.getLogger(ClientExitTest.class);
@@ -54,7 +55,7 @@ public class ClientExitTest extends ClientTestBase
 
    private ClientSession session;
 
-   private ClientConsumer consumer;   
+   private ClientConsumer consumer;
 
    // Constructors ---------------------------------------------------------------------------------
 
@@ -63,48 +64,50 @@ public class ClientExitTest extends ClientTestBase
    public void testGracefulClientExit() throws Exception
    {
       // spawn a JVM that creates a JMS client, which sends a test message
-      Process p = SpawnedVMSupport.spawnVM(GracefulClient.class.getName(), QUEUE.toString(), MESSAGE_TEXT);
+      Process p = SpawnedVMSupport.spawnVM(GracefulClient.class.getName(),
+                                           ClientExitTest.QUEUE.toString(),
+                                           ClientExitTest.MESSAGE_TEXT);
 
       // read the message from the queue
 
       Message message = consumer.receive(15000);
 
-      assertNotNull(message);
-      assertEquals(MESSAGE_TEXT, message.getBodyBuffer().readString());
+      Assert.assertNotNull(message);
+      Assert.assertEquals(ClientExitTest.MESSAGE_TEXT, message.getBodyBuffer().readString());
 
       // the client VM should exit by itself. If it doesn't, that means we have a problem
       // and the test will timeout
-      log.debug("waiting for the client VM to exit ...");
+      ClientExitTest.log.debug("waiting for the client VM to exit ...");
       p.waitFor();
 
-      assertEquals(0, p.exitValue());
-      
+      Assert.assertEquals(0, p.exitValue());
+
       // FIXME https://jira.jboss.org/jira/browse/JBMESSAGING-1421
-//      Thread.sleep(1000);
-//      
-//      // the local session
-//      assertActiveConnections(1);
-//      // assertActiveSession(1);
-      
+      // Thread.sleep(1000);
+      //      
+      // // the local session
+      // assertActiveConnections(1);
+      // // assertActiveSession(1);
+
       session.close();
-      
+
       // FIXME https://jira.jboss.org/jira/browse/JBMESSAGING-1421
-//      Thread.sleep(1000);
-//      assertActiveConnections(0);
-//      // assertActiveSession(0);
+      // Thread.sleep(1000);
+      // assertActiveConnections(0);
+      // // assertActiveSession(0);
    }
-   
+
    // Package protected ----------------------------------------------------------------------------
 
    @Override
    protected void setUp() throws Exception
    {
       super.setUp();
-      
+
       ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(NettyConnectorFactory.class.getName()));
       session = sf.createSession(false, true, true);
-      session.createQueue(QUEUE, QUEUE, null, false);
-      consumer = session.createConsumer(QUEUE);
+      session.createQueue(ClientExitTest.QUEUE, ClientExitTest.QUEUE, null, false);
+      consumer = session.createConsumer(ClientExitTest.QUEUE);
       session.start();
    }
 

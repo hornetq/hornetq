@@ -23,6 +23,7 @@ import org.hornetq.tests.integration.cluster.reattach.MultiThreadRandomReattachT
  */
 public class MultiThreadRandomReattachStressTest extends MultiThreadRandomReattachTest
 {
+   @Override
    protected int getNumIterations()
    {
       return 100;

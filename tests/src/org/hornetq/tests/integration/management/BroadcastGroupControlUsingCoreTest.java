@@ -54,7 +54,7 @@ public class BroadcastGroupControlUsingCoreTest extends BroadcastGroupControlTes
       {
          private final CoreMessagingProxy proxy = new CoreMessagingProxy(session,
                                                                          ResourceNames.CORE_BROADCAST_GROUP + name);
-         
+
          public long getBroadcastPeriod()
          {
             return ((Integer)proxy.retrieveAttributeValue("broadcastPeriod")).longValue();
@@ -64,7 +64,7 @@ public class BroadcastGroupControlUsingCoreTest extends BroadcastGroupControlTes
          {
             return (Object[])proxy.retrieveAttributeValue("connectorPairs");
          }
-         
+
          public String getConnectorPairsAsJSON()
          {
             return (String)proxy.retrieveAttributeValue("connectorPairsAsJSON");
@@ -120,7 +120,7 @@ public class BroadcastGroupControlUsingCoreTest extends BroadcastGroupControlTes
       {
          session.close();
       }
-      
+
       session = null;
 
       super.tearDown();

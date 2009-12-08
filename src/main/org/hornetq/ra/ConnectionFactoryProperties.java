@@ -29,7 +29,7 @@ public class ConnectionFactoryProperties
    /**
     * Trace enabled
     */
-   private static boolean trace = log.isTraceEnabled();
+   private static boolean trace = ConnectionFactoryProperties.log.isTraceEnabled();
 
    private boolean hasBeenUpdated = false;
 
@@ -42,6 +42,7 @@ public class ConnectionFactoryProperties
     * The transport config, changing the default configured from the RA
     */
    private Map<String, Object> connectionParameters;
+
    /**
     * The transport config, changing the default configured from the RA
     */
@@ -118,7 +119,7 @@ public class ConnectionFactoryProperties
       return connectionParameters;
    }
 
-   public void setParsedConnectionParameters(Map<String, Object> connectionParameters)
+   public void setParsedConnectionParameters(final Map<String, Object> connectionParameters)
    {
       this.connectionParameters = connectionParameters;
       hasBeenUpdated = true;
@@ -135,19 +136,18 @@ public class ConnectionFactoryProperties
       return backupConnectorClassName;
    }
 
-
    public Map<String, Object> getParsedBackupConnectionParameters()
    {
       return backupConnectionParameters;
    }
 
-   public void setParsedBackupConnectionParameters(Map<String, Object> backupConnectionParameters)
+   public void setParsedBackupConnectionParameters(final Map<String, Object> backupConnectionParameters)
    {
       this.backupConnectionParameters = backupConnectionParameters;
       hasBeenUpdated = true;
    }
 
-   public void setBackupConnectorClassName(String backupConnectorClassName)
+   public void setBackupConnectorClassName(final String backupConnectorClassName)
    {
       this.backupConnectorClassName = backupConnectorClassName;
       hasBeenUpdated = true;
@@ -155,19 +155,19 @@ public class ConnectionFactoryProperties
 
    public String getConnectionLoadBalancingPolicyClassName()
    {
-      if (trace)
+      if (ConnectionFactoryProperties.trace)
       {
-         log.trace("getConnectionLoadBalancingPolicyClassName()");
+         ConnectionFactoryProperties.log.trace("getConnectionLoadBalancingPolicyClassName()");
       }
       hasBeenUpdated = true;
       return connectionLoadBalancingPolicyClassName;
    }
 
-   public void setConnectionLoadBalancingPolicyClassName(String connectionLoadBalancingPolicyClassName)
+   public void setConnectionLoadBalancingPolicyClassName(final String connectionLoadBalancingPolicyClassName)
    {
-      if (trace)
+      if (ConnectionFactoryProperties.trace)
       {
-         log.trace("setSessionDefaultType(" + connectionLoadBalancingPolicyClassName + ")");
+         ConnectionFactoryProperties.log.trace("setSessionDefaultType(" + connectionLoadBalancingPolicyClassName + ")");
       }
       hasBeenUpdated = true;
       this.connectionLoadBalancingPolicyClassName = connectionLoadBalancingPolicyClassName;
@@ -175,19 +175,19 @@ public class ConnectionFactoryProperties
 
    public String getDiscoveryAddress()
    {
-      if (trace)
+      if (ConnectionFactoryProperties.trace)
       {
-         log.trace("getDiscoveryAddress()");
+         ConnectionFactoryProperties.log.trace("getDiscoveryAddress()");
       }
       hasBeenUpdated = true;
       return discoveryAddress;
    }
 
-   public void setDiscoveryAddress(String discoveryAddress)
+   public void setDiscoveryAddress(final String discoveryAddress)
    {
-      if (trace)
+      if (ConnectionFactoryProperties.trace)
       {
-         log.trace("setDiscoveryAddress(" + discoveryAddress + ")");
+         ConnectionFactoryProperties.log.trace("setDiscoveryAddress(" + discoveryAddress + ")");
       }
       hasBeenUpdated = true;
       this.discoveryAddress = discoveryAddress;
@@ -195,19 +195,19 @@ public class ConnectionFactoryProperties
 
    public Integer getDiscoveryPort()
    {
-      if (trace)
+      if (ConnectionFactoryProperties.trace)
       {
-         log.trace("getDiscoveryPort()");
+         ConnectionFactoryProperties.log.trace("getDiscoveryPort()");
       }
       hasBeenUpdated = true;
       return discoveryPort;
    }
 
-   public void setDiscoveryPort(Integer discoveryPort)
+   public void setDiscoveryPort(final Integer discoveryPort)
    {
-      if (trace)
+      if (ConnectionFactoryProperties.trace)
       {
-         log.trace("setDiscoveryPort(" + discoveryPort + ")");
+         ConnectionFactoryProperties.log.trace("setDiscoveryPort(" + discoveryPort + ")");
       }
       hasBeenUpdated = true;
       this.discoveryPort = discoveryPort;
@@ -215,19 +215,19 @@ public class ConnectionFactoryProperties
 
    public Long getDiscoveryRefreshTimeout()
    {
-      if (trace)
+      if (ConnectionFactoryProperties.trace)
       {
-         log.trace("getDiscoveryRefreshTimeout()");
+         ConnectionFactoryProperties.log.trace("getDiscoveryRefreshTimeout()");
       }
       hasBeenUpdated = true;
       return discoveryRefreshTimeout;
    }
 
-   public void setDiscoveryRefreshTimeout(Long discoveryRefreshTimeout)
+   public void setDiscoveryRefreshTimeout(final Long discoveryRefreshTimeout)
    {
-      if (trace)
+      if (ConnectionFactoryProperties.trace)
       {
-         log.trace("setDiscoveryRefreshTimeout(" + discoveryRefreshTimeout + ")");
+         ConnectionFactoryProperties.log.trace("setDiscoveryRefreshTimeout(" + discoveryRefreshTimeout + ")");
       }
       hasBeenUpdated = true;
       this.discoveryRefreshTimeout = discoveryRefreshTimeout;
@@ -235,19 +235,19 @@ public class ConnectionFactoryProperties
 
    public Long getDiscoveryInitialWaitTimeout()
    {
-      if (trace)
+      if (ConnectionFactoryProperties.trace)
       {
-         log.trace("getDiscoveryInitialWaitTimeout()");
+         ConnectionFactoryProperties.log.trace("getDiscoveryInitialWaitTimeout()");
       }
       hasBeenUpdated = true;
       return discoveryInitialWaitTimeout;
    }
 
-   public void setDiscoveryInitialWaitTimeout(Long discoveryInitialWaitTimeout)
+   public void setDiscoveryInitialWaitTimeout(final Long discoveryInitialWaitTimeout)
    {
-      if (trace)
+      if (ConnectionFactoryProperties.trace)
       {
-         log.trace("setDiscoveryInitialWaitTimeout(" + discoveryInitialWaitTimeout + ")");
+         ConnectionFactoryProperties.log.trace("setDiscoveryInitialWaitTimeout(" + discoveryInitialWaitTimeout + ")");
       }
       hasBeenUpdated = true;
       this.discoveryInitialWaitTimeout = discoveryInitialWaitTimeout;
@@ -255,19 +255,19 @@ public class ConnectionFactoryProperties
 
    public String getClientID()
    {
-      if (trace)
+      if (ConnectionFactoryProperties.trace)
       {
-         log.trace("getClientID()");
+         ConnectionFactoryProperties.log.trace("getClientID()");
       }
       hasBeenUpdated = true;
       return clientID;
    }
 
-   public void setClientID(String clientID)
+   public void setClientID(final String clientID)
    {
-      if (trace)
+      if (ConnectionFactoryProperties.trace)
       {
-         log.trace("setClientID(" + clientID + ")");
+         ConnectionFactoryProperties.log.trace("setClientID(" + clientID + ")");
       }
       hasBeenUpdated = true;
       this.clientID = clientID;
@@ -275,19 +275,19 @@ public class ConnectionFactoryProperties
 
    public Integer getDupsOKBatchSize()
    {
-      if (trace)
+      if (ConnectionFactoryProperties.trace)
       {
-         log.trace("getDupsOKBatchSize()");
+         ConnectionFactoryProperties.log.trace("getDupsOKBatchSize()");
       }
       hasBeenUpdated = true;
       return dupsOKBatchSize;
    }
 
-   public void setDupsOKBatchSize(Integer dupsOKBatchSize)
+   public void setDupsOKBatchSize(final Integer dupsOKBatchSize)
    {
-      if (trace)
+      if (ConnectionFactoryProperties.trace)
       {
-         log.trace("setDupsOKBatchSize(" + dupsOKBatchSize + ")");
+         ConnectionFactoryProperties.log.trace("setDupsOKBatchSize(" + dupsOKBatchSize + ")");
       }
       hasBeenUpdated = true;
       this.dupsOKBatchSize = dupsOKBatchSize;
@@ -295,19 +295,19 @@ public class ConnectionFactoryProperties
 
    public Integer getTransactionBatchSize()
    {
-      if (trace)
+      if (ConnectionFactoryProperties.trace)
       {
-         log.trace("getTransactionBatchSize()");
+         ConnectionFactoryProperties.log.trace("getTransactionBatchSize()");
       }
       hasBeenUpdated = true;
       return transactionBatchSize;
    }
 
-   public void setTransactionBatchSize(Integer transactionBatchSize)
+   public void setTransactionBatchSize(final Integer transactionBatchSize)
    {
-      if (trace)
+      if (ConnectionFactoryProperties.trace)
       {
-         log.trace("setTransactionBatchSize(" + transactionBatchSize + ")");
+         ConnectionFactoryProperties.log.trace("setTransactionBatchSize(" + transactionBatchSize + ")");
       }
       hasBeenUpdated = true;
       this.transactionBatchSize = transactionBatchSize;
@@ -315,19 +315,19 @@ public class ConnectionFactoryProperties
 
    public Long getClientFailureCheckPeriod()
    {
-      if (trace)
+      if (ConnectionFactoryProperties.trace)
       {
-         log.trace("getClientFailureCheckPeriod()");
+         ConnectionFactoryProperties.log.trace("getClientFailureCheckPeriod()");
       }
       hasBeenUpdated = true;
       return clientFailureCheckPeriod;
    }
 
-   public void setClientFailureCheckPeriod(Long clientFailureCheckPeriod)
+   public void setClientFailureCheckPeriod(final Long clientFailureCheckPeriod)
    {
-      if (trace)
+      if (ConnectionFactoryProperties.trace)
       {
-         log.trace("setClientFailureCheckPeriod(" + clientFailureCheckPeriod + ")");
+         ConnectionFactoryProperties.log.trace("setClientFailureCheckPeriod(" + clientFailureCheckPeriod + ")");
       }
       hasBeenUpdated = true;
       this.clientFailureCheckPeriod = clientFailureCheckPeriod;
@@ -335,19 +335,19 @@ public class ConnectionFactoryProperties
 
    public Long getConnectionTTL()
    {
-      if (trace)
+      if (ConnectionFactoryProperties.trace)
       {
-         log.trace("getConnectionTTL()");
+         ConnectionFactoryProperties.log.trace("getConnectionTTL()");
       }
       hasBeenUpdated = true;
       return connectionTTL;
    }
 
-   public void setConnectionTTL(Long connectionTTL)
+   public void setConnectionTTL(final Long connectionTTL)
    {
-      if (trace)
+      if (ConnectionFactoryProperties.trace)
       {
-         log.trace("setConnectionTTL(" + connectionTTL + ")");
+         ConnectionFactoryProperties.log.trace("setConnectionTTL(" + connectionTTL + ")");
       }
       hasBeenUpdated = true;
       this.connectionTTL = connectionTTL;
@@ -355,19 +355,19 @@ public class ConnectionFactoryProperties
 
    public Long getCallTimeout()
    {
-      if (trace)
+      if (ConnectionFactoryProperties.trace)
       {
-         log.trace("getCallTimeout()");
+         ConnectionFactoryProperties.log.trace("getCallTimeout()");
       }
       hasBeenUpdated = true;
       return callTimeout;
    }
 
-   public void setCallTimeout(Long callTimeout)
+   public void setCallTimeout(final Long callTimeout)
    {
-      if (trace)
+      if (ConnectionFactoryProperties.trace)
       {
-         log.trace("setCallTimeout(" + callTimeout + ")");
+         ConnectionFactoryProperties.log.trace("setCallTimeout(" + callTimeout + ")");
       }
       hasBeenUpdated = true;
       this.callTimeout = callTimeout;
@@ -375,19 +375,19 @@ public class ConnectionFactoryProperties
 
    public Integer getConsumerWindowSize()
    {
-      if (trace)
+      if (ConnectionFactoryProperties.trace)
       {
-         log.trace("getConsumerWindowSize()");
+         ConnectionFactoryProperties.log.trace("getConsumerWindowSize()");
       }
       hasBeenUpdated = true;
       return consumerWindowSize;
    }
 
-   public void setConsumerWindowSize(Integer consumerWindowSize)
+   public void setConsumerWindowSize(final Integer consumerWindowSize)
    {
-      if (trace)
+      if (ConnectionFactoryProperties.trace)
       {
-         log.trace("setConsumerWindowSize(" + consumerWindowSize + ")");
+         ConnectionFactoryProperties.log.trace("setConsumerWindowSize(" + consumerWindowSize + ")");
       }
       hasBeenUpdated = true;
       this.consumerWindowSize = consumerWindowSize;
@@ -395,19 +395,19 @@ public class ConnectionFactoryProperties
 
    public Integer getConsumerMaxRate()
    {
-      if (trace)
+      if (ConnectionFactoryProperties.trace)
       {
-         log.trace("getConsumerMaxRate()");
+         ConnectionFactoryProperties.log.trace("getConsumerMaxRate()");
       }
       hasBeenUpdated = true;
       return consumerMaxRate;
    }
 
-   public void setConsumerMaxRate(Integer consumerMaxRate)
+   public void setConsumerMaxRate(final Integer consumerMaxRate)
    {
-      if (trace)
+      if (ConnectionFactoryProperties.trace)
       {
-         log.trace("setConsumerMaxRate(" + consumerMaxRate + ")");
+         ConnectionFactoryProperties.log.trace("setConsumerMaxRate(" + consumerMaxRate + ")");
       }
       hasBeenUpdated = true;
       this.consumerMaxRate = consumerMaxRate;
@@ -415,19 +415,19 @@ public class ConnectionFactoryProperties
 
    public Integer getConfirmationWindowSize()
    {
-      if (trace)
+      if (ConnectionFactoryProperties.trace)
       {
-         log.trace("getConfirmationWindowSize()");
+         ConnectionFactoryProperties.log.trace("getConfirmationWindowSize()");
       }
       hasBeenUpdated = true;
       return confirmationWindowSize;
    }
 
-   public void setConfirmationWindowSize(Integer confirmationWindowSize)
+   public void setConfirmationWindowSize(final Integer confirmationWindowSize)
    {
-      if (trace)
+      if (ConnectionFactoryProperties.trace)
       {
-         log.trace("setConfirmationWindowSize(" + confirmationWindowSize + ")");
+         ConnectionFactoryProperties.log.trace("setConfirmationWindowSize(" + confirmationWindowSize + ")");
       }
       hasBeenUpdated = true;
       this.confirmationWindowSize = confirmationWindowSize;
@@ -435,19 +435,19 @@ public class ConnectionFactoryProperties
 
    public Integer getProducerMaxRate()
    {
-      if (trace)
+      if (ConnectionFactoryProperties.trace)
       {
-         log.trace("getProducerMaxRate()");
+         ConnectionFactoryProperties.log.trace("getProducerMaxRate()");
       }
       hasBeenUpdated = true;
       return producerMaxRate;
    }
 
-   public void setProducerMaxRate(Integer producerMaxRate)
+   public void setProducerMaxRate(final Integer producerMaxRate)
    {
-      if (trace)
+      if (ConnectionFactoryProperties.trace)
       {
-         log.trace("setProducerMaxRate(" + producerMaxRate + ")");
+         ConnectionFactoryProperties.log.trace("setProducerMaxRate(" + producerMaxRate + ")");
       }
       hasBeenUpdated = true;
       this.producerMaxRate = producerMaxRate;
@@ -455,19 +455,19 @@ public class ConnectionFactoryProperties
 
    public Integer getMinLargeMessageSize()
    {
-      if (trace)
+      if (ConnectionFactoryProperties.trace)
       {
-         log.trace("getMinLargeMessageSize()");
+         ConnectionFactoryProperties.log.trace("getMinLargeMessageSize()");
       }
       hasBeenUpdated = true;
       return minLargeMessageSize;
    }
 
-   public void setMinLargeMessageSize(Integer minLargeMessageSize)
+   public void setMinLargeMessageSize(final Integer minLargeMessageSize)
    {
-      if (trace)
+      if (ConnectionFactoryProperties.trace)
       {
-         log.trace("setMinLargeMessageSize(" + minLargeMessageSize + ")");
+         ConnectionFactoryProperties.log.trace("setMinLargeMessageSize(" + minLargeMessageSize + ")");
       }
       hasBeenUpdated = true;
       this.minLargeMessageSize = minLargeMessageSize;
@@ -475,19 +475,19 @@ public class ConnectionFactoryProperties
 
    public Boolean isBlockOnAcknowledge()
    {
-      if (trace)
+      if (ConnectionFactoryProperties.trace)
       {
-         log.trace("isBlockOnAcknowledge()");
+         ConnectionFactoryProperties.log.trace("isBlockOnAcknowledge()");
       }
       hasBeenUpdated = true;
       return blockOnAcknowledge;
    }
 
-   public void setBlockOnAcknowledge(Boolean blockOnAcknowledge)
+   public void setBlockOnAcknowledge(final Boolean blockOnAcknowledge)
    {
-      if (trace)
+      if (ConnectionFactoryProperties.trace)
       {
-         log.trace("setBlockOnAcknowledge(" + blockOnAcknowledge + ")");
+         ConnectionFactoryProperties.log.trace("setBlockOnAcknowledge(" + blockOnAcknowledge + ")");
       }
       hasBeenUpdated = true;
       this.blockOnAcknowledge = blockOnAcknowledge;
@@ -495,19 +495,19 @@ public class ConnectionFactoryProperties
 
    public Boolean isBlockOnNonPersistentSend()
    {
-      if (trace)
+      if (ConnectionFactoryProperties.trace)
       {
-         log.trace("isBlockOnNonPersistentSend()");
+         ConnectionFactoryProperties.log.trace("isBlockOnNonPersistentSend()");
       }
       hasBeenUpdated = true;
       return blockOnNonPersistentSend;
    }
 
-   public void setBlockOnNonPersistentSend(Boolean blockOnNonPersistentSend)
+   public void setBlockOnNonPersistentSend(final Boolean blockOnNonPersistentSend)
    {
-      if (trace)
+      if (ConnectionFactoryProperties.trace)
       {
-         log.trace("setBlockOnNonPersistentSend(" + blockOnNonPersistentSend + ")");
+         ConnectionFactoryProperties.log.trace("setBlockOnNonPersistentSend(" + blockOnNonPersistentSend + ")");
       }
       hasBeenUpdated = true;
       this.blockOnNonPersistentSend = blockOnNonPersistentSend;
@@ -515,19 +515,19 @@ public class ConnectionFactoryProperties
 
    public Boolean isBlockOnPersistentSend()
    {
-      if (trace)
+      if (ConnectionFactoryProperties.trace)
       {
-         log.trace("isBlockOnPersistentSend()");
+         ConnectionFactoryProperties.log.trace("isBlockOnPersistentSend()");
       }
       hasBeenUpdated = true;
       return blockOnPersistentSend;
    }
 
-   public void setBlockOnPersistentSend(Boolean blockOnPersistentSend)
+   public void setBlockOnPersistentSend(final Boolean blockOnPersistentSend)
    {
-      if (trace)
+      if (ConnectionFactoryProperties.trace)
       {
-         log.trace("setBlockOnPersistentSend(" + blockOnPersistentSend + ")");
+         ConnectionFactoryProperties.log.trace("setBlockOnPersistentSend(" + blockOnPersistentSend + ")");
       }
       hasBeenUpdated = true;
       this.blockOnPersistentSend = blockOnPersistentSend;
@@ -535,40 +535,39 @@ public class ConnectionFactoryProperties
 
    public Boolean isAutoGroup()
    {
-      if (trace)
+      if (ConnectionFactoryProperties.trace)
       {
-         log.trace("isAutoGroup()");
+         ConnectionFactoryProperties.log.trace("isAutoGroup()");
       }
       hasBeenUpdated = true;
       return autoGroup;
    }
 
-   public void setAutoGroup(Boolean autoGroup)
+   public void setAutoGroup(final Boolean autoGroup)
    {
-      if (trace)
+      if (ConnectionFactoryProperties.trace)
       {
-         log.trace("setAutoGroup(" + autoGroup + ")");
+         ConnectionFactoryProperties.log.trace("setAutoGroup(" + autoGroup + ")");
       }
       hasBeenUpdated = true;
       this.autoGroup = autoGroup;
    }
 
-   
    public Boolean isPreAcknowledge()
    {
-      if (trace)
+      if (ConnectionFactoryProperties.trace)
       {
-         log.trace("isPreAcknowledge()");
+         ConnectionFactoryProperties.log.trace("isPreAcknowledge()");
       }
       hasBeenUpdated = true;
       return preAcknowledge;
    }
 
-   public void setPreAcknowledge(Boolean preAcknowledge)
+   public void setPreAcknowledge(final Boolean preAcknowledge)
    {
-      if (trace)
+      if (ConnectionFactoryProperties.trace)
       {
-         log.trace("setPreAcknowledge(" + preAcknowledge + ")");
+         ConnectionFactoryProperties.log.trace("setPreAcknowledge(" + preAcknowledge + ")");
       }
       hasBeenUpdated = true;
       this.preAcknowledge = preAcknowledge;
@@ -576,19 +575,19 @@ public class ConnectionFactoryProperties
 
    public Long getRetryInterval()
    {
-      if (trace)
+      if (ConnectionFactoryProperties.trace)
       {
-         log.trace("getRetryInterval()");
+         ConnectionFactoryProperties.log.trace("getRetryInterval()");
       }
       hasBeenUpdated = true;
       return retryInterval;
    }
 
-   public void setRetryInterval(Long retryInterval)
+   public void setRetryInterval(final Long retryInterval)
    {
-      if (trace)
+      if (ConnectionFactoryProperties.trace)
       {
-         log.trace("setRetryInterval(" + retryInterval + ")");
+         ConnectionFactoryProperties.log.trace("setRetryInterval(" + retryInterval + ")");
       }
       hasBeenUpdated = true;
       this.retryInterval = retryInterval;
@@ -596,19 +595,19 @@ public class ConnectionFactoryProperties
 
    public Double getRetryIntervalMultiplier()
    {
-      if (trace)
+      if (ConnectionFactoryProperties.trace)
       {
-         log.trace("getRetryIntervalMultiplier()");
+         ConnectionFactoryProperties.log.trace("getRetryIntervalMultiplier()");
       }
       hasBeenUpdated = true;
       return retryIntervalMultiplier;
    }
 
-   public void setRetryIntervalMultiplier(Double retryIntervalMultiplier)
+   public void setRetryIntervalMultiplier(final Double retryIntervalMultiplier)
    {
-      if (trace)
+      if (ConnectionFactoryProperties.trace)
       {
-         log.trace("setRetryIntervalMultiplier(" + retryIntervalMultiplier + ")");
+         ConnectionFactoryProperties.log.trace("setRetryIntervalMultiplier(" + retryIntervalMultiplier + ")");
       }
       hasBeenUpdated = true;
       this.retryIntervalMultiplier = retryIntervalMultiplier;
@@ -616,19 +615,19 @@ public class ConnectionFactoryProperties
 
    public Integer getReconnectAttempts()
    {
-      if (trace)
+      if (ConnectionFactoryProperties.trace)
       {
-         log.trace("getReconnectAttempts()");
+         ConnectionFactoryProperties.log.trace("getReconnectAttempts()");
       }
       hasBeenUpdated = true;
       return reconnectAttempts;
    }
 
-   public void setReconnectAttempts(Integer reconnectAttempts)
+   public void setReconnectAttempts(final Integer reconnectAttempts)
    {
-      if (trace)
+      if (ConnectionFactoryProperties.trace)
       {
-         log.trace("setReconnectAttempts(" + reconnectAttempts + ")");
+         ConnectionFactoryProperties.log.trace("setReconnectAttempts(" + reconnectAttempts + ")");
       }
       hasBeenUpdated = true;
       this.reconnectAttempts = reconnectAttempts;
@@ -636,19 +635,19 @@ public class ConnectionFactoryProperties
 
    public Boolean isFailoverOnServerShutdown()
    {
-      if (trace)
+      if (ConnectionFactoryProperties.trace)
       {
-         log.trace("isFailoverOnServerShutdown()");
+         ConnectionFactoryProperties.log.trace("isFailoverOnServerShutdown()");
       }
       hasBeenUpdated = true;
       return failoverOnServerShutdown;
    }
 
-   public void setFailoverOnServerShutdown(Boolean failoverOnServerShutdown)
+   public void setFailoverOnServerShutdown(final Boolean failoverOnServerShutdown)
    {
-      if (trace)
+      if (ConnectionFactoryProperties.trace)
       {
-         log.trace("setFailoverOnServerShutdown(" + failoverOnServerShutdown + ")");
+         ConnectionFactoryProperties.log.trace("setFailoverOnServerShutdown(" + failoverOnServerShutdown + ")");
       }
       hasBeenUpdated = true;
       this.failoverOnServerShutdown = failoverOnServerShutdown;
@@ -656,19 +655,19 @@ public class ConnectionFactoryProperties
 
    public Boolean isUseGlobalPools()
    {
-      if (trace)
+      if (ConnectionFactoryProperties.trace)
       {
-         log.trace("isUseGlobalPools()");
+         ConnectionFactoryProperties.log.trace("isUseGlobalPools()");
       }
       hasBeenUpdated = true;
       return useGlobalPools;
    }
 
-   public void setUseGlobalPools(Boolean useGlobalPools)
+   public void setUseGlobalPools(final Boolean useGlobalPools)
    {
-      if (trace)
+      if (ConnectionFactoryProperties.trace)
       {
-         log.trace("setUseGlobalPools(" + useGlobalPools + ")");
+         ConnectionFactoryProperties.log.trace("setUseGlobalPools(" + useGlobalPools + ")");
       }
       hasBeenUpdated = true;
       this.useGlobalPools = useGlobalPools;
@@ -676,19 +675,19 @@ public class ConnectionFactoryProperties
 
    public Integer getScheduledThreadPoolMaxSize()
    {
-      if (trace)
+      if (ConnectionFactoryProperties.trace)
       {
-         log.trace("getScheduledThreadPoolMaxSize()");
+         ConnectionFactoryProperties.log.trace("getScheduledThreadPoolMaxSize()");
       }
       hasBeenUpdated = true;
       return scheduledThreadPoolMaxSize;
    }
 
-   public void setScheduledThreadPoolMaxSize(Integer scheduledThreadPoolMaxSize)
+   public void setScheduledThreadPoolMaxSize(final Integer scheduledThreadPoolMaxSize)
    {
-      if (trace)
+      if (ConnectionFactoryProperties.trace)
       {
-         log.trace("setScheduledThreadPoolMaxSize(" + scheduledThreadPoolMaxSize + ")");
+         ConnectionFactoryProperties.log.trace("setScheduledThreadPoolMaxSize(" + scheduledThreadPoolMaxSize + ")");
       }
       hasBeenUpdated = true;
       this.scheduledThreadPoolMaxSize = scheduledThreadPoolMaxSize;
@@ -696,19 +695,19 @@ public class ConnectionFactoryProperties
 
    public Integer getThreadPoolMaxSize()
    {
-      if (trace)
+      if (ConnectionFactoryProperties.trace)
       {
-         log.trace("getThreadPoolMaxSize()");
+         ConnectionFactoryProperties.log.trace("getThreadPoolMaxSize()");
       }
       hasBeenUpdated = true;
       return threadPoolMaxSize;
    }
 
-   public void setThreadPoolMaxSize(Integer threadPoolMaxSize)
+   public void setThreadPoolMaxSize(final Integer threadPoolMaxSize)
    {
-      if (trace)
+      if (ConnectionFactoryProperties.trace)
       {
-         log.trace("setThreadPoolMaxSize(" + threadPoolMaxSize + ")");
+         ConnectionFactoryProperties.log.trace("setThreadPoolMaxSize(" + threadPoolMaxSize + ")");
       }
       hasBeenUpdated = true;
       this.threadPoolMaxSize = threadPoolMaxSize;

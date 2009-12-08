@@ -63,7 +63,7 @@ public class LargeMessageBufferImpl implements LargeMessageBuffer
    private final long totalSize;
 
    private boolean streamEnded = false;
-   
+
    private boolean streamClosed = false;
 
    private final int readTimeout;
@@ -103,11 +103,11 @@ public class LargeMessageBufferImpl implements LargeMessageBuffer
       this.totalSize = totalSize;
       if (cachedFile == null)
       {
-         this.fileCache = null;
+         fileCache = null;
       }
       else
       {
-         this.fileCache = new FileCache(cachedFile);
+         fileCache = new FileCache(cachedFile);
       }
    }
 
@@ -163,7 +163,7 @@ public class LargeMessageBufferImpl implements LargeMessageBuffer
                outStream.write(packet.getBody());
 
                flowControlCredit = packet.getPacketSize();
-               
+
                continues = packet.isContinues();
 
                notifyAll();
@@ -175,7 +175,7 @@ public class LargeMessageBufferImpl implements LargeMessageBuffer
             }
             catch (Exception e)
             {
-               log.warn(e.getMessage(), e);
+               LargeMessageBufferImpl.log.warn(e.getMessage(), e);
                handledException = e;
             }
          }
@@ -189,7 +189,7 @@ public class LargeMessageBufferImpl implements LargeMessageBuffer
                }
                catch (Exception e)
                {
-                  log.warn(e.getMessage(), e);
+                  LargeMessageBufferImpl.log.warn(e.getMessage(), e);
                   handledException = e;
                }
             }
@@ -206,7 +206,7 @@ public class LargeMessageBufferImpl implements LargeMessageBuffer
          }
          catch (Exception e)
          {
-            log.warn(e.getMessage(), e);
+            LargeMessageBufferImpl.log.warn(e.getMessage(), e);
             handledException = e;
          }
       }
@@ -250,7 +250,7 @@ public class LargeMessageBufferImpl implements LargeMessageBuffer
                break;
             }
             totalFlowControl += packet.getPacketSize();
-            
+
             continues = packet.isContinues();
             sendPacketToOutput(output, packet);
          }
@@ -296,15 +296,15 @@ public class LargeMessageBufferImpl implements LargeMessageBuffer
          if (timeWait > 0 && System.currentTimeMillis() > timeOut)
          {
             throw new HornetQException(HornetQException.LARGE_MESSAGE_ERROR_BODY,
-                                         "Timeout waiting for LargeMessage Body");
+                                       "Timeout waiting for LargeMessage Body");
          }
       }
 
       if (handledException != null)
       {
          throw new HornetQException(HornetQException.LARGE_MESSAGE_ERROR_BODY,
-                                      "Error on saving LargeMessageBufferImpl",
-                                      handledException);
+                                    "Error on saving LargeMessageBufferImpl",
+                                    handledException);
       }
 
       return streamEnded;
@@ -514,7 +514,7 @@ public class LargeMessageBufferImpl implements LargeMessageBuffer
     */
    public void setByte(final int index, final byte value)
    {
-      throw new IllegalAccessError(READ_ONLY_ERROR_MESSAGE);
+      throw new IllegalAccessError(LargeMessageBufferImpl.READ_ONLY_ERROR_MESSAGE);
    }
 
    /* (non-Javadoc)
@@ -522,7 +522,7 @@ public class LargeMessageBufferImpl implements LargeMessageBuffer
     */
    public void setBytes(final int index, final HornetQBuffer src, final int srcIndex, final int length)
    {
-      throw new IllegalAccessError(READ_ONLY_ERROR_MESSAGE);
+      throw new IllegalAccessError(LargeMessageBufferImpl.READ_ONLY_ERROR_MESSAGE);
    }
 
    /* (non-Javadoc)
@@ -530,7 +530,7 @@ public class LargeMessageBufferImpl implements LargeMessageBuffer
     */
    public void setBytes(final int index, final byte[] src, final int srcIndex, final int length)
    {
-      throw new IllegalAccessError(READ_ONLY_ERROR_MESSAGE);
+      throw new IllegalAccessError(LargeMessageBufferImpl.READ_ONLY_ERROR_MESSAGE);
    }
 
    /* (non-Javadoc)
@@ -538,7 +538,7 @@ public class LargeMessageBufferImpl implements LargeMessageBuffer
     */
    public void setBytes(final int index, final ByteBuffer src)
    {
-      throw new IllegalAccessError(READ_ONLY_ERROR_MESSAGE);
+      throw new IllegalAccessError(LargeMessageBufferImpl.READ_ONLY_ERROR_MESSAGE);
    }
 
    /* (non-Javadoc)
@@ -546,7 +546,7 @@ public class LargeMessageBufferImpl implements LargeMessageBuffer
     */
    public int setBytes(final int index, final InputStream in, final int length) throws IOException
    {
-      throw new IllegalAccessError(READ_ONLY_ERROR_MESSAGE);
+      throw new IllegalAccessError(LargeMessageBufferImpl.READ_ONLY_ERROR_MESSAGE);
    }
 
    /* (non-Javadoc)
@@ -554,7 +554,7 @@ public class LargeMessageBufferImpl implements LargeMessageBuffer
     */
    public int setBytes(final int index, final ScatteringByteChannel in, final int length) throws IOException
    {
-      throw new IllegalAccessError(READ_ONLY_ERROR_MESSAGE);
+      throw new IllegalAccessError(LargeMessageBufferImpl.READ_ONLY_ERROR_MESSAGE);
    }
 
    /* (non-Javadoc)
@@ -562,7 +562,7 @@ public class LargeMessageBufferImpl implements LargeMessageBuffer
     */
    public void setInt(final int index, final int value)
    {
-      throw new IllegalAccessError(READ_ONLY_ERROR_MESSAGE);
+      throw new IllegalAccessError(LargeMessageBufferImpl.READ_ONLY_ERROR_MESSAGE);
    }
 
    /* (non-Javadoc)
@@ -570,7 +570,7 @@ public class LargeMessageBufferImpl implements LargeMessageBuffer
     */
    public void setLong(final int index, final long value)
    {
-      throw new IllegalAccessError(READ_ONLY_ERROR_MESSAGE);
+      throw new IllegalAccessError(LargeMessageBufferImpl.READ_ONLY_ERROR_MESSAGE);
    }
 
    /* (non-Javadoc)
@@ -578,7 +578,7 @@ public class LargeMessageBufferImpl implements LargeMessageBuffer
     */
    public void setMedium(final int index, final int value)
    {
-      throw new IllegalAccessError(READ_ONLY_ERROR_MESSAGE);
+      throw new IllegalAccessError(LargeMessageBufferImpl.READ_ONLY_ERROR_MESSAGE);
    }
 
    /* (non-Javadoc)
@@ -586,7 +586,7 @@ public class LargeMessageBufferImpl implements LargeMessageBuffer
     */
    public void setShort(final int index, final short value)
    {
-      throw new IllegalAccessError(READ_ONLY_ERROR_MESSAGE);
+      throw new IllegalAccessError(LargeMessageBufferImpl.READ_ONLY_ERROR_MESSAGE);
    }
 
    /* (non-Javadoc)
@@ -594,7 +594,7 @@ public class LargeMessageBufferImpl implements LargeMessageBuffer
     */
    public ByteBuffer toByteBuffer(final int index, final int length)
    {
-      throw new IllegalAccessError(READ_ONLY_ERROR_MESSAGE);
+      throw new IllegalAccessError(LargeMessageBufferImpl.READ_ONLY_ERROR_MESSAGE);
    }
 
    /* (non-Javadoc)
@@ -602,7 +602,7 @@ public class LargeMessageBufferImpl implements LargeMessageBuffer
     */
    public String toString(final int index, final int length, final String charsetName)
    {
-      throw new IllegalAccessError(READ_ONLY_ERROR_MESSAGE);
+      throw new IllegalAccessError(LargeMessageBufferImpl.READ_ONLY_ERROR_MESSAGE);
    }
 
    public int readerIndex()
@@ -618,7 +618,7 @@ public class LargeMessageBufferImpl implements LargeMessageBuffer
       }
       catch (Exception e)
       {
-         log.warn(e.getMessage(), e);
+         LargeMessageBufferImpl.log.warn(e.getMessage(), e);
          throw new RuntimeException(e.getMessage(), e);
       }
       this.readerIndex = readerIndex;
@@ -636,7 +636,7 @@ public class LargeMessageBufferImpl implements LargeMessageBuffer
 
    public void writerIndex(final int writerIndex)
    {
-      throw new IllegalAccessError(READ_ONLY_ERROR_MESSAGE);
+      throw new IllegalAccessError(LargeMessageBufferImpl.READ_ONLY_ERROR_MESSAGE);
    }
 
    public void setIndex(final int readerIndex, final int writerIndex)
@@ -647,7 +647,7 @@ public class LargeMessageBufferImpl implements LargeMessageBuffer
       }
       catch (Exception e)
       {
-         log.warn(e.getMessage(), e);
+         LargeMessageBufferImpl.log.warn(e.getMessage(), e);
          throw new RuntimeException(e.getMessage(), e);
       }
       this.readerIndex = readerIndex;
@@ -688,7 +688,7 @@ public class LargeMessageBufferImpl implements LargeMessageBuffer
 
    public void markReaderIndex()
    {
-      throw new IllegalAccessError(READ_ONLY_ERROR_MESSAGE);
+      throw new IllegalAccessError(LargeMessageBufferImpl.READ_ONLY_ERROR_MESSAGE);
    }
 
    public void resetReaderIndex()
@@ -699,24 +699,24 @@ public class LargeMessageBufferImpl implements LargeMessageBuffer
       }
       catch (Exception e)
       {
-         log.warn(e.getMessage(), e);
+         LargeMessageBufferImpl.log.warn(e.getMessage(), e);
          throw new RuntimeException(e.getMessage(), e);
       }
    }
 
    public void markWriterIndex()
    {
-      throw new IllegalAccessError(READ_ONLY_ERROR_MESSAGE);
+      throw new IllegalAccessError(LargeMessageBufferImpl.READ_ONLY_ERROR_MESSAGE);
    }
 
    public void resetWriterIndex()
    {
-      throw new IllegalAccessError(READ_ONLY_ERROR_MESSAGE);
+      throw new IllegalAccessError(LargeMessageBufferImpl.READ_ONLY_ERROR_MESSAGE);
    }
 
    public void discardReadBytes()
    {
-      throw new IllegalAccessError(READ_ONLY_ERROR_MESSAGE);
+      throw new IllegalAccessError(LargeMessageBufferImpl.READ_ONLY_ERROR_MESSAGE);
    }
 
    public short getUnsignedByte(final int index)
@@ -779,22 +779,22 @@ public class LargeMessageBufferImpl implements LargeMessageBuffer
 
    public void setBytes(final int index, final byte[] src)
    {
-      throw new IllegalAccessError(READ_ONLY_ERROR_MESSAGE);
+      throw new IllegalAccessError(LargeMessageBufferImpl.READ_ONLY_ERROR_MESSAGE);
    }
 
    public void setBytes(final int index, final HornetQBuffer src)
    {
-      throw new IllegalAccessError(READ_ONLY_ERROR_MESSAGE);
+      throw new IllegalAccessError(LargeMessageBufferImpl.READ_ONLY_ERROR_MESSAGE);
    }
 
    public void setBytes(final int index, final HornetQBuffer src, final int length)
    {
-      throw new IllegalAccessError(READ_ONLY_ERROR_MESSAGE);
+      throw new IllegalAccessError(LargeMessageBufferImpl.READ_ONLY_ERROR_MESSAGE);
    }
 
    public void setZero(final int index, final int length)
    {
-      throw new IllegalAccessError(READ_ONLY_ERROR_MESSAGE);
+      throw new IllegalAccessError(LargeMessageBufferImpl.READ_ONLY_ERROR_MESSAGE);
    }
 
    public short readUnsignedByte()
@@ -837,13 +837,13 @@ public class LargeMessageBufferImpl implements LargeMessageBuffer
       readerIndex += 4;
       return v;
    }
-   
+
    public int readInt(final int pos)
    {
       int v = getInt(pos);
       return v;
    }
-   
+
    public long readUnsignedInt()
    {
       return readInt() & 0xFFFFFFFFL;
@@ -918,87 +918,87 @@ public class LargeMessageBufferImpl implements LargeMessageBuffer
 
    public void writeByte(final byte value)
    {
-      throw new IllegalAccessError(READ_ONLY_ERROR_MESSAGE);
+      throw new IllegalAccessError(LargeMessageBufferImpl.READ_ONLY_ERROR_MESSAGE);
    }
 
    public void writeShort(final short value)
    {
-      throw new IllegalAccessError(READ_ONLY_ERROR_MESSAGE);
+      throw new IllegalAccessError(LargeMessageBufferImpl.READ_ONLY_ERROR_MESSAGE);
    }
 
    public void writeMedium(final int value)
    {
-      throw new IllegalAccessError(READ_ONLY_ERROR_MESSAGE);
+      throw new IllegalAccessError(LargeMessageBufferImpl.READ_ONLY_ERROR_MESSAGE);
    }
 
    public void writeInt(final int value)
    {
-      throw new IllegalAccessError(READ_ONLY_ERROR_MESSAGE);
+      throw new IllegalAccessError(LargeMessageBufferImpl.READ_ONLY_ERROR_MESSAGE);
    }
 
    public void writeLong(final long value)
    {
-      throw new IllegalAccessError(READ_ONLY_ERROR_MESSAGE);
+      throw new IllegalAccessError(LargeMessageBufferImpl.READ_ONLY_ERROR_MESSAGE);
    }
 
    public void writeBytes(final byte[] src, final int srcIndex, final int length)
    {
-      throw new IllegalAccessError(READ_ONLY_ERROR_MESSAGE);
+      throw new IllegalAccessError(LargeMessageBufferImpl.READ_ONLY_ERROR_MESSAGE);
    }
 
    public void writeBytes(final byte[] src)
    {
-      throw new IllegalAccessError(READ_ONLY_ERROR_MESSAGE);
+      throw new IllegalAccessError(LargeMessageBufferImpl.READ_ONLY_ERROR_MESSAGE);
    }
 
    public void writeBytes(final HornetQBuffer src)
    {
-      throw new IllegalAccessError(READ_ONLY_ERROR_MESSAGE);
+      throw new IllegalAccessError(LargeMessageBufferImpl.READ_ONLY_ERROR_MESSAGE);
    }
 
    public void writeBytes(final HornetQBuffer src, final int length)
    {
-      throw new IllegalAccessError(READ_ONLY_ERROR_MESSAGE);
+      throw new IllegalAccessError(LargeMessageBufferImpl.READ_ONLY_ERROR_MESSAGE);
    }
 
    public void writeBytes(final ByteBuffer src)
    {
-      throw new IllegalAccessError(READ_ONLY_ERROR_MESSAGE);
+      throw new IllegalAccessError(LargeMessageBufferImpl.READ_ONLY_ERROR_MESSAGE);
    }
 
    public int writeBytes(final InputStream in, final int length) throws IOException
    {
-      throw new IllegalAccessError(READ_ONLY_ERROR_MESSAGE);
+      throw new IllegalAccessError(LargeMessageBufferImpl.READ_ONLY_ERROR_MESSAGE);
    }
 
    public int writeBytes(final ScatteringByteChannel in, final int length) throws IOException
    {
-      throw new IllegalAccessError(READ_ONLY_ERROR_MESSAGE);
+      throw new IllegalAccessError(LargeMessageBufferImpl.READ_ONLY_ERROR_MESSAGE);
    }
 
    public void writeZero(final int length)
    {
-      throw new IllegalAccessError(READ_ONLY_ERROR_MESSAGE);
+      throw new IllegalAccessError(LargeMessageBufferImpl.READ_ONLY_ERROR_MESSAGE);
    }
 
    public ByteBuffer toByteBuffer()
    {
-      throw new IllegalAccessError(READ_ONLY_ERROR_MESSAGE);
+      throw new IllegalAccessError(LargeMessageBufferImpl.READ_ONLY_ERROR_MESSAGE);
    }
 
    public ByteBuffer[] toByteBuffers()
    {
-      throw new IllegalAccessError(READ_ONLY_ERROR_MESSAGE);
+      throw new IllegalAccessError(LargeMessageBufferImpl.READ_ONLY_ERROR_MESSAGE);
    }
 
    public ByteBuffer[] toByteBuffers(final int index, final int length)
    {
-      throw new IllegalAccessError(READ_ONLY_ERROR_MESSAGE);
+      throw new IllegalAccessError(LargeMessageBufferImpl.READ_ONLY_ERROR_MESSAGE);
    }
 
    public String toString(final String charsetName)
    {
-      throw new IllegalAccessError(READ_ONLY_ERROR_MESSAGE);
+      throw new IllegalAccessError(LargeMessageBufferImpl.READ_ONLY_ERROR_MESSAGE);
    }
 
    public Object getUnderlyingBuffer()
@@ -1087,7 +1087,7 @@ public class LargeMessageBufferImpl implements LargeMessageBuffer
    public String readString()
    {
       int len = readInt();
-      
+
       if (len < 9)
       {
          char[] chars = new char[len];
@@ -1120,7 +1120,7 @@ public class LargeMessageBufferImpl implements LargeMessageBuffer
     */
    public void writeBoolean(final boolean val)
    {
-      throw new IllegalAccessError(READ_ONLY_ERROR_MESSAGE);
+      throw new IllegalAccessError(LargeMessageBufferImpl.READ_ONLY_ERROR_MESSAGE);
    }
 
    /* (non-Javadoc)
@@ -1128,7 +1128,7 @@ public class LargeMessageBufferImpl implements LargeMessageBuffer
     */
    public void writeChar(final char val)
    {
-      throw new IllegalAccessError(READ_ONLY_ERROR_MESSAGE);
+      throw new IllegalAccessError(LargeMessageBufferImpl.READ_ONLY_ERROR_MESSAGE);
    }
 
    /* (non-Javadoc)
@@ -1136,7 +1136,7 @@ public class LargeMessageBufferImpl implements LargeMessageBuffer
     */
    public void writeDouble(final double val)
    {
-      throw new IllegalAccessError(READ_ONLY_ERROR_MESSAGE);
+      throw new IllegalAccessError(LargeMessageBufferImpl.READ_ONLY_ERROR_MESSAGE);
 
    }
 
@@ -1145,7 +1145,7 @@ public class LargeMessageBufferImpl implements LargeMessageBuffer
     */
    public void writeFloat(final float val)
    {
-      throw new IllegalAccessError(READ_ONLY_ERROR_MESSAGE);
+      throw new IllegalAccessError(LargeMessageBufferImpl.READ_ONLY_ERROR_MESSAGE);
 
    }
 
@@ -1154,7 +1154,7 @@ public class LargeMessageBufferImpl implements LargeMessageBuffer
     */
    public void writeNullableSimpleString(final SimpleString val)
    {
-      throw new IllegalAccessError(READ_ONLY_ERROR_MESSAGE);
+      throw new IllegalAccessError(LargeMessageBufferImpl.READ_ONLY_ERROR_MESSAGE);
    }
 
    /* (non-Javadoc)
@@ -1162,7 +1162,7 @@ public class LargeMessageBufferImpl implements LargeMessageBuffer
     */
    public void writeNullableString(final String val)
    {
-      throw new IllegalAccessError(READ_ONLY_ERROR_MESSAGE);
+      throw new IllegalAccessError(LargeMessageBufferImpl.READ_ONLY_ERROR_MESSAGE);
    }
 
    /* (non-Javadoc)
@@ -1170,7 +1170,7 @@ public class LargeMessageBufferImpl implements LargeMessageBuffer
     */
    public void writeSimpleString(final SimpleString val)
    {
-      throw new IllegalAccessError(READ_ONLY_ERROR_MESSAGE);
+      throw new IllegalAccessError(LargeMessageBufferImpl.READ_ONLY_ERROR_MESSAGE);
    }
 
    /* (non-Javadoc)
@@ -1178,7 +1178,7 @@ public class LargeMessageBufferImpl implements LargeMessageBuffer
     */
    public void writeString(final String val)
    {
-      throw new IllegalAccessError(READ_ONLY_ERROR_MESSAGE);
+      throw new IllegalAccessError(LargeMessageBufferImpl.READ_ONLY_ERROR_MESSAGE);
    }
 
    /* (non-Javadoc)
@@ -1186,7 +1186,7 @@ public class LargeMessageBufferImpl implements LargeMessageBuffer
     */
    public void writeUTF(final String utf)
    {
-      throw new IllegalAccessError(READ_ONLY_ERROR_MESSAGE);
+      throw new IllegalAccessError(LargeMessageBufferImpl.READ_ONLY_ERROR_MESSAGE);
    }
 
    /* (non-Javadoc)
@@ -1196,13 +1196,13 @@ public class LargeMessageBufferImpl implements LargeMessageBuffer
    {
       return -1;
    }
-   
+
    public HornetQBuffer copy()
    {
       throw new UnsupportedOperationException();
    }
-   
-   public HornetQBuffer slice(int index, int length)
+
+   public HornetQBuffer slice(final int index, final int length)
    {
       throw new UnsupportedOperationException();
    }
@@ -1285,7 +1285,7 @@ public class LargeMessageBufferImpl implements LargeMessageBuffer
       {
          throw new IndexOutOfBoundsException();
       }
-      
+
       if (streamClosed)
       {
          throw new IllegalAccessError("The consumer associated with this large message was closed before the body was read");
@@ -1310,13 +1310,12 @@ public class LargeMessageBufferImpl implements LargeMessageBuffer
     * @param body
     */
    // Inner classes -------------------------------------------------
-
    private class FileCache
    {
 
       private final int BUFFER_SIZE = 10 * 1024;
 
-      public FileCache(File cachedFile)
+      public FileCache(final File cachedFile)
       {
          this.cachedFile = cachedFile;
       }
@@ -1333,14 +1332,14 @@ public class LargeMessageBufferImpl implements LargeMessageBuffer
 
       private volatile FileChannel cachedChannel;
 
-      private synchronized void readCache(long position)
+      private synchronized void readCache(final long position)
       {
 
          try
          {
             if (position < readCachePositionStart || position > readCachePositionEnd)
             {
-               
+
                checkOpen();
 
                if (position > cachedChannel.size())
@@ -1348,7 +1347,7 @@ public class LargeMessageBufferImpl implements LargeMessageBuffer
                   throw new ArrayIndexOutOfBoundsException("position > " + cachedChannel.size());
                }
 
-               readCachePositionStart = (position / BUFFER_SIZE) * BUFFER_SIZE;
+               readCachePositionStart = position / BUFFER_SIZE * BUFFER_SIZE;
 
                if (readCache == null)
                {
@@ -1357,12 +1356,12 @@ public class LargeMessageBufferImpl implements LargeMessageBuffer
 
                readCache.clear();
 
-               readCachePositionEnd = readCachePositionStart + cachedChannel.read(readCache) -1;
+               readCachePositionEnd = readCachePositionStart + cachedChannel.read(readCache) - 1;
             }
          }
          catch (Exception e)
          {
-            log.warn(e.getMessage(), e);
+            LargeMessageBufferImpl.log.warn(e.getMessage(), e);
             throw new RuntimeException(e.getMessage(), e);
          }
          finally
@@ -1371,7 +1370,7 @@ public class LargeMessageBufferImpl implements LargeMessageBuffer
          }
       }
 
-      public synchronized byte getByteFromCache(long position)
+      public synchronized byte getByteFromCache(final long position)
       {
          readCache(position);
 
@@ -1379,13 +1378,13 @@ public class LargeMessageBufferImpl implements LargeMessageBuffer
 
       }
 
-      public void cachePackage(byte[] body) throws Exception
+      public void cachePackage(final byte[] body) throws Exception
       {
          checkOpen();
 
          cachedChannel.position(cachedChannel.size());
          cachedChannel.write(ByteBuffer.wrap(body));
-         
+
          close();
       }
 
@@ -1396,7 +1395,7 @@ public class LargeMessageBufferImpl implements LargeMessageBuffer
       {
          if (cachedFile != null || !cachedChannel.isOpen())
          {
-            this.cachedRAFile = new RandomAccessFile(cachedFile, "rw");
+            cachedRAFile = new RandomAccessFile(cachedFile, "rw");
 
             cachedChannel = cachedRAFile.getChannel();
          }
@@ -1412,7 +1411,7 @@ public class LargeMessageBufferImpl implements LargeMessageBuffer
             }
             catch (Exception e)
             {
-               log.warn(e.getMessage(), e);
+               LargeMessageBufferImpl.log.warn(e.getMessage(), e);
             }
             cachedChannel = null;
          }
@@ -1425,13 +1424,14 @@ public class LargeMessageBufferImpl implements LargeMessageBuffer
             }
             catch (Exception e)
             {
-               log.warn(e.getMessage(), e);
+               LargeMessageBufferImpl.log.warn(e.getMessage(), e);
             }
             cachedRAFile = null;
          }
 
       }
 
+      @Override
       protected void finalize()
       {
          close();
@@ -1443,7 +1443,7 @@ public class LargeMessageBufferImpl implements LargeMessageBuffer
             }
             catch (Exception e)
             {
-               log.warn("Exception during finalization for LargeMessage file cache", e);
+               LargeMessageBufferImpl.log.warn("Exception during finalization for LargeMessage file cache", e);
             }
          }
       }
@@ -1456,7 +1456,7 @@ public class LargeMessageBufferImpl implements LargeMessageBuffer
       return null;
    }
 
-   public HornetQBuffer copy(int index, int length)
+   public HornetQBuffer copy(final int index, final int length)
    {
       // TODO Auto-generated method stub
       return null;
@@ -1468,52 +1468,52 @@ public class LargeMessageBufferImpl implements LargeMessageBuffer
       return null;
    }
 
-   public char getChar(int index)
+   public char getChar(final int index)
    {
       // TODO Auto-generated method stub
       return 0;
    }
 
-   public double getDouble(int index)
+   public double getDouble(final int index)
    {
       // TODO Auto-generated method stub
       return 0;
    }
 
-   public float getFloat(int index)
+   public float getFloat(final int index)
    {
       // TODO Auto-generated method stub
       return 0;
    }
 
-   public HornetQBuffer readBytes(int length)
+   public HornetQBuffer readBytes(final int length)
    {
       // TODO Auto-generated method stub
       return null;
    }
 
-   public HornetQBuffer readSlice(int length)
+   public HornetQBuffer readSlice(final int length)
    {
       // TODO Auto-generated method stub
       return null;
    }
 
-   public void setChar(int index, char value)
+   public void setChar(final int index, final char value)
    {
       // TODO Auto-generated method stub
-      
+
    }
 
-   public void setDouble(int index, double value)
+   public void setDouble(final int index, final double value)
    {
       // TODO Auto-generated method stub
-      
+
    }
 
-   public void setFloat(int index, float value)
+   public void setFloat(final int index, final float value)
    {
       // TODO Auto-generated method stub
-      
+
    }
 
    public HornetQBuffer slice()
@@ -1522,10 +1522,10 @@ public class LargeMessageBufferImpl implements LargeMessageBuffer
       return null;
    }
 
-   public void writeBytes(HornetQBuffer src, int srcIndex, int length)
+   public void writeBytes(final HornetQBuffer src, final int srcIndex, final int length)
    {
       // TODO Auto-generated method stub
-      
+
    }
 
 }

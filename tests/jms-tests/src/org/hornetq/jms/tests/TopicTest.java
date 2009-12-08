@@ -26,6 +26,8 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.jms.Topic;
 
+import org.hornetq.jms.tests.util.ProxyAssertSupport;
+
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
@@ -53,17 +55,17 @@ public class TopicTest extends JMSTestCase
 
       try
       {
-         conn = cf.createConnection();
+         conn = JMSTestCase.cf.createConnection();
 
          Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer p = s.createProducer(topic1);
-         MessageConsumer c = s.createConsumer(topic1);
+         MessageProducer p = s.createProducer(HornetQServerTestCase.topic1);
+         MessageConsumer c = s.createConsumer(HornetQServerTestCase.topic1);
          conn.start();
 
          p.send(s.createTextMessage("payload"));
          TextMessage m = (TextMessage)c.receive();
 
-         assertEquals("payload", m.getText());
+         ProxyAssertSupport.assertEquals("payload", m.getText());
       }
       finally
       {
@@ -80,17 +82,17 @@ public class TopicTest extends JMSTestCase
 
       try
       {
-         conn = cf.createConnection();
+         conn = JMSTestCase.cf.createConnection();
 
          Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer p = s.createProducer(topic1);
-         MessageConsumer c = s.createConsumer(topic1);
+         MessageProducer p = s.createProducer(HornetQServerTestCase.topic1);
+         MessageConsumer c = s.createConsumer(HornetQServerTestCase.topic1);
          conn.start();
 
          p.send(s.createTextMessage("payload"));
          TextMessage m = (TextMessage)c.receive();
 
-         assertEquals("payload", m.getText());
+         ProxyAssertSupport.assertEquals("payload", m.getText());
       }
       finally
       {
@@ -103,12 +105,11 @@ public class TopicTest extends JMSTestCase
 
    public void testTopicName() throws Exception
    {
-      Topic topic = (Topic)ic.lookup("/topic/Topic1");
-      assertEquals("Topic1", topic.getTopicName());
+      Topic topic = (Topic)JMSTestCase.ic.lookup("/topic/Topic1");
+      ProxyAssertSupport.assertEquals("Topic1", topic.getTopicName());
    }
 
-      
-    /*
+   /*
    * See http://jira.jboss.com/jira/browse/JBMESSAGING-399
    */
    public void testRace() throws Exception
@@ -117,20 +118,20 @@ public class TopicTest extends JMSTestCase
 
       try
       {
-         conn = cf.createConnection();
+         conn = JMSTestCase.cf.createConnection();
 
          Session sSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         MessageProducer prod = sSend.createProducer(topic1);
+         MessageProducer prod = sSend.createProducer(HornetQServerTestCase.topic1);
          prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
 
          Session s1 = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          Session s2 = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          Session s3 = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         MessageConsumer c1 = s1.createConsumer(topic1);
-         MessageConsumer c2 = s2.createConsumer(topic1);
-         MessageConsumer c3 = s3.createConsumer(topic1);
+         MessageConsumer c1 = s1.createConsumer(HornetQServerTestCase.topic1);
+         MessageConsumer c2 = s2.createConsumer(HornetQServerTestCase.topic1);
+         MessageConsumer c3 = s3.createConsumer(HornetQServerTestCase.topic1);
 
          final int numMessages = 500;
 
@@ -160,9 +161,9 @@ public class TopicTest extends JMSTestCase
          l2.waitForMessages();
          l3.waitForMessages();
 
-         assertFalse(l1.failed);
-         assertFalse(l2.failed);
-         assertFalse(l3.failed);
+         ProxyAssertSupport.assertFalse(l1.failed);
+         ProxyAssertSupport.assertFalse(l2.failed);
+         ProxyAssertSupport.assertFalse(l3.failed);
       }
       finally
       {
@@ -196,12 +197,12 @@ public class TopicTest extends JMSTestCase
 
       int num;
 
-      TestListener(int num)
+      TestListener(final int num)
       {
          this.num = num;
       }
 
-      public synchronized void onMessage(Message m)
+      public synchronized void onMessage(final Message m)
       {
          ObjectMessage om = (ObjectMessage)m;
 
@@ -218,7 +219,7 @@ public class TopicTest extends JMSTestCase
 
          if (count == num)
          {
-            this.notify();
+            notify();
          }
       }
 

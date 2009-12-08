@@ -31,55 +31,62 @@ import java.util.concurrent.ConcurrentMap;
  */
 public class ConcurrentHashSet<E> extends AbstractSet<E> implements ConcurrentSet<E>
 {
-   private ConcurrentMap<E, Object> theMap;
-   
+   private final ConcurrentMap<E, Object> theMap;
+
    private static final Object dummy = new Object();
-   
+
    public ConcurrentHashSet()
    {
       theMap = new ConcurrentHashMap<E, Object>();
    }
-   
+
+   @Override
    public int size()
    {
       return theMap.size();
    }
-   
+
+   @Override
    public Iterator<E> iterator()
    {
       return theMap.keySet().iterator();
    }
-   
+
+   @Override
    public boolean isEmpty()
    {
       return theMap.isEmpty();
    }
-   
-   public boolean add(E o)
+
+   @Override
+   public boolean add(final E o)
    {
-      return theMap.put(o, dummy) == null;
+      return theMap.put(o, ConcurrentHashSet.dummy) == null;
    }
-   
-   public boolean contains(Object o)
+
+   @Override
+   public boolean contains(final Object o)
    {
       return theMap.containsKey(o);
    }
-   
+
+   @Override
    public void clear()
    {
       theMap.clear();
    }
-   
-   public boolean remove(Object o)
+
+   @Override
+   public boolean remove(final Object o)
    {
-      return theMap.remove(o) == dummy;
+      return theMap.remove(o) == ConcurrentHashSet.dummy;
    }
-   
-   public boolean addIfAbsent(E o)
+
+   public boolean addIfAbsent(final E o)
    {
-   	Object obj = theMap.putIfAbsent(o, dummy);
-   	
-   	return obj == null;
+      Object obj = theMap.putIfAbsent(o, ConcurrentHashSet.dummy);
+
+      return obj == null;
    }
 
 }

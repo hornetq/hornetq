@@ -15,6 +15,8 @@ package org.hornetq.tests.unit.util;
 
 import java.util.concurrent.CountDownLatch;
 
+import junit.framework.Assert;
+
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.ConcurrentHashSet;
 import org.hornetq.utils.TimeAndCounterIDGenerator;
@@ -48,7 +50,7 @@ public class TimeAndCounterIDGeneratorTest extends UnitTestCase
       {
          long seqNr = seq.generateID();
 
-         assertTrue("The sequence generator should aways generate crescent numbers", seqNr > lastNr);
+         Assert.assertTrue("The sequence generator should aways generate crescent numbers", seqNr > lastNr);
 
          lastNr = seqNr;
       }
@@ -58,20 +60,18 @@ public class TimeAndCounterIDGeneratorTest extends UnitTestCase
    public void testCalculationRefresh()
    {
       TimeAndCounterIDGenerator seq = new TimeAndCounterIDGenerator();
-      
+
       long id1 = seq.generateID();
-      assertEquals(1, id1 & 0xffff);
-      assertEquals(2, seq.generateID() & 0xffff);
-      
+      Assert.assertEquals(1, id1 & 0xffff);
+      Assert.assertEquals(2, seq.generateID() & 0xffff);
+
       seq.refresh();
-      
+
       long id2 = seq.generateID();
-      
-      assertTrue(id2 > id1);
-      
-      assertEquals(1, id2 & 0xffff);
-      
-      
+
+      Assert.assertTrue(id2 > id1);
+
+      Assert.assertEquals(1, id2 & 0xffff);
 
    }
 
@@ -80,8 +80,8 @@ public class TimeAndCounterIDGeneratorTest extends UnitTestCase
       final ConcurrentHashSet<Long> hashSet = new ConcurrentHashSet<Long>();
 
       final TimeAndCounterIDGenerator seq = new TimeAndCounterIDGenerator();
-      
-      System.out.println("Time = " + hex(System.currentTimeMillis()) + ", " + seq);
+
+      System.out.println("Time = " + TimeAndCounterIDGeneratorTest.hex(System.currentTimeMillis()) + ", " + seq);
 
       final int NUMBER_OF_THREADS = 100;
 
@@ -107,8 +107,10 @@ public class TimeAndCounterIDGeneratorTest extends UnitTestCase
                for (int i = 0; i < NUMBER_OF_IDS; i++)
                {
                   long value = seq.generateID();
-                  assertTrue(hex(value) + " should be greater than " + hex(lastValue) + " on seq " + seq.toString(),
-                             value > lastValue);
+                  Assert.assertTrue(TimeAndCounterIDGeneratorTest.hex(value) + " should be greater than " +
+                                    TimeAndCounterIDGeneratorTest.hex(lastValue) +
+                                    " on seq " +
+                                    seq.toString(), value > lastValue);
                   lastValue = value;
 
                   hashSet.add(value);
@@ -143,46 +145,48 @@ public class TimeAndCounterIDGeneratorTest extends UnitTestCase
          }
       }
 
-      assertEquals(NUMBER_OF_THREADS * NUMBER_OF_IDS, hashSet.size());
+      Assert.assertEquals(NUMBER_OF_THREADS * NUMBER_OF_IDS, hashSet.size());
 
       hashSet.clear();
 
    }
-   
+
    public void testWrapID() throws Throwable
    {
       final ConcurrentHashSet<Long> hashSet = new org.hornetq.utils.ConcurrentHashSet<Long>();
 
       TimeAndCounterIDGenerator seq = new TimeAndCounterIDGenerator();
 
-      System.out.println("Current Time = " + hex(System.currentTimeMillis()) + " " + seq);
-      
+      System.out.println("Current Time = " + TimeAndCounterIDGeneratorTest.hex(System.currentTimeMillis()) + " " + seq);
+
       seq.setInternalDate(System.currentTimeMillis() + 10000l); // 10 seconds in the future
 
       seq.setInternalID(TimeAndCounterIDGenerator.ID_MASK); // 1 ID about to explode
-     
+
       try
       {
          // This is simulating a situation where we generated more than 268 million messages on the same time interval
          seq.generateID();
-         fail("It was supposed to throw an exception, as the counter was set to explode on this test");
+         Assert.fail("It was supposed to throw an exception, as the counter was set to explode on this test");
       }
       catch (Exception e)
       {
       }
 
       seq = new TimeAndCounterIDGenerator();
-      
+
       seq.setInternalDate(System.currentTimeMillis() - 10000l); // 10 seconds in the past
-      
+
       long timeMark = seq.getInternalTimeMark();
 
       seq.setInternalID(TimeAndCounterIDGenerator.ID_MASK); // 1 ID about to explode
-      
+
       // This is ok... the time portion would be added to the next one generated 10 seconds ago
       seq.generateID();
 
-      assertTrue (hex(timeMark) + " < " + hex(seq.getInternalTimeMark()), timeMark < seq.getInternalTimeMark());
+      Assert.assertTrue(TimeAndCounterIDGeneratorTest.hex(timeMark) + " < " +
+                                 TimeAndCounterIDGeneratorTest.hex(seq.getInternalTimeMark()),
+                        timeMark < seq.getInternalTimeMark());
    }
 
    private static String hex(final long value)

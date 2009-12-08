@@ -17,6 +17,8 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.buffers.HornetQBuffer;
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.SequentialFileFactory;
@@ -25,12 +27,10 @@ import org.hornetq.core.paging.PagedMessage;
 import org.hornetq.core.paging.impl.PageImpl;
 import org.hornetq.core.paging.impl.PagedMessageImpl;
 import org.hornetq.core.persistence.impl.nullpm.NullStorageManager;
-import org.hornetq.core.remoting.impl.wireformat.PacketImpl;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.impl.ServerMessageImpl;
 import org.hornetq.tests.unit.core.journal.impl.fakes.FakeSequentialFileFactory;
 import org.hornetq.tests.util.UnitTestCase;
-import org.hornetq.utils.DataConstants;
 import org.hornetq.utils.SimpleString;
 
 /**
@@ -49,7 +49,7 @@ public class PageImplTest extends UnitTestCase
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
- 
+
    public void testPageWithNIO() throws Exception
    {
       recreateDirectory(getTestDir());
@@ -72,7 +72,7 @@ public class PageImplTest extends UnitTestCase
    {
       testDamagedPage(new FakeSequentialFileFactory(1, false), 100);
    }
-   
+
    /** Validate if everything we add is recovered */
    protected void testAdd(final SequentialFileFactory factory, final int numberOfElements) throws Exception
    {
@@ -81,11 +81,11 @@ public class PageImplTest extends UnitTestCase
 
       PageImpl impl = new PageImpl(new SimpleString("something"), new NullStorageManager(), factory, file, 10);
 
-      assertEquals(10, impl.getPageId());
+      Assert.assertEquals(10, impl.getPageId());
 
       impl.open();
 
-      assertEquals(1, factory.listFiles("page").size());
+      Assert.assertEquals(1, factory.listFiles("page").size());
 
       SimpleString simpleDestination = new SimpleString("Test");
 
@@ -100,25 +100,27 @@ public class PageImplTest extends UnitTestCase
 
       List<PagedMessage> msgs = impl.read();
 
-      assertEquals(numberOfElements, msgs.size());
+      Assert.assertEquals(numberOfElements, msgs.size());
 
-      assertEquals(numberOfElements, impl.getNumberOfMessages());
+      Assert.assertEquals(numberOfElements, impl.getNumberOfMessages());
 
       for (int i = 0; i < msgs.size(); i++)
       {
-         assertEquals(simpleDestination, (msgs.get(i).getMessage(null)).getDestination());
+         Assert.assertEquals(simpleDestination, msgs.get(i).getMessage(null).getDestination());
 
-         assertEqualsByteArrays(buffers.get(i).toByteBuffer().array(), (msgs.get(i).getMessage(null)).getBodyBuffer().toByteBuffer().array());
+         UnitTestCase.assertEqualsByteArrays(buffers.get(i).toByteBuffer().array(), msgs.get(i)
+                                                                                        .getMessage(null)
+                                                                                        .getBodyBuffer()
+                                                                                        .toByteBuffer()
+                                                                                        .array());
       }
 
       impl.delete();
 
-      assertEquals(0, factory.listFiles(".page").size());
+      Assert.assertEquals(0, factory.listFiles(".page").size());
 
    }
 
-   
-   
    protected void testDamagedPage(final SequentialFileFactory factory, final int numberOfElements) throws Exception
    {
 
@@ -126,11 +128,11 @@ public class PageImplTest extends UnitTestCase
 
       PageImpl impl = new PageImpl(new SimpleString("something"), new NullStorageManager(), factory, file, 10);
 
-      assertEquals(10, impl.getPageId());
+      Assert.assertEquals(10, impl.getPageId());
 
       impl.open();
 
-      assertEquals(1, factory.listFiles("page").size());
+      Assert.assertEquals(1, factory.listFiles("page").size());
 
       SimpleString simpleDestination = new SimpleString("Test");
 
@@ -142,27 +144,26 @@ public class PageImplTest extends UnitTestCase
 
       // Add one record that will be damaged
       addPageElements(simpleDestination, impl, 1);
-      
+
       long positionB = file.position();
-      
+
       // Add more 10 as they will need to be ignored
       addPageElements(simpleDestination, impl, 10);
-      
 
       // Damage data... position the file on the middle between points A and B
       file.position(positionA + (positionB - positionA) / 2);
-      
+
       ByteBuffer buffer = ByteBuffer.allocate((int)(positionB - file.position()));
-      
-      for (int i = 0; i< buffer.capacity(); i++)
+
+      for (int i = 0; i < buffer.capacity(); i++)
       {
          buffer.put((byte)'Z');
       }
-      
+
       buffer.rewind();
-      
+
       file.writeDirect(buffer, true);
-      
+
       impl.close();
 
       file = factory.createSequentialFile("00010.page", 1);
@@ -171,25 +172,29 @@ public class PageImplTest extends UnitTestCase
 
       List<PagedMessage> msgs = impl.read();
 
-      assertEquals(numberOfElements, msgs.size());
+      Assert.assertEquals(numberOfElements, msgs.size());
 
-      assertEquals(numberOfElements, impl.getNumberOfMessages());
+      Assert.assertEquals(numberOfElements, impl.getNumberOfMessages());
 
       for (int i = 0; i < msgs.size(); i++)
       {
-         assertEquals(simpleDestination, (msgs.get(i).getMessage(null)).getDestination());
+         Assert.assertEquals(simpleDestination, msgs.get(i).getMessage(null).getDestination());
 
-         assertEqualsByteArrays(buffers.get(i).toByteBuffer().array(), (msgs.get(i).getMessage(null)).getBodyBuffer().toByteBuffer().array());
+         UnitTestCase.assertEqualsByteArrays(buffers.get(i).toByteBuffer().array(), msgs.get(i)
+                                                                                        .getMessage(null)
+                                                                                        .getBodyBuffer()
+                                                                                        .toByteBuffer()
+                                                                                        .array());
       }
 
       impl.delete();
 
-      assertEquals(0, factory.listFiles("page").size());
+      Assert.assertEquals(0, factory.listFiles("page").size());
 
-      assertEquals(1, factory.listFiles("invalidPage").size());
+      Assert.assertEquals(1, factory.listFiles("invalidPage").size());
 
    }
-   
+
    /**
     * @param simpleDestination
     * @param page
@@ -197,18 +202,20 @@ public class PageImplTest extends UnitTestCase
     * @return
     * @throws Exception
     */
-   protected ArrayList<HornetQBuffer> addPageElements(SimpleString simpleDestination, PageImpl page, int numberOfElements) throws Exception
+   protected ArrayList<HornetQBuffer> addPageElements(final SimpleString simpleDestination,
+                                                      final PageImpl page,
+                                                      final int numberOfElements) throws Exception
    {
       ArrayList<HornetQBuffer> buffers = new ArrayList<HornetQBuffer>();
-      
+
       int initialNumberOfMessages = page.getNumberOfMessages();
 
       for (int i = 0; i < numberOfElements; i++)
       {
-         ServerMessage msg = new ServerMessageImpl(i, 100);                 
+         ServerMessage msg = new ServerMessageImpl(i, 100);
 
          for (int j = 0; j < 10; j++)
-         {           
+         {
             msg.getBodyBuffer().writeByte((byte)'b');
          }
 
@@ -218,7 +225,7 @@ public class PageImplTest extends UnitTestCase
 
          page.write(new PagedMessageImpl(msg));
 
-         assertEquals(initialNumberOfMessages + i + 1, page.getNumberOfMessages());
+         Assert.assertEquals(initialNumberOfMessages + i + 1, page.getNumberOfMessages());
       }
       return buffers;
    }

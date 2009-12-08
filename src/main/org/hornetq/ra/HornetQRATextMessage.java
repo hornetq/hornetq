@@ -31,7 +31,7 @@ public class HornetQRATextMessage extends HornetQRAMessage implements TextMessag
    private static final Logger log = Logger.getLogger(HornetQRATextMessage.class);
 
    /** Whether trace is enabled */
-   private static boolean trace = log.isTraceEnabled();
+   private static boolean trace = HornetQRATextMessage.log.isTraceEnabled();
 
    /**
     * Create a new wrapper
@@ -42,9 +42,9 @@ public class HornetQRATextMessage extends HornetQRAMessage implements TextMessag
    {
       super(message, session);
 
-      if (trace)
+      if (HornetQRATextMessage.trace)
       {
-         log.trace("constructor(" + message + ", " + session + ")");
+         HornetQRATextMessage.log.trace("constructor(" + message + ", " + session + ")");
       }
    }
 
@@ -55,9 +55,9 @@ public class HornetQRATextMessage extends HornetQRAMessage implements TextMessag
     */
    public String getText() throws JMSException
    {
-      if (trace)
+      if (HornetQRATextMessage.trace)
       {
-         log.trace("getText()");
+         HornetQRATextMessage.log.trace("getText()");
       }
 
       return ((TextMessage)message).getText();
@@ -70,9 +70,9 @@ public class HornetQRATextMessage extends HornetQRAMessage implements TextMessag
     */
    public void setText(final String string) throws JMSException
    {
-      if (trace)
+      if (HornetQRATextMessage.trace)
       {
-         log.trace("setText(" + string + ")");
+         HornetQRATextMessage.log.trace("setText(" + string + ")");
       }
 
       ((TextMessage)message).setText(string);

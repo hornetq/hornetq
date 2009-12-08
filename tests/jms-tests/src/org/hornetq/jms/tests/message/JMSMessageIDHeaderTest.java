@@ -15,6 +15,9 @@ package org.hornetq.jms.tests.message;
 
 import javax.jms.Message;
 
+import org.hornetq.jms.tests.HornetQServerTestCase;
+import org.hornetq.jms.tests.util.ProxyAssertSupport;
+
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
@@ -24,7 +27,7 @@ public class JMSMessageIDHeaderTest extends MessageHeaderTestBase
    // Constants -----------------------------------------------------
 
    // Static --------------------------------------------------------
-   
+
    // Attributes ----------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -37,9 +40,9 @@ public class JMSMessageIDHeaderTest extends MessageHeaderTestBase
       queueProducer.send(m);
       String messageID = queueConsumer.receive().getJMSMessageID();
       // JMS1.1 specs 3.4.3
-      assertTrue(messageID.startsWith("ID:"));
+      ProxyAssertSupport.assertTrue(messageID.startsWith("ID:"));
    }
-   
+
    public void testJMSMessageIDChangedAfterSendingMessage() throws Exception
    {
       try
@@ -48,38 +51,38 @@ public class JMSMessageIDHeaderTest extends MessageHeaderTestBase
          m.setJMSMessageID("ID:something");
 
          queueProducer.send(m);
-         
-         assertFalse("ID:something".equals(m.getJMSMessageID()));
+
+         ProxyAssertSupport.assertFalse("ID:something".equals(m.getJMSMessageID()));
       }
       finally
       {
-         removeAllMessages(queue1.getQueueName(), true);
+         removeAllMessages(HornetQServerTestCase.queue1.getQueueName(), true);
       }
    }
-   
+
    public void testJMSMessageID() throws Exception
    {
       try
       {
          Message m = queueProducerSession.createMessage();;
-         assertNull(m.getJMSMessageID());
+         ProxyAssertSupport.assertNull(m.getJMSMessageID());
 
          queueProducer.send(m);
 
-         assertNotNull(m.getJMSMessageID());
-         assertTrue(m.getJMSMessageID().startsWith("ID:"));
+         ProxyAssertSupport.assertNotNull(m.getJMSMessageID());
+         ProxyAssertSupport.assertTrue(m.getJMSMessageID().startsWith("ID:"));
       }
       finally
       {
-         removeAllMessages(queue1.getQueueName(), true);
+         removeAllMessages(HornetQServerTestCase.queue1.getQueueName(), true);
       }
    }
 
    // Package protected ---------------------------------------------
-   
+
    // Protected -----------------------------------------------------
-   
+
    // Private -------------------------------------------------------
-   
+
    // Inner classes -------------------------------------------------
 }

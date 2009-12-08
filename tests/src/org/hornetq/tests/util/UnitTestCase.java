@@ -40,18 +40,17 @@ import javax.naming.Context;
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.Xid;
 
+import junit.framework.Assert;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
 import org.hornetq.core.buffers.HornetQBuffer;
-import org.hornetq.core.buffers.HornetQBuffers;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.journal.impl.AIOSequentialFileFactory;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.persistence.impl.journal.JournalStorageManager;
 import org.hornetq.core.persistence.impl.journal.OperationContextImpl;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.Bindings;
@@ -80,9 +79,8 @@ import org.hornetq.utils.UUIDGenerator;
 public class UnitTestCase extends TestCase
 {
    // Constants -----------------------------------------------------
-   
+
    private static final Logger log = Logger.getLogger(UnitTestCase.class);
-   
 
    public static final String INVM_ACCEPTOR_FACTORY = "org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory";
 
@@ -94,17 +92,14 @@ public class UnitTestCase extends TestCase
 
    // Attributes ----------------------------------------------------
 
-   private String testDir = System.getProperty("java.io.tmpdir", "/tmp") + "/hornetq-unit-test";
+   private final String testDir = System.getProperty("java.io.tmpdir", "/tmp") + "/hornetq-unit-test";
 
-   
-   
-   
    // Static --------------------------------------------------------
 
    /**
     * @param name
     */
-   public UnitTestCase(String name)
+   public UnitTestCase(final String name)
    {
       super(name);
    }
@@ -132,7 +127,7 @@ public class UnitTestCase extends TestCase
    }
 
    // verify if these weak references are released after a few GCs
-   public static void checkWeakReferences(WeakReference<?>... references)
+   public static void checkWeakReferences(final WeakReference<?>... references)
    {
 
       int i = 0;
@@ -144,7 +139,7 @@ public class UnitTestCase extends TestCase
 
          if (i > 0)
          {
-            forceGC();
+            UnitTestCase.forceGC();
          }
 
          for (WeakReference<?> ref : references)
@@ -159,17 +154,15 @@ public class UnitTestCase extends TestCase
 
       for (WeakReference<?> ref : references)
       {
-         assertNull(ref.get());
+         Assert.assertNull(ref.get());
       }
    }
 
-
-   public static String threadDump(String msg)
+   public static String threadDump(final String msg)
    {
       StringWriter str = new StringWriter();
       PrintWriter out = new PrintWriter(str);
-      
-      
+
       Map<Thread, StackTraceElement[]> stackTrace = Thread.getAllStackTraces();
 
       out.println("*******************************************************************************");
@@ -178,26 +171,29 @@ public class UnitTestCase extends TestCase
       for (Map.Entry<Thread, StackTraceElement[]> el : stackTrace.entrySet())
       {
          out.println("===============================================================================");
-         out.println("Thread " + el.getKey() + " name = " + el.getKey().getName() + " group = " + el.getKey().getThreadGroup());
+         out.println("Thread " + el.getKey() +
+                     " name = " +
+                     el.getKey().getName() +
+                     " group = " +
+                     el.getKey().getThreadGroup());
          out.println();
          for (StackTraceElement traceEl : el.getValue())
          {
             out.println(traceEl);
          }
       }
-      
+
       out.println("===============================================================================");
       out.println("End Thread dump " + msg);
       out.println("*******************************************************************************");
-      
-      
+
       return str.toString();
    }
-   
-   protected static TestSuite createAIOTestSuite(Class<?> clazz)
+
+   protected static TestSuite createAIOTestSuite(final Class<?> clazz)
    {
       TestSuite suite = new TestSuite(clazz.getName() + " testsuite");
-      
+
       if (AIOSequentialFileFactory.isSupported())
       {
          suite.addTestSuite(clazz);
@@ -210,8 +206,8 @@ public class UnitTestCase extends TestCase
 
       return suite;
    }
-   
-   public static String dumpBytes(byte[] bytes)
+
+   public static String dumpBytes(final byte[] bytes)
    {
       StringBuffer buff = new StringBuffer();
 
@@ -232,7 +228,7 @@ public class UnitTestCase extends TestCase
       return buff.toString();
    }
 
-   public static String dumbBytesHex(final byte[] buffer, int bytesPerLine)
+   public static String dumbBytesHex(final byte[] buffer, final int bytesPerLine)
    {
 
       StringBuffer buff = new StringBuffer();
@@ -256,90 +252,90 @@ public class UnitTestCase extends TestCase
       return buff.toString();
    }
 
-   public static void assertEqualsByteArrays(byte[] expected, byte[] actual)
+   public static void assertEqualsByteArrays(final byte[] expected, final byte[] actual)
    {
       // assertEquals(expected.length, actual.length);
       for (int i = 0; i < expected.length; i++)
       {
-         assertEquals("byte at index " + i, expected[i], actual[i]);
+         Assert.assertEquals("byte at index " + i, expected[i], actual[i]);
       }
    }
 
-   public static void assertEqualsBuffers(int size, HornetQBuffer expected, HornetQBuffer actual)
+   public static void assertEqualsBuffers(final int size, final HornetQBuffer expected, final HornetQBuffer actual)
    {
       // assertEquals(expected.length, actual.length);
       expected.readerIndex(0);
       actual.readerIndex(0);
-      
+
       for (int i = 0; i < size; i++)
       {
          byte b1 = expected.readByte();
          byte b2 = actual.readByte();
-         assertEquals("byte at index " + i, b1, b2);
+         Assert.assertEquals("byte at index " + i, b1, b2);
       }
       expected.resetReaderIndex();
       actual.resetReaderIndex();
    }
 
-   public static void assertEqualsByteArrays(int length, byte[] expected, byte[] actual)
+   public static void assertEqualsByteArrays(final int length, final byte[] expected, final byte[] actual)
    {
       // we check only for the given length (the arrays might be
       // larger)
-      assertTrue(expected.length >= length);
-      assertTrue(actual.length >= length);
+      Assert.assertTrue(expected.length >= length);
+      Assert.assertTrue(actual.length >= length);
       for (int i = 0; i < length; i++)
       {
-         assertEquals("byte at index " + i, expected[i], actual[i]);
+         Assert.assertEquals("byte at index " + i, expected[i], actual[i]);
       }
    }
 
-   public static void assertSameXids(List<Xid> expected, List<Xid> actual)
+   public static void assertSameXids(final List<Xid> expected, final List<Xid> actual)
    {
-      assertNotNull(expected);
-      assertNotNull(actual);
-      assertEquals(expected.size(), actual.size());
+      Assert.assertNotNull(expected);
+      Assert.assertNotNull(actual);
+      Assert.assertEquals(expected.size(), actual.size());
 
       for (int i = 0; i < expected.size(); i++)
       {
          Xid expectedXid = expected.get(i);
          Xid actualXid = actual.get(i);
          UnitTestCase.assertEqualsByteArrays(expectedXid.getBranchQualifier(), actualXid.getBranchQualifier());
-         assertEquals(expectedXid.getFormatId(), actualXid.getFormatId());
+         Assert.assertEquals(expectedXid.getFormatId(), actualXid.getFormatId());
          UnitTestCase.assertEqualsByteArrays(expectedXid.getGlobalTransactionId(), actualXid.getGlobalTransactionId());
       }
    }
 
-   protected static void checkNoBinding(Context context, String binding)
+   protected static void checkNoBinding(final Context context, final String binding)
    {
       try
       {
          context.lookup(binding);
-         fail("there must be no resource to look up for " + binding);
+         Assert.fail("there must be no resource to look up for " + binding);
       }
       catch (Exception e)
       {
       }
    }
 
-   protected static Object checkBinding(Context context, String binding) throws Exception
+   protected static Object checkBinding(final Context context, final String binding) throws Exception
    {
       Object o = context.lookup(binding);
-      assertNotNull(o);
+      Assert.assertNotNull(o);
       return o;
    }
-   
-   protected static void checkFreePort(int... ports)
+
+   protected static void checkFreePort(final int... ports)
    {
       for (int port : ports)
       {
          ServerSocket ssocket = null;
          try
          {
-           ssocket = new ServerSocket(port);  
+            ssocket = new ServerSocket(port);
          }
          catch (Exception e)
          {
-            fail("port " + port + " is already bound");
+            Assert.fail("port " + port + " is already bound");
          }
          finally
          {
@@ -356,7 +352,7 @@ public class UnitTestCase extends TestCase
          }
       }
    }
-   
+
    // Constructors --------------------------------------------------
 
    // Protected -----------------------------------------------------
@@ -374,7 +370,7 @@ public class UnitTestCase extends TestCase
       clearData(getTestDir());
    }
 
-   protected void clearData(String testDir)
+   protected void clearData(final String testDir)
    {
       // Need to delete the root
 
@@ -390,7 +386,6 @@ public class UnitTestCase extends TestCase
       recreateDirectory(getTemporaryDir(testDir));
    }
 
-
    /**
     * @return the journalDir
     */
@@ -399,14 +394,14 @@ public class UnitTestCase extends TestCase
       return getJournalDir(testDir);
    }
 
-   protected String getJournalDir(String testDir)
+   protected String getJournalDir(final String testDir)
    {
       return testDir + "/journal";
    }
-   
-   protected String getJournalDir(int index, boolean backup)
+
+   protected String getJournalDir(final int index, final boolean backup)
    {
-      String dir =  getJournalDir(testDir) + index + "-" + (backup ? "B" : "L");
+      String dir = getJournalDir(testDir) + index + "-" + (backup ? "B" : "L");
 
       return dir;
    }
@@ -418,11 +413,11 @@ public class UnitTestCase extends TestCase
    {
       return getBindingsDir(testDir);
    }
-   
+
    /**
     * @return the bindingsDir
     */
-   protected String getBindingsDir(String testDir)
+   protected String getBindingsDir(final String testDir)
    {
       return testDir + "/bindings";
    }
@@ -430,7 +425,7 @@ public class UnitTestCase extends TestCase
    /**
     * @return the bindingsDir
     */
-   protected String getBindingsDir(int index, boolean backup)
+   protected String getBindingsDir(final int index, final boolean backup)
    {
       return getBindingsDir(testDir) + index + "-" + (backup ? "B" : "L");
    }
@@ -446,12 +441,12 @@ public class UnitTestCase extends TestCase
    /**
     * @return the pageDir
     */
-   protected String getPageDir(String testDir)
+   protected String getPageDir(final String testDir)
    {
       return testDir + "/page";
    }
-   
-   protected String getPageDir(int index, boolean backup)
+
+   protected String getPageDir(final int index, final boolean backup)
    {
       return getPageDir(testDir) + index + "-" + (backup ? "B" : "L");
    }
@@ -467,12 +462,12 @@ public class UnitTestCase extends TestCase
    /**
     * @return the largeMessagesDir
     */
-   protected String getLargeMessagesDir(String testDir)
+   protected String getLargeMessagesDir(final String testDir)
    {
       return testDir + "/large-msg";
    }
-   
-   protected String getLargeMessagesDir(int index, boolean backup)
+
+   protected String getLargeMessagesDir(final int index, final boolean backup)
    {
       return getLargeMessagesDir(testDir) + index + "-" + (backup ? "B" : "L");
    }
@@ -488,7 +483,7 @@ public class UnitTestCase extends TestCase
    /**
     * @return the clientLargeMessagesDir
     */
-   protected String getClientLargeMessagesDir(String testDir)
+   protected String getClientLargeMessagesDir(final String testDir)
    {
       return testDir + "/client-large-msg";
    }
@@ -504,48 +499,49 @@ public class UnitTestCase extends TestCase
    /**
     * @return the temporaryDir
     */
-   protected String getTemporaryDir(String testDir)
+   protected String getTemporaryDir(final String testDir)
    {
       return testDir + "/temp";
    }
 
-   protected static void expectHornetQException(String message, int errorCode, HornetQAction action)
+   protected static void expectHornetQException(final String message, final int errorCode, final HornetQAction action)
    {
       try
       {
          action.run();
-         fail(message);
+         Assert.fail(message);
       }
       catch (Exception e)
       {
-         assertTrue(e instanceof HornetQException);
-         assertEquals(errorCode, ((HornetQException)e).getCode());
+         Assert.assertTrue(e instanceof HornetQException);
+         Assert.assertEquals(errorCode, ((HornetQException)e).getCode());
       }
    }
-   
-   protected static void expectHornetQException(int errorCode, HornetQAction action)
+
+   protected static void expectHornetQException(final int errorCode, final HornetQAction action)
    {
-      expectHornetQException("must throw a HornetQException with the expected errorCode: " + errorCode, errorCode, action);
+      UnitTestCase.expectHornetQException("must throw a HornetQException with the expected errorCode: " + errorCode,
+                                          errorCode,
+                                          action);
    }
-   
-   protected static void expectXAException(int errorCode, HornetQAction action)
+
+   protected static void expectXAException(final int errorCode, final HornetQAction action)
    {
       try
       {
          action.run();
-         fail("must throw a XAException with the expected errorCode: " + errorCode);
+         Assert.fail("must throw a XAException with the expected errorCode: " + errorCode);
       }
       catch (Exception e)
       {
-         assertTrue(e instanceof XAException);
-         assertEquals(errorCode, ((XAException)e).errorCode);
+         Assert.assertTrue(e instanceof XAException);
+         Assert.assertEquals(errorCode, ((XAException)e).errorCode);
       }
    }
-   
-   
+
    public static byte getSamplebyte(final long position)
    {
-      return (byte)('a' + (position) % ('z' - 'a' + 1));
+      return (byte)('a' + position % ('z' - 'a' + 1));
    }
 
    // Creates a Fake LargeStream without using a real file
@@ -573,7 +569,7 @@ public class UnitTestCase extends TestCase
             }
             if (count++ < size)
             {
-               return getSamplebyte(count - 1);
+               return UnitTestCase.getSamplebyte(count - 1);
             }
             else
             {
@@ -584,26 +580,25 @@ public class UnitTestCase extends TestCase
 
    }
 
-   
    /** It validates a Bean (POJO) using simple setters and getters with random values.
     *  You can pass a list of properties to be ignored, as some properties will have a pre-defined domain (not being possible to use random-values on them) */
-   protected void validateGettersAndSetters(Object pojo, String...IgnoredProperties) throws Exception
+   protected void validateGettersAndSetters(final Object pojo, final String... IgnoredProperties) throws Exception
    {
       HashSet<String> ignoreSet = new HashSet<String>();
-      
-      for (String ignore: IgnoredProperties)
+
+      for (String ignore : IgnoredProperties)
       {
          ignoreSet.add(ignore);
       }
-      
+
       BeanInfo info = Introspector.getBeanInfo(pojo.getClass());
-      
+
       PropertyDescriptor properties[] = info.getPropertyDescriptors();
-      
+
       for (PropertyDescriptor prop : properties)
       {
          Object value;
-         
+
          if (prop.getPropertyType() == String.class)
          {
             value = RandomUtil.randomString();
@@ -634,13 +629,14 @@ public class UnitTestCase extends TestCase
          {
             System.out.println("WriteOnly property " + prop.getName() + " on " + pojo.getClass());
          }
-         else
-         if (value != null & prop.getWriteMethod() != null && prop.getReadMethod() != null && !ignoreSet.contains(prop.getName()))
+         else if (value != null & prop.getWriteMethod() != null &&
+                  prop.getReadMethod() != null &&
+                  !ignoreSet.contains(prop.getName()))
          {
             System.out.println("Validating " + prop.getName() + " type = " + prop.getPropertyType());
             prop.getWriteMethod().invoke(pojo, value);
-         
-            assertEquals("Property " + prop.getName(), value, prop.getReadMethod().invoke(pojo));
+
+            Assert.assertEquals("Property " + prop.getName(), value, prop.getReadMethod().invoke(pojo));
          }
       }
    }
@@ -653,16 +649,16 @@ public class UnitTestCase extends TestCase
    protected void setUp() throws Exception
    {
       super.setUp();
-      
+
       deleteDirectory(new File(getTestDir()));
-      
+
       InVMRegistry.instance.clear();
-      
+
       // checkFreePort(TransportConstants.DEFAULT_PORT);
-      
-      log.info("###### starting test " + this.getClass().getName() + "." + this.getName());
+
+      UnitTestCase.log.info("###### starting test " + this.getClass().getName() + "." + getName());
    }
-   
+
    @Override
    protected void tearDown() throws Exception
    {
@@ -670,18 +666,18 @@ public class UnitTestCase extends TestCase
 
       deleteDirectory(new File(getTestDir()));
 
-      assertEquals(0, InVMRegistry.instance.size());
-      
+      Assert.assertEquals(0, InVMRegistry.instance.size());
+
       if (AsynchronousFileImpl.getTotalMaxIO() != 0)
       {
          AsynchronousFileImpl.resetMaxAIO();
-         fail("test did not close all its files " + AsynchronousFileImpl.getTotalMaxIO());
+         Assert.fail("test did not close all its files " + AsynchronousFileImpl.getTotalMaxIO());
       }
 
       super.tearDown();
    }
 
-   protected byte[] autoEncode(Object... args)
+   protected byte[] autoEncode(final Object... args)
    {
 
       int size = 0;
@@ -758,14 +754,14 @@ public class UnitTestCase extends TestCase
       return buffer.array();
    }
 
-   protected void recreateDirectory(String directory)
+   protected void recreateDirectory(final String directory)
    {
       File file = new File(directory);
       deleteDirectory(file);
       file.mkdirs();
    }
 
-   protected boolean deleteDirectory(File directory)
+   protected boolean deleteDirectory(final File directory)
    {
       if (directory.isDirectory())
       {
@@ -783,7 +779,7 @@ public class UnitTestCase extends TestCase
       return directory.delete();
    }
 
-   protected void copyRecursive(File from, File to) throws Exception
+   protected void copyRecursive(final File from, final File to) throws Exception
    {
       if (from.isDirectory())
       {
@@ -794,9 +790,9 @@ public class UnitTestCase extends TestCase
 
          String[] subs = from.list();
 
-         for (int i = 0; i < subs.length; i++)
+         for (String sub : subs)
          {
-            copyRecursive(new File(from, subs[i]), new File(to, subs[i]));
+            copyRecursive(new File(from, sub), new File(to, sub));
          }
       }
       else
@@ -833,11 +829,11 @@ public class UnitTestCase extends TestCase
       }
    }
 
-   protected void assertRefListsIdenticalRefs(List<MessageReference> l1, List<MessageReference> l2)
+   protected void assertRefListsIdenticalRefs(final List<MessageReference> l1, final List<MessageReference> l2)
    {
       if (l1.size() != l2.size())
       {
-         fail("Lists different sizes: " + l1.size() + ", " + l2.size());
+         Assert.fail("Lists different sizes: " + l1.size() + ", " + l2.size());
       }
 
       Iterator<MessageReference> iter1 = l1.iterator();
@@ -848,41 +844,41 @@ public class UnitTestCase extends TestCase
          MessageReference o1 = iter1.next();
          MessageReference o2 = iter2.next();
 
-         assertTrue(o1 == o2);
+         Assert.assertTrue(o1 == o2);
       }
    }
 
-   protected ServerMessage generateMessage(long id)
+   protected ServerMessage generateMessage(final long id)
    {
       ServerMessage message = new ServerMessageImpl(id, 1000);
 
       message.setMessageID(id);
 
       message.getBodyBuffer().writeString(UUID.randomUUID().toString());
-      
+
       message.setDestination(new SimpleString("foo"));
 
       return message;
    }
 
-   protected MessageReference generateReference(Queue queue, long id)
+   protected MessageReference generateReference(final Queue queue, final long id)
    {
       ServerMessage message = generateMessage(id);
 
       return message.createReference(queue);
    }
 
-   protected int calculateRecordSize(int size, int alignment)
+   protected int calculateRecordSize(final int size, final int alignment)
    {
-      return ((size / alignment) + (size % alignment != 0 ? 1 : 0)) * alignment;
+      return (size / alignment + (size % alignment != 0 ? 1 : 0)) * alignment;
    }
 
-   protected ClientMessage createTextMessage(String s, ClientSession clientSession)
+   protected ClientMessage createTextMessage(final String s, final ClientSession clientSession)
    {
       return createTextMessage(s, true, clientSession);
    }
 
-   protected ClientMessage createTextMessage(String s, boolean durable, ClientSession clientSession)
+   protected ClientMessage createTextMessage(final String s, final boolean durable, final ClientSession clientSession)
    {
       ClientMessage message = clientSession.createClientMessage(HornetQTextMessage.TYPE,
                                                                 durable,
@@ -892,12 +888,11 @@ public class UnitTestCase extends TestCase
       message.getBodyBuffer().writeString(s);
       return message;
    }
-   
+
    protected XidImpl newXID()
    {
       return new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
    }
-   
 
    protected int getMessageCount(final HornetQServer service, final String address) throws Exception
    {
@@ -913,17 +908,17 @@ public class UnitTestCase extends TestCase
    protected int getMessageCount(final PostOffice postOffice, final String address) throws Exception
    {
       int messageCount = 0;
-      
+
       List<QueueBinding> bindings = getLocalQueueBindings(postOffice, address);
-      
-      for (QueueBinding qBinding: bindings)
+
+      for (QueueBinding qBinding : bindings)
       {
          messageCount += qBinding.getQueue().getMessageCount();
       }
 
       return messageCount;
    }
-   
+
    protected List<QueueBinding> getLocalQueueBindings(final PostOffice postOffice, final String address) throws Exception
    {
       ArrayList<QueueBinding> bindingsFound = new ArrayList<QueueBinding>();
@@ -932,7 +927,7 @@ public class UnitTestCase extends TestCase
 
       for (Binding binding : bindings.getBindings())
       {
-         if ((binding instanceof LocalQueueBinding))
+         if (binding instanceof LocalQueueBinding)
          {
             bindingsFound.add((QueueBinding)binding);
          }
@@ -940,9 +935,6 @@ public class UnitTestCase extends TestCase
       return bindingsFound;
    }
 
-
-   
-   
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------

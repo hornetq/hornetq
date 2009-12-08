@@ -13,7 +13,7 @@
 
 package org.hornetq.tests.integration;
 
-import static org.hornetq.tests.util.RandomUtil.randomSimpleString;
+import junit.framework.Assert;
 
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
@@ -28,6 +28,7 @@ import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.server.HornetQ;
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.SimpleString;
 
@@ -60,7 +61,7 @@ public class String64KLimitTest extends UnitTestCase
 
    // Public --------------------------------------------------------
 
-   protected String genString(int len)
+   protected String genString(final int len)
    {
       char[] chars = new char[len];
       for (int i = 0; i < len; i++)
@@ -72,8 +73,8 @@ public class String64KLimitTest extends UnitTestCase
 
    public void test64KLimitWithWriteString() throws Exception
    {
-      SimpleString address = randomSimpleString();
-      SimpleString queue = randomSimpleString();
+      SimpleString address = RandomUtil.randomSimpleString();
+      SimpleString queue = RandomUtil.randomSimpleString();
 
       session.createQueue(address, queue, false);
 
@@ -111,33 +112,33 @@ public class String64KLimitTest extends UnitTestCase
 
       ClientMessage rm1 = consumer.receive(1000);
 
-      assertNotNull(rm1);
+      Assert.assertNotNull(rm1);
 
-      assertEquals(s1, rm1.getBodyBuffer().readString());
+      Assert.assertEquals(s1, rm1.getBodyBuffer().readString());
 
       ClientMessage rm2 = consumer.receive(1000);
 
-      assertNotNull(rm2);
+      Assert.assertNotNull(rm2);
 
-      assertEquals(s2, rm2.getBodyBuffer().readString());
+      Assert.assertEquals(s2, rm2.getBodyBuffer().readString());
 
       ClientMessage rm3 = consumer.receive(1000);
 
-      assertEquals(s3, rm3.getBodyBuffer().readString());
+      Assert.assertEquals(s3, rm3.getBodyBuffer().readString());
 
-      assertNotNull(rm3);
+      Assert.assertNotNull(rm3);
 
       ClientMessage rm4 = consumer.receive(1000);
 
-      assertEquals(s4, rm4.getBodyBuffer().readString());
+      Assert.assertEquals(s4, rm4.getBodyBuffer().readString());
 
-      assertNotNull(rm4);
+      Assert.assertNotNull(rm4);
    }
 
    public void test64KLimitWithWriteUTF() throws Exception
    {
-      SimpleString address = randomSimpleString();
-      SimpleString queue = randomSimpleString();
+      SimpleString address = RandomUtil.randomSimpleString();
+      SimpleString queue = RandomUtil.randomSimpleString();
 
       session.createQueue(address, queue, false);
 
@@ -164,7 +165,7 @@ public class String64KLimitTest extends UnitTestCase
       {
          ClientMessage tm3 = session.createClientMessage(false);
          tm3.getBodyBuffer().writeUTF(s3);
-         fail("can not write UTF string bigger than 64K");
+         Assert.fail("can not write UTF string bigger than 64K");
       }
       catch (Exception e)
       {
@@ -174,7 +175,7 @@ public class String64KLimitTest extends UnitTestCase
       {
          ClientMessage tm4 = session.createClientMessage(false);
          tm4.getBodyBuffer().writeUTF(s4);
-         fail("can not write UTF string bigger than 64K");
+         Assert.fail("can not write UTF string bigger than 64K");
       }
       catch (Exception e)
       {
@@ -185,14 +186,14 @@ public class String64KLimitTest extends UnitTestCase
 
       ClientMessage rm1 = consumer.receive(1000);
 
-      assertNotNull(rm1);
+      Assert.assertNotNull(rm1);
 
       ClientMessage rm2 = consumer.receive(1000);
 
-      assertNotNull(rm2);
+      Assert.assertNotNull(rm2);
 
-      assertEquals(s1, rm1.getBodyBuffer().readUTF());
-      assertEquals(s2, rm2.getBodyBuffer().readUTF());
+      Assert.assertEquals(s1, rm1.getBodyBuffer().readUTF());
+      Assert.assertEquals(s2, rm2.getBodyBuffer().readUTF());
    }
 
    // Protected -----------------------------------------------------
@@ -210,7 +211,7 @@ public class String64KLimitTest extends UnitTestCase
       server = HornetQ.newHornetQServer(config, false);
       server.start();
 
-      sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));      
+      sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
       session = sf.createSession();
    }
 
@@ -222,7 +223,7 @@ public class String64KLimitTest extends UnitTestCase
       sf.close();
 
       server.stop();
-      
+
       server = null;
       sf = null;
       session = null;

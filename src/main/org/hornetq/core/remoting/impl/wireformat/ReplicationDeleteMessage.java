@@ -14,7 +14,6 @@
 package org.hornetq.core.remoting.impl.wireformat;
 
 import org.hornetq.core.buffers.HornetQBuffer;
-import org.hornetq.utils.DataConstants;
 
 /**
  * A ReplicationAddMessage
@@ -41,7 +40,7 @@ public class ReplicationDeleteMessage extends PacketImpl
 
    public ReplicationDeleteMessage()
    {
-      super(REPLICATION_DELETE);
+      super(PacketImpl.REPLICATION_DELETE);
    }
 
    public ReplicationDeleteMessage(final byte journalID, final long id)

@@ -40,7 +40,7 @@ import org.hornetq.common.example.HornetQExample;
  */
 public class LargeMessageExample extends HornetQExample
 {
-   public static void main(String[] args)
+   public static void main(final String[] args)
    {
       new LargeMessageExample().run(args);
    }
@@ -48,11 +48,12 @@ public class LargeMessageExample extends HornetQExample
    // The message we will send is size 10GiB, even though we are only running in 50MB of RAM on both client and server.
    // This may take some considerable time to create, send and consume - if it takes too long or you don't have
    // enough disk space just reduce the file size here
-   
+
    // private final long FILE_SIZE = 256L * 1024 * 1024;
-   
+
    private final long FILE_SIZE = 10L * 1024 * 1024 * 1024; // 10 GiB message
 
+   @Override
    public boolean runExample() throws Exception
    {
       Connection connection = null;
@@ -196,7 +197,7 @@ public class LargeMessageExample extends HornetQExample
     * @throws FileNotFoundException
     * @throws IOException
     */
-   private void createFile(File file, long fileSize) throws FileNotFoundException, IOException
+   private void createFile(final File file, final long fileSize) throws FileNotFoundException, IOException
    {
       FileOutputStream fileOut = new FileOutputStream(file);
       BufferedOutputStream buffOut = new BufferedOutputStream(fileOut);

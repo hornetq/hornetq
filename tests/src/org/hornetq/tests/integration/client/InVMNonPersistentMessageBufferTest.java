@@ -12,6 +12,8 @@
  */
 package org.hornetq.tests.integration.client;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
@@ -59,20 +61,20 @@ public class InVMNonPersistentMessageBufferTest extends ServiceTestBase
 
       ClientMessage received = sendAndReceive(message);
 
-      assertNotNull(received);
+      Assert.assertNotNull(received);
 
-      assertEquals(body, received.getBodyBuffer().readString());
+      Assert.assertEquals(body, received.getBodyBuffer().readString());
    }
-   
+
    public void testSimpleSendReceiveWithEmptyBody() throws Exception
    {
       ClientMessage message = session.createClientMessage(false);
-      
+
       ClientMessage received = sendAndReceive(message);
 
-      assertNotNull(received);
+      Assert.assertNotNull(received);
 
-      assertEquals(0, received.getBodySize());
+      Assert.assertEquals(0, received.getBodySize());
    }
 
    public void testSendSameMessageMultipleTimes() throws Exception
@@ -82,20 +84,20 @@ public class InVMNonPersistentMessageBufferTest extends ServiceTestBase
       final String body = RandomUtil.randomString();
 
       message.getBodyBuffer().writeString(body);
-      
+
       int bodySize = message.getBodySize();
-      
+
       for (int i = 0; i < 10; i++)
-      {  
+      {
          ClientMessage received = sendAndReceive(message);
 
-         assertNotNull(received);
-         
-         assertEquals(bodySize, received.getBodySize());
+         Assert.assertNotNull(received);
 
-         assertEquals(body, received.getBodyBuffer().readString());
-         
-         assertFalse(received.getBodyBuffer().readable());
+         Assert.assertEquals(bodySize, received.getBodySize());
+
+         Assert.assertEquals(body, received.getBodyBuffer().readString());
+
+         Assert.assertFalse(received.getBodyBuffer().readable());
       }
    }
 
@@ -104,31 +106,33 @@ public class InVMNonPersistentMessageBufferTest extends ServiceTestBase
       ClientMessage message = session.createClientMessage(false);
 
       String body = RandomUtil.randomString();
-      
+
       for (int i = 0; i < 10; i++)
       {
-         //Make the body a bit longer each time
+         // Make the body a bit longer each time
          body += "XX";
-         
+
          message.getBodyBuffer().writeString(body);
-         
+
          int bodySize = message.getBodySize();
 
          ClientMessage received = sendAndReceive(message);
 
-         assertNotNull(received);
-         
-         assertEquals(bodySize, received.getBodySize());
-         
-         assertEquals(body, received.getBodyBuffer().readString());
+         Assert.assertNotNull(received);
 
-         assertFalse(received.getBodyBuffer().readable());
+         Assert.assertEquals(bodySize, received.getBodySize());
+
+         Assert.assertEquals(body, received.getBodyBuffer().readString());
+
+         Assert.assertFalse(received.getBodyBuffer().readable());
 
          message.getBodyBuffer().clear();
 
-         assertEquals(PacketImpl.PACKET_HEADERS_SIZE + DataConstants.SIZE_INT, message.getBodyBuffer().writerIndex());
+         Assert.assertEquals(PacketImpl.PACKET_HEADERS_SIZE + DataConstants.SIZE_INT, message.getBodyBuffer()
+                                                                                             .writerIndex());
 
-         assertEquals(PacketImpl.PACKET_HEADERS_SIZE + DataConstants.SIZE_INT, message.getBodyBuffer().readerIndex());
+         Assert.assertEquals(PacketImpl.PACKET_HEADERS_SIZE + DataConstants.SIZE_INT, message.getBodyBuffer()
+                                                                                             .readerIndex());
       }
    }
 
@@ -142,15 +146,15 @@ public class InVMNonPersistentMessageBufferTest extends ServiceTestBase
 
       ClientMessage received = sendAndReceive(message);
 
-      assertNotNull(received);
+      Assert.assertNotNull(received);
 
-      assertEquals(body, received.getBodyBuffer().readString());
+      Assert.assertEquals(body, received.getBodyBuffer().readString());
 
       try
       {
          received.getBodyBuffer().readByte();
 
-         fail("Should throw exception");
+         Assert.fail("Should throw exception");
       }
       catch (IndexOutOfBoundsException e)
       {
@@ -166,33 +170,36 @@ public class InVMNonPersistentMessageBufferTest extends ServiceTestBase
 
       message.getBodyBuffer().writeString(body);
 
-      assertEquals(PacketImpl.PACKET_HEADERS_SIZE + DataConstants.SIZE_INT, message.getBodyBuffer().readerIndex());
+      Assert.assertEquals(PacketImpl.PACKET_HEADERS_SIZE + DataConstants.SIZE_INT, message.getBodyBuffer()
+                                                                                          .readerIndex());
 
       String body2 = message.getBodyBuffer().readString();
 
-      assertEquals(body, body2);
+      Assert.assertEquals(body, body2);
 
       message.getBodyBuffer().resetReaderIndex();
 
-      assertEquals(PacketImpl.PACKET_HEADERS_SIZE + DataConstants.SIZE_INT, message.getBodyBuffer().readerIndex());
+      Assert.assertEquals(PacketImpl.PACKET_HEADERS_SIZE + DataConstants.SIZE_INT, message.getBodyBuffer()
+                                                                                          .readerIndex());
 
       String body3 = message.getBodyBuffer().readString();
 
-      assertEquals(body, body3);
+      Assert.assertEquals(body, body3);
 
       ClientMessage received = sendAndReceive(message);
 
-      assertNotNull(received);
+      Assert.assertNotNull(received);
 
-      assertEquals(body, received.getBodyBuffer().readString());
+      Assert.assertEquals(body, received.getBodyBuffer().readString());
 
       received.getBodyBuffer().resetReaderIndex();
 
-      assertEquals(PacketImpl.PACKET_HEADERS_SIZE + DataConstants.SIZE_INT, received.getBodyBuffer().readerIndex());
+      Assert.assertEquals(PacketImpl.PACKET_HEADERS_SIZE + DataConstants.SIZE_INT, received.getBodyBuffer()
+                                                                                           .readerIndex());
 
       String body4 = received.getBodyBuffer().readString();
 
-      assertEquals(body, body4);
+      Assert.assertEquals(body, body4);
 
    }
 
@@ -200,11 +207,11 @@ public class InVMNonPersistentMessageBufferTest extends ServiceTestBase
    {
       if (isNetty())
       {
-         return this.createNettyFactory();
+         return createNettyFactory();
       }
       else
       {
-         return this.createInVMFactory();
+         return createInVMFactory();
       }
    }
 
@@ -212,12 +219,13 @@ public class InVMNonPersistentMessageBufferTest extends ServiceTestBase
    {
       return false;
    }
-   
+
    protected boolean isPersistent()
    {
       return false;
    }
 
+   @Override
    protected void setUp() throws Exception
    {
       super.setUp();
@@ -230,22 +238,23 @@ public class InVMNonPersistentMessageBufferTest extends ServiceTestBase
 
       session = cf.createSession();
 
-      session.createQueue(address, queueName);
+      session.createQueue(InVMNonPersistentMessageBufferTest.address, InVMNonPersistentMessageBufferTest.queueName);
 
-      producer = session.createProducer(address);
+      producer = session.createProducer(InVMNonPersistentMessageBufferTest.address);
 
-      consumer = session.createConsumer(queueName);
+      consumer = session.createConsumer(InVMNonPersistentMessageBufferTest.queueName);
 
       session.start();
    }
 
+   @Override
    protected void tearDown() throws Exception
    {
       if (session != null)
       {
          consumer.close();
 
-         session.deleteQueue(queueName);
+         session.deleteQueue(InVMNonPersistentMessageBufferTest.queueName);
 
          session.close();
       }

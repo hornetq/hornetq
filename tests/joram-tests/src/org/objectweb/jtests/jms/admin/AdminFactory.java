@@ -21,24 +21,24 @@ public class AdminFactory
 {
    private static final String PROP_NAME = "jms.provider.admin.class";
 
-   protected static String getAdminClassName(Properties props)
+   protected static String getAdminClassName(final Properties props)
    {
-      String adminClassName = props.getProperty(PROP_NAME);
+      String adminClassName = props.getProperty(AdminFactory.PROP_NAME);
       return adminClassName;
    }
 
-   public static Admin getAdmin(Properties props)
+   public static Admin getAdmin(final Properties props)
    {
-      String adminClassName = getAdminClassName(props);
+      String adminClassName = AdminFactory.getAdminClassName(props);
       Admin admin = null;
       if (adminClassName == null)
       {
-         throw new NestedRuntimeException("Property " + PROP_NAME + " has not been found in input props");
+         throw new NestedRuntimeException("Property " + AdminFactory.PROP_NAME + " has not been found in input props");
       }
       try
       {
          Class adminClass = Class.forName(adminClassName);
-         admin = (Admin) adminClass.newInstance();
+         admin = (Admin)adminClass.newInstance();
       }
       catch (ClassNotFoundException e)
       {

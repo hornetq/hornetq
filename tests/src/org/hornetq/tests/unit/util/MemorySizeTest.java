@@ -33,15 +33,15 @@ public class MemorySizeTest extends TestCase
 
    public void testObjectSizes() throws Exception
    {
-      log.info("Server message size is " + MemorySize.calculateSize(new MemorySize.ObjectFactory()
+      MemorySizeTest.log.info("Server message size is " + MemorySize.calculateSize(new MemorySize.ObjectFactory()
       {
          public Object createObject()
          {
             return new ServerMessageImpl(1, 1000);
          }
       }));
-      
-      log.info("Message reference size is " + MemorySize.calculateSize(new MemorySize.ObjectFactory()
+
+      MemorySizeTest.log.info("Message reference size is " + MemorySize.calculateSize(new MemorySize.ObjectFactory()
       {
          public Object createObject()
          {
@@ -50,5 +50,3 @@ public class MemorySizeTest extends TestCase
       }));
    }
 }
-
-

@@ -9,14 +9,15 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
  * implied.  See the License for the specific language governing
  * permissions and limitations under the License.
- */ 
+ */
 
 package org.hornetq.tests.unit.util;
 
-import static org.hornetq.tests.util.RandomUtil.randomString;
-
 import java.util.Iterator;
 
+import junit.framework.Assert;
+
+import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.ConcurrentHashSet;
 import org.hornetq.utils.ConcurrentSet;
@@ -34,6 +35,7 @@ public class ConcurrentHashSetTest extends UnitTestCase
    // Attributes ----------------------------------------------------
 
    private ConcurrentSet<String> set;
+
    private String element;
 
    // Static --------------------------------------------------------
@@ -41,81 +43,81 @@ public class ConcurrentHashSetTest extends UnitTestCase
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
-   
+
    public void testAdd() throws Exception
    {
-      assertTrue(set.add(element));
-      assertFalse(set.add(element));
+      Assert.assertTrue(set.add(element));
+      Assert.assertFalse(set.add(element));
    }
 
    public void testAddIfAbsent() throws Exception
    {
-      assertTrue(set.addIfAbsent(element));
-      assertFalse(set.addIfAbsent(element));
+      Assert.assertTrue(set.addIfAbsent(element));
+      Assert.assertFalse(set.addIfAbsent(element));
    }
-   
+
    public void testRemove() throws Exception
    {
-      assertTrue(set.add(element));
-      
-      assertTrue(set.remove(element));
-      assertFalse(set.remove(element));
+      Assert.assertTrue(set.add(element));
+
+      Assert.assertTrue(set.remove(element));
+      Assert.assertFalse(set.remove(element));
    }
-   
+
    public void testContains() throws Exception
    {
-      assertFalse(set.contains(element));
-      
-      assertTrue(set.add(element));      
-      assertTrue(set.contains(element));
+      Assert.assertFalse(set.contains(element));
 
-      assertTrue(set.remove(element));      
-      assertFalse(set.contains(element));
+      Assert.assertTrue(set.add(element));
+      Assert.assertTrue(set.contains(element));
+
+      Assert.assertTrue(set.remove(element));
+      Assert.assertFalse(set.contains(element));
    }
-   
+
    public void testSize() throws Exception
    {
-      assertEquals(0, set.size());
-      
-      assertTrue(set.add(element));      
-      assertEquals(1, set.size());
+      Assert.assertEquals(0, set.size());
 
-      assertTrue(set.remove(element));      
-      assertEquals(0, set.size());
+      Assert.assertTrue(set.add(element));
+      Assert.assertEquals(1, set.size());
+
+      Assert.assertTrue(set.remove(element));
+      Assert.assertEquals(0, set.size());
    }
-   
+
    public void testClear() throws Exception
    {
-      assertTrue(set.add(element));      
+      Assert.assertTrue(set.add(element));
 
-      assertTrue(set.contains(element));
+      Assert.assertTrue(set.contains(element));
       set.clear();
-      assertFalse(set.contains(element));
+      Assert.assertFalse(set.contains(element));
    }
-   
+
    public void testIsEmpty() throws Exception
    {
-      assertTrue(set.isEmpty());
-      
-      assertTrue(set.add(element));      
-      assertFalse(set.isEmpty());
+      Assert.assertTrue(set.isEmpty());
+
+      Assert.assertTrue(set.add(element));
+      Assert.assertFalse(set.isEmpty());
 
       set.clear();
-      assertTrue(set.isEmpty());
+      Assert.assertTrue(set.isEmpty());
    }
 
    public void testIterator() throws Exception
    {
       set.add(element);
-      
+
       Iterator<String> iterator = set.iterator();
       while (iterator.hasNext())
       {
-         String e = (String) iterator.next();
-         assertEquals(element, e);
+         String e = iterator.next();
+         Assert.assertEquals(element, e);
       }
    }
-   
+
    // TestCase overrides --------------------------------------------
 
    @Override
@@ -124,7 +126,7 @@ public class ConcurrentHashSetTest extends UnitTestCase
       super.setUp();
 
       set = new ConcurrentHashSet<String>();
-      element = randomString();
+      element = RandomUtil.randomString();
    }
 
    @Override

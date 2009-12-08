@@ -43,13 +43,12 @@ public interface Configuration extends Serializable
 
    public boolean isStarted();
 
-   
    // General attributes -------------------------------------------------------------------
 
    boolean isClustered();
 
    void setClustered(boolean clustered);
-   
+
    boolean isPersistDeliveryCountBeforeDelivery();
 
    void setPersistDeliveryCountBeforeDelivery(boolean persistDeliveryCountBeforeDelivery);
@@ -57,21 +56,21 @@ public interface Configuration extends Serializable
    boolean isBackup();
 
    void setBackup(boolean backup);
-   
+
    boolean isSharedStore();
-   
+
    void setSharedStore(boolean sharedStore);
-   
+
    boolean isFileDeploymentEnabled();
-   
+
    void setFileDeploymentEnabled(boolean enable);
-   
+
    boolean isPersistenceEnabled();
-   
+
    void setPersistenceEnabled(boolean enable);
-   
+
    long getFileDeployerScanPeriod();
-   
+
    void setFileDeployerScanPeriod(long period);
 
    int getThreadPoolMaxSize();
@@ -95,9 +94,9 @@ public interface Configuration extends Serializable
    void setJMXManagementEnabled(boolean enabled);
 
    String getJMXDomain();
-   
+
    void setJMXDomain(String domain);
-   
+
    List<String> getInterceptorClassNames();
 
    void setInterceptorClassNames(List<String> interceptors);
@@ -105,9 +104,9 @@ public interface Configuration extends Serializable
    long getConnectionTTLOverride();
 
    void setConnectionTTLOverride(long ttl);
-   
+
    boolean isAsyncConnectionExecutionEnabled();
-   
+
    void setEnabledAsyncConnectionExecution(boolean enabled);
 
    Set<TransportConfiguration> getAcceptorConfigurations();
@@ -119,7 +118,7 @@ public interface Configuration extends Serializable
    void setConnectorConfigurations(Map<String, TransportConfiguration> infos);
 
    String getBackupConnectorName();
-   
+
    void setBackupConnectorName(String name);
 
    List<BroadcastGroupConfiguration> getBroadcastGroupConfigurations();
@@ -155,19 +154,19 @@ public interface Configuration extends Serializable
    void setManagementAddress(SimpleString address);
 
    SimpleString getManagementNotificationAddress();
-   
+
    void setManagementNotificationAddress(SimpleString address);
 
    String getManagementClusterUser();
-   
+
    void setManagementClusterUser(String user);
-   
+
    String getManagementClusterPassword();
-   
+
    void setManagementClusterPassword(String password);
 
    long getManagementRequestTimeout();
-   
+
    void setManagementRequestTimeout(long timeout);
 
    int getIDCacheSize();
@@ -177,11 +176,11 @@ public interface Configuration extends Serializable
    boolean isPersistIDCache();
 
    void setPersistIDCache(boolean persist);
-   
+
    String getLogDelegateFactoryClassName();
-   
+
    void setLogDelegateFactoryClassName(String className);
-   
+
    // Journal related attributes ------------------------------------------------------------
 
    String getBindingsDirectory();
@@ -207,21 +206,21 @@ public interface Configuration extends Serializable
    int getJournalFileSize();
 
    void setJournalFileSize(int size);
-   
+
    int getJournalCompactMinFiles();
-   
+
    void setJournalCompactMinFiles(int minFiles);
-   
+
    int getJournalCompactPercentage();
-   
+
    void setJournalCompactPercentage(int percentage);
 
    int getJournalMinFiles();
 
    void setJournalMinFiles(int files);
 
-   //AIO and NIO need different values for these params
-   
+   // AIO and NIO need different values for these params
+
    int getJournalMaxIO_AIO();
 
    void setJournalMaxIO_AIO(int journalMaxIO);
@@ -233,8 +232,7 @@ public interface Configuration extends Serializable
    int getJournalBufferSize_AIO();
 
    void setJournalBufferSize_AIO(int journalBufferSize);
-   
-   
+
    int getJournalMaxIO_NIO();
 
    void setJournalMaxIO_NIO(int journalMaxIO);
@@ -246,8 +244,7 @@ public interface Configuration extends Serializable
    int getJournalBufferSize_NIO();
 
    void setJournalBufferSize_NIO(int journalBufferSize);
-   
-    
+
    boolean isCreateBindingsDir();
 
    void setCreateBindingsDir(boolean create);
@@ -255,15 +252,15 @@ public interface Configuration extends Serializable
    boolean isCreateJournalDir();
 
    void setCreateJournalDir(boolean create);
-   
+
    boolean isLogJournalWriteRate();
-   
+
    void setLogJournalWriteRate(boolean rate);
 
-   //Undocumented attributes
+   // Undocumented attributes
 
    int getJournalPerfBlastPages();
-   
+
    void setJournalPerfBlastPages(int pages);
 
    long getServerDumpInterval();
@@ -271,9 +268,9 @@ public interface Configuration extends Serializable
    void setServerDumpInterval(long interval);
 
    int getMemoryWarningThreshold();
-   
+
    void setMemoryWarningThreshold(int memoryWarningThreshold);
-   
+
    long getMemoryMeasureInterval();
 
    void setMemoryMeasureInterval(long memoryMeasureInterval);
@@ -305,13 +302,13 @@ public interface Configuration extends Serializable
    void setTransactionTimeout(long timeout);
 
    boolean isMessageCounterEnabled();
-   
+
    void setMessageCounterEnabled(boolean enabled);
 
    long getMessageCounterSamplePeriod();
 
    int getMessageCounterMaxDayHistory();
-   
+
    void setMessageCounterMaxDayHistory(int maxDayHistory);
 
    long getTransactionTimeoutScanPeriod();
@@ -325,7 +322,5 @@ public interface Configuration extends Serializable
    int getMessageExpiryThreadPriority();
 
    void setMessageExpiryThreadPriority(int messageExpiryThreadPriority);
-
-
 
 }

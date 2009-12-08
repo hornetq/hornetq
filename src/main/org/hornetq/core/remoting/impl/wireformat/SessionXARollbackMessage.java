@@ -36,14 +36,14 @@ public class SessionXARollbackMessage extends PacketImpl
 
    public SessionXARollbackMessage(final Xid xid)
    {
-      super(SESS_XA_ROLLBACK);
+      super(PacketImpl.SESS_XA_ROLLBACK);
 
       this.xid = xid;
    }
 
    public SessionXARollbackMessage()
    {
-      super(SESS_XA_ROLLBACK);
+      super(PacketImpl.SESS_XA_ROLLBACK);
    }
 
    // Public --------------------------------------------------------

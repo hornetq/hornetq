@@ -31,76 +31,75 @@ public class AbstractAdmin implements Admin
    {
       return getClass().getName();
    }
-   
+
    public void start()
    {
    }
 
    public void stop() throws Exception
    {
-     
-      
+
    }
-   
+
    public InitialContext createContext() throws NamingException
    {
       return new InitialContext();
    }
-   
-   public void createConnectionFactory(String name)
+
+   public void createConnectionFactory(final String name)
    {
       throw new NotImplementedException("FIXME NYI createConnectionFactory");
    }
 
-   public void deleteConnectionFactory(String name)
+   public void deleteConnectionFactory(final String name)
    {
       throw new NotImplementedException("FIXME NYI deleteConnectionFactory");
    }
 
-   public void createQueue(String name)
+   public void createQueue(final String name)
    {
       throw new NotImplementedException("FIXME NYI createQueue");
    }
 
-   public void deleteQueue(String name)
+   public void deleteQueue(final String name)
    {
       throw new NotImplementedException("FIXME NYI deleteQueue");
    }
 
-   public void createQueueConnectionFactory(String name)
+   public void createQueueConnectionFactory(final String name)
    {
       createConnectionFactory(name);
    }
 
-   public void deleteQueueConnectionFactory(String name)
+   public void deleteQueueConnectionFactory(final String name)
    {
       deleteConnectionFactory(name);
    }
 
-   public void createTopic(String name)
+   public void createTopic(final String name)
    {
       throw new NotImplementedException("FIXME NYI createTopic");
    }
 
-   public void deleteTopic(String name)
+   public void deleteTopic(final String name)
    {
       throw new NotImplementedException("FIXME NYI deleteTopic");
    }
 
-   public void createTopicConnectionFactory(String name)
+   public void createTopicConnectionFactory(final String name)
    {
       createConnectionFactory(name);
    }
 
-   public void deleteTopicConnectionFactory(String name)
+   public void deleteTopicConnectionFactory(final String name)
    {
       deleteConnectionFactory(name);
    }
-   
+
    public void startServer()
    {
    }
-   
+
    public void stopServer()
    {
    }

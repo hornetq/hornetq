@@ -36,21 +36,21 @@ public class HornetQ
 {
    private static final Logger log = Logger.getLogger(HornetQ.class);
 
-   public static HornetQServer newHornetQServer(final Configuration config, boolean enablePersistence)
+   public static HornetQServer newHornetQServer(final Configuration config, final boolean enablePersistence)
    {
       HornetQSecurityManager securityManager = new HornetQSecurityManagerImpl();
 
-      HornetQServer server = newHornetQServer(config,
-                                              ManagementFactory.getPlatformMBeanServer(),
-                                              securityManager,
-                                              enablePersistence);
+      HornetQServer server = HornetQ.newHornetQServer(config,
+                                                      ManagementFactory.getPlatformMBeanServer(),
+                                                      securityManager,
+                                                      enablePersistence);
 
       return server;
    }
 
    public static HornetQServer newHornetQServer(final Configuration config)
    {
-      return newHornetQServer(config, config.isPersistenceEnabled());
+      return HornetQ.newHornetQServer(config, config.isPersistenceEnabled());
    }
 
    public static HornetQServer newHornetQServer(final Configuration config,
@@ -59,21 +59,21 @@ public class HornetQ
    {
       HornetQSecurityManager securityManager = new HornetQSecurityManagerImpl();
 
-      HornetQServer server = newHornetQServer(config, mbeanServer, securityManager, enablePersistence);
+      HornetQServer server = HornetQ.newHornetQServer(config, mbeanServer, securityManager, enablePersistence);
 
       return server;
    }
 
    public static HornetQServer newHornetQServer(final Configuration config, final MBeanServer mbeanServer)
    {
-      return newHornetQServer(config, mbeanServer, true);
+      return HornetQ.newHornetQServer(config, mbeanServer, true);
    }
 
    public static HornetQServer newHornetQServer(final Configuration config,
                                                 final MBeanServer mbeanServer,
                                                 final HornetQSecurityManager securityManager)
    {
-      HornetQServer server = newHornetQServer(config, mbeanServer, securityManager, true);
+      HornetQServer server = HornetQ.newHornetQServer(config, mbeanServer, securityManager, true);
 
       return server;
    }

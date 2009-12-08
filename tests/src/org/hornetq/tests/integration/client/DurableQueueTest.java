@@ -13,7 +13,7 @@
 
 package org.hornetq.tests.integration.client;
 
-import static org.hornetq.tests.util.RandomUtil.randomSimpleString;
+import junit.framework.Assert;
 
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
@@ -24,6 +24,7 @@ import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.utils.SimpleString;
 
@@ -53,18 +54,18 @@ public class DurableQueueTest extends ServiceTestBase
 
    public void testConsumeFromDurableQueue() throws Exception
    {
-      SimpleString queue = randomSimpleString();
-      SimpleString address = randomSimpleString();
+      SimpleString queue = RandomUtil.randomSimpleString();
+      SimpleString address = RandomUtil.randomSimpleString();
 
       session.createQueue(address, queue, true);
-      
+
       ClientProducer producer = session.createProducer(address);
       producer.send(session.createClientMessage(false));
 
       session.start();
       ClientConsumer consumer = session.createConsumer(queue);
       ClientMessage message = consumer.receive(500);
-      assertNotNull(message);
+      Assert.assertNotNull(message);
       message.acknowledge();
 
       consumer.close();
@@ -75,26 +76,26 @@ public class DurableQueueTest extends ServiceTestBase
 
    public void testConsumeFromDurableQueueAfterServerRestart() throws Exception
    {
-      SimpleString queue = randomSimpleString();
-      SimpleString address = randomSimpleString();
+      SimpleString queue = RandomUtil.randomSimpleString();
+      SimpleString address = RandomUtil.randomSimpleString();
 
       session.createQueue(address, queue, true);
-      
+
       ClientProducer producer = session.createProducer(address);
       producer.send(session.createClientMessage(true));
 
       session.close();
-      
+
       server.stop();
       server.start();
-      
+
       sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
       session = sf.createSession(false, true, true);
 
       session.start();
       ClientConsumer consumer = session.createConsumer(queue);
       ClientMessage message = consumer.receive(500);
-      assertNotNull(message);
+      Assert.assertNotNull(message);
       message.acknowledge();
 
       consumer.close();
@@ -102,19 +103,19 @@ public class DurableQueueTest extends ServiceTestBase
 
       session.close();
    }
- 
+
    public void testProduceAndConsumeFromDurableQueueAfterServerRestart() throws Exception
    {
-      SimpleString queue = randomSimpleString();
-      SimpleString address = randomSimpleString();
+      SimpleString queue = RandomUtil.randomSimpleString();
+      SimpleString address = RandomUtil.randomSimpleString();
 
       session.createQueue(address, queue, true);
-      
+
       session.close();
-      
+
       server.stop();
       server.start();
-      
+
       sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
       session = sf.createSession(false, true, true);
 
@@ -124,7 +125,7 @@ public class DurableQueueTest extends ServiceTestBase
       session.start();
       ClientConsumer consumer = session.createConsumer(queue);
       ClientMessage message = consumer.receive(500);
-      assertNotNull(message);
+      Assert.assertNotNull(message);
       message.acknowledge();
 
       consumer.close();
@@ -132,7 +133,7 @@ public class DurableQueueTest extends ServiceTestBase
 
       session.close();
    }
-   
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
@@ -145,9 +146,9 @@ public class DurableQueueTest extends ServiceTestBase
       server = createServer(true);
 
       server.start();
-      
+
       sf = createInVMFactory();
-      
+
       session = sf.createSession(false, true, true);
    }
 
@@ -157,13 +158,13 @@ public class DurableQueueTest extends ServiceTestBase
       session.close();
 
       server.stop();
-      
+
       sf.close();
-      
+
       session = null;
-      
+
       server = null;
-      
+
       sf = null;
 
       super.tearDown();

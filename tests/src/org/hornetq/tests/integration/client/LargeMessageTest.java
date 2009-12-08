@@ -18,6 +18,8 @@ import java.util.HashMap;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
@@ -35,6 +37,7 @@ import org.hornetq.core.server.Queue;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.tests.integration.largemessage.LargeMessageTestBase;
 import org.hornetq.tests.util.RandomUtil;
+import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.SimpleString;
 
 /**
@@ -86,9 +89,9 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          session = sf.createSession(false, false, false);
 
-         session.createTemporaryQueue(ADDRESS, ADDRESS);
+         session.createTemporaryQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS);
 
-         ClientProducer producer = session.createProducer(ADDRESS);
+         ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
 
          Message clientFile = createLargeClientMessage(session, messageSize, true);
 
@@ -98,18 +101,18 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          session.start();
 
-         ClientConsumer consumer = session.createConsumer(ADDRESS);
+         ClientConsumer consumer = session.createConsumer(LargeMessageTest.ADDRESS);
          ClientMessage msg1 = consumer.receive(1000);
          msg1.acknowledge();
          session.commit();
-         assertNotNull(msg1);
+         Assert.assertNotNull(msg1);
 
          consumer.close();
 
          try
          {
             msg1.getBodyBuffer().readByte();
-            fail("Exception was expected");
+            Assert.fail("Exception was expected");
          }
          catch (Throwable ignored)
          {
@@ -155,10 +158,10 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          session = sf.createSession(false, false, false);
 
-         session.createQueue(ADDRESS, ADDRESS, true);
-         session.createQueue(ADDRESS, ADDRESS.concat("-2"), true);
+         session.createQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS, true);
+         session.createQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS.concat("-2"), true);
 
-         SimpleString ADDRESS_DLA = ADDRESS.concat("-dla");
+         SimpleString ADDRESS_DLA = LargeMessageTest.ADDRESS.concat("-dla");
 
          AddressSettings addressSettings = new AddressSettings();
 
@@ -169,7 +172,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          session.createQueue(ADDRESS_DLA, ADDRESS_DLA, true);
 
-         ClientProducer producer = session.createProducer(ADDRESS);
+         ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
 
          Message clientFile = createLargeClientMessage(session, messageSize, true);
 
@@ -181,20 +184,20 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          ClientConsumer consumer = session.createConsumer(ADDRESS_DLA);
 
-         ClientConsumer consumerRollback = session.createConsumer(ADDRESS);
+         ClientConsumer consumerRollback = session.createConsumer(LargeMessageTest.ADDRESS);
          ClientMessage msg1 = consumerRollback.receive(1000);
-         assertNotNull(msg1);
+         Assert.assertNotNull(msg1);
          msg1.acknowledge();
          session.rollback();
          consumerRollback.close();
 
          msg1 = consumer.receive(10000);
 
-         assertNotNull(msg1);
+         Assert.assertNotNull(msg1);
 
          for (int i = 0; i < messageSize; i++)
          {
-            assertEquals(getSamplebyte(i), msg1.getBodyBuffer().readByte());
+            Assert.assertEquals(UnitTestCase.getSamplebyte(i), msg1.getBodyBuffer().readByte());
          }
 
          session.close();
@@ -214,11 +217,11 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          msg1 = consumer.receive(10000);
 
-         assertNotNull(msg1);
+         Assert.assertNotNull(msg1);
 
          for (int i = 0; i < messageSize; i++)
          {
-            assertEquals(getSamplebyte(i), msg1.getBodyBuffer().readByte());
+            Assert.assertEquals(UnitTestCase.getSamplebyte(i), msg1.getBodyBuffer().readByte());
          }
 
          msg1.acknowledge();
@@ -227,15 +230,15 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          validateNoFilesOnLargeDir(1);
 
-         consumer = session.createConsumer(ADDRESS.concat("-2"));
+         consumer = session.createConsumer(LargeMessageTest.ADDRESS.concat("-2"));
 
          msg1 = consumer.receive(10000);
 
-         assertNotNull(msg1);
+         Assert.assertNotNull(msg1);
 
          for (int i = 0; i < messageSize; i++)
          {
-            assertEquals(getSamplebyte(i), msg1.getBodyBuffer().readByte());
+            Assert.assertEquals(UnitTestCase.getSamplebyte(i), msg1.getBodyBuffer().readByte());
          }
 
          msg1.acknowledge();
@@ -282,9 +285,9 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          session = sf.createSession(false, false, false);
 
-         session.createQueue(ADDRESS, ADDRESS, true);
+         session.createQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS, true);
 
-         ClientProducer producer = session.createProducer(ADDRESS);
+         ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
 
          Message clientFile = createLargeClientMessage(session, messageSize, true);
          producer.send(clientFile);
@@ -293,18 +296,18 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          session.start();
 
-         ClientConsumer consumer = session.createConsumer(ADDRESS);
+         ClientConsumer consumer = session.createConsumer(LargeMessageTest.ADDRESS);
 
          ClientMessage msg = consumer.receive(10000);
-         assertNotNull(msg);
+         Assert.assertNotNull(msg);
          msg.acknowledge();
-         assertEquals(1, msg.getDeliveryCount());
+         Assert.assertEquals(1, msg.getDeliveryCount());
 
          log.info("body buffer is " + msg.getBodyBuffer());
 
          for (int i = 0; i < messageSize; i++)
          {
-            assertEquals(getSamplebyte(i), msg.getBodyBuffer().readByte());
+            Assert.assertEquals(UnitTestCase.getSamplebyte(i), msg.getBodyBuffer().readByte());
          }
          session.rollback();
 
@@ -313,15 +316,15 @@ public class LargeMessageTest extends LargeMessageTestBase
          session = sf.createSession(false, false, false);
          session.start();
 
-         consumer = session.createConsumer(ADDRESS);
+         consumer = session.createConsumer(LargeMessageTest.ADDRESS);
          msg = consumer.receive(10000);
-         assertNotNull(msg);
+         Assert.assertNotNull(msg);
          msg.acknowledge();
          for (int i = 0; i < messageSize; i++)
          {
-            assertEquals(getSamplebyte(i), msg.getBodyBuffer().readByte());
+            Assert.assertEquals(UnitTestCase.getSamplebyte(i), msg.getBodyBuffer().readByte());
          }
-         assertEquals(2, msg.getDeliveryCount());
+         Assert.assertEquals(2, msg.getDeliveryCount());
          msg.acknowledge();
          consumer.close();
 
@@ -363,8 +366,8 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          ClientSessionFactory sf = createFactory(isNetty());
 
-         SimpleString ADDRESS_DLA = ADDRESS.concat("-dla");
-         SimpleString ADDRESS_EXPIRY = ADDRESS.concat("-expiry");
+         SimpleString ADDRESS_DLA = LargeMessageTest.ADDRESS.concat("-dla");
+         SimpleString ADDRESS_EXPIRY = LargeMessageTest.ADDRESS.concat("-expiry");
 
          AddressSettings addressSettings = new AddressSettings();
 
@@ -376,12 +379,12 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          session = sf.createSession(false, false, false);
 
-         session.createQueue(ADDRESS, ADDRESS, true);
+         session.createQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS, true);
 
          session.createQueue(ADDRESS_DLA, ADDRESS_DLA, true);
          session.createQueue(ADDRESS_EXPIRY, ADDRESS_EXPIRY, true);
 
-         ClientProducer producer = session.createProducer(ADDRESS);
+         ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
 
          Message clientFile = createLargeClientMessage(session, messageSize, false);
          clientFile.setExpiration(System.currentTimeMillis());
@@ -392,22 +395,22 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          session.start();
 
-         ClientConsumer consumerExpired = session.createConsumer(ADDRESS);
+         ClientConsumer consumerExpired = session.createConsumer(LargeMessageTest.ADDRESS);
          // to kick expiry quicker than waiting reaper thread
-         assertNull(consumerExpired.receiveImmediate());
+         Assert.assertNull(consumerExpired.receiveImmediate());
          consumerExpired.close();
 
          ClientConsumer consumerExpiry = session.createConsumer(ADDRESS_EXPIRY);
 
          ClientMessage msg1 = consumerExpiry.receive(5000);
-         assertNotNull(msg1);
+         Assert.assertNotNull(msg1);
          msg1.acknowledge();
 
          session.rollback();
 
          for (int j = 0; j < messageSize; j++)
          {
-            assertEquals(getSamplebyte(j), msg1.getBodyBuffer().readByte());
+            Assert.assertEquals(UnitTestCase.getSamplebyte(j), msg1.getBodyBuffer().readByte());
          }
 
          consumerExpiry.close();
@@ -418,14 +421,14 @@ public class LargeMessageTest extends LargeMessageTestBase
             consumerExpiry = session.createConsumer(ADDRESS_DLA);
 
             msg1 = consumerExpiry.receive(5000);
-            assertNotNull(msg1);
+            Assert.assertNotNull(msg1);
             msg1.acknowledge();
 
             session.rollback();
 
             for (int j = 0; j < messageSize; j++)
             {
-               assertEquals(getSamplebyte(j), msg1.getBodyBuffer().readByte());
+               Assert.assertEquals(UnitTestCase.getSamplebyte(j), msg1.getBodyBuffer().readByte());
             }
 
             consumerExpiry.close();
@@ -441,13 +444,13 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          msg1 = consumerExpiry.receive(5000);
 
-         assertNotNull(msg1);
+         Assert.assertNotNull(msg1);
 
          msg1.acknowledge();
 
          for (int i = 0; i < messageSize; i++)
          {
-            assertEquals(getSamplebyte(i), msg1.getBodyBuffer().readByte());
+            Assert.assertEquals(UnitTestCase.getSamplebyte(i), msg1.getBodyBuffer().readByte());
          }
 
          session.commit();
@@ -498,8 +501,8 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          ClientSessionFactory sf = createFactory(isNetty());
 
-         SimpleString ADDRESS_DLA = ADDRESS.concat("-dla");
-         SimpleString ADDRESS_EXPIRY = ADDRESS.concat("-expiry");
+         SimpleString ADDRESS_DLA = LargeMessageTest.ADDRESS.concat("-dla");
+         SimpleString ADDRESS_EXPIRY = LargeMessageTest.ADDRESS.concat("-expiry");
 
          AddressSettings addressSettings = new AddressSettings();
 
@@ -511,12 +514,12 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          session = sf.createSession(false, false, false);
 
-         session.createQueue(ADDRESS, ADDRESS, true);
+         session.createQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS, true);
 
          session.createQueue(ADDRESS_DLA, ADDRESS_DLA, true);
          session.createQueue(ADDRESS_EXPIRY, ADDRESS_EXPIRY, true);
 
-         ClientProducer producer = session.createProducer(ADDRESS);
+         ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
 
          Message clientFile = createLargeClientMessage(session, messageSize, true);
          clientFile.setExpiration(System.currentTimeMillis());
@@ -527,22 +530,22 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          session.start();
 
-         ClientConsumer consumerExpired = session.createConsumer(ADDRESS);
+         ClientConsumer consumerExpired = session.createConsumer(LargeMessageTest.ADDRESS);
          // to kick expiry quicker than waiting reaper thread
-         assertNull(consumerExpired.receiveImmediate());
+         Assert.assertNull(consumerExpired.receiveImmediate());
          consumerExpired.close();
 
          ClientConsumer consumerExpiry = session.createConsumer(ADDRESS_EXPIRY);
 
          ClientMessage msg1 = consumerExpiry.receive(5000);
-         assertNotNull(msg1);
+         Assert.assertNotNull(msg1);
          msg1.acknowledge();
 
          session.rollback();
 
          for (int j = 0; j < messageSize; j++)
          {
-            assertEquals(getSamplebyte(j), msg1.getBodyBuffer().readByte());
+            Assert.assertEquals(UnitTestCase.getSamplebyte(j), msg1.getBodyBuffer().readByte());
          }
 
          consumerExpiry.close();
@@ -552,14 +555,14 @@ public class LargeMessageTest extends LargeMessageTestBase
             consumerExpiry = session.createConsumer(ADDRESS_DLA);
 
             msg1 = consumerExpiry.receive(5000);
-            assertNotNull(msg1);
+            Assert.assertNotNull(msg1);
             msg1.acknowledge();
 
             session.rollback();
 
             for (int j = 0; j < messageSize; j++)
             {
-               assertEquals(getSamplebyte(j), msg1.getBodyBuffer().readByte());
+               Assert.assertEquals(UnitTestCase.getSamplebyte(j), msg1.getBodyBuffer().readByte());
             }
 
             consumerExpiry.close();
@@ -581,12 +584,12 @@ public class LargeMessageTest extends LargeMessageTestBase
          consumerExpiry = session.createConsumer(ADDRESS_DLA);
 
          msg1 = consumerExpiry.receive(5000);
-         assertNotNull(msg1);
+         Assert.assertNotNull(msg1);
          msg1.acknowledge();
 
          for (int i = 0; i < messageSize; i++)
          {
-            assertEquals(getSamplebyte(i), msg1.getBodyBuffer().readByte());
+            Assert.assertEquals(UnitTestCase.getSamplebyte(i), msg1.getBodyBuffer().readByte());
          }
 
          session.commit();
@@ -621,7 +624,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
    public void testExpiryLargeMessage() throws Exception
    {
-      final int messageSize = (int)(3 * ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE);
+      final int messageSize = 3 * ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE;
 
       ClientSession session = null;
 
@@ -633,7 +636,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          AddressSettings addressSettings = new AddressSettings();
 
-         SimpleString ADDRESS_EXPIRY = ADDRESS.concat("-expiry");
+         SimpleString ADDRESS_EXPIRY = LargeMessageTest.ADDRESS.concat("-expiry");
 
          addressSettings.setExpiryAddress(ADDRESS_EXPIRY);
 
@@ -643,11 +646,11 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          session = sf.createSession(false, false, false);
 
-         session.createQueue(ADDRESS, ADDRESS, true);
+         session.createQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS, true);
 
          session.createQueue(ADDRESS_EXPIRY, ADDRESS_EXPIRY, true);
 
-         ClientProducer producer = session.createProducer(ADDRESS);
+         ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
 
          Message clientFile = createLargeClientMessage(session, messageSize, true);
 
@@ -662,16 +665,16 @@ public class LargeMessageTest extends LargeMessageTestBase
          ClientConsumer consumer = session.createConsumer(ADDRESS_EXPIRY);
 
          // Creating a consumer just to make the expiry process go faster and not have to wait for the reaper
-         ClientConsumer consumer2 = session.createConsumer(ADDRESS);
-         assertNull(consumer2.receiveImmediate());
+         ClientConsumer consumer2 = session.createConsumer(LargeMessageTest.ADDRESS);
+         Assert.assertNull(consumer2.receiveImmediate());
 
          ClientMessage msg1 = consumer.receive(50000);
 
-         assertNotNull(msg1);
+         Assert.assertNotNull(msg1);
 
          for (int i = 0; i < messageSize; i++)
          {
-            assertEquals(getSamplebyte(i), msg1.getBodyBuffer().readByte());
+            Assert.assertEquals(UnitTestCase.getSamplebyte(i), msg1.getBodyBuffer().readByte());
          }
 
          session.close();
@@ -691,11 +694,11 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          msg1 = consumer.receive(10000);
 
-         assertNotNull(msg1);
+         Assert.assertNotNull(msg1);
 
          for (int i = 0; i < messageSize; i++)
          {
-            assertEquals(getSamplebyte(i), msg1.getBodyBuffer().readByte());
+            Assert.assertEquals(UnitTestCase.getSamplebyte(i), msg1.getBodyBuffer().readByte());
          }
 
          msg1.acknowledge();
@@ -736,7 +739,7 @@ public class LargeMessageTest extends LargeMessageTestBase
       internalTestResendMessage(150 * 1024);
    }
 
-   public void internalTestResendMessage(long messageSize) throws Exception
+   public void internalTestResendMessage(final long messageSize) throws Exception
    {
       ClientSession session = null;
 
@@ -750,13 +753,13 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          session = sf.createSession(false, false, false);
 
-         session.createQueue(ADDRESS, ADDRESS, true);
+         session.createQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS, true);
 
-         SimpleString ADDRESS2 = ADDRESS.concat("-2");
+         SimpleString ADDRESS2 = LargeMessageTest.ADDRESS.concat("-2");
 
          session.createQueue(ADDRESS2, ADDRESS2, true);
 
-         ClientProducer producer = session.createProducer(ADDRESS);
+         ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
 
          ClientProducer producer2 = session.createProducer(ADDRESS2);
 
@@ -768,7 +771,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          session.start();
 
-         ClientConsumer consumer = session.createConsumer(ADDRESS);
+         ClientConsumer consumer = session.createConsumer(LargeMessageTest.ADDRESS);
          ClientConsumer consumer2 = session.createConsumer(ADDRESS2);
 
          ClientMessage msg1 = consumer.receive(10000);
@@ -777,7 +780,7 @@ public class LargeMessageTest extends LargeMessageTestBase
          producer2.send(msg1);
 
          boolean failed = false;
-         
+
          try
          {
             producer2.send(msg1);
@@ -786,24 +789,24 @@ public class LargeMessageTest extends LargeMessageTestBase
          {
             failed = true;
          }
-         
-         assertTrue("Exception expected", failed);
+
+         Assert.assertTrue("Exception expected", failed);
 
          session.commit();
 
          ClientMessage msg2 = consumer2.receive(10000);
 
-         assertNotNull(msg2);
+         Assert.assertNotNull(msg2);
 
          msg2.acknowledge();
 
          session.commit();
 
-         assertEquals(messageSize, msg2.getBodySize());
+         Assert.assertEquals(messageSize, msg2.getBodySize());
 
          for (int i = 0; i < messageSize; i++)
          {
-            assertEquals(getSamplebyte(i), msg2.getBodyBuffer().readByte());
+            Assert.assertEquals(UnitTestCase.getSamplebyte(i), msg2.getBodyBuffer().readByte());
          }
 
          session.close();
@@ -843,7 +846,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  false,
                  1,
                  100 * 1024l * 1024l,
-                 RECEIVE_WAIT_TIME,
+                 LargeMessageTest.RECEIVE_WAIT_TIME,
                  0,
                  10 * 1024 * 1024,
                  1024 * 1024);
@@ -862,13 +865,25 @@ public class LargeMessageTest extends LargeMessageTestBase
                  false,
                  1,
                  100 * 1024l * 1024l,
-                 RECEIVE_WAIT_TIME,
+                 LargeMessageTest.RECEIVE_WAIT_TIME,
                  0);
    }
 
    public void testFilePersistenceSmallMessageStreaming() throws Exception
    {
-      testChunks(false, false, false, true, true, false, false, false, false, 100, 1024, RECEIVE_WAIT_TIME, 0);
+      testChunks(false,
+                 false,
+                 false,
+                 true,
+                 true,
+                 false,
+                 false,
+                 false,
+                 false,
+                 100,
+                 1024,
+                 LargeMessageTest.RECEIVE_WAIT_TIME,
+                 0);
    }
 
    public void testFilePersistenceOneHugeMessageConsumer() throws Exception
@@ -903,7 +918,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  false,
                  100,
                  LARGE_MESSAGE_SIZE,
-                 RECEIVE_WAIT_TIME,
+                 LargeMessageTest.RECEIVE_WAIT_TIME,
                  0);
    }
 
@@ -920,7 +935,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  true,
                  2,
                  LARGE_MESSAGE_SIZE,
-                 RECEIVE_WAIT_TIME,
+                 LargeMessageTest.RECEIVE_WAIT_TIME,
                  0);
    }
 
@@ -937,18 +952,42 @@ public class LargeMessageTest extends LargeMessageTestBase
                  false,
                  100,
                  LARGE_MESSAGE_SIZE,
-                 RECEIVE_WAIT_TIME,
+                 LargeMessageTest.RECEIVE_WAIT_TIME,
                  0);
    }
 
    public void testFilePersistenceXAStream() throws Exception
    {
-      testChunks(true, false, false, true, true, false, false, false, false, 1, 1024 * 1024, RECEIVE_WAIT_TIME, 0);
+      testChunks(true,
+                 false,
+                 false,
+                 true,
+                 true,
+                 false,
+                 false,
+                 false,
+                 false,
+                 1,
+                 1024 * 1024,
+                 LargeMessageTest.RECEIVE_WAIT_TIME,
+                 0);
    }
 
    public void testFilePersistenceXAStreamRestart() throws Exception
    {
-      testChunks(true, true, false, true, true, false, false, false, false, 1, 1024 * 1024, RECEIVE_WAIT_TIME, 0);
+      testChunks(true,
+                 true,
+                 false,
+                 true,
+                 true,
+                 false,
+                 false,
+                 false,
+                 false,
+                 1,
+                 1024 * 1024,
+                 LargeMessageTest.RECEIVE_WAIT_TIME,
+                 0);
    }
 
    public void testFilePersistenceXAConsumer() throws Exception
@@ -964,13 +1003,25 @@ public class LargeMessageTest extends LargeMessageTestBase
                  true,
                  100,
                  LARGE_MESSAGE_SIZE,
-                 RECEIVE_WAIT_TIME,
+                 LargeMessageTest.RECEIVE_WAIT_TIME,
                  0);
    }
 
    public void testFilePersistenceXAConsumerRestart() throws Exception
    {
-      testChunks(true, true, true, false, true, false, false, true, true, 100, LARGE_MESSAGE_SIZE, RECEIVE_WAIT_TIME, 0);
+      testChunks(true,
+                 true,
+                 true,
+                 false,
+                 true,
+                 false,
+                 false,
+                 true,
+                 true,
+                 100,
+                 LARGE_MESSAGE_SIZE,
+                 LargeMessageTest.RECEIVE_WAIT_TIME,
+                 0);
    }
 
    public void testFilePersistenceBlocked() throws Exception
@@ -986,7 +1037,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  false,
                  100,
                  LARGE_MESSAGE_SIZE,
-                 RECEIVE_WAIT_TIME,
+                 LargeMessageTest.RECEIVE_WAIT_TIME,
                  0);
    }
 
@@ -1003,7 +1054,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  true,
                  100,
                  LARGE_MESSAGE_SIZE,
-                 RECEIVE_WAIT_TIME,
+                 LargeMessageTest.RECEIVE_WAIT_TIME,
                  0);
    }
 
@@ -1020,43 +1071,127 @@ public class LargeMessageTest extends LargeMessageTestBase
                  false,
                  100,
                  LARGE_MESSAGE_SIZE,
-                 RECEIVE_WAIT_TIME,
+                 LargeMessageTest.RECEIVE_WAIT_TIME,
                  0);
    }
 
    public void testFilePersistenceBlockedXAConsumer() throws Exception
    {
-      testChunks(true, false, true, false, true, false, true, true, true, 100, LARGE_MESSAGE_SIZE, RECEIVE_WAIT_TIME, 0);
+      testChunks(true,
+                 false,
+                 true,
+                 false,
+                 true,
+                 false,
+                 true,
+                 true,
+                 true,
+                 100,
+                 LARGE_MESSAGE_SIZE,
+                 LargeMessageTest.RECEIVE_WAIT_TIME,
+                 0);
    }
 
    public void testFilePersistenceBlockedPreACK() throws Exception
    {
-      testChunks(false, false, true, false, true, true, true, true, false, 1, LARGE_MESSAGE_SIZE, RECEIVE_WAIT_TIME, 0);
+      testChunks(false,
+                 false,
+                 true,
+                 false,
+                 true,
+                 true,
+                 true,
+                 true,
+                 false,
+                 1,
+                 LARGE_MESSAGE_SIZE,
+                 LargeMessageTest.RECEIVE_WAIT_TIME,
+                 0);
    }
 
    public void testFilePersistenceBlockedPreACKConsumer() throws Exception
    {
-      testChunks(false, false, true, false, true, true, true, true, true, 1, LARGE_MESSAGE_SIZE, RECEIVE_WAIT_TIME, 0);
+      testChunks(false,
+                 false,
+                 true,
+                 false,
+                 true,
+                 true,
+                 true,
+                 true,
+                 true,
+                 1,
+                 LARGE_MESSAGE_SIZE,
+                 LargeMessageTest.RECEIVE_WAIT_TIME,
+                 0);
    }
 
    public void testFilePersistenceBlockedPreACKXA() throws Exception
    {
-      testChunks(true, false, true, false, true, true, true, true, false, 100, LARGE_MESSAGE_SIZE, RECEIVE_WAIT_TIME, 0);
+      testChunks(true,
+                 false,
+                 true,
+                 false,
+                 true,
+                 true,
+                 true,
+                 true,
+                 false,
+                 100,
+                 LARGE_MESSAGE_SIZE,
+                 LargeMessageTest.RECEIVE_WAIT_TIME,
+                 0);
    }
 
    public void testFilePersistenceBlockedPreACKXARestart() throws Exception
    {
-      testChunks(true, true, true, false, true, true, true, true, false, 100, LARGE_MESSAGE_SIZE, RECEIVE_WAIT_TIME, 0);
+      testChunks(true,
+                 true,
+                 true,
+                 false,
+                 true,
+                 true,
+                 true,
+                 true,
+                 false,
+                 100,
+                 LARGE_MESSAGE_SIZE,
+                 LargeMessageTest.RECEIVE_WAIT_TIME,
+                 0);
    }
 
    public void testFilePersistenceBlockedPreACKXAConsumer() throws Exception
    {
-      testChunks(true, false, true, false, true, true, true, true, true, 100, LARGE_MESSAGE_SIZE, RECEIVE_WAIT_TIME, 0);
+      testChunks(true,
+                 false,
+                 true,
+                 false,
+                 true,
+                 true,
+                 true,
+                 true,
+                 true,
+                 100,
+                 LARGE_MESSAGE_SIZE,
+                 LargeMessageTest.RECEIVE_WAIT_TIME,
+                 0);
    }
 
    public void testFilePersistenceBlockedPreACKXAConsumerRestart() throws Exception
    {
-      testChunks(true, true, true, false, true, true, true, true, true, 100, LARGE_MESSAGE_SIZE, RECEIVE_WAIT_TIME, 0);
+      testChunks(true,
+                 true,
+                 true,
+                 false,
+                 true,
+                 true,
+                 true,
+                 true,
+                 true,
+                 100,
+                 LARGE_MESSAGE_SIZE,
+                 LargeMessageTest.RECEIVE_WAIT_TIME,
+                 0);
    }
 
    public void testFilePersistenceDelayed() throws Exception
@@ -1072,7 +1207,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  false,
                  1,
                  LARGE_MESSAGE_SIZE,
-                 RECEIVE_WAIT_TIME,
+                 LargeMessageTest.RECEIVE_WAIT_TIME,
                  2000);
    }
 
@@ -1089,7 +1224,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  true,
                  1,
                  LARGE_MESSAGE_SIZE,
-                 RECEIVE_WAIT_TIME,
+                 LargeMessageTest.RECEIVE_WAIT_TIME,
                  2000);
    }
 
@@ -1106,7 +1241,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  false,
                  1,
                  LARGE_MESSAGE_SIZE,
-                 RECEIVE_WAIT_TIME,
+                 LargeMessageTest.RECEIVE_WAIT_TIME,
                  2000);
    }
 
@@ -1123,7 +1258,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  true,
                  1,
                  LARGE_MESSAGE_SIZE,
-                 RECEIVE_WAIT_TIME,
+                 LargeMessageTest.RECEIVE_WAIT_TIME,
                  2000);
    }
 
@@ -1140,7 +1275,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  true,
                  1,
                  LARGE_MESSAGE_SIZE,
-                 RECEIVE_WAIT_TIME,
+                 LargeMessageTest.RECEIVE_WAIT_TIME,
                  0);
    }
 
@@ -1157,7 +1292,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  true,
                  1,
                  LARGE_MESSAGE_SIZE,
-                 RECEIVE_WAIT_TIME,
+                 LargeMessageTest.RECEIVE_WAIT_TIME,
                  0);
    }
 
@@ -1174,13 +1309,25 @@ public class LargeMessageTest extends LargeMessageTestBase
                  false,
                  1,
                  LARGE_MESSAGE_SIZE,
-                 RECEIVE_WAIT_TIME,
+                 LargeMessageTest.RECEIVE_WAIT_TIME,
                  0);
    }
 
    public void testNullPersistenceXAConsumer() throws Exception
    {
-      testChunks(true, false, true, false, false, false, false, true, true, 1, LARGE_MESSAGE_SIZE, RECEIVE_WAIT_TIME, 0);
+      testChunks(true,
+                 false,
+                 true,
+                 false,
+                 false,
+                 false,
+                 false,
+                 true,
+                 true,
+                 1,
+                 LARGE_MESSAGE_SIZE,
+                 LargeMessageTest.RECEIVE_WAIT_TIME,
+                 0);
    }
 
    public void testNullPersistenceDelayed() throws Exception
@@ -1196,7 +1343,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  false,
                  100,
                  LARGE_MESSAGE_SIZE,
-                 RECEIVE_WAIT_TIME,
+                 LargeMessageTest.RECEIVE_WAIT_TIME,
                  100);
    }
 
@@ -1213,7 +1360,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  true,
                  100,
                  LARGE_MESSAGE_SIZE,
-                 RECEIVE_WAIT_TIME,
+                 LargeMessageTest.RECEIVE_WAIT_TIME,
                  100);
    }
 
@@ -1230,7 +1377,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  false,
                  100,
                  LARGE_MESSAGE_SIZE,
-                 RECEIVE_WAIT_TIME,
+                 LargeMessageTest.RECEIVE_WAIT_TIME,
                  100);
    }
 
@@ -1247,7 +1394,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  true,
                  100,
                  LARGE_MESSAGE_SIZE,
-                 RECEIVE_WAIT_TIME,
+                 LargeMessageTest.RECEIVE_WAIT_TIME,
                  100);
    }
 
@@ -1258,82 +1405,274 @@ public class LargeMessageTest extends LargeMessageTestBase
 
    public void testSendSmallMessageXA() throws Exception
    {
-      testChunks(true, false, true, false, true, false, false, true, false, 100, 4, RECEIVE_WAIT_TIME, 0);
+      testChunks(true,
+                 false,
+                 true,
+                 false,
+                 true,
+                 false,
+                 false,
+                 true,
+                 false,
+                 100,
+                 4,
+                 LargeMessageTest.RECEIVE_WAIT_TIME,
+                 0);
    }
 
    public void testSendSmallMessageXAConsumer() throws Exception
    {
-      testChunks(true, false, true, false, true, false, false, true, true, 100, 4, RECEIVE_WAIT_TIME, 0);
+      testChunks(true,
+                 false,
+                 true,
+                 false,
+                 true,
+                 false,
+                 false,
+                 true,
+                 true,
+                 100,
+                 4,
+                 LargeMessageTest.RECEIVE_WAIT_TIME,
+                 0);
    }
 
    public void testSendSmallMessageNullPersistenceXA() throws Exception
    {
-      testChunks(true, false, true, false, false, false, false, true, false, 100, 100, RECEIVE_WAIT_TIME, 0);
+      testChunks(true,
+                 false,
+                 true,
+                 false,
+                 false,
+                 false,
+                 false,
+                 true,
+                 false,
+                 100,
+                 100,
+                 LargeMessageTest.RECEIVE_WAIT_TIME,
+                 0);
    }
 
    public void testSendSmallMessageNullPersistenceXAConsumer() throws Exception
    {
-      testChunks(true, false, true, false, false, false, false, true, true, 100, 100, RECEIVE_WAIT_TIME, 0);
+      testChunks(true,
+                 false,
+                 true,
+                 false,
+                 false,
+                 false,
+                 false,
+                 true,
+                 true,
+                 100,
+                 100,
+                 LargeMessageTest.RECEIVE_WAIT_TIME,
+                 0);
    }
 
    public void testSendRegularMessageNullPersistenceDelayed() throws Exception
    {
-      testChunks(false, false, true, false, false, false, false, false, false, 100, 100, RECEIVE_WAIT_TIME, 1000);
+      testChunks(false,
+                 false,
+                 true,
+                 false,
+                 false,
+                 false,
+                 false,
+                 false,
+                 false,
+                 100,
+                 100,
+                 LargeMessageTest.RECEIVE_WAIT_TIME,
+                 1000);
    }
 
    public void testSendRegularMessageNullPersistenceDelayedConsumer() throws Exception
    {
-      testChunks(false, false, true, false, false, false, false, false, true, 100, 100, RECEIVE_WAIT_TIME, 1000);
+      testChunks(false,
+                 false,
+                 true,
+                 false,
+                 false,
+                 false,
+                 false,
+                 false,
+                 true,
+                 100,
+                 100,
+                 LargeMessageTest.RECEIVE_WAIT_TIME,
+                 1000);
    }
 
    public void testSendRegularMessageNullPersistenceDelayedXA() throws Exception
    {
-      testChunks(true, false, true, false, false, false, false, false, false, 100, 100, RECEIVE_WAIT_TIME, 1000);
+      testChunks(true,
+                 false,
+                 true,
+                 false,
+                 false,
+                 false,
+                 false,
+                 false,
+                 false,
+                 100,
+                 100,
+                 LargeMessageTest.RECEIVE_WAIT_TIME,
+                 1000);
    }
 
    public void testSendRegularMessageNullPersistenceDelayedXAConsumer() throws Exception
    {
-      testChunks(true, false, true, false, false, false, false, false, true, 100, 100, RECEIVE_WAIT_TIME, 1000);
+      testChunks(true,
+                 false,
+                 true,
+                 false,
+                 false,
+                 false,
+                 false,
+                 false,
+                 true,
+                 100,
+                 100,
+                 LargeMessageTest.RECEIVE_WAIT_TIME,
+                 1000);
    }
 
    public void testSendRegularMessagePersistence() throws Exception
    {
-      testChunks(false, false, true, false, true, false, false, true, false, 100, 100, RECEIVE_WAIT_TIME, 0);
+      testChunks(false,
+                 false,
+                 true,
+                 false,
+                 true,
+                 false,
+                 false,
+                 true,
+                 false,
+                 100,
+                 100,
+                 LargeMessageTest.RECEIVE_WAIT_TIME,
+                 0);
    }
 
    public void testSendRegularMessagePersistenceConsumer() throws Exception
    {
-      testChunks(false, false, true, false, true, false, false, true, true, 100, 100, RECEIVE_WAIT_TIME, 0);
+      testChunks(false,
+                 false,
+                 true,
+                 false,
+                 true,
+                 false,
+                 false,
+                 true,
+                 true,
+                 100,
+                 100,
+                 LargeMessageTest.RECEIVE_WAIT_TIME,
+                 0);
    }
 
    public void testSendRegularMessagePersistenceXA() throws Exception
    {
-      testChunks(true, false, true, false, true, false, false, true, false, 100, 100, RECEIVE_WAIT_TIME, 0);
+      testChunks(true,
+                 false,
+                 true,
+                 false,
+                 true,
+                 false,
+                 false,
+                 true,
+                 false,
+                 100,
+                 100,
+                 LargeMessageTest.RECEIVE_WAIT_TIME,
+                 0);
    }
 
    public void testSendRegularMessagePersistenceXAConsumer() throws Exception
    {
-      testChunks(true, false, true, false, true, false, false, true, true, 100, 100, RECEIVE_WAIT_TIME, 0);
+      testChunks(true,
+                 false,
+                 true,
+                 false,
+                 true,
+                 false,
+                 false,
+                 true,
+                 true,
+                 100,
+                 100,
+                 LargeMessageTest.RECEIVE_WAIT_TIME,
+                 0);
    }
 
    public void testSendRegularMessagePersistenceDelayed() throws Exception
    {
-      testChunks(false, false, true, false, true, false, false, false, false, 100, 100, RECEIVE_WAIT_TIME, 1000);
+      testChunks(false,
+                 false,
+                 true,
+                 false,
+                 true,
+                 false,
+                 false,
+                 false,
+                 false,
+                 100,
+                 100,
+                 LargeMessageTest.RECEIVE_WAIT_TIME,
+                 1000);
    }
 
    public void testSendRegularMessagePersistenceDelayedConsumer() throws Exception
    {
-      testChunks(false, false, true, false, true, false, false, false, true, 100, 100, RECEIVE_WAIT_TIME, 1000);
+      testChunks(false,
+                 false,
+                 true,
+                 false,
+                 true,
+                 false,
+                 false,
+                 false,
+                 true,
+                 100,
+                 100,
+                 LargeMessageTest.RECEIVE_WAIT_TIME,
+                 1000);
    }
 
    public void testSendRegularMessagePersistenceDelayedXA() throws Exception
    {
-      testChunks(false, false, true, false, true, false, false, false, false, 100, 100, RECEIVE_WAIT_TIME, 1000);
+      testChunks(false,
+                 false,
+                 true,
+                 false,
+                 true,
+                 false,
+                 false,
+                 false,
+                 false,
+                 100,
+                 100,
+                 LargeMessageTest.RECEIVE_WAIT_TIME,
+                 1000);
    }
 
    public void testSendRegularMessagePersistenceDelayedXAConsumer() throws Exception
    {
-      testChunks(false, false, true, false, true, false, false, false, true, 100, 100, RECEIVE_WAIT_TIME, 1000);
+      testChunks(false,
+                 false,
+                 true,
+                 false,
+                 true,
+                 false,
+                 false,
+                 false,
+                 true,
+                 100,
+                 100,
+                 LargeMessageTest.RECEIVE_WAIT_TIME,
+                 1000);
    }
 
    public void testTwoBindingsTwoStartedConsumers() throws Exception
@@ -1354,14 +1693,14 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          ClientSession session = sf.createSession(null, null, false, true, true, false, 0);
 
-         session.createQueue(ADDRESS, queue[0], null, true);
-         session.createQueue(ADDRESS, queue[1], null, true);
+         session.createQueue(LargeMessageTest.ADDRESS, queue[0], null, true);
+         session.createQueue(LargeMessageTest.ADDRESS, queue[1], null, true);
 
          int numberOfBytes = 400000;
 
          Message clientFile = createLargeClientMessage(session, numberOfBytes);
 
-         ClientProducer producer = session.createProducer(ADDRESS);
+         ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
 
          session.start();
 
@@ -1370,9 +1709,9 @@ public class LargeMessageTest extends LargeMessageTestBase
          producer.close();
 
          ClientConsumer consumer = session.createConsumer(queue[1]);
-         ClientMessage msg = consumer.receive(RECEIVE_WAIT_TIME);
-         assertNull(consumer.receiveImmediate());
-         assertNotNull(msg);
+         ClientMessage msg = consumer.receive(LargeMessageTest.RECEIVE_WAIT_TIME);
+         Assert.assertNull(consumer.receiveImmediate());
+         Assert.assertNotNull(msg);
 
          msg.acknowledge();
          consumer.close();
@@ -1385,8 +1724,8 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          session.start();
 
-         msg = consumer1.receive(RECEIVE_WAIT_TIME);
-         assertNotNull(msg);
+         msg = consumer1.receive(LargeMessageTest.RECEIVE_WAIT_TIME);
+         Assert.assertNotNull(msg);
          msg.acknowledge();
          consumer1.close();
 
@@ -1437,14 +1776,14 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          ClientSession session = sf.createSession(null, null, false, true, true, false, 0);
 
-         session.createQueue(ADDRESS, queue[0], null, true);
-         session.createQueue(ADDRESS, queue[1], null, true);
+         session.createQueue(LargeMessageTest.ADDRESS, queue[0], null, true);
+         session.createQueue(LargeMessageTest.ADDRESS, queue[1], null, true);
 
          int numberOfBytes = 400000;
 
          Message clientFile = createLargeClientMessage(session, numberOfBytes);
 
-         ClientProducer producer = session.createProducer(ADDRESS);
+         ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
          producer.send(clientFile);
 
          producer.close();
@@ -1519,7 +1858,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          session = sf.createSession(isXA, false, false);
 
-         session.createQueue(ADDRESS, ADDRESS, true);
+         session.createQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS, true);
 
          Xid xid = null;
 
@@ -1529,7 +1868,7 @@ public class LargeMessageTest extends LargeMessageTestBase
             session.start(xid, XAResource.TMNOFLAGS);
          }
 
-         ClientProducer producer = session.createProducer(ADDRESS);
+         ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
 
          Message clientFile = createLargeClientMessage(session, 50000, durable);
 
@@ -1614,15 +1953,15 @@ public class LargeMessageTest extends LargeMessageTestBase
             session.start(xid, XAResource.TMNOFLAGS);
          }
 
-         session.createQueue(ADDRESS, ADDRESS, null, true);
+         session.createQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS, null, true);
 
          int numberOfBytes = 200000;
 
          session.start();
 
-         ClientProducer producer = session.createProducer(ADDRESS);
+         ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
 
-         ClientConsumer consumer = session.createConsumer(ADDRESS);
+         ClientConsumer consumer = session.createConsumer(LargeMessageTest.ADDRESS);
 
          for (int n = 0; n < 10; n++)
          {
@@ -1630,7 +1969,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
             producer.send(clientFile);
 
-            assertNull(consumer.receiveImmediate());
+            Assert.assertNull(consumer.receiveImmediate());
 
             if (isXA)
             {
@@ -1648,7 +1987,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
             producer.send(clientFile);
 
-            assertNull(consumer.receiveImmediate());
+            Assert.assertNull(consumer.receiveImmediate());
 
             if (isXA)
             {
@@ -1667,9 +2006,9 @@ public class LargeMessageTest extends LargeMessageTestBase
 
                ClientMessage clientMessage = consumer.receive(5000);
 
-               assertNotNull(clientMessage);
+               Assert.assertNotNull(clientMessage);
 
-               assertEquals(numberOfBytes, clientMessage.getBodyBuffer().writerIndex());
+               Assert.assertEquals(numberOfBytes, clientMessage.getBodyBuffer().writerIndex());
 
                clientMessage.acknowledge();
 
@@ -1743,14 +2082,14 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          session = sf.createSession(null, null, false, false, false, false, 0);
 
-         session.createQueue(ADDRESS, ADDRESS, null, true);
+         session.createQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS, null, true);
 
-         ClientProducer producer = session.createProducer(ADDRESS);
+         ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
 
          for (int i = 0; i < NUMBER_OF_MESSAGES; i++)
          {
             ClientMessage clientFile = session.createClientMessage(true);
-            clientFile.setBodyInputStream(createFakeLargeStream(SIZE));
+            clientFile.setBodyInputStream(UnitTestCase.createFakeLargeStream(SIZE));
             producer.send(clientFile);
 
          }
@@ -1759,7 +2098,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          session.start();
 
-         ClientConsumerInternal consumer = (ClientConsumerInternal)session.createConsumer(ADDRESS);
+         ClientConsumerInternal consumer = (ClientConsumerInternal)session.createConsumer(LargeMessageTest.ADDRESS);
 
          // Wait the consumer to be complete with 10 messages before getting others
          long timeout = System.currentTimeMillis() + 10000;
@@ -1767,7 +2106,7 @@ public class LargeMessageTest extends LargeMessageTestBase
          {
             Thread.sleep(10);
          }
-         assertEquals(NUMBER_OF_MESSAGES, consumer.getBufferSize());
+         Assert.assertEquals(NUMBER_OF_MESSAGES, consumer.getBufferSize());
 
          // Reads the messages, rollback.. read them again
          for (int trans = 0; trans < 2; trans++)
@@ -1776,14 +2115,14 @@ public class LargeMessageTest extends LargeMessageTestBase
             for (int i = 0; i < NUMBER_OF_MESSAGES; i++)
             {
                ClientMessage msg = consumer.receive(10000);
-               assertNotNull(msg);
+               Assert.assertNotNull(msg);
 
                // it will ignore the buffer (not read it) on the first try
                if (trans == 0)
                {
                   for (int byteRead = 0; byteRead < SIZE; byteRead++)
                   {
-                     assertEquals(getSamplebyte(byteRead), msg.getBodyBuffer().readByte());
+                     Assert.assertEquals(UnitTestCase.getSamplebyte(byteRead), msg.getBodyBuffer().readByte());
                   }
                }
 
@@ -1800,8 +2139,10 @@ public class LargeMessageTest extends LargeMessageTestBase
          }
 
          assertGlobalSize(server);
-         assertEquals(0, ((Queue)server.getPostOffice().getBinding(ADDRESS).getBindable()).getDeliveringCount());
-         assertEquals(0, ((Queue)server.getPostOffice().getBinding(ADDRESS).getBindable()).getMessageCount());
+         Assert.assertEquals(0,
+                             ((Queue)server.getPostOffice().getBinding(LargeMessageTest.ADDRESS).getBindable()).getDeliveringCount());
+         Assert.assertEquals(0,
+                             ((Queue)server.getPostOffice().getBinding(LargeMessageTest.ADDRESS).getBindable()).getMessageCount());
 
       }
       finally
@@ -1845,14 +2186,14 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          session = sf.createSession(null, null, false, false, false, false, 0);
 
-         session.createQueue(ADDRESS, ADDRESS, null, true);
+         session.createQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS, null, true);
 
-         ClientProducer producer = session.createProducer(ADDRESS);
+         ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
 
          for (int i = 0; i < NUMBER_OF_MESSAGES; i++)
          {
             ClientMessage clientFile = session.createClientMessage(true);
-            clientFile.setBodyInputStream(createFakeLargeStream(SIZE));
+            clientFile.setBodyInputStream(UnitTestCase.createFakeLargeStream(SIZE));
             producer.send(clientFile);
 
          }
@@ -1865,7 +2206,7 @@ public class LargeMessageTest extends LargeMessageTestBase
          for (int trans = 0; trans < 2; trans++)
          {
 
-            ClientConsumerInternal consumer = (ClientConsumerInternal)session.createConsumer(ADDRESS);
+            ClientConsumerInternal consumer = (ClientConsumerInternal)session.createConsumer(LargeMessageTest.ADDRESS);
 
             // Wait the consumer to be complete with 10 messages before getting others
             long timeout = System.currentTimeMillis() + 10000;
@@ -1877,14 +2218,14 @@ public class LargeMessageTest extends LargeMessageTestBase
             for (int i = 0; i < NUMBER_OF_MESSAGES; i++)
             {
                ClientMessage msg = consumer.receive(10000);
-               assertNotNull(msg);
+               Assert.assertNotNull(msg);
 
                // it will ignore the buffer (not read it) on the first try
                if (trans == 0)
                {
                   for (int byteRead = 0; byteRead < SIZE; byteRead++)
                   {
-                     assertEquals(getSamplebyte(byteRead), msg.getBodyBuffer().readByte());
+                     Assert.assertEquals(UnitTestCase.getSamplebyte(byteRead), msg.getBodyBuffer().readByte());
                   }
                }
 
@@ -1903,8 +2244,10 @@ public class LargeMessageTest extends LargeMessageTestBase
          }
 
          assertGlobalSize(server);
-         assertEquals(0, ((Queue)server.getPostOffice().getBinding(ADDRESS).getBindable()).getDeliveringCount());
-         assertEquals(0, ((Queue)server.getPostOffice().getBinding(ADDRESS).getBindable()).getMessageCount());
+         Assert.assertEquals(0,
+                             ((Queue)server.getPostOffice().getBinding(LargeMessageTest.ADDRESS).getBindable()).getDeliveringCount());
+         Assert.assertEquals(0,
+                             ((Queue)server.getPostOffice().getBinding(LargeMessageTest.ADDRESS).getBindable()).getMessageCount());
 
       }
       finally
@@ -1946,12 +2289,12 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          session = sf.createSession(null, null, false, true, true, false, 0);
 
-         session.createQueue(ADDRESS, ADDRESS, null, true);
+         session.createQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS, null, true);
 
          ClientMessage clientFile = session.createClientMessage(true);
-         clientFile.setBodyInputStream(createFakeLargeStream(SIZE));
+         clientFile.setBodyInputStream(UnitTestCase.createFakeLargeStream(SIZE));
 
-         ClientProducer producer = session.createProducer(ADDRESS);
+         ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
 
          session.start();
 
@@ -1962,20 +2305,22 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          log.debug("Waiting");
 
-         ClientConsumer consumer = session.createConsumer(ADDRESS);
+         ClientConsumer consumer = session.createConsumer(LargeMessageTest.ADDRESS);
 
          ClientMessage msg2 = consumer.receive(10000);
 
          msg2.acknowledge();
 
          msg2.setOutputStream(createFakeOutputStream());
-         assertTrue(msg2.waitOutputStreamCompletion(60000));
+         Assert.assertTrue(msg2.waitOutputStreamCompletion(60000));
 
          session.commit();
 
          assertGlobalSize(server);
-         assertEquals(0, ((Queue)server.getPostOffice().getBinding(ADDRESS).getBindable()).getDeliveringCount());
-         assertEquals(0, ((Queue)server.getPostOffice().getBinding(ADDRESS).getBindable()).getMessageCount());
+         Assert.assertEquals(0,
+                             ((Queue)server.getPostOffice().getBinding(LargeMessageTest.ADDRESS).getBindable()).getDeliveringCount());
+         Assert.assertEquals(0,
+                             ((Queue)server.getPostOffice().getBinding(LargeMessageTest.ADDRESS).getBindable()).getMessageCount());
 
       }
       finally
@@ -2019,14 +2364,14 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          session = sf.createSession(null, null, false, true, true, false, 0);
 
-         session.createQueue(ADDRESS, ADDRESS, null, true);
+         session.createQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS, null, true);
 
-         ClientProducer producer = session.createProducer(ADDRESS);
+         ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
 
          for (int i = 0; i < NUMBER_OF_MESSAGES; i++)
          {
             ClientMessage msg = session.createClientMessage(true);
-            msg.setBodyInputStream(createFakeLargeStream(SIZE));
+            msg.setBodyInputStream(UnitTestCase.createFakeLargeStream(SIZE));
             msg.putIntProperty(new SimpleString("key"), i);
             producer.send(msg);
 
@@ -2041,14 +2386,14 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          log.debug("Waiting");
 
-         ClientConsumer consumer = session.createConsumer(ADDRESS);
+         ClientConsumer consumer = session.createConsumer(LargeMessageTest.ADDRESS);
 
          for (int i = 0; i < NUMBER_OF_MESSAGES; i++)
          {
             ClientMessage msg = consumer.receive(50000);
-            assertNotNull(msg);
+            Assert.assertNotNull(msg);
 
-            assertEquals(i, msg.getObjectProperty(new SimpleString("key")));
+            Assert.assertEquals(i, msg.getObjectProperty(new SimpleString("key")));
 
             msg.acknowledge();
          }
@@ -2058,8 +2403,10 @@ public class LargeMessageTest extends LargeMessageTestBase
          session.commit();
 
          assertGlobalSize(server);
-         assertEquals(0, ((Queue)server.getPostOffice().getBinding(ADDRESS).getBindable()).getDeliveringCount());
-         assertEquals(0, ((Queue)server.getPostOffice().getBinding(ADDRESS).getBindable()).getMessageCount());
+         Assert.assertEquals(0,
+                             ((Queue)server.getPostOffice().getBinding(LargeMessageTest.ADDRESS).getBindable()).getDeliveringCount());
+         Assert.assertEquals(0,
+                             ((Queue)server.getPostOffice().getBinding(LargeMessageTest.ADDRESS).getBindable()).getMessageCount());
 
          log.debug("Thread done");
       }
@@ -2102,14 +2449,14 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          for (int i = 0; i < LARGE_MESSAGE_SIZE; i++)
          {
-            fileMessage.addBytes(new byte[] { getSamplebyte(i) });
+            fileMessage.addBytes(new byte[] { UnitTestCase.getSamplebyte(i) });
          }
 
          fileMessage.releaseResources();
 
-         session.createQueue(ADDRESS, ADDRESS, true);
+         session.createQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS, true);
 
-         ClientProducer prod = session.createProducer(ADDRESS);
+         ClientProducer prod = session.createProducer(LargeMessageTest.ADDRESS);
 
          prod.send(fileMessage);
 
@@ -2119,17 +2466,17 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          session.start();
 
-         ClientConsumer cons = session.createConsumer(ADDRESS);
+         ClientConsumer cons = session.createConsumer(LargeMessageTest.ADDRESS);
 
          ClientMessage msg = cons.receive(5000);
 
-         assertNotNull(msg);
+         Assert.assertNotNull(msg);
 
-         assertEquals(msg.getBodySize(), LARGE_MESSAGE_SIZE);
+         Assert.assertEquals(msg.getBodySize(), LARGE_MESSAGE_SIZE);
 
          for (int i = 0; i < LARGE_MESSAGE_SIZE; i++)
          {
-            assertEquals(getSamplebyte(i), msg.getBodyBuffer().readByte());
+            Assert.assertEquals(UnitTestCase.getSamplebyte(i), msg.getBodyBuffer().readByte());
          }
 
          msg.acknowledge();
@@ -2176,7 +2523,7 @@ public class LargeMessageTest extends LargeMessageTestBase
       HashMap<String, AddressSettings> map = new HashMap<String, AddressSettings>();
 
       AddressSettings value = new AddressSettings();
-      map.put(ADDRESS.toString(), value);
+      map.put(LargeMessageTest.ADDRESS.toString(), value);
       server = createServer(realFiles, config, PAGE_SIZE, PAGE_MAX, map);
       server.start();
 
@@ -2197,19 +2544,19 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          ClientSession session = sf.createSession(null, null, false, true, true, false, 0);
 
-         session.createQueue(ADDRESS, ADDRESS, null, true);
+         session.createQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS, null, true);
 
-         ClientProducer producer = session.createProducer(ADDRESS);
+         ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
 
          ClientMessage message = null;
 
          for (int i = 0; i < 100; i++)
          {
             message = session.createClientMessage(true);
-            
+
             // TODO: Why do I need to reset the writerIndex?
             message.getBodyBuffer().writerIndex(0);
-            
+
             for (int j = 1; j <= numberOfBytes; j++)
             {
                message.getBodyBuffer().writeInt(j);
@@ -2236,25 +2583,25 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          session = sf.createSession(null, null, false, true, true, false, 0);
 
-         ClientConsumer consumer = session.createConsumer(ADDRESS);
+         ClientConsumer consumer = session.createConsumer(LargeMessageTest.ADDRESS);
 
          session.start();
 
          for (int i = 0; i < 100; i++)
          {
-            ClientMessage message2 = consumer.receive(RECEIVE_WAIT_TIME);
+            ClientMessage message2 = consumer.receive(LargeMessageTest.RECEIVE_WAIT_TIME);
 
-            assertNotNull(message2);
+            Assert.assertNotNull(message2);
 
             message2.acknowledge();
 
-            assertNotNull(message2);
+            Assert.assertNotNull(message2);
 
             message.getBodyBuffer().readerIndex(0);
-               
+
             for (int j = 1; j <= numberOfBytes; j++)
             {
-               assertEquals(j, message.getBodyBuffer().readInt());
+               Assert.assertEquals(j, message.getBodyBuffer().readInt());
             }
          }
 
@@ -2264,7 +2611,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          session = sf.createSession(null, null, false, true, true, false, 0);
 
-         readMessage(session, ADDRESS, numberOfBytesBigMessage);
+         readMessage(session, LargeMessageTest.ADDRESS, numberOfBytesBigMessage);
 
          // printBuffer("message received : ", message2.getBody());
 
@@ -2285,7 +2632,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
    // Private -------------------------------------------------------
 
-   private void assertGlobalSize(HornetQServer server) throws InterruptedException
+   private void assertGlobalSize(final HornetQServer server) throws InterruptedException
    {
       // addGlobalSize on LargeMessage is only done after the delivery, and the addSize could be asynchronous
       long timeout = System.currentTimeMillis() + 5000;
@@ -2294,7 +2641,7 @@ public class LargeMessageTest extends LargeMessageTestBase
          Thread.sleep(100);
       }
 
-      assertEquals(0l, server.getPostOffice().getPagingManager().getTotalMemory());
+      Assert.assertEquals(0l, server.getPostOffice().getPagingManager().getTotalMemory());
    }
 
    // Inner classes -------------------------------------------------

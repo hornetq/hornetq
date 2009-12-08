@@ -9,12 +9,14 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
  * implied.  See the License for the specific language governing
  * permissions and limitations under the License.
- */ 
+ */
 
 package org.hornetq.tests.unit.core.settings.impl;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+
+import junit.framework.Assert;
 
 import org.hornetq.core.security.Role;
 import org.hornetq.core.settings.HierarchicalRepository;
@@ -29,11 +31,11 @@ public class RepositoryTest extends UnitTestCase
 {
    HierarchicalRepository<HashSet<Role>> securityRepository;
 
-
+   @Override
    protected void setUp() throws Exception
    {
       super.setUp();
-      
+
       securityRepository = new HierarchicalObjectRepository<HashSet<Role>>();
    }
 
@@ -42,14 +44,14 @@ public class RepositoryTest extends UnitTestCase
       securityRepository.setDefault(new HashSet<Role>());
       HashSet<Role> roles = securityRepository.getMatch("queues.something");
 
-      assertEquals(roles.size(), 0);
+      Assert.assertEquals(roles.size(), 0);
    }
 
    public void testSingleMatch()
    {
       securityRepository.addMatch("queues.*", new HashSet<Role>());
       HashSet<Role> hashSet = securityRepository.getMatch("queues.something");
-      assertEquals(hashSet.size(), 0);
+      Assert.assertEquals(hashSet.size(), 0);
    }
 
    public void testSingletwo()
@@ -64,9 +66,9 @@ public class RepositoryTest extends UnitTestCase
       roles2.add(new Role("test2", true, true, true, true, true, true, true));
       roles2.add(new Role("test3", true, true, true, true, true, true, true));
       securityRepository.addMatch("queues.another.andanother", roles2);
-      
+
       HashSet<Role> hashSet = securityRepository.getMatch("queues.another.andanother");
-      assertEquals(hashSet.size(), 3);
+      Assert.assertEquals(hashSet.size(), 3);
    }
 
    public void testWithoutWildcard()
@@ -77,7 +79,7 @@ public class RepositoryTest extends UnitTestCase
       roles.add(new Role("test2", true, true, true, true, true, true, true));
       securityRepository.addMatch("queues.2.aq", roles);
       HashSet<Role> hashSet = securityRepository.getMatch("queues.2.aq");
-      assertEquals(hashSet.size(), 2);
+      Assert.assertEquals(hashSet.size(), 2);
    }
 
    public void testMultipleWildcards()
@@ -97,31 +99,31 @@ public class RepositoryTest extends UnitTestCase
       repository.addMatch("a.*.*.d", "a.*.*.d");
       repository.addMatch("a.*.d.#", "a.*.d.#");
       String val = repository.getMatch("a");
-      assertEquals("a", val);
+      Assert.assertEquals("a", val);
       val = repository.getMatch("a.b");
-      assertEquals("a.b", val);
+      Assert.assertEquals("a.b", val);
       val = repository.getMatch("a.x");
-      assertEquals("a.*", val);
+      Assert.assertEquals("a.*", val);
       val = repository.getMatch("a.b.x");
-      assertEquals("a.b.#", val);
+      Assert.assertEquals("a.b.#", val);
       val = repository.getMatch("a.b.c");
-      assertEquals("a.b.c", val);
+      Assert.assertEquals("a.b.c", val);
       val = repository.getMatch("a.d.c");
-      assertEquals("a.d.c", val);
+      Assert.assertEquals("a.d.c", val);
       val = repository.getMatch("a.x.c");
-      assertEquals("a.*.c", val);
+      Assert.assertEquals("a.*.c", val);
       val = repository.getMatch("a.b.c.d");
-      assertEquals("a.b.c.d", val);
+      Assert.assertEquals("a.b.c.d", val);
       val = repository.getMatch("a.x.c.d");
-      assertEquals("a.*.*.d", val);
+      Assert.assertEquals("a.*.*.d", val);
       val = repository.getMatch("a.b.x.d");
-      assertEquals("a.*.*.d", val);
+      Assert.assertEquals("a.*.*.d", val);
       val = repository.getMatch("a.d.x.d");
-      assertEquals("a.*.*.d", val);
+      Assert.assertEquals("a.*.*.d", val);
       val = repository.getMatch("a.d.d.g");
-      assertEquals("a.*.d.#", val);
+      Assert.assertEquals("a.*.d.#", val);
       val = repository.getMatch("zzzz.z.z.z.d.r.g.f.sd.s.fsdfd.fsdfs");
-      assertEquals("#", val);
+      Assert.assertEquals("#", val);
    }
 
    public void testRepositoryMerge()
@@ -136,21 +138,21 @@ public class RepositoryTest extends UnitTestCase
       repository.addMatch("a.b.*.d", new DummyMergeable(7));
       repository.addMatch("a.b.c.*", new DummyMergeable(8));
       repository.getMatch("a.b.c.d");
-      assertEquals(5, DummyMergeable.timesMerged);
-      assertTrue(DummyMergeable.contains(1));
-      assertTrue(DummyMergeable.contains(2));
-      assertTrue(DummyMergeable.contains(4));
-      assertTrue(DummyMergeable.contains(7));
-      assertTrue(DummyMergeable.contains(8));
+      Assert.assertEquals(5, DummyMergeable.timesMerged);
+      Assert.assertTrue(DummyMergeable.contains(1));
+      Assert.assertTrue(DummyMergeable.contains(2));
+      Assert.assertTrue(DummyMergeable.contains(4));
+      Assert.assertTrue(DummyMergeable.contains(7));
+      Assert.assertTrue(DummyMergeable.contains(8));
       DummyMergeable.reset();
       repository.getMatch("a.b.c");
-      assertEquals(2, DummyMergeable.timesMerged);
-      assertTrue(DummyMergeable.contains(1));
-      assertTrue(DummyMergeable.contains(2));
-      assertTrue(DummyMergeable.contains(4));
+      Assert.assertEquals(2, DummyMergeable.timesMerged);
+      Assert.assertTrue(DummyMergeable.contains(1));
+      Assert.assertTrue(DummyMergeable.contains(2));
+      Assert.assertTrue(DummyMergeable.contains(4));
       DummyMergeable.reset();
       repository.getMatch("a");
-      assertEquals(0, DummyMergeable.timesMerged);
+      Assert.assertEquals(0, DummyMergeable.timesMerged);
       DummyMergeable.reset();
    }
 
@@ -163,7 +165,7 @@ public class RepositoryTest extends UnitTestCase
       }
       catch (IllegalArgumentException e)
       {
-         //pass
+         // pass
       }
       try
       {
@@ -171,34 +173,37 @@ public class RepositoryTest extends UnitTestCase
       }
       catch (IllegalArgumentException e)
       {
-         //pass
+         // pass
       }
    }
 
    static class DummyMergeable implements Mergeable
    {
       static int timesMerged = 0;
+
       static ArrayList<Integer> merged = new ArrayList<Integer>();
-      private Integer id;
+
+      private final Integer id;
 
       static void reset()
       {
-          timesMerged = 0;
+         DummyMergeable.timesMerged = 0;
          DummyMergeable.merged = new ArrayList<Integer>();
       }
 
-      static boolean contains(Integer i)
+      static boolean contains(final Integer i)
       {
          return DummyMergeable.merged.contains(i);
       }
-      public DummyMergeable(Integer id)
+
+      public DummyMergeable(final Integer id)
       {
          this.id = id;
       }
 
-      public void merge(Object merged)
+      public void merge(final Object merged)
       {
-         timesMerged++;
+         DummyMergeable.timesMerged++;
          DummyMergeable.merged.add(id);
          DummyMergeable.merged.add(((DummyMergeable)merged).id);
       }

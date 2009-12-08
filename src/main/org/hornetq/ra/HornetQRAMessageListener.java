@@ -30,7 +30,7 @@ public class HornetQRAMessageListener implements MessageListener
    private static final Logger log = Logger.getLogger(HornetQRAMessageListener.class);
 
    /** Whether trace is enabled */
-   private static boolean trace = log.isTraceEnabled();
+   private static boolean trace = HornetQRAMessageListener.log.isTraceEnabled();
 
    /** The message listener */
    private final MessageListener listener;
@@ -45,9 +45,9 @@ public class HornetQRAMessageListener implements MessageListener
     */
    public HornetQRAMessageListener(final MessageListener listener, final HornetQRAMessageConsumer consumer)
    {
-      if (trace)
+      if (HornetQRAMessageListener.trace)
       {
-         log.trace("constructor(" + listener + ", " + consumer + ")");
+         HornetQRAMessageListener.log.trace("constructor(" + listener + ", " + consumer + ")");
       }
 
       this.listener = listener;
@@ -60,9 +60,9 @@ public class HornetQRAMessageListener implements MessageListener
     */
    public void onMessage(Message message)
    {
-      if (trace)
+      if (HornetQRAMessageListener.trace)
       {
-         log.trace("onMessage(" + message + ")");
+         HornetQRAMessageListener.log.trace("onMessage(" + message + ")");
       }
 
       message = consumer.wrapMessage(message);

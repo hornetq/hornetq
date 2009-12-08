@@ -11,7 +11,6 @@
  * permissions and limitations under the License.
  */
 
-
 package org.hornetq.jms.example;
 
 import org.hornetq.core.server.ServerMessage;
@@ -27,10 +26,10 @@ import org.hornetq.utils.SimpleString;
  */
 public class AddForwardingTimeTransformer implements Transformer
 {
-   public ServerMessage transform(ServerMessage message)
+   public ServerMessage transform(final ServerMessage message)
    {
       message.putLongProperty(new SimpleString("time_of_forward"), System.currentTimeMillis());
-            
+
       return message;
    }
 

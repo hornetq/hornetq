@@ -13,7 +13,6 @@
 
 package org.hornetq.core.management;
 
-
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * 

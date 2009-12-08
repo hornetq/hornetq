@@ -13,6 +13,8 @@
 
 package org.hornetq.tests.integration.clientcrash;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
@@ -58,20 +60,20 @@ public abstract class ClientTestBase extends ServiceTestBase
    protected void tearDown() throws Exception
    {
       server.stop();
-      
+
       server = null;
 
       super.tearDown();
    }
 
-   protected void assertActiveConnections(int expectedActiveConnections) throws Exception
+   protected void assertActiveConnections(final int expectedActiveConnections) throws Exception
    {
-      assertEquals(expectedActiveConnections, server.getHornetQServerControl().getConnectionCount());
+      Assert.assertEquals(expectedActiveConnections, server.getHornetQServerControl().getConnectionCount());
    }
 
-   protected void assertActiveSession(int expectedActiveSession) throws Exception
+   protected void assertActiveSession(final int expectedActiveSession) throws Exception
    {
-      assertEquals(expectedActiveSession, server.getSessions().size());
+      Assert.assertEquals(expectedActiveSession, server.getSessions().size());
    }
 
    // Private -------------------------------------------------------

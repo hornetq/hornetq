@@ -83,32 +83,32 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
 
    public static void enableDebug()
    {
-      debug = true;
+      FailoverManagerImpl.debug = true;
 
-      debugConns = new ConcurrentHashMap<TransportConfiguration, Set<RemotingConnection>>();
+      FailoverManagerImpl.debugConns = new ConcurrentHashMap<TransportConfiguration, Set<RemotingConnection>>();
    }
-   
+
    public static void disableDebug()
    {
-      debug = false;
+      FailoverManagerImpl.debug = false;
 
-      debugConns.clear();
-      debugConns = null;
+      FailoverManagerImpl.debugConns.clear();
+      FailoverManagerImpl.debugConns = null;
    }
-   
+
    private void checkAddDebug(final RemotingConnection conn)
    {
       Set<RemotingConnection> conns;
 
-      synchronized (debugConns)
+      synchronized (FailoverManagerImpl.debugConns)
       {
-         conns = debugConns.get(connectorConfig);
+         conns = FailoverManagerImpl.debugConns.get(connectorConfig);
 
          if (conns == null)
          {
             conns = new HashSet<RemotingConnection>();
 
-            debugConns.put(connectorConfig, conns);
+            FailoverManagerImpl.debugConns.put(connectorConfig, conns);
          }
 
          conns.add(conn);
@@ -119,13 +119,13 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
    {
       Set<RemotingConnection> conns;
 
-      synchronized (debugConns)
+      synchronized (FailoverManagerImpl.debugConns)
       {
-         conns = debugConns.get(config);
+         conns = FailoverManagerImpl.debugConns.get(config);
 
          if (conns != null)
          {
-            conns = new HashSet<RemotingConnection>(debugConns.get(config));
+            conns = new HashSet<RemotingConnection>(FailoverManagerImpl.debugConns.get(config));
          }
       }
 
@@ -141,12 +141,7 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
    // Attributes
    // -----------------------------------------------------------------------------------
 
-   // We hold this reference for GC reasons
-   private final ClientSessionFactory sessionFactory;
-
    private final TransportConfiguration connectorConfig;
-
-   private final TransportConfiguration backupConfig;
 
    private ConnectorFactory connectorFactory;
 
@@ -179,7 +174,7 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
    private final ScheduledExecutorService scheduledThreadPool;
 
    private final Executor closeExecutor;
-   
+
    private RemotingConnection connection;
 
    private final long retryInterval;
@@ -190,9 +185,9 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
 
    private final int reconnectAttempts;
 
-   private boolean failoverOnServerShutdown;
+   private final boolean failoverOnServerShutdown;
 
-   private Set<SessionFailureListener> listeners = new ConcurrentHashSet<SessionFailureListener>();
+   private final Set<SessionFailureListener> listeners = new ConcurrentHashSet<SessionFailureListener>();
 
    private Connector connector;
 
@@ -225,11 +220,7 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
                               final ScheduledExecutorService scheduledThreadPool,
                               final List<Interceptor> interceptors)
    {
-      this.sessionFactory = sessionFactory;
-
       this.connectorConfig = connectorConfig;
-
-      this.backupConfig = backupConfig;
 
       this.failoverOnServerShutdown = failoverOnServerShutdown;
 
@@ -272,10 +263,10 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
 
       this.threadPool = threadPool;
 
-      this.orderedExecutorFactory = new OrderedExecutorFactory(threadPool);
+      orderedExecutorFactory = new OrderedExecutorFactory(threadPool);
 
-      this.closeExecutor = orderedExecutorFactory.getExecutor();
-      
+      closeExecutor = orderedExecutorFactory.getExecutor();
+
       this.interceptors = interceptors;
    }
 
@@ -287,13 +278,13 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
 
    public void connectionDestroyed(final Object connectionID)
    {
-      this.handleConnectionFailure(connectionID, new HornetQException(HornetQException.NOT_CONNECTED,
-                                                                      "Channel disconnected"));
+      handleConnectionFailure(connectionID,
+                              new HornetQException(HornetQException.NOT_CONNECTED, "Channel disconnected"));
    }
 
    public void connectionException(final Object connectionID, final HornetQException me)
    {
-      this.handleConnectionFailure(connectionID, me);
+      handleConnectionFailure(connectionID, me);
    }
 
    // ConnectionManager implementation ------------------------------------------------------------------
@@ -346,7 +337,6 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
                      {
                         return null;
                      }
-                     // This can happen if the connection manager gets exitLoop - e.g. the server gets shut down
 
                      throw new HornetQException(HornetQException.NOT_CONNECTED,
                                                 "Unable to connect to server using configuration " + connectorConfig);
@@ -404,9 +394,8 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
                }
 
                CreateSessionResponseMessage response = (CreateSessionResponseMessage)pResponse;
-               
-               Channel sessionChannel = theConnection.getChannel(sessionChannelID,
-                                                              confWindowSize);
+
+               Channel sessionChannel = theConnection.getChannel(sessionChannelID, confWindowSize);
 
                ClientSessionInternal session = new ClientSessionImpl(this,
                                                                      name,
@@ -537,7 +526,7 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
 
    public void stopPingingAfterOne()
    {
-      this.stopPingingAfterOne = true;
+      stopPingingAfterOne = true;
    }
 
    // Protected
@@ -555,9 +544,9 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
    }
 
    private void failoverOrReconnect(final Object connectionID, final HornetQException me)
-   {  
+   {
       Set<ClientSessionInternal> sessionsToClose = null;
-      
+
       synchronized (failoverLock)
       {
          if (connection == null || connection.getID() != connectionID)
@@ -568,8 +557,8 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
             // listeners again
             return;
          }
-         
-         //We call before reconnection occurs to give the user a chance to do cleanup, like cancel messages
+
+         // We call before reconnection occurs to give the user a chance to do cleanup, like cancel messages
          callFailureListeners(me, false);
 
          // Now get locks on all channel 1s, whilst holding the failoverLock - this makes sure
@@ -613,7 +602,7 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
          {
             attemptReconnect = reconnectAttempts != 0;
          }
-         
+
          if (attemptFailover || attemptReconnect)
          {
             lockChannel1();
@@ -667,8 +656,8 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
             catch (Exception ignore)
             {
             }
-            
-            this.cancelPinger();
+
+            cancelPinger();
 
             connector = null;
 
@@ -697,24 +686,24 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
          {
             connection.destroy();
 
-            connection = null;                       
-         }      
-                    
+            connection = null;
+         }
+
          callFailureListeners(me, true);
-         
+
          if (connection == null)
          {
             sessionsToClose = new HashSet<ClientSessionInternal>(sessions);
          }
       }
-      
-      //This needs to be outside the failover lock to prevent deadlock
+
+      // This needs to be outside the failover lock to prevent deadlock
       if (sessionsToClose != null)
       {
          // If connection is null it means we didn't succeed in failing over or reconnecting
          // so we close all the sessions, so they will throw exceptions when attempted to be used
-         
-         for (ClientSessionInternal session: sessionsToClose)
+
+         for (ClientSessionInternal session : sessionsToClose)
          {
             try
             {
@@ -722,7 +711,7 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
             }
             catch (Exception e)
             {
-               log.error("Failed to cleanup session");
+               FailoverManagerImpl.log.error("Failed to cleanup session");
             }
          }
       }
@@ -733,7 +722,7 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
       final List<SessionFailureListener> listenersClone = new ArrayList<SessionFailureListener>(listeners);
 
       for (final SessionFailureListener listener : listenersClone)
-      {       
+      {
          try
          {
             if (afterReconnect)
@@ -750,7 +739,7 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
             // Failure of one listener to execute shouldn't prevent others
             // from
             // executing
-            log.error("Failed to execute failure listener", t);
+            FailoverManagerImpl.log.error("Failed to execute failure listener", t);
          }
       }
    }
@@ -759,18 +748,18 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
     * Re-attach sessions all pre-existing sessions to the new remoting connection
     */
    private void reconnectSessions(final RemotingConnection oldConnection, final int reconnectAttempts)
-   {        
+   {
       RemotingConnection newConnection = getConnectionWithRetry(reconnectAttempts);
-      
+
       if (newConnection == null)
       {
-         log.warn("Failed to connect to server.");
+         FailoverManagerImpl.log.warn("Failed to connect to server.");
 
          return;
       }
-                 
+
       List<FailureListener> oldListeners = oldConnection.getFailureListeners();
-      
+
       List<FailureListener> newListeners = new ArrayList<FailureListener>(newConnection.getFailureListeners());
 
       for (FailureListener listener : oldListeners)
@@ -816,7 +805,7 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
 
                if (reconnectAttempts != -1 && count == reconnectAttempts)
                {
-                  log.warn("Tried " + reconnectAttempts + " times to connect. Now giving up.");
+                  FailoverManagerImpl.log.warn("Tried " + reconnectAttempts + " times to connect. Now giving up.");
 
                   return null;
                }
@@ -828,9 +817,9 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
                catch (InterruptedException ignore)
                {
                }
-               
+
                // Exponential back-off
-               long newInterval = (long)((double)interval * retryIntervalMultiplier);
+               long newInterval = (long)(interval * retryIntervalMultiplier);
 
                if (newInterval > maxRetryInterval)
                {
@@ -847,7 +836,7 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
          else
          {
 
-            if (debug)
+            if (FailoverManagerImpl.debug)
             {
                checkAddDebug(theConnection);
             }
@@ -856,7 +845,7 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
          }
       }
    }
-   
+
    private void cancelPinger()
    {
       if (pingerFuture != null)
@@ -903,7 +892,7 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
    }
 
    public RemotingConnection getConnection()
-   {     
+   {
       if (connection == null)
       {
          Connection tc = null;
@@ -949,8 +938,8 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
          {
             // Sanity catch for badly behaved remoting plugins
 
-            log.warn("connector.create or connectorFactory.createConnector should never throw an exception, implementation is badly behaved, but we'll deal with it anyway.",
-                     e);
+            FailoverManagerImpl.log.warn("connector.create or connectorFactory.createConnector should never throw an exception, implementation is badly behaved, but we'll deal with it anyway.",
+                                         e);
 
             if (tc != null)
             {
@@ -1009,7 +998,7 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
             }
          }
       }
-      
+
       return connection;
    }
 
@@ -1100,7 +1089,7 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
       public void bufferReceived(final Object connectionID, final HornetQBuffer buffer)
       {
          RemotingConnection theConn = connection;
-         
+
          if (theConn != null && connectionID == theConn.getID())
          {
             theConn.bufferReceived(connectionID, buffer);
@@ -1129,7 +1118,7 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
 
       ActualScheduled(final PingRunnable runnable)
       {
-         this.pingRunnable = new WeakReference<PingRunnable>(runnable);
+         pingRunnable = new WeakReference<PingRunnable>(runnable);
       }
 
       public void run()
@@ -1154,7 +1143,7 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
 
       public synchronized void run()
       {
-         if (cancelled || (stopPingingAfterOne && !first))
+         if (cancelled || stopPingingAfterOne && !first)
          {
             return;
          }
@@ -1171,7 +1160,7 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
                                                                 "Did not receive data from server for " + connection.getTransportConnection());
 
                cancelled = true;
-               
+
                threadPool.execute(new Runnable()
                {
                   // Must be executed on different thread
@@ -1180,7 +1169,7 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
                      connection.fail(me);
                   }
                });
-                              
+
                return;
             }
             else

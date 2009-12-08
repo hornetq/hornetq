@@ -32,18 +32,18 @@ public interface SequentialFile
     * Creates the file if it doesn't already exist, then opens it
     */
    void open() throws Exception;
-   
+
    boolean isOpen();
-   
+
    boolean exists();
-   
+
    /**
     * The maximum number of simultaneous writes accepted
     * @param maxIO
     * @throws Exception
     */
    void open(int maxIO, boolean useExecutor) throws Exception;
-   
+
    boolean fits(int size);
 
    int getAlignment() throws Exception;
@@ -79,16 +79,16 @@ public interface SequentialFile
    long position() throws Exception;
 
    void close() throws Exception;
-   
+
    void waitForClose() throws Exception;
 
    void sync() throws Exception;
 
    long size() throws Exception;
-   
+
    void renameTo(String newFileName) throws Exception;
 
    SequentialFile copy();
-   
+
    void setTimedBuffer(TimedBuffer buffer);
 }

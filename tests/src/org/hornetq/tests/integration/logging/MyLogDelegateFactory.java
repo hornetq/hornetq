@@ -25,42 +25,42 @@ import org.hornetq.core.logging.LogDelegateFactory;
  */
 public class MyLogDelegateFactory implements LogDelegateFactory
 {
-   public LogDelegate createDelegate(Class<?> clazz)
+   public LogDelegate createDelegate(final Class<?> clazz)
    {
       return new MyLogDelegate();
-   }      
-   
+   }
+
    public class MyLogDelegate implements LogDelegate
    {
-      public void debug(Object message, Throwable t)
+      public void debug(final Object message, final Throwable t)
       {
       }
 
-      public void debug(Object message)
-      { 
-      }
-
-      public void error(Object message, Throwable t)
+      public void debug(final Object message)
       {
       }
 
-      public void error(Object message)
-      { 
-      }
-
-      public void fatal(Object message, Throwable t)
-      { 
-      }
-
-      public void fatal(Object message)
+      public void error(final Object message, final Throwable t)
       {
       }
 
-      public void info(Object message, Throwable t)
+      public void error(final Object message)
       {
       }
 
-      public void info(Object message)
+      public void fatal(final Object message, final Throwable t)
+      {
+      }
+
+      public void fatal(final Object message)
+      {
+      }
+
+      public void info(final Object message, final Throwable t)
+      {
+      }
+
+      public void info(final Object message)
       {
       }
 
@@ -79,23 +79,21 @@ public class MyLogDelegateFactory implements LogDelegateFactory
          return false;
       }
 
-      public void trace(Object message, Throwable t)
+      public void trace(final Object message, final Throwable t)
       {
       }
 
-      public void trace(Object message)
+      public void trace(final Object message)
       {
       }
 
-      public void warn(Object message, Throwable t)
+      public void warn(final Object message, final Throwable t)
       {
       }
 
-      public void warn(Object message)
-      { 
+      public void warn(final Object message)
+      {
       }
-      
+
    }
 }
-
-

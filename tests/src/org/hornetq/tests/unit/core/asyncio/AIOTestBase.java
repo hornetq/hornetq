@@ -20,6 +20,8 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.asyncio.AIOCallback;
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
 import org.hornetq.core.exception.HornetQException;
@@ -50,17 +52,17 @@ public abstract class AIOTestBase extends UnitTestCase
 
       if (!AsynchronousFileImpl.isLoaded())
       {
-         fail(String.format("libAIO is not loaded on %s %s %s",
-                            System.getProperty("os.name"),
-                            System.getProperty("os.arch"),
-                            System.getProperty("os.version")));
+         Assert.fail(String.format("libAIO is not loaded on %s %s %s",
+                                   System.getProperty("os.name"),
+                                   System.getProperty("os.arch"),
+                                   System.getProperty("os.version")));
       }
    }
 
    @Override
    protected void tearDown() throws Exception
    {
-      assertEquals(0, AsynchronousFileImpl.getTotalMaxIO());
+      Assert.assertEquals(0, AsynchronousFileImpl.getTotalMaxIO());
 
       super.tearDown();
    }
@@ -86,21 +88,24 @@ public abstract class AIOTestBase extends UnitTestCase
    protected static class CountDownCallback implements AIOCallback
    {
       private final CountDownLatch latch;
-      
+
       private final List<Integer> outputList;
-      
+
       private final int order;
-      
+
       private final AtomicInteger errors;
 
-      public CountDownCallback(final CountDownLatch latch, final AtomicInteger errors, final List<Integer> outputList, final int order)
+      public CountDownCallback(final CountDownLatch latch,
+                               final AtomicInteger errors,
+                               final List<Integer> outputList,
+                               final int order)
       {
          this.latch = latch;
-         
+
          this.outputList = outputList;
-         
+
          this.order = order;
-         
+
          this.errors = errors;
       }
 
@@ -138,18 +143,18 @@ public abstract class AIOTestBase extends UnitTestCase
          if (latch != null)
          {
             // even thought an error happened, we need to inform the latch,
-               // or the test won't finish
+            // or the test won't finish
             latch.countDown();
          }
       }
-      
+
       public static void checkResults(final int numberOfElements, final ArrayList<Integer> result)
       {
-         assertEquals(numberOfElements, result.size());
+         Assert.assertEquals(numberOfElements, result.size());
          int i = 0;
          for (Integer resultI : result)
          {
-            assertEquals(i++, resultI.intValue());
+            Assert.assertEquals(i++, resultI.intValue());
          }
       }
    }

@@ -30,6 +30,8 @@ import javax.jms.TextMessage;
 import javax.jms.Topic;
 import javax.transaction.TransactionManager;
 
+import junit.framework.Assert;
+
 import com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionManagerImple;
 
 import org.hornetq.core.config.Configuration;
@@ -72,8 +74,7 @@ public abstract class BridgeTestBase extends UnitTestCase
 
    protected ConnectionFactory cf0, cf1;
 
-   protected DestinationFactory sourceQueueFactory, targetQueueFactory, localTargetQueueFactory,
-            sourceTopicFactory;
+   protected DestinationFactory sourceQueueFactory, targetQueueFactory, localTargetQueueFactory, sourceTopicFactory;
 
    protected Queue sourceQueue, targetQueue, localTargetQueue;
 
@@ -93,6 +94,7 @@ public abstract class BridgeTestBase extends UnitTestCase
 
    private HashMap<String, Object> params1;
 
+   @Override
    protected void setUp() throws Exception
    {
       super.setUp();
@@ -108,7 +110,6 @@ public abstract class BridgeTestBase extends UnitTestCase
       jmsServer0 = new JMSServerManagerImpl(server0);
       jmsServer0.setContext(context0);
       jmsServer0.start();
-      
 
       Configuration conf1 = new ConfigurationImpl();
       conf1.setSecurityEnabled(false);
@@ -120,11 +121,10 @@ public abstract class BridgeTestBase extends UnitTestCase
       server1 = HornetQ.newHornetQServer(conf1, false);
 
       context1 = new InVMContext();
-      
+
       jmsServer1 = new JMSServerManagerImpl(server1);
       jmsServer1.setContext(context1);
       jmsServer1.start();
-      
 
       createQueue("sourceQueue", 0);
 
@@ -142,7 +142,7 @@ public abstract class BridgeTestBase extends UnitTestCase
 
    }
 
-   protected void createQueue(String queueName, int index) throws Exception
+   protected void createQueue(final String queueName, final int index) throws Exception
    {
       JMSServerManager server = jmsServer0;
       if (index == 1)
@@ -152,6 +152,7 @@ public abstract class BridgeTestBase extends UnitTestCase
       server.createQueue(queueName, "/queue/" + queueName, null, true);
    }
 
+   @Override
    protected void tearDown() throws Exception
    {
       checkEmpty(sourceQueue, 0);
@@ -161,10 +162,9 @@ public abstract class BridgeTestBase extends UnitTestCase
       // Check no subscriptions left lying around
 
       checkNoSubscriptions(sourceTopic, 0);
-      
-      
+
       jmsServer0.stop();
-      
+
       jmsServer1.stop();
 
       server1.stop();
@@ -193,8 +193,6 @@ public abstract class BridgeTestBase extends UnitTestCase
 
       context1 = null;
 
-     
-
       super.tearDown();
    }
 
@@ -203,15 +201,15 @@ public abstract class BridgeTestBase extends UnitTestCase
       cff0 = new ConnectionFactoryFactory()
       {
          public ConnectionFactory createConnectionFactory() throws Exception
-         {            
+         {
             HornetQConnectionFactory cf = new HornetQConnectionFactory(new TransportConfiguration(InVMConnectorFactory.class.getName()));
-            
-            //Note! We disable automatic reconnection on the session factory. The bridge needs to do the reconnection
+
+            // Note! We disable automatic reconnection on the session factory. The bridge needs to do the reconnection
             cf.setReconnectAttempts(0);
             cf.setBlockOnNonPersistentSend(true);
             cf.setBlockOnPersistentSend(true);
             cf.setCacheLargeMessagesClient(true);
-            
+
             return cf;
          }
 
@@ -224,14 +222,15 @@ public abstract class BridgeTestBase extends UnitTestCase
 
          public ConnectionFactory createConnectionFactory() throws Exception
          {
-            HornetQConnectionFactory cf = new HornetQConnectionFactory(new TransportConfiguration(InVMConnectorFactory.class.getName(), params1));
-            
-            //Note! We disable automatic reconnection on the session factory. The bridge needs to do the reconnection
+            HornetQConnectionFactory cf = new HornetQConnectionFactory(new TransportConfiguration(InVMConnectorFactory.class.getName(),
+                                                                                                  params1));
+
+            // Note! We disable automatic reconnection on the session factory. The bridge needs to do the reconnection
             cf.setReconnectAttempts(0);
             cf.setBlockOnNonPersistentSend(true);
             cf.setBlockOnPersistentSend(true);
             cf.setCacheLargeMessagesClient(true);
-            
+
             return cf;
          }
       };
@@ -279,7 +278,12 @@ public abstract class BridgeTestBase extends UnitTestCase
       localTargetQueue = (Queue)localTargetQueueFactory.createDestination();
    }
 
-   protected void sendMessages(ConnectionFactory cf, Destination dest, int start, int numMessages, boolean persistent, boolean largeMessage) throws Exception
+   protected void sendMessages(final ConnectionFactory cf,
+                               final Destination dest,
+                               final int start,
+                               final int numMessages,
+                               final boolean persistent,
+                               final boolean largeMessage) throws Exception
    {
       Connection conn = null;
 
@@ -298,7 +302,7 @@ public abstract class BridgeTestBase extends UnitTestCase
             if (largeMessage)
             {
                BytesMessage msg = sess.createBytesMessage();
-               ((HornetQMessage)msg).setInputStream(createFakeLargeStream(1024l * 1024l));
+               ((HornetQMessage)msg).setInputStream(UnitTestCase.createFakeLargeStream(1024l * 1024l));
                msg.setStringProperty("msg", "message" + i);
                prod.send(msg);
             }
@@ -319,12 +323,12 @@ public abstract class BridgeTestBase extends UnitTestCase
       }
    }
 
-   protected void checkMessagesReceived(ConnectionFactory cf,
-                                        Destination dest,
-                                        QualityOfServiceMode qosMode,
-                                        int numMessages,
-                                        boolean longWaitForFirst,
-                                        boolean largeMessage) throws Exception
+   protected void checkMessagesReceived(final ConnectionFactory cf,
+                                        final Destination dest,
+                                        final QualityOfServiceMode qosMode,
+                                        final int numMessages,
+                                        final boolean longWaitForFirst,
+                                        final boolean largeMessage) throws Exception
    {
       Connection conn = null;
 
@@ -356,7 +360,7 @@ public abstract class BridgeTestBase extends UnitTestCase
             }
 
             // log.info("Got message " + tm.getText());
-            
+
             if (largeMessage)
             {
                BytesMessage bmsg = (BytesMessage)tm;
@@ -364,14 +368,13 @@ public abstract class BridgeTestBase extends UnitTestCase
                byte buffRead[] = new byte[1024];
                for (int i = 0; i < 1024; i++)
                {
-                  assertEquals(1024, bmsg.readBytes(buffRead));
+                  Assert.assertEquals(1024, bmsg.readBytes(buffRead));
                }
             }
             else
             {
                msgs.add(((TextMessage)tm).getText());
             }
-
 
             count++;
 
@@ -383,13 +386,13 @@ public abstract class BridgeTestBase extends UnitTestCase
 
             for (int i = 0; i < numMessages; i++)
             {
-               assertTrue("" + i, msgs.contains("message" + i));
+               Assert.assertTrue("" + i, msgs.contains("message" + i));
             }
 
             // Should be no more
             if (qosMode == QualityOfServiceMode.ONCE_AND_ONLY_ONCE)
             {
-               assertEquals(numMessages, msgs.size());
+               Assert.assertEquals(numMessages, msgs.size());
             }
          }
          else if (qosMode == QualityOfServiceMode.AT_MOST_ONCE)
@@ -398,7 +401,7 @@ public abstract class BridgeTestBase extends UnitTestCase
             // but you still might get some depending on how/where the crash occurred
          }
 
-         log.trace("Check complete");
+         BridgeTestBase.log.trace("Check complete");
 
       }
       finally
@@ -410,7 +413,11 @@ public abstract class BridgeTestBase extends UnitTestCase
       }
    }
 
-   protected void checkAllMessageReceivedInOrder(ConnectionFactory cf, Destination dest, int start, int numMessages, boolean largeMessage) throws Exception
+   protected void checkAllMessageReceivedInOrder(final ConnectionFactory cf,
+                                                 final Destination dest,
+                                                 final int start,
+                                                 final int numMessages,
+                                                 final boolean largeMessage) throws Exception
    {
       Connection conn = null;
       try
@@ -429,22 +436,21 @@ public abstract class BridgeTestBase extends UnitTestCase
          {
             Message tm = cons.receive(30000);
 
-            assertNotNull(tm);
-            
-            
+            Assert.assertNotNull(tm);
+
             if (largeMessage)
             {
                BytesMessage bmsg = (BytesMessage)tm;
-               assertEquals("message" + (i + start), tm.getStringProperty("msg"));
+               Assert.assertEquals("message" + (i + start), tm.getStringProperty("msg"));
                byte buffRead[] = new byte[1024];
                for (int j = 0; j < 1024; j++)
                {
-                  assertEquals(1024, bmsg.readBytes(buffRead));
+                  Assert.assertEquals(1024, bmsg.readBytes(buffRead));
                }
             }
             else
             {
-               assertEquals("message" + (i + start),((TextMessage)tm).getText());
+               Assert.assertEquals("message" + (i + start), ((TextMessage)tm).getText());
             }
          }
       }
@@ -457,7 +463,7 @@ public abstract class BridgeTestBase extends UnitTestCase
       }
    }
 
-   public boolean checkEmpty(Queue queue, int index) throws Exception
+   public boolean checkEmpty(final Queue queue, final int index) throws Exception
    {
       ManagementService managementService = server0.getManagementService();
       if (index == 1)
@@ -475,7 +481,7 @@ public abstract class BridgeTestBase extends UnitTestCase
       return true;
    }
 
-   protected void checkNoSubscriptions(Topic topic, int index) throws Exception
+   protected void checkNoSubscriptions(final Topic topic, final int index) throws Exception
    {
       ManagementService managementService = server0.getManagementService();
       if (index == 1)
@@ -483,11 +489,11 @@ public abstract class BridgeTestBase extends UnitTestCase
          managementService = server1.getManagementService();
       }
       TopicControl topicControl = (TopicControl)managementService.getResource(ResourceNames.JMS_TOPIC + topic.getTopicName());
-      assertEquals(0, topicControl.getSubscriptionCount());
+      Assert.assertEquals(0, topicControl.getSubscriptionCount());
 
    }
 
-   protected void removeAllMessages(String queueName, int index) throws Exception
+   protected void removeAllMessages(final String queueName, final int index) throws Exception
    {
       ManagementService managementService = server0.getManagementService();
       if (index == 1)

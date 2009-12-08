@@ -16,7 +16,6 @@ package org.hornetq.core.logging.impl;
 import org.hornetq.core.logging.LogDelegate;
 import org.hornetq.core.logging.LogDelegateFactory;
 
-
 /**
  * A {@link LogDelegateFactory} which creates {@link JULLogDelegate} instances.
  *

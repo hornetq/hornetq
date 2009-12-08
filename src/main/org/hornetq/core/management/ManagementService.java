@@ -69,23 +69,23 @@ public interface ManagementService extends NotificationService, HornetQComponent
    SimpleString getManagementNotificationAddress();
 
    ObjectNameBuilder getObjectNameBuilder();
-   
+
    // Resource Registration
-   
+
    void setStorageManager(StorageManager storageManager);
 
    HornetQServerControlImpl registerServer(PostOffice postOffice,
-                                         StorageManager storageManager,
-                                         Configuration configuration,
-                                         HierarchicalRepository<AddressSettings> addressSettingsRepository,
-                                         HierarchicalRepository<Set<Role>> securityRepository,
-                                         ResourceManager resourceManager,
-                                         RemotingService remotingService,
-                                         HornetQServer messagingServer,
-                                         QueueFactory queueFactory,
-                                         ScheduledExecutorService scheduledThreadPool,
-                                         final PagingManager pagingManager, 
-                                         boolean backup) throws Exception;
+                                           StorageManager storageManager,
+                                           Configuration configuration,
+                                           HierarchicalRepository<AddressSettings> addressSettingsRepository,
+                                           HierarchicalRepository<Set<Role>> securityRepository,
+                                           ResourceManager resourceManager,
+                                           RemotingService remotingService,
+                                           HornetQServer messagingServer,
+                                           QueueFactory queueFactory,
+                                           ScheduledExecutorService scheduledThreadPool,
+                                           final PagingManager pagingManager,
+                                           boolean backup) throws Exception;
 
    void unregisterServer() throws Exception;
 
@@ -132,6 +132,6 @@ public interface ManagementService extends NotificationService, HornetQComponent
    Object getResource(String resourceName);
 
    Object[] getResources(Class<?> resourceType);
-   
+
    ServerMessage handleMessage(ServerMessage message) throws Exception;
 }

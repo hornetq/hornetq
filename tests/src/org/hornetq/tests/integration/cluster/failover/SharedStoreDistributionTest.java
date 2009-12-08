@@ -36,12 +36,12 @@ public class SharedStoreDistributionTest extends ReplicatedDistributionTest
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
-   
+
+   @Override
    protected boolean isShared()
    {
       return true;
    }
-
 
    // Private -------------------------------------------------------
 

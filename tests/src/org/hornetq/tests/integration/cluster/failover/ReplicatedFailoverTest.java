@@ -13,7 +13,6 @@
 
 package org.hornetq.tests.integration.cluster.failover;
 
-
 /**
  * A ReplicatedFailoverTest
  *
@@ -37,7 +36,7 @@ public class ReplicatedFailoverTest extends FailoverTest
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
-   
+
    @Override
    protected void createConfigs() throws Exception
    {

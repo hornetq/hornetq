@@ -11,7 +11,6 @@
  * permissions and limitations under the License.
  */
 
-
 package org.hornetq.core.config.cluster;
 
 import java.io.Serializable;
@@ -31,23 +30,23 @@ import org.hornetq.utils.Pair;
 public class BroadcastGroupConfiguration implements Serializable
 {
    private static final long serialVersionUID = 1052413739064253955L;
-   
+
    private static final Logger log = Logger.getLogger(BroadcastGroupConfiguration.class);
-  
+
    private String name;
-   
+
    private String localBindAddress;
 
    private int localBindPort;
-   
+
    private String groupAddress;
-   
+
    private int groupPort;
-   
+
    private long broadcastPeriod;
-   
+
    private List<Pair<String, String>> connectorInfos;
-   
+
    public BroadcastGroupConfiguration(final String name,
                                       final String localBindAddress,
                                       final int localBindPort,
@@ -95,7 +94,7 @@ public class BroadcastGroupConfiguration implements Serializable
    {
       return broadcastPeriod;
    }
-   
+
    public List<Pair<String, String>> getConnectorInfos()
    {
       return connectorInfos;
@@ -104,7 +103,7 @@ public class BroadcastGroupConfiguration implements Serializable
    /**
     * @param name the name to set
     */
-   public void setName(String name)
+   public void setName(final String name)
    {
       this.name = name;
    }
@@ -112,7 +111,7 @@ public class BroadcastGroupConfiguration implements Serializable
    /**
     * @param localBindAddress the localBindAddress to set
     */
-   public void setLocalBindAddress(String localBindAddress)
+   public void setLocalBindAddress(final String localBindAddress)
    {
       this.localBindAddress = localBindAddress;
    }
@@ -120,7 +119,7 @@ public class BroadcastGroupConfiguration implements Serializable
    /**
     * @param localBindPort the localBindPort to set
     */
-   public void setLocalBindPort(int localBindPort)
+   public void setLocalBindPort(final int localBindPort)
    {
       this.localBindPort = localBindPort;
    }
@@ -128,7 +127,7 @@ public class BroadcastGroupConfiguration implements Serializable
    /**
     * @param groupAddress the groupAddress to set
     */
-   public void setGroupAddress(String groupAddress)
+   public void setGroupAddress(final String groupAddress)
    {
       this.groupAddress = groupAddress;
    }
@@ -136,7 +135,7 @@ public class BroadcastGroupConfiguration implements Serializable
    /**
     * @param groupPort the groupPort to set
     */
-   public void setGroupPort(int groupPort)
+   public void setGroupPort(final int groupPort)
    {
       this.groupPort = groupPort;
    }
@@ -144,7 +143,7 @@ public class BroadcastGroupConfiguration implements Serializable
    /**
     * @param broadcastPeriod the broadcastPeriod to set
     */
-   public void setBroadcastPeriod(long broadcastPeriod)
+   public void setBroadcastPeriod(final long broadcastPeriod)
    {
       this.broadcastPeriod = broadcastPeriod;
    }
@@ -152,7 +151,7 @@ public class BroadcastGroupConfiguration implements Serializable
    /**
     * @param connectorInfos the connectorInfos to set
     */
-   public void setConnectorInfos(List<Pair<String, String>> connectorInfos)
+   public void setConnectorInfos(final List<Pair<String, String>> connectorInfos)
    {
       this.connectorInfos = connectorInfos;
    }

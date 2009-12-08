@@ -33,30 +33,30 @@ public abstract class Runner implements Runnable
    protected Logger log = Logger.getLogger(getClass());
 
    protected Session sess;
-   
+
    protected int numMessages;
-   
+
    private boolean failed;
 
-   public Runner(Session sess, int numMessages)
+   public Runner(final Session sess, final int numMessages)
    {
       this.sess = sess;
       this.numMessages = numMessages;
    }
-   
+
    public abstract void run();
-   
+
    public boolean isFailed()
    {
       return failed;
    }
 
-   public void setFailed(boolean failed)
+   public void setFailed(final boolean failed)
    {
       this.failed = failed;
       if (failed)
       {
-         log.info("Marking Runner " + this + " as failed", new Exception ("trace"));
+         log.info("Marking Runner " + this + " as failed", new Exception("trace"));
       }
    }
 

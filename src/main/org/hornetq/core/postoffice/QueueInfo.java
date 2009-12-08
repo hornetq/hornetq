@@ -11,7 +11,6 @@
  * permissions and limitations under the License.
  */
 
-
 package org.hornetq.core.postoffice;
 
 import java.io.Serializable;
@@ -33,22 +32,26 @@ public class QueueInfo implements Serializable
    private static final long serialVersionUID = 3451892849198803182L;
 
    private final SimpleString routingName;
-   
+
    private final SimpleString clusterName;
-   
+
    private final SimpleString address;
-   
+
    private final SimpleString filterString;
-   
+
    private final long id;
-   
+
    private List<SimpleString> filterStrings;
-   
+
    private int numberOfConsumers;
-   
+
    private final int distance;
-   
-   public QueueInfo(final SimpleString routingName, final SimpleString clusterName, final SimpleString address, final SimpleString filterString, final long id,
+
+   public QueueInfo(final SimpleString routingName,
+                    final SimpleString clusterName,
+                    final SimpleString address,
+                    final SimpleString filterString,
+                    final long id,
                     final int distance)
    {
       if (routingName == null)
@@ -66,7 +69,7 @@ public class QueueInfo implements Serializable
 
       this.routingName = routingName;
       this.clusterName = clusterName;
-      this.address = address;      
+      this.address = address;
       this.filterString = filterString;
       this.id = id;
       this.distance = distance;
@@ -76,7 +79,7 @@ public class QueueInfo implements Serializable
    {
       return routingName;
    }
-   
+
    public SimpleString getClusterName()
    {
       return clusterName;
@@ -86,17 +89,17 @@ public class QueueInfo implements Serializable
    {
       return address;
    }
-   
+
    public SimpleString getFilterString()
    {
       return filterString;
    }
-   
+
    public int getDistance()
    {
       return distance;
    }
-   
+
    public long getID()
    {
       return id;
@@ -106,7 +109,7 @@ public class QueueInfo implements Serializable
    {
       return filterStrings;
    }
-   
+
    public void setFilterStrings(final List<SimpleString> filterStrings)
    {
       this.filterStrings = filterStrings;
@@ -115,15 +118,15 @@ public class QueueInfo implements Serializable
    public int getNumberOfConsumers()
    {
       return numberOfConsumers;
-   }     
-   
+   }
+
    public void incrementConsumers()
    {
-      this.numberOfConsumers++;
+      numberOfConsumers++;
    }
-   
+
    public void decrementConsumers()
    {
-      this.numberOfConsumers--;
+      numberOfConsumers--;
    }
 }

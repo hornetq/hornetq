@@ -39,60 +39,59 @@ import org.hornetq.core.server.HornetQServer;
 public class EmbeddedExample
 {
 
-   public static void main(String[] args)
+   public static void main(final String[] args)
    {
       try
       {
-         
+
          // Step 1. Create the Configuration, and set the properties accordingly
          Configuration configuration = new ConfigurationImpl();
          configuration.setPersistenceEnabled(false);
          configuration.setSecurityEnabled(false);
          configuration.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
-         
+
          // Step 2. Create and start the server
          HornetQServer server = HornetQ.newHornetQServer(configuration);
          server.start();
-   
-   
-         // Step 3. As we are not using a JNDI environment we instantiate the objects directly         
-         ClientSessionFactory sf = new ClientSessionFactoryImpl (new TransportConfiguration(InVMConnectorFactory.class.getName()));
-         
+
+         // Step 3. As we are not using a JNDI environment we instantiate the objects directly
+         ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
+
          // Step 4. Create a core queue
          ClientSession coreSession = sf.createSession(false, false, false);
-         
+
          final String queueName = "queue.exampleQueue";
-         
+
          coreSession.createQueue(queueName, queueName, true);
-         
+
          coreSession.close();
-                  
+
          ClientSession session = null;
-   
+
          try
          {
-   
+
             // Step 5. Create the session, and producer
             session = sf.createSession();
-                                   
+
             ClientProducer producer = session.createProducer(queueName);
-   
+
             // Step 6. Create and send a message
             ClientMessage message = session.createClientMessage(false);
-            
+
             final String propName = "myprop";
-            
+
             message.putStringProperty(propName, "Hello sent at " + new Date());
-            
+
             System.out.println("Sending the message.");
-            
+
             producer.send(message);
 
             // Step 7. Create the message consumer and start the connection
             ClientConsumer messageConsumer = session.createConsumer(queueName);
             session.start();
-   
-            // Step 8. Receive the message. 
+
+            // Step 8. Receive the message.
             ClientMessage messageReceived = messageConsumer.receive(1000);
             System.out.println("Received TextMessage:" + messageReceived.getStringProperty(propName));
          }
@@ -103,7 +102,7 @@ public class EmbeddedExample
             {
                session.close();
             }
-            
+
             // Step 10. Stop the server
             server.stop();
          }

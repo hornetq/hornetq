@@ -24,27 +24,28 @@ import org.hornetq.jms.server.config.TopicConfiguration;
  */
 public class TopicConfigurationImpl implements TopicConfiguration
 {
-   
+
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
 
    private final String name;
+
    private final String[] bindings;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public TopicConfigurationImpl(String name, String... bindings)
+   public TopicConfigurationImpl(final String name, final String... bindings)
    {
       this.name = name;
       this.bindings = new String[bindings.length];
       System.arraycopy(bindings, 0, this.bindings, 0, bindings.length);
    }
-   
+
    // TopicConfiguration implementation -----------------------------
-   
+
    public String[] getBindings()
    {
       return bindings;
@@ -54,7 +55,7 @@ public class TopicConfigurationImpl implements TopicConfiguration
    {
       return name;
    }
-   
+
    // Public --------------------------------------------------------
 
    // Package protected ---------------------------------------------

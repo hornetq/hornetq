@@ -158,7 +158,7 @@ public class Operator
 
    public String print(final String level)
    {
-      String st = level + operation + ":" + operationString(operation) + "(\n";
+      String st = level + operation + ":" + Operator.operationString(operation) + "(\n";
 
       String nextLevel = level + "  ";
 
@@ -254,11 +254,11 @@ public class Operator
             {
                return null;
             }
-            if (class2 == LONG)
+            if (class2 == Operator.LONG)
             {
                return Boolean.valueOf(((Number)arg1).longValue() == ((Number)arg2).longValue());
             }
-            if (class2 == DOUBLE)
+            if (class2 == Operator.DOUBLE)
             {
                return Boolean.valueOf(((Number)arg1).longValue() == ((Number)arg2).doubleValue());
             }
@@ -274,11 +274,11 @@ public class Operator
             {
                return null;
             }
-            if (class2 == LONG)
+            if (class2 == Operator.LONG)
             {
                return Boolean.valueOf(((Number)arg1).doubleValue() == ((Number)arg2).longValue());
             }
-            if (class2 == DOUBLE)
+            if (class2 == Operator.DOUBLE)
             {
                return Boolean.valueOf(((Number)arg1).doubleValue() == ((Number)arg2).doubleValue());
             }
@@ -310,7 +310,7 @@ public class Operator
       {
          return null;
       }
-      if (class1 != BOOLEAN)
+      if (class1 != Operator.BOOLEAN)
       {
          throwBadObjectException(class1);
       }
@@ -335,7 +335,7 @@ public class Operator
          {
             return null;
          }
-         if (class2 != BOOLEAN)
+         if (class2 != Operator.BOOLEAN)
          {
             throwBadObjectException(class2);
          }
@@ -346,7 +346,7 @@ public class Operator
          return null;
       }
 
-      if (class1 == BOOLEAN)
+      if (class1 == Operator.BOOLEAN)
       {
          if (((Boolean)arg1).booleanValue() == false)
          {
@@ -357,7 +357,7 @@ public class Operator
          {
             return null;
          }
-         if (class2 != BOOLEAN)
+         if (class2 != Operator.BOOLEAN)
          {
             throwBadObjectException(class2);
          }
@@ -385,7 +385,7 @@ public class Operator
       computeArgument1();
       if (arg1 != null)
       {
-         if (class1 != BOOLEAN)
+         if (class1 != Operator.BOOLEAN)
          {
             throwBadObjectException(class1);
          }
@@ -402,7 +402,7 @@ public class Operator
       computeArgument2();
       if (arg2 != null)
       {
-         if (class2 != BOOLEAN)
+         if (class2 != Operator.BOOLEAN)
          {
             throwBadObjectException(class2);
          }
@@ -433,34 +433,34 @@ public class Operator
          return null;
       }
 
-      if (class1 == LONG)
+      if (class1 == Operator.LONG)
       {
          computeArgument2();
          if (arg2 == null)
          {
             return null;
          }
-         if (class2 == LONG)
+         if (class2 == Operator.LONG)
          {
             return Boolean.valueOf(((Number)arg1).longValue() > ((Number)arg2).longValue());
          }
-         if (class2 == DOUBLE)
+         if (class2 == Operator.DOUBLE)
          {
             return Boolean.valueOf(((Number)arg1).longValue() > ((Number)arg2).doubleValue());
          }
       }
-      else if (class1 == DOUBLE)
+      else if (class1 == Operator.DOUBLE)
       {
          computeArgument2();
          if (arg2 == null)
          {
             return null;
          }
-         if (class2 == LONG)
+         if (class2 == Operator.LONG)
          {
             return Boolean.valueOf(((Number)arg1).doubleValue() > ((Number)arg2).longValue());
          }
-         if (class2 == DOUBLE)
+         if (class2 == Operator.DOUBLE)
          {
             return Boolean.valueOf(((Number)arg1).doubleValue() > ((Number)arg2).doubleValue());
          }
@@ -478,34 +478,34 @@ public class Operator
          return null;
       }
 
-      if (class1 == LONG)
+      if (class1 == Operator.LONG)
       {
          computeArgument2();
          if (arg2 == null)
          {
             return null;
          }
-         if (class2 == LONG)
+         if (class2 == Operator.LONG)
          {
             return Boolean.valueOf(((Number)arg1).longValue() >= ((Number)arg2).longValue());
          }
-         if (class2 == DOUBLE)
+         if (class2 == Operator.DOUBLE)
          {
             return Boolean.valueOf(((Number)arg1).longValue() >= ((Number)arg2).doubleValue());
          }
       }
-      else if (class1 == DOUBLE)
+      else if (class1 == Operator.DOUBLE)
       {
          computeArgument2();
          if (arg2 == null)
          {
             return null;
          }
-         if (class2 == LONG)
+         if (class2 == Operator.LONG)
          {
             return Boolean.valueOf(((Number)arg1).longValue() >= ((Number)arg2).longValue());
          }
-         if (class2 == DOUBLE)
+         if (class2 == Operator.DOUBLE)
          {
             return Boolean.valueOf(((Number)arg1).doubleValue() >= ((Number)arg2).doubleValue());
          }
@@ -523,34 +523,34 @@ public class Operator
          return null;
       }
 
-      if (class1 == LONG)
+      if (class1 == Operator.LONG)
       {
          computeArgument2();
          if (arg2 == null)
          {
             return null;
          }
-         if (class2 == LONG)
+         if (class2 == Operator.LONG)
          {
             return Boolean.valueOf(((Number)arg1).longValue() < ((Number)arg2).longValue());
          }
-         if (class2 == DOUBLE)
+         if (class2 == Operator.DOUBLE)
          {
             return Boolean.valueOf(((Number)arg1).longValue() < ((Number)arg2).doubleValue());
          }
       }
-      else if (class1 == DOUBLE)
+      else if (class1 == Operator.DOUBLE)
       {
          computeArgument2();
          if (arg2 == null)
          {
             return null;
          }
-         if (class2 == LONG)
+         if (class2 == Operator.LONG)
          {
             return Boolean.valueOf(((Number)arg1).doubleValue() < ((Number)arg2).longValue());
          }
-         if (class2 == DOUBLE)
+         if (class2 == Operator.DOUBLE)
          {
             return Boolean.valueOf(((Number)arg1).doubleValue() < ((Number)arg2).doubleValue());
          }
@@ -568,34 +568,34 @@ public class Operator
          return null;
       }
 
-      if (class1 == LONG)
+      if (class1 == Operator.LONG)
       {
          computeArgument2();
          if (arg2 == null)
          {
             return null;
          }
-         if (class2 == LONG)
+         if (class2 == Operator.LONG)
          {
             return Boolean.valueOf(((Number)arg1).longValue() <= ((Number)arg2).longValue());
          }
-         if (class2 == DOUBLE)
+         if (class2 == Operator.DOUBLE)
          {
             return Boolean.valueOf(((Number)arg1).longValue() <= ((Number)arg2).doubleValue());
          }
       }
-      else if (class1 == DOUBLE)
+      else if (class1 == Operator.DOUBLE)
       {
          computeArgument2();
          if (arg2 == null)
          {
             return null;
          }
-         if (class2 == LONG)
+         if (class2 == Operator.LONG)
          {
             return Boolean.valueOf(((Number)arg1).doubleValue() <= ((Number)arg2).longValue());
          }
-         if (class2 == DOUBLE)
+         if (class2 == Operator.DOUBLE)
          {
             return Boolean.valueOf(((Number)arg1).doubleValue() <= ((Number)arg2).doubleValue());
          }
@@ -607,7 +607,7 @@ public class Operator
    Object different() throws Exception
    {
       computeArgument1();
-      
+
       if (arg1 == null)
       {
          computeArgument2();
@@ -634,11 +634,11 @@ public class Operator
             {
                return null;
             }
-            if (class2 == LONG)
+            if (class2 == Operator.LONG)
             {
                return Boolean.valueOf(((Number)arg1).longValue() != ((Number)arg2).longValue());
             }
-            if (class2 == DOUBLE)
+            if (class2 == Operator.DOUBLE)
             {
                return Boolean.valueOf(((Number)arg1).longValue() != ((Number)arg2).doubleValue());
             }
@@ -654,11 +654,11 @@ public class Operator
             {
                return null;
             }
-            if (class2 == LONG)
+            if (class2 == Operator.LONG)
             {
                return Boolean.valueOf(((Number)arg1).doubleValue() != ((Number)arg2).longValue());
             }
-            if (class2 == DOUBLE)
+            if (class2 == Operator.DOUBLE)
             {
                return Boolean.valueOf(((Number)arg1).doubleValue() != ((Number)arg2).doubleValue());
             }
@@ -908,24 +908,24 @@ public class Operator
       Character escapeChar = null;
 
       computeArgument1();
-      
+
       if (arg1 == null)
       {
          return Boolean.FALSE;
       }
-      
-      if (class1 != SIMPLE_STRING)
+
+      if (class1 != Operator.SIMPLE_STRING)
       {
          throwBadObjectException(class1);
       }
 
       computeArgument2();
-       
+
       if (arg2 == null)
       {
          return Boolean.FALSE;
       }
-      if (class2 != SIMPLE_STRING)
+      if (class2 != Operator.SIMPLE_STRING)
       {
          throwBadObjectException(class2);
       }
@@ -938,7 +938,7 @@ public class Operator
             return null;
          }
 
-         if (class3 != SIMPLE_STRING)
+         if (class3 != Operator.SIMPLE_STRING)
          {
             throwBadObjectException(class3);
          }
@@ -982,7 +982,7 @@ public class Operator
       {
          return false;
       }
-      if (class1 != SIMPLE_STRING)
+      if (class1 != Operator.SIMPLE_STRING)
       {
          throwBadObjectException(class1);
       }
@@ -1004,7 +1004,7 @@ public class Operator
       {
          return true;
       }
-      if (class1 != SIMPLE_STRING)
+      if (class1 != Operator.SIMPLE_STRING)
       {
          throwBadObjectException(class1);
       }
@@ -1050,39 +1050,39 @@ public class Operator
 
       if (className == SimpleString.class)
       {
-         class1 = SIMPLE_STRING;
+         class1 = Operator.SIMPLE_STRING;
       }
       else if (className == Double.class)
       {
-         class1 = DOUBLE;
+         class1 = Operator.DOUBLE;
       }
       else if (className == Long.class)
       {
-         class1 = LONG;
+         class1 = Operator.LONG;
       }
       else if (className == Integer.class)
       {
-         class1 = LONG;
+         class1 = Operator.LONG;
          arg1 = new Long(((Integer)arg1).longValue());
       }
       else if (className == Short.class)
       {
-         class1 = LONG;
+         class1 = Operator.LONG;
          arg1 = new Long(((Short)arg1).longValue());
       }
       else if (className == Byte.class)
       {
-         class1 = LONG;
+         class1 = Operator.LONG;
          arg1 = new Long(((Byte)arg1).longValue());
       }
       else if (className == Float.class)
       {
-         class1 = DOUBLE;
+         class1 = Operator.DOUBLE;
          arg1 = new Double(((Float)arg1).doubleValue());
       }
       else if (className == Boolean.class)
       {
-         class1 = BOOLEAN;
+         class1 = Operator.BOOLEAN;
       }
       else
       {
@@ -1123,39 +1123,39 @@ public class Operator
 
       if (className == SimpleString.class)
       {
-         class2 = SIMPLE_STRING;
+         class2 = Operator.SIMPLE_STRING;
       }
       else if (className == Double.class)
       {
-         class2 = DOUBLE;
+         class2 = Operator.DOUBLE;
       }
       else if (className == Long.class)
       {
-         class2 = LONG;
+         class2 = Operator.LONG;
       }
       else if (className == Integer.class)
       {
-         class2 = LONG;
+         class2 = Operator.LONG;
          arg2 = new Long(((Integer)arg2).longValue());
       }
       else if (className == Short.class)
       {
-         class2 = LONG;
+         class2 = Operator.LONG;
          arg2 = new Long(((Short)arg2).longValue());
       }
       else if (className == Byte.class)
       {
-         class2 = LONG;
+         class2 = Operator.LONG;
          arg2 = new Long(((Byte)arg2).longValue());
       }
       else if (className == Float.class)
       {
-         class2 = DOUBLE;
+         class2 = Operator.DOUBLE;
          arg2 = new Double(((Float)arg2).doubleValue());
       }
       else if (className == Boolean.class)
       {
-         class2 = BOOLEAN;
+         class2 = Operator.BOOLEAN;
       }
       else
       {
@@ -1196,39 +1196,39 @@ public class Operator
 
       if (className == SimpleString.class)
       {
-         class3 = SIMPLE_STRING;
+         class3 = Operator.SIMPLE_STRING;
       }
       else if (className == Double.class)
       {
-         class3 = DOUBLE;
+         class3 = Operator.DOUBLE;
       }
       else if (className == Long.class)
       {
-         class3 = LONG;
+         class3 = Operator.LONG;
       }
       else if (className == Integer.class)
       {
-         class3 = LONG;
+         class3 = Operator.LONG;
          arg3 = new Long(((Integer)arg3).longValue());
       }
       else if (className == Short.class)
       {
-         class3 = LONG;
+         class3 = Operator.LONG;
          arg3 = new Long(((Short)arg3).longValue());
       }
       else if (className == Byte.class)
       {
-         class3 = LONG;
+         class3 = Operator.LONG;
          arg3 = new Long(((Byte)arg3).longValue());
       }
       else if (className == Float.class)
       {
-         class3 = DOUBLE;
+         class3 = Operator.DOUBLE;
          arg3 = new Double(((Float)arg3).doubleValue());
       }
       else if (className == Boolean.class)
       {
-         class3 = BOOLEAN;
+         class3 = Operator.BOOLEAN;
       }
       else
       {
@@ -1300,14 +1300,14 @@ public class Operator
 
    public void throwBadObjectException(final int class1) throws Exception
    {
-      throw new Exception("Bad Object: '" + getClassName(class1) + "' for operation: " + toString());
+      throw new Exception("Bad Object: '" + Operator.getClassName(class1) + "' for operation: " + toString());
    }
 
    public void throwBadObjectException(final int class1, final int class2) throws Exception
    {
-      throw new Exception("Bad Object: expected '" + getClassName(class1) +
+      throw new Exception("Bad Object: expected '" + Operator.getClassName(class1) +
                           "' got '" +
-                          getClassName(class2) +
+                          Operator.getClassName(class2) +
                           "' for operation: " +
                           toString());
    }

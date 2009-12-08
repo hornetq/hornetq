@@ -11,7 +11,6 @@
  * permissions and limitations under the License.
  */
 
-
 package org.hornetq.tests.integration.cluster.distribution;
 
 /**
@@ -25,6 +24,7 @@ package org.hornetq.tests.integration.cluster.distribution;
  */
 public class NettySymmetricClusterTest extends SymmetricClusterTest
 {
+   @Override
    protected boolean isNetty()
    {
       return true;

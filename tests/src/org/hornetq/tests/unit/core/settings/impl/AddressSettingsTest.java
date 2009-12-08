@@ -13,6 +13,8 @@
 
 package org.hornetq.tests.unit.core.settings.impl;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.tests.util.UnitTestCase;
@@ -26,14 +28,14 @@ public class AddressSettingsTest extends UnitTestCase
    public void testDefaults()
    {
       AddressSettings addressSettings = new AddressSettings();
-      assertEquals(null, addressSettings.getDeadLetterAddress());
-      assertEquals(null, addressSettings.getExpiryAddress());
-      assertEquals(AddressSettings.DEFAULT_MAX_DELIVERY_ATTEMPTS, addressSettings.getMaxDeliveryAttempts());
-      assertEquals(addressSettings.getMaxSizeBytes(), AddressSettings.DEFAULT_MAX_SIZE_BYTES);
-      assertEquals(AddressSettings.DEFAULT_PAGE_SIZE, addressSettings.getPageSizeBytes());
-      assertEquals(AddressSettings.DEFAULT_MESSAGE_COUNTER_HISTORY_DAY_LIMIT,
-                   addressSettings.getMessageCounterHistoryDayLimit());
-      assertEquals(AddressSettings.DEFAULT_REDELIVER_DELAY, addressSettings.getRedeliveryDelay());
+      Assert.assertEquals(null, addressSettings.getDeadLetterAddress());
+      Assert.assertEquals(null, addressSettings.getExpiryAddress());
+      Assert.assertEquals(AddressSettings.DEFAULT_MAX_DELIVERY_ATTEMPTS, addressSettings.getMaxDeliveryAttempts());
+      Assert.assertEquals(addressSettings.getMaxSizeBytes(), AddressSettings.DEFAULT_MAX_SIZE_BYTES);
+      Assert.assertEquals(AddressSettings.DEFAULT_PAGE_SIZE, addressSettings.getPageSizeBytes());
+      Assert.assertEquals(AddressSettings.DEFAULT_MESSAGE_COUNTER_HISTORY_DAY_LIMIT,
+                          addressSettings.getMessageCounterHistoryDayLimit());
+      Assert.assertEquals(AddressSettings.DEFAULT_REDELIVER_DELAY, addressSettings.getRedeliveryDelay());
 
    }
 
@@ -49,17 +51,17 @@ public class AddressSettingsTest extends UnitTestCase
       addressSettingsToMerge.setAddressFullMessagePolicy(AddressFullMessagePolicy.DROP);
       addressSettingsToMerge.setMaxSizeBytes(1001);
       addressSettingsToMerge.setMessageCounterHistoryDayLimit(1002);
-      addressSettingsToMerge.setRedeliveryDelay((long)1003);
+      addressSettingsToMerge.setRedeliveryDelay(1003);
       addressSettingsToMerge.setPageSizeBytes(1004);
       addressSettings.merge(addressSettingsToMerge);
-      assertEquals(addressSettings.getDeadLetterAddress(), DLQ);
-      assertEquals(addressSettings.getExpiryAddress(), exp);
-      assertEquals(addressSettings.getMaxDeliveryAttempts(), 1000);
-      assertEquals(addressSettings.getMaxSizeBytes(), 1001);
-      assertEquals(addressSettings.getMessageCounterHistoryDayLimit(), 1002);
-      assertEquals(addressSettings.getRedeliveryDelay(), 1003);
-      assertEquals(addressSettings.getPageSizeBytes(), 1004);
-      assertEquals(AddressFullMessagePolicy.DROP, addressSettings.getAddressFullMessagePolicy());
+      Assert.assertEquals(addressSettings.getDeadLetterAddress(), DLQ);
+      Assert.assertEquals(addressSettings.getExpiryAddress(), exp);
+      Assert.assertEquals(addressSettings.getMaxDeliveryAttempts(), 1000);
+      Assert.assertEquals(addressSettings.getMaxSizeBytes(), 1001);
+      Assert.assertEquals(addressSettings.getMessageCounterHistoryDayLimit(), 1002);
+      Assert.assertEquals(addressSettings.getRedeliveryDelay(), 1003);
+      Assert.assertEquals(addressSettings.getPageSizeBytes(), 1004);
+      Assert.assertEquals(AddressFullMessagePolicy.DROP, addressSettings.getAddressFullMessagePolicy());
    }
 
    public void testMultipleMerge()
@@ -80,16 +82,16 @@ public class AddressSettingsTest extends UnitTestCase
       SimpleString exp2 = new SimpleString("testExpiryQueue2");
       addressSettingsToMerge2.setExpiryAddress(exp2);
       addressSettingsToMerge2.setMaxSizeBytes(2001);
-      addressSettingsToMerge2.setRedeliveryDelay((long)2003);
+      addressSettingsToMerge2.setRedeliveryDelay(2003);
       addressSettings.merge(addressSettingsToMerge2);
 
-      assertEquals(addressSettings.getDeadLetterAddress(), DLQ);
-      assertEquals(addressSettings.getExpiryAddress(), exp);
-      assertEquals(addressSettings.getMaxDeliveryAttempts(), 1000);
-      assertEquals(addressSettings.getMaxSizeBytes(), 1001);
-      assertEquals(addressSettings.getMessageCounterHistoryDayLimit(), 1002);
-      assertEquals(addressSettings.getRedeliveryDelay(), 2003);
-      assertEquals(AddressFullMessagePolicy.DROP, addressSettings.getAddressFullMessagePolicy());
+      Assert.assertEquals(addressSettings.getDeadLetterAddress(), DLQ);
+      Assert.assertEquals(addressSettings.getExpiryAddress(), exp);
+      Assert.assertEquals(addressSettings.getMaxDeliveryAttempts(), 1000);
+      Assert.assertEquals(addressSettings.getMaxSizeBytes(), 1001);
+      Assert.assertEquals(addressSettings.getMessageCounterHistoryDayLimit(), 1002);
+      Assert.assertEquals(addressSettings.getRedeliveryDelay(), 2003);
+      Assert.assertEquals(AddressFullMessagePolicy.DROP, addressSettings.getAddressFullMessagePolicy());
    }
 
    public void testMultipleMergeAll()
@@ -101,7 +103,7 @@ public class AddressSettingsTest extends UnitTestCase
       addressSettingsToMerge.setDeadLetterAddress(DLQ);
       addressSettingsToMerge.setExpiryAddress(exp);
       addressSettingsToMerge.setMaxSizeBytes(1001);
-      addressSettingsToMerge.setRedeliveryDelay((long)1003);
+      addressSettingsToMerge.setRedeliveryDelay(1003);
       addressSettingsToMerge.setAddressFullMessagePolicy(AddressFullMessagePolicy.DROP);
       addressSettings.merge(addressSettingsToMerge);
 
@@ -113,16 +115,16 @@ public class AddressSettingsTest extends UnitTestCase
       addressSettingsToMerge2.setMaxDeliveryAttempts(2000);
       addressSettingsToMerge2.setMaxSizeBytes(2001);
       addressSettingsToMerge2.setMessageCounterHistoryDayLimit(2002);
-      addressSettingsToMerge2.setRedeliveryDelay((long)2003);
+      addressSettingsToMerge2.setRedeliveryDelay(2003);
       addressSettingsToMerge.setAddressFullMessagePolicy(AddressFullMessagePolicy.PAGE);
       addressSettings.merge(addressSettingsToMerge2);
 
-      assertEquals(addressSettings.getDeadLetterAddress(), DLQ);
-      assertEquals(addressSettings.getExpiryAddress(), exp);
-      assertEquals(addressSettings.getMaxDeliveryAttempts(), 2000);
-      assertEquals(addressSettings.getMaxSizeBytes(), 1001);
-      assertEquals(addressSettings.getMessageCounterHistoryDayLimit(), 2002);
-      assertEquals(addressSettings.getRedeliveryDelay(), 1003);
-      assertEquals(AddressFullMessagePolicy.DROP, addressSettings.getAddressFullMessagePolicy());
+      Assert.assertEquals(addressSettings.getDeadLetterAddress(), DLQ);
+      Assert.assertEquals(addressSettings.getExpiryAddress(), exp);
+      Assert.assertEquals(addressSettings.getMaxDeliveryAttempts(), 2000);
+      Assert.assertEquals(addressSettings.getMaxSizeBytes(), 1001);
+      Assert.assertEquals(addressSettings.getMessageCounterHistoryDayLimit(), 2002);
+      Assert.assertEquals(addressSettings.getRedeliveryDelay(), 1003);
+      Assert.assertEquals(AddressFullMessagePolicy.DROP, addressSettings.getAddressFullMessagePolicy());
    }
 }

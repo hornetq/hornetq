@@ -37,10 +37,10 @@ public class ChannelBufferWrapper implements HornetQBuffer
    protected ChannelBuffer buffer;
 
    public ChannelBufferWrapper(final ChannelBuffer buffer)
-   { 
+   {
       this.buffer = buffer;
    }
-   
+
    public boolean readBoolean()
    {
       return readByte() != 0;
@@ -76,7 +76,7 @@ public class ChannelBufferWrapper implements HornetQBuffer
    {
       return readSimpleStringInternal();
    }
-   
+
    private SimpleString readSimpleStringInternal()
    {
       int len = buffer.readInt();
@@ -89,11 +89,11 @@ public class ChannelBufferWrapper implements HornetQBuffer
    {
       return readStringInternal();
    }
-   
+
    private String readStringInternal()
    {
       int len = buffer.readInt();
-      
+
       if (len < 9)
       {
          char[] chars = new char[len];
@@ -153,7 +153,7 @@ public class ChannelBufferWrapper implements HornetQBuffer
    {
       writeSimpleStringInternal(val);
    }
-   
+
    private void writeSimpleStringInternal(final SimpleString val)
    {
       byte[] data = val.getData();
@@ -165,16 +165,16 @@ public class ChannelBufferWrapper implements HornetQBuffer
    {
       writeStringInternal(val);
    }
-   
+
    private void writeStringInternal(final String val)
    {
       int length = val.length();
-      
+
       buffer.writeInt(length);
-       
+
       if (length < 9)
       {
-         //If very small it's more performant to store char by char
+         // If very small it's more performant to store char by char
          for (int i = 0; i < val.length(); i++)
          {
             buffer.writeShort((short)val.charAt(i));
@@ -182,12 +182,12 @@ public class ChannelBufferWrapper implements HornetQBuffer
       }
       else if (length < 0xfff)
       {
-         //Store as UTF - this is quicker than char by char for most strings
+         // Store as UTF - this is quicker than char by char for most strings
          writeUTF(val);
       }
       else
       {
-         //Store as SimpleString, since can't store utf > 0xffff in length
+         // Store as SimpleString, since can't store utf > 0xffff in length
          writeSimpleStringInternal(new SimpleString(val));
       }
    }
@@ -196,7 +196,6 @@ public class ChannelBufferWrapper implements HornetQBuffer
    {
       UTF8Util.saveUTF(this, utf);
    }
-
 
    public int capacity()
    {
@@ -218,7 +217,7 @@ public class ChannelBufferWrapper implements HornetQBuffer
       return new ChannelBufferWrapper(buffer.copy());
    }
 
-   public HornetQBuffer copy(int index, int length)
+   public HornetQBuffer copy(final int index, final int length)
    {
       return new ChannelBufferWrapper(buffer.copy(index, length));
    }
@@ -233,82 +232,82 @@ public class ChannelBufferWrapper implements HornetQBuffer
       return new ChannelBufferWrapper(buffer.duplicate());
    }
 
-   public byte getByte(int index)
+   public byte getByte(final int index)
    {
       return buffer.getByte(index);
    }
 
-   public void getBytes(int index, byte[] dst, int dstIndex, int length)
+   public void getBytes(final int index, final byte[] dst, final int dstIndex, final int length)
    {
       buffer.getBytes(index, dst, dstIndex, length);
    }
 
-   public void getBytes(int index, byte[] dst)
+   public void getBytes(final int index, final byte[] dst)
    {
       buffer.getBytes(index, dst);
    }
 
-   public void getBytes(int index, ByteBuffer dst)
+   public void getBytes(final int index, final ByteBuffer dst)
    {
       buffer.getBytes(index, dst);
    }
 
-   public void getBytes(int index, HornetQBuffer dst, int dstIndex, int length)
+   public void getBytes(final int index, final HornetQBuffer dst, final int dstIndex, final int length)
    {
       buffer.getBytes(index, dst.channelBuffer(), dstIndex, length);
    }
 
-   public void getBytes(int index, HornetQBuffer dst, int length)
+   public void getBytes(final int index, final HornetQBuffer dst, final int length)
    {
       buffer.getBytes(index, dst.channelBuffer(), length);
    }
 
-   public void getBytes(int index, HornetQBuffer dst)
+   public void getBytes(final int index, final HornetQBuffer dst)
    {
       buffer.getBytes(index, dst.channelBuffer());
    }
 
-   public char getChar(int index)
+   public char getChar(final int index)
    {
       return (char)buffer.getShort(index);
    }
 
-   public double getDouble(int index)
+   public double getDouble(final int index)
    {
       return Double.longBitsToDouble(buffer.getLong(index));
    }
 
-   public float getFloat(int index)
+   public float getFloat(final int index)
    {
       return Float.intBitsToFloat(buffer.getInt(index));
    }
 
-   public int getInt(int index)
+   public int getInt(final int index)
    {
       return buffer.getInt(index);
    }
 
-   public long getLong(int index)
+   public long getLong(final int index)
    {
       return buffer.getLong(index);
    }
 
-   public short getShort(int index)
+   public short getShort(final int index)
    {
       return buffer.getShort(index);
    }
 
-   public short getUnsignedByte(int index)
+   public short getUnsignedByte(final int index)
    {
       return buffer.getUnsignedByte(index);
    }
 
-   public long getUnsignedInt(int index)
+   public long getUnsignedInt(final int index)
    {
       return buffer.getUnsignedInt(index);
    }
 
-   public int getUnsignedShort(int index)
+   public int getUnsignedShort(final int index)
    {
       return buffer.getUnsignedShort(index);
    }
@@ -338,37 +337,37 @@ public class ChannelBufferWrapper implements HornetQBuffer
       return buffer.readByte();
    }
 
-   public void readBytes(byte[] dst, int dstIndex, int length)
+   public void readBytes(final byte[] dst, final int dstIndex, final int length)
    {
       buffer.readBytes(dst, dstIndex, length);
    }
 
-   public void readBytes(byte[] dst)
+   public void readBytes(final byte[] dst)
    {
       buffer.readBytes(dst);
    }
 
-   public void readBytes(ByteBuffer dst)
+   public void readBytes(final ByteBuffer dst)
    {
       buffer.readBytes(dst);
    }
 
-   public void readBytes(HornetQBuffer dst, int dstIndex, int length)
+   public void readBytes(final HornetQBuffer dst, final int dstIndex, final int length)
    {
       buffer.readBytes(dst.channelBuffer(), dstIndex, length);
    }
 
-   public void readBytes(HornetQBuffer dst, int length)
+   public void readBytes(final HornetQBuffer dst, final int length)
    {
       buffer.readBytes(dst.channelBuffer(), length);
    }
 
-   public void readBytes(HornetQBuffer dst)
+   public void readBytes(final HornetQBuffer dst)
    {
       buffer.readBytes(dst.channelBuffer());
    }
 
-   public HornetQBuffer readBytes(int length)
+   public HornetQBuffer readBytes(final int length)
    {
       return new ChannelBufferWrapper(buffer.readBytes(length));
    }
@@ -388,7 +387,7 @@ public class ChannelBufferWrapper implements HornetQBuffer
       return buffer.readerIndex();
    }
 
-   public void readerIndex(int readerIndex)
+   public void readerIndex(final int readerIndex)
    {
       buffer.readerIndex(readerIndex);
    }
@@ -413,7 +412,7 @@ public class ChannelBufferWrapper implements HornetQBuffer
       return buffer.readShort();
    }
 
-   public HornetQBuffer readSlice(int length)
+   public HornetQBuffer readSlice(final int length)
    {
       return new ChannelBufferWrapper(buffer.readSlice(length));
    }
@@ -443,77 +442,77 @@ public class ChannelBufferWrapper implements HornetQBuffer
       buffer.resetWriterIndex();
    }
 
-   public void setByte(int index, byte value)
+   public void setByte(final int index, final byte value)
    {
       buffer.setByte(index, value);
    }
 
-   public void setBytes(int index, byte[] src, int srcIndex, int length)
+   public void setBytes(final int index, final byte[] src, final int srcIndex, final int length)
    {
       buffer.setBytes(index, src, srcIndex, length);
    }
 
-   public void setBytes(int index, byte[] src)
+   public void setBytes(final int index, final byte[] src)
    {
       buffer.setBytes(index, src);
    }
 
-   public void setBytes(int index, ByteBuffer src)
+   public void setBytes(final int index, final ByteBuffer src)
    {
       buffer.setBytes(index, src);
    }
 
-   public void setBytes(int index, HornetQBuffer src, int srcIndex, int length)
+   public void setBytes(final int index, final HornetQBuffer src, final int srcIndex, final int length)
    {
       buffer.setBytes(index, src.channelBuffer(), srcIndex, length);
    }
 
-   public void setBytes(int index, HornetQBuffer src, int length)
+   public void setBytes(final int index, final HornetQBuffer src, final int length)
    {
       buffer.setBytes(index, src.channelBuffer(), length);
    }
 
-   public void setBytes(int index, HornetQBuffer src)
+   public void setBytes(final int index, final HornetQBuffer src)
    {
       buffer.setBytes(index, src.channelBuffer());
    }
 
-   public void setChar(int index, char value)
+   public void setChar(final int index, final char value)
    {
       buffer.setShort(index, (short)value);
    }
 
-   public void setDouble(int index, double value)
+   public void setDouble(final int index, final double value)
    {
       buffer.setLong(index, Double.doubleToLongBits(value));
    }
 
-   public void setFloat(int index, float value)
+   public void setFloat(final int index, final float value)
    {
       buffer.setInt(index, Float.floatToIntBits(value));
    }
 
-   public void setIndex(int readerIndex, int writerIndex)
+   public void setIndex(final int readerIndex, final int writerIndex)
    {
       buffer.setIndex(readerIndex, writerIndex);
    }
 
-   public void setInt(int index, int value)
+   public void setInt(final int index, final int value)
    {
       buffer.setInt(index, value);
    }
 
-   public void setLong(int index, long value)
+   public void setLong(final int index, final long value)
    {
       buffer.setLong(index, value);
    }
 
-   public void setShort(int index, short value)
+   public void setShort(final int index, final short value)
    {
       buffer.setShort(index, value);
    }
 
-   public void skipBytes(int length)
+   public void skipBytes(final int length)
    {
       buffer.skipBytes(length);
    }
@@ -523,7 +522,7 @@ public class ChannelBufferWrapper implements HornetQBuffer
       return new ChannelBufferWrapper(buffer.slice());
    }
 
-   public HornetQBuffer slice(int index, int length)
+   public HornetQBuffer slice(final int index, final int length)
    {
       return new ChannelBufferWrapper(buffer.slice(index, length));
    }
@@ -533,7 +532,7 @@ public class ChannelBufferWrapper implements HornetQBuffer
       return buffer.toByteBuffer();
    }
 
-   public ByteBuffer toByteBuffer(int index, int length)
+   public ByteBuffer toByteBuffer(final int index, final int length)
    {
       return buffer.toByteBuffer(index, length);
    }
@@ -548,57 +547,57 @@ public class ChannelBufferWrapper implements HornetQBuffer
       return buffer.writableBytes();
    }
 
-   public void writeByte(byte value)
+   public void writeByte(final byte value)
    {
       buffer.writeByte(value);
    }
 
-   public void writeBytes(byte[] src, int srcIndex, int length)
+   public void writeBytes(final byte[] src, final int srcIndex, final int length)
    {
       buffer.writeBytes(src, srcIndex, length);
    }
 
-   public void writeBytes(byte[] src)
+   public void writeBytes(final byte[] src)
    {
       buffer.writeBytes(src);
    }
 
-   public void writeBytes(ByteBuffer src)
+   public void writeBytes(final ByteBuffer src)
    {
       buffer.writeBytes(src);
    }
 
-   public void writeBytes(HornetQBuffer src, int srcIndex, int length)
+   public void writeBytes(final HornetQBuffer src, final int srcIndex, final int length)
    {
       buffer.writeBytes(src.channelBuffer(), srcIndex, length);
    }
 
-   public void writeBytes(HornetQBuffer src, int length)
+   public void writeBytes(final HornetQBuffer src, final int length)
    {
       buffer.writeBytes(src.channelBuffer(), length);
    }
 
-   public void writeChar(char chr)
+   public void writeChar(final char chr)
    {
       buffer.writeShort((short)chr);
    }
 
-   public void writeDouble(double value)
+   public void writeDouble(final double value)
    {
       buffer.writeLong(Double.doubleToLongBits(value));
    }
 
-   public void writeFloat(float value)
+   public void writeFloat(final float value)
    {
       buffer.writeInt(Float.floatToIntBits(value));
    }
 
-   public void writeInt(int value)
+   public void writeInt(final int value)
    {
       buffer.writeInt(value);
    }
 
-   public void writeLong(long value)
+   public void writeLong(final long value)
    {
       buffer.writeLong(value);
    }
@@ -608,12 +607,12 @@ public class ChannelBufferWrapper implements HornetQBuffer
       return buffer.writerIndex();
    }
 
-   public void writerIndex(int writerIndex)
+   public void writerIndex(final int writerIndex)
    {
       buffer.writerIndex(writerIndex);
    }
 
-   public void writeShort(short value)
+   public void writeShort(final short value)
    {
       buffer.writeShort(value);
    }

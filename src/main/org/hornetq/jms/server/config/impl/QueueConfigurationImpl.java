@@ -24,21 +24,27 @@ import org.hornetq.jms.server.config.QueueConfiguration;
  */
 public class QueueConfigurationImpl implements QueueConfiguration
 {
-   
+
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
 
    private final String name;
+
    private final String selector;
+
    private final boolean durable;
+
    private final String[] bindings;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public QueueConfigurationImpl(String name, String selector, boolean durable, String... bindings)
+   public QueueConfigurationImpl(final String name,
+                                 final String selector,
+                                 final boolean durable,
+                                 final String... bindings)
    {
       this.name = name;
       this.selector = selector;
@@ -46,9 +52,9 @@ public class QueueConfigurationImpl implements QueueConfiguration
       this.bindings = new String[bindings.length];
       System.arraycopy(bindings, 0, this.bindings, 0, bindings.length);
    }
-   
+
    // QueueConfiguration implementation -----------------------------
-   
+
    public String[] getBindings()
    {
       return bindings;
@@ -68,7 +74,7 @@ public class QueueConfigurationImpl implements QueueConfiguration
    {
       return durable;
    }
-   
+
    // Public --------------------------------------------------------
 
    // Package protected ---------------------------------------------

@@ -19,7 +19,6 @@ import javax.naming.NameNotFoundException;
 import org.hornetq.jms.tests.HornetQServerTestCase;
 import org.hornetq.utils.JNDIUtil;
 
-
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
@@ -43,16 +42,16 @@ public class JNDIUtilTest extends HornetQServerTestCase
       try
       {
          ic.lookup("/nosuchsubcontext");
-         fail("the name is not supposed to be there");
+         ProxyAssertSupport.fail("the name is not supposed to be there");
       }
-      catch(NameNotFoundException e)
+      catch (NameNotFoundException e)
       {
          // OK
       }
 
       JNDIUtil.rebind(ic, "/nosuchsubcontext/sub1/sub2/sub3/name", new Integer(7));
 
-      assertEquals(7, ((Integer)ic.lookup("/nosuchsubcontext/sub1/sub2/sub3/name")).intValue());
+      ProxyAssertSupport.assertEquals(7, ((Integer)ic.lookup("/nosuchsubcontext/sub1/sub2/sub3/name")).intValue());
    }
 
    public void testRebind_2() throws Exception
@@ -60,16 +59,16 @@ public class JNDIUtilTest extends HornetQServerTestCase
       try
       {
          ic.lookup("/doesnotexistyet");
-         fail("the name is not supposed to be there");
+         ProxyAssertSupport.fail("the name is not supposed to be there");
       }
-      catch(NameNotFoundException e)
+      catch (NameNotFoundException e)
       {
          // OK
       }
 
       JNDIUtil.rebind(ic, "/doesnotexistyet", new Integer(8));
 
-      assertEquals(8, ((Integer)ic.lookup("/doesnotexistyet")).intValue());
+      ProxyAssertSupport.assertEquals(8, ((Integer)ic.lookup("/doesnotexistyet")).intValue());
 
       ic.unbind("doesnotexistyet");
    }
@@ -79,37 +78,35 @@ public class JNDIUtilTest extends HornetQServerTestCase
       try
       {
          ic.lookup("doesnotexistyet");
-         fail("the name is not supposed to be there");
+         ProxyAssertSupport.fail("the name is not supposed to be there");
       }
-      catch(NameNotFoundException e)
+      catch (NameNotFoundException e)
       {
          // OK
       }
 
       JNDIUtil.rebind(ic, "doesnotexistyet", new Integer(9));
 
-      assertEquals(9, ((Integer)ic.lookup("/doesnotexistyet")).intValue());
+      ProxyAssertSupport.assertEquals(9, ((Integer)ic.lookup("/doesnotexistyet")).intValue());
 
       ic.unbind("doesnotexistyet");
    }
-
-
 
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
 
+   @Override
    protected void setUp() throws Exception
    {
       super.setUp();
 
-      //ServerManagement.start("none");
+      // ServerManagement.start("none");
 
       ic = getInitialContext();
 
       log.debug("setup done");
    }
-
 
    // Private -------------------------------------------------------
 

@@ -21,5 +21,6 @@ package org.hornetq.jms.server.config;
 public interface TopicConfiguration
 {
    String getName();
+
    String[] getBindings();
 }

@@ -17,6 +17,8 @@ import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
 import javax.management.ObjectName;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientSession;
@@ -41,7 +43,7 @@ public abstract class ManagementTestBase extends ServiceTestBase
 
    // Static --------------------------------------------------------
 
-   protected static void consumeMessages(int expected, ClientSession session, SimpleString queue) throws Exception
+   protected static void consumeMessages(final int expected, final ClientSession session, final SimpleString queue) throws Exception
    {
       ClientConsumer consumer = null;
       try
@@ -51,12 +53,12 @@ public abstract class ManagementTestBase extends ServiceTestBase
          for (int i = 0; i < expected; i++)
          {
             m = consumer.receive(500);
-            assertNotNull("expected to received " + expected + " messages, got only " + i, m);
+            Assert.assertNotNull("expected to received " + expected + " messages, got only " + i, m);
             m.acknowledge();
          }
          session.commit();
          m = consumer.receiveImmediate();
-         assertNull("received one more message than expected (" + expected + ")", m);
+         Assert.assertNull("received one more message than expected (" + expected + ")", m);
       }
       finally
       {
@@ -82,26 +84,26 @@ public abstract class ManagementTestBase extends ServiceTestBase
 
       mbeanServer = MBeanServerFactory.createMBeanServer();
    }
-   
+
+   @Override
    protected void tearDown() throws Exception
    {
       MBeanServerFactory.releaseMBeanServer(mbeanServer);
-      
+
       mbeanServer = null;
-      
+
       super.tearDown();
    }
 
-   protected void checkNoResource(ObjectName on)
+   protected void checkNoResource(final ObjectName on)
    {
-      assertFalse("unexpected resource for " + on, mbeanServer.isRegistered(on));
+      Assert.assertFalse("unexpected resource for " + on, mbeanServer.isRegistered(on));
    }
 
-   protected void checkResource(ObjectName on)
+   protected void checkResource(final ObjectName on)
    {
-      assertTrue("no resource for " + on, mbeanServer.isRegistered(on));
+      Assert.assertTrue("no resource for " + on, mbeanServer.isRegistered(on));
    }
-
 
    // Private -------------------------------------------------------
 

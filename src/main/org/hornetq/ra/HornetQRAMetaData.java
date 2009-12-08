@@ -31,7 +31,7 @@ public class HornetQRAMetaData implements ManagedConnectionMetaData
    private static final Logger log = Logger.getLogger(HornetQRAMetaData.class);
 
    /** Trace enabled */
-   private static boolean trace = log.isTraceEnabled();
+   private static boolean trace = HornetQRAMetaData.log.isTraceEnabled();
 
    /** The managed connection */
    private final HornetQRAManagedConnection mc;
@@ -42,9 +42,9 @@ public class HornetQRAMetaData implements ManagedConnectionMetaData
     */
    public HornetQRAMetaData(final HornetQRAManagedConnection mc)
    {
-      if (trace)
+      if (HornetQRAMetaData.trace)
       {
-         log.trace("constructor(" + mc + ")");
+         HornetQRAMetaData.log.trace("constructor(" + mc + ")");
       }
 
       this.mc = mc;
@@ -57,9 +57,9 @@ public class HornetQRAMetaData implements ManagedConnectionMetaData
     */
    public String getEISProductName() throws ResourceException
    {
-      if (trace)
+      if (HornetQRAMetaData.trace)
       {
-         log.trace("getEISProductName()");
+         HornetQRAMetaData.log.trace("getEISProductName()");
       }
 
       return "HornetQ";
@@ -72,9 +72,9 @@ public class HornetQRAMetaData implements ManagedConnectionMetaData
     */
    public String getEISProductVersion() throws ResourceException
    {
-      if (trace)
+      if (HornetQRAMetaData.trace)
       {
-         log.trace("getEISProductVersion()");
+         HornetQRAMetaData.log.trace("getEISProductVersion()");
       }
 
       return "2.0";
@@ -87,24 +87,24 @@ public class HornetQRAMetaData implements ManagedConnectionMetaData
     */
    public String getUserName() throws ResourceException
    {
-      if (trace)
+      if (HornetQRAMetaData.trace)
       {
-         log.trace("getUserName()");
+         HornetQRAMetaData.log.trace("getUserName()");
       }
 
       return mc.getUserName();
    }
 
-  /**
-    * Get the maximum number of connections -- RETURNS 0
-    * @return The number
-    * @exception ResourceException Thrown if operation fails
-    */
+   /**
+     * Get the maximum number of connections -- RETURNS 0
+     * @return The number
+     * @exception ResourceException Thrown if operation fails
+     */
    public int getMaxConnections() throws ResourceException
    {
-      if (trace)
+      if (HornetQRAMetaData.trace)
       {
-         log.trace("getMaxConnections()");
+         HornetQRAMetaData.log.trace("getMaxConnections()");
       }
 
       return 0;

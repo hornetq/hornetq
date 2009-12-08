@@ -41,13 +41,14 @@ public class QueueDeployer extends XmlDeployer
     * the names of the elements to deploy
     * @return the names of the elements todeploy
     */
+   @Override
    public String[] getElementTagName()
    {
       return new String[] { "queue" };
    }
 
    @Override
-   public void validate(Node rootNode) throws Exception
+   public void validate(final Node rootNode) throws Exception
    {
       org.hornetq.utils.XMLUtil.validate(rootNode, "schema/hornetq-configuration.xsd");
    }
@@ -57,7 +58,8 @@ public class QueueDeployer extends XmlDeployer
     * @param node the element to deploy
     * @throws Exception .
     */
-   public void deploy(Node node) throws Exception
+   @Override
+   public void deploy(final Node node) throws Exception
    {
       QueueConfiguration queueConfig = parseQueueConfiguration(node);
 
@@ -68,7 +70,7 @@ public class QueueDeployer extends XmlDeployer
    }
 
    @Override
-   public void undeploy(Node node) throws Exception
+   public void undeploy(final Node node) throws Exception
    {
       // Undeploy means nothing for core queues
    }
@@ -78,6 +80,7 @@ public class QueueDeployer extends XmlDeployer
     *
     * @return The name of the config file
     */
+   @Override
    public String[] getDefaultConfigFileNames()
    {
       return new String[] { "hornetq-configuration.xml", "hornetq-queues.xml" };

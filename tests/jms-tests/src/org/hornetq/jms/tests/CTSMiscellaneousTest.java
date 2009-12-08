@@ -13,29 +13,6 @@
 
 package org.hornetq.jms.tests;
 
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CACHE_LARGE_MESSAGE_CLIENT;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MAX_RETRY_INTERVAL;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONFIRMATION_WINDOW_SIZE;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_THREAD_POOL_MAX_SIZE;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_USE_GLOBAL_POOLS;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -71,6 +48,7 @@ public class CTSMiscellaneousTest extends HornetQServerTestCase
 
    // Constructors --------------------------------------------------
 
+   @Override
    protected void setUp() throws Exception
    {
       try
@@ -91,36 +69,36 @@ public class CTSMiscellaneousTest extends HornetQServerTestCase
          getJmsServerManager().createConnectionFactory("StrictTCKConnectionFactory",
                                                        connectorConfigs,
                                                        null,
-                                                       DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
-                                                       DEFAULT_CONNECTION_TTL,
-                                                       DEFAULT_CALL_TIMEOUT,                                                       
-                                                       DEFAULT_CACHE_LARGE_MESSAGE_CLIENT,
-                                                       DEFAULT_MIN_LARGE_MESSAGE_SIZE,
-                                                       DEFAULT_CONSUMER_WINDOW_SIZE,
-                                                       DEFAULT_CONSUMER_MAX_RATE,
-                                                       DEFAULT_CONFIRMATION_WINDOW_SIZE,
-                                                       DEFAULT_PRODUCER_WINDOW_SIZE,
-                                                       DEFAULT_PRODUCER_MAX_RATE,
+                                                       ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
+                                                       ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL,
+                                                       ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,
+                                                       ClientSessionFactoryImpl.DEFAULT_CACHE_LARGE_MESSAGE_CLIENT,
+                                                       ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
+                                                       ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE,
+                                                       ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE,
+                                                       ClientSessionFactoryImpl.DEFAULT_CONFIRMATION_WINDOW_SIZE,
+                                                       ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE,
+                                                       ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE,
                                                        true,
                                                        true,
                                                        true,
-                                                       DEFAULT_AUTO_GROUP,
-                                                       DEFAULT_PRE_ACKNOWLEDGE,
-                                                       DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
-                                                       DEFAULT_ACK_BATCH_SIZE,
-                                                       DEFAULT_ACK_BATCH_SIZE,
-                                                       DEFAULT_USE_GLOBAL_POOLS,
-                                                       DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE,
-                                                       DEFAULT_THREAD_POOL_MAX_SIZE,                                                         
-                                                       DEFAULT_RETRY_INTERVAL,
-                                                       DEFAULT_RETRY_INTERVAL_MULTIPLIER,
-                                                       DEFAULT_MAX_RETRY_INTERVAL,
-                                                       DEFAULT_RECONNECT_ATTEMPTS,
-                                                       DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN,
+                                                       ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP,
+                                                       ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE,
+                                                       ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
+                                                       ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE,
+                                                       ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE,
+                                                       ClientSessionFactoryImpl.DEFAULT_USE_GLOBAL_POOLS,
+                                                       ClientSessionFactoryImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE,
+                                                       ClientSessionFactoryImpl.DEFAULT_THREAD_POOL_MAX_SIZE,
+                                                       ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL,
+                                                       ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER,
+                                                       ClientSessionFactoryImpl.DEFAULT_MAX_RETRY_INTERVAL,
+                                                       ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS,
+                                                       ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN,
                                                        null,
                                                        jndiBindings);
 
-         cf = (HornetQConnectionFactory)getInitialContext().lookup("/StrictTCKConnectionFactory");
+         CTSMiscellaneousTest.cf = (HornetQConnectionFactory)getInitialContext().lookup("/StrictTCKConnectionFactory");
       }
       catch (Exception e)
       {
@@ -140,23 +118,23 @@ public class CTSMiscellaneousTest extends HornetQServerTestCase
 
       try
       {
-         c = cf.createConnection();
+         c = CTSMiscellaneousTest.cf.createConnection();
          Session s = c.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         MessageProducer p = s.createProducer(queue1);
+         MessageProducer p = s.createProducer(HornetQServerTestCase.queue1);
 
          p.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
 
          final int numMessages = 100;
 
-         this.assertRemainingMessages(0);
+         assertRemainingMessages(0);
 
          for (int i = 0; i < numMessages; i++)
          {
             p.send(s.createMessage());
          }
 
-         this.assertRemainingMessages(numMessages);
+         assertRemainingMessages(numMessages);
       }
       finally
       {
@@ -165,14 +143,15 @@ public class CTSMiscellaneousTest extends HornetQServerTestCase
             c.close();
          }
 
-         removeAllMessages(queue1.getQueueName(), true);
+         removeAllMessages(HornetQServerTestCase.queue1.getQueueName(), true);
       }
    }
 
+   @Override
    protected void tearDown() throws Exception
    {
       super.tearDown();
-      undeployConnectionFactory(ORG_JBOSS_MESSAGING_SERVICE_LBCONNECTION_FACTORY);
+      HornetQServerTestCase.undeployConnectionFactory(CTSMiscellaneousTest.ORG_JBOSS_MESSAGING_SERVICE_LBCONNECTION_FACTORY);
    }
 
    // Package protected ---------------------------------------------

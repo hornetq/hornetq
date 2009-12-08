@@ -13,28 +13,6 @@
 
 package org.hornetq.jms.tests.tools.container;
 
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CACHE_LARGE_MESSAGE_CLIENT;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MAX_RETRY_INTERVAL;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONFIRMATION_WINDOW_SIZE;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_THREAD_POOL_MAX_SIZE;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_USE_GLOBAL_POOLS;
-
 import java.io.File;
 import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
@@ -52,22 +30,14 @@ import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.management.ObjectNameBuilder;
-import org.hornetq.core.management.QueueControl;
 import org.hornetq.core.management.ResourceNames;
-import org.hornetq.core.postoffice.Binding;
-import org.hornetq.core.postoffice.BindingType;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.server.HornetQServer;
-import org.hornetq.core.server.Queue;
 import org.hornetq.integration.bootstrap.HornetQBootstrapServer;
-import org.hornetq.jms.HornetQQueue;
-import org.hornetq.jms.HornetQTopic;
 import org.hornetq.jms.server.JMSServerManager;
-import org.hornetq.jms.server.config.TopicConfiguration;
 import org.hornetq.jms.server.management.JMSQueueControl;
 import org.hornetq.jms.server.management.TopicControl;
 import org.hornetq.utils.Pair;
-import org.hornetq.utils.SimpleString;
 import org.jboss.kernel.plugins.config.property.PropertyKernelConfig;
 
 /**
@@ -85,11 +55,11 @@ public class LocalTestServer implements Server, Runnable
 
    private boolean started = false;
 
-   private HashMap<String, List<String>> allBindings = new HashMap<String, List<String>>();
+   private final HashMap<String, List<String>> allBindings = new HashMap<String, List<String>>();
 
    // Static ---------------------------------------------------------------------------------------
 
-   public static void setEnvironmentServerIndex(int serverIndex)
+   public static void setEnvironmentServerIndex(final int serverIndex)
    {
       System.setProperty(Constants.SERVER_INDEX_PROPERTY_NAME, Integer.toString(serverIndex));
    }
@@ -101,7 +71,7 @@ public class LocalTestServer implements Server, Runnable
 
    // Attributes -----------------------------------------------------------------------------------
 
-   private int serverIndex;
+   private final int serverIndex;
 
    private HornetQBootstrapServer bootstrap;
 
@@ -111,7 +81,7 @@ public class LocalTestServer implements Server, Runnable
    {
       super();
 
-      this.serverIndex = 0;
+      serverIndex = 0;
    }
 
    // Server implementation ------------------------------------------------------------------------
@@ -121,7 +91,9 @@ public class LocalTestServer implements Server, Runnable
       return serverIndex;
    }
 
-   public synchronized void start(String[] containerConfig, HashMap<String, Object> configuration, boolean clearJournal) throws Exception
+   public synchronized void start(final String[] containerConfig,
+                                  final HashMap<String, Object> configuration,
+                                  final boolean clearJournal) throws Exception
    {
       if (isStarted())
       {
@@ -134,9 +106,9 @@ public class LocalTestServer implements Server, Runnable
 
          File dir = new File("data");
 
-         boolean deleted = deleteDirectory(dir);
+         boolean deleted = LocalTestServer.deleteDirectory(dir);
 
-         log.info("Deleted dir: " + dir.getAbsolutePath() + " deleted: " + deleted);
+         LocalTestServer.log.info("Deleted dir: " + dir.getAbsolutePath() + " deleted: " + deleted);
       }
 
       PropertyKernelConfig propertyKernelConfig = new PropertyKernelConfig(System.getProperties());
@@ -147,7 +119,7 @@ public class LocalTestServer implements Server, Runnable
 
    }
 
-   private static boolean deleteDirectory(File directory)
+   private static boolean deleteDirectory(final File directory)
    {
       if (directory.isDirectory())
       {
@@ -155,7 +127,7 @@ public class LocalTestServer implements Server, Runnable
 
          for (int j = 0; j < files.length; j++)
          {
-            if (!deleteDirectory(new File(directory, files[j])))
+            if (!LocalTestServer.deleteDirectory(new File(directory, files[j])))
             {
                return false;
             }
@@ -226,47 +198,49 @@ public class LocalTestServer implements Server, Runnable
       return getHornetQServer();
    }
 
-   public void destroyQueue(String name, String jndiName) throws Exception
+   public void destroyQueue(final String name, final String jndiName) throws Exception
    {
-      this.getJMSServerManager().destroyQueue(name);
+      getJMSServerManager().destroyQueue(name);
    }
 
-   public void destroyTopic(String name, String jndiName) throws Exception
+   public void destroyTopic(final String name, final String jndiName) throws Exception
    {
-      this.getJMSServerManager().destroyTopic(name);
+      getJMSServerManager().destroyTopic(name);
    }
 
-   public void createQueue(String name, String jndiName) throws Exception
+   public void createQueue(final String name, final String jndiName) throws Exception
    {
-      this.getJMSServerManager().createQueue(name, "/queue/" + (jndiName != null ? jndiName : name), null, true);
+      getJMSServerManager().createQueue(name, "/queue/" + (jndiName != null ? jndiName : name), null, true);
    }
 
-   public void createTopic(String name, String jndiName) throws Exception
+   public void createTopic(final String name, final String jndiName) throws Exception
    {
-      this.getJMSServerManager().createTopic(name, "/topic/" + (jndiName != null ? jndiName : name));
+      getJMSServerManager().createTopic(name, "/topic/" + (jndiName != null ? jndiName : name));
    }
 
-   public void deployConnectionFactory(String clientId, String objectName, List<String> jndiBindings) throws Exception
+   public void deployConnectionFactory(final String clientId, final String objectName, final List<String> jndiBindings) throws Exception
    {
       deployConnectionFactory(clientId, objectName, jndiBindings, -1, -1, -1, -1, false, false, -1, false);
    }
 
-   public void deployConnectionFactory(String objectName, List<String> jndiBindings, int consumerWindowSize) throws Exception
+   public void deployConnectionFactory(final String objectName,
+                                       final List<String> jndiBindings,
+                                       final int consumerWindowSize) throws Exception
    {
       deployConnectionFactory(null, objectName, jndiBindings, consumerWindowSize, -1, -1, -1, false, false, -1, false);
    }
 
-   public void deployConnectionFactory(String objectName, List<String> jndiBindings) throws Exception
+   public void deployConnectionFactory(final String objectName, final List<String> jndiBindings) throws Exception
    {
       deployConnectionFactory(null, objectName, jndiBindings, -1, -1, -1, -1, false, false, -1, false);
    }
 
-   public void deployConnectionFactory(String objectName,
-                                       List<String> jndiBindings,
-                                       int prefetchSize,
-                                       int defaultTempQueueFullSize,
-                                       int defaultTempQueuePageSize,
-                                       int defaultTempQueueDownCacheSize) throws Exception
+   public void deployConnectionFactory(final String objectName,
+                                       final List<String> jndiBindings,
+                                       final int prefetchSize,
+                                       final int defaultTempQueueFullSize,
+                                       final int defaultTempQueuePageSize,
+                                       final int defaultTempQueueDownCacheSize) throws Exception
    {
       this.deployConnectionFactory(null,
                                    objectName,
@@ -281,10 +255,10 @@ public class LocalTestServer implements Server, Runnable
                                    false);
    }
 
-   public void deployConnectionFactory(String objectName,
-                                       List<String> jndiBindings,
-                                       boolean supportsFailover,
-                                       boolean supportsLoadBalancing) throws Exception
+   public void deployConnectionFactory(final String objectName,
+                                       final List<String> jndiBindings,
+                                       final boolean supportsFailover,
+                                       final boolean supportsLoadBalancing) throws Exception
    {
       this.deployConnectionFactory(null,
                                    objectName,
@@ -299,17 +273,17 @@ public class LocalTestServer implements Server, Runnable
                                    false);
    }
 
-   public void deployConnectionFactory(String clientId,
-                                       String objectName,
-                                       List<String> jndiBindings,
-                                       int prefetchSize,
-                                       int defaultTempQueueFullSize,
-                                       int defaultTempQueuePageSize,
-                                       int defaultTempQueueDownCacheSize,
-                                       boolean supportsFailover,
-                                       boolean supportsLoadBalancing,
-                                       int dupsOkBatchSize,
-                                       boolean blockOnAcknowledge) throws Exception
+   public void deployConnectionFactory(final String clientId,
+                                       final String objectName,
+                                       final List<String> jndiBindings,
+                                       final int prefetchSize,
+                                       final int defaultTempQueueFullSize,
+                                       final int defaultTempQueuePageSize,
+                                       final int defaultTempQueueDownCacheSize,
+                                       final boolean supportsFailover,
+                                       final boolean supportsLoadBalancing,
+                                       final int dupsOkBatchSize,
+                                       final boolean blockOnAcknowledge) throws Exception
    {
       List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs = new ArrayList<Pair<TransportConfiguration, TransportConfiguration>>();
 
@@ -319,42 +293,42 @@ public class LocalTestServer implements Server, Runnable
       getJMSServerManager().createConnectionFactory(objectName,
                                                     connectorConfigs,
                                                     clientId,
-                                                    DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
-                                                    DEFAULT_CONNECTION_TTL,
-                                                    DEFAULT_CALL_TIMEOUT,                                                   
-                                                    DEFAULT_CACHE_LARGE_MESSAGE_CLIENT,                                                    
-                                                    DEFAULT_MIN_LARGE_MESSAGE_SIZE,
+                                                    ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
+                                                    ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL,
+                                                    ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,
+                                                    ClientSessionFactoryImpl.DEFAULT_CACHE_LARGE_MESSAGE_CLIENT,
+                                                    ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
                                                     prefetchSize,
-                                                    DEFAULT_CONSUMER_MAX_RATE,
-                                                    DEFAULT_CONFIRMATION_WINDOW_SIZE,
-                                                    DEFAULT_PRODUCER_WINDOW_SIZE,
-                                                    DEFAULT_PRODUCER_MAX_RATE,                                                    
+                                                    ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE,
+                                                    ClientSessionFactoryImpl.DEFAULT_CONFIRMATION_WINDOW_SIZE,
+                                                    ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE,
+                                                    ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE,
                                                     blockOnAcknowledge,
                                                     true,
                                                     true,
-                                                    DEFAULT_AUTO_GROUP,
-                                                    DEFAULT_PRE_ACKNOWLEDGE,
-                                                    DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
-                                                    DEFAULT_ACK_BATCH_SIZE,
+                                                    ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP,
+                                                    ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE,
+                                                    ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
+                                                    ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE,
                                                     dupsOkBatchSize,
-                                                    DEFAULT_USE_GLOBAL_POOLS,
-                                                    DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE,
-                                                    DEFAULT_THREAD_POOL_MAX_SIZE,                                                   
-                                                    DEFAULT_RETRY_INTERVAL,
-                                                    DEFAULT_RETRY_INTERVAL_MULTIPLIER,
-                                                    DEFAULT_MAX_RETRY_INTERVAL,
-                                                    DEFAULT_RECONNECT_ATTEMPTS,
-                                                    DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN,
+                                                    ClientSessionFactoryImpl.DEFAULT_USE_GLOBAL_POOLS,
+                                                    ClientSessionFactoryImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE,
+                                                    ClientSessionFactoryImpl.DEFAULT_THREAD_POOL_MAX_SIZE,
+                                                    ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL,
+                                                    ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER,
+                                                    ClientSessionFactoryImpl.DEFAULT_MAX_RETRY_INTERVAL,
+                                                    ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS,
+                                                    ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN,
                                                     null,
                                                     jndiBindings);
    }
 
-   public void undeployConnectionFactory(String objectName) throws Exception
+   public void undeployConnectionFactory(final String objectName) throws Exception
    {
       getJMSServerManager().destroyConnectionFactory(objectName);
    }
 
-   public void configureSecurityForDestination(String destName, boolean isQueue, Set<Role> roles) throws Exception
+   public void configureSecurityForDestination(final String destName, final boolean isQueue, final Set<Role> roles) throws Exception
    {
       String destination = (isQueue ? "jms.queue." : "jms.topic.") + destName;
       if (roles != null)
@@ -416,10 +390,10 @@ public class LocalTestServer implements Server, Runnable
 
    }
 
-   public Integer getMessageCountForQueue(String queueName) throws Exception
+   public Integer getMessageCountForQueue(final String queueName) throws Exception
    {
       JMSQueueControl queue = (JMSQueueControl)getHornetQServer().getManagementService()
-                                                                             .getResource(ResourceNames.JMS_QUEUE + queueName);
+                                                                 .getResource(ResourceNames.JMS_QUEUE + queueName);
       if (queue != null)
       {
          return queue.getMessageCount();
@@ -430,27 +404,29 @@ public class LocalTestServer implements Server, Runnable
       }
    }
 
-   public void removeAllMessages(String destination, boolean isQueue) throws Exception
+   public void removeAllMessages(final String destination, final boolean isQueue) throws Exception
    {
       if (isQueue)
       {
-         JMSQueueControl queue = (JMSQueueControl)getHornetQServer().getManagementService().getResource(ResourceNames.JMS_QUEUE + destination);
+         JMSQueueControl queue = (JMSQueueControl)getHornetQServer().getManagementService()
+                                                                    .getResource(ResourceNames.JMS_QUEUE + destination);
          queue.removeMessages(null);
-      } 
+      }
       else
       {
-         TopicControl topic = (TopicControl)getHornetQServer().getManagementService().getResource(ResourceNames.JMS_TOPIC + destination);
+         TopicControl topic = (TopicControl)getHornetQServer().getManagementService()
+                                                              .getResource(ResourceNames.JMS_TOPIC + destination);
          topic.removeMessages(null);
       }
    }
 
-   public List<String> listAllSubscribersForTopic(String s) throws Exception
+   public List<String> listAllSubscribersForTopic(final String s) throws Exception
    {
       ObjectName objectName = ObjectNameBuilder.DEFAULT.getJMSTopicObjectName(s);
-      TopicControl topic = (TopicControl)MBeanServerInvocationHandler.newProxyInstance(ManagementFactory.getPlatformMBeanServer(),
-                                                                                                 objectName,
-                                                                                                 TopicControl.class,
-                                                                                                 false);
+      TopicControl topic = MBeanServerInvocationHandler.newProxyInstance(ManagementFactory.getPlatformMBeanServer(),
+                                                                         objectName,
+                                                                         TopicControl.class,
+                                                                         false);
       Object[] subInfos = topic.listAllSubscriptions();
       List<String> subs = new ArrayList<String>();
       for (Object o : subInfos)
@@ -466,7 +442,7 @@ public class LocalTestServer implements Server, Runnable
       return getHornetQServer().getSecurityRepository().getMatch("*");
    }
 
-   public void setSecurityConfig(Set<Role> defConfig) throws Exception
+   public void setSecurityConfig(final Set<Role> defConfig) throws Exception
    {
       getHornetQServer().getSecurityRepository().removeMatch("#");
       getHornetQServer().getSecurityRepository().addMatch("#", defConfig);
@@ -475,4 +451,3 @@ public class LocalTestServer implements Server, Runnable
    // Inner classes --------------------------------------------------------------------------------
 
 }
-

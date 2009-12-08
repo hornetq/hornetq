@@ -11,7 +11,6 @@
  * permissions and limitations under the License.
  */
 
-
 package org.hornetq.core.cluster;
 
 import org.hornetq.core.config.TransportConfiguration;
@@ -27,11 +26,10 @@ import org.hornetq.utils.Pair;
 public class DiscoveryEntry
 {
    private final Pair<TransportConfiguration, TransportConfiguration> connectorPair;
-   
+
    private final long lastUpdate;
 
-   public DiscoveryEntry(final Pair<TransportConfiguration, TransportConfiguration> connectorPair,
-                         final long lastUpdate)
+   public DiscoveryEntry(final Pair<TransportConfiguration, TransportConfiguration> connectorPair, final long lastUpdate)
    {
       this.connectorPair = connectorPair;
       this.lastUpdate = lastUpdate;
@@ -41,7 +39,7 @@ public class DiscoveryEntry
    {
       return connectorPair;
    }
-   
+
    public long getLastUpdate()
    {
       return lastUpdate;

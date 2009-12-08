@@ -13,7 +13,7 @@
 
 package org.hornetq.tests.integration.client;
 
-import static org.hornetq.tests.util.RandomUtil.randomSimpleString;
+import junit.framework.Assert;
 
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientProducer;
@@ -21,7 +21,9 @@ import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.client.ClientSessionFactory;
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.ServiceTestBase;
+import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.SimpleString;
 
 /**
@@ -54,14 +56,14 @@ public class MessageDurabilityTest extends ServiceTestBase
    {
       boolean durable = true;
 
-      SimpleString address = randomSimpleString();
-      SimpleString queue = randomSimpleString();
+      SimpleString address = RandomUtil.randomSimpleString();
+      SimpleString queue = RandomUtil.randomSimpleString();
 
       session.createQueue(address, queue, !durable);
 
       ClientProducer producer = session.createProducer(address);
       producer.send(session.createClientMessage(!durable));
-      
+
       restart();
 
       session.start();
@@ -71,7 +73,7 @@ public class MessageDurabilityTest extends ServiceTestBase
       }
       catch (HornetQException e)
       {
-         assertEquals(HornetQException.QUEUE_DOES_NOT_EXIST, e.getCode());
+         Assert.assertEquals(HornetQException.QUEUE_DOES_NOT_EXIST, e.getCode());
       }
    }
 
@@ -79,8 +81,8 @@ public class MessageDurabilityTest extends ServiceTestBase
    {
       boolean durable = true;
 
-      SimpleString address = randomSimpleString();
-      SimpleString queue = randomSimpleString();
+      SimpleString address = RandomUtil.randomSimpleString();
+      SimpleString queue = RandomUtil.randomSimpleString();
 
       session.createQueue(address, queue, durable);
 
@@ -91,7 +93,7 @@ public class MessageDurabilityTest extends ServiceTestBase
 
       session.start();
       ClientConsumer consumer = session.createConsumer(queue);
-      assertNull(consumer.receiveImmediate());
+      Assert.assertNull(consumer.receiveImmediate());
 
       consumer.close();
       session.deleteQueue(queue);
@@ -101,8 +103,8 @@ public class MessageDurabilityTest extends ServiceTestBase
    {
       boolean durable = true;
 
-      SimpleString address = randomSimpleString();
-      SimpleString queue = randomSimpleString();
+      SimpleString address = RandomUtil.randomSimpleString();
+      SimpleString queue = RandomUtil.randomSimpleString();
 
       session.createQueue(address, queue, durable);
 
@@ -113,7 +115,7 @@ public class MessageDurabilityTest extends ServiceTestBase
 
       session.start();
       ClientConsumer consumer = session.createConsumer(queue);
-      assertNotNull(consumer.receive(500));
+      Assert.assertNotNull(consumer.receive(500));
 
       consumer.close();
       session.deleteQueue(queue);
@@ -126,8 +128,8 @@ public class MessageDurabilityTest extends ServiceTestBase
    {
       boolean durable = true;
 
-      SimpleString address = randomSimpleString();
-      final SimpleString queue = randomSimpleString();
+      SimpleString address = RandomUtil.randomSimpleString();
+      final SimpleString queue = RandomUtil.randomSimpleString();
 
       session.createQueue(address, queue, !durable);
 
@@ -137,8 +139,8 @@ public class MessageDurabilityTest extends ServiceTestBase
       restart();
 
       session.start();
-      
-      expectHornetQException(HornetQException.QUEUE_DOES_NOT_EXIST, new HornetQAction()
+
+      UnitTestCase.expectHornetQException(HornetQException.QUEUE_DOES_NOT_EXIST, new HornetQAction()
       {
          public void run() throws HornetQException
          {
@@ -154,8 +156,8 @@ public class MessageDurabilityTest extends ServiceTestBase
    {
       boolean durable = true;
 
-      SimpleString address = randomSimpleString();
-      final SimpleString queue = randomSimpleString();
+      SimpleString address = RandomUtil.randomSimpleString();
+      final SimpleString queue = RandomUtil.randomSimpleString();
 
       session.createTemporaryQueue(address, queue);
 
@@ -165,7 +167,7 @@ public class MessageDurabilityTest extends ServiceTestBase
       restart();
 
       session.start();
-      expectHornetQException(HornetQException.QUEUE_DOES_NOT_EXIST, new HornetQAction()
+      UnitTestCase.expectHornetQException(HornetQException.QUEUE_DOES_NOT_EXIST, new HornetQAction()
       {
          public void run() throws HornetQException
          {
@@ -194,15 +196,15 @@ public class MessageDurabilityTest extends ServiceTestBase
    protected void tearDown() throws Exception
    {
       sf.close();
-      
+
       session.close();
 
       server.stop();
-      
+
       server = null;
-      
+
       session = null;
-      
+
       sf = null;
 
       super.tearDown();

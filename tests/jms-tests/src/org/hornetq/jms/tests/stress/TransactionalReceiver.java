@@ -36,38 +36,44 @@ import org.hornetq.core.logging.Logger;
 public class TransactionalReceiver extends Receiver
 {
    private static final Logger log = Logger.getLogger(TransactionalReceiver.class);
-   
+
    protected int commitSize;
+
    protected int rollbackSize;
-   
+
    class Count
-   {      
+   {
       int lastCommitted;
+
       int lastReceived;
    }
-    
-   public TransactionalReceiver(Session sess, MessageConsumer cons, int numMessages,
-         int commitSize, int rollbackSize, boolean isListener) throws Exception
+
+   public TransactionalReceiver(final Session sess,
+                                final MessageConsumer cons,
+                                final int numMessages,
+                                final int commitSize,
+                                final int rollbackSize,
+                                final boolean isListener) throws Exception
    {
       super(sess, cons, numMessages, isListener);
       this.commitSize = commitSize;
-      this.rollbackSize = rollbackSize;   
+      this.rollbackSize = rollbackSize;
    }
-   
 
+   @Override
    public void run()
-   {      
-      //Small pause so as not to miss any messages in a topic
+   {
+      // Small pause so as not to miss any messages in a topic
       try
       {
          Thread.sleep(1000);
       }
       catch (InterruptedException e)
-      {         
+      {
       }
-      
+
       try
-      {      
+      {
          int iterations = numMessages / commitSize;
 
          for (int outerCount = 0; outerCount < iterations; outerCount++)
@@ -75,23 +81,23 @@ public class TransactionalReceiver extends Receiver
             for (int innerCount = 0; innerCount < commitSize; innerCount++)
             {
                Message m = getMessage();
-                           
+
                if (m == null)
                {
-                  log.error("Message is null");
+                  TransactionalReceiver.log.error("Message is null");
                   setFailed(true);
                   return;
                }
                String prodName = m.getStringProperty("PROD_NAME");
                Integer msgCount = new Integer(m.getIntProperty("MSG_NUMBER"));
-                        
+
                Count count = (Count)counts.get(prodName);
                if (count == null)
                {
-                  //First time
+                  // First time
                   if (msgCount.intValue() != 0)
                   {
-                     log.error("First message from " + prodName + " is not 0, it is " + msgCount);
+                     TransactionalReceiver.log.error("First message from " + prodName + " is not 0, it is " + msgCount);
                      setFailed(true);
                      return;
                   }
@@ -105,48 +111,54 @@ public class TransactionalReceiver extends Receiver
                {
                   if (count.lastCommitted != msgCount.intValue() - 1)
                   {
-                     log.error("Message out of sequence for " + m.getJMSMessageID() + " " + prodName + ", expected " + (count.lastCommitted + 1) + ", actual " + msgCount);
+                     TransactionalReceiver.log.error("Message out of sequence for " + m.getJMSMessageID() +
+                                                     " " +
+                                                     prodName +
+                                                     ", expected " +
+                                                     (count.lastCommitted + 1) +
+                                                     ", actual " +
+                                                     msgCount);
                      setFailed(true);
                      return;
                   }
                }
                count.lastCommitted = msgCount.intValue();
-               
+
                count.lastReceived = msgCount.intValue();
-               
-               if (innerCount == commitSize -1)
+
+               if (innerCount == commitSize - 1)
                {
                   sess.commit();
                }
-               
-               processingDone();            
-            }            
-                        
+
+               processingDone();
+            }
+
             if (outerCount == iterations - 1)
             {
                break;
             }
-                        
+
             for (int innerCount = 0; innerCount < rollbackSize; innerCount++)
             {
                Message m = getMessage();
-               
+
                if (m == null)
                {
-                  log.error("Message is null");
+                  TransactionalReceiver.log.error("Message is null");
                   setFailed(true);
                   return;
                }
-               String prodName = m.getStringProperty("PROD_NAME");               
+               String prodName = m.getStringProperty("PROD_NAME");
                Integer msgCount = new Integer(m.getIntProperty("MSG_NUMBER"));
-               
+
                Count count = (Count)counts.get(prodName);
                if (count == null)
                {
                   // First time
                   if (msgCount.intValue() != 0)
                   {
-                     log.error("First message from " + prodName + " is not 0, it is " + msgCount);
+                     TransactionalReceiver.log.error("First message from " + prodName + " is not 0, it is " + msgCount);
                      setFailed(true);
                      return;
                   }
@@ -155,32 +167,32 @@ public class TransactionalReceiver extends Receiver
                      count = new Count();
                      count.lastCommitted = -1;
                      counts.put(prodName, count);
-                  }                 
+                  }
                }
                else
                {
                   if (count.lastReceived != msgCount.intValue() - 1)
                   {
-                     log.error("Message out of sequence");
+                     TransactionalReceiver.log.error("Message out of sequence");
                      setFailed(true);
                      return;
                   }
                }
-               count.lastReceived = msgCount.intValue();          
-               
-               if ((innerCount == rollbackSize -1) && (outerCount != iterations - 1))
+               count.lastReceived = msgCount.intValue();
+
+               if (innerCount == rollbackSize - 1 && outerCount != iterations - 1)
                {
-                  //Don't roll back on the very last one
+                  // Don't roll back on the very last one
                   sess.rollback();
                }
                processingDone();
-            }            
+            }
          }
          finished();
       }
       catch (Exception e)
       {
-         log.error("Failed to receive message", e);
+         TransactionalReceiver.log.error("Failed to receive message", e);
          setFailed(true);
       }
    }

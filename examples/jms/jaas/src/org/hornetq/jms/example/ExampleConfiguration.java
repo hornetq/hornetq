@@ -11,7 +11,6 @@
  * permissions and limitations under the License.
  */
 
-
 package org.hornetq.jms.example;
 
 import java.util.Map;
@@ -27,10 +26,10 @@ import javax.security.auth.login.Configuration;
 public class ExampleConfiguration extends Configuration
 {
    private final Map<String, ?> options;
-   
+
    private final String loginModuleName;
 
-   public ExampleConfiguration(String loginModuleName, Map<String, ?> options)
+   public ExampleConfiguration(final String loginModuleName, final Map<String, ?> options)
    {
       this.loginModuleName = loginModuleName;
       this.options = options;
@@ -42,7 +41,7 @@ public class ExampleConfiguration extends Configuration
       AppConfigurationEntry entry = new AppConfigurationEntry(loginModuleName,
                                                               AppConfigurationEntry.LoginModuleControlFlag.REQUIRED,
                                                               options);
-      return new AppConfigurationEntry[]{entry};
+      return new AppConfigurationEntry[] { entry };
    }
 
    @Override

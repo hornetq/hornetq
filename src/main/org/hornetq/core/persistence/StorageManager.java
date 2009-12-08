@@ -48,16 +48,16 @@ import org.hornetq.utils.UUID;
  */
 public interface StorageManager extends HornetQComponent
 {
-   
+
    /** Get the context associated with the thread for later reuse */
    OperationContext getContext();
-   
+
    /** It just creates an OperationContext without associating it */
    OperationContext newContext(Executor executor);
-   
+
    /** Set the context back to the thread */
    void setContext(OperationContext context);
-   
+
    // Message related operations
 
    void pageClosed(SimpleString storeName, int pageNumber);
@@ -69,7 +69,7 @@ public interface StorageManager extends HornetQComponent
    boolean isReplicated();
 
    void afterCompleteOperations(IOAsyncTask run);
-   
+
    /** Block until the operations are done. 
     * @throws Exception */
    void waitOnOperations(long timeout) throws Exception;
@@ -80,19 +80,19 @@ public interface StorageManager extends HornetQComponent
 
    /** To close the OperationsContext */
    void completeOperations();
-   
+
    void clearContext();
 
    UUID getPersistentID();
-   
+
    void setPersistentID(UUID id) throws Exception;
 
    long generateUniqueID();
-   
+
    long getCurrentUniqueID();
 
    void storeMessage(ServerMessage message) throws Exception;
-   
+
    void storeReference(long queueID, long messageID, boolean last) throws Exception;
 
    void deleteMessage(long messageID) throws Exception;
@@ -108,7 +108,7 @@ public interface StorageManager extends HornetQComponent
    void deleteDuplicateID(long recordID) throws Exception;
 
    void storeMessageTransactional(long txID, ServerMessage message) throws Exception;
-   
+
    void storeReferenceTransactional(long txID, long queueID, long messageID) throws Exception;
 
    void storeAcknowledgeTransactional(long txID, long queueID, long messageID) throws Exception;
@@ -125,7 +125,7 @@ public interface StorageManager extends HornetQComponent
 
    LargeServerMessage createLargeMessage();
 
-   LargeServerMessage createLargeMessage(long id, byte [] header);
+   LargeServerMessage createLargeMessage(long id, byte[] header);
 
    void prepare(long txID, Xid xid) throws Exception;
 
@@ -141,29 +141,26 @@ public interface StorageManager extends HornetQComponent
     *  append mode on the backup side. */
    JournalLoadInformation[] loadInternalOnly() throws Exception;
 
-   
    JournalLoadInformation loadMessageJournal(final PostOffice postOffice,
-                                  final PagingManager pagingManager,
-                                  final ResourceManager resourceManager,
-                                  final Map<Long, Queue> queues,
-                                  final Map<SimpleString, List<Pair<byte[], Long>>> duplicateIDMap) throws Exception;
+                                             final PagingManager pagingManager,
+                                             final ResourceManager resourceManager,
+                                             final Map<Long, Queue> queues,
+                                             final Map<SimpleString, List<Pair<byte[], Long>>> duplicateIDMap) throws Exception;
 
    long storeHeuristicCompletion(Xid xid, boolean isCommit) throws Exception;
-   
-   void deleteHeuristicCompletion(long id) throws Exception;
 
+   void deleteHeuristicCompletion(long id) throws Exception;
 
    // Bindings related operations
 
    void addQueueBinding(Binding binding) throws Exception;
-   
+
    void deleteQueueBinding(long queueBindingID) throws Exception;
-   
+
    JournalLoadInformation loadBindingJournal(List<QueueBindingInfo> queueBindingInfos, List<GroupingInfo> groupingInfos) throws Exception;
 
-   //grouping relateed operations
+   // grouping relateed operations
    void addGrouping(GroupBinding groupBinding) throws Exception;
-
 
    void deleteGrouping(GroupBinding groupBinding) throws Exception;
 }

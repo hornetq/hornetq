@@ -35,9 +35,9 @@ import org.objectweb.jtests.jms.admin.AdminFactory;
  */
 public abstract class JMSTestCase extends TestCase
 {
-    private static final String PROP_FILE_NAME = "provider.properties";
-    
-    protected Admin admin;
+   private static final String PROP_FILE_NAME = "provider.properties";
+
+   protected Admin admin;
 
    /**
     * Fails a test with an exception which will be used for a message.
@@ -46,11 +46,11 @@ public abstract class JMSTestCase extends TestCase
     * message of the failure will contained both the JMSException and its linked exception
     * (provided there's one).
     */
-   public void fail(Exception e)
+   public void fail(final Exception e)
    {
       if (e instanceof javax.jms.JMSException)
       {
-         JMSException exception = (JMSException) e;
+         JMSException exception = (JMSException)e;
          String message = e.toString();
          Exception linkedException = exception.getLinkedException();
          if (linkedException != null)
@@ -65,7 +65,7 @@ public abstract class JMSTestCase extends TestCase
       }
    }
 
-   public JMSTestCase(String name)
+   public JMSTestCase(final String name)
    {
       super(name);
    }
@@ -74,14 +74,13 @@ public abstract class JMSTestCase extends TestCase
     * Should be overriden 
     * @return
     */
-   protected Properties getProviderProperties()
-   throws IOException
+   protected Properties getProviderProperties() throws IOException
    {
-       Properties props = new Properties();
-       props.load(ClassLoader.getSystemResourceAsStream(PROP_FILE_NAME));
-	   return props;
+      Properties props = new Properties();
+      props.load(ClassLoader.getSystemResourceAsStream(JMSTestCase.PROP_FILE_NAME));
+      return props;
    }
-   
+
    @Override
    protected void setUp() throws Exception
    {
@@ -91,19 +90,19 @@ public abstract class JMSTestCase extends TestCase
       // gets the provider administration wrapper...
       Properties props = getProviderProperties();
       admin = AdminFactory.getAdmin(props);
-      
+
       admin.startServer();
-      
+
       admin.start();
    }
-   
+
    @Override
    protected void tearDown() throws Exception
    {
       admin.stop();
-      
+
       admin.stopServer();
-      
+
       super.tearDown();
    }
 

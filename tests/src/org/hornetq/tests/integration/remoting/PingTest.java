@@ -17,6 +17,8 @@ import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.client.ClientSessionFactory;
 import org.hornetq.core.client.SessionFailureListener;
@@ -82,7 +84,7 @@ public class PingTest extends ServiceTestBase
    {
       volatile HornetQException me;
 
-      public void connectionFailed(HornetQException me)
+      public void connectionFailed(final HornetQException me)
       {
          this.me = me;
       }
@@ -91,9 +93,9 @@ public class PingTest extends ServiceTestBase
       {
          return me;
       }
-      
-      public void beforeReconnect(HornetQException exception)
-      {               
+
+      public void beforeReconnect(final HornetQException exception)
+      {
       }
    };
 
@@ -106,14 +108,14 @@ public class PingTest extends ServiceTestBase
 
       ClientSessionFactory csf = new ClientSessionFactoryImpl(transportConfig);
 
-      csf.setClientFailureCheckPeriod(CLIENT_FAILURE_CHECK_PERIOD);
-      csf.setConnectionTTL(CLIENT_FAILURE_CHECK_PERIOD * 2);
+      csf.setClientFailureCheckPeriod(PingTest.CLIENT_FAILURE_CHECK_PERIOD);
+      csf.setConnectionTTL(PingTest.CLIENT_FAILURE_CHECK_PERIOD * 2);
 
       ClientSession session = csf.createSession(false, true, true);
-      
-      log.info("Created session");
 
-      assertEquals(1, ((ClientSessionFactoryInternal)csf).numConnections());
+      PingTest.log.info("Created session");
+
+      Assert.assertEquals(1, ((ClientSessionFactoryInternal)csf).numConnections());
 
       Listener clientListener = new Listener();
 
@@ -139,20 +141,20 @@ public class PingTest extends ServiceTestBase
 
       serverConn.addFailureListener(serverListener);
 
-      Thread.sleep(CLIENT_FAILURE_CHECK_PERIOD * 10);
+      Thread.sleep(PingTest.CLIENT_FAILURE_CHECK_PERIOD * 10);
 
-      assertNull(clientListener.getException());
+      Assert.assertNull(clientListener.getException());
 
-      assertNull(serverListener.getException());
+      Assert.assertNull(serverListener.getException());
 
       RemotingConnection serverConn2 = server.getRemotingService().getConnections().iterator().next();
-      
-      log.info("Server conn2 is " + serverConn2);
 
-      assertTrue(serverConn == serverConn2);
+      PingTest.log.info("Server conn2 is " + serverConn2);
+
+      Assert.assertTrue(serverConn == serverConn2);
 
       session.close();
-      
+
       csf.close();
    }
 
@@ -169,7 +171,7 @@ public class PingTest extends ServiceTestBase
 
       ClientSession session = csf.createSession(false, true, true);
 
-      assertEquals(1, ((ClientSessionFactoryInternal)csf).numConnections());
+      Assert.assertEquals(1, ((ClientSessionFactoryInternal)csf).numConnections());
 
       Listener clientListener = new Listener();
 
@@ -197,18 +199,18 @@ public class PingTest extends ServiceTestBase
 
       Thread.sleep(ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD);
 
-      assertNull(clientListener.getException());
+      Assert.assertNull(clientListener.getException());
 
-      assertNull(serverListener.getException());
+      Assert.assertNull(serverListener.getException());
 
       RemotingConnection serverConn2 = server.getRemotingService().getConnections().iterator().next();
-      
-      log.info("Serverconn2 is " + serverConn2);
 
-      assertTrue(serverConn == serverConn2);
+      PingTest.log.info("Serverconn2 is " + serverConn2);
+
+      Assert.assertTrue(serverConn == serverConn2);
 
       session.close();
-      
+
       csf.close();
    }
 
@@ -221,14 +223,14 @@ public class PingTest extends ServiceTestBase
 
       ClientSessionFactoryImpl csf = new ClientSessionFactoryImpl(transportConfig);
 
-      csf.setClientFailureCheckPeriod(CLIENT_FAILURE_CHECK_PERIOD);
-      csf.setConnectionTTL(CLIENT_FAILURE_CHECK_PERIOD * 2);
+      csf.setClientFailureCheckPeriod(PingTest.CLIENT_FAILURE_CHECK_PERIOD);
+      csf.setConnectionTTL(PingTest.CLIENT_FAILURE_CHECK_PERIOD * 2);
 
       Listener clientListener = new Listener();
 
       ClientSession session = csf.createSession(false, true, true);
 
-      assertEquals(1, csf.numConnections());
+      Assert.assertEquals(1, csf.numConnections());
 
       session.addFailureListener(clientListener);
 
@@ -267,28 +269,28 @@ public class PingTest extends ServiceTestBase
 
          Thread.sleep(10);
       }
-      
+
       if (!server.getRemotingService().getConnections().isEmpty())
       {
          RemotingConnection serverConn2 = server.getRemotingService().getConnections().iterator().next();
-         
-         log.info("Serverconn2 is " + serverConn2);
+
+         PingTest.log.info("Serverconn2 is " + serverConn2);
       }
 
-      assertTrue(server.getRemotingService().getConnections().isEmpty());
-            
+      Assert.assertTrue(server.getRemotingService().getConnections().isEmpty());
+
       // The client listener should be called too since the server will close it from the server side which will result
       // in the
       // netty detecting closure on the client side and then calling failure listener
-      assertNotNull(clientListener.getException());
+      Assert.assertNotNull(clientListener.getException());
 
-      assertNotNull(serverListener.getException());
+      Assert.assertNotNull(serverListener.getException());
 
       session.close();
-      
+
       csf.close();
    }
-   
+
    /*
    * Test the client triggering failure due to no ping from server received in time
    */
@@ -299,8 +301,8 @@ public class PingTest extends ServiceTestBase
       final CountDownLatch pingOnServerLatch = new CountDownLatch(2);
       server.getRemotingService().addInterceptor(new Interceptor()
       {
-         
-         public boolean intercept(Packet packet, RemotingConnection connection) throws HornetQException
+
+         public boolean intercept(final Packet packet, final RemotingConnection connection) throws HornetQException
          {
             if (packet.getType() == PacketImpl.PING)
             {
@@ -314,29 +316,29 @@ public class PingTest extends ServiceTestBase
 
       ClientSessionFactory csf = new ClientSessionFactoryImpl(transportConfig);
 
-      csf.setClientFailureCheckPeriod(CLIENT_FAILURE_CHECK_PERIOD);
-      csf.setConnectionTTL(CLIENT_FAILURE_CHECK_PERIOD * 2);
+      csf.setClientFailureCheckPeriod(PingTest.CLIENT_FAILURE_CHECK_PERIOD);
+      csf.setConnectionTTL(PingTest.CLIENT_FAILURE_CHECK_PERIOD * 2);
 
       ClientSession session = csf.createSession(false, true, true);
 
-      assertEquals(1, ((ClientSessionFactoryInternal)csf).numConnections());
+      Assert.assertEquals(1, ((ClientSessionFactoryInternal)csf).numConnections());
 
       final CountDownLatch clientLatch = new CountDownLatch(1);
       SessionFailureListener clientListener = new SessionFailureListener()
       {
-         public void connectionFailed(HornetQException me)
+         public void connectionFailed(final HornetQException me)
          {
             clientLatch.countDown();
          }
 
-         public void beforeReconnect(HornetQException exception)
+         public void beforeReconnect(final HornetQException exception)
          {
          }
       };
-      
+
       final CountDownLatch serverLatch = new CountDownLatch(1);
       CloseListener serverListener = new CloseListener()
-      {         
+      {
          public void connectionClosed()
          {
             serverLatch.countDown();
@@ -360,20 +362,20 @@ public class PingTest extends ServiceTestBase
             Thread.sleep(10);
          }
       }
-      
-      
+
       serverConn.addCloseListener(serverListener);
-      assertTrue("server has not received any ping from the client" , pingOnServerLatch.await(4000, TimeUnit.MILLISECONDS));
+      Assert.assertTrue("server has not received any ping from the client",
+                        pingOnServerLatch.await(4000, TimeUnit.MILLISECONDS));
 
       // we let the server receives at least 1 ping (so that it uses the client ConnectionTTL value)
-      
-      //Setting the handler to null will prevent server sending pings back to client
+
+      // Setting the handler to null will prevent server sending pings back to client
       serverConn.getChannel(0, -1).setHandler(null);
 
-      assertTrue(clientLatch.await(8 * CLIENT_FAILURE_CHECK_PERIOD, TimeUnit.MILLISECONDS));
-      
-      //Server connection will be closed too, when client closes client side connection after failure is detected
-      assertTrue(serverLatch.await(2 * RemotingServiceImpl.CONNECTION_TTL_CHECK_INTERVAL, TimeUnit.MILLISECONDS));
+      Assert.assertTrue(clientLatch.await(8 * PingTest.CLIENT_FAILURE_CHECK_PERIOD, TimeUnit.MILLISECONDS));
+
+      // Server connection will be closed too, when client closes client side connection after failure is detected
+      Assert.assertTrue(serverLatch.await(2 * RemotingServiceImpl.CONNECTION_TTL_CHECK_INTERVAL, TimeUnit.MILLISECONDS));
 
       long start = System.currentTimeMillis();
       while (true)
@@ -387,7 +389,7 @@ public class PingTest extends ServiceTestBase
             break;
          }
       }
-      assertTrue(server.getRemotingService().getConnections().isEmpty());
+      Assert.assertTrue(server.getRemotingService().getConnections().isEmpty());
 
       session.close();
 

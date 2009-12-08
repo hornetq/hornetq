@@ -14,7 +14,6 @@
 package org.hornetq.core.remoting.impl.wireformat;
 
 import org.hornetq.core.buffers.HornetQBuffer;
-import org.hornetq.utils.DataConstants;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -35,14 +34,14 @@ public class SessionXASetTimeoutMessage extends PacketImpl
 
    public SessionXASetTimeoutMessage(final int timeoutSeconds)
    {
-      super(SESS_XA_SET_TIMEOUT);
+      super(PacketImpl.SESS_XA_SET_TIMEOUT);
 
       this.timeoutSeconds = timeoutSeconds;
    }
 
    public SessionXASetTimeoutMessage()
    {
-      super(SESS_XA_SET_TIMEOUT);
+      super(PacketImpl.SESS_XA_SET_TIMEOUT);
    }
 
    // Public --------------------------------------------------------

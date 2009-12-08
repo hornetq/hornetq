@@ -40,43 +40,42 @@ public class ConsumerClosedTest extends JMSTestCase
 
    // Public --------------------------------------------------------
 
-
    public void testMessagesSentDuringClose() throws Exception
-   {     
+   {
       Connection c = null;
-      
+
       try
       {
-	      c = cf.createConnection();
-	      c.start();
-	
-	      Session s = c.createSession(false, Session.AUTO_ACKNOWLEDGE);
-	      MessageProducer p = s.createProducer(queue1);
-	
-	      for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
-	      {
-	         p.send(s.createTextMessage("message" + i));
-	      }
-	
-	      log.debug("all messages sent");
-	
-	      MessageConsumer cons = s.createConsumer(queue1);
-	      cons.close();
-	
-	      log.debug("consumer closed");
-	      
-	      // make sure that all messages are in queue
-	      
-	      assertRemainingMessages(NUMBER_OF_MESSAGES);
+         c = JMSTestCase.cf.createConnection();
+         c.start();
+
+         Session s = c.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageProducer p = s.createProducer(HornetQServerTestCase.queue1);
+
+         for (int i = 0; i < ConsumerClosedTest.NUMBER_OF_MESSAGES; i++)
+         {
+            p.send(s.createTextMessage("message" + i));
+         }
+
+         log.debug("all messages sent");
+
+         MessageConsumer cons = s.createConsumer(HornetQServerTestCase.queue1);
+         cons.close();
+
+         log.debug("consumer closed");
+
+         // make sure that all messages are in queue
+
+         assertRemainingMessages(ConsumerClosedTest.NUMBER_OF_MESSAGES);
       }
       finally
       {
-      	if (c != null)
-      	{
-      		c.close();
-      	}
-      	
-      	removeAllMessages(queue1.getQueueName(), true);      	
+         if (c != null)
+         {
+            c.close();
+         }
+
+         removeAllMessages(HornetQServerTestCase.queue1.getQueueName(), true);
       }
    }
 

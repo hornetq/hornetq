@@ -21,6 +21,8 @@ import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
+import junit.framework.Assert;
+
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
@@ -126,11 +128,11 @@ public class BasicXaTest extends ServiceTestBase
 
       if (factory1 == factory2)
       {
-         assertTrue(session1.isSameRM(session2));
+         Assert.assertTrue(session1.isSameRM(session2));
       }
       else
       {
-         assertFalse(session1.isSameRM(session2));
+         Assert.assertFalse(session1.isSameRM(session2));
       }
 
       session1.close();
@@ -162,17 +164,17 @@ public class BasicXaTest extends ServiceTestBase
       clientSession.start();
       ClientConsumer clientConsumer = clientSession.createConsumer(atestq);
       ClientMessage m = clientConsumer.receive(1000);
-      assertNotNull(m);
-      assertEquals(m.getBodyBuffer().readString(), "m1");
+      Assert.assertNotNull(m);
+      Assert.assertEquals(m.getBodyBuffer().readString(), "m1");
       m = clientConsumer.receive(1000);
-      assertNotNull(m);
-      assertEquals(m.getBodyBuffer().readString(), "m2");
+      Assert.assertNotNull(m);
+      Assert.assertEquals(m.getBodyBuffer().readString(), "m2");
       m = clientConsumer.receive(1000);
-      assertNotNull(m);
-      assertEquals(m.getBodyBuffer().readString(), "m3");
+      Assert.assertNotNull(m);
+      Assert.assertEquals(m.getBodyBuffer().readString(), "m3");
       m = clientConsumer.receive(1000);
-      assertNotNull(m);
-      assertEquals(m.getBodyBuffer().readString(), "m4");
+      Assert.assertNotNull(m);
+      Assert.assertEquals(m.getBodyBuffer().readString(), "m4");
    }
 
    public void testReceivePrepareDoesntRollbackOnClose() throws Exception
@@ -194,21 +196,21 @@ public class BasicXaTest extends ServiceTestBase
       clientSession.start();
       ClientConsumer clientConsumer = clientSession.createConsumer(atestq);
       ClientMessage m = clientConsumer.receive(1000);
-      assertNotNull(m);
+      Assert.assertNotNull(m);
       m.acknowledge();
-      assertEquals(m.getBodyBuffer().readString(), "m1");
+      Assert.assertEquals(m.getBodyBuffer().readString(), "m1");
       m = clientConsumer.receive(1000);
-      assertNotNull(m);
+      Assert.assertNotNull(m);
       m.acknowledge();
-      assertEquals(m.getBodyBuffer().readString(), "m2");
+      Assert.assertEquals(m.getBodyBuffer().readString(), "m2");
       m = clientConsumer.receive(1000);
-      assertNotNull(m);
+      Assert.assertNotNull(m);
       m.acknowledge();
-      assertEquals(m.getBodyBuffer().readString(), "m3");
+      Assert.assertEquals(m.getBodyBuffer().readString(), "m3");
       m = clientConsumer.receive(1000);
-      assertNotNull(m);
+      Assert.assertNotNull(m);
       m.acknowledge();
-      assertEquals(m.getBodyBuffer().readString(), "m4");
+      Assert.assertEquals(m.getBodyBuffer().readString(), "m4");
       clientSession.end(xid, XAResource.TMSUCCESS);
       clientSession.prepare(xid);
 
@@ -220,8 +222,8 @@ public class BasicXaTest extends ServiceTestBase
       clientSession.start();
       clientConsumer = clientSession.createConsumer(atestq);
       m = clientConsumer.receiveImmediate();
-      assertNull(m);
-      
+      Assert.assertNull(m);
+
       clientSession2.close();
 
    }
@@ -251,18 +253,18 @@ public class BasicXaTest extends ServiceTestBase
          session.start();
       }
 
-      assertTrue(latch.await(10, TimeUnit.SECONDS));
+      Assert.assertTrue(latch.await(10, TimeUnit.SECONDS));
       for (TxMessageHandler messageHandler : handlers)
       {
-         assertFalse(messageHandler.failedToAck);
+         Assert.assertFalse(messageHandler.failedToAck);
       }
-      
+
       clientSession2.close();
       for (ClientSession session : clientSessions)
       {
          session.close();
       }
-      
+
    }
 
    public void testSendMultipleQueues() throws Exception
@@ -316,11 +318,11 @@ public class BasicXaTest extends ServiceTestBase
       try
       {
          session.start(xid, XAResource.TMRESUME);
-         fail("XAException expected");
+         Assert.fail("XAException expected");
       }
       catch (XAException e)
       {
-         assertEquals(XAException.XAER_PROTO, e.errorCode);
+         Assert.assertEquals(XAException.XAER_PROTO, e.errorCode);
       }
 
       session.close();
@@ -358,26 +360,26 @@ public class BasicXaTest extends ServiceTestBase
       session.commit(xid, false);
 
       session.close();
-      
+
       xid = newXID();
       session = sessionFactory.createSession(true, false, false);
       session.start(xid, XAResource.TMNOFLAGS);
       session.end(xid, XAResource.TMSUCCESS);
       session.prepare(xid);
       session.rollback(xid);
-      
+
       session.close();
 
       messagingService.start();
-      
+
       sessionFactory = createInVMFactory();
-      
+
       xid = newXID();
       session = sessionFactory.createSession(true, false, false);
       session.start(xid, XAResource.TMNOFLAGS);
       session.end(xid, XAResource.TMSUCCESS);
       session.rollback(xid);
-      
+
       session.close();
 
       messagingService.stop();
@@ -390,7 +392,7 @@ public class BasicXaTest extends ServiceTestBase
 
       Xid[] xids = session.recover(XAResource.TMSTARTRSCAN);
 
-      assertEquals(0, xids.length);
+      Assert.assertEquals(0, xids.length);
 
       session.close();
 
@@ -413,11 +415,11 @@ public class BasicXaTest extends ServiceTestBase
       try
       {
          clientSession.forget(newXID());
-         fail("should throw a XAERR_NOTA XAException");
+         Assert.fail("should throw a XAERR_NOTA XAException");
       }
       catch (XAException e)
       {
-         assertEquals(XAException.XAER_NOTA, e.errorCode);
+         Assert.assertEquals(XAException.XAER_NOTA, e.errorCode);
       }
    }
 
@@ -429,14 +431,15 @@ public class BasicXaTest extends ServiceTestBase
       clientSession.prepare(xid);
 
       String[] preparedTransactions = messagingService.getHornetQServerControl().listPreparedTransactions();
-      assertEquals(1, preparedTransactions.length);
+      Assert.assertEquals(1, preparedTransactions.length);
       System.out.println(preparedTransactions[0]);
-      assertTrue(messagingService.getHornetQServerControl().commitPreparedTransaction(XidImpl.toBase64String(xid)));
-      assertEquals(1, messagingService.getHornetQServerControl().listHeuristicCommittedTransactions().length);
+      Assert.assertTrue(messagingService.getHornetQServerControl()
+                                        .commitPreparedTransaction(XidImpl.toBase64String(xid)));
+      Assert.assertEquals(1, messagingService.getHornetQServerControl().listHeuristicCommittedTransactions().length);
 
       clientSession.forget(xid);
 
-      assertEquals(0, messagingService.getHornetQServerControl().listHeuristicCommittedTransactions().length);
+      Assert.assertEquals(0, messagingService.getHornetQServerControl().listHeuristicCommittedTransactions().length);
    }
 
    public void testForgetHeuristicallyRolledBackXID() throws Exception
@@ -447,15 +450,16 @@ public class BasicXaTest extends ServiceTestBase
       clientSession.prepare(xid);
 
       String[] preparedTransactions = messagingService.getHornetQServerControl().listPreparedTransactions();
-      assertEquals(1, preparedTransactions.length);
+      Assert.assertEquals(1, preparedTransactions.length);
       System.out.println(preparedTransactions[0]);
 
-      assertTrue(messagingService.getHornetQServerControl().rollbackPreparedTransaction(XidImpl.toBase64String(xid)));      
-      assertEquals(1, messagingService.getHornetQServerControl().listHeuristicRolledBackTransactions().length);
+      Assert.assertTrue(messagingService.getHornetQServerControl()
+                                        .rollbackPreparedTransaction(XidImpl.toBase64String(xid)));
+      Assert.assertEquals(1, messagingService.getHornetQServerControl().listHeuristicRolledBackTransactions().length);
 
       clientSession.forget(xid);
 
-      assertEquals(0, messagingService.getHornetQServerControl().listHeuristicRolledBackTransactions().length);
+      Assert.assertEquals(0, messagingService.getHornetQServerControl().listHeuristicRolledBackTransactions().length);
    }
 
    public void testCommitHeuristicallyCommittedXID() throws Exception
@@ -523,18 +527,18 @@ public class BasicXaTest extends ServiceTestBase
       for (int i = 0; i < 100; i++)
       {
          ClientMessage msg = cons1.receive(1000);
-         assertNotNull(msg);
-         assertEquals("A" + i, getTextMessage(msg));
+         Assert.assertNotNull(msg);
+         Assert.assertEquals("A" + i, getTextMessage(msg));
          msg.acknowledge();
 
          msg = cons2.receive(1000);
-         assertNotNull(msg);
-         assertEquals("B" + i, getTextMessage(msg));
+         Assert.assertNotNull(msg);
+         Assert.assertEquals("B" + i, getTextMessage(msg));
          msg.acknowledge();
       }
 
-      assertNull(cons1.receiveImmediate());
-      assertNull(cons2.receiveImmediate());
+      Assert.assertNull(cons1.receiveImmediate());
+      Assert.assertNull(cons2.receiveImmediate());
 
       clientSession.end(xid, XAResource.TMSUCCESS);
 
@@ -609,7 +613,7 @@ public class BasicXaTest extends ServiceTestBase
 
                // This is a basic condition, or a real TM wouldn't be able to join both sessions in a single
                // transactions
-               assertTrue(session.isSameRM(newJoinSession));
+               Assert.assertTrue(session.isSameRM(newJoinSession));
 
                newJoinSession.start(xid, XAResource.TMJOIN);
 
@@ -667,16 +671,16 @@ public class BasicXaTest extends ServiceTestBase
                {
                   ClientMessage msg = consumer.receive(1000);
 
-                  assertNotNull(msg);
+                  Assert.assertNotNull(msg);
 
-                  assertEquals("SimpleMessage" + nmsg, getTextMessage(msg));
+                  Assert.assertEquals("SimpleMessage" + nmsg, getTextMessage(msg));
 
                   msg.acknowledge();
                }
 
                ClientMessage msg = consumer.receive(1000);
-               assertNotNull(msg);
-               assertEquals("one more", getTextMessage(msg));
+               Assert.assertNotNull(msg);
+               Assert.assertEquals("one more", getTextMessage(msg));
                msg.acknowledge();
 
                if (suspend)
@@ -685,7 +689,7 @@ public class BasicXaTest extends ServiceTestBase
                   session.start(xid, XAResource.TMRESUME);
                }
 
-               assertEquals("one more", getTextMessage(msg));
+               Assert.assertEquals("one more", getTextMessage(msg));
 
                if (isJoinSession)
                {
@@ -698,9 +702,9 @@ public class BasicXaTest extends ServiceTestBase
                   ClientConsumer newConsumer = newSession.createConsumer(ADDRESS.concat("-join." + nqueues));
 
                   msg = newConsumer.receive(1000);
-                  assertNotNull(msg);
+                  Assert.assertNotNull(msg);
 
-                  assertEquals("After Join", getTextMessage(msg));
+                  Assert.assertEquals("After Join", getTextMessage(msg));
                   msg.acknowledge();
 
                   newSession.end(xid, XAResource.TMSUCCESS);
@@ -708,7 +712,7 @@ public class BasicXaTest extends ServiceTestBase
                   newSession.close();
                }
 
-               assertNull(consumer.receiveImmediate());
+               Assert.assertNull(consumer.receiveImmediate());
                consumer.close();
 
             }
@@ -742,7 +746,7 @@ public class BasicXaTest extends ServiceTestBase
       }
    }
 
-   private void doCompleteHeuristicallyCompletedXID(boolean isCommit, boolean heuristicCommit) throws Exception
+   private void doCompleteHeuristicallyCompletedXID(final boolean isCommit, final boolean heuristicCommit) throws Exception
    {
       Xid xid = newXID();
       clientSession.start(xid, XAResource.TMNOFLAGS);
@@ -750,54 +754,57 @@ public class BasicXaTest extends ServiceTestBase
       clientSession.prepare(xid);
 
       String[] preparedTransactions = messagingService.getHornetQServerControl().listPreparedTransactions();
-      assertEquals(1, preparedTransactions.length);
+      Assert.assertEquals(1, preparedTransactions.length);
 
       if (heuristicCommit)
       {
-         assertTrue(messagingService.getHornetQServerControl().commitPreparedTransaction(XidImpl.toBase64String(xid)));      
-         assertEquals(1, messagingService.getHornetQServerControl().listHeuristicCommittedTransactions().length);
+         Assert.assertTrue(messagingService.getHornetQServerControl()
+                                           .commitPreparedTransaction(XidImpl.toBase64String(xid)));
+         Assert.assertEquals(1, messagingService.getHornetQServerControl().listHeuristicCommittedTransactions().length);
       }
       else
       {
-         assertTrue(messagingService.getHornetQServerControl().rollbackPreparedTransaction(XidImpl.toBase64String(xid)));      
-         assertEquals(1, messagingService.getHornetQServerControl().listHeuristicRolledBackTransactions().length);         
+         Assert.assertTrue(messagingService.getHornetQServerControl()
+                                           .rollbackPreparedTransaction(XidImpl.toBase64String(xid)));
+         Assert.assertEquals(1, messagingService.getHornetQServerControl().listHeuristicRolledBackTransactions().length);
       }
-      assertEquals(0, messagingService.getHornetQServerControl().listPreparedTransactions().length);
+      Assert.assertEquals(0, messagingService.getHornetQServerControl().listPreparedTransactions().length);
 
       try
       {
          if (isCommit)
          {
             clientSession.commit(xid, false);
-         } else
+         }
+         else
          {
             clientSession.rollback(xid);
          }
-         fail("neither commit not rollback must succeed on a heuristically completed tx");
+         Assert.fail("neither commit not rollback must succeed on a heuristically completed tx");
       }
 
       catch (XAException e)
       {
          if (heuristicCommit)
          {
-            assertEquals(XAException.XA_HEURCOM, e.errorCode);
+            Assert.assertEquals(XAException.XA_HEURCOM, e.errorCode);
          }
          else
          {
-            assertEquals(XAException.XA_HEURRB, e.errorCode);
+            Assert.assertEquals(XAException.XA_HEURRB, e.errorCode);
          }
       }
 
       if (heuristicCommit)
       {
-         assertEquals(1, messagingService.getHornetQServerControl().listHeuristicCommittedTransactions().length);
+         Assert.assertEquals(1, messagingService.getHornetQServerControl().listHeuristicCommittedTransactions().length);
       }
       else
       {
-         assertEquals(1, messagingService.getHornetQServerControl().listHeuristicRolledBackTransactions().length);
+         Assert.assertEquals(1, messagingService.getHornetQServerControl().listHeuristicRolledBackTransactions().length);
       }
    }
-   
+
    class TxMessageHandler implements MessageHandler
    {
       boolean failedToAck = false;
@@ -832,7 +839,7 @@ public class BasicXaTest extends ServiceTestBase
          }
          catch (HornetQException e)
          {
-            log.error("Failed to process message", e);
+            BasicXaTest.log.error("Failed to process message", e);
          }
          try
          {
