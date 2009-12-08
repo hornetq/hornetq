@@ -291,26 +291,31 @@ public class OrderReattachTest extends ServiceTestBase
          final CountDownLatch latch = new CountDownLatch(1);
 
          volatile int count;
+         
+         Exception failure;
 
          public void onMessage(final ClientMessage message)
          {
-            if (count == numMessages)
+            if (count >= numMessages)
             {
-               Assert.fail("Too many messages");
+               failure = new Exception("too many messages");
+               latch.countDown();
             }
-
+            
             if (message.getIntProperty("count") != count)
             {
-               log.warn("Error on counter", new Exception("error on counter"));
-               System.exit(-1);
+               failure = new Exception("counter " + count + " was not as expected (" + message.getIntProperty("count") + ")");
+               log.warn("Failure on receiving message ", failure);
+               failure.printStackTrace();
+               latch.countDown();
             }
-            Assert.assertEquals(count, message.getObjectProperty(new SimpleString("count")));
 
             count++;
 
             if (count % 100 == 0)
             {
                failureQueue.push(true);
+               System.out.println("Received " + count);
             }
 
             if (count == numMessages)
@@ -333,9 +338,14 @@ public class OrderReattachTest extends ServiceTestBase
 
       for (MyHandler handler : handlers)
       {
-         boolean ok = handler.latch.await(10000, TimeUnit.MILLISECONDS);
+         boolean ok = handler.latch.await(60000, TimeUnit.MILLISECONDS);
 
          Assert.assertTrue(ok);
+         
+         if (handler.failure != null)
+         {
+            throw handler.failure;
+         }
       }
 
       // failureQueue.push(true);
@@ -344,7 +354,6 @@ public class OrderReattachTest extends ServiceTestBase
 
       for (ClientSession session : sessions)
       {
-
          // failureQueue.push(true);
          session.close();
       }
