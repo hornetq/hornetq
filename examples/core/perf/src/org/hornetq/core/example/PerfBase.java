@@ -28,8 +28,10 @@ import org.hornetq.core.client.ClientProducer;
 import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.client.ClientSessionFactory;
 import org.hornetq.core.client.MessageHandler;
+import org.hornetq.core.client.SendAcknowledgementHandler;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.config.TransportConfiguration;
+import org.hornetq.core.message.Message;
 import org.hornetq.integration.transports.netty.NettyConnectorFactory;
 import org.hornetq.integration.transports.netty.TransportConstants;
 import org.hornetq.utils.TokenBucketLimiter;
@@ -123,6 +125,7 @@ public abstract class PerfBase
       int consumerWindowSize = Integer.valueOf(props.getProperty("consumer-window"));
       boolean blockOnACK = Boolean.valueOf(props.getProperty("block-ack", "false"));
       boolean blockOnPersistent = Boolean.valueOf(props.getProperty("block-persistent", "false"));
+      boolean useSendAcks = Boolean.valueOf(props.getProperty("use-send-acks", "false"));
 
       PerfBase.log.info("num-messages: " + noOfMessages);
       PerfBase.log.info("num-warmup-messages: " + noOfWarmupMessages);
@@ -144,6 +147,12 @@ public abstract class PerfBase
       PerfBase.log.info("consumer-window: " + consumerWindowSize);
       PerfBase.log.info("block-ack:" + blockOnACK);
       PerfBase.log.info("block-persistent:" + blockOnPersistent);
+      PerfBase.log.info("use-send-acks:" + useSendAcks);
+
+      if (useSendAcks && confirmationWindowSize < 1)
+      {
+         throw new IllegalArgumentException("If you use send acks, then need to set confirmation-window-size to a positive integer");
+      }
 
       PerfParams perfParams = new PerfParams();
       perfParams.setNoOfMessagesToSend(noOfMessages);
@@ -166,6 +175,7 @@ public abstract class PerfBase
       perfParams.setConsumerWindow(consumerWindowSize);
       perfParams.setBlockOnACK(blockOnACK);
       perfParams.setBlockOnPersistent(blockOnPersistent);
+      perfParams.setUseSendAcks(useSendAcks);
 
       return perfParams;
    }
@@ -178,8 +188,6 @@ public abstract class PerfBase
    }
 
    private ClientSessionFactory factory;
-
-   private ClientSession session;
 
    private long start;
 
@@ -204,8 +212,6 @@ public abstract class PerfBase
 
       factory.setBlockOnAcknowledge(perfParams.isBlockOnACK());
       factory.setBlockOnPersistentSend(perfParams.isBlockOnPersistent());
-
-      session = factory.createSession(!transacted, !transacted);
    }
 
    private void displayAverage(final long numberOfMessages, final long start, final long end)
@@ -223,6 +229,7 @@ public abstract class PerfBase
       try
       {
          PerfBase.log.info("params = " + perfParams);
+
          init(perfParams.isSessionTransacted(), perfParams.getQueueName());
 
          if (perfParams.isDrainQueue())
@@ -238,7 +245,8 @@ public abstract class PerfBase
                       perfParams.isSessionTransacted(),
                       false,
                       perfParams.getThrottleRate(),
-                      perfParams.getMessageSize());
+                      perfParams.getMessageSize(),
+                      perfParams.isUseSendAcks());
          PerfBase.log.info("warmed up");
          start = System.currentTimeMillis();
          sendMessages(perfParams.getNoOfMessagesToSend(),
@@ -247,7 +255,8 @@ public abstract class PerfBase
                       perfParams.isSessionTransacted(),
                       true,
                       perfParams.getThrottleRate(),
-                      perfParams.getMessageSize());
+                      perfParams.getMessageSize(),
+                      perfParams.isUseSendAcks());
          long end = System.currentTimeMillis();
          displayAverage(perfParams.getNoOfMessagesToSend(), start, end);
       }
@@ -255,28 +264,17 @@ public abstract class PerfBase
       {
          e.printStackTrace();
       }
-      finally
-      {
-         if (session != null)
-         {
-            try
-            {
-               session.close();
-            }
-            catch (Exception e)
-            {
-               e.printStackTrace();
-            }
-         }
-      }
    }
 
    protected void runListener()
    {
+      ClientSession session = null;
+
       try
       {
-
          init(perfParams.isSessionTransacted(), perfParams.getQueueName());
+
+         session = factory.createSession(!perfParams.isSessionTransacted(), !perfParams.isSessionTransacted());
 
          if (perfParams.isDrainQueue())
          {
@@ -290,7 +288,7 @@ public abstract class PerfBase
          PerfBase.log.info("READY!!!");
 
          CountDownLatch countDownLatch = new CountDownLatch(1);
-         consumer.setMessageHandler(new PerfListener(countDownLatch, perfParams));
+         consumer.setMessageHandler(new PerfListener(session, countDownLatch, perfParams));
          countDownLatch.await();
          long end = System.currentTimeMillis();
          // start was set on the first received message
@@ -319,29 +317,42 @@ public abstract class PerfBase
    private void drainQueue() throws Exception
    {
       PerfBase.log.info("Draining queue");
-      ClientConsumer consumer = session.createConsumer(perfParams.getQueueName());
 
-      session.start();
+      ClientSession session = null;
 
-      ClientMessage message = null;
-
-      int count = 0;
-      do
+      try
       {
-         message = consumer.receive(3000);
+         session = factory.createSession();
 
-         if (message != null)
+         ClientConsumer consumer = session.createConsumer(perfParams.getQueueName());
+
+         session.start();
+
+         ClientMessage message = null;
+
+         int count = 0;
+         do
          {
-            message.acknowledge();
+            message = consumer.receive(3000);
 
-            count++;
+            if (message != null)
+            {
+               message.acknowledge();
+
+               count++;
+            }
+         }
+         while (message != null);
+
+         PerfBase.log.info("Drained " + count + " messages");
+      }
+      finally
+      {
+         if (session != null)
+         {
+            session.close();
          }
       }
-      while (message != null);
-
-      consumer.close();
-
-      PerfBase.log.info("Drained " + count + " messages");
    }
 
    private void sendMessages(final int numberOfMessages,
@@ -350,53 +361,97 @@ public abstract class PerfBase
                              final boolean transacted,
                              final boolean display,
                              final int throttleRate,
-                             final int messageSize) throws Exception
+                             final int messageSize,
+                             final boolean useSendAcks) throws Exception
    {
-      ClientProducer producer = session.createProducer(perfParams.getAddress());
+      ClientSession session = null;
 
-      ClientMessage message = session.createClientMessage(durable);
-
-      byte[] payload = PerfBase.randomByteArray(messageSize);
-
-      message.getBodyBuffer().writeBytes(payload);
-
-      final int modulo = 2000;
-
-      TokenBucketLimiter tbl = throttleRate != -1 ? new TokenBucketLimiterImpl(throttleRate, false) : null;
-
-      boolean committed = false;
-      for (int i = 1; i <= numberOfMessages; i++)
+      try
       {
-         producer.send(message);
+         session = factory.createSession(!transacted, !transacted);
 
-         if (transacted)
+         CountDownLatch theLatch = null;
+
+         if (useSendAcks)
          {
-            if (i % txBatchSize == 0)
+            final CountDownLatch latch = new CountDownLatch(numberOfMessages);
+
+            class MySendAckHandler implements SendAcknowledgementHandler
             {
-               session.commit();
-               committed = true;
+               public void sendAcknowledged(Message message)
+               {
+                  latch.countDown();
+               }
             }
-            else
+            
+            session.setSendAcknowledgementHandler(new MySendAckHandler());
+
+            theLatch = latch;
+         }
+
+         ClientProducer producer = session.createProducer(perfParams.getAddress());
+
+         ClientMessage message = session.createClientMessage(durable);
+
+         byte[] payload = PerfBase.randomByteArray(messageSize);
+
+         message.getBodyBuffer().writeBytes(payload);
+
+         final int modulo = 2000;
+
+         TokenBucketLimiter tbl = throttleRate != -1 ? new TokenBucketLimiterImpl(throttleRate, false) : null;
+
+         boolean committed = false;
+
+         for (int i = 1; i <= numberOfMessages; i++)
+         {
+            producer.send(message);
+
+            if (transacted)
             {
-               committed = false;
+               if (i % txBatchSize == 0)
+               {
+                  session.commit();
+                  committed = true;
+               }
+               else
+               {
+                  committed = false;
+               }
+            }
+            if (display && i % modulo == 0)
+            {
+               double duration = (1.0 * System.currentTimeMillis() - start) / 1000;
+               PerfBase.log.info(String.format("sent %6d messages in %2.2fs", i, duration));
+            }
+
+            // log.info("sent message " + i);
+
+            if (tbl != null)
+            {
+               tbl.limit();
             }
          }
-         if (display && i % modulo == 0)
+
+         if (transacted && !committed)
          {
-            double duration = (1.0 * System.currentTimeMillis() - start) / 1000;
-            PerfBase.log.info(String.format("sent %6d messages in %2.2fs", i, duration));
+            session.commit();
          }
 
-         // log.info("sent message " + i);
-
-         if (tbl != null)
+         if (useSendAcks)
          {
-            tbl.limit();
+            // Must close the session first since this flushes the confirmations
+            session.close();
+
+            theLatch.await();
          }
       }
-      if (transacted && !committed)
+      finally
       {
-         session.commit();
+         if (session != null)
+         {
+            session.close();
+         }
       }
    }
 
@@ -414,8 +469,11 @@ public abstract class PerfBase
 
       private final AtomicLong count = new AtomicLong(0);
 
-      public PerfListener(final CountDownLatch countDownLatch, final PerfParams perfParams)
+      private final ClientSession session;
+
+      public PerfListener(final ClientSession session, final CountDownLatch countDownLatch, final PerfParams perfParams)
       {
+         this.session = session;
          this.countDownLatch = countDownLatch;
          this.perfParams = perfParams;
          warmingUp = perfParams.getNoOfWarmupMessages() > 0;
@@ -428,13 +486,13 @@ public abstract class PerfBase
          {
             if (warmingUp)
             {
-               boolean committed = checkCommit();
+               boolean committed = checkCommit(session);
                if (count.incrementAndGet() == perfParams.getNoOfWarmupMessages())
                {
                   PerfBase.log.info("warmed up after receiving " + count.longValue() + " msgs");
                   if (!committed)
                   {
-                     checkCommit();
+                     checkCommit(session);
                   }
                   warmingUp = false;
                }
@@ -452,12 +510,12 @@ public abstract class PerfBase
             message.acknowledge();
 
             long currentCount = count.incrementAndGet();
-            boolean committed = checkCommit();
+            boolean committed = checkCommit(session);
             if (currentCount == perfParams.getNoOfMessagesToSend())
             {
                if (!committed)
                {
-                  checkCommit();
+                  checkCommit(session);
                }
                countDownLatch.countDown();
             }
@@ -473,7 +531,7 @@ public abstract class PerfBase
          }
       }
 
-      private boolean checkCommit() throws Exception
+      private boolean checkCommit(final ClientSession session) throws Exception
       {
          if (perfParams.isSessionTransacted())
          {

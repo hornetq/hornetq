@@ -54,7 +54,7 @@ public class PerfParams implements Serializable
 
    private boolean preAck;
 
-   private int confirmationWindow;
+   private int confirmationWindow = -1;
 
    private int producerWindow;
 
@@ -63,6 +63,8 @@ public class PerfParams implements Serializable
    private boolean blockOnPersistent = true;
 
    private boolean blockOnACK = true;
+   
+   private boolean useSendAcks;
 
    public boolean isBlockOnPersistent()
    {
@@ -283,5 +285,15 @@ public class PerfParams implements Serializable
    public void setConsumerWindow(final int consumerWindow)
    {
       this.consumerWindow = consumerWindow;
+   }
+
+   public boolean isUseSendAcks()
+   {
+      return useSendAcks;
+   }
+
+   public void setUseSendAcks(boolean useSendAcks)
+   {
+      this.useSendAcks = useSendAcks;
    }
 }
