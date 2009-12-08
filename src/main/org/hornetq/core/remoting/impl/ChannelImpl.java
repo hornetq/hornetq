@@ -64,8 +64,6 @@ public class ChannelImpl implements Channel
 
    private final Object sendLock = new Object();
 
-   private final Object sendBlockingLock = new Object();
-
    private boolean failingOver;
 
    private final int confWindowSize;
@@ -194,7 +192,7 @@ public class ChannelImpl implements Channel
 
       // Synchronized since can't be called concurrently by more than one thread and this can occur
       // E.g. blocking acknowledge() from inside a message handler at some time as other operation on main thread
-      synchronized (sendBlockingLock)
+      synchronized (sendLock)
       {
          packet.setChannelID(id);
 
