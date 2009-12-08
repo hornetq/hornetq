@@ -376,7 +376,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
    public void handleCreateConsumer(final SessionCreateConsumerMessage packet)
    {
       SimpleString name = packet.getQueueName();
-
+      
       SimpleString filterString = packet.getFilterString();
 
       boolean browseOnly = packet.isBrowseOnly();
@@ -437,7 +437,17 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
             managementService.sendNotification(notification);
          }
 
-         response = new NullResponseMessage();
+         //We send back queue information on the queue as a response-  this allows the queue to
+         //be automaticall recreated on failover
+         
+         if (packet.isRequiresResponse())
+         {
+            response = doExecuteQueueQuery(name);
+         }
+         else
+         {
+            response = null;
+         }
       }
       catch (Exception e)
       {
@@ -451,7 +461,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
             response = new HornetQExceptionMessage(new HornetQException(HornetQException.INTERNAL_ERROR));
          }
       }
-
+      
       sendResponse(packet, response, false, false);
    }
 
@@ -460,7 +470,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       SimpleString address = packet.getAddress();
 
       final SimpleString name = packet.getQueueName();
-
+      
       SimpleString filterString = packet.getFilterString();
 
       boolean temporary = packet.isTemporary();
@@ -510,7 +520,14 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
             });
          }
 
-         response = new NullResponseMessage();
+         if (packet.isRequiresResponse())
+         {
+            response = new NullResponseMessage();
+         }
+         else
+         {
+            response = null;
+         }
       }
       catch (Exception e)
       {
@@ -562,7 +579,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
 
       sendResponse(packet, response, false, false);
    }
-
+   
    public void handleExecuteQueueQuery(final SessionQueueQueryMessage packet)
    {
       SimpleString name = packet.getQueueName();
@@ -571,35 +588,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
 
       try
       {
-         if (name == null)
-         {
-            throw new IllegalArgumentException("Queue name is null");
-         }
-
-         Binding binding = postOffice.getBinding(name);
-
-         if (binding != null && binding.getType() == BindingType.LOCAL_QUEUE)
-         {
-            Queue queue = (Queue)binding.getBindable();
-
-            Filter filter = queue.getFilter();
-
-            SimpleString filterString = filter == null ? null : filter.getFilterString();
-            response = new SessionQueueQueryResponseMessage(queue.isDurable(),
-                                                            queue.getConsumerCount(),
-                                                            queue.getMessageCount(),
-                                                            filterString,
-                                                            binding.getAddress());
-         }
-         // make an exception for the management address (see HORNETQ-29)
-         else if (name.equals(managementAddress))
-         {
-            response = new SessionQueueQueryResponseMessage(true, -1, -1, null, managementAddress);
-         }
-         else
-         {
-            response = new SessionQueueQueryResponseMessage();
-         }
+         response = doExecuteQueueQuery(name);
       }
       catch (Exception e)
       {
@@ -1419,6 +1408,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       if (consumer == null)
       {
          ServerSessionImpl.log.error("There is no consumer with id " + packet.getConsumerID());
+         
          return;
       }
 
@@ -1710,6 +1700,46 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
    // Private
    // ----------------------------------------------------------------------------
 
+   private SessionQueueQueryResponseMessage doExecuteQueueQuery(final SimpleString name) throws Exception
+   {
+      if (name == null)
+      {
+         throw new IllegalArgumentException("Queue name is null");
+      }
+      
+      SessionQueueQueryResponseMessage response;
+
+      Binding binding = postOffice.getBinding(name);
+
+      if (binding != null && binding.getType() == BindingType.LOCAL_QUEUE)
+      {
+         Queue queue = (Queue)binding.getBindable();
+
+         Filter filter = queue.getFilter();
+
+         SimpleString filterString = filter == null ? null : filter.getFilterString();
+         
+         response = new SessionQueueQueryResponseMessage(name,
+                                                         binding.getAddress(),
+                                                         queue.isDurable(),
+                                                         queue.isTemporary(),
+                                                         filterString,                                                         
+                                                         queue.getConsumerCount(),
+                                                         queue.getMessageCount());
+      }
+      // make an exception for the management address (see HORNETQ-29)
+      else if (name.equals(managementAddress))
+      {
+         response = new SessionQueueQueryResponseMessage(name, managementAddress, true, false, null, -1, -1);
+      }
+      else
+      {
+         response = new SessionQueueQueryResponseMessage();
+      }
+      
+      return response;
+   }
+   
    private void sendResponse(final Packet confirmPacket,
                              final Packet response,
                              final boolean flush,

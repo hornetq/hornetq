@@ -1350,7 +1350,7 @@ public class FailoverTest extends FailoverTestBase
    {
       ClientSessionFactoryInternal sf = getSessionFactory();
 
-      ClientSession session = sendAndConsume(sf);
+      ClientSession session = sendAndConsume(sf, true);
 
       final CountDownLatch latch = new CountDownLatch(1);
 
@@ -1379,7 +1379,7 @@ public class FailoverTest extends FailoverTestBase
 
       sf = new ClientSessionFactoryImpl(getConnectorTransportConfiguration(false));
 
-      session = sendAndConsume(sf);
+      session = sendAndConsume(sf, false);
 
       session.close();
 
@@ -1757,7 +1757,27 @@ public class FailoverTest extends FailoverTestBase
       Assert.assertEquals(0, sf.numConnections());
    }
 
-   public void testSimpleSendAfterFailover() throws Exception
+   public void testSimpleSendAfterFailoverDurableTemporary() throws Exception
+   {
+      testSimpleSendAfterFailover(true, true);
+   }
+   
+   public void testSimpleSendAfterFailoverNonDurableTemporary() throws Exception
+   {
+      testSimpleSendAfterFailover(false, true);
+   }
+   
+   public void testSimpleSendAfterFailoverDurableNonTemporary() throws Exception
+   {
+      testSimpleSendAfterFailover(true, false);
+   }
+   
+   public void testSimpleSendAfterFailoverNonDurableNonTemporary() throws Exception
+   {
+      testSimpleSendAfterFailover(false, false);
+   }
+   
+   private void testSimpleSendAfterFailover(final boolean durable, final boolean temporary) throws Exception
    {
       ClientSessionFactoryInternal sf = getSessionFactory();
 
@@ -1767,8 +1787,15 @@ public class FailoverTest extends FailoverTestBase
 
       ClientSession session = sf.createSession(true, true, 0);
 
-      session.createQueue(FailoverTestBase.ADDRESS, FailoverTestBase.ADDRESS, null, true);
-
+      if (temporary)
+      {
+         session.createTemporaryQueue(FailoverTestBase.ADDRESS, FailoverTestBase.ADDRESS, null);
+      }
+      else
+      {
+         session.createQueue(FailoverTestBase.ADDRESS, FailoverTestBase.ADDRESS, null, durable);         
+      }
+                
       final CountDownLatch latch = new CountDownLatch(1);
 
       class MyListener extends BaseListener
@@ -2254,11 +2281,14 @@ public class FailoverTest extends FailoverTestBase
 
    // Private -------------------------------------------------------
 
-   private ClientSession sendAndConsume(final ClientSessionFactory sf) throws Exception
+   private ClientSession sendAndConsume(final ClientSessionFactory sf, final boolean createQueue) throws Exception
    {
       ClientSession session = sf.createSession(false, true, true);
 
-      session.createQueue(FailoverTestBase.ADDRESS, FailoverTestBase.ADDRESS, null, false);
+      if (createQueue)
+      {
+         session.createQueue(FailoverTestBase.ADDRESS, FailoverTestBase.ADDRESS, null, false);
+      }
 
       ClientProducer producer = session.createProducer(FailoverTestBase.ADDRESS);
 

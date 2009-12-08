@@ -922,6 +922,23 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
                for (Map.Entry<Long, ClientConsumerInternal> entry : consumers.entrySet())
                {
+                  SessionQueueQueryResponseMessage queueInfo = entry.getValue().getQueueInfo();
+                  
+                  // We try and recreate any non durable queues, since they probably won't be there unless
+                  // they are defined in hornetq-configuration.xml
+                  // This allows e.g. JMS non durable subs and temporary queues to continue to be used after failover
+                  if (!queueInfo.isDurable())
+                  {
+                     CreateQueueMessage createQueueRequest = new CreateQueueMessage(queueInfo.getAddress(),
+                                                                                    queueInfo.getName(),
+                                                                                    queueInfo.getFilterString(),
+                                                                                    false,
+                                                                                    queueInfo.isTemporary(),
+                                                                                    false);
+
+                     sendPacketWithoutLock(createQueueRequest);
+                  }
+
                   SessionCreateConsumerMessage createConsumerRequest = new SessionCreateConsumerMessage(entry.getKey(),
                                                                                                         entry.getValue()
                                                                                                              .getQueueName(),
@@ -931,14 +948,8 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
                                                                                                              .isBrowseOnly(),
                                                                                                         false);
 
-                  createConsumerRequest.setChannelID(channel.getID());
-
-                  Connection conn = channel.getConnection().getTransportConnection();
-
-                  HornetQBuffer buffer = createConsumerRequest.encode(channel.getConnection());
-
-                  conn.write(buffer, false);
-
+                  sendPacketWithoutLock(createConsumerRequest);
+                  
                   int clientWindowSize = entry.getValue().getClientWindowSize();
 
                   if (clientWindowSize != 0)
@@ -946,11 +957,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
                      SessionConsumerFlowCreditMessage packet = new SessionConsumerFlowCreditMessage(entry.getKey(),
                                                                                                     clientWindowSize);
 
-                     packet.setChannelID(channel.getID());
-
-                     buffer = packet.encode(channel.getConnection());
-
-                     conn.write(buffer, false);
+                     sendPacketWithoutLock(packet);
                   }
                }
 
@@ -1004,6 +1011,17 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
          // Also need to send more credits for consumers, otherwise the system could hand with the server
          // not having any credits to send
       }
+   }
+
+   private void sendPacketWithoutLock(final Packet packet)
+   {
+      packet.setChannelID(channel.getID());
+
+      Connection conn = channel.getConnection().getTransportConnection();
+
+      HornetQBuffer buffer = packet.encode(channel.getConnection());
+
+      conn.write(buffer, false);
    }
 
    public void workDone()
@@ -1478,7 +1496,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
                                                                               browseOnly,
                                                                               true);
 
-      channel.sendBlocking(request);
+      SessionQueueQueryResponseMessage queueInfo = (SessionQueueQueryResponseMessage)channel.sendBlocking(request);
 
       // The actual windows size that gets used is determined by the user since
       // could be overridden on the queue settings
@@ -1497,7 +1515,8 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
                                                                                                                 false)
                                                                                   : null,
                                                                executor,
-                                                               channel);
+                                                               channel,
+                                                               queueInfo);
 
       addConsumer(consumer);
 
@@ -1546,7 +1565,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
          throw new HornetQException(HornetQException.INTERNAL_ERROR, "Queue can not be both durable and temporay");
       }
 
-      CreateQueueMessage request = new CreateQueueMessage(address, queueName, filterString, durable, temp);
+      CreateQueueMessage request = new CreateQueueMessage(address, queueName, filterString, durable, temp, true);
 
       channel.sendBlocking(request);
    }

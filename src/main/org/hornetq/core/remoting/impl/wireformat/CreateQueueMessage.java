@@ -39,6 +39,8 @@ public class CreateQueueMessage extends PacketImpl
    private boolean durable;
 
    private boolean temporary;
+   
+   private boolean requiresResponse;
 
    // Static --------------------------------------------------------
 
@@ -48,7 +50,8 @@ public class CreateQueueMessage extends PacketImpl
                              final SimpleString queueName,
                              final SimpleString filterString,
                              final boolean durable,
-                             final boolean temporary)
+                             final boolean temporary,
+                             final boolean requiresResponse)
    {
       super(PacketImpl.CREATE_QUEUE);
 
@@ -57,6 +60,7 @@ public class CreateQueueMessage extends PacketImpl
       this.filterString = filterString;
       this.durable = durable;
       this.temporary = temporary;
+      this.requiresResponse = requiresResponse;
    }
 
    public CreateQueueMessage()
@@ -103,6 +107,11 @@ public class CreateQueueMessage extends PacketImpl
    {
       return temporary;
    }
+   
+   public boolean isRequiresResponse()
+   {
+      return requiresResponse;
+   }
 
    @Override
    public void encodeRest(final HornetQBuffer buffer)
@@ -112,6 +121,7 @@ public class CreateQueueMessage extends PacketImpl
       buffer.writeNullableSimpleString(filterString);
       buffer.writeBoolean(durable);
       buffer.writeBoolean(temporary);
+      buffer.writeBoolean(requiresResponse);
    }
 
    @Override
@@ -122,6 +132,7 @@ public class CreateQueueMessage extends PacketImpl
       filterString = buffer.readNullableSimpleString();
       durable = buffer.readBoolean();
       temporary = buffer.readBoolean();
+      requiresResponse = buffer.readBoolean();
    }
 
    @Override

@@ -25,6 +25,8 @@ import org.hornetq.utils.SimpleString;
  */
 public class SessionQueueQueryResponseMessage extends PacketImpl
 {
+   private SimpleString name;
+   
    private boolean exists;
 
    private boolean durable;
@@ -36,31 +38,39 @@ public class SessionQueueQueryResponseMessage extends PacketImpl
    private SimpleString filterString;
 
    private SimpleString address;
+   
+   private boolean temporary;
 
-   public SessionQueueQueryResponseMessage(final boolean durable,
-                                           final int consumerCount,
-                                           final int messageCount,
+   public SessionQueueQueryResponseMessage(final SimpleString name,
+                                           final SimpleString address,                                           
+                                           final boolean durable,
+                                           final boolean temporary,
                                            final SimpleString filterString,
-                                           final SimpleString address)
+                                           final int consumerCount,
+                                           final int messageCount)
    {
-      this(durable, consumerCount, messageCount, filterString, address, true);
+      this(name, address, durable, temporary, filterString, consumerCount, messageCount, true);
    }
 
    public SessionQueueQueryResponseMessage()
    {
-      this(false, 0, 0, null, null, false);
+      this(null, null, false, false, null, 0, 0, false);
    }
 
-   private SessionQueueQueryResponseMessage(final boolean durable,
+   private SessionQueueQueryResponseMessage(final SimpleString name,
+                                            final SimpleString address,
+                                            final boolean durable,
+                                            final boolean temporary,
+                                            final SimpleString filterString,
                                             final int consumerCount,
                                             final int messageCount,
-                                            final SimpleString filterString,
-                                            final SimpleString address,
                                             final boolean exists)
    {
       super(PacketImpl.SESS_QUEUEQUERY_RESP);
 
       this.durable = durable;
+      
+      this.temporary = temporary;
 
       this.consumerCount = consumerCount;
 
@@ -69,6 +79,8 @@ public class SessionQueueQueryResponseMessage extends PacketImpl
       this.filterString = filterString;
 
       this.address = address;
+      
+      this.name = name;
 
       this.exists = exists;
    }
@@ -108,16 +120,28 @@ public class SessionQueueQueryResponseMessage extends PacketImpl
    {
       return address;
    }
+   
+   public SimpleString getName()
+   {
+      return name;
+   }
+   
+   public boolean isTemporary()
+   {
+      return temporary;
+   }
 
    @Override
    public void encodeRest(final HornetQBuffer buffer)
    {
       buffer.writeBoolean(exists);
       buffer.writeBoolean(durable);
+      buffer.writeBoolean(temporary);
       buffer.writeInt(consumerCount);
       buffer.writeInt(messageCount);
       buffer.writeNullableSimpleString(filterString);
       buffer.writeNullableSimpleString(address);
+      buffer.writeNullableSimpleString(name);
    }
 
    @Override
@@ -125,10 +149,12 @@ public class SessionQueueQueryResponseMessage extends PacketImpl
    {
       exists = buffer.readBoolean();
       durable = buffer.readBoolean();
+      temporary = buffer.readBoolean();
       consumerCount = buffer.readInt();
       messageCount = buffer.readInt();
       filterString = buffer.readNullableSimpleString();
       address = buffer.readNullableSimpleString();
+      name = buffer.readNullableSimpleString();
    }
 
    @Override

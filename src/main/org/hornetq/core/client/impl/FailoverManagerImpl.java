@@ -546,7 +546,7 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
    private void failoverOrReconnect(final Object connectionID, final HornetQException me)
    {
       Set<ClientSessionInternal> sessionsToClose = null;
-
+      
       synchronized (failoverLock)
       {
          if (connection == null || connection.getID() != connectionID)
@@ -555,6 +555,7 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
             // over then a async connection exception or disconnect
             // came in for one of the already exitLoop connections, so we return true - we don't want to call the
             // listeners again
+            
             return;
          }
 
@@ -602,7 +603,7 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
          {
             attemptReconnect = reconnectAttempts != 0;
          }
-
+         
          if (attemptFailover || attemptReconnect)
          {
             lockChannel1();

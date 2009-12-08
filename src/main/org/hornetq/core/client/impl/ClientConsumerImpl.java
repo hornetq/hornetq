@@ -27,6 +27,7 @@ import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.Channel;
 import org.hornetq.core.remoting.impl.wireformat.SessionConsumerCloseMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionConsumerFlowCreditMessage;
+import org.hornetq.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionReceiveContinuationMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionReceiveLargeMessage;
 import org.hornetq.utils.Future;
@@ -112,6 +113,8 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    private boolean stopped = false;
 
    private final AtomicLong forceDeliveryCount = new AtomicLong(0);
+   
+   private final SessionQueueQueryResponseMessage queueInfo;
 
    // Constructors
    // ---------------------------------------------------------------------------------
@@ -125,7 +128,8 @@ public class ClientConsumerImpl implements ClientConsumerInternal
                              final int ackBatchSize,
                              final TokenBucketLimiter rateLimiter,
                              final Executor executor,
-                             final Channel channel)
+                             final Channel channel,
+                             final SessionQueueQueryResponseMessage queueInfo)
    {
       this.id = id;
 
@@ -146,6 +150,8 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       this.clientWindowSize = clientWindowSize;
 
       this.ackBatchSize = ackBatchSize;
+      
+      this.queueInfo = queueInfo;
    }
 
    // ClientConsumer implementation
@@ -424,6 +430,11 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    // ClientConsumerInternal implementation
    // --------------------------------------------------------------
 
+   public SessionQueueQueryResponseMessage getQueueInfo()
+   {
+      return queueInfo;
+   }
+   
    public long getID()
    {
       return id;

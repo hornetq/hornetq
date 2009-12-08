@@ -145,7 +145,7 @@ public class HornetQMessageConsumer implements MessageConsumer, QueueReceiver, T
 
          if (autoDeleteQueueName != null)
          {
-            // If non durable subscriber need to delete subscription too
+            // If non durable subscriber need to delete subscription too  
             session.deleteQueue(autoDeleteQueueName);
          }
 

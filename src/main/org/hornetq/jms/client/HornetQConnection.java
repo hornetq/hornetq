@@ -261,16 +261,26 @@ public class HornetQConnection implements Connection, QueueConnection, TopicConn
          {
             if (!tempQueues.isEmpty())
             {
-               if (initialSession == null)
-               {
-                  initialSession = sessionFactory.createSession(username, password, false, true, true, false, 0);
-               }
+//               if (initialSession == null)
+//               {
+//                  initialSession = sessionFactory.createSession(username, password, false, true, true, false, 0);
+//               }
 
                // Remove any temporary queues
 
                for (SimpleString queueName : tempQueues)
                {
-                  initialSession.deleteQueue(queueName);
+                  if (!initialSession.isClosed())
+                  {
+                     try
+                     {
+                        initialSession.deleteQueue(queueName);
+                     }
+                     catch (HornetQException ignore)
+                     {
+                        //Exception on deleting queue shouldn't prevent close from completing
+                     }
+                  }
                }
             }
          }

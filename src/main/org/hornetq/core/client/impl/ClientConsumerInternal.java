@@ -16,6 +16,7 @@ package org.hornetq.core.client.impl;
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.exception.HornetQException;
+import org.hornetq.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionReceiveContinuationMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionReceiveLargeMessage;
 import org.hornetq.utils.SimpleString;
@@ -62,4 +63,6 @@ public interface ClientConsumerInternal extends ClientConsumer
    void stop() throws HornetQException;
 
    void start();
+   
+   SessionQueueQueryResponseMessage getQueueInfo();
 }

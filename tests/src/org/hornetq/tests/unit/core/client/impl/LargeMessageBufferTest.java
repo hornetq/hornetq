@@ -35,6 +35,7 @@ import org.hornetq.core.client.impl.ClientConsumerInternal;
 import org.hornetq.core.client.impl.ClientMessageInternal;
 import org.hornetq.core.client.impl.LargeMessageBufferImpl;
 import org.hornetq.core.exception.HornetQException;
+import org.hornetq.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionReceiveContinuationMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionReceiveLargeMessage;
 import org.hornetq.tests.util.RandomUtil;
@@ -722,6 +723,12 @@ public class LargeMessageBufferTest extends UnitTestCase
       {
          // TODO Auto-generated method stub
 
+      }
+
+      public SessionQueueQueryResponseMessage getQueueInfo()
+      {
+         // TODO Auto-generated method stub
+         return null;
       }
 
    }

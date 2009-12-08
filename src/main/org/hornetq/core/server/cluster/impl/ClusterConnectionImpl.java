@@ -367,8 +367,7 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
    }
 
    private void updateConnectors(final Map<String, DiscoveryEntry> connectors) throws Exception
-   {
-      System.out.println("ClusterConnectionImpl.updateConnectors");
+   {     
       Iterator<Map.Entry<String, MessageFlowRecord>> iter = records.entrySet().iterator();
 
       while (iter.hasNext())

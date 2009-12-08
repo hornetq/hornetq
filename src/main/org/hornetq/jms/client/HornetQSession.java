@@ -939,19 +939,7 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
          throw JMSExceptionHelper.convertFromHornetQException(e);
       }
    }
-
-   public void deleteQueue(final SimpleString queueName) throws JMSException
-   {
-      try
-      {
-         session.deleteQueue(queueName);
-      }
-      catch (HornetQException e)
-      {
-         throw JMSExceptionHelper.convertFromHornetQException(e);
-      }
-   }
-
+   
    public void start() throws JMSException
    {
       try
@@ -983,6 +971,21 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
 
    // Package protected ---------------------------------------------
 
+   void deleteQueue(final SimpleString queueName) throws JMSException
+   {
+      if (!session.isClosed())
+      {
+         try
+         {
+            session.deleteQueue(queueName);
+         }
+         catch (HornetQException ignore)
+         {
+            //Exception on deleting queue shouldn't prevent close from completing
+         }
+      }
+   }
+   
    // Protected -----------------------------------------------------
 
    // Private -------------------------------------------------------
