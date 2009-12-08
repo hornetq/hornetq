@@ -21,33 +21,85 @@ import org.hornetq.core.exception.HornetQException;
 import org.hornetq.utils.SimpleString;
 
 /**
+ * A ClientSession is a single-thread object required for producing and consuming messages.
+ * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
- * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
+ * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * 
  */
 public interface ClientSession extends XAResource
 {
+   /**
+    * Information returned by a binding query
+    * 
+    * @see ClientSession#bindingQuery(SimpleString)
+    */
    public interface BindingQuery
    {
+      /**
+       * Return <code>true</code> if the binding exists, <code>false</code> else.
+       *
+       * @return <code>true</code> if the binding exists, <code>false</code> else
+       */
       boolean isExists();
 
+      /**
+       * Return the names of the queues bound to the binding.
+       * 
+       * @return the names of the queues bound to the binding
+       */
       public List<SimpleString> getQueueNames();
    }
 
+   /**
+    * Information returned by a queue query
+    * 
+    * @see ClientSession#queueQuery(SimpleString)
+    */
    public interface QueueQuery
    {
+      /**
+       * Return <code>true</code> if the queue exists, <code>false</code> else.
+       * 
+       * @return <code>true</code> if the queue exists, <code>false</code> else
+       */
       boolean isExists();
 
+      /**
+       * Return <code>true</code> if the queue is durable, <code>false</code> else.
+       * 
+       * @return <code>true</code> if the queue is durable, <code>false</code> else
+       */
       boolean isDurable();
 
+      /**
+       * Return the number of consumers attached to the queue.
+       * 
+       * @return the number of consumers attached to the queue
+       */
       int getConsumerCount();
 
+      /**
+       * Return the number of messages in the queue.
+       * 
+       * @return the number of messages in the queue
+       */
       int getMessageCount();
 
+      /**
+       * Return the queue's filter string (or <code>null</code> if the queue has no filter).
+       * 
+       * @return the queue's filter string (or <code>null</code> if the queue has no filter)
+       */
       SimpleString getFilterString();
 
+      /**
+       * Return the address that the queue is bound to.
+       * 
+       * @return the address that the queue is bound to
+       */
       SimpleString getAddress();
    }
 
@@ -108,7 +160,7 @@ public interface ClientSession extends XAResource
    // Queue Operations ----------------------------------------------
 
    /**
-    * Create a queue. The created queue is <em>not</em> temporary.
+    * Create a <em>non-temporary</em> queue.
     * 
     * @param address the queue will be bound to this address
     * @param queueName the name of the queue
@@ -118,7 +170,7 @@ public interface ClientSession extends XAResource
    void createQueue(SimpleString address, SimpleString queueName, boolean durable) throws HornetQException;
 
    /**
-    * Create a queue. The created queue is <em>not</em> temporary.
+    * Create a <em>non-temporary</em> queue.
     * 
     * @param address the queue will be bound to this address
     * @param queueName the name of the queue
@@ -128,7 +180,7 @@ public interface ClientSession extends XAResource
    void createQueue(String address, String queueName, boolean durable) throws HornetQException;
 
    /**
-    * Create a queue. The created queue is <em>not</em> temporary and <em>not</em> durable.
+    * Create a <em>non-temporary</em> queue <em>non-durable</em> queue.
     * 
     * @param address the queue will be bound to this address
     * @param queueName the name of the queue
@@ -137,7 +189,7 @@ public interface ClientSession extends XAResource
    void createQueue(String address, String queueName) throws HornetQException;
 
    /**
-    * Create a queue. The created queue is <em>not</em> temporary.
+    * Create a <em>non-temporary</em> queue.
     * 
     * @param address the queue will be bound to this address
     * @param queueName the name of the queue
@@ -148,7 +200,7 @@ public interface ClientSession extends XAResource
    void createQueue(SimpleString address, SimpleString queueName, SimpleString filter, boolean durable) throws HornetQException;
 
    /**
-    * Create a queue. The created queue is <em>not</em> temporary.
+    * Create a <em>non-temporary</em>queue.
     * 
     * @param address the queue will be bound to this address
     * @param queueName the name of the queue
@@ -420,8 +472,24 @@ public interface ClientSession extends XAResource
 
    // Query operations ----------------------------------------------
 
+   /**
+    * Query information on a queue.
+    * 
+    * @param queueName the name of the queue to query
+    * @return a QueueQuery containing information on the given queue
+    * 
+    * @throws HornetQException if an exception occurs while querying the queue
+    */
    QueueQuery queueQuery(SimpleString queueName) throws HornetQException;
 
+   /**
+    * Query information on a binding.
+    * 
+    * @param address the address of the biding to query
+    * @return a BindingQuery containing information on the binding attached to the given address
+    * 
+    * @throws HornetQException if an exception occurs while querying the binding
+    */
    BindingQuery bindingQuery(SimpleString address) throws HornetQException;
 
    // Transaction operations ----------------------------------------
@@ -493,6 +561,11 @@ public interface ClientSession extends XAResource
     */
    boolean isBlockOnAcknowledge();
 
+   /**
+    * Set a <code>SendAcknowledgementHandler</code> for this session.
+    * 
+    * @param handler a SendAcknowledgementHandler
+    */
    void setSendAcknowledgementHandler(SendAcknowledgementHandler handler);
 
 }
