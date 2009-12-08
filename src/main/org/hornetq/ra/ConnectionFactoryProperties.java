@@ -96,7 +96,7 @@ public class ConnectionFactoryProperties
 
    private Double retryIntervalMultiplier;
 
-   private Integer reconnectAttempts;
+   private Integer reconnectAttempts = -1;
 
    private Boolean failoverOnServerShutdown;
 

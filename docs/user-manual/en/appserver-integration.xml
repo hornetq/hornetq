@@ -375,7 +375,13 @@ public class MDBMessageSendTxExample implements MessageListener
                 be left unchanged. This is the HornetQ resource adapter class.</para>
             <para>After that there is a list of configuration properties. This will be where most of
                 the configuration is done. The first 2 configure the transport used by the adapter
-                and the rest configure the connection itself.</para>
+                and the rest configure the connection factory itself.<note><para>All connection
+                        factory properties will use the defaults when not provided. This is accept
+                        for the <literal>reconnectAttempts</literal>  which will default to -1 which
+                        signifies that the connection should attempt to reconnect on connection
+                        failure indefinately. This is only used when the adapter is configured to
+                        connect to a remote server as an InVM connector can never
+                    fail.</para></note></para>
             <para>The following table explains what each property is for.</para>
             <table frame="topbot" border="2">
                 <title>Global Configuration Properties</title>
@@ -541,12 +547,17 @@ public class MDBMessageSendTxExample implements MessageListener
                             <entry>AutoGroup</entry>
                             <entry>boolean</entry>
                             <entry>If true then auto group messages</entry>
-                        </row>           
+                        </row>
                         <row>
                             <entry>PreAcknowledge</entry>
                             <entry>boolean</entry>
                             <entry>Whether to pre acknowledge messages before sending to
                                 consumer</entry>
+                        </row>
+                        <row>
+                            <entry>reconnectAttempts</entry>
+                            <entry>Integer</entry>
+                            <entry>How attemts to try at reconnecting, default is -1</entry>
                         </row>
                         <row>
                             <entry>RetryInterval</entry>
@@ -642,7 +653,6 @@ initialContext = new InitialContext(jndiParameters);</programlisting>
                 url="http://www.jboss.org/file-access/default/members/jbossas/freezone/docs/Clustering_Guide/5/html/clustering-jndi.html"
                 >JBoss Application Server clustering documentation</ulink></para>
     </section>
-
     <section id="xa-recovery">
         <title>XA Recovery</title>
         <para><emphasis>XA recovery</emphasis> deals with system or application failures to ensure
