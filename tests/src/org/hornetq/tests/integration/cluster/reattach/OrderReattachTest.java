@@ -57,6 +57,8 @@ public class OrderReattachTest extends ServiceTestBase
 
    // Constants -----------------------------------------------------
 
+   final SimpleString ADDRESS = new SimpleString("address");
+
    // Attributes ----------------------------------------------------
    private final Logger log = Logger.getLogger(this.getClass());
 
@@ -97,6 +99,9 @@ public class OrderReattachTest extends ServiceTestBase
 
       final CountDownLatch ready = new CountDownLatch(1);
 
+      
+      // this test will use a queue. Whenever the test wants a failure.. it can just send TRUE to failureQueue
+      // This Thread will be reading the queue
       Thread failer = new Thread()
       {
          @Override
@@ -147,60 +152,7 @@ public class OrderReattachTest extends ServiceTestBase
 
       try
       {
-         int numberOfProducers = 1;
-
-         final CountDownLatch align = new CountDownLatch(numberOfProducers);
-         final CountDownLatch flagStart = new CountDownLatch(1);
-
-         final ClientSessionFactory sessionFactory = sf;
-
-         class ThreadProd extends Thread
-         {
-            Throwable throwable;
-
-            int count;
-
-            public ThreadProd(final int count)
-            {
-               this.count = count;
-            }
-
-            @Override
-            public void run()
-            {
-               try
-               {
-                  align.countDown();
-                  flagStart.await();
-                  doSend2(count, sessionFactory, failureQueue);
-               }
-               catch (Throwable e)
-               {
-                  e.printStackTrace();
-                  throwable = e;
-               }
-            }
-         }
-
-         ThreadProd prod[] = new ThreadProd[numberOfProducers];
-         for (int i = 0; i < prod.length; i++)
-         {
-            prod[i] = new ThreadProd(i);
-            prod[i].start();
-         }
-
-         align.await();
-         flagStart.countDown();
-
-         for (ThreadProd prodT : prod)
-         {
-            prodT.join();
-            if (prodT.throwable != null)
-            {
-               throw prodT.throwable;
-            }
-         }
-
+         doSend2(1, sf, failureQueue);
       }
       finally
       {
@@ -228,8 +180,6 @@ public class OrderReattachTest extends ServiceTestBase
       }
 
    }
-
-   final SimpleString ADDRESS = new SimpleString("address");
 
    public void doSend2(final int order, final ClientSessionFactory sf, final LinkedBlockingDeque<Boolean> failureQueue) throws Exception
    {
@@ -315,7 +265,6 @@ public class OrderReattachTest extends ServiceTestBase
             if (count % 100 == 0)
             {
                failureQueue.push(true);
-               System.out.println("Received " + count);
             }
 
             if (count == numMessages)
