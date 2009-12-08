@@ -60,7 +60,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
    {
       ClientSessionFactory cf = createFactory(isNetty());
       ClientSession session = cf.createSession(false, true, true);
-      ClientMessage message = session.createClientMessage(false);
+      ClientMessage message = session.createMessage(false);
       // we need to set the destination so we can calculate the encodesize correctly
       message.setDestination(address);
       int encodeSize = message.getEncodeSize();
@@ -96,7 +96,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
          receiveSession.start();
          for (int i = 0; i < numMessage * 4; i++)
          {
-            cp.send(sendSession.createClientMessage(false));
+            cp.send(sendSession.createMessage(false));
          }
 
          for (int i = 0; i < numMessage * 2; i++)

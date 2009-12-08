@@ -53,7 +53,7 @@ public class InVMNonPersistentMessageBufferTest extends ServiceTestBase
 
    public void testSimpleSendReceive() throws Exception
    {
-      ClientMessage message = session.createClientMessage(false);
+      ClientMessage message = session.createMessage(false);
 
       final String body = RandomUtil.randomString();
 
@@ -68,7 +68,7 @@ public class InVMNonPersistentMessageBufferTest extends ServiceTestBase
 
    public void testSimpleSendReceiveWithEmptyBody() throws Exception
    {
-      ClientMessage message = session.createClientMessage(false);
+      ClientMessage message = session.createMessage(false);
 
       ClientMessage received = sendAndReceive(message);
 
@@ -79,7 +79,7 @@ public class InVMNonPersistentMessageBufferTest extends ServiceTestBase
 
    public void testSendSameMessageMultipleTimes() throws Exception
    {
-      ClientMessage message = session.createClientMessage(false);
+      ClientMessage message = session.createMessage(false);
 
       final String body = RandomUtil.randomString();
 
@@ -103,7 +103,7 @@ public class InVMNonPersistentMessageBufferTest extends ServiceTestBase
 
    public void testSendMessageResetSendAgainDifferentBody() throws Exception
    {
-      ClientMessage message = session.createClientMessage(false);
+      ClientMessage message = session.createMessage(false);
 
       String body = RandomUtil.randomString();
 
@@ -138,7 +138,7 @@ public class InVMNonPersistentMessageBufferTest extends ServiceTestBase
 
    public void testCannotReadPastEndOfMessageBody() throws Exception
    {
-      ClientMessage message = session.createClientMessage(false);
+      ClientMessage message = session.createMessage(false);
 
       final String body = RandomUtil.randomString();
 
@@ -164,7 +164,7 @@ public class InVMNonPersistentMessageBufferTest extends ServiceTestBase
 
    public void testCanReReadBodyAfterReaderReset() throws Exception
    {
-      ClientMessage message = session.createClientMessage(false);
+      ClientMessage message = session.createMessage(false);
 
       final String body = RandomUtil.randomString();
 

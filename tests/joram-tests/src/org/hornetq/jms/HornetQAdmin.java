@@ -279,7 +279,7 @@ public class HornetQAdmin implements Admin
 
    private Object invokeSyncOperation(final String resourceName, final String operationName, final Object... parameters) throws Exception
    {
-      ClientMessage message = clientSession.createClientMessage(false);
+      ClientMessage message = clientSession.createMessage(false);
       ManagementHelper.putOperationInvocation(message, resourceName, operationName, parameters);
       ClientMessage reply;
       try

@@ -80,7 +80,7 @@ public class ProducerTest extends ServiceTestBase
       cf.setConfirmationWindowSize(100);
       ClientSession session = cf.createSession(false, true, true);
       ClientProducer producer = session.createProducer(QUEUE);
-      ClientMessage message = session.createClientMessage(true);
+      ClientMessage message = session.createMessage(true);
       byte[] body = new byte[1000];
       message.getBodyBuffer().writeBytes(body);
       producer.send(message);

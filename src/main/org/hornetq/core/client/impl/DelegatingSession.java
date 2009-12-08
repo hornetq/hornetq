@@ -148,23 +148,23 @@ public class DelegatingSession implements ClientSessionInternal
       session.commit(xid, onePhase);
    }
 
-   public ClientMessage createClientMessage(final boolean durable)
+   public ClientMessage createMessage(final boolean durable)
    {
-      return session.createClientMessage(durable);
+      return session.createMessage(durable);
    }
 
-   public ClientMessage createClientMessage(final byte type,
+   public ClientMessage createMessage(final byte type,
                                             final boolean durable,
                                             final long expiration,
                                             final long timestamp,
                                             final byte priority)
    {
-      return session.createClientMessage(type, durable, expiration, timestamp, priority);
+      return session.createMessage(type, durable, expiration, timestamp, priority);
    }
 
-   public ClientMessage createClientMessage(final byte type, final boolean durable)
+   public ClientMessage createMessage(final byte type, final boolean durable)
    {
-      return session.createClientMessage(type, durable);
+      return session.createMessage(type, durable);
    }
 
    public ClientConsumer createConsumer(final SimpleString queueName,

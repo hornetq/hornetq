@@ -458,7 +458,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
 
          for (int i = msgStart; i < msgEnd; i++)
          {
-            ClientMessage message = session.createClientMessage(durable);
+            ClientMessage message = session.createMessage(durable);
 
             if (filterVal != null)
             {
@@ -509,7 +509,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
 
          for (int i = msgStart; i < msgEnd; i++)
          {
-            ClientMessage message = session.createClientMessage(durable);
+            ClientMessage message = session.createMessage(durable);
 
             message.putStringProperty(key, val);
             message.putIntProperty(ClusterTestBase.COUNT_PROP, i);

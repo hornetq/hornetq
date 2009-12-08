@@ -125,7 +125,7 @@ public class PagingTest extends ServiceTestBase
 
          for (int i = 0; i < numberOfMessages; i++)
          {
-            message = session.createClientMessage(true);
+            message = session.createMessage(true);
 
             HornetQBuffer bodyLocal = message.getBodyBuffer();
 
@@ -269,7 +269,7 @@ public class PagingTest extends ServiceTestBase
          int numberOfMessages = 0;
          while (true)
          {
-            message = session.createClientMessage(true);
+            message = session.createMessage(true);
             message.getBodyBuffer().writeBytes(body);
 
             // Stop sending message as soon as we start paging
@@ -292,7 +292,7 @@ public class PagingTest extends ServiceTestBase
 
          for (int i = 0; i < 10; i++)
          {
-            message = session.createClientMessage(true);
+            message = session.createMessage(true);
             message.getBodyBuffer().writeBytes(body);
             message.putIntProperty(new SimpleString("id"), i);
 
@@ -417,7 +417,7 @@ public class PagingTest extends ServiceTestBase
 
          for (int i = 0; i < numberOfMessages; i++)
          {
-            message = session.createClientMessage(true);
+            message = session.createMessage(true);
 
             message.getBodyBuffer().writeBytes(body);
             message.putIntProperty(new SimpleString("id"), i);
@@ -546,7 +546,7 @@ public class PagingTest extends ServiceTestBase
 
          for (int i = 0; i < numberOfMessages; i++)
          {
-            message = session.createClientMessage(true);
+            message = session.createMessage(true);
 
             HornetQBuffer bodyLocal = message.getBodyBuffer();
 
@@ -623,7 +623,7 @@ public class PagingTest extends ServiceTestBase
 
          for (int i = 0; i < numberOfMessages; i++)
          {
-            message = session.createClientMessage(true);
+            message = session.createMessage(true);
 
             HornetQBuffer bodyLocal = message.getBodyBuffer();
 
@@ -717,7 +717,7 @@ public class PagingTest extends ServiceTestBase
          {
             byte[] body = new byte[1024];
 
-            message = session.createClientMessage(true);
+            message = session.createMessage(true);
             message.getBodyBuffer().writeBytes(body);
 
             producer.send(message);
@@ -748,7 +748,7 @@ public class PagingTest extends ServiceTestBase
          {
             byte[] body = new byte[1024];
 
-            message = session.createClientMessage(true);
+            message = session.createMessage(true);
             message.getBodyBuffer().writeBytes(body);
 
             producer.send(message);
@@ -775,7 +775,7 @@ public class PagingTest extends ServiceTestBase
          {
             byte[] body = new byte[1024];
 
-            message = session.createClientMessage(true);
+            message = session.createMessage(true);
             message.getBodyBuffer().writeBytes(body);
 
             producer.send(message);
@@ -859,7 +859,7 @@ public class PagingTest extends ServiceTestBase
 
          byte[] body = new byte[1024];
 
-         message = session.createClientMessage(true);
+         message = session.createMessage(true);
          message.getBodyBuffer().writeBytes(body);
 
          for (int i = 0; i < NUMBER_OF_MESSAGES; i++)
@@ -977,7 +977,7 @@ public class PagingTest extends ServiceTestBase
 
          for (int i = 0; i < NUMBER_OF_MESSAGES; i++)
          {
-            ClientMessage msg = session.createClientMessage(true);
+            ClientMessage msg = session.createMessage(true);
             msg.getBodyBuffer().writeBytes(new byte[512]);
 
             producerPaged.send(msg);
@@ -1086,7 +1086,7 @@ public class PagingTest extends ServiceTestBase
 
          for (int i = 0; i < NUMBER_MESSAGES_BEFORE_PAGING; i++)
          {
-            ClientMessage msg = session.createClientMessage(true);
+            ClientMessage msg = session.createMessage(true);
             msg.getBodyBuffer().writeBytes(new byte[512]);
 
             producerA.send(msg);
@@ -1100,7 +1100,7 @@ public class PagingTest extends ServiceTestBase
 
          for (int i = 0; i < NUMBER_MESSAGES_BEFORE_PAGING; i++)
          {
-            ClientMessage msg = session.createClientMessage(true);
+            ClientMessage msg = session.createMessage(true);
             msg.getBodyBuffer().writeBytes(new byte[512]);
 
             producerA.send(msg);
@@ -1114,7 +1114,7 @@ public class PagingTest extends ServiceTestBase
 
          for (int i = NUMBER_MESSAGES_BEFORE_PAGING * 2; i < NUMBER_OF_MESSAGES; i++)
          {
-            ClientMessage msg = session.createClientMessage(true);
+            ClientMessage msg = session.createMessage(true);
             msg.getBodyBuffer().writeBytes(new byte[512]);
 
             producerA.send(msg);

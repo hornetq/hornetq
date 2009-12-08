@@ -56,7 +56,7 @@ public class SimpleSendMultipleQueues extends ServiceTestBase
    {
       for (int i = 0; i < 1000; i++)
       {
-         ClientMessage message = session.createClientMessage(false);
+         ClientMessage message = session.createMessage(false);
 
          final String body = RandomUtil.randomString();
 

@@ -364,7 +364,7 @@ public abstract class ServiceTestBase extends UnitTestCase
 
    protected ClientMessage createTextMessage(final ClientSession session, final String s, final boolean durable)
    {
-      ClientMessage message = session.createClientMessage(HornetQTextMessage.TYPE,
+      ClientMessage message = session.createMessage(HornetQTextMessage.TYPE,
                                                           durable,
                                                           0,
                                                           System.currentTimeMillis(),
@@ -375,7 +375,7 @@ public abstract class ServiceTestBase extends UnitTestCase
 
    protected ClientMessage createBytesMessage(final ClientSession session, final byte[] b, final boolean durable)
    {
-      ClientMessage message = session.createClientMessage(HornetQBytesMessage.TYPE,
+      ClientMessage message = session.createMessage(HornetQBytesMessage.TYPE,
                                                           durable,
                                                           0,
                                                           System.currentTimeMillis(),

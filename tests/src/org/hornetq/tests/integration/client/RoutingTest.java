@@ -52,7 +52,7 @@ public class RoutingTest extends ServiceTestBase
          ClientProducer p = sendSession.createProducer(addressA);
          for (int i = 0; i < numMessages; i++)
          {
-            p.send(sendSession.createClientMessage(false));
+            p.send(sendSession.createMessage(false));
          }
          ClientSession session = cf.createSession(false, true, true);
          ClientConsumer c1 = session.createConsumer(queueA);
@@ -100,7 +100,7 @@ public class RoutingTest extends ServiceTestBase
          ClientProducer p = sendSession.createProducer(addressA);
          for (int i = 0; i < numMessages; i++)
          {
-            p.send(sendSession.createClientMessage(false));
+            p.send(sendSession.createMessage(false));
          }
          ClientSession session = cf.createSession(false, true, true);
          ClientConsumer c1 = session.createConsumer(queueA);
@@ -138,7 +138,7 @@ public class RoutingTest extends ServiceTestBase
          ClientProducer p = sendSession.createProducer(addressA);
          for (int i = 0; i < numMessages; i++)
          {
-            p.send(sendSession.createClientMessage(false));
+            p.send(sendSession.createMessage(false));
          }
          ClientSession session = cf.createSession(false, true, true);
          ClientConsumer c1 = session.createConsumer(queueA);
@@ -176,7 +176,7 @@ public class RoutingTest extends ServiceTestBase
          ClientProducer p = sendSession.createProducer(addressA);
          for (int i = 0; i < numMessages; i++)
          {
-            ClientMessage clientMessage = sendSession.createClientMessage(false);
+            ClientMessage clientMessage = sendSession.createMessage(false);
             clientMessage.putStringProperty(new SimpleString("foo"), new SimpleString("bar"));
             p.send(clientMessage);
          }
@@ -218,7 +218,7 @@ public class RoutingTest extends ServiceTestBase
          ClientProducer p = sendSession.createProducer(addressA);
          for (int i = 0; i < numMessages; i++)
          {
-            ClientMessage clientMessage = sendSession.createClientMessage(false);
+            ClientMessage clientMessage = sendSession.createMessage(false);
             if (i % 3 == 0)
             {
                clientMessage.putStringProperty(new SimpleString("foo"), new SimpleString("bar"));
@@ -279,7 +279,7 @@ public class RoutingTest extends ServiceTestBase
          ClientProducer p = sendSession.createProducer(addressA);
          for (int i = 0; i < numMessages; i++)
          {
-            p.send(sendSession.createClientMessage(false));
+            p.send(sendSession.createMessage(false));
          }
          ClientSession session = cf.createSession(false, true, true);
          ClientConsumer c1 = session.createConsumer(queueA);

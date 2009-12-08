@@ -62,7 +62,7 @@ public class MessageDurabilityTest extends ServiceTestBase
       session.createQueue(address, queue, !durable);
 
       ClientProducer producer = session.createProducer(address);
-      producer.send(session.createClientMessage(!durable));
+      producer.send(session.createMessage(!durable));
 
       restart();
 
@@ -87,7 +87,7 @@ public class MessageDurabilityTest extends ServiceTestBase
       session.createQueue(address, queue, durable);
 
       ClientProducer producer = session.createProducer(address);
-      producer.send(session.createClientMessage(!durable));
+      producer.send(session.createMessage(!durable));
 
       restart();
 
@@ -109,7 +109,7 @@ public class MessageDurabilityTest extends ServiceTestBase
       session.createQueue(address, queue, durable);
 
       ClientProducer producer = session.createProducer(address);
-      producer.send(session.createClientMessage(durable));
+      producer.send(session.createMessage(durable));
 
       restart();
 
@@ -134,7 +134,7 @@ public class MessageDurabilityTest extends ServiceTestBase
       session.createQueue(address, queue, !durable);
 
       ClientProducer producer = session.createProducer(address);
-      producer.send(session.createClientMessage(durable));
+      producer.send(session.createMessage(durable));
 
       restart();
 
@@ -162,7 +162,7 @@ public class MessageDurabilityTest extends ServiceTestBase
       session.createTemporaryQueue(address, queue);
 
       ClientProducer producer = session.createProducer(address);
-      producer.send(session.createClientMessage(durable));
+      producer.send(session.createMessage(durable));
 
       restart();
 

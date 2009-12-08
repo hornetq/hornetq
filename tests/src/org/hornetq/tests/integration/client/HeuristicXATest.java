@@ -121,7 +121,7 @@ public class HeuristicXATest extends ServiceTestBase
 
          ClientProducer producer = session.createProducer(ADDRESS);
 
-         ClientMessage msg = session.createClientMessage(true);
+         ClientMessage msg = session.createMessage(true);
 
          msg.getBodyBuffer().writeString(body);
 
@@ -226,7 +226,7 @@ public class HeuristicXATest extends ServiceTestBase
 
          ClientProducer producer = session.createProducer(ADDRESS);
 
-         ClientMessage msg = session.createClientMessage(true);
+         ClientMessage msg = session.createMessage(true);
 
          msg.getBodyBuffer().writeString(body);
 
@@ -334,7 +334,7 @@ public class HeuristicXATest extends ServiceTestBase
 
          ClientProducer producer = session.createProducer(ADDRESS);
 
-         ClientMessage msg = session.createClientMessage(true);
+         ClientMessage msg = session.createMessage(true);
 
          msg.getBodyBuffer().writeString(body);
 
@@ -450,7 +450,7 @@ public class HeuristicXATest extends ServiceTestBase
 
          ClientProducer producer = session.createProducer(ADDRESS);
 
-         ClientMessage msg = session.createClientMessage(true);
+         ClientMessage msg = session.createMessage(true);
 
          msg.getBodyBuffer().writeBytes(new byte[123]);
 

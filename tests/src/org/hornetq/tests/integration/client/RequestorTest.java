@@ -75,7 +75,7 @@ public class RequestorTest extends UnitTestCase
       requestConsumer.setMessageHandler(new SimpleMessageHandler(key, session));
 
       ClientRequestor requestor = new ClientRequestor(session, requestAddress);
-      ClientMessage request = session.createClientMessage(false);
+      ClientMessage request = session.createMessage(false);
       request.putLongProperty(key, value);
 
       ClientMessage reply = requestor.request(request, 500);
@@ -103,14 +103,14 @@ public class RequestorTest extends UnitTestCase
       requestConsumer.setMessageHandler(new SimpleMessageHandler(key, session));
 
       ClientRequestor requestor = new ClientRequestor(session, requestAddress);
-      ClientMessage request = session.createClientMessage(false);
+      ClientMessage request = session.createMessage(false);
       request.putLongProperty(key, value);
 
       ClientMessage reply = requestor.request(request, 500);
       Assert.assertNotNull("reply was not received", reply);
       Assert.assertEquals(value, reply.getObjectProperty(key));
 
-      request = session.createClientMessage(false);
+      request = session.createMessage(false);
       request.putLongProperty(key, value + 1);
 
       reply = requestor.request(request, 500);
@@ -143,7 +143,7 @@ public class RequestorTest extends UnitTestCase
       });
 
       ClientRequestor requestor = new ClientRequestor(session, requestAddress);
-      ClientMessage request = session.createClientMessage(false);
+      ClientMessage request = session.createMessage(false);
 
       ClientMessage reply = requestor.request(request, 500);
       Assert.assertNull(reply);
@@ -189,14 +189,14 @@ public class RequestorTest extends UnitTestCase
       requestConsumer.setMessageHandler(new SimpleMessageHandler(key, session));
 
       final ClientRequestor requestor = new ClientRequestor(session, requestAddress);
-      ClientMessage request = session.createClientMessage(false);
+      ClientMessage request = session.createMessage(false);
       request.putLongProperty(key, value);
 
       ClientMessage reply = requestor.request(request, 500);
       Assert.assertNotNull("reply was not received", reply);
       Assert.assertEquals(value, reply.getObjectProperty(key));
 
-      request = session.createClientMessage(false);
+      request = session.createMessage(false);
       request.putLongProperty(key, value + 1);
 
       requestor.close();
@@ -208,7 +208,7 @@ public class RequestorTest extends UnitTestCase
 
                                              public void run() throws Exception
                                              {
-                                                requestor.request(session.createClientMessage(false), 500);
+                                                requestor.request(session.createMessage(false), 500);
                                              }
                                           });
    }
@@ -265,7 +265,7 @@ public class RequestorTest extends UnitTestCase
       {
          try
          {
-            ClientMessage reply = session.createClientMessage(false);
+            ClientMessage reply = session.createMessage(false);
             SimpleString replyTo = (SimpleString)request.getObjectProperty(ClientMessageImpl.REPLYTO_HEADER_NAME);
             long value = (Long)request.getObjectProperty(key);
             reply.putLongProperty(key, value);

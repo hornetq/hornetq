@@ -129,7 +129,7 @@ public class FailoverTest extends FailoverTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = session.createClientMessage(i % 2 == 0);
+         ClientMessage message = session.createMessage(i % 2 == 0);
 
          setBody(i, message);
 
@@ -191,7 +191,7 @@ public class FailoverTest extends FailoverTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = session.createClientMessage(true);
+         ClientMessage message = session.createMessage(true);
 
          setBody(i, message);
 
@@ -292,7 +292,7 @@ public class FailoverTest extends FailoverTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = session.createClientMessage(i % 2 == 0);
+         ClientMessage message = session.createMessage(i % 2 == 0);
 
          setBody(i, message);
 
@@ -365,7 +365,7 @@ public class FailoverTest extends FailoverTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = session.createClientMessage(i % 2 == 0);
+         ClientMessage message = session.createMessage(i % 2 == 0);
 
          setBody(i, message);
 
@@ -389,7 +389,7 @@ public class FailoverTest extends FailoverTestBase
          Assert.assertEquals(HornetQException.TRANSACTION_ROLLED_BACK, e.getCode());
       }
 
-      ClientMessage message = session.createClientMessage(false);
+      ClientMessage message = session.createMessage(false);
       int counter = RandomUtil.randomInt();
       message.putIntProperty("counter", counter);
 
@@ -445,7 +445,7 @@ public class FailoverTest extends FailoverTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = session.createClientMessage(i % 2 == 0);
+         ClientMessage message = session.createMessage(i % 2 == 0);
 
          setBody(i, message);
 
@@ -531,7 +531,7 @@ public class FailoverTest extends FailoverTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = session.createClientMessage(i % 2 == 0);
+         ClientMessage message = session.createMessage(i % 2 == 0);
 
          setBody(i, message);
 
@@ -615,7 +615,7 @@ public class FailoverTest extends FailoverTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = session1.createClientMessage(i % 2 == 0);
+         ClientMessage message = session1.createMessage(i % 2 == 0);
 
          setBody(i, message);
 
@@ -698,7 +698,7 @@ public class FailoverTest extends FailoverTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = session1.createClientMessage(true);
+         ClientMessage message = session1.createMessage(true);
 
          setBody(i, message);
 
@@ -797,7 +797,7 @@ public class FailoverTest extends FailoverTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = session.createClientMessage(i % 2 == 0);
+         ClientMessage message = session.createMessage(i % 2 == 0);
 
          setBody(i, message);
 
@@ -867,7 +867,7 @@ public class FailoverTest extends FailoverTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = session.createClientMessage(i % 2 == 0);
+         ClientMessage message = session.createMessage(i % 2 == 0);
 
          setBody(i, message);
 
@@ -940,7 +940,7 @@ public class FailoverTest extends FailoverTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = session.createClientMessage(i % 2 == 0);
+         ClientMessage message = session.createMessage(i % 2 == 0);
 
          setBody(i, message);
 
@@ -1014,7 +1014,7 @@ public class FailoverTest extends FailoverTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = session.createClientMessage(i % 2 == 0);
+         ClientMessage message = session.createMessage(i % 2 == 0);
 
          setBody(i, message);
 
@@ -1099,7 +1099,7 @@ public class FailoverTest extends FailoverTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = session1.createClientMessage(i % 2 == 0);
+         ClientMessage message = session1.createMessage(i % 2 == 0);
 
          setBody(i, message);
 
@@ -1185,7 +1185,7 @@ public class FailoverTest extends FailoverTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = session1.createClientMessage(i % 2 == 0);
+         ClientMessage message = session1.createMessage(i % 2 == 0);
 
          setBody(i, message);
 
@@ -1286,7 +1286,7 @@ public class FailoverTest extends FailoverTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = session1.createClientMessage(i % 2 == 0);
+         ClientMessage message = session1.createMessage(i % 2 == 0);
 
          setBody(i, message);
 
@@ -1441,7 +1441,7 @@ public class FailoverTest extends FailoverTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = sendSession.createClientMessage(true);
+         ClientMessage message = sendSession.createMessage(true);
 
          setBody(i, message);
 
@@ -1531,7 +1531,7 @@ public class FailoverTest extends FailoverTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = session.createClientMessage(i % 2 == 0);
+         ClientMessage message = session.createMessage(i % 2 == 0);
 
          setBody(i, message);
 
@@ -1611,7 +1611,7 @@ public class FailoverTest extends FailoverTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = session.createClientMessage(i % 2 == 0);
+         ClientMessage message = session.createMessage(i % 2 == 0);
 
          setBody(i, message);
 
@@ -1694,7 +1694,7 @@ public class FailoverTest extends FailoverTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = session.createClientMessage(i % 2 == 0);
+         ClientMessage message = session.createMessage(i % 2 == 0);
 
          setBody(i, message);
 
@@ -1726,7 +1726,7 @@ public class FailoverTest extends FailoverTestBase
 
       for (int i = numMessages; i < numMessages * 2; i++)
       {
-         ClientMessage message = session.createClientMessage(i % 2 == 0);
+         ClientMessage message = session.createMessage(i % 2 == 0);
 
          setBody(i, message);
 
@@ -1793,7 +1793,7 @@ public class FailoverTest extends FailoverTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = session.createClientMessage(i % 2 == 0);
+         ClientMessage message = session.createMessage(i % 2 == 0);
 
          setBody(i, message);
 
@@ -1859,7 +1859,7 @@ public class FailoverTest extends FailoverTestBase
          @Override
          public void run()
          {
-            ClientMessage message = session.createClientMessage(true);
+            ClientMessage message = session.createMessage(true);
 
             message.getBodyBuffer().writeString("message");
 
@@ -1929,7 +1929,7 @@ public class FailoverTest extends FailoverTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = session.createClientMessage(true);
+         ClientMessage message = session.createMessage(true);
 
          if (i == 0)
          {
@@ -2013,7 +2013,7 @@ public class FailoverTest extends FailoverTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = session2.createClientMessage(true);
+         ClientMessage message = session2.createMessage(true);
 
          if (i == 0)
          {
@@ -2088,7 +2088,7 @@ public class FailoverTest extends FailoverTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = session.createClientMessage(true);
+         ClientMessage message = session.createMessage(true);
 
          setBody(i, message);
 
@@ -2156,7 +2156,7 @@ public class FailoverTest extends FailoverTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = session2.createClientMessage(true);
+         ClientMessage message = session2.createMessage(true);
 
          setBody(i, message);
 
@@ -2266,7 +2266,7 @@ public class FailoverTest extends FailoverTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = session.createClientMessage(HornetQTextMessage.TYPE,
+         ClientMessage message = session.createMessage(HornetQTextMessage.TYPE,
                                                              false,
                                                              0,
                                                              System.currentTimeMillis(),

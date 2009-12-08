@@ -880,7 +880,7 @@ public class UnitTestCase extends TestCase
 
    protected ClientMessage createTextMessage(final String s, final boolean durable, final ClientSession clientSession)
    {
-      ClientMessage message = clientSession.createClientMessage(HornetQTextMessage.TYPE,
+      ClientMessage message = clientSession.createMessage(HornetQTextMessage.TYPE,
                                                                 durable,
                                                                 0,
                                                                 System.currentTimeMillis(),

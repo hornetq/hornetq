@@ -69,7 +69,7 @@ public class MessageRateTest extends ServiceTestBase
          long start = System.currentTimeMillis();
          for (int i = 0; i < 10; i++)
          {
-            producer.send(session.createClientMessage(false));
+            producer.send(session.createMessage(false));
          }
          long end = System.currentTimeMillis();
 
@@ -106,7 +106,7 @@ public class MessageRateTest extends ServiceTestBase
 
          for (int i = 0; i < 12; i++)
          {
-            producer.send(session.createClientMessage(false));
+            producer.send(session.createMessage(false));
          }
 
          session.start();
@@ -155,7 +155,7 @@ public class MessageRateTest extends ServiceTestBase
 
          for (int i = 0; i < 12; i++)
          {
-            producer.send(session.createClientMessage(false));
+            producer.send(session.createMessage(false));
          }
 
          ClientConsumer consumer = session.createConsumer(ADDRESS);

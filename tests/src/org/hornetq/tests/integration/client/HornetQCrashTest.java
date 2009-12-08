@@ -67,7 +67,7 @@ public class HornetQCrashTest extends TestCase
 
       ClientProducer producer = session.createProducer("fooQueue");
 
-      ClientMessage msg = session.createClientMessage(false);
+      ClientMessage msg = session.createMessage(false);
 
       msg.putStringProperty("someKey", "someValue");
 

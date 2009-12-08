@@ -89,7 +89,7 @@ public class OrderTest extends ServiceTestBase
 
          for (int i = 0; i < 100; i++)
          {
-            ClientMessage msg = session.createClientMessage(i % 2 == 0);
+            ClientMessage msg = session.createMessage(i % 2 == 0);
             msg.putIntProperty("id", i);
             prod.send(msg);
          }
@@ -181,7 +181,7 @@ public class OrderTest extends ServiceTestBase
 
          for (int i = 0; i < numberOfMessages; i++)
          {
-            ClientMessage msg = session.createClientMessage(i % 2 == 0);
+            ClientMessage msg = session.createMessage(i % 2 == 0);
             msg.putIntProperty("id", i);
             prod.send(msg);
          }

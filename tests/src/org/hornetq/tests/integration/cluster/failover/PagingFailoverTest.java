@@ -116,7 +116,7 @@ public class PagingFailoverTest extends FailoverTestBase
             {
                session.commit();
             }
-            ClientMessage msg = session.createClientMessage(true);
+            ClientMessage msg = session.createMessage(true);
             msg.putIntProperty(new SimpleString("key"), i);
             prod.send(msg);
          }

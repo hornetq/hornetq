@@ -1245,7 +1245,7 @@ public class BasicXaRecoveryTest extends ServiceTestBase
 
    private ClientMessage createTextMessage(final String s, final boolean durable)
    {
-      ClientMessage message = clientSession.createClientMessage(HornetQTextMessage.TYPE,
+      ClientMessage message = clientSession.createMessage(HornetQTextMessage.TYPE,
                                                                 durable,
                                                                 0,
                                                                 System.currentTimeMillis(),
@@ -1256,7 +1256,7 @@ public class BasicXaRecoveryTest extends ServiceTestBase
 
    private ClientMessage createBytesMessage(final byte[] b, final boolean durable)
    {
-      ClientMessage message = clientSession.createClientMessage(HornetQBytesMessage.TYPE,
+      ClientMessage message = clientSession.createMessage(HornetQBytesMessage.TYPE,
                                                                 durable,
                                                                 0,
                                                                 System.currentTimeMillis(),

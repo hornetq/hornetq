@@ -448,7 +448,7 @@ public interface ClientSession extends XAResource
     * @param durable whether the created message is durable or not
     * @return a ClientMessage
     */
-   ClientMessage createClientMessage(boolean durable);
+   ClientMessage createMessage(boolean durable);
 
    /**
     * Create a ClientMessage.
@@ -457,7 +457,7 @@ public interface ClientSession extends XAResource
     * @param durable whether the created message is durable or not
     * @return a ClientMessage
     */
-   ClientMessage createClientMessage(byte type, boolean durable);
+   ClientMessage createMessage(byte type, boolean durable);
 
    /**
     * Create a ClientMessage with the given HornetQBuffer as its body.
@@ -468,7 +468,7 @@ public interface ClientSession extends XAResource
     * @param priority the message priority (between 0 and 9 inclusive)
     * @return a ClientMessage
     */
-   ClientMessage createClientMessage(byte type, boolean durable, long expiration, long timestamp, byte priority);
+   ClientMessage createMessage(byte type, boolean durable, long expiration, long timestamp, byte priority);
 
    // Query operations ----------------------------------------------
 

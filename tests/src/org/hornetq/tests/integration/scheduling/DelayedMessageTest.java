@@ -213,7 +213,7 @@ public class DelayedMessageTest extends ServiceTestBase
 
    private ClientMessage createDurableMessage(final ClientSession session, final String body)
    {
-      ClientMessage message = session.createClientMessage(HornetQTextMessage.TYPE,
+      ClientMessage message = session.createMessage(HornetQTextMessage.TYPE,
                                                           true,
                                                           0,
                                                           System.currentTimeMillis(),

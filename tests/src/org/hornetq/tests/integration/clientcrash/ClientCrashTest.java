@@ -85,7 +85,7 @@ public class ClientCrashTest extends ClientTestBase
       assertActiveConnections(1 + 1); // One local and one from the other vm
       assertActiveSession(1 + 1);
 
-      ClientMessage message = session.createClientMessage(HornetQTextMessage.TYPE,
+      ClientMessage message = session.createMessage(HornetQTextMessage.TYPE,
                                                           false,
                                                           0,
                                                           System.currentTimeMillis(),

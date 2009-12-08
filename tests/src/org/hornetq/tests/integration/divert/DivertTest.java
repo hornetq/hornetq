@@ -102,7 +102,7 @@ public class DivertTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = session.createClientMessage(false);
+         ClientMessage message = session.createMessage(false);
 
          message.putIntProperty(propKey, i);
 
@@ -208,7 +208,7 @@ public class DivertTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = session.createClientMessage(false);
+         ClientMessage message = session.createMessage(false);
 
          message.putIntProperty(propKey, i);
 
@@ -322,7 +322,7 @@ public class DivertTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = session.createClientMessage(false);
+         ClientMessage message = session.createMessage(false);
 
          message.putIntProperty(propKey, i);
 
@@ -413,7 +413,7 @@ public class DivertTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = session.createClientMessage(false);
+         ClientMessage message = session.createMessage(false);
 
          message.putIntProperty(propKey, i);
 
@@ -532,7 +532,7 @@ public class DivertTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = session.createClientMessage(false);
+         ClientMessage message = session.createMessage(false);
 
          message.putIntProperty(propKey, i);
 
@@ -684,7 +684,7 @@ public class DivertTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = session.createClientMessage(false);
+         ClientMessage message = session.createMessage(false);
 
          message.putIntProperty(propKey, i);
 
@@ -825,7 +825,7 @@ public class DivertTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = session.createClientMessage(false);
+         ClientMessage message = session.createMessage(false);
 
          message.putIntProperty(propKey, i);
 
@@ -958,7 +958,7 @@ public class DivertTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = session.createClientMessage(false);
+         ClientMessage message = session.createMessage(false);
 
          message.putStringProperty(new SimpleString("animal"), new SimpleString("giraffe"));
 
@@ -1021,7 +1021,7 @@ public class DivertTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = session.createClientMessage(false);
+         ClientMessage message = session.createMessage(false);
 
          message.putStringProperty(new SimpleString("animal"), new SimpleString("antelope"));
 
@@ -1142,7 +1142,7 @@ public class DivertTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = session.createClientMessage(false);
+         ClientMessage message = session.createMessage(false);
 
          message.putIntProperty(propKey, i);
 
@@ -1304,7 +1304,7 @@ public class DivertTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = session.createClientMessage(false);
+         ClientMessage message = session.createMessage(false);
 
          message.putIntProperty(propKey, i);
 

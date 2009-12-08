@@ -151,7 +151,7 @@ public class BridgeStartTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = session0.createClientMessage(false);
+         ClientMessage message = session0.createMessage(false);
 
          message.putIntProperty(propKey, i);
 
@@ -177,7 +177,7 @@ public class BridgeStartTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = session0.createClientMessage(false);
+         ClientMessage message = session0.createMessage(false);
 
          message.putIntProperty(propKey, i);
 
@@ -296,7 +296,7 @@ public class BridgeStartTest extends ServiceTestBase
 
          for (int i = 0; i < numMessages; i++)
          {
-            ClientMessage message = session0.createClientMessage(false);
+            ClientMessage message = session0.createMessage(false);
 
             message.putIntProperty(propKey, i);
 
@@ -331,7 +331,7 @@ public class BridgeStartTest extends ServiceTestBase
 
          for (int i = 0; i < numMessages; i++)
          {
-            ClientMessage message = session0.createClientMessage(false);
+            ClientMessage message = session0.createMessage(false);
 
             message.putIntProperty(propKey, i);
 
@@ -363,7 +363,7 @@ public class BridgeStartTest extends ServiceTestBase
 
          for (int i = 0; i < numMessages; i++)
          {
-            ClientMessage message = session0.createClientMessage(false);
+            ClientMessage message = session0.createMessage(false);
 
             message.putIntProperty(propKey, i);
 
@@ -491,7 +491,7 @@ public class BridgeStartTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = session0.createClientMessage(false);
+         ClientMessage message = session0.createMessage(false);
 
          message.putIntProperty(propKey, i);
 
@@ -626,7 +626,7 @@ public class BridgeStartTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = session0.createClientMessage(false);
+         ClientMessage message = session0.createMessage(false);
 
          message.putIntProperty(propKey, i);
 
@@ -664,7 +664,7 @@ public class BridgeStartTest extends ServiceTestBase
 
       for (int i = numMessages; i < numMessages * 2; i++)
       {
-         ClientMessage message = session0.createClientMessage(false);
+         ClientMessage message = session0.createMessage(false);
 
          message.putIntProperty(propKey, i);
 
@@ -697,7 +697,7 @@ public class BridgeStartTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = session0.createClientMessage(false);
+         ClientMessage message = session0.createMessage(false);
 
          message.putIntProperty(propKey, i);
 

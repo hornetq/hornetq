@@ -60,7 +60,7 @@ public class DurableQueueTest extends ServiceTestBase
       session.createQueue(address, queue, true);
 
       ClientProducer producer = session.createProducer(address);
-      producer.send(session.createClientMessage(false));
+      producer.send(session.createMessage(false));
 
       session.start();
       ClientConsumer consumer = session.createConsumer(queue);
@@ -82,7 +82,7 @@ public class DurableQueueTest extends ServiceTestBase
       session.createQueue(address, queue, true);
 
       ClientProducer producer = session.createProducer(address);
-      producer.send(session.createClientMessage(true));
+      producer.send(session.createMessage(true));
 
       session.close();
 
@@ -120,7 +120,7 @@ public class DurableQueueTest extends ServiceTestBase
       session = sf.createSession(false, true, true);
 
       ClientProducer producer = session.createProducer(address);
-      producer.send(session.createClientMessage(true));
+      producer.send(session.createMessage(true));
 
       session.start();
       ClientConsumer consumer = session.createConsumer(queue);

@@ -55,7 +55,7 @@ public class DeliveryOrderTest extends ServiceTestBase
          sendSession.createQueue(addressA, queueA, false);
          for (int i = 0; i < numMessages; i++)
          {
-            ClientMessage cm = sendSession.createClientMessage(false);
+            ClientMessage cm = sendSession.createMessage(false);
             cm.getBodyBuffer().writeInt(i);
             cp.send(cm);
             if (i % 10 == 0)
@@ -96,7 +96,7 @@ public class DeliveryOrderTest extends ServiceTestBase
          sendSession.createQueue(addressA, queueA, false);
          for (int i = 0; i < numMessages; i++)
          {
-            ClientMessage cm = sendSession.createClientMessage(false);
+            ClientMessage cm = sendSession.createMessage(false);
             cm.getBodyBuffer().writeInt(i);
             cp.send(cm);
          }
@@ -154,7 +154,7 @@ public class DeliveryOrderTest extends ServiceTestBase
          ClientProducer clientProducer = sendSession.createProducer(addressA);
          for (int i = 0; i < numMessage; i++)
          {
-            ClientMessage cm = sendSession.createClientMessage(false);
+            ClientMessage cm = sendSession.createMessage(false);
             cm.getBodyBuffer().writeInt(count.getAndIncrement());
             clientProducer.send(cm);
          }

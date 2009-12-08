@@ -391,7 +391,7 @@ public abstract class PerfBase
 
          ClientProducer producer = session.createProducer(perfParams.getAddress());
 
-         ClientMessage message = session.createClientMessage(durable);
+         ClientMessage message = session.createMessage(durable);
 
          byte[] payload = PerfBase.randomByteArray(messageSize);
 

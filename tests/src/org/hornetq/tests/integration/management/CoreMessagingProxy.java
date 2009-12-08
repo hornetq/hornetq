@@ -66,7 +66,7 @@ public class CoreMessagingProxy
 
    public Object retrieveAttributeValue(final String attributeName, final Class desiredType)
    {
-      ClientMessage m = session.createClientMessage(false);
+      ClientMessage m = session.createMessage(false);
       ManagementHelper.putAttribute(m, resourceName, attributeName);
       ClientMessage reply;
       try
@@ -95,7 +95,7 @@ public class CoreMessagingProxy
 
    public Object invokeOperation(final String operationName, final Object... args) throws Exception
    {
-      ClientMessage m = session.createClientMessage(false);
+      ClientMessage m = session.createMessage(false);
       ManagementHelper.putOperationInvocation(m, resourceName, operationName, args);
       ClientMessage reply = requestor.request(m);
       if (ManagementHelper.hasOperationSucceeded(reply))

@@ -237,7 +237,7 @@ public class HornetQMessage implements javax.jms.Message
     */
    protected HornetQMessage(final byte type, final ClientSession session)
    {
-      message = session.createClientMessage(type, true, 0, System.currentTimeMillis(), (byte)4);
+      message = session.createMessage(type, true, 0, System.currentTimeMillis(), (byte)4);
 
    }
 

@@ -299,7 +299,7 @@ public class RandomReattachTest extends UnitTestCase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = sessSend.createClientMessage(HornetQTextMessage.TYPE,
+         ClientMessage message = sessSend.createMessage(HornetQTextMessage.TYPE,
                                                               false,
                                                               0,
                                                               System.currentTimeMillis(),
@@ -413,7 +413,7 @@ public class RandomReattachTest extends UnitTestCase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = sessSend.createClientMessage(HornetQTextMessage.TYPE,
+         ClientMessage message = sessSend.createMessage(HornetQTextMessage.TYPE,
                                                               false,
                                                               0,
                                                               System.currentTimeMillis(),
@@ -527,7 +527,7 @@ public class RandomReattachTest extends UnitTestCase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = sessSend.createClientMessage(HornetQTextMessage.TYPE,
+         ClientMessage message = sessSend.createMessage(HornetQTextMessage.TYPE,
                                                               false,
                                                               0,
                                                               System.currentTimeMillis(),
@@ -540,7 +540,7 @@ public class RandomReattachTest extends UnitTestCase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = sessSend.createClientMessage(HornetQTextMessage.TYPE,
+         ClientMessage message = sessSend.createMessage(HornetQTextMessage.TYPE,
                                                               false,
                                                               0,
                                                               System.currentTimeMillis(),
@@ -676,7 +676,7 @@ public class RandomReattachTest extends UnitTestCase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = sessSend.createClientMessage(HornetQTextMessage.TYPE,
+         ClientMessage message = sessSend.createMessage(HornetQTextMessage.TYPE,
                                                               false,
                                                               0,
                                                               System.currentTimeMillis(),
@@ -689,7 +689,7 @@ public class RandomReattachTest extends UnitTestCase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = sessSend.createClientMessage(HornetQTextMessage.TYPE,
+         ClientMessage message = sessSend.createMessage(HornetQTextMessage.TYPE,
                                                               false,
                                                               0,
                                                               System.currentTimeMillis(),
@@ -834,7 +834,7 @@ public class RandomReattachTest extends UnitTestCase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = sessSend.createClientMessage(HornetQTextMessage.TYPE,
+         ClientMessage message = sessSend.createMessage(HornetQTextMessage.TYPE,
                                                               false,
                                                               0,
                                                               System.currentTimeMillis(),
@@ -921,7 +921,7 @@ public class RandomReattachTest extends UnitTestCase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = sessSend.createClientMessage(HornetQTextMessage.TYPE,
+         ClientMessage message = sessSend.createMessage(HornetQTextMessage.TYPE,
                                                               false,
                                                               0,
                                                               System.currentTimeMillis(),
@@ -1022,7 +1022,7 @@ public class RandomReattachTest extends UnitTestCase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = sessSend.createClientMessage(HornetQTextMessage.TYPE,
+         ClientMessage message = sessSend.createMessage(HornetQTextMessage.TYPE,
                                                               false,
                                                               0,
                                                               System.currentTimeMillis(),
@@ -1035,7 +1035,7 @@ public class RandomReattachTest extends UnitTestCase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = sessSend.createClientMessage(HornetQTextMessage.TYPE,
+         ClientMessage message = sessSend.createMessage(HornetQTextMessage.TYPE,
                                                               false,
                                                               0,
                                                               System.currentTimeMillis(),
@@ -1155,7 +1155,7 @@ public class RandomReattachTest extends UnitTestCase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = sessSend.createClientMessage(HornetQTextMessage.TYPE,
+         ClientMessage message = sessSend.createMessage(HornetQTextMessage.TYPE,
                                                               false,
                                                               0,
                                                               System.currentTimeMillis(),
@@ -1168,7 +1168,7 @@ public class RandomReattachTest extends UnitTestCase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = sessSend.createClientMessage(HornetQTextMessage.TYPE,
+         ClientMessage message = sessSend.createMessage(HornetQTextMessage.TYPE,
                                                               false,
                                                               0,
                                                               System.currentTimeMillis(),
@@ -1276,7 +1276,7 @@ public class RandomReattachTest extends UnitTestCase
 
       ClientProducer producer = sess.createProducer(RandomReattachTest.ADDRESS);
 
-      ClientMessage message = sess.createClientMessage(HornetQTextMessage.TYPE,
+      ClientMessage message = sess.createMessage(HornetQTextMessage.TYPE,
                                                        false,
                                                        0,
                                                        System.currentTimeMillis(),
@@ -1310,7 +1310,7 @@ public class RandomReattachTest extends UnitTestCase
 
       ClientProducer producer = sess.createProducer(RandomReattachTest.ADDRESS);
 
-      ClientMessage message = sess.createClientMessage(HornetQTextMessage.TYPE,
+      ClientMessage message = sess.createMessage(HornetQTextMessage.TYPE,
                                                        false,
                                                        0,
                                                        System.currentTimeMillis(),
@@ -1383,7 +1383,7 @@ public class RandomReattachTest extends UnitTestCase
 
       ClientProducer producer = sess.createProducer(RandomReattachTest.ADDRESS);
 
-      ClientMessage message = sess.createClientMessage(HornetQTextMessage.TYPE,
+      ClientMessage message = sess.createMessage(HornetQTextMessage.TYPE,
                                                        false,
                                                        0,
                                                        System.currentTimeMillis(),

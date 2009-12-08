@@ -854,7 +854,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
 
    private ClientMessage createMessage(final ClientSession session, final int i)
    {
-      ClientMessage message = session.createClientMessage(false);
+      ClientMessage message = session.createMessage(false);
 
       message.putIntProperty(propKey, i);
 

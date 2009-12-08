@@ -79,7 +79,7 @@ public class MultiThreadConsumerStressTest extends ServiceTestBase
 
       for (int i = 0; i < 100; i++)
       {
-         producer.send(session.createClientMessage(true));
+         producer.send(session.createMessage(true));
       }
 
       session.commit();
@@ -273,7 +273,7 @@ public class MultiThreadConsumerStressTest extends ServiceTestBase
                {
                   // System.out.println(Thread.currentThread().getName() + "::received #" + i);
                }
-               ClientMessage msg = session.createClientMessage(true);
+               ClientMessage msg = session.createMessage(true);
                prod.send(msg);
             }
 

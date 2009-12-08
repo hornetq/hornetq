@@ -2088,7 +2088,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          for (int i = 0; i < NUMBER_OF_MESSAGES; i++)
          {
-            ClientMessage clientFile = session.createClientMessage(true);
+            ClientMessage clientFile = session.createMessage(true);
             clientFile.setBodyInputStream(UnitTestCase.createFakeLargeStream(SIZE));
             producer.send(clientFile);
 
@@ -2192,7 +2192,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          for (int i = 0; i < NUMBER_OF_MESSAGES; i++)
          {
-            ClientMessage clientFile = session.createClientMessage(true);
+            ClientMessage clientFile = session.createMessage(true);
             clientFile.setBodyInputStream(UnitTestCase.createFakeLargeStream(SIZE));
             producer.send(clientFile);
 
@@ -2291,7 +2291,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          session.createQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS, null, true);
 
-         ClientMessage clientFile = session.createClientMessage(true);
+         ClientMessage clientFile = session.createMessage(true);
          clientFile.setBodyInputStream(UnitTestCase.createFakeLargeStream(SIZE));
 
          ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
@@ -2370,7 +2370,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          for (int i = 0; i < NUMBER_OF_MESSAGES; i++)
          {
-            ClientMessage msg = session.createClientMessage(true);
+            ClientMessage msg = session.createMessage(true);
             msg.setBodyInputStream(UnitTestCase.createFakeLargeStream(SIZE));
             msg.putIntProperty(new SimpleString("key"), i);
             producer.send(msg);
@@ -2552,7 +2552,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          for (int i = 0; i < 100; i++)
          {
-            message = session.createClientMessage(true);
+            message = session.createMessage(true);
 
             // TODO: Why do I need to reset the writerIndex?
             message.getBodyBuffer().writerIndex(0);

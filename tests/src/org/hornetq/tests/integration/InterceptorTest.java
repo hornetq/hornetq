@@ -259,7 +259,7 @@ public class InterceptorTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = session.createClientMessage(false);
+         ClientMessage message = session.createMessage(false);
 
          message.putStringProperty(InterceptorTest.key, "apple");
 
@@ -281,7 +281,7 @@ public class InterceptorTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = session.createClientMessage(false);
+         ClientMessage message = session.createMessage(false);
 
          message.putStringProperty(InterceptorTest.key, "apple");
 
@@ -318,7 +318,7 @@ public class InterceptorTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = session.createClientMessage(false);
+         ClientMessage message = session.createMessage(false);
 
          producer.send(message);
       }
@@ -352,7 +352,7 @@ public class InterceptorTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = session.createClientMessage(false);
+         ClientMessage message = session.createMessage(false);
 
          message.putStringProperty(InterceptorTest.key, "apple");
 
@@ -374,7 +374,7 @@ public class InterceptorTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = session.createClientMessage(false);
+         ClientMessage message = session.createMessage(false);
 
          message.putStringProperty(InterceptorTest.key, "apple");
 
@@ -409,7 +409,7 @@ public class InterceptorTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = session.createClientMessage(false);
+         ClientMessage message = session.createMessage(false);
 
          producer.send(message);
       }
@@ -449,7 +449,7 @@ public class InterceptorTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = session.createClientMessage(false);
+         ClientMessage message = session.createMessage(false);
 
          producer.send(message);
       }
@@ -472,7 +472,7 @@ public class InterceptorTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = session.createClientMessage(false);
+         ClientMessage message = session.createMessage(false);
 
          producer.send(message);
       }
@@ -497,7 +497,7 @@ public class InterceptorTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = session.createClientMessage(false);
+         ClientMessage message = session.createMessage(false);
 
          producer.send(message);
       }
@@ -538,7 +538,7 @@ public class InterceptorTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = session.createClientMessage(false);
+         ClientMessage message = session.createMessage(false);
 
          producer.send(message);
       }
@@ -561,7 +561,7 @@ public class InterceptorTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = session.createClientMessage(false);
+         ClientMessage message = session.createMessage(false);
 
          producer.send(message);
       }
@@ -586,7 +586,7 @@ public class InterceptorTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = session.createClientMessage(false);
+         ClientMessage message = session.createMessage(false);
 
          producer.send(message);
       }

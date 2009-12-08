@@ -225,8 +225,8 @@ public class SessionTest extends ServiceTestBase
          clientSession.createConsumer(queueName);
          clientSession.createConsumer(queueName);
          ClientProducer cp = clientSession.createProducer("a1");
-         cp.send(clientSession.createClientMessage(false));
-         cp.send(clientSession.createClientMessage(false));
+         cp.send(clientSession.createMessage(false));
+         cp.send(clientSession.createMessage(false));
          QueueQuery resp = clientSession.queueQuery(new SimpleString(queueName));
          Assert.assertEquals(new SimpleString("a1"), resp.getAddress());
          Assert.assertEquals(2, resp.getConsumerCount());
@@ -321,7 +321,7 @@ public class SessionTest extends ServiceTestBase
       }
    }
 
-   public void testCreateClientMessageNonDurable() throws Exception
+   public void testCreateMessageNonDurable() throws Exception
    {
       HornetQServer server = createServer(false);
       try
@@ -329,7 +329,7 @@ public class SessionTest extends ServiceTestBase
          server.start();
          ClientSessionFactory cf = createInVMFactory();
          ClientSession clientSession = cf.createSession(false, true, true);
-         ClientMessage clientMessage = clientSession.createClientMessage(false);
+         ClientMessage clientMessage = clientSession.createMessage(false);
          Assert.assertFalse(clientMessage.isDurable());
          clientSession.close();
       }
@@ -342,7 +342,7 @@ public class SessionTest extends ServiceTestBase
       }
    }
 
-   public void testCreateClientMessageDurable() throws Exception
+   public void testCreateMessageDurable() throws Exception
    {
       HornetQServer server = createServer(false);
       try
@@ -350,7 +350,7 @@ public class SessionTest extends ServiceTestBase
          server.start();
          ClientSessionFactory cf = createInVMFactory();
          ClientSession clientSession = cf.createSession(false, true, true);
-         ClientMessage clientMessage = clientSession.createClientMessage(true);
+         ClientMessage clientMessage = clientSession.createMessage(true);
          Assert.assertTrue(clientMessage.isDurable());
          clientSession.close();
       }
@@ -363,7 +363,7 @@ public class SessionTest extends ServiceTestBase
       }
    }
 
-   public void testCreateClientMessageType() throws Exception
+   public void testCreateMessageType() throws Exception
    {
       HornetQServer server = createServer(false);
       try
@@ -371,7 +371,7 @@ public class SessionTest extends ServiceTestBase
          server.start();
          ClientSessionFactory cf = createInVMFactory();
          ClientSession clientSession = cf.createSession(false, true, true);
-         ClientMessage clientMessage = clientSession.createClientMessage((byte)99, false);
+         ClientMessage clientMessage = clientSession.createMessage((byte)99, false);
          Assert.assertEquals((byte)99, clientMessage.getType());
          clientSession.close();
       }
@@ -384,7 +384,7 @@ public class SessionTest extends ServiceTestBase
       }
    }
 
-   public void testCreateClientMessageOverrides() throws Exception
+   public void testCreateMessageOverrides() throws Exception
    {
       HornetQServer server = createServer(false);
       try
@@ -392,7 +392,7 @@ public class SessionTest extends ServiceTestBase
          server.start();
          ClientSessionFactory cf = createInVMFactory();
          ClientSession clientSession = cf.createSession(false, true, true);
-         ClientMessage clientMessage = clientSession.createClientMessage((byte)88, false, 100l, 300l, (byte)33);
+         ClientMessage clientMessage = clientSession.createMessage((byte)88, false, 100l, 300l, (byte)33);
          Assert.assertEquals((byte)88, clientMessage.getType());
          Assert.assertEquals(100l, clientMessage.getExpiration());
          Assert.assertEquals(300l, clientMessage.getTimestamp());
@@ -481,16 +481,16 @@ public class SessionTest extends ServiceTestBase
          ClientSession clientSession = cf.createSession(false, false, true);
          clientSession.createQueue(queueName, queueName, false);
          ClientProducer cp = clientSession.createProducer(queueName);
-         cp.send(clientSession.createClientMessage(false));
-         cp.send(clientSession.createClientMessage(false));
-         cp.send(clientSession.createClientMessage(false));
-         cp.send(clientSession.createClientMessage(false));
-         cp.send(clientSession.createClientMessage(false));
-         cp.send(clientSession.createClientMessage(false));
-         cp.send(clientSession.createClientMessage(false));
-         cp.send(clientSession.createClientMessage(false));
-         cp.send(clientSession.createClientMessage(false));
-         cp.send(clientSession.createClientMessage(false));
+         cp.send(clientSession.createMessage(false));
+         cp.send(clientSession.createMessage(false));
+         cp.send(clientSession.createMessage(false));
+         cp.send(clientSession.createMessage(false));
+         cp.send(clientSession.createMessage(false));
+         cp.send(clientSession.createMessage(false));
+         cp.send(clientSession.createMessage(false));
+         cp.send(clientSession.createMessage(false));
+         cp.send(clientSession.createMessage(false));
+         cp.send(clientSession.createMessage(false));
          Queue q = (Queue)server.getPostOffice().getBinding(new SimpleString(queueName)).getBindable();
          Assert.assertEquals(0, q.getMessageCount());
          clientSession.commit();
@@ -516,21 +516,21 @@ public class SessionTest extends ServiceTestBase
          ClientSession clientSession = cf.createSession(false, false, true);
          clientSession.createQueue(queueName, queueName, false);
          ClientProducer cp = clientSession.createProducer(queueName);
-         cp.send(clientSession.createClientMessage(false));
-         cp.send(clientSession.createClientMessage(false));
-         cp.send(clientSession.createClientMessage(false));
-         cp.send(clientSession.createClientMessage(false));
-         cp.send(clientSession.createClientMessage(false));
-         cp.send(clientSession.createClientMessage(false));
-         cp.send(clientSession.createClientMessage(false));
-         cp.send(clientSession.createClientMessage(false));
-         cp.send(clientSession.createClientMessage(false));
-         cp.send(clientSession.createClientMessage(false));
+         cp.send(clientSession.createMessage(false));
+         cp.send(clientSession.createMessage(false));
+         cp.send(clientSession.createMessage(false));
+         cp.send(clientSession.createMessage(false));
+         cp.send(clientSession.createMessage(false));
+         cp.send(clientSession.createMessage(false));
+         cp.send(clientSession.createMessage(false));
+         cp.send(clientSession.createMessage(false));
+         cp.send(clientSession.createMessage(false));
+         cp.send(clientSession.createMessage(false));
          Queue q = (Queue)server.getPostOffice().getBinding(new SimpleString(queueName)).getBindable();
          Assert.assertEquals(0, q.getMessageCount());
          clientSession.rollback();
-         cp.send(clientSession.createClientMessage(false));
-         cp.send(clientSession.createClientMessage(false));
+         cp.send(clientSession.createMessage(false));
+         cp.send(clientSession.createMessage(false));
          clientSession.commit();
          Assert.assertEquals(2, q.getMessageCount());
          clientSession.close();
@@ -557,16 +557,16 @@ public class SessionTest extends ServiceTestBase
          ClientProducer cp = sendSession.createProducer(queueName);
          ClientSession clientSession = cf.createSession(false, true, false);
          clientSession.createQueue(queueName, queueName, false);
-         cp.send(clientSession.createClientMessage(false));
-         cp.send(clientSession.createClientMessage(false));
-         cp.send(clientSession.createClientMessage(false));
-         cp.send(clientSession.createClientMessage(false));
-         cp.send(clientSession.createClientMessage(false));
-         cp.send(clientSession.createClientMessage(false));
-         cp.send(clientSession.createClientMessage(false));
-         cp.send(clientSession.createClientMessage(false));
-         cp.send(clientSession.createClientMessage(false));
-         cp.send(clientSession.createClientMessage(false));
+         cp.send(clientSession.createMessage(false));
+         cp.send(clientSession.createMessage(false));
+         cp.send(clientSession.createMessage(false));
+         cp.send(clientSession.createMessage(false));
+         cp.send(clientSession.createMessage(false));
+         cp.send(clientSession.createMessage(false));
+         cp.send(clientSession.createMessage(false));
+         cp.send(clientSession.createMessage(false));
+         cp.send(clientSession.createMessage(false));
+         cp.send(clientSession.createMessage(false));
          Queue q = (Queue)server.getPostOffice().getBinding(new SimpleString(queueName)).getBindable();
          Assert.assertEquals(10, q.getMessageCount());
          ClientConsumer cc = clientSession.createConsumer(queueName);
@@ -628,16 +628,16 @@ public class SessionTest extends ServiceTestBase
          ClientProducer cp = sendSession.createProducer(queueName);
          ClientSession clientSession = cf.createSession(false, true, false);
          clientSession.createQueue(queueName, queueName, false);
-         cp.send(clientSession.createClientMessage(false));
-         cp.send(clientSession.createClientMessage(false));
-         cp.send(clientSession.createClientMessage(false));
-         cp.send(clientSession.createClientMessage(false));
-         cp.send(clientSession.createClientMessage(false));
-         cp.send(clientSession.createClientMessage(false));
-         cp.send(clientSession.createClientMessage(false));
-         cp.send(clientSession.createClientMessage(false));
-         cp.send(clientSession.createClientMessage(false));
-         cp.send(clientSession.createClientMessage(false));
+         cp.send(clientSession.createMessage(false));
+         cp.send(clientSession.createMessage(false));
+         cp.send(clientSession.createMessage(false));
+         cp.send(clientSession.createMessage(false));
+         cp.send(clientSession.createMessage(false));
+         cp.send(clientSession.createMessage(false));
+         cp.send(clientSession.createMessage(false));
+         cp.send(clientSession.createMessage(false));
+         cp.send(clientSession.createMessage(false));
+         cp.send(clientSession.createMessage(false));
          Queue q = (Queue)server.getPostOffice().getBinding(new SimpleString(queueName)).getBindable();
          Assert.assertEquals(10, q.getMessageCount());
          ClientConsumer cc = clientSession.createConsumer(queueName);

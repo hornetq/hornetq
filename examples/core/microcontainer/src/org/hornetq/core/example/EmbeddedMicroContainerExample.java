@@ -69,7 +69,7 @@ public class EmbeddedMicroContainerExample
             ClientProducer producer = session.createProducer(queueName);
 
             // Step 5. Create and send a message
-            ClientMessage message = session.createClientMessage(false);
+            ClientMessage message = session.createMessage(false);
 
             final String propName = "myprop";
 

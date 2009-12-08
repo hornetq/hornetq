@@ -118,9 +118,9 @@ public class LargeJournalStressTest extends ServiceTestBase
                      {
                         sessionSlow.commit();
                      }
-                     slowProd.send(session.createClientMessage(true));
+                     slowProd.send(session.createMessage(true));
                   }
-                  ClientMessage msg = session.createClientMessage(true);
+                  ClientMessage msg = session.createMessage(true);
                   prod.send(msg);
                }
                sessionSlow.commit();

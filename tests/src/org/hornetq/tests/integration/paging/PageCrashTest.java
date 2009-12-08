@@ -163,7 +163,7 @@ public class PageCrashTest extends ServiceTestBase
 
          ClientProducer producer = session.createProducer(PageCrashTest.ADDRESS);
 
-         ClientMessage message = session.createClientMessage(true);
+         ClientMessage message = session.createMessage(true);
          message.getBodyBuffer().writeBytes(new byte[1024]);
 
          PagingStore store = server.getPostOffice().getPagingManager().getPageStore(PageCrashTest.ADDRESS);

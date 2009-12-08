@@ -171,7 +171,7 @@ public class PredefinedQueueTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = session.createClientMessage(false);
+         ClientMessage message = session.createMessage(false);
 
          message.putIntProperty(propKey, i);
 
@@ -269,7 +269,7 @@ public class PredefinedQueueTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = session.createClientMessage(false);
+         ClientMessage message = session.createMessage(false);
 
          message.putIntProperty(propKey, i);
 
@@ -344,7 +344,7 @@ public class PredefinedQueueTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = session.createClientMessage(true);
+         ClientMessage message = session.createMessage(true);
 
          message.putIntProperty(propKey, i);
 
@@ -429,7 +429,7 @@ public class PredefinedQueueTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = session.createClientMessage(true);
+         ClientMessage message = session.createMessage(true);
 
          message.putStringProperty(new SimpleString("cheese"), new SimpleString("camembert"));
 
@@ -454,7 +454,7 @@ public class PredefinedQueueTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = session.createClientMessage(true);
+         ClientMessage message = session.createMessage(true);
 
          message.putStringProperty(new SimpleString("cheese"), new SimpleString("roquefort"));
 

@@ -109,7 +109,7 @@ public class PagingSendTest extends ServiceTestBase
 
          ClientMessage message = null;
 
-         message = session.createClientMessage(true);
+         message = session.createMessage(true);
          message.getBodyBuffer().writeBytes(new byte[1024]);
 
          for (int i = 0; i < 200; i++)

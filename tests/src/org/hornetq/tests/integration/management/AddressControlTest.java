@@ -357,7 +357,7 @@ public class AddressControlTest extends ManagementTestBase
 
       for (int i = 0; i < NUMBER_MESSAGES_BEFORE_PAGING; i++)
       {
-         ClientMessage msg = session.createClientMessage(true);
+         ClientMessage msg = session.createMessage(true);
          msg.getBodyBuffer().writeBytes(new byte[512]);
          producer.send(msg);
       }
@@ -366,21 +366,21 @@ public class AddressControlTest extends ManagementTestBase
       AddressControl addressControl = createManagementControl(address);
       Assert.assertEquals(0, addressControl.getNumberOfPages());
 
-      ClientMessage msg = session.createClientMessage(true);
+      ClientMessage msg = session.createMessage(true);
       msg.getBodyBuffer().writeBytes(new byte[512]);
       producer.send(msg);
 
       session.commit();
       Assert.assertEquals(1, addressControl.getNumberOfPages());
 
-      msg = session.createClientMessage(true);
+      msg = session.createMessage(true);
       msg.getBodyBuffer().writeBytes(new byte[512]);
       producer.send(msg);
 
       session.commit();
       Assert.assertEquals(1, addressControl.getNumberOfPages());
 
-      msg = session.createClientMessage(true);
+      msg = session.createMessage(true);
       msg.getBodyBuffer().writeBytes(new byte[512]);
       producer.send(msg);
 

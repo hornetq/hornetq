@@ -85,7 +85,7 @@ public class CoreClientTest extends UnitTestCase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = session.createClientMessage(HornetQTextMessage.TYPE,
+         ClientMessage message = session.createMessage(HornetQTextMessage.TYPE,
                                                              false,
                                                              0,
                                                              System.currentTimeMillis(),

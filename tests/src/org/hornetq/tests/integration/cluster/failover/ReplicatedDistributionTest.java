@@ -76,7 +76,7 @@ public class ReplicatedDistributionTest extends ClusterTestBase
 
          for (int i = 0; i < 100; i++)
          {
-            ClientMessage msg = sessionOne.createClientMessage(true);
+            ClientMessage msg = sessionOne.createMessage(true);
 
             msg.putIntProperty(new SimpleString("key"), i);
 
@@ -179,7 +179,7 @@ public class ReplicatedDistributionTest extends ClusterTestBase
 
          for (int i = 0; i < 100; i++)
          {
-            ClientMessage msg = sessionOne.createClientMessage(true);
+            ClientMessage msg = sessionOne.createMessage(true);
             msg.putIntProperty(new SimpleString("key"), i);
             producer.send(msg);
          }

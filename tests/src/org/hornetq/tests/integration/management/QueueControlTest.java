@@ -210,7 +210,7 @@ public class QueueControlTest extends ManagementTestBase
       Assert.assertEquals(0, queueControl.getMessageCount());
 
       ClientProducer producer = session.createProducer(address);
-      producer.send(session.createClientMessage(false));
+      producer.send(session.createMessage(false));
       Assert.assertEquals(1, queueControl.getMessageCount());
 
       ManagementTestBase.consumeMessages(1, session, queue);
@@ -231,9 +231,9 @@ public class QueueControlTest extends ManagementTestBase
       Assert.assertEquals(0, queueControl.getMessagesAdded());
 
       ClientProducer producer = session.createProducer(address);
-      producer.send(session.createClientMessage(false));
+      producer.send(session.createMessage(false));
       Assert.assertEquals(1, queueControl.getMessagesAdded());
-      producer.send(session.createClientMessage(false));
+      producer.send(session.createMessage(false));
       Assert.assertEquals(2, queueControl.getMessagesAdded());
 
       ManagementTestBase.consumeMessages(2, session, queue);
@@ -255,7 +255,7 @@ public class QueueControlTest extends ManagementTestBase
       Assert.assertEquals(0, queueControl.getScheduledCount());
 
       ClientProducer producer = session.createProducer(address);
-      ClientMessage message = session.createClientMessage(false);
+      ClientMessage message = session.createMessage(false);
       message.putLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME, System.currentTimeMillis() + delay);
       producer.send(message);
 
@@ -281,12 +281,12 @@ public class QueueControlTest extends ManagementTestBase
       QueueControl queueControl = createManagementControl(address, queue);
 
       ClientProducer producer = session.createProducer(address);
-      ClientMessage message = session.createClientMessage(false);
+      ClientMessage message = session.createMessage(false);
       message.putLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME, System.currentTimeMillis() + delay);
       message.putIntProperty(new SimpleString("key"), intValue);
       producer.send(message);
       // unscheduled message
-      producer.send(session.createClientMessage(false));
+      producer.send(session.createMessage(false));
 
       Map<String, Object>[] messages = queueControl.listScheduledMessages();
       Assert.assertEquals(1, messages.length);
@@ -313,12 +313,12 @@ public class QueueControlTest extends ManagementTestBase
       QueueControl queueControl = createManagementControl(address, queue);
 
       ClientProducer producer = session.createProducer(address);
-      ClientMessage message = session.createClientMessage(false);
+      ClientMessage message = session.createMessage(false);
       message.putLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME, System.currentTimeMillis() + delay);
       message.putIntProperty(new SimpleString("key"), intValue);
       producer.send(message);
       // unscheduled message
-      producer.send(session.createClientMessage(false));
+      producer.send(session.createMessage(false));
 
       String jsonString = queueControl.listScheduledMessagesAsJSON();
       Assert.assertNotNull(jsonString);
@@ -346,7 +346,7 @@ public class QueueControlTest extends ManagementTestBase
       session.createQueue(address, queue, null, false);
 
       ClientProducer producer = session.createProducer(address);
-      producer.send(session.createClientMessage(false));
+      producer.send(session.createMessage(false));
 
       QueueControl queueControl = createManagementControl(address, queue);
       Assert.assertEquals(0, queueControl.getDeliveringCount());
@@ -374,7 +374,7 @@ public class QueueControlTest extends ManagementTestBase
       QueueControl queueControl = createManagementControl(address, queue);
 
       ClientProducer producer = session.createProducer(address);
-      ClientMessage message = session.createClientMessage(false);
+      ClientMessage message = session.createMessage(false);
       message.putIntProperty(new SimpleString("key"), intValue);
       producer.send(message);
 
@@ -408,10 +408,10 @@ public class QueueControlTest extends ManagementTestBase
       QueueControl queueControl = createManagementControl(address, queue);
 
       ClientProducer producer = session.createProducer(address);
-      ClientMessage matchingMessage = session.createClientMessage(false);
+      ClientMessage matchingMessage = session.createMessage(false);
       matchingMessage.putLongProperty(key, matchingValue);
       producer.send(matchingMessage);
-      ClientMessage unmatchingMessage = session.createClientMessage(false);
+      ClientMessage unmatchingMessage = session.createMessage(false);
       unmatchingMessage.putLongProperty(key, unmatchingValue);
       producer.send(unmatchingMessage);
 
@@ -436,8 +436,8 @@ public class QueueControlTest extends ManagementTestBase
       QueueControl queueControl = createManagementControl(address, queue);
 
       ClientProducer producer = session.createProducer(address);
-      producer.send(session.createClientMessage(false));
-      producer.send(session.createClientMessage(false));
+      producer.send(session.createMessage(false));
+      producer.send(session.createMessage(false));
 
       Map<String, Object>[] messages = queueControl.listMessages(null);
       Assert.assertEquals(2, messages.length);
@@ -459,8 +459,8 @@ public class QueueControlTest extends ManagementTestBase
       QueueControl queueControl = createManagementControl(address, queue);
 
       ClientProducer producer = session.createProducer(address);
-      producer.send(session.createClientMessage(false));
-      producer.send(session.createClientMessage(false));
+      producer.send(session.createMessage(false));
+      producer.send(session.createMessage(false));
 
       Map<String, Object>[] messages = queueControl.listMessages("");
       Assert.assertEquals(2, messages.length);
@@ -487,10 +487,10 @@ public class QueueControlTest extends ManagementTestBase
       QueueControl queueControl = createManagementControl(address, queue);
 
       ClientProducer producer = session.createProducer(address);
-      ClientMessage matchingMessage = session.createClientMessage(false);
+      ClientMessage matchingMessage = session.createMessage(false);
       matchingMessage.putLongProperty(key, matchingValue);
       producer.send(matchingMessage);
-      ClientMessage unmatchingMessage = session.createClientMessage(false);
+      ClientMessage unmatchingMessage = session.createMessage(false);
       unmatchingMessage.putLongProperty(key, unmatchingValue);
       producer.send(unmatchingMessage);
 
@@ -530,7 +530,7 @@ public class QueueControlTest extends ManagementTestBase
       ClientProducer producer = session.createProducer(address);
 
       // send on queue
-      ClientMessage message = session.createClientMessage(false);
+      ClientMessage message = session.createMessage(false);
       SimpleString key = RandomUtil.randomSimpleString();
       long value = RandomUtil.randomLong();
       message.putLongProperty(key, value);
@@ -569,7 +569,7 @@ public class QueueControlTest extends ManagementTestBase
       ClientProducer producer = session.createProducer(address);
 
       // send on queue
-      ClientMessage message = session.createClientMessage(false);
+      ClientMessage message = session.createMessage(false);
       SimpleString key = RandomUtil.randomSimpleString();
       long value = RandomUtil.randomLong();
       message.putLongProperty(key, value);
@@ -619,10 +619,10 @@ public class QueueControlTest extends ManagementTestBase
       ClientProducer producer = session.createProducer(address);
 
       // send on queue
-      ClientMessage matchingMessage = session.createClientMessage(false);
+      ClientMessage matchingMessage = session.createMessage(false);
       matchingMessage.putLongProperty(key, matchingValue);
       producer.send(matchingMessage);
-      ClientMessage unmatchingMessage = session.createClientMessage(false);
+      ClientMessage unmatchingMessage = session.createMessage(false);
       unmatchingMessage.putLongProperty(key, unmatchingValue);
       producer.send(unmatchingMessage);
 
@@ -666,8 +666,8 @@ public class QueueControlTest extends ManagementTestBase
       ClientProducer producer = session.createProducer(address);
 
       // send 2 messages on queue
-      producer.send(session.createClientMessage(false));
-      producer.send(session.createClientMessage(false));
+      producer.send(session.createMessage(false));
+      producer.send(session.createMessage(false));
 
       QueueControl queueControl = createManagementControl(address, queue);
       QueueControl otherQueueControl = createManagementControl(otherAddress, otherQueue);
@@ -701,7 +701,7 @@ public class QueueControlTest extends ManagementTestBase
       ClientProducer producer = session.createProducer(address);
 
       // send 2 messages on queue
-      producer.send(session.createClientMessage(false));
+      producer.send(session.createMessage(false));
 
       QueueControl queueControl = createManagementControl(address, queue);
       Assert.assertEquals(1, queueControl.getMessageCount());
@@ -748,10 +748,10 @@ public class QueueControlTest extends ManagementTestBase
       ClientProducer producer = session.createProducer(address);
 
       // send on queue
-      ClientMessage matchingMessage = session.createClientMessage(false);
+      ClientMessage matchingMessage = session.createMessage(false);
       matchingMessage.putLongProperty(key, matchingValue);
       producer.send(matchingMessage);
-      ClientMessage unmatchingMessage = session.createClientMessage(false);
+      ClientMessage unmatchingMessage = session.createMessage(false);
       unmatchingMessage.putLongProperty(key, unmatchingValue);
       producer.send(unmatchingMessage);
 
@@ -788,8 +788,8 @@ public class QueueControlTest extends ManagementTestBase
       ClientProducer producer = session.createProducer(address);
 
       // send on queue
-      producer.send(session.createClientMessage(false));
-      producer.send(session.createClientMessage(false));
+      producer.send(session.createMessage(false));
+      producer.send(session.createMessage(false));
 
       QueueControl queueControl = createManagementControl(address, queue);
       Assert.assertEquals(2, queueControl.getMessageCount());
@@ -811,8 +811,8 @@ public class QueueControlTest extends ManagementTestBase
       ClientProducer producer = session.createProducer(address);
 
       // send on queue
-      producer.send(session.createClientMessage(false));
-      producer.send(session.createClientMessage(false));
+      producer.send(session.createMessage(false));
+      producer.send(session.createMessage(false));
 
       QueueControl queueControl = createManagementControl(address, queue);
       Assert.assertEquals(2, queueControl.getMessageCount());
@@ -834,8 +834,8 @@ public class QueueControlTest extends ManagementTestBase
       ClientProducer producer = session.createProducer(address);
 
       // send 2 messages on queue
-      producer.send(session.createClientMessage(false));
-      producer.send(session.createClientMessage(false));
+      producer.send(session.createMessage(false));
+      producer.send(session.createMessage(false));
 
       QueueControl queueControl = createManagementControl(address, queue);
       Assert.assertEquals(2, queueControl.getMessageCount());
@@ -869,9 +869,9 @@ public class QueueControlTest extends ManagementTestBase
       ClientProducer producer = session.createProducer(address);
 
       // send on queue
-      ClientMessage matchingMessage = session.createClientMessage(false);
+      ClientMessage matchingMessage = session.createMessage(false);
       matchingMessage.putLongProperty(key, matchingValue);
-      ClientMessage unmatchingMessage = session.createClientMessage(false);
+      ClientMessage unmatchingMessage = session.createMessage(false);
       unmatchingMessage.putLongProperty(key, unmatchingValue);
       producer.send(matchingMessage);
       producer.send(unmatchingMessage);
@@ -899,10 +899,10 @@ public class QueueControlTest extends ManagementTestBase
       ClientProducer producer = session.createProducer(address);
 
       // send on queue
-      ClientMessage matchingMessage = session.createClientMessage(false);
+      ClientMessage matchingMessage = session.createMessage(false);
       matchingMessage.putLongProperty(key, matchingValue);
       producer.send(matchingMessage);
-      ClientMessage unmatchingMessage = session.createClientMessage(false);
+      ClientMessage unmatchingMessage = session.createMessage(false);
       unmatchingMessage.putLongProperty(key, unmatchingValue);
       producer.send(unmatchingMessage);
 
@@ -942,7 +942,7 @@ public class QueueControlTest extends ManagementTestBase
       ClientProducer producer = session.createProducer(address);
 
       // send on queue
-      producer.send(session.createClientMessage(false));
+      producer.send(session.createMessage(false));
 
       QueueControl queueControl = createManagementControl(address, queue);
       QueueControl expiryQueueControl = createManagementControl(expiryAddress, expiryQueue);
@@ -980,8 +980,8 @@ public class QueueControlTest extends ManagementTestBase
       ClientProducer producer = session.createProducer(address);
 
       // send 2 messages on queue
-      producer.send(session.createClientMessage(false));
-      producer.send(session.createClientMessage(false));
+      producer.send(session.createMessage(false));
+      producer.send(session.createMessage(false));
 
       QueueControl queueControl = createManagementControl(address, queue);
       QueueControl deadLetterQueueControl = createManagementControl(deadLetterAddress, deadLetterQueue);
@@ -1021,7 +1021,7 @@ public class QueueControlTest extends ManagementTestBase
       session.createQueue(address, queue, null, false);
       ClientProducer producer = session.createProducer(address);
 
-      ClientMessage message = session.createClientMessage(false);
+      ClientMessage message = session.createMessage(false);
       message.setPriority(originalPriority);
       producer.send(message);
 
@@ -1055,7 +1055,7 @@ public class QueueControlTest extends ManagementTestBase
       session.createQueue(address, queue, null, false);
       ClientProducer producer = session.createProducer(address);
 
-      ClientMessage message = session.createClientMessage(false);
+      ClientMessage message = session.createMessage(false);
       producer.send(message);
 
       QueueControl queueControl = createManagementControl(address, queue);
@@ -1103,7 +1103,7 @@ public class QueueControlTest extends ManagementTestBase
       Assert.assertEquals(0, info.getCount());
 
       ClientProducer producer = session.createProducer(address);
-      producer.send(session.createClientMessage(false));
+      producer.send(session.createMessage(false));
 
       Thread.sleep(MessageCounterManagerImpl.MIN_SAMPLE_PERIOD * 2);
       jsonString = queueControl.listMessageCounter();
@@ -1113,7 +1113,7 @@ public class QueueControlTest extends ManagementTestBase
       Assert.assertEquals(1, info.getCount());
       Assert.assertEquals(1, info.getCountDelta());
 
-      producer.send(session.createClientMessage(false));
+      producer.send(session.createMessage(false));
 
       Thread.sleep(MessageCounterManagerImpl.MIN_SAMPLE_PERIOD * 2);
       jsonString = queueControl.listMessageCounter();
@@ -1155,7 +1155,7 @@ public class QueueControlTest extends ManagementTestBase
       Assert.assertEquals(0, info.getCount());
 
       ClientProducer producer = session.createProducer(address);
-      producer.send(session.createClientMessage(false));
+      producer.send(session.createMessage(false));
 
       Thread.sleep(MessageCounterManagerImpl.MIN_SAMPLE_PERIOD * 2);
       jsonString = queueControl.listMessageCounter();

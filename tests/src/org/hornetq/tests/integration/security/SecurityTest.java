@@ -491,7 +491,7 @@ public class SecurityTest extends ServiceTestBase
          ClientSession session = cf.createSession("auser", "pass", false, true, true, false, -1);
          session.createQueue(SecurityTest.addressA, SecurityTest.queueA, true);
          ClientProducer cp = session.createProducer(SecurityTest.addressA);
-         cp.send(session.createClientMessage(false));
+         cp.send(session.createMessage(false));
          session.close();
       }
       finally
@@ -527,7 +527,7 @@ public class SecurityTest extends ServiceTestBase
          ClientProducer cp = session.createProducer(SecurityTest.addressA);
          try
          {
-            cp.send(session.createClientMessage(false));
+            cp.send(session.createMessage(false));
          }
          catch (HornetQException e)
          {
@@ -565,7 +565,7 @@ public class SecurityTest extends ServiceTestBase
          ClientSession session = cf.createSession("auser", "pass", false, true, true, false, -1);
          session.createQueue(SecurityTest.addressA, SecurityTest.queueA, true);
          ClientProducer cp = session.createProducer(SecurityTest.addressA);
-         cp.send(session.createClientMessage(false));
+         cp.send(session.createMessage(false));
          session.close();
 
          Queue binding = (Queue)server.getPostOffice().getBinding(new SimpleString(SecurityTest.queueA)).getBindable();
@@ -607,7 +607,7 @@ public class SecurityTest extends ServiceTestBase
          ClientSession session = cf.createSession("auser", "pass", false, true, true, false, -1);
          senSession.createQueue(SecurityTest.addressA, SecurityTest.queueA, true);
          ClientProducer cp = senSession.createProducer(SecurityTest.addressA);
-         cp.send(session.createClientMessage(false));
+         cp.send(session.createMessage(false));
          ClientConsumer cc = session.createConsumer(SecurityTest.queueA);
          session.close();
          senSession.close();
@@ -648,7 +648,7 @@ public class SecurityTest extends ServiceTestBase
          ClientSession session = cf.createSession("auser", "pass", false, true, true, false, -1);
          senSession.createQueue(SecurityTest.addressA, SecurityTest.queueA, true);
          ClientProducer cp = senSession.createProducer(SecurityTest.addressA);
-         cp.send(session.createClientMessage(false));
+         cp.send(session.createMessage(false));
          try
          {
             ClientConsumer cc = session.createConsumer(SecurityTest.queueA);
@@ -699,7 +699,7 @@ public class SecurityTest extends ServiceTestBase
          ClientSession session = cf.createSession("auser", "pass", false, true, true, false, -1);
          senSession.createQueue(SecurityTest.addressA, SecurityTest.queueA, true);
          ClientProducer cp = senSession.createProducer(SecurityTest.addressA);
-         cp.send(session.createClientMessage(false));
+         cp.send(session.createMessage(false));
          try
          {
             ClientConsumer cc = session.createConsumer(SecurityTest.queueA);
@@ -761,7 +761,7 @@ public class SecurityTest extends ServiceTestBase
          ClientSession session = cf.createSession("auser", "pass", false, true, true, false, -1);
          senSession.createQueue(SecurityTest.addressA, SecurityTest.queueA, true);
          ClientProducer cp = senSession.createProducer(SecurityTest.addressA);
-         cp.send(session.createClientMessage(false));
+         cp.send(session.createMessage(false));
          try
          {
             session.createConsumer(SecurityTest.queueA);
@@ -835,7 +835,7 @@ public class SecurityTest extends ServiceTestBase
          ClientSession session = cf.createSession("auser", "pass", false, true, true, false, -1);
          senSession.createQueue(SecurityTest.addressA, SecurityTest.queueA, true);
          ClientProducer cp = senSession.createProducer(SecurityTest.addressA);
-         cp.send(session.createClientMessage(false));
+         cp.send(session.createMessage(false));
          try
          {
             session.createConsumer(SecurityTest.queueA);
@@ -929,7 +929,7 @@ public class SecurityTest extends ServiceTestBase
          cf.setBlockOnNonDurableSend(true);
          ClientSession session = cf.createSession("auser", "pass", false, true, true, false, -1);
          ClientProducer cp = session.createProducer(configuration.getManagementAddress());
-         cp.send(session.createClientMessage(false));
+         cp.send(session.createMessage(false));
          session.close();
       }
       finally
@@ -962,10 +962,10 @@ public class SecurityTest extends ServiceTestBase
          ClientSession session = cf.createSession("auser", "pass", false, true, true, false, -1);
          session.createQueue(configuration.getManagementAddress().toString(), SecurityTest.queueA, true);
          ClientProducer cp = session.createProducer(configuration.getManagementAddress());
-         cp.send(session.createClientMessage(false));
+         cp.send(session.createMessage(false));
          try
          {
-            cp.send(session.createClientMessage(false));
+            cp.send(session.createMessage(false));
          }
          catch (HornetQException e)
          {
@@ -1003,7 +1003,7 @@ public class SecurityTest extends ServiceTestBase
          ClientSession session = cf.createSession("auser", "pass", false, true, true, false, -1);
          session.createQueue(configuration.getManagementAddress().toString(), SecurityTest.queueA, true);
          ClientProducer cp = session.createProducer(configuration.getManagementAddress());
-         cp.send(session.createClientMessage(false));
+         cp.send(session.createMessage(false));
          session.close();
 
          Queue binding = (Queue)server.getPostOffice().getBinding(new SimpleString(SecurityTest.queueA)).getBindable();
@@ -1383,7 +1383,7 @@ public class SecurityTest extends ServiceTestBase
       {
          ClientProducer prod = connection.createProducer(genericQueueName);
          ClientConsumer con = connection.createConsumer(genericQueueName);
-         ClientMessage m = connection.createClientMessage(false);
+         ClientMessage m = connection.createMessage(false);
          prod.send(m);
          ClientMessage rec = con.receive(1000);
          Assert.assertNotNull(rec);
@@ -1404,7 +1404,7 @@ public class SecurityTest extends ServiceTestBase
       try
       {
          ClientProducer prod = connection.createProducer(queue);
-         ClientMessage m = connection.createClientMessage(false);
+         ClientMessage m = connection.createMessage(false);
          try
          {
             prod.send(m);
@@ -1436,7 +1436,7 @@ public class SecurityTest extends ServiceTestBase
       try
       {
          ClientProducer prod = connection.createProducer(queue);
-         ClientMessage m = connection.createClientMessage(false);
+         ClientMessage m = connection.createMessage(false);
          try
          {
             prod.send(m);
@@ -1470,7 +1470,7 @@ public class SecurityTest extends ServiceTestBase
    private void checkUserSendNoReceive(final String queue, final ClientSession connection) throws Exception
    {
       ClientProducer prod = connection.createProducer(queue);
-      ClientMessage m = connection.createClientMessage(false);
+      ClientMessage m = connection.createMessage(false);
       prod.send(m);
 
       try

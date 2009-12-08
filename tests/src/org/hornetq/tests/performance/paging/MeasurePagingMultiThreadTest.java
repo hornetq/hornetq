@@ -100,7 +100,7 @@ public class MeasurePagingMultiThreadTest extends ServiceTestBase
             {
                session = factory.createSession(false, true, true);
                producer = session.createProducer(adr);
-               msg = session.createClientMessage(true);
+               msg = session.createMessage(true);
                msg.getBodyBuffer().writeBytes(new byte[SIZE_OF_MESSAGE]);
             }
 
@@ -203,7 +203,7 @@ public class MeasurePagingMultiThreadTest extends ServiceTestBase
    {
       ClientSession session = factory.createSession(false, true, true);
       ClientProducer producer = session.createProducer(adr);
-      ClientMessage msg = session.createClientMessage(true);
+      ClientMessage msg = session.createMessage(true);
 
       msg.getBodyBuffer().writeBytes(new byte[messageSize]);
 

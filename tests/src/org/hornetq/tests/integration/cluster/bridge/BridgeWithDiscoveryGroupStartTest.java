@@ -157,7 +157,7 @@ public class BridgeWithDiscoveryGroupStartTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = session0.createClientMessage(false);
+         ClientMessage message = session0.createMessage(false);
 
          message.putIntProperty(propKey, i);
 
@@ -183,7 +183,7 @@ public class BridgeWithDiscoveryGroupStartTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = session0.createClientMessage(false);
+         ClientMessage message = session0.createMessage(false);
 
          message.putIntProperty(propKey, i);
 

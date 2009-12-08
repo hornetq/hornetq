@@ -97,7 +97,7 @@ public class CompactingStressTest extends ServiceTestBase
 
       for (int i = 0; i < 500; i++)
       {
-         prod.send(session.createClientMessage(true));
+         prod.send(session.createMessage(true));
       }
 
       session.commit();
@@ -115,7 +115,7 @@ public class CompactingStressTest extends ServiceTestBase
          // Sending non transactionally, so it would test non transactional stuff on the journal
          for (int j = 0; j < 1000; j++)
          {
-            Message msg = session.createClientMessage(true);
+            Message msg = session.createMessage(true);
             msg.getBodyBuffer().writeBytes(new byte[1024]);
 
             prod.send(msg);
@@ -186,7 +186,7 @@ public class CompactingStressTest extends ServiceTestBase
 
          byte[] buffer = new byte[10 * 1024];
 
-         ClientMessage msg = session.createClientMessage(true);
+         ClientMessage msg = session.createMessage(true);
 
          for (int i = 0; i < CompactingStressTest.TOT_AD3; i++)
          {
@@ -245,9 +245,9 @@ public class CompactingStressTest extends ServiceTestBase
                      {
                         sessionSlow.commit();
                      }
-                     slowProd.send(session.createClientMessage(true));
+                     slowProd.send(session.createMessage(true));
                   }
-                  ClientMessage msg = session.createClientMessage(true);
+                  ClientMessage msg = session.createMessage(true);
 
                   prod.send(msg);
                }

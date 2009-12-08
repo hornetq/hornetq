@@ -280,7 +280,7 @@ public class ScheduledMessageTest extends ServiceTestBase
       ClientSession session = sessionFactory.createSession(false, true, false);
       session.createQueue(atestq, atestq, null, true);
       ClientProducer producer = session.createProducer(atestq);
-      ClientMessage message = session.createClientMessage(HornetQTextMessage.TYPE,
+      ClientMessage message = session.createMessage(HornetQTextMessage.TYPE,
                                                           false,
                                                           0,
                                                           System.currentTimeMillis(),
@@ -768,7 +768,7 @@ public class ScheduledMessageTest extends ServiceTestBase
 
    private ClientMessage createDurableMessage(final ClientSession session, final String body)
    {
-      ClientMessage message = session.createClientMessage(HornetQTextMessage.TYPE,
+      ClientMessage message = session.createMessage(HornetQTextMessage.TYPE,
                                                           true,
                                                           0,
                                                           System.currentTimeMillis(),

@@ -47,7 +47,7 @@ public class ReceiveTest extends ServiceTestBase
          session.createQueue(addressA, queueA, false);
          ClientConsumer cc = session.createConsumer(queueA);
          session.start();
-         cp.send(sendSession.createClientMessage(false));
+         cp.send(sendSession.createMessage(false));
          Assert.assertNotNull(cc.receive());
          session.close();
          sendSession.close();
@@ -174,9 +174,9 @@ public class ReceiveTest extends ServiceTestBase
          ClientConsumer cc = session.createConsumer(queueA);
          ClientConsumer cc2 = session.createConsumer(queueA);
          session.start();
-         cp.send(sendSession.createClientMessage(false));
-         cp.send(sendSession.createClientMessage(false));
-         cp.send(sendSession.createClientMessage(false));
+         cp.send(sendSession.createMessage(false));
+         cp.send(sendSession.createMessage(false));
+         cp.send(sendSession.createMessage(false));
          // at this point we know that the first consumer has a messge in ites buffer
          Assert.assertNotNull(cc2.receive(5000));
          Assert.assertNotNull(cc2.receive(5000));

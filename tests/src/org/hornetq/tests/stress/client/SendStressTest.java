@@ -76,7 +76,7 @@ public class SendStressTest extends ServiceTestBase
 
          ClientProducer producer = session.createProducer("address");
 
-         ClientMessage message = session.createClientMessage(false);
+         ClientMessage message = session.createMessage(false);
 
          message.getBodyBuffer().writeBytes(new byte[1024]);
 

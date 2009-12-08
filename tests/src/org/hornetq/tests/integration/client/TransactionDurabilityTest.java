@@ -82,7 +82,7 @@ public class TransactionDurabilityTest extends ServiceTestBase
 
       ClientProducer producer = session1.createProducer(testAddress);
 
-      ClientMessage message = session1.createClientMessage(true);
+      ClientMessage message = session1.createMessage(true);
 
       producer.send(message);
 

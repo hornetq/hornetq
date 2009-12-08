@@ -573,7 +573,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       rollbackOnly = false;
    }
 
-   public ClientMessage createClientMessage(final byte type,
+   public ClientMessage createMessage(final byte type,
                                             final boolean durable,
                                             final long expiration,
                                             final long timestamp,
@@ -582,14 +582,14 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       return new ClientMessageImpl(type, durable, expiration, timestamp, priority, initialMessagePacketSize);
    }
 
-   public ClientMessage createClientMessage(final byte type, final boolean durable)
+   public ClientMessage createMessage(final byte type, final boolean durable)
    {
-      return this.createClientMessage(type, durable, 0, System.currentTimeMillis(), (byte)4);
+      return this.createMessage(type, durable, 0, System.currentTimeMillis(), (byte)4);
    }
 
-   public ClientMessage createClientMessage(final boolean durable)
+   public ClientMessage createMessage(final boolean durable)
    {
-      return this.createClientMessage((byte)0, durable);
+      return this.createMessage((byte)0, durable);
    }
 
    public boolean isClosed()

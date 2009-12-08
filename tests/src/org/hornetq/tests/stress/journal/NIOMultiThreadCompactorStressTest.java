@@ -305,7 +305,7 @@ public class NIOMultiThreadCompactorStressTest extends ServiceTestBase
       ClientProducer prod = session.createProducer(queue);
       for (int i = 0; i < nmessages; i++)
       {
-         ClientMessage msg = session.createClientMessage(true);
+         ClientMessage msg = session.createMessage(true);
          msg.getBodyBuffer().writeBytes(new byte[1024]);
          prod.send(msg);
       }
@@ -458,7 +458,7 @@ public class NIOMultiThreadCompactorStressTest extends ServiceTestBase
                {
                   // System.out.println(Thread.currentThread().getName() + "::sent #" + i);
                }
-               ClientMessage msg = session.createClientMessage(true);
+               ClientMessage msg = session.createMessage(true);
 
                prod.send(msg);
             }

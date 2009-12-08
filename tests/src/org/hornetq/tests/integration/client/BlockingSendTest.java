@@ -68,7 +68,7 @@ public class BlockingSendTest extends ServiceTestBase
 
          ClientProducer prod = session.createProducer("address");
 
-         ClientMessage message = session.createClientMessage(true);
+         ClientMessage message = session.createMessage(true);
 
          prod.send(message);
 

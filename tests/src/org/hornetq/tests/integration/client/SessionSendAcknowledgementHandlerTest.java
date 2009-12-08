@@ -96,7 +96,7 @@ public class SessionSendAcknowledgementHandlerTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage msg = session.createClientMessage(false);
+         ClientMessage msg = session.createMessage(false);
 
          prod.send(msg);
       }

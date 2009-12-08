@@ -172,7 +172,7 @@ public class BridgeReconnectTest extends BridgeTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = session0.createClientMessage(true);
+         ClientMessage message = session0.createMessage(true);
          message.putIntProperty(propKey, i);
 
          prod0.send(message);
@@ -299,7 +299,7 @@ public class BridgeReconnectTest extends BridgeTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = session0.createClientMessage(false);
+         ClientMessage message = session0.createMessage(false);
          message.putIntProperty(propKey, i);
 
          prod0.send(message);
@@ -415,7 +415,7 @@ public class BridgeReconnectTest extends BridgeTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = session0.createClientMessage(false);
+         ClientMessage message = session0.createMessage(false);
          message.putIntProperty(propKey, i);
 
          prod0.send(message);
@@ -543,7 +543,7 @@ public class BridgeReconnectTest extends BridgeTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = session0.createClientMessage(false);
+         ClientMessage message = session0.createMessage(false);
          message.putIntProperty(propKey, i);
 
          prod0.send(message);
@@ -656,7 +656,7 @@ public class BridgeReconnectTest extends BridgeTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = session0.createClientMessage(false);
+         ClientMessage message = session0.createMessage(false);
          message.putIntProperty(propKey, i);
 
          prod0.send(message);
@@ -677,7 +677,7 @@ public class BridgeReconnectTest extends BridgeTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = session0.createClientMessage(false);
+         ClientMessage message = session0.createMessage(false);
          message.putIntProperty(propKey, i);
 
          prod0.send(message);

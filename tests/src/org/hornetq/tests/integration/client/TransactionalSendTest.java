@@ -48,7 +48,7 @@ public class TransactionalSendTest extends ServiceTestBase
          int numMessages = 100;
          for (int i = 0; i < numMessages; i++)
          {
-            cp.send(session.createClientMessage(false));
+            cp.send(session.createMessage(false));
          }
          Queue q = (Queue)server.getPostOffice().getBinding(queueA).getBindable();
          Assert.assertEquals(q.getMessageCount(), 0);
@@ -57,7 +57,7 @@ public class TransactionalSendTest extends ServiceTestBase
          // now send some more
          for (int i = 0; i < numMessages; i++)
          {
-            cp.send(session.createClientMessage(false));
+            cp.send(session.createMessage(false));
          }
          Assert.assertEquals(q.getMessageCount(), numMessages);
          session.commit();
@@ -86,7 +86,7 @@ public class TransactionalSendTest extends ServiceTestBase
          int numMessages = 100;
          for (int i = 0; i < numMessages; i++)
          {
-            cp.send(session.createClientMessage(false));
+            cp.send(session.createMessage(false));
          }
          Queue q = (Queue)server.getPostOffice().getBinding(queueA).getBindable();
          Assert.assertEquals(q.getMessageCount(), 0);
@@ -95,7 +95,7 @@ public class TransactionalSendTest extends ServiceTestBase
          // now send some more
          for (int i = 0; i < numMessages; i++)
          {
-            cp.send(session.createClientMessage(false));
+            cp.send(session.createMessage(false));
          }
          Assert.assertEquals(q.getMessageCount(), 0);
          session.commit();

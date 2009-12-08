@@ -78,7 +78,7 @@ public class TemporaryQueueTest extends ServiceTestBase
       session.createTemporaryQueue(address, queue);
 
       ClientProducer producer = session.createProducer(address);
-      ClientMessage msg = session.createClientMessage(false);
+      ClientMessage msg = session.createMessage(false);
 
       producer.send(msg);
 
@@ -102,7 +102,7 @@ public class TemporaryQueueTest extends ServiceTestBase
       session.createTemporaryQueue(address, queue);
 
       ClientProducer producer = session.createProducer(address);
-      producer.send(session.createClientMessage(false));
+      producer.send(session.createMessage(false));
 
       ClientSession session2 = sf.createSession(false, true, true);
       session2.start();

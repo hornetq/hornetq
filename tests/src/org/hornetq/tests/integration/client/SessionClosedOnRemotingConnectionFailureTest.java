@@ -60,7 +60,7 @@ public class SessionClosedOnRemotingConnectionFailureTest extends UnitTestCase
 
          session.start();
 
-         prod.send(session.createClientMessage(false));
+         prod.send(session.createMessage(false));
 
          Assert.assertNotNull(cons.receive());
 
@@ -80,7 +80,7 @@ public class SessionClosedOnRemotingConnectionFailureTest extends UnitTestCase
 
          try
          {
-            prod.send(session.createClientMessage(false));
+            prod.send(session.createMessage(false));
 
             Assert.fail("Should throw exception");
          }

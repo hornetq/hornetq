@@ -289,7 +289,7 @@ public class ProducerFlowControlTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = session.createClientMessage(false);
+         ClientMessage message = session.createMessage(false);
 
          message.getBodyBuffer().writeBytes(bytes);
 
@@ -389,7 +389,7 @@ public class ProducerFlowControlTest extends ServiceTestBase
 
       byte[] bytes = new byte[0];
 
-      ClientMessage message = session.createClientMessage(false);
+      ClientMessage message = session.createMessage(false);
 
       message.getBodyBuffer().writeBytes(bytes);
 
@@ -421,7 +421,7 @@ public class ProducerFlowControlTest extends ServiceTestBase
 
       t.start();
 
-      ClientMessage message2 = session.createClientMessage(false);
+      ClientMessage message2 = session.createMessage(false);
 
       message2.getBodyBuffer().writeBytes(bytes);
 
@@ -475,7 +475,7 @@ public class ProducerFlowControlTest extends ServiceTestBase
 
       byte[] bytes = new byte[0];
 
-      ClientMessage message = session.createClientMessage(false);
+      ClientMessage message = session.createMessage(false);
 
       message.getBodyBuffer().writeBytes(bytes);
 
@@ -505,7 +505,7 @@ public class ProducerFlowControlTest extends ServiceTestBase
 
       Assert.assertEquals(1, waiting);
 
-      message = session.createClientMessage(false);
+      message = session.createMessage(false);
 
       message.getBodyBuffer().writeBytes(bytes);
 
@@ -554,7 +554,7 @@ public class ProducerFlowControlTest extends ServiceTestBase
 
       byte[] bytes = new byte[0];
 
-      ClientMessage message = session.createClientMessage(false);
+      ClientMessage message = session.createMessage(false);
 
       message.getBodyBuffer().writeBytes(bytes);
 
@@ -602,7 +602,7 @@ public class ProducerFlowControlTest extends ServiceTestBase
 
       session.close();
 
-      message = session.createClientMessage(false);
+      message = session.createMessage(false);
 
       message.getBodyBuffer().writeBytes(bytes);
 
@@ -650,7 +650,7 @@ public class ProducerFlowControlTest extends ServiceTestBase
 
       byte[] bytes = new byte[2000];
 
-      ClientMessage message = session.createClientMessage(false);
+      ClientMessage message = session.createMessage(false);
 
       message.getBodyBuffer().writeBytes(bytes);
 
@@ -723,7 +723,7 @@ public class ProducerFlowControlTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = session.createClientMessage(false);
+         ClientMessage message = session.createMessage(false);
 
          message.getBodyBuffer().writeBytes(bytes);
 
@@ -768,7 +768,7 @@ public class ProducerFlowControlTest extends ServiceTestBase
 
       byte[] bytes = new byte[2000];
 
-      ClientMessage message = session.createClientMessage(false);
+      ClientMessage message = session.createMessage(false);
 
       message.getBodyBuffer().writeBytes(bytes);
 

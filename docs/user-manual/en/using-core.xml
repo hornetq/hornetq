@@ -135,7 +135,7 @@ session.createQueue("example", "example", true);
 
 ClientProducer producer = session.createProducer("example");
 
-ClientMessage message = session.createClientMessage(true);
+ClientMessage message = session.createMessage(true);
 
 message.getBody().writeString("Hello");
 

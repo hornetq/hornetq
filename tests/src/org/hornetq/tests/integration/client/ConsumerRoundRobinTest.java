@@ -58,7 +58,7 @@ public class ConsumerRoundRobinTest extends ServiceTestBase
          int numMessage = 100;
          for (int i = 0; i < numMessage; i++)
          {
-            ClientMessage cm = session.createClientMessage(false);
+            ClientMessage cm = session.createMessage(false);
             cm.getBodyBuffer().writeInt(i);
             cp.send(cm);
          }

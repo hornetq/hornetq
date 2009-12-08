@@ -151,7 +151,7 @@ public class PersistentDivertTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = session.createClientMessage(true);
+         ClientMessage message = session.createMessage(true);
 
          if (largeMessage)
          {
@@ -344,7 +344,7 @@ public class PersistentDivertTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = session.createClientMessage(true);
+         ClientMessage message = session.createMessage(true);
 
          message.putIntProperty(propKey, i);
 

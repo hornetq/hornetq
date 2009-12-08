@@ -64,7 +64,7 @@ public class MessageExpirationTest extends ServiceTestBase
       session.createQueue(address, queue, false);
 
       ClientProducer producer = session.createProducer(address);
-      ClientMessage message = session.createClientMessage(false);
+      ClientMessage message = session.createMessage(false);
       message.setExpiration(System.currentTimeMillis() + MessageExpirationTest.EXPIRATION);
       producer.send(message);
 
@@ -89,7 +89,7 @@ public class MessageExpirationTest extends ServiceTestBase
 
       ClientProducer producer = session.createProducer(address);
       ClientConsumer consumer = session.createConsumer(queue);
-      ClientMessage message = session.createClientMessage(false);
+      ClientMessage message = session.createMessage(false);
       message.setExpiration(System.currentTimeMillis() + MessageExpirationTest.EXPIRATION);
       producer.send(message);
 
@@ -117,7 +117,7 @@ public class MessageExpirationTest extends ServiceTestBase
       session.createQueue(address, queue, false);
 
       ClientProducer producer = session.createProducer(address);
-      ClientMessage message = session.createClientMessage(false);
+      ClientMessage message = session.createMessage(false);
       message.setExpiration(System.currentTimeMillis() + MessageExpirationTest.EXPIRATION);
       producer.send(message);
 
@@ -156,7 +156,7 @@ public class MessageExpirationTest extends ServiceTestBase
       session.createQueue(expiryAddress, expiryQueue, false);
 
       ClientProducer producer = session.createProducer(address);
-      ClientMessage message = session.createClientMessage(false);
+      ClientMessage message = session.createMessage(false);
       message.setExpiration(System.currentTimeMillis() + MessageExpirationTest.EXPIRATION);
       producer.send(message);
 

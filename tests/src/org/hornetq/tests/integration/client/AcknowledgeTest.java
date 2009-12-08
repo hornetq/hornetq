@@ -59,7 +59,7 @@ public class AcknowledgeTest extends ServiceTestBase
          int numMessages = 100;
          for (int i = 0; i < numMessages; i++)
          {
-            cp.send(sendSession.createClientMessage(false));
+            cp.send(sendSession.createMessage(false));
          }
          session.start();
          ClientMessage cm = null;
@@ -99,7 +99,7 @@ public class AcknowledgeTest extends ServiceTestBase
          int numMessages = 100;
          for (int i = 0; i < numMessages; i++)
          {
-            cp.send(sendSession.createClientMessage(false));
+            cp.send(sendSession.createMessage(false));
          }
          final CountDownLatch latch = new CountDownLatch(numMessages);
          session.start();
@@ -142,7 +142,7 @@ public class AcknowledgeTest extends ServiceTestBase
          int numMessages = 100;
          for (int i = 0; i < numMessages; i++)
          {
-            cp.send(sendSession.createClientMessage(false));
+            cp.send(sendSession.createMessage(false));
          }
          final CountDownLatch latch = new CountDownLatch(numMessages);
          session.start();
@@ -200,7 +200,7 @@ public class AcknowledgeTest extends ServiceTestBase
          int numMessages = 100;
          for (int i = 0; i < numMessages; i++)
          {
-            cp.send(sendSession.createClientMessage(false));
+            cp.send(sendSession.createMessage(false));
          }
          final CountDownLatch latch = new CountDownLatch(numMessages);
          session.start();

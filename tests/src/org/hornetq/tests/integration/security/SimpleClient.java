@@ -59,7 +59,7 @@ public class SimpleClient
          ClientProducer producer = session.createProducer(queueName);
          ClientConsumer consumer = session.createConsumer(queueName);
 
-         ClientMessage message = session.createClientMessage(HornetQTextMessage.TYPE,
+         ClientMessage message = session.createMessage(HornetQTextMessage.TYPE,
                                                              false,
                                                              0,
                                                              System.currentTimeMillis(),

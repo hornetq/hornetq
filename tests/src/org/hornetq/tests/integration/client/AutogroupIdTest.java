@@ -79,7 +79,7 @@ public class AutogroupIdTest extends ServiceTestBase
 
          for (int i = 0; i < numMessages; i++)
          {
-            producer.send(session.createClientMessage(false));
+            producer.send(session.createMessage(false));
          }
          latch.await();
 
@@ -136,11 +136,11 @@ public class AutogroupIdTest extends ServiceTestBase
 
          for (int i = 0; i < numMessages; i++)
          {
-            producer.send(session.createClientMessage(false));
+            producer.send(session.createMessage(false));
          }
          for (int i = 0; i < numMessages; i++)
          {
-            producer2.send(session.createClientMessage(false));
+            producer2.send(session.createMessage(false));
          }
          latch.await();
 
@@ -194,7 +194,7 @@ public class AutogroupIdTest extends ServiceTestBase
 
          for (int i = 0; i < numMessages; i++)
          {
-            producer.send(session.createClientMessage(false));
+            producer.send(session.createMessage(false));
          }
          latch.await();
 

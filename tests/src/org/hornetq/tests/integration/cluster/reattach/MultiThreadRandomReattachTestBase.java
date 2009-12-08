@@ -1024,7 +1024,7 @@ public abstract class MultiThreadRandomReattachTestBase extends MultiThreadReatt
 
       ClientProducer producer = sess.createProducer(MultiThreadRandomReattachTestBase.ADDRESS);
 
-      ClientMessage message = sess.createClientMessage(HornetQTextMessage.TYPE,
+      ClientMessage message = sess.createMessage(HornetQTextMessage.TYPE,
                                                        false,
                                                        0,
                                                        System.currentTimeMillis(),
@@ -1061,7 +1061,7 @@ public abstract class MultiThreadRandomReattachTestBase extends MultiThreadReatt
 
       ClientProducer producer = sess.createProducer(MultiThreadRandomReattachTestBase.ADDRESS);
 
-      ClientMessage message = sess.createClientMessage(HornetQTextMessage.TYPE,
+      ClientMessage message = sess.createMessage(HornetQTextMessage.TYPE,
                                                        false,
                                                        0,
                                                        System.currentTimeMillis(),
@@ -1140,7 +1140,7 @@ public abstract class MultiThreadRandomReattachTestBase extends MultiThreadReatt
 
       ClientProducer producer = sess.createProducer(MultiThreadRandomReattachTestBase.ADDRESS);
 
-      ClientMessage message = sess.createClientMessage(HornetQTextMessage.TYPE,
+      ClientMessage message = sess.createMessage(HornetQTextMessage.TYPE,
                                                        false,
                                                        0,
                                                        System.currentTimeMillis(),
@@ -1245,7 +1245,7 @@ public abstract class MultiThreadRandomReattachTestBase extends MultiThreadReatt
    {
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = sessSend.createClientMessage(HornetQBytesMessage.TYPE,
+         ClientMessage message = sessSend.createMessage(HornetQBytesMessage.TYPE,
                                                               false,
                                                               0,
                                                               System.currentTimeMillis(),

@@ -50,7 +50,7 @@ public class AckBatchSizeTest extends ServiceTestBase
    {
       ClientSessionFactory cf = createInVMFactory();
       ClientSession session = cf.createSession(false, true, true);
-      ClientMessage message = session.createClientMessage(false);
+      ClientMessage message = session.createMessage(false);
       // we need to set the destination so we can calculate the encodesize correctly
       message.setDestination(address);
       int encodeSize = message.getEncodeSize();
@@ -77,7 +77,7 @@ public class AckBatchSizeTest extends ServiceTestBase
          ClientProducer cp = sendSession.createProducer(addressA);
          for (int i = 0; i < numMessages; i++)
          {
-            cp.send(sendSession.createClientMessage(false));
+            cp.send(sendSession.createMessage(false));
          }
 
          ClientConsumer consumer = session.createConsumer(queueA);
@@ -127,7 +127,7 @@ public class AckBatchSizeTest extends ServiceTestBase
          ClientProducer cp = sendSession.createProducer(addressA);
          for (int i = 0; i < numMessages; i++)
          {
-            cp.send(sendSession.createClientMessage(false));
+            cp.send(sendSession.createMessage(false));
          }
 
          ClientConsumer consumer = session.createConsumer(queueA);

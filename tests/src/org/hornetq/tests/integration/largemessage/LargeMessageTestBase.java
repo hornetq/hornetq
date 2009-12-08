@@ -565,7 +565,7 @@ public abstract class LargeMessageTestBase extends ServiceTestBase
       LargeMessageTestBase.log.debug("NumberOfBytes = " + numberOfBytes);
       for (int i = 0; i < numberOfMessages; i++)
       {
-         ClientMessage message = session.createClientMessage(true);
+         ClientMessage message = session.createMessage(true);
 
          // If the test is using more than 1M, we will only use the Streaming, as it require too much memory from the
          // test
@@ -623,7 +623,7 @@ public abstract class LargeMessageTestBase extends ServiceTestBase
                                                     final boolean persistent) throws Exception
    {
 
-      ClientMessage clientMessage = session.createClientMessage(persistent);
+      ClientMessage clientMessage = session.createMessage(persistent);
 
       clientMessage.setBodyInputStream(UnitTestCase.createFakeLargeStream(numberOfBytes));
 

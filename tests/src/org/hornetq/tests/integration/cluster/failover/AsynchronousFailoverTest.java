@@ -218,7 +218,7 @@ public class AsynchronousFailoverTest extends FailoverTestBase
 
          for (int i = 0; i < numMessages; i++)
          {
-            ClientMessage message = session.createClientMessage(true);
+            ClientMessage message = session.createMessage(true);
 
             message.getBodyBuffer().writeString("message" + i);
 
@@ -332,7 +332,7 @@ public class AsynchronousFailoverTest extends FailoverTestBase
 
             for (int i = 0; i < numMessages; i++)
             {
-               ClientMessage message = session.createClientMessage(true);
+               ClientMessage message = session.createMessage(true);
 
                message.getBodyBuffer().writeString("message" + i);
 

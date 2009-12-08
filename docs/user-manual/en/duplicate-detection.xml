@@ -74,7 +74,7 @@
         <programlisting>
 ...     
 
-ClientMessage message = session.createClientMessage(true);
+ClientMessage message = session.createMessage(true);
 
 SimpleString myUniqueID = "This is my unique id";   // Could use a UUID for this
 

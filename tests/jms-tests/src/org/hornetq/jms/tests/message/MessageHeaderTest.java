@@ -1261,7 +1261,7 @@ public class MessageHeaderTest extends MessageHeaderTestBase
          return false;
       }
 
-      public ClientMessage createClientMessage(final byte type,
+      public ClientMessage createMessage(final byte type,
                                                final boolean durable,
                                                final long expiration,
                                                final long timestamp,
@@ -1270,12 +1270,12 @@ public class MessageHeaderTest extends MessageHeaderTestBase
          return message;
       }
 
-      public ClientMessage createClientMessage(final byte type, final boolean durable)
+      public ClientMessage createMessage(final byte type, final boolean durable)
       {
          return message;
       }
 
-      public ClientMessage createClientMessage(final boolean durable)
+      public ClientMessage createMessage(final boolean durable)
       {
          return message;
       }
@@ -1369,14 +1369,6 @@ public class MessageHeaderTest extends MessageHeaderTestBase
          return null;
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.client.ClientSession#createClientMessage(boolean, org.hornetq.core.remoting.spi.HornetQBuffer)
-       */
-      public ClientMessage createClientMessage(final boolean durable, final HornetQBuffer buffer)
-      {
-         // TODO Auto-generated method stub
-         return null;
-      }
 
       public void addFailureListener(final SessionFailureListener listener)
       {

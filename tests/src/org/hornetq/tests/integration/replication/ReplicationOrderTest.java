@@ -85,7 +85,7 @@ public class ReplicationOrderTest extends FailoverTestBase
       boolean durable = false;
       for (int i = 0; i < ReplicationOrderTest.NUM; i++)
       {
-         ClientMessage msg = session.createClientMessage(durable);
+         ClientMessage msg = session.createMessage(durable);
          msg.putIntProperty("counter", i);
          producer.send(msg);
          if (transactional)

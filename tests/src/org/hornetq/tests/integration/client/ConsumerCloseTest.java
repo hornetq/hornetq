@@ -110,7 +110,7 @@ public class ConsumerCloseTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = session.createClientMessage(false);
+         ClientMessage message = session.createMessage(false);
 
          producer.send(message);
       }

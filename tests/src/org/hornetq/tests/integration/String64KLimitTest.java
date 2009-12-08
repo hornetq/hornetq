@@ -90,16 +90,16 @@ public class String64KLimitTest extends UnitTestCase
 
       String s4 = genString(10 * 64 * 1024);
 
-      ClientMessage tm1 = session.createClientMessage(false);
+      ClientMessage tm1 = session.createMessage(false);
       tm1.getBodyBuffer().writeString(s1);
 
-      ClientMessage tm2 = session.createClientMessage(false);
+      ClientMessage tm2 = session.createMessage(false);
       tm2.getBodyBuffer().writeString(s2);
 
-      ClientMessage tm3 = session.createClientMessage(false);
+      ClientMessage tm3 = session.createMessage(false);
       tm3.getBodyBuffer().writeString(s3);
 
-      ClientMessage tm4 = session.createClientMessage(false);
+      ClientMessage tm4 = session.createMessage(false);
       tm4.getBodyBuffer().writeString(s4);
 
       producer.send(tm1);
@@ -155,15 +155,15 @@ public class String64KLimitTest extends UnitTestCase
 
       String s4 = genString(10 * 64 * 1024);
 
-      ClientMessage tm1 = session.createClientMessage(false);
+      ClientMessage tm1 = session.createMessage(false);
       tm1.getBodyBuffer().writeUTF(s1);
 
-      ClientMessage tm2 = session.createClientMessage(false);
+      ClientMessage tm2 = session.createMessage(false);
       tm2.getBodyBuffer().writeUTF(s2);
 
       try
       {
-         ClientMessage tm3 = session.createClientMessage(false);
+         ClientMessage tm3 = session.createMessage(false);
          tm3.getBodyBuffer().writeUTF(s3);
          Assert.fail("can not write UTF string bigger than 64K");
       }
@@ -173,7 +173,7 @@ public class String64KLimitTest extends UnitTestCase
 
       try
       {
-         ClientMessage tm4 = session.createClientMessage(false);
+         ClientMessage tm4 = session.createMessage(false);
          tm4.getBodyBuffer().writeUTF(s4);
          Assert.fail("can not write UTF string bigger than 64K");
       }

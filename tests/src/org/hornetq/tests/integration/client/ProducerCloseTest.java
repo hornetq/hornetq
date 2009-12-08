@@ -65,7 +65,7 @@ public class ProducerCloseTest extends ServiceTestBase
       {
          public void run() throws HornetQException
          {
-            producer.send(session.createClientMessage(false));
+            producer.send(session.createMessage(false));
          }
       });
    }

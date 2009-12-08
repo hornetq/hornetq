@@ -92,7 +92,7 @@ public abstract class SecurityManagementTestBase extends UnitTestCase
 
          ClientRequestor requestor = new ClientRequestor(session, ConfigurationImpl.DEFAULT_MANAGEMENT_ADDRESS);
 
-         ClientMessage mngmntMessage = session.createClientMessage(false);
+         ClientMessage mngmntMessage = session.createMessage(false);
          ManagementHelper.putAttribute(mngmntMessage, ResourceNames.CORE_SERVER, "started");
          ClientMessage reply = requestor.request(mngmntMessage, 500);
          if (expectSuccess)

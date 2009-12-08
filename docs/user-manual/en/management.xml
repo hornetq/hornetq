@@ -619,7 +619,7 @@
       <programlisting>
    ClientSession session = ...
    ClientRequestor requestor = new ClientRequestor(session, "hornetq.management");
-   ClientMessage message = session.createClientMessage(false);
+   ClientMessage message = session.createMessage(false);
    ManagementHelper.putAttribute(message, "core.queue.exampleQueue", "messageCount");
    ClientMessage reply = requestor.request(m);
    int count = (Integer) ManagementHelper.getResult(reply);

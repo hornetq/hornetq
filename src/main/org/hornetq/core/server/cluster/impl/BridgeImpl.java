@@ -620,7 +620,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
 
          session.start();
 
-         ClientMessage message = session.createClientMessage(false);
+         ClientMessage message = session.createMessage(false);
 
          ManagementHelper.putOperationInvocation(message,
                                                  ResourceNames.CORE_SERVER,

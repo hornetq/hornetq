@@ -546,7 +546,7 @@ public class SessionStopStartTest extends ServiceTestBase
    {
       ClientSessionFactory cf = createInVMFactory();
       ClientSession session = cf.createSession(false, true, true);
-      ClientMessage message = session.createClientMessage(false);
+      ClientMessage message = session.createMessage(false);
       // we need to set the destination so we can calculate the encodesize correctly
       message.setDestination(address);
       int encodeSize = message.getEncodeSize();

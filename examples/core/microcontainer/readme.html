@@ -44,7 +44,7 @@
 
         <li>Create and send a Message</li>
         <pre class="prettyprint">
-           ClientMessage message = session.createClientMessage(false);
+           ClientMessage message = session.createMessage(false);
            message.putStringProperty(propName, "Hello sent at " + new Date());
            System.out.println("Sending the message.");
            producer.send(message);
