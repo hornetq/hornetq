@@ -393,8 +393,8 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
                                                     final int producerWindowSize,
                                                     final int producerMaxRate,
                                                     final boolean blockOnAcknowledge,
-                                                    final boolean blockOnPersistentSend,
-                                                    final boolean blockOnNonPersistentSend,
+                                                    final boolean blockOnDurableSend,
+                                                    final boolean blockOnNonDurableSend,
                                                     final boolean autoGroup,
                                                     final boolean preAcknowledge,
                                                     final String loadBalancingPolicyClassName,
@@ -428,8 +428,8 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
          cf.setProducerWindowSize(producerWindowSize);
          cf.setProducerMaxRate(producerMaxRate);
          cf.setBlockOnAcknowledge(blockOnAcknowledge);
-         cf.setBlockOnPersistentSend(blockOnPersistentSend);
-         cf.setBlockOnNonPersistentSend(blockOnNonPersistentSend);
+         cf.setBlockOnDurableSend(blockOnDurableSend);
+         cf.setBlockOnNonDurableSend(blockOnNonDurableSend);
          cf.setAutoGroup(autoGroup);
          cf.setPreAcknowledge(preAcknowledge);
          cf.setConnectionLoadBalancingPolicyClassName(loadBalancingPolicyClassName);
@@ -465,8 +465,8 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
                                                     final int producerWindowSize,
                                                     final int producerMaxRate,
                                                     final boolean blockOnAcknowledge,
-                                                    final boolean blockOnPersistentSend,
-                                                    final boolean blockOnNonPersistentSend,
+                                                    final boolean blockOnDurableSend,
+                                                    final boolean blockOnNonDurableSend,
                                                     final boolean autoGroup,
                                                     final boolean preAcknowledge,
                                                     final String loadBalancingPolicyClassName,
@@ -502,8 +502,8 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
          cf.setProducerWindowSize(producerWindowSize);
          cf.setProducerMaxRate(producerMaxRate);
          cf.setBlockOnAcknowledge(blockOnAcknowledge);
-         cf.setBlockOnPersistentSend(blockOnPersistentSend);
-         cf.setBlockOnNonPersistentSend(blockOnNonPersistentSend);
+         cf.setBlockOnDurableSend(blockOnDurableSend);
+         cf.setBlockOnNonDurableSend(blockOnNonDurableSend);
          cf.setAutoGroup(autoGroup);
          cf.setPreAcknowledge(preAcknowledge);
          cf.setConnectionLoadBalancingPolicyClassName(loadBalancingPolicyClassName);
@@ -783,8 +783,8 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
                                     config.getProducerWindowSize(),
                                     config.getProducerMaxRate(),
                                     config.isBlockOnAcknowledge(),
-                                    config.isBlockOnPersistentSend(),
-                                    config.isBlockOnNonPersistentSend(),
+                                    config.isBlockOnDurableSend(),
+                                    config.isBlockOnNonDurableSend(),
                                     config.isAutoGroup(),
                                     config.isPreAcknowledge(),
                                     config.getLoadBalancingPolicyClassName(),
@@ -818,8 +818,8 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
                                     config.getProducerWindowSize(),
                                     config.getProducerMaxRate(),
                                     config.isBlockOnAcknowledge(),
-                                    config.isBlockOnPersistentSend(),
-                                    config.isBlockOnNonPersistentSend(),
+                                    config.isBlockOnDurableSend(),
+                                    config.isBlockOnNonDurableSend(),
                                     config.isAutoGroup(),
                                     config.isPreAcknowledge(),
                                     config.getLoadBalancingPolicyClassName(),

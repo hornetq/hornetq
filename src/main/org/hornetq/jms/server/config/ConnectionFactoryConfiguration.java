@@ -95,13 +95,13 @@ public interface ConnectionFactoryConfiguration
 
    void setBlockOnAcknowledge(boolean blockOnAcknowledge);
 
-   boolean isBlockOnPersistentSend();
+   boolean isBlockOnDurableSend();
 
-   void setBlockOnPersistentSend(boolean blockOnPersistentSend);
+   void setBlockOnDurableSend(boolean blockOnDurableSend);
 
-   boolean isBlockOnNonPersistentSend();
+   boolean isBlockOnNonDurableSend();
 
-   void setBlockOnNonPersistentSend(boolean blockOnNonPersistentSend);
+   void setBlockOnNonDurableSend(boolean blockOnNonDurableSend);
 
    boolean isAutoGroup();
 

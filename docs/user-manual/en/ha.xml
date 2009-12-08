@@ -51,7 +51,7 @@
                     response serially in an RPC manner before replicating the next piece of
                     data.</para>
                 <para>When the user receives confirmation that a transaction has committed, prepared
-                    or rolled back or a persistent message has been sent, we can guarantee it has
+                    or rolled back or a durable message has been sent, we can guarantee it has
                     reached the backup server and been persisted.</para>
                 <para>Data replication introduces some inevitable performance overhead compared to
                     non replicated operation, but has the advantage in that it requires no expensive
@@ -319,7 +319,7 @@
                         linkend="duplicate-detection"/>) in the transaction, and retry the
                     transaction operations again after the call is unblocked. If the transaction had
                     indeed been committed on the live server successfully before failover, then when
-                    the transaction is retried, duplicate detection will ensure that any persistent
+                    the transaction is retried, duplicate detection will ensure that any durable
                     messages resent in the transaction will be ignored on the server to prevent them
                     getting sent more than once.</para>
                 <note>

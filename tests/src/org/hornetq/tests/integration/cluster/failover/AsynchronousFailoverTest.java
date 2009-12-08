@@ -134,8 +134,8 @@ public class AsynchronousFailoverTest extends FailoverTestBase
 
             sf = getSessionFactory();
 
-            sf.setBlockOnNonPersistentSend(true);
-            sf.setBlockOnPersistentSend(true);
+            sf.setBlockOnNonDurableSend(true);
+            sf.setBlockOnDurableSend(true);
 
             ClientSession createSession = sf.createSession(true, true);
 

@@ -1104,8 +1104,8 @@ public abstract class ClusterTestBase extends ServiceTestBase
 
       ClientSessionFactory sf = new ClientSessionFactoryImpl(serverTotc);
 
-      sf.setBlockOnNonPersistentSend(true);
-      sf.setBlockOnPersistentSend(true);
+      sf.setBlockOnNonDurableSend(true);
+      sf.setBlockOnDurableSend(true);
 
       sfs[node] = sf;
    }
@@ -1152,8 +1152,8 @@ public abstract class ClusterTestBase extends ServiceTestBase
       sf.setRetryInterval(100);
       sf.setRetryIntervalMultiplier(1d);
       sf.setReconnectAttempts(-1);
-      sf.setBlockOnNonPersistentSend(blocking);
-      sf.setBlockOnPersistentSend(blocking);
+      sf.setBlockOnNonDurableSend(blocking);
+      sf.setBlockOnDurableSend(blocking);
 
       sfs[node] = sf;
    }

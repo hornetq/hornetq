@@ -160,8 +160,8 @@ public class JMSBridgeImplTest extends UnitTestCase
       HornetQConnectionFactory cf = new HornetQConnectionFactory(new TransportConfiguration(InVMConnectorFactory.class.getName()));
       // Note! We disable automatic reconnection on the session factory. The bridge needs to do the reconnection
       cf.setReconnectAttempts(0);
-      cf.setBlockOnNonPersistentSend(true);
-      cf.setBlockOnPersistentSend(true);
+      cf.setBlockOnNonDurableSend(true);
+      cf.setBlockOnDurableSend(true);
       return cf;
    }
 
@@ -232,8 +232,8 @@ public class JMSBridgeImplTest extends UnitTestCase
       };
       // Note! We disable automatic reconnection on the session factory. The bridge needs to do the reconnection
       failingSourceCF.setReconnectAttempts(0);
-      failingSourceCF.setBlockOnNonPersistentSend(true);
-      failingSourceCF.setBlockOnPersistentSend(true);
+      failingSourceCF.setBlockOnNonDurableSend(true);
+      failingSourceCF.setBlockOnDurableSend(true);
 
       ConnectionFactoryFactory sourceCFF = JMSBridgeImplTest.newConnectionFactoryFactory(failingSourceCF);
       ConnectionFactoryFactory targetCFF = JMSBridgeImplTest.newConnectionFactoryFactory(JMSBridgeImplTest.createConnectionFactory());
@@ -421,8 +421,8 @@ public class JMSBridgeImplTest extends UnitTestCase
       };
       // Note! We disable automatic reconnection on the session factory. The bridge needs to do the reconnection
       failingSourceCF.setReconnectAttempts(0);
-      failingSourceCF.setBlockOnNonPersistentSend(true);
-      failingSourceCF.setBlockOnPersistentSend(true);
+      failingSourceCF.setBlockOnNonDurableSend(true);
+      failingSourceCF.setBlockOnDurableSend(true);
 
       ConnectionFactoryFactory sourceCFF = JMSBridgeImplTest.newConnectionFactoryFactory(failingSourceCF);
       ConnectionFactoryFactory targetCFF = JMSBridgeImplTest.newConnectionFactoryFactory(JMSBridgeImplTest.createConnectionFactory());
@@ -481,8 +481,8 @@ public class JMSBridgeImplTest extends UnitTestCase
       };
       // Note! We disable automatic reconnection on the session factory. The bridge needs to do the reconnection
       failingSourceCF.setReconnectAttempts(0);
-      failingSourceCF.setBlockOnNonPersistentSend(true);
-      failingSourceCF.setBlockOnPersistentSend(true);
+      failingSourceCF.setBlockOnNonDurableSend(true);
+      failingSourceCF.setBlockOnDurableSend(true);
 
       ConnectionFactoryFactory sourceCFF = JMSBridgeImplTest.newConnectionFactoryFactory(failingSourceCF);
       ConnectionFactoryFactory targetCFF = JMSBridgeImplTest.newConnectionFactoryFactory(JMSBridgeImplTest.createConnectionFactory());

@@ -280,8 +280,8 @@ public class LargeJournalStressTest extends ServiceTestBase
 
       sf = createInVMFactory();
       sf.setBlockOnAcknowledge(false);
-      sf.setBlockOnNonPersistentSend(false);
-      sf.setBlockOnPersistentSend(false);
+      sf.setBlockOnNonDurableSend(false);
+      sf.setBlockOnDurableSend(false);
 
       ClientSession sess = sf.createSession();
 

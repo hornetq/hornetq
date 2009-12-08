@@ -104,8 +104,8 @@ public class FailoverTest extends FailoverTestBase
    {
       ClientSessionFactoryInternal sf = getSessionFactory();
 
-      sf.setBlockOnNonPersistentSend(true);
-      sf.setBlockOnPersistentSend(true);
+      sf.setBlockOnNonDurableSend(true);
+      sf.setBlockOnDurableSend(true);
 
       ClientSession session = sf.createSession(true, true);
 
@@ -178,8 +178,8 @@ public class FailoverTest extends FailoverTestBase
    {
       ClientSessionFactoryInternal sf = getSessionFactory();
 
-      sf.setBlockOnNonPersistentSend(true);
-      sf.setBlockOnPersistentSend(true);
+      sf.setBlockOnNonDurableSend(true);
+      sf.setBlockOnDurableSend(true);
 
       ClientSession session = sf.createSession(true, true);
 
@@ -212,8 +212,8 @@ public class FailoverTest extends FailoverTestBase
 
       sf = getSessionFactory();
 
-      sf.setBlockOnNonPersistentSend(true);
-      sf.setBlockOnPersistentSend(true);
+      sf.setBlockOnNonDurableSend(true);
+      sf.setBlockOnDurableSend(true);
 
       session = sf.createSession(true, true);
 
@@ -266,8 +266,8 @@ public class FailoverTest extends FailoverTestBase
    {
       ClientSessionFactoryInternal sf = getSessionFactory();
 
-      sf.setBlockOnNonPersistentSend(true);
-      sf.setBlockOnPersistentSend(true);
+      sf.setBlockOnNonDurableSend(true);
+      sf.setBlockOnDurableSend(true);
 
       ClientSession session = sf.createSession(false, false);
 
@@ -339,8 +339,8 @@ public class FailoverTest extends FailoverTestBase
    {
       ClientSessionFactoryInternal sf = getSessionFactory();
 
-      sf.setBlockOnNonPersistentSend(true);
-      sf.setBlockOnPersistentSend(true);
+      sf.setBlockOnNonDurableSend(true);
+      sf.setBlockOnDurableSend(true);
 
       ClientSession session = sf.createSession(false, false);
 
@@ -420,8 +420,8 @@ public class FailoverTest extends FailoverTestBase
    {
       ClientSessionFactoryInternal sf = getSessionFactory();
 
-      sf.setBlockOnNonPersistentSend(true);
-      sf.setBlockOnPersistentSend(true);
+      sf.setBlockOnNonDurableSend(true);
+      sf.setBlockOnDurableSend(true);
 
       ClientSession session = sf.createSession(false, false);
 
@@ -501,8 +501,8 @@ public class FailoverTest extends FailoverTestBase
    {
       ClientSessionFactoryInternal sf = getSessionFactory();
 
-      sf.setBlockOnNonPersistentSend(true);
-      sf.setBlockOnPersistentSend(true);
+      sf.setBlockOnNonDurableSend(true);
+      sf.setBlockOnDurableSend(true);
 
       ClientSession session = sf.createSession(false, false);
 
@@ -590,8 +590,8 @@ public class FailoverTest extends FailoverTestBase
    {
       ClientSessionFactoryInternal sf = getSessionFactory();
 
-      sf.setBlockOnNonPersistentSend(true);
-      sf.setBlockOnPersistentSend(true);
+      sf.setBlockOnNonDurableSend(true);
+      sf.setBlockOnDurableSend(true);
 
       ClientSession session1 = sf.createSession(false, false);
 
@@ -673,8 +673,8 @@ public class FailoverTest extends FailoverTestBase
    {
       ClientSessionFactoryInternal sf = getSessionFactory();
 
-      sf.setBlockOnNonPersistentSend(true);
-      sf.setBlockOnPersistentSend(true);
+      sf.setBlockOnNonDurableSend(true);
+      sf.setBlockOnDurableSend(true);
 
       ClientSession session1 = sf.createSession(false, false);
 
@@ -768,8 +768,8 @@ public class FailoverTest extends FailoverTestBase
    {
       ClientSessionFactoryInternal sf = getSessionFactory();
 
-      sf.setBlockOnNonPersistentSend(true);
-      sf.setBlockOnPersistentSend(true);
+      sf.setBlockOnNonDurableSend(true);
+      sf.setBlockOnDurableSend(true);
 
       ClientSession session = sf.createSession(true, false, false);
 
@@ -838,8 +838,8 @@ public class FailoverTest extends FailoverTestBase
    {
       ClientSessionFactoryInternal sf = getSessionFactory();
 
-      sf.setBlockOnNonPersistentSend(true);
-      sf.setBlockOnPersistentSend(true);
+      sf.setBlockOnNonDurableSend(true);
+      sf.setBlockOnDurableSend(true);
 
       ClientSession session = sf.createSession(true, false, false);
 
@@ -911,8 +911,8 @@ public class FailoverTest extends FailoverTestBase
    {
       ClientSessionFactoryInternal sf = getSessionFactory();
 
-      sf.setBlockOnNonPersistentSend(true);
-      sf.setBlockOnPersistentSend(true);
+      sf.setBlockOnNonDurableSend(true);
+      sf.setBlockOnDurableSend(true);
 
       ClientSession session = sf.createSession(true, false, false);
 
@@ -985,8 +985,8 @@ public class FailoverTest extends FailoverTestBase
    {
       ClientSessionFactoryInternal sf = getSessionFactory();
 
-      sf.setBlockOnNonPersistentSend(true);
-      sf.setBlockOnPersistentSend(true);
+      sf.setBlockOnNonDurableSend(true);
+      sf.setBlockOnDurableSend(true);
 
       ClientSession session = sf.createSession(true, false, false);
 
@@ -1074,8 +1074,8 @@ public class FailoverTest extends FailoverTestBase
    {
       ClientSessionFactoryInternal sf = getSessionFactory();
 
-      sf.setBlockOnNonPersistentSend(true);
-      sf.setBlockOnPersistentSend(true);
+      sf.setBlockOnNonDurableSend(true);
+      sf.setBlockOnDurableSend(true);
 
       ClientSession session1 = sf.createSession(false, false);
 
@@ -1159,8 +1159,8 @@ public class FailoverTest extends FailoverTestBase
    {
       ClientSessionFactoryInternal sf = getSessionFactory();
 
-      sf.setBlockOnNonPersistentSend(true);
-      sf.setBlockOnPersistentSend(true);
+      sf.setBlockOnNonDurableSend(true);
+      sf.setBlockOnDurableSend(true);
 
       ClientSession session1 = sf.createSession(false, false);
 
@@ -1261,8 +1261,8 @@ public class FailoverTest extends FailoverTestBase
    {
       ClientSessionFactoryInternal sf = getSessionFactory();
 
-      sf.setBlockOnNonPersistentSend(true);
-      sf.setBlockOnPersistentSend(true);
+      sf.setBlockOnNonDurableSend(true);
+      sf.setBlockOnDurableSend(true);
 
       ClientSession session1 = sf.createSession(false, false);
 
@@ -1392,8 +1392,8 @@ public class FailoverTest extends FailoverTestBase
    {
       ClientSessionFactoryInternal sf = getSessionFactory();
 
-      sf.setBlockOnNonPersistentSend(true);
-      sf.setBlockOnPersistentSend(true);
+      sf.setBlockOnNonDurableSend(true);
+      sf.setBlockOnDurableSend(true);
 
       final int numSessions = 10;
 
@@ -1506,8 +1506,8 @@ public class FailoverTest extends FailoverTestBase
    {
       ClientSessionFactoryInternal sf = getSessionFactory();
 
-      sf.setBlockOnNonPersistentSend(true);
-      sf.setBlockOnPersistentSend(true);
+      sf.setBlockOnNonDurableSend(true);
+      sf.setBlockOnDurableSend(true);
 
       ClientSession session = sf.createSession(true, true);
 
@@ -1586,8 +1586,8 @@ public class FailoverTest extends FailoverTestBase
    {
       ClientSessionFactoryInternal sf = getSessionFactory();
 
-      sf.setBlockOnNonPersistentSend(true);
-      sf.setBlockOnPersistentSend(true);
+      sf.setBlockOnNonDurableSend(true);
+      sf.setBlockOnDurableSend(true);
 
       ClientSession session = sf.createSession(true, true);
 
@@ -1668,8 +1668,8 @@ public class FailoverTest extends FailoverTestBase
    {
       ClientSessionFactoryInternal sf = getSessionFactory();
 
-      sf.setBlockOnNonPersistentSend(true);
-      sf.setBlockOnPersistentSend(true);
+      sf.setBlockOnNonDurableSend(true);
+      sf.setBlockOnDurableSend(true);
       sf.setBlockOnAcknowledge(true);
 
       ClientSession session = sf.createSession(true, true, 0);
@@ -1761,8 +1761,8 @@ public class FailoverTest extends FailoverTestBase
    {
       ClientSessionFactoryInternal sf = getSessionFactory();
 
-      sf.setBlockOnNonPersistentSend(true);
-      sf.setBlockOnPersistentSend(true);
+      sf.setBlockOnNonDurableSend(true);
+      sf.setBlockOnDurableSend(true);
       sf.setBlockOnAcknowledge(true);
 
       ClientSession session = sf.createSession(true, true, 0);
@@ -1832,8 +1832,8 @@ public class FailoverTest extends FailoverTestBase
 
       server0Service.getRemotingService().addInterceptor(new DelayInterceptor());
 
-      sf.setBlockOnNonPersistentSend(true);
-      sf.setBlockOnPersistentSend(true);
+      sf.setBlockOnNonDurableSend(true);
+      sf.setBlockOnDurableSend(true);
       sf.setBlockOnAcknowledge(true);
 
       final ClientSession session = sf.createSession(true, true, 0);
@@ -1901,8 +1901,8 @@ public class FailoverTest extends FailoverTestBase
    {
       final ClientSessionFactoryInternal sf = getSessionFactory();
 
-      sf.setBlockOnNonPersistentSend(true);
-      sf.setBlockOnPersistentSend(true);
+      sf.setBlockOnNonDurableSend(true);
+      sf.setBlockOnDurableSend(true);
       sf.setBlockOnAcknowledge(true);
 
       final ClientSession session = sf.createSession(false, false);
@@ -2062,8 +2062,8 @@ public class FailoverTest extends FailoverTestBase
    {
       ClientSessionFactoryInternal sf = getSessionFactory();
 
-      sf.setBlockOnNonPersistentSend(true);
-      sf.setBlockOnPersistentSend(true);
+      sf.setBlockOnNonDurableSend(true);
+      sf.setBlockOnDurableSend(true);
       sf.setBlockOnAcknowledge(true);
 
       final ClientSession session = sf.createSession(false, false);

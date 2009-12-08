@@ -80,8 +80,8 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
                           ClientSessionFactoryImpl.DEFAULT_CONFIRMATION_WINDOW_SIZE,
                           ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE,
                           ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE,
-                          ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND,
-                          ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND,
+                          ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_DURABLE_SEND,
+                          ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_DURABLE_SEND,
                           ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP,
                           ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE,
                           ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
@@ -144,8 +144,8 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
                           ClientSessionFactoryImpl.DEFAULT_CONFIRMATION_WINDOW_SIZE,
                           ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE,
                           ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE,
-                          ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND,
-                          ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND,
+                          ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_DURABLE_SEND,
+                          ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_DURABLE_SEND,
                           ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP,
                           ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE,
                           ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
@@ -187,8 +187,8 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
                           ClientSessionFactoryImpl.DEFAULT_CONFIRMATION_WINDOW_SIZE,
                           ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE,
                           ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE,
-                          ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND,
-                          ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND,
+                          ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_DURABLE_SEND,
+                          ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_DURABLE_SEND,
                           ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP,
                           ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE,
                           ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
@@ -234,8 +234,8 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
                           ClientSessionFactoryImpl.DEFAULT_CONFIRMATION_WINDOW_SIZE,
                           ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE,
                           ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE,
-                          ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND,
-                          ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND,
+                          ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_DURABLE_SEND,
+                          ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_DURABLE_SEND,
                           ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP,
                           ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE,
                           ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
@@ -282,8 +282,8 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
                           ClientSessionFactoryImpl.DEFAULT_CONFIRMATION_WINDOW_SIZE,
                           ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE,
                           ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE,
-                          ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND,
-                          ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND,
+                          ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_DURABLE_SEND,
+                          ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_DURABLE_SEND,
                           ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP,
                           ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE,
                           ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
@@ -330,8 +330,8 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
                           ClientSessionFactoryImpl.DEFAULT_CONFIRMATION_WINDOW_SIZE,
                           ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE,
                           ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE,
-                          ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND,
-                          ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND,
+                          ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_DURABLE_SEND,
+                          ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_DURABLE_SEND,
                           ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP,
                           ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE,
                           ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
@@ -376,8 +376,8 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
       int confirmationWindowSize = RandomUtil.randomPositiveInt();
       int producerMaxRate = RandomUtil.randomPositiveInt();
       boolean blockOnAcknowledge = RandomUtil.randomBoolean();
-      boolean blockOnPersistentSend = RandomUtil.randomBoolean();
-      boolean blockOnNonPersistentSend = RandomUtil.randomBoolean();
+      boolean blockOnDurableSend = RandomUtil.randomBoolean();
+      boolean blockOnNonDurableSend = RandomUtil.randomBoolean();
       boolean autoGroup = RandomUtil.randomBoolean();
       boolean preAcknowledge = RandomUtil.randomBoolean();
       String loadBalancingPolicyClassName = RandomUtil.randomString();
@@ -403,8 +403,8 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
       cf.setConfirmationWindowSize(confirmationWindowSize);
       cf.setProducerMaxRate(producerMaxRate);
       cf.setBlockOnAcknowledge(blockOnAcknowledge);
-      cf.setBlockOnPersistentSend(blockOnPersistentSend);
-      cf.setBlockOnNonPersistentSend(blockOnNonPersistentSend);
+      cf.setBlockOnDurableSend(blockOnDurableSend);
+      cf.setBlockOnNonDurableSend(blockOnNonDurableSend);
       cf.setAutoGroup(autoGroup);
       cf.setPreAcknowledge(preAcknowledge);
       cf.setConnectionLoadBalancingPolicyClassName(loadBalancingPolicyClassName);
@@ -430,8 +430,8 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
       Assert.assertEquals(confirmationWindowSize, cf.getConfirmationWindowSize());
       Assert.assertEquals(producerMaxRate, cf.getProducerMaxRate());
       Assert.assertEquals(blockOnAcknowledge, cf.isBlockOnAcknowledge());
-      Assert.assertEquals(blockOnPersistentSend, cf.isBlockOnPersistentSend());
-      Assert.assertEquals(blockOnNonPersistentSend, cf.isBlockOnNonPersistentSend());
+      Assert.assertEquals(blockOnDurableSend, cf.isBlockOnDurableSend());
+      Assert.assertEquals(blockOnNonDurableSend, cf.isBlockOnNonDurableSend());
       Assert.assertEquals(autoGroup, cf.isAutoGroup());
       Assert.assertEquals(preAcknowledge, cf.isPreAcknowledge());
       Assert.assertEquals(loadBalancingPolicyClassName, cf.getConnectionLoadBalancingPolicyClassName());
@@ -467,8 +467,8 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
       int confirmationWindowSize = RandomUtil.randomPositiveInt();
       int producerMaxRate = RandomUtil.randomPositiveInt();
       boolean blockOnAcknowledge = RandomUtil.randomBoolean();
-      boolean blockOnPersistentSend = RandomUtil.randomBoolean();
-      boolean blockOnNonPersistentSend = RandomUtil.randomBoolean();
+      boolean blockOnDurableSend = RandomUtil.randomBoolean();
+      boolean blockOnNonDurableSend = RandomUtil.randomBoolean();
       boolean autoGroup = RandomUtil.randomBoolean();
       boolean preAcknowledge = RandomUtil.randomBoolean();
       String loadBalancingPolicyClassName = RandomUtil.randomString();
@@ -611,7 +611,7 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
       }
       try
       {
-         cf.setBlockOnPersistentSend(blockOnPersistentSend);
+         cf.setBlockOnDurableSend(blockOnDurableSend);
          Assert.fail("Should throw exception");
       }
       catch (IllegalStateException e)
@@ -620,7 +620,7 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
       }
       try
       {
-         cf.setBlockOnNonPersistentSend(blockOnNonPersistentSend);
+         cf.setBlockOnNonDurableSend(blockOnNonDurableSend);
          Assert.fail("Should throw exception");
       }
       catch (IllegalStateException e)
@@ -759,8 +759,8 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
       cf.getConfirmationWindowSize();
       cf.getProducerMaxRate();
       cf.isBlockOnAcknowledge();
-      cf.isBlockOnPersistentSend();
-      cf.isBlockOnNonPersistentSend();
+      cf.isBlockOnDurableSend();
+      cf.isBlockOnNonDurableSend();
       cf.isAutoGroup();
       cf.isPreAcknowledge();
       cf.getConnectionLoadBalancingPolicyClassName();
@@ -792,8 +792,8 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
                                     final int confirmationWindowSize,
                                     final int producerMaxRate,
                                     final boolean blockOnAcknowledge,
-                                    final boolean blockOnPersistentSend,
-                                    final boolean blockOnNonPersistentSend,
+                                    final boolean blockOnDurableSend,
+                                    final boolean blockOnNonDurableSend,
                                     final boolean autoGroup,
                                     final boolean preAcknowledge,
                                     final String loadBalancingPolicyClassName,
@@ -835,8 +835,8 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
       Assert.assertEquals(cf.getConfirmationWindowSize(), confirmationWindowSize);
       Assert.assertEquals(cf.getProducerMaxRate(), producerMaxRate);
       Assert.assertEquals(cf.isBlockOnAcknowledge(), blockOnAcknowledge);
-      Assert.assertEquals(cf.isBlockOnPersistentSend(), blockOnPersistentSend);
-      Assert.assertEquals(cf.isBlockOnNonPersistentSend(), blockOnNonPersistentSend);
+      Assert.assertEquals(cf.isBlockOnDurableSend(), blockOnDurableSend);
+      Assert.assertEquals(cf.isBlockOnNonDurableSend(), blockOnNonDurableSend);
       Assert.assertEquals(cf.isAutoGroup(), autoGroup);
       Assert.assertEquals(cf.isPreAcknowledge(), preAcknowledge);
       Assert.assertEquals(cf.getConnectionLoadBalancingPolicyClassName(), loadBalancingPolicyClassName);

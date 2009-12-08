@@ -188,9 +188,9 @@ public class MultiThreadConsumerStressTest extends ServiceTestBase
 
       sf = createNettyFactory();
 
-      sf.setBlockOnPersistentSend(false);
+      sf.setBlockOnDurableSend(false);
 
-      sf.setBlockOnNonPersistentSend(false);
+      sf.setBlockOnNonDurableSend(false);
 
       sf.setBlockOnAcknowledge(false);
 

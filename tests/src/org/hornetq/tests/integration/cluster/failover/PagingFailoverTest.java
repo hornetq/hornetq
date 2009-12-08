@@ -80,7 +80,7 @@ public class PagingFailoverTest extends FailoverTestBase
    public void internalTestPage(final boolean transacted, final boolean failBeforeConsume) throws Exception
    {
       ClientSessionFactoryInternal factory = getSessionFactory();
-      factory.setBlockOnPersistentSend(true);
+      factory.setBlockOnDurableSend(true);
       factory.setBlockOnAcknowledge(true);
       ClientSession session = factory.createSession(!transacted, !transacted, 0);
 

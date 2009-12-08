@@ -409,26 +409,26 @@ public class HornetQConnectionFactory implements ConnectionFactory, QueueConnect
       sessionFactory.setBlockOnAcknowledge(blockOnAcknowledge);
    }
 
-   public synchronized boolean isBlockOnNonPersistentSend()
+   public synchronized boolean isBlockOnNonDurableSend()
    {
-      return sessionFactory.isBlockOnNonPersistentSend();
+      return sessionFactory.isBlockOnNonDurableSend();
    }
 
-   public synchronized void setBlockOnNonPersistentSend(final boolean blockOnNonPersistentSend)
+   public synchronized void setBlockOnNonDurableSend(final boolean blockOnNonDurableSend)
    {
       checkWrite();
-      sessionFactory.setBlockOnNonPersistentSend(blockOnNonPersistentSend);
+      sessionFactory.setBlockOnNonDurableSend(blockOnNonDurableSend);
    }
 
-   public synchronized boolean isBlockOnPersistentSend()
+   public synchronized boolean isBlockOnDurableSend()
    {
-      return sessionFactory.isBlockOnPersistentSend();
+      return sessionFactory.isBlockOnDurableSend();
    }
 
-   public synchronized void setBlockOnPersistentSend(final boolean blockOnPersistentSend)
+   public synchronized void setBlockOnDurableSend(final boolean blockOnDurableSend)
    {
       checkWrite();
-      sessionFactory.setBlockOnPersistentSend(blockOnPersistentSend);
+      sessionFactory.setBlockOnDurableSend(blockOnDurableSend);
    }
 
    public synchronized boolean isAutoGroup()

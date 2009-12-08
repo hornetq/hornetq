@@ -206,8 +206,8 @@ public abstract class BridgeTestBase extends UnitTestCase
 
             // Note! We disable automatic reconnection on the session factory. The bridge needs to do the reconnection
             cf.setReconnectAttempts(0);
-            cf.setBlockOnNonPersistentSend(true);
-            cf.setBlockOnPersistentSend(true);
+            cf.setBlockOnNonDurableSend(true);
+            cf.setBlockOnDurableSend(true);
             cf.setCacheLargeMessagesClient(true);
 
             return cf;
@@ -227,8 +227,8 @@ public abstract class BridgeTestBase extends UnitTestCase
 
             // Note! We disable automatic reconnection on the session factory. The bridge needs to do the reconnection
             cf.setReconnectAttempts(0);
-            cf.setBlockOnNonPersistentSend(true);
-            cf.setBlockOnPersistentSend(true);
+            cf.setBlockOnNonDurableSend(true);
+            cf.setBlockOnDurableSend(true);
             cf.setCacheLargeMessagesClient(true);
 
             return cf;

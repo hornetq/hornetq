@@ -434,7 +434,7 @@ public class CompactingStressTest extends ServiceTestBase
       server.start();
 
       sf = createInVMFactory();
-      sf.setBlockOnPersistentSend(false);
+      sf.setBlockOnDurableSend(false);
       sf.setBlockOnAcknowledge(false);
 
       ClientSession sess = sf.createSession();

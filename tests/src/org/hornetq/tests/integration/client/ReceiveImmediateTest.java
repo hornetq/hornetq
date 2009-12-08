@@ -89,7 +89,7 @@ public class ReceiveImmediateTest extends ServiceTestBase
    public void testConsumerReceiveImmediateWithSessionStop() throws Exception
    {
       sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
-      sf.setBlockOnNonPersistentSend(true);
+      sf.setBlockOnNonDurableSend(true);
       sf.setBlockOnAcknowledge(true);
       sf.setAckBatchSize(0);
 
@@ -122,7 +122,7 @@ public class ReceiveImmediateTest extends ServiceTestBase
    private void doConsumerReceiveImmediateWithNoMessages(final boolean browser) throws Exception
    {
       sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
-      sf.setBlockOnNonPersistentSend(true);
+      sf.setBlockOnNonDurableSend(true);
       sf.setBlockOnAcknowledge(true);
       sf.setAckBatchSize(0);
 
@@ -144,7 +144,7 @@ public class ReceiveImmediateTest extends ServiceTestBase
    private void doConsumerReceiveImmediate(final boolean browser) throws Exception
    {
       sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
-      sf.setBlockOnNonPersistentSend(true);
+      sf.setBlockOnNonDurableSend(true);
       sf.setBlockOnAcknowledge(true);
       sf.setAckBatchSize(0);
 

@@ -368,36 +368,36 @@ public interface ClientSessionFactory
    void setBlockOnAcknowledge(boolean blockOnAcknowledge);
 
    /**
-    * Return whether producers created through this factory will block while sending <em>persistent</em> messages or do it asynchronously.
+    * Return whether producers created through this factory will block while sending <em>durable</em> messages or do it asynchronously.
     * 
-    * Default value is {@value org.hornetq.core.client.impl.ClientSessionFactoryImpl#DEFAULT_BLOCK_ON_PERSISTENT_SEND}.
+    * Default value is {@value org.hornetq.core.client.impl.ClientSessionFactoryImpl#DEFAULT_BLOCK_ON_DURABLE_SEND}.
     *
     * @return whether producers will block while sending persistent messages or do it asynchronously
     */
-   boolean isBlockOnPersistentSend();
+   boolean isBlockOnDurableSend();
 
    /**
-    * Set whether producers created through this factory will block while sending <em>persistent</em> messages or do it asynchronously.
+    * Set whether producers created through this factory will block while sending <em>durable</em> messages or do it asynchronously.
     * 
-    * @param blockOnPersistentSend <code>true</code> to block when sending persistent messages or <code>false</code> to send them asynchronously
+    * @param blockOnDurableSend <code>true</code> to block when sending durable messages or <code>false</code> to send them asynchronously
     */
-   void setBlockOnPersistentSend(boolean blockOnPersistentSend);
+   void setBlockOnDurableSend(boolean blockOnDurableSend);
 
    /**
-    * Return whether producers created through this factory will block while sending <em>non-persistent</em> messages or do it asynchronously.
+    * Return whether producers created through this factory will block while sending <em>non-durable</em> messages or do it asynchronously.
     * 
-    * Default value is {@value org.hornetq.core.client.impl.ClientSessionFactoryImpl#DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND}.
+    * Default value is {@value org.hornetq.core.client.impl.ClientSessionFactoryImpl#DEFAULT_BLOCK_ON_NON_DURABLE_SEND}.
     *
-    * @return whether producers will block while sending non-persistent messages or do it asynchronously
+    * @return whether producers will block while sending non-durable messages or do it asynchronously
     */
-   boolean isBlockOnNonPersistentSend();
+   boolean isBlockOnNonDurableSend();
 
    /**
-    * Set whether producers created through this factory will block while sending <em>non-persistent</em> messages or do it asynchronously.
+    * Set whether producers created through this factory will block while sending <em>non-durable</em> messages or do it asynchronously.
     * 
-    * @param blockOnNonPersistentSend <code>true</code> to block when sending non-persistent messages or <code>false</code> to send them asynchronously
+    * @param blockOnNonDurableSend <code>true</code> to block when sending non-durable messages or <code>false</code> to send them asynchronously
     */
-   void setBlockOnNonPersistentSend(boolean blockOnNonPersistentSend);
+   void setBlockOnNonDurableSend(boolean blockOnNonDurableSend);
 
    /**
     * Return whether producers created through this factory will automatically

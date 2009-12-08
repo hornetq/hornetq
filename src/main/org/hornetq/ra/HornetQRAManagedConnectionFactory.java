@@ -598,24 +598,24 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
       mcfProperties.setBlockOnAcknowledge(blockOnAcknowledge);
    }
 
-   public Boolean isBlockOnNonPersistentSend()
+   public Boolean isBlockOnNonDurableSend()
    {
-      return mcfProperties.isBlockOnNonPersistentSend();
+      return mcfProperties.isBlockOnNonDurableSend();
    }
 
-   public void setBlockOnNonPersistentSend(final Boolean blockOnNonPersistentSend)
+   public void setBlockOnNonDurableSend(final Boolean blockOnNonDurableSend)
    {
-      mcfProperties.setBlockOnNonPersistentSend(blockOnNonPersistentSend);
+      mcfProperties.setBlockOnNonDurableSend(blockOnNonDurableSend);
    }
 
-   public Boolean isBlockOnPersistentSend()
+   public Boolean isBlockOnDurableSend()
    {
-      return mcfProperties.isBlockOnPersistentSend();
+      return mcfProperties.isBlockOnDurableSend();
    }
 
-   public void setBlockOnPersistentSend(final Boolean blockOnPersistentSend)
+   public void setBlockOnDurableSend(final Boolean blockOnDurableSend)
    {
-      mcfProperties.setBlockOnPersistentSend(blockOnPersistentSend);
+      mcfProperties.setBlockOnDurableSend(blockOnDurableSend);
    }
 
    public Boolean isAutoGroup()

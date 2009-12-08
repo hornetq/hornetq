@@ -43,19 +43,19 @@
         <para>If you are sending messages to a server using a non transacted session, HornetQ can be
             configured to block the call to send until the message has definitely reached the
             server, and a response has been sent back to the client. This can be configured
-            individually for persistent and non-persistent messages, and is determined by the
+            individually for durable and non-durable messages, and is determined by the
             following two parameters:</para>
         <itemizedlist>
             <listitem>
-                <para><literal>BlockOnPersistentSend</literal>. If this is set to <literal
-                        >true</literal> then all calls to send for persistent messages on non
+                <para><literal>BlockOnDurableSend</literal>. If this is set to <literal
+                        >true</literal> then all calls to send for durable messages on non
                     transacted sessions will block until the message has reached the server, and a
                     response has been sent back. The default value is <literal>true</literal>.
                 </para>
             </listitem>
             <listitem>
-                <para><literal>BlockOnNonPersistentSend</literal>. If this is set to <literal
-                        >true</literal> then all calls to send for non-persistent messages on non
+                <para><literal>BlockOnNonDurableSend</literal>. If this is set to <literal
+                        >true</literal> then all calls to send for non-durable messages on non
                     transacted sessions will block until the message has reached the server, and a
                     response has been sent back. The default value is <literal
                     >false</literal>.</para>
@@ -72,15 +72,15 @@
         <para>If you are using JMS and you're using the JMS service on the server to load your JMS
             connection factory instances into JNDI then these parameters can be configured in
                 <literal>hornetq-jms.xml</literal> using the elements <literal
-                >block-on-persistent-send</literal> and <literal
-                >block-on-non-persistent-send</literal>. If you're using JMS but not using JNDI then
+                >block-on-durable-send</literal> and <literal
+                >block-on-non-durable-send</literal>. If you're using JMS but not using JNDI then
             you can set these values directly on the <literal>HornetQConnectionFactory</literal>
             instance using the appropriate setter methods.</para>
         <para>If you're using core you can set these values directly on the <literal
                 >ClientSessionFactory</literal> instance using the appropriate setter
             methods.</para>
         <para>When the server receives a message sent from a non transactional session, and that
-            message is persistent and the message is routed to at least one durable queue, then the
+            message is durable and the message is routed to at least one durable queue, then the
             server will persist the message in permanent storage. If the journal parameter <literal
                 >journal-sync-non-transactional</literal> is set to <literal>true</literal> the
             server will not send a response back to the client until the message has been persisted

@@ -368,7 +368,7 @@
                     to the destination. Therefore there is a possibility that if failure occurs
                     between removing them from the source and them arriving at the destination they
                     could be lost. Hence delivery will occur at most once.</para>
-                <para>This mode is available for both persistent and non persistent messages.</para>
+                <para>This mode is available for both durable and non-durable messages.</para>
             </section>
             <section>
                 <title>DUPLICATES_OK</title>
@@ -378,7 +378,7 @@
                     destination but before acknowledging them, they could be sent again when the
                     system recovers. I.e. the destination might receive duplicates after a
                     failure.</para>
-                <para>This mode is available for both persistent and non persistent messages.</para>
+                <para>This mode is available for both durable and non-durable messages.</para>
             </section>
             <section>
                 <title>ONCE_AND_ONLY_ONCE</title>
@@ -393,7 +393,7 @@
                     degree of durability. If JTA is required then both supplied connection factories
                     need to be XAConnectionFactory implementations. This is likely to be the slowest
                     mode since it requires extra persistence for the transaction logging.</para>
-                <para>This mode is only available for persistent messages.</para>
+                <para>This mode is only available for durable messages.</para>
                 <note>
                     <para>For a specific application it may possible to provide once and only once
                         semantics without using the ONCE_AND_ONLY_ONCE QoS level. This can be done

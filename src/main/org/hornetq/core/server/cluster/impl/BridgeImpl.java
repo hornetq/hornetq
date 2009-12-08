@@ -662,7 +662,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
             csf.setRetryInterval(retryInterval);
             csf.setRetryIntervalMultiplier(retryIntervalMultiplier);
             csf.setReconnectAttempts(reconnectAttempts);
-            csf.setBlockOnPersistentSend(false);
+            csf.setBlockOnDurableSend(false);
 
             // Must have confirmations enabled so we get send acks
 

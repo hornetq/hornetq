@@ -305,8 +305,8 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
                                       final int consumerWindowSize,
                                       final int producerMaxRate,
                                       final int consumerMaxRate,
-                                      final boolean blockOnNonPersistentSend,
-                                      final boolean blockOnPersistentSend,
+                                      final boolean blockOnNonDurableSend,
+                                      final boolean blockOnDurableSend,
                                       final int initialMessagePacketSize,
                                       final String groupID) throws HornetQException
    {
@@ -413,8 +413,8 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
                                                                      confWindowSize,
                                                                      producerWindowSize,
                                                                      producerMaxRate,
-                                                                     blockOnNonPersistentSend,
-                                                                     blockOnPersistentSend,
+                                                                     blockOnNonDurableSend,
+                                                                     blockOnDurableSend,
                                                                      cacheLargeMessageClient,
                                                                      minLargeMessageSize,
                                                                      initialMessagePacketSize,

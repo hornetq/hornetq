@@ -68,8 +68,8 @@ public class PageStressTest extends ServiceTestBase
 
       ClientSessionFactory factory = createInVMFactory();
       factory.setBlockOnAcknowledge(true);
-      factory.setBlockOnPersistentSend(false);
-      factory.setBlockOnNonPersistentSend(false);
+      factory.setBlockOnDurableSend(false);
+      factory.setBlockOnNonDurableSend(false);
       ClientSession session = null;
 
       try

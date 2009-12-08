@@ -46,9 +46,9 @@ public interface ConnectionFactoryControl
 
    boolean isBlockOnAcknowledge();
 
-   boolean isBlockOnPersistentSend();
+   boolean isBlockOnDurableSend();
 
-   boolean isBlockOnNonPersistentSend();
+   boolean isBlockOnNonDurableSend();
 
    boolean isPreAcknowledge();
 

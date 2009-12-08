@@ -208,8 +208,8 @@ public class MessagePriorityTest extends UnitTestCase
       server.start();
 
       sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
-      sf.setBlockOnNonPersistentSend(true);
-      sf.setBlockOnPersistentSend(true);
+      sf.setBlockOnNonDurableSend(true);
+      sf.setBlockOnDurableSend(true);
       session = sf.createSession(false, true, true);
    }
 

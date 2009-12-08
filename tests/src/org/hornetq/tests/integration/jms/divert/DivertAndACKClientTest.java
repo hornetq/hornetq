@@ -158,8 +158,8 @@ public class DivertAndACKClientTest extends JMSTestBase
                                         ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE,
                                         ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE,
                                         true, // this test needs to block on ACK
-                                        ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND,
-                                        ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND,
+                                        ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_DURABLE_SEND,
+                                        ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_DURABLE_SEND,
                                         ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP,
                                         ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE,
                                         ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,

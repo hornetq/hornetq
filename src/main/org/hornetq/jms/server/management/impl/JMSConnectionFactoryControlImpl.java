@@ -107,14 +107,14 @@ public class JMSConnectionFactoryControlImpl extends StandardMBean implements Co
       return cf.isBlockOnAcknowledge();
    }
 
-   public boolean isBlockOnNonPersistentSend()
+   public boolean isBlockOnNonDurableSend()
    {
-      return cf.isBlockOnNonPersistentSend();
+      return cf.isBlockOnNonDurableSend();
    }
 
-   public boolean isBlockOnPersistentSend()
+   public boolean isBlockOnDurableSend()
    {
-      return cf.isBlockOnPersistentSend();
+      return cf.isBlockOnDurableSend();
    }
 
    public boolean isPreAcknowledge()

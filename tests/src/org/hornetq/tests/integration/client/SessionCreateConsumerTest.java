@@ -36,8 +36,8 @@ public class SessionCreateConsumerTest extends ServiceTestBase
          service.start();
          ClientSessionFactory cf = createInVMFactory();
          cf.setProducerMaxRate(99);
-         cf.setBlockOnNonPersistentSend(true);
-         cf.setBlockOnNonPersistentSend(true);
+         cf.setBlockOnNonDurableSend(true);
+         cf.setBlockOnNonDurableSend(true);
          ClientSessionInternal clientSession = (ClientSessionInternal)cf.createSession(false, true, true);
          clientSession.createQueue(queueName, queueName, false);
          ClientConsumer consumer = clientSession.createConsumer(queueName);
@@ -58,8 +58,8 @@ public class SessionCreateConsumerTest extends ServiceTestBase
          service.start();
          ClientSessionFactory cf = createInVMFactory();
          cf.setProducerMaxRate(99);
-         cf.setBlockOnNonPersistentSend(true);
-         cf.setBlockOnNonPersistentSend(true);
+         cf.setBlockOnNonDurableSend(true);
+         cf.setBlockOnNonDurableSend(true);
          ClientSessionInternal clientSession = (ClientSessionInternal)cf.createSession(false, true, true);
          try
          {
@@ -86,8 +86,8 @@ public class SessionCreateConsumerTest extends ServiceTestBase
          service.start();
          ClientSessionFactory cf = createInVMFactory();
          cf.setProducerMaxRate(99);
-         cf.setBlockOnNonPersistentSend(true);
-         cf.setBlockOnNonPersistentSend(true);
+         cf.setBlockOnNonDurableSend(true);
+         cf.setBlockOnNonDurableSend(true);
          ClientSessionInternal clientSession = (ClientSessionInternal)cf.createSession(false, true, true);
          clientSession.createQueue(queueName, queueName, false);
          ClientConsumer consumer = clientSession.createConsumer(queueName, "foo=bar");
@@ -108,8 +108,8 @@ public class SessionCreateConsumerTest extends ServiceTestBase
          service.start();
          ClientSessionFactory cf = createInVMFactory();
          cf.setProducerMaxRate(99);
-         cf.setBlockOnNonPersistentSend(true);
-         cf.setBlockOnNonPersistentSend(true);
+         cf.setBlockOnNonDurableSend(true);
+         cf.setBlockOnNonDurableSend(true);
          ClientSessionInternal clientSession = (ClientSessionInternal)cf.createSession(false, true, true);
          clientSession.createQueue(queueName, queueName, false);
          try
@@ -137,8 +137,8 @@ public class SessionCreateConsumerTest extends ServiceTestBase
          service.start();
          ClientSessionFactory cf = createInVMFactory();
          cf.setProducerMaxRate(99);
-         cf.setBlockOnNonPersistentSend(true);
-         cf.setBlockOnNonPersistentSend(true);
+         cf.setBlockOnNonDurableSend(true);
+         cf.setBlockOnNonDurableSend(true);
          ClientSessionInternal clientSession = (ClientSessionInternal)cf.createSession(false, true, true);
          clientSession.createQueue(queueName, queueName, false);
          ClientConsumer consumer = clientSession.createConsumer(queueName, null, true);
@@ -159,8 +159,8 @@ public class SessionCreateConsumerTest extends ServiceTestBase
          service.start();
          ClientSessionFactory cf = createInVMFactory();
          cf.setProducerMaxRate(99);
-         cf.setBlockOnNonPersistentSend(true);
-         cf.setBlockOnNonPersistentSend(true);
+         cf.setBlockOnNonDurableSend(true);
+         cf.setBlockOnNonDurableSend(true);
          ClientSessionInternal clientSession = (ClientSessionInternal)cf.createSession(false, true, true);
          clientSession.createQueue(queueName, queueName, false);
          ClientConsumer consumer = clientSession.createConsumer(queueName, null, 100, 100, false);

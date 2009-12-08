@@ -753,63 +753,63 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
    }
 
    /**
-    * Get block on non persistent send
+    * Get block on non durable send
     *
     * @return The value
     */
-   public Boolean getBlockOnNonPersistentSend()
+   public Boolean getBlockOnNonDurableSend()
    {
       if (HornetQResourceAdapter.trace)
       {
-         HornetQResourceAdapter.log.trace("getBlockOnNonPersistentSend()");
+         HornetQResourceAdapter.log.trace("getBlockOnNonDurableSend()");
       }
 
-      return raProperties.isBlockOnNonPersistentSend();
+      return raProperties.isBlockOnNonDurableSend();
    }
 
    /**
-    * Set block on non persistent send
+    * Set block on non durable send
     *
-    * @param blockOnNonPersistentSend The value
+    * @param blockOnNonDurableSend The value
     */
-   public void setBlockOnNonPersistentSend(final Boolean blockOnNonPersistentSend)
+   public void setBlockOnNonDurableSend(final Boolean blockOnNonDurableSend)
    {
       if (HornetQResourceAdapter.trace)
       {
-         HornetQResourceAdapter.log.trace("setBlockOnNonPersistentSend(" + blockOnNonPersistentSend + ")");
+         HornetQResourceAdapter.log.trace("setBlockOnNonDurableSend(" + blockOnNonDurableSend + ")");
       }
 
-      raProperties.setBlockOnNonPersistentSend(blockOnNonPersistentSend);
+      raProperties.setBlockOnNonDurableSend(blockOnNonDurableSend);
    }
 
    /**
-    * Get block on persistent send
+    * Get block on durable send
     *
     * @return The value
     */
-   public Boolean getBlockOnPersistentSend()
+   public Boolean getBlockOnDurableSend()
    {
       if (HornetQResourceAdapter.trace)
       {
-         HornetQResourceAdapter.log.trace("getBlockOnPersistentSend()");
+         HornetQResourceAdapter.log.trace("getBlockOnDurableSend()");
       }
 
-      return raProperties.isBlockOnPersistentSend();
+      return raProperties.isBlockOnDurableSend();
    }
 
    /**
-    * Set block on persistent send
+    * Set block on durable send
     *
-    * @param blockOnPersistentSend The value
+    * @param blockOnDurableSend The value
     */
-   public void setBlockOnPersistentSend(final Boolean blockOnPersistentSend)
+   public void setBlockOnDurableSend(final Boolean blockOnDurableSend)
    {
       if (HornetQResourceAdapter.trace)
       {
-         HornetQResourceAdapter.log.trace("setBlockOnPersistentSend(" + blockOnPersistentSend + ")");
+         HornetQResourceAdapter.log.trace("setBlockOnDurableSend(" + blockOnDurableSend + ")");
       }
 
-      raProperties.setBlockOnPersistentSend(blockOnPersistentSend);
+      raProperties.setBlockOnDurableSend(blockOnDurableSend);
    }
 
    /**
@@ -1421,17 +1421,17 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       {
          cf.setBlockOnAcknowledge(val);
       }
-      val = overrideProperties.isBlockOnNonPersistentSend() != null ? overrideProperties.isBlockOnNonPersistentSend()
-                                                                   : raProperties.isBlockOnNonPersistentSend();
+      val = overrideProperties.isBlockOnNonDurableSend() != null ? overrideProperties.isBlockOnNonDurableSend()
+                                                                   : raProperties.isBlockOnNonDurableSend();
       if (val != null)
       {
-         cf.setBlockOnNonPersistentSend(val);
+         cf.setBlockOnNonDurableSend(val);
       }
-      val = overrideProperties.isBlockOnPersistentSend() != null ? overrideProperties.isBlockOnPersistentSend()
-                                                                : raProperties.isBlockOnPersistentSend();
+      val = overrideProperties.isBlockOnDurableSend() != null ? overrideProperties.isBlockOnDurableSend()
+                                                                : raProperties.isBlockOnDurableSend();
       if (val != null)
       {
-         cf.setBlockOnPersistentSend(val);
+         cf.setBlockOnDurableSend(val);
       }
       val = overrideProperties.isFailoverOnServerShutdown() != null ? overrideProperties.isFailoverOnServerShutdown()
                                                                    : raProperties.isFailoverOnServerShutdown();

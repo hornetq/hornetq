@@ -306,7 +306,7 @@ public class InterceptorTest extends ServiceTestBase
 
       ClientSessionFactory sf = createInVMFactory();
 
-      sf.setBlockOnNonPersistentSend(false);
+      sf.setBlockOnNonDurableSend(false);
 
       ClientSession session = sf.createSession(false, true, true, true);
 

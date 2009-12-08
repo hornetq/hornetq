@@ -70,9 +70,9 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
 
    private boolean blockOnAcknowledge = ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE;
 
-   private boolean blockOnPersistentSend = ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND;
+   private boolean blockOnDurableSend = ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_DURABLE_SEND;
 
-   private boolean blockOnNonPersistentSend = ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND;
+   private boolean blockOnNonDurableSend = ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_DURABLE_SEND;
 
    private boolean autoGroup = ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP;
 
@@ -324,24 +324,24 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
       this.blockOnAcknowledge = blockOnAcknowledge;
    }
 
-   public boolean isBlockOnPersistentSend()
+   public boolean isBlockOnDurableSend()
    {
-      return blockOnPersistentSend;
+      return blockOnDurableSend;
    }
 
-   public void setBlockOnPersistentSend(final boolean blockOnPersistentSend)
+   public void setBlockOnDurableSend(final boolean blockOnDurableSend)
    {
-      this.blockOnPersistentSend = blockOnPersistentSend;
+      this.blockOnDurableSend = blockOnDurableSend;
    }
 
-   public boolean isBlockOnNonPersistentSend()
+   public boolean isBlockOnNonDurableSend()
    {
-      return blockOnNonPersistentSend;
+      return blockOnNonDurableSend;
    }
 
-   public void setBlockOnNonPersistentSend(final boolean blockOnNonPersistentSend)
+   public void setBlockOnNonDurableSend(final boolean blockOnNonDurableSend)
    {
-      this.blockOnNonPersistentSend = blockOnNonPersistentSend;
+      this.blockOnNonDurableSend = blockOnNonDurableSend;
    }
 
    public boolean isAutoGroup()

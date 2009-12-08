@@ -65,7 +65,7 @@ public class QueueBrowserTest extends ServiceTestBase
    {
       sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
 
-      sf.setBlockOnNonPersistentSend(true);
+      sf.setBlockOnNonDurableSend(true);
 
       ClientSession session = sf.createSession(false, true, true);
 

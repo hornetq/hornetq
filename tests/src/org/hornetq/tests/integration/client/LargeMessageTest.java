@@ -2537,8 +2537,8 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          if (sendBlocking)
          {
-            sf.setBlockOnNonPersistentSend(true);
-            sf.setBlockOnPersistentSend(true);
+            sf.setBlockOnNonDurableSend(true);
+            sf.setBlockOnDurableSend(true);
             sf.setBlockOnAcknowledge(true);
          }
 

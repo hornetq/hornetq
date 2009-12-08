@@ -84,9 +84,9 @@ public class ConnectionFactoryProperties
 
    private Boolean blockOnAcknowledge;
 
-   private Boolean blockOnNonPersistentSend;
+   private Boolean blockOnNonDurableSend;
 
-   private Boolean blockOnPersistentSend;
+   private Boolean blockOnDurableSend;
 
    private Boolean autoGroup;
 
@@ -493,44 +493,44 @@ public class ConnectionFactoryProperties
       this.blockOnAcknowledge = blockOnAcknowledge;
    }
 
-   public Boolean isBlockOnNonPersistentSend()
+   public Boolean isBlockOnNonDurableSend()
    {
       if (ConnectionFactoryProperties.trace)
       {
-         ConnectionFactoryProperties.log.trace("isBlockOnNonPersistentSend()");
+         ConnectionFactoryProperties.log.trace("isBlockOnNonDurableSend()");
       }
       hasBeenUpdated = true;
-      return blockOnNonPersistentSend;
+      return blockOnNonDurableSend;
    }
 
-   public void setBlockOnNonPersistentSend(final Boolean blockOnNonPersistentSend)
+   public void setBlockOnNonDurableSend(final Boolean blockOnNonDurableSend)
    {
       if (ConnectionFactoryProperties.trace)
       {
-         ConnectionFactoryProperties.log.trace("setBlockOnNonPersistentSend(" + blockOnNonPersistentSend + ")");
+         ConnectionFactoryProperties.log.trace("setBlockOnNonDurableSend(" + blockOnNonDurableSend + ")");
       }
       hasBeenUpdated = true;
-      this.blockOnNonPersistentSend = blockOnNonPersistentSend;
+      this.blockOnNonDurableSend = blockOnNonDurableSend;
    }
 
-   public Boolean isBlockOnPersistentSend()
+   public Boolean isBlockOnDurableSend()
    {
       if (ConnectionFactoryProperties.trace)
       {
-         ConnectionFactoryProperties.log.trace("isBlockOnPersistentSend()");
+         ConnectionFactoryProperties.log.trace("isBlockOnDurableSend()");
       }
       hasBeenUpdated = true;
-      return blockOnPersistentSend;
+      return blockOnDurableSend;
    }
 
-   public void setBlockOnPersistentSend(final Boolean blockOnPersistentSend)
+   public void setBlockOnDurableSend(final Boolean blockOnDurableSend)
    {
       if (ConnectionFactoryProperties.trace)
       {
-         ConnectionFactoryProperties.log.trace("setBlockOnPersistentSend(" + blockOnPersistentSend + ")");
+         ConnectionFactoryProperties.log.trace("setBlockOnDurableSend(" + blockOnDurableSend + ")");
       }
       hasBeenUpdated = true;
-      this.blockOnPersistentSend = blockOnPersistentSend;
+      this.blockOnDurableSend = blockOnDurableSend;
    }
 
    public Boolean isAutoGroup()

@@ -53,8 +53,8 @@ public class JMSUtil
    {
       HornetQConnectionFactory cf = new HornetQConnectionFactory(new TransportConfiguration(connectorFactory));
 
-      cf.setBlockOnNonPersistentSend(true);
-      cf.setBlockOnPersistentSend(true);
+      cf.setBlockOnNonDurableSend(true);
+      cf.setBlockOnDurableSend(true);
       cf.setBlockOnAcknowledge(true);
 
       return cf.createConnection();
@@ -66,8 +66,8 @@ public class JMSUtil
    {
       HornetQConnectionFactory cf = new HornetQConnectionFactory(new TransportConfiguration(connectorFactory));
 
-      cf.setBlockOnNonPersistentSend(true);
-      cf.setBlockOnPersistentSend(true);
+      cf.setBlockOnNonDurableSend(true);
+      cf.setBlockOnDurableSend(true);
       cf.setBlockOnAcknowledge(true);
       cf.setConnectionTTL(connectionTTL);
       cf.setClientFailureCheckPeriod(clientFailureCheckPeriod);

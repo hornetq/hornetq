@@ -161,7 +161,7 @@
                 subscriber - i.e. they will accumulate messages sent to the topic even if there is
                 no active subscriber on them. They will also survive server restarts or crashes.
                 Note that for the messages to be persisted, the messages sent to them must be marked
-                as persistent messages. </para>
+                as durable messages. </para>
         </section>
         <section>
             <title>Embedded</title>

@@ -866,17 +866,17 @@
                         </row>
                         <row>
                             <entry><link linkend="non-transactional-sends"
-                                    >connection-factory.block-on-non-persistent-send</link></entry>
+                                    >connection-factory.block-on-non-durable-send</link></entry>
                             <entry>Boolean</entry>
-                            <entry>whether or not non persistent messages are sent
+                            <entry>whether or not non-durable messages are sent
                                 synchronously</entry>
                             <entry>false</entry>
                         </row>
                         <row>
                             <entry><link linkend="non-transactional-sends"
-                                    >connection-factory.block-on-persistent-send</link></entry>
+                                    >connection-factory.block-on-durable-send</link></entry>
                             <entry>Boolean</entry>
-                            <entry>whether or not persistent messages are sent synchronously</entry>
+                            <entry>whether or not durable messages are sent synchronously</entry>
                             <entry>true</entry>
                         </row>
                         <row>

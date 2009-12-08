@@ -81,7 +81,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
       try
       {
          messagingService.start();
-         cf.setBlockOnNonPersistentSend(false);
+         cf.setBlockOnNonDurableSend(false);
          int numMessage = 100;
          cf.setConsumerWindowSize(numMessage * getMessageEncodeSize(addressA));
          ClientSession sendSession = cf.createSession(false, true, true);

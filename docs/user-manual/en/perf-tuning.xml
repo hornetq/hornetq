@@ -95,9 +95,9 @@
                     acknowledgements with one acknowledge/commit. </para>
             </listitem>
             <listitem>
-                <para>Avoid persistent messages. By default JMS messages are persistent. If you
-                    don't really need persistent messages then set them to be non persistent.
-                    Persistent messages incur a lot more overhead in persisting them to
+                <para>Avoid durable messages. By default JMS messages are durable. If you
+                    don't really need durable messages then set them to be non-durable.
+                    Durable messages incur a lot more overhead in persisting them to
                     storage.</para>
             </listitem>
         </itemizedlist>
@@ -107,9 +107,9 @@
         <para>There are various other places in HornetQ where we can perform some tuning:</para>
         <itemizedlist>
             <listitem>
-                <para>Use Asynchronous Send Acknowledgements. If you need to send persistent
+                <para>Use Asynchronous Send Acknowledgements. If you need to send durable
                     messages non transactionally and you need a guarantee that they have reached the
-                    server by the time the call to send() returns, don't set persistent messages to
+                    server by the time the call to send() returns, don't set durable messages to
                     be sent blocking, instead use asynchronous send acknowledgements to get your
                     acknowledgements of send back in a separate stream, see <xref
                         linkend="send-guarantees"/> for more information on this.</para>
@@ -143,13 +143,13 @@
                         >journal-sync-non-transactional</literal> to <literal>false</literal> in
                         <literal>hornetq-configuration.xml</literal> can give you better
                     non-transactional persistent performance at the expense of some possibility of
-                    loss of persistent messages on failure. See <xref linkend="send-guarantees"/>
+                    loss of durable messages on failure. See <xref linkend="send-guarantees"/>
                     for more information.</para>
             </listitem>
             <listitem>
                 <para>Send messages non blocking. Setting <literal
-                        >block-on-persistent-send</literal> and <literal
-                        >block-on-non-persistent-send</literal> to <literal>false</literal> in
+                        >block-on-durable-send</literal> and <literal
+                        >block-on-non-durable-send</literal> to <literal>false</literal> in
                         <literal>hornetq-jms.xml</literal> (if you're using JMS and JNDI) or
                     directly on the ClientSessionFactory. This means you don't have to wait a whole
                     network round trip for every message sent. See <xref linkend="send-guarantees"/>

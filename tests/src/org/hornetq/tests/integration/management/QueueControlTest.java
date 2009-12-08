@@ -1286,8 +1286,8 @@ public class QueueControlTest extends ManagementTestBase
       server.start();
 
       ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
-      sf.setBlockOnNonPersistentSend(true);
-      sf.setBlockOnNonPersistentSend(true);
+      sf.setBlockOnNonDurableSend(true);
+      sf.setBlockOnNonDurableSend(true);
       session = sf.createSession(false, true, false);
       session.start();
    }

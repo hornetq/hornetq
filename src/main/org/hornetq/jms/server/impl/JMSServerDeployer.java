@@ -170,12 +170,12 @@ public class JMSServerDeployer extends XmlDeployer
          boolean blockOnAcknowledge = XMLConfigurationUtil.getBoolean(e,
                                                                       "block-on-acknowledge",
                                                                       ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE);
-         boolean blockOnNonPersistentSend = XMLConfigurationUtil.getBoolean(e,
-                                                                            "block-on-non-persistent-send",
-                                                                            ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND);
-         boolean blockOnPersistentSend = XMLConfigurationUtil.getBoolean(e,
-                                                                         "block-on-persistent-send",
-                                                                         ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND);
+         boolean blockOnNonDurableSend = XMLConfigurationUtil.getBoolean(e,
+                                                                            "block-on-non-durable-send",
+                                                                            ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_DURABLE_SEND);
+         boolean blockOnDurableSend = XMLConfigurationUtil.getBoolean(e,
+                                                                         "block-on-durable-send",
+                                                                         ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_DURABLE_SEND);
          boolean autoGroup = XMLConfigurationUtil.getBoolean(e,
                                                              "auto-group",
                                                              ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP);
@@ -318,8 +318,8 @@ public class JMSServerDeployer extends XmlDeployer
                                                      producerWindowSize,
                                                      producerMaxRate,
                                                      blockOnAcknowledge,
-                                                     blockOnPersistentSend,
-                                                     blockOnNonPersistentSend,
+                                                     blockOnDurableSend,
+                                                     blockOnNonDurableSend,
                                                      autoGroup,
                                                      preAcknowledge,
                                                      connectionLoadBalancingPolicyClassName,
@@ -353,8 +353,8 @@ public class JMSServerDeployer extends XmlDeployer
                                                      producerWindowSize,
                                                      producerMaxRate,
                                                      blockOnAcknowledge,
-                                                     blockOnPersistentSend,
-                                                     blockOnNonPersistentSend,
+                                                     blockOnDurableSend,
+                                                     blockOnNonDurableSend,
                                                      autoGroup,
                                                      preAcknowledge,
                                                      connectionLoadBalancingPolicyClassName,

@@ -1175,8 +1175,8 @@ public class MessageHeaderTest extends MessageHeaderTestBase
 
       public ClientProducer createProducer(final SimpleString address,
                                            final int maxRate,
-                                           final boolean blockOnNonPersistentSend,
-                                           final boolean blockOnPersistentSend) throws HornetQException
+                                           final boolean blockOnNonDurableSend,
+                                           final boolean blockOnDurableSend) throws HornetQException
       {
          return null;
       }
@@ -1193,8 +1193,8 @@ public class MessageHeaderTest extends MessageHeaderTestBase
 
       public ClientProducer createProducer(final String address,
                                            final int maxRate,
-                                           final boolean blockOnNonPersistentSend,
-                                           final boolean blockOnPersistentSend) throws HornetQException
+                                           final boolean blockOnNonDurableSend,
+                                           final boolean blockOnDurableSend) throws HornetQException
       {
          return null;
       }

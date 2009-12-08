@@ -146,9 +146,9 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
    private final int producerMaxRate;
 
-   private final boolean blockOnNonPersistentSend;
+   private final boolean blockOnNonDurableSend;
 
-   private final boolean blockOnPersistentSend;
+   private final boolean blockOnDurableSend;
 
    private final int minLargeMessageSize;
 
@@ -197,8 +197,8 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
                             final int confirmationWindowSize,
                             final int producerWindowSize,
                             final int producerMaxRate,
-                            final boolean blockOnNonPersistentSend,
-                            final boolean blockOnPersistentSend,
+                            final boolean blockOnNonDurableSend,
+                            final boolean blockOnDurableSend,
                             final boolean cacheLargeMessageClient,
                             final int minLargeMessageSize,
                             final int initialMessagePacketSize,
@@ -246,9 +246,9 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
       this.producerMaxRate = producerMaxRate;
 
-      this.blockOnNonPersistentSend = blockOnNonPersistentSend;
+      this.blockOnNonDurableSend = blockOnNonDurableSend;
 
-      this.blockOnPersistentSend = blockOnPersistentSend;
+      this.blockOnDurableSend = blockOnDurableSend;
 
       this.cacheLargeMessageClient = cacheLargeMessageClient;
 
@@ -1521,8 +1521,8 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
                                                                address,
                                                                maxRate == -1 ? null
                                                                             : new TokenBucketLimiterImpl(maxRate, false),
-                                                               autoCommitSends && blockOnNonPersistentSend,
-                                                               autoCommitSends && blockOnPersistentSend,
+                                                               autoCommitSends && blockOnNonDurableSend,
+                                                               autoCommitSends && blockOnDurableSend,
                                                                autoGroup,
                                                                groupID == null ? null : new SimpleString(groupID),
                                                                minLargeMessageSize,

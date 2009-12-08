@@ -60,7 +60,7 @@ public class BlockingSendTest extends ServiceTestBase
          System.out.println("sync = " + server.getConfiguration().isJournalSyncNonTransactional());
 
          factory = createFactory(false);
-         factory.setBlockOnPersistentSend(true);
+         factory.setBlockOnDurableSend(true);
 
          session = factory.createSession();
 

@@ -112,8 +112,8 @@ public class PersistentDivertTest extends ServiceTestBase
       ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
 
       sf.setBlockOnAcknowledge(true);
-      sf.setBlockOnNonPersistentSend(true);
-      sf.setBlockOnPersistentSend(true);
+      sf.setBlockOnNonDurableSend(true);
+      sf.setBlockOnDurableSend(true);
 
       ClientSession session = sf.createSession(true, true, 0);
 
@@ -315,8 +315,8 @@ public class PersistentDivertTest extends ServiceTestBase
       ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
 
       sf.setBlockOnAcknowledge(true);
-      sf.setBlockOnNonPersistentSend(true);
-      sf.setBlockOnPersistentSend(true);
+      sf.setBlockOnNonDurableSend(true);
+      sf.setBlockOnDurableSend(true);
 
       ClientSession session = sf.createSession(true, true, 0);
 
@@ -366,7 +366,7 @@ public class PersistentDivertTest extends ServiceTestBase
 
       sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
 
-      sf.setBlockOnPersistentSend(true);
+      sf.setBlockOnDurableSend(true);
 
       session = sf.createSession(false, true, true);
 
@@ -462,7 +462,7 @@ public class PersistentDivertTest extends ServiceTestBase
 
       sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
 
-      sf.setBlockOnPersistentSend(true);
+      sf.setBlockOnDurableSend(true);
 
       session = sf.createSession(false, true, true);
 

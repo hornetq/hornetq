@@ -6,8 +6,8 @@
       <connectors>
          <connector-ref connector-name="netty-connector"/>
       </connectors>
-      <block-on-persistent-send>true</block-on-persistent-send>
-      <block-on-non-persistent-send>true</block-on-non-persistent-send>
+      <block-on-durable-send>true</block-on-durable-send>
+      <block-on-non-durable-send>true</block-on-non-durable-send>
       <entries>
          <entry name="ConnectionFactory"/>
       </entries>

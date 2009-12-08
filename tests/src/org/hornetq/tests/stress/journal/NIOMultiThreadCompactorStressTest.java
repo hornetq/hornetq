@@ -144,7 +144,7 @@ public class NIOMultiThreadCompactorStressTest extends ServiceTestBase
    private void addEmptyTransaction(final Xid xid) throws HornetQException, XAException
    {
       ClientSessionFactory sf = createInVMFactory();
-      sf.setBlockOnNonPersistentSend(false);
+      sf.setBlockOnNonDurableSend(false);
       sf.setBlockOnAcknowledge(false);
       ClientSession session = sf.createSession(true, false, false);
       session.start(xid, XAResource.TMNOFLAGS);
@@ -157,7 +157,7 @@ public class NIOMultiThreadCompactorStressTest extends ServiceTestBase
    private void checkEmptyXID(final Xid xid) throws HornetQException, XAException
    {
       ClientSessionFactory sf = createInVMFactory();
-      sf.setBlockOnNonPersistentSend(false);
+      sf.setBlockOnNonDurableSend(false);
       sf.setBlockOnAcknowledge(false);
       ClientSession session = sf.createSession(true, false, false);
 
@@ -368,7 +368,7 @@ public class NIOMultiThreadCompactorStressTest extends ServiceTestBase
       server.start();
 
       sf = createNettyFactory();
-      sf.setBlockOnPersistentSend(false);
+      sf.setBlockOnDurableSend(false);
       sf.setBlockOnAcknowledge(false);
 
       ClientSession sess = sf.createSession();

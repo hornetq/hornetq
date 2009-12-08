@@ -551,8 +551,8 @@ public class SessionTest extends ServiceTestBase
       {
          server.start();
          ClientSessionFactory cf = createInVMFactory();
-         cf.setBlockOnNonPersistentSend(true);
-         cf.setBlockOnPersistentSend(true);
+         cf.setBlockOnNonDurableSend(true);
+         cf.setBlockOnDurableSend(true);
          ClientSession sendSession = cf.createSession(false, true, true);
          ClientProducer cp = sendSession.createProducer(queueName);
          ClientSession clientSession = cf.createSession(false, true, false);
@@ -622,8 +622,8 @@ public class SessionTest extends ServiceTestBase
       {
          server.start();
          ClientSessionFactory cf = createInVMFactory();
-         cf.setBlockOnNonPersistentSend(true);
-         cf.setBlockOnPersistentSend(true);
+         cf.setBlockOnNonDurableSend(true);
+         cf.setBlockOnDurableSend(true);
          ClientSession sendSession = cf.createSession(false, true, true);
          ClientProducer cp = sendSession.createProducer(queueName);
          ClientSession clientSession = cf.createSession(false, true, false);

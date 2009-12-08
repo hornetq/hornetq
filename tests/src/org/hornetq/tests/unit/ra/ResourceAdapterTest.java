@@ -91,7 +91,8 @@ public class ResourceAdapterTest extends ServiceTestBase
       Assert.assertEquals(factory.getProducerMaxRate(), ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE);
       Assert.assertEquals(factory.getConfirmationWindowSize(),
                           ClientSessionFactoryImpl.DEFAULT_CONFIRMATION_WINDOW_SIZE);
-      Assert.assertEquals(factory.getReconnectAttempts(), ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS);
+      // by default, reconnect attempts is set to -1
+      Assert.assertEquals(-1, factory.getReconnectAttempts());
       Assert.assertEquals(factory.getRetryInterval(), ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL);
       Assert.assertEquals(factory.getRetryIntervalMultiplier(),
                           ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER);
@@ -101,9 +102,9 @@ public class ResourceAdapterTest extends ServiceTestBase
       Assert.assertEquals(factory.getTransactionBatchSize(), ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE);
       Assert.assertEquals(factory.isAutoGroup(), ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP);
       Assert.assertEquals(factory.isBlockOnAcknowledge(), ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE);
-      Assert.assertEquals(factory.isBlockOnNonPersistentSend(),
-                          ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND);
-      Assert.assertEquals(factory.isBlockOnPersistentSend(), ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND);
+      Assert.assertEquals(factory.isBlockOnNonDurableSend(),
+                          ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_DURABLE_SEND);
+      Assert.assertEquals(factory.isBlockOnDurableSend(), ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_DURABLE_SEND);
       Assert.assertEquals(factory.isFailoverOnServerShutdown(),
                           ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN);
       Assert.assertEquals(factory.isPreAcknowledge(), ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE);
@@ -144,7 +145,8 @@ public class ResourceAdapterTest extends ServiceTestBase
       Assert.assertEquals(factory.getProducerMaxRate(), ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE);
       Assert.assertEquals(factory.getConfirmationWindowSize(),
                           ClientSessionFactoryImpl.DEFAULT_CONFIRMATION_WINDOW_SIZE);
-      Assert.assertEquals(factory.getReconnectAttempts(), ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS);
+      // by default, reconnect attempts is set to -1
+      Assert.assertEquals(-1, factory.getReconnectAttempts());
       Assert.assertEquals(factory.getRetryInterval(), ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL);
       Assert.assertEquals(factory.getRetryIntervalMultiplier(),
                           ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER);
@@ -154,9 +156,9 @@ public class ResourceAdapterTest extends ServiceTestBase
       Assert.assertEquals(factory.getTransactionBatchSize(), ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE);
       Assert.assertEquals(factory.isAutoGroup(), ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP);
       Assert.assertEquals(factory.isBlockOnAcknowledge(), ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE);
-      Assert.assertEquals(factory.isBlockOnNonPersistentSend(),
-                          ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND);
-      Assert.assertEquals(factory.isBlockOnPersistentSend(), ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND);
+      Assert.assertEquals(factory.isBlockOnNonDurableSend(),
+                          ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_DURABLE_SEND);
+      Assert.assertEquals(factory.isBlockOnDurableSend(), ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_DURABLE_SEND);
       Assert.assertEquals(factory.isFailoverOnServerShutdown(),
                           ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN);
       Assert.assertEquals(factory.isPreAcknowledge(), ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE);
@@ -169,8 +171,8 @@ public class ResourceAdapterTest extends ServiceTestBase
       ra.setConnectorClassName(InVMConnector.class.getName());
       ra.setAutoGroup(!ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP);
       ra.setBlockOnAcknowledge(!ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE);
-      ra.setBlockOnNonPersistentSend(!ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND);
-      ra.setBlockOnPersistentSend(!ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND);
+      ra.setBlockOnNonDurableSend(!ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_DURABLE_SEND);
+      ra.setBlockOnDurableSend(!ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_DURABLE_SEND);
       ra.setCallTimeout(1l);
       ra.setClientFailureCheckPeriod(2l);
       ra.setClientID("myid");
@@ -217,9 +219,9 @@ public class ResourceAdapterTest extends ServiceTestBase
       Assert.assertEquals(factory.getTransactionBatchSize(), 18);
       Assert.assertEquals(factory.isAutoGroup(), !ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP);
       Assert.assertEquals(factory.isBlockOnAcknowledge(), !ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE);
-      Assert.assertEquals(factory.isBlockOnNonPersistentSend(),
-                          !ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND);
-      Assert.assertEquals(factory.isBlockOnPersistentSend(), !ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND);
+      Assert.assertEquals(factory.isBlockOnNonDurableSend(),
+                          !ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_DURABLE_SEND);
+      Assert.assertEquals(factory.isBlockOnDurableSend(), !ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_DURABLE_SEND);
       Assert.assertEquals(factory.isFailoverOnServerShutdown(),
                           !ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN);
       Assert.assertEquals(factory.isPreAcknowledge(), !ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE);
@@ -233,8 +235,8 @@ public class ResourceAdapterTest extends ServiceTestBase
       ConnectionFactoryProperties connectionFactoryProperties = new ConnectionFactoryProperties();
       connectionFactoryProperties.setAutoGroup(!ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP);
       connectionFactoryProperties.setBlockOnAcknowledge(!ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE);
-      connectionFactoryProperties.setBlockOnNonPersistentSend(!ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND);
-      connectionFactoryProperties.setBlockOnPersistentSend(!ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND);
+      connectionFactoryProperties.setBlockOnNonDurableSend(!ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_DURABLE_SEND);
+      connectionFactoryProperties.setBlockOnDurableSend(!ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_DURABLE_SEND);
       connectionFactoryProperties.setCallTimeout(1l);
       connectionFactoryProperties.setClientFailureCheckPeriod(2l);
       connectionFactoryProperties.setClientID("myid");
@@ -281,9 +283,9 @@ public class ResourceAdapterTest extends ServiceTestBase
       Assert.assertEquals(factory.getTransactionBatchSize(), 18);
       Assert.assertEquals(factory.isAutoGroup(), !ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP);
       Assert.assertEquals(factory.isBlockOnAcknowledge(), !ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE);
-      Assert.assertEquals(factory.isBlockOnNonPersistentSend(),
-                          !ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND);
-      Assert.assertEquals(factory.isBlockOnPersistentSend(), !ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND);
+      Assert.assertEquals(factory.isBlockOnNonDurableSend(),
+                          !ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_DURABLE_SEND);
+      Assert.assertEquals(factory.isBlockOnDurableSend(), !ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_DURABLE_SEND);
       Assert.assertEquals(factory.isFailoverOnServerShutdown(),
                           !ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN);
       Assert.assertEquals(factory.isPreAcknowledge(), !ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE);

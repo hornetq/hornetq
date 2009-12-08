@@ -185,14 +185,14 @@ Copyright 2009 Red Hat, Inc.
         <config-property-value></config-property-value>
       </config-property>
       <config-property>
-        <description>The block on non persistent send</description>
-        <config-property-name>BlockOnNonPersistentSend</config-property-name>
+        <description>The block on non-durable send</description>
+        <config-property-name>BlockOnNonDurableSend</config-property-name>
         <config-property-type>java.lang.Boolean</config-property-type>
         <config-property-value></config-property-value>
       </config-property>
       <config-property>
-        <description>The block on persistent send</description>
-        <config-property-name>BlockOnPersistentSend</config-property-name>
+        <description>The block on durable send</description>
+        <config-property-name>BlockOnDurableSend</config-property-name>
         <config-property-type>java.lang.Boolean</config-property-type>
         <config-property-value></config-property-value>
       </config-property>

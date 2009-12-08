@@ -51,7 +51,7 @@ public class CloseDestroyedConnectionTest extends JMSTestBase
       super.setUp();
 
       cf = new HornetQConnectionFactory(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
-      cf.setBlockOnPersistentSend(true);
+      cf.setBlockOnDurableSend(true);
       cf.setPreAcknowledge(true);
    }
 

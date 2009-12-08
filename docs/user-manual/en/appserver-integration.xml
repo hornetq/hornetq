@@ -534,14 +534,14 @@ public class MDBMessageSendTxExample implements MessageListener
                             <entry>If true then block on acknowledge of messages.</entry>
                         </row>
                         <row>
-                            <entry>BlockOnNonPersistentSend</entry>
+                            <entry>BlockOnNonDurableSend</entry>
                             <entry>boolean</entry>
-                            <entry>If true then block when sending non persistent messages</entry>
+                            <entry>If true then block when sending non-durable messages</entry>
                         </row>
                         <row>
-                            <entry>BlockOnPersistentSend</entry>
+                            <entry>BlockOnDurableSend</entry>
                             <entry>boolean</entry>
-                            <entry>If true then block when sending persistent messages</entry>
+                            <entry>If true then block when sending durable messages</entry>
                         </row>
                         <row>
                             <entry>AutoGroup</entry>

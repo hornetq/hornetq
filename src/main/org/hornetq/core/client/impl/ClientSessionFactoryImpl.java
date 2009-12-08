@@ -82,9 +82,9 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
 
    public static final boolean DEFAULT_BLOCK_ON_ACKNOWLEDGE = false;
 
-   public static final boolean DEFAULT_BLOCK_ON_PERSISTENT_SEND = true;
+   public static final boolean DEFAULT_BLOCK_ON_DURABLE_SEND = true;
 
-   public static final boolean DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND = false;
+   public static final boolean DEFAULT_BLOCK_ON_NON_DURABLE_SEND = false;
 
    public static final boolean DEFAULT_AUTO_GROUP = false;
 
@@ -171,9 +171,9 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
 
    private boolean blockOnAcknowledge;
 
-   private boolean blockOnPersistentSend;
+   private boolean blockOnDurableSend;
 
-   private boolean blockOnNonPersistentSend;
+   private boolean blockOnNonDurableSend;
 
    private boolean autoGroup;
 
@@ -355,9 +355,9 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
 
       blockOnAcknowledge = other.isBlockOnAcknowledge();
 
-      blockOnPersistentSend = other.isBlockOnPersistentSend();
+      blockOnDurableSend = other.isBlockOnDurableSend();
 
-      blockOnNonPersistentSend = other.isBlockOnNonPersistentSend();
+      blockOnNonDurableSend = other.isBlockOnNonDurableSend();
 
       autoGroup = other.isAutoGroup();
 
@@ -416,9 +416,9 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
 
       blockOnAcknowledge = ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE;
 
-      blockOnPersistentSend = ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND;
+      blockOnDurableSend = ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_DURABLE_SEND;
 
-      blockOnNonPersistentSend = ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND;
+      blockOnNonDurableSend = ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_DURABLE_SEND;
 
       autoGroup = ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP;
 
@@ -617,26 +617,26 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       this.blockOnAcknowledge = blockOnAcknowledge;
    }
 
-   public synchronized boolean isBlockOnPersistentSend()
+   public synchronized boolean isBlockOnDurableSend()
    {
-      return blockOnPersistentSend;
+      return blockOnDurableSend;
    }
 
-   public synchronized void setBlockOnPersistentSend(final boolean blockOnPersistentSend)
+   public synchronized void setBlockOnDurableSend(final boolean blockOnDurableSend)
    {
       checkWrite();
-      this.blockOnPersistentSend = blockOnPersistentSend;
+      this.blockOnDurableSend = blockOnDurableSend;
    }
 
-   public synchronized boolean isBlockOnNonPersistentSend()
+   public synchronized boolean isBlockOnNonDurableSend()
    {
-      return blockOnNonPersistentSend;
+      return blockOnNonDurableSend;
    }
 
-   public synchronized void setBlockOnNonPersistentSend(final boolean blockOnNonPersistentSend)
+   public synchronized void setBlockOnNonDurableSend(final boolean blockOnNonDurableSend)
    {
       checkWrite();
-      this.blockOnNonPersistentSend = blockOnNonPersistentSend;
+      this.blockOnNonDurableSend = blockOnNonDurableSend;
    }
 
    public synchronized boolean isAutoGroup()
@@ -1133,8 +1133,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
                                                                consumerWindowSize,
                                                                producerMaxRate,
                                                                consumerMaxRate,
-                                                               blockOnNonPersistentSend,
-                                                               blockOnPersistentSend,
+                                                               blockOnNonDurableSend,
+                                                               blockOnDurableSend,
                                                                initialMessagePacketSize,
                                                                groupID);
 

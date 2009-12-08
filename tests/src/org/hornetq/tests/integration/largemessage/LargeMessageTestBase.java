@@ -153,8 +153,8 @@ public abstract class LargeMessageTestBase extends ServiceTestBase
 
          if (sendingBlocking)
          {
-            sf.setBlockOnNonPersistentSend(true);
-            sf.setBlockOnPersistentSend(true);
+            sf.setBlockOnNonDurableSend(true);
+            sf.setBlockOnDurableSend(true);
             sf.setBlockOnAcknowledge(true);
          }
 

@@ -102,8 +102,8 @@ public class PagingTest extends ServiceTestBase
       {
          ClientSessionFactory sf = createInVMFactory();
 
-         sf.setBlockOnNonPersistentSend(true);
-         sf.setBlockOnPersistentSend(true);
+         sf.setBlockOnNonDurableSend(true);
+         sf.setBlockOnDurableSend(true);
          sf.setBlockOnAcknowledge(true);
 
          ClientSession session = sf.createSession(null, null, false, true, true, false, 0);
@@ -251,8 +251,8 @@ public class PagingTest extends ServiceTestBase
       {
          ClientSessionFactory sf = createInVMFactory();
 
-         sf.setBlockOnNonPersistentSend(true);
-         sf.setBlockOnPersistentSend(true);
+         sf.setBlockOnNonDurableSend(true);
+         sf.setBlockOnDurableSend(true);
          sf.setBlockOnAcknowledge(true);
 
          ClientSession session = sf.createSession(null, null, false, true, true, false, 0);
@@ -394,8 +394,8 @@ public class PagingTest extends ServiceTestBase
       {
          ClientSessionFactory sf = createInVMFactory();
 
-         sf.setBlockOnNonPersistentSend(true);
-         sf.setBlockOnPersistentSend(true);
+         sf.setBlockOnNonDurableSend(true);
+         sf.setBlockOnDurableSend(true);
          sf.setBlockOnAcknowledge(true);
 
          ClientSession session = sf.createSession(null, null, false, true, true, false, 0);
@@ -530,8 +530,8 @@ public class PagingTest extends ServiceTestBase
       {
          ClientSessionFactory sf = createInVMFactory();
 
-         sf.setBlockOnNonPersistentSend(true);
-         sf.setBlockOnPersistentSend(true);
+         sf.setBlockOnNonDurableSend(true);
+         sf.setBlockOnDurableSend(true);
          sf.setBlockOnAcknowledge(true);
 
          ClientSession session = sf.createSession(null, null, false, false, true, false, 0);
@@ -607,8 +607,8 @@ public class PagingTest extends ServiceTestBase
       {
          ClientSessionFactory sf = createInVMFactory();
 
-         sf.setBlockOnNonPersistentSend(true);
-         sf.setBlockOnPersistentSend(true);
+         sf.setBlockOnNonDurableSend(true);
+         sf.setBlockOnDurableSend(true);
          sf.setBlockOnAcknowledge(true);
 
          ClientSession session = sf.createSession(null, null, false, false, false, false, 0);
@@ -701,8 +701,8 @@ public class PagingTest extends ServiceTestBase
       {
          ClientSessionFactory sf = createInVMFactory();
 
-         sf.setBlockOnNonPersistentSend(true);
-         sf.setBlockOnPersistentSend(true);
+         sf.setBlockOnNonDurableSend(true);
+         sf.setBlockOnDurableSend(true);
          sf.setBlockOnAcknowledge(true);
 
          ClientSession session = sf.createSession(null, null, false, true, true, false, 0);
@@ -842,8 +842,8 @@ public class PagingTest extends ServiceTestBase
       {
          ClientSessionFactory sf = createInVMFactory();
 
-         sf.setBlockOnNonPersistentSend(true);
-         sf.setBlockOnPersistentSend(true);
+         sf.setBlockOnNonDurableSend(true);
+         sf.setBlockOnDurableSend(true);
          sf.setBlockOnAcknowledge(true);
 
          ClientSession session = sf.createSession(null, null, false, !transacted, true, false, 0);

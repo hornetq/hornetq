@@ -73,18 +73,18 @@ public interface ClientProducer
    boolean isClosed();
 
    /**
-    * Return whether the producer will block when sending <em>persistent</em> messages.
+    * Return whether the producer will block when sending <em>durable</em> messages.
     * 
-    * @return <code>true</code> if the producer blocks when sending persistent, <code>false</code> else
+    * @return <code>true</code> if the producer blocks when sending durable, <code>false</code> else
     */
-   boolean isBlockOnPersistentSend();
+   boolean isBlockOnDurableSend();
 
    /**
-    * Return whether the producer will block when sending <em>non-persistent</em> messages.
+    * Return whether the producer will block when sending <em>non-durable</em> messages.
     * 
-    * @return <code>true</code> if the producer blocks when sending non-persistent, <code>false</code> else
+    * @return <code>true</code> if the producer blocks when sending non-durable, <code>false</code> else
     */
-   boolean isBlockOnNonPersistentSend();
+   boolean isBlockOnNonDurableSend();
 
    /**
     * Return the producer maximum rate.

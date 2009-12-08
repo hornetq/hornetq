@@ -71,8 +71,8 @@ public class JMSServerStartStopTest extends UnitTestCase
 
          HornetQConnectionFactory jbcf = new HornetQConnectionFactory(new TransportConfiguration(NettyConnectorFactory.class.getCanonicalName()));
 
-         jbcf.setBlockOnPersistentSend(true);
-         jbcf.setBlockOnNonPersistentSend(true);
+         jbcf.setBlockOnDurableSend(true);
+         jbcf.setBlockOnNonDurableSend(true);
 
          Connection conn = jbcf.createConnection();
 
@@ -98,8 +98,8 @@ public class JMSServerStartStopTest extends UnitTestCase
 
       HornetQConnectionFactory jbcf = new HornetQConnectionFactory(new TransportConfiguration(NettyConnectorFactory.class.getCanonicalName()));
 
-      jbcf.setBlockOnPersistentSend(true);
-      jbcf.setBlockOnNonPersistentSend(true);
+      jbcf.setBlockOnDurableSend(true);
+      jbcf.setBlockOnNonDurableSend(true);
 
       Connection conn = jbcf.createConnection();
 

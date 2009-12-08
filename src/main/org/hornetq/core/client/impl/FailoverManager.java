@@ -45,8 +45,8 @@ public interface FailoverManager
                                final int consumerWindowSize,
                                final int producerMaxRate,
                                final int consumerMaxRate,
-                               final boolean blockOnNonPersistentSend,
-                               final boolean blockOnPersistentSend,
+                               final boolean blockOnNonDurableSend,
+                               final boolean blockOnDurableSend,
                                final int initialMessagePacketSize,
                                final String groupID) throws HornetQException;
 

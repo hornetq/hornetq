@@ -87,8 +87,8 @@ public class JMSFailoverTest extends UnitTestCase
                                                                    new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory",
                                                                                               backupParams));
 
-      jbcf.setBlockOnPersistentSend(true);
-      jbcf.setBlockOnNonPersistentSend(true);
+      jbcf.setBlockOnDurableSend(true);
+      jbcf.setBlockOnNonDurableSend(true);
 
       // Note we set consumer window size to a value so we can verify that consumer credit re-sending
       // works properly on failover
@@ -171,13 +171,13 @@ public class JMSFailoverTest extends UnitTestCase
    {
       HornetQConnectionFactory jbcfLive = new HornetQConnectionFactory(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
 
-      jbcfLive.setBlockOnNonPersistentSend(true);
-      jbcfLive.setBlockOnPersistentSend(true);
+      jbcfLive.setBlockOnNonDurableSend(true);
+      jbcfLive.setBlockOnDurableSend(true);
 
       HornetQConnectionFactory jbcfBackup = new HornetQConnectionFactory(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory",
                                                                                                     backupParams));
-      jbcfBackup.setBlockOnNonPersistentSend(true);
-      jbcfBackup.setBlockOnPersistentSend(true);
+      jbcfBackup.setBlockOnNonDurableSend(true);
+      jbcfBackup.setBlockOnDurableSend(true);
 
       Connection connLive = jbcfLive.createConnection();
 

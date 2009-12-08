@@ -867,7 +867,7 @@ public class JMSQueueControlTest extends ManagementTestBase
    {
       HornetQConnectionFactory cf = new HornetQConnectionFactory(new TransportConfiguration(InVMConnectorFactory.class.getName()));
 
-      cf.setBlockOnPersistentSend(true);
+      cf.setBlockOnDurableSend(true);
 
       return cf.createConnection();
    }

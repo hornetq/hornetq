@@ -211,7 +211,7 @@ public abstract class PerfBase
       factory.setAckBatchSize(perfParams.getBatchSize());
 
       factory.setBlockOnAcknowledge(perfParams.isBlockOnACK());
-      factory.setBlockOnPersistentSend(perfParams.isBlockOnPersistent());
+      factory.setBlockOnDurableSend(perfParams.isBlockOnPersistent());
    }
 
    private void displayAverage(final long numberOfMessages, final long start, final long end)

@@ -88,10 +88,10 @@
             <xsd:element name="block-on-acknowledge" type="xsd:boolean"
                 maxOccurs="1" minOccurs="0">
             </xsd:element>
-            <xsd:element name="block-on-non-persistent-send" type="xsd:boolean"
+            <xsd:element name="block-on-non-durable-send" type="xsd:boolean"
                 maxOccurs="1" minOccurs="0">
             </xsd:element>
-            <xsd:element name="block-on-persistent-send" type="xsd:boolean"
+            <xsd:element name="block-on-durable-send" type="xsd:boolean"
                 maxOccurs="1" minOccurs="0">
             </xsd:element>
             <xsd:element name="auto-group-id" type="xsd:boolean"

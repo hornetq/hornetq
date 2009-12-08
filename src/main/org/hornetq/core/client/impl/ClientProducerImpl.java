@@ -61,9 +61,9 @@ public class ClientProducerImpl implements ClientProducerInternal
 
    private final TokenBucketLimiter rateLimiter;
 
-   private final boolean blockOnNonPersistentSend;
+   private final boolean blockOnNonDurableSend;
 
-   private final boolean blockOnPersistentSend;
+   private final boolean blockOnDurableSend;
 
    private final SimpleString groupID;
 
@@ -78,8 +78,8 @@ public class ClientProducerImpl implements ClientProducerInternal
    public ClientProducerImpl(final ClientSessionInternal session,
                              final SimpleString address,
                              final TokenBucketLimiter rateLimiter,
-                             final boolean blockOnNonPersistentSend,
-                             final boolean blockOnPersistentSend,
+                             final boolean blockOnNonDurableSend,
+                             final boolean blockOnDurableSend,
                              final boolean autoGroup,
                              final SimpleString groupID,
                              final int minLargeMessageSize,
@@ -93,9 +93,9 @@ public class ClientProducerImpl implements ClientProducerInternal
 
       this.rateLimiter = rateLimiter;
 
-      this.blockOnNonPersistentSend = blockOnNonPersistentSend;
+      this.blockOnNonDurableSend = blockOnNonDurableSend;
 
-      this.blockOnPersistentSend = blockOnPersistentSend;
+      this.blockOnDurableSend = blockOnDurableSend;
 
       if (autoGroup)
       {
@@ -169,14 +169,14 @@ public class ClientProducerImpl implements ClientProducerInternal
       return closed;
    }
 
-   public boolean isBlockOnPersistentSend()
+   public boolean isBlockOnDurableSend()
    {
-      return blockOnPersistentSend;
+      return blockOnDurableSend;
    }
 
-   public boolean isBlockOnNonPersistentSend()
+   public boolean isBlockOnNonDurableSend()
    {
-      return blockOnNonPersistentSend;
+      return blockOnNonDurableSend;
    }
 
    public int getMaxRate()
@@ -229,7 +229,7 @@ public class ClientProducerImpl implements ClientProducerInternal
          msg.putStringProperty(MessageImpl.HDR_GROUP_ID, groupID);
       }
 
-      boolean sendBlocking = msg.isDurable() ? blockOnPersistentSend : blockOnNonPersistentSend;
+      boolean sendBlocking = msg.isDurable() ? blockOnDurableSend : blockOnNonDurableSend;
 
       session.workDone();
 

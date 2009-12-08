@@ -376,9 +376,9 @@
                   <para>The <literal>ConnectionFactoryControl</literal> exposes JMS
                      ConnectionFactory configuration through its attributes (e.g. <literal
                         >getConsumerWindowSize()</literal> to retrieve the consumer window size for
-                     flow control, <literal>isBlockOnNonPersistentSend()</literal> to know wether
+                     flow control, <literal>isBlockOnNonDurableSend()</literal> to know wether
                      the producers created from the connection factory will block or not when
-                     sending non-persistent messages, etc.)</para>
+                     sending non-durable messages, etc.)</para>
                </listitem>
             </itemizedlist>
          </section>

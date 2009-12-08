@@ -70,8 +70,8 @@ public class DeleteQueueRestartTest extends ServiceTestBase
 
       ClientSessionFactory factory = createInVMFactory();
 
-      factory.setBlockOnPersistentSend(true);
-      factory.setBlockOnNonPersistentSend(true);
+      factory.setBlockOnDurableSend(true);
+      factory.setBlockOnNonDurableSend(true);
       factory.setMinLargeMessageSize(1024 * 1024);
 
       final ClientSession session = factory.createSession(false, true, true);

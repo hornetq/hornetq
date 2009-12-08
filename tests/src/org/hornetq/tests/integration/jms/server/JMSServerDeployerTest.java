@@ -213,8 +213,8 @@ public class JMSServerDeployerTest extends ServiceTestBase
          Assert.assertEquals(3456, cf.getDupsOKBatchSize());
          Assert.assertEquals(4567, cf.getTransactionBatchSize());
          Assert.assertEquals(true, cf.isBlockOnAcknowledge());
-         Assert.assertEquals(false, cf.isBlockOnNonPersistentSend());
-         Assert.assertEquals(true, cf.isBlockOnPersistentSend());
+         Assert.assertEquals(false, cf.isBlockOnNonDurableSend());
+         Assert.assertEquals(true, cf.isBlockOnDurableSend());
          Assert.assertEquals(false, cf.isAutoGroup());
          Assert.assertEquals(true, cf.isPreAcknowledge());
          Assert.assertEquals(2345, cf.getConnectionTTL());
