@@ -20,15 +20,22 @@ import org.jboss.netty.buffer.ChannelBuffer;
 
 /**
  *
- * A HornetQBuffer
+ * A HornetQBuffer wraps a Netty's ChannelBuffer and is used throughout HornetQ code base.
  * 
  * Much of it derived from Netty ChannelBuffer by Trustin Lee
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * 
+ * @see HornetQBuffers
  *
  */
 public interface HornetQBuffer
 {
+   /**
+    * Return the underlying Netty's ChannelBuffer
+    * 
+    * @return the underlying Netty's ChannelBuffer
+    */
    ChannelBuffer channelBuffer();
 
    int capacity();

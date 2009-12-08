@@ -20,20 +20,29 @@ import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBuffers;
 
 /**
- * 
- * A HornetQChannelBuffers
+ * Factory class to create HornetQBuffers
  *
- * @author tim
- *
- *
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  */
 public class HornetQBuffers
-{
-   public static HornetQBuffer dynamicBuffer(final int estimatedLength)
+{   
+   /**
+    * Create a <em>self-expanding</em> HornetQBuffer with the given initial size
+    * 
+    * @param size the initial size of the created HornetQBuffer
+    * @return a self-expanding HornetQBuffer starting with the given size
+    */
+   public static HornetQBuffer dynamicBuffer(final int size)
    {
-      return new ChannelBufferWrapper(ChannelBuffers.dynamicBuffer(estimatedLength));
+      return new ChannelBufferWrapper(ChannelBuffers.dynamicBuffer(size));
    }
 
+   /**
+    * Create a <em>self-expanding</em> HornetQBuffer filled with the given byte array
+    * 
+    * @param bytes the created buffer will be initially filled with this byte array
+    * @return a self-expanding HornetQBuffer filled with the given byte array
+    */
    public static HornetQBuffer dynamicBuffer(final byte[] bytes)
    {
       ChannelBuffer buff = ChannelBuffers.dynamicBuffer(bytes.length);
@@ -43,6 +52,14 @@ public class HornetQBuffers
       return new ChannelBufferWrapper(buff);
    }
 
+   /**
+    * Create a HornetQBuffer wrapping the underlying NIO ByteBuffer
+    * 
+    * The position on this buffer won't affect the position on the inner buffer
+    * 
+    * @param underlying the underlying NIO ByteBuffer
+    * @return a HornetQBuffer wrapping the underlying NIO ByteBuffer
+    */
    public static HornetQBuffer wrappedBuffer(final ByteBuffer underlying)
    {
       HornetQBuffer buff = new ChannelBufferWrapper(ChannelBuffers.wrappedBuffer(underlying));
@@ -52,11 +69,23 @@ public class HornetQBuffers
       return buff;
    }
 
+   /**
+    * Create a HornetQBuffer wrapping the underlying byte array
+    *
+    * @param underlying the underlying byte array
+    * @return a HornetQBuffer wrapping the underlying byte array
+    */
    public static HornetQBuffer wrappedBuffer(final byte[] underlying)
    {
       return new ChannelBufferWrapper(ChannelBuffers.wrappedBuffer(underlying));
    }
 
+   /**
+    * Create a <em>fixed</em> HornetQBuffer of the given size
+    * 
+    * @param size the size of the created HornetQBuffer
+    * @return a fixed HornetQBuffer with the given size
+    */
    public static HornetQBuffer fixedBuffer(final int size)
    {
       return new ChannelBufferWrapper(ChannelBuffers.buffer(size));
