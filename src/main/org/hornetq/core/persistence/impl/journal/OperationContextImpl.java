@@ -211,8 +211,7 @@ public class OperationContextImpl implements OperationContext
       }
       catch (Throwable e)
       {
-         e.printStackTrace();
-         OperationContextImpl.log.warn("Error on executor's submit");
+         OperationContextImpl.log.warn("Error on executor's submit", e);
          executorsPending.decrementAndGet();
          task.onError(HornetQException.INTERNAL_ERROR,
                       "It wasn't possible to complete IO operation - " + e.getMessage());
