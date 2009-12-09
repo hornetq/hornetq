@@ -20,20 +20,20 @@ import java.util.List;
 import org.hornetq.core.logging.Logger;
 
 /**
- * 
- * A SimpleString
- * 
  * A simple String class that can store all characters, and stores as simple byte[],
- * this minimises expensive copying between String objects
+ * this minimises expensive copying between String objects.
+ *
+ * This object is used heavily throughout HornetQ for performance reasons.
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
- * TODO - implement an intern() method like in java.lang.String, since many Strings e.g. addresses, queue names, remote node ids are duplicated heavily
- * in bindings taking up more memory than they should
- * Intern can be called when receiving a sent message at the server (destination)
- * Also when receiving bindings remotely via bridge, the address, queue name and node id can be interned
  *
  */
+
+ // TODO - implement an intern() method like in java.lang.String, since many Strings e.g. addresses, queue names, remote node ids are duplicated heavily
+ //in bindings taking up more memory than they should
+ //Intern can be called when receiving a sent message at the server (destination)
+ //Also when receiving bindings remotely via bridge, the address, queue name and node id can be interned
+ //
 public class SimpleString implements CharSequence, Serializable, Comparable<SimpleString>
 {
    private static final long serialVersionUID = 4204223851422244307L;
@@ -67,7 +67,10 @@ public class SimpleString implements CharSequence, Serializable, Comparable<Simp
 
    // Constructors
    // ----------------------------------------------------------------------
-
+   /**
+    * creates a SimpleString from a conventional String
+    * @param string the string to transform
+    */
    public SimpleString(final String string)
    {
       int len = string.length();
@@ -92,6 +95,10 @@ public class SimpleString implements CharSequence, Serializable, Comparable<Simp
       str = string;
    }
 
+   /**
+    * creates a SimpleString from a byte array
+    * @param data the byte array to use
+    */
    public SimpleString(final byte[] data)
    {
       this.data = data;
@@ -145,11 +152,20 @@ public class SimpleString implements CharSequence, Serializable, Comparable<Simp
    // Public
    // ---------------------------------------------------------------------------
 
+   /**
+    * returns the underlying byte array of this SimpleString
+    * @return the byte array
+    */
    public byte[] getData()
    {
       return data;
    }
 
+   /**
+    * returns true if the SimpleString parameter starts with the same data as this one. false if not.
+    * @param other the SimpelString to look for
+    * @return true if this SimpleString starts with the same data
+    */
    public boolean startsWith(final SimpleString other)
    {
       byte[] otherdata = other.data;
@@ -240,6 +256,13 @@ public class SimpleString implements CharSequence, Serializable, Comparable<Simp
       return hash;
    }
 
+   /**
+    * splits this SimpleString into an array of SimpleString using the char param as the delimeter.
+    *
+    * i.e. "a.b" would return "a" and "b" if . was the delimeter
+    * @param delim
+    * @return
+    */
    public SimpleString[] split(final char delim)
    {
       if (!contains(delim))
@@ -270,6 +293,12 @@ public class SimpleString implements CharSequence, Serializable, Comparable<Simp
       }
    }
 
+   /**
+    * checks to see if this SimpleString contains the char parameter passed in
+    *
+    * @param c the char to check for
+    * @return true if the char is found, false otherwise.
+    */
    public boolean contains(final char c)
    {
       for (int i = 0; i < data.length; i += 2)
@@ -284,11 +313,23 @@ public class SimpleString implements CharSequence, Serializable, Comparable<Simp
       return false;
    }
 
+   /**
+    * concatanates a SimpleString and a String
+    *
+    * @param toAdd the String to concate with.
+    * @return the concatanated SimpleString
+    */
    public SimpleString concat(final String toAdd)
    {
       return concat(new SimpleString(toAdd));
    }
 
+   /**
+    * concatanates 2 SimpleString's
+    *
+    * @param toAdd the SimpleString to concate with.
+    * @return the concatanated SimpleString
+    */
    public SimpleString concat(final SimpleString toAdd)
    {
       byte[] bytes = new byte[data.length + toAdd.getData().length];
@@ -297,6 +338,12 @@ public class SimpleString implements CharSequence, Serializable, Comparable<Simp
       return new SimpleString(bytes);
    }
 
+   /**
+    * concatanates a SimpleString and a char
+    *
+    * @param toAdd the char to concate with.
+    * @return the concatanated SimpleString
+    */
    public SimpleString concat(final char c)
    {
       byte[] bytes = new byte[data.length + 2];
@@ -306,16 +353,30 @@ public class SimpleString implements CharSequence, Serializable, Comparable<Simp
       return new SimpleString(bytes);
    }
 
+   /**
+    * returns the size of this SimpleString
+    * @return the size
+    */
    public int sizeof()
    {
       return DataConstants.SIZE_INT + data.length;
    }
 
+   /**
+    * returns the size of a SimpleString
+    * @param str the SimpleString to check
+    * @return the size
+    */
    public static int sizeofString(final SimpleString str)
    {
       return str.sizeof();
    }
 
+   /**
+    * returns the size of a SimpleString which could be null
+    * @param str the SimpleString to check
+    * @return the size
+    */
    public static int sizeofNullableString(final SimpleString str)
    {
       if (str == null)
@@ -328,6 +389,13 @@ public class SimpleString implements CharSequence, Serializable, Comparable<Simp
       }
    }
 
+   /**
+    * 
+    * @param srcBegin
+    * @param srcEnd
+    * @param dst
+    * @param dstBegin
+    */
    public void getChars(final int srcBegin, final int srcEnd, final char dst[], final int dstBegin)
    {
       if (srcBegin < 0)
