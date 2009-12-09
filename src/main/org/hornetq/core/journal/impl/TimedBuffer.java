@@ -382,34 +382,25 @@ public class TimedBuffer
       // Needs to be called within synchronized blocks on TimedBuffer
       public void resumeSpin()
       {
-         synchronized (TimedBuffer.this)
-         {
-            if (!spinning)
-            {
-               spinning = true;
-               spinLimiter.release();
-            }
-         }
+         spinning = true;
+         spinLimiter.release();
       }
 
       // Needs to be called within synchronized blocks on TimedBuffer
       public void pauseSpin()
       {
-         synchronized (TimedBuffer.this)
+         if (spinning)
          {
-            if (spinning)
+            spinning = false;
+            try
             {
-               spinning = false;
-               try
+               if (!spinLimiter.tryAcquire(60, TimeUnit.SECONDS))
                {
-                  if (!spinLimiter.tryAcquire(60, TimeUnit.SECONDS))
-                  {
-                     throw new IllegalStateException("Internal error on TimedBuffer. Can't stop spinning");
-                  }
+                  throw new IllegalStateException("Internal error on TimedBuffer. Can't stop spinning");
                }
-               catch (InterruptedException ignored)
-               {
-               }
+            }
+            catch (InterruptedException ignored)
+            {
             }
          }
       }
