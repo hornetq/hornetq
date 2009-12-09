@@ -46,7 +46,7 @@ public class MockConnector extends InVMConnector
                         final BufferHandler handler,
                         final ConnectionLifeCycleListener listener)
    {
-      super(configuration, handler, listener, Executors.newCachedThreadPool());
+      super(configuration, handler, listener, Executors.newSingleThreadExecutor(), Executors.newCachedThreadPool());
       callback = (MockCallback)configuration.get("callback");
    }
 

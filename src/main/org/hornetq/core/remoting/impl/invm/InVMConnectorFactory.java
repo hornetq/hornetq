@@ -33,11 +33,11 @@ public class InVMConnectorFactory implements ConnectorFactory
    public Connector createConnector(final Map<String, Object> configuration,
                                     final BufferHandler handler,
                                     final ConnectionLifeCycleListener listener,
-                                    final Executor closExecutor,
+                                    final Executor closeExecutor,
                                     final Executor threadPool,
                                     final ScheduledExecutorService scheduledThreadPool)
    {
-      InVMConnector connector = new InVMConnector(configuration, handler, listener, threadPool);
+      InVMConnector connector = new InVMConnector(configuration, handler, listener, closeExecutor, threadPool);
 
       if (connector.getAcceptor() == null)
       {

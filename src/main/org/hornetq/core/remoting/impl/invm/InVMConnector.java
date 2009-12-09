@@ -73,10 +73,13 @@ public class InVMConnector implements Connector
    private volatile boolean started;
 
    protected final OrderedExecutorFactory executorFactory;
+   
+   private final Executor closeExecutor;
 
    public InVMConnector(final Map<String, Object> configuration,
                         final BufferHandler handler,
                         final ConnectionLifeCycleListener listener,
+                        final Executor closeExecutor,
                         final Executor threadPool)
    {
       this.listener = listener;
@@ -84,6 +87,8 @@ public class InVMConnector implements Connector
       id = ConfigurationHelper.getIntProperty(TransportConstants.SERVER_ID_PROP_NAME, 0, configuration);
 
       this.handler = handler;
+      
+      this.closeExecutor = closeExecutor;
 
       executorFactory = new OrderedExecutorFactory(threadPool);
 
@@ -187,28 +192,26 @@ public class InVMConnector implements Connector
             acceptor.disconnect((String)connectionID);
 
             // Execute on different thread to avoid deadlocks
-            new Thread()
+            closeExecutor.execute(new Runnable()
             {
-               @Override
                public void run()
                {
                   listener.connectionDestroyed(connectionID);
-               }
-            }.start();
+               }            
+            });
          }
       }
 
       public void connectionException(final Object connectionID, final HornetQException me)
       {
          // Execute on different thread to avoid deadlocks
-         new Thread()
+         closeExecutor.execute(new Runnable()
          {
-            @Override
             public void run()
             {
                listener.connectionException(connectionID, me);
-            }
-         }.start();
+            }            
+         });
       }
 
    }
