@@ -20,10 +20,20 @@ import org.hornetq.core.buffers.HornetQBuffer;
 import org.hornetq.utils.UUIDGenerator;
 
 /**
- * A TransportConfiguration
- * 
- * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * A TransportConfiguration is used by a client to specify a connections to a server and its back up if one exists.<br><br>
+ * <p/>
+ * Typically the constructors take the classname and paramaters for needed to create the connection. These will be
+ * different dependant on what connector is beingused i.e. Netty or InVM etc. An example:<br><br>
+ * <p/>
+ * <code>
+ * HashMap<String, Object> map = new HashMap<String, Object>();<br>
+ * map.put("host", "localhost");<br>
+ * map.put("port", 5445);<br>
+ * TransportConfiguration config = new TransportConfiguration(InVMConnectorFactory.class.getName(), map); <br>
+ * ClientSessionFactory sf = new ClientSessionFactoryImpl(config);  <br>
+ * </code><br><br>
  *
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  */
 public class TransportConfiguration implements Serializable
 {
@@ -43,6 +53,12 @@ public class TransportConfiguration implements Serializable
 
    private static final byte TYPE_STRING = 3;
 
+   /**
+    * Utility method for splitting a comma separated list of hosts
+    *
+    * @param commaSeparatedHosts the comma separated host string
+    * @return the hosts
+    */
    public static String[] splitHosts(final String commaSeparatedHosts)
    {
       if (commaSeparatedHosts == null)
@@ -58,10 +74,21 @@ public class TransportConfiguration implements Serializable
       return hosts;
    }
 
+   /**
+    * Creates a default TransportConfiguration with no configured transport.
+    */
    public TransportConfiguration()
    {
    }
 
+   /**
+    * Creates a TransportConfiguration with a specific name providing the class name of the {@link org.hornetq.core.remoting.spi.ConnectorFactory}
+    * and any params needed.
+    *
+    * @param className The class name of the ConnectorFactory
+    * @param params    The params needed by the ConnectorFactory
+    * @param name      The name of this TransportConfiguration
+    */
    public TransportConfiguration(final String className, final Map<String, Object> params, final String name)
    {
       factoryClassName = className;
@@ -71,26 +98,53 @@ public class TransportConfiguration implements Serializable
       this.name = name;
    }
 
+   /**
+    * Creates a TransportConfiguration providing the class name of the {@link org.hornetq.core.remoting.spi.ConnectorFactory}
+    * and any params needed.
+    *
+    * @param className The class name of the ConnectorFactory
+    * @param params    The params needed by the ConnectorFactory
+    */
    public TransportConfiguration(final String className, final Map<String, Object> params)
    {
       this(className, params, UUIDGenerator.getInstance().generateStringUUID());
    }
 
+   /**
+    * Creates a TransportConfiguration providing the class name of the {@link org.hornetq.core.remoting.spi.ConnectorFactory}
+    *
+    * @param className The class name of the ConnectorFactory
+    */
    public TransportConfiguration(final String className)
    {
       this(className, new HashMap<String, Object>(), UUIDGenerator.getInstance().generateStringUUID());
    }
 
+   /**
+    * Returns the name of this TransportConfiguration.
+    *
+    * @return the name
+    */
    public String getName()
    {
       return name;
    }
 
+   /**
+    * Returns the class name of ConnectorFactory being used by this TransportConfiguration
+    *
+    * @return The classname
+    */
    public String getFactoryClassName()
    {
       return factoryClassName;
    }
 
+   /**
+    * Returns any params set for this TransportConfiguration
+    *
+    * @return the params
+    */
    public Map<String, Object> getParams()
    {
       return params;
@@ -110,7 +164,7 @@ public class TransportConfiguration implements Serializable
          return false;
       }
 
-      TransportConfiguration kother = (TransportConfiguration)other;
+      TransportConfiguration kother = (TransportConfiguration) other;
 
       if (factoryClassName.equals(kother.factoryClassName))
       {
@@ -184,6 +238,13 @@ public class TransportConfiguration implements Serializable
       return str.toString();
    }
 
+   /**
+    * Encodes this TransportConfiguration into a buffer.
+    * <p/>
+    * Note that this is only used internally HornetQ.
+    *
+    * @param buffer the buffer to encode into
+    */
    public void encode(final HornetQBuffer buffer)
    {
       buffer.writeString(name);
@@ -202,22 +263,22 @@ public class TransportConfiguration implements Serializable
             if (val instanceof Boolean)
             {
                buffer.writeByte(TransportConfiguration.TYPE_BOOLEAN);
-               buffer.writeBoolean((Boolean)val);
+               buffer.writeBoolean((Boolean) val);
             }
             else if (val instanceof Integer)
             {
                buffer.writeByte(TransportConfiguration.TYPE_INT);
-               buffer.writeInt((Integer)val);
+               buffer.writeInt((Integer) val);
             }
             else if (val instanceof Long)
             {
                buffer.writeByte(TransportConfiguration.TYPE_LONG);
-               buffer.writeLong((Long)val);
+               buffer.writeLong((Long) val);
             }
             else if (val instanceof String)
             {
                buffer.writeByte(TransportConfiguration.TYPE_STRING);
-               buffer.writeString((String)val);
+               buffer.writeString((String) val);
             }
             else
             {
@@ -227,6 +288,13 @@ public class TransportConfiguration implements Serializable
       }
    }
 
+   /**
+    * Decodes this TransportConfiguration from a buffer.
+    * <p/>
+    * Note this is only used internally by HornetQ
+    *
+    * @param buffer the biffer to decode from
+    */
    public void decode(final HornetQBuffer buffer)
    {
       name = buffer.readString();
