@@ -84,7 +84,7 @@ public class MessageCounterExample extends HornetQExample
          ObjectName on = ObjectNameBuilder.DEFAULT.getJMSQueueObjectName(queue.getQueueName());
          JMXConnector connector = JMXConnectorFactory.connect(new JMXServiceURL(JMX_URL), new HashMap());
          MBeanServerConnection mbsc = connector.getMBeanServerConnection();
-         JMSQueueControl queueControl = MBeanServerInvocationHandler.newProxyInstance(mbsc,
+         JMSQueueControl queueControl = (JMSQueueControl)MBeanServerInvocationHandler.newProxyInstance(mbsc,
                                                                                       on,
                                                                                       JMSQueueControl.class,
                                                                                       false);

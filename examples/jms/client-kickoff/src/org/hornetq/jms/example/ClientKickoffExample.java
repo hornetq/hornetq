@@ -78,7 +78,7 @@ public class ClientKickoffExample extends HornetQExample
          ObjectName on = ObjectNameBuilder.DEFAULT.getHornetQServerObjectName();
          JMXConnector connector = JMXConnectorFactory.connect(new JMXServiceURL(JMX_URL), new HashMap<String, String>());
          MBeanServerConnection mbsc = connector.getMBeanServerConnection();
-         HornetQServerControl serverControl = MBeanServerInvocationHandler.newProxyInstance(mbsc,
+         HornetQServerControl serverControl = (HornetQServerControl)MBeanServerInvocationHandler.newProxyInstance(mbsc,
                                                                                             on,
                                                                                             HornetQServerControl.class,
                                                                                             false);

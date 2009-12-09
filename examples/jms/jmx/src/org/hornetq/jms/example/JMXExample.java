@@ -90,7 +90,7 @@ public class JMXExample extends HornetQExample
          MBeanServerConnection mbsc = connector.getMBeanServerConnection();
 
          // Step 12. Create a JMSQueueControl proxy to manage the queue on the server
-         JMSQueueControl queueControl = MBeanServerInvocationHandler.newProxyInstance(mbsc,
+         JMSQueueControl queueControl = (JMSQueueControl)MBeanServerInvocationHandler.newProxyInstance(mbsc,
                                                                                       on,
                                                                                       JMSQueueControl.class,
                                                                                       false);
