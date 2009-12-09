@@ -21,7 +21,7 @@ import org.hornetq.core.message.Message;
 
 /**
  * 
- * A ClientMessage
+ * A ClientMessage represents a message sent and/or received by HornetQ.
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
@@ -29,31 +29,80 @@ import org.hornetq.core.message.Message;
  */
 public interface ClientMessage extends Message
 {
+   /**
+    * Returns the number of times this message was delivered.
+    */
    int getDeliveryCount();
 
+   /**
+    * Set the delivery count for this message.
+    * 
+    * This method is not meant to be called by HornetQ clients.
+    * 
+    * @param deliveryCount message delivery count
+    */
    void setDeliveryCount(int deliveryCount);
 
+   /**
+    * Acknowledge reception of this message.
+    * 
+    * If the session responsible to acknowledge this message has  {@code autoCommitAcks}
+    * set to {@code true}, the transaction will automatically commit the current transaction.
+    * Otherwise, this acknwoledgement will not be committed until the client commits the session transaction.
+    * 
+    * @throws HornetQException if an error occured while acknowledging the message.
+    * 
+    * @see ClientSession#isAutoCommitAcks()
+    */
    void acknowledge() throws HornetQException;
 
+   /**
+    * Return the size (in bytes) of this message's body
+    */
    int getBodySize();
 
-   // FIXME - these are only used for large messages - they should be moved elsewhere
-
-   /** Sets the OutputStream that will receive the content of a message received in a non blocking way
-    * @throws HornetQException */
+   /** 
+    * Sets the OutputStream that will receive the content of a message received in a non blocking way.
+    * 
+    * This method is used for large message and is not meant to be called directly by HornetQ clients.
+    * 
+    * @deprecated 
+    * @throws HornetQException
+    */
    void setOutputStream(OutputStream out) throws HornetQException;
 
-   /** Save the content of the message to the OutputStream. It will block until the entire content is transfered to the OutputStream. */
+   /** 
+    * Saves the content of the message to the OutputStream.
+    * It will block until the entire content is transfered to the OutputStream.
+    *  
+    * This method is used for large message and is not meant to be called directly by HornetQ clients.
+    * 
+    * @deprecated 
+    * @throws HornetQException
+    */
    void saveToOutputStream(OutputStream out) throws HornetQException;
 
    /**
     * Wait the outputStream completion of the message.
+    *
+    * This method is used for large message and is not meant to be called directly by HornetQ clients.
+    * 
     * @param timeMilliseconds - 0 means wait forever
     * @return true if it reached the end
     * @throws HornetQException
+
+    * @deprecated 
     */
    boolean waitOutputStreamCompletion(long timeMilliseconds) throws HornetQException;
 
+   /** 
+    * Sets the body's IntputStream.
+    * 
+    * This method is used for large message and is not meant to be called directly by HornetQ clients.
+    * 
+    * @deprecated 
+    * @throws HornetQException
+    */
    void setBodyInputStream(InputStream bodyInputStream);
 
 }
