@@ -16,25 +16,109 @@ package org.hornetq.core.client;
 import org.hornetq.core.exception.HornetQException;
 
 /**
+ * A ClientConsumer receives messages from HornetQ queues.
+ * 
+ * Messages can be consumed synchronously by using the <code>receive()</code> methods
+ * which will block until a message is received (or a timeout expires) or asynchronously
+ * by setting a {@link MessageHandler}.
+ * 
+ * These 2 types of consumption are exclusive: a ClientConsumer with a MessageHandler set will
+ * throw HornetQException if its <code>receive()</code> methods are called.
+ * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
+ * 
+ * @see ClientSession#createConsumer(String)
  */
 public interface ClientConsumer
 {
+   /**
+    * Receives a message from a queue.
+    * 
+    * This call will block indefinitely until a message is received.
+    * 
+    * Calling this method on a closed consumer will throw a HornetQException.
+    * 
+    * @return a ClientMessage
+    * 
+    * @throws HornetQException if an exception occurs while waiting to receive a message
+    */
    ClientMessage receive() throws HornetQException;
 
+   /**
+    * Receives a message from a queue.
+    * 
+    * This call will block until a message is received or the given timeout expires
+    * 
+    * Calling this method on a closed consumer will throw a HornetQException.
+    * @param timeout time (in milliseconds) to wait to receive a message
+    * 
+    * @return a message or <code>null</code> if the time out expired
+    * 
+    * @throws HornetQException  if an exception occurs while waiting to receive a message
+    */
    ClientMessage receive(long timeout) throws HornetQException;
 
+   /**
+    * Receives a message from a queue.
+    * 
+    * This call will force a network trip to HornetQ server to ensure that
+    * there are no messages in the queue which can be delivered to this consumer.
+    * This call will never wait indefinitely for a message, it will return <code>null</code>
+    * if no messages are available for this consumer.
+    * Note however that there is a performance cost as an additional network trip to the 
+    * server may required to check the queue status.
+    * 
+    * Calling this method on a closed consumer will throw a HornetQException.
+    * 
+    * @return a message or <code>null</code> if there are no messages in the queue for this consumer
+    * 
+    * @throws HornetQException  if an exception occurs while waiting to receive a message
+    */
    ClientMessage receiveImmediate() throws HornetQException;
 
+   /**
+    * Return the MessageHandler associated to this consumer.
+    * 
+    * Calling this method on a closed consumer will throw a HornetQException.
+    * 
+    * @return the MessageHandler associated to this consumer or <code>null</code>
+    * 
+    * @throws HornetQException  if an exception occurs while getting the MessageHandler
+    */
    MessageHandler getMessageHandler() throws HornetQException;
 
+   /**
+    * Set the MessageHandler for this consumer to consume messages asynchronously.
+    * 
+    * Calling this method on a closed consumer will throw a HornetQException.
+    * 
+    * @param handler a MessageHandler
+    * @throws HornetQException  if an exception occurs while setting the MessageHandler
+    */
    void setMessageHandler(MessageHandler handler) throws HornetQException;
 
+   /**
+    * Close the consumer.
+    * 
+    * Once this consumer is closed, it can not receive messages, whether synchronously or asynchronously.
+    * 
+    * @throws HornetQException
+    */
    void close() throws HornetQException;
 
+   /**
+    * Return whether the consumer is closed or not.
+    * 
+    * @return <code>true</code> if this consumer is closed, <code>false</code> else
+    */
    boolean isClosed();
 
+   /**
+    * Return the last exception thrown by a call to this consumer's MessageHandler
+    * 
+    * @return the last exception thrown by a call to this consumer's MessageHandler or <code>null</code>
+    */
    Exception getLastException();
 }
