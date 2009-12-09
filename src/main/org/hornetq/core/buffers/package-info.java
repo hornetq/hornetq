@@ -13,10 +13,10 @@
 
 /**
  * HornetQ Buffering.
- * 
+ * <br>
  * This package defines the buffers used by HornetQ. The underlying implementations uses
  * Netty's ChannelBuffer and wraps it with methods required by HornetQ usage.
- * 
+ * <br>
  * ChannelBuffer differs from {@link java.nio.ByteBuffer} in two ways:
  * <ol>
  *   <li>it is possible to interface almost directly with byte arrays, what is faster</li>

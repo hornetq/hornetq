@@ -19,7 +19,7 @@ import org.hornetq.utils.SimpleString;
 
 /**
  * The ClientRequestor class helps making requests.
- *
+ * <br>
  * The ClientRequestor constructor is given a ClientSession and a request address. 
  * It creates a temporary queue for the responses and provides a request method that sends the request message and waits for its reply.
  *

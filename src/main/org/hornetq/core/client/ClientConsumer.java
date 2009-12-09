@@ -17,11 +17,11 @@ import org.hornetq.core.exception.HornetQException;
 
 /**
  * A ClientConsumer receives messages from HornetQ queues.
- * 
+ * <br>
  * Messages can be consumed synchronously by using the <code>receive()</code> methods
  * which will block until a message is received (or a timeout expires) or asynchronously
  * by setting a {@link MessageHandler}.
- * 
+ * <br>
  * These 2 types of consumption are exclusive: a ClientConsumer with a MessageHandler set will
  * throw HornetQException if its <code>receive()</code> methods are called.
  * 
