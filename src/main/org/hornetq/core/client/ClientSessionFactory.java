@@ -24,6 +24,9 @@ import org.hornetq.utils.Pair;
 /**
  * A ClientSessionFactory is the entry point to create and configure HornetQ resources to produce and consume messages.
  *
+ * It is possible to configure a factory using the setter methods only if no session has been created.
+ * Once a session is created, the configuration is fixed and any call to a setter method will throw a IllegalStateException.
+ * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  */
 public interface ClientSessionFactory
@@ -182,7 +185,7 @@ public interface ClientSessionFactory
     * 
     * Default value is {@value org.hornetq.core.client.impl.ClientSessionFactoryImpl#DEFAULT_CACHE_LARGE_MESSAGE_CLIENT}.
     * 
-    * @return <code>true</code> if consumers created through this factory will cache large messages in temporary files, <code>false</code> else.
+    * @return <code>true</code> if consumers created through this factory will cache large messages in temporary files, <code>false</code> else
     */
    boolean isCacheLargeMessagesClient();
 
@@ -403,8 +406,8 @@ public interface ClientSessionFactory
     * Return whether producers created through this factory will automatically
     * assign a group ID to the messages they sent.
     * 
-    * if <code>true</code>, the random unique group ID is created set on each message for the property
-    * {@value MessageImpl#HDR_GROUP_ID}.
+    * if <code>true</code>, a random unique group ID is created and set on each message for the property
+    * {@link org.hornetq.core.message.impl.MessageImpl#HDR_GROUP_ID}.
     * Default value is {@value org.hornetq.core.client.impl.ClientSessionFactoryImpl#DEFAULT_AUTO_GROUP}.
     * 
     * @return whether producers will automatically assign a group ID to their messages
@@ -419,79 +422,333 @@ public interface ClientSessionFactory
     */
    void setAutoGroup(boolean autoGroup);
 
-   boolean isPreAcknowledge();
-
-   void setPreAcknowledge(boolean preAcknowledge);
-
-   int getAckBatchSize();
-
-   void setAckBatchSize(int ackBatchSize);
-
-   long getDiscoveryInitialWaitTimeout();
-
-   void setDiscoveryInitialWaitTimeout(long initialWaitTimeout);
-
-   boolean isUseGlobalPools();
-
-   void setUseGlobalPools(boolean useGlobalPools);
-
-   int getScheduledThreadPoolMaxSize();
-
-   void setScheduledThreadPoolMaxSize(int scheduledThreadPoolMaxSize);
-
-   int getThreadPoolMaxSize();
-
-   void setThreadPoolMaxSize(int threadPoolMaxSize);
-
-   long getRetryInterval();
-
-   void setRetryInterval(long retryInterval);
-
-   double getRetryIntervalMultiplier();
-
-   void setRetryIntervalMultiplier(double retryIntervalMultiplier);
-
-   long getMaxRetryInterval();
-
-   void setMaxRetryInterval(long maxRetryInterval);
-
-   int getReconnectAttempts();
-
-   void setReconnectAttempts(int reconnectAttempts);
-
-   boolean isFailoverOnServerShutdown();
-
-   void setFailoverOnServerShutdown(boolean failoverOnServerShutdown);
-
-   String getConnectionLoadBalancingPolicyClassName();
-
-   void setConnectionLoadBalancingPolicyClassName(String loadBalancingPolicyClassName);
-
-   String getDiscoveryAddress();
-
-   void setDiscoveryAddress(String discoveryAddress);
-
-   int getDiscoveryPort();
-
-   void setDiscoveryPort(int discoveryPort);
-
-   long getDiscoveryRefreshTimeout();
-
-   void setDiscoveryRefreshTimeout(long discoveryRefreshTimeout);
-
-   int getInitialMessagePacketSize();
-
-   void setInitialMessagePacketSize(int size);
-
-   void addInterceptor(Interceptor interceptor);
-
-   boolean removeInterceptor(Interceptor interceptor);
-
-   void close();
-
-   ClientSessionFactory copy();
-
+   /**
+    * Return the group ID that will be eventually set on each message for the property {@link org.hornetq.core.message.impl.MessageImpl#HDR_GROUP_ID}.
+    * 
+    * Default value is is <code>null</code> and no group ID will be set on the messages.
+    * 
+    * @return the group ID that will be eventually set on each message
+    */
+   String getGroupID();
+   
+   /**
+    * Set the group ID that will be  set on each message sent through this factory.
+    * 
+    * @param groupID the group ID to use
+    */
    void setGroupID(String groupID);
 
-   String getGroupID();
+   /**
+    * Return whether messages will pre-acknowledged on the server before they are sent to the consumers or not.
+    *
+    * Default value is {@value org.hornetq.core.client.impl.ClientSessionFactoryImpl#DEFAULT_PRE_ACKNOWLEDGE}
+    */
+   boolean isPreAcknowledge();
+
+   /**
+    * Set to <code>true</code> to pre-acknowledge consumed messages on the server before they are sent to consumers, else set to <code>false</code> to let
+    * clients acknowledge the message they consume.
+    * 
+    * @param preAcknowledge <code>true</code> to enable pre-acknowledgement, <code>false</code> else
+    */
+   void setPreAcknowledge(boolean preAcknowledge);
+
+   /**
+    * Return the acknowledgements batch size.
+    * 
+    * Default value is  {@value org.hornetq.core.client.impl.ClientSessionFactoryImpl#DEFAULT_ACK_BATCH_SIZE}.
+    * 
+    * @return acknowledgements batch size
+    */
+   int getAckBatchSize();
+
+   /**
+    * Return the acknowledgements batch size.
+    * 
+    * Value must be greater than 0.
+    * 
+    * @param ackBatchSize the acknowledgements batch size
+    */
+   void setAckBatchSize(int ackBatchSize);
+
+   /**
+    * Return the address to listen to discover which connectors this factory can use.
+    * The discovery address must be set to enable this factory to discover HornetQ servers.
+    * 
+    * @return the address to listen to discover which connectors this factory can use
+    */
+   String getDiscoveryAddress();
+
+   /**
+    * Set the address to listen to discover which connectors this factory can use.
+    * 
+    * @param discoveryAddress the address to listen to discover which connectors this factory can use
+    */
+   void setDiscoveryAddress(String discoveryAddress);
+
+   /**
+    * Return the port to listen to discover which connectors this factory can use.
+    * The discovery port must be set to enable this factory to discover HornetQ servers.
+    * 
+    * @return the port to listen to discover which connectors this factory can use
+    */   
+   int getDiscoveryPort();
+
+
+   /**
+    * Set the port to listen to discover which connectors this factory can use.
+    * 
+    * @param discoveryPort the port to listen to discover which connectors this factory can use
+    */
+   void setDiscoveryPort(int discoveryPort);
+
+   /**
+    * Return the refresh timeout for discovered HornetQ servers.
+    * 
+    * If this factory uses discovery to find HornetQ servers, the list of discovered servers
+    * will be refreshed according to this timeout.
+    * 
+    * Value is in milliseconds, default value is {@value org.hornetq.core.client.impl.ClientSessionFactoryImpl#DEFAULT_DISCOVERY_REFRESH_TIMEOUT}.
+    * 
+    * @return the refresh timeout for discovered HornetQ servers
+    */
+   long getDiscoveryRefreshTimeout();
+
+   /**
+    * Set the refresh timeout for discovered HornetQ servers.
+    * 
+    * Value must be greater than 0.
+    * 
+    * @param discoveryRefreshTimeout refresh timeout (in milliseconds) for discovered HornetQ servers
+    */
+   void setDiscoveryRefreshTimeout(long discoveryRefreshTimeout);
+
+   /**
+    * Return the initial wait timeout if this factory is configured to use discovery.
+    * 
+    * Value is in milliseconds, default value is  {@value org.hornetq.core.client.impl.ClientSessionFactoryImpl#DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT}. 
+    * 
+    * @return the initial wait timeout if this factory is configured to use discovery 
+    */
+   long getDiscoveryInitialWaitTimeout();
+
+   /**
+    * Set the initial wait timeout if this factory is configured to use discovery.
+    * 
+    * Value is in milliseconds and must be greater than 0.
+    * 
+    * @param initialWaitTimeout initial wait timeout when using discovery 
+    */
+   void setDiscoveryInitialWaitTimeout(long initialWaitTimeout);
+
+   /**
+    * Return whether this factory will use global thread pools (shared among all the factories in the same JVM)
+    * or its own pools.
+    * 
+    * Default value is {@value org.hornetq.core.client.impl.ClientSessionFactoryImpl#DEFAULT_USE_GLOBAL_POOLS}. 
+    * 
+    * @return <code>true</code> if this factory uses global thread pools, <code>false</code> else
+    */
+   boolean isUseGlobalPools();
+
+   /**
+    * Set whether this factory will use global thread pools (shared among all the factories in the same JVM)
+    * or its own pools.
+    * 
+    * @param useGlobalPools <code>true</code> to let this factory uses global thread pools, <code>false</code> else
+    */
+   void setUseGlobalPools(boolean useGlobalPools);
+
+   /**
+    * Return the maximum size of the scheduled thread pool.
+    * 
+    * Default value is {@value org.hornetq.core.client.impl.ClientSessionFactoryImpl#DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE}. 
+    * 
+    * @return maximum size of the scheduled thread pool.
+    */
+   int getScheduledThreadPoolMaxSize();
+
+   /**
+    * Set the maximum size of the scheduled thread pool.
+    * 
+    * This setting is relevant only if this factory does not use global pools.
+    * Value must be greater than 0.
+    * 
+    * @param scheduledThreadPoolMaxSize  maximum size of the scheduled thread pool.
+    */
+   void setScheduledThreadPoolMaxSize(int scheduledThreadPoolMaxSize);
+
+   /**
+    * Return the maximum size of the thread pool.
+    * 
+    * Default value is {@value org.hornetq.core.client.impl.ClientSessionFactoryImpl#DEFAULT_THREAD_POOL_MAX_SIZE}. 
+    * 
+    * @return maximum size of the thread pool.
+    */
+   int getThreadPoolMaxSize();
+
+   /**
+    * Set the maximum size of the thread pool.
+    * 
+    * This setting is relevant only if this factory does not use global pools.
+    * Value must be -1 (for unlimited thread pool) or greater than 0.
+    * 
+    * @param threadPoolMaxSize  maximum size of the thread pool.
+    */
+   void setThreadPoolMaxSize(int threadPoolMaxSize);
+
+   /**
+    * Return the time to retry connections created by this factory after failure. 
+    * 
+    * Value is in milliseconds, default is {@value org.hornetq.core.client.impl.ClientSessionFactoryImpl#DEFAULT_RETRY_INTERVAL}.
+    * 
+    * @return the time to retry connections created by this factory after failure
+    */
+   long getRetryInterval();
+
+   /**
+    * Set the time to retry connections created by this factory after failure.
+    * 
+    * Value must be greater than 0.
+    * 
+    * @param retryInterval time (in milliseconds) to retry connections created by this factory after failure 
+    */
+   void setRetryInterval(long retryInterval);
+
+   /**
+    * Return the multiplier to apply to successive retry intervals.
+    * 
+    * Default value is  {@value org.hornetq.core.client.impl.ClientSessionFactoryImpl#DEFAULT_RETRY_INTERVAL_MULTIPLIER}.
+    * 
+    * @return the multiplier to apply to successive retry intervals
+    */
+   double getRetryIntervalMultiplier();
+
+   /**
+    * Set the multiplier to apply to successive retry intervals.
+    * 
+    * Value must be positive.
+    * 
+    * @param retryIntervalMultiplier multiplier to apply to successive retry intervals
+    */
+   void setRetryIntervalMultiplier(double retryIntervalMultiplier);
+
+   /**
+    * Return the maximum retry interval (in the case a retry interval multiplier has been specified).
+    * 
+    * Value is in milliseconds, default value is  {@value org.hornetq.core.client.impl.ClientSessionFactoryImpl#DEFAULT_MAX_RETRY_INTERVAL}.
+    * 
+    * @return the maximum retry interval
+    */
+   long getMaxRetryInterval();
+
+   /**
+    * Set the maximum retry interval.
+    * 
+    * Value must be greater than 0.
+    * 
+    * @param maxRetryInterval maximum retry interval to apply in the case a retry interval multiplier has been specified
+    */
+   void setMaxRetryInterval(long maxRetryInterval);
+
+   /**
+    * Return the maximum number of attempts to retry connection in case of failure.
+    * 
+    * Default value is {@value org.hornetq.core.client.impl.ClientSessionFactoryImpl#DEFAULT_RECONNECT_ATTEMPTS}.
+    * 
+    * @return the maximum number of attempts to retry connection in case of failure.
+    */
+   int getReconnectAttempts();
+
+   /**
+    * Set the maximum number of attempts to retry connection in case of failure.
+    * 
+    * Value must be -1 (to retry infinitely), 0 (to never retry connection) or greater than 0.
+    * 
+    * @param reconnectAttempts maximum number of attempts to retry connection in case of failure
+    */
+   void setReconnectAttempts(int reconnectAttempts);
+
+   /**
+    * Return whether connections created by this factory must failover in case the server they are
+    * connected to <em>has normally shut down</em>.
+    * 
+    * Default value is {@value org.hornetq.core.client.impl.ClientSessionFactoryImpl#DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN}.
+    * 
+    * @return <code>true</code> if connections must failover if the server has normally shut down, else <code>false</code>
+    */
+   boolean isFailoverOnServerShutdown();
+
+   /**
+    * Set whether connections created by this factory must failover in case the server they are
+    * connected to <em>has normally shut down</em>
+    * 
+    * @param failoverOnServerShutdown <code>true</code> if connections must failover if the server has normally shut down, <code>false</code> else
+    */
+   void setFailoverOnServerShutdown(boolean failoverOnServerShutdown);
+
+   /**
+    * Return the class name of the connection load balancing policy.
+    * 
+    * Default value is {@value org.hornetq.core.client.impl.ClientSessionFactoryImpl#DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME}.
+    * 
+    * @return the class name of the connection load balancing policy
+    */
+   String getConnectionLoadBalancingPolicyClassName();
+
+   /**
+    * Set the class name of the connection load balancing policy.
+    * 
+    * Value must be the name of a class implementing {@link ConnectionLoadBalancingPolicy}.
+    * 
+    * @param loadBalancingPolicyClassName class name of the connection load balancing policy
+    */
+   void setConnectionLoadBalancingPolicyClassName(String loadBalancingPolicyClassName);
+
+   /**
+    * Return the initial size of messages created through this factory.
+    * 
+    * Value is in bytes, default value is  {@value org.hornetq.core.client.impl.ClientSessionFactoryImpl#DEFAULT_INITIAL_MESSAGE_PACKET_SIZE}.
+    * 
+    * @return the initial size of messages created through this factory
+    */
+   int getInitialMessagePacketSize();
+
+   /**
+    * Set the initial size of messages created through this factory.
+    * 
+    * Value must be greater than 0.
+    * 
+    * @param size initial size of messages created through this factory.
+    */
+   void setInitialMessagePacketSize(int size);
+
+   /**
+    * Add an interceptor which will be executed <em>after packets are received from the server</em>.
+    * 
+    * @param interceptor an Interceptor
+    */
+   void addInterceptor(Interceptor interceptor);
+
+   /**
+    * Remove an interceptor.
+    * 
+    * @param interceptor interceptor to remove
+    * 
+    * @return <code>true</code> if the interceptor is removed from this factory, <code>false</code> else
+    */
+   boolean removeInterceptor(Interceptor interceptor);
+
+   /**
+    * Close this factory and release all its resources
+    */
+   void close();
+
+   /**
+    * Creates a copy of this factory.
+    * 
+    * @return a copy of this factory with the same parameters values
+    */
+   ClientSessionFactory copy();
+
 }
