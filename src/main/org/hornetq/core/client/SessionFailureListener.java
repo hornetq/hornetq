@@ -17,13 +17,18 @@ import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.remoting.FailureListener;
 
 /**
- * A SessionFailureListener
+ * A SessionFailureListener notifies the client when a failure occured on the session.
  *
- * @author Tim Fox
- *
- *
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  */
 public interface SessionFailureListener extends FailureListener
 {
+   /**
+    * Notifies that a connection has failed due to the specified exception.
+    * <br>
+    * This method is called <em>before the session attempts to reconnect/failover</em>.
+    * 
+    * @param exception exception which has caused the connection to fail
+    */
    void beforeReconnect(HornetQException exception);
 }

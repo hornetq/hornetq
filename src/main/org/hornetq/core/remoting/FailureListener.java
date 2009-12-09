@@ -17,7 +17,7 @@ import org.hornetq.core.exception.HornetQException;
 
 /**
  * 
- * A FailureListener
+ * A FailureListener notifies the user when a connection failure occured.
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -25,5 +25,10 @@ import org.hornetq.core.exception.HornetQException;
  */
 public interface FailureListener
 {
-   void connectionFailed(HornetQException me);
+   /**
+    * Notifies that a connection has failed due to the specified exception.
+    * 
+    * @param exception exception which has caused the connection to fail
+    */
+   void connectionFailed(HornetQException exception);
 }
