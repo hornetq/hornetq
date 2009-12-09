@@ -39,9 +39,9 @@ public interface Channel
 
    void transferConnection(RemotingConnection newConnection);
 
-   void replayCommands(int lastReceivedCommandID, final long newID);
+   void replayCommands(int lastConfirmedCommandID, final long newID);
 
-   int getLastReceivedCommandID();
+   int getLastConfirmedCommandID();
 
    void lock();
 
@@ -64,4 +64,6 @@ public interface Channel
    void clearCommands();
 
    int getConfirmationWindowSize();
+   
+   void setTransferring(boolean transferring);
 }

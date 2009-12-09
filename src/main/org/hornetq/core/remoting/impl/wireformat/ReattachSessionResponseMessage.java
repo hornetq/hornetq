@@ -28,7 +28,7 @@ public class ReattachSessionResponseMessage extends PacketImpl
 
    // Attributes ----------------------------------------------------
 
-   private int lastReceivedCommandID;
+   private int lastConfirmedCommandID;
 
    private boolean reattached;
 
@@ -36,11 +36,11 @@ public class ReattachSessionResponseMessage extends PacketImpl
 
    // Constructors --------------------------------------------------
 
-   public ReattachSessionResponseMessage(final int lastReceivedCommandID, final boolean reattached)
+   public ReattachSessionResponseMessage(final int lastConfirmedCommandID, final boolean reattached)
    {
       super(PacketImpl.REATTACH_SESSION_RESP);
 
-      this.lastReceivedCommandID = lastReceivedCommandID;
+      this.lastConfirmedCommandID = lastConfirmedCommandID;
 
       this.reattached = reattached;
    }
@@ -52,9 +52,9 @@ public class ReattachSessionResponseMessage extends PacketImpl
 
    // Public --------------------------------------------------------
 
-   public int getLastReceivedCommandID()
+   public int getLastConfirmedCommandID()
    {
-      return lastReceivedCommandID;
+      return lastConfirmedCommandID;
    }
 
    public boolean isReattached()
@@ -65,14 +65,14 @@ public class ReattachSessionResponseMessage extends PacketImpl
    @Override
    public void encodeRest(final HornetQBuffer buffer)
    {
-      buffer.writeInt(lastReceivedCommandID);
+      buffer.writeInt(lastConfirmedCommandID);
       buffer.writeBoolean(reattached);
    }
 
    @Override
    public void decodeRest(final HornetQBuffer buffer)
    {
-      lastReceivedCommandID = buffer.readInt();
+      lastConfirmedCommandID = buffer.readInt();
       reattached = buffer.readBoolean();
    }
 
@@ -92,7 +92,7 @@ public class ReattachSessionResponseMessage extends PacketImpl
 
       ReattachSessionResponseMessage r = (ReattachSessionResponseMessage)other;
 
-      return super.equals(other) && lastReceivedCommandID == r.lastReceivedCommandID;
+      return super.equals(other) && lastConfirmedCommandID == r.lastConfirmedCommandID;
    }
 
    @Override

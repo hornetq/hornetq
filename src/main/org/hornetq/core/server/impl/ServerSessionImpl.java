@@ -1596,13 +1596,13 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
    }
 
    public int transferConnection(final RemotingConnection newConnection, final int lastReceivedCommandID)
-   {
-      boolean wasStarted = started;
-
-      if (wasStarted)
-      {
-         setStarted(false);
-      }
+   { 
+      //We need to disable delivery on all the consumers while the transfer is occurring- otherwise packets might get delivered
+      //after the channel has transferred but *before* packets have been replayed - this will give the client the wrong
+      //sequence of packets.
+      //It is not sufficient to just stop the session, since right after stopping the session, another session start might be executed
+      //before we have transferred the connection, leaving it in a started state      
+      setTransferring(true);
 
       remotingConnection.removeFailureListener(this);
       remotingConnection.removeCloseListener(this);
@@ -1613,9 +1613,9 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       // the replicating connection will cause the outstanding responses to be be replayed on the live server,
       // if these reach the client who then subsequently fails over, on reconnection to backup, it will have
       // received responses that the backup did not know about.
-
+            
       channel.transferConnection(newConnection);
-
+      
       newConnection.syncIDGeneratorSequence(remotingConnection.getIDGeneratorSequence());
 
       remotingConnection = newConnection;
@@ -1623,14 +1623,13 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       remotingConnection.addFailureListener(this);
       remotingConnection.addCloseListener(this);
 
-      int serverLastReceivedCommandID = channel.getLastReceivedCommandID();
+      int serverLastReceivedCommandID = channel.getLastConfirmedCommandID();
 
       channel.replayCommands(lastReceivedCommandID, id);
-
-      if (wasStarted)
-      {
-         setStarted(true);
-      }
+       
+      channel.setTransferring(false);
+      
+      setTransferring(false);
 
       return serverLastReceivedCommandID;
    }
@@ -1807,6 +1806,16 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
 
       started = s;
    }
+   
+   private void setTransferring(final boolean transferring)
+   {
+      Set<ServerConsumer> consumersClone = new HashSet<ServerConsumer>(consumers.values());
+
+      for (ServerConsumer consumer : consumersClone)
+      {
+         consumer.setTransferring(transferring);
+      }
+   }   
 
    /**
     * We need to create the LargeMessage before replicating the packet, or else we won't know how to extract the destination,

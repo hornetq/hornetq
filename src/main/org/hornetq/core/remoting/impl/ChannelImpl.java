@@ -50,7 +50,7 @@ public class ChannelImpl implements Channel
 
    private volatile int firstStoredCommandID;
 
-   private volatile int lastReceivedCommandID = -1;
+   private volatile int lastConfirmedCommandID = -1;
 
    private volatile RemotingConnection connection;
 
@@ -73,7 +73,9 @@ public class ChannelImpl implements Channel
    private int receivedBytes;
 
    private CommandConfirmationHandler commandConfirmationHandler;
-
+      
+   private volatile boolean transferring;
+ 
    public ChannelImpl(final RemotingConnection connection, final long id, final int confWindowSize)
    {
       this.connection = connection;
@@ -97,9 +99,9 @@ public class ChannelImpl implements Channel
       return id;
    }
 
-   public int getLastReceivedCommandID()
+   public int getLastConfirmedCommandID()
    {
-      return lastReceivedCommandID;
+      return lastConfirmedCommandID;
    }
 
    public Lock getLock()
@@ -140,6 +142,11 @@ public class ChannelImpl implements Channel
    {
       send(packet, false);
    }
+   
+   public void setTransferring(boolean transferring)
+   {
+      this.transferring = transferring;
+   }
 
    // This must never called by more than one thread concurrently
    public void send(final Packet packet, final boolean flush)
@@ -147,11 +154,11 @@ public class ChannelImpl implements Channel
       synchronized (sendLock)
       {
          packet.setChannelID(id);
-
+         
          final HornetQBuffer buffer = packet.encode(connection);
 
          lock.lock();
-
+                  
          try
          {
             while (failingOver)
@@ -165,6 +172,13 @@ public class ChannelImpl implements Channel
                {
                }
             }
+            
+            //Sanity check
+            if (transferring)
+            {
+               throw new IllegalStateException("Cannot send a packet while channel is doing failover");
+            }
+            
 
             if (resendCache != null && packet.isRequiresConfirmations())
             {
@@ -197,7 +211,7 @@ public class ChannelImpl implements Channel
       synchronized (sendBlockingLock)
       {
          packet.setChannelID(id);
-
+         
          final HornetQBuffer buffer = packet.encode(connection);
 
          lock.lock();
@@ -306,7 +320,7 @@ public class ChannelImpl implements Channel
 
       closed = true;
    }
-
+   
    public void transferConnection(final RemotingConnection newConnection)
    {
       // Needs to synchronize on the connection to make sure no packets from
@@ -322,19 +336,21 @@ public class ChannelImpl implements Channel
          rnewConnection.putChannel(id, this);
 
          connection = rnewConnection;
+
+         transferring = true;
       }
    }
 
-   public void replayCommands(final int otherLastReceivedCommandID, final long newChannelID)
+   public void replayCommands(final int otherLastConfirmedCommandID, final long newChannelID)
    {
       if (resendCache != null)
       {
-         clearUpTo(otherLastReceivedCommandID);
+         clearUpTo(otherLastConfirmedCommandID);
 
          for (final Packet packet : resendCache)
          {
             packet.setChannelID(newChannelID);
-
+            
             doWrite(packet);
          }
       }
@@ -372,7 +388,7 @@ public class ChannelImpl implements Channel
       {
          receivedBytes = 0;
 
-         final Packet confirmed = new PacketsConfirmedMessage(lastReceivedCommandID);
+         final Packet confirmed = new PacketsConfirmedMessage(lastConfirmedCommandID);
 
          confirmed.setChannelID(id);
 
@@ -384,7 +400,7 @@ public class ChannelImpl implements Channel
    {
       if (resendCache != null && packet.isRequiresConfirmations())
       {
-         lastReceivedCommandID++;
+         lastConfirmedCommandID++;
 
          receivedBytes += packet.getPacketSize();
 
@@ -392,7 +408,7 @@ public class ChannelImpl implements Channel
          {
             receivedBytes = 0;
 
-            final Packet confirmed = new PacketsConfirmedMessage(lastReceivedCommandID);
+            final Packet confirmed = new PacketsConfirmedMessage(lastConfirmedCommandID);
 
             confirmed.setChannelID(id);
 
@@ -405,14 +421,14 @@ public class ChannelImpl implements Channel
    {
       if (resendCache != null)
       {
-         lastReceivedCommandID = -1;
+         lastConfirmedCommandID = -1;
 
          firstStoredCommandID = 0;
 
          resendCache.clear();
       }
    }
-
+   
    public void handlePacket(final Packet packet)
    {
       if (packet.getType() == PacketImpl.PACKETS_CONFIRMED)

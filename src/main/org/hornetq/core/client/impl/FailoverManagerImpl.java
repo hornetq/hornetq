@@ -899,26 +899,20 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
          Connection tc = null;
 
          try
-         {
-            if (connector == null)
-            {
-               DelegatingBufferHandler handler = new DelegatingBufferHandler();
+         {            
+            DelegatingBufferHandler handler = new DelegatingBufferHandler();
 
-               connector = connectorFactory.createConnector(transportParams,
-                                                            handler,
-                                                            this,
-                                                            closeExecutor,
-                                                            threadPool,
-                                                            scheduledThreadPool);
-
-               if (connector != null)
-               {
-                  connector.start();
-               }
-            }
+            connector = connectorFactory.createConnector(transportParams,
+                                                         handler,
+                                                         this,
+                                                         closeExecutor,
+                                                         threadPool,
+                                                         scheduledThreadPool);
 
             if (connector != null)
             {
+               connector.start();
+            
                tc = connector.createConnection();
 
                if (tc == null)

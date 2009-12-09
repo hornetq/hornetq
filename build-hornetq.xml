@@ -1373,8 +1373,7 @@
                     haltonerror="${junit.batchtest.haltonerror}">
             <formatter type="plain" usefile="${junit.formatter.usefile}"/>
             <fileset dir="${test.classes.dir}">
-               <include name="**/org/hornetq/tests/stress/**/*${test-mask}.class"/>
-               <exclude name="**/org/hornetq/tests/stress/failover/MultiThreadRandomReattachStressTest.class"/>
+               <include name="**/org/hornetq/tests/stress/**/*${test-mask}.class"/>               
             </fileset>
          </batchtest>
       </junit>

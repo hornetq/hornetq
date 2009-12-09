@@ -42,5 +42,9 @@ public interface ServerConsumer extends Consumer
 
    void acknowledge(boolean autoCommitAcks, Transaction tx, long messageID) throws Exception;
 
-   void forceDelivery(long sequence);
+   void forceDelivery(long sequence);   
+   
+   void setTransferring(boolean transferring);
 }
+
+

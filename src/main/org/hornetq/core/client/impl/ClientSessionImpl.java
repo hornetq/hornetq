@@ -846,7 +846,6 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       // We lock the channel to prevent any packets to be added to the resend
       // cache during the failover process
       channel.lock();
-
       try
       {
          channel.transferConnection(backupConnection);
@@ -854,8 +853,10 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
          backupConnection.syncIDGeneratorSequence(remotingConnection.getIDGeneratorSequence());
 
          remotingConnection = backupConnection;
-
-         Packet request = new ReattachSessionMessage(name, channel.getLastReceivedCommandID());
+         
+         int lcid = channel.getLastConfirmedCommandID();
+         
+         Packet request = new ReattachSessionMessage(name, lcid);
 
          Channel channel1 = backupConnection.getChannel(1, -1);
 
@@ -865,10 +866,11 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
          {
             // The session was found on the server - we reattached transparently ok
 
-            channel.replayCommands(response.getLastReceivedCommandID(), channel.getID());
+            channel.replayCommands(response.getLastConfirmedCommandID(), channel.getID());                        
          }
          else
          {
+            
             // The session wasn't found on the server - probably we're failing over onto a backup server where the
             // session won't exist or the target server has been restarted - in this case the session will need to be
             // recreated,
@@ -994,6 +996,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
             channel.returnBlocking();
          }
 
+         channel.setTransferring(false);         
       }
       catch (Throwable t)
       {

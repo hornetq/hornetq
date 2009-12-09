@@ -539,7 +539,7 @@ public class HornetQServerImpl implements HornetQServer
 
    public ReattachSessionResponseMessage reattachSession(final RemotingConnection connection,
                                                          final String name,
-                                                         final int lastReceivedCommandID) throws Exception
+                                                         final int lastConfirmedCommandID) throws Exception
    {
       if (!started)
       {
@@ -581,9 +581,9 @@ public class HornetQServerImpl implements HornetQServer
          else
          {
             // Reconnect the channel to the new connection
-            int serverLastReceivedCommandID = session.transferConnection(connection, lastReceivedCommandID);
+            int serverLastConfirmedCommandID = session.transferConnection(connection, lastConfirmedCommandID);
 
-            return new ReattachSessionResponseMessage(serverLastReceivedCommandID, true);
+            return new ReattachSessionResponseMessage(serverLastConfirmedCommandID, true);
          }
       }
    }

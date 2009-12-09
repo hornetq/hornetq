@@ -120,6 +120,9 @@ public class ServerConsumerImpl implements ServerConsumer
    private final ManagementService managementService;
 
    private final Binding binding;
+   
+   private boolean transferring = false;
+
 
    // Constructors ---------------------------------------------------------------------------------
 
@@ -197,8 +200,8 @@ public class ServerConsumerImpl implements ServerConsumer
          // If the consumer is stopped then we don't accept the message, it
          // should go back into the
          // queue for delivery later.
-         if (!started)
-         {
+         if (!started || transferring)
+         {            
             return HandleStatus.BUSY;
          }
 
@@ -413,10 +416,27 @@ public class ServerConsumerImpl implements ServerConsumer
          promptDelivery(true);
       }
    }
-
+   
+   public void setTransferring(final boolean transferring)
+   {
+      lock.lock();
+      try
+      {
+         this.transferring = transferring;
+      }
+      finally
+      {
+         lock.unlock();
+      }
+      
+      if (!transferring)
+      {
+         promptDelivery(true);
+      }
+   }
+   
    public void receiveCredits(final int credits) throws Exception
    {
-
       if (credits == -1)
       {
          // No flow control

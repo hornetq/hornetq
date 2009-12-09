@@ -30,19 +30,19 @@ public class ReattachSessionMessage extends PacketImpl
 
    private String name;
 
-   private int lastReceivedCommandID;
+   private int lastConfirmedCommandID;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public ReattachSessionMessage(final String name, final int lastReceivedCommandID)
+   public ReattachSessionMessage(final String name, final int lastConfirmedCommandID)
    {
       super(PacketImpl.REATTACH_SESSION);
 
       this.name = name;
 
-      this.lastReceivedCommandID = lastReceivedCommandID;
+      this.lastConfirmedCommandID = lastConfirmedCommandID;
    }
 
    public ReattachSessionMessage()
@@ -57,23 +57,23 @@ public class ReattachSessionMessage extends PacketImpl
       return name;
    }
 
-   public int getLastReceivedCommandID()
+   public int getLastConfirmedCommandID()
    {
-      return lastReceivedCommandID;
+      return lastConfirmedCommandID;
    }
 
    @Override
    public void encodeRest(final HornetQBuffer buffer)
    {
       buffer.writeString(name);
-      buffer.writeInt(lastReceivedCommandID);
+      buffer.writeInt(lastConfirmedCommandID);
    }
 
    @Override
    public void decodeRest(final HornetQBuffer buffer)
    {
       name = buffer.readString();
-      lastReceivedCommandID = buffer.readInt();
+      lastConfirmedCommandID = buffer.readInt();
    }
 
    @Override

@@ -150,7 +150,7 @@ public class HornetQPacketHandler implements ChannelHandler
 
       try
       {
-         response = server.reattachSession(connection, request.getName(), request.getLastReceivedCommandID());
+         response = server.reattachSession(connection, request.getName(), request.getLastConfirmedCommandID());
       }
       catch (Exception e)
       {

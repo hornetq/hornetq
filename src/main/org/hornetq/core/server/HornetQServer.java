@@ -70,7 +70,7 @@ public interface HornetQServer extends HornetQComponent
 
    void unregisterActivateCallback(ActivateCallback callback);
 
-   ReattachSessionResponseMessage reattachSession(RemotingConnection connection, String name, int lastReceivedCommandID) throws Exception;
+   ReattachSessionResponseMessage reattachSession(RemotingConnection connection, String name, int lastConfirmedCommandID) throws Exception;
 
    /** The journal at the backup server has to be equivalent as the journal used on the live node. 
     *  Or else the backup node is out of sync. */
