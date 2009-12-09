@@ -18,22 +18,43 @@ import org.hornetq.core.message.Message;
 import org.hornetq.utils.SimpleString;
 
 /**
+ * A ClientProducer is ised to send messages to a specific address. Messages are then routed on the server to any queues
+ * that are bound to the address. A ClientProducer can either be created with a specific address in mind or with none.
+ * With the latter the address must be provided using the appropriate send() method.  <br><br>
+ *
+ * The sending semantics can change depending on what blocking semantics are set via {@link ClientSessionFactory#setBlockOnDurableSend(boolean)}
+ * and {@link org.hornetq.core.client.ClientSessionFactory#setBlockOnNonDurableSend(boolean)} . If set to true
+ * then for each message type, durable and non durable respectively, any exceptions such as the address not existing or
+ * security exceptions will be thrown at the time of send. Alternatively if set to false then exceptions will only be
+ * logged on the server.      <br><br>
+ *
+ * The send rate can also be controlled via {@link ClientSessionFactory#setProducerMaxRate(int)}
+ * and the {@link org.hornetq.core.client.ClientSessionFactory#setProducerWindowSize(int)}. <br><br>
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
  */
 public interface ClientProducer
 {
    /**
-    * Return the address where messages will be sent to.
-    * The address can be <code>null</code> if the ClientProducer
-    * was creating without specifying an address with {@link ClientSession#createProducer()}. 
+    * Returns the address where messages will be sent.
+    *
+    * <br><br>The address can be <code>null</code> if the ClientProducer
+    *
+    * was creating without specifying an address, that is by using {@link ClientSession#createProducer()}. 
     * 
     * @return the address where messages will be sent
     */
    SimpleString getAddress();
 
    /**
-    * Send a message.
+    * Sends a message to an address.
+    *
+    * specified in {@link ClientSession#createProducer(String)} or similar methods.
+    *
+    * <br><br>This will block until confirmation that the message has reached the server has been received if
+    * {@link ClientSessionFactory#setBlockOnDurableSend(boolean)} or {@link org.hornetq.core.client.ClientSessionFactory#setBlockOnNonDurableSend(boolean)}
+    * are set to <code>true</code>  for the specified message type.
     * 
     * @param message the message to send
     * @throws HornetQException if an exception occurs while sending the message
@@ -41,8 +62,12 @@ public interface ClientProducer
    void send(Message message) throws HornetQException;
 
    /**
-    * Send a message to the specified address instead of the ClientProducer's address.
-    * 
+    * Sends a message to the specified address instead of the ClientProducer's address.
+    *
+    * <br><br>This will block until confirmation that the message has reached the server has been received if
+    * {@link ClientSessionFactory#setBlockOnDurableSend(boolean)} or {@link org.hornetq.core.client.ClientSessionFactory#setBlockOnNonDurableSend(boolean)}
+    * are set to true for the specified message type.
+    *
     * @param address the address where the message will be sent
     * @param message the message to send
     * @throws HornetQException if an exception occurs while sending the message
@@ -50,8 +75,12 @@ public interface ClientProducer
    void send(SimpleString address, Message message) throws HornetQException;
 
    /**
-    * Send a message to the specified address instead of the ClientProducer's address.
-    * 
+    * Sends a message to the specified address instead of the ClientProducer's address.
+    *
+    * <br><br>This will block until confirmation that the message has reached the server has been received if
+    * {@link ClientSessionFactory#setBlockOnDurableSend(boolean)} or {@link org.hornetq.core.client.ClientSessionFactory#setBlockOnNonDurableSend(boolean)}
+    * are set to true for the specified message type.
+    *
     * @param address the address where the message will be sent
     * @param message the message to send
     * @throws HornetQException if an exception occurs while sending the message
@@ -59,37 +88,37 @@ public interface ClientProducer
    void send(String address, Message message) throws HornetQException;
 
    /**
-    * Close the ClientProducer.
+    * Closes the ClientProducer. If already closed nothing is done.
     * 
     * @throws HornetQException if an exception occurs while closing the producer
     */
    void close() throws HornetQException;
 
    /**
-    * Return whether the producer is closed or not.
+    * Returns whether the producer is closed or not.
     * 
     * @return <code>true</code> if the producer is closed, <code>false</code> else
     */
    boolean isClosed();
 
    /**
-    * Return whether the producer will block when sending <em>durable</em> messages.
+    * Returns whether the producer will block when sending <em>durable</em> messages.
     * 
     * @return <code>true</code> if the producer blocks when sending durable, <code>false</code> else
     */
    boolean isBlockOnDurableSend();
 
    /**
-    * Return whether the producer will block when sending <em>non-durable</em> messages.
+    * Returns whether the producer will block when sending <em>non-durable</em> messages.
     * 
     * @return <code>true</code> if the producer blocks when sending non-durable, <code>false</code> else
     */
    boolean isBlockOnNonDurableSend();
 
    /**
-    * Return the producer maximum rate.
+    * Returns the maximum rate at which a ClientProducer can send messages per second.
     * 
-    * @return the producer maximum rate
+    * @return the producers maximum rate
     */
    int getMaxRate();
 }
