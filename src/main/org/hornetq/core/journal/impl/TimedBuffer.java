@@ -256,9 +256,9 @@ public class TimedBuffer
       timer.resumeSpin();
    }
 
+   
    /** 
-    * force means the Journal is moving to a new file. Any pending write need to be done immediately
-    * or data could be lost
+    * Note: Flush could be called by either the CheckTime, or by the Journal directly when moving to a new file
     * */
    public synchronized void flush()
    {
