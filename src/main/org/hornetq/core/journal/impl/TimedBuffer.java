@@ -251,9 +251,10 @@ public class TimedBuffer
          //
          // flush();
          // }
+
+         timer.resumeSpin();
       }
 
-      timer.resumeSpin();
    }
 
    
