@@ -50,6 +50,8 @@ public class DelegatingSession implements ClientSessionInternal
    private final ClientSessionInternal session;
 
    private final Exception creationStack;
+   
+   private volatile boolean closed;
 
    private static Set<DelegatingSession> sessions = new ConcurrentHashSet<DelegatingSession>();
 
@@ -68,7 +70,9 @@ public class DelegatingSession implements ClientSessionInternal
    @Override
    protected void finalize() throws Throwable
    {
-      if (!session.isClosed())
+      // In some scenarios we have seen the JDK finalizing the DelegatingSession while the call to session.close() was still in progress
+      // 
+      if (!closed && !session.isClosed())
       {
          DelegatingSession.log.warn("I'm closing a core ClientSession you left open. Please make sure you close all ClientSessions explicitly " + "before letting them go out of scope! " +
                                     System.identityHashCode(this));
@@ -130,6 +134,8 @@ public class DelegatingSession implements ClientSessionInternal
 
    public void close() throws HornetQException
    {
+      closed = true;
+      
       if (DelegatingSession.debug)
       {
          DelegatingSession.sessions.remove(this);
