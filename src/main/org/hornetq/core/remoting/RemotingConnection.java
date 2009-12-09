@@ -75,4 +75,6 @@ public interface RemotingConnection extends BufferHandler
    boolean checkDataReceived();
 
    void removeAllChannels();
+   
+   void flushConfirmations();
 }

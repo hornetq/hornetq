@@ -364,10 +364,11 @@ public class ChannelImpl implements Channel
    {
       return connection;
    }
-
-   public void flushConfirmations()
+   
+   //Needs to be synchronized since can be called by remoting service timer thread too for timeout flush
+   public synchronized void flushConfirmations()
    {
-      if (receivedBytes != 0)
+      if (resendCache != null && receivedBytes != 0)
       {
          receivedBytes = 0;
 

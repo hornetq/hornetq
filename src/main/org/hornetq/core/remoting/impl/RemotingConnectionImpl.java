@@ -334,6 +334,17 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
          channels.clear();
       }
    }
+   
+   public void flushConfirmations()
+   {
+      synchronized (transferLock)
+      {
+         for (Channel channel: channels.values())
+         {
+            channel.flushConfirmations();
+         }
+      }
+   }
 
    // Buffer Handler implementation
    // ----------------------------------------------------

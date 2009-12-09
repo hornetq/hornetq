@@ -437,14 +437,13 @@ public abstract class PerfBase
          {
             session.commit();
          }
-
+         
+         session.close();
+         
          if (useSendAcks)
          {
-            // Must close the session first since this flushes the confirmations
-            session.close();
-
             theLatch.await();
-         }
+         }       
       }
       finally
       {

@@ -88,7 +88,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
    private final ScheduledExecutorService scheduledThreadPool;
 
-   private FailureCheckThread failureCheckThread;
+   private FailureCheckAndFlushThread failureCheckAndFlushThread;
 
    // Static --------------------------------------------------------
 
@@ -184,9 +184,10 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
          a.start();
       }
 
-      failureCheckThread = new FailureCheckThread(RemotingServiceImpl.CONNECTION_TTL_CHECK_INTERVAL);
+      //This thread checks connections that need to be closed, and also flushes confirmations
+      failureCheckAndFlushThread = new FailureCheckAndFlushThread(RemotingServiceImpl.CONNECTION_TTL_CHECK_INTERVAL);
 
-      failureCheckThread.start();
+      failureCheckAndFlushThread.start();
 
       started = true;
    }
@@ -220,7 +221,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
          return;
       }
 
-      failureCheckThread.close();
+      failureCheckAndFlushThread.close();
 
       // We need to stop them accepting first so no new connections are accepted after we send the disconnect message
       for (Acceptor acceptor : acceptors)
@@ -451,13 +452,13 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       }
    }
 
-   private final class FailureCheckThread extends Thread
+   private final class FailureCheckAndFlushThread extends Thread
    {
       private final long pauseInterval;
 
       private volatile boolean closed;
 
-      FailureCheckThread(final long pauseInterval)
+      FailureCheckAndFlushThread(final long pauseInterval)
       {
          super("hornetq-failure-check-thread");
 
@@ -493,21 +494,33 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
             for (ConnectionEntry entry : connections.values())
             {
+               RemotingConnection conn = entry.connection;
+               
+               boolean flush = true;
+               
                if (entry.ttl != -1)
                {
                   if (now >= entry.lastCheck + entry.ttl)
                   {
-                     RemotingConnection conn = entry.connection;
-
                      if (!conn.checkDataReceived())
                      {
                         idsToRemove.add(conn.getID());
+                        
+                        flush = false;
                      }
                      else
                      {
                         entry.lastCheck = now;
                      }
                   }
+               }
+               
+               if (flush)
+               {
+                  //We flush any confirmations on the connection - this prevents idle bridges for example
+                  //sitting there with many unacked messages
+                                    
+                  conn.flushConfirmations();
                }
             }
 
