@@ -115,7 +115,7 @@ public class TimedBuffer
 
       callbacks = new ArrayList<IOAsyncTask>();
 
-      this.timeout = timeout;
+      this.timeout = timeout;           
    }
 
    public synchronized void start()
@@ -136,6 +136,15 @@ public class TimedBuffer
          logRatesTimerTask = new LogRatesTimerTask();
 
          logRatesTimer.scheduleAtFixedRate(logRatesTimerTask, 2000, 2000);
+      }
+      
+      //Need to start with the spin limiter acquired
+      try
+      {
+         spinLimiter.acquire();
+      }
+      catch (InterruptedException ignore)
+      {         
       }
 
       started = true;
@@ -240,13 +249,6 @@ public class TimedBuffer
    {
       delayFlush = false;
 
-      if (buffer.writerIndex() == 0)
-      {
-         // More bytes have been added so the timer flush thread can resume
-
-         spinLimiter.release();
-      }
-
       bytes.encode(buffer);
 
       callbacks.add(callback);
@@ -263,6 +265,13 @@ public class TimedBuffer
          //
          // flush();
          // }
+         
+         if (buffer.writerIndex() == 0)
+         {
+            // More bytes have been added so the timer flush thread can resume
+
+            spinLimiter.release();
+         }
       }
 
    }
