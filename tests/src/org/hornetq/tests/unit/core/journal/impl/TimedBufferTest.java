@@ -41,6 +41,8 @@ public class TimedBufferTest extends UnitTestCase
 
    // Attributes ----------------------------------------------------
 
+   private static final int ONE_SECOND = 1000000000; // in nanoseconds
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -85,13 +87,91 @@ public class TimedBufferTest extends UnitTestCase
          }
       }
 
-      TimedBuffer timedBuffer = new TimedBuffer(100, 3600 * 1000, false); // Any big timeout
+      TimedBuffer timedBuffer = new TimedBuffer(100, TimedBufferTest.ONE_SECOND, false);
 
-      timedBuffer.setObserver(new TestObserver());
+      timedBuffer.start();
 
-      int x = 0;
-      for (int i = 0; i < 10; i++)
+      try
       {
+
+         timedBuffer.setObserver(new TestObserver());
+
+         int x = 0;
+         for (int i = 0; i < 10; i++)
+         {
+            byte[] bytes = new byte[10];
+            for (int j = 0; j < 10; j++)
+            {
+               bytes[j] = UnitTestCase.getSamplebyte(x++);
+            }
+
+            HornetQBuffer buff = HornetQBuffers.wrappedBuffer(bytes);
+
+            timedBuffer.checkSize(10);
+            timedBuffer.addBytes(buff, false, dummyCallback);
+         }
+
+         timedBuffer.checkSize(1);
+
+         Assert.assertEquals(1, flushTimes.get());
+
+         ByteBuffer flushedBuffer = buffers.get(0);
+
+         Assert.assertEquals(100, flushedBuffer.limit());
+
+         Assert.assertEquals(100, flushedBuffer.capacity());
+
+         flushedBuffer.rewind();
+
+         for (int i = 0; i < 100; i++)
+         {
+            Assert.assertEquals(UnitTestCase.getSamplebyte(i), flushedBuffer.get());
+         }
+      }
+      finally
+      {
+         timedBuffer.stop();
+      }
+
+   }
+
+   public void testTimingAndFlush() throws Exception
+   {
+      final ArrayList<ByteBuffer> buffers = new ArrayList<ByteBuffer>();
+      final AtomicInteger flushTimes = new AtomicInteger(0);
+      class TestObserver implements TimedBufferObserver
+      {
+         public void flushBuffer(final ByteBuffer buffer, final boolean sync, final List<IOAsyncTask> callbacks)
+         {
+            buffers.add(buffer);
+            flushTimes.incrementAndGet();
+         }
+
+         /* (non-Javadoc)
+          * @see org.hornetq.utils.timedbuffer.TimedBufferObserver#newBuffer(int, int)
+          */
+         public ByteBuffer newBuffer(final int minSize, final int maxSize)
+         {
+            return ByteBuffer.allocate(maxSize);
+         }
+
+         public int getRemainingBytes()
+         {
+            return 1024 * 1024;
+         }
+      }
+
+      TimedBuffer timedBuffer = new TimedBuffer(100, TimedBufferTest.ONE_SECOND / 10, false);
+
+      timedBuffer.start();
+
+      try
+      {
+
+         timedBuffer.setObserver(new TestObserver());
+
+         int x = 0;
+
          byte[] bytes = new byte[10];
          for (int j = 0; j < 10; j++)
          {
@@ -102,23 +182,42 @@ public class TimedBufferTest extends UnitTestCase
 
          timedBuffer.checkSize(10);
          timedBuffer.addBytes(buff, false, dummyCallback);
+
+         Thread.sleep(200);
+
+         Assert.assertEquals(0, flushTimes.get());
+
+         bytes = new byte[10];
+         for (int j = 0; j < 10; j++)
+         {
+            bytes[j] = UnitTestCase.getSamplebyte(x++);
+         }
+
+         buff = HornetQBuffers.wrappedBuffer(bytes);
+
+         timedBuffer.checkSize(10);
+         timedBuffer.addBytes(buff, true, dummyCallback);
+
+         Thread.sleep(500);
+
+         Assert.assertEquals(1, flushTimes.get());
+
+         ByteBuffer flushedBuffer = buffers.get(0);
+
+         Assert.assertEquals(20, flushedBuffer.limit());
+
+         Assert.assertEquals(20, flushedBuffer.capacity());
+
+         flushedBuffer.rewind();
+
+         for (int i = 0; i < 20; i++)
+         {
+            Assert.assertEquals(UnitTestCase.getSamplebyte(i), flushedBuffer.get());
+         }
       }
-
-      timedBuffer.checkSize(1);
-
-      Assert.assertEquals(1, flushTimes.get());
-
-      ByteBuffer flushedBuffer = buffers.get(0);
-
-      Assert.assertEquals(100, flushedBuffer.limit());
-
-      Assert.assertEquals(100, flushedBuffer.capacity());
-
-      flushedBuffer.rewind();
-
-      for (int i = 0; i < 100; i++)
+      finally
       {
-         Assert.assertEquals(UnitTestCase.getSamplebyte(i), flushedBuffer.get());
+         timedBuffer.stop();
       }
 
    }

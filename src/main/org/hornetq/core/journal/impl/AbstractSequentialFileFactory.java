@@ -143,7 +143,7 @@ public abstract class AbstractSequentialFileFactory implements SequentialFileFac
       if (timedBuffer != null)
       {
          // When moving to a new file, we need to make sure any pending buffer will be transfered to the buffer
-         timedBuffer.flush(true);
+         timedBuffer.flush();
          timedBuffer.setObserver(null);
       }
    }

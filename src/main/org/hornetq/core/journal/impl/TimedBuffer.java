@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.hornetq.core.buffers.HornetQBuffer;
@@ -46,12 +47,7 @@ public class TimedBuffer
 
    private TimedBufferObserver bufferObserver;
 
-   // If the TimedBuffer is idle - i.e. no records are being added, then it's pointless the timer flush thread
-   // in spinning and checking the time - and using up CPU in the process - this semaphore is used to
-   // prevent that
-   private final Semaphore spinLimiter = new Semaphore(1);
-
-   private CheckTimer timerRunnable = new CheckTimer();
+   private CheckTimer timer;
 
    private final int bufferSize;
 
@@ -125,9 +121,9 @@ public class TimedBuffer
          return;
       }
 
-      timerRunnable = new CheckTimer();
+      timer = new CheckTimer();
 
-      timerThread = new Thread(timerRunnable, "hornetq-buffer-timeout");
+      timerThread = new Thread(timer, "hornetq-buffer-timeout");
 
       timerThread.start();
 
@@ -152,9 +148,7 @@ public class TimedBuffer
 
       bufferObserver = null;
 
-      spinLimiter.release();
-
-      timerRunnable.close();
+      timer.close();
 
       if (logRates)
       {
@@ -238,14 +232,8 @@ public class TimedBuffer
 
    public synchronized void addBytes(final EncodingSupport bytes, final boolean sync, final IOAsyncTask callback)
    {
+
       delayFlush = false;
-
-      if (buffer.writerIndex() == 0)
-      {
-         // More bytes have been added so the timer flush thread can resume
-
-         spinLimiter.release();
-      }
 
       bytes.encode(buffer);
 
@@ -265,22 +253,18 @@ public class TimedBuffer
          // }
       }
 
-   }
-
-   public void flush()
-   {
-      flush(false);
+      timer.resumeSpin();
    }
 
    /** 
     * force means the Journal is moving to a new file. Any pending write need to be done immediately
     * or data could be lost
     * */
-   public void flush(final boolean force)
+   public synchronized void flush()
    {
       synchronized (this)
       {
-         if ((force || !delayFlush) && buffer.writerIndex() > 0)
+         if (buffer.writerIndex() > 0)
          {
             int pos = buffer.writerIndex();
 
@@ -301,17 +285,6 @@ public class TimedBuffer
                bufferObserver.flushBuffer(bufferToFlush, pendingSync, callbacks);
             }
 
-            try
-            {
-               // We acquire the spinLimiter semaphore - this prevents the timer flush thread unnecessarily spinning
-               // when the buffer is inactive
-               spinLimiter.acquire();
-            }
-            catch (InterruptedException e)
-            {
-               // Ignore
-            }
-
             lastFlushTime.set(System.nanoTime());
 
             pendingSync = false;
@@ -323,6 +296,8 @@ public class TimedBuffer
             bufferLimit = 0;
 
             flushesDone.incrementAndGet();
+
+            timer.pauseSpin();
          }
       }
    }
@@ -387,6 +362,58 @@ public class TimedBuffer
    {
       private volatile boolean closed = false;
 
+      private boolean spinning = false;
+
+      // If the TimedBuffer is idle - i.e. no records are being added, then it's pointless the timer flush thread
+      // in spinning and checking the time - and using up CPU in the process - this semaphore is used to
+      // prevent that
+      private final Semaphore spinLimiter = new Semaphore(1);
+
+      public CheckTimer()
+      {
+         if (!spinLimiter.tryAcquire())
+         {
+            // JDK would be screwed up if this was happening
+            throw new IllegalStateException("InternalError: Semaphore not working properly!");
+         }
+         spinning = false;
+      }
+
+      // Needs to be called within synchronized blocks on TimedBuffer
+      public void resumeSpin()
+      {
+         synchronized (TimedBuffer.this)
+         {
+            if (!spinning)
+            {
+               spinning = true;
+               spinLimiter.release();
+            }
+         }
+      }
+
+      // Needs to be called within synchronized blocks on TimedBuffer
+      public void pauseSpin()
+      {
+         synchronized (TimedBuffer.this)
+         {
+            if (spinning)
+            {
+               spinning = false;
+               try
+               {
+                  if (!spinLimiter.tryAcquire(60, TimeUnit.SECONDS))
+                  {
+                     throw new IllegalStateException("Internal error on TimedBuffer. Can't stop spinning");
+                  }
+               }
+               catch (InterruptedException ignored)
+               {
+               }
+            }
+         }
+      }
+
       public void run()
       {
          while (!closed)
@@ -395,9 +422,22 @@ public class TimedBuffer
             // timeout since the time of the last flush
             // Effectively flushing "resets" the timer
 
-            if (pendingSync && bufferObserver != null && System.nanoTime() > lastFlushTime.get() + timeout)
+            if (System.nanoTime() > lastFlushTime.get() + timeout)
             {
-               flush();
+               // delayFlush and pendingSync are changed inside synchronized blocks
+               // They need to be done atomically
+               synchronized (TimedBuffer.this)
+               {
+                  if (!delayFlush && pendingSync && bufferObserver != null)
+                  {
+                     flush();
+                  }
+                  else if (!closed && !delayFlush)
+                  {
+                     // if delayFlush is set, it means we have to keep trying, we can't stop spinning on this case
+                     pauseSpin();
+                  }
+               }
             }
 
             try
@@ -417,6 +457,7 @@ public class TimedBuffer
       public void close()
       {
          closed = true;
+         resumeSpin();
       }
    }
 
