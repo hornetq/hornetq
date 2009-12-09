@@ -262,43 +262,40 @@ public class TimedBuffer
     * */
    public synchronized void flush()
    {
-      synchronized (this)
+      if (buffer.writerIndex() > 0)
       {
-         if (buffer.writerIndex() > 0)
+         int pos = buffer.writerIndex();
+
+         if (logRates)
          {
-            int pos = buffer.writerIndex();
-
-            if (logRates)
-            {
-               bytesFlushed.addAndGet(pos);
-            }
-
-            ByteBuffer bufferToFlush = bufferObserver.newBuffer(bufferSize, pos);
-
-            // Putting a byteArray on a native buffer is much faster, since it will do in a single native call.
-            // Using bufferToFlush.put(buffer) would make several append calls for each byte
-
-            bufferToFlush.put(buffer.toByteBuffer().array(), 0, pos);
-
-            if (bufferToFlush != null)
-            {
-               bufferObserver.flushBuffer(bufferToFlush, pendingSync, callbacks);
-            }
-
-            lastFlushTime.set(System.nanoTime());
-
-            pendingSync = false;
-
-            callbacks = new LinkedList<IOAsyncTask>();
-
-            buffer.clear();
-
-            bufferLimit = 0;
-
-            flushesDone.incrementAndGet();
-
-            timer.pauseSpin();
+            bytesFlushed.addAndGet(pos);
          }
+
+         ByteBuffer bufferToFlush = bufferObserver.newBuffer(bufferSize, pos);
+
+         // Putting a byteArray on a native buffer is much faster, since it will do in a single native call.
+         // Using bufferToFlush.put(buffer) would make several append calls for each byte
+
+         bufferToFlush.put(buffer.toByteBuffer().array(), 0, pos);
+
+         if (bufferToFlush != null)
+         {
+            bufferObserver.flushBuffer(bufferToFlush, pendingSync, callbacks);
+         }
+
+         lastFlushTime.set(System.nanoTime());
+
+         pendingSync = false;
+
+         callbacks = new LinkedList<IOAsyncTask>();
+
+         buffer.clear();
+
+         bufferLimit = 0;
+
+         flushesDone.incrementAndGet();
+
+         timer.pauseSpin();
       }
    }
 
