@@ -16,9 +16,11 @@ package org.hornetq.tests.integration.jms.client;
 import javax.jms.Connection;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
+import javax.jms.MessageEOFException;
 import javax.jms.MessageProducer;
 import javax.jms.Queue;
 import javax.jms.Session;
+import javax.jms.StreamMessage;
 
 import junit.framework.Assert;
 
@@ -55,6 +57,160 @@ public class MessageTest extends JMSTestBase
 
    // Public --------------------------------------------------------
 
+   //https://jira.jboss.org/jira/browse/HORNETQ-242
+   public void testStreamMessageReadsNull() throws Exception
+   {
+      Connection conn = cf.createConnection();
+
+      Queue queue = createQueue("testQueue");
+
+      try
+      {
+         Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+         MessageProducer prod = sess.createProducer(queue);
+
+         MessageConsumer cons = sess.createConsumer(queue);
+
+         conn.start();
+
+         StreamMessage msg = sess.createStreamMessage();
+         
+         msg.writeInt(1);
+         msg.writeInt(2);
+         msg.writeInt(3);
+
+
+         StreamMessage received = (StreamMessage)sendAndConsumeMessage(msg, prod, cons);
+
+         Assert.assertNotNull(received);
+
+         assertEquals(1, received.readObject());
+         assertEquals(2, received.readObject());
+         assertEquals(3, received.readObject());
+         
+         try
+         {
+            received.readObject();
+            
+            fail("Should throw exception");
+         }
+         catch (MessageEOFException e)
+         {
+            //Ok
+         }
+         
+         try
+         {
+            received.readBoolean();
+            
+            fail("Should throw exception");
+         }
+         catch (MessageEOFException e)
+         {
+            //Ok
+         }
+         
+         try
+         {
+            received.readByte();
+            
+            fail("Should throw exception");
+         }
+         catch (MessageEOFException e)
+         {
+            //Ok
+         }
+         
+         try
+         {
+            received.readChar();
+            
+            fail("Should throw exception");
+         }
+         catch (MessageEOFException e)
+         {
+            //Ok
+         }
+         
+         try
+         {
+            received.readDouble();
+            
+            fail("Should throw exception");
+         }
+         catch (MessageEOFException e)
+         {
+            //Ok
+         }
+         
+         try
+         {
+            received.readFloat();
+            
+            fail("Should throw exception");
+         }
+         catch (MessageEOFException e)
+         {
+            //Ok
+         }
+         
+         try
+         {
+            received.readInt();
+            
+            fail("Should throw exception");
+         }
+         catch (MessageEOFException e)
+         {
+            //Ok
+         }
+         
+         try
+         {
+            received.readLong();
+            
+            fail("Should throw exception");
+         }
+         catch (MessageEOFException e)
+         {
+            //Ok
+         }
+         
+         try
+         {
+            received.readShort();
+            
+            fail("Should throw exception");
+         }
+         catch (MessageEOFException e)
+         {
+            //Ok
+         }
+         
+         try
+         {
+            received.readString();
+            
+            fail("Should throw exception");
+         }
+         catch (MessageEOFException e)
+         {
+            //Ok
+         }                 
+      }
+      finally
+      {
+         try
+         {
+            conn.close();
+         }
+         catch (Throwable igonred)
+         {
+         }
+      }
+   }
+   
    public void testNullProperties() throws Exception
    {
       Connection conn = cf.createConnection();

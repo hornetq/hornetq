@@ -373,34 +373,41 @@ public class HornetQStreamMessage extends HornetQMessage implements StreamMessag
    public Object readObject() throws JMSException
    {
       checkRead();
-      byte type = getBuffer().readByte();
-      switch (type)
+      try
       {
-         case DataConstants.BOOLEAN:
-            return getBuffer().readBoolean();
-         case DataConstants.BYTE:
-            return getBuffer().readByte();
-         case DataConstants.SHORT:
-            return getBuffer().readShort();
-         case DataConstants.CHAR:
-            return (char)getBuffer().readShort();
-         case DataConstants.INT:
-            return getBuffer().readInt();
-         case DataConstants.LONG:
-            return getBuffer().readLong();
-         case DataConstants.FLOAT:
-            return Float.intBitsToFloat(getBuffer().readInt());
-         case DataConstants.DOUBLE:
-            return Double.longBitsToDouble(getBuffer().readLong());
-         case DataConstants.STRING:
-            return getBuffer().readNullableString();
-         case DataConstants.BYTES:
-            int len = getBuffer().readInt();
-            byte[] bytes = new byte[len];
-            getBuffer().readBytes(bytes);
-            return bytes;
-         default:
-            throw new MessageFormatException("Invalid conversion");
+         byte type = getBuffer().readByte();
+         switch (type)
+         {
+            case DataConstants.BOOLEAN:
+               return getBuffer().readBoolean();
+            case DataConstants.BYTE:
+               return getBuffer().readByte();
+            case DataConstants.SHORT:
+               return getBuffer().readShort();
+            case DataConstants.CHAR:
+               return (char)getBuffer().readShort();
+            case DataConstants.INT:
+               return getBuffer().readInt();
+            case DataConstants.LONG:
+               return getBuffer().readLong();
+            case DataConstants.FLOAT:
+               return Float.intBitsToFloat(getBuffer().readInt());
+            case DataConstants.DOUBLE:
+               return Double.longBitsToDouble(getBuffer().readLong());
+            case DataConstants.STRING:
+               return getBuffer().readNullableString();
+            case DataConstants.BYTES:
+               int len = getBuffer().readInt();
+               byte[] bytes = new byte[len];
+               getBuffer().readBytes(bytes);
+               return bytes;
+            default:
+               throw new MessageFormatException("Invalid conversion");
+         }
+      }
+      catch (IndexOutOfBoundsException e)
+      {
+         throw new MessageEOFException("");
       }
    }
 
