@@ -423,7 +423,7 @@ public class LocalTestServer implements Server, Runnable
    public List<String> listAllSubscribersForTopic(final String s) throws Exception
    {
       ObjectName objectName = ObjectNameBuilder.DEFAULT.getJMSTopicObjectName(s);
-      TopicControl topic = MBeanServerInvocationHandler.newProxyInstance(ManagementFactory.getPlatformMBeanServer(),
+      TopicControl topic = (TopicControl)MBeanServerInvocationHandler.newProxyInstance(ManagementFactory.getPlatformMBeanServer(),
                                                                          objectName,
                                                                          TopicControl.class,
                                                                          false);
