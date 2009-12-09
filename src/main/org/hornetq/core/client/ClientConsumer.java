@@ -79,7 +79,7 @@ public interface ClientConsumer
    ClientMessage receiveImmediate() throws HornetQException;
 
    /**
-    * Return the MessageHandler associated to this consumer.
+    * Returns the MessageHandler associated to this consumer.
     * 
     * Calling this method on a closed consumer will throw a HornetQException.
     * 
@@ -90,7 +90,7 @@ public interface ClientConsumer
    MessageHandler getMessageHandler() throws HornetQException;
 
    /**
-    * Set the MessageHandler for this consumer to consume messages asynchronously.
+    * Sets the MessageHandler for this consumer to consume messages asynchronously.
     * 
     * Calling this method on a closed consumer will throw a HornetQException.
     * 
@@ -100,7 +100,7 @@ public interface ClientConsumer
    void setMessageHandler(MessageHandler handler) throws HornetQException;
 
    /**
-    * Close the consumer.
+    * Closes the consumer.
     * 
     * Once this consumer is closed, it can not receive messages, whether synchronously or asynchronously.
     * 
@@ -109,14 +109,14 @@ public interface ClientConsumer
    void close() throws HornetQException;
 
    /**
-    * Return whether the consumer is closed or not.
+    * Returns whether the consumer is closed or not.
     * 
     * @return <code>true</code> if this consumer is closed, <code>false</code> else
     */
    boolean isClosed();
 
    /**
-    * Return the last exception thrown by a call to this consumer's MessageHandler
+    * Returns the last exception thrown by a call to this consumer's MessageHandler.
     * 
     * @return the last exception thrown by a call to this consumer's MessageHandler or <code>null</code>
     */

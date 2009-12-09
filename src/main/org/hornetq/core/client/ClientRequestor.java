@@ -67,7 +67,7 @@ public class ClientRequestor
    }
 
    /**
-    * Send a message to the request address and wait indefinitely for a reply.
+    * Sends a message to the request address and wait indefinitely for a reply.
     * The temporary queue is used for the REPLYTO_HEADER_NAME, and only one reply per request is expected
     *
     * @param request the message to send
@@ -80,7 +80,7 @@ public class ClientRequestor
    }
 
    /**
-    * Send a message to the request address and wait for the given timeout for a reply.
+    * Sends a message to the request address and wait for the given timeout for a reply.
     * The temporary queue is used for the REPLYTO_HEADER_NAME, and only one reply per request is expected
     * 
     * @param request  the message to send
@@ -96,7 +96,7 @@ public class ClientRequestor
    }
 
    /**
-    * Close the ClientRequestor and its session.
+    * Closes the ClientRequestor and its session.
     * 
     * @throws Exception if an exception occurs while closing the ClientRequestor
     */

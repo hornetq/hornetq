@@ -27,7 +27,7 @@ import org.jboss.netty.buffer.ChannelBuffers;
 public class HornetQBuffers
 {   
    /**
-    * Create a <em>self-expanding</em> HornetQBuffer with the given initial size
+    * Creates a <em>self-expanding</em> HornetQBuffer with the given initial size
     * 
     * @param size the initial size of the created HornetQBuffer
     * @return a self-expanding HornetQBuffer starting with the given size
@@ -38,7 +38,7 @@ public class HornetQBuffers
    }
 
    /**
-    * Create a <em>self-expanding</em> HornetQBuffer filled with the given byte array
+    * Creates a <em>self-expanding</em> HornetQBuffer filled with the given byte array
     * 
     * @param bytes the created buffer will be initially filled with this byte array
     * @return a self-expanding HornetQBuffer filled with the given byte array
@@ -53,7 +53,7 @@ public class HornetQBuffers
    }
 
    /**
-    * Create a HornetQBuffer wrapping the underlying NIO ByteBuffer
+    * Creates a HornetQBuffer wrapping the underlying NIO ByteBuffer
     * 
     * The position on this buffer won't affect the position on the inner buffer
     * 
@@ -70,7 +70,7 @@ public class HornetQBuffers
    }
 
    /**
-    * Create a HornetQBuffer wrapping the underlying byte array
+    * Creates a HornetQBuffer wrapping the underlying byte array
     *
     * @param underlying the underlying byte array
     * @return a HornetQBuffer wrapping the underlying byte array
@@ -81,7 +81,7 @@ public class HornetQBuffers
    }
 
    /**
-    * Create a <em>fixed</em> HornetQBuffer of the given size
+    * Creates a <em>fixed</em> HornetQBuffer of the given size
     * 
     * @param size the size of the created HornetQBuffer
     * @return a fixed HornetQBuffer with the given size

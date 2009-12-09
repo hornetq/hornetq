@@ -32,7 +32,7 @@ import org.jboss.netty.buffer.ChannelBuffer;
 public interface HornetQBuffer
 {
    /**
-    * Return the underlying Netty's ChannelBuffer
+    * Returns the underlying Netty's ChannelBuffer
     * 
     * @return the underlying Netty's ChannelBuffer
     */
