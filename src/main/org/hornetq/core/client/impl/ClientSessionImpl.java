@@ -1039,9 +1039,9 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       return failoverManager;
    }
 
-   public void sendProducerCreditsMessage(final int credits, final SimpleString destination)
+   public void sendProducerCreditsMessage(final int credits, final SimpleString address)
    {
-      channel.send(new SessionRequestProducerCreditsMessage(credits, destination));
+      channel.send(new SessionRequestProducerCreditsMessage(credits, address));
    }
 
    public ClientProducerCredits getCredits(final SimpleString address)

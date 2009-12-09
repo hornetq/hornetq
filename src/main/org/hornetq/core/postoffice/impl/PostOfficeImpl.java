@@ -555,7 +555,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
          throw new IllegalStateException("Message cannot be routed more than once");
       }
 
-      SimpleString address = message.getDestination();
+      SimpleString address = message.getAddress();
 
       setPagingStore(message);
 
@@ -567,7 +567,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
       if (duplicateID != null)
       {
-         cache = getDuplicateIDCache(message.getDestination());
+         cache = getDuplicateIDCache(message.getAddress());
 
          if (duplicateID instanceof SimpleString)
          {
@@ -662,7 +662,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
             {
                message.setOriginalHeaders(message, false);
 
-               message.setDestination(dlaAddress);
+               message.setAddress(dlaAddress);
 
                route(message, context.getTransaction());
             }
@@ -713,7 +713,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
    public boolean redistribute(final ServerMessage message, final Queue originatingQueue, final Transaction tx) throws Exception
    {
-      Bindings bindings = addressManager.getBindingsForRoutingAddress(message.getDestination());
+      Bindings bindings = addressManager.getBindingsForRoutingAddress(message.getAddress());
 
       boolean res = false;
 
@@ -784,7 +784,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
          ServerMessage message = new ServerMessageImpl(storageManager.generateUniqueID(), 50);
 
-         message.setDestination(queueName);
+         message.setAddress(queueName);
          message.putBooleanProperty(PostOfficeImpl.HDR_RESET_QUEUE_DATA, true);
          routeDirect(message, queue, false);
 
@@ -842,7 +842,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
    private void setPagingStore(final ServerMessage message) throws Exception
    {
-      PagingStore store = pagingManager.getPageStore(message.getDestination());
+      PagingStore store = pagingManager.getPageStore(message.getAddress());
       message.setPagingStore(store);
    }
 
@@ -992,7 +992,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
    {
       ServerMessage message = new ServerMessageImpl(storageManager.generateUniqueID(), 50);
 
-      message.setDestination(queueName);
+      message.setAddress(queueName);
       // message.setDurable(true);
 
       String uid = UUIDGenerator.getInstance().generateStringUUID();

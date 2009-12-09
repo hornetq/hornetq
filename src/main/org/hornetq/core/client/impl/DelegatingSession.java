@@ -503,9 +503,9 @@ public class DelegatingSession implements ClientSessionInternal
       session.workDone();
    }
 
-   public void sendProducerCreditsMessage(final int credits, final SimpleString destination)
+   public void sendProducerCreditsMessage(final int credits, final SimpleString address)
    {
-      session.sendProducerCreditsMessage(credits, destination);
+      session.sendProducerCreditsMessage(credits, address);
    }
 
    public ClientProducerCredits getCredits(final SimpleString address)

@@ -965,7 +965,7 @@ public class QueueImpl implements Queue
    {
       ServerMessage copyMessage = makeCopy(ref, expiry);
 
-      copyMessage.setDestination(toAddress);
+      copyMessage.setAddress(toAddress);
 
       postOffice.route(copyMessage, tx);
 
@@ -980,7 +980,7 @@ public class QueueImpl implements Queue
        because otherwise we may end up with a ref with the same message id in the
        queue more than once which would barf - this might happen if the same message had been
        expire from multiple subscriptions of a topic for example
-       We set headers that hold the original message destination, expiry time
+       We set headers that hold the original message address, expiry time
        and original message id
       */
 
@@ -1054,7 +1054,7 @@ public class QueueImpl implements Queue
 
       ServerMessage copyMessage = makeCopy(ref, expiry);
 
-      copyMessage.setDestination(address);
+      copyMessage.setAddress(address);
 
       postOffice.route(copyMessage, tx);
 

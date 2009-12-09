@@ -611,7 +611,7 @@ public class PagingStoreImplTest extends UnitTestCase
             ServerMessage msgWritten = buffers.remove(id);
             buffers2.put(id, msg.getMessage(null));
             Assert.assertNotNull(msgWritten);
-            Assert.assertEquals(msg.getMessage(null).getDestination(), msgWritten.getDestination());
+            Assert.assertEquals(msg.getMessage(null).getAddress(), msgWritten.getAddress());
             UnitTestCase.assertEqualsBuffers(10, msgWritten.getBodyBuffer(), msg.getMessage(null).getBodyBuffer());
          }
       }
@@ -681,7 +681,7 @@ public class PagingStoreImplTest extends UnitTestCase
             long id = msg.getMessage(null).getBodyBuffer().readLong();
             ServerMessage msgWritten = buffers2.remove(id);
             Assert.assertNotNull(msgWritten);
-            Assert.assertEquals(msg.getMessage(null).getDestination(), msgWritten.getDestination());
+            Assert.assertEquals(msg.getMessage(null).getAddress(), msgWritten.getAddress());
             UnitTestCase.assertEqualsByteArrays(msgWritten.getBodyBuffer().toByteBuffer().array(), msg.getMessage(null)
                                                                                                       .getBodyBuffer()
                                                                                                       .toByteBuffer()
@@ -727,7 +727,7 @@ public class PagingStoreImplTest extends UnitTestCase
    {
       ServerMessage msg = new ServerMessageImpl(id, 50 + buffer.capacity());
 
-      msg.setDestination(destination);
+      msg.setAddress(destination);
 
       msg.setPagingStore(store);
 

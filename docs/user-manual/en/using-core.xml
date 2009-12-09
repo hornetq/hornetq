@@ -36,8 +36,8 @@
                 properties which are key-value pairs. Each property key is a string and property
                 values can be of type integer, long, short, byte, byte[], String, double, float or
                 boolean.</para>
-            <para>A message has a destination which represents the <emphasis>address</emphasis> it
-                is being sent to. When the message arrives on the server it is routed to any queues
+            <para>A message has an <emphasis>address</emphasis> it is being sent to.
+                When the message arrives on the server it is routed to any queues
                 that are bound to the address. An address may have many queues bound to it or even
                 none. There may also be entities other than queues, like <emphasis role="italic"
                     >diverts</emphasis> bound to addresses.</para>
@@ -56,8 +56,8 @@
             <title>Address</title>
             <para>A server maintains a mapping between an address and a set of queues. Zero or more
                 queues can be bound to a single address. Each queue can be bound with an optional
-                message filter. When a message is routed to an address it is routed to the set of
-                queues bound to the message's destination address. If any of the queues are bound
+                message filter. When a message is routed, it is in fact routed to the set of
+                queues bound to the message's address. If any of the queues are bound
                 with a filter expression, then the message will only be routed to the subset of
                 bound queues which match that filter expression.</para>
             <para>Other entities, such as <emphasis role="italic">diverts</emphasis> can also be

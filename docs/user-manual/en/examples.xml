@@ -244,7 +244,7 @@
             <para>The <literal>management-notification</literal> example shows how to receive
                 management notifications from HornetQ using JMS messages. HornetQ servers emit
                 management notifications when events of interest occur (consumers are created or
-                closed, destinations are created or deleted, security authentication fails,
+                closed, addresses are created or deleted, security authentication fails,
                 etc.).</para>
         </section>
         <section id="examples.consumer-rate-limit">
@@ -268,9 +268,9 @@
                 period of time before being removed. JMS specification states that clients should
                 not receive messages that have been expired (but it does not guarantee this will not
                 happen).</para>
-            <para>HornetQ can assign an expiry destination to a given queue so that when messages
-                are expired, they are removed from the queue and sent to the expiry destination.
-                These "expired" messages can later be consumed from the expiry destination for
+            <para>HornetQ can assign an expiry address to a given queue so that when messages
+                are expired, they are removed from the queue and sent to the expiry address.
+                These "expired" messages can later be consumed from the expiry address for
                 further inspection.</para>
         </section>
         <section id="examples.message-group">

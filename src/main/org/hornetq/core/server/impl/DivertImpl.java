@@ -81,17 +81,17 @@ public class DivertImpl implements Divert
    public void route(final ServerMessage message, final RoutingContext context) throws Exception
    {
       // We must make a copy of the message, otherwise things like returning credits to the page won't work
-      // properly on ack, since the original destination will be overwritten
+      // properly on ack, since the original address will be overwritten
 
       // TODO we can optimise this so it doesn't copy if it's not routed anywhere else
 
       long id = storageManager.generateUniqueID();
       ServerMessage copy = message.copy(id);
 
-      // This will set the original MessageId, and the original destination
+      // This will set the original MessageId, and the original address
       copy.setOriginalHeaders(message, false);
 
-      copy.setDestination(forwardAddress);
+      copy.setAddress(forwardAddress);
 
       if (transformer != null)
       {

@@ -64,8 +64,8 @@ public class MessageImplTest extends UnitTestCase
          final long timestamp2 = RandomUtil.randomLong();
          final byte priority2 = RandomUtil.randomByte();
 
-         message.setDestination(destination);
-         Assert.assertEquals(destination, message.getDestination());
+         message.setAddress(destination);
+         Assert.assertEquals(destination, message.getAddress());
 
          message.setDurable(durable2);
          Assert.assertEquals(durable2, message.isDurable());
@@ -242,7 +242,7 @@ public class MessageImplTest extends UnitTestCase
                                                                                            .toByteBuffer()
                                                                                            .array());
 
-      Assert.assertEquals(msg1.getDestination(), msg2.getDestination());
+      Assert.assertEquals(msg1.getAddress(), msg2.getAddress());
 
       Set<SimpleString> props1 = msg1.getPropertyNames();
 

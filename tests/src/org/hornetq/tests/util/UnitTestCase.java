@@ -856,7 +856,7 @@ public class UnitTestCase extends TestCase
 
       message.getBodyBuffer().writeString(UUID.randomUUID().toString());
 
-      message.setDestination(new SimpleString("foo"));
+      message.setAddress(new SimpleString("foo"));
 
       return message;
    }

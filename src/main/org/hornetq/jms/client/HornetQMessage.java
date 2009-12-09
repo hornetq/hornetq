@@ -443,7 +443,7 @@ public class HornetQMessage implements javax.jms.Message
    {
       if (dest == null)
       {
-         SimpleString sdest = message.getDestination();
+         SimpleString sdest = message.getAddress();
 
          dest = sdest == null ? null : HornetQDestination.fromAddress(sdest.toString());
       }

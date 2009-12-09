@@ -30,7 +30,7 @@ import org.hornetq.utils.SimpleString;
  */
 public interface PagingStoreFactory
 {
-   PagingStore newStore(SimpleString destinationName, AddressSettings addressSettings) throws Exception;
+   PagingStore newStore(SimpleString address, AddressSettings addressSettings) throws Exception;
 
    void stop() throws InterruptedException;
 
@@ -42,6 +42,6 @@ public interface PagingStoreFactory
 
    List<PagingStore> reloadStores(HierarchicalRepository<AddressSettings> addressSettingsRepository) throws Exception;
 
-   SequentialFileFactory newFileFactory(SimpleString destinationName) throws Exception;
+   SequentialFileFactory newFileFactory(SimpleString address) throws Exception;
 
 }

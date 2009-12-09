@@ -719,7 +719,7 @@ public class ManagementServiceImpl implements ManagementService
                // consume
                // them in
                notificationMessage.setDurable(true);
-               notificationMessage.setDestination(managementNotificationAddress);
+               notificationMessage.setAddress(managementNotificationAddress);
 
                TypedProperties notifProps;
                if (notification.getProperties() != null)

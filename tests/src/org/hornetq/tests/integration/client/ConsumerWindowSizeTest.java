@@ -62,7 +62,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
       ClientSession session = cf.createSession(false, true, true);
       ClientMessage message = session.createMessage(false);
       // we need to set the destination so we can calculate the encodesize correctly
-      message.setDestination(address);
+      message.setAddress(address);
       int encodeSize = message.getEncodeSize();
       session.close();
       cf.close();

@@ -90,7 +90,7 @@
             <listitem>
                 <para><literal>forwarding-address</literal>. This is the address on the target
                     server that the message will be forwarded to. If a forwarding address is not
-                    specified then the original destination of the message will be retained.</para>
+                    specified, then the original address of the message will be retained.</para>
             </listitem>
             <listitem>
                 <para><literal>filter-string</literal>. An optional filter string can be supplied.

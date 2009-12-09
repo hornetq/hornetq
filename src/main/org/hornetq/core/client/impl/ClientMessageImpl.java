@@ -137,14 +137,10 @@ public class ClientMessageImpl extends MessageImpl implements ClientMessageInter
       return "ClientMessage[messageID=" + messageID +
              ", durable=" +
              durable +
-             ", destination=" +
-             getDestination() +
+             ", address=" +
+             getAddress() +
              "]";
    }
-
-   /* (non-Javadoc)
-    * @see org.hornetq.core.message.Message#getBodyEncoder()
-    */
 
    // FIXME - only used for large messages - move it!
    /* (non-Javadoc)

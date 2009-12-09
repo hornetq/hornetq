@@ -126,8 +126,8 @@ public class DeadLetterExample extends HornetQExample
          // Step 21. the messageReceived's destination is now the dead letter queue.
          System.out.println("Destination of the message: " + ((Queue)messageReceived.getJMSDestination()).getQueueName());
 
-         // Step 22. the *origin* destination is stored in the _HORNETQ_ORIG_DESTINATION property
-         System.out.println("*Origin destination* of the message: " + messageReceived.getStringProperty("_HORNETQ_ORIG_DESTINATION"));
+         // Step 22. the *origin* destination is stored in the _HQ_ORIG_ADDRESS property
+         System.out.println("*Origin destination* of the message: " + messageReceived.getStringProperty("_HQ_ORIG_ADDRESS"));
 
          // Step 23. This time, we commit the session, the delivery from the dead letter queue is successful!
          session.commit();

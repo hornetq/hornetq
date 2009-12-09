@@ -1136,7 +1136,7 @@ public class HornetQServerImpl implements HornetQServer
          queueDeployer.start();
       }
 
-      // We need to call this here, this gives any dependent server a chance to deploy its own destinations
+      // We need to call this here, this gives any dependent server a chance to deploy its own addresses
       // this needs to be done before clustering is initialised
       callActivateCallbacks();
 

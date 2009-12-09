@@ -353,9 +353,6 @@ public interface ClientSessionFactory
    /**
     * Returns whether consumers created through this factory will block while sending message acknowledgements or do it asynchronously.
     * 
-    * If the consumer are configured to send message acknowledgement asynchronously, you can set a SendAcknowledgementHandler on the ClientSession
-    * to be notified once the acknowledgement has been handled by the server.
-    * 
     * Default value is {@value org.hornetq.core.client.impl.ClientSessionFactoryImpl#DEFAULT_BLOCK_ON_ACKNOWLEDGE}.
     * 
     * @return whether consumers will block while sending message acknowledgements or do it asynchronously
@@ -371,6 +368,9 @@ public interface ClientSessionFactory
 
    /**
     * Returns whether producers created through this factory will block while sending <em>durable</em> messages or do it asynchronously.
+    * <br>
+    * If the session is configured to send durable message asynchronously, the client can set a SendAcknowledgementHandler on the ClientSession
+    * to be notified once the message has been handled by the server.
     * 
     * Default value is {@value org.hornetq.core.client.impl.ClientSessionFactoryImpl#DEFAULT_BLOCK_ON_DURABLE_SEND}.
     *
@@ -387,6 +387,9 @@ public interface ClientSessionFactory
 
    /**
     * Returns whether producers created through this factory will block while sending <em>non-durable</em> messages or do it asynchronously.
+    * <br>
+    * If the session is configured to send non-durable message asynchronously, the client can set a SendAcknowledgementHandler on the ClientSession
+    * to be notified once the message has been handled by the server.
     * 
     * Default value is {@value org.hornetq.core.client.impl.ClientSessionFactoryImpl#DEFAULT_BLOCK_ON_NON_DURABLE_SEND}.
     *

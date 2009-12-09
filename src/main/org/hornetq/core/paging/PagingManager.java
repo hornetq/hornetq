@@ -30,9 +30,9 @@ import org.hornetq.utils.SimpleString;
                               |                         |
                               |                         |
                               |                         | 1
-                              |        N +-------------------+
-                              +--------&gt; | DestinationAdress |
-                                         +-------------------+   
+                              |        N +---------+
+                              +--------&gt; | Address |
+                                         +---------+   
 
 </PRE>
 
@@ -50,7 +50,7 @@ public interface PagingManager extends HornetQComponent
    /** An injection point for the PostOffice to inject itself */
    void setPostOffice(PostOffice postOffice);
 
-   /** Used to start depaging every paged destination, after a reload/restart */
+   /** Used to start depaging every paged address, after a reload/restart */
    void resumeDepages() throws Exception;
 
    /**

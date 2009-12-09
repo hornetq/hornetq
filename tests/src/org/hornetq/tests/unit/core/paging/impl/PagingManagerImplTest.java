@@ -118,7 +118,7 @@ public class PagingManagerImplTest extends UnitTestCase
    {
       ServerMessage msg = new ServerMessageImpl(messageId, 200);
 
-      msg.setDestination(destination);
+      msg.setAddress(destination);
 
       msg.getBodyBuffer().writeBytes(buffer);
 

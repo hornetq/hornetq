@@ -54,7 +54,7 @@ public abstract class MessageImpl implements Message
 
    public static final SimpleString HDR_ACTUAL_EXPIRY_TIME = new SimpleString("_HQ_ACTUAL_EXPIRY");
 
-   public static final SimpleString HDR_ORIGINAL_DESTINATION = new SimpleString("_HQ_ORIG_DESTINATION");
+   public static final SimpleString HDR_ORIGINAL_ADDRESS = new SimpleString("_HQ_ORIG_ADDRESS");
 
    public static final SimpleString HDR_ORIG_MESSAGE_ID = new SimpleString("_HQ_ORIG_MESSAGE_ID");
 
@@ -74,7 +74,7 @@ public abstract class MessageImpl implements Message
 
    protected long messageID;
 
-   protected SimpleString destination;
+   protected SimpleString address;
 
    protected byte type;
 
@@ -153,7 +153,7 @@ public abstract class MessageImpl implements Message
    protected MessageImpl(final MessageImpl other)
    {
       messageID = other.getMessageID();
-      destination = other.getDestination();
+      address = other.getAddress();
       type = other.getType();
       durable = other.isDurable();
       expiration = other.getExpiration();
@@ -192,7 +192,7 @@ public abstract class MessageImpl implements Message
    public int getHeadersAndPropertiesEncodeSize()
    {
       return DataConstants.SIZE_LONG + // Message ID
-             /* Destination */SimpleString.sizeofString(destination) +
+             /* address */SimpleString.sizeofString(address) +
              DataConstants./* Type */SIZE_BYTE +
              DataConstants./* Durable */SIZE_BOOLEAN +
              DataConstants./* Expiration */SIZE_LONG +
@@ -204,7 +204,7 @@ public abstract class MessageImpl implements Message
    public void encodeHeadersAndProperties(final HornetQBuffer buffer)
    {
       buffer.writeLong(messageID);
-      buffer.writeSimpleString(destination);
+      buffer.writeSimpleString(address);
       buffer.writeByte(type);
       buffer.writeBoolean(durable);
       buffer.writeLong(expiration);
@@ -216,7 +216,7 @@ public abstract class MessageImpl implements Message
    public void decodeHeadersAndProperties(final HornetQBuffer buffer)
    {
       messageID = buffer.readLong();
-      destination = buffer.readSimpleString();
+      address = buffer.readSimpleString();
       type = buffer.readByte();
       durable = buffer.readBoolean();
       expiration = buffer.readLong();
@@ -249,16 +249,16 @@ public abstract class MessageImpl implements Message
       return messageID;
    }
 
-   public SimpleString getDestination()
+   public SimpleString getAddress()
    {
-      return destination;
+      return address;
    }
 
-   public void setDestination(final SimpleString destination)
+   public void setAddress(final SimpleString address)
    {
-      if (this.destination != destination)
+      if (this.address != address)
       {
-         this.destination = destination;
+         this.address = address;
 
          bufferValid = false;
       }
@@ -344,7 +344,7 @@ public abstract class MessageImpl implements Message
       Map<String, Object> map = new HashMap<String, Object>();
 
       map.put("messageID", messageID);
-      map.put("destination", destination.toString());
+      map.put("address", address.toString());
       map.put("type", type);
       map.put("durable", durable);
       map.put("expiration", expiration);
@@ -555,6 +555,10 @@ public abstract class MessageImpl implements Message
       else if (value instanceof String)
       {
          properties.putSimpleStringProperty(key, new SimpleString((String)value));
+      }
+      else if (value instanceof SimpleString)
+      {
+         properties.putSimpleStringProperty(key, (SimpleString)value);
       }
       else
       {

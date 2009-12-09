@@ -14,29 +14,32 @@
 package org.hornetq.core.message;
 
 /**
- * A PropertyConversionException
+ * A PropertyConversionException is thrown by Message methods
+ * when a property can not be converted to the expected type.
  *
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  *
+ * @see Message
  *
  */
 public class PropertyConversionException extends RuntimeException
 {
 
-   private static final long serialVersionUID = -3010008708334904332L;
-
-   public PropertyConversionException(final String message)
-   {
-      super(message);
-   }
-
    // Constants -----------------------------------------------------
+
+   private static final long serialVersionUID = -3010008708334904332L;
 
    // Attributes ----------------------------------------------------
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
+
+
+   public PropertyConversionException(final String message)
+   {
+      super(message);
+   }
 
    // Public --------------------------------------------------------
 

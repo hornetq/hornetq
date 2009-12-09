@@ -172,7 +172,7 @@ public class MessageExpirationTest extends ServiceTestBase
       ClientMessage expiredMessage = expiryConsumer.receive(500);
       Assert.assertNotNull(expiredMessage);
       Assert.assertNotNull(expiredMessage.getObjectProperty(MessageImpl.HDR_ACTUAL_EXPIRY_TIME));
-      Assert.assertEquals(address, expiredMessage.getObjectProperty(MessageImpl.HDR_ORIGINAL_DESTINATION));
+      Assert.assertEquals(address, expiredMessage.getObjectProperty(MessageImpl.HDR_ORIGINAL_ADDRESS));
       consumer.close();
       expiryConsumer.close();
       session.deleteQueue(queue);

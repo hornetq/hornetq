@@ -43,8 +43,8 @@ producer.setTimeToLive(5000);
          properties:</para>
       <itemizedlist>
          <listitem>
-            <para><literal>_HQ_ORIG_DESTINATION</literal></para>
-            <para>a String property containing the <emphasis>original destination</emphasis> of the
+            <para><literal>_HQ_ORIG_ADDRESS</literal></para>
+            <para>a String property containing the <emphasis>original address</emphasis> of the
                expired message </para>
          </listitem>
          <listitem>

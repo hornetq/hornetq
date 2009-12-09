@@ -644,7 +644,7 @@ public class PagingStoreImpl implements TestSupportPageStore
                   returnPage.open();
                   returnPage.delete();
 
-                  // This will trigger this Destination to exit the page mode,
+                  // This will trigger this address to exit the page mode,
                   // and this will make HornetQ start using the journal again
                   return null;
                }
@@ -917,7 +917,7 @@ public class PagingStoreImpl implements TestSupportPageStore
     * If persistent messages are also used, it will update eventual PageTransactions
     */
 
-   private boolean onDepage(final int pageId, final SimpleString destination, final List<PagedMessage> pagedMessages) throws Exception
+   private boolean onDepage(final int pageId, final SimpleString address, final List<PagedMessage> pagedMessages) throws Exception
    {
       if (PagingStoreImpl.isTrace)
       {
@@ -1092,7 +1092,7 @@ public class PagingStoreImpl implements TestSupportPageStore
                                addressFull);
       }
 
-      // It should stop the executor when the destination is full or when there is nothing else to be depaged
+      // It should stop the executor when the address is full or when there is nothing else to be depaged
       if (addressFull || !isPaging())
       {
          depaging.set(false);

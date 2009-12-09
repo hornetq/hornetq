@@ -528,7 +528,7 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
    {
       PagedMessage pgdMessage = packet.getPagedMessage();
       ServerMessage msg = pgdMessage.getMessage(storage);
-      Page page = getPage(msg.getDestination(), packet.getPageNumber());
+      Page page = getPage(msg.getAddress(), packet.getPageNumber());
       page.write(pgdMessage);
    }
 

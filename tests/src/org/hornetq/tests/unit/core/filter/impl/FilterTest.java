@@ -104,7 +104,7 @@ public class FilterTest extends UnitTestCase
 
    public void testHQSize() throws Exception
    {
-      message.setDestination(RandomUtil.randomSimpleString());
+      message.setAddress(RandomUtil.randomSimpleString());
 
       int encodeSize = message.getEncodeSize();
 

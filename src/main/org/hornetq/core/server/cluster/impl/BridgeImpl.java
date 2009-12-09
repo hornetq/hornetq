@@ -413,7 +413,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
          {
             // We make a copy of the message, then we strip out the unwanted routing id headers and leave
             // only
-            // the one pertinent for the destination node - this is important since different queues on different
+            // the one pertinent for the address node - this is important since different queues on different
             // nodes could have same queue ids
             // Note we must copy since same message may get routed to other nodes which require different headers
             message = message.copy();
@@ -472,7 +472,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
          else
          {
             // Preserve the original address
-            dest = message.getDestination();
+            dest = message.getAddress();
          }
 
          producer.send(dest, message);

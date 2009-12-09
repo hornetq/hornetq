@@ -351,7 +351,7 @@ public class ServerConsumerImpl implements ServerConsumer
                ServerMessage forcedDeliveryMessage = new ServerMessageImpl(storageManager.generateUniqueID(), 50);
 
                forcedDeliveryMessage.putLongProperty(ClientConsumerImpl.FORCED_DELIVERY_MESSAGE, sequence);
-               forcedDeliveryMessage.setDestination(messageQueue.getName());
+               forcedDeliveryMessage.setAddress(messageQueue.getName());
 
                final SessionReceiveMessage packet = new SessionReceiveMessage(id, forcedDeliveryMessage, 0);
 

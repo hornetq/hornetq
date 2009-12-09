@@ -86,14 +86,11 @@ public class PagingManagerImpl implements PagingManager
       return names.toArray(new SimpleString[names.size()]);
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.paging.PagingManager#reloadStores()
-    */
    public synchronized void reloadStores() throws Exception
    {
-      List<PagingStore> destinations = pagingStoreFactory.reloadStores(addressSettingsRepository);
+      List<PagingStore> reloadedStores = pagingStoreFactory.reloadStores(addressSettingsRepository);
 
-      for (PagingStore store : destinations)
+      for (PagingStore store : reloadedStores)
       {
          store.start();
          stores.put(store.getStoreName(), store);
@@ -101,10 +98,6 @@ public class PagingManagerImpl implements PagingManager
 
    }
 
-   /**
-    * @param destination
-    * @return
-    */
    private synchronized PagingStore createPageStore(final SimpleString storeName) throws Exception
    {
       PagingStore store = stores.get(storeName);
@@ -244,10 +237,10 @@ public class PagingManagerImpl implements PagingManager
 
    // Private -------------------------------------------------------
 
-   private PagingStore newStore(final SimpleString destinationName) throws Exception
+   private PagingStore newStore(final SimpleString address) throws Exception
    {
-      return pagingStoreFactory.newStore(destinationName,
-                                         addressSettingsRepository.getMatch(destinationName.toString()));
+      return pagingStoreFactory.newStore(address,
+                                         addressSettingsRepository.getMatch(address.toString()));
    }
 
    // Inner classes -------------------------------------------------

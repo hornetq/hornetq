@@ -529,7 +529,7 @@
                             <entry><link linkend="core-bridges"
                                 >bridges.forwarding-address</link></entry>
                             <entry>String</entry>
-                            <entry>address to forward to. If omitted original destination is
+                            <entry>address to forward to. If omitted original address is
                                 used</entry>
                             <entry>null</entry>
                         </row>

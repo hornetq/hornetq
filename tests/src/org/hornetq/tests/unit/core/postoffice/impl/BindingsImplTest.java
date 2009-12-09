@@ -490,7 +490,7 @@ public class BindingsImplTest extends UnitTestCase
          return null;
       }
 
-      public SimpleString getDestination()
+      public SimpleString getAddress()
       {
          // TODO Auto-generated method stub
          return null;
@@ -832,7 +832,7 @@ public class BindingsImplTest extends UnitTestCase
 
       }
 
-      public void setDestination(final SimpleString destination)
+      public void setAddress(final SimpleString destination)
       {
          // TODO Auto-generated method stub
 

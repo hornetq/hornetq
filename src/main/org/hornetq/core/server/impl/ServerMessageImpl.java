@@ -195,7 +195,7 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
        because otherwise we may end up with a ref with the same message id in the
        queue more than once which would barf - this might happen if the same message had been
        expire from multiple subscriptions of a topic for example
-       We set headers that hold the original message destination, expiry time
+       We set headers that hold the original message address, expiry time
        and original message id
       */
 
@@ -210,16 +210,16 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
    {
       if (other.containsProperty(MessageImpl.HDR_ORIG_MESSAGE_ID))
       {
-         putStringProperty(MessageImpl.HDR_ORIGINAL_DESTINATION,
-                           other.getSimpleStringProperty(MessageImpl.HDR_ORIGINAL_DESTINATION));
+         putStringProperty(MessageImpl.HDR_ORIGINAL_ADDRESS,
+                           other.getSimpleStringProperty(MessageImpl.HDR_ORIGINAL_ADDRESS));
 
          putLongProperty(MessageImpl.HDR_ORIG_MESSAGE_ID, other.getLongProperty(MessageImpl.HDR_ORIG_MESSAGE_ID));
       }
       else
       {
-         SimpleString originalQueue = other.getDestination();
+         SimpleString originalQueue = other.getAddress();
 
-         putStringProperty(MessageImpl.HDR_ORIGINAL_DESTINATION, originalQueue);
+         putStringProperty(MessageImpl.HDR_ORIGINAL_ADDRESS, originalQueue);
 
          putLongProperty(MessageImpl.HDR_ORIG_MESSAGE_ID, other.getMessageID());
       }
@@ -243,7 +243,7 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
 
       // On the server side, we reset the address to point to the instance of address in the paging store
       // Otherwise each message would have its own copy of the address String which would take up more memory
-      destination = pagingStore.getAddress();
+      address = pagingStore.getAddress();
    }
 
    public PagingStore getPagingStore()
@@ -293,8 +293,8 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
       return "ServerMessage[messageID=" + messageID +
              ", durable=" +
              durable +
-             ", destination=" +
-             getDestination() +
+             ", address=" +
+             getAddress() +
              "]";
    }
 

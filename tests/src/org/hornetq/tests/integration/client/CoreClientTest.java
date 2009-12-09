@@ -97,7 +97,7 @@ public class CoreClientTest extends UnitTestCase
          // Remove destination as an attribute from client producer.
          // The destination always has to be set explicity before sending a message
 
-         message.setDestination(QUEUE);
+         message.setAddress(QUEUE);
 
          message.getBodyBuffer().writeString("testINVMCoreClient");
 

@@ -40,24 +40,24 @@ public class ClientProducerCreditManagerImpl implements ClientProducerCreditMana
       this.windowSize = windowSize;
    }
 
-   public synchronized ClientProducerCredits getCredits(final SimpleString destination)
+   public synchronized ClientProducerCredits getCredits(final SimpleString address)
    {
-      ClientProducerCredits credits = producerCredits.get(destination);
+      ClientProducerCredits credits = producerCredits.get(address);
 
       if (credits == null)
       {
          // Doesn't need to be fair since session is single threaded
-         credits = new ClientProducerCreditsImpl(session, destination, windowSize);
+         credits = new ClientProducerCreditsImpl(session, address, windowSize);
 
-         producerCredits.put(destination, credits);
+         producerCredits.put(address, credits);
       }
 
       return credits;
    }
 
-   public synchronized void receiveCredits(final SimpleString destination, final int credits, final int offset)
+   public synchronized void receiveCredits(final SimpleString address, final int credits, final int offset)
    {
-      ClientProducerCredits cr = producerCredits.get(destination);
+      ClientProducerCredits cr = producerCredits.get(address);
 
       if (cr != null)
       {

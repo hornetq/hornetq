@@ -33,19 +33,19 @@ public class ClientProducerCreditsImpl implements ClientProducerCredits
 
    private final int windowSize;
 
-   private final SimpleString destination;
+   private final SimpleString address;
 
    private final ClientSessionInternal session;
 
    private int arriving;
 
    public ClientProducerCreditsImpl(final ClientSessionInternal session,
-                                    final SimpleString destination,
+                                    final SimpleString address,
                                     final int windowSize)
    {
       this.session = session;
 
-      this.destination = destination;
+      this.address = address;
 
       this.windowSize = windowSize / 2;
 
@@ -120,7 +120,7 @@ public class ClientProducerCreditsImpl implements ClientProducerCredits
    private void requestCredits(final int credits)
    {
 
-      session.sendProducerCreditsMessage(credits, destination);
+      session.sendProducerCreditsMessage(credits, address);
    }
 
 }

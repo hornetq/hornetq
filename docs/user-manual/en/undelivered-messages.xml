@@ -106,8 +106,8 @@
             property:</para>
          <itemizedlist>
             <listitem>
-               <para><literal>_HQ_ORIG_DESTINATION</literal></para>
-               <para>a String property containing the <emphasis>original destination</emphasis> of
+               <para><literal>_HQ_ORIG_ADDRESS</literal></para>
+               <para>a String property containing the <emphasis>original address</emphasis> of
                   the dead letter message </para>
             </listitem>
          </itemizedlist>

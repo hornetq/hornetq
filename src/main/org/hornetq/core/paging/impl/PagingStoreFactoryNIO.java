@@ -102,7 +102,7 @@ public class PagingStoreFactoryNIO implements PagingStoreFactory
                                  syncNonTransactional);
    }
 
-   public synchronized SequentialFileFactory newFileFactory(final SimpleString destinationName) throws Exception
+   public synchronized SequentialFileFactory newFileFactory(final SimpleString address) throws Exception
    {
 
       String guid = UUIDGenerator.getInstance().generateStringUUID();
@@ -120,7 +120,7 @@ public class PagingStoreFactoryNIO implements PagingStoreFactory
 
       try
       {
-         writer.write(destinationName.toString());
+         writer.write(address.toString());
          writer.newLine();
       }
       finally

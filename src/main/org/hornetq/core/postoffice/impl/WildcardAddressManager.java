@@ -137,9 +137,9 @@ public class WildcardAddressManager extends SimpleAddressManager
          Address add = getAddress(binding.getAddress());
          if (!add.containsWildCard())
          {
-            for (Address destination : add.getLinkedAddresses())
+            for (Address theAddress : add.getLinkedAddresses())
             {
-               Bindings bindings = super.getBindingsForRoutingAddress(destination.getAddress());
+               Bindings bindings = super.getBindingsForRoutingAddress(theAddress.getAddress());
                if (bindings != null)
                {
                   for (Binding b : bindings.getBindings())
@@ -151,9 +151,9 @@ public class WildcardAddressManager extends SimpleAddressManager
          }
          else
          {
-            for (Address destination : add.getLinkedAddresses())
+            for (Address theAddress : add.getLinkedAddresses())
             {
-               super.removeBindingInternal(destination.getAddress(), uniqueName);
+               super.removeBindingInternal(theAddress.getAddress(), uniqueName);
             }
          }
          removeAndUpdateAddressMap(add);

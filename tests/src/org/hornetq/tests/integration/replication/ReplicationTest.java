@@ -284,7 +284,7 @@ public class ReplicationTest extends ServiceTestBase
          ServerMessage msg = new ServerMessageImpl(1, 1024);
 
          SimpleString dummy = new SimpleString("dummy");
-         msg.setDestination(dummy);
+         msg.setAddress(dummy);
 
          replicatedJournal.appendAddRecordTransactional(23, 24, (byte)1, new FakeData());
 
@@ -317,7 +317,7 @@ public class ReplicationTest extends ServiceTestBase
 
          ServerMessageImpl serverMsg = new ServerMessageImpl();
          serverMsg.setMessageID(500);
-         serverMsg.setDestination(new SimpleString("tttt"));
+         serverMsg.setAddress(new SimpleString("tttt"));
 
          HornetQBuffer buffer = HornetQBuffers.dynamicBuffer(100);
          serverMsg.encodeHeadersAndProperties(buffer);

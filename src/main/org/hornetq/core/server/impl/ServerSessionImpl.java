@@ -1458,7 +1458,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
          message.setMessageID(id);
          message.encodeMessageIDToBuffer();
 
-         if (message.getDestination().equals(managementAddress))
+         if (message.getAddress().equals(managementAddress))
          {
             // It's a management message
 
@@ -1840,7 +1840,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
    {
       try
       {
-         securityStore.check(message.getDestination(), CheckType.MANAGE, this);
+         securityStore.check(message.getAddress(), CheckType.MANAGE, this);
       }
       catch (HornetQException e)
       {
@@ -1857,7 +1857,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
 
       if (replyTo != null)
       {
-         reply.setDestination(replyTo);
+         reply.setAddress(replyTo);
 
          send(reply);
       }
@@ -1927,7 +1927,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
     */
    private void releaseOutStanding(final ServerMessage message, final int credits) throws Exception
    {
-      CreditManagerHolder holder = getCreditManagerHolder(message.getDestination());
+      CreditManagerHolder holder = getCreditManagerHolder(message.getAddress());
 
       holder.outstandingCredits -= credits;
 
@@ -1966,7 +1966,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       // check the user has write access to this address.
       try
       {
-         securityStore.check(msg.getDestination(), CheckType.SEND, this);
+         securityStore.check(msg.getAddress(), CheckType.SEND, this);
       }
       catch (HornetQException e)
       {

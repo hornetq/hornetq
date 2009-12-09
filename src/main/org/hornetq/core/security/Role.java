@@ -16,7 +16,7 @@ package org.hornetq.core.security;
 import java.io.Serializable;
 
 /**
- * A role is used by the security store to define access rights and is configured on a connection factory or destination
+ * A role is used by the security store to define access rights and is configured on a connection factory or an address.
  *
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */

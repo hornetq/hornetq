@@ -68,7 +68,7 @@ public interface ClientSessionInternal extends ClientSession
 
    void forceDelivery(long consumerID, long sequence) throws HornetQException;
 
-   void sendProducerCreditsMessage(int credits, SimpleString destination);
+   void sendProducerCreditsMessage(int credits, SimpleString address);
 
    ClientProducerCredits getCredits(SimpleString address);
 
