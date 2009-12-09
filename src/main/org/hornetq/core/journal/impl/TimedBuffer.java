@@ -148,7 +148,7 @@ public class TimedBuffer
 
       bufferObserver = null;
 
-      timer.close();
+      timer.stop();
 
       if (logRates)
       {
@@ -258,7 +258,25 @@ public class TimedBuffer
 
    
    /** 
-    * Note: Flush could be called by either the CheckTime, or by the Journal directly when moving to a new file
+    * This method will verify if it a flush is required.
+    * It is called directly by the CheckTimer.
+    * 
+    * @return true means you can pause spinning for a while
+    * */
+   private synchronized boolean checkFlush()
+   {
+      // delayFlush and pendingSync are changed inside synchronized blocks
+      // They need to be done atomically
+      if (!delayFlush && pendingSync && bufferObserver != null)
+      {
+         flush();
+         return true;
+      }
+      else return !delayFlush;
+   }
+   
+   /** 
+    * Note: Flush could be called by either the checkFlush (and timer), or by the Journal directly before moving to a new file
     * */
    public synchronized void flush()
    {
@@ -357,7 +375,7 @@ public class TimedBuffer
 
    private class CheckTimer implements Runnable
    {
-      private volatile boolean closed = false;
+      private volatile boolean stopped = false;
 
       private boolean spinning = false;
 
@@ -404,7 +422,7 @@ public class TimedBuffer
 
       public void run()
       {
-         while (!closed)
+         while (!stopped)
          {
             // We flush on the timer if there are pending syncs there and we've waited waited at least one
             // timeout since the time of the last flush
@@ -412,17 +430,11 @@ public class TimedBuffer
 
             if (System.nanoTime() > lastFlushTime.get() + timeout)
             {
-               // delayFlush and pendingSync are changed inside synchronized blocks
-               // They need to be done atomically
-               synchronized (TimedBuffer.this)
+               if (checkFlush())
                {
-                  if (!delayFlush && pendingSync && bufferObserver != null)
+                  if (!stopped)
                   {
-                     flush();
-                  }
-                  else if (!closed && !delayFlush)
-                  {
-                     // if delayFlush is set, it means we have to keep trying, we can't stop spinning on this case
+                     // can't pause spin if stopped, or we would hang the thread
                      pauseSpin();
                   }
                }
@@ -442,9 +454,9 @@ public class TimedBuffer
          }
       }
 
-      public void close()
+      public void stop()
       {
-         closed = true;
+         stopped = true;
          resumeSpin();
       }
    }
