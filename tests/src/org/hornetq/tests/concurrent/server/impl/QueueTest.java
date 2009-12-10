@@ -21,6 +21,7 @@ import org.hornetq.core.server.HandleStatus;
 import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.ServerMessage;
+import org.hornetq.core.server.impl.QueueImpl;
 import org.hornetq.tests.unit.core.server.impl.fakes.FakeConsumer;
 import org.hornetq.tests.unit.core.server.impl.fakes.FakeQueueFactory;
 import org.hornetq.tests.util.UnitTestCase;
@@ -60,7 +61,7 @@ public class QueueTest extends UnitTestCase
     */
    public void testConcurrentAddsDeliver() throws Exception
    {
-      Queue queue = queueFactory.createQueue(1,
+      QueueImpl queue = (QueueImpl)queueFactory.createQueue(1,
                                              new SimpleString("address1"),
                                              new SimpleString("queue1"),
                                              null,
@@ -162,7 +163,7 @@ public class QueueTest extends UnitTestCase
    {
       private volatile Exception e;
 
-      private final Queue queue;
+      private final QueueImpl queue;
 
       private final FakeConsumer consumer;
 
@@ -182,7 +183,7 @@ public class QueueTest extends UnitTestCase
          return e;
       }
 
-      Toggler(final Queue queue, final FakeConsumer consumer, final long testTime)
+      Toggler(final QueueImpl queue, final FakeConsumer consumer, final long testTime)
       {
          this.testTime = testTime;
 

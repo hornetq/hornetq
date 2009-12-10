@@ -337,20 +337,19 @@ public class ServerConsumerImpl implements ServerConsumer
     * When the consumer receives such a "forced delivery" message, it discards it
     * and knows that there are no other messages to be delivered.
     */
-
-   // TODO - why is this executed on a different thread?
    public synchronized void forceDelivery(final long sequence)
    {      
+      promptDelivery();
+      
       executor.execute(new Runnable()
       {
          public void run()
          {
             try
             {
-               // The prompt delivery is called synchronously to ensure the "forced delivery" message is
-               // sent after any queue delivery.
-               promptDelivery(false);
-
+               // We execute this on the same executor to make sure the force delivery message is written after
+               // any delivery is completed
+               
                ServerMessage forcedDeliveryMessage = new ServerMessageImpl(storageManager.generateUniqueID(), 50);
 
                forcedDeliveryMessage.putLongProperty(ClientConsumerImpl.FORCED_DELIVERY_MESSAGE, sequence);
@@ -413,7 +412,7 @@ public class ServerConsumerImpl implements ServerConsumer
       // Outside the lock
       if (started)
       {
-         promptDelivery(true);
+         promptDelivery();
       }
    }
 
@@ -465,7 +464,7 @@ public class ServerConsumerImpl implements ServerConsumer
 
       if (!transferring)
       {
-         promptDelivery(true);
+         promptDelivery();
       }
    }
 
@@ -491,7 +490,7 @@ public class ServerConsumerImpl implements ServerConsumer
 
          if (previous <= 0 && previous + credits > 0)
          {
-            promptDelivery(true);
+            promptDelivery();
          }
       }
    }
@@ -580,7 +579,7 @@ public class ServerConsumerImpl implements ServerConsumer
 
    // Private --------------------------------------------------------------------------------------
 
-   private void promptDelivery(final boolean asyncDelivery)
+   private void promptDelivery()
    {
       lock.lock();
       try
@@ -595,18 +594,11 @@ public class ServerConsumerImpl implements ServerConsumer
          {
             if (browseOnly)
             {
-               if (asyncDelivery)
-               {
-                  executor.execute(browserDeliverer);
-               }
-               else
-               {
-                  browserDeliverer.run();
-               }
+               executor.execute(browserDeliverer);
             }
             else
             {
-               session.promptDelivery(messageQueue, asyncDelivery);
+               session.promptDelivery(messageQueue);
             }
          }
       }
@@ -668,7 +660,7 @@ public class ServerConsumerImpl implements ServerConsumer
                else
                {
                   // prompt Delivery only if chunk was finished
-                  session.promptDelivery(messageQueue, true);
+                  session.promptDelivery(messageQueue);
                }
             }
          }

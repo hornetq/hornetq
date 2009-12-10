@@ -120,8 +120,6 @@ public interface Queue extends Bindable
 
    boolean hasMatchingConsumer(ServerMessage message);
 
-   void deliverNow();
-
    Collection<Consumer> getConsumers();
 
    boolean checkDLQ(MessageReference ref) throws Exception;

@@ -76,7 +76,7 @@ public class QueueImplTest extends UnitTestCase
 
    public void testScheduledNoConsumer() throws Exception
    {
-      Queue queue = new QueueImpl(1,
+      QueueImpl queue = new QueueImpl(1,
                                   new SimpleString("address1"),
                                   new SimpleString("queue1"),
                                   null,
@@ -150,7 +150,7 @@ public class QueueImplTest extends UnitTestCase
 
    private void testScheduled(final boolean direct) throws Exception
    {
-      Queue queue = new QueueImpl(1,
+      QueueImpl queue = new QueueImpl(1,
                                   new SimpleString("address1"),
                                   new SimpleString("queue1"),
                                   null,
@@ -265,7 +265,7 @@ public class QueueImplTest extends UnitTestCase
             return HandleStatus.HANDLED;
          }
       };
-      Queue queue = new QueueImpl(1,
+      QueueImpl queue = new QueueImpl(1,
                                   new SimpleString("address1"),
                                   QueueImplTest.queue1,
                                   null,

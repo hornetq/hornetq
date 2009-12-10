@@ -114,30 +114,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
    private static final Logger log = Logger.getLogger(ServerSessionImpl.class);
 
    // Static -------------------------------------------------------------------------------
-
-   // TODO not actually used currently
-   // private static int offset;
-   //
-   // static
-   // {
-   // try
-   // {
-   // ServerMessage msg = new ServerMessageImpl(1, ChannelBuffers.EMPTY_BUFFER);
-   //
-   // msg.setDestination(new SimpleString("foobar"));
-   //   
-   // int es = msg.getEncodeSize();
-   //   
-   // int me = msg.getMemoryEstimate();
-   //   
-   // offset = MessageReferenceImpl.getMemoryEstimate() + me - es;
-   // }
-   // catch (Exception e)
-   // {
-   // log.error("Failed to initialise mult and offset", e);
-   // }
-   // }
-
+  
    // Attributes ----------------------------------------------------------------------------
 
    private final long id;
@@ -361,16 +338,9 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       }
    }
 
-   public void promptDelivery(final Queue queue, final boolean async)
+   public void promptDelivery(final Queue queue)
    {
-      if (async)
-      {
-         queue.deliverAsync(executor);
-      }
-      else
-      {
-         queue.deliverNow();
-      }
+      queue.deliverAsync(executor);
    }
 
    public void handleCreateConsumer(final SessionCreateConsumerMessage packet)

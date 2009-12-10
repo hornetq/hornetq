@@ -69,7 +69,7 @@ public class QueueImplTest extends UnitTestCase
    {
       final SimpleString name = new SimpleString("oobblle");
 
-      Queue queue = new QueueImpl(1,
+      QueueImpl queue = new QueueImpl(1,
                                   QueueImplTest.address1,
                                   name,
                                   null,
@@ -85,7 +85,7 @@ public class QueueImplTest extends UnitTestCase
 
    public void testDurable()
    {
-      Queue queue = new QueueImpl(1,
+      QueueImpl queue = new QueueImpl(1,
                                   QueueImplTest.address1,
                                   QueueImplTest.queue1,
                                   null,
@@ -120,7 +120,7 @@ public class QueueImplTest extends UnitTestCase
 
       Consumer cons3 = new FakeConsumer();
 
-      Queue queue = new QueueImpl(1,
+      QueueImpl queue = new QueueImpl(1,
                                   QueueImplTest.address1,
                                   QueueImplTest.queue1,
                                   null,
@@ -170,7 +170,7 @@ public class QueueImplTest extends UnitTestCase
 
    public void testGetFilter()
    {
-      Queue queue = new QueueImpl(1,
+      QueueImpl queue = new QueueImpl(1,
                                   QueueImplTest.address1,
                                   QueueImplTest.queue1,
                                   null,
@@ -213,7 +213,7 @@ public class QueueImplTest extends UnitTestCase
 
    public void testSimpleadd()
    {
-      Queue queue = new QueueImpl(1,
+      QueueImpl queue = new QueueImpl(1,
                                   QueueImplTest.address1,
                                   QueueImplTest.queue1,
                                   null,
@@ -241,7 +241,7 @@ public class QueueImplTest extends UnitTestCase
 
    public void testSimpleDirectDelivery() throws Exception
    {
-      Queue queue = new QueueImpl(1,
+      QueueImpl queue = new QueueImpl(1,
                                   QueueImplTest.address1,
                                   QueueImplTest.queue1,
                                   null,
@@ -278,7 +278,7 @@ public class QueueImplTest extends UnitTestCase
 
    public void testSimpleNonDirectDelivery() throws Exception
    {
-      Queue queue = new QueueImpl(1,
+      QueueImpl queue = new QueueImpl(1,
                                   QueueImplTest.address1,
                                   QueueImplTest.queue1,
                                   null,
@@ -325,7 +325,7 @@ public class QueueImplTest extends UnitTestCase
 
    public void testBusyConsumer() throws Exception
    {
-      Queue queue = new QueueImpl(1,
+      QueueImpl queue = new QueueImpl(1,
                                   QueueImplTest.address1,
                                   QueueImplTest.queue1,
                                   null,
@@ -378,7 +378,7 @@ public class QueueImplTest extends UnitTestCase
 
    public void testBusyConsumerThenAddMoreMessages() throws Exception
    {
-      Queue queue = new QueueImpl(1,
+      QueueImpl queue = new QueueImpl(1,
                                   QueueImplTest.address1,
                                   QueueImplTest.queue1,
                                   null,
@@ -454,7 +454,7 @@ public class QueueImplTest extends UnitTestCase
 
    public void testAddFirstadd() throws Exception
    {
-      Queue queue = new QueueImpl(1,
+      QueueImpl queue = new QueueImpl(1,
                                   QueueImplTest.address1,
                                   QueueImplTest.queue1,
                                   null,
@@ -517,7 +517,7 @@ public class QueueImplTest extends UnitTestCase
 
    public void testChangeConsumersAndDeliver() throws Exception
    {
-      Queue queue = new QueueImpl(1,
+      QueueImpl queue = new QueueImpl(1,
                                   QueueImplTest.address1,
                                   QueueImplTest.queue1,
                                   null,
@@ -680,7 +680,7 @@ public class QueueImplTest extends UnitTestCase
 
    public void testConsumerReturningNull() throws Exception
    {
-      Queue queue = new QueueImpl(1,
+      QueueImpl queue = new QueueImpl(1,
                                   QueueImplTest.address1,
                                   QueueImplTest.queue1,
                                   null,
@@ -722,7 +722,7 @@ public class QueueImplTest extends UnitTestCase
 
    public void testRoundRobinWithQueueing() throws Exception
    {
-      Queue queue = new QueueImpl(1,
+      QueueImpl queue = new QueueImpl(1,
                                   QueueImplTest.address1,
                                   QueueImplTest.queue1,
                                   null,
@@ -774,7 +774,7 @@ public class QueueImplTest extends UnitTestCase
 
    public void testRoundRobinDirect() throws Exception
    {
-      Queue queue = new QueueImpl(1,
+      QueueImpl queue = new QueueImpl(1,
                                   QueueImplTest.address1,
                                   QueueImplTest.queue1,
                                   null,
@@ -824,7 +824,7 @@ public class QueueImplTest extends UnitTestCase
 
    public void testWithPriorities() throws Exception
    {
-      Queue queue = new QueueImpl(1,
+      QueueImpl queue = new QueueImpl(1,
                                   QueueImplTest.address1,
                                   QueueImplTest.queue1,
                                   null,
@@ -900,7 +900,7 @@ public class QueueImplTest extends UnitTestCase
 
    public void testConsumerWithFilterAddAndRemove()
    {
-      Queue queue = new QueueImpl(1,
+      QueueImpl queue = new QueueImpl(1,
                                   QueueImplTest.address1,
                                   QueueImplTest.queue1,
                                   null,
@@ -918,7 +918,7 @@ public class QueueImplTest extends UnitTestCase
 
    public void testList()
    {
-      Queue queue = new QueueImpl(1,
+      QueueImpl queue = new QueueImpl(1,
                                   QueueImplTest.address1,
                                   QueueImplTest.queue1,
                                   null,
@@ -951,7 +951,7 @@ public class QueueImplTest extends UnitTestCase
 
    public void testListWithFilter()
    {
-      Queue queue = new QueueImpl(1,
+      QueueImpl queue = new QueueImpl(1,
                                   QueueImplTest.address1,
                                   QueueImplTest.queue1,
                                   null,
@@ -996,7 +996,7 @@ public class QueueImplTest extends UnitTestCase
 
    public void testConsumeWithFiltersAddAndRemoveConsumer() throws Exception
    {
-      Queue queue = new QueueImpl(1,
+      QueueImpl queue = new QueueImpl(1,
                                   QueueImplTest.address1,
                                   QueueImplTest.queue1,
                                   null,
@@ -1074,7 +1074,7 @@ public class QueueImplTest extends UnitTestCase
 
    public void testBusyConsumerWithFilterFirstCallBusy() throws Exception
    {
-      Queue queue = new QueueImpl(1,
+      QueueImpl queue = new QueueImpl(1,
                                   QueueImplTest.address1,
                                   QueueImplTest.queue1,
                                   null,
@@ -1124,7 +1124,7 @@ public class QueueImplTest extends UnitTestCase
 
    public void testBusyConsumerWithFilterThenAddMoreMessages() throws Exception
    {
-      Queue queue = new QueueImpl(1,
+      QueueImpl queue = new QueueImpl(1,
                                   QueueImplTest.address1,
                                   QueueImplTest.queue1,
                                   null,
@@ -1207,7 +1207,7 @@ public class QueueImplTest extends UnitTestCase
 
    public void testConsumerWithFilterThenAddMoreMessages() throws Exception
    {
-      Queue queue = new QueueImpl(1,
+      QueueImpl queue = new QueueImpl(1,
                                   QueueImplTest.address1,
                                   QueueImplTest.queue1,
                                   null,
@@ -1280,7 +1280,7 @@ public class QueueImplTest extends UnitTestCase
 
    private void testConsumerWithFilters(final boolean direct) throws Exception
    {
-      Queue queue = new QueueImpl(1,
+      QueueImpl queue = new QueueImpl(1,
                                   QueueImplTest.address1,
                                   QueueImplTest.queue1,
                                   null,
@@ -1378,7 +1378,7 @@ public class QueueImplTest extends UnitTestCase
    public void testMessageOrder() throws Exception
    {
       FakeConsumer consumer = new FakeConsumer();
-      Queue queue = new QueueImpl(1,
+      QueueImpl queue = new QueueImpl(1,
                                   QueueImplTest.address1,
                                   QueueImplTest.queue1,
                                   null,
@@ -1407,7 +1407,7 @@ public class QueueImplTest extends UnitTestCase
 
    public void testMessagesAdded() throws Exception
    {
-      Queue queue = new QueueImpl(1,
+      QueueImpl queue = new QueueImpl(1,
                                   QueueImplTest.address1,
                                   QueueImplTest.queue1,
                                   null,
@@ -1428,7 +1428,7 @@ public class QueueImplTest extends UnitTestCase
 
    public void testGetReference() throws Exception
    {
-      Queue queue = new QueueImpl(1,
+      QueueImpl queue = new QueueImpl(1,
                                   QueueImplTest.address1,
                                   QueueImplTest.queue1,
                                   null,
@@ -1450,7 +1450,7 @@ public class QueueImplTest extends UnitTestCase
 
    public void testGetNonExistentReference() throws Exception
    {
-      Queue queue = new QueueImpl(1,
+      QueueImpl queue = new QueueImpl(1,
                                   QueueImplTest.address1,
                                   QueueImplTest.queue1,
                                   null,
@@ -1476,7 +1476,7 @@ public class QueueImplTest extends UnitTestCase
     */
    public void testPauseAndResumeWithAsync() throws Exception
    {
-      Queue queue = new QueueImpl(1,
+      QueueImpl queue = new QueueImpl(1,
                                   QueueImplTest.address1,
                                   QueueImplTest.queue1,
                                   null,
@@ -1540,7 +1540,7 @@ public class QueueImplTest extends UnitTestCase
 
    public void testPauseAndResumeWithDirect() throws Exception
    {
-      Queue queue = new QueueImpl(1,
+      QueueImpl queue = new QueueImpl(1,
                                   QueueImplTest.address1,
                                   QueueImplTest.queue1,
                                   null,
@@ -1588,7 +1588,7 @@ public class QueueImplTest extends UnitTestCase
 
    class AddtoQueueRunner implements Runnable
    {
-      Queue queue;
+      QueueImpl queue;
 
       MessageReference messageReference;
 
@@ -1599,7 +1599,7 @@ public class QueueImplTest extends UnitTestCase
       boolean first;
 
       public AddtoQueueRunner(final boolean first,
-                              final Queue queue,
+                              final QueueImpl queue,
                               final MessageReference messageReference,
                               final CountDownLatch countDownLatch)
       {

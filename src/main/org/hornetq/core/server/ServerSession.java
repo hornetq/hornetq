@@ -68,7 +68,7 @@ public interface ServerSession
 
    void close() throws Exception;
 
-   void promptDelivery(Queue queue, boolean async);
+   void promptDelivery(Queue queue);
 
    void handleAcknowledge(final SessionAcknowledgeMessage packet);
 
