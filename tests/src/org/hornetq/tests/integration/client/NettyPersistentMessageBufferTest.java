@@ -16,7 +16,7 @@ package org.hornetq.tests.integration.client;
 /**
  * A NettyPersistentMessageBufferTest
  *
- * @author tim
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  *
  */

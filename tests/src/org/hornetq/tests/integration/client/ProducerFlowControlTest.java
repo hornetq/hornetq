@@ -39,7 +39,7 @@ import org.hornetq.utils.SimpleString;
  * 
  * A ProducerFlowControlTest
  *
- * @author tim fox
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a> fox
  *
  */
 public class ProducerFlowControlTest extends ServiceTestBase

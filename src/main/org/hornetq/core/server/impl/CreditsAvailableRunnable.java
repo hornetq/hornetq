@@ -16,7 +16,7 @@ package org.hornetq.core.server.impl;
 /**
  * A CreditsAvailableRunnable
  *
- * @author tim
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  *
  */

@@ -340,15 +340,15 @@ public class ServerConsumerImpl implements ServerConsumer
 
    // TODO - why is this executed on a different thread?
    public synchronized void forceDelivery(final long sequence)
-   {
-      // The prompt delivery is called synchronously to ensure the "forced delivery" message is
-      // sent after any queue delivery.
+   {      
       executor.execute(new Runnable()
       {
          public void run()
          {
             try
             {
+               // The prompt delivery is called synchronously to ensure the "forced delivery" message is
+               // sent after any queue delivery.
                promptDelivery(false);
 
                ServerMessage forcedDeliveryMessage = new ServerMessageImpl(storageManager.generateUniqueID(), 50);

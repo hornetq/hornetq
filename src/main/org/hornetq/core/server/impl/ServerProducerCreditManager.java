@@ -18,7 +18,7 @@ import org.hornetq.core.paging.PagingStore;
 /**
  * A ServerProducerCreditManager
  *
- * @author tim
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  *
  */

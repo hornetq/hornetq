@@ -37,7 +37,7 @@ import org.hornetq.utils.SimpleString;
  * 
  * A InterceptorTest
  *
- * @author tim fox
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a> fox
  *
  *
  */

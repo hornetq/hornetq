@@ -32,7 +32,7 @@ import org.hornetq.core.logging.Logger;
  * This class just provides some diagnostics on how fast your disk can sync
  * Useful when determining performance issues
  *
- * @author tim fox
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a> fox
  *
  *
  */
