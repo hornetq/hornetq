@@ -15,6 +15,7 @@ package org.hornetq.core.remoting.impl.wireformat;
 
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.Message;
+import org.hornetq.core.message.impl.MessageInternal;
 
 /**
  * A MessagePacket
@@ -27,9 +28,9 @@ public abstract class MessagePacket extends PacketImpl
 {
    private static final Logger log = Logger.getLogger(MessagePacket.class);
 
-   protected Message message;
+   protected MessageInternal message;
 
-   public MessagePacket(final byte type, final Message message)
+   public MessagePacket(final byte type, final MessageInternal message)
    {
       super(type);
 

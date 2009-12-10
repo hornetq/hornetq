@@ -16,6 +16,7 @@ package org.hornetq.core.remoting.impl.wireformat;
 import org.hornetq.core.buffers.HornetQBuffer;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.Message;
+import org.hornetq.core.message.impl.MessageInternal;
 import org.hornetq.core.remoting.RemotingConnection;
 import org.hornetq.core.server.impl.ServerMessageImpl;
 import org.hornetq.utils.DataConstants;
@@ -39,7 +40,7 @@ public class SessionSendMessage extends MessagePacket
 
    // Constructors --------------------------------------------------
 
-   public SessionSendMessage(final Message message, final boolean requiresResponse)
+   public SessionSendMessage(final MessageInternal message, final boolean requiresResponse)
    {
       super(PacketImpl.SESS_SEND, message);
 

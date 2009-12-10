@@ -14,7 +14,7 @@
 package org.hornetq.core.server;
 
 import org.hornetq.core.journal.EncodingSupport;
-import org.hornetq.core.message.Message;
+import org.hornetq.core.message.impl.MessageInternal;
 import org.hornetq.core.paging.PagingStore;
 
 /**
@@ -25,7 +25,7 @@ import org.hornetq.core.paging.PagingStore;
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
  */
-public interface ServerMessage extends Message, EncodingSupport
+public interface ServerMessage extends MessageInternal, EncodingSupport
 {
    void setMessageID(long id);
 

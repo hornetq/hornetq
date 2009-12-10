@@ -64,9 +64,8 @@ public interface ClientMessage extends Message
    /** 
     * Sets the OutputStream that will receive the content of a message received in a non blocking way.
     * 
-    * This method is used for large message and is not meant to be called directly by HornetQ clients.
+    * This method is used when consuming large messages
     * 
-    * @deprecated 
     * @throws HornetQException
     */
    void setOutputStream(OutputStream out) throws HornetQException;
@@ -75,9 +74,8 @@ public interface ClientMessage extends Message
     * Saves the content of the message to the OutputStream.
     * It will block until the entire content is transfered to the OutputStream.
     *  
-    * This method is used for large message and is not meant to be called directly by HornetQ clients.
+    * This method is used for when consuming large messages
     * 
-    * @deprecated 
     * @throws HornetQException
     */
    void saveToOutputStream(OutputStream out) throws HornetQException;
@@ -85,22 +83,20 @@ public interface ClientMessage extends Message
    /**
     * Wait the outputStream completion of the message.
     *
-    * This method is used for large message and is not meant to be called directly by HornetQ clients.
+    * This method is used when consuming large messages
     * 
     * @param timeMilliseconds - 0 means wait forever
     * @return true if it reached the end
     * @throws HornetQException
-
-    * @deprecated 
+ 
     */
    boolean waitOutputStreamCompletion(long timeMilliseconds) throws HornetQException;
 
    /** 
     * Sets the body's IntputStream.
     * 
-    * This method is used for large message and is not meant to be called directly by HornetQ clients.
+    * This method is used when sending large messages
     * 
-    * @deprecated 
     * @throws HornetQException
     */
    void setBodyInputStream(InputStream bodyInputStream);

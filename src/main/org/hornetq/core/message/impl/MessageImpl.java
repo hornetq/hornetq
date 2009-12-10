@@ -25,7 +25,6 @@ import org.hornetq.core.client.LargeMessageBuffer;
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.BodyEncoder;
-import org.hornetq.core.message.Message;
 import org.hornetq.core.message.PropertyConversionException;
 import org.hornetq.core.remoting.impl.wireformat.PacketImpl;
 import org.hornetq.utils.DataConstants;
@@ -46,7 +45,7 @@ import org.hornetq.utils.TypedProperties;
  *
  * $Id: MessageSupport.java 2740 2007-05-30 11:36:28Z timfox $
  */
-public abstract class MessageImpl implements Message
+public abstract class MessageImpl implements MessageInternal
 {
    // Constants -----------------------------------------------------
 

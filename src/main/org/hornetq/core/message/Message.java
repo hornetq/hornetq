@@ -18,7 +18,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.hornetq.core.buffers.HornetQBuffer;
-import org.hornetq.core.exception.HornetQException;
 import org.hornetq.utils.SimpleString;
 import org.hornetq.utils.TypedProperties;
 
@@ -53,7 +52,6 @@ import org.hornetq.utils.TypedProperties;
  * If conversion is not allowed (for example calling {@code getFloatProperty} on a property set a {@code boolean}),
  * a PropertyConversionException will be thrown.
  *
- * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:clebert.suconic@jboss.com">ClebertSuconic</a>
  * @version <tt>$Revision: 3341 $</tt>
@@ -76,8 +74,6 @@ public interface Message
 
    /**
     * Sets the address to send this message to.
-    * 
-    * This method must not be called directly by HornetQ clients.
     * 
     * @param address address to send the message to
     */
@@ -168,43 +164,6 @@ public interface Message
     * Returns the message body as a HornetQBuffer
     */
    HornetQBuffer getBodyBuffer();
-
-   // Should the following methods really be on the public API?
-
-   /**
-    * This method must not be called directly by HornetQ clients.
-    */
-   void decodeFromBuffer(HornetQBuffer buffer);
-
-   /**
-    * This method must not be called directly by HornetQ clients.
-    */
-   int getEndOfMessagePosition();
-
-   /**
-    * This method must not be called directly by HornetQ clients.
-    */
-   int getEndOfBodyPosition();
-
-   /**
-    * This method must not be called directly by HornetQ clients.
-    */
-   void checkCopy();
-
-   /**
-    * This method must not be called directly by HornetQ clients.
-    */
-   void bodyChanged();
-
-   /**
-    * This method must not be called directly by HornetQ clients.
-    */
-   void resetCopied();
-
-   /**
-    * This method must not be called directly by HornetQ clients.
-    */
-   HornetQBuffer getEncodedBuffer();
 
    // Properties
    // ------------------------------------------------------------------
@@ -523,39 +482,8 @@ public interface Message
     */
    Set<SimpleString> getPropertyNames();
 
-   Map<String, Object> toMap();
-
-   // FIXME - All this stuff is only necessary here for large messages - it should be refactored to be put in a better
-   // place
-
    /**
-    * This method must not be called directly by HornetQ clients.
+    * @return Returns the message in Map form, useful when encoding to JSON
     */
-   int getHeadersAndPropertiesEncodeSize();
-
-   /**
-    * This method must not be called directly by HornetQ clients.
-    */
-   HornetQBuffer getWholeBuffer();
-
-   /**
-    * This method must not be called directly by HornetQ clients.
-    */
-   void encodeHeadersAndProperties(HornetQBuffer buffer);
-
-   /**
-    * This method must not be called directly by HornetQ clients.
-    */
-   void decodeHeadersAndProperties(HornetQBuffer buffer);
-
-   /**
-    * This method must not be called directly by HornetQ clients.
-    */
-   BodyEncoder getBodyEncoder() throws HornetQException;
-
-   /**
-    * This method must not be called directly by HornetQ clients.
-    */
-   InputStream getBodyInputStream();
-
+   Map<String, Object> toMap();  
 }

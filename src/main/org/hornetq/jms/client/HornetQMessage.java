@@ -700,11 +700,7 @@ public class HornetQMessage implements javax.jms.Message
 
    public Object getObjectProperty(final String name) throws JMSException
    {
-      if (HornetQMessage.JMS_HORNETQ_INPUT_STREAM.equals(name))
-      {
-         return message.getBodyInputStream();
-      }
-      else if (HornetQMessage.JMSXDELIVERYCOUNT.equals(name))
+      if (HornetQMessage.JMSXDELIVERYCOUNT.equals(name))
       {
          return String.valueOf(message.getDeliveryCount());
       }

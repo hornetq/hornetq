@@ -16,7 +16,7 @@ package org.hornetq.core.remoting.impl.wireformat;
 import org.hornetq.core.buffers.HornetQBuffer;
 import org.hornetq.core.client.impl.ClientMessageImpl;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.message.Message;
+import org.hornetq.core.message.impl.MessageInternal;
 import org.hornetq.core.remoting.RemotingConnection;
 import org.hornetq.utils.DataConstants;
 
@@ -36,7 +36,7 @@ public class SessionReceiveMessage extends MessagePacket
 
    private int deliveryCount;
 
-   public SessionReceiveMessage(final long consumerID, final Message message, final int deliveryCount)
+   public SessionReceiveMessage(final long consumerID, final MessageInternal message, final int deliveryCount)
    {
       super(PacketImpl.SESS_RECEIVE_MSG, message);
 

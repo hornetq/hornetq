@@ -15,6 +15,7 @@ package org.hornetq.core.client.impl;
 
 import org.hornetq.core.buffers.HornetQBuffer;
 import org.hornetq.core.client.ClientMessage;
+import org.hornetq.core.message.impl.MessageInternal;
 
 /**
  * A ClientMessageInternal
@@ -25,7 +26,7 @@ import org.hornetq.core.client.ClientMessage;
  *
  *
  */
-public interface ClientMessageInternal extends ClientMessage
+public interface ClientMessageInternal extends ClientMessage, MessageInternal
 {
    /** Size used for FlowControl */
    int getFlowControlSize();

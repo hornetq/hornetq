@@ -23,6 +23,7 @@ import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.BodyEncoder;
 import org.hornetq.core.message.Message;
 import org.hornetq.core.message.impl.MessageImpl;
+import org.hornetq.core.message.impl.MessageInternal;
 import org.hornetq.core.remoting.Channel;
 import org.hornetq.core.remoting.impl.wireformat.SessionSendContinuationMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionSendLargeMessage;
@@ -201,18 +202,20 @@ public class ClientProducerImpl implements ClientProducerInternal
 
    private void doSend(final SimpleString address, final Message msg) throws HornetQException
    {
+      MessageInternal msgI = (MessageInternal)msg;
+      
       ClientProducerCredits theCredits;
 
       if (address != null)
       {
-         msg.setAddress(address);
+         msgI.setAddress(address);
 
          // Anonymous
          theCredits = session.getCredits(address);
       }
       else
       {
-         msg.setAddress(this.address);
+         msgI.setAddress(this.address);
 
          theCredits = credits;
       }
@@ -226,16 +229,16 @@ public class ClientProducerImpl implements ClientProducerInternal
 
       if (groupID != null)
       {
-         msg.putStringProperty(MessageImpl.HDR_GROUP_ID, groupID);
+         msgI.putStringProperty(MessageImpl.HDR_GROUP_ID, groupID);
       }
 
-      boolean sendBlocking = msg.isDurable() ? blockOnDurableSend : blockOnNonDurableSend;
+      boolean sendBlocking = msgI.isDurable() ? blockOnDurableSend : blockOnNonDurableSend;
 
       session.workDone();
 
       boolean isLarge;
 
-      if (msg.getBodyInputStream() != null || msg.isLargeMessage())
+      if (msgI.getBodyInputStream() != null || msgI.isLargeMessage())
       {
          isLarge = true;
       }
@@ -246,19 +249,19 @@ public class ClientProducerImpl implements ClientProducerInternal
 
       if (isLarge)
       {
-         largeMessageSend(sendBlocking, msg, theCredits);
+         largeMessageSend(sendBlocking, msgI, theCredits);
       }
       else
       {
-         SessionSendMessage message = new SessionSendMessage(msg, sendBlocking);
+         SessionSendMessage packet = new SessionSendMessage(msgI, sendBlocking);
 
          if (sendBlocking)
          {
-            channel.sendBlocking(message);
+            channel.sendBlocking(packet);
          }
          else
          {
-            channel.send(message);
+            channel.send(packet);
          }
       }
 
@@ -272,7 +275,7 @@ public class ClientProducerImpl implements ClientProducerInternal
 
          if (!isLarge)
          {
-            theCredits.acquireCredits(msg.getEncodeSize());
+            theCredits.acquireCredits(msgI.getEncodeSize());
          }
       }
       catch (InterruptedException e)
@@ -291,12 +294,12 @@ public class ClientProducerImpl implements ClientProducerInternal
    // Methods to send Large Messages----------------------------------------------------------------
 
    /**
-    * @param msg
+    * @param msgI
     * @throws HornetQException
     */
-   private void largeMessageSend(final boolean sendBlocking, final Message msg, final ClientProducerCredits credits) throws HornetQException
+   private void largeMessageSend(final boolean sendBlocking, final MessageInternal msgI, final ClientProducerCredits credits) throws HornetQException
    {
-      int headerSize = msg.getHeadersAndPropertiesEncodeSize();
+      int headerSize = msgI.getHeadersAndPropertiesEncodeSize();
 
       if (headerSize >= minLargeMessageSize)
       {
@@ -305,14 +308,14 @@ public class ClientProducerImpl implements ClientProducerInternal
       }
 
       // msg.getBody() could be Null on LargeServerMessage
-      if (msg.getBodyInputStream() == null && msg.getWholeBuffer() != null)
+      if (msgI.getBodyInputStream() == null && msgI.getWholeBuffer() != null)
       {
-         msg.getWholeBuffer().readerIndex(0);
+         msgI.getWholeBuffer().readerIndex(0);
       }
 
       HornetQBuffer headerBuffer = HornetQBuffers.fixedBuffer(headerSize);
 
-      msg.encodeHeadersAndProperties(headerBuffer);
+      msgI.encodeHeadersAndProperties(headerBuffer);
 
       SessionSendLargeMessage initialChunk = new SessionSendLargeMessage(headerBuffer.toByteBuffer().array());
 
@@ -320,13 +323,13 @@ public class ClientProducerImpl implements ClientProducerInternal
 
       try
       {
-         credits.acquireCredits(msg.getHeadersAndPropertiesEncodeSize());
+         credits.acquireCredits(msgI.getHeadersAndPropertiesEncodeSize());
       }
       catch (InterruptedException e)
       {
       }
 
-      InputStream input = msg.getBodyInputStream();
+      InputStream input = msgI.getBodyInputStream();
 
       if (input != null)
       {
@@ -334,20 +337,20 @@ public class ClientProducerImpl implements ClientProducerInternal
       }
       else
       {
-         largeMessageSendBuffered(sendBlocking, msg, credits);
+         largeMessageSendBuffered(sendBlocking, msgI, credits);
       }
    }
 
    /**
     * @param sendBlocking
-    * @param msg
+    * @param msgI
     * @throws HornetQException
     */
    private void largeMessageSendBuffered(final boolean sendBlocking,
-                                         final Message msg,
+                                         final MessageInternal msgI,
                                          final ClientProducerCredits credits) throws HornetQException
    {
-      BodyEncoder context = msg.getBodyEncoder();
+      BodyEncoder context = msgI.getBodyEncoder();
 
       final long bodySize = context.getLargeBodySize();
 
