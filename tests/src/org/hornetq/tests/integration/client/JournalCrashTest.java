@@ -181,7 +181,7 @@ public class JournalCrashTest extends ServiceTestBase
          for (int i = start; i < end; i++)
          {
             ClientMessage msg = session.createMessage(true);
-            msg.getProperties().putIntProperty(new SimpleString("key"), i);
+            msg.putIntProperty(new SimpleString("key"), i);
             msg.getBodyBuffer().writeUTF("message " + i);
             prod.send(msg);
          }

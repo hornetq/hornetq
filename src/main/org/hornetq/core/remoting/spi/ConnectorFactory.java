@@ -19,14 +19,25 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 
 /**
- * 
- * A ConnectorFactory
- * 
- * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * A ConnectorFactory is used by the client for creating connectors.
+ * <p/>
+ * A Connector is used to connect to an {@link org.hornetq.core.remoting.spi.Acceptor}.
  *
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  */
 public interface ConnectorFactory
 {
+   /**
+    * creates a new instanc of a connector.
+    *
+    * @param configuration       the configuration
+    * @param handler             the handler
+    * @param listener            the listener
+    * @param closeExecutor       the close executor
+    * @param threadPool          the threadpool
+    * @param scheduledThreadPool the scheduled thread pool
+    * @return a new connector
+    */
    Connector createConnector(Map<String, Object> configuration,
                              BufferHandler handler,
                              ConnectionLifeCycleListener listener,
@@ -34,5 +45,12 @@ public interface ConnectorFactory
                              Executor threadPool,
                              ScheduledExecutorService scheduledThreadPool);
 
+   /**
+    * Returns the allowable properties for this connector.
+    * <p/>
+    * This will differ between different connector implementations.
+    *
+    * @return the allowable properties.
+    */
    Set<String> getAllowableProperties();
 }

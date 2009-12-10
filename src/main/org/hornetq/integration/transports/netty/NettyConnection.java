@@ -145,11 +145,6 @@ public class NettyConnection implements Connection
       return channel.getRemoteAddress().toString();
    }
 
-   public void fail(final HornetQException me)
-   {
-      listener.connectionException(channel.getId(), me);
-   }
-
    // Public --------------------------------------------------------
 
    @Override

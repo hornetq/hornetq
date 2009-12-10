@@ -151,9 +151,4 @@ public class InVMConnection implements Connection
       return "invm:" + serverID;
    }
 
-   public void fail(final HornetQException me)
-   {
-      listener.connectionException(id, me);
-   }
-
 }

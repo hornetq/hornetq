@@ -17,25 +17,52 @@ import org.hornetq.core.buffers.HornetQBuffer;
 import org.hornetq.core.exception.HornetQException;
 
 /**
+ * The connection used by a channel to write data to.
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
  * @version <tt>$Revision$</tt>
- *
  */
 public interface Connection
 {
+   /**
+    * Create a new HornetQBuffer of the given size.
+    *
+    * @param size the size of buffer to create
+    * @return the new buffer.
+    */
    HornetQBuffer createBuffer(int size);
 
+   /**
+    * returns the unique id of this wire.
+    *
+    * @return the id
+    */
    Object getID();
 
+   /**
+    * writes the buffer to the wire.
+    *
+    * @param buffer the buffer to write
+    */
    void write(HornetQBuffer buffer);
 
+   /**
+    * writes the buffer to the connection and if flush is true returns only when the buffer has been physically written to the connection.
+    *
+    * @param buffer the buffer to write
+    * @param flush  whether to flush the buffers onto the wire
+    */
    void write(HornetQBuffer buffer, boolean flush);
 
+   /**
+    * closes this connection.
+    */
    void close();
 
+   /**
+    * returns a string representation of the remote address this connection is connected to.
+    *
+    * @return the remote address
+    */
    String getRemoteAddress();
-
-   void fail(HornetQException me);
 }

@@ -792,11 +792,6 @@ public abstract class MessageImpl implements MessageInternal
       return properties.getPropertyNames();
    }
 
-   public TypedProperties getProperties()
-   {
-      return properties;
-   }
-
    public HornetQBuffer getWholeBuffer()
    {
       return buffer;
@@ -815,6 +810,12 @@ public abstract class MessageImpl implements MessageInternal
 
    // Private -------------------------------------------------------
 
+
+   private TypedProperties getProperties()
+   {
+      return properties;
+   }
+   
    // This must be synchronized as it can be called concurrently id the message is being delivered concurently to
    // many queues - the first caller in this case will actually encode it
    private synchronized HornetQBuffer encodeToBuffer()

@@ -166,9 +166,7 @@ public interface Message
    HornetQBuffer getBodyBuffer();
 
    // Properties
-   // ------------------------------------------------------------------
-
-   TypedProperties getProperties();
+   // -----------------------------------------------------------------
 
    /**
     * Puts a boolean property in this message.

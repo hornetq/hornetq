@@ -25,7 +25,15 @@ import org.hornetq.core.server.HornetQComponent;
  */
 public interface Acceptor extends HornetQComponent
 {
+   /**
+    * Pause the acceptor and stop it from receiving client requests.
+    */
    void pause();
 
+   /**
+    * Set the notification service for this acceptor to use.
+    *
+    * @param notificationService the notification service
+    */
    void setNotificationService(NotificationService notificationService);
 }

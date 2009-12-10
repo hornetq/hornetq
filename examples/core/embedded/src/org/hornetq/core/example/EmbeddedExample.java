@@ -13,6 +13,7 @@
 package org.hornetq.core.example;
 
 import java.util.Date;
+import java.util.HashMap;
 
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
@@ -112,6 +113,14 @@ public class EmbeddedExample
          e.printStackTrace();
          System.exit(-1);
       }
+   }
+
+   {
+      HashMap<String, Object> map = new HashMap<String, Object>();
+      map.put("host", "localhost");
+      map.put("port", 5445);
+      TransportConfiguration config = new TransportConfiguration(InVMConnectorFactory.class.getName(), map);
+      ClientSessionFactory sf = new ClientSessionFactoryImpl(config);
    }
 
 }

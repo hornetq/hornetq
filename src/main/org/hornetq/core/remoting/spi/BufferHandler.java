@@ -15,14 +15,29 @@ package org.hornetq.core.remoting.spi;
 import org.hornetq.core.buffers.HornetQBuffer;
 
 /**
- * A BufferHandler
- * 
- * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * A BufferHandler that will handle buffers received by an acceptor.
+ * <p/>
+ * The Buffer Handler will decode the buffer and take the appropriate action, typically forwarding to the correct channel.
  *
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  */
 public interface BufferHandler
 {
+   /**
+    * called by the remoting connection when a buffer is received.
+    *
+    * @param connectionID the connection the buffer was received on
+    * @param buffer       the buffer to decode
+    */
    void bufferReceived(Object connectionID, HornetQBuffer buffer);
 
+   /**
+    * called by the remoting connection prior to {@link org.hornetq.core.remoting.spi.BufferHandler#bufferReceived(Object, org.hornetq.core.buffers.HornetQBuffer)}.
+    * <p/>
+    * The implementation should return true if there is enough data in the buffer to decode. otherwise false.
+    *
+    * @param buffer the buffer
+    * @return true id the buffer can be decoded..
+    */
    int isReadyToHandle(HornetQBuffer buffer);
 }

@@ -15,17 +15,32 @@ package org.hornetq.core.remoting.spi;
 import org.hornetq.core.exception.HornetQException;
 
 /**
- *
- * A ConnectionLifeCycleListener
+ * A ConnectionLifeCycleListener is called by the remoting implementation to notify of connection events.
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
  */
 public interface ConnectionLifeCycleListener
 {
+   /**
+    * called when a connection is created.
+    *
+    * @param connection the connection that has been created
+    */
    void connectionCreated(Connection connection);
 
+   /**
+    * called when a connection is destroyed.
+    *
+    * @param connectionID the connection being destroyed.
+    */
    void connectionDestroyed(Object connectionID);
 
+
+   /**
+    * called when an error occurs on the connection.
+    *
+    * @param connectionID the id of the connection.
+    * @param me           the exception.
+    */
    void connectionException(Object connectionID, HornetQException me);
 }

@@ -16,11 +16,7 @@ package org.hornetq.core.server.cluster.impl;
 import static org.hornetq.core.management.NotificationType.CONSUMER_CLOSED;
 import static org.hornetq.core.management.NotificationType.CONSUMER_CREATED;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -761,7 +757,26 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
          binding.addConsumer(filterString);
 
          // Need to propagate the consumer add
-         Notification notification = new Notification(null, CONSUMER_CREATED, message.getProperties());
+         TypedProperties props = new TypedProperties();
+
+         props.putSimpleStringProperty(ManagementHelper.HDR_ADDRESS, binding.getAddress());
+
+         props.putSimpleStringProperty(ManagementHelper.HDR_CLUSTER_NAME, clusterName);
+
+         props.putSimpleStringProperty(ManagementHelper.HDR_ROUTING_NAME, binding.getRoutingName());
+
+         props.putIntProperty(ManagementHelper.HDR_DISTANCE, distance + 1);
+
+         Queue theQueue = (Queue)binding.getBindable();
+
+         props.putIntProperty(ManagementHelper.HDR_CONSUMER_COUNT, theQueue.getConsumerCount());
+
+         if (filterString != null)
+         {
+            props.putSimpleStringProperty(ManagementHelper.HDR_FILTERSTRING, filterString);
+         }
+
+         Notification notification = new Notification(null, CONSUMER_CREATED, props);
 
          managementService.sendNotification(notification);
       }
@@ -796,7 +811,25 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
          binding.removeConsumer(filterString);
 
          // Need to propagate the consumer close
-         Notification notification = new Notification(null, CONSUMER_CLOSED, message.getProperties());
+         TypedProperties props = new TypedProperties();
+
+         props.putSimpleStringProperty(ManagementHelper.HDR_ADDRESS, binding.getAddress());
+
+         props.putSimpleStringProperty(ManagementHelper.HDR_CLUSTER_NAME, clusterName);
+
+         props.putSimpleStringProperty(ManagementHelper.HDR_ROUTING_NAME, binding.getRoutingName());
+
+         props.putIntProperty(ManagementHelper.HDR_DISTANCE, distance + 1);
+
+         Queue theQueue = (Queue)binding.getBindable();
+
+         props.putIntProperty(ManagementHelper.HDR_CONSUMER_COUNT, theQueue.getConsumerCount());
+
+         if (filterString != null)
+         {
+            props.putSimpleStringProperty(ManagementHelper.HDR_FILTERSTRING, filterString);
+         }
+         Notification notification = new Notification(null, CONSUMER_CLOSED, props);
 
          managementService.sendNotification(notification);
       }

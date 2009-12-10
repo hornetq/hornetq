@@ -13,26 +13,35 @@
 package org.hornetq.core.remoting.spi;
 
 /**
- * 
- * A Connector
- * 
- * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * A Connector is used by the client for creating and controlling a connection.
  *
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  */
 public interface Connector
 {
+   /**
+    * starts the connector
+    */
    void start();
 
+   /**
+    * closes the connector
+    */
    void close();
 
+   /**
+    * returns true if the connector is started, oterwise false.
+    *
+    * @return true if the connector is started
+    */
    boolean isStarted();
 
    /**
     * Create and return a connection from this connector.
-    * 
+    * <p/>
     * This method must NOT throw an exception if it fails to create the connection
     * (e.g. network is not available), in this case it MUST return null
-    * 
+    *
     * @return The connection, or null if unable to create a connection (e.g. network is unavailable)
     */
    Connection createConnection();

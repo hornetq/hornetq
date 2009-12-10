@@ -19,17 +19,38 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 
 /**
+ * A factory for creating acceptors.
+ * <p/>
+ * An Acceptor is an endpoin that a {@link org.hornetq.core.remoting.spi.Connector} will connect to and is used by the remoting service.
+ *
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
  */
 public interface AcceptorFactory
 {
+   /**
+    * Create a new instance of an Acceptor.
+    *
+    * @param configuration       the configuration
+    * @param handler             the handler
+    * @param listener            the listener
+    * @param threadPool          the threadpool
+    * @param scheduledThreadPool a scheduled thread pool
+    * @return an acceptor
+    */
    Acceptor createAcceptor(final Map<String, Object> configuration,
                            BufferHandler handler,
                            ConnectionLifeCycleListener listener,
                            Executor threadPool,
                            ScheduledExecutorService scheduledThreadPool);
 
+   /**
+    * Returns the allowable properties for this acceptor.
+    * <p/>
+    * This will differ between different acceptor implementations.
+    *
+    * @return the allowable properties.
+    */
    Set<String> getAllowableProperties();
 }
