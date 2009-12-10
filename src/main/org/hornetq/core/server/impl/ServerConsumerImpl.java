@@ -48,6 +48,7 @@ import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.ServerSession;
 import org.hornetq.core.transaction.Transaction;
 import org.hornetq.core.transaction.impl.TransactionImpl;
+import org.hornetq.utils.Future;
 import org.hornetq.utils.TypedProperties;
 
 /**
@@ -120,9 +121,8 @@ public class ServerConsumerImpl implements ServerConsumer
    private final ManagementService managementService;
 
    private final Binding binding;
-   
-   private boolean transferring = false;
 
+   private boolean transferring = false;
 
    // Constructors ---------------------------------------------------------------------------------
 
@@ -201,7 +201,7 @@ public class ServerConsumerImpl implements ServerConsumer
          // should go back into the
          // queue for delivery later.
          if (!started || transferring)
-         {            
+         {
             return HandleStatus.BUSY;
          }
 
@@ -416,25 +416,59 @@ public class ServerConsumerImpl implements ServerConsumer
          promptDelivery(true);
       }
    }
-   
+
    public void setTransferring(final boolean transferring)
    {
       lock.lock();
       try
       {
          this.transferring = transferring;
+
+         if (transferring)
+         {
+            // Now we must wait for any large message delivery to finish
+            while (largeMessageInDelivery)
+            {
+               try
+               {
+                  Thread.sleep(1);
+               }
+               catch (InterruptedException ignore)
+               {
+               }
+            }
+         }
       }
       finally
       {
          lock.unlock();
       }
-      
+
+      //Outside the lock
+      if (transferring)
+      {
+         // And we must wait for any force delivery to be executed - this is executed async so we add a future to the
+         // executor and
+         // wait for it to complete
+
+         Future future = new Future();
+
+         executor.execute(future);
+
+         boolean ok = future.await(10000);
+
+         if (!ok)
+         {
+            log.warn("Timed out waiting for executor to complete");
+         }
+      }
+
       if (!transferring)
       {
          promptDelivery(true);
       }
    }
-   
+
    public void receiveCredits(final int credits) throws Exception
    {
       if (credits == -1)

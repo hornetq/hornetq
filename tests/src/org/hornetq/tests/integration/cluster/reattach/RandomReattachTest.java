@@ -742,7 +742,7 @@ public class RandomReattachTest extends UnitTestCase
 
       for (MyHandler handler : handlers)
       {
-         boolean ok = handler.latch.await(10000, TimeUnit.MILLISECONDS);
+         boolean ok = handler.latch.await(20000, TimeUnit.MILLISECONDS);
 
          Assert.assertTrue(ok);
       }

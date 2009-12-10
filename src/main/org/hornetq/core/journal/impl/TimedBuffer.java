@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.Semaphore;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.hornetq.core.buffers.HornetQBuffer;
@@ -47,7 +47,12 @@ public class TimedBuffer
 
    private TimedBufferObserver bufferObserver;
 
-   private CheckTimer timer;
+   // If the TimedBuffer is idle - i.e. no records are being added, then it's pointless the timer flush thread
+   // in spinning and checking the time - and using up CPU in the process - this semaphore is used to
+   // prevent that
+   private final Semaphore spinLimiter = new Semaphore(1);
+
+   private CheckTimer timerRunnable = new CheckTimer();
 
    private final int bufferSize;
 
@@ -85,6 +90,8 @@ public class TimedBuffer
 
    private final AtomicLong lastFlushTime = new AtomicLong(0);
 
+   private boolean spinning = false;
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -121,9 +128,9 @@ public class TimedBuffer
          return;
       }
 
-      timer = new CheckTimer();
+      timerRunnable = new CheckTimer();
 
-      timerThread = new Thread(timer, "hornetq-buffer-timeout");
+      timerThread = new Thread(timerRunnable, "hornetq-buffer-timeout");
 
       timerThread.start();
 
@@ -132,6 +139,15 @@ public class TimedBuffer
          logRatesTimerTask = new LogRatesTimerTask();
 
          logRatesTimer.scheduleAtFixedRate(logRatesTimerTask, 2000, 2000);
+      }
+
+      // Need to start with the spin limiter acquired
+      try
+      {
+         spinLimiter.acquire();
+      }
+      catch (InterruptedException ignore)
+      {
       }
 
       started = true;
@@ -148,7 +164,9 @@ public class TimedBuffer
 
       bufferObserver = null;
 
-      timer.stop();
+      spinLimiter.release();
+
+      timerRunnable.close();
 
       if (logRates)
       {
@@ -232,7 +250,6 @@ public class TimedBuffer
 
    public synchronized void addBytes(final EncodingSupport bytes, final boolean sync, final IOAsyncTask callback)
    {
-
       delayFlush = false;
 
       bytes.encode(buffer);
@@ -252,69 +269,78 @@ public class TimedBuffer
          // flush();
          // }
 
-         timer.resumeSpin();
+         if (!spinning)
+         {
+            spinLimiter.release();
+
+            spinning = true;
+         }
       }
 
    }
 
-   
-   /** 
-    * This method will verify if it a flush is required.
-    * It is called directly by the CheckTimer.
-    * 
-    * @return true means you can pause spinning for a while
-    * */
-   private synchronized boolean checkFlush()
+   public void flush()
    {
-      // delayFlush and pendingSync are changed inside synchronized blocks
-      // They need to be done atomically
-      if (!delayFlush && pendingSync && bufferObserver != null)
-      {
-         flush();
-         return true;
-      }
-      else return !delayFlush;
+      flush(false);
    }
-   
+
    /** 
-    * Note: Flush could be called by either the checkFlush (and timer), or by the Journal directly before moving to a new file
+    * force means the Journal is moving to a new file. Any pending write need to be done immediately
+    * or data could be lost
     * */
-   public synchronized void flush()
+   public void flush(final boolean force)
    {
-      if (buffer.writerIndex() > 0)
+      synchronized (this)
       {
-         int pos = buffer.writerIndex();
-
-         if (logRates)
+         if ((force || !delayFlush) && buffer.writerIndex() > 0)
          {
-            bytesFlushed.addAndGet(pos);
+            int pos = buffer.writerIndex();
+
+            if (logRates)
+            {
+               bytesFlushed.addAndGet(pos);
+            }
+
+            ByteBuffer bufferToFlush = bufferObserver.newBuffer(bufferSize, pos);
+
+            // Putting a byteArray on a native buffer is much faster, since it will do in a single native call.
+            // Using bufferToFlush.put(buffer) would make several append calls for each byte
+
+            bufferToFlush.put(buffer.toByteBuffer().array(), 0, pos);
+
+            if (bufferToFlush != null)
+            {
+               bufferObserver.flushBuffer(bufferToFlush, pendingSync, callbacks);
+            }
+
+            if (spinning)
+            {
+               try
+               {
+                  // We acquire the spinLimiter semaphore - this prevents the timer flush thread unnecessarily spinning
+                  // when the buffer is inactive
+                  spinLimiter.acquire();
+               }
+               catch (InterruptedException e)
+               {
+                  // Ignore
+               }
+
+               spinning = false;
+            }
+
+            lastFlushTime.set(System.nanoTime());
+
+            pendingSync = false;
+
+            callbacks = new LinkedList<IOAsyncTask>();
+
+            buffer.clear();
+
+            bufferLimit = 0;
+
+            flushesDone.incrementAndGet();
          }
-
-         ByteBuffer bufferToFlush = bufferObserver.newBuffer(bufferSize, pos);
-
-         // Putting a byteArray on a native buffer is much faster, since it will do in a single native call.
-         // Using bufferToFlush.put(buffer) would make several append calls for each byte
-
-         bufferToFlush.put(buffer.toByteBuffer().array(), 0, pos);
-
-         if (bufferToFlush != null)
-         {
-            bufferObserver.flushBuffer(bufferToFlush, pendingSync, callbacks);
-         }
-
-         lastFlushTime.set(System.nanoTime());
-
-         pendingSync = false;
-
-         callbacks = new LinkedList<IOAsyncTask>();
-
-         buffer.clear();
-
-         bufferLimit = 0;
-
-         flushesDone.incrementAndGet();
-
-         timer.pauseSpin();
       }
    }
 
@@ -376,69 +402,19 @@ public class TimedBuffer
 
    private class CheckTimer implements Runnable
    {
-      private volatile boolean stopped = false;
-
-      private boolean spinning = false;
-
-      // If the TimedBuffer is idle - i.e. no records are being added, then it's pointless the timer flush thread
-      // in spinning and checking the time - and using up CPU in the process - this semaphore is used to
-      // prevent that
-      private final Semaphore spinLimiter = new Semaphore(1);
-
-      public CheckTimer()
-      {
-         if (!spinLimiter.tryAcquire())
-         {
-            // JDK would be screwed up if this was happening
-            throw new IllegalStateException("InternalError: Semaphore not working properly!");
-         }
-         spinning = false;
-      }
-
-      // Needs to be called within synchronized blocks on TimedBuffer
-      public void resumeSpin()
-      {
-         spinning = true;
-         spinLimiter.release();
-      }
-
-      // Needs to be called within synchronized blocks on TimedBuffer
-      public void pauseSpin()
-      {
-         if (spinning)
-         {
-            spinning = false;
-            try
-            {
-               if (!spinLimiter.tryAcquire(60, TimeUnit.SECONDS))
-               {
-                  throw new IllegalStateException("Internal error on TimedBuffer. Can't stop spinning");
-               }
-            }
-            catch (InterruptedException ignored)
-            {
-            }
-         }
-      }
+      private volatile boolean closed = false;
 
       public void run()
       {
-         while (!stopped)
+         while (!closed)
          {
             // We flush on the timer if there are pending syncs there and we've waited waited at least one
             // timeout since the time of the last flush
             // Effectively flushing "resets" the timer
 
-            if (System.nanoTime() > lastFlushTime.get() + timeout)
+            if (pendingSync && bufferObserver != null && System.nanoTime() > lastFlushTime.get() + timeout)
             {
-               if (checkFlush())
-               {
-                  if (!stopped)
-                  {
-                     // can't pause spin if stopped, or we would hang the thread
-                     pauseSpin();
-                  }
-               }
+               flush();
             }
 
             try
@@ -455,10 +431,9 @@ public class TimedBuffer
          }
       }
 
-      public void stop()
+      public void close()
       {
-         stopped = true;
-         resumeSpin();
+         closed = true;
       }
    }
 
