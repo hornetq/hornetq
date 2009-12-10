@@ -16,6 +16,8 @@ package org.hornetq.core.management.impl;
 import java.util.List;
 import java.util.Map;
 
+import javax.management.MBeanOperationInfo;
+
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.filter.impl.FilterImpl;
@@ -698,6 +700,12 @@ public class QueueControlImpl extends AbstractControl implements QueueControl
       {
          blockOnIO();
       }
+   }
+
+   @Override
+   MBeanOperationInfo[] fillMBeanOperationInfo()
+   {
+      return MBeanInfoHelper.getMBeanOperationsInfo(QueueControl.class);
    }
 
    // Package protected ---------------------------------------------

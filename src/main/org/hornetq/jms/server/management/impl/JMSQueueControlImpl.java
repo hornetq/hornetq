@@ -15,12 +15,14 @@ package org.hornetq.jms.server.management.impl;
 
 import java.util.Map;
 
+import javax.management.MBeanInfo;
 import javax.management.StandardMBean;
 
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.management.MessageCounterInfo;
 import org.hornetq.core.management.QueueControl;
+import org.hornetq.core.management.impl.MBeanInfoHelper;
 import org.hornetq.core.messagecounter.MessageCounter;
 import org.hornetq.core.messagecounter.impl.MessageCounterHelper;
 import org.hornetq.jms.HornetQQueue;
@@ -336,6 +338,18 @@ public class JMSQueueControlImpl extends StandardMBean implements JMSQueueContro
       coreQueueControl.resume();
    }
 
+   @Override
+   public MBeanInfo getMBeanInfo()
+   {
+      MBeanInfo info = super.getMBeanInfo();
+      return new MBeanInfo(info.getClassName(),
+                           info.getDescription(),
+                           info.getAttributes(),
+                           info.getConstructors(),
+                           MBeanInfoHelper.getMBeanOperationsInfo(JMSQueueControl.class),
+                           info.getNotifications());
+   }
+   
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

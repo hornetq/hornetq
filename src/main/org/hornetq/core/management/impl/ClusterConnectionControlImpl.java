@@ -16,7 +16,10 @@ package org.hornetq.core.management.impl;
 import java.util.List;
 import java.util.Map;
 
+import javax.management.MBeanOperationInfo;
+
 import org.hornetq.core.config.cluster.ClusterConnectionConfiguration;
+import org.hornetq.core.management.AddressControl;
 import org.hornetq.core.management.ClusterConnectionControl;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.server.cluster.ClusterConnection;
@@ -276,6 +279,12 @@ public class ClusterConnectionControlImpl extends AbstractControl implements Clu
       {
          blockOnIO();
       }
+   }
+
+   @Override
+   MBeanOperationInfo[] fillMBeanOperationInfo()
+   {
+      return MBeanInfoHelper.getMBeanOperationsInfo(ClusterConnectionControl.class);
    }
 
    // Public --------------------------------------------------------

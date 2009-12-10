@@ -13,6 +13,8 @@
 
 package org.hornetq.core.management.impl;
 
+import javax.management.MBeanOperationInfo;
+
 import org.hornetq.core.config.cluster.DivertConfiguration;
 import org.hornetq.core.management.DivertControl;
 import org.hornetq.core.persistence.StorageManager;
@@ -141,6 +143,13 @@ public class DivertControlImpl extends AbstractControl implements DivertControl
          blockOnIO();
       }
    }
+   
+   @Override
+   MBeanOperationInfo[] fillMBeanOperationInfo()
+   {
+      return MBeanInfoHelper.getMBeanOperationsInfo(DivertControl.class);
+   }
+
 
    // Public --------------------------------------------------------
 

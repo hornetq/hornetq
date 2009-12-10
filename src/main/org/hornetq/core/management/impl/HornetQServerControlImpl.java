@@ -26,6 +26,7 @@ import java.util.Map.Entry;
 
 import javax.management.ListenerNotFoundException;
 import javax.management.MBeanNotificationInfo;
+import javax.management.MBeanOperationInfo;
 import javax.management.NotificationBroadcasterSupport;
 import javax.management.NotificationEmitter;
 import javax.management.NotificationFilter;
@@ -1206,6 +1207,12 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
    public boolean isWildcardRoutingEnabled()
    {
       return configuration.isWildcardRoutingEnabled();
+   }
+
+   @Override
+   MBeanOperationInfo[] fillMBeanOperationInfo()
+   {
+      return MBeanInfoHelper.getMBeanOperationsInfo(HornetQServerControl.class);
    }
 
 }

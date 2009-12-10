@@ -16,6 +16,8 @@ package org.hornetq.core.management.impl;
 import java.util.Iterator;
 import java.util.Set;
 
+import javax.management.MBeanOperationInfo;
+
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.management.AddressControl;
 import org.hornetq.core.paging.PagingManager;
@@ -240,6 +242,12 @@ public class AddressControlImpl extends AbstractControl implements AddressContro
       {
          blockOnIO();
       }
+   }
+   
+   @Override
+   MBeanOperationInfo[] fillMBeanOperationInfo()
+   {
+      return MBeanInfoHelper.getMBeanOperationsInfo(AddressControl.class);
    }
 
    // Package protected ---------------------------------------------

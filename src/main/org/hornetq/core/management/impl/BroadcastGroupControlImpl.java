@@ -13,7 +13,10 @@
 
 package org.hornetq.core.management.impl;
 
+import javax.management.MBeanOperationInfo;
+
 import org.hornetq.core.config.cluster.BroadcastGroupConfiguration;
+import org.hornetq.core.management.AddressControl;
 import org.hornetq.core.management.BroadcastGroupControl;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.server.cluster.BroadcastGroup;
@@ -206,6 +209,12 @@ public class BroadcastGroupControlImpl extends AbstractControl implements Broadc
       {
          blockOnIO();
       }
+   }
+
+   @Override
+   MBeanOperationInfo[] fillMBeanOperationInfo()
+   {
+      return MBeanInfoHelper.getMBeanOperationsInfo(BroadcastGroupControl.class);
    }
 
    // Public --------------------------------------------------------

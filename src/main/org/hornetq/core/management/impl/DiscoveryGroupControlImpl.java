@@ -13,8 +13,11 @@
 
 package org.hornetq.core.management.impl;
 
+import javax.management.MBeanOperationInfo;
+
 import org.hornetq.core.cluster.DiscoveryGroup;
 import org.hornetq.core.config.cluster.DiscoveryGroupConfiguration;
+import org.hornetq.core.management.AddressControl;
 import org.hornetq.core.management.DiscoveryGroupControl;
 import org.hornetq.core.persistence.StorageManager;
 
@@ -147,6 +150,13 @@ public class DiscoveryGroupControlImpl extends AbstractControl implements Discov
       }
 
    }
+   
+   @Override
+   MBeanOperationInfo[] fillMBeanOperationInfo()
+   {
+      return MBeanInfoHelper.getMBeanOperationsInfo(DiscoveryGroupControl.class);
+   }
+
 
    // Public --------------------------------------------------------
 

@@ -13,6 +13,8 @@
 
 package org.hornetq.core.management.impl;
 
+import javax.management.MBeanInfo;
+import javax.management.MBeanOperationInfo;
 import javax.management.NotCompliantMBeanException;
 import javax.management.StandardMBean;
 
@@ -75,6 +77,20 @@ public abstract class AbstractControl extends StandardMBean
          }
       }
 
+   }
+
+   abstract MBeanOperationInfo[] fillMBeanOperationInfo();
+
+   @Override
+   public MBeanInfo getMBeanInfo()
+   {
+      MBeanInfo info = super.getMBeanInfo();
+      return new MBeanInfo(info.getClassName(),
+                           info.getDescription(),
+                           info.getAttributes(),
+                           info.getConstructors(),
+                           fillMBeanOperationInfo(),
+                           info.getNotifications());
    }
 
    // Private -------------------------------------------------------

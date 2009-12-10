@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
 import javax.management.ListenerNotFoundException;
+import javax.management.MBeanInfo;
 import javax.management.MBeanNotificationInfo;
 import javax.management.Notification;
 import javax.management.NotificationBroadcasterSupport;
@@ -29,6 +30,7 @@ import javax.management.StandardMBean;
 
 import org.hornetq.core.client.management.impl.ManagementHelper;
 import org.hornetq.core.config.TransportConfiguration;
+import org.hornetq.core.management.impl.MBeanInfoHelper;
 import org.hornetq.jms.server.JMSServerManager;
 import org.hornetq.jms.server.management.ConnectionFactoryControl;
 import org.hornetq.jms.server.management.JMSQueueControl;
@@ -777,6 +779,18 @@ public class JMSServerControlImpl extends StandardMBean implements JMSServerCont
    public String[] listSessions(final String connectionID) throws Exception
    {
       return server.listSessions(connectionID);
+   }
+
+   @Override
+   public MBeanInfo getMBeanInfo()
+   {
+      MBeanInfo info = super.getMBeanInfo();
+      return new MBeanInfo(info.getClassName(),
+                           info.getDescription(),
+                           info.getAttributes(),
+                           info.getConstructors(),
+                           MBeanInfoHelper.getMBeanOperationsInfo(JMSServerControl.class),
+                           info.getNotifications());
    }
 
    // Package protected ---------------------------------------------

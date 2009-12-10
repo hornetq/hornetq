@@ -15,11 +15,14 @@ package org.hornetq.jms.server.management.impl;
 
 import java.util.List;
 
+import javax.management.MBeanInfo;
 import javax.management.NotCompliantMBeanException;
 import javax.management.StandardMBean;
 
+import org.hornetq.core.management.impl.MBeanInfoHelper;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.server.management.ConnectionFactoryControl;
+import org.hornetq.jms.server.management.JMSQueueControl;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -165,6 +168,18 @@ public class JMSConnectionFactoryControlImpl extends StandardMBean implements Co
    public boolean isAutoGroup()
    {
       return cf.isAutoGroup();
+   }
+
+   @Override
+   public MBeanInfo getMBeanInfo()
+   {
+      MBeanInfo info = super.getMBeanInfo();
+      return new MBeanInfo(info.getClassName(),
+                           info.getDescription(),
+                           info.getAttributes(),
+                           info.getConstructors(),
+                           MBeanInfoHelper.getMBeanOperationsInfo(ConnectionFactoryControl.class),
+                           info.getNotifications());
    }
 
    // Package protected ---------------------------------------------

@@ -18,6 +18,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import javax.management.MBeanInfo;
 import javax.management.StandardMBean;
 
 import org.hornetq.core.exception.HornetQException;
@@ -26,10 +27,12 @@ import org.hornetq.core.management.AddressControl;
 import org.hornetq.core.management.HornetQServerControl;
 import org.hornetq.core.management.QueueControl;
 import org.hornetq.core.management.ResourceNames;
+import org.hornetq.core.management.impl.MBeanInfoHelper;
 import org.hornetq.core.server.management.ManagementService;
 import org.hornetq.jms.HornetQTopic;
 import org.hornetq.jms.client.HornetQMessage;
 import org.hornetq.jms.client.SelectorTranslator;
+import org.hornetq.jms.server.management.JMSQueueControl;
 import org.hornetq.jms.server.management.TopicControl;
 import org.hornetq.utils.Pair;
 import org.hornetq.utils.json.JSONArray;
@@ -345,6 +348,18 @@ public class JMSTopicControlImpl extends StandardMBean implements TopicControl
       {
          return Collections.emptyList();
       }
+   }
+
+   @Override
+   public MBeanInfo getMBeanInfo()
+   {
+      MBeanInfo info = super.getMBeanInfo();
+      return new MBeanInfo(info.getClassName(),
+                           info.getDescription(),
+                           info.getAttributes(),
+                           info.getConstructors(),
+                           MBeanInfoHelper.getMBeanOperationsInfo(TopicControl.class),
+                           info.getNotifications());
    }
 
    // Inner classes -------------------------------------------------
