@@ -69,7 +69,6 @@ public interface QueueControl
     */
    long getScheduledCount();
 
-   
    /**
     * Returns the number of consumers consuming messages from this queue.
     */
@@ -122,21 +121,27 @@ public interface QueueControl
    String listScheduledMessagesAsJSON() throws Exception;
 
    /**
-     * Lists all the messages in this queue matching the specified filter.
+    * Lists all the messages in this queue matching the specified filter.
     * <br>
     * 1 Map represents 1 message, keys are the message's properties and headers, values are the corresponding values.
+    * <br>
+    * Using {@code null} or an empty filter will list <em>all</em> messages from this queue.
     */
    @Operation(desc = "List all the messages in the queue matching the given filter", impact = MBeanOperationInfo.INFO)
    Map<String, Object>[] listMessages(@Parameter(name = "filter", desc = "A message filter (can be empty)") String filter) throws Exception;
 
    /**
     * Lists all the messages in this queue matching the specified filter using JSON serialization.
-   */
+    * <br>
+    * Using {@code null} or an empty filter will list <em>all</em> messages from this queue.
+    */
    @Operation(desc = "List all the messages in the queue matching the given filter and returns them using JSON", impact = MBeanOperationInfo.INFO)
    String listMessagesAsJSON(@Parameter(name = "filter", desc = "A message filter (can be empty)") String filter) throws Exception;
 
    /**
     * Counts the number of messages in this queue matching the specified filter.
+    * <br>
+    * Using {@code null} or an empty filter will count <em>all</em> messages from this queue.
     */
    @Operation(desc = "Returns the number of the messages in the queue matching the given filter", impact = MBeanOperationInfo.INFO)
    int countMessages(@Parameter(name = "filter", desc = "A message filter (can be empty)") String filter) throws Exception;
@@ -228,6 +233,8 @@ public interface QueueControl
 
    /**
     * Changes the priority for all the message corresponding to the specified filter to the specified priority.
+    * <br>
+    * Using {@code null} or an empty filter will change <em>all</em> messages from this queue.
     * 
     * @return the number of changed messages
     */
@@ -278,7 +285,7 @@ public interface QueueControl
    void resume() throws Exception;
 
    /**
-    * Returns whether the queue is pause.
+    * Returns whether the queue is paused.
     */
    @Operation(desc = "Inspects if the queue is paused", impact = MBeanOperationInfo.INFO)
    boolean isPaused() throws Exception;

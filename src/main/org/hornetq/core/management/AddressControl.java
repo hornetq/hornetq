@@ -38,6 +38,8 @@ public interface AddressControl
    /**
     * Returns the roles  (name and permissions) associated to this address
     * using JSON serialization.
+    * <br>
+    * Java objects can be recreated from JSON serialization using {@link RoleInfo#from(String)}.
     */
    String getRolesAsJSON() throws Exception;
 

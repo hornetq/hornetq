@@ -19,27 +19,48 @@ import org.hornetq.core.server.management.Operation;
 import org.hornetq.core.server.management.Parameter;
 
 /**
+ * A DestinationControl is used to manage a JMS Destination.
+ * 
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- * 
- * @version <tt>$Revision$</tt>
- * 
  */
 public interface DestinationControl
 {
    // Attributes ----------------------------------------------------
 
+   /**
+    * Returns the name of this destination.
+    */
    String getName();
 
+   /**
+    * Returns the JNDI binding of this destination.
+    */
    String getJNDIBinding();
 
+   /**
+    * Returns the HornetQ address corresponding to this destination.
+    */
    String getAddress();
 
+   /**
+    * Returns whether this destination is temporary.
+    */
    boolean isTemporary();
 
+   /**
+    * Returns the number of messages currently in this destination.
+    */
    int getMessageCount() throws Exception;
 
    // Operations ----------------------------------------------------
 
+   /**
+    * Removed all the messages which matches the specified JMS filter from this destination.
+    * <br>
+    * Using {@code null} or an empty filter will remove <em>all</em> messages from this destination.
+    *
+    * @return the number of removed messages
+    */
    @Operation(desc = "Remove messages matching the given filter from the destination", impact = MBeanOperationInfo.ACTION)
    int removeMessages(@Parameter(name = "filter", desc = "A JMS message filter (can be empty)") String filter) throws Exception;
 
