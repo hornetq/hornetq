@@ -19,13 +19,13 @@ import java.util.concurrent.Executor;
 
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.management.Notification;
-import org.hornetq.core.management.NotificationService;
 import org.hornetq.core.management.NotificationType;
 import org.hornetq.core.remoting.spi.Acceptor;
 import org.hornetq.core.remoting.spi.BufferHandler;
 import org.hornetq.core.remoting.spi.Connection;
 import org.hornetq.core.remoting.spi.ConnectionLifeCycleListener;
+import org.hornetq.core.server.management.Notification;
+import org.hornetq.core.server.management.NotificationService;
 import org.hornetq.utils.ConfigurationHelper;
 import org.hornetq.utils.ExecutorFactory;
 import org.hornetq.utils.OrderedExecutorFactory;

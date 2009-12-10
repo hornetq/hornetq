@@ -14,24 +14,49 @@
 package org.hornetq.core.management;
 
 /**
+ * A DivertControl is used to manage a divert.
+ * 
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- * 
- * @version <tt>$Revision$</tt>
- * 
  */
 public interface DivertControl
 {
+   /**
+    * Returns the filter used by this divert.
+    */
    String getFilter();
 
+   /**
+    * Returns whether this divert is exclusive.
+    * <br>
+    * if {@code true} messages will be exclusively diverted and will not be routed to the origin address,
+    * else messages will be routed both to the origin address and the forwarding address.
+    */
    boolean isExclusive();
 
+   /**
+    * Returns the cluster-wide unique name of this divert.
+    */
    String getUniqueName();
 
+   /**
+    * Returns the routing name of this divert.
+    */
    String getRoutingName();
 
+   /**
+    * Returns the origin address used by this divert.
+    */
    String getAddress();
 
+   /**
+    * Returns the forwarding address used by this divert.
+    */
    String getForwardingAddress();
 
+   /**
+    * Return the name of the Transformer implementation associated to this bridge.
+    * 
+    * @see org.hornetq.core.server.cluster.Transformer
+    */
    String getTransformerClassName();
 }

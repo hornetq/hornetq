@@ -14,24 +14,46 @@
 package org.hornetq.core.management;
 
 /**
- * A BroadcastGroupControlMBean
+ * A BroadcastGroupControl is used to manage a broadcast group.
  *
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
  *
  */
 public interface BroadcastGroupControl extends HornetQComponentControl
 {
+   /**
+    * Returns the configuration name of this broadcast group.
+    */
    String getName();
 
+   /**
+    * Returns the local port this broadcast group is bound to.
+    */
    int getLocalBindPort();
 
+   /**
+    * Returns the address this broadcast group is broadcasting to.
+    */
    String getGroupAddress();
 
+   /**
+    * Returns the port this broadcast group is broadcasting to.
+    */
    int getGroupPort();
 
+   /**
+    * Returns the period used by this broadcast group.
+    */
    long getBroadcastPeriod();
 
+   /**
+    * Returns the pairs of live-backup connectors that are broadcasted by this broadcast group.
+    */
    Object[] getConnectorPairs();
 
+   /**
+    * Returns the pairs of live-backup connectors that are broadcasted by this broadcast group
+    * using JSON serialization.
+    */
    String getConnectorPairsAsJSON() throws Exception;
 }

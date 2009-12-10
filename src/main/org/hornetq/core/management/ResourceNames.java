@@ -14,11 +14,9 @@
 package org.hornetq.core.management;
 
 /**
- * A ResourceNames
+ * Helper class used to build resource names used by management messages.
  *
- * @author jmesnil
- *
- *
+ * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  */
 public class ResourceNames
 {

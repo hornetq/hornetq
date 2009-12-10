@@ -92,8 +92,6 @@ public interface Message
    /**
     * Sets whether this message is durable or not.
     * 
-    * This method must not be called directly by HornetQ clients.
-
     * @param durable {@code true} to flag this message as durable, {@code false} else
     */
    void setDurable(boolean durable);
@@ -110,8 +108,6 @@ public interface Message
 
    /**
     * Sets the expiration of this message.
-    * <br>
-    * This method must not be called directly by HornetQ clients.
     * 
     * @param expiration expiration time
     */
@@ -127,8 +123,6 @@ public interface Message
 
    /**
     * Sets the message timestamp.
-    * <br>
-    * This method must not be called directly by HornetQ clients.
     * 
     * @param timestamp timestamp
     */

@@ -46,7 +46,6 @@ public class FileConfigurationTest extends ConfigurationImplTest
       Assert.assertEquals(5423, conf.getSecurityInvalidationInterval());
       Assert.assertEquals(true, conf.isWildcardRoutingEnabled());
       Assert.assertEquals(new SimpleString("Giraffe"), conf.getManagementAddress());
-      Assert.assertEquals(91, conf.getManagementRequestTimeout());
       Assert.assertEquals(new SimpleString("Whatever"), conf.getManagementNotificationAddress());
       Assert.assertEquals("Frog", conf.getManagementClusterUser());
       Assert.assertEquals("Wombat", conf.getManagementClusterPassword());

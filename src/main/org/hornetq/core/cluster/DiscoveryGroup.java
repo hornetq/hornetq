@@ -15,7 +15,7 @@ package org.hornetq.core.cluster;
 
 import java.util.Map;
 
-import org.hornetq.core.management.NotificationService;
+import org.hornetq.core.server.management.NotificationService;
 
 /**
  * A DiscoveryGroup

@@ -97,7 +97,6 @@ public class ConfigurationImplTest extends UnitTestCase
       Assert.assertEquals(ConfigurationImpl.DEFAULT_MESSAGE_COUNTER_MAX_DAY_HISTORY,
                           conf.getMessageCounterMaxDayHistory());
       Assert.assertEquals(ConfigurationImpl.DEFAULT_MESSAGE_COUNTER_SAMPLE_PERIOD, conf.getMessageCounterSamplePeriod());
-      Assert.assertEquals(ConfigurationImpl.DEFAULT_MANAGEMENT_REQUEST_TIMEOUT, conf.getManagementRequestTimeout());
       Assert.assertEquals(ConfigurationImpl.DEFAULT_ID_CACHE_SIZE, conf.getIDCacheSize());
       Assert.assertEquals(ConfigurationImpl.DEFAULT_PERSIST_ID_CACHE, conf.isPersistIDCache());
       Assert.assertEquals(ConfigurationImpl.DEFAULT_SERVER_DUMP_INTERVAL, conf.getServerDumpInterval());
@@ -233,10 +232,6 @@ public class ConfigurationImplTest extends UnitTestCase
          s = RandomUtil.randomString();
          conf.setManagementClusterUser(s);
          Assert.assertEquals(s, conf.getManagementClusterUser());
-
-         l = RandomUtil.randomLong();
-         conf.setManagementRequestTimeout(l);
-         Assert.assertEquals(l, conf.getManagementRequestTimeout());
 
          i = RandomUtil.randomInt();
          conf.setIDCacheSize(i);
@@ -454,10 +449,6 @@ public class ConfigurationImplTest extends UnitTestCase
       s = RandomUtil.randomString();
       conf.setManagementClusterUser(s);
       Assert.assertEquals(s, conf.getManagementClusterUser());
-
-      l = RandomUtil.randomLong();
-      conf.setManagementRequestTimeout(l);
-      Assert.assertEquals(l, conf.getManagementRequestTimeout());
 
       i = RandomUtil.randomInt();
       conf.setIDCacheSize(i);

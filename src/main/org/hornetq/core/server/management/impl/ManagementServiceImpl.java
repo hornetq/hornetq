@@ -11,7 +11,7 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.core.management.impl;
+package org.hornetq.core.server.management.impl;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -45,11 +45,17 @@ import org.hornetq.core.management.BroadcastGroupControl;
 import org.hornetq.core.management.ClusterConnectionControl;
 import org.hornetq.core.management.DiscoveryGroupControl;
 import org.hornetq.core.management.DivertControl;
-import org.hornetq.core.management.ManagementService;
-import org.hornetq.core.management.Notification;
-import org.hornetq.core.management.NotificationListener;
 import org.hornetq.core.management.ObjectNameBuilder;
 import org.hornetq.core.management.ResourceNames;
+import org.hornetq.core.management.impl.AcceptorControlImpl;
+import org.hornetq.core.management.impl.AddressControlImpl;
+import org.hornetq.core.management.impl.BridgeControlImpl;
+import org.hornetq.core.management.impl.BroadcastGroupControlImpl;
+import org.hornetq.core.management.impl.ClusterConnectionControlImpl;
+import org.hornetq.core.management.impl.DiscoveryGroupControlImpl;
+import org.hornetq.core.management.impl.DivertControlImpl;
+import org.hornetq.core.management.impl.HornetQServerControlImpl;
+import org.hornetq.core.management.impl.QueueControlImpl;
 import org.hornetq.core.messagecounter.MessageCounter;
 import org.hornetq.core.messagecounter.MessageCounterManager;
 import org.hornetq.core.messagecounter.impl.MessageCounterManagerImpl;
@@ -68,6 +74,9 @@ import org.hornetq.core.server.cluster.Bridge;
 import org.hornetq.core.server.cluster.BroadcastGroup;
 import org.hornetq.core.server.cluster.ClusterConnection;
 import org.hornetq.core.server.impl.ServerMessageImpl;
+import org.hornetq.core.server.management.ManagementService;
+import org.hornetq.core.server.management.Notification;
+import org.hornetq.core.server.management.NotificationListener;
 import org.hornetq.core.settings.HierarchicalRepository;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.core.transaction.ResourceManager;
@@ -118,8 +127,6 @@ public class ManagementServiceImpl implements ManagementService
 
    private final String managementClusterPassword;
 
-   private final long managementRequestTimeout;
-
    private boolean started = false;
 
    private final boolean messageCounterEnabled;
@@ -152,7 +159,6 @@ public class ManagementServiceImpl implements ManagementService
       managementNotificationAddress = configuration.getManagementNotificationAddress();
       managementClusterUser = configuration.getManagementClusterUser();
       managementClusterPassword = configuration.getManagementClusterPassword();
-      managementRequestTimeout = configuration.getManagementRequestTimeout();
 
       ManagementServiceImpl.checkDefaultManagementClusterCredentials(managementClusterUser, managementClusterPassword);
 

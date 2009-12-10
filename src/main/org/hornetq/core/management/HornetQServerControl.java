@@ -15,188 +15,462 @@ package org.hornetq.core.management;
 
 import javax.management.MBeanOperationInfo;
 
-import org.hornetq.core.config.Configuration;
+import org.hornetq.core.exception.HornetQException;
+import org.hornetq.core.remoting.Interceptor;
+import org.hornetq.core.server.management.Operation;
+import org.hornetq.core.server.management.Parameter;
 
 /**
- * This interface describes the core management interface exposed by the server
+ * A HornetQServerControl is used to manage HornetQ servers.
  */
 public interface HornetQServerControl
 {
    // Attributes ----------------------------------------------------
 
+   /**
+    * Returns the name of the connector used to connect to the backup.
+    * <br>
+    * If this server has no backup or is itself a backup, the value is {@code null}.
+    */
    String getBackupConnectorName();
 
+   /**
+    * Returns this server's version.
+    */
    String getVersion();
 
+   /**
+    * Returns the number of connections connected to this server.
+    */
    int getConnectionCount();
 
+   /**
+    * Return whether this server is started.
+    */
    boolean isStarted();
 
+   /**
+    * Returns the list of interceptors used by this server.
+    * 
+    * @see Interceptor
+    */
    String[] getInterceptorClassNames();
 
+   /**
+    * Returns whether this server is clustered.
+    */
    boolean isClustered();
 
+   /**
+    * Returns the maximum number of threads in the <em>scheduled</em> thread pool.
+    */
    int getScheduledThreadPoolMaxSize();
 
+   /**
+    * Returns the maximum number of threads in the thread pool.
+    */
    int getThreadPoolMaxSize();
 
+   /**
+    * Returns the interval time (in milliseconds) to invalidate security credentials.
+    */
    long getSecurityInvalidationInterval();
 
+   /**
+    * Returns whether security is enabled for this server.
+    */
    boolean isSecurityEnabled();
 
+   /**
+    * Returns the file system directory used to store bindings.
+    */
    String getBindingsDirectory();
 
+   /**
+    * Returns the file system directory used to store journal log.
+    */
    String getJournalDirectory();
 
+   /**
+    * Returns the type of journal used by this server (either {@code NIO} or {@code ASYNCIO}).
+    */
    String getJournalType();
 
+   /**
+    * Returns whether the journal is synchronized when receiving transactional data.
+    */
    boolean isJournalSyncTransactional();
 
+   /**
+    * Returns whether the journal is synchronized when receiving non-transactional data.
+    */
    boolean isJournalSyncNonTransactional();
 
+   /**
+    * Returns the size (in bytes) of each journal files.
+    */
    int getJournalFileSize();
 
+   /**
+    * Returns the number of journal files to pre-create.
+    */
    int getJournalMinFiles();
 
+   /**
+    * Returns the maximum number of write requests that can be in the AIO queue at any given time.
+    */
    int getJournalMaxIO();
 
+   /**
+    * Returns the size of the internal buffer on the journal.
+    */
    int getJournalBufferSize();
 
+   /**
+    * Returns the timeout (in nanoseconds) used to flush internal buffers on the journal.
+    */
    int getJournalBufferTimeout();
 
+   /**
+    * Returns the minimal number of journal files before compacting.
+    */
    int getJournalCompactMinFiles();
 
+   /**
+    * Return the percentage of live data before compacting the journal.
+    */
    int getJournalCompactPercentage();
 
+   /**
+    * Returns whether this server is using persistence and store data.
+    */
    boolean isPersistenceEnabled();
 
+   /**
+    * Returns whether the bindings directory is created on this server startup.
+    */
    boolean isCreateBindingsDir();
 
+   /**
+    * Returns whether the journal directory is created on this server startup.
+    */
    boolean isCreateJournalDir();
 
-   Configuration getConfiguration();
-
+   /**
+    * Returns whether message counter is enabled for this server.
+    */
    boolean isMessageCounterEnabled();
 
+   /**
+    * Returns the maximum number of days kept in memory for message counter.
+    */
    int getMessageCounterMaxDayCount();
 
+   /**
+    * Sets the maximum number of days kept in memory for message counter.
+    * 
+    * @count value must be greater than 0
+    */
    void setMessageCounterMaxDayCount(int count) throws Exception;
 
+   /**
+    * Returns the sample period (in milliseconds) to take message counter snapshot.
+    */
    long getMessageCounterSamplePeriod();
 
+   /**
+    * Sets the sample period to take message counter snapshot.
+    * 
+    * @param newPeriod value must be greater than 1000ms
+    */
    void setMessageCounterSamplePeriod(long newPeriod) throws Exception;
 
+   /**
+    * Returns {@code true} if this server is a backup, {@code false} if it is a live server.
+    * <br>
+    * If a backup server has been activated, returns {@code false}.
+    */
    boolean isBackup();
 
+   /**
+    * Returns whether this server shares its data store with a corresponding live or backup server.
+    */
    boolean isSharedStore();
 
+   /**
+    * Returns the file system directory used to store paging files.
+    */
    String getPagingDirectory();
 
+   /**
+    * Returns whether delivery count is persisted before messages are delivered to the consumers.
+    */
    boolean isPersistDeliveryCountBeforeDelivery();
 
+   /**
+    * Returns the connection time to live.
+    * <br>
+    * This value overrides the connection time to live <em>sent by the client</em>.
+    */
    long getConnectionTTLOverride();
 
+   /**
+    * Returns the management address of this server.
+    * <br>
+    * Clients can send management messages to this address to manage this server.
+    */
    String getManagementAddress();
 
+   /**
+    * Returns the management notification address of this server.
+    * <br>
+    * Clients can bind queues to this address to receive management notifications emitted by this server.
+    */
    String getManagementNotificationAddress();
 
-   long getManagementRequestTimeout();
-
+   /**
+    * Returns the size of the cache for pre-creating message IDs.
+    */
    int getIDCacheSize();
 
+   /**
+    * Returns whether message ID cache is persisted.
+    */
    boolean isPersistIDCache();
 
+   /**
+    * Returns the file system directory used to store large messages.
+    */
    String getLargeMessagesDirectory();
 
+   /**
+    * Returns whether wildcard routing is supported by this server.
+    */
    boolean isWildcardRoutingEnabled();
 
+   /**
+    * Returns the timeout (in milliseconds) after which transactions is removed 
+    * from the resource manager after it was created.
+    */
    long getTransactionTimeout();
 
+   /**
+    * Returns the frequency (in milliseconds)  to scan transactions to detect which transactions 
+    * have timed out.
+    */
    long getTransactionTimeoutScanPeriod();
 
+   /**
+    * Returns the frequency (in milliseconds)  to scan messages to detect which messages 
+    * have expired.
+    */
    long getMessageExpiryScanPeriod();
 
+   /**
+    * Returns the priority of the thread used to scan message expiration.
+    */
    long getMessageExpiryThreadPriority();
 
+   /**
+    * Returns the connectors configured for this server.
+    */
    Object[] getConnectors() throws Exception;
 
+   /**
+    * Returns the connectors configured for this server using JSON serialization.
+    */
    String getConnectorsAsJSON() throws Exception;
 
+   /**
+    * Returns the addresses created on this server.
+    */
    String[] getAddressNames();
 
+   /**
+    * Returns the names of the queues created on this server.
+    */
    String[] getQueueNames();
 
    // Operations ----------------------------------------------------
 
+   /**
+    * Create a durable queue.
+    * <br>
+    * This method throws a {@link HornetQException#QUEUE_EXISTS}) exception if the queue already exits.
+    * 
+    * @param address address to bind the queue to
+    * @param name name of the queue
+    */
    @Operation(desc = "Create a queue with the specified address", impact = MBeanOperationInfo.ACTION)
    void createQueue(@Parameter(name = "address", desc = "Address of the queue") String address,
                     @Parameter(name = "name", desc = "Name of the queue") String name) throws Exception;
 
+   /**
+    * Create a queue.
+    * <br>
+    * This method throws a {@link HornetQException#QUEUE_EXISTS}) exception if the queue already exits.
+    * 
+    * @param address address to bind the queue to
+    * @param name name of the queue
+    * @param filter of the queue
+    * @param durable whether the queue is durable
+    */
    @Operation(desc = "Create a queue", impact = MBeanOperationInfo.ACTION)
    void createQueue(@Parameter(name = "address", desc = "Address of the queue") String address,
                     @Parameter(name = "name", desc = "Name of the queue") String name,
                     @Parameter(name = "filter", desc = "Filter of the queue") String filter,
                     @Parameter(name = "durable", desc = "Is the queue durable?") boolean durable) throws Exception;
 
+   /**
+    * Create a queue.
+    * <br>
+    * This method throws a {@link HornetQException#QUEUE_EXISTS}) exception if the queue already exits.
+    * 
+    * @param address address to bind the queue to
+    * @param name name of the queue
+    * @param durable whether the queue is durable
+    */
    @Operation(desc = "Create a queue with the specified address, name and durability", impact = MBeanOperationInfo.ACTION)
    void createQueue(@Parameter(name = "address", desc = "Address of the queue") String address,
                     @Parameter(name = "name", desc = "Name of the queue") String name,
                     @Parameter(name = "durable", desc = "Is the queue durable?") boolean durable) throws Exception;
 
+   /**
+    * Deploy a durable queue.
+    * <br>
+    * This method will do nothing if the queue with the given name already exists on the server.
+    * 
+    * @param address address to bind the queue to
+    * @param name name of the queue
+    * @param filter of the queue
+    */
    @Operation(desc = "Deploy a queue", impact = MBeanOperationInfo.ACTION)
    void deployQueue(@Parameter(name = "address", desc = "Address of the queue") String address,
                     @Parameter(name = "name", desc = "Name of the queue") String name,
-                    String filterString) throws Exception;
+                    @Parameter(name = "filter", desc = "Filter of the queue")String filter) throws Exception;
 
+   /**
+    * Deploy a queue.
+    * <br>
+    * This method will do nothing if the queue with the given name already exists on the server.
+    * 
+    * @param address address to bind the queue to
+    * @param name name of the queue
+    * @param filter of the queue
+    * @param durable whether the queue is durable
+    */
    @Operation(desc = "Deploy a queue", impact = MBeanOperationInfo.ACTION)
    void deployQueue(@Parameter(name = "address", desc = "Address of the queue") String address,
                     @Parameter(name = "name", desc = "Name of the queue") String name,
                     @Parameter(name = "filter", desc = "Filter of the queue") String filter,
                     @Parameter(name = "durable", desc = "Is the queue durable?") boolean durable) throws Exception;
 
+   /**
+    * Destroys the queue corresponding to the specified name.
+    */
    @Operation(desc = "Destroy a queue", impact = MBeanOperationInfo.ACTION)
    void destroyQueue(@Parameter(name = "name", desc = "Name of the queue to destroy") String name) throws Exception;
 
+   /**
+    * Enables message counters for this server.
+    */
    @Operation(desc = "Enable message counters", impact = MBeanOperationInfo.ACTION)
    void enableMessageCounters() throws Exception;
 
+   /**
+    * Disables message counters for this server.
+    */
    @Operation(desc = "Disable message counters", impact = MBeanOperationInfo.ACTION)
    void disableMessageCounters() throws Exception;
 
+   /**
+    * Reset all message counters.
+    */
    @Operation(desc = "Reset all message counters", impact = MBeanOperationInfo.ACTION)
    void resetAllMessageCounters() throws Exception;
 
+   /**
+    * Reset histories for all message counters.
+    */
    @Operation(desc = "Reset all message counters history", impact = MBeanOperationInfo.ACTION)
    void resetAllMessageCounterHistories() throws Exception;
 
+   /**
+    * List all the prepared transaction, sorted by date, oldest first.
+    * <br>
+    * The Strings are Base-64 representation of the transaction XID and can be
+    * used to heuristically commit or rollback the transactions.
+    * 
+    * @see #commitPreparedTransaction(String), {@link #rollbackPreparedTransaction(String)}
+    */
    @Operation(desc = "List all the prepared transaction, sorted by date, oldest first")
    String[] listPreparedTransactions() throws Exception;
 
+   /**
+    * List transactions which have been heuristically committed.
+    */
    String[] listHeuristicCommittedTransactions() throws Exception;
 
+   /**
+    * List transactions which have been heuristically rolled back.
+    */
    String[] listHeuristicRolledBackTransactions() throws Exception;
 
+   /**
+    * Heuristically commits a prepared transaction.
+    * 
+    * @param transactionAsBase64 base 64 representation of a prepare transaction
+    * @return {@code true} if the transaction was successfully committed, {@code false} else
+    * 
+    * @see #listPreparedTransactions()
+    */
    @Operation(desc = "Commit a prepared transaction")
    boolean commitPreparedTransaction(@Parameter(desc = "the Base64 representation of a transaction", name = "transactionAsBase64") String transactionAsBase64) throws Exception;
 
+   /**
+    * Heuristically rolls back a prepared transaction.
+    * 
+    * @param transactionAsBase64 base 64 representation of a prepare transaction
+    * @return {@code true} if the transaction was successfully rolled back, {@code false} else
+    * 
+    * @see #listPreparedTransactions()
+    */
    @Operation(desc = "Rollback a prepared transaction")
    boolean rollbackPreparedTransaction(@Parameter(desc = "the Base64 representation of a transaction", name = "transactionAsBase64") String transactionAsBase64) throws Exception;
 
+   /**
+    * Lists the addresses of all the clients connected to this address.
+    */
    @Operation(desc = "List the client addresses", impact = MBeanOperationInfo.INFO)
    String[] listRemoteAddresses() throws Exception;
 
+   /**
+    * Lists the addresses of the clients connected to this address which matches the specified IP address.
+    */
    @Operation(desc = "List the client addresses which match the given IP Address", impact = MBeanOperationInfo.INFO)
    String[] listRemoteAddresses(@Parameter(desc = "an IP address", name = "ipAddress") String ipAddress) throws Exception;
 
+   /**
+    * Closes all the connections of clients connected to this server which matches the specified IP address.
+    */
    @Operation(desc = "Closes all the connections for the given IP Address", impact = MBeanOperationInfo.INFO)
    boolean closeConnectionsForAddress(@Parameter(desc = "an IP address", name = "ipAddress") String ipAddress) throws Exception;
 
+   /**
+    * Lists all the IDs of the connections connected to this server.
+    */
    @Operation(desc = "List all the connection IDs", impact = MBeanOperationInfo.INFO)
    String[] listConnectionIDs() throws Exception;
 
+   /**
+    * Lists all the sessions IDs for the specified connection ID.
+    */
    @Operation(desc = "List the sessions for the given connectionID", impact = MBeanOperationInfo.INFO)
    String[] listSessions(@Parameter(desc = "a connection ID", name = "connectionID") String connectionID) throws Exception;
 
+   /**
+    * This method is used by HornetQ clustering and must not be called by HornetQ clients.
+    */
    void sendQueueInfoToQueue(String queueName, String address) throws Exception;
 
 }

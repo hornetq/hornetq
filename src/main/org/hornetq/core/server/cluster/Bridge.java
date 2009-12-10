@@ -13,11 +13,11 @@
 
 package org.hornetq.core.server.cluster;
 
-import org.hornetq.core.management.NotificationService;
 import org.hornetq.core.remoting.RemotingConnection;
 import org.hornetq.core.server.Consumer;
 import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.core.server.Queue;
+import org.hornetq.core.server.management.NotificationService;
 import org.hornetq.utils.SimpleString;
 
 /**

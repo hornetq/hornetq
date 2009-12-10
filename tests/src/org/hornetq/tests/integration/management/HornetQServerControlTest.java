@@ -97,7 +97,6 @@ public class HornetQServerControlTest extends ManagementTestBase
       Assert.assertEquals(conf.getManagementAddress().toString(), serverControl.getManagementAddress());
       Assert.assertEquals(conf.getManagementNotificationAddress().toString(),
                           serverControl.getManagementNotificationAddress());
-      Assert.assertEquals(conf.getManagementRequestTimeout(), serverControl.getManagementRequestTimeout());
       Assert.assertEquals(conf.getIDCacheSize(), serverControl.getIDCacheSize());
       Assert.assertEquals(conf.isPersistIDCache(), serverControl.isPersistIDCache());
       Assert.assertEquals(conf.getBindingsDirectory(), serverControl.getBindingsDirectory());

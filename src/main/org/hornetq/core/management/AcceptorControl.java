@@ -15,17 +15,33 @@ package org.hornetq.core.management;
 
 import java.util.Map;
 
+import org.hornetq.core.remoting.spi.Acceptor;
+import org.hornetq.core.remoting.spi.AcceptorFactory;
+
 /**
- * A AcceptorMBean
+ * An AcceptorControl is used to manage Acceptors.
  *
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
- *
+ * 
+ * @see Acceptor
  */
 public interface AcceptorControl extends HornetQComponentControl
 {
+   /**
+    * Returns the name of the acceptor
+    */
    String getName();
 
+   /**
+    * Returns the class name of the AcceptorFactory implementation
+    * used by this acceptor.
+    * 
+    * @see AcceptorFactory
+    */
    String getFactoryClassName();
 
+   /**
+    * Returns the parameters used to configure this acceptor
+    */
    Map<String, Object> getParameters();
 }

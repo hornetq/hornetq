@@ -11,7 +11,7 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.core.management;
+package org.hornetq.core.server.management;
 
 import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
@@ -26,6 +26,7 @@ import org.hornetq.core.config.cluster.BroadcastGroupConfiguration;
 import org.hornetq.core.config.cluster.ClusterConnectionConfiguration;
 import org.hornetq.core.config.cluster.DiscoveryGroupConfiguration;
 import org.hornetq.core.config.cluster.DivertConfiguration;
+import org.hornetq.core.management.ObjectNameBuilder;
 import org.hornetq.core.management.impl.HornetQServerControlImpl;
 import org.hornetq.core.messagecounter.MessageCounterManager;
 import org.hornetq.core.paging.PagingManager;

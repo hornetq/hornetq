@@ -737,15 +737,6 @@
       <para>It is strongly suggested to change these values from their default. If they are not
          changed from the default, HornetQ will detect this and pester you with a warning on every
          start-up.</para>
-      <para>HornetQ internally uses Core messages to replicate management operations between the
-         live and backup server when JMX is used. By default, there is a timeout of 5s (5000ms) to
-         send a management request from the live server to the backup server and wait for a reply.
-         If a reply is not received before the timeout is hit, HornetQ considers the replication has
-         failed. This timeout can be configured in <literal
-         >hornetq-configuration.xml</literal>:</para>
-      <programlisting>
-         &lt;management-request-timeout&gt;5000&lt;/management-request-timeout&gt;
-      </programlisting>
    </section>
    <section id="management.notifications">
       <title>Management Notifications</title>

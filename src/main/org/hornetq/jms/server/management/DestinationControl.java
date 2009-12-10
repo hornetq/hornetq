@@ -15,8 +15,8 @@ package org.hornetq.jms.server.management;
 
 import javax.management.MBeanOperationInfo;
 
-import org.hornetq.core.management.Operation;
-import org.hornetq.core.management.Parameter;
+import org.hornetq.core.server.management.Operation;
+import org.hornetq.core.server.management.Parameter;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>

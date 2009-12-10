@@ -140,8 +140,6 @@ public class ConfigurationImpl implements Configuration
 
    public static final String DEFAULT_MANAGEMENT_CLUSTER_PASSWORD = "CHANGE ME!!";
 
-   public static final long DEFAULT_MANAGEMENT_REQUEST_TIMEOUT = 5000;
-
    public static final long DEFAULT_BROADCAST_PERIOD = 1000;
 
    public static final long DEFAULT_BROADCAST_REFRESH_TIMEOUT = 10000;
@@ -307,8 +305,6 @@ public class ConfigurationImpl implements Configuration
    protected String managementClusterUser = ConfigurationImpl.DEFAULT_MANAGEMENT_CLUSTER_USER;
 
    protected String managementClusterPassword = ConfigurationImpl.DEFAULT_MANAGEMENT_CLUSTER_PASSWORD;
-
-   protected long managementRequestTimeout = ConfigurationImpl.DEFAULT_MANAGEMENT_REQUEST_TIMEOUT;
 
    protected long serverDumpInterval = ConfigurationImpl.DEFAULT_SERVER_DUMP_INTERVAL;
 
@@ -872,16 +868,6 @@ public class ConfigurationImpl implements Configuration
       managementClusterPassword = clusterPassword;
    }
 
-   public long getManagementRequestTimeout()
-   {
-      return managementRequestTimeout;
-   }
-
-   public void setManagementRequestTimeout(final long managementRequestTimeout)
-   {
-      this.managementRequestTimeout = managementRequestTimeout;
-   }
-
    public int getJournalCompactMinFiles()
    {
       return journalCompactMinFiles;
@@ -1217,10 +1203,6 @@ public class ConfigurationImpl implements Configuration
          }
       }
       else if (!managementNotificationAddress.equals(other.managementNotificationAddress))
-      {
-         return false;
-      }
-      if (managementRequestTimeout != other.managementRequestTimeout)
       {
          return false;
       }

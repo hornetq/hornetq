@@ -13,35 +13,75 @@
 
 package org.hornetq.core.management;
 
+
 /**
- * A BridgeControlMBean
+ * A BridgeControl is used to manage a Bridge.
  *
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
  *
  */
 public interface BridgeControl extends HornetQComponentControl
 {
+   /**
+    * Returns the name of this bridge
+    */
    String getName();
 
+   /**
+    * Returns the name of the queue this bridge is consuming messages from.
+    */
    String getQueueName();
 
+   /**
+    * Returns the address this bridge will forward messages to.
+    */
    String getForwardingAddress();
 
+   /**
+    * Returns the filter string associated to this bridge.
+    */
    String getFilterString();
 
+   /**
+    * Return the name of the Transformer implementation associated to this bridge.
+    * 
+    * @see org.hornetq.core.server.cluster.Transformer
+    */
    String getTransformerClassName();
 
+   /**
+    * Returns the pair of connectors used by this bridge.
+    */
    String[] getConnectorPair() throws Exception;
 
+   /**
+    * Returns the name of the discovery group used by this bridge.
+    */
    String getDiscoveryGroupName();
 
+   /**
+    * Returns the retry interval used by this bridge.
+    */
    long getRetryInterval();
 
+   /**
+    * Returns the retry interval multiplier used by this bridge.
+    */
    double getRetryIntervalMultiplier();
 
+   /**
+    * Returns the number of reconnection attempts used by this bridge.
+    */
    int getReconnectAttempts();
 
+   /**
+    * Returns whether the session used by this bridge will failover if
+    * the target server is normally shutdown.
+    */
    boolean isFailoverOnServerShutdown();
 
+   /**
+    * Returns whether this bridge is using duplicate detection.
+    */
    boolean isUseDuplicateDetection();
 }

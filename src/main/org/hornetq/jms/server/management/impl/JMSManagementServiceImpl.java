@@ -18,11 +18,11 @@ import java.util.List;
 import javax.management.ObjectName;
 
 import org.hornetq.core.management.AddressControl;
-import org.hornetq.core.management.ManagementService;
 import org.hornetq.core.management.QueueControl;
 import org.hornetq.core.management.ResourceNames;
 import org.hornetq.core.messagecounter.MessageCounter;
 import org.hornetq.core.messagecounter.MessageCounterManager;
+import org.hornetq.core.server.management.ManagementService;
 import org.hornetq.jms.HornetQQueue;
 import org.hornetq.jms.HornetQTopic;
 import org.hornetq.jms.client.HornetQConnectionFactory;

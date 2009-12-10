@@ -250,14 +250,6 @@
                             <entry>hornetq.notifications</entry>
                         </row>
                         <row>
-                            <entry><link linkend="management.replication"
-                                    >management-request-timeout</link></entry>
-                            <entry>Long</entry>
-                            <entry>how long (in ms) to wait for a reply to a management
-                                request</entry>
-                            <entry>5000</entry>
-                        </row>
-                        <row>
                             <entry><link linkend="configuring.message.counters"
                                     >message-counter-enabled</link></entry>
                             <entry>Boolean</entry>

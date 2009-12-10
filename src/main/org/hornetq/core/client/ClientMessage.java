@@ -63,7 +63,7 @@ public interface ClientMessage extends Message
 
    /** 
     * Sets the OutputStream that will receive the content of a message received in a non blocking way.
-    * 
+    * <br> 
     * This method is used when consuming large messages
     * 
     * @throws HornetQException
@@ -73,8 +73,7 @@ public interface ClientMessage extends Message
    /** 
     * Saves the content of the message to the OutputStream.
     * It will block until the entire content is transfered to the OutputStream.
-    *  
-    * This method is used for when consuming large messages
+    * <br> 
     * 
     * @throws HornetQException
     */
@@ -88,13 +87,12 @@ public interface ClientMessage extends Message
     * @param timeMilliseconds - 0 means wait forever
     * @return true if it reached the end
     * @throws HornetQException
- 
     */
    boolean waitOutputStreamCompletion(long timeMilliseconds) throws HornetQException;
 
    /** 
-    * Sets the body's IntputStream.
-    * 
+    * Sets the body's IntputStream. 
+    * <br> 
     * This method is used when sending large messages
     * 
     * @throws HornetQException

@@ -14,15 +14,24 @@
 package org.hornetq.core.management;
 
 /**
- * A HornetQComponentControl
+ * A HornetQComponentControl is used to manage the lifecycle of a HornetQ components.
  *
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  */
 public interface HornetQComponentControl
 {
+   /**
+    * Returns {@code true} if this component is started, {@code false} else.
+    */
    boolean isStarted();
 
+   /**
+    * Starts this component.
+    */
    void start() throws Exception;
 
+   /**
+    * Stops this component.
+    */
    void stop() throws Exception;
 }

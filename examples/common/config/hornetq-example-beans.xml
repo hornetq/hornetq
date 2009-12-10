@@ -138,7 +138,7 @@
       </constructor>
    </bean>
 
-   <bean name="ManagementService" class="org.hornetq.core.management.impl.ManagementServiceImpl">
+   <bean name="ManagementService" class="org.hornetq.core.server.management.impl.ManagementServiceImpl">
       <constructor>
          <parameter>
             <inject bean="MBeanServer"/>

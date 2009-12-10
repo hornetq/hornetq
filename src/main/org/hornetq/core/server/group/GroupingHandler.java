@@ -12,10 +12,10 @@
  */
 package org.hornetq.core.server.group;
 
-import org.hornetq.core.management.NotificationListener;
 import org.hornetq.core.server.group.impl.GroupBinding;
 import org.hornetq.core.server.group.impl.Proposal;
 import org.hornetq.core.server.group.impl.Response;
+import org.hornetq.core.server.management.NotificationListener;
 import org.hornetq.utils.SimpleString;
 
 /**

@@ -1173,11 +1173,6 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
       return configuration.getManagementNotificationAddress().toString();
    }
 
-   public long getManagementRequestTimeout()
-   {
-      return configuration.getManagementRequestTimeout();
-   }
-
    public long getMessageExpiryScanPeriod()
    {
       return configuration.getMessageExpiryScanPeriod();

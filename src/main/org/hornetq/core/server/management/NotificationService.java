@@ -11,7 +11,7 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.core.management;
+package org.hornetq.core.server.management;
 
 import org.hornetq.core.client.management.impl.ManagementHelper;
 

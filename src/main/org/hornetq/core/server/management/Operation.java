@@ -11,15 +11,21 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.core.management;
+package org.hornetq.core.server.management;
 
 import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import javax.management.MBeanOperationInfo;
+
 /**
- * Info for a MBean Operation Parameter.
+ * Info for a MBean Operation.
+ * 
+ * This annotation is used only for methods which can be invoked
+ * through a GUI.
  * 
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * 
@@ -27,10 +33,11 @@ import java.lang.annotation.Target;
  * 
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.PARAMETER)
-public @interface Parameter
+@Target(ElementType.METHOD)
+@Inherited
+public @interface Operation
 {
-   String name();
+   String desc();
 
-   String desc() default "N/A";
+   int impact() default MBeanOperationInfo.INFO;
 }

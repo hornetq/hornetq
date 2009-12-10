@@ -16,10 +16,14 @@ package org.hornetq.core.management;
 import javax.management.ObjectName;
 
 import org.hornetq.core.config.impl.ConfigurationImpl;
+import org.hornetq.jms.server.management.ConnectionFactoryControl;
+import org.hornetq.jms.server.management.JMSQueueControl;
+import org.hornetq.jms.server.management.JMSServerControl;
+import org.hornetq.jms.server.management.TopicControl;
 import org.hornetq.utils.SimpleString;
 
 /**
- * A ObjectNameBuilder
+ * Helper class to build ObjectNames for HornetQ resources.
  *
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
  *
@@ -29,6 +33,9 @@ public class ObjectNameBuilder
 
    // Constants -----------------------------------------------------
 
+   /**
+    * Default JMX domain for HornetQ resources.
+    */
    public static ObjectNameBuilder DEFAULT = new ObjectNameBuilder(ConfigurationImpl.DEFAULT_JMX_DOMAIN);
 
    public static final String JMS_MODULE = "JMS";
@@ -55,16 +62,29 @@ public class ObjectNameBuilder
 
    // Public --------------------------------------------------------
 
+   /**
+    * Returns the ObjectName used by the single HornetQServerControl.
+    */
    public ObjectName getHornetQServerObjectName() throws Exception
    {
       return ObjectName.getInstance(domain + ":module=Core,type=Server");
    }
 
+   /**
+    * Returns the ObjectName used by AddressControl.
+    * 
+    * @see AddressControl
+    */
    public ObjectName getAddressObjectName(final SimpleString address) throws Exception
    {
       return createObjectName(ObjectNameBuilder.CORE_MODULE, "Address", address.toString());
    }
 
+   /**
+    * Returns the ObjectName used by QueueControl.
+    * 
+    * @see QueueControl
+    */
    public ObjectName getQueueObjectName(final SimpleString address, final SimpleString name) throws Exception
    {
       return ObjectName.getInstance(String.format("%s:module=%s,type=%s,address=%s,name=%s",
@@ -75,51 +95,101 @@ public class ObjectNameBuilder
                                                   ObjectName.quote(name.toString())));
    }
 
+   /**
+    * Returns the ObjectName used by DivertControl.
+    * 
+    * @see DivertControl
+    */
    public ObjectName getDivertObjectName(final SimpleString name) throws Exception
    {
       return createObjectName(ObjectNameBuilder.CORE_MODULE, "Divert", name.toString());
    }
 
+   /**
+    * Returns the ObjectName used by AcceptorControl.
+    * 
+    * @see AcceptorControl
+    */
    public ObjectName getAcceptorObjectName(final String name) throws Exception
    {
       return createObjectName(ObjectNameBuilder.CORE_MODULE, "Acceptor", name);
    }
 
+   /**
+    * Returns the ObjectName used by BroadcastGroupControl.
+    * 
+    * @see BroadcastGroupControl
+    */
    public ObjectName getBroadcastGroupObjectName(final String name) throws Exception
    {
       return createObjectName(ObjectNameBuilder.CORE_MODULE, "BroadcastGroup", name);
    }
 
+   /**
+    * Returns the ObjectName used by BridgeControl.
+    * 
+    * @see BridgeControl
+    */
    public ObjectName getBridgeObjectName(final String name) throws Exception
    {
       return createObjectName(ObjectNameBuilder.CORE_MODULE, "JMSBridge", name);
    }
 
+   /**
+    * Returns the ObjectName used by ClusterConnectionControl.
+    * 
+    * @see ClusterConnectionControl
+    */
    public ObjectName getClusterConnectionObjectName(final String name) throws Exception
    {
       return createObjectName(ObjectNameBuilder.CORE_MODULE, "ClusterConnection", name);
    }
 
+   /**
+    * Returns the ObjectName used by DiscoveryGroupControl.
+    * 
+    * @see DiscoveryGroupControl
+    */
    public ObjectName getDiscoveryGroupObjectName(final String name) throws Exception
    {
       return createObjectName(ObjectNameBuilder.CORE_MODULE, "DiscoveryGroup", name);
    }
 
+   /**
+    * Returns the ObjectName used by JMSServerControl.
+    * 
+    * @see JMSServerControl
+    */
    public ObjectName getJMSServerObjectName() throws Exception
    {
       return ObjectName.getInstance(domain + ":module=JMS,type=Server");
    }
 
+   /**
+    * Returns the ObjectName used by JMSQueueControl.
+    * 
+    * @see JMSQueueControl
+    */
    public ObjectName getJMSQueueObjectName(final String name) throws Exception
    {
       return createObjectName(ObjectNameBuilder.JMS_MODULE, "Queue", name);
    }
 
+   /**
+    * Returns the ObjectName used by TopicControl.
+    * 
+    * @see TopicControl
+    */
    public ObjectName getJMSTopicObjectName(final String name) throws Exception
    {
       return createObjectName(ObjectNameBuilder.JMS_MODULE, "Topic", name);
    }
 
+   /**
+    * Returns the ObjectName used by ConnectionFactoryControl.
+    * 
+    * @see ConnectionFactoryControl
+    */
    public ObjectName getConnectionFactoryObjectName(final String name) throws Exception
    {
       return createObjectName(ObjectNameBuilder.JMS_MODULE, "ConnectionFactory", name);

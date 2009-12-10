@@ -14,18 +14,30 @@
 package org.hornetq.core.management;
 
 /**
- * A DiscoveryGroupControlMBean
+ * A DiscoveryGroupControl is used to manage a discovery group.
  *
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
  *
  */
 public interface DiscoveryGroupControl extends HornetQComponentControl
 {
+   /**
+    * Returns the configuration name of this discovery group.
+    */
    String getName();
 
+   /**
+    * Returns the address that this discovery group is listening to.
+    */
    String getGroupAddress();
 
+   /**
+    * Returns the port that this discovery group is listening to.
+    */
    int getGroupPort();
 
+   /**
+    * Returns the refresh timeout used by this discovery group.
+    */
    long getRefreshTimeout();
 }

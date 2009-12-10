@@ -180,11 +180,6 @@ public class FileConfiguration extends ConfigurationImpl
                                                              managementClusterUser,
                                                              Validators.NOT_NULL_OR_EMPTY);
 
-      managementRequestTimeout = XMLConfigurationUtil.getLong(e,
-                                                              "management-request-timeout",
-                                                              managementRequestTimeout,
-                                                              Validators.GT_ZERO);
-
       logDelegateFactoryClassName = XMLConfigurationUtil.getString(e,
                                                                    "log-delegate-factory-class-name",
                                                                    logDelegateFactoryClassName,

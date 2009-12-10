@@ -165,10 +165,6 @@ public interface Configuration extends Serializable
 
    void setManagementClusterPassword(String password);
 
-   long getManagementRequestTimeout();
-
-   void setManagementRequestTimeout(long timeout);
-
    int getIDCacheSize();
 
    void setIDCacheSize(int idCacheSize);

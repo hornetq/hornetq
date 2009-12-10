@@ -13,8 +13,8 @@
 
 package org.hornetq.core.remoting.spi;
 
-import org.hornetq.core.management.NotificationService;
 import org.hornetq.core.server.HornetQComponent;
+import org.hornetq.core.server.management.NotificationService;
 
 /**
  * An Acceptor is used by the Remoting Service to allow clients to connect. It should take care of dispatching client requests

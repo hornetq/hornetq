@@ -28,7 +28,6 @@ import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.management.ManagementService;
 import org.hornetq.core.remoting.Channel;
 import org.hornetq.core.remoting.ChannelHandler;
 import org.hornetq.core.remoting.Interceptor;
@@ -46,6 +45,7 @@ import org.hornetq.core.remoting.spi.Connection;
 import org.hornetq.core.remoting.spi.ConnectionLifeCycleListener;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.impl.HornetQPacketHandler;
+import org.hornetq.core.server.management.ManagementService;
 import org.hornetq.utils.ConfigurationHelper;
 
 /**

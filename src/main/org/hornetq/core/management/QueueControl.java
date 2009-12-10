@@ -17,6 +17,9 @@ import java.util.Map;
 
 import javax.management.MBeanOperationInfo;
 
+import org.hornetq.core.server.management.Operation;
+import org.hornetq.core.server.management.Parameter;
+
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * 

@@ -22,9 +22,6 @@ import org.hornetq.utils.json.JSONObject;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- * 
- * @version <tt>$Revision$</tt>
- * 
  */
 public class DayCounterInfo
 {
@@ -87,6 +84,8 @@ public class DayCounterInfo
 
    // Public --------------------------------------------------------
 
+   /**
+    */
    public String getDate()
    {
       return date;

@@ -17,6 +17,9 @@ import org.hornetq.utils.json.JSONArray;
 import org.hornetq.utils.json.JSONObject;
 
 /**
+ * Helper class to create Java Objects from the
+ * JSON serialization returned by {@link AddressControl#getRolesAsJSON()}.
+ * 
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
  */
 public class RoleInfo
@@ -37,6 +40,10 @@ public class RoleInfo
 
    final private boolean manage;
 
+   /**
+    * Returns an array of RoleInfo corresponding to the JSON serialization returned
+    * by {@link AddressControl#getRolesAsJSON()}.
+    */
    public static final RoleInfo[] from(final String jsonString) throws Exception
    {
       JSONArray array = new JSONArray(jsonString);
@@ -76,41 +83,65 @@ public class RoleInfo
       this.manage = manage;
    }
 
+   /**
+    * Returns the name of the role.
+    */
    public String getName()
    {
       return name;
    }
 
+   /**
+    * Returns whether this role can send messages to the address.
+    */
    public boolean isSend()
    {
       return send;
    }
 
+   /**
+    * Returns whether this role can consume messages from queues bound to the address.
+    */
    public boolean isConsume()
    {
       return consume;
    }
 
+   /**
+    * Returns whether this role can create durable queues bound to the address.
+    */
    public boolean isCreateDurableQueue()
    {
       return createDurableQueue;
    }
 
+   /**
+    * Returns whether this role can delete durable queues bound to the address.
+    */
    public boolean isDeleteDurableQueue()
    {
       return deleteDurableQueue;
    }
 
+   /**
+    * Returns whether this role can create non-durable queues bound to the address.
+    */
    public boolean isCreateNonDurableQueue()
    {
       return createNonDurableQueue;
    }
 
+   /**
+    * Returns whether this role can delete non-durable queues bound to the address.
+    */
    public boolean isDeleteNonDurableQueue()
    {
       return deleteNonDurableQueue;
    }
 
+   /**
+    * Returns whether this role can send management messages to the address.
+    */
    public boolean isManage()
    {
       return manage;

@@ -16,32 +16,68 @@ package org.hornetq.core.management;
 import java.util.Map;
 
 /**
- * A ClusterConnectionControlMBean
+ * A ClusterConnectionControl is used to manage a cluster connection.
  *
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
  *
  */
 public interface ClusterConnectionControl extends HornetQComponentControl
 {
+   /**
+    * Returns the configuration name of this cluster connection.
+    */
    String getName();
 
+   /**
+    * Returns the address used by this cluster connection.
+    */
    String getAddress();
 
+   /**
+    * Returns the node ID used by this cluster connection.
+    */
    String getNodeID();
 
+   /**
+    * Return whether this cluster connection use duplicate detection.
+    */
    boolean isDuplicateDetection();
 
+   /**
+    * Return whether this cluster connection forward messages when it has no local consumers.
+    */
    boolean isForwardWhenNoConsumers();
 
+   /**
+    * Returns the maximum number of hops used by this cluster connection.
+    */
    int getMaxHops();
 
+   /**
+    * Returns the pairs of live-backup connectors used by this cluster connection.
+    */
    Object[] getStaticConnectorNamePairs();
 
+   /**
+    * Returns the pairs of live-backup connectors used by this cluster connection
+    * using JSON serialization.
+    */
    String getStaticConnectorNamePairsAsJSON() throws Exception;
 
+   /**
+    * Returns the name of the discovery group used by this cluster connection.
+    */
    String getDiscoveryGroupName();
 
+   /**
+    * Returns the connection retry interval used by this cluster connection.
+    */
    long getRetryInterval();
 
+   /**
+    * Returns a map of the nodes connected to this cluster connection.
+    * <br>
+    * keys are node IDs, values are the addresses used to connect to the nodes.
+    */
    Map<String, String> getNodes() throws Exception;
 }
