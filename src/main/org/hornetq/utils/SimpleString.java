@@ -261,7 +261,6 @@ public class SimpleString implements CharSequence, Serializable, Comparable<Simp
     *
     * i.e. "a.b" would return "a" and "b" if . was the delimeter
     * @param delim
-    * @return
     */
    public SimpleString[] split(final char delim)
    {
@@ -341,7 +340,7 @@ public class SimpleString implements CharSequence, Serializable, Comparable<Simp
    /**
     * concatanates a SimpleString and a char
     *
-    * @param toAdd the char to concate with.
+    * @param c the char to concate with.
     * @return the concatanated SimpleString
     */
    public SimpleString concat(final char c)

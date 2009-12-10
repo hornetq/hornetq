@@ -14,15 +14,16 @@
 package org.hornetq.core.client;
 
 /**
- * A ConnectionLoadBalancingPolicy
+ * A ConnectionLoadBalancingPolicy defines a policy to load balance between connections.
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
- * Created 28 Nov 2008 10:19:56
- *
- *
  */
 public interface ConnectionLoadBalancingPolicy
 {
+   /**
+    * Returns the selected index according to the policy implementation.
+    *
+    * @param max maximum position index that can be selected
+    */
    int select(int max);
 }

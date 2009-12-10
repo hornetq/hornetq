@@ -54,9 +54,7 @@ public interface DivertControl
    String getForwardingAddress();
 
    /**
-    * Return the name of the Transformer implementation associated to this bridge.
-    * 
-    * @see org.hornetq.core.server.cluster.Transformer
+    * Return the name of the org.hornetq.core.server.cluster.Transformer implementation associated to this bridge.
     */
    String getTransformerClassName();
 }

@@ -169,7 +169,7 @@ public interface HornetQServerControl
    /**
     * Sets the maximum number of days kept in memory for message counter.
     * 
-    * @count value must be greater than 0
+    * @param count value must be greater than 0
     */
    void setMessageCounterMaxDayCount(int count) throws Exception;
 
@@ -401,7 +401,8 @@ public interface HornetQServerControl
     * The Strings are Base-64 representation of the transaction XID and can be
     * used to heuristically commit or rollback the transactions.
     * 
-    * @see #commitPreparedTransaction(String), {@link #rollbackPreparedTransaction(String)}
+    * @see #commitPreparedTransaction(String)
+    * @see #rollbackPreparedTransaction(String)
     */
    @Operation(desc = "List all the prepared transaction, sorted by date, oldest first")
    String[] listPreparedTransactions() throws Exception;

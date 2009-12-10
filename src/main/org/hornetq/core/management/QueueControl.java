@@ -218,7 +218,7 @@ public interface QueueControl
    /**
     * Changes the message's priority corresponding to the specified message ID to the specified priority.
     * 
-    * @param priority between 0 and 9 inclusive.
+    * @param newPriority between 0 and 9 inclusive.
     *
     * @return {@code true}Êif the message priority was changed
     */

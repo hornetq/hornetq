@@ -43,9 +43,7 @@ public interface BridgeControl extends HornetQComponentControl
    String getFilterString();
 
    /**
-    * Return the name of the Transformer implementation associated to this bridge.
-    * 
-    * @see org.hornetq.core.server.cluster.Transformer
+    * Return the name of the org.hornetq.core.server.cluster.Transformer implementation associated to this bridge.
     */
    String getTransformerClassName();
 
