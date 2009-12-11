@@ -21,7 +21,10 @@ import org.hornetq.utils.json.JSONException;
 import org.hornetq.utils.json.JSONObject;
 
 /**
- * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
+ * Helper class to create Java Objects from the
+ * JSON serialization returned by {@link QueueControl#listMessageCounterHistory()}.
+ * 
+ *  @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  */
 public class DayCounterInfo
 {
@@ -52,9 +55,12 @@ public class DayCounterInfo
       return json.toString();
    }
 
+   /**
+    * Returns an array of RoleInfo corresponding to the JSON serialization returned
+    * by {@link QueueControl#listMessageCounterHistory()}.
+    */
    public static DayCounterInfo[] fromJSON(final String jsonString) throws JSONException
    {
-
       JSONObject json = new JSONObject(jsonString);
       JSONArray dayCounters = json.getJSONArray("dayCounters");
       DayCounterInfo[] infos = new DayCounterInfo[dayCounters.length()];
@@ -85,12 +91,17 @@ public class DayCounterInfo
    // Public --------------------------------------------------------
 
    /**
+    * Returns the date of the counter.
     */
    public String getDate()
    {
       return date;
    }
 
+   /**
+    * Returns a 24-length array corresponding to the number of messages added to the queue
+    * for the given hour of the day.
+    */
    public int[] getCounters()
    {
       return counters;

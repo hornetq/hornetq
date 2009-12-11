@@ -21,10 +21,10 @@ import org.hornetq.core.messagecounter.MessageCounter;
 import org.hornetq.utils.json.JSONObject;
 
 /**
- * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
+ * Helper class to create Java Objects from the
+ * JSON serialization returned by {@link QueueControl#listMessageCounter()}.
  * 
- * @version <tt>$Revision$</tt>
- * 
+ *  @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  */
 public class MessageCounterInfo
 {
@@ -67,6 +67,10 @@ public class MessageCounterInfo
       return json.toString();
    }
 
+   /**
+    * Returns an array of RoleInfo corresponding to the JSON serialization returned
+    * by {@link QueueControl#listMessageCounter()}.
+    */
    public static MessageCounterInfo fromJSON(final String jsonString) throws Exception
    {
       JSONObject data = new JSONObject(jsonString);
@@ -116,46 +120,73 @@ public class MessageCounterInfo
 
    // Public --------------------------------------------------------
 
+   /**
+    * Returns the name of the queue.
+    */
    public String getName()
    {
       return name;
    }
 
+   /**
+    * Returns the name of the subscription.
+    */
    public String getSubscription()
    {
       return subscription;
    }
 
+   /**
+    * Returns whether the queue is durable.
+    */
    public boolean isDurable()
    {
       return durable;
    }
 
+   /**
+    * Returns the number of messages added to the queue since it was created.
+    */
    public long getCount()
    {
       return count;
    }
 
+   /**
+    * Returns the number of messages added to the queue since the last counter sample.
+    */
    public long getCountDelta()
    {
       return countDelta;
    }
 
+   /**
+    * Returns the number of messages currently in the queue.
+    */
    public int getDepth()
    {
       return depth;
    }
 
+   /**
+    * Returns the number of messages in the queue since last counter sample.
+    */
    public int getDepthDelta()
    {
       return depthDelta;
    }
 
+   /**
+    * Returns the timestamp of the last time a message was added to the queue.
+    */
    public String getLastAddTimestamp()
    {
       return lastAddTimestamp;
    }
 
+   /**
+    * Returns the timestamp of the last time the queue was updated.
+    */
    public String getUdpateTimestamp()
    {
       return udpateTimestamp;

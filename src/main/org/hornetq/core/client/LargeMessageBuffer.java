@@ -19,7 +19,7 @@ import org.hornetq.core.buffers.HornetQBuffer;
 import org.hornetq.core.exception.HornetQException;
 
 /**
- * A LargeMessageBufferImpl
+ * A LargeMessageBuffer represents the buffer of a large message.
  *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  *
@@ -27,18 +27,40 @@ import org.hornetq.core.exception.HornetQException;
  */
 public interface LargeMessageBuffer extends HornetQBuffer
 {
+   /**
+    * Returns the size of this buffer.
+
+    */
    long getSize();
 
+   /**
+    * Discards packets unused by this buffer.
+    */
    void discardUnusedPackets();
 
+   /**
+    * Closes this buffer.
+    */
    void close();
 
+   /**
+    * Cancels this buffer.
+    */
    void cancel();
 
+   /**
+    * Sets the OutputStream of this buffer to the specified output.
+    */
    void setOutputStream(final OutputStream output) throws HornetQException;
 
+   /**
+    * Saves this buffer to the specified output.
+    */
    void saveBuffer(final OutputStream output) throws HornetQException;
 
+   /**
+    * Waits for the completion for the specified waiting time (in milliseconds).
+    */
    boolean waitCompletion(long timeWait) throws HornetQException;
 
 }
