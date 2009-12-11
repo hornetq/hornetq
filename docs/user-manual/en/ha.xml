@@ -37,6 +37,10 @@
             <para>HornetQ provides two different modes for high availability, either by
                     <emphasis>replicating data</emphasis> from the live server journal to the backup
                 server or using a <emphasis>shared store</emphasis> for both servers.</para>
+            <note>
+                <para>Only persistent message data will survive failover. Any non persistent message
+                    data will not be available after failover.</para>
+            </note>
             <section id="ha.mode.replicated">
                 <title>Data Replication</title>
                 <para>In this mode, data stored in the HornetQ journal are replicated from the live
@@ -196,6 +200,9 @@
             same server (e.g. in case of transient network problems). This is similar to failover,
             except it's reconnecting to the same server and is discussed in <xref
                 linkend="client-reconnection"/></para>
+        <para>During failover, if the client has consumers on any non persistent or temporary
+            queues, those queues will be automatically recreated during failover on the backup node,
+            since the backup node will not have any knowledge of non persistent queues.</para>
         <section id="ha.automatic.failover">
             <title>Automatic Client Failover</title>
             <para>HornetQ clients can be configured with knowledge of live and backup servers, so

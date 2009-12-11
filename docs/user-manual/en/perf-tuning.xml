@@ -95,10 +95,9 @@
                     acknowledgements with one acknowledge/commit. </para>
             </listitem>
             <listitem>
-                <para>Avoid durable messages. By default JMS messages are durable. If you
-                    don't really need durable messages then set them to be non-durable.
-                    Durable messages incur a lot more overhead in persisting them to
-                    storage.</para>
+                <para>Avoid durable messages. By default JMS messages are durable. If you don't
+                    really need durable messages then set them to be non-durable. Durable messages
+                    incur a lot more overhead in persisting them to storage.</para>
             </listitem>
         </itemizedlist>
     </section>
@@ -107,10 +106,10 @@
         <para>There are various other places in HornetQ where we can perform some tuning:</para>
         <itemizedlist>
             <listitem>
-                <para>Use Asynchronous Send Acknowledgements. If you need to send durable
-                    messages non transactionally and you need a guarantee that they have reached the
-                    server by the time the call to send() returns, don't set durable messages to
-                    be sent blocking, instead use asynchronous send acknowledgements to get your
+                <para>Use Asynchronous Send Acknowledgements. If you need to send durable messages
+                    non transactionally and you need a guarantee that they have reached the server
+                    by the time the call to send() returns, don't set durable messages to be sent
+                    blocking, instead use asynchronous send acknowledgements to get your
                     acknowledgements of send back in a separate stream, see <xref
                         linkend="send-guarantees"/> for more information on this.</para>
             </listitem>
@@ -143,22 +142,36 @@
                         >journal-sync-non-transactional</literal> to <literal>false</literal> in
                         <literal>hornetq-configuration.xml</literal> can give you better
                     non-transactional persistent performance at the expense of some possibility of
-                    loss of durable messages on failure. See <xref linkend="send-guarantees"/>
-                    for more information.</para>
+                    loss of durable messages on failure. See <xref linkend="send-guarantees"/> for
+                    more information.</para>
             </listitem>
             <listitem>
-                <para>Send messages non blocking. Setting <literal
-                        >block-on-durable-send</literal> and <literal
-                        >block-on-non-durable-send</literal> to <literal>false</literal> in
+                <para>Send messages non blocking. Setting <literal>block-on-durable-send</literal>
+                    and <literal>block-on-non-durable-send</literal> to <literal>false</literal> in
                         <literal>hornetq-jms.xml</literal> (if you're using JMS and JNDI) or
                     directly on the ClientSessionFactory. This means you don't have to wait a whole
                     network round trip for every message sent. See <xref linkend="send-guarantees"/>
                     for more information.</para>
             </listitem>
             <listitem>
+                <para>Socket NIO vs Socket Old IO. By default HornetQ uses Socket NIO on the server
+                    and old (blocking) IO on the client side (see the chapter on configuring
+                    transports for more information <xref linkend="configuring-transports"/>). NIO
+                    is much more scalable but can give you some latency hit compared to old blocking
+                    IO. If you expect to be able to service many thousands of connections on the
+                    server, then continue to use NIO on the server. However, if don't expect many
+                    thousands of connections on the server you can configure the server acceptors to
+                    use old IO, and might get a small performance advantage.</para>
+            </listitem>
+            <listitem>
                 <para>Use the core API not JMS. Using the JMS API you will have slightly lower
                     performance than using the core API, since all JMS operations need to be
-                    translated into core operations before the server can handle them.</para>
+                    translated into core operations before the server can handle them. If using the
+                    core API try to use methods that take <literal>SimpleString</literal> as much as
+                    possible. <literal>SimpleString</literal>, unlike java.lang.String does not
+                    require copying before it is written to the wire, so if you re-use <literal
+                        >SimpleString</literal> instances between calls then you can avoid some
+                    unnecessary copying.</para>
             </listitem>
         </itemizedlist>
     </section>
