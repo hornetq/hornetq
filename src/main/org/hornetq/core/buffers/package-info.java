@@ -12,7 +12,7 @@
  */
 
 /**
- * HornetQ Buffering.
+ * Buffering API.
  * <br>
  * This package defines the buffers used by HornetQ. The underlying implementations uses
  * Netty's ChannelBuffer and wraps it with methods required by HornetQ usage.

@@ -13,7 +13,7 @@
 
 /**
  * Core API to produce and consume messages.
- * 
+ * <br>
  * This package defines the API used by HornetQ clients to produce and consume messages.
  */
 package org.hornetq.core.client;

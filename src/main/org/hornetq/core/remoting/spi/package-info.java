@@ -12,10 +12,10 @@
  */
 
 /**
- * management API for HornetQ servers and its Core resources.
+ * Remoting SPI.
  * <br>
- * HornetQ can be managed either using JMX or by sending management messages to the 
- * server's special management address. Please refer to the user manual for more information.
+ * This package defines the Service Provide Interface that
+ * remoting providers must implement to be supported by HornetQ.
  */
-package org.hornetq.core.management;
+package org.hornetq.core.remoting.spi;
 

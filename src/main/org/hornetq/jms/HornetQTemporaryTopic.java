@@ -19,6 +19,10 @@ import javax.jms.TemporaryTopic;
 import org.hornetq.jms.client.HornetQSession;
 
 /**
+ * HornetQ implementation of a JMS TemporaryTopic.
+ * <br>
+ * This class can be instantiated directly.
+ * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision: 3569 $</tt>
  *

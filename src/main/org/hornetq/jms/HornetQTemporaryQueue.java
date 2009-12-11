@@ -19,6 +19,10 @@ import javax.jms.TemporaryQueue;
 import org.hornetq.jms.client.HornetQSession;
 
 /**
+ * HornetQ implementation of a JMS TemporaryQueue.
+ * <br>
+ * This class can be instantiated directly.
+ * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision: 3569 $</tt>
  *

@@ -12,10 +12,11 @@
  */
 
 /**
- * management API for HornetQ servers and its Core resources.
+ * Implementation of the JMS Destinations.
  * <br>
- * HornetQ can be managed either using JMX or by sending management messages to the 
- * server's special management address. Please refer to the user manual for more information.
+ * Classes in this package can be instantiated directly
+ * if JMS destinations are not looked up in JNDI.
+ * 
  */
-package org.hornetq.core.management;
+package org.hornetq.jms;
 

@@ -20,6 +20,10 @@ import org.hornetq.utils.Pair;
 import org.hornetq.utils.SimpleString;
 
 /**
+ * HornetQ implementation of a JMS Topic.
+ * <br>
+ * This class can be instantiated directly.
+ * 
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>

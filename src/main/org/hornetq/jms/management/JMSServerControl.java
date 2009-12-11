@@ -17,6 +17,9 @@ import java.util.Map;
 
 import javax.management.MBeanOperationInfo;
 
+import org.hornetq.core.client.ClientSessionFactory;
+import org.hornetq.core.config.TransportConfiguration;
+import org.hornetq.core.remoting.spi.ConnectorFactory;
 import org.hornetq.core.server.management.Operation;
 import org.hornetq.core.server.management.Parameter;
 
@@ -57,20 +60,51 @@ public interface JMSServerControl
 
    // Operations ----------------------------------------------------
 
+   /**
+    * Creates a JMS Queue with the specified name and JNDI binding.
+    * 
+    * @return {@code true}Êif the queue was created, {@code false} else
+    */
    @Operation(desc = "Create a JMS Queue", impact = MBeanOperationInfo.ACTION)
    boolean createQueue(@Parameter(name = "name", desc = "Name of the queue to create") String name,
                        @Parameter(name = "jndiBinding", desc = "the name of the binding for JNDI") String jndiBinding) throws Exception;
 
+   /**
+    * Destroys a JMS Queue with the specified name.
+    * 
+    * @return {@code true}Êif the queue was destroyed, {@code false} else
+    */
    @Operation(desc = "Destroy a JMS Queue", impact = MBeanOperationInfo.ACTION)
    boolean destroyQueue(@Parameter(name = "name", desc = "Name of the queue to destroy") String name) throws Exception;
 
+   /**
+    * Creates a JMS Topic with the specified name and JNDI binding.
+    * 
+    * @return {@code true}Êif the topic was created, {@code false} else
+    */
    @Operation(desc = "Create a JMS Topic", impact = MBeanOperationInfo.ACTION)
    boolean createTopic(@Parameter(name = "name", desc = "Name of the topic to create") String name,
                        @Parameter(name = "jndiBinding", desc = "the name of the binding for JNDI") String jndiBinding) throws Exception;
 
+   /**
+    * Destroys a JMS Topic with the specified name.
+    * 
+    * @return {@code true}Êif the topic was destroyed, {@code false} else
+    */
    @Operation(desc = "Destroy a JMS Topic", impact = MBeanOperationInfo.ACTION)
    boolean destroyTopic(@Parameter(name = "name", desc = "Name of the topic to destroy") String name) throws Exception;
 
+   /**
+    * Create a JMS ConnectionFactory with the specified name connected to a static list of live-backup servers.
+    * <br>
+    * The ConnectionFactory is bound to JNDI for all the specified bindings Strings.
+    * <br>
+    * {@code liveConnectorsTransportClassNames} (resp. {@code backupConnectorsTransportClassNames}) are the class names 
+    * of the {@link ConnectorFactory} to connect to the live (resp. backup) servers
+    * and {@code liveConnectorTransportParams} (resp. backupConnectorTransportParams) are Map&lt;String, Object&gt; for the corresponding {@link TransportConfiguration}'s parameters.
+    * 
+    * @see ClientSessionFactory#setStaticConnectors(java.util.List)
+    */
    void createConnectionFactory(String name,
                                 Object[] liveConnectorsTransportClassNames,
                                 Object[] liveConnectorTransportParams,
@@ -78,6 +112,13 @@ public interface JMSServerControl
                                 Object[] backupConnectorTransportParams,
                                 Object[] bindings) throws Exception;
 
+   /**
+    * Create a JMS ConnectionFactory with the specified name connected to a single live-backup pair of servers.
+    * <br>
+    * The ConnectionFactory is bound to JNDI for all the specified bindings Strings.
+    * <br>
+    * {@code backupTransportClassNames} and {@code backupTransportParams}Êcan be {@code null} if there is no backup server.
+    */
    @Operation(desc = "Create a JMS ConnectionFactory", impact = MBeanOperationInfo.ACTION)
    void createConnectionFactory(@Parameter(name = "name") String name,
                                 @Parameter(name = "liveTransportClassNames", desc = "comma-separated list of class names for transport to live servers") String liveTransportClassNames,
@@ -86,6 +127,13 @@ public interface JMSServerControl
                                 @Parameter(name = "backupTransportParams", desc = "comma-separated list of key=value parameters for the backup transports (enclosed between { } for each transport)") String backupTransportParams,
                                 @Parameter(name = "jndiBindings", desc = "comma-separated list of JNDI bindings") String jndiBindings) throws Exception;
 
+   /**
+    * Create a JMS ConnectionFactory with the specified name connected to a static list of live-backup servers.
+    * <br>
+    * Connections created by this ConnectionFactory will have their ClientID set to the specified ClientID.
+    * 
+    * @see #createConnectionFactory(String, Object[], Object[], Object[], Object[], Object[])
+    */
    void createConnectionFactory(String name,
                                 Object[] liveConnectorsTransportClassNames,
                                 Object[] liveConnectorTransportParams,
@@ -94,6 +142,15 @@ public interface JMSServerControl
                                 String clientID,
                                 Object[] jndiBindings) throws Exception;
 
+   /**
+    * Create a JMS ConnectionFactory with the specified name connected to a single live-backup pair of servers.
+    * <br>
+    * The ConnectionFactory is bound to JNDI for all the specified bindings Strings.
+    * <br>
+    * Connections created by this ConnectionFactory will have their ClientID set to the specified ClientID.
+    * <br>
+    * {@code backupTransportClassNames} and {@code backupTransportParams}Êcan be {@code null} if there is no backup server.
+    */
    @Operation(desc = "Create a JMS ConnectionFactory", impact = MBeanOperationInfo.ACTION)
    void createConnectionFactory(@Parameter(name = "name") String name,
                                 @Parameter(name = "liveTransportClassNames", desc = "comma-separated list of class names for transport to live servers") String liveTransportClassNames,
@@ -103,6 +160,16 @@ public interface JMSServerControl
                                 @Parameter(name = "clientID") String clientID,
                                 @Parameter(name = "jndiBindings", desc = "comma-separated list of JNDI bindings") String jndiBindings) throws Exception;
 
+   /**
+    * Create a JMS ConnectionFactory with the specified name connected to a static list of live-backup servers.
+    * <br>
+    * The ConnectionFactory is bound to JNDI for all the specified bindings Strings.
+    * <br>
+    * All parameters corresponds to the underlying ClientSessionFactory used by the factory.
+    * 
+    * @see #createConnectionFactory(String, Object[], Object[], Object[], Object[], Object[])
+    * @see ClientSessionFactory
+    */
    void createConnectionFactory(String name,
                                 Object[] liveConnectorsTransportClassNames,
                                 Object[] liveConnectorTransportParams,
@@ -138,6 +205,16 @@ public interface JMSServerControl
                                 String groupID,
                                 Object[] jndiBindings) throws Exception;
 
+   /**
+    * Create a JMS ConnectionFactory with the specified name connected to a single live-backup pair of servers.
+    * <br>
+    * The ConnectionFactory is bound to JNDI for all the specified bindings Strings.
+    * <br>
+    * All parameters corresponds to the underlying ClientSessionFactory used by the factory.
+    * 
+    * @see #createConnectionFactory(String, Object[], Object[], Object[], Object[], Object[])
+    * @see ClientSessionFactory
+    */
    void createConnectionFactory(@Parameter(name = "name") String name,
                                 @Parameter(name = "liveTransportClassNames", desc = "comma-separated list of class names for transport to live servers") String liveTransportClassNames,
                                 @Parameter(name = "liveTransportParams", desc = "comma-separated list of key=value parameters for the live transports (enclosed between { } for each transport)") String liveTransportParams,
@@ -173,12 +250,34 @@ public interface JMSServerControl
                                 @Parameter(name = "groupID") String groupID,
                                 @Parameter(name = "jndiBindings", desc = "comma-separated list of JNDI bindings") String jndiBindings) throws Exception;
 
+   /**
+    * Create a JMS ConnectionFactory with the specified name using a discovery group to discover HornetQ servers.
+    * <br>
+    * The ConnectionFactory is bound to JNDI for all the specified bindings Strings.
+    * <br>
+    * This factory listens to the specified {@code discoveryAddress} and {@code discoveryPort} to discover which servers it can connect to.
+    * <br>
+    * Connections created by this ConnectionFactory will have their ClientID set to the specified ClientID.
+    * 
+    * @see #createConnectionFactory(String, Object[], Object[], Object[], Object[], Object[])
+    */
    void createConnectionFactory(String name,
                                 String discoveryAddress,
                                 int discoveryPort,
                                 String clientID,
                                 Object[] bindings) throws Exception;
 
+   /**
+    * Create a JMS ConnectionFactory with the specified name using a discovery group to discover HornetQ servers.
+    * <br>
+    * The ConnectionFactory is bound to JNDI for the specified bindings Strings
+    * <br>
+    * This factory listens to the specified {@code discoveryAddress} and {@code discoveryPort} to discover which servers it can connect to.
+    * <br>
+    * Connections created by this ConnectionFactory will have their ClientID set to the specified ClientID.
+    * 
+    * @see #createConnectionFactory(String, Object[], Object[], Object[], Object[], Object[])
+    */
    @Operation(desc = "Create a JMS ConnectionFactory", impact = MBeanOperationInfo.ACTION)
    void createConnectionFactory(@Parameter(name = "name") String name,
                                 @Parameter(name = "discoveryAddress") String discoveryAddress,
@@ -186,6 +285,17 @@ public interface JMSServerControl
                                 @Parameter(name = "clientID") String clientID,
                                 @Parameter(name = "jndiBindings") String jndiBindings) throws Exception;
 
+   /**
+    * Create a JMS ConnectionFactory with the specified name using a discovery group to discover HornetQ servers.
+    * <br>
+    * The ConnectionFactory is bound to JNDI for all the specified bindings Strings.
+    * <br>
+    * This factory listens to the specified {@code discoveryAddress} and {@code discoveryPort} to discover which servers it can connect to.
+    * <br>
+    * All parameters corresponds to the underlying ClientSessionFactory used by the factory.
+    * 
+    * @see ClientSessionFactory
+    */
    void createConnectionFactory(String name,
                                 String discoveryAddress,
                                 int discoveryPort,
@@ -221,6 +331,17 @@ public interface JMSServerControl
                                 String groupID,
                                 Object[] jndiBindings) throws Exception;
 
+   /**
+    * Create a JMS ConnectionFactory with the specified name using a discovery group to discover HornetQ servers.
+    * <br>
+    * The ConnectionFactory is bound to JNDI for all the specified comma-separated bindings.
+    * <br>
+    * This factory listens to the specified {@code discoveryAddress} and {@code discoveryPort} to discover which servers it can connect to.
+    * <br>
+    * All parameters corresponds to the underlying ClientSessionFactory used by the factory.
+    * 
+    * @see ClientSessionFactory
+    */
    @Operation(desc = "Create a JMS ConnectionFactory", impact = MBeanOperationInfo.ACTION)
    void createConnectionFactory(@Parameter(name = "name") String name,
                                 @Parameter(name = "discoveryAddress") String discoveryAddress,
@@ -257,23 +378,51 @@ public interface JMSServerControl
                                 @Parameter(name = "groupID") String groupID,
                                 @Parameter(name = "jndiBindings", desc = "comma-separated list of JNDI bindings") String jndiBindings) throws Exception;
 
+   /**
+    * Create a JMS ConnectionFactory with the specified name connected to a single HornetQ server.
+    * <br>
+    * The ConnectionFactory is bound to JNDI for all the specified bindings.
+    */
    void createConnectionFactory(String name,
                                 String liveTransportClassName,
                                 Map<String, Object> liveTransportParams,
                                 Object[] jndiBindings) throws Exception;
 
+   /**
+    * Create a JMS ConnectionFactory with the specified name connected to a single HornetQ server.
+    * <br>
+    * The ConnectionFactory is bound to JNDI for all the specified comma-separated bindings.
+    * <br>
+    * The {@code liveTransportParams} is a  comma-separated list of key=value for the transport parameters corresponding to the {@code TransportConfiguration}Êparameters.
+    */
    @Operation(desc = "Create a JMS ConnectionFactory", impact = MBeanOperationInfo.ACTION)
    void createConnectionFactory(@Parameter(name = "name") String name,
                                 @Parameter(name = "liveTransportClassName") String liveTransportClassName,
                                 @Parameter(name = "liveTransportParams", desc = "comma-separated list of key=value for the transport parameters") String liveTransportParams,
                                 @Parameter(name = "jndiBindings", desc = "comma-separated list of JNDI bindings") String jndiBindings) throws Exception;
 
+   /**
+    * Create a JMS ConnectionFactory with the specified name connected to a single HornetQ server.
+    * <br>
+    * The ConnectionFactory is bound to JNDI for all the specified comma-separated bindings.
+    * <br>
+    * Connections created by this ConnectionFactory will have their ClientID set to the specified ClientID.
+    */
    void createConnectionFactory(String name,
                                 String liveTransportClassName,
                                 Map<String, Object> liveTransportParams,
                                 String clientID,
                                 Object[] jndiBindings) throws Exception;
 
+   /**
+    * Create a JMS ConnectionFactory with the specified name connected to a single HornetQ server.
+    * <br>
+    * The ConnectionFactory is bound to JNDI for all the specified comma-separated bindings.
+    * <br>
+    * The {@code liveTransportParams} is a  comma-separated list of key=value for the transport parameters corresponding to the {@code TransportConfiguration}Êparameters.
+    * <br>
+    * Connections created by this ConnectionFactory will have their ClientID set to the specified ClientID.
+    */
    @Operation(desc = "Create a JMS ConnectionFactory", impact = MBeanOperationInfo.ACTION)
    void createConnectionFactory(@Parameter(name = "name") String name,
                                 @Parameter(name = "liveTransportClassName") String liveTransportClassName,
@@ -281,6 +430,11 @@ public interface JMSServerControl
                                 @Parameter(name = "clientID") String clientID,
                                 @Parameter(name = "jndiBindings", desc = "comma-separated list of JNDI bindings") String jndiBindings) throws Exception;
 
+   /**
+    * Create a JMS ConnectionFactory with the specified name connected to a static list of live-backup HornetQ servers.
+    * <br>
+    * The ConnectionFactory is bound to JNDI for all the specified comma-separated bindings.
+    */
    void createConnectionFactory(String name,
                                 String liveTransportClassName,
                                 Map<String, Object> liveTransportParams,
@@ -288,6 +442,13 @@ public interface JMSServerControl
                                 Map<String, Object> backupTransportParams,
                                 Object[] jndiBindings) throws Exception;
 
+   /**
+    * Create a JMS ConnectionFactory with the specified name connected to a static list of live-backup HornetQ servers.
+    * <br>
+    * The ConnectionFactory is bound to JNDI for all the specified comma-separated bindings.
+    * <br>
+    * Connections created by this ConnectionFactory will have their ClientID set to the specified ClientID.
+    */
    void createConnectionFactory(String name,
                                 String liveTransportClassName,
                                 Map<String, Object> liveTransportParams,
@@ -296,21 +457,39 @@ public interface JMSServerControl
                                 String clientID,
                                 Object[] jndiBindings) throws Exception;
 
+   /**
+    * Destroy the ConnectionFactory corresponding to the specified name.
+    */
    @Operation(desc = "Destroy a JMS ConnectionFactory", impact = MBeanOperationInfo.ACTION)
    void destroyConnectionFactory(@Parameter(name = "name", desc = "Name of the ConnectionFactory to destroy") String name) throws Exception;
 
+   /**
+    * Lists the addresses of all the clients connected to this address.
+    */
    @Operation(desc = "List the client addresses", impact = MBeanOperationInfo.INFO)
    String[] listRemoteAddresses() throws Exception;
 
+   /**
+    * Lists the addresses of the clients connected to this address which matches the specified IP address.
+    */
    @Operation(desc = "List the client addresses which match the given IP Address", impact = MBeanOperationInfo.INFO)
    String[] listRemoteAddresses(@Parameter(desc = "an IP address", name = "ipAddress") String ipAddress) throws Exception;
 
+   /**
+    * Closes all the connections of clients connected to this server which matches the specified IP address.
+    */
    @Operation(desc = "Closes all the connections for the given IP Address", impact = MBeanOperationInfo.INFO)
    boolean closeConnectionsForAddress(@Parameter(desc = "an IP address", name = "ipAddress") String ipAddress) throws Exception;
 
+   /**
+    * Lists all the IDs of the connections connected to this server.
+    */
    @Operation(desc = "List all the connection IDs", impact = MBeanOperationInfo.INFO)
    String[] listConnectionIDs() throws Exception;
 
+   /**
+    * Lists all the sessions IDs for the specified connection ID.
+    */
    @Operation(desc = "List the sessions for the given connectionID", impact = MBeanOperationInfo.INFO)
    String[] listSessions(@Parameter(desc = "a connection ID", name = "connectionID") String connectionID) throws Exception;
 }

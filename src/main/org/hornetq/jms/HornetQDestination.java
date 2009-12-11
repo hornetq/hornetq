@@ -25,6 +25,8 @@ import org.hornetq.jms.referenceable.SerializableObjectRefAddr;
 import org.hornetq.utils.SimpleString;
 
 /**
+ * HornetQ implementation of a JMS Destination.
+ * 
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>

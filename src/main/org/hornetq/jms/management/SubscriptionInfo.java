@@ -13,14 +13,15 @@
 
 package org.hornetq.jms.management;
 
+import org.hornetq.core.management.AddressControl;
 import org.hornetq.utils.json.JSONArray;
 import org.hornetq.utils.json.JSONObject;
 
 /**
+ * Helper class to create Java Objects from the
+ * JSON serialization returned by {@link TopicControl#listAllSubscriptionsAsJSON()} and related methods.
+ * 
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- * 
- * @version <tt>$Revision$</tt>
- * 
  */
 public class SubscriptionInfo
 {
@@ -42,6 +43,10 @@ public class SubscriptionInfo
 
    // Static --------------------------------------------------------
 
+   /**
+    * Returns an array of SubscriptionInfo corresponding to the JSON serialization returned
+    * by {@link TopicControl#listAllSubscriptionsAsJSON()} and related methods.
+    */
    public static SubscriptionInfo[] from(final String jsonString) throws Exception
    {
       JSONArray array = new JSONArray(jsonString);
@@ -80,31 +85,49 @@ public class SubscriptionInfo
 
    // Public --------------------------------------------------------
 
+   /**
+    * Returns the name of the HornetQ core queue corresponding to this subscription.
+    */
    public String getQueueName()
    {
       return queueName;
    }
 
+   /**
+    * Returns the client ID of this subscription or {@code null}.
+    */
    public String getClientID()
    {
       return clientID;
    }
 
+   /**
+    * Returns the name of this subscription.
+    */
    public String getName()
    {
       return name;
    }
 
+   /**
+    * Returns whether this subscription is durable.
+    */
    public boolean isDurable()
    {
       return durable;
    }
 
+   /**
+    * Returns the JMS message selector associated to this subscription.
+    */
    public String getSelector()
    {
       return selector;
    }
 
+   /**
+    * Returns the number of messages currently held by this subscription.
+    */
    public int getMessageCount()
    {
       return messageCount;

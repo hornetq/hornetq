@@ -126,8 +126,6 @@ public interface Channel
 
    /**
     * returns the Remoting Connection being used by the channel
-    *
-    * @return
     */
    RemotingConnection getConnection();
 

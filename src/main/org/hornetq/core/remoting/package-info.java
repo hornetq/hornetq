@@ -12,10 +12,9 @@
  */
 
 /**
- * management API for HornetQ servers and its Core resources.
+ * Remoting API.
  * <br>
- * HornetQ can be managed either using JMX or by sending management messages to the 
- * server's special management address. Please refer to the user manual for more information.
+ * This package defines the API used by HornetQ for remoting.
  */
-package org.hornetq.core.management;
+package org.hornetq.core.remoting;
 
