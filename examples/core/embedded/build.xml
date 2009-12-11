@@ -22,8 +22,11 @@
    <!-- We use a minimal classpath on this example -->
    <path id="local.classpath">
       <fileset dir="${hornetq.jars.dir}">
-         <include name="hornetq-core.jar"/>
-         <include name="netty.jar"/>
+        <include name="hornetq-core.jar"/>
+        <include name="hornetq-transports.jar"/>
+      </fileset>
+      <fileset dir="${jars.dir}">
+        <include name="**/netty*jar"/>
       </fileset>
       <pathelement location="${classes.dir}"/>	   	
    </path>
