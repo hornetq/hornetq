@@ -257,6 +257,11 @@ public class DelegatingSession implements ClientSessionInternal
    {
       session.createQueue(address, queueName);
    }
+   
+   public void createQueue(final SimpleString address, final SimpleString queueName) throws HornetQException
+   {
+      session.createQueue(address, queueName);
+   }
 
    public void createQueue(final SimpleString address, final SimpleString queueName, final boolean durable) throws HornetQException
    {

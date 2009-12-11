@@ -187,6 +187,15 @@ public interface ClientSession extends XAResource
     * @throws HornetQException in an exception occurs while creating the queue
     */
    void createQueue(String address, String queueName) throws HornetQException;
+   
+   /**
+    * Creates a <em>non-temporary</em> queue <em>non-durable</em> queue.
+    * 
+    * @param address the queue will be bound to this address
+    * @param queueName the name of the queue
+    * @throws HornetQException in an exception occurs while creating the queue
+    */
+   void createQueue(SimpleString address, SimpleString queueName) throws HornetQException;
 
    /**
     * Creates a <em>non-temporary</em> queue.
