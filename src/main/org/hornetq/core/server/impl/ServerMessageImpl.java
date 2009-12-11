@@ -51,7 +51,7 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
 
    static
    {
-      // This is an estimate of how much memory a ServerMessageImpl takes up, exclusing body and properties
+      // This is an estimate of how much memory a ServerMessageImpl takes up, excluding body and properties
       // Note, it is only an estimate, it's not possible to be entirely sure with Java
       // This figure is calculated using the test utilities in org.hornetq.tests.unit.util.sizeof
       // The value is somewhat higher on 64 bit architectures, probably due to different alignment
