@@ -24,7 +24,7 @@ import javax.naming.InitialContext;
 
 import org.hornetq.common.example.HornetQExample;
 import org.hornetq.jms.HornetQQueue;
-import org.hornetq.jms.server.management.impl.JMSManagementHelper;
+import org.hornetq.jms.management.impl.JMSManagementHelper;
 
 /**
  * This examples demonstrates a connection created to a server. Failure of the network connection is then simulated

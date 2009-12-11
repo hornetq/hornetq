@@ -11,7 +11,7 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.jms.server.management.impl;
+package org.hornetq.jms.management.impl;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,11 +31,11 @@ import javax.management.StandardMBean;
 import org.hornetq.core.client.management.impl.ManagementHelper;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.management.impl.MBeanInfoHelper;
+import org.hornetq.jms.management.ConnectionFactoryControl;
+import org.hornetq.jms.management.JMSQueueControl;
+import org.hornetq.jms.management.JMSServerControl;
+import org.hornetq.jms.management.TopicControl;
 import org.hornetq.jms.server.JMSServerManager;
-import org.hornetq.jms.server.management.ConnectionFactoryControl;
-import org.hornetq.jms.server.management.JMSQueueControl;
-import org.hornetq.jms.server.management.JMSServerControl;
-import org.hornetq.jms.server.management.TopicControl;
 import org.hornetq.utils.Pair;
 
 /**

@@ -683,8 +683,8 @@
          <fileset dir="${build.jms.classes.dir}" includes="org/hornetq/jms/*.class"/>
 	      <fileset dir="${build.jms.classes.dir}" includes="org/hornetq/jms/client/*.class"/>
          <fileset dir="${build.jms.classes.dir}" includes="org/hornetq/jms/referenceable/*.class"/>
-         <fileset dir="${build.jms.classes.dir}" includes="org/hornetq/jms/server/management/*.class"/>
-         <fileset dir="${build.jms.classes.dir}" includes="org/hornetq/jms/server/management/impl/JMSManagementHelper.class"/>
+         <fileset dir="${build.jms.classes.dir}" includes="org/hornetq/jms/management/*.class"/>
+         <fileset dir="${build.jms.classes.dir}" includes="org/hornetq/jms/management/impl/JMSManagementHelper.class"/>
       </jar>
 	   
    </target>
@@ -1019,7 +1019,7 @@
             <include name="org/hornetq/core/remoting/spi"/>
             <include name="org/hornetq/jms"/>
             <include name="org/hornetq/jms/client"/>
-         	<include name="org/hornetq/jms/server/management"/>
+         	<include name="org/hornetq/jms/management"/>
             <include name="org/hornetq/utils"/>
          </packageset>
          <classpath refid="javadoc.classpath"/>
@@ -1030,7 +1030,7 @@
       	<group title="HornetQ Remoting API" packages="org.hornetq.core.remoting"/>
          <group title="HornetQ Remoting SPI" packages="org.hornetq.core.remoting.spi"/>
          <group title="JMS Facade" packages="org.hornetq.jms, org.hornetq.jms.client"/>
-         <group title="JMS Management API" packages="org.hornetq.jms.server.management"/>
+         <group title="JMS Management API" packages="org.hornetq.jms.management"/>
       	<link href="http://java.sun.com/j2se/1.5.0/docs/api"/>
       	<link href="http://java.sun.com/javaee/5/docs/api/"/>
       </javadoc>

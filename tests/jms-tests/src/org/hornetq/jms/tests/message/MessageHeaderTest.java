@@ -1381,6 +1381,15 @@ public class MessageHeaderTest extends MessageHeaderTestBase
          // TODO Auto-generated method stub
          return false;
       }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.client.ClientSession#createQueue(org.hornetq.utils.SimpleString, org.hornetq.utils.SimpleString)
+       */
+      public void createQueue(SimpleString address, SimpleString queueName) throws HornetQException
+      {
+         // TODO Auto-generated method stub
+         
+      }
    }
 
 }

@@ -66,7 +66,8 @@ import org.hornetq.jms.HornetQTopic;
 import org.hornetq.utils.SimpleString;
 
 /**
- *
+ * HornetQ implementation of a JMS Session.
+ * <br>
  * Note that we *do not* support JMS ASF (Application Server Facilities) optional
  * constructs such as ConnectionConsumer
  *
@@ -116,7 +117,7 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
 
    // Constructors --------------------------------------------------
 
-   public HornetQSession(final HornetQConnection connection,
+   protected HornetQSession(final HornetQConnection connection,
                          final boolean transacted,
                          final boolean xa,
                          final int ackMode,

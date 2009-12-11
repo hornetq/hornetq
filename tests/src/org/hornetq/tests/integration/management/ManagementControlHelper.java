@@ -29,10 +29,10 @@ import org.hornetq.core.management.DivertControl;
 import org.hornetq.core.management.HornetQServerControl;
 import org.hornetq.core.management.ObjectNameBuilder;
 import org.hornetq.core.management.QueueControl;
-import org.hornetq.jms.server.management.ConnectionFactoryControl;
-import org.hornetq.jms.server.management.JMSQueueControl;
-import org.hornetq.jms.server.management.JMSServerControl;
-import org.hornetq.jms.server.management.TopicControl;
+import org.hornetq.jms.management.ConnectionFactoryControl;
+import org.hornetq.jms.management.JMSQueueControl;
+import org.hornetq.jms.management.JMSServerControl;
+import org.hornetq.jms.management.TopicControl;
 import org.hornetq.utils.SimpleString;
 
 /**

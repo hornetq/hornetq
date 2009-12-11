@@ -26,7 +26,7 @@ import org.hornetq.core.logging.Logger;
 import org.hornetq.utils.DataConstants;
 
 /**
- * This class implements javax.jms.StreamMessage.
+ * HornetQ implementation of a JMS StreamMessage.
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * 
@@ -56,12 +56,12 @@ public class HornetQStreamMessage extends HornetQMessage implements StreamMessag
 
    // Constructors --------------------------------------------------
 
-   public HornetQStreamMessage(final ClientSession session)
+   protected HornetQStreamMessage(final ClientSession session)
    {
       super(HornetQStreamMessage.TYPE, session);
    }
 
-   public HornetQStreamMessage(final ClientMessage message, final ClientSession session)
+   protected HornetQStreamMessage(final ClientMessage message, final ClientSession session)
    {
       super(message, session);
    }

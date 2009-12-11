@@ -93,7 +93,7 @@
         </pre>
         
         <li>a <em>management</em> message has well-defined properties that HornetQ server needs to know to perform management operations.<br />
-            We use a helper class <a href="../../../docs/api/org/jboss/messaging/jms/server/management/impl/JMSManagementHelper.html">JMSManagementHelper</a> to fill these properties:
+            We use a helper class <code>JMSManagementHelper</code> to fill these properties:
             <ul>
                 <li>The name of the resource to manage <code>jms.queue.exampleQueue</code> 
                     (i.e. <code>jms.queue</code> followed by the name of the queue as defined in <a href="server0/hornetq-jms.xml">hornetq-jms.xml</a>)</li>
@@ -109,7 +109,7 @@
             <code>Message reply = requestor.request(m);</code>
         </pre>
         
-        <li>We use a helper class <a href="../../../docs/api/org/jboss/messaging/jms/server/management/impl/JMSManagementHelper.html">JMSManagementHelper</a> to retrieve the result from the reply message:
+        <li>We use a helper class <code>JMSManagementHelper</code> to retrieve the result from the reply message:
         <pre class="prettyprint">
             <code>int messageCount = (Integer)JMSManagementHelper.getResult(reply);
             System.out.println(queue.getQueueName() + " contains " + messageCount + " messages");</code>
@@ -142,7 +142,7 @@
             System.out.println("operation invocation has succeeded: " + success);</code>
         </pre>
         
-        <li>We use a helper class <a href="../../../docs/api/org/jboss/messaging/jms/server/management/impl/JMSManagementHelper.html">JMSManagementHelper</a> to retrieve the result from the reply message:
+        <li>We use a helper class <code>JMSManagementHelper</code> to retrieve the result from the reply message:
             (in our case, the <code>removeMessage</code> method returns a boolean)</li>
         <pre class="prettyprint">
             <code>boolean messageRemoved = (Boolean)JMSManagementHelper.getResult(reply);
@@ -184,12 +184,6 @@
      
      <ul>
         <li>User Manual's <a href="../../../docs/user-manual/en/html_single/index.html#management.jms">Using Management Via JMS chapter</a></li>
-        <li>HornetQ defines a set of resources for this core 
-            API (<a href="../../../docs/api/org/jboss/messaging/core/management/package-summary.html">org.hornetq.core.management</a>
-             package) and its JMS API (in the <a href="../../../docs/api/org/jboss/messaging/jms/server/management/package-summary.html">org.hornetq.jms.server.management</a> package)
-         <li><a href="../../../docs/api/org/jboss/messaging/core/management/ResourceNames.html">ResourceNames</a> is a helper class used to build the name of HornetQ resources by messages<br />
-            The convention is simple: <code>jms.queue.</code> followed by the name of the queue for a JMS queue, <code>jms.topic.</code> followed by the name of a topic for a JMS topic, etc.<br />
-            The name for the JMS server resource is <code>jms.server</code></li>
-     </p>
+     </ul>
   </body>
 </html>

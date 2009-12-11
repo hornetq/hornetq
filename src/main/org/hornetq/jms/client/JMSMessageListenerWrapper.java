@@ -41,7 +41,7 @@ public class JMSMessageListenerWrapper implements MessageHandler
 
    private final boolean transactedOrClientAck;
 
-   public JMSMessageListenerWrapper(final HornetQSession session,
+   protected JMSMessageListenerWrapper(final HornetQSession session,
                                     final ClientConsumer consumer,
                                     final MessageListener listener,
                                     final int ackMode)

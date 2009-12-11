@@ -11,7 +11,7 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.jms.server.management.impl;
+package org.hornetq.jms.management.impl;
 
 import javax.jms.JMSException;
 import javax.jms.Message;

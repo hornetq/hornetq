@@ -11,7 +11,7 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.jms.server.management.impl;
+package org.hornetq.jms.management.impl;
 
 import java.util.List;
 
@@ -21,8 +21,8 @@ import javax.management.StandardMBean;
 
 import org.hornetq.core.management.impl.MBeanInfoHelper;
 import org.hornetq.jms.client.HornetQConnectionFactory;
-import org.hornetq.jms.server.management.ConnectionFactoryControl;
-import org.hornetq.jms.server.management.JMSQueueControl;
+import org.hornetq.jms.management.ConnectionFactoryControl;
+import org.hornetq.jms.management.JMSQueueControl;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -140,7 +140,7 @@ public class JMSConnectionFactoryControlImpl extends StandardMBean implements Co
       return cf.getReconnectAttempts();
    }
 
-   public boolean isFailoverOnNodeShutdown()
+   public boolean isFailoverOnServerShutdown()
    {
       return cf.isFailoverOnServerShutdown();
    }

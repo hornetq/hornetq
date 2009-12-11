@@ -29,6 +29,8 @@ import org.hornetq.jms.HornetQQueue;
 import org.hornetq.utils.SimpleString;
 
 /**
+ * HornetQ implementation of a JMS QueueBrowser.
+ * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  *
@@ -54,7 +56,7 @@ public class HornetQQueueBrowser implements QueueBrowser
 
    // Constructors ---------------------------------------------------------------------------------
 
-   public HornetQQueueBrowser(final HornetQQueue queue, final String messageSelector, final ClientSession session) throws JMSException
+   protected HornetQQueueBrowser(final HornetQQueue queue, final String messageSelector, final ClientSession session) throws JMSException
    {
       this.session = session;
       this.queue = queue;

@@ -56,7 +56,7 @@
          </listitem>
          <listitem>
             <para><emphasis>JMS</emphasis> resources are located in the <literal
-                  >org.hornetq.jms.server.management</literal> package</para>
+                  >org.hornetq.jms.management</literal> package</para>
          </listitem>
       </itemizedlist>
       <para>The way to invoke a <emphasis>management operations</emphasis> depends whether JMX, core
@@ -504,7 +504,7 @@
       </programlisting>
       <para>and the MBean is:</para>
       <programlisting>
-   org.hornetq.jms.server.management.JMSQueueControl   
+   org.hornetq.jms.management.JMSQueueControl   
       </programlisting>
       <para>The MBean's <literal>ObjectName</literal> are built using the helper class <literal
             >org.hornetq.core.management.ObjectNameBuilder</literal>. You can also use <literal
@@ -674,7 +674,7 @@
          </listitem>
          <listitem>
             <para>use the helper class <literal
-                  >org.hornetq.jms.server.management.impl.JMSManagementHelper</literal> to fill the
+                  >org.hornetq.jms.management.impl.JMSManagementHelper</literal> to fill the
                message with the management properties</para>
          </listitem>
          <listitem>
@@ -682,7 +682,7 @@
          </listitem>
          <listitem>
             <para>use the helper class <literal
-                  >org.hornetq.jms.server.management.impl.JMSManagementHelper</literal> to retrieve
+                  >org.hornetq.jms.management.impl.JMSManagementHelper</literal> to retrieve
                the operation result from the management reply</para>
          </listitem>
       </orderedlist>

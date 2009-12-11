@@ -86,7 +86,7 @@
            <code>TextMessage messageReceived = (TextMessage) messageConsumer.receive(5000);</code>
         </pre>
         
-        <li>We create a <a href="../../../docs/api/org/jboss/messaging/jms/server/management/JMSQueueControl.html">JMSQueueControl</a> proxy to manage the queue on the server</li>
+        <li>We create a <code>JMSQueueControl</code> proxy to manage the queue on the server</li>
         <pre class="prettyprint">
             <code>JMSQueueControl queueControl = (JMSQueueControl)MBeanServerInvocationHandler.newProxyInstance(mbsc,
                                                                                               on,
@@ -156,10 +156,6 @@
      <ul>
         <li>User Manual's <a href="../../../docs/user-manual/en/html_single/index.html#management.jmx">Using Management Via JMX chapter</a></li>
         <li><a href="http://java.sun.com/j2se/1.5.0/docs/guide/management/agent.html">Java 5 Management guide</a></li>
-        <li>HornetQ defines a set of MBeans for this core 
-            API (<a href="../../../docs/api/org/jboss/messaging/core/management/package-summary.html">org.hornetq.core.management</a>
-             package) and its JMS API (in the <a href="../../../docs/api/org/jboss/messaging/jms/server/management/package-summary.html">org.hornetq.jms.server.management</a> package)
-        <li><a href="../../../docs/api/org/jboss/messaging/core/management/ObjectNameBuilder.html">ObjectNameBuilder</a> is a helper class used to build the ObjectName of HornetQ manageable resources</li>
      </ul>
   </body>
 </html>

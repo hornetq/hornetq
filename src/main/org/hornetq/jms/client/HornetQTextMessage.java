@@ -23,7 +23,9 @@ import org.hornetq.core.logging.Logger;
 import org.hornetq.utils.SimpleString;
 
 /**
- * This class implements javax.jms.TextMessage ported from SpyTextMessage in JBossMQ.
+ * HornetQ implementation of a JMS TextMessage.
+ * <br>
+ * This class was ported from SpyTextMessage in JBossMQ.
  * 
  * @author Norbert Lataille (Norbert.Lataille@m4x.org)
  * @author <a href="mailto:jason@planet57.com">Jason Dillon</a>

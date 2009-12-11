@@ -42,6 +42,8 @@ import org.hornetq.jms.referenceable.SerializableObjectRefAddr;
 import org.hornetq.utils.Pair;
 
 /**
+ * HornetQ implementation of a JMS ConnectionFactory.
+ * 
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt> $Id$

@@ -24,7 +24,7 @@ import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.logging.Logger;
 
 /**
- * This class implements javax.jms.BytesMessage.
+ * HornetQ implementation of a JMS BytesMessage.
  * 
  * @author Norbert Lataille (Norbert.Lataille@m4x.org)
  * @author <a href="mailto:adrian@jboss.org">Adrian Brock</a>
@@ -53,7 +53,7 @@ public class HornetQBytesMessage extends HornetQMessage implements BytesMessage
    /*
     * This constructor is used to construct messages prior to sending
     */
-   public HornetQBytesMessage(final ClientSession session)
+   protected HornetQBytesMessage(final ClientSession session)
    {
       super(HornetQBytesMessage.TYPE, session);
    }
@@ -61,7 +61,7 @@ public class HornetQBytesMessage extends HornetQMessage implements BytesMessage
    /*
     * Constructor on receipt at client side
     */
-   public HornetQBytesMessage(final ClientMessage message, final ClientSession session)
+   protected HornetQBytesMessage(final ClientMessage message, final ClientSession session)
    {
       super(message, session);
    }

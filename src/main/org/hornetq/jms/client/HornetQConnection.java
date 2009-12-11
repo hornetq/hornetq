@@ -50,6 +50,8 @@ import org.hornetq.utils.UUIDGenerator;
 import org.hornetq.utils.VersionLoader;
 
 /**
+ * HornetQ implementation of a JMS Connection.
+ * 
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
@@ -118,7 +120,7 @@ public class HornetQConnection implements Connection, QueueConnection, TopicConn
 
    // Constructors ---------------------------------------------------------------------------------
 
-   public HornetQConnection(final String username,
+   protected HornetQConnection(final String username,
                             final String password,
                             final int connectionType,
                             final String clientID,

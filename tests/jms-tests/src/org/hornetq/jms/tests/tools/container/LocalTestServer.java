@@ -34,9 +34,9 @@ import org.hornetq.core.management.ResourceNames;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.integration.bootstrap.HornetQBootstrapServer;
+import org.hornetq.jms.management.JMSQueueControl;
+import org.hornetq.jms.management.TopicControl;
 import org.hornetq.jms.server.JMSServerManager;
-import org.hornetq.jms.server.management.JMSQueueControl;
-import org.hornetq.jms.server.management.TopicControl;
 import org.hornetq.utils.Pair;
 import org.jboss.kernel.plugins.config.property.PropertyKernelConfig;
 

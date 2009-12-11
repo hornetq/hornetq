@@ -33,10 +33,10 @@ import org.hornetq.jms.HornetQDestination;
 import org.hornetq.utils.SimpleString;
 
 /**
+ * HornetQ implementation of a JMS MessageConsumer.
+ * 
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
- *
- * $Id$
  */
 public class HornetQMessageConsumer implements MessageConsumer, QueueReceiver, TopicSubscriber
 {
@@ -68,7 +68,7 @@ public class HornetQMessageConsumer implements MessageConsumer, QueueReceiver, T
 
    // Constructors --------------------------------------------------
 
-   public HornetQMessageConsumer(final HornetQSession session,
+   protected HornetQMessageConsumer(final HornetQSession session,
                                  final ClientConsumer consumer,
                                  final boolean noLocal,
                                  final HornetQDestination destination,
@@ -181,7 +181,7 @@ public class HornetQMessageConsumer implements MessageConsumer, QueueReceiver, T
    @Override
    public String toString()
    {
-      return "HornetQRAMessageConsumer->" + consumer;
+      return "HornetQMessageConsumer[" + consumer + "]";
    }
 
    // Package protected ---------------------------------------------

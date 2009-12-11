@@ -11,7 +11,7 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.jms.server.management;
+package org.hornetq.jms.management;
 
 import javax.management.MBeanOperationInfo;
 

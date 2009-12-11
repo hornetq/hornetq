@@ -11,7 +11,7 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.jms.server.management;
+package org.hornetq.jms.management;
 
 import java.util.Map;
 
@@ -21,24 +21,38 @@ import org.hornetq.core.server.management.Operation;
 import org.hornetq.core.server.management.Parameter;
 
 /**
+ * A JMSSserverControl is used to manage HornetQ JMS server.
+ * 
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
- * @version <tt>$Revision$</tt>
- * 
  */
 public interface JMSServerControl
 {
    // Attributes ----------------------------------------------------
 
+   /**
+    * Returns whether this server is started.
+    */
    boolean isStarted();
 
+   /**
+    * Returns this server's version
+    */
    String getVersion();
 
+   /**
+    * Returns the names of the JMS topics available on this server.
+    */
    String[] getTopicNames();
 
+   /**
+    * Returns the names of the JMS queues available on this server.
+    */
    String[] getQueueNames();
 
+   /**
+    * Returns the names of the JMS connection factories available on this server.
+    */
    String[] getConnectionFactoryNames();
 
    // Operations ----------------------------------------------------

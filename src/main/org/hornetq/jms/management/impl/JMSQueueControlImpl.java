@@ -11,7 +11,7 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.jms.server.management.impl;
+package org.hornetq.jms.management.impl;
 
 import java.util.Map;
 
@@ -28,7 +28,7 @@ import org.hornetq.core.messagecounter.impl.MessageCounterHelper;
 import org.hornetq.jms.HornetQQueue;
 import org.hornetq.jms.client.HornetQMessage;
 import org.hornetq.jms.client.SelectorTranslator;
-import org.hornetq.jms.server.management.JMSQueueControl;
+import org.hornetq.jms.management.JMSQueueControl;
 import org.hornetq.utils.json.JSONArray;
 import org.hornetq.utils.json.JSONObject;
 

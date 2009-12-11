@@ -22,7 +22,7 @@ import javax.jms.JMSException;
 import org.hornetq.core.version.Version;
 
 /**
- * Connection metadata
+ * HornetQ implementation of a JMS ConnectionMetaData.
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -44,7 +44,7 @@ public class HornetQConnectionMetaData implements ConnectionMetaData
    // Constructors --------------------------------------------------
 
    /**
-    * Create a new HornetQRAConnectionMetaData object.
+    * Create a new HornetQConnectionMetaData object.
     */
    public HornetQConnectionMetaData(final Version serverVersion)
    {

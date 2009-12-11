@@ -26,8 +26,8 @@ import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientSession;
 
 /**
- * This class implements javax.jms.ObjectMessage
- * 
+ * HornetQ implementation of a JMS ObjectMessage.
+ * <br>
  * Don't used ObjectMessage if you want good performance!
  * 
  * Serialization is slooooow!
@@ -55,12 +55,12 @@ public class HornetQObjectMessage extends HornetQMessage implements ObjectMessag
 
    // Constructors --------------------------------------------------
 
-   public HornetQObjectMessage(final ClientSession session)
+   protected HornetQObjectMessage(final ClientSession session)
    {
       super(HornetQObjectMessage.TYPE, session);
    }
 
-   public HornetQObjectMessage(final ClientMessage message, final ClientSession session)
+   protected HornetQObjectMessage(final ClientMessage message, final ClientSession session)
    {
       super(message, session);
    }

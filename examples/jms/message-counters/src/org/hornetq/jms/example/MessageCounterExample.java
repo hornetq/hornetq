@@ -33,7 +33,7 @@ import javax.naming.InitialContext;
 import org.hornetq.common.example.HornetQExample;
 import org.hornetq.core.management.MessageCounterInfo;
 import org.hornetq.core.management.ObjectNameBuilder;
-import org.hornetq.jms.server.management.JMSQueueControl;
+import org.hornetq.jms.management.JMSQueueControl;
 
 /**
  * An example showing how to use message counters to have information on a queue.

@@ -45,7 +45,9 @@ import org.hornetq.jms.HornetQDestination;
 import org.hornetq.utils.SimpleString;
 
 /**
- * Implementation of a JMS Message JMS Messages only live on the client side - the server only deals with MessageImpl
+ * HornetQ implementation of a JMS Message.
+ * <br>
+ * JMS Messages only live on the client side - the server only deals with MessageImpl
  * instances
  * 
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -241,7 +243,7 @@ public class HornetQMessage implements javax.jms.Message
 
    }
 
-   public HornetQMessage(final ClientSession session)
+   protected HornetQMessage(final ClientSession session)
    {
       this(HornetQMessage.TYPE, session);
    }

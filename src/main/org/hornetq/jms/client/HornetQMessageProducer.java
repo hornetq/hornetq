@@ -40,6 +40,8 @@ import org.hornetq.utils.SimpleString;
 import org.hornetq.utils.UUIDGenerator;
 
 /**
+ * HornetQ implementation of a JMS MessageProducer.
+ * 
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
@@ -83,7 +85,7 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
 
    // Constructors --------------------------------------------------
 
-   public HornetQMessageProducer(final HornetQConnection jbossConn,
+   protected HornetQMessageProducer(final HornetQConnection jbossConn,
                                  final ClientProducer producer,
                                  final HornetQDestination defaultDestination,
                                  final ClientSession clientSession) throws JMSException

@@ -26,12 +26,16 @@ import org.hornetq.core.server.management.ManagementService;
 import org.hornetq.jms.HornetQQueue;
 import org.hornetq.jms.HornetQTopic;
 import org.hornetq.jms.client.HornetQConnectionFactory;
+import org.hornetq.jms.management.ConnectionFactoryControl;
+import org.hornetq.jms.management.JMSQueueControl;
+import org.hornetq.jms.management.JMSServerControl;
+import org.hornetq.jms.management.TopicControl;
+import org.hornetq.jms.management.impl.JMSConnectionFactoryControlImpl;
+import org.hornetq.jms.management.impl.JMSQueueControlImpl;
+import org.hornetq.jms.management.impl.JMSServerControlImpl;
+import org.hornetq.jms.management.impl.JMSTopicControlImpl;
 import org.hornetq.jms.server.JMSServerManager;
-import org.hornetq.jms.server.management.ConnectionFactoryControl;
 import org.hornetq.jms.server.management.JMSManagementService;
-import org.hornetq.jms.server.management.JMSQueueControl;
-import org.hornetq.jms.server.management.JMSServerControl;
-import org.hornetq.jms.server.management.TopicControl;
 
 /*
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>

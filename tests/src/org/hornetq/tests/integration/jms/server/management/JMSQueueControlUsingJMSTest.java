@@ -25,7 +25,7 @@ import org.hornetq.core.management.ResourceNames;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.jms.HornetQQueue;
 import org.hornetq.jms.client.HornetQConnectionFactory;
-import org.hornetq.jms.server.management.JMSQueueControl;
+import org.hornetq.jms.management.JMSQueueControl;
 
 /**
  * 

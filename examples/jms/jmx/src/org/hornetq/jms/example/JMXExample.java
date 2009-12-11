@@ -32,7 +32,7 @@ import javax.naming.InitialContext;
 
 import org.hornetq.common.example.HornetQExample;
 import org.hornetq.core.management.ObjectNameBuilder;
-import org.hornetq.jms.server.management.JMSQueueControl;
+import org.hornetq.jms.management.JMSQueueControl;
 
 /**
  * An example that shows how to manage HornetQ using JMX.

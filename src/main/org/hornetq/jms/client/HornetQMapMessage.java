@@ -29,7 +29,7 @@ import org.hornetq.utils.SimpleString;
 import org.hornetq.utils.TypedProperties;
 
 /**
- * This class implements javax.jms.MapMessage
+ * HornetQ implementation of a JMS MapMessage.
  * 
  * @author Norbert Lataille (Norbert.Lataille@m4x.org)
  * @author <a href="mailto:adrian@jboss.org">Adrian Brock</a>
@@ -58,14 +58,14 @@ public class HornetQMapMessage extends HornetQMessage implements MapMessage
    /*
     * This constructor is used to construct messages prior to sending
     */
-   public HornetQMapMessage(final ClientSession session)
+   protected HornetQMapMessage(final ClientSession session)
    {
       super(HornetQMapMessage.TYPE, session);
 
       map = new TypedProperties();
    }
 
-   public HornetQMapMessage(final ClientMessage message, final ClientSession session)
+   protected HornetQMapMessage(final ClientMessage message, final ClientSession session)
    {
       super(message, session);
    }

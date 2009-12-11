@@ -49,10 +49,10 @@ import org.hornetq.jms.bridge.DestinationFactory;
 import org.hornetq.jms.bridge.QualityOfServiceMode;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.client.HornetQMessage;
+import org.hornetq.jms.management.JMSQueueControl;
+import org.hornetq.jms.management.TopicControl;
 import org.hornetq.jms.server.JMSServerManager;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
-import org.hornetq.jms.server.management.JMSQueueControl;
-import org.hornetq.jms.server.management.TopicControl;
 import org.hornetq.tests.unit.util.InVMContext;
 import org.hornetq.tests.util.UnitTestCase;
 
