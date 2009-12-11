@@ -16,20 +16,20 @@ package org.hornetq.core.remoting;
 import org.hornetq.core.exception.HornetQException;
 
 /**
- *
  * This is class is a simple way to intercepting server calls on HornetQ.
- * 
+ * <p/>
  * To Add this interceptor, you have to modify hornetq-configuration.xml
- * 
+ *
  * @author clebert.suconic@jboss.com
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  */
 public interface Interceptor
 {
    /**
-    * 
-    * @param packet
-    * @param connection
+    * gets called when a packet is received prior to be sent to the channel
+    *
+    * @param packet     the packet being received
+    * @param connection the connection the packet was received on
     * @return true to process the next interceptor and handle the packet,
     *         false to abort processing of the packet
     * @throws HornetQException

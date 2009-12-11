@@ -13,12 +13,17 @@
 package org.hornetq.core.remoting;
 
 /**
- * A ChannelHandler
- * 
- * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * A ChannelHandler is used by {@link Channel}. When a channel receives a packet it will call its handler to deal with the
+ * packet.
  *
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  */
 public interface ChannelHandler
 {
+   /**
+    * called by the channel when a packet is received..
+    *
+    * @param packet the packet received
+    */
    void handlePacket(Packet packet);
 }

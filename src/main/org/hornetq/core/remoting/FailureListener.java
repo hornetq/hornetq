@@ -16,18 +16,16 @@ package org.hornetq.core.remoting;
 import org.hornetq.core.exception.HornetQException;
 
 /**
- * 
- * A FailureListener notifies the user when a connection failure occured.
- * 
+ * A FailureListener notifies the user when a connection failure occurred.
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- * 
  */
 public interface FailureListener
 {
    /**
     * Notifies that a connection has failed due to the specified exception.
-    * 
+    *
     * @param exception exception which has caused the connection to fail
     */
    void connectionFailed(HornetQException exception);

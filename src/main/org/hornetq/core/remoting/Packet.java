@@ -16,31 +16,68 @@ package org.hornetq.core.remoting;
 import org.hornetq.core.buffers.HornetQBuffer;
 
 /**
- * 
- * A Packet
- * 
- * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * A Packet represents a pcaket of data transmitted over a connection.
  *
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  */
 public interface Packet
 {
+   /**
+    * This sets the channel id that should be used once the packet has been successfully decoded it is sent to the correct channel.
+    *
+    * @param channelID the id of the channel to handle the packet
+    */
    void setChannelID(long channelID);
 
+   /**
+    * returns the channel id of the channel that should handle this pcaket
+    *
+    * @return the id of the channel
+    */
    long getChannelID();
 
+   /**
+    * returns true if this packet is being sent in response to a previously received packet
+    *
+    * @return true if a response
+    */
    boolean isResponse();
 
+   /**
+    * returns the type of the packet.
+    * <p/>
+    * This is needed when decoding the packet
+    *
+    * @return the packet type
+    */
    byte getType();
 
+   /**
+    * Encodes the packet and returns a {@link org.hornetq.core.buffers.HornetQBuffer} containing the data
+    *
+    * @param connection the connection
+    * @return the buffer to encode to
+    */
    HornetQBuffer encode(RemotingConnection connection);
 
+   /**
+    * decodes the buffer into this packet
+    *
+    * @param buffer the buffer to decode from
+    */
    void decode(HornetQBuffer buffer);
 
    /**
-    * 
+    * returns the size needed to encode this packet.
+    *
     * @return The size of the entire packet including headers, and extra data
     */
    int getPacketSize();
 
+   /**
+    * returns true if a confirmation should be sent on receipt of this packet.
+    *
+    * @return true if confirmation is required
+    */
    boolean isRequiresConfirmations();
 }

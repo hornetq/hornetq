@@ -21,60 +21,197 @@ import org.hornetq.core.remoting.spi.BufferHandler;
 import org.hornetq.core.remoting.spi.Connection;
 
 /**
- * A RemotingConnection
- * 
+ * A RemotingConnection is a connection between a client and a server.
+ * <p/>
+ * It allows multiple {@link org.hornetq.core.remoting.Channel}'s to be created and data multiplexed over them. It uses
+ * and a {@link Connection} implementation and takes care of failures etc.
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  */
 public interface RemotingConnection extends BufferHandler
 {
+   /**
+    * returns the unique id of the Remoting Connection
+    *
+    * @return the id
+    */
    Object getID();
 
+   /**
+    * returns a string representation of the remote address of this connection
+    *
+    * @return the remote address
+    */
    String getRemoteAddress();
 
+   /**
+    * return the channel with the channel id specified.
+    * <p/>
+    * If it does not exist create it with the confirmation window size.
+    *
+    * @param channelID      the channel id
+    * @param confWindowSize the confirmation window size
+    * @return the channel
+    */
    Channel getChannel(long channelID, int confWindowSize);
 
+   /**
+    * add the channel with the specified channel id
+    *
+    * @param channelID the channel id
+    * @param channel   the channel
+    */
    void putChannel(long channelID, Channel channel);
 
+   /**
+    * remove the channel with the specified channel id
+    *
+    * @param channelID the channel id
+    * @return true if removed
+    */
    boolean removeChannel(long channelID);
 
+   /**
+    * generate a unique (within this connection) channel id
+    *
+    * @return the id
+    */
    long generateChannelID();
 
+   /**
+    * add a failure listener.
+    * <p/>
+    * The listener will be called in the event of connection failure.
+    *
+    * @param listener the listener
+    */
    void addFailureListener(FailureListener listener);
 
+   /**
+    * remove the failure listener
+    *
+    * @param listener the lister to remove
+    * @return true if removed
+    */
    boolean removeFailureListener(FailureListener listener);
 
+   /**
+    * add a CloseListener.
+    * <p/>
+    * This will be called in the event of the connection being closed.
+    *
+    * @param listener the listener to add
+    */
    void addCloseListener(CloseListener listener);
 
+   /**
+    * remove a Close Listener
+    *
+    * @param listener the listener to remove
+    * @return true if removed
+    */
    boolean removeCloseListener(CloseListener listener);
 
+   /**
+    * return all the failure listeners
+    *
+    * @return the listeners
+    */
    List<FailureListener> getFailureListeners();
 
+   /**
+    * set the failure listeners.
+    * <p/>
+    * These will be called in the event of the connection being closed. Any previosuly added listeners will be removed.
+    *
+    * @param listeners the listeners to add.
+    */
    void setFailureListeners(List<FailureListener> listeners);
 
+   /**
+    * creates a new HornetQBuffer of the specified size.
+    *
+    * @param size the size of buffer required
+    * @return the buffer
+    */
    HornetQBuffer createBuffer(int size);
 
+   /**
+    * called when the underlying connection fails.
+    *
+    * @param me the exception that caused the failure
+    */
    void fail(HornetQException me);
 
+   /**
+    * destroys this connection.
+    */
    void destroy();
 
+   /**
+    * resets the id generator used to when generating id's
+    *
+    * @param id the first id to set it to
+    */
    void syncIDGeneratorSequence(long id);
 
+   /**
+    * return the next id that will be chosen.
+    *
+    * @return the id
+    */
    long getIDGeneratorSequence();
 
+   /**
+    * return the underlying Connection.
+    *
+    * @return the connection
+    */
    Connection getTransportConnection();
 
+   /**
+    * returns whether or not the Remoting Connection is a client
+    *
+    * @return true if client, false if a server
+    */
    boolean isClient();
 
+   /**
+    * returns true if this Remoting Connection has been destroyed.
+    *
+    * @return true if destroyed, otherwise false
+    */
    boolean isDestroyed();
 
+   /**
+    * return the current tomeout for blocking calls
+    *
+    * @return the timeout in milliseconds
+    */
    long getBlockingCallTimeout();
 
+   /**
+    * return the transfer lock used when transferring connections.
+    *
+    * @return the lock
+    */
    Object getTransferLock();
 
+   /**
+    * returns true if any data has been received since the last time this method was called.
+    *
+    * @return true if data has been received.
+    */
    boolean checkDataReceived();
 
+   /**
+    * remove all channels from the remoting connection
+    */
    void removeAllChannels();
-   
+
+   /**
+    * flush all outstanding confirmations onto the connection.
+    */
    void flushConfirmations();
 }

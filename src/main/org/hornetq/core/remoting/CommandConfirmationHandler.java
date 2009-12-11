@@ -14,15 +14,18 @@
 package org.hornetq.core.remoting;
 
 /**
- * A CommandConfirmationHandler
+ * A CommandConfirmationHandler is used by the channel to confirm confirmations of packets.
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
- * Created 9 Feb 2009 12:39:11
- *
- *
+ *         <p/>
+ *         Created 9 Feb 2009 12:39:11
  */
 public interface CommandConfirmationHandler
 {
+   /**
+    * called by channel after a confirmation has been received.
+    *
+    * @param packet the packet confirmed
+    */
    void commandConfirmed(Packet packet);
 }
