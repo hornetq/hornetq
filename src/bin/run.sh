@@ -17,7 +17,7 @@ for i in `ls $HORNETQ_HOME/lib/*.jar`; do
 	CLASSPATH=$i:$CLASSPATH
 done
 
-echo ***********************************************************************************
+echo "***********************************************************************************"
 echo "java $JVM_ARGS -classpath $CLASSPATH org.hornetq.integration.bootstrap.HornetQBootstrapServer $FILENAME"
-echo ***********************************************************************************
+echo "***********************************************************************************"
 java $JVM_ARGS -classpath $CLASSPATH -Dcom.sun.management.jmxremote org.hornetq.integration.bootstrap.HornetQBootstrapServer $FILENAME
