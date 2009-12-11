@@ -374,7 +374,7 @@ public abstract class MessageImpl implements MessageInternal
       endOfBodyPosition = -1;
    }
 
-   public void checkCopy()
+   public synchronized void checkCopy()
    {
       if (!copied)
       {
@@ -444,7 +444,7 @@ public abstract class MessageImpl implements MessageInternal
          buffer.setIndex(0, endOfMessagePosition);
 
          bufferUsed = true;
-
+         
          return buffer;
       }
    }
