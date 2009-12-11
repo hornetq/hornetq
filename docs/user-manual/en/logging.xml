@@ -28,7 +28,7 @@
     <para>You can configure a different Logging Delegate programatically or via a System
         Property.</para>
     <para>To do this programatically simply do the
-        following<programlisting>org.hornetq.core.logging.setDelegateFactory(new Log4jLogDelegateFactory())</programlisting></para>
+        following<programlisting>org.hornetq.core.logging.Logger.setDelegateFactory(new Log4jLogDelegateFactory())</programlisting></para>
     <para>Where <literal>Log4jLogDelegateFactory</literal> is the implementation of <literal
             >org.hornetq.core.logging.LogDelegateFactory </literal>that you would like to
         use.</para>
