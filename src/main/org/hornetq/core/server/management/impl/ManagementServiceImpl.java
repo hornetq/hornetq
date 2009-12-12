@@ -96,7 +96,8 @@ public class ManagementServiceImpl implements ManagementService
    private static final Logger log = Logger.getLogger(ManagementServiceImpl.class);
 
    private final MBeanServer mbeanServer;
-  private final boolean jmxManagementEnabled;
+
+   private final boolean jmxManagementEnabled;
 
    private final Map<String, Object> registry;
 
@@ -426,7 +427,7 @@ public class ManagementServiceImpl implements ManagementService
    public ServerMessage handleMessage(final ServerMessage message) throws Exception
    {
       // a reply message is sent with the result stored in the message body.
-      ServerMessage reply = new ServerMessageImpl(storageManager.generateUniqueID(), 50);
+      ServerMessage reply = new ServerMessageImpl(storageManager.generateUniqueID(), 512);
 
       String resourceName = message.getStringProperty(ManagementHelper.HDR_RESOURCE_NAME);
       if (ManagementServiceImpl.log.isDebugEnabled())
@@ -718,7 +719,7 @@ public class ManagementServiceImpl implements ManagementService
 
                long messageID = storageManager.generateUniqueID();
 
-               ServerMessage notificationMessage = new ServerMessageImpl(messageID, 50);
+               ServerMessage notificationMessage = new ServerMessageImpl(messageID, 512);
 
                // Notification messages are always durable so the user can choose whether to add a durable queue to
                // consume

@@ -13,7 +13,6 @@
 
 package org.hornetq.integration.transports.netty;
 
-import org.hornetq.core.logging.Logger;
 import org.hornetq.utils.DataConstants;
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBuffers;
@@ -34,8 +33,6 @@ import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
 @ChannelPipelineCoverage("one")
 public class HornetQFrameDecoder2 extends SimpleChannelUpstreamHandler
 {
-   private static final Logger log = Logger.getLogger(HornetQFrameDecoder2.class);
-
    private ChannelBuffer previousData = ChannelBuffers.EMPTY_BUFFER;
 
    // SimpleChannelUpstreamHandler overrides
@@ -49,9 +46,8 @@ public class HornetQFrameDecoder2 extends SimpleChannelUpstreamHandler
       {
          if (previousData.readableBytes() + in.readableBytes() < DataConstants.SIZE_INT)
          {
-            // XXX Length is unknown. Bet at 100. Tune this value.
-            //In most cases this won't occur
-            append(in, 100);
+            // XXX Length is unknown. Bet at 512. Tune this value.
+            append(in, 512);
             return;
          }
 
@@ -115,8 +111,8 @@ public class HornetQFrameDecoder2 extends SimpleChannelUpstreamHandler
          {
             // XXX Tune this value: Increasing the initial capacity of the
             // dynamic buffer might reduce the chance of additional memory
-            // copy.            
-            frame = ChannelBuffers.dynamicBuffer(length + 4);          
+            // copy.
+            frame = ChannelBuffers.dynamicBuffer(length + 4);
             frame.writeBytes(previousData, previousData.readerIndex(), previousData.readableBytes());
             frame.writeBytes(in, length + 4 - frame.writerIndex());
          }
@@ -168,8 +164,8 @@ public class HornetQFrameDecoder2 extends SimpleChannelUpstreamHandler
 
          // Convert to dynamic buffer (this requires copy)
          // XXX Tune this value: Increasing the initial capacity of the dynamic
-         // buffer might reduce the chance of additional memory copy.        
-         ChannelBuffer frame = ChannelBuffers.dynamicBuffer(length + DataConstants.SIZE_INT);       
+         // buffer might reduce the chance of additional memory copy.
+         ChannelBuffer frame = ChannelBuffers.dynamicBuffer(length + DataConstants.SIZE_INT);
          frame.writeBytes(in, length + DataConstants.SIZE_INT);
          frame.skipBytes(DataConstants.SIZE_INT);
          Channels.fireMessageReceived(ctx, frame);
@@ -186,7 +182,7 @@ public class HornetQFrameDecoder2 extends SimpleChannelUpstreamHandler
          previousData.writeBytes(in);
       }
       else
-      {         
+      {
          ChannelBuffer newPreviousData = ChannelBuffers.dynamicBuffer(Math.max(previousData.readableBytes() + in.readableBytes(),
                                                                                length + 4));
          newPreviousData.writeBytes(previousData);
