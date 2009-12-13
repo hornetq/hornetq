@@ -45,13 +45,6 @@ public class SessionSendMessage extends MessagePacket
       super(PacketImpl.SESS_SEND, message);
 
       this.requiresResponse = requiresResponse;
-
-      // If the message hasn't already been copied when the headers/properties/body was changed since last send
-      // (which will prompt an invalidate(), which will cause a copy if not copied already)
-      // Then the message needs to be copied before sending - the previous send may be in the Netty write queue
-      // so we can't just use the same buffer. Also we can't just duplicate, since the extra data (requiresResponse)
-      // may be different on different calls
-      message.checkCopy();
    }
 
    public SessionSendMessage()

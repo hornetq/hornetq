@@ -113,7 +113,7 @@ public class JMSServerStartStopTest extends UnitTestCase
 
       for (int i = 0; i < numMessages; i++)
       {
-         TextMessage tm = (TextMessage)consumer.receive(1000);
+         TextMessage tm = (TextMessage)consumer.receive(10000);
 
          Assert.assertNotNull(tm);
 
