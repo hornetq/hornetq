@@ -19,10 +19,6 @@
 
    <import file="../../common/build.xml"/>
 
-   <path id="extra.classpath">
-      <fileset file="${jars.dir}/org/jboss/netty/lib/netty.jar" />
-   </path>
-
    <path id="applet.classpath">
       <fileset dir="build/classes" />
 	  <fileset dir="build/classes">
@@ -38,8 +34,10 @@
 	        <include name="hornetq-jms-client.jar"/>
 	        <include name="hornetq-transports.jar"/>
 	     </fileset>
-	     <fileset file="${jars.dir}/org/jboss/netty/lib/netty.jar" />
-	   	 <fileset file="${jars.dir}/org/jboss/javaee/lib/jboss-jms-api.jar" />
+	     <fileset dir="${jars.dir}">
+	        <include name="**/netty.jar" />
+           <include name="**/jboss-jms-api.jar" />
+        </fileset>
 	  </copy>
    </target>
 
