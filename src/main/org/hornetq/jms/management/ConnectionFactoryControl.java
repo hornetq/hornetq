@@ -41,7 +41,7 @@ public interface ConnectionFactoryControl
    List<String> getBindings();
 
    /**
-    * Returns the Client ID of this connection factory (or {@code null}Êif it is not set.
+    * Returns the Client ID of this connection factory (or {@code null} if it is not set.
     */
    String getClientID();
 

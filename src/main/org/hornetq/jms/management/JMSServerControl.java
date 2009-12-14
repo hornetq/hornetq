@@ -63,7 +63,7 @@ public interface JMSServerControl
    /**
     * Creates a JMS Queue with the specified name and JNDI binding.
     * 
-    * @return {@code true}Êif the queue was created, {@code false} else
+    * @return {@code true} if the queue was created, {@code false} else
     */
    @Operation(desc = "Create a JMS Queue", impact = MBeanOperationInfo.ACTION)
    boolean createQueue(@Parameter(name = "name", desc = "Name of the queue to create") String name,
@@ -72,7 +72,7 @@ public interface JMSServerControl
    /**
     * Destroys a JMS Queue with the specified name.
     * 
-    * @return {@code true}Êif the queue was destroyed, {@code false} else
+    * @return {@code true} if the queue was destroyed, {@code false} else
     */
    @Operation(desc = "Destroy a JMS Queue", impact = MBeanOperationInfo.ACTION)
    boolean destroyQueue(@Parameter(name = "name", desc = "Name of the queue to destroy") String name) throws Exception;
@@ -80,7 +80,7 @@ public interface JMSServerControl
    /**
     * Creates a JMS Topic with the specified name and JNDI binding.
     * 
-    * @return {@code true}Êif the topic was created, {@code false} else
+    * @return {@code true} if the topic was created, {@code false} else
     */
    @Operation(desc = "Create a JMS Topic", impact = MBeanOperationInfo.ACTION)
    boolean createTopic(@Parameter(name = "name", desc = "Name of the topic to create") String name,
@@ -89,7 +89,7 @@ public interface JMSServerControl
    /**
     * Destroys a JMS Topic with the specified name.
     * 
-    * @return {@code true}Êif the topic was destroyed, {@code false} else
+    * @return {@code true} if the topic was destroyed, {@code false} else
     */
    @Operation(desc = "Destroy a JMS Topic", impact = MBeanOperationInfo.ACTION)
    boolean destroyTopic(@Parameter(name = "name", desc = "Name of the topic to destroy") String name) throws Exception;
@@ -117,7 +117,7 @@ public interface JMSServerControl
     * <br>
     * The ConnectionFactory is bound to JNDI for all the specified bindings Strings.
     * <br>
-    * {@code backupTransportClassNames} and {@code backupTransportParams}Êcan be {@code null} if there is no backup server.
+    * {@code backupTransportClassNames} and {@code backupTransportParams} can be {@code null} if there is no backup server.
     */
    @Operation(desc = "Create a JMS ConnectionFactory", impact = MBeanOperationInfo.ACTION)
    void createConnectionFactory(@Parameter(name = "name") String name,
@@ -149,7 +149,7 @@ public interface JMSServerControl
     * <br>
     * Connections created by this ConnectionFactory will have their ClientID set to the specified ClientID.
     * <br>
-    * {@code backupTransportClassNames} and {@code backupTransportParams}Êcan be {@code null} if there is no backup server.
+    * {@code backupTransportClassNames} and {@code backupTransportParams} can be {@code null} if there is no backup server.
     */
    @Operation(desc = "Create a JMS ConnectionFactory", impact = MBeanOperationInfo.ACTION)
    void createConnectionFactory(@Parameter(name = "name") String name,
@@ -393,7 +393,7 @@ public interface JMSServerControl
     * <br>
     * The ConnectionFactory is bound to JNDI for all the specified comma-separated bindings.
     * <br>
-    * The {@code liveTransportParams} is a  comma-separated list of key=value for the transport parameters corresponding to the {@code TransportConfiguration}Êparameters.
+    * The {@code liveTransportParams} is a  comma-separated list of key=value for the transport parameters corresponding to the {@code TransportConfiguration} parameters.
     */
    @Operation(desc = "Create a JMS ConnectionFactory", impact = MBeanOperationInfo.ACTION)
    void createConnectionFactory(@Parameter(name = "name") String name,
@@ -419,7 +419,7 @@ public interface JMSServerControl
     * <br>
     * The ConnectionFactory is bound to JNDI for all the specified comma-separated bindings.
     * <br>
-    * The {@code liveTransportParams} is a  comma-separated list of key=value for the transport parameters corresponding to the {@code TransportConfiguration}Êparameters.
+    * The {@code liveTransportParams} is a  comma-separated list of key=value for the transport parameters corresponding to the {@code TransportConfiguration} parameters.
     * <br>
     * Connections created by this ConnectionFactory will have their ClientID set to the specified ClientID.
     */

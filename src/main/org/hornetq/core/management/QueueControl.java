@@ -149,7 +149,7 @@ public interface QueueControl
    /**
     * Removes the message corresponding to the specified message ID.
     *
-    * @return {@code true}Êif the message was removed, {@code false} else
+    * @return {@code true} if the message was removed, {@code false} else
     */
    @Operation(desc = "Remove the message corresponding to the given messageID", impact = MBeanOperationInfo.ACTION)
    boolean removeMessage(@Parameter(name = "messageID", desc = "A message ID") long messageID) throws Exception;
@@ -177,7 +177,7 @@ public interface QueueControl
    /**
     * Expires the message corresponding to the specified message ID.
     *
-    * @return {@code true}Êif the message was expired, {@code false} else
+    * @return {@code true} if the message was expired, {@code false} else
     */
    @Operation(desc = "Remove the message corresponding to the given messageID", impact = MBeanOperationInfo.ACTION)
    boolean expireMessage(@Parameter(name = "messageID", desc = "A message ID") long messageID) throws Exception;
@@ -185,7 +185,7 @@ public interface QueueControl
    /**
     * Moves the message corresponding to the specified message ID to the specified other queue.
     *
-    * @return {@code true}Êif the message was moved, {@code false} else
+    * @return {@code true} if the message was moved, {@code false} else
     */
    @Operation(desc = "Move the message corresponding to the given messageID to another queue", impact = MBeanOperationInfo.ACTION)
    boolean moveMessage(@Parameter(name = "messageID", desc = "A message ID") long messageID,
@@ -205,7 +205,7 @@ public interface QueueControl
    /**
     * Sends the message corresponding to the specified message ID to this queue's dead letter address.
     *
-    * @return {@code true}Êif the message was sent to the dead letter address, {@code false} else
+    * @return {@code true} if the message was sent to the dead letter address, {@code false} else
     */
    @Operation(desc = "Send the message corresponding to the given messageID to this queue's Dead Letter Address", impact = MBeanOperationInfo.ACTION)
    boolean sendMessageToDeadLetterAddress(@Parameter(name = "messageID", desc = "A message ID") long messageID) throws Exception;
@@ -225,7 +225,7 @@ public interface QueueControl
     * 
     * @param newPriority between 0 and 9 inclusive.
     *
-    * @return {@code true}Êif the message priority was changed
+    * @return {@code true} if the message priority was changed
     */
    @Operation(desc = "Change the priority of the message corresponding to the given messageID", impact = MBeanOperationInfo.ACTION)
    boolean changeMessagePriority(@Parameter(name = "messageID", desc = "A message ID") long messageID,

@@ -122,7 +122,7 @@ public class ConnectionClosedTest extends JMSTestCase
    }
 
    /**
-    * A close terminates all pending message receives on the connection�s session�s  consumers. The
+    * A close terminates all pending message receives on the connection's session's  consumers. The
     * receives may return with a message or null depending on whether or not there was a message
     * available at the time of the close.
     */
