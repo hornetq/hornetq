@@ -838,8 +838,17 @@ public abstract class MessageImpl implements MessageInternal
          // write it
          buffer.setInt(PacketImpl.PACKET_HEADERS_SIZE, endOfBodyPosition);
 
-         // Position at end of body and skip past the message end position int
-         buffer.setIndex(0, endOfBodyPosition + DataConstants.SIZE_INT);
+         // Position at end of body and skip past the message end position int.
+         // check for enough room in the buffer even tho it is dynamic
+         if((endOfBodyPosition + 4) > buffer.capacity())
+         {
+            buffer.setIndex(0, endOfBodyPosition);
+            buffer.writeInt(0);
+         }
+         else
+         {
+            buffer.setIndex(0, endOfBodyPosition + DataConstants.SIZE_INT);
+         }
 
          encodeHeadersAndProperties(buffer);
 
