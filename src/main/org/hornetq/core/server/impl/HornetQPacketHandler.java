@@ -112,6 +112,7 @@ public class HornetQPacketHandler implements ChannelHandler
 
    private void handleCreateSession(final CreateSessionMessage request)
    {
+      boolean incompatibleVersion = false;
       Packet response;
       try
       {
@@ -133,6 +134,11 @@ public class HornetQPacketHandler implements ChannelHandler
          if (e instanceof HornetQException)
          {
             response = new HornetQExceptionMessage((HornetQException)e);
+            
+            if (((HornetQException)e).getCode() == HornetQException.INCOMPATIBLE_CLIENT_SERVER_VERSIONS)
+            {
+               incompatibleVersion = true;
+            }
          }
          else
          {
@@ -140,8 +146,19 @@ public class HornetQPacketHandler implements ChannelHandler
             response = new HornetQExceptionMessage(new HornetQException(HornetQException.INTERNAL_ERROR));
          }
       }
-
-      channel1.send(response);
+      
+      // send the exception to the client and destroy
+      // the connection if the client and server versions
+      // are not compatible
+      if (incompatibleVersion)
+      {
+         channel1.sendAndFlush(response);
+         connection.destroy();
+      }
+      else
+      {
+         channel1.send(response);
+      }
    }
 
    private void handleReattachSession(final ReattachSessionMessage request)

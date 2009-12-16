@@ -378,6 +378,11 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
                }
                catch (HornetQException e)
                {
+                  if (e.getCode() == HornetQException.INCOMPATIBLE_CLIENT_SERVER_VERSIONS)
+                  {
+                     theConnection.destroy();
+                  }
+                  
                   if (e.getCode() == HornetQException.UNBLOCKED)
                   {
                      // This means the thread was blocked on create session and failover unblocked it
