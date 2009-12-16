@@ -11,7 +11,7 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.core.client;
+package org.hornetq.core.client.impl;
 
 import java.io.OutputStream;
 
@@ -19,13 +19,11 @@ import org.hornetq.core.buffers.HornetQBuffer;
 import org.hornetq.core.exception.HornetQException;
 
 /**
- * A LargeMessageBuffer represents the buffer of a large message.
+ * A LargeMessageBufferInternal
  *
- * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
- *
+ * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  */
-public interface LargeMessageBuffer extends HornetQBuffer
+public interface LargeMessageBufferInternal extends HornetQBuffer
 {
    /**
     * Returns the size of this buffer.

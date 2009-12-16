@@ -21,7 +21,7 @@ import java.util.Set;
 import org.hornetq.core.buffers.HornetQBuffer;
 import org.hornetq.core.buffers.HornetQBuffers;
 import org.hornetq.core.buffers.impl.ResetLimitWrappedHornetQBuffer;
-import org.hornetq.core.client.LargeMessageBuffer;
+import org.hornetq.core.client.impl.LargeMessageBufferInternal;
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.BodyEncoder;
@@ -228,7 +228,7 @@ public abstract class MessageImpl implements MessageInternal
    {
       if (bodyBuffer == null)
       {
-         if (buffer instanceof LargeMessageBuffer == false)
+         if (buffer instanceof LargeMessageBufferInternal == false)
          {
             bodyBuffer = new ResetLimitWrappedHornetQBuffer(PacketImpl.PACKET_HEADERS_SIZE + DataConstants.SIZE_INT,
                                                             buffer,

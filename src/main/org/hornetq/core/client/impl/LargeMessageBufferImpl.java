@@ -27,7 +27,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 import org.hornetq.core.buffers.HornetQBuffer;
-import org.hornetq.core.client.LargeMessageBuffer;
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.impl.wireformat.SessionReceiveContinuationMessage;
@@ -44,7 +43,7 @@ import org.jboss.netty.buffer.ChannelBuffer;
  *
  *
  */
-public class LargeMessageBufferImpl implements LargeMessageBuffer
+public class LargeMessageBufferImpl implements LargeMessageBufferInternal
 {
    // Constants -----------------------------------------------------
 

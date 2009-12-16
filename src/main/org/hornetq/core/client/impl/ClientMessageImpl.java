@@ -20,7 +20,6 @@ import java.nio.ByteBuffer;
 
 import org.hornetq.core.buffers.HornetQBuffer;
 import org.hornetq.core.buffers.HornetQBuffers;
-import org.hornetq.core.client.LargeMessageBuffer;
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.BodyEncoder;
@@ -150,7 +149,7 @@ public class ClientMessageImpl extends MessageImpl implements ClientMessageInter
    {
       if (largeMessage)
       {
-         ((LargeMessageBufferImpl)getWholeBuffer()).saveBuffer(out);
+         ((LargeMessageBufferInternal)getWholeBuffer()).saveBuffer(out);
       }
       else
       {
@@ -175,7 +174,7 @@ public class ClientMessageImpl extends MessageImpl implements ClientMessageInter
    {
       if (largeMessage)
       {
-         ((LargeMessageBufferImpl)getWholeBuffer()).setOutputStream(out);
+         ((LargeMessageBufferInternal)getWholeBuffer()).setOutputStream(out);
       }
       else
       {
@@ -191,7 +190,7 @@ public class ClientMessageImpl extends MessageImpl implements ClientMessageInter
    {
       if (largeMessage)
       {
-         return ((LargeMessageBufferImpl)getWholeBuffer()).waitCompletion(timeMilliseconds);
+         return ((LargeMessageBufferInternal)getWholeBuffer()).waitCompletion(timeMilliseconds);
       }
       else
       {
@@ -206,7 +205,7 @@ public class ClientMessageImpl extends MessageImpl implements ClientMessageInter
    {
       if (largeMessage)
       {
-         ((LargeMessageBuffer)getWholeBuffer()).discardUnusedPackets();
+         ((LargeMessageBufferInternal)getWholeBuffer()).discardUnusedPackets();
       }
    }
 

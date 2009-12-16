@@ -722,33 +722,29 @@ public class ManagementServiceImpl implements ManagementService
                ServerMessage notificationMessage = new ServerMessageImpl(messageID, 512);
 
                // Notification messages are always durable so the user can choose whether to add a durable queue to
-               // consume
-               // them in
+               // consume them in
                notificationMessage.setDurable(true);
                notificationMessage.setAddress(managementNotificationAddress);
 
-               TypedProperties notifProps;
                if (notification.getProperties() != null)
                {
-                  notifProps = new TypedProperties(notification.getProperties());
-               }
-               else
-               {
-                  notifProps = new TypedProperties();
+                  TypedProperties props = notification.getProperties();
+                  for (SimpleString name : notification.getProperties().getPropertyNames())
+                  {
+                     notificationMessage.putObjectProperty(name, props.getProperty(name));
+                  }
                }
 
-               notifProps.putSimpleStringProperty(ManagementHelper.HDR_NOTIFICATION_TYPE,
+               notificationMessage.putStringProperty(ManagementHelper.HDR_NOTIFICATION_TYPE,
                                                   new SimpleString(notification.getType().toString()));
 
-               notifProps.putLongProperty(ManagementHelper.HDR_NOTIFICATION_TIMESTAMP, System.currentTimeMillis());
+               notificationMessage.putLongProperty(ManagementHelper.HDR_NOTIFICATION_TIMESTAMP, System.currentTimeMillis());
 
                if (notification.getUID() != null)
                {
-                  notifProps.putSimpleStringProperty(new SimpleString("foobar"),
+                  notificationMessage.putStringProperty(new SimpleString("foobar"),
                                                      new SimpleString(notification.getUID()));
                }
-
-               notificationMessage.putTypedProperties(notifProps);
 
                postOffice.route(notificationMessage);
             }

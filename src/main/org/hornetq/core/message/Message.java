@@ -13,13 +13,11 @@
 
 package org.hornetq.core.message;
 
-import java.io.InputStream;
 import java.util.Map;
 import java.util.Set;
 
 import org.hornetq.core.buffers.HornetQBuffer;
 import org.hornetq.utils.SimpleString;
-import org.hornetq.utils.TypedProperties;
 
 /**
  * A Message is a routable instance that has a payload.
@@ -311,8 +309,6 @@ public interface Message
     * @see #putObjectProperty(SimpleString, Object)
     */
    void putObjectProperty(String key, Object value) throws PropertyConversionException;
-
-   void putTypedProperties(TypedProperties properties);
 
    /**
     * Removes the property corresponding to the specified key.
