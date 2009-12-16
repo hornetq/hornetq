@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Executor;
 
+import org.hornetq.SimpleString;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.server.Consumer;
 import org.hornetq.core.server.MessageReference;
@@ -25,7 +26,6 @@ import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.RoutingContext;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.transaction.Transaction;
-import org.hornetq.utils.SimpleString;
 
 public class FakeQueue implements Queue
 {

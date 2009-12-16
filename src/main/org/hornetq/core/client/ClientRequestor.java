@@ -14,8 +14,8 @@ package org.hornetq.core.client;
 
 import java.util.UUID;
 
+import org.hornetq.SimpleString;
 import org.hornetq.core.client.impl.ClientMessageImpl;
-import org.hornetq.utils.SimpleString;
 
 /**
  * The ClientRequestor class helps making requests.

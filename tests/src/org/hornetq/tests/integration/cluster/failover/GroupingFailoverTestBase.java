@@ -18,6 +18,7 @@ import java.util.concurrent.TimeUnit;
 
 import junit.framework.Assert;
 
+import org.hornetq.SimpleString;
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.remoting.FailureListener;
@@ -26,7 +27,6 @@ import org.hornetq.core.server.cluster.MessageFlowRecord;
 import org.hornetq.core.server.cluster.impl.ClusterConnectionImpl;
 import org.hornetq.core.server.group.impl.GroupingHandlerConfiguration;
 import org.hornetq.tests.integration.cluster.distribution.ClusterTestBase;
-import org.hornetq.utils.SimpleString;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>

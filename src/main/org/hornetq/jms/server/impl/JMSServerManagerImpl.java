@@ -26,6 +26,7 @@ import javax.naming.InitialContext;
 import javax.naming.NameNotFoundException;
 import javax.naming.NamingException;
 
+import org.hornetq.Pair;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.deployers.DeploymentManager;
 import org.hornetq.core.deployers.impl.FileDeploymentManager;
@@ -44,7 +45,6 @@ import org.hornetq.jms.server.config.QueueConfiguration;
 import org.hornetq.jms.server.config.TopicConfiguration;
 import org.hornetq.jms.server.management.JMSManagementService;
 import org.hornetq.jms.server.management.impl.JMSManagementServiceImpl;
-import org.hornetq.utils.Pair;
 
 /**
  * A Deployer used to create and add to JNDI queues, topics and connection

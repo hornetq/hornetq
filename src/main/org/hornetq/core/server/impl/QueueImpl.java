@@ -30,6 +30,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.hornetq.SimpleString;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.list.PriorityLinkedList;
 import org.hornetq.core.list.impl.PriorityLinkedListImpl;
@@ -54,7 +55,6 @@ import org.hornetq.core.transaction.TransactionPropertyIndexes;
 import org.hornetq.core.transaction.impl.TransactionImpl;
 import org.hornetq.utils.ConcurrentHashSet;
 import org.hornetq.utils.ConcurrentSet;
-import org.hornetq.utils.SimpleString;
 
 /**
  * Implementation of a Queue

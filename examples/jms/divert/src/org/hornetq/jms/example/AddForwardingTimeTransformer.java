@@ -13,9 +13,9 @@
 
 package org.hornetq.jms.example;
 
+import org.hornetq.SimpleString;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.cluster.Transformer;
-import org.hornetq.utils.SimpleString;
 
 /**
  * A AddForwardingTimeTransformer

@@ -29,6 +29,7 @@ import javax.resource.spi.endpoint.MessageEndpointFactory;
 import javax.resource.spi.work.Work;
 import javax.resource.spi.work.WorkManager;
 
+import org.hornetq.SimpleString;
 import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.jms.HornetQDestination;
@@ -36,7 +37,6 @@ import org.hornetq.jms.HornetQQueue;
 import org.hornetq.jms.HornetQTopic;
 import org.hornetq.ra.HornetQResourceAdapter;
 import org.hornetq.ra.Util;
-import org.hornetq.utils.SimpleString;
 
 /**
  * The activation.

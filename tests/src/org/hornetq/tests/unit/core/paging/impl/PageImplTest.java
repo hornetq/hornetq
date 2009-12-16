@@ -19,6 +19,7 @@ import java.util.List;
 
 import junit.framework.Assert;
 
+import org.hornetq.SimpleString;
 import org.hornetq.core.buffers.HornetQBuffer;
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.SequentialFileFactory;
@@ -31,7 +32,6 @@ import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.impl.ServerMessageImpl;
 import org.hornetq.tests.unit.core.journal.impl.fakes.FakeSequentialFileFactory;
 import org.hornetq.tests.util.UnitTestCase;
-import org.hornetq.utils.SimpleString;
 
 /**
  * 

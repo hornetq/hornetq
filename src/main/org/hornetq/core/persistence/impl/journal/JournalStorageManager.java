@@ -24,6 +24,8 @@ import java.util.concurrent.Executor;
 
 import javax.transaction.xa.Xid;
 
+import org.hornetq.Pair;
+import org.hornetq.SimpleString;
 import org.hornetq.core.buffers.HornetQBuffer;
 import org.hornetq.core.buffers.HornetQBuffers;
 import org.hornetq.core.config.Configuration;
@@ -71,8 +73,6 @@ import org.hornetq.core.transaction.Transaction.State;
 import org.hornetq.core.transaction.impl.TransactionImpl;
 import org.hornetq.utils.DataConstants;
 import org.hornetq.utils.ExecutorFactory;
-import org.hornetq.utils.Pair;
-import org.hornetq.utils.SimpleString;
 import org.hornetq.utils.UUID;
 
 /**

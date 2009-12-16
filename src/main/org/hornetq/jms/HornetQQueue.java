@@ -16,8 +16,8 @@ package org.hornetq.jms;
 import javax.jms.JMSException;
 import javax.jms.Queue;
 
+import org.hornetq.SimpleString;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.utils.SimpleString;
 
 /**
  * HornetQ implementation of a JMS Queue.

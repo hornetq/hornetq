@@ -13,8 +13,8 @@
 
 package org.hornetq.core.server.cluster;
 
+import org.hornetq.SimpleString;
 import org.hornetq.core.postoffice.QueueBinding;
-import org.hornetq.utils.SimpleString;
 
 /**
  * A RemoteQueueBinding

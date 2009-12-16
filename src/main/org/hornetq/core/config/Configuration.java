@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.hornetq.SimpleString;
 import org.hornetq.core.config.cluster.BridgeConfiguration;
 import org.hornetq.core.config.cluster.BroadcastGroupConfiguration;
 import org.hornetq.core.config.cluster.ClusterConnectionConfiguration;
@@ -26,7 +27,6 @@ import org.hornetq.core.config.cluster.DivertConfiguration;
 import org.hornetq.core.config.cluster.QueueConfiguration;
 import org.hornetq.core.server.JournalType;
 import org.hornetq.core.server.group.impl.GroupingHandlerConfiguration;
-import org.hornetq.utils.SimpleString;
 
 /**
  * 

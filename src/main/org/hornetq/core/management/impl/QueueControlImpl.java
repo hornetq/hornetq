@@ -18,6 +18,7 @@ import java.util.Map;
 
 import javax.management.MBeanOperationInfo;
 
+import org.hornetq.SimpleString;
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.filter.impl.FilterImpl;
@@ -34,7 +35,6 @@ import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.settings.HierarchicalRepository;
 import org.hornetq.core.settings.impl.AddressSettings;
-import org.hornetq.utils.SimpleString;
 import org.hornetq.utils.json.JSONArray;
 import org.hornetq.utils.json.JSONObject;
 

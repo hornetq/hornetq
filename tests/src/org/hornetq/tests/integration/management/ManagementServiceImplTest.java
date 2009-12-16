@@ -15,6 +15,7 @@ package org.hornetq.tests.integration.management;
 
 import junit.framework.Assert;
 
+import org.hornetq.SimpleString;
 import org.hornetq.core.client.management.impl.ManagementHelper;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
@@ -33,7 +34,6 @@ import org.hornetq.tests.integration.server.FakeStorageManager;
 import org.hornetq.tests.unit.core.postoffice.impl.FakeQueue;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
-import org.hornetq.utils.SimpleString;
 
 /*
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>

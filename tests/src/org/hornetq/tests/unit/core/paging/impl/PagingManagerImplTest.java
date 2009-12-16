@@ -20,6 +20,7 @@ import java.util.concurrent.Executors;
 
 import junit.framework.Assert;
 
+import org.hornetq.SimpleString;
 import org.hornetq.core.paging.Page;
 import org.hornetq.core.paging.PagedMessage;
 import org.hornetq.core.paging.impl.PagingManagerImpl;
@@ -35,7 +36,6 @@ import org.hornetq.core.settings.impl.HierarchicalObjectRepository;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.OrderedExecutorFactory;
-import org.hornetq.utils.SimpleString;
 
 /**
  * 

@@ -20,6 +20,7 @@ import javax.management.MBeanServerFactory;
 
 import junit.framework.Assert;
 
+import org.hornetq.Pair;
 import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.client.ClientSessionFactory;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
@@ -36,7 +37,6 @@ import org.hornetq.core.remoting.impl.invm.TransportConstants;
 import org.hornetq.core.server.HornetQ;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.RandomUtil;
-import org.hornetq.utils.Pair;
 
 /**
  * A BridgeControlTest

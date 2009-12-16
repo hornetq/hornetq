@@ -21,6 +21,7 @@ import java.util.concurrent.CountDownLatch;
 
 import junit.framework.Assert;
 
+import org.hornetq.Pair;
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.journal.impl.AbstractJournalUpdateTask;
@@ -33,7 +34,6 @@ import org.hornetq.core.logging.Logger;
 import org.hornetq.tests.unit.core.journal.impl.JournalImplTestBase;
 import org.hornetq.tests.unit.core.journal.impl.fakes.SimpleEncoding;
 import org.hornetq.utils.IDGenerator;
-import org.hornetq.utils.Pair;
 import org.hornetq.utils.TimeAndCounterIDGenerator;
 
 /**

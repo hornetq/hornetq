@@ -33,6 +33,7 @@ import javax.jms.MessageFormatException;
 import javax.jms.MessageNotReadableException;
 import javax.jms.MessageNotWriteableException;
 
+import org.hornetq.SimpleString;
 import org.hornetq.core.buffers.HornetQBuffer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientSession;
@@ -42,7 +43,6 @@ import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.PropertyConversionException;
 import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.jms.HornetQDestination;
-import org.hornetq.utils.SimpleString;
 
 /**
  * HornetQ implementation of a JMS Message.

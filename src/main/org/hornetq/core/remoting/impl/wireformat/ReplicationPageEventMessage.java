@@ -13,8 +13,8 @@
 
 package org.hornetq.core.remoting.impl.wireformat;
 
+import org.hornetq.SimpleString;
 import org.hornetq.core.buffers.HornetQBuffer;
-import org.hornetq.utils.SimpleString;
 
 /**
  * A ReplicationPageWrite

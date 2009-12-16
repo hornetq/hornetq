@@ -17,10 +17,10 @@ import java.util.concurrent.CountDownLatch;
 
 import junit.framework.Assert;
 
+import org.hornetq.SimpleString;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.DataConstants;
-import org.hornetq.utils.SimpleString;
 
 /**
  * 

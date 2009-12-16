@@ -18,6 +18,7 @@ import java.util.concurrent.ScheduledExecutorService;
 
 import javax.management.ObjectName;
 
+import org.hornetq.SimpleString;
 import org.hornetq.core.cluster.DiscoveryGroup;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.TransportConfiguration;
@@ -47,7 +48,6 @@ import org.hornetq.core.server.cluster.ClusterConnection;
 import org.hornetq.core.settings.HierarchicalRepository;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.core.transaction.ResourceManager;
-import org.hornetq.utils.SimpleString;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>

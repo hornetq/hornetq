@@ -15,6 +15,7 @@ package org.hornetq.tests.unit.core.deployers.impl;
 
 import junit.framework.Assert;
 
+import org.hornetq.SimpleString;
 import org.hornetq.core.deployers.DeploymentManager;
 import org.hornetq.core.deployers.impl.AddressSettingsDeployer;
 import org.hornetq.core.settings.HierarchicalRepository;
@@ -22,7 +23,6 @@ import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.core.settings.impl.HierarchicalObjectRepository;
 import org.hornetq.tests.util.UnitTestCase;
-import org.hornetq.utils.SimpleString;
 import org.hornetq.utils.XMLUtil;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;

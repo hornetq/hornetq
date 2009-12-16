@@ -24,13 +24,13 @@ import javax.jms.TextMessage;
 
 import junit.framework.Assert;
 
+import org.hornetq.Pair;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.config.cluster.DivertConfiguration;
 import org.hornetq.jms.HornetQQueue;
 import org.hornetq.tests.util.JMSTestBase;
-import org.hornetq.utils.Pair;
 
 /**
  * A DivertAndACKClientTest

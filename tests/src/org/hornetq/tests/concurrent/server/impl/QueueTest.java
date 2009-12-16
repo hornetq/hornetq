@@ -16,6 +16,7 @@ package org.hornetq.tests.concurrent.server.impl;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hornetq.SimpleString;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HandleStatus;
 import org.hornetq.core.server.MessageReference;
@@ -25,7 +26,6 @@ import org.hornetq.core.server.impl.QueueImpl;
 import org.hornetq.tests.unit.core.server.impl.fakes.FakeConsumer;
 import org.hornetq.tests.unit.core.server.impl.fakes.FakeQueueFactory;
 import org.hornetq.tests.util.UnitTestCase;
-import org.hornetq.utils.SimpleString;
 
 /**
  * 

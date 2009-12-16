@@ -26,6 +26,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.net.ssl.SSLContext;
 
+import org.hornetq.SimpleString;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
@@ -38,7 +39,6 @@ import org.hornetq.core.remoting.spi.ConnectionLifeCycleListener;
 import org.hornetq.core.server.management.Notification;
 import org.hornetq.core.server.management.NotificationService;
 import org.hornetq.utils.ConfigurationHelper;
-import org.hornetq.utils.SimpleString;
 import org.hornetq.utils.TypedProperties;
 import org.hornetq.utils.VersionLoader;
 import org.jboss.netty.bootstrap.ServerBootstrap;

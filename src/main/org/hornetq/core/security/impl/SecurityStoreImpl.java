@@ -19,6 +19,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import org.hornetq.SimpleString;
 import org.hornetq.core.client.management.impl.ManagementHelper;
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
@@ -33,7 +34,6 @@ import org.hornetq.core.server.management.NotificationService;
 import org.hornetq.core.settings.HierarchicalRepository;
 import org.hornetq.core.settings.HierarchicalRepositoryChangeListener;
 import org.hornetq.utils.ConcurrentHashSet;
-import org.hornetq.utils.SimpleString;
 import org.hornetq.utils.TypedProperties;
 
 /**

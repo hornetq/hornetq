@@ -32,6 +32,8 @@ import java.util.concurrent.TimeUnit;
 
 import javax.management.MBeanServer;
 
+import org.hornetq.Pair;
+import org.hornetq.SimpleString;
 import org.hornetq.core.client.ClientSessionFactory;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.client.impl.FailoverManager;
@@ -111,8 +113,6 @@ import org.hornetq.core.version.Version;
 import org.hornetq.utils.ExecutorFactory;
 import org.hornetq.utils.HornetQThreadFactory;
 import org.hornetq.utils.OrderedExecutorFactory;
-import org.hornetq.utils.Pair;
-import org.hornetq.utils.SimpleString;
 import org.hornetq.utils.UUID;
 import org.hornetq.utils.UUIDGenerator;
 import org.hornetq.utils.VersionLoader;

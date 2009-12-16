@@ -17,6 +17,7 @@ import java.util.ArrayList;
 
 import junit.framework.Assert;
 
+import org.hornetq.SimpleString;
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
@@ -31,7 +32,6 @@ import org.hornetq.core.journal.impl.NIOSequentialFileFactory;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.SpawnedVMSupport;
-import org.hornetq.utils.SimpleString;
 
 /**
  * A JournalCrashTest

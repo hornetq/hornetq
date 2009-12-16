@@ -13,10 +13,10 @@
 
 package org.hornetq.core.server.cluster;
 
+import org.hornetq.Pair;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.core.server.management.NotificationService;
-import org.hornetq.utils.Pair;
 
 /**
  * A BroadcastGroup

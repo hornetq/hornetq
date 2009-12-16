@@ -16,6 +16,7 @@ package org.hornetq.core.server.impl;
 import java.io.InputStream;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.hornetq.SimpleString;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.paging.PagingStore;
@@ -25,7 +26,6 @@ import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.utils.DataConstants;
 import org.hornetq.utils.MemorySize;
-import org.hornetq.utils.SimpleString;
 
 /**
  * 

@@ -50,6 +50,7 @@ import javax.jms.XASession;
 import javax.jms.XATopicSession;
 import javax.transaction.xa.XAResource;
 
+import org.hornetq.SimpleString;
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientProducer;
 import org.hornetq.core.client.ClientSession;
@@ -63,7 +64,6 @@ import org.hornetq.jms.HornetQQueue;
 import org.hornetq.jms.HornetQTemporaryQueue;
 import org.hornetq.jms.HornetQTemporaryTopic;
 import org.hornetq.jms.HornetQTopic;
-import org.hornetq.utils.SimpleString;
 
 /**
  * HornetQ implementation of a JMS Session.

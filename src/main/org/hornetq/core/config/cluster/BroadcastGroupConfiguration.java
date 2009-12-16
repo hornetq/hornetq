@@ -16,8 +16,8 @@ package org.hornetq.core.config.cluster;
 import java.io.Serializable;
 import java.util.List;
 
+import org.hornetq.Pair;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.utils.Pair;
 
 /**
  * A BroadcastGroupConfiguration

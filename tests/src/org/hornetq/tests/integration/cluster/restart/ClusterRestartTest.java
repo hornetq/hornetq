@@ -14,9 +14,9 @@ package org.hornetq.tests.integration.cluster.restart;
 
 import java.util.Collection;
 
+import org.hornetq.SimpleString;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.tests.integration.cluster.distribution.ClusterTestBase;
-import org.hornetq.utils.SimpleString;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>

@@ -18,6 +18,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import org.hornetq.SimpleString;
 import org.hornetq.core.buffers.HornetQBuffer;
 import org.hornetq.core.buffers.HornetQBuffers;
 import org.hornetq.core.buffers.impl.ResetLimitWrappedHornetQBuffer;
@@ -28,7 +29,6 @@ import org.hornetq.core.message.BodyEncoder;
 import org.hornetq.core.message.PropertyConversionException;
 import org.hornetq.core.remoting.impl.wireformat.PacketImpl;
 import org.hornetq.utils.DataConstants;
-import org.hornetq.utils.SimpleString;
 import org.hornetq.utils.TypedProperties;
 
 /**

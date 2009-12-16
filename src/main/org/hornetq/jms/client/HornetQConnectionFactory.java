@@ -33,13 +33,13 @@ import javax.naming.NamingException;
 import javax.naming.Reference;
 import javax.naming.Referenceable;
 
+import org.hornetq.Pair;
 import org.hornetq.core.client.ClientSessionFactory;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.jms.referenceable.ConnectionFactoryObjectFactory;
 import org.hornetq.jms.referenceable.SerializableObjectRefAddr;
-import org.hornetq.utils.Pair;
 
 /**
  * HornetQ implementation of a JMS ConnectionFactory.

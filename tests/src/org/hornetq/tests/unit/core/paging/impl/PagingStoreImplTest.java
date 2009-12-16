@@ -30,6 +30,8 @@ import javax.transaction.xa.Xid;
 
 import junit.framework.Assert;
 
+import org.hornetq.Pair;
+import org.hornetq.SimpleString;
 import org.hornetq.core.buffers.HornetQBuffer;
 import org.hornetq.core.buffers.HornetQBuffers;
 import org.hornetq.core.journal.IOAsyncTask;
@@ -67,8 +69,6 @@ import org.hornetq.tests.unit.core.journal.impl.fakes.FakeSequentialFileFactory;
 import org.hornetq.tests.unit.core.server.impl.fakes.FakePostOffice;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
-import org.hornetq.utils.Pair;
-import org.hornetq.utils.SimpleString;
 import org.hornetq.utils.UUID;
 
 /**

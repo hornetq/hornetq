@@ -13,8 +13,8 @@
 
 package org.hornetq.core.server;
 
+import org.hornetq.SimpleString;
 import org.hornetq.core.filter.Filter;
-import org.hornetq.utils.SimpleString;
 
 /**
  * A Divert

@@ -16,7 +16,7 @@ package org.hornetq.core.config.cluster;
 import java.io.Serializable;
 import java.util.List;
 
-import org.hornetq.utils.Pair;
+import org.hornetq.Pair;
 
 /**
  * A ClusterConnectionConfiguration

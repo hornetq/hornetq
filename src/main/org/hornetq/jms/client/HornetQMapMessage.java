@@ -22,10 +22,10 @@ import javax.jms.JMSException;
 import javax.jms.MapMessage;
 import javax.jms.MessageFormatException;
 
+import org.hornetq.SimpleString;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.message.PropertyConversionException;
-import org.hornetq.utils.SimpleString;
 import org.hornetq.utils.TypedProperties;
 
 /**

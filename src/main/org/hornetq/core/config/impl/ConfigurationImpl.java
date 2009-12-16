@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.hornetq.SimpleString;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.config.cluster.BridgeConfiguration;
@@ -32,7 +33,6 @@ import org.hornetq.core.config.cluster.QueueConfiguration;
 import org.hornetq.core.logging.impl.JULLogDelegateFactory;
 import org.hornetq.core.server.JournalType;
 import org.hornetq.core.server.group.impl.GroupingHandlerConfiguration;
-import org.hornetq.utils.SimpleString;
 
 /**
  * @author <a href="mailto:ataylor@redhat.com>Andy Taylor</a>

@@ -13,13 +13,13 @@
 
 package org.hornetq.jms.example;
 
+import org.hornetq.SimpleString;
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.message.Message;
 import org.hornetq.core.remoting.Interceptor;
 import org.hornetq.core.remoting.Packet;
 import org.hornetq.core.remoting.RemotingConnection;
 import org.hornetq.core.remoting.impl.wireformat.SessionSendMessage;
-import org.hornetq.utils.SimpleString;
 
 /**
  * A simple Interceptor implementation

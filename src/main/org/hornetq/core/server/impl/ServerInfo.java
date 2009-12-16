@@ -17,10 +17,10 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
 import java.util.Date;
 
+import org.hornetq.SimpleString;
 import org.hornetq.core.paging.PagingManager;
 import org.hornetq.core.paging.PagingStore;
 import org.hornetq.core.server.HornetQServer;
-import org.hornetq.utils.SimpleString;
 import org.hornetq.utils.SizeFormatterUtil;
 
 /**

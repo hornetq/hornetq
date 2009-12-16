@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import org.hornetq.Pair;
 import org.hornetq.core.buffers.HornetQBuffer;
 import org.hornetq.core.buffers.HornetQBuffers;
 import org.hornetq.core.journal.SequentialFile;
@@ -27,7 +28,6 @@ import org.hornetq.core.journal.impl.dataformat.JournalAddRecord;
 import org.hornetq.core.journal.impl.dataformat.JournalInternalRecord;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.utils.ConcurrentHashSet;
-import org.hornetq.utils.Pair;
 
 /**
  * 

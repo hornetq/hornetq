@@ -16,10 +16,10 @@ package org.hornetq.tests.unit.util;
 import junit.framework.Assert;
 import junit.framework.TestCase;
 
+import org.hornetq.SimpleString;
 import org.hornetq.core.message.PropertyConversionException;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
-import org.hornetq.utils.SimpleString;
 import org.hornetq.utils.TypedProperties;
 
 /**

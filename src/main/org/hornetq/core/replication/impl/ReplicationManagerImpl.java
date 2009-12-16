@@ -18,6 +18,7 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import org.hornetq.SimpleString;
 import org.hornetq.core.buffers.HornetQBuffer;
 import org.hornetq.core.client.SessionFailureListener;
 import org.hornetq.core.client.impl.FailoverManager;
@@ -48,7 +49,6 @@ import org.hornetq.core.remoting.impl.wireformat.ReplicationPageWriteMessage;
 import org.hornetq.core.remoting.impl.wireformat.ReplicationPrepareMessage;
 import org.hornetq.core.replication.ReplicationManager;
 import org.hornetq.utils.ExecutorFactory;
-import org.hornetq.utils.SimpleString;
 
 /**
  * A RepplicationManagerImpl

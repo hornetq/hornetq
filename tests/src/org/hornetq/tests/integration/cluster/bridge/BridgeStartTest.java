@@ -20,6 +20,8 @@ import java.util.Map;
 
 import junit.framework.Assert;
 
+import org.hornetq.Pair;
+import org.hornetq.SimpleString;
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
@@ -35,8 +37,6 @@ import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.cluster.Bridge;
 import org.hornetq.integration.transports.netty.NettyConnectorFactory;
 import org.hornetq.tests.util.ServiceTestBase;
-import org.hornetq.utils.Pair;
-import org.hornetq.utils.SimpleString;
 
 /**
  * A BridgeStartTest

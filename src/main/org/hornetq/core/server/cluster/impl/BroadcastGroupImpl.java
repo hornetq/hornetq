@@ -20,6 +20,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ScheduledFuture;
 
+import org.hornetq.Pair;
+import org.hornetq.SimpleString;
 import org.hornetq.core.buffers.HornetQBuffer;
 import org.hornetq.core.buffers.HornetQBuffers;
 import org.hornetq.core.config.TransportConfiguration;
@@ -28,8 +30,6 @@ import org.hornetq.core.management.NotificationType;
 import org.hornetq.core.server.cluster.BroadcastGroup;
 import org.hornetq.core.server.management.Notification;
 import org.hornetq.core.server.management.NotificationService;
-import org.hornetq.utils.Pair;
-import org.hornetq.utils.SimpleString;
 import org.hornetq.utils.TypedProperties;
 import org.hornetq.utils.UUIDGenerator;
 

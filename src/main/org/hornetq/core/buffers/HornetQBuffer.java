@@ -15,7 +15,7 @@ package org.hornetq.core.buffers;
 
 import java.nio.ByteBuffer;
 
-import org.hornetq.utils.SimpleString;
+import org.hornetq.SimpleString;
 import org.jboss.netty.buffer.ChannelBuffer;
 
 /**

@@ -13,13 +13,13 @@
 
 package org.hornetq.core.deployers.impl;
 
+import org.hornetq.SimpleString;
 import org.hornetq.core.config.impl.Validators;
 import org.hornetq.core.deployers.DeploymentManager;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.settings.HierarchicalRepository;
 import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.hornetq.core.settings.impl.AddressSettings;
-import org.hornetq.utils.SimpleString;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 

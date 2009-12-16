@@ -19,6 +19,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import junit.framework.Assert;
 
+import org.hornetq.SimpleString;
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
@@ -27,7 +28,6 @@ import org.hornetq.core.client.ClientSessionFactory;
 import org.hornetq.core.client.MessageHandler;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
-import org.hornetq.utils.SimpleString;
 
 /**
  * A MessageRateTest

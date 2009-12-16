@@ -27,10 +27,10 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+import org.hornetq.Pair;
 import org.hornetq.core.deployers.Deployer;
 import org.hornetq.core.deployers.DeploymentManager;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.utils.Pair;
 
 /**
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>

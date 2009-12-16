@@ -33,6 +33,7 @@ import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
+import org.hornetq.SimpleString;
 import org.hornetq.core.buffers.HornetQBuffer;
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
@@ -51,7 +52,6 @@ import org.hornetq.jms.client.HornetQStreamMessage;
 import org.hornetq.jms.client.HornetQTextMessage;
 import org.hornetq.jms.tests.HornetQServerTestCase;
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
-import org.hornetq.utils.SimpleString;
 
 /**
  *

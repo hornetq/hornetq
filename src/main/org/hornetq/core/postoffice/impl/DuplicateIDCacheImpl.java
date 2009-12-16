@@ -19,14 +19,14 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import org.hornetq.Pair;
+import org.hornetq.SimpleString;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.DuplicateIDCache;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.transaction.Transaction;
 import org.hornetq.core.transaction.TransactionOperation;
-import org.hornetq.utils.Pair;
-import org.hornetq.utils.SimpleString;
 
 /**
  * A DuplicateIDCacheImpl

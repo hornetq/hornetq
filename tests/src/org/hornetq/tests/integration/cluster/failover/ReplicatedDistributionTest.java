@@ -18,6 +18,7 @@ import java.util.concurrent.TimeUnit;
 
 import junit.framework.Assert;
 
+import org.hornetq.SimpleString;
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
@@ -28,7 +29,6 @@ import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.remoting.RemotingConnection;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.tests.integration.cluster.distribution.ClusterTestBase;
-import org.hornetq.utils.SimpleString;
 
 /**
  * A SymmetricFailoverTest

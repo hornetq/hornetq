@@ -18,6 +18,7 @@ import javax.transaction.xa.Xid;
 
 import junit.framework.Assert;
 
+import org.hornetq.SimpleString;
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
@@ -32,7 +33,6 @@ import org.hornetq.core.server.HornetQ;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.transaction.impl.XidImpl;
 import org.hornetq.tests.util.ServiceTestBase;
-import org.hornetq.utils.SimpleString;
 import org.hornetq.utils.UUIDGenerator;
 
 /**

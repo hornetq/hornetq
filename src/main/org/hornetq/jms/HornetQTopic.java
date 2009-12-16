@@ -16,8 +16,8 @@ package org.hornetq.jms;
 import javax.jms.JMSException;
 import javax.jms.Topic;
 
-import org.hornetq.utils.Pair;
-import org.hornetq.utils.SimpleString;
+import org.hornetq.Pair;
+import org.hornetq.SimpleString;
 
 /**
  * HornetQ implementation of a JMS Topic.

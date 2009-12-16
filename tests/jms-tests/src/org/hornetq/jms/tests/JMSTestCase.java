@@ -18,10 +18,10 @@ import java.util.List;
 
 import javax.naming.InitialContext;
 
+import org.hornetq.Pair;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.jms.client.HornetQConnectionFactory;
-import org.hornetq.utils.Pair;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>

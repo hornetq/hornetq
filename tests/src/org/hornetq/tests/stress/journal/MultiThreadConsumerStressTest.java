@@ -18,6 +18,7 @@ import java.util.concurrent.CountDownLatch;
 
 import junit.framework.Assert;
 
+import org.hornetq.SimpleString;
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
@@ -29,7 +30,6 @@ import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.JournalType;
 import org.hornetq.tests.util.ServiceTestBase;
-import org.hornetq.utils.SimpleString;
 
 /**
  * A MultiThreadConsumerStressTest

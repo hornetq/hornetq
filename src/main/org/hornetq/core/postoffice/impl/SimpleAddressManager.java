@@ -16,13 +16,13 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import org.hornetq.SimpleString;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.postoffice.Address;
 import org.hornetq.core.postoffice.AddressManager;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.Bindings;
 import org.hornetq.core.postoffice.BindingsFactory;
-import org.hornetq.utils.SimpleString;
 
 /**
  * A simple address manager that maintains the addresses and bindings.

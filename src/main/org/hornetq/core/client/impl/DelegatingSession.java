@@ -19,6 +19,7 @@ import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
+import org.hornetq.SimpleString;
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
@@ -31,7 +32,6 @@ import org.hornetq.core.remoting.impl.wireformat.SessionReceiveContinuationMessa
 import org.hornetq.core.remoting.impl.wireformat.SessionReceiveLargeMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionReceiveMessage;
 import org.hornetq.utils.ConcurrentHashSet;
-import org.hornetq.utils.SimpleString;
 
 /**
  * A DelegatingSession

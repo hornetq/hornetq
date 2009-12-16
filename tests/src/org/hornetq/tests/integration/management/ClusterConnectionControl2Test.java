@@ -23,6 +23,7 @@ import javax.management.MBeanServerFactory;
 
 import junit.framework.Assert;
 
+import org.hornetq.Pair;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.TransportConfiguration;
@@ -39,7 +40,6 @@ import org.hornetq.integration.transports.netty.NettyAcceptorFactory;
 import org.hornetq.integration.transports.netty.NettyConnectorFactory;
 import org.hornetq.integration.transports.netty.TransportConstants;
 import org.hornetq.tests.util.RandomUtil;
-import org.hornetq.utils.Pair;
 
 /**
  * A BridgeControlTest

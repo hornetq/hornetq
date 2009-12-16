@@ -10,32 +10,11 @@
  * implied.  See the License for the specific language governing
  * permissions and limitations under the License.
  */
-package org.hornetq.core.postoffice;
-
-import java.util.List;
-
-import org.hornetq.SimpleString;
 
 /**
- * USed to hold a hierarchichal style address, delimited by a '.'.
- *
- * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
+ * HornetQ base classes.
+ * <br>
+ * This package defines the base classes used by HornetQ.
  */
-public interface Address
-{
-   SimpleString getAddress();
+package org.hornetq;
 
-   SimpleString[] getAddressParts();
-
-   boolean containsWildCard();
-
-   List<Address> getLinkedAddresses();
-
-   void addLinkedAddress(Address address);
-
-   void removeLinkedAddress(Address actualAddress);
-
-   void removeAddressPart(int pos);
-
-   boolean matches(Address add);
-}

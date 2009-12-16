@@ -13,9 +13,9 @@
 
 package org.hornetq.tests.unit.core.server.impl.fakes;
 
+import org.hornetq.SimpleString;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.server.ServerMessage;
-import org.hornetq.utils.SimpleString;
 
 /**
  * 

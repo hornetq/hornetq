@@ -28,6 +28,7 @@ import javax.management.NotificationBroadcasterSupport;
 import javax.management.ObjectName;
 import javax.management.StandardMBean;
 
+import org.hornetq.SimpleString;
 import org.hornetq.core.client.management.impl.ManagementHelper;
 import org.hornetq.core.cluster.DiscoveryGroup;
 import org.hornetq.core.config.Configuration;
@@ -80,7 +81,6 @@ import org.hornetq.core.server.management.NotificationListener;
 import org.hornetq.core.settings.HierarchicalRepository;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.core.transaction.ResourceManager;
-import org.hornetq.utils.SimpleString;
 import org.hornetq.utils.TypedProperties;
 
 /*

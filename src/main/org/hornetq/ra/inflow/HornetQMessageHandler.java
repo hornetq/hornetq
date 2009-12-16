@@ -20,6 +20,7 @@ import javax.resource.ResourceException;
 import javax.resource.spi.endpoint.MessageEndpoint;
 import javax.resource.spi.endpoint.MessageEndpointFactory;
 
+import org.hornetq.SimpleString;
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientSession;
@@ -29,7 +30,6 @@ import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.jms.HornetQTopic;
 import org.hornetq.jms.client.HornetQMessage;
-import org.hornetq.utils.SimpleString;
 
 /**
  * The message handler

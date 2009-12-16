@@ -13,9 +13,9 @@
 
 package org.hornetq.core.server;
 
+import org.hornetq.SimpleString;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.postoffice.PostOffice;
-import org.hornetq.utils.SimpleString;
 
 /**
  * 

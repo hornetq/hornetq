@@ -15,10 +15,10 @@ package org.hornetq.tests.unit.core.settings.impl;
 
 import junit.framework.Assert;
 
+import org.hornetq.SimpleString;
 import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.tests.util.UnitTestCase;
-import org.hornetq.utils.SimpleString;
 
 /**
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>

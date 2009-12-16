@@ -18,8 +18,8 @@ import java.util.UUID;
 
 import javax.transaction.xa.Xid;
 
+import org.hornetq.SimpleString;
 import org.hornetq.core.transaction.impl.XidImpl;
-import org.hornetq.utils.SimpleString;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>

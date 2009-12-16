@@ -23,6 +23,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.hornetq.Pair;
+import org.hornetq.SimpleString;
 import org.hornetq.core.buffers.HornetQBuffer;
 import org.hornetq.core.buffers.HornetQBuffers;
 import org.hornetq.core.cluster.DiscoveryEntry;
@@ -33,8 +35,6 @@ import org.hornetq.core.logging.Logger;
 import org.hornetq.core.management.NotificationType;
 import org.hornetq.core.server.management.Notification;
 import org.hornetq.core.server.management.NotificationService;
-import org.hornetq.utils.Pair;
-import org.hornetq.utils.SimpleString;
 import org.hornetq.utils.TypedProperties;
 
 /**

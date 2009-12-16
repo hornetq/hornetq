@@ -28,6 +28,7 @@ import javax.management.NotificationFilter;
 import javax.management.NotificationListener;
 import javax.management.StandardMBean;
 
+import org.hornetq.Pair;
 import org.hornetq.core.client.management.impl.ManagementHelper;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.management.impl.MBeanInfoHelper;
@@ -36,7 +37,6 @@ import org.hornetq.jms.management.JMSQueueControl;
 import org.hornetq.jms.management.JMSServerControl;
 import org.hornetq.jms.management.TopicControl;
 import org.hornetq.jms.server.JMSServerManager;
-import org.hornetq.utils.Pair;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>

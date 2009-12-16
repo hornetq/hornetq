@@ -15,6 +15,7 @@ package org.hornetq.tests.unit.core.config.impl;
 
 import junit.framework.Assert;
 
+import org.hornetq.SimpleString;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.config.cluster.BridgeConfiguration;
@@ -24,7 +25,6 @@ import org.hornetq.core.config.cluster.DiscoveryGroupConfiguration;
 import org.hornetq.core.config.cluster.DivertConfiguration;
 import org.hornetq.core.config.impl.FileConfiguration;
 import org.hornetq.core.server.JournalType;
-import org.hornetq.utils.SimpleString;
 
 /**
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>

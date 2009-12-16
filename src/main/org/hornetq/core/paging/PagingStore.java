@@ -13,12 +13,12 @@
 
 package org.hornetq.core.paging;
 
+import org.hornetq.SimpleString;
 import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.impl.ServerProducerCreditManager;
 import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
-import org.hornetq.utils.SimpleString;
 
 /**
  * 

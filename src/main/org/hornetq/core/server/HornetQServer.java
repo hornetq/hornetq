@@ -18,6 +18,7 @@ import java.util.Set;
 
 import javax.management.MBeanServer;
 
+import org.hornetq.SimpleString;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.management.impl.HornetQServerControlImpl;
 import org.hornetq.core.persistence.StorageManager;
@@ -38,7 +39,6 @@ import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.core.transaction.ResourceManager;
 import org.hornetq.core.version.Version;
 import org.hornetq.utils.ExecutorFactory;
-import org.hornetq.utils.SimpleString;
 
 /**
  * This interface defines the internal interface of the HornetQ Server exposed to other components of the server. The

@@ -26,6 +26,7 @@ import javax.transaction.xa.Xid;
 
 import junit.framework.Assert;
 
+import org.hornetq.SimpleString;
 import org.hornetq.core.buffers.HornetQBuffer;
 import org.hornetq.core.buffers.HornetQBuffers;
 import org.hornetq.core.client.ClientConsumer;
@@ -42,7 +43,6 @@ import org.hornetq.core.server.Queue;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.DataConstants;
-import org.hornetq.utils.SimpleString;
 
 /**
  * A LargeMessageTestBase

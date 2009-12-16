@@ -16,6 +16,7 @@ package org.hornetq.jms.server.impl;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hornetq.Pair;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.TransportConfiguration;
@@ -25,7 +26,6 @@ import org.hornetq.core.deployers.DeploymentManager;
 import org.hornetq.core.deployers.impl.XmlDeployer;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.jms.server.JMSServerManager;
-import org.hornetq.utils.Pair;
 import org.hornetq.utils.XMLConfigurationUtil;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;

@@ -13,13 +13,13 @@
 
 package org.hornetq.core.client.impl;
 
+import org.hornetq.SimpleString;
 import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.remoting.RemotingConnection;
 import org.hornetq.core.remoting.impl.wireformat.SessionReceiveContinuationMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionReceiveLargeMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionReceiveMessage;
-import org.hornetq.utils.SimpleString;
 
 /**
  * A ClientSessionInternal

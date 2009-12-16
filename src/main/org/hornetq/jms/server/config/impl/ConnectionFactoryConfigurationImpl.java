@@ -16,10 +16,10 @@ package org.hornetq.jms.server.config.impl;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hornetq.Pair;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.jms.server.config.ConnectionFactoryConfiguration;
-import org.hornetq.utils.Pair;
 
 /**
  * A ConnectionFactoryConfigurationImpl

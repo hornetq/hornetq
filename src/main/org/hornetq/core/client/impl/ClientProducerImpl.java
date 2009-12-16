@@ -16,6 +16,7 @@ package org.hornetq.core.client.impl;
 import java.io.IOException;
 import java.io.InputStream;
 
+import org.hornetq.SimpleString;
 import org.hornetq.core.buffers.HornetQBuffer;
 import org.hornetq.core.buffers.HornetQBuffers;
 import org.hornetq.core.exception.HornetQException;
@@ -28,7 +29,6 @@ import org.hornetq.core.remoting.Channel;
 import org.hornetq.core.remoting.impl.wireformat.SessionSendContinuationMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionSendLargeMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionSendMessage;
-import org.hornetq.utils.SimpleString;
 import org.hornetq.utils.TokenBucketLimiter;
 import org.hornetq.utils.UUIDGenerator;
 

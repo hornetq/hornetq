@@ -16,11 +16,11 @@ package org.hornetq.core.filter.impl;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.hornetq.SimpleString;
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.ServerMessage;
-import org.hornetq.utils.SimpleString;
 
 /**
 * This class implements a HornetQ filter

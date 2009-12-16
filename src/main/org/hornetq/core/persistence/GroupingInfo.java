@@ -12,7 +12,7 @@
  */
 package org.hornetq.core.persistence;
 
-import org.hornetq.utils.SimpleString;
+import org.hornetq.SimpleString;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>

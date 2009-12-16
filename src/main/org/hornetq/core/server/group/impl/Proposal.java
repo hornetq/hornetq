@@ -12,7 +12,7 @@
  */
 package org.hornetq.core.server.group.impl;
 
-import org.hornetq.utils.SimpleString;
+import org.hornetq.SimpleString;
 
 /**
  * A proposal to select a group id

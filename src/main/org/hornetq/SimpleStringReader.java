@@ -11,10 +11,11 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.utils;
+package org.hornetq;
 
 import java.io.IOException;
 import java.io.Reader;
+
 
 /**
  * A SimpleStringReader

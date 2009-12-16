@@ -20,9 +20,9 @@ import javax.naming.NamingException;
 import javax.naming.Reference;
 import javax.naming.Referenceable;
 
+import org.hornetq.SimpleString;
 import org.hornetq.jms.referenceable.DestinationObjectFactory;
 import org.hornetq.jms.referenceable.SerializableObjectRefAddr;
-import org.hornetq.utils.SimpleString;
 
 /**
  * HornetQ implementation of a JMS Destination.

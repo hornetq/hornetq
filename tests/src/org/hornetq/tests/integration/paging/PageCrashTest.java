@@ -23,6 +23,7 @@ import java.util.concurrent.Executors;
 
 import junit.framework.Assert;
 
+import org.hornetq.SimpleString;
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
@@ -43,7 +44,6 @@ import org.hornetq.core.server.impl.HornetQServerImpl;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.utils.OrderedExecutorFactory;
-import org.hornetq.utils.SimpleString;
 
 /**
  * This test will make sure that a failing depage won't cause duplicated messages

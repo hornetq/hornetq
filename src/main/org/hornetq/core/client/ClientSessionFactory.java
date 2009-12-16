@@ -15,10 +15,10 @@ package org.hornetq.core.client;
 
 import java.util.List;
 
+import org.hornetq.Pair;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.remoting.Interceptor;
-import org.hornetq.utils.Pair;
 
 /**
  * A ClientSessionFactory is the entry point to create and configure HornetQ resources to produce and consume messages.
@@ -141,8 +141,8 @@ public interface ClientSessionFactory
     * that sessions created by this factory will use to connect
     * to HornetQ servers or <code>null</code> if the factory is using discovery group.
     * 
-    * The backup configuration (returned by {@link org.hornetq.utils.Pair#b}) can be <code>null</code> if there is no
-    * backup for the corresponding live configuration (returned by {@link org.hornetq.utils.Pair#a})
+    * The backup configuration (returned by {@link org.hornetq.Pair#b}) can be <code>null</code> if there is no
+    * backup for the corresponding live configuration (returned by {@link org.hornetq.Pair#a})
     * 
     * @return a list of pair of TransportConfiguration corresponding to the live - backup nodes
     */

@@ -11,13 +11,14 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.utils;
+package org.hornetq;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.hornetq.core.logging.Logger;
+import org.hornetq.utils.DataConstants;
 
 /**
  * A simple String class that can store all characters, and stores as simple byte[],

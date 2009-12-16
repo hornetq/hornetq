@@ -15,10 +15,10 @@ package org.hornetq.core.buffers.impl;
 
 import java.nio.ByteBuffer;
 
+import org.hornetq.SimpleString;
 import org.hornetq.core.buffers.HornetQBuffer;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.impl.MessageInternal;
-import org.hornetq.utils.SimpleString;
 
 /**
  * A ResetLimitWrappedHornetQBuffer

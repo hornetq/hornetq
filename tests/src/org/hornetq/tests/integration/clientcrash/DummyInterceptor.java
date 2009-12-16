@@ -15,13 +15,13 @@ package org.hornetq.tests.integration.clientcrash;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.hornetq.SimpleString;
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.Interceptor;
 import org.hornetq.core.remoting.Packet;
 import org.hornetq.core.remoting.RemotingConnection;
 import org.hornetq.core.remoting.impl.wireformat.SessionReceiveMessage;
-import org.hornetq.utils.SimpleString;
 
 /**
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>

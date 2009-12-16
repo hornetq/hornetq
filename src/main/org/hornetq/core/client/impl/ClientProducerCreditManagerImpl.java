@@ -16,7 +16,7 @@ package org.hornetq.core.client.impl;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.hornetq.utils.SimpleString;
+import org.hornetq.SimpleString;
 
 /**
  * A ProducerCreditManager

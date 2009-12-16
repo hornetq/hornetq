@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.hornetq.SimpleString;
 import org.hornetq.core.client.management.impl.ManagementHelper;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.management.NotificationType;
@@ -24,7 +25,6 @@ import org.hornetq.core.postoffice.BindingType;
 import org.hornetq.core.server.group.GroupingHandler;
 import org.hornetq.core.server.management.ManagementService;
 import org.hornetq.core.server.management.Notification;
-import org.hornetq.utils.SimpleString;
 import org.hornetq.utils.TypedProperties;
 
 /**

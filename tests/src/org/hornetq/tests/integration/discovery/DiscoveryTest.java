@@ -19,6 +19,8 @@ import java.util.Map;
 
 import junit.framework.Assert;
 
+import org.hornetq.Pair;
+import org.hornetq.SimpleString;
 import org.hornetq.core.cluster.DiscoveryEntry;
 import org.hornetq.core.cluster.DiscoveryGroup;
 import org.hornetq.core.cluster.DiscoveryListener;
@@ -32,8 +34,6 @@ import org.hornetq.core.server.management.Notification;
 import org.hornetq.tests.integration.SimpleNotificationService;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
-import org.hornetq.utils.Pair;
-import org.hornetq.utils.SimpleString;
 import org.hornetq.utils.UUIDGenerator;
 
 /**

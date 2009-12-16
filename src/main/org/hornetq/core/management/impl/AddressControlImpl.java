@@ -18,6 +18,7 @@ import java.util.Set;
 
 import javax.management.MBeanOperationInfo;
 
+import org.hornetq.SimpleString;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.management.AddressControl;
 import org.hornetq.core.paging.PagingManager;
@@ -28,7 +29,6 @@ import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.security.CheckType;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.settings.HierarchicalRepository;
-import org.hornetq.utils.SimpleString;
 import org.hornetq.utils.json.JSONArray;
 import org.hornetq.utils.json.JSONObject;
 

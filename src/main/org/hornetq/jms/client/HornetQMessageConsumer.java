@@ -24,13 +24,13 @@ import javax.jms.Session;
 import javax.jms.Topic;
 import javax.jms.TopicSubscriber;
 
+import org.hornetq.SimpleString;
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.MessageHandler;
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.jms.HornetQDestination;
-import org.hornetq.utils.SimpleString;
 
 /**
  * HornetQ implementation of a JMS MessageConsumer.

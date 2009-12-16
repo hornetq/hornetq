@@ -13,9 +13,9 @@
 
 package org.hornetq.core.settings.impl;
 
+import org.hornetq.SimpleString;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.settings.Mergeable;
-import org.hornetq.utils.SimpleString;
 
 /**
  * Configuration settings that are applied on the address level

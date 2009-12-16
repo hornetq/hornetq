@@ -30,13 +30,13 @@ import javax.jms.TextMessage;
 import javax.jms.Topic;
 import javax.jms.TopicPublisher;
 
+import org.hornetq.SimpleString;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
 import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.jms.HornetQDestination;
-import org.hornetq.utils.SimpleString;
 import org.hornetq.utils.UUIDGenerator;
 
 /**

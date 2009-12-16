@@ -15,10 +15,10 @@ package org.hornetq.tests.unit.jms;
 
 import junit.framework.Assert;
 
+import org.hornetq.Pair;
 import org.hornetq.jms.HornetQTopic;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
-import org.hornetq.utils.Pair;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>

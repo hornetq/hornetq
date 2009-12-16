@@ -13,8 +13,8 @@
 
 package org.hornetq.core.security;
 
+import org.hornetq.SimpleString;
 import org.hornetq.core.server.ServerSession;
-import org.hornetq.utils.SimpleString;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>

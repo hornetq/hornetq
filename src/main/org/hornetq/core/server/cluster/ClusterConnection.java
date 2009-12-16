@@ -15,8 +15,8 @@ package org.hornetq.core.server.cluster;
 
 import java.util.Map;
 
+import org.hornetq.SimpleString;
 import org.hornetq.core.server.HornetQComponent;
-import org.hornetq.utils.SimpleString;
 
 /**
  * A ClusterConnection

@@ -15,12 +15,12 @@ package org.hornetq.core.management.impl;
 
 import javax.management.MBeanOperationInfo;
 
+import org.hornetq.Pair;
 import org.hornetq.core.config.cluster.BroadcastGroupConfiguration;
 import org.hornetq.core.management.AddressControl;
 import org.hornetq.core.management.BroadcastGroupControl;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.server.cluster.BroadcastGroup;
-import org.hornetq.utils.Pair;
 import org.hornetq.utils.json.JSONArray;
 import org.hornetq.utils.json.JSONObject;
 

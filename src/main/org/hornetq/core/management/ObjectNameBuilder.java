@@ -15,12 +15,12 @@ package org.hornetq.core.management;
 
 import javax.management.ObjectName;
 
+import org.hornetq.SimpleString;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.jms.management.ConnectionFactoryControl;
 import org.hornetq.jms.management.JMSQueueControl;
 import org.hornetq.jms.management.JMSServerControl;
 import org.hornetq.jms.management.TopicControl;
-import org.hornetq.utils.SimpleString;
 
 /**
  * Helper class to build ObjectNames for HornetQ resources.

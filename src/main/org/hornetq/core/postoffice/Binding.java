@@ -13,11 +13,11 @@
 
 package org.hornetq.core.postoffice;
 
+import org.hornetq.SimpleString;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.server.Bindable;
 import org.hornetq.core.server.RoutingContext;
 import org.hornetq.core.server.ServerMessage;
-import org.hornetq.utils.SimpleString;
 
 /**
  * 

@@ -15,6 +15,7 @@ package org.hornetq.tests.integration.clientcrash;
 
 import junit.framework.Assert;
 
+import org.hornetq.SimpleString;
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.client.ClientSessionFactory;
@@ -25,7 +26,6 @@ import org.hornetq.core.message.Message;
 import org.hornetq.integration.transports.netty.NettyConnectorFactory;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.SpawnedVMSupport;
-import org.hornetq.utils.SimpleString;
 
 /**
  * A test that makes sure that a HornetQ client gracefully exists after the last session is

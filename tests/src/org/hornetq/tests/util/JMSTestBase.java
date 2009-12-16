@@ -20,6 +20,7 @@ import javax.jms.ConnectionFactory;
 import javax.jms.Queue;
 import javax.naming.NamingException;
 
+import org.hornetq.Pair;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.TransportConfiguration;
@@ -29,7 +30,6 @@ import org.hornetq.integration.transports.netty.NettyAcceptorFactory;
 import org.hornetq.integration.transports.netty.NettyConnectorFactory;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.hornetq.tests.unit.util.InVMContext;
-import org.hornetq.utils.Pair;
 
 /**
  * A JMSBaseTest

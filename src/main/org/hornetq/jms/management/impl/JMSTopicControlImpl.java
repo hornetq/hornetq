@@ -21,6 +21,7 @@ import java.util.Map;
 import javax.management.MBeanInfo;
 import javax.management.StandardMBean;
 
+import org.hornetq.Pair;
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.management.AddressControl;
@@ -34,7 +35,6 @@ import org.hornetq.jms.client.HornetQMessage;
 import org.hornetq.jms.client.SelectorTranslator;
 import org.hornetq.jms.management.JMSQueueControl;
 import org.hornetq.jms.management.TopicControl;
-import org.hornetq.utils.Pair;
 import org.hornetq.utils.json.JSONArray;
 import org.hornetq.utils.json.JSONObject;
 

@@ -17,6 +17,7 @@ import java.util.HashMap;
 
 import junit.framework.Assert;
 
+import org.hornetq.SimpleString;
 import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.client.ClientSessionFactory;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
@@ -33,7 +34,6 @@ import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.management.Notification;
 import org.hornetq.tests.integration.SimpleNotificationService;
 import org.hornetq.tests.util.RandomUtil;
-import org.hornetq.utils.SimpleString;
 
 /**
  * A AcceptorControlTest

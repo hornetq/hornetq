@@ -16,6 +16,7 @@ package org.hornetq.tests.performance.paging;
 import java.util.HashMap;
 import java.util.concurrent.CountDownLatch;
 
+import org.hornetq.SimpleString;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
 import org.hornetq.core.client.ClientSession;
@@ -25,7 +26,6 @@ import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.tests.util.ServiceTestBase;
-import org.hornetq.utils.SimpleString;
 
 /**
  * A MeasurePagingMultiThreadTest

@@ -15,12 +15,12 @@ package org.hornetq.core.paging;
 
 import java.util.List;
 
+import org.hornetq.SimpleString;
 import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.settings.HierarchicalRepository;
 import org.hornetq.core.settings.impl.AddressSettings;
-import org.hornetq.utils.SimpleString;
 
 /**
  * The integration point between the PagingManger and the File System (aka SequentialFiles)

@@ -23,13 +23,13 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Logger;
 
+import org.hornetq.SimpleString;
 import org.hornetq.core.client.management.impl.ManagementHelper;
 import org.hornetq.core.management.NotificationType;
 import org.hornetq.core.postoffice.BindingType;
 import org.hornetq.core.server.group.GroupingHandler;
 import org.hornetq.core.server.management.ManagementService;
 import org.hornetq.core.server.management.Notification;
-import org.hornetq.utils.SimpleString;
 import org.hornetq.utils.TypedProperties;
 
 /**

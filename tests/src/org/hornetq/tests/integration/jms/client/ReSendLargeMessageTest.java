@@ -30,12 +30,12 @@ import javax.jms.TextMessage;
 
 import junit.framework.Assert;
 
+import org.hornetq.Pair;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.jms.client.HornetQMessage;
 import org.hornetq.tests.util.JMSTestBase;
 import org.hornetq.tests.util.UnitTestCase;
-import org.hornetq.utils.Pair;
 
 /**
  * Receive Messages and resend them, like the bridge would do

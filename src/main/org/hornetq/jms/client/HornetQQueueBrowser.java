@@ -20,13 +20,13 @@ import javax.jms.JMSException;
 import javax.jms.Queue;
 import javax.jms.QueueBrowser;
 
+import org.hornetq.SimpleString;
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.jms.HornetQQueue;
-import org.hornetq.utils.SimpleString;
 
 /**
  * HornetQ implementation of a JMS QueueBrowser.

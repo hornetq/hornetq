@@ -17,10 +17,10 @@ import java.util.List;
 
 import javax.naming.Context;
 
+import org.hornetq.Pair;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.core.server.HornetQServer;
-import org.hornetq.utils.Pair;
 
 /**
  * The JMS Management interface.

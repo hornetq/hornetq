@@ -13,10 +13,10 @@
 
 package org.hornetq.core.paging;
 
+import org.hornetq.SimpleString;
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.server.HornetQComponent;
-import org.hornetq.utils.SimpleString;
 
 /**
  * 

@@ -13,6 +13,7 @@
 
 package org.hornetq.core.server.impl;
 
+import org.hornetq.SimpleString;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.persistence.StorageManager;
@@ -21,7 +22,6 @@ import org.hornetq.core.server.Divert;
 import org.hornetq.core.server.RoutingContext;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.cluster.Transformer;
-import org.hornetq.utils.SimpleString;
 
 /**
  * A DivertImpl simply diverts a message to a different forwardAddress

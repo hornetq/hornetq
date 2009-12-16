@@ -17,8 +17,8 @@ import java.util.List;
 
 import javax.transaction.xa.XAResource;
 
+import org.hornetq.SimpleString;
 import org.hornetq.core.exception.HornetQException;
-import org.hornetq.utils.SimpleString;
 
 /**
  * A ClientSession is a single-thread object required for producing and consuming messages.

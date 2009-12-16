@@ -15,6 +15,7 @@ package org.hornetq.tests.integration.clientcrash;
 
 import junit.framework.Assert;
 
+import org.hornetq.SimpleString;
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
@@ -26,7 +27,6 @@ import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.Message;
 import org.hornetq.jms.client.HornetQTextMessage;
 import org.hornetq.tests.util.SpawnedVMSupport;
-import org.hornetq.utils.SimpleString;
 
 /**
  * A test that makes sure that a HornetQ server cleans up the associated

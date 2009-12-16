@@ -15,6 +15,7 @@ package org.hornetq.tests.integration.management;
 
 import junit.framework.Assert;
 
+import org.hornetq.SimpleString;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.config.cluster.DivertConfiguration;
@@ -27,7 +28,6 @@ import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.server.HornetQ;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.RandomUtil;
-import org.hornetq.utils.SimpleString;
 
 /**
  * A BridgeControlTest

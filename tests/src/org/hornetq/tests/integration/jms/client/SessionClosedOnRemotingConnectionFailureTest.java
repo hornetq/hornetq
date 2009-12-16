@@ -26,6 +26,7 @@ import javax.jms.Session;
 
 import junit.framework.Assert;
 
+import org.hornetq.Pair;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.config.TransportConfiguration;
@@ -35,7 +36,6 @@ import org.hornetq.core.remoting.RemotingConnection;
 import org.hornetq.integration.transports.netty.NettyConnectorFactory;
 import org.hornetq.jms.client.HornetQSession;
 import org.hornetq.tests.util.JMSTestBase;
-import org.hornetq.utils.Pair;
 
 /**
  * 

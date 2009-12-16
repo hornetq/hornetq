@@ -17,6 +17,7 @@ import java.io.File;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.hornetq.SimpleString;
 import org.hornetq.core.buffers.HornetQBuffers;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.MessageHandler;
@@ -31,7 +32,6 @@ import org.hornetq.core.remoting.impl.wireformat.SessionQueueQueryResponseMessag
 import org.hornetq.core.remoting.impl.wireformat.SessionReceiveContinuationMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionReceiveLargeMessage;
 import org.hornetq.utils.Future;
-import org.hornetq.utils.SimpleString;
 import org.hornetq.utils.TokenBucketLimiter;
 
 /**

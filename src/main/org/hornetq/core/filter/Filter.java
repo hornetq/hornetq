@@ -13,8 +13,8 @@
 
 package org.hornetq.core.filter;
 
+import org.hornetq.SimpleString;
 import org.hornetq.core.server.ServerMessage;
-import org.hornetq.utils.SimpleString;
 
 /**
  * 

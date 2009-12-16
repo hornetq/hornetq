@@ -28,6 +28,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
+import org.hornetq.Pair;
 import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.client.ClientSessionFactory;
 import org.hornetq.core.client.ConnectionLoadBalancingPolicy;
@@ -40,7 +41,6 @@ import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.Interceptor;
 import org.hornetq.utils.HornetQThreadFactory;
-import org.hornetq.utils.Pair;
 import org.hornetq.utils.UUIDGenerator;
 
 /**

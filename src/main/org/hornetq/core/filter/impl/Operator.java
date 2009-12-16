@@ -24,8 +24,8 @@ package org.hornetq.core.filter.impl;
 
 import java.util.HashSet;
 
+import org.hornetq.SimpleString;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.utils.SimpleString;
 
 /**
 * Implementations of the operators used in HornetQ filter expressions

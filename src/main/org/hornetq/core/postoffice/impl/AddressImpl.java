@@ -15,8 +15,8 @@ package org.hornetq.core.postoffice.impl;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hornetq.SimpleString;
 import org.hornetq.core.postoffice.Address;
-import org.hornetq.utils.SimpleString;
 
 /**
  * splits an address string into its hierarchical parts split by '.'

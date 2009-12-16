@@ -15,6 +15,7 @@ package org.hornetq.tests.integration.management;
 
 import java.util.Map;
 
+import org.hornetq.SimpleString;
 import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.client.ClientSessionFactory;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
@@ -23,7 +24,6 @@ import org.hornetq.core.logging.Logger;
 import org.hornetq.core.management.QueueControl;
 import org.hornetq.core.management.ResourceNames;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
-import org.hornetq.utils.SimpleString;
 
 /**
  * A QueueControlTest

@@ -21,6 +21,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import org.hornetq.SimpleString;
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.logging.Logger;
@@ -33,7 +34,6 @@ import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.group.GroupingHandler;
 import org.hornetq.core.server.group.impl.Proposal;
 import org.hornetq.core.server.group.impl.Response;
-import org.hornetq.utils.SimpleString;
 
 /**
  * A BindingsImpl

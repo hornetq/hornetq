@@ -18,6 +18,7 @@ import java.util.List;
 
 import junit.framework.Assert;
 
+import org.hornetq.Pair;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.config.cluster.BroadcastGroupConfiguration;
@@ -28,7 +29,6 @@ import org.hornetq.core.server.HornetQ;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.integration.transports.netty.NettyConnectorFactory;
 import org.hornetq.tests.util.RandomUtil;
-import org.hornetq.utils.Pair;
 import org.hornetq.utils.json.JSONArray;
 import org.hornetq.utils.json.JSONObject;
 
