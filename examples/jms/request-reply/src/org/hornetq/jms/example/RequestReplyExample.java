@@ -34,6 +34,11 @@ import org.hornetq.common.example.HornetQExample;
 /**
  * A simple JMS example that shows how to use Request/Replay style messaging.
  *
+ * Of course, in a real world example you would re-use the session, producer, consumer and temporary queue
+ * and not create a new one for each message!
+ *
+ * Or better still use the correlation id, and just store the requests in a map, then you don't need a temporary queue at all
+ *
  * @author <a href="hgao@redhat.com">Howard Gao</a>
  */
 public class RequestReplyExample extends HornetQExample
