@@ -22,25 +22,23 @@
    <section id="installation.prerequisites">
       <title>Prerequisites</title>
       <note>
-         <para>HornetQ only runs on Java 5 or later. We highly recommend to use Java 6.</para>
+         <para>HornetQ only runs on Java 5 or later. We highly recommend you use Java 6.</para>
       </note>
-      <para>By default, HornetQ server is run with 1GiB of memory. If your computer has less memory,
+      <para>By default, HornetQ server runs with 1GiB of memory. If your computer has less memory,
          or you want to run it with more available RAM, modify the value in <literal
             >bin/run.sh</literal> accordingly.</para>
       <para>For persistence, HornetQ uses its own fast journal, which you can configure to use
          libaio (which is the default when running on Linux) or Java NIO. In order to use the libaio
          module on Linux, it's required to install libaio.</para>
       <para>If you're not running on Linux then you don't need to worry about this.</para>
-      <para>You can install libaio using the following steps:</para>
+      <para>You can install libaio using the following steps as the root user:</para>
       <para>Using yum, (e.g. on Fedora or Red Hat Enterprise Linux):</para>
-      <programlisting>sudo yum install libaio</programlisting>
+      <programlisting>yum install libaio</programlisting>
       <para>Using aptitude, (e.g. on Ubuntu or Debian system):</para>
-      <programlisting>sudo apt-get install libaio</programlisting>
-      <para><ulink url="http://ant.apache.org/">Apache Ant</ulink> is required to create the
-         profiles for JBoss AS 5 and run the examples.</para>
+      <programlisting>apt-get install libaio</programlisting>
    </section>
    <section id="installation.standalone">
-      <title>Standalone HornetQ Server</title>
+      <title>Stand-alone HornetQ Server</title>
       <para>After downloading the distribution, unzip it into your chosen directory. At this point
          it should be possible to <link linkend="running.standalone">run straight out of the
             box</link>, the following describes the directory structure: </para>
@@ -91,10 +89,10 @@
       </itemizedlist>
    </section>
    <section id="installation.jboss.as5">
-      <title>HornetQ In JBoss AS 5</title>
-      <para>HornetQ can be deployed in <ulink url="http://www.jboss.org/jbossas/">JBoss AS
-         5</ulink>. It is not shipped by default with the application server and you need to create
-         new AS 5 profiles to run AS 5 with HornetQ.</para>
+      <title>HornetQ In JBoss Application Server 5.x</title>
+      <para>HornetQ can also be deployed in <ulink url="http://www.jboss.org/jbossas/">JBoss AS
+            5</ulink>. It is not shipped by default with the application server and you need to
+         create new AS 5 profiles to run AS 5 with HornetQ.</para>
       <para>To create AS 5 profiles:</para>
       <orderedlist>
          <listitem>
@@ -126,7 +124,7 @@
       <programlisting>$JBOSS_HOME/bin/run.sh -c default-with-hornetq</programlisting>
    </section>
    <section id="installation.jboss.as4">
-      <title>HornetQ In JBoss AS 4</title>
+      <title>HornetQ In JBoss Application Server 4.x</title>
       <note>
          <para>HornetQ can be deployed on AS 4 but isn't recommended</para>
       </note>
