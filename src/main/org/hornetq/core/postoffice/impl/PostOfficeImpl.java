@@ -481,23 +481,20 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
          throw new HornetQException(HornetQException.QUEUE_DOES_NOT_EXIST);
       }
 
+      if (addressManager.getBindingsForRoutingAddress(binding.getAddress()) == null)
+      {
+         pagingManager.deletePageStore(binding.getAddress());
+         
+         managementService.unregisterAddress(binding.getAddress());
+      }
+      
       if (binding.getType() == BindingType.LOCAL_QUEUE)
       {
          managementService.unregisterQueue(uniqueName, binding.getAddress());
-
-         if (addressManager.getBindingsForRoutingAddress(binding.getAddress()) == null)
-         {
-            managementService.unregisterAddress(binding.getAddress());
-         }
       }
       else if (binding.getType() == BindingType.DIVERT)
       {
          managementService.unregisterDivert(uniqueName);
-
-         if (addressManager.getBindingsForRoutingAddress(binding.getAddress()) == null)
-         {
-            managementService.unregisterAddress(binding.getAddress());
-         }
       }
 
       TypedProperties props = new TypedProperties();

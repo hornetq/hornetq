@@ -236,6 +236,10 @@ public class DuplicateDetectionUnitTest extends ServiceTestBase
          return null;
       }
 
+      public void deletePageStore(SimpleString storeName) throws Exception
+      {
+      }
+
       public PageTransactionInfo getTransaction(final long transactionID)
       {
          return null;

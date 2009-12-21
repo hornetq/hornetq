@@ -13,6 +13,7 @@
 
 package org.hornetq.tests.integration.client;
 
+import java.util.Arrays;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -93,7 +94,37 @@ public class TemporaryQueueTest extends ServiceTestBase
 
       session.close();
    }
+   
+   public void testPaginStoreIsRemovedWhenQueueIsDeleted() throws Exception
+   {
+      SimpleString queue = RandomUtil.randomSimpleString();
+      SimpleString address = RandomUtil.randomSimpleString();
 
+      session.createTemporaryQueue(address, queue);
+
+      ClientProducer producer = session.createProducer(address);
+      ClientMessage msg = session.createMessage(false);
+
+      producer.send(msg);
+
+      session.start();
+      ClientConsumer consumer = session.createConsumer(queue);
+      ClientMessage message = consumer.receive(500);
+      Assert.assertNotNull(message);
+      message.acknowledge();
+
+      SimpleString[] storeNames = server.getPostOffice().getPagingManager().getStoreNames();
+      assertTrue(Arrays.asList(storeNames).contains(address));      
+
+      consumer.close();
+      session.deleteQueue(queue);
+
+      storeNames = server.getPostOffice().getPagingManager().getStoreNames();
+      assertFalse(Arrays.asList(storeNames).contains(address));
+
+      session.close();
+   }
+   
    public void testConsumeFromTemporaryQueueCreatedByOtherSession() throws Exception
    {
       SimpleString queue = RandomUtil.randomSimpleString();

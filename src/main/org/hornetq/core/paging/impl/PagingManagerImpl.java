@@ -113,6 +113,15 @@ public class PagingManagerImpl implements PagingManager
 
       return store;
    }
+   
+   public void deletePageStore(final SimpleString storeName) throws Exception
+   {
+      PagingStore store = stores.remove(storeName);
+      if (store != null)
+      {
+         store.stop();
+      }
+   }
 
    /** stores is a ConcurrentHashMap, so we don't need to synchronize this method */
    public PagingStore getPageStore(final SimpleString storeName) throws Exception

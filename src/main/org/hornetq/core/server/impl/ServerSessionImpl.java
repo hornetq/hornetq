@@ -155,7 +155,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
 
    private volatile boolean started = false;
 
-   private final List<Runnable> failureRunners = new ArrayList<Runnable>();
+   private final Map<SimpleString, Runnable> failureRunners = new HashMap<SimpleString, Runnable>();
 
    private final String name;
 
@@ -471,7 +471,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
             // session is closed.
             // It is up to the user to delete the queue when finished with it
 
-            failureRunners.add(new Runnable()
+            failureRunners.put(name, new Runnable()
             {
                public void run()
                {
@@ -480,6 +480,11 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
                      if (postOffice.getBinding(name) != null)
                      {
                         postOffice.removeBinding(name);
+                        
+                        if (postOffice.getBindingsForAddress(name).getBindings().size() == 0)
+                        {
+                           creditManagerHolders.remove(name);
+                        }
                      }
                   }
                   catch (Exception e)
@@ -531,6 +536,13 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
          }
 
          server.destroyQueue(name, this);
+
+         failureRunners.remove(name);
+         
+         if (postOffice.getBindingsForAddress(name).getBindings().size() == 0)
+         {
+            creditManagerHolders.remove(name);
+         }
 
          response = new NullResponseMessage();
       }
@@ -1618,7 +1630,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       {
          ServerSessionImpl.log.warn("Client connection failed, clearing up resources for session " + name);
 
-         for (Runnable runner : failureRunners)
+         for (Runnable runner : failureRunners.values())
          {
             try
             {
@@ -1644,7 +1656,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
    {
       try
       {
-         for (Runnable runner : failureRunners)
+         for (Runnable runner : failureRunners.values())
          {
             try
             {
