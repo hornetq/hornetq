@@ -30,6 +30,7 @@ import org.hornetq.core.remoting.RemotingConnection;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.remoting.impl.wireformat.CreateSessionMessage;
 import org.hornetq.core.remoting.impl.wireformat.CreateSessionResponseMessage;
+import org.hornetq.core.remoting.server.impl.RemotingServiceImpl;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.utils.VersionLoader;
@@ -37,7 +38,7 @@ import org.hornetq.utils.VersionLoader;
 /**
  * A IncompatibleVersionTest
  *
- * @author jmesnil
+ * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  *
  *
  */
@@ -62,6 +63,7 @@ public class IncompatibleVersionTest extends ServiceTestBase
    protected void setUp() throws Exception
    {
       server = createServer(false, false);
+      server.getConfiguration().setConnectionTTLOverride(500);
       server.start();
 
       TransportConfiguration config = new TransportConfiguration(InVMConnectorFactory.class.getName());
@@ -74,7 +76,7 @@ public class IncompatibleVersionTest extends ServiceTestBase
                                                                     ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN,
                                                                     ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,
                                                                     ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
-                                                                    ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL,
+                                                                    500,
                                                                     ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL,
                                                                     ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER,
                                                                     ClientSessionFactoryImpl.DEFAULT_MAX_RETRY_INTERVAL,
@@ -88,6 +90,8 @@ public class IncompatibleVersionTest extends ServiceTestBase
    @Override
    protected void tearDown() throws Exception
    {
+      connection.destroy();
+      
       server.stop();
    }
 
@@ -140,6 +144,14 @@ public class IncompatibleVersionTest extends ServiceTestBase
          catch (HornetQException e)
          {
             assertEquals(HornetQException.INCOMPATIBLE_CLIENT_SERVER_VERSIONS, e.getCode());
+         }
+         long start = System.currentTimeMillis();
+         while (System.currentTimeMillis() < start + 3 * RemotingServiceImpl.CONNECTION_TTL_CHECK_INTERVAL)
+         {
+            if (server.getConnectionCount() == 0)
+            {
+               break;
+            }
          }
          // no connection on the server
          assertEquals(0, server.getConnectionCount());

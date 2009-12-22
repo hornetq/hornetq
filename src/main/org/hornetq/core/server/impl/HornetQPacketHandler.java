@@ -153,7 +153,6 @@ public class HornetQPacketHandler implements ChannelHandler
       if (incompatibleVersion)
       {
          channel1.sendAndFlush(response);
-         connection.destroy();
       }
       else
       {
