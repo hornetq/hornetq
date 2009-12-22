@@ -1321,30 +1321,17 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
 
    public void handleClose(final Packet packet)
    {
-      Packet response = null;
-
-      try
+      storageManager.afterCompleteOperations(new IOAsyncTask()
       {
-         close();
-
-         response = new NullResponseMessage();
-      }
-      catch (Exception e)
-      {
-         ServerSessionImpl.log.error("Failed to close", e);
-
-         if (e instanceof HornetQException)
+         public void onError(int errorCode, String errorMessage)
          {
-            response = new HornetQExceptionMessage((HornetQException)e);
          }
-         else
+
+         public void done()
          {
-            response = new HornetQExceptionMessage(new HornetQException(HornetQException.INTERNAL_ERROR));
+            doClose(packet);
          }
-      }
-
-      sendResponse(packet, response, true, true);
-
+      });
    }
 
    public void handleCloseConsumer(final SessionConsumerCloseMessage packet)
@@ -1777,6 +1764,33 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       }
    }
 
+   private void doClose(final Packet packet)
+   {
+      Packet response = null;
+
+      try
+      {
+         close();
+
+         response = new NullResponseMessage();
+      }
+      catch (Exception e)
+      {
+         ServerSessionImpl.log.error("Failed to close", e);
+
+         if (e instanceof HornetQException)
+         {
+            response = new HornetQExceptionMessage((HornetQException)e);
+         }
+         else
+         {
+            response = new HornetQExceptionMessage(new HornetQException(HornetQException.INTERNAL_ERROR));
+         }
+      }
+
+      sendResponse(packet, response, true, true);
+   }
+   
    private void setStarted(final boolean s)
    {
       Set<ServerConsumer> consumersClone = new HashSet<ServerConsumer>(consumers.values());
