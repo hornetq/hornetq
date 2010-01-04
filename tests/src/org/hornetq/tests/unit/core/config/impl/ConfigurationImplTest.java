@@ -297,6 +297,10 @@ public class ConfigurationImplTest extends UnitTestCase
          conf.setMessageCounterEnabled(b);
          Assert.assertEquals(b, conf.isMessageCounterEnabled());
 
+         l = RandomUtil.randomPositiveLong();
+         conf.setMessageCounterSamplePeriod(l);
+         Assert.assertEquals(l, conf.getMessageCounterSamplePeriod());
+
          i = RandomUtil.randomInt();
          conf.setMessageCounterMaxDayHistory(i);
          Assert.assertEquals(i, conf.getMessageCounterMaxDayHistory());
@@ -513,6 +517,10 @@ public class ConfigurationImplTest extends UnitTestCase
       b = RandomUtil.randomBoolean();
       conf.setMessageCounterEnabled(b);
       Assert.assertEquals(b, conf.isMessageCounterEnabled());
+
+      l = RandomUtil.randomPositiveLong();
+      conf.setMessageCounterSamplePeriod(l);
+      Assert.assertEquals(l, conf.getMessageCounterSamplePeriod());
 
       i = RandomUtil.randomInt();
       conf.setMessageCounterMaxDayHistory(i);

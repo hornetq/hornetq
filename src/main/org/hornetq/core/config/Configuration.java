@@ -420,6 +420,13 @@ public interface Configuration extends Serializable
    long getMessageCounterSamplePeriod();
 
    /**
+    * Sets the sample period to take message counter snapshot.
+    * 
+    * @param newPeriod value must be greater than 1000ms
+    */
+   void setMessageCounterSamplePeriod(long period);
+
+   /**
     * Returns the maximum number of days kept in memory for message counter.
     */
    int getMessageCounterMaxDayHistory();

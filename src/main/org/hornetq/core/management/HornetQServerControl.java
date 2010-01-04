@@ -182,9 +182,7 @@ public interface HornetQServerControl
    long getMessageCounterSamplePeriod();
 
    /**
-    * Sets the sample period to take message counter snapshot.
-    * 
-    * @param newPeriod value must be greater than 1000ms
+    * @see Configuration#setMessageCounterSamplePeriod(long)
     */
    void setMessageCounterSamplePeriod(long newPeriod) throws Exception;
 

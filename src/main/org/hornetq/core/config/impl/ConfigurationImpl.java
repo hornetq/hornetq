@@ -804,6 +804,11 @@ public class ConfigurationImpl implements Configuration
    {
       return messageCounterSamplePeriod;
    }
+   
+   public void setMessageCounterSamplePeriod(long period)
+   {
+      this.messageCounterSamplePeriod = period;
+   }
 
    public int getMessageCounterMaxDayHistory()
    {
