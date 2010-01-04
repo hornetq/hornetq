@@ -420,9 +420,9 @@ Connection jmsConnection2 = jmsConnectionFactory.createConnection();</programlis
     </section>
     <section id="clusters.client.loadbalancing">
         <title>Client-Side Load balancing</title>
-        <para>With HornetQ client-side connection load balancing, subsequent client
-            connections created using a single factory can be made to different nodes of the
-            cluster. This allows connections to spread smoothly across the nodes of a cluster and
+        <para>With HornetQ client-side load balancing, subsequent 
+            sessions created using a single session factory can be connected to different nodes of the
+            cluster. This allows sessions to spread smoothly across the nodes of a cluster and
             not be "clumped" on any particular node.</para>
         <para>The load balancing policy to be used by the client factory is configurable. HornetQ
             provides two out-of-the-box load balancing policies and you can also implement
