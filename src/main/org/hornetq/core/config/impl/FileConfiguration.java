@@ -444,8 +444,6 @@ public class FileConfiguration extends ConfigurationImpl
 
    public synchronized void stop() throws Exception
    {
-      super.stop();
-
       started = false;
    }
 

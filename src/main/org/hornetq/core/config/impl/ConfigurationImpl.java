@@ -317,19 +317,6 @@ public class ConfigurationImpl implements Configuration
 
    // Public -------------------------------------------------------------------------
 
-   public void start() throws Exception
-   {
-   }
-
-   public void stop() throws Exception
-   {
-   }
-
-   public boolean isStarted()
-   {
-      return true;
-   }
-
    public boolean isClustered()
    {
       return clustered;

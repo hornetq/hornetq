@@ -86,8 +86,6 @@ public class RestartSMTest extends ServiceTestBase
 
       Configuration configuration = createDefaultConfig();
 
-      configuration.start();
-
       configuration.setJournalType(JournalType.ASYNCIO);
 
       PostOffice postOffice = new FakePostOffice();

@@ -98,9 +98,7 @@ public class DuplicateDetectionUnitTest extends ServiceTestBase
 
          PostOffice postOffice = new FakePostOffice();
 
-         configuration.start();
-
-         configuration.setJournalType(JournalType.ASYNCIO);
+          configuration.setJournalType(JournalType.ASYNCIO);
 
          ScheduledExecutorService scheduledThreadPool = Executors.newScheduledThreadPool(ConfigurationImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE);
 
