@@ -111,7 +111,7 @@ public class ClientProducerImpl implements ClientProducerInternal
 
       if (address != null)
       {
-         credits = session.getCredits(address);
+         credits = session.getCredits(address, false);
       }
       else
       {
@@ -151,7 +151,7 @@ public class ClientProducerImpl implements ClientProducerInternal
       {
          return;
       }
-
+            
       doCleanup();
    }
 
@@ -195,6 +195,11 @@ public class ClientProducerImpl implements ClientProducerInternal
 
    private void doCleanup()
    {
+      if (address != null)
+      {
+         session.returnCredits(address);
+      }
+      
       session.removeProducer(this);
 
       closed = true;
@@ -211,7 +216,7 @@ public class ClientProducerImpl implements ClientProducerInternal
          msgI.setAddress(address);
 
          // Anonymous
-         theCredits = session.getCredits(address);
+         theCredits = session.getCredits(address, true);
       }
       else
       {

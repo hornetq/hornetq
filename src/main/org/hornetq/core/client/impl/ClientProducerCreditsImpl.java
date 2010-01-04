@@ -19,7 +19,7 @@ import org.hornetq.SimpleString;
 import org.hornetq.core.logging.Logger;
 
 /**
- * A ProducerCredits
+ * A ClientProducerCreditsImpl
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
@@ -38,7 +38,11 @@ public class ClientProducerCreditsImpl implements ClientProducerCredits
    private final ClientSessionInternal session;
 
    private int arriving;
-
+   
+   private int refCount;
+   
+   private boolean anon;
+   
    public ClientProducerCreditsImpl(final ClientSessionInternal session,
                                     final SimpleString address,
                                     final int windowSize)
@@ -94,7 +98,34 @@ public class ClientProducerCreditsImpl implements ClientProducerCredits
 
       semaphore.release(Integer.MAX_VALUE / 2);
    }
-
+    
+   public synchronized void incrementRefCount()
+   {
+      refCount++;
+   }
+   
+   public synchronized int decrementRefCount()
+   {
+      return --refCount;
+   }
+   
+   public synchronized void releaseOutstanding()
+   {
+      int permits = semaphore.drainPermits();
+      
+      session.sendProducerCreditsMessage(permits, address);
+   }
+   
+   public synchronized boolean isAnon()
+   {
+      return anon;
+   }
+   
+   public synchronized void setAnon()
+   {
+      this.anon = true;
+   }
+   
    private void checkCredits(final int credits)
    {
       int needed = Math.max(credits, windowSize);
@@ -119,7 +150,6 @@ public class ClientProducerCreditsImpl implements ClientProducerCredits
 
    private void requestCredits(final int credits)
    {
-
       session.sendProducerCreditsMessage(credits, address);
    }
 

@@ -519,9 +519,14 @@ public class DelegatingSession implements ClientSessionInternal
       session.sendProducerCreditsMessage(credits, address);
    }
 
-   public ClientProducerCredits getCredits(final SimpleString address)
+   public ClientProducerCredits getCredits(final SimpleString address, final boolean anon)
    {
-      return session.getCredits(address);
+      return session.getCredits(address, anon);
+   }
+   
+   public void returnCredits(final SimpleString address)
+   {
+      session.returnCredits(address);
    }
 
    public void handleReceiveProducerCredits(final SimpleString address, final int credits, final int offset)

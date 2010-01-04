@@ -70,7 +70,9 @@ public interface ClientSessionInternal extends ClientSession
 
    void sendProducerCreditsMessage(int credits, SimpleString address);
 
-   ClientProducerCredits getCredits(SimpleString address);
+   ClientProducerCredits getCredits(SimpleString address, boolean anon);
+   
+   void returnCredits(SimpleString address);
 
    void handleReceiveProducerCredits(SimpleString address, int credits, int offset);
 }

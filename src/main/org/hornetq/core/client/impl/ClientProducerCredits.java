@@ -29,4 +29,14 @@ public interface ClientProducerCredits
    void reset();
 
    void close();
+   
+   void incrementRefCount();
+   
+   int decrementRefCount();
+   
+   void setAnon();
+   
+   boolean isAnon();
+   
+   void releaseOutstanding();
 }

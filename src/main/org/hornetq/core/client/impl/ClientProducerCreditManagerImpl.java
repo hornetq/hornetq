@@ -13,10 +13,12 @@
 
 package org.hornetq.core.client.impl;
 
-import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.hornetq.SimpleString;
+import org.hornetq.core.logging.Logger;
 
 /**
  * A ProducerCreditManager
@@ -27,7 +29,13 @@ import org.hornetq.SimpleString;
  */
 public class ClientProducerCreditManagerImpl implements ClientProducerCreditManager
 {
-   private final Map<SimpleString, ClientProducerCredits> producerCredits = new HashMap<SimpleString, ClientProducerCredits>();
+   private static final Logger log = Logger.getLogger(ClientProducerCreditManagerImpl.class);
+
+   private static final int MAX_ANON_CREDITS_CACHE_SIZE = 1000;
+
+   private final Map<SimpleString, ClientProducerCredits> producerCredits = new LinkedHashMap<SimpleString, ClientProducerCredits>();
+
+   private final Map<SimpleString, ClientProducerCredits> anonCredits = new LinkedHashMap<SimpleString, ClientProducerCredits>();
 
    private final ClientSessionInternal session;
 
@@ -39,8 +47,8 @@ public class ClientProducerCreditManagerImpl implements ClientProducerCreditMana
 
       this.windowSize = windowSize;
    }
-
-   public synchronized ClientProducerCredits getCredits(final SimpleString address)
+      
+   public synchronized ClientProducerCredits getCredits(final SimpleString address, final boolean anon)
    {
       ClientProducerCredits credits = producerCredits.get(address);
 
@@ -50,9 +58,44 @@ public class ClientProducerCreditManagerImpl implements ClientProducerCreditMana
          credits = new ClientProducerCreditsImpl(session, address, windowSize);
 
          producerCredits.put(address, credits);
+
+         if (anon)
+         {
+            addToAnonCache(address, credits);
+         }
       }
 
+      if (!anon)
+      {
+         credits.incrementRefCount();
+         
+         //Remove from anon credits (if there)
+         anonCredits.remove(address);                     
+      }
+      else
+      {
+         credits.setAnon();
+      }
+      
       return credits;
+   }
+
+   public synchronized void returnCredits(final SimpleString address)
+   {
+      ClientProducerCredits credits = producerCredits.get(address);
+
+      if (credits != null && credits.decrementRefCount() == 0)
+      {
+         if (!credits.isAnon())
+         {
+            removeEntry(address, credits);
+         }
+         else
+         {
+            //All the producer refs have been removed but it's been used anonymously too so we add to the anon cache
+            addToAnonCache(address, credits);
+         }
+      }
    }
 
    public synchronized void receiveCredits(final SimpleString address, final int credits, final int offset)
@@ -82,4 +125,32 @@ public class ClientProducerCreditManagerImpl implements ClientProducerCreditMana
 
       producerCredits.clear();
    }
+   
+   private void addToAnonCache(final SimpleString address, final ClientProducerCredits credits)
+   {
+      anonCredits.put(address, credits);
+      
+      if (anonCredits.size() > MAX_ANON_CREDITS_CACHE_SIZE)
+      {
+         //Remove the oldest entry
+         
+         Iterator<Map.Entry<SimpleString, ClientProducerCredits>> iter = anonCredits.entrySet().iterator();
+         
+         Map.Entry<SimpleString, ClientProducerCredits> oldest = iter.next();
+         
+         iter.remove();
+         
+         removeEntry(oldest.getKey(), oldest.getValue());
+      }
+   }
+   
+   private void removeEntry(final SimpleString address, final ClientProducerCredits credits)
+   {
+      producerCredits.remove(address);
+      
+      credits.releaseOutstanding();
+
+      credits.close();
+   }
+
 }

@@ -1485,7 +1485,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
             throw new HornetQException(HornetQException.ILLEGAL_STATE, "large-message not initialized on server");
          }
 
-         // Immediately release the credits for the continuations- these don't contrinute to the in-memory size
+         // Immediately release the credits for the continuations- these don't contribute to the in-memory size
          // of the message
 
          releaseOutStanding(currentLargeMessage, packet.getPacketSize());
@@ -1535,30 +1535,39 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       final CreditManagerHolder holder = getCreditManagerHolder(address);
 
       int credits = packet.getCredits();
-
-      int gotCredits = holder.manager.acquireCredits(credits, new CreditsAvailableRunnable()
+      
+      //Requesting -ve credits means returning them
+      
+      if (credits < 0)
       {
-         public boolean run(final int credits)
+         releaseOutStanding(address, -credits);
+      }
+      else
+      {
+         int gotCredits = holder.manager.acquireCredits(credits, new CreditsAvailableRunnable()
          {
-            synchronized (ServerSessionImpl.this)
+            public boolean run(final int credits)
             {
-               if (!closed)
+               synchronized (ServerSessionImpl.this)
                {
-                  sendProducerCredits(holder, credits, address);
-
-                  return true;
-               }
-               else
-               {
-                  return false;
+                  if (!closed)
+                  {
+                     sendProducerCredits(holder, credits, address);
+   
+                     return true;
+                  }
+                  else
+                  {
+                     return false;
+                  }
                }
             }
+         });
+   
+         if (gotCredits > 0)
+         {
+            sendProducerCredits(holder, gotCredits, address);
          }
-      });
-
-      if (gotCredits > 0)
-      {
-         sendProducerCredits(holder, gotCredits, address);
       }
 
       sendResponse(packet, null, false, false);
@@ -1932,7 +1941,12 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
     */
    private void releaseOutStanding(final ServerMessage message, final int credits) throws Exception
    {
-      CreditManagerHolder holder = getCreditManagerHolder(message.getAddress());
+      releaseOutStanding(message.getAddress(), credits);
+   }
+   
+   private void releaseOutStanding(final SimpleString address, final int credits) throws Exception
+   {
+      CreditManagerHolder holder = getCreditManagerHolder(address);
 
       holder.outstandingCredits -= credits;
 

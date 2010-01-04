@@ -1047,9 +1047,14 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       channel.send(new SessionRequestProducerCreditsMessage(credits, address));
    }
 
-   public ClientProducerCredits getCredits(final SimpleString address)
+   public ClientProducerCredits getCredits(final SimpleString address, final boolean anon)
    {
-      return producerCreditManager.getCredits(address);
+      return producerCreditManager.getCredits(address, anon);
+   }
+   
+   public void returnCredits(final SimpleString address)
+   {
+      producerCreditManager.returnCredits(address);
    }
 
    public void handleReceiveProducerCredits(final SimpleString address, final int credits, final int offset)

@@ -24,7 +24,9 @@ import org.hornetq.SimpleString;
  */
 public interface ClientProducerCreditManager
 {
-   ClientProducerCredits getCredits(SimpleString address);
+   ClientProducerCredits getCredits(SimpleString address, boolean anon);
+   
+   void returnCredits(SimpleString address);
 
    void receiveCredits(SimpleString address, int credits, int offset);
 
