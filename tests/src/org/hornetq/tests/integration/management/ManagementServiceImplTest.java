@@ -22,7 +22,7 @@ import org.hornetq.api.core.management.AddressControl;
 import org.hornetq.api.core.management.QueueControl;
 import org.hornetq.api.core.management.ResourceNames;
 import org.hornetq.api.core.management.client.ManagementHelper;
-import org.hornetq.api.core.server.HornetQ;
+import org.hornetq.api.core.server.HornetQServers;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.persistence.impl.nullpm.NullStorageManager;
 import org.hornetq.core.server.HornetQServer;
@@ -62,7 +62,7 @@ public class ManagementServiceImplTest extends UnitTestCase
       Configuration conf = new ConfigurationImpl();
       conf.setJMXManagementEnabled(false);
 
-      HornetQServer server = HornetQ.newHornetQServer(conf, false);
+      HornetQServer server = HornetQServers.newHornetQServer(conf, false);
       server.start();
 
       // invoke attribute and operation on the server
@@ -81,7 +81,7 @@ public class ManagementServiceImplTest extends UnitTestCase
       Configuration conf = new ConfigurationImpl();
       conf.setJMXManagementEnabled(false);
 
-      HornetQServer server = HornetQ.newHornetQServer(conf, false);
+      HornetQServer server = HornetQServers.newHornetQServer(conf, false);
       server.start();
 
       // invoke attribute and operation on the server
@@ -100,7 +100,7 @@ public class ManagementServiceImplTest extends UnitTestCase
       Configuration conf = new ConfigurationImpl();
       conf.setJMXManagementEnabled(false);
 
-      HornetQServer server = HornetQ.newHornetQServer(conf, false);
+      HornetQServer server = HornetQServers.newHornetQServer(conf, false);
       server.start();
 
       // invoke attribute and operation on the server
@@ -119,7 +119,7 @@ public class ManagementServiceImplTest extends UnitTestCase
       Configuration conf = new ConfigurationImpl();
       conf.setJMXManagementEnabled(false);
 
-      HornetQServer server = HornetQ.newHornetQServer(conf, false);
+      HornetQServer server = HornetQServers.newHornetQServer(conf, false);
       server.start();
 
       // invoke attribute and operation on the server

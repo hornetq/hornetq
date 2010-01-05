@@ -29,7 +29,7 @@ import org.hornetq.api.core.config.ConfigurationImpl;
 import org.hornetq.api.core.config.TransportConfiguration;
 import org.hornetq.api.core.exception.HornetQException;
 import org.hornetq.api.core.message.Message;
-import org.hornetq.api.core.server.HornetQ;
+import org.hornetq.api.core.server.HornetQServers;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.integration.transports.netty.NettyAcceptorFactory;
@@ -139,7 +139,7 @@ public class CoreClientOverSSLTest extends UnitTestCase
       Map<String, Object> params = new HashMap<String, Object>();
       params.put(TransportConstants.SSL_ENABLED_PROP_NAME, true);
       config.getAcceptorConfigurations().add(new TransportConfiguration(NettyAcceptorFactory.class.getName(), params));
-      server = HornetQ.newHornetQServer(config, false);
+      server = HornetQServers.newHornetQServer(config, false);
       server.start();
    }
 

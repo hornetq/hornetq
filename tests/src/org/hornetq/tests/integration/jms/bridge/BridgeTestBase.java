@@ -38,7 +38,7 @@ import org.hornetq.api.core.config.Configuration;
 import org.hornetq.api.core.config.ConfigurationImpl;
 import org.hornetq.api.core.config.TransportConfiguration;
 import org.hornetq.api.core.management.ResourceNames;
-import org.hornetq.api.core.server.HornetQ;
+import org.hornetq.api.core.server.HornetQServers;
 import org.hornetq.api.jms.HornetQConnectionFactory;
 import org.hornetq.api.jms.bridge.ConnectionFactoryFactory;
 import org.hornetq.api.jms.bridge.DestinationFactory;
@@ -104,7 +104,7 @@ public abstract class BridgeTestBase extends UnitTestCase
       conf0.setSecurityEnabled(false);
       conf0.getAcceptorConfigurations()
            .add(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory"));
-      server0 = HornetQ.newHornetQServer(conf0, false);
+      server0 = HornetQServers.newHornetQServer(conf0, false);
 
       context0 = new InVMContext();
       jmsServer0 = new JMSServerManagerImpl(server0);
@@ -118,7 +118,7 @@ public abstract class BridgeTestBase extends UnitTestCase
       conf1.getAcceptorConfigurations()
            .add(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory", params1));
 
-      server1 = HornetQ.newHornetQServer(conf1, false);
+      server1 = HornetQServers.newHornetQServer(conf1, false);
 
       context1 = new InVMContext();
 

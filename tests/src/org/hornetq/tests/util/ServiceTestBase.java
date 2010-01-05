@@ -28,7 +28,7 @@ import org.hornetq.api.core.client.ClientSessionFactoryImpl;
 import org.hornetq.api.core.config.Configuration;
 import org.hornetq.api.core.config.ConfigurationImpl;
 import org.hornetq.api.core.config.TransportConfiguration;
-import org.hornetq.api.core.server.HornetQ;
+import org.hornetq.api.core.server.HornetQServers;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
@@ -94,11 +94,11 @@ public abstract class ServiceTestBase extends UnitTestCase
 
       if (realFiles)
       {
-         server = HornetQ.newHornetQServer(configuration);
+         server = HornetQServers.newHornetQServer(configuration);
       }
       else
       {
-         server = HornetQ.newHornetQServer(configuration, false);
+         server = HornetQServers.newHornetQServer(configuration, false);
       }
 
       for (Map.Entry<String, AddressSettings> setting : settings.entrySet())
@@ -124,11 +124,11 @@ public abstract class ServiceTestBase extends UnitTestCase
 
       if (realFiles)
       {
-         server = HornetQ.newHornetQServer(configuration, mbeanServer);
+         server = HornetQServers.newHornetQServer(configuration, mbeanServer);
       }
       else
       {
-         server = HornetQ.newHornetQServer(configuration, mbeanServer, false);
+         server = HornetQServers.newHornetQServer(configuration, mbeanServer, false);
       }
 
       for (Map.Entry<String, AddressSettings> setting : settings.entrySet())
@@ -165,11 +165,11 @@ public abstract class ServiceTestBase extends UnitTestCase
 
       if (realFiles)
       {
-         server = HornetQ.newHornetQServer(configuration, ManagementFactory.getPlatformMBeanServer(), securityManager);
+         server = HornetQServers.newHornetQServer(configuration, ManagementFactory.getPlatformMBeanServer(), securityManager);
       }
       else
       {
-         server = HornetQ.newHornetQServer(configuration,
+         server = HornetQServers.newHornetQServer(configuration,
                                            ManagementFactory.getPlatformMBeanServer(),
                                            securityManager,
                                            false);

@@ -18,7 +18,7 @@ import java.util.Set;
 import org.hornetq.api.core.config.Configuration;
 import org.hornetq.api.core.config.ConfigurationImpl;
 import org.hornetq.api.core.config.TransportConfiguration;
-import org.hornetq.api.core.server.HornetQ;
+import org.hornetq.api.core.server.HornetQServers;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.server.HornetQServer;
@@ -88,7 +88,7 @@ public class SecurityManagementWithConfiguredAdminUserTest extends SecurityManag
       Configuration conf = new ConfigurationImpl();
       conf.setSecurityEnabled(true);
       conf.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
-      HornetQServer server = HornetQ.newHornetQServer(conf, false);
+      HornetQServer server = HornetQServers.newHornetQServer(conf, false);
       server.start();
       HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
       HornetQSecurityManagerImpl securityManager = (HornetQSecurityManagerImpl)server.getSecurityManager();

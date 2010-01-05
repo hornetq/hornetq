@@ -25,7 +25,10 @@ import org.hornetq.spi.core.security.HornetQSecurityManager;
 import org.hornetq.spi.core.security.HornetQSecurityManagerImpl;
 
 /**
- * A HornetQ
+ * HornetQServers is a factory class for instantiating HornetQServer instances.
+ * 
+ * This class should be used when you want to instantiate a HornetQServer instance for embedding in
+ * your own application, as opposed to directly instantiating an implementing instance.
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * 
@@ -33,15 +36,15 @@ import org.hornetq.spi.core.security.HornetQSecurityManagerImpl;
  *
  *
  */
-public class HornetQ
+public class HornetQServers
 {
-   private static final Logger log = Logger.getLogger(HornetQ.class);
+   private static final Logger log = Logger.getLogger(HornetQServers.class);
 
    public static HornetQServer newHornetQServer(final Configuration config, final boolean enablePersistence)
    {
       HornetQSecurityManager securityManager = new HornetQSecurityManagerImpl();
 
-      HornetQServer server = HornetQ.newHornetQServer(config,
+      HornetQServer server = HornetQServers.newHornetQServer(config,
                                                       ManagementFactory.getPlatformMBeanServer(),
                                                       securityManager,
                                                       enablePersistence);
@@ -51,7 +54,7 @@ public class HornetQ
 
    public static HornetQServer newHornetQServer(final Configuration config)
    {
-      return HornetQ.newHornetQServer(config, config.isPersistenceEnabled());
+      return HornetQServers.newHornetQServer(config, config.isPersistenceEnabled());
    }
 
    public static HornetQServer newHornetQServer(final Configuration config,
@@ -60,21 +63,21 @@ public class HornetQ
    {
       HornetQSecurityManager securityManager = new HornetQSecurityManagerImpl();
 
-      HornetQServer server = HornetQ.newHornetQServer(config, mbeanServer, securityManager, enablePersistence);
+      HornetQServer server = HornetQServers.newHornetQServer(config, mbeanServer, securityManager, enablePersistence);
 
       return server;
    }
 
    public static HornetQServer newHornetQServer(final Configuration config, final MBeanServer mbeanServer)
    {
-      return HornetQ.newHornetQServer(config, mbeanServer, true);
+      return HornetQServers.newHornetQServer(config, mbeanServer, true);
    }
 
    public static HornetQServer newHornetQServer(final Configuration config,
                                                 final MBeanServer mbeanServer,
                                                 final HornetQSecurityManager securityManager)
    {
-      HornetQServer server = HornetQ.newHornetQServer(config, mbeanServer, securityManager, true);
+      HornetQServer server = HornetQServers.newHornetQServer(config, mbeanServer, securityManager, true);
 
       return server;
    }

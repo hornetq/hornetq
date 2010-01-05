@@ -24,7 +24,7 @@ import org.hornetq.api.core.client.ClientSessionFactoryImpl;
 import org.hornetq.api.core.config.Configuration;
 import org.hornetq.api.core.config.ConfigurationImpl;
 import org.hornetq.api.core.config.TransportConfiguration;
-import org.hornetq.api.core.server.HornetQ;
+import org.hornetq.api.core.server.HornetQServers;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.server.HornetQServer;
@@ -52,7 +52,7 @@ public class EmbeddedExample
          configuration.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
 
          // Step 2. Create and start the server
-         HornetQServer server = HornetQ.newHornetQServer(configuration);
+         HornetQServer server = HornetQServers.newHornetQServer(configuration);
          server.start();
 
          // Step 3. As we are not using a JNDI environment we instantiate the objects directly

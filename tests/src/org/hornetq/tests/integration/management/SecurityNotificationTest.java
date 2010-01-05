@@ -32,7 +32,7 @@ import org.hornetq.api.core.config.ConfigurationImpl;
 import org.hornetq.api.core.config.TransportConfiguration;
 import org.hornetq.api.core.exception.HornetQException;
 import org.hornetq.api.core.management.client.ManagementHelper;
-import org.hornetq.api.core.server.HornetQ;
+import org.hornetq.api.core.server.HornetQServers;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.security.CheckType;
@@ -145,7 +145,7 @@ public class SecurityNotificationTest extends UnitTestCase
       // the notifications are independent of JMX
       conf.setJMXManagementEnabled(false);
       conf.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
-      server = HornetQ.newHornetQServer(conf, false);
+      server = HornetQServers.newHornetQServer(conf, false);
       server.start();
 
       notifQueue = RandomUtil.randomSimpleString();

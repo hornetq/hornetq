@@ -28,7 +28,7 @@ import org.hornetq.api.core.client.ClientSessionFactoryImpl;
 import org.hornetq.api.core.config.Configuration;
 import org.hornetq.api.core.config.TransportConfiguration;
 import org.hornetq.api.core.config.cluster.DivertConfiguration;
-import org.hornetq.api.core.server.HornetQ;
+import org.hornetq.api.core.server.HornetQServers;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
@@ -105,7 +105,7 @@ public class PersistentDivertTest extends ServiceTestBase
 
       conf.setDivertConfigurations(divertConfs);
 
-      HornetQServer messagingService = HornetQ.newHornetQServer(conf);
+      HornetQServer messagingService = HornetQServers.newHornetQServer(conf);
 
       messagingService.start();
 
@@ -308,7 +308,7 @@ public class PersistentDivertTest extends ServiceTestBase
 
       conf.setDivertConfigurations(divertConfs);
 
-      HornetQServer messagingService = HornetQ.newHornetQServer(conf);
+      HornetQServer messagingService = HornetQServers.newHornetQServer(conf);
 
       messagingService.start();
 

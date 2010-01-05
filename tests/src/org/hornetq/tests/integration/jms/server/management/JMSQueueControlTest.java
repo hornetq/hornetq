@@ -31,7 +31,7 @@ import org.hornetq.api.SimpleString;
 import org.hornetq.api.core.config.Configuration;
 import org.hornetq.api.core.config.ConfigurationImpl;
 import org.hornetq.api.core.config.TransportConfiguration;
-import org.hornetq.api.core.server.HornetQ;
+import org.hornetq.api.core.server.HornetQServers;
 import org.hornetq.api.jms.HornetQConnectionFactory;
 import org.hornetq.api.jms.HornetQQueue;
 import org.hornetq.api.jms.management.JMSQueueControl;
@@ -822,7 +822,7 @@ public class JMSQueueControlTest extends ManagementTestBase
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
       conf.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
-      server = HornetQ.newHornetQServer(conf, mbeanServer, false);
+      server = HornetQServers.newHornetQServer(conf, mbeanServer, false);
       server.start();
 
       serverManager = new JMSServerManagerImpl(server);

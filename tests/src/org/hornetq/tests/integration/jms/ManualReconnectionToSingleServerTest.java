@@ -35,7 +35,7 @@ import junit.framework.Assert;
 import org.hornetq.api.core.config.Configuration;
 import org.hornetq.api.core.config.ConfigurationImpl;
 import org.hornetq.api.core.config.TransportConfiguration;
-import org.hornetq.api.core.server.HornetQ;
+import org.hornetq.api.core.server.HornetQServers;
 import org.hornetq.api.jms.config.ConnectionFactoryConfiguration;
 import org.hornetq.api.jms.config.ConnectionFactoryConfigurationImpl;
 import org.hornetq.api.jms.config.JMSConfiguration;
@@ -159,7 +159,7 @@ public class ManualReconnectionToSingleServerTest extends UnitTestCase
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
       conf.getAcceptorConfigurations().add(new TransportConfiguration(NettyAcceptorFactory.class.getName()));
-      HornetQServer server = HornetQ.newHornetQServer(conf, false);
+      HornetQServer server = HornetQServers.newHornetQServer(conf, false);
 
       JMSConfiguration configuration = new JMSConfigurationImpl();
       context = new InVMContext();

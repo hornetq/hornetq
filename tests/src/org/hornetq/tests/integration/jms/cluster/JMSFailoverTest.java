@@ -35,7 +35,7 @@ import org.hornetq.api.core.config.Configuration;
 import org.hornetq.api.core.config.ConfigurationImpl;
 import org.hornetq.api.core.config.TransportConfiguration;
 import org.hornetq.api.core.exception.HornetQException;
-import org.hornetq.api.core.server.HornetQ;
+import org.hornetq.api.core.server.HornetQServers;
 import org.hornetq.api.jms.HornetQConnectionFactory;
 import org.hornetq.api.jms.HornetQQueue;
 import org.hornetq.core.client.impl.ClientSessionInternal;
@@ -269,7 +269,7 @@ public class JMSFailoverTest extends UnitTestCase
       backupConf.setJournalDirectory(getJournalDir());
       backupConf.setPagingDirectory(getPageDir());
       backupConf.setLargeMessagesDirectory(getLargeMessagesDir());
-      backupService = HornetQ.newHornetQServer(backupConf, true);
+      backupService = HornetQServers.newHornetQServer(backupConf, true);
       backupService.start();
 
       Configuration liveConf = new ConfigurationImpl();
@@ -283,7 +283,7 @@ public class JMSFailoverTest extends UnitTestCase
       liveConf.setPagingDirectory(getPageDir());
       liveConf.setLargeMessagesDirectory(getLargeMessagesDir());
 
-      liveService = HornetQ.newHornetQServer(liveConf, true);
+      liveService = HornetQServers.newHornetQServer(liveConf, true);
       liveService.start();
    }
 

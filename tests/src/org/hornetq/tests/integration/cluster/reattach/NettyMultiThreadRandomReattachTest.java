@@ -17,7 +17,7 @@ import org.hornetq.api.core.client.ClientSessionFactoryImpl;
 import org.hornetq.api.core.config.Configuration;
 import org.hornetq.api.core.config.ConfigurationImpl;
 import org.hornetq.api.core.config.TransportConfiguration;
-import org.hornetq.api.core.server.HornetQ;
+import org.hornetq.api.core.server.HornetQServers;
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 
 /**
@@ -40,7 +40,7 @@ public class NettyMultiThreadRandomReattachTest extends MultiThreadRandomReattac
       liveConf.getAcceptorConfigurations().clear();
       liveConf.getAcceptorConfigurations()
               .add(new TransportConfiguration("org.hornetq.integration.transports.netty.NettyAcceptorFactory"));
-      liveServer = HornetQ.newHornetQServer(liveConf, false);
+      liveServer = HornetQServers.newHornetQServer(liveConf, false);
       liveServer.start();
    }
 

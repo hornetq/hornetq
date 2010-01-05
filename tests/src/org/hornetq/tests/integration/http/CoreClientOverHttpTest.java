@@ -26,7 +26,7 @@ import org.hornetq.api.core.client.ClientSessionFactoryImpl;
 import org.hornetq.api.core.config.Configuration;
 import org.hornetq.api.core.config.ConfigurationImpl;
 import org.hornetq.api.core.config.TransportConfiguration;
-import org.hornetq.api.core.server.HornetQ;
+import org.hornetq.api.core.server.HornetQServers;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.integration.transports.netty.TransportConstants;
 import org.hornetq.jms.client.HornetQTextMessage;
@@ -49,7 +49,7 @@ public class CoreClientOverHttpTest extends UnitTestCase
       params.put(TransportConstants.HTTP_ENABLED_PROP_NAME, true);
       conf.getAcceptorConfigurations().add(new TransportConfiguration(UnitTestCase.NETTY_ACCEPTOR_FACTORY, params));
 
-      HornetQServer server = HornetQ.newHornetQServer(conf, false);
+      HornetQServer server = HornetQServers.newHornetQServer(conf, false);
 
       server.start();
 
@@ -105,7 +105,7 @@ public class CoreClientOverHttpTest extends UnitTestCase
       params.put(TransportConstants.HTTP_ENABLED_PROP_NAME, true);
       conf.getAcceptorConfigurations().add(new TransportConfiguration(UnitTestCase.NETTY_ACCEPTOR_FACTORY, params));
 
-      HornetQServer server = HornetQ.newHornetQServer(conf, false);
+      HornetQServer server = HornetQServers.newHornetQServer(conf, false);
 
       server.start();
 

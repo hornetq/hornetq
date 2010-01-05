@@ -21,7 +21,7 @@ import junit.framework.Assert;
 
 import org.hornetq.api.core.config.ConfigurationImpl;
 import org.hornetq.api.core.config.TransportConfiguration;
-import org.hornetq.api.core.server.HornetQ;
+import org.hornetq.api.core.server.HornetQServers;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.integration.transports.netty.NettyAcceptorFactory;
@@ -75,7 +75,7 @@ public class NettySecurityClientTest extends UnitTestCase
       ConfigurationImpl config = new ConfigurationImpl();
       config.setSecurityEnabled(false);
       config.getAcceptorConfigurations().add(new TransportConfiguration(NettyAcceptorFactory.class.getName()));
-      messagingService = HornetQ.newHornetQServer(config, false);
+      messagingService = HornetQServers.newHornetQServer(config, false);
       messagingService.start();
    }
 

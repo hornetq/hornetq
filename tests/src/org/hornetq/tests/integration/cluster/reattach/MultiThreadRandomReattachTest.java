@@ -17,7 +17,7 @@ import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.config.Configuration;
 import org.hornetq.api.core.config.ConfigurationImpl;
 import org.hornetq.api.core.config.TransportConfiguration;
-import org.hornetq.api.core.server.HornetQ;
+import org.hornetq.api.core.server.HornetQServers;
 import org.hornetq.core.logging.Logger;
 
 /**
@@ -39,7 +39,7 @@ public class MultiThreadRandomReattachTest extends MultiThreadRandomReattachTest
       liveConf.setSecurityEnabled(false);
       liveConf.getAcceptorConfigurations()
               .add(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory"));
-      liveServer = HornetQ.newHornetQServer(liveConf, false);
+      liveServer = HornetQServers.newHornetQServer(liveConf, false);
       liveServer.start();
    }
 

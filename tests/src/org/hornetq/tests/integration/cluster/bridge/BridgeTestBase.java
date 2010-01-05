@@ -19,7 +19,7 @@ import java.util.Map;
 import org.hornetq.api.core.config.Configuration;
 import org.hornetq.api.core.config.ConfigurationImpl;
 import org.hornetq.api.core.config.TransportConfiguration;
-import org.hornetq.api.core.server.HornetQ;
+import org.hornetq.api.core.server.HornetQServers;
 import org.hornetq.core.remoting.impl.invm.InVMConnector;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.integration.transports.netty.NettyAcceptorFactory;
@@ -110,7 +110,7 @@ public abstract class BridgeTestBase extends UnitTestCase
          serviceConf.getAcceptorConfigurations()
                     .add(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory", params));
       }
-      HornetQServer service = HornetQ.newHornetQServer(serviceConf, true);
+      HornetQServer service = HornetQServers.newHornetQServer(serviceConf, true);
 
       servers.add(service);
 

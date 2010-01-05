@@ -18,7 +18,7 @@ import java.util.HashSet;
 import org.hornetq.api.core.config.Configuration;
 import org.hornetq.api.core.config.ConfigurationImpl;
 import org.hornetq.api.core.config.TransportConfiguration;
-import org.hornetq.api.core.server.HornetQ;
+import org.hornetq.api.core.server.HornetQServers;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.integration.transports.netty.NettyAcceptorFactory;
 
@@ -59,7 +59,7 @@ public class EmbeddedServer
          configuration.setAcceptorConfigurations(setTransp);
 
          // Step 3. Create and start the server
-         HornetQServer server = HornetQ.newHornetQServer(configuration);
+         HornetQServer server = HornetQServers.newHornetQServer(configuration);
          server.start();
          System.out.println("STARTED::");
       }

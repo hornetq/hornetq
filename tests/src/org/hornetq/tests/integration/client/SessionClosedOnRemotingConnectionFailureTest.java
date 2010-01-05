@@ -24,7 +24,7 @@ import org.hornetq.api.core.config.Configuration;
 import org.hornetq.api.core.config.ConfigurationImpl;
 import org.hornetq.api.core.config.TransportConfiguration;
 import org.hornetq.api.core.exception.HornetQException;
-import org.hornetq.api.core.server.HornetQ;
+import org.hornetq.api.core.server.HornetQServers;
 import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.remoting.RemotingConnection;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
@@ -119,7 +119,7 @@ public class SessionClosedOnRemotingConnectionFailureTest extends UnitTestCase
       Configuration config = new ConfigurationImpl();
       config.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getCanonicalName()));
       config.setSecurityEnabled(false);
-      server = HornetQ.newHornetQServer(config, false);
+      server = HornetQServers.newHornetQServer(config, false);
 
       server.start();
 

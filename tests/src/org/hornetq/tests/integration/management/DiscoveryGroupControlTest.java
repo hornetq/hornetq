@@ -20,7 +20,7 @@ import org.hornetq.api.core.config.ConfigurationImpl;
 import org.hornetq.api.core.config.TransportConfiguration;
 import org.hornetq.api.core.config.cluster.DiscoveryGroupConfiguration;
 import org.hornetq.api.core.management.DiscoveryGroupControl;
-import org.hornetq.api.core.server.HornetQ;
+import org.hornetq.api.core.server.HornetQServers;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.RandomUtil;
@@ -62,7 +62,7 @@ public class DiscoveryGroupControlTest extends ManagementTestBase
       conf.setClustered(true);
       conf.getDiscoveryGroupConfigurations().put(discoveryGroupConfig.getName(), discoveryGroupConfig);
       conf.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
-      service = HornetQ.newHornetQServer(conf, mbeanServer, false);
+      service = HornetQServers.newHornetQServer(conf, mbeanServer, false);
       service.start();
 
       DiscoveryGroupControl discoveryGroupControl = createManagementControl(discoveryGroupConfig.getName());
@@ -86,7 +86,7 @@ public class DiscoveryGroupControlTest extends ManagementTestBase
       conf.setClustered(true);
       conf.getDiscoveryGroupConfigurations().put(discoveryGroupConfig.getName(), discoveryGroupConfig);
       conf.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
-      service = HornetQ.newHornetQServer(conf, mbeanServer, false);
+      service = HornetQServers.newHornetQServer(conf, mbeanServer, false);
       service.start();
 
       DiscoveryGroupControl discoveryGroupControl = createManagementControl(discoveryGroupConfig.getName());

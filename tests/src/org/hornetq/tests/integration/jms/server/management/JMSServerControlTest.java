@@ -28,7 +28,7 @@ import org.hornetq.api.core.config.ConfigurationImpl;
 import org.hornetq.api.core.config.TransportConfiguration;
 import org.hornetq.api.core.config.cluster.DiscoveryGroupConfiguration;
 import org.hornetq.api.core.management.ObjectNameBuilder;
-import org.hornetq.api.core.server.HornetQ;
+import org.hornetq.api.core.server.HornetQServers;
 import org.hornetq.api.jms.management.JMSServerControl;
 import org.hornetq.api.jms.server.JMSServerManager;
 import org.hornetq.api.jms.server.JMSServerManagerImpl;
@@ -635,7 +635,7 @@ public class JMSServerControlTest extends ManagementTestBase
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
       conf.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
-      server = HornetQ.newHornetQServer(conf, mbeanServer, false);
+      server = HornetQServers.newHornetQServer(conf, mbeanServer, false);
 
       context = new InVMContext();
       serverManager = new JMSServerManagerImpl(server);
@@ -704,7 +704,7 @@ public class JMSServerControlTest extends ManagementTestBase
                                                "231.7.7.7",
                                                discoveryPort,
                                                ConfigurationImpl.DEFAULT_BROADCAST_REFRESH_TIMEOUT));
-      HornetQServer server = HornetQ.newHornetQServer(conf, mbeanServer, false);
+      HornetQServer server = HornetQServers.newHornetQServer(conf, mbeanServer, false);
 
       context = new InVMContext();
       JMSServerManagerImpl serverManager = new JMSServerManagerImpl(server);

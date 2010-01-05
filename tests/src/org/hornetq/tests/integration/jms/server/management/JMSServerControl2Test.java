@@ -27,7 +27,7 @@ import junit.framework.Assert;
 import org.hornetq.api.core.config.Configuration;
 import org.hornetq.api.core.config.ConfigurationImpl;
 import org.hornetq.api.core.config.TransportConfiguration;
-import org.hornetq.api.core.server.HornetQ;
+import org.hornetq.api.core.server.HornetQServers;
 import org.hornetq.api.jms.management.JMSServerControl;
 import org.hornetq.api.jms.server.JMSServerManagerImpl;
 import org.hornetq.core.logging.Logger;
@@ -76,7 +76,7 @@ public class JMSServerControl2Test extends ManagementTestBase
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
       conf.getAcceptorConfigurations().add(new TransportConfiguration(acceptorFactory));
-      server = HornetQ.newHornetQServer(conf, mbeanServer, false);
+      server = HornetQServers.newHornetQServer(conf, mbeanServer, false);
       server.start();
 
       context = new InVMContext();

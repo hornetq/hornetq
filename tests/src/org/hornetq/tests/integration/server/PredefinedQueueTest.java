@@ -29,7 +29,7 @@ import org.hornetq.api.core.config.Configuration;
 import org.hornetq.api.core.config.TransportConfiguration;
 import org.hornetq.api.core.config.cluster.QueueConfiguration;
 import org.hornetq.api.core.exception.HornetQException;
-import org.hornetq.api.core.server.HornetQ;
+import org.hornetq.api.core.server.HornetQServers;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.postoffice.Bindings;
 import org.hornetq.core.server.HornetQServer;
@@ -75,7 +75,7 @@ public class PredefinedQueueTest extends ServiceTestBase
 
       conf.setQueueConfigurations(queueConfs);
 
-      HornetQServer server = HornetQ.newHornetQServer(conf, false);
+      HornetQServer server = HornetQServers.newHornetQServer(conf, false);
 
       server.start();
 
@@ -145,7 +145,7 @@ public class PredefinedQueueTest extends ServiceTestBase
 
       conf.setQueueConfigurations(queueConfs);
 
-      HornetQServer server = HornetQ.newHornetQServer(conf, false);
+      HornetQServer server = HornetQServers.newHornetQServer(conf, false);
 
       server.start();
 
@@ -213,7 +213,7 @@ public class PredefinedQueueTest extends ServiceTestBase
 
       final String queueName3 = "queue3";
 
-      HornetQServer server = HornetQ.newHornetQServer(conf);
+      HornetQServer server = HornetQServers.newHornetQServer(conf);
 
       server.start();
 
@@ -326,7 +326,7 @@ public class PredefinedQueueTest extends ServiceTestBase
 
       conf.setQueueConfigurations(queueConfs);
 
-      HornetQServer server = HornetQ.newHornetQServer(conf);
+      HornetQServer server = HornetQServers.newHornetQServer(conf);
 
       server.start();
 
@@ -411,7 +411,7 @@ public class PredefinedQueueTest extends ServiceTestBase
 
       conf.setQueueConfigurations(queueConfs);
 
-      HornetQServer server = HornetQ.newHornetQServer(conf, false);
+      HornetQServer server = HornetQServers.newHornetQServer(conf, false);
 
       server.start();
 

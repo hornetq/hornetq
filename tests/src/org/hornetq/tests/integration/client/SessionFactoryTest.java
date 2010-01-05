@@ -32,7 +32,7 @@ import org.hornetq.api.core.config.ConfigurationImpl;
 import org.hornetq.api.core.config.TransportConfiguration;
 import org.hornetq.api.core.config.cluster.BroadcastGroupConfiguration;
 import org.hornetq.api.core.exception.HornetQException;
-import org.hornetq.api.core.server.HornetQ;
+import org.hornetq.api.core.server.HornetQServers;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.impl.invm.TransportConstants;
 import org.hornetq.core.server.HornetQServer;
@@ -866,7 +866,7 @@ public class SessionFactoryTest extends ServiceTestBase
       backupConf.getAcceptorConfigurations()
                 .add(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory", backupParams));
       backupConf.setBackup(true);
-      backupService = HornetQ.newHornetQServer(backupConf, false);
+      backupService = HornetQServers.newHornetQServer(backupConf, false);
       backupService.start();
 
       Configuration liveConf = new ConfigurationImpl();
@@ -904,7 +904,7 @@ public class SessionFactoryTest extends ServiceTestBase
       bcConfigs1.add(bcConfig1);
       liveConf.setBroadcastGroupConfigurations(bcConfigs1);
 
-      liveService = HornetQ.newHornetQServer(liveConf, false);
+      liveService = HornetQServers.newHornetQServer(liveConf, false);
       liveService.start();
    }
 }

@@ -43,7 +43,7 @@ import junit.framework.Assert;
 import org.hornetq.api.core.config.Configuration;
 import org.hornetq.api.core.config.ConfigurationImpl;
 import org.hornetq.api.core.config.TransportConfiguration;
-import org.hornetq.api.core.server.HornetQ;
+import org.hornetq.api.core.server.HornetQServers;
 import org.hornetq.api.jms.HornetQConnectionFactory;
 import org.hornetq.api.jms.HornetQQueue;
 import org.hornetq.api.jms.bridge.ConnectionFactoryFactory;
@@ -529,7 +529,7 @@ public class JMSBridgeImplTest extends UnitTestCase
       config.setSecurityEnabled(false);
       config.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
       InVMContext context = new InVMContext();
-      jmsServer = new JMSServerManagerImpl(HornetQ.newHornetQServer(config, false));
+      jmsServer = new JMSServerManagerImpl(HornetQServers.newHornetQServer(config, false));
       jmsServer.setContext(context);
       jmsServer.start();
 

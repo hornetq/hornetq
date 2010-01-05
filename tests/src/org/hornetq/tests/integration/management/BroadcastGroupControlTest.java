@@ -24,7 +24,7 @@ import org.hornetq.api.core.config.ConfigurationImpl;
 import org.hornetq.api.core.config.TransportConfiguration;
 import org.hornetq.api.core.config.cluster.BroadcastGroupConfiguration;
 import org.hornetq.api.core.management.BroadcastGroupControl;
-import org.hornetq.api.core.server.HornetQ;
+import org.hornetq.api.core.server.HornetQServers;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.integration.transports.netty.NettyConnectorFactory;
@@ -86,7 +86,7 @@ public class BroadcastGroupControlTest extends ManagementTestBase
       conf.getConnectorConfigurations().put(connectorConfiguration.getName(), connectorConfiguration);
       conf.getBroadcastGroupConfigurations().add(broadcastGroupConfig);
       conf.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
-      service = HornetQ.newHornetQServer(conf, mbeanServer, false);
+      service = HornetQServers.newHornetQServer(conf, mbeanServer, false);
       service.start();
 
       BroadcastGroupControl broadcastGroupControl = createManagementControl(broadcastGroupConfig.getName());
@@ -128,7 +128,7 @@ public class BroadcastGroupControlTest extends ManagementTestBase
       conf.getConnectorConfigurations().put(connectorConfiguration.getName(), connectorConfiguration);
       conf.getBroadcastGroupConfigurations().add(broadcastGroupConfig);
       conf.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
-      service = HornetQ.newHornetQServer(conf, mbeanServer, false);
+      service = HornetQServers.newHornetQServer(conf, mbeanServer, false);
       service.start();
 
       BroadcastGroupControl broadcastGroupControl = createManagementControl(broadcastGroupConfig.getName());

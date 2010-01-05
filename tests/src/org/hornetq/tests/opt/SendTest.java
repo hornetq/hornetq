@@ -31,7 +31,7 @@ import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.config.Configuration;
 import org.hornetq.api.core.config.ConfigurationImpl;
 import org.hornetq.api.core.config.TransportConfiguration;
-import org.hornetq.api.core.server.HornetQ;
+import org.hornetq.api.core.server.HornetQServers;
 import org.hornetq.api.jms.HornetQConnectionFactory;
 import org.hornetq.api.jms.HornetQQueue;
 import org.hornetq.core.logging.Logger;
@@ -114,7 +114,7 @@ public class SendTest
       configuration.getAcceptorConfigurations().add(transportConfig1);
       configuration.getAcceptorConfigurations().add(transportConfig2);
 
-      server = HornetQ.newHornetQServer(configuration);
+      server = HornetQServers.newHornetQServer(configuration);
 
       server.start();
 

@@ -32,7 +32,7 @@ import org.hornetq.api.core.config.cluster.QueueConfiguration;
 import org.hornetq.api.core.management.BridgeControl;
 import org.hornetq.api.core.management.NotificationType;
 import org.hornetq.api.core.management.ObjectNameBuilder;
-import org.hornetq.api.core.server.HornetQ;
+import org.hornetq.api.core.server.HornetQServers;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.remoting.impl.invm.TransportConstants;
@@ -190,10 +190,10 @@ public class BridgeControlTest extends ManagementTestBase
       conf_0.getQueueConfigurations().add(sourceQueueConfig);
       conf_0.getBridgeConfigurations().add(bridgeConfig);
 
-      server_1 = HornetQ.newHornetQServer(conf_1, MBeanServerFactory.createMBeanServer(), false);
+      server_1 = HornetQServers.newHornetQServer(conf_1, MBeanServerFactory.createMBeanServer(), false);
       server_1.start();
 
-      server_0 = HornetQ.newHornetQServer(conf_0, mbeanServer, false);
+      server_0 = HornetQServers.newHornetQServer(conf_0, mbeanServer, false);
       server_0.start();
    }
 

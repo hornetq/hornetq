@@ -38,7 +38,7 @@ import org.hornetq.api.core.config.TransportConfiguration;
 import org.hornetq.api.core.config.cluster.BroadcastGroupConfiguration;
 import org.hornetq.api.core.config.cluster.ClusterConnectionConfiguration;
 import org.hornetq.api.core.config.cluster.DiscoveryGroupConfiguration;
-import org.hornetq.api.core.server.HornetQ;
+import org.hornetq.api.core.server.HornetQServers;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.postoffice.Binding;
@@ -1280,11 +1280,11 @@ public abstract class ClusterTestBase extends ServiceTestBase
 
       if (fileStorage)
       {
-         server = HornetQ.newHornetQServer(configuration);
+         server = HornetQServers.newHornetQServer(configuration);
       }
       else
       {
-         server = HornetQ.newHornetQServer(configuration, false);
+         server = HornetQServers.newHornetQServer(configuration, false);
       }
       servers[node] = server;
    }
@@ -1413,11 +1413,11 @@ public abstract class ClusterTestBase extends ServiceTestBase
 
       if (fileStorage)
       {
-         server = HornetQ.newHornetQServer(configuration);
+         server = HornetQServers.newHornetQServer(configuration);
       }
       else
       {
-         server = HornetQ.newHornetQServer(configuration, false);
+         server = HornetQServers.newHornetQServer(configuration, false);
       }
       servers[node] = server;
    }

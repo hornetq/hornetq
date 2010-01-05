@@ -23,7 +23,7 @@ import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.ClientSessionFactoryImpl;
 import org.hornetq.api.core.config.Configuration;
 import org.hornetq.api.core.config.TransportConfiguration;
-import org.hornetq.api.core.server.HornetQ;
+import org.hornetq.api.core.server.HornetQServers;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
@@ -49,7 +49,7 @@ public class ReceiveImmediateTest extends ServiceTestBase
       super.setUp();
 
       Configuration config = createDefaultConfig(false);
-      server = HornetQ.newHornetQServer(config, false);
+      server = HornetQServers.newHornetQServer(config, false);
 
       server.start();
    }

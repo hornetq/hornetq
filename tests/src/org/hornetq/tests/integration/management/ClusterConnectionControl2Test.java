@@ -33,7 +33,7 @@ import org.hornetq.api.core.config.cluster.ClusterConnectionConfiguration;
 import org.hornetq.api.core.config.cluster.DiscoveryGroupConfiguration;
 import org.hornetq.api.core.config.cluster.QueueConfiguration;
 import org.hornetq.api.core.management.ClusterConnectionControl;
-import org.hornetq.api.core.server.HornetQ;
+import org.hornetq.api.core.server.HornetQServers;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.integration.transports.netty.NettyAcceptorFactory;
@@ -173,9 +173,9 @@ public class ClusterConnectionControl2Test extends ManagementTestBase
       conf_0.getBroadcastGroupConfigurations().add(broadcastGroupConfig);
 
       mbeanServer_1 = MBeanServerFactory.createMBeanServer();
-      server_1 = HornetQ.newHornetQServer(conf_1, mbeanServer_1, false);
+      server_1 = HornetQServers.newHornetQServer(conf_1, mbeanServer_1, false);
 
-      server_0 = HornetQ.newHornetQServer(conf_0, mbeanServer, false);
+      server_0 = HornetQServers.newHornetQServer(conf_0, mbeanServer, false);
       server_0.start();
    }
 

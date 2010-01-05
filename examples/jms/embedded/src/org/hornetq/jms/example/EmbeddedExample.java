@@ -28,7 +28,7 @@ import javax.naming.InitialContext;
 import org.hornetq.api.core.config.Configuration;
 import org.hornetq.api.core.config.ConfigurationImpl;
 import org.hornetq.api.core.config.TransportConfiguration;
-import org.hornetq.api.core.server.HornetQ;
+import org.hornetq.api.core.server.HornetQServers;
 import org.hornetq.api.jms.config.ConnectionFactoryConfiguration;
 import org.hornetq.api.jms.config.ConnectionFactoryConfigurationImpl;
 import org.hornetq.api.jms.config.JMSConfiguration;
@@ -65,7 +65,7 @@ public class EmbeddedExample
                       .add(new TransportConfiguration(NettyAcceptorFactory.class.getName()));
 
          // Step 2. Create HornetQ core server
-         HornetQServer hornetqServer = HornetQ.newHornetQServer(configuration);
+         HornetQServer hornetqServer = HornetQServers.newHornetQServer(configuration);
 
          // Step 3. Create and start the JNDI server
          System.setProperty("java.naming.factory.initial", "org.jnp.interfaces.NamingContextFactory");

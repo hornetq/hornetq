@@ -20,7 +20,7 @@ import org.hornetq.api.core.config.Configuration;
 import org.hornetq.api.core.config.ConfigurationImpl;
 import org.hornetq.api.core.config.TransportConfiguration;
 import org.hornetq.api.core.management.ObjectNameBuilder;
-import org.hornetq.api.core.server.HornetQ;
+import org.hornetq.api.core.server.HornetQServers;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.TransportConstants;
 import org.hornetq.core.server.HornetQServer;
@@ -60,8 +60,8 @@ public class JMXDomainTest extends ManagementTestBase
       config_1.setJMXDomain(jmxDomain_1);
       config_1.setJMXManagementEnabled(true);
 
-      HornetQServer server_0 = HornetQ.newHornetQServer(config_0, mbeanServer, false);
-      HornetQServer server_1 = HornetQ.newHornetQServer(config_1, mbeanServer, false);
+      HornetQServer server_0 = HornetQServers.newHornetQServer(config_0, mbeanServer, false);
+      HornetQServer server_1 = HornetQServers.newHornetQServer(config_1, mbeanServer, false);
 
       ObjectNameBuilder builder_0 = ObjectNameBuilder.DEFAULT;
       ObjectNameBuilder builder_1 = ObjectNameBuilder.create(jmxDomain_1);

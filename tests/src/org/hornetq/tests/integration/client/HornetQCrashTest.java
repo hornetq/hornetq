@@ -15,7 +15,7 @@ import org.hornetq.api.core.config.TransportConfiguration;
 import org.hornetq.api.core.exception.HornetQException;
 import org.hornetq.api.core.interceptor.Interceptor;
 import org.hornetq.api.core.message.Message;
-import org.hornetq.api.core.server.HornetQ;
+import org.hornetq.api.core.server.HornetQServers;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.Packet;
 import org.hornetq.core.remoting.RemotingConnection;
@@ -44,7 +44,7 @@ public class HornetQCrashTest extends TestCase
       configuration.setSecurityEnabled(false);
       configuration.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
 
-      server = HornetQ.newHornetQServer(configuration);
+      server = HornetQServers.newHornetQServer(configuration);
 
       server.start();
 

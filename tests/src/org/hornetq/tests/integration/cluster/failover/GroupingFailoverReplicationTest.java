@@ -17,7 +17,7 @@ import java.util.Map;
 import org.hornetq.api.core.config.Configuration;
 import org.hornetq.api.core.config.ConfigurationImpl;
 import org.hornetq.api.core.config.TransportConfiguration;
-import org.hornetq.api.core.server.HornetQ;
+import org.hornetq.api.core.server.HornetQServers;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.JournalType;
@@ -75,11 +75,11 @@ public class GroupingFailoverReplicationTest extends GroupingFailoverTestBase
 
       if (fileStorage)
       {
-         server = HornetQ.newHornetQServer(configuration);
+         server = HornetQServers.newHornetQServer(configuration);
       }
       else
       {
-         server = HornetQ.newHornetQServer(configuration, false);
+         server = HornetQServers.newHornetQServer(configuration, false);
       }
       servers[node] = server;
    }

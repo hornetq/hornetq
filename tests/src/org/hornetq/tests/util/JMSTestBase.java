@@ -24,7 +24,7 @@ import org.hornetq.api.Pair;
 import org.hornetq.api.core.client.ClientSessionFactoryImpl;
 import org.hornetq.api.core.config.Configuration;
 import org.hornetq.api.core.config.TransportConfiguration;
-import org.hornetq.api.core.server.HornetQ;
+import org.hornetq.api.core.server.HornetQServers;
 import org.hornetq.api.jms.server.JMSServerManagerImpl;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.integration.transports.netty.NettyAcceptorFactory;
@@ -100,7 +100,7 @@ public class JMSTestBase extends ServiceTestBase
 
       conf.getAcceptorConfigurations().add(new TransportConfiguration(NettyAcceptorFactory.class.getName()));
 
-      server = HornetQ.newHornetQServer(conf, usePersistence());
+      server = HornetQServers.newHornetQServer(conf, usePersistence());
 
       jmsServer = new JMSServerManagerImpl(server);
       context = new InVMContext();
