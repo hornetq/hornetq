@@ -37,7 +37,7 @@
             HornetQ. If you want to configure it from a file on the classpath, use <literal
                 >FileConfigurationImpl</literal></para>
         <programlisting>import org.hornetq.core.config.Configuration;
-import org.hornetq.core.config.impl.FileConfiguration;
+import org.hornetq.core.config.FileConfiguration;
 
 ...
 
@@ -52,7 +52,7 @@ config.start();</programlisting>
             the <literal>NettyAcceptorFactory</literal> on the transports the same way you would
             through the main configuration file.</para>
         <programlisting>import org.hornetq.core.config.Configuration;
-import org.hornetq.core.config.impl.ConfigurationImpl;
+import org.hornetq.core.config.ConfigurationImpl;
 
 ...
 
@@ -99,7 +99,7 @@ server.start();</programlisting>
    
    &lt;!-- The core configuration -->
    &lt;bean name="Configuration" 
-         class="org.hornetq.core.config.impl.FileConfiguration">
+         class="org.hornetq.core.config.FileConfiguration">
    &lt;/bean>
 
    	&lt;!-- The core server -->

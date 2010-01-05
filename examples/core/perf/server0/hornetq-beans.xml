@@ -3,7 +3,7 @@
 <deployment xmlns="urn:jboss:bean-deployer:2.0">
       
    <!-- The core configuration -->
-   <bean name="Configuration" class="org.hornetq.core.config.impl.FileConfiguration"/>   
+   <bean name="Configuration" class="org.hornetq.core.config.FileConfiguration"/>   
 
    <!-- The core server -->
    <bean name="HornetQServer" class="org.hornetq.core.server.impl.HornetQServerImpl">

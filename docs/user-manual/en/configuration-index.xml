@@ -898,7 +898,7 @@
                                     >connection-factory.connection-load-balancing-policy-class-name</link></entry>
                             <entry>String</entry>
                             <entry>the name of the load balancing class</entry>
-                            <entry>org.hornetq.core.client.impl.RoundRobinConnectionLoadBalancingPolicy</entry>
+                            <entry>org.hornetq.core.client.loadbalance.RoundRobinConnectionLoadBalancingPolicy</entry>
                         </row>
                         <row>
                             <entry><link linkend="dead.connections"

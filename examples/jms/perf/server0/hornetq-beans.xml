@@ -16,7 +16,7 @@
    </bean>
 
    <!-- The core configuration -->
-   <bean name="Configuration" class="org.hornetq.core.config.impl.FileConfiguration"/>
+   <bean name="Configuration" class="org.hornetq.core.config.FileConfiguration"/>
 
    <!-- The core server -->
    <bean name="HornetQServer" class="org.hornetq.core.server.impl.HornetQServerImpl">
@@ -30,7 +30,7 @@
    </bean>
 
    <!-- The JMS server -->
-   <bean name="JMSServerManager" class="org.hornetq.jms.server.impl.JMSServerManagerImpl">
+   <bean name="JMSServerManager" class="org.hornetq.jms.server.JMSServerManagerImpl">
       <constructor>
          <parameter>
             <inject bean="HornetQServer"/>
