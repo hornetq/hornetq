@@ -80,6 +80,7 @@
 	<classpathentry kind="src" path="examples/jms/xa-with-jta/src"/>
 	<classpathentry kind="src" path="examples/javaee/ejb-jms-transaction/src"/>
 	<classpathentry kind="src" path="examples/javaee/hajndi/src"/>
+	<classpathentry kind="src" path="examples/javaee/jca-config/src"/>
 	<classpathentry kind="src" path="examples/javaee/jms-bridge/src"/>
 	<classpathentry kind="src" path="examples/javaee/mdb-bmt/src"/>
 	<classpathentry kind="src" path="examples/javaee/mdb-cmt-setrollbackonly/src"/>
