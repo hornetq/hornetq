@@ -16,7 +16,7 @@ package org.hornetq.javaee.example.server2;
 
 
 
-import org.hornetq.jms.HornetQQueue;
+import org.hornetq.api.jms.HornetQQueue;
 
 import javax.annotation.Resource;
 import javax.ejb.Remote;
