@@ -15,10 +15,10 @@ package org.hornetq.core.remoting;
 
 import java.util.List;
 
-import org.hornetq.core.buffers.HornetQBuffer;
-import org.hornetq.core.exception.HornetQException;
-import org.hornetq.core.remoting.spi.BufferHandler;
-import org.hornetq.core.remoting.spi.Connection;
+import org.hornetq.api.core.buffers.HornetQBuffer;
+import org.hornetq.api.core.exception.HornetQException;
+import org.hornetq.spi.core.remoting.BufferHandler;
+import org.hornetq.spi.core.remoting.Connection;
 
 /**
  * A RemotingConnection is a connection between a client and a server.

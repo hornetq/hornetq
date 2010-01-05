@@ -17,7 +17,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.hornetq.core.buffers.HornetQBuffer;
+import org.hornetq.api.core.buffers.HornetQBuffer;
 import org.hornetq.core.paging.PageTransactionInfo;
 import org.hornetq.utils.DataConstants;
 

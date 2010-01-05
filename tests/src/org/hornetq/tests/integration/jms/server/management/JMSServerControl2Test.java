@@ -24,18 +24,18 @@ import javax.jms.JMSException;
 
 import junit.framework.Assert;
 
-import org.hornetq.core.config.Configuration;
-import org.hornetq.core.config.ConfigurationImpl;
-import org.hornetq.core.config.TransportConfiguration;
+import org.hornetq.api.core.config.Configuration;
+import org.hornetq.api.core.config.ConfigurationImpl;
+import org.hornetq.api.core.config.TransportConfiguration;
+import org.hornetq.api.core.server.HornetQ;
+import org.hornetq.api.jms.management.JMSServerControl;
+import org.hornetq.api.jms.server.JMSServerManagerImpl;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
-import org.hornetq.core.server.HornetQ;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.integration.transports.netty.NettyAcceptorFactory;
 import org.hornetq.integration.transports.netty.NettyConnectorFactory;
-import org.hornetq.jms.management.JMSServerControl;
-import org.hornetq.jms.server.JMSServerManagerImpl;
 import org.hornetq.tests.integration.management.ManagementControlHelper;
 import org.hornetq.tests.integration.management.ManagementTestBase;
 import org.hornetq.tests.unit.util.InVMContext;

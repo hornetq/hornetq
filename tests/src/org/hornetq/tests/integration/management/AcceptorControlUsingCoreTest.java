@@ -15,12 +15,12 @@ package org.hornetq.tests.integration.management;
 
 import java.util.Map;
 
-import org.hornetq.core.client.ClientSession;
-import org.hornetq.core.client.ClientSessionFactory;
-import org.hornetq.core.client.ClientSessionFactoryImpl;
-import org.hornetq.core.config.TransportConfiguration;
-import org.hornetq.core.management.AcceptorControl;
-import org.hornetq.core.management.ResourceNames;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.ClientSessionFactoryImpl;
+import org.hornetq.api.core.config.TransportConfiguration;
+import org.hornetq.api.core.management.AcceptorControl;
+import org.hornetq.api.core.management.ResourceNames;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 
 /**

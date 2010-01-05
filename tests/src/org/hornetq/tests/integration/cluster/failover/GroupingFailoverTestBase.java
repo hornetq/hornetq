@@ -18,8 +18,8 @@ import java.util.concurrent.TimeUnit;
 
 import junit.framework.Assert;
 
-import org.hornetq.SimpleString;
-import org.hornetq.core.exception.HornetQException;
+import org.hornetq.api.SimpleString;
+import org.hornetq.api.core.exception.HornetQException;
 import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.remoting.FailureListener;
 import org.hornetq.core.remoting.RemotingConnection;

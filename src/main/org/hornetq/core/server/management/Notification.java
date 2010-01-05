@@ -13,7 +13,7 @@
 
 package org.hornetq.core.server.management;
 
-import org.hornetq.core.management.NotificationType;
+import org.hornetq.api.core.management.NotificationType;
 import org.hornetq.utils.TypedProperties;
 
 /**

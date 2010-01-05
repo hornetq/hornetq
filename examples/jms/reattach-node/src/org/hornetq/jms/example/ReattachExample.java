@@ -22,9 +22,9 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
+import org.hornetq.api.jms.HornetQQueue;
+import org.hornetq.api.jms.management.JMSManagementHelper;
 import org.hornetq.common.example.HornetQExample;
-import org.hornetq.jms.HornetQQueue;
-import org.hornetq.jms.management.impl.JMSManagementHelper;
 
 /**
  * This examples demonstrates a connection created to a server. Failure of the network connection is then simulated

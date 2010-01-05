@@ -24,8 +24,8 @@ package org.hornetq.tests.integration.cluster.failover;
 
 import java.util.Map;
 
+import org.hornetq.api.core.config.TransportConfiguration;
 import org.hornetq.core.client.impl.FailoverManagerImpl;
-import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.cluster.BroadcastGroup;

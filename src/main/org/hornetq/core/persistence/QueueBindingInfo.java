@@ -13,7 +13,7 @@
 
 package org.hornetq.core.persistence;
 
-import org.hornetq.SimpleString;
+import org.hornetq.api.SimpleString;
 
 /**
  * A QueueBindingInfo

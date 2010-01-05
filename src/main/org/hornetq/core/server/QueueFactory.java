@@ -13,7 +13,7 @@
 
 package org.hornetq.core.server;
 
-import org.hornetq.SimpleString;
+import org.hornetq.api.SimpleString;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.postoffice.PostOffice;
 

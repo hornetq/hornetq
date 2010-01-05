@@ -13,7 +13,7 @@
 
 package org.hornetq.integration.logging;
 
-import org.hornetq.core.logging.LogDelegate;
+import org.hornetq.spi.core.logging.LogDelegate;
 
 /**
  * 

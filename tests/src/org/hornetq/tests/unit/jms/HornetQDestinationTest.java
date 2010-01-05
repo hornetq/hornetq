@@ -20,11 +20,11 @@ import javax.jms.Topic;
 
 import junit.framework.Assert;
 
-import org.hornetq.jms.HornetQDestination;
-import org.hornetq.jms.HornetQQueue;
-import org.hornetq.jms.HornetQTemporaryQueue;
-import org.hornetq.jms.HornetQTemporaryTopic;
-import org.hornetq.jms.HornetQTopic;
+import org.hornetq.api.jms.HornetQDestination;
+import org.hornetq.api.jms.HornetQQueue;
+import org.hornetq.api.jms.HornetQTemporaryQueue;
+import org.hornetq.api.jms.HornetQTemporaryTopic;
+import org.hornetq.api.jms.HornetQTopic;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
 

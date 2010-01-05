@@ -16,10 +16,10 @@ package org.hornetq.jms.client;
 import javax.jms.MessageListener;
 import javax.jms.Session;
 
-import org.hornetq.core.client.ClientConsumer;
-import org.hornetq.core.client.ClientMessage;
-import org.hornetq.core.client.MessageHandler;
-import org.hornetq.core.exception.HornetQException;
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.MessageHandler;
+import org.hornetq.api.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 
 /**

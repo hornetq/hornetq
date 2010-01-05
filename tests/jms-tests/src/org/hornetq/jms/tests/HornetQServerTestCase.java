@@ -35,10 +35,10 @@ import javax.transaction.TransactionManager;
 
 import com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionManagerImple;
 
+import org.hornetq.api.jms.server.JMSServerManager;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.server.HornetQServer;
-import org.hornetq.jms.server.JMSServerManager;
 import org.hornetq.jms.tests.tools.ServerManagement;
 import org.hornetq.jms.tests.tools.container.Server;
 import org.hornetq.jms.tests.util.ProxyAssertSupport;

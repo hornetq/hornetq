@@ -18,14 +18,14 @@ import java.util.concurrent.TimeUnit;
 
 import junit.framework.Assert;
 
-import org.hornetq.SimpleString;
-import org.hornetq.core.client.ClientConsumer;
-import org.hornetq.core.client.ClientMessage;
-import org.hornetq.core.client.ClientProducer;
-import org.hornetq.core.client.ClientSession;
-import org.hornetq.core.client.SessionFailureListener;
+import org.hornetq.api.SimpleString;
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.SessionFailureListener;
+import org.hornetq.api.core.exception.HornetQException;
 import org.hornetq.core.client.impl.ClientSessionInternal;
-import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.remoting.RemotingConnection;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.tests.integration.cluster.distribution.ClusterTestBase;
@@ -241,7 +241,7 @@ public class ReplicatedDistributionTest extends ClusterTestBase
          }
 
          /* (non-Javadoc)
-          * @see org.hornetq.core.client.SessionFailureListener#beforeReconnect(org.hornetq.core.exception.HornetQException)
+          * @see org.hornetq.api.core.client.SessionFailureListener#beforeReconnect(org.hornetq.api.core.exception.HornetQException)
           */
          public void beforeReconnect(final HornetQException exception)
          {

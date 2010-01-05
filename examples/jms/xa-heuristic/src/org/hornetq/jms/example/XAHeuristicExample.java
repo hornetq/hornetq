@@ -35,9 +35,9 @@ import javax.naming.InitialContext;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
+import org.hornetq.api.core.management.ObjectNameBuilder;
 import org.hornetq.common.example.DummyXid;
 import org.hornetq.common.example.HornetQExample;
-import org.hornetq.core.management.ObjectNameBuilder;
 import org.hornetq.utils.UUIDGenerator;
 
 /**

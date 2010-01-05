@@ -18,11 +18,11 @@ import java.util.List;
 
 import junit.framework.Assert;
 
-import org.hornetq.core.config.Configuration;
-import org.hornetq.core.config.cluster.QueueConfiguration;
+import org.hornetq.api.core.config.Configuration;
+import org.hornetq.api.core.config.cluster.QueueConfiguration;
+import org.hornetq.api.core.management.HornetQServerControl;
 import org.hornetq.core.deployers.DeploymentManager;
 import org.hornetq.core.deployers.impl.QueueDeployer;
-import org.hornetq.core.management.HornetQServerControl;
 import org.hornetq.tests.util.UnitTestCase;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;

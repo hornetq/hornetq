@@ -1,6 +1,6 @@
 package org.hornetq.service;
 
-import org.hornetq.core.config.Configuration;
+import org.hornetq.api.core.config.Configuration;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>

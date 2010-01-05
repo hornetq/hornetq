@@ -50,20 +50,20 @@ import javax.jms.XASession;
 import javax.jms.XATopicSession;
 import javax.transaction.xa.XAResource;
 
-import org.hornetq.SimpleString;
-import org.hornetq.core.client.ClientConsumer;
-import org.hornetq.core.client.ClientProducer;
-import org.hornetq.core.client.ClientSession;
-import org.hornetq.core.client.ClientSession.BindingQuery;
-import org.hornetq.core.client.ClientSession.QueueQuery;
-import org.hornetq.core.exception.HornetQException;
+import org.hornetq.api.SimpleString;
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSession.BindingQuery;
+import org.hornetq.api.core.client.ClientSession.QueueQuery;
+import org.hornetq.api.core.exception.HornetQException;
+import org.hornetq.api.jms.HornetQDestination;
+import org.hornetq.api.jms.HornetQQueue;
+import org.hornetq.api.jms.HornetQTemporaryQueue;
+import org.hornetq.api.jms.HornetQTemporaryTopic;
+import org.hornetq.api.jms.HornetQTopic;
 import org.hornetq.core.filter.impl.FilterImpl;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.jms.HornetQDestination;
-import org.hornetq.jms.HornetQQueue;
-import org.hornetq.jms.HornetQTemporaryQueue;
-import org.hornetq.jms.HornetQTemporaryTopic;
-import org.hornetq.jms.HornetQTopic;
 
 /**
  * HornetQ implementation of a JMS Session.

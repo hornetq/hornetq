@@ -12,7 +12,7 @@
  */
 package org.hornetq.core.client.impl;
 
-import org.hornetq.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.ClientSessionFactory;
 
 /**
  * A ClientSessionFactoryInternal

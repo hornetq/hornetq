@@ -26,18 +26,18 @@ import java.util.concurrent.TimeUnit;
 
 import javax.net.ssl.SSLContext;
 
-import org.hornetq.SimpleString;
-import org.hornetq.core.config.TransportConfiguration;
-import org.hornetq.core.exception.HornetQException;
+import org.hornetq.api.SimpleString;
+import org.hornetq.api.core.config.TransportConfiguration;
+import org.hornetq.api.core.exception.HornetQException;
+import org.hornetq.api.core.management.NotificationType;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.management.NotificationType;
 import org.hornetq.core.remoting.impl.ssl.SSLSupport;
-import org.hornetq.core.remoting.spi.Acceptor;
-import org.hornetq.core.remoting.spi.BufferHandler;
-import org.hornetq.core.remoting.spi.Connection;
-import org.hornetq.core.remoting.spi.ConnectionLifeCycleListener;
 import org.hornetq.core.server.management.Notification;
 import org.hornetq.core.server.management.NotificationService;
+import org.hornetq.spi.core.remoting.Acceptor;
+import org.hornetq.spi.core.remoting.BufferHandler;
+import org.hornetq.spi.core.remoting.Connection;
+import org.hornetq.spi.core.remoting.ConnectionLifeCycleListener;
 import org.hornetq.utils.ConfigurationHelper;
 import org.hornetq.utils.TypedProperties;
 import org.hornetq.utils.VersionLoader;

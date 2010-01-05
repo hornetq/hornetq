@@ -19,7 +19,7 @@ import javax.jms.QueueRequestor;
 import javax.jms.QueueSession;
 import javax.jms.Session;
 
-import org.hornetq.jms.management.impl.JMSManagementHelper;
+import org.hornetq.api.jms.management.JMSManagementHelper;
 
 /**
  * A MBeanUsingCoreMessage

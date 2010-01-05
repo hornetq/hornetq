@@ -13,12 +13,12 @@
 
 package org.hornetq.tests.integration.cluster.reattach;
 
-import org.hornetq.core.client.ClientMessage;
-import org.hornetq.core.config.Configuration;
-import org.hornetq.core.config.ConfigurationImpl;
-import org.hornetq.core.config.TransportConfiguration;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.config.Configuration;
+import org.hornetq.api.core.config.ConfigurationImpl;
+import org.hornetq.api.core.config.TransportConfiguration;
+import org.hornetq.api.core.server.HornetQ;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.server.HornetQ;
 
 /**
  * 
@@ -44,7 +44,7 @@ public class MultiThreadRandomReattachTest extends MultiThreadRandomReattachTest
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.tests.integration.cluster.failover.MultiThreadRandomReattachTestBase#setBody(org.hornetq.core.client.ClientMessage)
+    * @see org.hornetq.tests.integration.cluster.failover.MultiThreadRandomReattachTestBase#setBody(org.hornetq.api.core.client.ClientMessage)
     */
    @Override
    protected void setBody(final ClientMessage message) throws Exception
@@ -54,7 +54,7 @@ public class MultiThreadRandomReattachTest extends MultiThreadRandomReattachTest
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.tests.integration.cluster.failover.MultiThreadRandomReattachTestBase#checkSize(org.hornetq.core.client.ClientMessage)
+    * @see org.hornetq.tests.integration.cluster.failover.MultiThreadRandomReattachTestBase#checkSize(org.hornetq.api.core.client.ClientMessage)
     */
    @Override
    protected boolean checkSize(final ClientMessage message)

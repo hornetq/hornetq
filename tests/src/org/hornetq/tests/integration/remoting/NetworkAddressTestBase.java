@@ -26,11 +26,11 @@ import java.util.Map.Entry;
 
 import junit.framework.Assert;
 
-import org.hornetq.core.client.ClientSession;
-import org.hornetq.core.client.ClientSessionFactory;
-import org.hornetq.core.client.ClientSessionFactoryImpl;
-import org.hornetq.core.config.Configuration;
-import org.hornetq.core.config.TransportConfiguration;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.ClientSessionFactoryImpl;
+import org.hornetq.api.core.config.Configuration;
+import org.hornetq.api.core.config.TransportConfiguration;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
 

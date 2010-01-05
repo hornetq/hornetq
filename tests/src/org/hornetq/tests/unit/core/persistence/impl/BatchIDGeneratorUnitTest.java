@@ -18,8 +18,8 @@ import java.util.ArrayList;
 
 import junit.framework.Assert;
 
-import org.hornetq.core.buffers.HornetQBuffer;
-import org.hornetq.core.buffers.HornetQBuffers;
+import org.hornetq.api.core.buffers.HornetQBuffer;
+import org.hornetq.api.core.buffers.HornetQBuffers;
 import org.hornetq.core.journal.Journal;
 import org.hornetq.core.journal.PreparedTransactionInfo;
 import org.hornetq.core.journal.RecordInfo;

@@ -14,7 +14,7 @@ package org.hornetq.core.deployers.impl;
 
 import org.hornetq.core.deployers.DeploymentManager;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.security.HornetQSecurityManager;
+import org.hornetq.spi.core.security.HornetQSecurityManager;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 

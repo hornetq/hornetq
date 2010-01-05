@@ -27,9 +27,9 @@ import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 import javax.naming.InitialContext;
 
+import org.hornetq.api.core.management.HornetQServerControl;
+import org.hornetq.api.core.management.ObjectNameBuilder;
 import org.hornetq.common.example.HornetQExample;
-import org.hornetq.core.management.HornetQServerControl;
-import org.hornetq.core.management.ObjectNameBuilder;
 
 /**
  * An example that shows how to kick off a client connected to HornetQby using JMX.

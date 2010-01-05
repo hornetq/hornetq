@@ -22,17 +22,17 @@ import javax.jms.Session;
 
 import junit.framework.Assert;
 
+import org.hornetq.api.core.config.Configuration;
+import org.hornetq.api.core.config.ConfigurationImpl;
+import org.hornetq.api.core.config.TransportConfiguration;
+import org.hornetq.api.core.exception.HornetQException;
+import org.hornetq.api.core.server.HornetQ;
+import org.hornetq.api.jms.HornetQConnectionFactory;
+import org.hornetq.api.jms.server.JMSServerManagerImpl;
 import org.hornetq.core.client.impl.ClientSessionInternal;
-import org.hornetq.core.config.Configuration;
-import org.hornetq.core.config.ConfigurationImpl;
-import org.hornetq.core.config.TransportConfiguration;
-import org.hornetq.core.exception.HornetQException;
-import org.hornetq.core.server.HornetQ;
 import org.hornetq.core.server.HornetQServer;
-import org.hornetq.jms.HornetQConnectionFactory;
 import org.hornetq.jms.client.HornetQConnection;
 import org.hornetq.jms.client.HornetQSession;
-import org.hornetq.jms.server.JMSServerManagerImpl;
 import org.hornetq.tests.integration.jms.server.management.NullInitialContext;
 import org.hornetq.tests.util.UnitTestCase;
 

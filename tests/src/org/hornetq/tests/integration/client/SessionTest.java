@@ -18,17 +18,17 @@ import java.util.concurrent.TimeUnit;
 
 import junit.framework.Assert;
 
-import org.hornetq.SimpleString;
-import org.hornetq.core.client.ClientConsumer;
-import org.hornetq.core.client.ClientMessage;
-import org.hornetq.core.client.ClientProducer;
-import org.hornetq.core.client.ClientSession;
-import org.hornetq.core.client.ClientSessionFactory;
-import org.hornetq.core.client.SessionFailureListener;
-import org.hornetq.core.client.ClientSession.BindingQuery;
-import org.hornetq.core.client.ClientSession.QueueQuery;
+import org.hornetq.api.SimpleString;
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.SessionFailureListener;
+import org.hornetq.api.core.client.ClientSession.BindingQuery;
+import org.hornetq.api.core.client.ClientSession.QueueQuery;
+import org.hornetq.api.core.exception.HornetQException;
 import org.hornetq.core.client.impl.ClientSessionInternal;
-import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.remoting.RemotingConnection;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;

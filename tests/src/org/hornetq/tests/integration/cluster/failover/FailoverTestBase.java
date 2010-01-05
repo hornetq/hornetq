@@ -18,11 +18,11 @@ import java.util.Map;
 
 import junit.framework.Assert;
 
-import org.hornetq.SimpleString;
-import org.hornetq.core.client.ClientSessionFactoryImpl;
+import org.hornetq.api.SimpleString;
+import org.hornetq.api.core.client.ClientSessionFactoryImpl;
+import org.hornetq.api.core.config.Configuration;
+import org.hornetq.api.core.config.TransportConfiguration;
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
-import org.hornetq.core.config.Configuration;
-import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.remoting.impl.invm.InVMConnector;
 import org.hornetq.core.remoting.impl.invm.InVMRegistry;
 import org.hornetq.core.remoting.impl.invm.TransportConstants;

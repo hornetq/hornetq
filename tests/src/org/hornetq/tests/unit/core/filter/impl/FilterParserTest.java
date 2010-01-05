@@ -19,7 +19,7 @@ import java.util.Map;
 
 import junit.framework.Assert;
 
-import org.hornetq.SimpleString;
+import org.hornetq.api.SimpleString;
 import org.hornetq.core.filter.impl.FilterParser;
 import org.hornetq.core.filter.impl.Identifier;
 import org.hornetq.core.filter.impl.Operator;

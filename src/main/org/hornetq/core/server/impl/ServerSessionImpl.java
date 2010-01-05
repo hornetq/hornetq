@@ -13,7 +13,7 @@ x * Copyright 2009 Red Hat, Inc.
 
 package org.hornetq.core.server.impl;
 
-import static org.hornetq.core.management.NotificationType.CONSUMER_CREATED;
+import static org.hornetq.api.core.management.NotificationType.CONSUMER_CREATED;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -28,10 +28,10 @@ import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
-import org.hornetq.SimpleString;
+import org.hornetq.api.SimpleString;
+import org.hornetq.api.core.exception.HornetQException;
+import org.hornetq.api.core.management.client.ManagementHelper;
 import org.hornetq.core.client.impl.ClientMessageImpl;
-import org.hornetq.core.client.management.impl.ManagementHelper;
-import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.filter.impl.FilterImpl;
 import org.hornetq.core.journal.IOAsyncTask;

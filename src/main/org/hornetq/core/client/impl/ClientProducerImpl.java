@@ -16,13 +16,13 @@ package org.hornetq.core.client.impl;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.hornetq.SimpleString;
-import org.hornetq.core.buffers.HornetQBuffer;
-import org.hornetq.core.buffers.HornetQBuffers;
-import org.hornetq.core.exception.HornetQException;
+import org.hornetq.api.SimpleString;
+import org.hornetq.api.core.buffers.HornetQBuffer;
+import org.hornetq.api.core.buffers.HornetQBuffers;
+import org.hornetq.api.core.exception.HornetQException;
+import org.hornetq.api.core.message.Message;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.BodyEncoder;
-import org.hornetq.core.message.Message;
 import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.message.impl.MessageInternal;
 import org.hornetq.core.remoting.Channel;

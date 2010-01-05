@@ -15,7 +15,7 @@ package org.hornetq.core.asyncio;
 
 import java.nio.ByteBuffer;
 
-import org.hornetq.core.exception.HornetQException;
+import org.hornetq.api.core.exception.HornetQException;
 
 /**
  * 

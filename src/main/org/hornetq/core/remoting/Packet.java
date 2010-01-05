@@ -13,7 +13,7 @@
 
 package org.hornetq.core.remoting;
 
-import org.hornetq.core.buffers.HornetQBuffer;
+import org.hornetq.api.core.buffers.HornetQBuffer;
 
 /**
  * A Packet represents a pcaket of data transmitted over a connection.
@@ -53,7 +53,7 @@ public interface Packet
    byte getType();
 
    /**
-    * Encodes the packet and returns a {@link org.hornetq.core.buffers.HornetQBuffer} containing the data
+    * Encodes the packet and returns a {@link org.hornetq.api.core.buffers.HornetQBuffer} containing the data
     *
     * @param connection the connection
     * @return the buffer to encode to

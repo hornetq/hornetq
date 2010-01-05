@@ -13,7 +13,7 @@
 
 package org.hornetq.core.server.cluster;
 
-import org.hornetq.core.client.MessageHandler;
+import org.hornetq.api.core.client.MessageHandler;
 
 /**
  * A MessageFlowRecord

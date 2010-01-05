@@ -15,16 +15,16 @@ package org.hornetq.tests.integration.management;
 
 import junit.framework.Assert;
 
-import org.hornetq.SimpleString;
-import org.hornetq.core.client.management.impl.ManagementHelper;
-import org.hornetq.core.config.Configuration;
-import org.hornetq.core.config.ConfigurationImpl;
+import org.hornetq.api.SimpleString;
+import org.hornetq.api.core.config.Configuration;
+import org.hornetq.api.core.config.ConfigurationImpl;
+import org.hornetq.api.core.management.AddressControl;
+import org.hornetq.api.core.management.QueueControl;
+import org.hornetq.api.core.management.ResourceNames;
+import org.hornetq.api.core.management.client.ManagementHelper;
+import org.hornetq.api.core.server.HornetQ;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.management.AddressControl;
-import org.hornetq.core.management.QueueControl;
-import org.hornetq.core.management.ResourceNames;
 import org.hornetq.core.persistence.impl.nullpm.NullStorageManager;
-import org.hornetq.core.server.HornetQ;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.ServerMessage;

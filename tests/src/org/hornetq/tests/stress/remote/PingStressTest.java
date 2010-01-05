@@ -15,14 +15,14 @@ package org.hornetq.tests.stress.remote;
 
 import java.util.concurrent.CountDownLatch;
 
-import org.hornetq.core.client.ClientSession;
-import org.hornetq.core.client.ClientSessionFactory;
-import org.hornetq.core.client.ClientSessionFactoryImpl;
-import org.hornetq.core.config.Configuration;
-import org.hornetq.core.config.TransportConfiguration;
-import org.hornetq.core.exception.HornetQException;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.ClientSessionFactoryImpl;
+import org.hornetq.api.core.config.Configuration;
+import org.hornetq.api.core.config.TransportConfiguration;
+import org.hornetq.api.core.exception.HornetQException;
+import org.hornetq.api.core.interceptor.Interceptor;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.remoting.Interceptor;
 import org.hornetq.core.remoting.Packet;
 import org.hornetq.core.remoting.RemotingConnection;
 import org.hornetq.core.remoting.impl.wireformat.PacketImpl;

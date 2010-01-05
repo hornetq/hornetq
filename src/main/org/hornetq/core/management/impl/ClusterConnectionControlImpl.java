@@ -18,10 +18,10 @@ import java.util.Map;
 
 import javax.management.MBeanOperationInfo;
 
-import org.hornetq.Pair;
-import org.hornetq.core.config.cluster.ClusterConnectionConfiguration;
-import org.hornetq.core.management.AddressControl;
-import org.hornetq.core.management.ClusterConnectionControl;
+import org.hornetq.api.Pair;
+import org.hornetq.api.core.config.cluster.ClusterConnectionConfiguration;
+import org.hornetq.api.core.management.AddressControl;
+import org.hornetq.api.core.management.ClusterConnectionControl;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.server.cluster.ClusterConnection;
 import org.hornetq.utils.json.JSONArray;

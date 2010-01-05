@@ -15,7 +15,7 @@ package org.hornetq.tests.util;
 
 import java.util.ArrayList;
 
-import org.hornetq.core.config.FileConfiguration;
+import org.hornetq.api.core.config.FileConfiguration;
 import org.hornetq.core.journal.PreparedTransactionInfo;
 import org.hornetq.core.journal.RecordInfo;
 import org.hornetq.core.journal.impl.JournalImpl;

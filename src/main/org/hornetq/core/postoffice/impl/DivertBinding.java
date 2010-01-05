@@ -13,7 +13,7 @@
 
 package org.hornetq.core.postoffice.impl;
 
-import org.hornetq.SimpleString;
+import org.hornetq.api.SimpleString;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.BindingType;

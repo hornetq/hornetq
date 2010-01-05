@@ -22,9 +22,9 @@ import javax.security.auth.Subject;
 
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.security.CheckType;
-import org.hornetq.core.security.HornetQSecurityManager;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.server.HornetQComponent;
+import org.hornetq.spi.core.security.HornetQSecurityManager;
 import org.jboss.security.AuthenticationManager;
 import org.jboss.security.RealmMapping;
 import org.jboss.security.SimplePrincipal;

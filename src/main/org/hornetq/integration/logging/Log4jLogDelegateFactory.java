@@ -13,8 +13,8 @@
 
 package org.hornetq.integration.logging;
 
-import org.hornetq.core.logging.LogDelegate;
-import org.hornetq.core.logging.LogDelegateFactory;
+import org.hornetq.spi.core.logging.LogDelegate;
+import org.hornetq.spi.core.logging.LogDelegateFactory;
 
 /**
  * A {@link LogDelegateFactory} which creates {@link Log4jLogDelegate} instances.

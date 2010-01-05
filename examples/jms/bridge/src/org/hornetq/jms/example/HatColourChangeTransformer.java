@@ -13,7 +13,7 @@
 
 package org.hornetq.jms.example;
 
-import org.hornetq.SimpleString;
+import org.hornetq.api.SimpleString;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.cluster.Transformer;
 

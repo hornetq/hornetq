@@ -13,7 +13,7 @@
 
 package org.hornetq.core.security;
 
-import org.hornetq.SimpleString;
+import org.hornetq.api.SimpleString;
 import org.hornetq.core.server.ServerSession;
 
 /**

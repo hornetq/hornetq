@@ -13,7 +13,7 @@
 
 package org.hornetq.core.remoting;
 
-import org.hornetq.core.exception.HornetQException;
+import org.hornetq.api.core.exception.HornetQException;
 
 /**
  * A FailureListener notifies the user when a connection failure occurred.

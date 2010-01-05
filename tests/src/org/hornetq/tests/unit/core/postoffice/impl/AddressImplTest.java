@@ -14,7 +14,7 @@ package org.hornetq.tests.unit.core.postoffice.impl;
 
 import junit.framework.Assert;
 
-import org.hornetq.SimpleString;
+import org.hornetq.api.SimpleString;
 import org.hornetq.core.postoffice.Address;
 import org.hornetq.core.postoffice.impl.AddressImpl;
 import org.hornetq.tests.util.UnitTestCase;

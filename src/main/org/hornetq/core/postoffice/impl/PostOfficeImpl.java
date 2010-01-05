@@ -25,13 +25,13 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import org.hornetq.SimpleString;
-import org.hornetq.core.client.management.impl.ManagementHelper;
-import org.hornetq.core.exception.HornetQException;
+import org.hornetq.api.SimpleString;
+import org.hornetq.api.core.exception.HornetQException;
+import org.hornetq.api.core.management.NotificationType;
+import org.hornetq.api.core.management.client.ManagementHelper;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.management.NotificationType;
 import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.paging.PageTransactionInfo;
 import org.hornetq.core.paging.PagingManager;

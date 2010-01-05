@@ -24,12 +24,12 @@ import java.util.concurrent.Executor;
 
 import javax.transaction.xa.Xid;
 
-import org.hornetq.Pair;
-import org.hornetq.SimpleString;
-import org.hornetq.core.buffers.HornetQBuffer;
-import org.hornetq.core.buffers.HornetQBuffers;
-import org.hornetq.core.config.Configuration;
-import org.hornetq.core.exception.HornetQException;
+import org.hornetq.api.Pair;
+import org.hornetq.api.SimpleString;
+import org.hornetq.api.core.buffers.HornetQBuffer;
+import org.hornetq.api.core.buffers.HornetQBuffers;
+import org.hornetq.api.core.config.Configuration;
+import org.hornetq.api.core.exception.HornetQException;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.journal.EncodingSupport;
 import org.hornetq.core.journal.IOAsyncTask;
@@ -361,7 +361,7 @@ public class JournalStorageManager implements StorageManager
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.persistence.StorageManager#pageWrite(org.hornetq.utils.SimpleString, int, org.hornetq.core.buffers.ChannelBuffer)
+    * @see org.hornetq.core.persistence.StorageManager#pageWrite(org.hornetq.utils.SimpleString, int, org.hornetq.api.core.buffers.ChannelBuffer)
     */
    public void pageWrite(final PagedMessage message, final int pageNumber)
    {
@@ -1819,7 +1819,7 @@ public class JournalStorageManager implements StorageManager
       }
 
       /* (non-Javadoc)
-       * @see org.hornetq.core.journal.EncodingSupport#decode(org.hornetq.core.remoting.spi.HornetQBuffer)
+       * @see org.hornetq.core.journal.EncodingSupport#decode(org.hornetq.spi.core.remoting.HornetQBuffer)
        */
       public void decode(final HornetQBuffer buffer)
       {
@@ -1827,7 +1827,7 @@ public class JournalStorageManager implements StorageManager
       }
 
       /* (non-Javadoc)
-       * @see org.hornetq.core.journal.EncodingSupport#encode(org.hornetq.core.remoting.spi.HornetQBuffer)
+       * @see org.hornetq.core.journal.EncodingSupport#encode(org.hornetq.spi.core.remoting.HornetQBuffer)
        */
       public void encode(final HornetQBuffer buffer)
       {

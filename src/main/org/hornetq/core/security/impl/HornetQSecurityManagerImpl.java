@@ -21,8 +21,8 @@ import java.util.Set;
 
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.security.CheckType;
-import org.hornetq.core.security.HornetQSecurityManager;
 import org.hornetq.core.security.Role;
+import org.hornetq.spi.core.security.HornetQSecurityManager;
 
 /**
  * A basic implementation of the HornetQSecurityManager. This can be used within an appserver and be deployed by

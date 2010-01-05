@@ -15,11 +15,11 @@ package org.hornetq.jms.server.management;
 
 import java.util.List;
 
-import org.hornetq.jms.HornetQConnectionFactory;
-import org.hornetq.jms.HornetQQueue;
-import org.hornetq.jms.HornetQTopic;
-import org.hornetq.jms.management.JMSServerControl;
-import org.hornetq.jms.server.JMSServerManager;
+import org.hornetq.api.jms.HornetQConnectionFactory;
+import org.hornetq.api.jms.HornetQQueue;
+import org.hornetq.api.jms.HornetQTopic;
+import org.hornetq.api.jms.management.JMSServerControl;
+import org.hornetq.api.jms.server.JMSServerManager;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>

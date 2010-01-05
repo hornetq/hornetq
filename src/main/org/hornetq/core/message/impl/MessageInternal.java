@@ -15,10 +15,10 @@ package org.hornetq.core.message.impl;
 
 import java.io.InputStream;
 
-import org.hornetq.core.buffers.HornetQBuffer;
-import org.hornetq.core.exception.HornetQException;
+import org.hornetq.api.core.buffers.HornetQBuffer;
+import org.hornetq.api.core.exception.HornetQException;
+import org.hornetq.api.core.message.Message;
 import org.hornetq.core.message.BodyEncoder;
-import org.hornetq.core.message.Message;
 
 /**
  * A MessageInternal

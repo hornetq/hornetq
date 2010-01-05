@@ -15,8 +15,8 @@ package org.hornetq.core.client.impl;
 
 import java.io.OutputStream;
 
-import org.hornetq.core.buffers.HornetQBuffer;
-import org.hornetq.core.exception.HornetQException;
+import org.hornetq.api.core.buffers.HornetQBuffer;
+import org.hornetq.api.core.exception.HornetQException;
 
 /**
  * A LargeMessageBufferInternal

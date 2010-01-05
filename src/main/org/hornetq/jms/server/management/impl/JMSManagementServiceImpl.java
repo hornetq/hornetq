@@ -17,24 +17,24 @@ import java.util.List;
 
 import javax.management.ObjectName;
 
-import org.hornetq.core.management.AddressControl;
-import org.hornetq.core.management.QueueControl;
-import org.hornetq.core.management.ResourceNames;
+import org.hornetq.api.core.management.AddressControl;
+import org.hornetq.api.core.management.QueueControl;
+import org.hornetq.api.core.management.ResourceNames;
+import org.hornetq.api.jms.HornetQConnectionFactory;
+import org.hornetq.api.jms.HornetQQueue;
+import org.hornetq.api.jms.HornetQTopic;
+import org.hornetq.api.jms.management.ConnectionFactoryControl;
+import org.hornetq.api.jms.management.JMSQueueControl;
+import org.hornetq.api.jms.management.JMSServerControl;
+import org.hornetq.api.jms.management.TopicControl;
+import org.hornetq.api.jms.server.JMSServerManager;
 import org.hornetq.core.messagecounter.MessageCounter;
 import org.hornetq.core.messagecounter.MessageCounterManager;
 import org.hornetq.core.server.management.ManagementService;
-import org.hornetq.jms.HornetQConnectionFactory;
-import org.hornetq.jms.HornetQQueue;
-import org.hornetq.jms.HornetQTopic;
-import org.hornetq.jms.management.ConnectionFactoryControl;
-import org.hornetq.jms.management.JMSQueueControl;
-import org.hornetq.jms.management.JMSServerControl;
-import org.hornetq.jms.management.TopicControl;
 import org.hornetq.jms.management.impl.JMSConnectionFactoryControlImpl;
 import org.hornetq.jms.management.impl.JMSQueueControlImpl;
 import org.hornetq.jms.management.impl.JMSServerControlImpl;
 import org.hornetq.jms.management.impl.JMSTopicControlImpl;
-import org.hornetq.jms.server.JMSServerManager;
 import org.hornetq.jms.server.management.JMSManagementService;
 
 /*

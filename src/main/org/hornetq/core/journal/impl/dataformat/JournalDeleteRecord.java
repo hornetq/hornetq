@@ -13,7 +13,7 @@
 
 package org.hornetq.core.journal.impl.dataformat;
 
-import org.hornetq.core.buffers.HornetQBuffer;
+import org.hornetq.api.core.buffers.HornetQBuffer;
 import org.hornetq.core.journal.impl.JournalImpl;
 
 /**
@@ -37,7 +37,7 @@ public class JournalDeleteRecord extends JournalInternalRecord
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.journal.EncodingSupport#encode(org.hornetq.core.buffers.HornetQBuffer)
+    * @see org.hornetq.core.journal.EncodingSupport#encode(org.hornetq.api.core.buffers.HornetQBuffer)
     */
    public void encode(final HornetQBuffer buffer)
    {

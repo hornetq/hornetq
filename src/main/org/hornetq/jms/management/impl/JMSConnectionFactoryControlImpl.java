@@ -19,10 +19,10 @@ import javax.management.MBeanInfo;
 import javax.management.NotCompliantMBeanException;
 import javax.management.StandardMBean;
 
+import org.hornetq.api.jms.HornetQConnectionFactory;
+import org.hornetq.api.jms.management.ConnectionFactoryControl;
+import org.hornetq.api.jms.management.JMSQueueControl;
 import org.hornetq.core.management.impl.MBeanInfoHelper;
-import org.hornetq.jms.HornetQConnectionFactory;
-import org.hornetq.jms.management.ConnectionFactoryControl;
-import org.hornetq.jms.management.JMSQueueControl;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>

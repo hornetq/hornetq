@@ -15,7 +15,7 @@ package org.hornetq.core.transaction;
 
 import javax.transaction.xa.Xid;
 
-import org.hornetq.core.exception.HornetQException;
+import org.hornetq.api.core.exception.HornetQException;
 
 /**
  * A HornetQ internal transaction

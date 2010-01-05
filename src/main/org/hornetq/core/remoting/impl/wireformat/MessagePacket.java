@@ -13,8 +13,8 @@
 
 package org.hornetq.core.remoting.impl.wireformat;
 
+import org.hornetq.api.core.message.Message;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.message.Message;
 import org.hornetq.core.message.impl.MessageInternal;
 
 /**

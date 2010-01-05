@@ -12,7 +12,7 @@
  */
 package org.hornetq.core.server.group.impl;
 
-import org.hornetq.SimpleString;
+import org.hornetq.api.SimpleString;
 
 /**
  * A remote Grouping handler configuration

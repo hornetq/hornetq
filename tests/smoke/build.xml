@@ -683,7 +683,7 @@
 
    <target name="display-warnings-and-errors">
 
-      <java classname="org.hornetq.jms.tests.tools.ant.DisplayWarningsAndErrors">
+      <java classname="org.hornetq.api.jms.tests.tools.ant.DisplayWarningsAndErrors">
          <arg value="${jboss.home}/server/${jboss.configuration}/log/server.log"/>
          <arg value="WARN  [org.hornetq.core.plugin.JDBCPersistenceManager] "/>
          <arg value="ejb3.deployer/"/> <!-- EJB3 doesn't deploy with java 1.4 -->
@@ -705,7 +705,7 @@
 
    <target name="fail-on-serialization-debug-output">
 
-      <java classname="org.hornetq.jms.tests.tools.ant.FailOnSerializationDebugOutput">
+      <java classname="org.hornetq.api.jms.tests.tools.ant.FailOnSerializationDebugOutput">
          <arg value="${jboss.home}/server/${jboss.configuration}/log/server.log"/>
          <classpath>
             <pathelement location="../output/classes"/>
@@ -716,7 +716,7 @@
 
    <target name="report">
 
-      <java classname="org.hornetq.jms.tests.tools.ant.GenerateSmokeReport">
+      <java classname="org.hornetq.api.jms.tests.tools.ant.GenerateSmokeReport">
          <arg value="-inputfile"/>
          <arg value="./output/smoke.log"/>
          <arg value="-outputdir"/>

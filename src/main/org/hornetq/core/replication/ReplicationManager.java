@@ -15,8 +15,8 @@ package org.hornetq.core.replication;
 
 import java.util.Set;
 
-import org.hornetq.SimpleString;
-import org.hornetq.core.exception.HornetQException;
+import org.hornetq.api.SimpleString;
+import org.hornetq.api.core.exception.HornetQException;
 import org.hornetq.core.journal.EncodingSupport;
 import org.hornetq.core.journal.JournalLoadInformation;
 import org.hornetq.core.paging.PagedMessage;

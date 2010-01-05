@@ -240,7 +240,7 @@
 			com.arjuna.ats.internal.jta.transaction.jts.UserTransactionImple
 			-->
 			<property name="com.arjuna.ats.jta.recovery.XAResourceRecovery.HORNETQ1"
-                   value="org.hornetq.jms.server.recovery.HornetQXAResourceRecovery;org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"/>
+                   value="org.hornetq.api.jms.server.recovery.HornetQXAResourceRecovery;org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"/>
     </properties>
     <properties depends="arjuna,txoj,jta" name="recoverymanager">
         <!--

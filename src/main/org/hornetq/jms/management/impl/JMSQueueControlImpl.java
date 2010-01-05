@@ -18,17 +18,17 @@ import java.util.Map;
 import javax.management.MBeanInfo;
 import javax.management.StandardMBean;
 
-import org.hornetq.core.exception.HornetQException;
+import org.hornetq.api.core.exception.HornetQException;
+import org.hornetq.api.core.management.MessageCounterInfo;
+import org.hornetq.api.core.management.QueueControl;
+import org.hornetq.api.jms.HornetQQueue;
+import org.hornetq.api.jms.management.JMSQueueControl;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.management.MessageCounterInfo;
-import org.hornetq.core.management.QueueControl;
 import org.hornetq.core.management.impl.MBeanInfoHelper;
 import org.hornetq.core.messagecounter.MessageCounter;
 import org.hornetq.core.messagecounter.impl.MessageCounterHelper;
-import org.hornetq.jms.HornetQQueue;
 import org.hornetq.jms.client.HornetQMessage;
 import org.hornetq.jms.client.SelectorTranslator;
-import org.hornetq.jms.management.JMSQueueControl;
 import org.hornetq.utils.json.JSONArray;
 import org.hornetq.utils.json.JSONObject;
 

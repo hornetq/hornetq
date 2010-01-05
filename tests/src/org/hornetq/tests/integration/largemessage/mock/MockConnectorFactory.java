@@ -19,10 +19,10 @@ import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 
-import org.hornetq.core.remoting.spi.BufferHandler;
-import org.hornetq.core.remoting.spi.ConnectionLifeCycleListener;
-import org.hornetq.core.remoting.spi.Connector;
-import org.hornetq.core.remoting.spi.ConnectorFactory;
+import org.hornetq.spi.core.remoting.BufferHandler;
+import org.hornetq.spi.core.remoting.ConnectionLifeCycleListener;
+import org.hornetq.spi.core.remoting.Connector;
+import org.hornetq.spi.core.remoting.ConnectorFactory;
 
 /**
  * A MockConnectorFactory
@@ -46,7 +46,7 @@ public class MockConnectorFactory implements ConnectorFactory
    // Public --------------------------------------------------------
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.remoting.spi.ConnectorFactory#createConnector(java.util.Map, org.hornetq.core.remoting.spi.BufferHandler, org.hornetq.core.remoting.spi.ConnectionLifeCycleListener)
+    * @see org.hornetq.spi.core.remoting.ConnectorFactory#createConnector(java.util.Map, org.hornetq.spi.core.remoting.BufferHandler, org.hornetq.spi.core.remoting.ConnectionLifeCycleListener)
     */
    public Connector createConnector(final Map<String, Object> configuration,
                                     final BufferHandler handler,
@@ -59,7 +59,7 @@ public class MockConnectorFactory implements ConnectorFactory
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.remoting.spi.ConnectorFactory#getAllowableProperties()
+    * @see org.hornetq.spi.core.remoting.ConnectorFactory#getAllowableProperties()
     */
    public Set<String> getAllowableProperties()
    {

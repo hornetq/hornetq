@@ -15,7 +15,7 @@ package org.hornetq.core.persistence.impl.journal;
 
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.hornetq.core.buffers.HornetQBuffer;
+import org.hornetq.api.core.buffers.HornetQBuffer;
 import org.hornetq.core.journal.EncodingSupport;
 import org.hornetq.core.journal.Journal;
 import org.hornetq.core.logging.Logger;

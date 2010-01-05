@@ -14,9 +14,9 @@ package org.hornetq.tests.integration.jms.bridge;
 
 import junit.framework.Assert;
 
+import org.hornetq.api.jms.bridge.JMSBridgeImpl;
+import org.hornetq.api.jms.bridge.QualityOfServiceMode;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.jms.bridge.QualityOfServiceMode;
-import org.hornetq.jms.bridge.impl.JMSBridgeImpl;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>

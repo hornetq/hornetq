@@ -13,19 +13,18 @@
 
 package org.hornetq.core.security.impl;
 
-import static org.hornetq.core.management.NotificationType.SECURITY_AUTHENTICATION_VIOLATION;
+import static org.hornetq.api.core.management.NotificationType.SECURITY_AUTHENTICATION_VIOLATION;
 
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import org.hornetq.SimpleString;
-import org.hornetq.core.client.management.impl.ManagementHelper;
-import org.hornetq.core.exception.HornetQException;
+import org.hornetq.api.SimpleString;
+import org.hornetq.api.core.exception.HornetQException;
+import org.hornetq.api.core.management.NotificationType;
+import org.hornetq.api.core.management.client.ManagementHelper;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.management.NotificationType;
 import org.hornetq.core.security.CheckType;
-import org.hornetq.core.security.HornetQSecurityManager;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.security.SecurityStore;
 import org.hornetq.core.server.ServerSession;
@@ -33,6 +32,7 @@ import org.hornetq.core.server.management.Notification;
 import org.hornetq.core.server.management.NotificationService;
 import org.hornetq.core.settings.HierarchicalRepository;
 import org.hornetq.core.settings.HierarchicalRepositoryChangeListener;
+import org.hornetq.spi.core.security.HornetQSecurityManager;
 import org.hornetq.utils.ConcurrentHashSet;
 import org.hornetq.utils.TypedProperties;
 

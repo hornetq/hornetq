@@ -18,7 +18,7 @@ import java.util.UUID;
 
 import javax.transaction.xa.Xid;
 
-import org.hornetq.SimpleString;
+import org.hornetq.api.SimpleString;
 import org.hornetq.core.transaction.impl.XidImpl;
 
 /**

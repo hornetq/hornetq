@@ -18,11 +18,11 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import org.hornetq.SimpleString;
-import org.hornetq.core.buffers.HornetQBuffer;
-import org.hornetq.core.client.SessionFailureListener;
+import org.hornetq.api.SimpleString;
+import org.hornetq.api.core.buffers.HornetQBuffer;
+import org.hornetq.api.core.client.SessionFailureListener;
+import org.hornetq.api.core.exception.HornetQException;
 import org.hornetq.core.client.impl.FailoverManager;
-import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.journal.EncodingSupport;
 import org.hornetq.core.journal.JournalLoadInformation;
 import org.hornetq.core.logging.Logger;

@@ -18,8 +18,8 @@ import java.util.Set;
 
 import javax.management.MBeanServer;
 
-import org.hornetq.SimpleString;
-import org.hornetq.core.config.Configuration;
+import org.hornetq.api.SimpleString;
+import org.hornetq.api.core.config.Configuration;
 import org.hornetq.core.management.impl.HornetQServerControlImpl;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.PostOffice;
@@ -29,7 +29,6 @@ import org.hornetq.core.remoting.impl.wireformat.CreateSessionResponseMessage;
 import org.hornetq.core.remoting.impl.wireformat.ReattachSessionResponseMessage;
 import org.hornetq.core.remoting.server.RemotingService;
 import org.hornetq.core.replication.ReplicationEndpoint;
-import org.hornetq.core.security.HornetQSecurityManager;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.server.cluster.ClusterManager;
 import org.hornetq.core.server.group.GroupingHandler;
@@ -38,6 +37,7 @@ import org.hornetq.core.settings.HierarchicalRepository;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.core.transaction.ResourceManager;
 import org.hornetq.core.version.Version;
+import org.hornetq.spi.core.security.HornetQSecurityManager;
 import org.hornetq.utils.ExecutorFactory;
 
 /**

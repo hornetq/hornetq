@@ -20,10 +20,10 @@ import javax.jms.Queue;
 import javax.jms.Session;
 import javax.naming.InitialContext;
 
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.SendAcknowledgementHandler;
+import org.hornetq.api.core.message.Message;
 import org.hornetq.common.example.HornetQExample;
-import org.hornetq.core.client.ClientSession;
-import org.hornetq.core.client.SendAcknowledgementHandler;
-import org.hornetq.core.message.Message;
 import org.hornetq.jms.client.HornetQSession;
 
 /**

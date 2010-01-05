@@ -13,11 +13,11 @@
 
 package org.hornetq.tests.integration.management;
 
-import org.hornetq.core.client.ClientMessage;
-import org.hornetq.core.client.ClientRequestor;
-import org.hornetq.core.client.ClientSession;
-import org.hornetq.core.client.management.impl.ManagementHelper;
-import org.hornetq.core.config.ConfigurationImpl;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientRequestor;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.config.ConfigurationImpl;
+import org.hornetq.api.core.management.client.ManagementHelper;
 
 /**
  * A MBeanUsingCoreMessage

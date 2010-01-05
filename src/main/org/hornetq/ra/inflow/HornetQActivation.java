@@ -29,12 +29,12 @@ import javax.resource.spi.endpoint.MessageEndpointFactory;
 import javax.resource.spi.work.Work;
 import javax.resource.spi.work.WorkManager;
 
-import org.hornetq.SimpleString;
-import org.hornetq.core.client.ClientSession;
+import org.hornetq.api.SimpleString;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.jms.HornetQDestination;
+import org.hornetq.api.jms.HornetQQueue;
+import org.hornetq.api.jms.HornetQTopic;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.jms.HornetQDestination;
-import org.hornetq.jms.HornetQQueue;
-import org.hornetq.jms.HornetQTopic;
 import org.hornetq.ra.HornetQResourceAdapter;
 import org.hornetq.ra.Util;
 
@@ -97,7 +97,7 @@ public class HornetQActivation
 
    private final List<HornetQMessageHandler> handlers = new ArrayList<HornetQMessageHandler>();
 
-   private org.hornetq.jms.HornetQConnectionFactory factory;
+   private org.hornetq.api.jms.HornetQConnectionFactory factory;
 
    static
    {

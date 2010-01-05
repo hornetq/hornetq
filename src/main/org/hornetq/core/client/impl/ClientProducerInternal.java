@@ -13,7 +13,7 @@
 
 package org.hornetq.core.client.impl;
 
-import org.hornetq.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientProducer;
 
 /**
  * 

@@ -19,11 +19,11 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
-import org.hornetq.core.client.ClientSessionFactory;
-import org.hornetq.core.client.ClientSessionFactoryImpl;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.ClientSessionFactoryImpl;
+import org.hornetq.api.core.config.TransportConfiguration;
+import org.hornetq.api.core.exception.HornetQException;
 import org.hornetq.core.client.impl.FailoverManagerImpl;
-import org.hornetq.core.config.TransportConfiguration;
-import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.remoting.Channel;
 import org.hornetq.core.remoting.Packet;
 import org.hornetq.core.remoting.RemotingConnection;

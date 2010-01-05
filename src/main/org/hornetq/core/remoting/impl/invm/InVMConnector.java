@@ -17,13 +17,13 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executor;
 
-import org.hornetq.core.exception.HornetQException;
+import org.hornetq.api.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.remoting.spi.Acceptor;
-import org.hornetq.core.remoting.spi.BufferHandler;
-import org.hornetq.core.remoting.spi.Connection;
-import org.hornetq.core.remoting.spi.ConnectionLifeCycleListener;
-import org.hornetq.core.remoting.spi.Connector;
+import org.hornetq.spi.core.remoting.Acceptor;
+import org.hornetq.spi.core.remoting.BufferHandler;
+import org.hornetq.spi.core.remoting.Connection;
+import org.hornetq.spi.core.remoting.ConnectionLifeCycleListener;
+import org.hornetq.spi.core.remoting.Connector;
 import org.hornetq.utils.ConfigurationHelper;
 import org.hornetq.utils.OrderedExecutorFactory;
 

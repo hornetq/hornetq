@@ -13,7 +13,7 @@
 
 package org.hornetq.tests.integration.cluster.failover;
 
-import org.hornetq.core.config.TransportConfiguration;
+import org.hornetq.api.core.config.TransportConfiguration;
 
 /**
  * A NettyAsynchronousFailoverTest

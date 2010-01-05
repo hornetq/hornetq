@@ -30,7 +30,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.hornetq.SimpleString;
+import org.hornetq.api.SimpleString;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.list.PriorityLinkedList;
 import org.hornetq.core.list.impl.PriorityLinkedListImpl;

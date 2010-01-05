@@ -13,8 +13,8 @@
 
 package org.hornetq.core.server.cluster.impl;
 
-import static org.hornetq.core.management.NotificationType.CONSUMER_CLOSED;
-import static org.hornetq.core.management.NotificationType.CONSUMER_CREATED;
+import static org.hornetq.api.core.management.NotificationType.CONSUMER_CLOSED;
+import static org.hornetq.api.core.management.NotificationType.CONSUMER_CREATED;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -24,16 +24,16 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ScheduledExecutorService;
 
-import org.hornetq.Pair;
-import org.hornetq.SimpleString;
-import org.hornetq.core.client.ClientMessage;
-import org.hornetq.core.client.management.impl.ManagementHelper;
+import org.hornetq.api.Pair;
+import org.hornetq.api.SimpleString;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.config.TransportConfiguration;
+import org.hornetq.api.core.management.NotificationType;
+import org.hornetq.api.core.management.client.ManagementHelper;
 import org.hornetq.core.cluster.DiscoveryEntry;
 import org.hornetq.core.cluster.DiscoveryGroup;
 import org.hornetq.core.cluster.DiscoveryListener;
-import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.management.NotificationType;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.Bindings;
 import org.hornetq.core.postoffice.PostOffice;

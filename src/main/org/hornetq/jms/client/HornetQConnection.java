@@ -39,11 +39,11 @@ import javax.jms.XASession;
 import javax.jms.XATopicConnection;
 import javax.jms.XATopicSession;
 
-import org.hornetq.SimpleString;
-import org.hornetq.core.client.ClientSession;
-import org.hornetq.core.client.ClientSessionFactory;
-import org.hornetq.core.client.SessionFailureListener;
-import org.hornetq.core.exception.HornetQException;
+import org.hornetq.api.SimpleString;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.SessionFailureListener;
+import org.hornetq.api.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.version.Version;
 import org.hornetq.utils.UUIDGenerator;

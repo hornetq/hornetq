@@ -17,10 +17,10 @@ import java.util.Set;
 
 import junit.framework.Assert;
 
-import org.hornetq.SimpleString;
+import org.hornetq.api.SimpleString;
+import org.hornetq.api.core.message.Message;
 import org.hornetq.core.client.impl.ClientMessageImpl;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.message.Message;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
 

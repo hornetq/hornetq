@@ -23,12 +23,12 @@ import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
+import org.hornetq.api.core.config.TransportConfiguration;
+import org.hornetq.api.jms.HornetQConnectionFactory;
+import org.hornetq.api.jms.HornetQQueue;
 import org.hornetq.common.example.HornetQExample;
-import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.integration.transports.netty.NettyConnectorFactory;
 import org.hornetq.integration.transports.netty.TransportConstants;
-import org.hornetq.jms.HornetQConnectionFactory;
-import org.hornetq.jms.HornetQQueue;
 
 /**
  * 

@@ -19,8 +19,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import org.hornetq.Pair;
-import org.hornetq.SimpleString;
+import org.hornetq.api.Pair;
+import org.hornetq.api.SimpleString;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.DuplicateIDCache;

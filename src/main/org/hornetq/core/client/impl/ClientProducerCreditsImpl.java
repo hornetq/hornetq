@@ -15,7 +15,7 @@ package org.hornetq.core.client.impl;
 
 import java.util.concurrent.Semaphore;
 
-import org.hornetq.SimpleString;
+import org.hornetq.api.SimpleString;
 import org.hornetq.core.logging.Logger;
 
 /**

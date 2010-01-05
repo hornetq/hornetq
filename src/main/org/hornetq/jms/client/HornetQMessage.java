@@ -33,16 +33,16 @@ import javax.jms.MessageFormatException;
 import javax.jms.MessageNotReadableException;
 import javax.jms.MessageNotWriteableException;
 
-import org.hornetq.SimpleString;
-import org.hornetq.core.buffers.HornetQBuffer;
-import org.hornetq.core.client.ClientMessage;
-import org.hornetq.core.client.ClientSession;
+import org.hornetq.api.SimpleString;
+import org.hornetq.api.core.buffers.HornetQBuffer;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.exception.HornetQException;
+import org.hornetq.api.core.message.PropertyConversionException;
+import org.hornetq.api.jms.HornetQDestination;
 import org.hornetq.core.client.impl.ClientMessageImpl;
-import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.message.PropertyConversionException;
 import org.hornetq.core.message.impl.MessageImpl;
-import org.hornetq.jms.HornetQDestination;
 
 /**
  * HornetQ implementation of a JMS Message.

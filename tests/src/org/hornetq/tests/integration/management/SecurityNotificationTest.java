@@ -13,32 +13,32 @@
 
 package org.hornetq.tests.integration.management;
 
-import static org.hornetq.core.management.NotificationType.SECURITY_AUTHENTICATION_VIOLATION;
-import static org.hornetq.core.management.NotificationType.SECURITY_PERMISSION_VIOLATION;
+import static org.hornetq.api.core.management.NotificationType.SECURITY_AUTHENTICATION_VIOLATION;
+import static org.hornetq.api.core.management.NotificationType.SECURITY_PERMISSION_VIOLATION;
 
 import java.util.HashSet;
 import java.util.Set;
 
 import junit.framework.Assert;
 
-import org.hornetq.SimpleString;
-import org.hornetq.core.client.ClientConsumer;
-import org.hornetq.core.client.ClientMessage;
-import org.hornetq.core.client.ClientSession;
-import org.hornetq.core.client.ClientSessionFactory;
-import org.hornetq.core.client.ClientSessionFactoryImpl;
-import org.hornetq.core.client.management.impl.ManagementHelper;
-import org.hornetq.core.config.Configuration;
-import org.hornetq.core.config.ConfigurationImpl;
-import org.hornetq.core.config.TransportConfiguration;
-import org.hornetq.core.exception.HornetQException;
+import org.hornetq.api.SimpleString;
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.ClientSessionFactoryImpl;
+import org.hornetq.api.core.config.Configuration;
+import org.hornetq.api.core.config.ConfigurationImpl;
+import org.hornetq.api.core.config.TransportConfiguration;
+import org.hornetq.api.core.exception.HornetQException;
+import org.hornetq.api.core.management.client.ManagementHelper;
+import org.hornetq.api.core.server.HornetQ;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.security.CheckType;
-import org.hornetq.core.security.HornetQSecurityManager;
 import org.hornetq.core.security.Role;
-import org.hornetq.core.server.HornetQ;
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.spi.core.security.HornetQSecurityManager;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
 

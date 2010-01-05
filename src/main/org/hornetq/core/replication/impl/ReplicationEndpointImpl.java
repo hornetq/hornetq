@@ -16,9 +16,9 @@ package org.hornetq.core.replication.impl;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import org.hornetq.SimpleString;
-import org.hornetq.core.config.Configuration;
-import org.hornetq.core.exception.HornetQException;
+import org.hornetq.api.SimpleString;
+import org.hornetq.api.core.config.Configuration;
+import org.hornetq.api.core.exception.HornetQException;
 import org.hornetq.core.journal.Journal;
 import org.hornetq.core.journal.JournalLoadInformation;
 import org.hornetq.core.logging.Logger;

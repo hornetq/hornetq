@@ -21,10 +21,10 @@ import javax.jms.DeliveryMode;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
 
-import org.hornetq.Pair;
-import org.hornetq.core.client.ClientSessionFactoryImpl;
-import org.hornetq.core.config.TransportConfiguration;
-import org.hornetq.jms.HornetQConnectionFactory;
+import org.hornetq.api.Pair;
+import org.hornetq.api.core.client.ClientSessionFactoryImpl;
+import org.hornetq.api.core.config.TransportConfiguration;
+import org.hornetq.api.jms.HornetQConnectionFactory;
 
 /**
  * Safeguards for previously detected TCK failures.

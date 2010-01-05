@@ -17,9 +17,9 @@ import java.util.concurrent.TimeUnit;
 
 import junit.framework.Assert;
 
-import org.hornetq.SimpleString;
-import org.hornetq.core.client.management.impl.ManagementHelper;
-import org.hornetq.core.management.NotificationType;
+import org.hornetq.api.SimpleString;
+import org.hornetq.api.core.management.NotificationType;
+import org.hornetq.api.core.management.client.ManagementHelper;
 import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.server.group.GroupingHandler;
 import org.hornetq.core.server.group.impl.GroupBinding;

@@ -20,9 +20,9 @@ import java.util.Set;
 
 import javax.naming.InitialContext;
 
+import org.hornetq.api.jms.server.JMSServerManager;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.server.HornetQServer;
-import org.hornetq.jms.server.JMSServerManager;
 
 /**
  * The remote interface exposed by TestServer.

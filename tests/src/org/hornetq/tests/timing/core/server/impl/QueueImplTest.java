@@ -21,12 +21,11 @@ import java.util.concurrent.TimeUnit;
 
 import junit.framework.Assert;
 
-import org.hornetq.SimpleString;
+import org.hornetq.api.SimpleString;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.Consumer;
 import org.hornetq.core.server.HandleStatus;
 import org.hornetq.core.server.MessageReference;
-import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.impl.QueueImpl;
 import org.hornetq.tests.unit.core.server.impl.fakes.FakeConsumer;
 import org.hornetq.tests.util.UnitTestCase;

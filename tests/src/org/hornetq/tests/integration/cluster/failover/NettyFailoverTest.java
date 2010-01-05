@@ -16,7 +16,7 @@ package org.hornetq.tests.integration.cluster.failover;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.hornetq.core.config.TransportConfiguration;
+import org.hornetq.api.core.config.TransportConfiguration;
 import org.hornetq.integration.transports.netty.TransportConstants;
 
 /**

@@ -13,8 +13,8 @@
 
 package org.hornetq.core.client.impl;
 
-import org.hornetq.core.buffers.HornetQBuffer;
-import org.hornetq.core.client.ClientMessage;
+import org.hornetq.api.core.buffers.HornetQBuffer;
+import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.core.message.impl.MessageInternal;
 
 /**

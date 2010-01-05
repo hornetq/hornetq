@@ -25,9 +25,9 @@ import javax.jms.TextMessage;
 import javax.naming.Reference;
 import javax.naming.Referenceable;
 
-import org.hornetq.jms.HornetQConnectionFactory;
-import org.hornetq.jms.HornetQQueue;
-import org.hornetq.jms.HornetQTopic;
+import org.hornetq.api.jms.HornetQConnectionFactory;
+import org.hornetq.api.jms.HornetQQueue;
+import org.hornetq.api.jms.HornetQTopic;
 import org.hornetq.jms.referenceable.ConnectionFactoryObjectFactory;
 import org.hornetq.jms.referenceable.DestinationObjectFactory;
 import org.hornetq.jms.tests.util.ProxyAssertSupport;

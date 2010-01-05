@@ -2,7 +2,7 @@
 
 <server>
 
-   <mbean code="org.hornetq.jms.server.destination.QueueService"
+   <mbean code="org.hornetq.api.jms.server.destination.QueueService"
       name="hornetq.destination:service=Queue,name=DistributedSmokeTestQueue"
       xmbean-dd="xmdesc/Queue-xmbean.xml">
       <attribute name="Clustered">true</attribute>

@@ -25,7 +25,7 @@ import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
-import org.hornetq.jms.HornetQTopic;
+import org.hornetq.api.jms.HornetQTopic;
 import org.hornetq.jms.tests.message.SimpleJMSMessage;
 import org.hornetq.jms.tests.message.SimpleJMSTextMessage;
 import org.hornetq.jms.tests.util.ProxyAssertSupport;

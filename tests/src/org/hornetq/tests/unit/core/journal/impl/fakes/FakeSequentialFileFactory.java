@@ -19,9 +19,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.hornetq.api.core.buffers.HornetQBuffer;
+import org.hornetq.api.core.buffers.HornetQBuffers;
 import org.hornetq.core.asyncio.BufferCallback;
-import org.hornetq.core.buffers.HornetQBuffer;
-import org.hornetq.core.buffers.HornetQBuffers;
 import org.hornetq.core.journal.EncodingSupport;
 import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.journal.SequentialFile;
@@ -605,7 +605,7 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
       }
 
       /* (non-Javadoc)
-       * @see org.hornetq.core.journal.SequentialFile#write(org.hornetq.core.remoting.spi.HornetQBuffer, boolean, org.hornetq.core.journal.IOCallback)
+       * @see org.hornetq.core.journal.SequentialFile#write(org.hornetq.spi.core.remoting.HornetQBuffer, boolean, org.hornetq.core.journal.IOCallback)
        */
       public void write(final HornetQBuffer bytes, final boolean sync, final IOAsyncTask callback) throws Exception
       {
@@ -616,7 +616,7 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
       }
 
       /* (non-Javadoc)
-       * @see org.hornetq.core.journal.SequentialFile#write(org.hornetq.core.remoting.spi.HornetQBuffer, boolean)
+       * @see org.hornetq.core.journal.SequentialFile#write(org.hornetq.spi.core.remoting.HornetQBuffer, boolean)
        */
       public void write(final HornetQBuffer bytes, final boolean sync) throws Exception
       {

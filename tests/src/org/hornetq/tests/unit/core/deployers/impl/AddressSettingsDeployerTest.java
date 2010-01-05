@@ -15,7 +15,7 @@ package org.hornetq.tests.unit.core.deployers.impl;
 
 import junit.framework.Assert;
 
-import org.hornetq.SimpleString;
+import org.hornetq.api.SimpleString;
 import org.hornetq.core.deployers.DeploymentManager;
 import org.hornetq.core.deployers.impl.AddressSettingsDeployer;
 import org.hornetq.core.settings.HierarchicalRepository;

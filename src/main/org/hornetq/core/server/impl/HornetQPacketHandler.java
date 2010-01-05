@@ -18,7 +18,7 @@ import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.CREATE_QUEUE;
 import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.CREATE_REPLICATION;
 import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.REATTACH_SESSION;
 
-import org.hornetq.core.exception.HornetQException;
+import org.hornetq.api.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.Channel;
 import org.hornetq.core.remoting.ChannelHandler;

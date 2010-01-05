@@ -219,7 +219,7 @@
 &lt;/bean&gt; 
 
 &lt;!-- The core configuration --&gt;
-&lt;bean name="Configuration" class="org.hornetq.core.config.FileConfiguration"&gt;
+&lt;bean name="Configuration" class="org.hornetq.api.core.config.FileConfiguration"&gt;
 &lt;/bean&gt;
 
 &lt;!-- The security manager --&gt;
@@ -248,7 +248,7 @@
 
 &lt;!-- The JMS server --&gt;
 &lt;bean name="JMSServerManager" 
-      class="org.hornetq.jms.server.JMSServerManagerImpl"&gt;
+      class="org.hornetq.api.jms.server.JMSServerManagerImpl"&gt;
    &lt;constructor&gt;         
       &lt;parameter&gt;
          &lt;inject bean="HornetQServer"/&gt;

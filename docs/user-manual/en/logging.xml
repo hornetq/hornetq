@@ -30,7 +30,7 @@
     <para>To do this programatically simply do the
         following<programlisting>org.hornetq.core.logging.Logger.setDelegateFactory(new Log4jLogDelegateFactory())</programlisting></para>
     <para>Where <literal>Log4jLogDelegateFactory</literal> is the implementation of <literal
-            >org.hornetq.core.logging.LogDelegateFactory </literal>that you would like to
+            >org.hornetq.spi.core.logging.LogDelegateFactory </literal>that you would like to
         use.</para>
     <para>To do this via a System Property simply set the property <literal
             >org.hornetq.logger-delegate-factory-class-name</literal> to the delegate factory being

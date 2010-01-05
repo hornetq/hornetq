@@ -15,7 +15,7 @@ package org.hornetq.core.paging;
 
 import java.util.List;
 
-import org.hornetq.SimpleString;
+import org.hornetq.api.SimpleString;
 import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.PostOffice;

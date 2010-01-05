@@ -18,10 +18,10 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 
-import org.hornetq.SimpleString;
-import org.hornetq.core.buffers.HornetQBuffer;
-import org.hornetq.core.buffers.HornetQBuffers;
-import org.hornetq.core.exception.HornetQException;
+import org.hornetq.api.SimpleString;
+import org.hornetq.api.core.buffers.HornetQBuffer;
+import org.hornetq.api.core.buffers.HornetQBuffers;
+import org.hornetq.api.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.BodyEncoder;
 import org.hornetq.core.message.impl.MessageImpl;
@@ -143,7 +143,7 @@ public class ClientMessageImpl extends MessageImpl implements ClientMessageInter
 
    // FIXME - only used for large messages - move it!
    /* (non-Javadoc)
-    * @see org.hornetq.core.client.ClientMessage#saveToOutputStream(java.io.OutputStream)
+    * @see org.hornetq.api.core.client.ClientMessage#saveToOutputStream(java.io.OutputStream)
     */
    public void saveToOutputStream(final OutputStream out) throws HornetQException
    {
@@ -168,7 +168,7 @@ public class ClientMessageImpl extends MessageImpl implements ClientMessageInter
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.client.ClientMessage#setOutputStream(java.io.OutputStream)
+    * @see org.hornetq.api.core.client.ClientMessage#setOutputStream(java.io.OutputStream)
     */
    public void setOutputStream(final OutputStream out) throws HornetQException
    {
@@ -184,7 +184,7 @@ public class ClientMessageImpl extends MessageImpl implements ClientMessageInter
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.client.ClientMessage#waitOutputStreamCompletion()
+    * @see org.hornetq.api.core.client.ClientMessage#waitOutputStreamCompletion()
     */
    public boolean waitOutputStreamCompletion(final long timeMilliseconds) throws HornetQException
    {
@@ -199,7 +199,7 @@ public class ClientMessageImpl extends MessageImpl implements ClientMessageInter
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.client.impl.ClientMessageInternal#discardLargeBody()
+    * @see org.hornetq.api.core.client.impl.ClientMessageInternal#discardLargeBody()
     */
    public void discardLargeBody()
    {

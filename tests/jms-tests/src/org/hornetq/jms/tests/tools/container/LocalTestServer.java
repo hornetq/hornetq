@@ -26,18 +26,18 @@ import javax.management.MBeanServerInvocationHandler;
 import javax.management.ObjectName;
 import javax.naming.InitialContext;
 
-import org.hornetq.Pair;
-import org.hornetq.core.client.ClientSessionFactoryImpl;
-import org.hornetq.core.config.TransportConfiguration;
+import org.hornetq.api.Pair;
+import org.hornetq.api.core.client.ClientSessionFactoryImpl;
+import org.hornetq.api.core.config.TransportConfiguration;
+import org.hornetq.api.core.management.ObjectNameBuilder;
+import org.hornetq.api.core.management.ResourceNames;
+import org.hornetq.api.jms.management.JMSQueueControl;
+import org.hornetq.api.jms.management.TopicControl;
+import org.hornetq.api.jms.server.JMSServerManager;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.management.ObjectNameBuilder;
-import org.hornetq.core.management.ResourceNames;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.integration.bootstrap.HornetQBootstrapServer;
-import org.hornetq.jms.management.JMSQueueControl;
-import org.hornetq.jms.management.TopicControl;
-import org.hornetq.jms.server.JMSServerManager;
 import org.jboss.kernel.plugins.config.property.PropertyKernelConfig;
 
 /**

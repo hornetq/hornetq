@@ -2,7 +2,7 @@
 
 <server>
 
-   <mbean code="org.hornetq.jms.server.destination.TopicService"
+   <mbean code="org.hornetq.api.jms.server.destination.TopicService"
       name="hornetq.destination:service=Topic,name=DistributedSmokeTestTopic"
       xmbean-dd="xmdesc/Topic-xmbean.xml">
       <attribute name="Clustered">true</attribute>

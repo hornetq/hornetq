@@ -21,7 +21,7 @@ import javax.jms.JMSSecurityException;
 
 import junit.framework.Assert;
 
-import org.hornetq.core.exception.HornetQException;
+import org.hornetq.api.core.exception.HornetQException;
 import org.hornetq.jms.client.JMSExceptionHelper;
 import org.hornetq.tests.util.UnitTestCase;
 

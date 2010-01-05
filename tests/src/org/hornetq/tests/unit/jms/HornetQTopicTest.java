@@ -15,8 +15,8 @@ package org.hornetq.tests.unit.jms;
 
 import junit.framework.Assert;
 
-import org.hornetq.Pair;
-import org.hornetq.jms.HornetQTopic;
+import org.hornetq.api.Pair;
+import org.hornetq.api.jms.HornetQTopic;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
 

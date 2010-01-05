@@ -14,10 +14,10 @@ package org.hornetq.tests.integration.client;
 
 import junit.framework.Assert;
 
-import org.hornetq.core.client.ClientProducer;
-import org.hornetq.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.exception.HornetQException;
 import org.hornetq.core.client.impl.ClientSessionInternal;
-import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
 

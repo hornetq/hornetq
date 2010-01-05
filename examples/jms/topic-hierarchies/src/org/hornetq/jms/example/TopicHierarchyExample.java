@@ -22,8 +22,8 @@ import javax.jms.TextMessage;
 import javax.jms.Topic;
 import javax.naming.InitialContext;
 
+import org.hornetq.api.jms.HornetQTopic;
 import org.hornetq.common.example.HornetQExample;
-import org.hornetq.jms.HornetQTopic;
 
 /**
  * This example demonstrates how a JMS TopicSubscriber can be created to subscribe to a wild-card Topic.

@@ -440,10 +440,10 @@ Connection jmsConnection2 = jmsConnectionFactory.createConnection();</programlis
             </listitem>
         </itemizedlist>
         <para>You can also implement your own policy by implementing the interface <literal
-                >org.hornetq.core.client.loadbalance.ConnectionLoadBalancingPolicy</literal></para>
+                >org.hornetq.api.core.client.loadbalance.ConnectionLoadBalancingPolicy</literal></para>
         <para>Specifying which load balancing policy to use differs whether you are using JMS or the
             core API. If you don't specify a policy then the default will be used which is <literal
-                >org.hornetq.core.client.loadbalance.RoundRobinConnectionLoadBalancingPolicy</literal>.</para>
+                >org.hornetq.api.core.client.loadbalance.RoundRobinConnectionLoadBalancingPolicy</literal>.</para>
         <para>If you're using JMS, and you're using JNDI on the server to put your JMS connection
             factories into JNDI, then you can specify the load balancing policy directly in the
                 <literal>hornetq-jms.xml</literal> configuration file on the server as follows:
@@ -454,7 +454,7 @@ Connection jmsConnection2 = jmsConnectionFactory.createConnection();</programlis
         &lt;entry name="ConnectionFactory"/&gt;
     &lt;/entries&gt;
     &lt;connection-load-balancing-policy-class-name&gt;
-    org.hornetq.core.client.loadbalance.RandomConnectionLoadBalancingPolicy
+    org.hornetq.api.core.client.loadbalance.RandomConnectionLoadBalancingPolicy
     &lt;/connection-load-balancing-policy-class-name&gt;
 &lt;/connection-factory&gt;            
         </programlisting>The

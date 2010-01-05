@@ -13,9 +13,9 @@
 
 package org.hornetq.core.deployers.impl;
 
-import org.hornetq.core.config.cluster.QueueConfiguration;
+import org.hornetq.api.core.config.cluster.QueueConfiguration;
+import org.hornetq.api.core.management.HornetQServerControl;
 import org.hornetq.core.deployers.DeploymentManager;
-import org.hornetq.core.management.HornetQServerControl;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 

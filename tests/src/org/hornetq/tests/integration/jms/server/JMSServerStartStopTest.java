@@ -22,17 +22,17 @@ import javax.jms.TextMessage;
 
 import junit.framework.Assert;
 
-import org.hornetq.core.config.FileConfiguration;
-import org.hornetq.core.config.TransportConfiguration;
+import org.hornetq.api.core.config.FileConfiguration;
+import org.hornetq.api.core.config.TransportConfiguration;
+import org.hornetq.api.jms.HornetQConnectionFactory;
+import org.hornetq.api.jms.server.JMSServerManager;
+import org.hornetq.api.jms.server.JMSServerManagerImpl;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.security.HornetQSecurityManager;
 import org.hornetq.core.security.impl.HornetQSecurityManagerImpl;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.impl.HornetQServerImpl;
 import org.hornetq.integration.transports.netty.NettyConnectorFactory;
-import org.hornetq.jms.HornetQConnectionFactory;
-import org.hornetq.jms.server.JMSServerManager;
-import org.hornetq.jms.server.JMSServerManagerImpl;
+import org.hornetq.spi.core.security.HornetQSecurityManager;
 import org.hornetq.tests.util.UnitTestCase;
 
 /**

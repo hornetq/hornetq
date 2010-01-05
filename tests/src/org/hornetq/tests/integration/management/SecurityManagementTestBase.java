@@ -15,15 +15,15 @@ package org.hornetq.tests.integration.management;
 
 import junit.framework.Assert;
 
-import org.hornetq.core.client.ClientMessage;
-import org.hornetq.core.client.ClientRequestor;
-import org.hornetq.core.client.ClientSession;
-import org.hornetq.core.client.ClientSessionFactory;
-import org.hornetq.core.client.ClientSessionFactoryImpl;
-import org.hornetq.core.client.management.impl.ManagementHelper;
-import org.hornetq.core.config.ConfigurationImpl;
-import org.hornetq.core.config.TransportConfiguration;
-import org.hornetq.core.management.ResourceNames;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientRequestor;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.ClientSessionFactoryImpl;
+import org.hornetq.api.core.config.ConfigurationImpl;
+import org.hornetq.api.core.config.TransportConfiguration;
+import org.hornetq.api.core.management.ResourceNames;
+import org.hornetq.api.core.management.client.ManagementHelper;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.UnitTestCase;

@@ -15,7 +15,7 @@ package org.hornetq.core.logging.impl;
 
 import java.util.logging.Level;
 
-import org.hornetq.core.logging.LogDelegate;
+import org.hornetq.spi.core.logging.LogDelegate;
 
 /**
  * 

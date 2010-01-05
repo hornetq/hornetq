@@ -27,11 +27,11 @@ import javax.resource.spi.endpoint.MessageEndpointFactory;
 import javax.resource.spi.work.WorkManager;
 import javax.transaction.xa.XAResource;
 
-import org.hornetq.core.client.ClientSession;
-import org.hornetq.core.client.ClientSessionFactory;
-import org.hornetq.core.client.ClientSessionFactoryImpl;
-import org.hornetq.core.config.TransportConfiguration;
-import org.hornetq.core.exception.HornetQException;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.ClientSessionFactoryImpl;
+import org.hornetq.api.core.config.TransportConfiguration;
+import org.hornetq.api.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.ra.inflow.HornetQActivation;
 import org.hornetq.ra.inflow.HornetQActivationSpec;
@@ -86,7 +86,7 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
     */
    private final Map<ActivationSpec, HornetQActivation> activations;
 
-   private org.hornetq.jms.HornetQConnectionFactory defaultHornetQConnectionFactory;
+   private org.hornetq.api.jms.HornetQConnectionFactory defaultHornetQConnectionFactory;
 
    /**
     * Constructor
@@ -1353,7 +1353,7 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       sessionFactory = defaultHornetQConnectionFactory.getCoreFactory();
    }
 
-   public org.hornetq.jms.HornetQConnectionFactory getDefaultHornetQConnectionFactory() throws ResourceException
+   public org.hornetq.api.jms.HornetQConnectionFactory getDefaultHornetQConnectionFactory() throws ResourceException
    {
       if (!configured.getAndSet(true))
       {
@@ -1369,9 +1369,9 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       return defaultHornetQConnectionFactory;
    }
 
-   public org.hornetq.jms.HornetQConnectionFactory createHornetQConnectionFactory(final ConnectionFactoryProperties overrideProperties)
+   public org.hornetq.api.jms.HornetQConnectionFactory createHornetQConnectionFactory(final ConnectionFactoryProperties overrideProperties)
    {
-      org.hornetq.jms.HornetQConnectionFactory cf;
+      org.hornetq.api.jms.HornetQConnectionFactory cf;
       String connectorClassName = overrideProperties.getConnectorClassName() != null ? overrideProperties.getConnectorClassName()
                                                                                     : getConnectorClassName();
       String discoveryAddress = overrideProperties.getDiscoveryAddress() != null ? overrideProperties.getDiscoveryAddress()
@@ -1390,13 +1390,13 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
                                                                          : new TransportConfiguration(backUpCOnnectorClassname,
                                                                                                       backupConnectionParams);
 
-         cf = new org.hornetq.jms.HornetQConnectionFactory(transportConf, backup);
+         cf = new org.hornetq.api.jms.HornetQConnectionFactory(transportConf, backup);
       }
       else if (discoveryAddress != null)
       {
          Integer discoveryPort = overrideProperties.getDiscoveryPort() != null ? overrideProperties.getDiscoveryPort()
                                                                               : getDiscoveryPort();
-         cf = new org.hornetq.jms.HornetQConnectionFactory(discoveryAddress, discoveryPort);
+         cf = new org.hornetq.api.jms.HornetQConnectionFactory(discoveryAddress, discoveryPort);
       }
       else
       {
@@ -1406,7 +1406,7 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       return cf;
    }
 
-   private void setParams(final org.hornetq.jms.HornetQConnectionFactory cf,
+   private void setParams(final org.hornetq.api.jms.HornetQConnectionFactory cf,
                           final ConnectionFactoryProperties overrideProperties)
    {
       Boolean val = overrideProperties.isAutoGroup() != null ? overrideProperties.isAutoGroup()

@@ -19,15 +19,15 @@ import java.util.concurrent.Executors;
 
 import junit.framework.Assert;
 
-import org.hornetq.core.buffers.HornetQBuffer;
-import org.hornetq.core.config.ConfigurationImpl;
-import org.hornetq.core.exception.HornetQException;
+import org.hornetq.api.core.buffers.HornetQBuffer;
+import org.hornetq.api.core.config.ConfigurationImpl;
+import org.hornetq.api.core.exception.HornetQException;
 import org.hornetq.core.remoting.impl.AbstractBufferHandler;
-import org.hornetq.core.remoting.spi.BufferHandler;
-import org.hornetq.core.remoting.spi.Connection;
-import org.hornetq.core.remoting.spi.ConnectionLifeCycleListener;
 import org.hornetq.integration.transports.netty.NettyAcceptor;
 import org.hornetq.integration.transports.netty.TransportConstants;
+import org.hornetq.spi.core.remoting.BufferHandler;
+import org.hornetq.spi.core.remoting.Connection;
+import org.hornetq.spi.core.remoting.ConnectionLifeCycleListener;
 import org.hornetq.tests.util.UnitTestCase;
 
 /**

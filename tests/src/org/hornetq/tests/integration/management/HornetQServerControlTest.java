@@ -18,17 +18,17 @@ import java.util.Map;
 
 import junit.framework.Assert;
 
-import org.hornetq.SimpleString;
-import org.hornetq.core.config.Configuration;
-import org.hornetq.core.config.ConfigurationImpl;
-import org.hornetq.core.config.TransportConfiguration;
-import org.hornetq.core.management.HornetQServerControl;
-import org.hornetq.core.management.ObjectNameBuilder;
-import org.hornetq.core.management.QueueControl;
+import org.hornetq.api.SimpleString;
+import org.hornetq.api.core.config.Configuration;
+import org.hornetq.api.core.config.ConfigurationImpl;
+import org.hornetq.api.core.config.TransportConfiguration;
+import org.hornetq.api.core.management.HornetQServerControl;
+import org.hornetq.api.core.management.ObjectNameBuilder;
+import org.hornetq.api.core.management.QueueControl;
+import org.hornetq.api.core.server.HornetQ;
 import org.hornetq.core.messagecounter.impl.MessageCounterManagerImpl;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
-import org.hornetq.core.server.HornetQ;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.utils.json.JSONArray;

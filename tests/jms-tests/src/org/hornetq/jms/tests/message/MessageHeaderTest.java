@@ -33,16 +33,16 @@ import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
-import org.hornetq.SimpleString;
-import org.hornetq.core.buffers.HornetQBuffer;
-import org.hornetq.core.client.ClientConsumer;
-import org.hornetq.core.client.ClientMessage;
-import org.hornetq.core.client.ClientProducer;
-import org.hornetq.core.client.ClientSession;
-import org.hornetq.core.client.SendAcknowledgementHandler;
-import org.hornetq.core.client.SessionFailureListener;
+import org.hornetq.api.SimpleString;
+import org.hornetq.api.core.buffers.HornetQBuffer;
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.SendAcknowledgementHandler;
+import org.hornetq.api.core.client.SessionFailureListener;
+import org.hornetq.api.core.exception.HornetQException;
 import org.hornetq.core.client.impl.ClientMessageImpl;
-import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.remoting.FailureListener;
 import org.hornetq.jms.client.HornetQBytesMessage;
 import org.hornetq.jms.client.HornetQMapMessage;
@@ -1352,7 +1352,7 @@ public class MessageHeaderTest extends MessageHeaderTestBase
       }
 
       /* (non-Javadoc)
-       * @see org.hornetq.core.client.ClientSession#createBuffer(byte[])
+       * @see org.hornetq.api.core.client.ClientSession#createBuffer(byte[])
        */
       public HornetQBuffer createBuffer(final byte[] bytes)
       {
@@ -1361,7 +1361,7 @@ public class MessageHeaderTest extends MessageHeaderTestBase
       }
 
       /* (non-Javadoc)
-       * @see org.hornetq.core.client.ClientSession#createBuffer(int)
+       * @see org.hornetq.api.core.client.ClientSession#createBuffer(int)
        */
       public HornetQBuffer createBuffer(final int size)
       {
@@ -1383,7 +1383,7 @@ public class MessageHeaderTest extends MessageHeaderTestBase
       }
 
       /* (non-Javadoc)
-       * @see org.hornetq.core.client.ClientSession#createQueue(org.hornetq.utils.SimpleString, org.hornetq.utils.SimpleString)
+       * @see org.hornetq.api.core.client.ClientSession#createQueue(org.hornetq.utils.SimpleString, org.hornetq.utils.SimpleString)
        */
       public void createQueue(SimpleString address, SimpleString queueName) throws HornetQException
       {

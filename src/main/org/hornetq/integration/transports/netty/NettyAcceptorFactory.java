@@ -18,10 +18,10 @@ import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 
-import org.hornetq.core.remoting.spi.Acceptor;
-import org.hornetq.core.remoting.spi.AcceptorFactory;
-import org.hornetq.core.remoting.spi.BufferHandler;
-import org.hornetq.core.remoting.spi.ConnectionLifeCycleListener;
+import org.hornetq.spi.core.remoting.Acceptor;
+import org.hornetq.spi.core.remoting.AcceptorFactory;
+import org.hornetq.spi.core.remoting.BufferHandler;
+import org.hornetq.spi.core.remoting.ConnectionLifeCycleListener;
 
 /**
  * A NettyAcceptorFactory

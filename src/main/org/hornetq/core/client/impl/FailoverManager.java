@@ -13,9 +13,9 @@
 
 package org.hornetq.core.client.impl;
 
-import org.hornetq.core.client.ClientSession;
-import org.hornetq.core.client.SessionFailureListener;
-import org.hornetq.core.exception.HornetQException;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.SessionFailureListener;
+import org.hornetq.api.core.exception.HornetQException;
 import org.hornetq.core.remoting.RemotingConnection;
 
 /**

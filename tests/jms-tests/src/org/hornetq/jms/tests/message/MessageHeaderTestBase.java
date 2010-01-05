@@ -30,7 +30,7 @@ import javax.jms.Session;
 import javax.jms.StreamMessage;
 import javax.jms.TextMessage;
 
-import org.hornetq.jms.HornetQQueue;
+import org.hornetq.api.jms.HornetQQueue;
 import org.hornetq.jms.client.HornetQBytesMessage;
 import org.hornetq.jms.client.HornetQMapMessage;
 import org.hornetq.jms.client.HornetQMessage;

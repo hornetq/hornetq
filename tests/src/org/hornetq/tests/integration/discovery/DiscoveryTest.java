@@ -19,15 +19,15 @@ import java.util.Map;
 
 import junit.framework.Assert;
 
-import org.hornetq.Pair;
-import org.hornetq.SimpleString;
+import org.hornetq.api.Pair;
+import org.hornetq.api.SimpleString;
+import org.hornetq.api.core.config.TransportConfiguration;
+import org.hornetq.api.core.management.NotificationType;
 import org.hornetq.core.cluster.DiscoveryEntry;
 import org.hornetq.core.cluster.DiscoveryGroup;
 import org.hornetq.core.cluster.DiscoveryListener;
 import org.hornetq.core.cluster.impl.DiscoveryGroupImpl;
-import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.management.NotificationType;
 import org.hornetq.core.server.cluster.BroadcastGroup;
 import org.hornetq.core.server.cluster.impl.BroadcastGroupImpl;
 import org.hornetq.core.server.management.Notification;

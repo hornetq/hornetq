@@ -36,8 +36,8 @@
         <para>Create the configuration object - this contains configuration information for a
             HornetQ. If you want to configure it from a file on the classpath, use <literal
                 >FileConfigurationImpl</literal></para>
-        <programlisting>import org.hornetq.core.config.Configuration;
-import org.hornetq.core.config.FileConfiguration;
+        <programlisting>import org.hornetq.api.core.config.Configuration;
+import org.hornetq.api.core.config.FileConfiguration;
 
 ...
 
@@ -51,8 +51,8 @@ config.start();</programlisting>
         <para>The acceptors are configured through <literal>ConfigurationImpl</literal>. Just add
             the <literal>NettyAcceptorFactory</literal> on the transports the same way you would
             through the main configuration file.</para>
-        <programlisting>import org.hornetq.core.config.Configuration;
-import org.hornetq.core.config.ConfigurationImpl;
+        <programlisting>import org.hornetq.api.core.config.Configuration;
+import org.hornetq.api.core.config.ConfigurationImpl;
 
 ...
 
@@ -64,9 +64,9 @@ transports.add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
 
 config.setAcceptorConfigurations(transports);</programlisting>
         <para>You need to instantiate and start HornetQ server. The class <literal
-                >org.hornetq.core.server.HornetQ</literal> has a few static methods for creating
+                >org.hornetq.api.core.server.HornetQ</literal> has a few static methods for creating
             servers with common configurations.</para>
-        <programlisting>import org.hornetq.core.server.HornetQ;
+        <programlisting>import org.hornetq.api.core.server.HornetQ;
 import org.hornetq.core.server.HornetQServer;
 
 ...
@@ -99,7 +99,7 @@ server.start();</programlisting>
    
    &lt;!-- The core configuration -->
    &lt;bean name="Configuration" 
-         class="org.hornetq.core.config.FileConfiguration">
+         class="org.hornetq.api.core.config.FileConfiguration">
    &lt;/bean>
 
    	&lt;!-- The core server -->

@@ -16,7 +16,7 @@ package org.hornetq.tests.unit.core.server.impl.fakes;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
-import org.hornetq.SimpleString;
+import org.hornetq.api.SimpleString;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.server.Queue;

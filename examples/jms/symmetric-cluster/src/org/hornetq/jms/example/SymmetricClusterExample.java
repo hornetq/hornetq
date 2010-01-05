@@ -21,10 +21,10 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.jms.Topic;
 
+import org.hornetq.api.jms.HornetQConnectionFactory;
+import org.hornetq.api.jms.HornetQQueue;
+import org.hornetq.api.jms.HornetQTopic;
 import org.hornetq.common.example.HornetQExample;
-import org.hornetq.jms.HornetQConnectionFactory;
-import org.hornetq.jms.HornetQQueue;
-import org.hornetq.jms.HornetQTopic;
 
 /**
  * This example demonstrates a cluster of three nodes set up in a symmetric topology - i.e. each node

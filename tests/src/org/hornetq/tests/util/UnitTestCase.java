@@ -44,12 +44,12 @@ import junit.framework.Assert;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
-import org.hornetq.SimpleString;
+import org.hornetq.api.SimpleString;
+import org.hornetq.api.core.buffers.HornetQBuffer;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.exception.HornetQException;
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
-import org.hornetq.core.buffers.HornetQBuffer;
-import org.hornetq.core.client.ClientMessage;
-import org.hornetq.core.client.ClientSession;
-import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.journal.impl.AIOSequentialFileFactory;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.persistence.impl.journal.OperationContextImpl;

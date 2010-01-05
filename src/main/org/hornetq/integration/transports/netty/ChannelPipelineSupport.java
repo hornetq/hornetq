@@ -16,7 +16,7 @@ package org.hornetq.integration.transports.netty;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
 
-import org.hornetq.core.remoting.spi.BufferHandler;
+import org.hornetq.spi.core.remoting.BufferHandler;
 import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.handler.ssl.SslHandler;
 

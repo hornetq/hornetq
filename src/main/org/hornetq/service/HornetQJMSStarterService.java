@@ -12,7 +12,7 @@
  */
 package org.hornetq.service;
 
-import org.hornetq.jms.server.JMSServerManagerImpl;
+import org.hornetq.api.jms.server.JMSServerManagerImpl;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>

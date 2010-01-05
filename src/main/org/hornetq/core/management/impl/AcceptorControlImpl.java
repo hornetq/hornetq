@@ -17,11 +17,11 @@ import java.util.Map;
 
 import javax.management.MBeanOperationInfo;
 
-import org.hornetq.core.config.TransportConfiguration;
-import org.hornetq.core.management.AcceptorControl;
-import org.hornetq.core.management.AddressControl;
+import org.hornetq.api.core.config.TransportConfiguration;
+import org.hornetq.api.core.management.AcceptorControl;
+import org.hornetq.api.core.management.AddressControl;
 import org.hornetq.core.persistence.StorageManager;
-import org.hornetq.core.remoting.spi.Acceptor;
+import org.hornetq.spi.core.remoting.Acceptor;
 
 /**
  * A AcceptorControl

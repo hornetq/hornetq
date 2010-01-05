@@ -17,7 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.hornetq.SimpleString;
+import org.hornetq.api.SimpleString;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.postoffice.Address;
 import org.hornetq.core.postoffice.Binding;

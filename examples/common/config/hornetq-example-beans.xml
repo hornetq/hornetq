@@ -22,7 +22,7 @@
       </constructor>
    </bean>
    
-   <bean name="Configuration" class="org.hornetq.core.config.FileConfiguration"/>
+   <bean name="Configuration" class="org.hornetq.api.core.config.FileConfiguration"/>
 
    <!--<bean name="HornetQSecurityManager" class="org.hornetq.core.security.impl.JBossASSecurityManager"/>-->
 
@@ -80,7 +80,7 @@
       </property>
    </bean>
    
-   <bean name="JMSServerManager" class="org.hornetq.jms.server.JMSServerManagerImpl">
+   <bean name="JMSServerManager" class="org.hornetq.api.jms.server.JMSServerManagerImpl">
       <constructor>
          <parameter>
             <inject bean="HornetQServer" property="serverManagement"/>
@@ -91,7 +91,7 @@
       </constructor>
    </bean>
 
-   <bean name="JMSServerDeployer" class="org.hornetq.jms.server.impl.JMSServerDeployer">
+   <bean name="JMSServerDeployer" class="org.hornetq.api.jms.server.impl.JMSServerDeployer">
       <constructor>
          <parameter>
             <inject bean="DeploymentManager"/>
@@ -149,7 +149,7 @@
       </constructor>
    </bean>
    
-   <bean name="JMSManagementService" class="org.hornetq.jms.server.management.impl.JMSManagementServiceImpl">
+   <bean name="JMSManagementService" class="org.hornetq.api.jms.server.management.impl.JMSManagementServiceImpl">
       <constructor>
          <parameter>
             <inject bean="ManagementService"/>

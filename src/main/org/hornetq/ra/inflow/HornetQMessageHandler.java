@@ -20,15 +20,15 @@ import javax.resource.ResourceException;
 import javax.resource.spi.endpoint.MessageEndpoint;
 import javax.resource.spi.endpoint.MessageEndpointFactory;
 
-import org.hornetq.SimpleString;
-import org.hornetq.core.client.ClientConsumer;
-import org.hornetq.core.client.ClientMessage;
-import org.hornetq.core.client.ClientSession;
-import org.hornetq.core.client.MessageHandler;
-import org.hornetq.core.client.ClientSession.QueueQuery;
-import org.hornetq.core.exception.HornetQException;
+import org.hornetq.api.SimpleString;
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.MessageHandler;
+import org.hornetq.api.core.client.ClientSession.QueueQuery;
+import org.hornetq.api.core.exception.HornetQException;
+import org.hornetq.api.jms.HornetQTopic;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.jms.HornetQTopic;
 import org.hornetq.jms.client.HornetQMessage;
 
 /**

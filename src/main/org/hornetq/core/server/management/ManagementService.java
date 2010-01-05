@@ -18,23 +18,22 @@ import java.util.concurrent.ScheduledExecutorService;
 
 import javax.management.ObjectName;
 
-import org.hornetq.SimpleString;
+import org.hornetq.api.SimpleString;
+import org.hornetq.api.core.config.Configuration;
+import org.hornetq.api.core.config.TransportConfiguration;
+import org.hornetq.api.core.config.cluster.BridgeConfiguration;
+import org.hornetq.api.core.config.cluster.BroadcastGroupConfiguration;
+import org.hornetq.api.core.config.cluster.ClusterConnectionConfiguration;
+import org.hornetq.api.core.config.cluster.DiscoveryGroupConfiguration;
+import org.hornetq.api.core.config.cluster.DivertConfiguration;
+import org.hornetq.api.core.management.ObjectNameBuilder;
 import org.hornetq.core.cluster.DiscoveryGroup;
-import org.hornetq.core.config.Configuration;
-import org.hornetq.core.config.TransportConfiguration;
-import org.hornetq.core.config.cluster.BridgeConfiguration;
-import org.hornetq.core.config.cluster.BroadcastGroupConfiguration;
-import org.hornetq.core.config.cluster.ClusterConnectionConfiguration;
-import org.hornetq.core.config.cluster.DiscoveryGroupConfiguration;
-import org.hornetq.core.config.cluster.DivertConfiguration;
-import org.hornetq.core.management.ObjectNameBuilder;
 import org.hornetq.core.management.impl.HornetQServerControlImpl;
 import org.hornetq.core.messagecounter.MessageCounterManager;
 import org.hornetq.core.paging.PagingManager;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.remoting.server.RemotingService;
-import org.hornetq.core.remoting.spi.Acceptor;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.server.Divert;
 import org.hornetq.core.server.HornetQComponent;
@@ -48,6 +47,7 @@ import org.hornetq.core.server.cluster.ClusterConnection;
 import org.hornetq.core.settings.HierarchicalRepository;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.core.transaction.ResourceManager;
+import org.hornetq.spi.core.remoting.Acceptor;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>

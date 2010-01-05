@@ -16,11 +16,11 @@ package org.hornetq.tests.integration.cluster.bridge;
 import java.util.ArrayList;
 import java.util.Map;
 
-import org.hornetq.core.config.Configuration;
-import org.hornetq.core.config.ConfigurationImpl;
-import org.hornetq.core.config.TransportConfiguration;
+import org.hornetq.api.core.config.Configuration;
+import org.hornetq.api.core.config.ConfigurationImpl;
+import org.hornetq.api.core.config.TransportConfiguration;
+import org.hornetq.api.core.server.HornetQ;
 import org.hornetq.core.remoting.impl.invm.InVMConnector;
-import org.hornetq.core.server.HornetQ;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.integration.transports.netty.NettyAcceptorFactory;
 import org.hornetq.tests.util.UnitTestCase;

@@ -18,9 +18,9 @@ import javax.jms.JMSException;
 import javax.jms.MessageEOFException;
 import javax.jms.MessageFormatException;
 
-import org.hornetq.core.buffers.HornetQBuffer;
-import org.hornetq.core.client.ClientMessage;
-import org.hornetq.core.client.ClientSession;
+import org.hornetq.api.core.buffers.HornetQBuffer;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.core.logging.Logger;
 
 /**

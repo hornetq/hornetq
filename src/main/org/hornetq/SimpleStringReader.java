@@ -16,6 +16,8 @@ package org.hornetq;
 import java.io.IOException;
 import java.io.Reader;
 
+import org.hornetq.api.SimpleString;
+
 
 /**
  * A SimpleStringReader

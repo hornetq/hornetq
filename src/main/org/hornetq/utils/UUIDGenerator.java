@@ -22,7 +22,7 @@ import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Random;
 
-import org.hornetq.SimpleString;
+import org.hornetq.api.SimpleString;
 import org.hornetq.core.logging.Logger;
 
 public final class UUIDGenerator

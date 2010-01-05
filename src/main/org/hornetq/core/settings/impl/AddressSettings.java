@@ -13,7 +13,7 @@
 
 package org.hornetq.core.settings.impl;
 
-import org.hornetq.SimpleString;
+import org.hornetq.api.SimpleString;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.settings.Mergeable;
 

@@ -19,13 +19,13 @@ import javax.jms.QueueConnection;
 import javax.jms.QueueSession;
 import javax.jms.Session;
 
-import org.hornetq.core.config.ConfigurationImpl;
-import org.hornetq.core.config.TransportConfiguration;
-import org.hornetq.core.management.ResourceNames;
+import org.hornetq.api.core.config.ConfigurationImpl;
+import org.hornetq.api.core.config.TransportConfiguration;
+import org.hornetq.api.core.management.ResourceNames;
+import org.hornetq.api.jms.HornetQConnectionFactory;
+import org.hornetq.api.jms.HornetQQueue;
+import org.hornetq.api.jms.management.JMSServerControl;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
-import org.hornetq.jms.HornetQConnectionFactory;
-import org.hornetq.jms.HornetQQueue;
-import org.hornetq.jms.management.JMSServerControl;
 
 /**
  * A JMSServerControlUsingCoreTest

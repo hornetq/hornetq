@@ -24,12 +24,12 @@ import javax.jms.TextMessage;
 
 import junit.framework.Assert;
 
-import org.hornetq.Pair;
-import org.hornetq.core.client.ClientSessionFactoryImpl;
-import org.hornetq.core.config.Configuration;
-import org.hornetq.core.config.TransportConfiguration;
-import org.hornetq.core.config.cluster.DivertConfiguration;
-import org.hornetq.jms.HornetQQueue;
+import org.hornetq.api.Pair;
+import org.hornetq.api.core.client.ClientSessionFactoryImpl;
+import org.hornetq.api.core.config.Configuration;
+import org.hornetq.api.core.config.TransportConfiguration;
+import org.hornetq.api.core.config.cluster.DivertConfiguration;
+import org.hornetq.api.jms.HornetQQueue;
 import org.hornetq.tests.util.JMSTestBase;
 
 /**

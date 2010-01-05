@@ -27,9 +27,9 @@ import javax.security.auth.login.LoginException;
 
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.security.CheckType;
-import org.hornetq.core.security.HornetQSecurityManager;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.server.HornetQComponent;
+import org.hornetq.spi.core.security.HornetQSecurityManager;
 
 /**
  * This implementation delegates to the JAAS security interfaces.

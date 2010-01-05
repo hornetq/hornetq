@@ -13,7 +13,7 @@
 
 package org.hornetq.tests.unit.core.journal.impl.fakes;
 
-import org.hornetq.core.buffers.HornetQBuffer;
+import org.hornetq.api.core.buffers.HornetQBuffer;
 import org.hornetq.core.journal.EncodingSupport;
 
 /**

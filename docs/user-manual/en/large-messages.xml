@@ -118,7 +118,7 @@ factory.setMinLargeMessageSize(25 * 1024);</programlisting>
                     >ClientMessage</literal> which are also available through JMS by the use of
                 object properties.</para>
             <table frame="topbot" id="large-messages.ClientMessageAPI">
-                <title>org.hornetq.core.client.ClientMessage API</title>
+                <title>org.hornetq.api.core.client.ClientMessage API</title>
                 <tgroup cols="3">
                     <colspec colname="Name" colnum="1"/>
                     <colspec colname="Descr" colnum="2"/>

@@ -13,12 +13,12 @@
 
 package org.hornetq.integration.transports.netty;
 
-import org.hornetq.core.buffers.HornetQBuffer;
+import org.hornetq.api.core.buffers.HornetQBuffer;
+import org.hornetq.api.core.exception.HornetQException;
 import org.hornetq.core.buffers.impl.ChannelBufferWrapper;
-import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.remoting.spi.Connection;
-import org.hornetq.core.remoting.spi.ConnectionLifeCycleListener;
+import org.hornetq.spi.core.remoting.Connection;
+import org.hornetq.spi.core.remoting.ConnectionLifeCycleListener;
 import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelFuture;

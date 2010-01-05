@@ -19,12 +19,12 @@ import java.util.List;
 
 import junit.framework.Assert;
 
-import org.hornetq.core.buffers.HornetQBuffer;
-import org.hornetq.core.buffers.HornetQBuffers;
-import org.hornetq.core.exception.HornetQException;
-import org.hornetq.core.remoting.spi.Connection;
-import org.hornetq.core.remoting.spi.ConnectionLifeCycleListener;
+import org.hornetq.api.core.buffers.HornetQBuffer;
+import org.hornetq.api.core.buffers.HornetQBuffers;
+import org.hornetq.api.core.exception.HornetQException;
 import org.hornetq.integration.transports.netty.NettyConnection;
+import org.hornetq.spi.core.remoting.Connection;
+import org.hornetq.spi.core.remoting.ConnectionLifeCycleListener;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
 import org.jboss.netty.channel.Channel;

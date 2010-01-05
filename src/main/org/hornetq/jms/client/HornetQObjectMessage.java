@@ -22,8 +22,8 @@ import java.io.Serializable;
 import javax.jms.JMSException;
 import javax.jms.ObjectMessage;
 
-import org.hornetq.core.client.ClientMessage;
-import org.hornetq.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientSession;
 
 /**
  * HornetQ implementation of a JMS ObjectMessage.

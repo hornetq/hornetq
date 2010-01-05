@@ -19,7 +19,7 @@ import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.StringTokenizer;
 
-import org.hornetq.core.management.DayCounterInfo;
+import org.hornetq.api.core.management.DayCounterInfo;
 import org.hornetq.core.messagecounter.MessageCounter;
 import org.hornetq.core.messagecounter.MessageCounter.DayCounter;
 

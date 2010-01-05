@@ -15,10 +15,10 @@ package org.hornetq.core.management.impl;
 
 import javax.management.MBeanOperationInfo;
 
+import org.hornetq.api.core.config.cluster.DiscoveryGroupConfiguration;
+import org.hornetq.api.core.management.AddressControl;
+import org.hornetq.api.core.management.DiscoveryGroupControl;
 import org.hornetq.core.cluster.DiscoveryGroup;
-import org.hornetq.core.config.cluster.DiscoveryGroupConfiguration;
-import org.hornetq.core.management.AddressControl;
-import org.hornetq.core.management.DiscoveryGroupControl;
 import org.hornetq.core.persistence.StorageManager;
 
 /**

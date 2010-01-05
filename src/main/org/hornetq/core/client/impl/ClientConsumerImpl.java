@@ -17,11 +17,11 @@ import java.io.File;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.hornetq.SimpleString;
-import org.hornetq.core.buffers.HornetQBuffers;
-import org.hornetq.core.client.ClientMessage;
-import org.hornetq.core.client.MessageHandler;
-import org.hornetq.core.exception.HornetQException;
+import org.hornetq.api.SimpleString;
+import org.hornetq.api.core.buffers.HornetQBuffers;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.MessageHandler;
+import org.hornetq.api.core.exception.HornetQException;
 import org.hornetq.core.list.PriorityLinkedList;
 import org.hornetq.core.list.impl.PriorityLinkedListImpl;
 import org.hornetq.core.logging.Logger;

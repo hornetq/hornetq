@@ -19,21 +19,21 @@ import javax.management.MBeanServer;
 import javax.management.MBeanServerInvocationHandler;
 import javax.management.ObjectName;
 
-import org.hornetq.SimpleString;
-import org.hornetq.core.management.AcceptorControl;
-import org.hornetq.core.management.AddressControl;
-import org.hornetq.core.management.BridgeControl;
-import org.hornetq.core.management.BroadcastGroupControl;
-import org.hornetq.core.management.ClusterConnectionControl;
-import org.hornetq.core.management.DiscoveryGroupControl;
-import org.hornetq.core.management.DivertControl;
-import org.hornetq.core.management.HornetQServerControl;
-import org.hornetq.core.management.ObjectNameBuilder;
-import org.hornetq.core.management.QueueControl;
-import org.hornetq.jms.management.ConnectionFactoryControl;
-import org.hornetq.jms.management.JMSQueueControl;
-import org.hornetq.jms.management.JMSServerControl;
-import org.hornetq.jms.management.TopicControl;
+import org.hornetq.api.SimpleString;
+import org.hornetq.api.core.management.AcceptorControl;
+import org.hornetq.api.core.management.AddressControl;
+import org.hornetq.api.core.management.BridgeControl;
+import org.hornetq.api.core.management.BroadcastGroupControl;
+import org.hornetq.api.core.management.ClusterConnectionControl;
+import org.hornetq.api.core.management.DiscoveryGroupControl;
+import org.hornetq.api.core.management.DivertControl;
+import org.hornetq.api.core.management.HornetQServerControl;
+import org.hornetq.api.core.management.ObjectNameBuilder;
+import org.hornetq.api.core.management.QueueControl;
+import org.hornetq.api.jms.management.ConnectionFactoryControl;
+import org.hornetq.api.jms.management.JMSQueueControl;
+import org.hornetq.api.jms.management.JMSServerControl;
+import org.hornetq.api.jms.management.TopicControl;
 
 /**
  * A ManagementControlHelper

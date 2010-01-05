@@ -13,8 +13,8 @@
 
 package org.hornetq.tests.integration.cluster.bridge;
 
-import org.hornetq.SimpleString;
-import org.hornetq.core.buffers.HornetQBuffer;
+import org.hornetq.api.SimpleString;
+import org.hornetq.api.core.buffers.HornetQBuffer;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.cluster.Transformer;

@@ -406,6 +406,8 @@
             <pathelement path="${src.main.dir}"/>
          </src>
          <include name="**/hornetq/*.java"/>
+         <include name="**/hornetq/api/*.java"/>
+         <include name="**/hornetq/api/core/**/*.java"/>
          <include name="**/hornetq/core/**/*.java"/>
          <include name="**/hornetq/utils/**/*.java"/>
       	 <classpath refid="core.compilation.classpath"/>
@@ -681,11 +683,9 @@
    <target name="jar-jms-client" depends="compile-jms">
 	   
       <jar jarfile="${build.jars.dir}/${jms.client.jar.name}">         
-         <fileset dir="${build.jms.classes.dir}" includes="org/hornetq/jms/*.class"/>
+         <fileset dir="${build.jms.classes.dir}" includes="org/hornetq/api/jms/**/*.class"/>
 	      <fileset dir="${build.jms.classes.dir}" includes="org/hornetq/jms/client/*.class"/>
          <fileset dir="${build.jms.classes.dir}" includes="org/hornetq/jms/referenceable/*.class"/>
-         <fileset dir="${build.jms.classes.dir}" includes="org/hornetq/jms/management/*.class"/>
-         <fileset dir="${build.jms.classes.dir}" includes="org/hornetq/jms/management/impl/JMSManagementHelper.class"/>
       </jar>
 	   
    </target>
@@ -735,23 +735,24 @@
       <jar jarfile="${build.jars.dir}/${core.client.jar.name}">
          <fileset dir="${build.core.classes.dir}">
             <include name="hornetq-version.properties"/>
+            <include name="org/hornetq/api/**/*.class"/>
             <include name="org/hornetq/*.class"/>
+            <include name="org/hornetq/core/buffers/**/*.class"/>
             <include name="org/hornetq/core/client/**/*.class"/>
             <include name="org/hornetq/core/filter/**/*.class"/>
-            <include name="org/hornetq/core/buffers/**/*.class"/>
-            <include name="org/hornetq/core/config/**/*.class"/>
             <include name="org/hornetq/core/exception/**/*.class"/>
-            <include name="org/hornetq/core/logging/**/*.class"/>
-            <include name="org/hornetq/core/remoting/*.class"/>
-            <include name="org/hornetq/core/remoting/spi/*.class"/>
             <include name="org/hornetq/core/remoting/impl/**/*.class"/>
             <include name="org/hornetq/utils/**/*.class"/>
             <include name="org/hornetq/core/cluster/**/*.class"/>
             <include name="org/hornetq/core/list/**/*.class"/>
+            <include name="org/hornetq/core/logging/**/*.class"/>
             <include name="org/hornetq/core/message/**/*.class"/>
+            <include name="org/hornetq/core/remoting/**/*.class"/>
             <include name="org/hornetq/core/version/**/*.class"/>
             <include name="org/hornetq/core/management/*.class"/>
             <include name="org/hornetq/core/transaction/impl/XidImpl.class"/>
+            <include name="org/hornetq/spi/core/remoting/*.class"/>
+            <include name="org/hornetq/spi/core/logging/*.class"/>
          	
          	<!-- required by SessionSendMessage -->
             <include name="org/hornetq/core/server/ServerMessage.class"/>
@@ -1011,28 +1012,15 @@
    	   windowtitle="HornetQ ${module.version}">
 
          <packageset dir="${src.main.dir}" defaultexcludes="false">
-            <include name="org/hornetq"/>
-            <include name="org/hornetq/core/buffers"/>
-         	<include name="org/hornetq/core/config"/>
-            <include name="org/hornetq/core/config/cluster"/>
-            <include name="org/hornetq/core/client"/>
-         	<include name="org/hornetq/core/exception"/>
-            <include name="org/hornetq/core/management"/>
-            <include name="org/hornetq/core/message"/>
-            <include name="org/hornetq/core/remoting"/>
-            <include name="org/hornetq/core/remoting/spi"/>
-            <include name="org/hornetq/jms"/>
-            <include name="org/hornetq/jms/client"/>
-         	<include name="org/hornetq/jms/management"/>
+            <include name="org/hornetq/api/**"/>
+            <include name="org/hornetq/spi/**"/>
          </packageset>
          <classpath refid="javadoc.classpath"/>
          <doctitle><![CDATA[<h2>HornetQ  ${module.version}</h2>]]></doctitle>
          <bottom><![CDATA[<i>Copyright &#169; 2009 Red Hat Inc. All Rights Reserved.</i>]]></bottom>
-         <group title="HornetQ Core API" packages="org.hornetq, org.hornetq.core.buffers, org.hornetq.core.client, org.hornetq.core.config, org.hornetq.core.config.cluster, org.hornetq.core.exception, org.hornetq.core.message, org.hornetq.utils"/>
-         <group title="HornetQ Management API" packages="org.hornetq.core.management"/>
-      	<group title="HornetQ Remoting API &amp; SPI " packages="org.hornetq.core.remoting, org.hornetq.core.remoting.spi"/>
-         <group title="JMS Facade" packages="org.hornetq.jms, org.hornetq.jms.client"/>
-         <group title="JMS Management API" packages="org.hornetq.jms.management"/>
+         <group title="HornetQ Core" packages="org.hornetq.api, org.hornetq.api.core.*"/>
+         <group title="JMS" packages="org.hornetq.api.jms, org.hornetq.api.jms.*"/>
+         <group title="HornetQ SPI" packages="org.hornetq.spi.*"/>
       	<link href="http://java.sun.com/j2se/1.5.0/docs/api"/>
       	<link href="http://java.sun.com/javaee/5/docs/api/"/>
       </javadoc>

@@ -28,7 +28,7 @@
       <title>Implementing The Interceptors</title>
       <para>A interceptor must implement the <literal>Interceptor interface</literal>:</para>
       <programlisting>
-package org.hornetq.core.remoting;
+package org.hornetq.api.core.interceptor;
 
 public interface Interceptor
 {   

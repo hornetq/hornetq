@@ -16,7 +16,7 @@ package org.hornetq.core.postoffice;
 import java.io.Serializable;
 import java.util.List;
 
-import org.hornetq.SimpleString;
+import org.hornetq.api.SimpleString;
 
 /**
  * A QueueInfo

@@ -27,10 +27,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 import junit.framework.Assert;
 import junit.framework.TestSuite;
 
+import org.hornetq.api.core.exception.HornetQException;
 import org.hornetq.core.asyncio.AIOCallback;
 import org.hornetq.core.asyncio.BufferCallback;
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
-import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.HornetQThreadFactory;

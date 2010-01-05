@@ -16,7 +16,7 @@ package org.hornetq.tests.concurrent.server.impl;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.hornetq.SimpleString;
+import org.hornetq.api.SimpleString;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HandleStatus;
 import org.hornetq.core.server.MessageReference;

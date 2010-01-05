@@ -27,15 +27,15 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import junit.framework.Assert;
 
-import org.hornetq.SimpleString;
-import org.hornetq.core.buffers.HornetQBuffer;
-import org.hornetq.core.buffers.HornetQBuffers;
-import org.hornetq.core.client.ClientMessage;
-import org.hornetq.core.client.MessageHandler;
+import org.hornetq.api.SimpleString;
+import org.hornetq.api.core.buffers.HornetQBuffer;
+import org.hornetq.api.core.buffers.HornetQBuffers;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.MessageHandler;
+import org.hornetq.api.core.exception.HornetQException;
 import org.hornetq.core.client.impl.ClientConsumerInternal;
 import org.hornetq.core.client.impl.ClientMessageInternal;
 import org.hornetq.core.client.impl.LargeMessageBufferImpl;
-import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionReceiveContinuationMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionReceiveLargeMessage;

@@ -18,7 +18,7 @@ import java.net.URL;
 
 import junit.framework.Assert;
 
-import org.hornetq.Pair;
+import org.hornetq.api.Pair;
 import org.hornetq.core.deployers.Deployer;
 import org.hornetq.core.deployers.impl.FileDeploymentManager;
 import org.hornetq.core.logging.Logger;

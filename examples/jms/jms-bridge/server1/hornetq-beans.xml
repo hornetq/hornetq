@@ -28,7 +28,7 @@
    </bean> 
 
    <!-- The core configuration -->
-   <bean name="Configuration" class="org.hornetq.core.config.FileConfiguration"/>
+   <bean name="Configuration" class="org.hornetq.api.core.config.FileConfiguration"/>
 
    <!-- The security manager -->
    <bean name="HornetQSecurityManager" class="org.hornetq.core.security.impl.HornetQSecurityManagerImpl">
@@ -54,7 +54,7 @@
    </bean>
    
    <!-- The JMS server -->
-   <bean name="JMSServerManager" class="org.hornetq.jms.server.JMSServerManagerImpl">
+   <bean name="JMSServerManager" class="org.hornetq.api.jms.server.JMSServerManagerImpl">
       <constructor>         
          <parameter>
             <inject bean="HornetQServer"/>
@@ -63,7 +63,7 @@
    </bean>
    
    <!-- The JMS Bridge -->
-   <bean name="JMSBridge" class="org.hornetq.jms.bridge.impl.JMSBridgeImpl">
+   <bean name="JMSBridge" class="org.hornetq.api.jms.bridge.impl.JMSBridgeImpl">
            <constructor>
                <!-- Source ConnectionFactory Factory -->
                <parameter>
@@ -126,7 +126,7 @@
        </bean>
 
        <!-- SourceCFF describes the ConnectionFactory used to connect to the source destination -->
-       <bean name="SourceCFF" class="org.hornetq.jms.bridge.impl.JNDIConnectionFactoryFactory">
+       <bean name="SourceCFF" class="org.hornetq.api.jms.bridge.impl.JNDIConnectionFactoryFactory">
            <constructor>
                <parameter>
                    <inject bean="SourceJNDI" />
@@ -136,7 +136,7 @@
        </bean>
 
        <!-- TargetCFF describes the ConnectionFactory used to connect to the target destination -->
-       <bean name="TargetCFF" class="org.hornetq.jms.bridge.impl.JNDIConnectionFactoryFactory">
+       <bean name="TargetCFF" class="org.hornetq.api.jms.bridge.impl.JNDIConnectionFactoryFactory">
            <constructor>
                <parameter>
                    <inject bean="TargetJNDI" />
@@ -146,7 +146,7 @@
        </bean>
 
        <!-- SourceDestinationFactory describes the Destination used as the source -->
-       <bean name="SourceDestinationFactory" class="org.hornetq.jms.bridge.impl.JNDIDestinationFactory">
+       <bean name="SourceDestinationFactory" class="org.hornetq.api.jms.bridge.impl.JNDIDestinationFactory">
            <constructor>
                <parameter>
                    <inject bean="SourceJNDI" />
@@ -156,7 +156,7 @@
        </bean>
 
        <!-- TargetDestinationFactory describes the Destination used as the target -->
-       <bean name="TargetDestinationFactory" class="org.hornetq.jms.bridge.impl.JNDIDestinationFactory">
+       <bean name="TargetDestinationFactory" class="org.hornetq.api.jms.bridge.impl.JNDIDestinationFactory">
            <constructor>
                <parameter>
                    <inject bean="TargetJNDI" />

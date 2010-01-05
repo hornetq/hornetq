@@ -17,6 +17,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import org.hornetq.core.logging.impl.JULLogDelegateFactory;
+import org.hornetq.spi.core.logging.LogDelegate;
+import org.hornetq.spi.core.logging.LogDelegateFactory;
 
 /**
  * 

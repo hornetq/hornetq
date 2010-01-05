@@ -26,9 +26,9 @@ import java.nio.channels.ScatteringByteChannel;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
-import org.hornetq.SimpleString;
-import org.hornetq.core.buffers.HornetQBuffer;
-import org.hornetq.core.exception.HornetQException;
+import org.hornetq.api.SimpleString;
+import org.hornetq.api.core.buffers.HornetQBuffer;
+import org.hornetq.api.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.impl.wireformat.SessionReceiveContinuationMessage;
 import org.hornetq.utils.DataConstants;
@@ -313,7 +313,7 @@ public class LargeMessageBufferImpl implements LargeMessageBufferInternal
    // Channel Buffer Implementation ---------------------------------
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.buffers.ChannelBuffer#array()
+    * @see org.hornetq.api.core.buffers.ChannelBuffer#array()
     */
    public byte[] array()
    {
@@ -321,7 +321,7 @@ public class LargeMessageBufferImpl implements LargeMessageBufferInternal
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.buffers.ChannelBuffer#capacity()
+    * @see org.hornetq.api.core.buffers.ChannelBuffer#capacity()
     */
    public int capacity()
    {
@@ -334,7 +334,7 @@ public class LargeMessageBufferImpl implements LargeMessageBufferInternal
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.buffers.ChannelBuffer#getByte(int)
+    * @see org.hornetq.api.core.buffers.ChannelBuffer#getByte(int)
     */
    public byte getByte(final int index)
    {
@@ -356,7 +356,7 @@ public class LargeMessageBufferImpl implements LargeMessageBufferInternal
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.buffers.ChannelBuffer#getBytes(int, org.hornetq.core.buffers.ChannelBuffer, int, int)
+    * @see org.hornetq.api.core.buffers.ChannelBuffer#getBytes(int, org.hornetq.api.core.buffers.ChannelBuffer, int, int)
     */
    public void getBytes(final int index, final HornetQBuffer dst, final int dstIndex, final int length)
    {
@@ -366,7 +366,7 @@ public class LargeMessageBufferImpl implements LargeMessageBufferInternal
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.buffers.ChannelBuffer#getBytes(int, org.hornetq.core.buffers.ChannelBuffer, int, int)
+    * @see org.hornetq.api.core.buffers.ChannelBuffer#getBytes(int, org.hornetq.api.core.buffers.ChannelBuffer, int, int)
     */
    public void getBytes(final long index, final HornetQBuffer dst, final int dstIndex, final int length)
    {
@@ -376,7 +376,7 @@ public class LargeMessageBufferImpl implements LargeMessageBufferInternal
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.buffers.ChannelBuffer#getBytes(int, byte[], int, int)
+    * @see org.hornetq.api.core.buffers.ChannelBuffer#getBytes(int, byte[], int, int)
     */
    public void getBytes(final int index, final byte[] dst, final int dstIndex, final int length)
    {
@@ -397,7 +397,7 @@ public class LargeMessageBufferImpl implements LargeMessageBufferInternal
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.buffers.ChannelBuffer#getBytes(int, java.nio.ByteBuffer)
+    * @see org.hornetq.api.core.buffers.ChannelBuffer#getBytes(int, java.nio.ByteBuffer)
     */
    public void getBytes(final int index, final ByteBuffer dst)
    {
@@ -414,7 +414,7 @@ public class LargeMessageBufferImpl implements LargeMessageBufferInternal
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.buffers.ChannelBuffer#getBytes(int, java.io.OutputStream, int)
+    * @see org.hornetq.api.core.buffers.ChannelBuffer#getBytes(int, java.io.OutputStream, int)
     */
    public void getBytes(final int index, final OutputStream out, final int length) throws IOException
    {
@@ -431,7 +431,7 @@ public class LargeMessageBufferImpl implements LargeMessageBufferInternal
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.buffers.ChannelBuffer#getBytes(int, java.nio.channels.GatheringByteChannel, int)
+    * @see org.hornetq.api.core.buffers.ChannelBuffer#getBytes(int, java.nio.channels.GatheringByteChannel, int)
     */
    public int getBytes(final int index, final GatheringByteChannel out, final int length) throws IOException
    {
@@ -441,7 +441,7 @@ public class LargeMessageBufferImpl implements LargeMessageBufferInternal
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.buffers.ChannelBuffer#getInt(int)
+    * @see org.hornetq.api.core.buffers.ChannelBuffer#getInt(int)
     */
    public int getInt(final int index)
    {
@@ -458,7 +458,7 @@ public class LargeMessageBufferImpl implements LargeMessageBufferInternal
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.buffers.ChannelBuffer#getLong(int)
+    * @see org.hornetq.api.core.buffers.ChannelBuffer#getLong(int)
     */
    public long getLong(final int index)
    {
@@ -483,7 +483,7 @@ public class LargeMessageBufferImpl implements LargeMessageBufferInternal
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.buffers.ChannelBuffer#getShort(int)
+    * @see org.hornetq.api.core.buffers.ChannelBuffer#getShort(int)
     */
    public short getShort(final int index)
    {
@@ -496,7 +496,7 @@ public class LargeMessageBufferImpl implements LargeMessageBufferInternal
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.buffers.ChannelBuffer#getUnsignedMedium(int)
+    * @see org.hornetq.api.core.buffers.ChannelBuffer#getUnsignedMedium(int)
     */
    public int getUnsignedMedium(final int index)
    {
@@ -509,7 +509,7 @@ public class LargeMessageBufferImpl implements LargeMessageBufferInternal
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.buffers.ChannelBuffer#setByte(int, byte)
+    * @see org.hornetq.api.core.buffers.ChannelBuffer#setByte(int, byte)
     */
    public void setByte(final int index, final byte value)
    {
@@ -517,7 +517,7 @@ public class LargeMessageBufferImpl implements LargeMessageBufferInternal
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.buffers.ChannelBuffer#setBytes(int, org.hornetq.core.buffers.ChannelBuffer, int, int)
+    * @see org.hornetq.api.core.buffers.ChannelBuffer#setBytes(int, org.hornetq.api.core.buffers.ChannelBuffer, int, int)
     */
    public void setBytes(final int index, final HornetQBuffer src, final int srcIndex, final int length)
    {
@@ -525,7 +525,7 @@ public class LargeMessageBufferImpl implements LargeMessageBufferInternal
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.buffers.ChannelBuffer#setBytes(int, byte[], int, int)
+    * @see org.hornetq.api.core.buffers.ChannelBuffer#setBytes(int, byte[], int, int)
     */
    public void setBytes(final int index, final byte[] src, final int srcIndex, final int length)
    {
@@ -533,7 +533,7 @@ public class LargeMessageBufferImpl implements LargeMessageBufferInternal
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.buffers.ChannelBuffer#setBytes(int, java.nio.ByteBuffer)
+    * @see org.hornetq.api.core.buffers.ChannelBuffer#setBytes(int, java.nio.ByteBuffer)
     */
    public void setBytes(final int index, final ByteBuffer src)
    {
@@ -541,7 +541,7 @@ public class LargeMessageBufferImpl implements LargeMessageBufferInternal
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.buffers.ChannelBuffer#setBytes(int, java.io.InputStream, int)
+    * @see org.hornetq.api.core.buffers.ChannelBuffer#setBytes(int, java.io.InputStream, int)
     */
    public int setBytes(final int index, final InputStream in, final int length) throws IOException
    {
@@ -549,7 +549,7 @@ public class LargeMessageBufferImpl implements LargeMessageBufferInternal
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.buffers.ChannelBuffer#setBytes(int, java.nio.channels.ScatteringByteChannel, int)
+    * @see org.hornetq.api.core.buffers.ChannelBuffer#setBytes(int, java.nio.channels.ScatteringByteChannel, int)
     */
    public int setBytes(final int index, final ScatteringByteChannel in, final int length) throws IOException
    {
@@ -557,7 +557,7 @@ public class LargeMessageBufferImpl implements LargeMessageBufferInternal
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.buffers.ChannelBuffer#setInt(int, int)
+    * @see org.hornetq.api.core.buffers.ChannelBuffer#setInt(int, int)
     */
    public void setInt(final int index, final int value)
    {
@@ -565,7 +565,7 @@ public class LargeMessageBufferImpl implements LargeMessageBufferInternal
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.buffers.ChannelBuffer#setLong(int, long)
+    * @see org.hornetq.api.core.buffers.ChannelBuffer#setLong(int, long)
     */
    public void setLong(final int index, final long value)
    {
@@ -573,7 +573,7 @@ public class LargeMessageBufferImpl implements LargeMessageBufferInternal
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.buffers.ChannelBuffer#setMedium(int, int)
+    * @see org.hornetq.api.core.buffers.ChannelBuffer#setMedium(int, int)
     */
    public void setMedium(final int index, final int value)
    {
@@ -581,7 +581,7 @@ public class LargeMessageBufferImpl implements LargeMessageBufferInternal
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.buffers.ChannelBuffer#setShort(int, short)
+    * @see org.hornetq.api.core.buffers.ChannelBuffer#setShort(int, short)
     */
    public void setShort(final int index, final short value)
    {
@@ -589,7 +589,7 @@ public class LargeMessageBufferImpl implements LargeMessageBufferInternal
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.buffers.ChannelBuffer#toByteBuffer(int, int)
+    * @see org.hornetq.api.core.buffers.ChannelBuffer#toByteBuffer(int, int)
     */
    public ByteBuffer toByteBuffer(final int index, final int length)
    {
@@ -597,7 +597,7 @@ public class LargeMessageBufferImpl implements LargeMessageBufferInternal
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.buffers.ChannelBuffer#toString(int, int, java.lang.String)
+    * @see org.hornetq.api.core.buffers.ChannelBuffer#toString(int, int, java.lang.String)
     */
    public String toString(final int index, final int length, final String charsetName)
    {
@@ -1006,7 +1006,7 @@ public class LargeMessageBufferImpl implements LargeMessageBufferInternal
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.remoting.spi.HornetQBuffer#readBoolean()
+    * @see org.hornetq.spi.core.remoting.HornetQBuffer#readBoolean()
     */
    public boolean readBoolean()
    {
@@ -1014,7 +1014,7 @@ public class LargeMessageBufferImpl implements LargeMessageBufferInternal
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.remoting.spi.HornetQBuffer#readChar()
+    * @see org.hornetq.spi.core.remoting.HornetQBuffer#readChar()
     */
    public char readChar()
    {
@@ -1022,7 +1022,7 @@ public class LargeMessageBufferImpl implements LargeMessageBufferInternal
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.remoting.spi.HornetQBuffer#readDouble()
+    * @see org.hornetq.spi.core.remoting.HornetQBuffer#readDouble()
     */
    public double readDouble()
    {
@@ -1030,7 +1030,7 @@ public class LargeMessageBufferImpl implements LargeMessageBufferInternal
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.remoting.spi.HornetQBuffer#readFloat()
+    * @see org.hornetq.spi.core.remoting.HornetQBuffer#readFloat()
     */
    public float readFloat()
    {
@@ -1038,7 +1038,7 @@ public class LargeMessageBufferImpl implements LargeMessageBufferInternal
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.remoting.spi.HornetQBuffer#readNullableSimpleString()
+    * @see org.hornetq.spi.core.remoting.HornetQBuffer#readNullableSimpleString()
     */
    public SimpleString readNullableSimpleString()
    {
@@ -1054,7 +1054,7 @@ public class LargeMessageBufferImpl implements LargeMessageBufferInternal
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.remoting.spi.HornetQBuffer#readNullableString()
+    * @see org.hornetq.spi.core.remoting.HornetQBuffer#readNullableString()
     */
    public String readNullableString()
    {
@@ -1070,7 +1070,7 @@ public class LargeMessageBufferImpl implements LargeMessageBufferInternal
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.remoting.spi.HornetQBuffer#readSimpleString()
+    * @see org.hornetq.spi.core.remoting.HornetQBuffer#readSimpleString()
     */
    public SimpleString readSimpleString()
    {
@@ -1081,7 +1081,7 @@ public class LargeMessageBufferImpl implements LargeMessageBufferInternal
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.remoting.spi.HornetQBuffer#readString()
+    * @see org.hornetq.spi.core.remoting.HornetQBuffer#readString()
     */
    public String readString()
    {
@@ -1107,7 +1107,7 @@ public class LargeMessageBufferImpl implements LargeMessageBufferInternal
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.remoting.spi.HornetQBuffer#readUTF()
+    * @see org.hornetq.spi.core.remoting.HornetQBuffer#readUTF()
     */
    public String readUTF()
    {
@@ -1115,7 +1115,7 @@ public class LargeMessageBufferImpl implements LargeMessageBufferInternal
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.remoting.spi.HornetQBuffer#writeBoolean(boolean)
+    * @see org.hornetq.spi.core.remoting.HornetQBuffer#writeBoolean(boolean)
     */
    public void writeBoolean(final boolean val)
    {
@@ -1123,7 +1123,7 @@ public class LargeMessageBufferImpl implements LargeMessageBufferInternal
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.remoting.spi.HornetQBuffer#writeChar(char)
+    * @see org.hornetq.spi.core.remoting.HornetQBuffer#writeChar(char)
     */
    public void writeChar(final char val)
    {
@@ -1131,7 +1131,7 @@ public class LargeMessageBufferImpl implements LargeMessageBufferInternal
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.remoting.spi.HornetQBuffer#writeDouble(double)
+    * @see org.hornetq.spi.core.remoting.HornetQBuffer#writeDouble(double)
     */
    public void writeDouble(final double val)
    {
@@ -1140,7 +1140,7 @@ public class LargeMessageBufferImpl implements LargeMessageBufferInternal
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.remoting.spi.HornetQBuffer#writeFloat(float)
+    * @see org.hornetq.spi.core.remoting.HornetQBuffer#writeFloat(float)
     */
    public void writeFloat(final float val)
    {
@@ -1149,7 +1149,7 @@ public class LargeMessageBufferImpl implements LargeMessageBufferInternal
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.remoting.spi.HornetQBuffer#writeNullableSimpleString(org.hornetq.util.SimpleString)
+    * @see org.hornetq.spi.core.remoting.HornetQBuffer#writeNullableSimpleString(org.hornetq.util.SimpleString)
     */
    public void writeNullableSimpleString(final SimpleString val)
    {
@@ -1157,7 +1157,7 @@ public class LargeMessageBufferImpl implements LargeMessageBufferInternal
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.remoting.spi.HornetQBuffer#writeNullableString(java.lang.String)
+    * @see org.hornetq.spi.core.remoting.HornetQBuffer#writeNullableString(java.lang.String)
     */
    public void writeNullableString(final String val)
    {
@@ -1165,7 +1165,7 @@ public class LargeMessageBufferImpl implements LargeMessageBufferInternal
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.remoting.spi.HornetQBuffer#writeSimpleString(org.hornetq.util.SimpleString)
+    * @see org.hornetq.spi.core.remoting.HornetQBuffer#writeSimpleString(org.hornetq.util.SimpleString)
     */
    public void writeSimpleString(final SimpleString val)
    {
@@ -1173,7 +1173,7 @@ public class LargeMessageBufferImpl implements LargeMessageBufferInternal
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.remoting.spi.HornetQBuffer#writeString(java.lang.String)
+    * @see org.hornetq.spi.core.remoting.HornetQBuffer#writeString(java.lang.String)
     */
    public void writeString(final String val)
    {
@@ -1181,7 +1181,7 @@ public class LargeMessageBufferImpl implements LargeMessageBufferInternal
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.remoting.spi.HornetQBuffer#writeUTF(java.lang.String)
+    * @see org.hornetq.spi.core.remoting.HornetQBuffer#writeUTF(java.lang.String)
     */
    public void writeUTF(final String utf)
    {
@@ -1189,7 +1189,7 @@ public class LargeMessageBufferImpl implements LargeMessageBufferInternal
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.buffers.ChannelBuffer#compareTo(org.hornetq.core.buffers.ChannelBuffer)
+    * @see org.hornetq.api.core.buffers.ChannelBuffer#compareTo(org.hornetq.api.core.buffers.ChannelBuffer)
     */
    public int compareTo(final HornetQBuffer buffer)
    {

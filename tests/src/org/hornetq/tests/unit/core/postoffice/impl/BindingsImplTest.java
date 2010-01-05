@@ -20,12 +20,12 @@ import java.util.Set;
 
 import javax.transaction.xa.Xid;
 
-import org.hornetq.SimpleString;
-import org.hornetq.core.buffers.HornetQBuffer;
-import org.hornetq.core.exception.HornetQException;
+import org.hornetq.api.SimpleString;
+import org.hornetq.api.core.buffers.HornetQBuffer;
+import org.hornetq.api.core.exception.HornetQException;
+import org.hornetq.api.core.message.PropertyConversionException;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.message.BodyEncoder;
-import org.hornetq.core.message.PropertyConversionException;
 import org.hornetq.core.paging.PagingStore;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.BindingType;
@@ -204,7 +204,7 @@ public class BindingsImplTest extends UnitTestCase
       }
 
       /* (non-Javadoc)
-       * @see org.hornetq.core.transaction.Transaction#markAsRollbackOnly(org.hornetq.core.exception.HornetQException)
+       * @see org.hornetq.core.transaction.Transaction#markAsRollbackOnly(org.hornetq.api.core.exception.HornetQException)
        */
       public void markAsRollbackOnly(final HornetQException exception)
       {
