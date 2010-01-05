@@ -36,8 +36,8 @@ import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.MessageHandler;
 import org.hornetq.api.core.exception.HornetQException;
+import org.hornetq.api.core.message.Message;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
 import org.hornetq.tests.util.ServiceTestBase;
@@ -589,7 +589,7 @@ public abstract class LargeMessageTestBase extends ServiceTestBase
          {
             long time = System.currentTimeMillis();
             message.putLongProperty(new SimpleString("original-time"), time);
-            message.putLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME, time + delayDelivery);
+            message.putLongProperty(Message.HDR_SCHEDULED_DELIVERY_TIME, time + delayDelivery);
 
             producer.send(message);
          }

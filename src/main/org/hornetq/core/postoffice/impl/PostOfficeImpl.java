@@ -29,10 +29,10 @@ import org.hornetq.api.SimpleString;
 import org.hornetq.api.core.exception.HornetQException;
 import org.hornetq.api.core.management.NotificationType;
 import org.hornetq.api.core.management.client.ManagementHelper;
+import org.hornetq.api.core.message.Message;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.paging.PageTransactionInfo;
 import org.hornetq.core.paging.PagingManager;
 import org.hornetq.core.paging.PagingStore;
@@ -556,7 +556,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
       setPagingStore(message);
 
-      Object duplicateID = message.getObjectProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID);
+      Object duplicateID = message.getObjectProperty(Message.HDR_DUPLICATE_DETECTION_ID);
 
       DuplicateIDCache cache = null;
 
@@ -682,9 +682,9 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
       MessageReference reference = message.createReference(queue);
 
-      if (message.containsProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME))
+      if (message.containsProperty(Message.HDR_SCHEDULED_DELIVERY_TIME))
       {
-         Long scheduledDeliveryTime = message.getLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME);
+         Long scheduledDeliveryTime = message.getLongProperty(Message.HDR_SCHEDULED_DELIVERY_TIME);
          reference.setScheduledDeliveryTime(scheduledDeliveryTime);
       }
 
@@ -867,9 +867,9 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
          refs.add(reference);
 
-         if (message.containsProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME))
+         if (message.containsProperty(Message.HDR_SCHEDULED_DELIVERY_TIME))
          {
-            Long scheduledDeliveryTime = message.getLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME);
+            Long scheduledDeliveryTime = message.getLongProperty(Message.HDR_SCHEDULED_DELIVERY_TIME);
 
             reference.setScheduledDeliveryTime(scheduledDeliveryTime);
          }
@@ -887,9 +887,9 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
          refs.add(reference);
 
-         if (message.containsProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME))
+         if (message.containsProperty(Message.HDR_SCHEDULED_DELIVERY_TIME))
          {
-            Long scheduledDeliveryTime = message.getLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME);
+            Long scheduledDeliveryTime = message.getLongProperty(Message.HDR_SCHEDULED_DELIVERY_TIME);
 
             reference.setScheduledDeliveryTime(scheduledDeliveryTime);
          }
@@ -921,7 +921,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
                storageManager.storeReference(queue.getID(), message.getMessageID(), !iter.hasNext());
             }
 
-            if (message.containsProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME))
+            if (message.containsProperty(Message.HDR_SCHEDULED_DELIVERY_TIME))
             {
                if (tx != null)
                {

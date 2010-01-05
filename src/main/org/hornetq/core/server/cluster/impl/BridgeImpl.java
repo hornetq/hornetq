@@ -437,7 +437,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
             message.putBooleanProperty(MessageImpl.HDR_FROM_CLUSTER, Boolean.TRUE);
          }
 
-         if (useDuplicateDetection && !message.containsProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID))
+         if (useDuplicateDetection && !message.containsProperty(Message.HDR_DUPLICATE_DETECTION_ID))
          {
             // If we are using duplicate detection and there's not already a duplicate detection header, then
             // we add a header composed of the persistent node id and the message id, which makes it globally unique
@@ -455,7 +455,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
 
             bb.putLong(message.getMessageID());
 
-            message.putBytesProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, bytes);
+            message.putBytesProperty(Message.HDR_DUPLICATE_DETECTION_ID, bytes);
          }
 
          if (transformer != null)

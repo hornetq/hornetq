@@ -24,8 +24,8 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
+import org.hornetq.api.core.message.Message;
 import org.hornetq.common.example.HornetQExample;
-import org.hornetq.core.message.impl.MessageImpl;
 
 /**
  * A simple JMS scheduled delivery example that delivers a message in 5 seconds.
@@ -70,7 +70,7 @@ public class ScheduledMessageExample extends HornetQExample
          // Step 8. Set the delivery time to be 5 sec later.
          long time = System.currentTimeMillis();
          time += 5000;
-         message.setLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME.toString(), time);
+         message.setLongProperty(Message.HDR_SCHEDULED_DELIVERY_TIME.toString(), time);
 
          // Step 9. Send the Message
          producer.send(message);

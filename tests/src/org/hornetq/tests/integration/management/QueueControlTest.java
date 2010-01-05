@@ -31,8 +31,8 @@ import org.hornetq.api.core.management.DayCounterInfo;
 import org.hornetq.api.core.management.HornetQServerControl;
 import org.hornetq.api.core.management.MessageCounterInfo;
 import org.hornetq.api.core.management.QueueControl;
+import org.hornetq.api.core.message.Message;
 import org.hornetq.api.core.server.HornetQServers;
-import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.messagecounter.impl.MessageCounterManagerImpl;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
@@ -256,7 +256,7 @@ public class QueueControlTest extends ManagementTestBase
 
       ClientProducer producer = session.createProducer(address);
       ClientMessage message = session.createMessage(false);
-      message.putLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME, System.currentTimeMillis() + delay);
+      message.putLongProperty(Message.HDR_SCHEDULED_DELIVERY_TIME, System.currentTimeMillis() + delay);
       producer.send(message);
 
       Assert.assertEquals(1, queueControl.getScheduledCount());
@@ -282,7 +282,7 @@ public class QueueControlTest extends ManagementTestBase
 
       ClientProducer producer = session.createProducer(address);
       ClientMessage message = session.createMessage(false);
-      message.putLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME, System.currentTimeMillis() + delay);
+      message.putLongProperty(Message.HDR_SCHEDULED_DELIVERY_TIME, System.currentTimeMillis() + delay);
       message.putIntProperty(new SimpleString("key"), intValue);
       producer.send(message);
       // unscheduled message
@@ -314,7 +314,7 @@ public class QueueControlTest extends ManagementTestBase
 
       ClientProducer producer = session.createProducer(address);
       ClientMessage message = session.createMessage(false);
-      message.putLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME, System.currentTimeMillis() + delay);
+      message.putLongProperty(Message.HDR_SCHEDULED_DELIVERY_TIME, System.currentTimeMillis() + delay);
       message.putIntProperty(new SimpleString("key"), intValue);
       producer.send(message);
       // unscheduled message

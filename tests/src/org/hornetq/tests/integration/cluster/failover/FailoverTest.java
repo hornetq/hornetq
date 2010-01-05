@@ -37,10 +37,10 @@ import org.hornetq.api.core.client.SessionFailureListener;
 import org.hornetq.api.core.config.TransportConfiguration;
 import org.hornetq.api.core.exception.HornetQException;
 import org.hornetq.api.core.interceptor.Interceptor;
+import org.hornetq.api.core.message.Message;
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.remoting.RemotingConnection;
 import org.hornetq.core.remoting.impl.invm.TransportConstants;
 import org.hornetq.core.transaction.impl.XidImpl;
@@ -1961,7 +1961,7 @@ public class FailoverTest extends FailoverTestBase
          if (i == 0)
          {
             // Only need to add it on one message per tx
-            message.putStringProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, new SimpleString(txID));
+            message.putStringProperty(Message.HDR_DUPLICATE_DETECTION_ID, new SimpleString(txID));
          }
 
          setBody(i, message);
@@ -2045,7 +2045,7 @@ public class FailoverTest extends FailoverTestBase
          if (i == 0)
          {
             // Only need to add it on one message per tx
-            message.putStringProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, new SimpleString(txID));
+            message.putStringProperty(Message.HDR_DUPLICATE_DETECTION_ID, new SimpleString(txID));
          }
 
          setBody(i, message);

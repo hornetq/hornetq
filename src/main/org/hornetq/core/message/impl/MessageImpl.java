@@ -51,25 +51,9 @@ public abstract class MessageImpl implements MessageInternal
 
    private static final Logger log = Logger.getLogger(MessageImpl.class);
 
-   public static final SimpleString HDR_ACTUAL_EXPIRY_TIME = new SimpleString("_HQ_ACTUAL_EXPIRY");
-
-   public static final SimpleString HDR_ORIGINAL_ADDRESS = new SimpleString("_HQ_ORIG_ADDRESS");
-
-   public static final SimpleString HDR_ORIG_MESSAGE_ID = new SimpleString("_HQ_ORIG_MESSAGE_ID");
-
-   public static final SimpleString HDR_GROUP_ID = new SimpleString("_HQ_GROUP_ID");
-
-   public static final SimpleString HDR_SCHEDULED_DELIVERY_TIME = new SimpleString("_HQ_SCHED_DELIVERY");
-
-   public static final SimpleString HDR_DUPLICATE_DETECTION_ID = new SimpleString("_HQ_DUPL_ID");
-
    public static final SimpleString HDR_ROUTE_TO_IDS = new SimpleString("_HQ_ROUTE_TO");
 
    public static final SimpleString HDR_FROM_CLUSTER = new SimpleString("_HQ_FROM_CLUSTER");
-
-   public static final SimpleString HDR_LAST_VALUE_NAME = new SimpleString("_HQ_LVQ_NAME");
-
-   // Attributes ----------------------------------------------------
 
    protected long messageID;
 

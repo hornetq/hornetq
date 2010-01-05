@@ -31,11 +31,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.hornetq.api.SimpleString;
+import org.hornetq.api.core.message.Message;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.list.PriorityLinkedList;
 import org.hornetq.core.list.impl.PriorityLinkedListImpl;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.Bindings;
 import org.hornetq.core.postoffice.PostOffice;
@@ -1136,7 +1136,7 @@ public class QueueImpl implements Queue
             }
             else
             {
-               final SimpleString groupID = reference.getMessage().getSimpleStringProperty(MessageImpl.HDR_GROUP_ID);
+               final SimpleString groupID = reference.getMessage().getSimpleStringProperty(Message.HDR_GROUP_ID);
 
                boolean tryHandle = true;
 
@@ -1225,7 +1225,7 @@ public class QueueImpl implements Queue
 
          if (!checkExpired(reference))
          {
-            SimpleString groupID = reference.getMessage().getSimpleStringProperty(MessageImpl.HDR_GROUP_ID);
+            SimpleString groupID = reference.getMessage().getSimpleStringProperty(Message.HDR_GROUP_ID);
 
             boolean tryHandle = true;
 

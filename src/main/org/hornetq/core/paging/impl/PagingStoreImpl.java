@@ -28,10 +28,10 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.hornetq.api.SimpleString;
+import org.hornetq.api.core.message.Message;
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.paging.Page;
 import org.hornetq.core.paging.PageTransactionInfo;
 import org.hornetq.core.paging.PagedMessage;
@@ -853,7 +853,7 @@ public class PagingStoreImpl implements TestSupportPageStore
 
             buff.putLong(message.getMessageID());
 
-            message.putBytesProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, bytes);
+            message.putBytesProperty(Message.HDR_DUPLICATE_DETECTION_ID, bytes);
          }
 
          PagedMessage pagedMessage;

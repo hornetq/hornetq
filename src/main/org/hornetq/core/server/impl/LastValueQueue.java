@@ -17,9 +17,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledExecutorService;
 
 import org.hornetq.api.SimpleString;
+import org.hornetq.api.core.message.Message;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.server.MessageReference;
@@ -70,7 +70,7 @@ public class LastValueQueue extends QueueImpl
    @Override
    public synchronized void add(final MessageReference ref, final boolean first)
    {
-      SimpleString prop = ref.getMessage().getSimpleStringProperty(MessageImpl.HDR_LAST_VALUE_NAME);
+      SimpleString prop = ref.getMessage().getSimpleStringProperty(Message.HDR_LAST_VALUE_NAME);
 
       if (prop != null)
       {

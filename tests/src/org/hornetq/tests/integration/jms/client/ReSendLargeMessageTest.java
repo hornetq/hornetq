@@ -33,7 +33,7 @@ import junit.framework.Assert;
 import org.hornetq.api.Pair;
 import org.hornetq.api.core.client.ClientSessionFactoryImpl;
 import org.hornetq.api.core.config.TransportConfiguration;
-import org.hornetq.jms.client.HornetQMessage;
+import org.hornetq.api.jms.HornetQMessageConstants;
 import org.hornetq.tests.util.JMSTestBase;
 import org.hornetq.tests.util.UnitTestCase;
 
@@ -72,7 +72,7 @@ public class ReSendLargeMessageTest extends JMSTestBase
          for (int i = 0; i < 10; i++)
          {
             BytesMessage bm = sess.createBytesMessage();
-            bm.setObjectProperty(HornetQMessage.JMS_HORNETQ_INPUT_STREAM,
+            bm.setObjectProperty(HornetQMessageConstants.JMS_HORNETQ_INPUT_STREAM,
                                  UnitTestCase.createFakeLargeStream(2 * ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE));
             msgs.add(bm);
 

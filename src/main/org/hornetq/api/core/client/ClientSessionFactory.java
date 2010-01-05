@@ -410,7 +410,7 @@ public interface ClientSessionFactory
     * assign a group ID to the messages they sent.
     * 
     * if <code>true</code>, a random unique group ID is created and set on each message for the property
-    * {@link org.hornetq.core.message.impl.MessageImpl#HDR_GROUP_ID}.
+    * {@link org.hornetq.api.core.message.Message#HDR_GROUP_ID}.
     * Default value is {@value org.hornetq.api.core.client.ClientSessionFactoryImpl#DEFAULT_AUTO_GROUP}.
     * 
     * @return whether producers will automatically assign a group ID to their messages
@@ -426,7 +426,7 @@ public interface ClientSessionFactory
    void setAutoGroup(boolean autoGroup);
 
    /**
-    * Returns the group ID that will be eventually set on each message for the property {@link org.hornetq.core.message.impl.MessageImpl#HDR_GROUP_ID}.
+    * Returns the group ID that will be eventually set on each message for the property {@link org.hornetq.api.core.message.Message#HDR_GROUP_ID}.
     * 
     * Default value is is <code>null</code> and no group ID will be set on the messages.
     * 

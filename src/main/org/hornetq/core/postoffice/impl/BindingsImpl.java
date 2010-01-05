@@ -23,6 +23,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.hornetq.api.SimpleString;
 import org.hornetq.api.core.exception.HornetQException;
+import org.hornetq.api.core.message.Message;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.impl.MessageImpl;
@@ -241,7 +242,7 @@ public class BindingsImpl implements Bindings
          {
             routeFromCluster(message, context);
          }
-         else if (groupingHandler != null && message.containsProperty(MessageImpl.HDR_GROUP_ID))
+         else if (groupingHandler != null && message.containsProperty(Message.HDR_GROUP_ID))
          {
             routeUsingStrictOrdering(message, context, groupingHandler);
          }
@@ -376,7 +377,7 @@ public class BindingsImpl implements Bindings
                                          final RoutingContext context,
                                          final GroupingHandler groupingGroupingHandler) throws Exception
    {
-      SimpleString groupId = message.getSimpleStringProperty(MessageImpl.HDR_GROUP_ID);
+      SimpleString groupId = message.getSimpleStringProperty(Message.HDR_GROUP_ID);
 
       for (Map.Entry<SimpleString, List<Binding>> entry : routingNameBindingMap.entrySet())
       {

@@ -23,7 +23,6 @@ import org.hornetq.api.core.exception.HornetQException;
 import org.hornetq.api.core.message.Message;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.BodyEncoder;
-import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.message.impl.MessageInternal;
 import org.hornetq.core.remoting.Channel;
 import org.hornetq.core.remoting.impl.wireformat.SessionSendContinuationMessage;
@@ -239,7 +238,7 @@ public class ClientProducerImpl implements ClientProducerInternal
 
       if (groupID != null)
       {
-         msgI.putStringProperty(MessageImpl.HDR_GROUP_ID, groupID);
+         msgI.putStringProperty(Message.HDR_GROUP_ID, groupID);
       }
 
       boolean sendBlocking = msgI.isDurable() ? blockOnDurableSend : blockOnNonDurableSend;

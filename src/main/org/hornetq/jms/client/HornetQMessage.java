@@ -40,9 +40,9 @@ import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.exception.HornetQException;
 import org.hornetq.api.core.message.PropertyConversionException;
 import org.hornetq.api.jms.HornetQDestination;
+import org.hornetq.api.jms.HornetQMessageConstants;
 import org.hornetq.core.client.impl.ClientMessageImpl;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.message.impl.MessageImpl;
 
 /**
  * HornetQ implementation of a JMS Message.
@@ -66,13 +66,13 @@ public class HornetQMessage implements javax.jms.Message
 {
    // Constants -----------------------------------------------------
 
-   public static final SimpleString REPLYTO_HEADER_NAME = ClientMessageImpl.REPLYTO_HEADER_NAME;
+   private static final SimpleString REPLYTO_HEADER_NAME = ClientMessageImpl.REPLYTO_HEADER_NAME;
 
-   public static final SimpleString CORRELATIONID_HEADER_NAME = new SimpleString("JMSCorrelationID");
+   private static final SimpleString CORRELATIONID_HEADER_NAME = new SimpleString("JMSCorrelationID");
 
    public static final SimpleString HORNETQ_MESSAGE_ID = new SimpleString("JMSMessageID");
 
-   public static final SimpleString TYPE_HEADER_NAME = new SimpleString("JMSType");
+   private static final SimpleString TYPE_HEADER_NAME = new SimpleString("JMSType");
 
    private static final SimpleString JMS = new SimpleString("JMS");
 
@@ -80,18 +80,9 @@ public class HornetQMessage implements javax.jms.Message
 
    private static final SimpleString JMS_ = new SimpleString("JMS_");
 
-   public static final String JMSXDELIVERYCOUNT = "JMSXDeliveryCount";
+   private static final String JMSXDELIVERYCOUNT = "JMSXDeliveryCount";
 
-   public static final String JMS_HORNETQ_INPUT_STREAM = "JMS_HQ_InputStream";
-
-   public static final String JMS_HORNETQ_OUTPUT_STREAM = "JMS_HQ_OutputStream";
-
-   public static final String JMS_HORNETQ_SAVE_STREAM = "JMS_HQ_SaveStream";
-
-   public static final String JMSXGROUPID = "JMSXGroupID";
-
-   // Used when bridging a message
-   public static final String JBOSS_MESSAGING_BRIDGE_MESSAGE_ID_LIST = "HQ_BRIDGE_MSG_ID_LIST";
+   private static final String JMSXGROUPID = "JMSXGroupID";
 
    public static final byte TYPE = 0;
 
@@ -579,7 +570,7 @@ public class HornetQMessage implements javax.jms.Message
    {
       return message.containsProperty(new SimpleString(name)) || name.equals(HornetQMessage.JMSXDELIVERYCOUNT) ||
              HornetQMessage.JMSXGROUPID.equals(name) &&
-             message.containsProperty(MessageImpl.HDR_GROUP_ID);
+             message.containsProperty(org.hornetq.api.core.message.Message.HDR_GROUP_ID);
    }
 
    public boolean getBooleanProperty(final String name) throws JMSException
@@ -687,7 +678,7 @@ public class HornetQMessage implements javax.jms.Message
       {
          if (HornetQMessage.JMSXGROUPID.equals(name))
          {
-            return message.getStringProperty(MessageImpl.HDR_GROUP_ID);
+            return message.getStringProperty(org.hornetq.api.core.message.Message.HDR_GROUP_ID);
          }
          else
          {
@@ -788,7 +779,7 @@ public class HornetQMessage implements javax.jms.Message
 
       if (HornetQMessage.JMSXGROUPID.equals(name))
       {
-         message.putStringProperty(MessageImpl.HDR_GROUP_ID, new SimpleString(value));
+         message.putStringProperty(org.hornetq.api.core.message.Message.HDR_GROUP_ID, new SimpleString(value));
       }
       else
       {
@@ -798,13 +789,13 @@ public class HornetQMessage implements javax.jms.Message
 
    public void setObjectProperty(final String name, final Object value) throws JMSException
    {
-      if (HornetQMessage.JMS_HORNETQ_OUTPUT_STREAM.equals(name))
+      if (HornetQMessageConstants.JMS_HORNETQ_OUTPUT_STREAM.equals(name))
       {
          setOutputStream((OutputStream)value);
 
          return;
       }
-      else if (HornetQMessage.JMS_HORNETQ_SAVE_STREAM.equals(name))
+      else if (HornetQMessageConstants.JMS_HORNETQ_SAVE_STREAM.equals(name))
       {
          saveToOutputStream((OutputStream)value);
 
@@ -819,7 +810,7 @@ public class HornetQMessage implements javax.jms.Message
          return;
       }
 
-      if (HornetQMessage.JMS_HORNETQ_INPUT_STREAM.equals(name))
+      if (HornetQMessageConstants.JMS_HORNETQ_INPUT_STREAM.equals(name))
       {
          setInputStream((InputStream)value);
 
@@ -987,11 +978,11 @@ public class HornetQMessage implements javax.jms.Message
    {
       if (propertiesReadOnly)
       {
-         if (name.equals(HornetQMessage.JMS_HORNETQ_INPUT_STREAM))
+         if (name.equals(HornetQMessageConstants.JMS_HORNETQ_INPUT_STREAM))
          {
-            throw new MessageNotWriteableException("You cannot set the Input Stream on received messages. Did you mean " + HornetQMessage.JMS_HORNETQ_OUTPUT_STREAM +
+            throw new MessageNotWriteableException("You cannot set the Input Stream on received messages. Did you mean " + HornetQMessageConstants.JMS_HORNETQ_OUTPUT_STREAM +
                                                    " or " +
-                                                   HornetQMessage.JMS_HORNETQ_SAVE_STREAM +
+                                                   HornetQMessageConstants.JMS_HORNETQ_SAVE_STREAM +
                                                    "?");
          }
          else

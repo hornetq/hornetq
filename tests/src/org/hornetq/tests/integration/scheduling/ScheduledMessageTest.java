@@ -24,8 +24,8 @@ import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.config.Configuration;
+import org.hornetq.api.core.message.Message;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.core.transaction.impl.XidImpl;
@@ -139,7 +139,7 @@ public class ScheduledMessageTest extends ServiceTestBase
       ClientMessage message = createDurableMessage(session, "m1");
       long time = System.currentTimeMillis();
       time += 10000;
-      message.putLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME, time);
+      message.putLongProperty(Message.HDR_SCHEDULED_DELIVERY_TIME, time);
       producer.send(message);
 
       producer.close();
@@ -289,7 +289,7 @@ public class ScheduledMessageTest extends ServiceTestBase
       message.setDurable(true);
       long time = System.currentTimeMillis();
       time += 10000;
-      message.putLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME, time);
+      message.putLongProperty(Message.HDR_SCHEDULED_DELIVERY_TIME, time);
       producer.send(message);
 
       ScheduledMessageTest.log.info("Recover is " + recover);
@@ -336,19 +336,19 @@ public class ScheduledMessageTest extends ServiceTestBase
       ClientMessage m5 = createDurableMessage(session, "m5");
       long time = System.currentTimeMillis();
       time += 10000;
-      m1.putLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME, time);
+      m1.putLongProperty(Message.HDR_SCHEDULED_DELIVERY_TIME, time);
       producer.send(m1);
       time += 1000;
-      m2.putLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME, time);
+      m2.putLongProperty(Message.HDR_SCHEDULED_DELIVERY_TIME, time);
       producer.send(m2);
       time += 1000;
-      m3.putLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME, time);
+      m3.putLongProperty(Message.HDR_SCHEDULED_DELIVERY_TIME, time);
       producer.send(m3);
       time += 1000;
-      m4.putLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME, time);
+      m4.putLongProperty(Message.HDR_SCHEDULED_DELIVERY_TIME, time);
       producer.send(m4);
       time += 1000;
-      m5.putLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME, time);
+      m5.putLongProperty(Message.HDR_SCHEDULED_DELIVERY_TIME, time);
       producer.send(m5);
       time -= 4000;
       if (recover)
@@ -416,19 +416,19 @@ public class ScheduledMessageTest extends ServiceTestBase
       ClientMessage m5 = createDurableMessage(session, "m5");
       long time = System.currentTimeMillis();
       time += 10000;
-      m1.putLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME, time);
+      m1.putLongProperty(Message.HDR_SCHEDULED_DELIVERY_TIME, time);
       producer.send(m1);
       time += 3000;
-      m2.putLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME, time);
+      m2.putLongProperty(Message.HDR_SCHEDULED_DELIVERY_TIME, time);
       producer.send(m2);
       time -= 2000;
-      m3.putLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME, time);
+      m3.putLongProperty(Message.HDR_SCHEDULED_DELIVERY_TIME, time);
       producer.send(m3);
       time += 3000;
-      m4.putLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME, time);
+      m4.putLongProperty(Message.HDR_SCHEDULED_DELIVERY_TIME, time);
       producer.send(m4);
       time -= 2000;
-      m5.putLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME, time);
+      m5.putLongProperty(Message.HDR_SCHEDULED_DELIVERY_TIME, time);
       producer.send(m5);
       time -= 2000;
       ClientConsumer consumer = null;
@@ -497,15 +497,15 @@ public class ScheduledMessageTest extends ServiceTestBase
       ClientMessage m5 = createDurableMessage(session, "m5");
       long time = System.currentTimeMillis();
       time += 10000;
-      m1.putLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME, time);
+      m1.putLongProperty(Message.HDR_SCHEDULED_DELIVERY_TIME, time);
       producer.send(m1);
       producer.send(m2);
       time += 1000;
-      m3.putLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME, time);
+      m3.putLongProperty(Message.HDR_SCHEDULED_DELIVERY_TIME, time);
       producer.send(m3);
       producer.send(m4);
       time += 1000;
-      m5.putLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME, time);
+      m5.putLongProperty(Message.HDR_SCHEDULED_DELIVERY_TIME, time);
       producer.send(m5);
       time -= 2000;
       ClientConsumer consumer = null;
@@ -567,7 +567,7 @@ public class ScheduledMessageTest extends ServiceTestBase
       ClientProducer producer = session.createProducer(atestq);
       ClientMessage message = createDurableMessage(session, "testINVMCoreClient");
       long time = System.currentTimeMillis() + 1000;
-      message.putLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME, time);
+      message.putLongProperty(Message.HDR_SCHEDULED_DELIVERY_TIME, time);
       producer.send(message);
       session.end(xid, XAResource.TMSUCCESS);
       session.prepare(xid);
@@ -641,7 +641,7 @@ public class ScheduledMessageTest extends ServiceTestBase
       long now = System.currentTimeMillis();
 
       ClientMessage tm1 = createDurableMessage(session, "testScheduled1");
-      tm1.putLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME, now + 7000);
+      tm1.putLongProperty(Message.HDR_SCHEDULED_DELIVERY_TIME, now + 7000);
       producer.send(tm1);
 
       // First send some non scheduled messages
@@ -658,25 +658,25 @@ public class ScheduledMessageTest extends ServiceTestBase
       // Now send some more scheduled messages
 
       ClientMessage tm5 = createDurableMessage(session, "testScheduled5");
-      tm5.putLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME, now + 5000);
+      tm5.putLongProperty(Message.HDR_SCHEDULED_DELIVERY_TIME, now + 5000);
       producer.send(tm5);
 
       ClientMessage tm6 = createDurableMessage(session, "testScheduled6");
-      tm6.putLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME, now + 4000);
+      tm6.putLongProperty(Message.HDR_SCHEDULED_DELIVERY_TIME, now + 4000);
       producer.send(tm6);
 
       ClientMessage tm7 = createDurableMessage(session, "testScheduled7");
-      tm7.putLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME, now + 3000);
+      tm7.putLongProperty(Message.HDR_SCHEDULED_DELIVERY_TIME, now + 3000);
       producer.send(tm7);
 
       ClientMessage tm8 = createDurableMessage(session, "testScheduled8");
-      tm8.putLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME, now + 6000);
+      tm8.putLongProperty(Message.HDR_SCHEDULED_DELIVERY_TIME, now + 6000);
       producer.send(tm8);
 
       // And one scheduled with a -ve number
 
       ClientMessage tm9 = createDurableMessage(session, "testScheduled9");
-      tm9.putLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME, -3);
+      tm9.putLongProperty(Message.HDR_SCHEDULED_DELIVERY_TIME, -3);
       producer.send(tm9);
 
       if (tx)

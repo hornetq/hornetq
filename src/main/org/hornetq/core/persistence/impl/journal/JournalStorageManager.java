@@ -30,6 +30,7 @@ import org.hornetq.api.core.buffers.HornetQBuffer;
 import org.hornetq.api.core.buffers.HornetQBuffers;
 import org.hornetq.api.core.config.Configuration;
 import org.hornetq.api.core.exception.HornetQException;
+import org.hornetq.api.core.message.Message;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.journal.EncodingSupport;
 import org.hornetq.core.journal.IOAsyncTask;
@@ -44,7 +45,6 @@ import org.hornetq.core.journal.impl.AIOSequentialFileFactory;
 import org.hornetq.core.journal.impl.JournalImpl;
 import org.hornetq.core.journal.impl.NIOSequentialFileFactory;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.paging.PageTransactionInfo;
 import org.hornetq.core.paging.PagedMessage;
 import org.hornetq.core.paging.PagingManager;
@@ -963,7 +963,7 @@ public class JournalStorageManager implements StorageManager
 
             if (scheduledDeliveryTime != 0)
             {
-               record.message.putLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME, scheduledDeliveryTime);
+               record.message.putLongProperty(Message.HDR_SCHEDULED_DELIVERY_TIME, scheduledDeliveryTime);
             }
 
             MessageReference ref = postOffice.reroute(record.message, queue, null);
@@ -972,7 +972,7 @@ public class JournalStorageManager implements StorageManager
 
             if (scheduledDeliveryTime != 0)
             {
-               record.message.removeProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME);
+               record.message.removeProperty(Message.HDR_SCHEDULED_DELIVERY_TIME);
             }
          }
       }
@@ -1255,9 +1255,9 @@ public class JournalStorageManager implements StorageManager
 
       messageEncoding.decode(buff);
 
-      if (largeMessage.containsProperty(MessageImpl.HDR_ORIG_MESSAGE_ID))
+      if (largeMessage.containsProperty(Message.HDR_ORIG_MESSAGE_ID))
       {
-         long originalMessageID = largeMessage.getLongProperty(MessageImpl.HDR_ORIG_MESSAGE_ID);
+         long originalMessageID = largeMessage.getLongProperty(Message.HDR_ORIG_MESSAGE_ID);
 
          LargeServerMessage originalMessage = (LargeServerMessage)messages.get(originalMessageID);
 

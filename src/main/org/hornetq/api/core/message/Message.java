@@ -58,6 +58,20 @@ import org.hornetq.api.core.buffers.HornetQBuffer;
  */
 public interface Message
 {
+   public static final SimpleString HDR_ACTUAL_EXPIRY_TIME = new SimpleString("_HQ_ACTUAL_EXPIRY");
+   
+   public static final SimpleString HDR_ORIGINAL_ADDRESS = new SimpleString("_HQ_ORIG_ADDRESS");
+
+   public static final SimpleString HDR_ORIG_MESSAGE_ID = new SimpleString("_HQ_ORIG_MESSAGE_ID");
+
+   public static final SimpleString HDR_GROUP_ID = new SimpleString("_HQ_GROUP_ID");
+
+   public static final SimpleString HDR_SCHEDULED_DELIVERY_TIME = new SimpleString("_HQ_SCHED_DELIVERY");
+
+   public static final SimpleString HDR_DUPLICATE_DETECTION_ID = new SimpleString("_HQ_DUPL_ID");
+
+   public static final SimpleString HDR_LAST_VALUE_NAME = new SimpleString("_HQ_LVQ_NAME");
+
    /**
     * Returns the messageID.
     * <br>

@@ -28,8 +28,8 @@ import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.config.Configuration;
+import org.hornetq.api.core.message.Message;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.paging.impl.TestSupportPageStore;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
@@ -429,7 +429,7 @@ public class PagingTest extends ServiceTestBase
             // Worse scenario possible... only schedule what's on pages
             if (store.getCurrentPage() != null)
             {
-               message.putLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME, scheduledTime);
+               message.putLongProperty(Message.HDR_SCHEDULED_DELIVERY_TIME, scheduledTime);
             }
 
             producer.send(message);
@@ -468,7 +468,7 @@ public class PagingTest extends ServiceTestBase
 
             Assert.assertNotNull(message2);
 
-            Long scheduled = (Long)message2.getObjectProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME);
+            Long scheduled = (Long)message2.getObjectProperty(Message.HDR_SCHEDULED_DELIVERY_TIME);
             if (scheduled != null)
             {
                Assert.assertTrue("Scheduling didn't work", System.currentTimeMillis() >= scheduledTime);

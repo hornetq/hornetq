@@ -38,9 +38,9 @@ import org.hornetq.api.core.config.TransportConfiguration;
 import org.hornetq.api.core.config.cluster.BroadcastGroupConfiguration;
 import org.hornetq.api.core.config.cluster.ClusterConnectionConfiguration;
 import org.hornetq.api.core.config.cluster.DiscoveryGroupConfiguration;
+import org.hornetq.api.core.message.Message;
 import org.hornetq.api.core.server.HornetQServers;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.Bindings;
 import org.hornetq.core.postoffice.PostOffice;
@@ -612,7 +612,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
                Assert.assertTrue("Message received too soon", System.currentTimeMillis() >= firstReceiveTime);
             }
 
-            SimpleString id = (SimpleString)message.getObjectProperty(MessageImpl.HDR_GROUP_ID);
+            SimpleString id = (SimpleString)message.getObjectProperty(Message.HDR_GROUP_ID);
             System.out.println("received " + id + " on consumer " + consumerIDs[i]);
             if (groupIdsReceived.get(id) == null)
             {

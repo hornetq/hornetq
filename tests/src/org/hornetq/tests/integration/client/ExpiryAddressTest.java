@@ -24,9 +24,9 @@ import org.hornetq.api.core.client.ClientSessionFactoryImpl;
 import org.hornetq.api.core.config.ConfigurationImpl;
 import org.hornetq.api.core.config.TransportConfiguration;
 import org.hornetq.api.core.exception.HornetQException;
+import org.hornetq.api.core.message.Message;
 import org.hornetq.api.core.server.HornetQServers;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.tests.util.RandomUtil;
@@ -204,7 +204,7 @@ public class ExpiryAddressTest extends UnitTestCase
          Assert.assertEquals("Message:" + i, text);
 
          // Check the headers
-         Long actualExpiryTime = (Long)tm.getObjectProperty(MessageImpl.HDR_ACTUAL_EXPIRY_TIME);
+         Long actualExpiryTime = (Long)tm.getObjectProperty(Message.HDR_ACTUAL_EXPIRY_TIME);
          Assert.assertTrue(actualExpiryTime >= expiration);
       }
 

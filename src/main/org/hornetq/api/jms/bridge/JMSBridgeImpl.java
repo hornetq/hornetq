@@ -41,10 +41,10 @@ import javax.transaction.TransactionManager;
 import javax.transaction.xa.XAResource;
 
 import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.jms.HornetQMessageConstants;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.jms.bridge.impl.JMSBridgeControlImpl;
-import org.hornetq.jms.client.HornetQMessage;
 import org.hornetq.jms.client.HornetQSession;
 
 /**
@@ -1635,7 +1635,7 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
 
       String val = null;
 
-      val = msg.getStringProperty(HornetQMessage.JBOSS_MESSAGING_BRIDGE_MESSAGE_ID_LIST);
+      val = msg.getStringProperty(HornetQMessageConstants.JBOSS_MESSAGING_BRIDGE_MESSAGE_ID_LIST);
 
       if (val == null)
       {
@@ -1650,7 +1650,7 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
          val = sb.toString();
       }
 
-      msg.setStringProperty(HornetQMessage.JBOSS_MESSAGING_BRIDGE_MESSAGE_ID_LIST, val);
+      msg.setStringProperty(HornetQMessageConstants.JBOSS_MESSAGING_BRIDGE_MESSAGE_ID_LIST, val);
    }
 
    /*

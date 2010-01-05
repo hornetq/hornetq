@@ -20,7 +20,7 @@ import junit.framework.Assert;
 import org.hornetq.api.SimpleString;
 import org.hornetq.api.core.management.NotificationType;
 import org.hornetq.api.core.management.client.ManagementHelper;
-import org.hornetq.core.message.impl.MessageImpl;
+import org.hornetq.api.core.message.Message;
 import org.hornetq.core.server.group.GroupingHandler;
 import org.hornetq.core.server.group.impl.GroupBinding;
 import org.hornetq.core.server.group.impl.GroupingHandlerConfiguration;
@@ -76,7 +76,7 @@ public class ClusteredGroupingTest extends ClusterTestBase
          waitForBindings(1, "queues.testaddress", 2, 2, false);
          waitForBindings(2, "queues.testaddress", 2, 2, false);*/
 
-         sendWithProperty(0, "queues.testaddress", 10, false, MessageImpl.HDR_GROUP_ID, new SimpleString("id1"));
+         sendWithProperty(0, "queues.testaddress", 10, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
 
          verifyReceiveAll(10, 0);
 
@@ -177,7 +177,7 @@ public class ClusteredGroupingTest extends ClusterTestBase
 
          try
          {
-            sendWithProperty(1, "queues.testaddress", 10, false, MessageImpl.HDR_GROUP_ID, new SimpleString("id1"));
+            sendWithProperty(1, "queues.testaddress", 10, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
             Assert.fail("should timeout");
          }
          catch (Exception e)
@@ -237,10 +237,10 @@ public class ClusteredGroupingTest extends ClusterTestBase
          waitForBindings(1, "queues.testaddress", 2, 2, false);
          waitForBindings(2, "queues.testaddress", 2, 2, false);
 
-         sendInRange(0, "queues.testaddress", 0, 10, false, MessageImpl.HDR_GROUP_ID, new SimpleString("id1"));
+         sendInRange(0, "queues.testaddress", 0, 10, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
 
          verifyReceiveAllInRange(0, 10, 0);
-         sendInRange(1, "queues.testaddress", 10, 20, false, MessageImpl.HDR_GROUP_ID, new SimpleString("id1"));
+         sendInRange(1, "queues.testaddress", 10, 20, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
 
          verifyReceiveAllInRange(10, 20, 0);
 
@@ -296,13 +296,13 @@ public class ClusteredGroupingTest extends ClusterTestBase
          waitForBindings(1, "queues.testaddress", 2, 2, false);
          waitForBindings(2, "queues.testaddress", 2, 2, false);
 
-         sendInRange(0, "queues.testaddress", 0, 10, false, MessageImpl.HDR_GROUP_ID, new SimpleString("id1"));
+         sendInRange(0, "queues.testaddress", 0, 10, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
 
          verifyReceiveAllInRange(0, 10, 0);
-         sendInRange(1, "queues.testaddress", 10, 20, false, MessageImpl.HDR_GROUP_ID, new SimpleString("id1"));
+         sendInRange(1, "queues.testaddress", 10, 20, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
 
          verifyReceiveAllInRange(10, 20, 0);
-         sendInRange(2, "queues.testaddress", 10, 20, false, MessageImpl.HDR_GROUP_ID, new SimpleString("id1"));
+         sendInRange(2, "queues.testaddress", 10, 20, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
 
          verifyReceiveAllInRange(10, 20, 0);
 
@@ -356,13 +356,13 @@ public class ClusteredGroupingTest extends ClusterTestBase
          waitForBindings(1, "queues.testaddress", 2, 0, false);
          waitForBindings(2, "queues.testaddress", 2, 1, false);
 
-         sendInRange(1, "queues.testaddress", 0, 10, false, MessageImpl.HDR_GROUP_ID, new SimpleString("id1"));
+         sendInRange(1, "queues.testaddress", 0, 10, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
 
          verifyReceiveAllInRange(0, 10, 1);
-         sendInRange(2, "queues.testaddress", 10, 20, false, MessageImpl.HDR_GROUP_ID, new SimpleString("id1"));
+         sendInRange(2, "queues.testaddress", 10, 20, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
 
          verifyReceiveAllInRange(10, 20, 1);
-         sendInRange(0, "queues.testaddress", 20, 30, false, MessageImpl.HDR_GROUP_ID, new SimpleString("id1"));
+         sendInRange(0, "queues.testaddress", 20, 30, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
 
          verifyReceiveAllInRange(20, 30, 1);
 
@@ -418,13 +418,13 @@ public class ClusteredGroupingTest extends ClusterTestBase
          waitForBindings(1, "queues.testaddress", 2, 2, false);
          waitForBindings(2, "queues.testaddress", 2, 1, false);
 
-         sendInRange(1, "queues.testaddress", 0, 10, false, MessageImpl.HDR_GROUP_ID, new SimpleString("id1"));
+         sendInRange(1, "queues.testaddress", 0, 10, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
 
          verifyReceiveAllInRange(0, 10, 0);
-         sendInRange(2, "queues.testaddress", 10, 20, false, MessageImpl.HDR_GROUP_ID, new SimpleString("id1"));
+         sendInRange(2, "queues.testaddress", 10, 20, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
 
          verifyReceiveAllInRange(10, 20, 0);
-         sendInRange(0, "queues.testaddress", 20, 30, false, MessageImpl.HDR_GROUP_ID, new SimpleString("id1"));
+         sendInRange(0, "queues.testaddress", 20, 30, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
 
          verifyReceiveAllInRange(20, 30, 0);
 
@@ -480,9 +480,9 @@ public class ClusteredGroupingTest extends ClusterTestBase
          waitForBindings(1, "queues.testaddress", 2, 2, false);
          waitForBindings(2, "queues.testaddress", 2, 2, false);
 
-         sendInRange(0, "queues.testaddress", 0, 10, false, MessageImpl.HDR_GROUP_ID, new SimpleString("id1"));
-         sendInRange(0, "queues.testaddress", 10, 20, false, MessageImpl.HDR_GROUP_ID, new SimpleString("id2"));
-         sendInRange(0, "queues.testaddress", 20, 30, false, MessageImpl.HDR_GROUP_ID, new SimpleString("id3"));
+         sendInRange(0, "queues.testaddress", 0, 10, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
+         sendInRange(0, "queues.testaddress", 10, 20, false, Message.HDR_GROUP_ID, new SimpleString("id2"));
+         sendInRange(0, "queues.testaddress", 20, 30, false, Message.HDR_GROUP_ID, new SimpleString("id3"));
          verifyReceiveAllWithGroupIDRoundRobin(0, 10, 0, 1, 2);
 
          System.out.println("*****************************************************************************");
@@ -537,13 +537,13 @@ public class ClusteredGroupingTest extends ClusterTestBase
          waitForBindings(1, "queues.testaddress", 2, 2, false);
          waitForBindings(2, "queues.testaddress", 2, 2, false);
 
-         sendInRange(0, "queues.testaddress", 0, 10, false, MessageImpl.HDR_GROUP_ID, new SimpleString("id1"));
+         sendInRange(0, "queues.testaddress", 0, 10, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
 
          verifyReceiveAllInRange(0, 10, 0);
-         sendInRange(1, "queues.testaddress", 10, 20, false, MessageImpl.HDR_GROUP_ID, new SimpleString("id1"));
+         sendInRange(1, "queues.testaddress", 10, 20, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
 
          verifyReceiveAllInRange(10, 20, 0);
-         sendInRange(2, "queues.testaddress", 20, 30, false, MessageImpl.HDR_GROUP_ID, new SimpleString("id1"));
+         sendInRange(2, "queues.testaddress", 20, 30, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
 
          verifyReceiveAllInRange(20, 30, 0);
          removeConsumer(0);
@@ -559,11 +559,11 @@ public class ClusteredGroupingTest extends ClusterTestBase
          waitForBindings(1, "queues.testaddress", 1, 1, false);
          waitForBindings(2, "queues.testaddress", 1, 1, false);
 
-         sendInRange(0, "queues.testaddress", 30, 40, false, MessageImpl.HDR_GROUP_ID, new SimpleString("id1"));
+         sendInRange(0, "queues.testaddress", 30, 40, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
          verifyReceiveAllInRange(30, 40, 3);
-         sendInRange(1, "queues.testaddress", 40, 50, false, MessageImpl.HDR_GROUP_ID, new SimpleString("id1"));
+         sendInRange(1, "queues.testaddress", 40, 50, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
          verifyReceiveAllInRange(40, 50, 3);
-         sendInRange(2, "queues.testaddress", 50, 60, false, MessageImpl.HDR_GROUP_ID, new SimpleString("id1"));
+         sendInRange(2, "queues.testaddress", 50, 60, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
          verifyReceiveAllInRange(50, 60, 3);
          System.out.println("*****************************************************************************");
       }
@@ -616,7 +616,7 @@ public class ClusteredGroupingTest extends ClusterTestBase
          waitForBindings(1, "queues.testaddress", 2, 0, false);
          waitForBindings(2, "queues.testaddress", 2, 1, false);
 
-         sendInRange(1, "queues.testaddress", 0, 10, true, MessageImpl.HDR_GROUP_ID, new SimpleString("id1"));
+         sendInRange(1, "queues.testaddress", 0, 10, true, Message.HDR_GROUP_ID, new SimpleString("id1"));
 
          verifyReceiveAllInRange(true, 0, 10, 0);
 
@@ -664,7 +664,7 @@ public class ClusteredGroupingTest extends ClusterTestBase
          waitForBindings(2, "queues.testaddress", 1, 1, true);
          waitForBindings(1, "queues.testaddress", 2, 1, false);
          waitForBindings(0, "queues.testaddress", 2, 1, false);
-         sendInRange(2, "queues.testaddress", 10, 20, true, MessageImpl.HDR_GROUP_ID, new SimpleString("id1"));
+         sendInRange(2, "queues.testaddress", 10, 20, true, Message.HDR_GROUP_ID, new SimpleString("id1"));
          verifyReceiveAllInRange(10, 20, 1);
 
          System.out.println("*****************************************************************************");
@@ -718,13 +718,13 @@ public class ClusteredGroupingTest extends ClusterTestBase
          waitForBindings(1, "queues.testaddress", 2, 0, false);
          waitForBindings(2, "queues.testaddress", 2, 1, false);
 
-         sendInRange(1, "queues.testaddress", 0, 10, true, MessageImpl.HDR_GROUP_ID, new SimpleString("id1"));
+         sendInRange(1, "queues.testaddress", 0, 10, true, Message.HDR_GROUP_ID, new SimpleString("id1"));
 
          verifyReceiveAllInRange(true, 0, 10, 0);
 
          closeAllConsumers();
 
-         sendInRange(2, "queues.testaddress", 10, 20, true, MessageImpl.HDR_GROUP_ID, new SimpleString("id1"));
+         sendInRange(2, "queues.testaddress", 10, 20, true, Message.HDR_GROUP_ID, new SimpleString("id1"));
          final CountDownLatch latch = new CountDownLatch(4);
          NotificationListener listener = new NotificationListener()
          {
@@ -821,7 +821,7 @@ public class ClusteredGroupingTest extends ClusterTestBase
          waitForBindings(1, "queues.testaddress", 2, 0, false);
          waitForBindings(2, "queues.testaddress", 2, 1, false);
 
-         sendInRange(1, "queues.testaddress", 0, 10, false, MessageImpl.HDR_GROUP_ID, new SimpleString("id1"));
+         sendInRange(1, "queues.testaddress", 0, 10, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
 
          verifyReceiveAllInRange(0, 10, 0);
          final CountDownLatch latch = new CountDownLatch(4);
@@ -864,11 +864,11 @@ public class ClusteredGroupingTest extends ClusterTestBase
          waitForBindings(1, "queues.testaddress", 1, 1, true);
          waitForBindings(0, "queues.testaddress", 2, 1, false);
          waitForBindings(2, "queues.testaddress", 2, 1, false);
-         sendInRange(2, "queues.testaddress", 10, 20, false, MessageImpl.HDR_GROUP_ID, new SimpleString("id1"));
+         sendInRange(2, "queues.testaddress", 10, 20, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
 
          verifyReceiveAllInRange(10, 20, 1);
 
-         sendInRange(0, "queues.testaddress", 20, 30, false, MessageImpl.HDR_GROUP_ID, new SimpleString("id1"));
+         sendInRange(0, "queues.testaddress", 20, 30, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
          verifyReceiveAllInRange(20, 30, 1);
 
          System.out.println("*****************************************************************************");
@@ -931,7 +931,7 @@ public class ClusteredGroupingTest extends ClusterTestBase
          waitForBindings(1, "queues.testaddress", 4, 4, false);
          waitForBindings(2, "queues.testaddress", 4, 4, false);
 
-         sendWithProperty(0, "queues.testaddress", 10, false, MessageImpl.HDR_GROUP_ID, new SimpleString("id1"));
+         sendWithProperty(0, "queues.testaddress", 10, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
 
          verifyReceiveAll(10, 0);
 
@@ -1066,7 +1066,7 @@ public class ClusteredGroupingTest extends ClusterTestBase
          }
          try
          {
-            sendInRange(node, "queues.testaddress", msgStart, msgEnd, false, MessageImpl.HDR_GROUP_ID, id);
+            sendInRange(node, "queues.testaddress", msgStart, msgEnd, false, Message.HDR_GROUP_ID, id);
          }
          catch (Exception e)
          {

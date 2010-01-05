@@ -22,8 +22,8 @@ import javax.jms.TextMessage;
 import javax.jms.TransactionRolledBackException;
 import javax.naming.InitialContext;
 
+import org.hornetq.api.core.message.Message;
 import org.hornetq.common.example.HornetQExample;
-import org.hornetq.core.message.impl.MessageImpl;
 
 /**
  * A simple example that demonstrates failover of the JMS connection from one node to another
@@ -142,7 +142,7 @@ public class TransactionFailoverExample extends HornetQExample
          // We set the duplicate detection header - so the server will ignore the same message
          // if sent again after failover
 
-         message.setStringProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID.toString(), "uniqueid" + i);
+         message.setStringProperty(Message.HDR_DUPLICATE_DETECTION_ID.toString(), "uniqueid" + i);
 
          producer.send(message);
 
@@ -164,7 +164,7 @@ public class TransactionFailoverExample extends HornetQExample
          // We set the duplicate detection header - so the server will ignore the same message
          // if sent again after failover
 
-         message.setStringProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID.toString(), "uniqueid" + i);
+         message.setStringProperty(Message.HDR_DUPLICATE_DETECTION_ID.toString(), "uniqueid" + i);
 
          producer.send(message);
 

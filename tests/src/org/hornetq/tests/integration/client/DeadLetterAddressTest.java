@@ -27,9 +27,9 @@ import org.hornetq.api.core.client.ClientSessionFactoryImpl;
 import org.hornetq.api.core.config.ConfigurationImpl;
 import org.hornetq.api.core.config.TransportConfiguration;
 import org.hornetq.api.core.exception.HornetQException;
+import org.hornetq.api.core.message.Message;
 import org.hornetq.api.core.server.HornetQServers;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.settings.impl.AddressSettings;
@@ -208,9 +208,9 @@ public class DeadLetterAddressTest extends UnitTestCase
          Assert.assertEquals("Message:" + i, text);
 
          // Check the headers
-         SimpleString origDest = (SimpleString)tm.getObjectProperty(MessageImpl.HDR_ORIGINAL_ADDRESS);
+         SimpleString origDest = (SimpleString)tm.getObjectProperty(Message.HDR_ORIGINAL_ADDRESS);
 
-         Long origMessageId = (Long)tm.getObjectProperty(MessageImpl.HDR_ORIG_MESSAGE_ID);
+         Long origMessageId = (Long)tm.getObjectProperty(Message.HDR_ORIG_MESSAGE_ID);
 
          Assert.assertEquals(qName, origDest);
 

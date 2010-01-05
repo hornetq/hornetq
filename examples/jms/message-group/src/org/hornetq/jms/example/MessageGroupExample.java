@@ -83,7 +83,7 @@ public class MessageGroupExample extends HornetQExample
          for (int i = 0; i < msgCount; i++)
          {
             groupMessages[i] = session.createTextMessage("Group-0 message " + i);
-            groupMessages[i].setStringProperty(HornetQMessage.JMSXGROUPID, "Group-0");
+            groupMessages[i].setStringProperty("JMSXGroupID", "Group-0");
             producer.send(groupMessages[i]);
             System.out.println("Sent message: " + groupMessages[i].getText());
          }

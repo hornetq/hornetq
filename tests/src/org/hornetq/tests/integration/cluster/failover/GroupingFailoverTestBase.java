@@ -20,7 +20,7 @@ import junit.framework.Assert;
 
 import org.hornetq.api.SimpleString;
 import org.hornetq.api.core.exception.HornetQException;
-import org.hornetq.core.message.impl.MessageImpl;
+import org.hornetq.api.core.message.Message;
 import org.hornetq.core.remoting.FailureListener;
 import org.hornetq.core.remoting.RemotingConnection;
 import org.hornetq.core.server.cluster.MessageFlowRecord;
@@ -74,7 +74,7 @@ public abstract class GroupingFailoverTestBase extends ClusterTestBase
          waitForBindings(0, "queues.testaddress", 1, 1, false);
          waitForBindings(1, "queues.testaddress", 1, 1, false);
 
-         sendWithProperty(0, "queues.testaddress", 10, false, MessageImpl.HDR_GROUP_ID, new SimpleString("id1"));
+         sendWithProperty(0, "queues.testaddress", 10, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
 
          verifyReceiveAll(10, 0);
 
@@ -110,7 +110,7 @@ public abstract class GroupingFailoverTestBase extends ClusterTestBase
 
          waitForBindings(1, "queues.testaddress", 1, 1, false);
 
-         sendWithProperty(2, "queues.testaddress", 10, false, MessageImpl.HDR_GROUP_ID, new SimpleString("id1"));
+         sendWithProperty(2, "queues.testaddress", 10, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
 
          verifyReceiveAll(10, 2);
 
@@ -167,12 +167,12 @@ public abstract class GroupingFailoverTestBase extends ClusterTestBase
          waitForBindings(0, "queues.testaddress", 1, 1, false);
          waitForBindings(1, "queues.testaddress", 1, 1, false);
 
-         sendWithProperty(0, "queues.testaddress", 10, false, MessageImpl.HDR_GROUP_ID, new SimpleString("id1"));
-         sendWithProperty(0, "queues.testaddress", 10, false, MessageImpl.HDR_GROUP_ID, new SimpleString("id2"));
-         sendWithProperty(0, "queues.testaddress", 10, false, MessageImpl.HDR_GROUP_ID, new SimpleString("id3"));
-         sendWithProperty(0, "queues.testaddress", 10, false, MessageImpl.HDR_GROUP_ID, new SimpleString("id4"));
-         sendWithProperty(0, "queues.testaddress", 10, false, MessageImpl.HDR_GROUP_ID, new SimpleString("id5"));
-         sendWithProperty(0, "queues.testaddress", 10, false, MessageImpl.HDR_GROUP_ID, new SimpleString("id6"));
+         sendWithProperty(0, "queues.testaddress", 10, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
+         sendWithProperty(0, "queues.testaddress", 10, false, Message.HDR_GROUP_ID, new SimpleString("id2"));
+         sendWithProperty(0, "queues.testaddress", 10, false, Message.HDR_GROUP_ID, new SimpleString("id3"));
+         sendWithProperty(0, "queues.testaddress", 10, false, Message.HDR_GROUP_ID, new SimpleString("id4"));
+         sendWithProperty(0, "queues.testaddress", 10, false, Message.HDR_GROUP_ID, new SimpleString("id5"));
+         sendWithProperty(0, "queues.testaddress", 10, false, Message.HDR_GROUP_ID, new SimpleString("id6"));
 
          verifyReceiveAllWithGroupIDRoundRobin(0, 30, 0, 1);
 
@@ -208,12 +208,12 @@ public abstract class GroupingFailoverTestBase extends ClusterTestBase
 
          waitForBindings(1, "queues.testaddress", 1, 1, false);
 
-         sendWithProperty(2, "queues.testaddress", 10, false, MessageImpl.HDR_GROUP_ID, new SimpleString("id1"));
-         sendWithProperty(2, "queues.testaddress", 10, false, MessageImpl.HDR_GROUP_ID, new SimpleString("id2"));
-         sendWithProperty(2, "queues.testaddress", 10, false, MessageImpl.HDR_GROUP_ID, new SimpleString("id3"));
-         sendWithProperty(2, "queues.testaddress", 10, false, MessageImpl.HDR_GROUP_ID, new SimpleString("id4"));
-         sendWithProperty(2, "queues.testaddress", 10, false, MessageImpl.HDR_GROUP_ID, new SimpleString("id5"));
-         sendWithProperty(2, "queues.testaddress", 10, false, MessageImpl.HDR_GROUP_ID, new SimpleString("id6"));
+         sendWithProperty(2, "queues.testaddress", 10, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
+         sendWithProperty(2, "queues.testaddress", 10, false, Message.HDR_GROUP_ID, new SimpleString("id2"));
+         sendWithProperty(2, "queues.testaddress", 10, false, Message.HDR_GROUP_ID, new SimpleString("id3"));
+         sendWithProperty(2, "queues.testaddress", 10, false, Message.HDR_GROUP_ID, new SimpleString("id4"));
+         sendWithProperty(2, "queues.testaddress", 10, false, Message.HDR_GROUP_ID, new SimpleString("id5"));
+         sendWithProperty(2, "queues.testaddress", 10, false, Message.HDR_GROUP_ID, new SimpleString("id6"));
 
          verifyReceiveAllWithGroupIDRoundRobin(0, 30, 1, 2);
 

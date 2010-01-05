@@ -17,6 +17,7 @@ import java.io.InputStream;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.hornetq.api.SimpleString;
+import org.hornetq.api.core.message.Message;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.paging.PagingStore;
@@ -208,20 +209,20 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
 
    public void setOriginalHeaders(final ServerMessage other, final boolean expiry)
    {
-      if (other.containsProperty(MessageImpl.HDR_ORIG_MESSAGE_ID))
+      if (other.containsProperty(Message.HDR_ORIG_MESSAGE_ID))
       {
-         putStringProperty(MessageImpl.HDR_ORIGINAL_ADDRESS,
-                           other.getSimpleStringProperty(MessageImpl.HDR_ORIGINAL_ADDRESS));
+         putStringProperty(Message.HDR_ORIGINAL_ADDRESS,
+                           other.getSimpleStringProperty(Message.HDR_ORIGINAL_ADDRESS));
 
-         putLongProperty(MessageImpl.HDR_ORIG_MESSAGE_ID, other.getLongProperty(MessageImpl.HDR_ORIG_MESSAGE_ID));
+         putLongProperty(Message.HDR_ORIG_MESSAGE_ID, other.getLongProperty(Message.HDR_ORIG_MESSAGE_ID));
       }
       else
       {
          SimpleString originalQueue = other.getAddress();
 
-         putStringProperty(MessageImpl.HDR_ORIGINAL_ADDRESS, originalQueue);
+         putStringProperty(Message.HDR_ORIGINAL_ADDRESS, originalQueue);
 
-         putLongProperty(MessageImpl.HDR_ORIG_MESSAGE_ID, other.getMessageID());
+         putLongProperty(Message.HDR_ORIG_MESSAGE_ID, other.getMessageID());
       }
 
       // reset expiry
@@ -231,7 +232,7 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
       {
          long actualExpiryTime = System.currentTimeMillis();
 
-         putLongProperty(MessageImpl.HDR_ACTUAL_EXPIRY_TIME, actualExpiryTime);
+         putLongProperty(Message.HDR_ACTUAL_EXPIRY_TIME, actualExpiryTime);
       }
 
       bufferValid = false;
