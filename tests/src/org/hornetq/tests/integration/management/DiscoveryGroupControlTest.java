@@ -16,9 +16,9 @@ package org.hornetq.tests.integration.management;
 import junit.framework.Assert;
 
 import org.hornetq.core.config.Configuration;
+import org.hornetq.core.config.ConfigurationImpl;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.config.cluster.DiscoveryGroupConfiguration;
-import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.management.DiscoveryGroupControl;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.server.HornetQ;

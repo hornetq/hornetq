@@ -11,7 +11,7 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.core.config.impl;
+package org.hornetq.core.config;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -22,8 +22,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.hornetq.SimpleString;
-import org.hornetq.core.config.Configuration;
-import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.config.cluster.BridgeConfiguration;
 import org.hornetq.core.config.cluster.BroadcastGroupConfiguration;
 import org.hornetq.core.config.cluster.ClusterConnectionConfiguration;

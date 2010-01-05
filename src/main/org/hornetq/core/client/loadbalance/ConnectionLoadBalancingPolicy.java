@@ -11,7 +11,7 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.core.client;
+package org.hornetq.core.client.loadbalance;
 
 /**
  * A ConnectionLoadBalancingPolicy defines a policy to load balance between connections.

@@ -21,8 +21,8 @@ import junit.framework.Assert;
 
 import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.client.ClientSessionFactory;
+import org.hornetq.core.client.ClientSessionFactoryImpl;
 import org.hornetq.core.client.SessionFailureListener;
-import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.client.impl.FailoverManagerImpl;
 import org.hornetq.core.config.Configuration;

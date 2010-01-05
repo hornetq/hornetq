@@ -29,7 +29,7 @@ import javax.transaction.xa.XAResource;
 
 import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.client.ClientSessionFactory;
-import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
+import org.hornetq.core.client.ClientSessionFactoryImpl;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
@@ -86,7 +86,7 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
     */
    private final Map<ActivationSpec, HornetQActivation> activations;
 
-   private org.hornetq.jms.client.HornetQConnectionFactory defaultHornetQConnectionFactory;
+   private org.hornetq.jms.HornetQConnectionFactory defaultHornetQConnectionFactory;
 
    /**
     * Constructor
@@ -1353,7 +1353,7 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       sessionFactory = defaultHornetQConnectionFactory.getCoreFactory();
    }
 
-   public org.hornetq.jms.client.HornetQConnectionFactory getDefaultHornetQConnectionFactory() throws ResourceException
+   public org.hornetq.jms.HornetQConnectionFactory getDefaultHornetQConnectionFactory() throws ResourceException
    {
       if (!configured.getAndSet(true))
       {
@@ -1369,9 +1369,9 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       return defaultHornetQConnectionFactory;
    }
 
-   public org.hornetq.jms.client.HornetQConnectionFactory createHornetQConnectionFactory(final ConnectionFactoryProperties overrideProperties)
+   public org.hornetq.jms.HornetQConnectionFactory createHornetQConnectionFactory(final ConnectionFactoryProperties overrideProperties)
    {
-      org.hornetq.jms.client.HornetQConnectionFactory cf;
+      org.hornetq.jms.HornetQConnectionFactory cf;
       String connectorClassName = overrideProperties.getConnectorClassName() != null ? overrideProperties.getConnectorClassName()
                                                                                     : getConnectorClassName();
       String discoveryAddress = overrideProperties.getDiscoveryAddress() != null ? overrideProperties.getDiscoveryAddress()
@@ -1390,13 +1390,13 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
                                                                          : new TransportConfiguration(backUpCOnnectorClassname,
                                                                                                       backupConnectionParams);
 
-         cf = new org.hornetq.jms.client.HornetQConnectionFactory(transportConf, backup);
+         cf = new org.hornetq.jms.HornetQConnectionFactory(transportConf, backup);
       }
       else if (discoveryAddress != null)
       {
          Integer discoveryPort = overrideProperties.getDiscoveryPort() != null ? overrideProperties.getDiscoveryPort()
                                                                               : getDiscoveryPort();
-         cf = new org.hornetq.jms.client.HornetQConnectionFactory(discoveryAddress, discoveryPort);
+         cf = new org.hornetq.jms.HornetQConnectionFactory(discoveryAddress, discoveryPort);
       }
       else
       {
@@ -1406,7 +1406,7 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       return cf;
    }
 
-   private void setParams(final org.hornetq.jms.client.HornetQConnectionFactory cf,
+   private void setParams(final org.hornetq.jms.HornetQConnectionFactory cf,
                           final ConnectionFactoryProperties overrideProperties)
    {
       Boolean val = overrideProperties.isAutoGroup() != null ? overrideProperties.isAutoGroup()

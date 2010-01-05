@@ -120,7 +120,7 @@ public class HornetQConnection implements Connection, QueueConnection, TopicConn
 
    // Constructors ---------------------------------------------------------------------------------
 
-   protected HornetQConnection(final String username,
+   public HornetQConnection(final String username,
                             final String password,
                             final int connectionType,
                             final String clientID,

@@ -10,7 +10,7 @@
  * implied.  See the License for the specific language governing
  * permissions and limitations under the License.
  */
-package org.hornetq.core.client.impl;
+package org.hornetq.core.client;
 
 import java.io.Serializable;
 import java.net.InetAddress;
@@ -29,9 +29,11 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 import org.hornetq.Pair;
-import org.hornetq.core.client.ClientSession;
-import org.hornetq.core.client.ClientSessionFactory;
-import org.hornetq.core.client.ConnectionLoadBalancingPolicy;
+import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
+import org.hornetq.core.client.impl.FailoverManager;
+import org.hornetq.core.client.impl.FailoverManagerImpl;
+import org.hornetq.core.client.loadbalance.ConnectionLoadBalancingPolicy;
+import org.hornetq.core.client.loadbalance.RoundRobinConnectionLoadBalancingPolicy;
 import org.hornetq.core.cluster.DiscoveryEntry;
 import org.hornetq.core.cluster.DiscoveryGroup;
 import org.hornetq.core.cluster.DiscoveryListener;
@@ -60,8 +62,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
 
    private static final Logger log = Logger.getLogger(ClientSessionFactoryImpl.class);
 
-   public static final String DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME = "org.hornetq.core.client.impl.RoundRobinConnectionLoadBalancingPolicy";
-
+   public static final String DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME = RoundRobinConnectionLoadBalancingPolicy.class.getCanonicalName();
+   
    public static final long DEFAULT_CLIENT_FAILURE_CHECK_PERIOD = 30000;
 
    // 1 minute - this should be higher than ping period

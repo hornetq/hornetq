@@ -11,9 +11,8 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.core.client.impl;
+package org.hornetq.core.client.loadbalance;
 
-import org.hornetq.core.client.ConnectionLoadBalancingPolicy;
 import org.hornetq.utils.Random;
 
 /**

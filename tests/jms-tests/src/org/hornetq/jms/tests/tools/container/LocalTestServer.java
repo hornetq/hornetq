@@ -27,7 +27,7 @@ import javax.management.ObjectName;
 import javax.naming.InitialContext;
 
 import org.hornetq.Pair;
-import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
+import org.hornetq.core.client.ClientSessionFactoryImpl;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.management.ObjectNameBuilder;

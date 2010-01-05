@@ -22,9 +22,9 @@ import javax.jms.TextMessage;
 import javax.jms.Topic;
 
 import org.hornetq.common.example.HornetQExample;
+import org.hornetq.jms.HornetQConnectionFactory;
 import org.hornetq.jms.HornetQQueue;
 import org.hornetq.jms.HornetQTopic;
-import org.hornetq.jms.client.HornetQConnectionFactory;
 
 /**
  * This example demonstrates a cluster of three nodes set up in a symmetric topology - i.e. each node

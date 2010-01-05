@@ -26,7 +26,7 @@ import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.CloseListener;
 import org.hornetq.core.remoting.RemotingConnection;
-import org.hornetq.jms.client.HornetQConnectionFactory;
+import org.hornetq.jms.HornetQConnectionFactory;
 import org.hornetq.tests.util.JMSTestBase;
 import org.hornetq.tests.util.UnitTestCase;
 

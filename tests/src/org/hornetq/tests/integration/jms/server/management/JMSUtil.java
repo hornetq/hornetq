@@ -28,7 +28,7 @@ import junit.framework.Assert;
 
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
-import org.hornetq.jms.client.HornetQConnectionFactory;
+import org.hornetq.jms.HornetQConnectionFactory;
 import org.hornetq.tests.util.RandomUtil;
 
 /**

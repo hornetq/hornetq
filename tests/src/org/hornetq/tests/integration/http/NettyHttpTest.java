@@ -23,7 +23,7 @@ import java.util.concurrent.TimeUnit;
 import junit.framework.Assert;
 
 import org.hornetq.core.buffers.HornetQBuffer;
-import org.hornetq.core.config.impl.ConfigurationImpl;
+import org.hornetq.core.config.ConfigurationImpl;
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.remoting.impl.AbstractBufferHandler;
 import org.hornetq.core.remoting.spi.BufferHandler;

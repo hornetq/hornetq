@@ -21,7 +21,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import junit.framework.Assert;
 
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
-import org.hornetq.core.config.impl.ConfigurationImpl;
+import org.hornetq.core.config.ConfigurationImpl;
 import org.hornetq.core.journal.Journal;
 import org.hornetq.core.journal.LoaderCallback;
 import org.hornetq.core.journal.PreparedTransactionInfo;

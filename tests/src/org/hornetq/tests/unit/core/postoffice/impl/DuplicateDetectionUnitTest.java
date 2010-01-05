@@ -26,7 +26,7 @@ import junit.framework.Assert;
 import org.hornetq.Pair;
 import org.hornetq.SimpleString;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.config.impl.ConfigurationImpl;
+import org.hornetq.core.config.ConfigurationImpl;
 import org.hornetq.core.paging.PageTransactionInfo;
 import org.hornetq.core.paging.PagingManager;
 import org.hornetq.core.paging.PagingStore;

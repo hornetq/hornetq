@@ -11,7 +11,7 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.jms.server.impl;
+package org.hornetq.jms.server;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -34,15 +34,15 @@ import org.hornetq.core.deployers.impl.XmlDeployer;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.ActivateCallback;
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.jms.HornetQConnectionFactory;
 import org.hornetq.jms.HornetQQueue;
 import org.hornetq.jms.HornetQTopic;
-import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.client.SelectorTranslator;
-import org.hornetq.jms.server.JMSServerManager;
 import org.hornetq.jms.server.config.ConnectionFactoryConfiguration;
 import org.hornetq.jms.server.config.JMSConfiguration;
 import org.hornetq.jms.server.config.QueueConfiguration;
 import org.hornetq.jms.server.config.TopicConfiguration;
+import org.hornetq.jms.server.impl.JMSServerDeployer;
 import org.hornetq.jms.server.management.JMSManagementService;
 import org.hornetq.jms.server.management.impl.JMSManagementServiceImpl;
 

@@ -33,12 +33,12 @@ import junit.framework.Assert;
 
 import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.client.ClientSessionFactory;
-import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
+import org.hornetq.core.client.ClientSessionFactoryImpl;
 import org.hornetq.core.remoting.impl.invm.InVMConnector;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.integration.transports.netty.NettyConnector;
+import org.hornetq.jms.HornetQConnectionFactory;
 import org.hornetq.jms.HornetQQueue;
-import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.ra.ConnectionFactoryProperties;
 import org.hornetq.ra.HornetQRAManagedConnectionFactory;
 import org.hornetq.ra.HornetQResourceAdapter;

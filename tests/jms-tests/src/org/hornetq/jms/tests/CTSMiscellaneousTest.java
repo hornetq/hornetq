@@ -22,9 +22,9 @@ import javax.jms.MessageProducer;
 import javax.jms.Session;
 
 import org.hornetq.Pair;
-import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
+import org.hornetq.core.client.ClientSessionFactoryImpl;
 import org.hornetq.core.config.TransportConfiguration;
-import org.hornetq.jms.client.HornetQConnectionFactory;
+import org.hornetq.jms.HornetQConnectionFactory;
 
 /**
  * Safeguards for previously detected TCK failures.

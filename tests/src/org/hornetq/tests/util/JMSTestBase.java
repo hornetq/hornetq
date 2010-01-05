@@ -21,14 +21,14 @@ import javax.jms.Queue;
 import javax.naming.NamingException;
 
 import org.hornetq.Pair;
-import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
+import org.hornetq.core.client.ClientSessionFactoryImpl;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.server.HornetQ;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.integration.transports.netty.NettyAcceptorFactory;
 import org.hornetq.integration.transports.netty.NettyConnectorFactory;
-import org.hornetq.jms.server.impl.JMSServerManagerImpl;
+import org.hornetq.jms.server.JMSServerManagerImpl;
 import org.hornetq.tests.unit.util.InVMContext;
 
 /**

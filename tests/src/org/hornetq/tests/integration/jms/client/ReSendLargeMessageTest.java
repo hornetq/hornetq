@@ -31,7 +31,7 @@ import javax.jms.TextMessage;
 import junit.framework.Assert;
 
 import org.hornetq.Pair;
-import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
+import org.hornetq.core.client.ClientSessionFactoryImpl;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.jms.client.HornetQMessage;
 import org.hornetq.tests.util.JMSTestBase;

@@ -13,11 +13,11 @@
 
 package org.hornetq.tests.integration.cluster.reattach;
 
-import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
+import org.hornetq.core.client.ClientSessionFactoryImpl;
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.config.Configuration;
+import org.hornetq.core.config.ConfigurationImpl;
 import org.hornetq.core.config.TransportConfiguration;
-import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.server.HornetQ;
 
 /**

@@ -18,7 +18,7 @@ import junit.framework.TestSuite;
 
 import org.hornetq.core.buffers.HornetQBuffer;
 import org.hornetq.core.client.ClientMessage;
-import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
+import org.hornetq.core.client.ClientSessionFactoryImpl;
 import org.hornetq.tests.util.UnitTestCase;
 
 /**

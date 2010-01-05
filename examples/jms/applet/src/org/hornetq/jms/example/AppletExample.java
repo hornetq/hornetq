@@ -43,11 +43,11 @@ import javax.swing.JTextArea;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 
-import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
+import org.hornetq.core.client.ClientSessionFactoryImpl;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.integration.transports.netty.NettyConnectorFactory;
+import org.hornetq.jms.HornetQConnectionFactory;
 import org.hornetq.jms.HornetQTopic;
-import org.hornetq.jms.client.HornetQConnectionFactory;
 
 /**
  * A AppletExample

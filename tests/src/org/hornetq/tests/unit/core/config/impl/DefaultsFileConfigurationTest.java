@@ -18,8 +18,8 @@ import java.util.Collections;
 import junit.framework.Assert;
 
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.config.impl.ConfigurationImpl;
-import org.hornetq.core.config.impl.FileConfiguration;
+import org.hornetq.core.config.ConfigurationImpl;
+import org.hornetq.core.config.FileConfiguration;
 
 /**
  * 

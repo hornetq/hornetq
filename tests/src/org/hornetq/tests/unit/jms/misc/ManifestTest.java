@@ -24,7 +24,7 @@ import javax.jms.ConnectionMetaData;
 
 import junit.framework.Assert;
 
-import org.hornetq.core.config.impl.ConfigurationImpl;
+import org.hornetq.core.config.ConfigurationImpl;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQ;
 import org.hornetq.core.server.HornetQServer;

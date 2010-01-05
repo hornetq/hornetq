@@ -17,13 +17,13 @@ import junit.framework.Assert;
 
 import org.hornetq.SimpleString;
 import org.hornetq.core.config.Configuration;
+import org.hornetq.core.config.FileConfiguration;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.config.cluster.BridgeConfiguration;
 import org.hornetq.core.config.cluster.BroadcastGroupConfiguration;
 import org.hornetq.core.config.cluster.ClusterConnectionConfiguration;
 import org.hornetq.core.config.cluster.DiscoveryGroupConfiguration;
 import org.hornetq.core.config.cluster.DivertConfiguration;
-import org.hornetq.core.config.impl.FileConfiguration;
 import org.hornetq.core.server.JournalType;
 
 /**

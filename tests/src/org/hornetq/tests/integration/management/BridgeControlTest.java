@@ -23,12 +23,12 @@ import junit.framework.Assert;
 
 import org.hornetq.Pair;
 import org.hornetq.SimpleString;
-import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
+import org.hornetq.core.client.ClientSessionFactoryImpl;
 import org.hornetq.core.config.Configuration;
+import org.hornetq.core.config.ConfigurationImpl;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.config.cluster.BridgeConfiguration;
 import org.hornetq.core.config.cluster.QueueConfiguration;
-import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.management.BridgeControl;
 import org.hornetq.core.management.NotificationType;
 import org.hornetq.core.management.ObjectNameBuilder;

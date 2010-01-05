@@ -11,7 +11,7 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.jms.client;
+package org.hornetq.jms;
 
 import java.io.Serializable;
 import java.util.List;
@@ -35,9 +35,10 @@ import javax.naming.Referenceable;
 
 import org.hornetq.Pair;
 import org.hornetq.core.client.ClientSessionFactory;
-import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
+import org.hornetq.core.client.ClientSessionFactoryImpl;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.logging.Logger;
+import org.hornetq.jms.client.HornetQConnection;
 import org.hornetq.jms.referenceable.ConnectionFactoryObjectFactory;
 import org.hornetq.jms.referenceable.SerializableObjectRefAddr;
 

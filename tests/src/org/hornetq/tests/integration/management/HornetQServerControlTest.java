@@ -20,8 +20,8 @@ import junit.framework.Assert;
 
 import org.hornetq.SimpleString;
 import org.hornetq.core.config.Configuration;
+import org.hornetq.core.config.ConfigurationImpl;
 import org.hornetq.core.config.TransportConfiguration;
-import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.management.HornetQServerControl;
 import org.hornetq.core.management.ObjectNameBuilder;
 import org.hornetq.core.management.QueueControl;

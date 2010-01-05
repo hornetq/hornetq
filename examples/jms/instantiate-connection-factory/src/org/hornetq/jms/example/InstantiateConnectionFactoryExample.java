@@ -27,8 +27,8 @@ import org.hornetq.common.example.HornetQExample;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.integration.transports.netty.NettyConnectorFactory;
 import org.hornetq.integration.transports.netty.TransportConstants;
+import org.hornetq.jms.HornetQConnectionFactory;
 import org.hornetq.jms.HornetQQueue;
-import org.hornetq.jms.client.HornetQConnectionFactory;
 
 /**
  * 

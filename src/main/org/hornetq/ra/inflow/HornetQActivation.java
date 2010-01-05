@@ -97,7 +97,7 @@ public class HornetQActivation
 
    private final List<HornetQMessageHandler> handlers = new ArrayList<HornetQMessageHandler>();
 
-   private org.hornetq.jms.client.HornetQConnectionFactory factory;
+   private org.hornetq.jms.HornetQConnectionFactory factory;
 
    static
    {

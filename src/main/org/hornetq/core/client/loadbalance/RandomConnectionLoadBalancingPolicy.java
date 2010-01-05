@@ -11,23 +11,25 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.core.client.impl;
+package org.hornetq.core.client.loadbalance;
 
-import org.hornetq.core.client.ConnectionLoadBalancingPolicy;
+import org.hornetq.utils.Random;
 
 /**
- * A FirstElementConnectionLoadBalancingPolicy
+ * A RandomConnectionLoadBalancingPolicy
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * 
- * Created 28 Nov 2008 10:56:59
+ * Created 28 Nov 2008 10:24:11
  *
  *
  */
-public class FirstElementConnectionLoadBalancingPolicy implements ConnectionLoadBalancingPolicy
+public class RandomConnectionLoadBalancingPolicy implements ConnectionLoadBalancingPolicy
 {
+   private final Random random = new Random();
+
    public int select(final int max)
    {
-      return 0;
+      return random.getRandom().nextInt(max);
    }
 }

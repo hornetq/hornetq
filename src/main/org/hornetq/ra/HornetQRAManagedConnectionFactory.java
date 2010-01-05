@@ -72,7 +72,7 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
    /**
     * Connection Factory used if properties are set
     */
-   private org.hornetq.jms.client.HornetQConnectionFactory connectionFactory;
+   private org.hornetq.jms.HornetQConnectionFactory connectionFactory;
 
    /**
     * Constructor
@@ -758,7 +758,7 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
     *
     * @return The factory
     */
-   protected synchronized org.hornetq.jms.client.HornetQConnectionFactory getHornetQConnectionFactory() throws ResourceException
+   protected synchronized org.hornetq.jms.HornetQConnectionFactory getHornetQConnectionFactory() throws ResourceException
    {
 
       if (connectionFactory == null)
