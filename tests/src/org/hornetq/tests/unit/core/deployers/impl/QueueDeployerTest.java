@@ -435,6 +435,11 @@ public class QueueDeployerTest extends UnitTestCase
          return false;
       }
 
+      public boolean isAsyncConnectionExecutionEnabled()
+      {
+         return false;
+      }
+
       public boolean isPersistIDCache()
       {
 

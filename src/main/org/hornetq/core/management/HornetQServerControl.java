@@ -262,6 +262,11 @@ public interface HornetQServerControl
    long getMessageExpiryThreadPriority();
 
    /**
+    * @see Configuration#isAsyncConnectionExecutionEnabled()
+    */
+   boolean isAsyncConnectionExecutionEnabled();
+
+   /**
     * @see Configuration#getConnectorConfigurations()
     */
    Object[] getConnectors() throws Exception;

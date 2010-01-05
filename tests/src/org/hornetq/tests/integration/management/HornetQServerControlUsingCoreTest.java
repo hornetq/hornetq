@@ -332,6 +332,11 @@ public class HornetQServerControlUsingCoreTest extends HornetQServerControlTest
             return (Boolean)proxy.retrieveAttributeValue("persistDeliveryCountBeforeDelivery");
          }
 
+         public boolean isAsyncConnectionExecutionEnabled()
+         {
+            return (Boolean)proxy.retrieveAttributeValue("asyncConnectionExecutionEnabled");
+         }
+
          public boolean isPersistIDCache()
          {
             return (Boolean)proxy.retrieveAttributeValue("persistIDCache");

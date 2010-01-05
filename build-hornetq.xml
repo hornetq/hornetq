@@ -1014,6 +1014,7 @@
             <include name="org/hornetq"/>
             <include name="org/hornetq/core/buffers"/>
          	<include name="org/hornetq/core/config"/>
+            <include name="org/hornetq/core/config/cluster"/>
             <include name="org/hornetq/core/client"/>
          	<include name="org/hornetq/core/exception"/>
             <include name="org/hornetq/core/management"/>
@@ -1027,7 +1028,7 @@
          <classpath refid="javadoc.classpath"/>
          <doctitle><![CDATA[<h2>HornetQ  ${module.version}</h2>]]></doctitle>
          <bottom><![CDATA[<i>Copyright &#169; 2009 Red Hat Inc. All Rights Reserved.</i>]]></bottom>
-         <group title="HornetQ Core API" packages="org.hornetq, org.hornetq.core.buffers, org.hornetq.core.client, org.hornetq.core.config, org.hornetq.core.exception, org.hornetq.core.message, org.hornetq.utils"/>
+         <group title="HornetQ Core API" packages="org.hornetq, org.hornetq.core.buffers, org.hornetq.core.client, org.hornetq.core.config, org.hornetq.core.config.cluster, org.hornetq.core.exception, org.hornetq.core.message, org.hornetq.utils"/>
          <group title="HornetQ Management API" packages="org.hornetq.core.management"/>
       	<group title="HornetQ Remoting API &amp; SPI " packages="org.hornetq.core.remoting, org.hornetq.core.remoting.spi"/>
          <group title="JMS Facade" packages="org.hornetq.jms, org.hornetq.jms.client"/>

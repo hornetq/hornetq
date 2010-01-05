@@ -472,6 +472,18 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
       }
    }
 
+   public boolean isAsyncConnectionExecutionEnabled()
+   {
+      clearIO();
+      try
+      {
+         return configuration.isAsyncConnectionExecutionEnabled();
+      }
+      finally
+      {
+         blockOnIO();
+      }
+   }
    public void deployQueue(final String address, final String name, final String filterString) throws Exception
    {
       clearIO();
