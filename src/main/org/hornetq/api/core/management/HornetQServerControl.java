@@ -15,8 +15,8 @@ package org.hornetq.api.core.management;
 
 import javax.management.MBeanOperationInfo;
 
-import org.hornetq.api.core.config.Configuration;
 import org.hornetq.api.core.exception.HornetQException;
+import org.hornetq.core.config.Configuration;
 import org.hornetq.core.server.management.Operation;
 import org.hornetq.core.server.management.Parameter;
 

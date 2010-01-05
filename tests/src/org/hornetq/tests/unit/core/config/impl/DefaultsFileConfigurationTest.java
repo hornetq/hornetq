@@ -17,9 +17,9 @@ import java.util.Collections;
 
 import junit.framework.Assert;
 
-import org.hornetq.api.core.config.Configuration;
-import org.hornetq.api.core.config.ConfigurationImpl;
-import org.hornetq.api.core.config.FileConfiguration;
+import org.hornetq.core.config.Configuration;
+import org.hornetq.core.config.impl.ConfigurationImpl;
+import org.hornetq.core.config.impl.FileConfiguration;
 
 /**
  * 

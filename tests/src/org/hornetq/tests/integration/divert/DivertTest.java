@@ -25,12 +25,12 @@ import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.ClientSessionFactoryImpl;
-import org.hornetq.api.core.config.Configuration;
 import org.hornetq.api.core.config.TransportConfiguration;
-import org.hornetq.api.core.config.cluster.DivertConfiguration;
-import org.hornetq.api.core.server.HornetQServers;
+import org.hornetq.core.config.Configuration;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.core.server.HornetQServers;
+import org.hornetq.core.server.cluster.DivertConfiguration;
 import org.hornetq.tests.util.ServiceTestBase;
 
 /**

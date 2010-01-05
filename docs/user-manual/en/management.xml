@@ -588,7 +588,7 @@
          retrieve the result of the operation (if any) stored in the reply's body. For portability,
          results are returned as a <ulink url="http://json.org">JSON</ulink> String rather than Java
          Serialization (the <literal
-            >org.hornetq.api.core.management.client.ManagementHelper</literal> can be used to
+            >org.hornetq.api.core.management.ManagementHelper</literal> can be used to
          convert the JSON string to Java objects).</para>
       <para>These steps can be simplified to make it easier to invoke management operations using
          Core messages:</para>
@@ -602,7 +602,7 @@
          </listitem>
          <listitem>
             <para>Use the helper class <literal
-                  >org.hornetq.api.core.management.client.ManagementHelper</literal> to fill the
+                  >org.hornetq.api.core.management.ManagementHelper</literal> to fill the
                message with the management properties</para>
          </listitem>
          <listitem>
@@ -610,7 +610,7 @@
          </listitem>
          <listitem>
             <para>Use the helper class <literal
-                  >org.hornetq.api.core.management.client.ManagementHelper</literal> to retrieve
+                  >org.hornetq.api.core.management.ManagementHelper</literal> to retrieve
                the operation result from the management reply</para>
          </listitem>
       </orderedlist>

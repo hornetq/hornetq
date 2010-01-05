@@ -29,8 +29,6 @@ import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.ClientSessionFactoryImpl;
 import org.hornetq.api.core.config.TransportConfiguration;
-import org.hornetq.api.core.config.cluster.BridgeConfiguration;
-import org.hornetq.api.core.config.cluster.QueueConfiguration;
 import org.hornetq.api.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.RemotingConnection;
@@ -38,6 +36,8 @@ import org.hornetq.core.remoting.impl.invm.InVMConnector;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.cluster.Bridge;
+import org.hornetq.core.server.cluster.BridgeConfiguration;
+import org.hornetq.core.server.cluster.QueueConfiguration;
 import org.hornetq.core.server.cluster.impl.BridgeImpl;
 import org.hornetq.integration.transports.netty.NettyConnectorFactory;
 

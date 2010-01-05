@@ -18,14 +18,14 @@ import java.util.List;
 
 import org.hornetq.api.Pair;
 import org.hornetq.api.core.client.ClientSessionFactoryImpl;
-import org.hornetq.api.core.config.Configuration;
 import org.hornetq.api.core.config.TransportConfiguration;
-import org.hornetq.api.core.config.cluster.DiscoveryGroupConfiguration;
-import org.hornetq.api.jms.server.JMSServerManager;
+import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.Validators;
 import org.hornetq.core.deployers.DeploymentManager;
 import org.hornetq.core.deployers.impl.XmlDeployer;
 import org.hornetq.core.logging.Logger;
+import org.hornetq.core.server.cluster.DiscoveryGroupConfiguration;
+import org.hornetq.jms.server.JMSServerManager;
 import org.hornetq.utils.XMLConfigurationUtil;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;

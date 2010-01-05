@@ -17,8 +17,8 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.hornetq.api.SimpleString;
+import org.hornetq.api.core.management.ManagementHelper;
 import org.hornetq.api.core.management.NotificationType;
-import org.hornetq.api.core.management.client.ManagementHelper;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.BindingType;

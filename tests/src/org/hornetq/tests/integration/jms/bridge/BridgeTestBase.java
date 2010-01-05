@@ -34,25 +34,25 @@ import junit.framework.Assert;
 
 import com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionManagerImple;
 
-import org.hornetq.api.core.config.Configuration;
-import org.hornetq.api.core.config.ConfigurationImpl;
 import org.hornetq.api.core.config.TransportConfiguration;
 import org.hornetq.api.core.management.ResourceNames;
-import org.hornetq.api.core.server.HornetQServers;
 import org.hornetq.api.jms.HornetQConnectionFactory;
-import org.hornetq.api.jms.bridge.ConnectionFactoryFactory;
-import org.hornetq.api.jms.bridge.DestinationFactory;
-import org.hornetq.api.jms.bridge.QualityOfServiceMode;
 import org.hornetq.api.jms.management.JMSQueueControl;
 import org.hornetq.api.jms.management.TopicControl;
-import org.hornetq.api.jms.server.JMSServerManager;
-import org.hornetq.api.jms.server.JMSServerManagerImpl;
+import org.hornetq.core.config.Configuration;
+import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.remoting.impl.invm.TransportConstants;
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.core.server.HornetQServers;
 import org.hornetq.core.server.management.ManagementService;
+import org.hornetq.jms.bridge.ConnectionFactoryFactory;
+import org.hornetq.jms.bridge.DestinationFactory;
+import org.hornetq.jms.bridge.QualityOfServiceMode;
 import org.hornetq.jms.client.HornetQMessage;
+import org.hornetq.jms.server.JMSServerManager;
+import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.hornetq.tests.unit.util.InVMContext;
 import org.hornetq.tests.util.UnitTestCase;
 

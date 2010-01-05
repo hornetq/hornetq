@@ -30,7 +30,7 @@ import javax.transaction.xa.Xid;
 
 import org.hornetq.api.SimpleString;
 import org.hornetq.api.core.exception.HornetQException;
-import org.hornetq.api.core.management.client.ManagementHelper;
+import org.hornetq.api.core.management.ManagementHelper;
 import org.hornetq.core.client.impl.ClientMessageImpl;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.filter.impl.FilterImpl;

@@ -19,14 +19,14 @@ import java.util.List;
 import junit.framework.Assert;
 
 import org.hornetq.api.Pair;
-import org.hornetq.api.core.config.Configuration;
-import org.hornetq.api.core.config.ConfigurationImpl;
 import org.hornetq.api.core.config.TransportConfiguration;
-import org.hornetq.api.core.config.cluster.BroadcastGroupConfiguration;
 import org.hornetq.api.core.management.BroadcastGroupControl;
-import org.hornetq.api.core.server.HornetQServers;
+import org.hornetq.core.config.Configuration;
+import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.core.server.HornetQServers;
+import org.hornetq.core.server.cluster.BroadcastGroupConfiguration;
 import org.hornetq.integration.transports.netty.NettyConnectorFactory;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.utils.json.JSONArray;

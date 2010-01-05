@@ -19,14 +19,14 @@ import java.util.Hashtable;
 
 import javax.naming.InitialContext;
 
-import org.hornetq.api.core.config.Configuration;
-import org.hornetq.api.core.config.ConfigurationImpl;
 import org.hornetq.api.core.config.TransportConfiguration;
-import org.hornetq.api.core.server.HornetQServers;
-import org.hornetq.api.jms.server.JMSServerManager;
-import org.hornetq.api.jms.server.JMSServerManagerImpl;
+import org.hornetq.core.config.Configuration;
+import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.core.server.HornetQServers;
 import org.hornetq.integration.transports.netty.NettyAcceptorFactory;
+import org.hornetq.jms.server.JMSServerManager;
+import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.jnp.server.Main;
 import org.jnp.server.NamingBeanImpl;
 

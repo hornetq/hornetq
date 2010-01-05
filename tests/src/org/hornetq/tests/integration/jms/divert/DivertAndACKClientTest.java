@@ -26,10 +26,10 @@ import junit.framework.Assert;
 
 import org.hornetq.api.Pair;
 import org.hornetq.api.core.client.ClientSessionFactoryImpl;
-import org.hornetq.api.core.config.Configuration;
 import org.hornetq.api.core.config.TransportConfiguration;
-import org.hornetq.api.core.config.cluster.DivertConfiguration;
 import org.hornetq.api.jms.HornetQQueue;
+import org.hornetq.core.config.Configuration;
+import org.hornetq.core.server.cluster.DivertConfiguration;
 import org.hornetq.tests.util.JMSTestBase;
 
 /**

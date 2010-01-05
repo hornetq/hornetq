@@ -13,7 +13,7 @@
 
 package org.hornetq.core.server.management;
 
-import org.hornetq.api.core.management.client.ManagementHelper;
+import org.hornetq.api.core.management.ManagementHelper;
 
 /**
  * A NotificationService

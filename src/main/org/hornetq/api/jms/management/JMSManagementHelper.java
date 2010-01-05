@@ -16,7 +16,7 @@ package org.hornetq.api.jms.management;
 import javax.jms.JMSException;
 import javax.jms.Message;
 
-import org.hornetq.api.core.management.client.ManagementHelper;
+import org.hornetq.api.core.management.ManagementHelper;
 import org.hornetq.jms.client.HornetQMessage;
 
 /*

@@ -15,7 +15,7 @@ package org.hornetq.tests.integration.clientcrash;
 
 import junit.framework.Assert;
 
-import org.hornetq.api.core.config.Configuration;
+import org.hornetq.core.config.Configuration;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
 

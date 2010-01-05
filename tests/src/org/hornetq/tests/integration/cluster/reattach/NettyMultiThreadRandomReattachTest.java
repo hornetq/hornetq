@@ -14,11 +14,11 @@
 package org.hornetq.tests.integration.cluster.reattach;
 
 import org.hornetq.api.core.client.ClientSessionFactoryImpl;
-import org.hornetq.api.core.config.Configuration;
-import org.hornetq.api.core.config.ConfigurationImpl;
 import org.hornetq.api.core.config.TransportConfiguration;
-import org.hornetq.api.core.server.HornetQServers;
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
+import org.hornetq.core.config.Configuration;
+import org.hornetq.core.config.impl.ConfigurationImpl;
+import org.hornetq.core.server.HornetQServers;
 
 /**
  * A NettyMultiThreadRandomReattachTest

@@ -15,11 +15,11 @@ package org.hornetq.core.example;
 
 import java.util.HashSet;
 
-import org.hornetq.api.core.config.Configuration;
-import org.hornetq.api.core.config.ConfigurationImpl;
 import org.hornetq.api.core.config.TransportConfiguration;
-import org.hornetq.api.core.server.HornetQServers;
+import org.hornetq.core.config.Configuration;
+import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.core.server.HornetQServers;
 import org.hornetq.integration.transports.netty.NettyAcceptorFactory;
 
 /**

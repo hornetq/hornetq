@@ -15,9 +15,9 @@ package org.hornetq.jms.bridge.impl;
 
 import javax.management.StandardMBean;
 
-import org.hornetq.api.jms.bridge.JMSBridge;
-import org.hornetq.api.jms.bridge.JMSBridgeControl;
-import org.hornetq.api.jms.bridge.QualityOfServiceMode;
+import org.hornetq.jms.bridge.JMSBridge;
+import org.hornetq.jms.bridge.JMSBridgeControl;
+import org.hornetq.jms.bridge.QualityOfServiceMode;
 
 /**
  * A JMSBridgeControlImpl

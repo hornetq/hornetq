@@ -22,7 +22,7 @@
       </constructor>
    </bean>
    
-   <bean name="Configuration" class="org.hornetq.api.core.config.FileConfiguration"/>
+   <bean name="Configuration" class="org.hornetq.core.config.impl.FileConfiguration"/>
 
    <!--<bean name="HornetQSecurityManager" class="org.hornetq.core.security.impl.JBossASSecurityManager"/>-->
 
@@ -80,7 +80,7 @@
       </property>
    </bean>
    
-   <bean name="JMSServerManager" class="org.hornetq.api.jms.server.JMSServerManagerImpl">
+   <bean name="JMSServerManager" class="org.hornetq.jms.server.impl.JMSServerManagerImpl">
       <constructor>
          <parameter>
             <inject bean="HornetQServer" property="serverManagement"/>

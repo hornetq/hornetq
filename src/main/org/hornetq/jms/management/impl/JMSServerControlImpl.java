@@ -30,13 +30,13 @@ import javax.management.StandardMBean;
 
 import org.hornetq.api.Pair;
 import org.hornetq.api.core.config.TransportConfiguration;
-import org.hornetq.api.core.management.client.ManagementHelper;
+import org.hornetq.api.core.management.ManagementHelper;
 import org.hornetq.api.jms.management.ConnectionFactoryControl;
 import org.hornetq.api.jms.management.JMSQueueControl;
 import org.hornetq.api.jms.management.JMSServerControl;
 import org.hornetq.api.jms.management.TopicControl;
-import org.hornetq.api.jms.server.JMSServerManager;
 import org.hornetq.core.management.impl.MBeanInfoHelper;
+import org.hornetq.jms.server.JMSServerManager;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>

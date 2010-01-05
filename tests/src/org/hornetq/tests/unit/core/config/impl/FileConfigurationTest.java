@@ -16,15 +16,15 @@ package org.hornetq.tests.unit.core.config.impl;
 import junit.framework.Assert;
 
 import org.hornetq.api.SimpleString;
-import org.hornetq.api.core.config.Configuration;
-import org.hornetq.api.core.config.FileConfiguration;
 import org.hornetq.api.core.config.TransportConfiguration;
-import org.hornetq.api.core.config.cluster.BridgeConfiguration;
-import org.hornetq.api.core.config.cluster.BroadcastGroupConfiguration;
-import org.hornetq.api.core.config.cluster.ClusterConnectionConfiguration;
-import org.hornetq.api.core.config.cluster.DiscoveryGroupConfiguration;
-import org.hornetq.api.core.config.cluster.DivertConfiguration;
+import org.hornetq.core.config.Configuration;
+import org.hornetq.core.config.impl.FileConfiguration;
 import org.hornetq.core.server.JournalType;
+import org.hornetq.core.server.cluster.BridgeConfiguration;
+import org.hornetq.core.server.cluster.BroadcastGroupConfiguration;
+import org.hornetq.core.server.cluster.ClusterConnectionConfiguration;
+import org.hornetq.core.server.cluster.DiscoveryGroupConfiguration;
+import org.hornetq.core.server.cluster.DivertConfiguration;
 
 /**
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>

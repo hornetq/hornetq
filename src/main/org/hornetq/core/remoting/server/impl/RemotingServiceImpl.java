@@ -24,10 +24,10 @@ import java.util.concurrent.ScheduledExecutorService;
 
 import org.hornetq.api.core.buffers.HornetQBuffer;
 import org.hornetq.api.core.client.ClientSessionFactoryImpl;
-import org.hornetq.api.core.config.Configuration;
 import org.hornetq.api.core.config.TransportConfiguration;
 import org.hornetq.api.core.exception.HornetQException;
 import org.hornetq.api.core.interceptor.Interceptor;
+import org.hornetq.core.config.Configuration;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.Channel;
 import org.hornetq.core.remoting.ChannelHandler;

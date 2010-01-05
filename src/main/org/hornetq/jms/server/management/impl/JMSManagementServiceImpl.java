@@ -27,7 +27,6 @@ import org.hornetq.api.jms.management.ConnectionFactoryControl;
 import org.hornetq.api.jms.management.JMSQueueControl;
 import org.hornetq.api.jms.management.JMSServerControl;
 import org.hornetq.api.jms.management.TopicControl;
-import org.hornetq.api.jms.server.JMSServerManager;
 import org.hornetq.core.messagecounter.MessageCounter;
 import org.hornetq.core.messagecounter.MessageCounterManager;
 import org.hornetq.core.server.management.ManagementService;
@@ -35,6 +34,7 @@ import org.hornetq.jms.management.impl.JMSConnectionFactoryControlImpl;
 import org.hornetq.jms.management.impl.JMSQueueControlImpl;
 import org.hornetq.jms.management.impl.JMSServerControlImpl;
 import org.hornetq.jms.management.impl.JMSTopicControlImpl;
+import org.hornetq.jms.server.JMSServerManager;
 import org.hornetq.jms.server.management.JMSManagementService;
 
 /*

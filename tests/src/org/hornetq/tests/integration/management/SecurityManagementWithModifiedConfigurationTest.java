@@ -13,11 +13,11 @@
 
 package org.hornetq.tests.integration.management;
 
-import org.hornetq.api.core.config.ConfigurationImpl;
 import org.hornetq.api.core.config.TransportConfiguration;
-import org.hornetq.api.core.server.HornetQServers;
+import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.core.server.HornetQServers;
 
 /**
  * A SecurityManagementTest

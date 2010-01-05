@@ -32,9 +32,9 @@ import javax.transaction.TransactionManager;
 import junit.framework.Assert;
 
 import org.hornetq.api.jms.HornetQMessageConstants;
-import org.hornetq.api.jms.bridge.JMSBridgeImpl;
-import org.hornetq.api.jms.bridge.QualityOfServiceMode;
 import org.hornetq.core.logging.Logger;
+import org.hornetq.jms.bridge.QualityOfServiceMode;
+import org.hornetq.jms.bridge.impl.JMSBridgeImpl;
 
 /**
  * A JMSBridgeTest

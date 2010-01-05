@@ -19,7 +19,7 @@ import org.hornetq.api.jms.HornetQConnectionFactory;
 import org.hornetq.api.jms.HornetQQueue;
 import org.hornetq.api.jms.HornetQTopic;
 import org.hornetq.api.jms.management.JMSServerControl;
-import org.hornetq.api.jms.server.JMSServerManager;
+import org.hornetq.jms.server.JMSServerManager;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>

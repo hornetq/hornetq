@@ -22,7 +22,7 @@
    </bean> 
 
    <!-- The core configuration -->
-   <bean name="Configuration" class="org.hornetq.api.core.config.FileConfiguration"/>
+   <bean name="Configuration" class="org.hornetq.core.config.impl.FileConfiguration"/>
 
    <!-- The security manager using JAAS -->
    <bean name="HornetQSecurityManager" class="org.hornetq.spi.core.security.JAASSecurityManager">
@@ -81,7 +81,7 @@
    </bean>
    
    <!-- The JMS server -->
-   <bean name="JMSServerManager" class="org.hornetq.api.jms.server.JMSServerManagerImpl">
+   <bean name="JMSServerManager" class="org.hornetq.jms.server.impl.JMSServerManagerImpl">
       <constructor>         
          <parameter>
             <inject bean="HornetQServer"/>

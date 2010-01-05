@@ -18,8 +18,8 @@ import java.io.File;
 import junit.framework.Assert;
 import junit.framework.TestSuite;
 
-import org.hornetq.api.core.config.ConfigurationImpl;
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
+import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.journal.impl.AIOSequentialFileFactory;
 import org.hornetq.core.logging.Logger;
