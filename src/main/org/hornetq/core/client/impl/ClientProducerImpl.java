@@ -187,6 +187,11 @@ public class ClientProducerImpl implements ClientProducerInternal
 
    // Public ---------------------------------------------------------------------------------------
 
+   public ClientProducerCredits getProducerCredits()
+   {
+      return credits;
+   }
+   
    // Protected ------------------------------------------------------------------------------------
 
    // Package Private ------------------------------------------------------------------------------

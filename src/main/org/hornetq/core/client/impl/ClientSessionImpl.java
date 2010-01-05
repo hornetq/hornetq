@@ -1061,6 +1061,11 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    {
       producerCreditManager.receiveCredits(address, credits, offset);
    }
+   
+   public ClientProducerCreditManager getProducerCreditManager()
+   {
+      return producerCreditManager;
+   }
 
    // CommandConfirmationHandler implementation ------------------------------------
 

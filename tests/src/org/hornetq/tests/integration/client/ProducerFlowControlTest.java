@@ -12,6 +12,9 @@
  */
 package org.hornetq.tests.integration.client;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -24,6 +27,10 @@ import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.MessageHandler;
+import org.hornetq.core.client.impl.ClientProducerCreditManagerImpl;
+import org.hornetq.core.client.impl.ClientProducerCredits;
+import org.hornetq.core.client.impl.ClientProducerInternal;
+import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.paging.impl.TestSupportPageStore;
 import org.hornetq.core.server.HornetQServer;
@@ -809,4 +816,332 @@ public class ProducerFlowControlTest extends ServiceTestBase
       server.stop();
    }
 
+   public void testProducerCreditsCaching1() throws Exception
+   {
+      HornetQServer server = createServer(false, isNetty());
+
+      server.start();
+
+      ClientSessionFactory sf = createFactory(isNetty());
+
+      final ClientSession session = sf.createSession(false, true, true, true);
+
+      session.createQueue("address", "queue1", null, false);
+      
+      ClientProducerCredits credits = null;
+      
+      for (int i = 0; i < ClientProducerCreditManagerImpl.MAX_UNREFERENCED_CREDITS_CACHE_SIZE * 2; i++)
+      {
+         ClientProducer prod = session.createProducer("address");
+         
+         ClientProducerCredits newCredits = ((ClientProducerInternal)prod).getProducerCredits();         
+         
+         if (credits != null)
+         {            
+            assertTrue(newCredits == credits);
+         }
+         
+         credits = newCredits;
+         
+         assertEquals(1, ((ClientSessionInternal)session).getProducerCreditManager().creditsMapSize());
+         assertEquals(0, ((ClientSessionInternal)session).getProducerCreditManager().unReferencedCreditsSize());
+      }
+      
+      session.close();
+
+      server.stop();
+   }
+   
+   public void testProducerCreditsCaching2() throws Exception
+   {
+      HornetQServer server = createServer(false, isNetty());
+
+      server.start();
+
+      ClientSessionFactory sf = createFactory(isNetty());
+
+      final ClientSession session = sf.createSession(false, true, true, true);
+
+      session.createQueue("address", "queue1", null, false);
+      
+      ClientProducerCredits credits = null;
+      
+      for (int i = 0; i < ClientProducerCreditManagerImpl.MAX_UNREFERENCED_CREDITS_CACHE_SIZE * 2; i++)
+      {
+         ClientProducer prod = session.createProducer("address");
+         
+         ClientProducerCredits newCredits = ((ClientProducerInternal)prod).getProducerCredits();         
+         
+         if (credits != null)
+         {            
+            assertTrue(newCredits == credits);
+         }
+         
+         credits = newCredits;
+         
+         prod.close();
+         
+         assertEquals(1, ((ClientSessionInternal)session).getProducerCreditManager().creditsMapSize());
+         assertEquals(1, ((ClientSessionInternal)session).getProducerCreditManager().unReferencedCreditsSize());
+      }
+      
+      session.close();
+
+      server.stop();
+   }
+   
+   public void testProducerCreditsCaching3() throws Exception
+   {
+      HornetQServer server = createServer(false, isNetty());
+
+      server.start();
+
+      ClientSessionFactory sf = createFactory(isNetty());
+
+      final ClientSession session = sf.createSession(false, true, true, true);
+
+      session.createQueue("address", "queue1", null, false);
+      
+      ClientProducerCredits credits = null;
+      
+      for (int i = 0; i < ClientProducerCreditManagerImpl.MAX_UNREFERENCED_CREDITS_CACHE_SIZE; i++)
+      {
+         ClientProducer prod = session.createProducer("address" + i);
+         
+         ClientProducerCredits newCredits = ((ClientProducerInternal)prod).getProducerCredits();         
+         
+         if (credits != null)
+         {            
+            assertFalse(newCredits == credits);
+         }
+         
+         credits = newCredits;
+         
+         assertEquals(i + 1, ((ClientSessionInternal)session).getProducerCreditManager().creditsMapSize());
+         assertEquals(0, ((ClientSessionInternal)session).getProducerCreditManager().unReferencedCreditsSize());
+      }
+      
+      session.close();
+
+      server.stop();
+   }
+   
+   public void testProducerCreditsCaching4() throws Exception
+   {
+      HornetQServer server = createServer(false, isNetty());
+
+      server.start();
+
+      ClientSessionFactory sf = createFactory(isNetty());
+
+      final ClientSession session = sf.createSession(false, true, true, true);
+
+      session.createQueue("address", "queue1", null, false);
+      
+      ClientProducerCredits credits = null;
+      
+      for (int i = 0; i < ClientProducerCreditManagerImpl.MAX_UNREFERENCED_CREDITS_CACHE_SIZE; i++)
+      {
+         ClientProducer prod = session.createProducer("address" + i);
+         
+         ClientProducerCredits newCredits = ((ClientProducerInternal)prod).getProducerCredits();         
+         
+         if (credits != null)
+         {            
+            assertFalse(newCredits == credits);
+         }
+         
+         credits = newCredits;
+         
+         prod.close();
+         
+         assertEquals(i + 1, ((ClientSessionInternal)session).getProducerCreditManager().creditsMapSize());
+         assertEquals(i + 1, ((ClientSessionInternal)session).getProducerCreditManager().unReferencedCreditsSize());
+      }
+      
+      session.close();
+
+      server.stop();
+   }
+   
+   public void testProducerCreditsCaching5() throws Exception
+   {
+      HornetQServer server = createServer(false, isNetty());
+
+      server.start();
+
+      ClientSessionFactory sf = createFactory(isNetty());
+
+      final ClientSession session = sf.createSession(false, true, true, true);
+
+      session.createQueue("address", "queue1", null, false);
+      
+      ClientProducerCredits credits = null;
+      
+      List<ClientProducerCredits> creditsList = new ArrayList<ClientProducerCredits>();
+      
+      for (int i = 0; i < ClientProducerCreditManagerImpl.MAX_UNREFERENCED_CREDITS_CACHE_SIZE; i++)
+      {
+         ClientProducer prod = session.createProducer("address" + i);
+         
+         ClientProducerCredits newCredits = ((ClientProducerInternal)prod).getProducerCredits();         
+         
+         if (credits != null)
+         {            
+            assertFalse(newCredits == credits);
+         }
+         
+         credits = newCredits;
+         
+         assertEquals(i + 1, ((ClientSessionInternal)session).getProducerCreditManager().creditsMapSize());
+         assertEquals(0, ((ClientSessionInternal)session).getProducerCreditManager().unReferencedCreditsSize());
+         
+         creditsList.add(credits);
+      }
+      
+      Iterator<ClientProducerCredits> iter = creditsList.iterator();
+      
+      for (int i = 0; i < ClientProducerCreditManagerImpl.MAX_UNREFERENCED_CREDITS_CACHE_SIZE; i++)
+      {
+         ClientProducer prod = session.createProducer("address" + i);
+         
+         ClientProducerCredits newCredits = ((ClientProducerInternal)prod).getProducerCredits();    
+         
+         assertTrue(newCredits == iter.next());
+         
+         assertEquals(ClientProducerCreditManagerImpl.MAX_UNREFERENCED_CREDITS_CACHE_SIZE, ((ClientSessionInternal)session).getProducerCreditManager().creditsMapSize());
+         assertEquals(0, ((ClientSessionInternal)session).getProducerCreditManager().unReferencedCreditsSize());
+      }
+      
+      for (int i = 0; i < 10; i++)
+      {
+         ClientProducer prod = session.createProducer("address" + (i + ClientProducerCreditManagerImpl.MAX_UNREFERENCED_CREDITS_CACHE_SIZE));
+         
+         assertEquals(ClientProducerCreditManagerImpl.MAX_UNREFERENCED_CREDITS_CACHE_SIZE + i + 1, ((ClientSessionInternal)session).getProducerCreditManager().creditsMapSize());
+         assertEquals(0, ((ClientSessionInternal)session).getProducerCreditManager().unReferencedCreditsSize());
+      }
+      
+      session.close();
+
+      server.stop();
+   }
+   
+   public void testProducerCreditsCaching6() throws Exception
+   {
+      HornetQServer server = createServer(false, isNetty());
+
+      server.start();
+
+      ClientSessionFactory sf = createFactory(isNetty());
+
+      final ClientSession session = sf.createSession(false, true, true, true);
+
+      session.createQueue("address", "queue1", null, false);
+      
+      for (int i = 0; i < ClientProducerCreditManagerImpl.MAX_UNREFERENCED_CREDITS_CACHE_SIZE; i++)
+      {
+         ClientProducer prod = session.createProducer((String)null);
+         
+         prod.send("address", session.createMessage(false));
+         
+         assertEquals(1, ((ClientSessionInternal)session).getProducerCreditManager().creditsMapSize());
+         assertEquals(1, ((ClientSessionInternal)session).getProducerCreditManager().unReferencedCreditsSize());
+      }
+      
+      session.close();
+
+      server.stop();
+   }
+   
+   public void testProducerCreditsCaching7() throws Exception
+   {
+      HornetQServer server = createServer(false, isNetty());
+
+      server.start();
+
+      ClientSessionFactory sf = createFactory(isNetty());
+
+      final ClientSession session = sf.createSession(false, true, true, true);
+
+      session.createQueue("address", "queue1", null, false);
+      
+      for (int i = 0; i < ClientProducerCreditManagerImpl.MAX_UNREFERENCED_CREDITS_CACHE_SIZE; i++)
+      {
+         ClientProducer prod = session.createProducer((String)null);
+         
+         prod.send("address" + i, session.createMessage(false));
+         
+         assertEquals(i + 1, ((ClientSessionInternal)session).getProducerCreditManager().creditsMapSize());
+         assertEquals(i + 1, ((ClientSessionInternal)session).getProducerCreditManager().unReferencedCreditsSize());
+      }
+      
+      for (int i = 0; i < 10; i++)
+      {
+         ClientProducer prod = session.createProducer((String)null);
+         
+         prod.send("address" + i, session.createMessage(false));
+         
+         assertEquals(ClientProducerCreditManagerImpl.MAX_UNREFERENCED_CREDITS_CACHE_SIZE, ((ClientSessionInternal)session).getProducerCreditManager().creditsMapSize());
+         assertEquals(ClientProducerCreditManagerImpl.MAX_UNREFERENCED_CREDITS_CACHE_SIZE, ((ClientSessionInternal)session).getProducerCreditManager().unReferencedCreditsSize());
+      }
+      
+      for (int i = 0; i < 10; i++)
+      {
+         ClientProducer prod = session.createProducer((String)null);
+         
+         prod.send("address2-" + i, session.createMessage(false));
+         
+         assertEquals(ClientProducerCreditManagerImpl.MAX_UNREFERENCED_CREDITS_CACHE_SIZE, ((ClientSessionInternal)session).getProducerCreditManager().creditsMapSize());
+         assertEquals(ClientProducerCreditManagerImpl.MAX_UNREFERENCED_CREDITS_CACHE_SIZE, ((ClientSessionInternal)session).getProducerCreditManager().unReferencedCreditsSize());
+      }
+      
+      session.close();
+
+      server.stop();
+   }
+   
+   public void testProducerCreditsRefCounting() throws Exception
+   {
+      HornetQServer server = createServer(false, isNetty());
+
+      server.start();
+
+      ClientSessionFactory sf = createFactory(isNetty());
+
+      final ClientSession session = sf.createSession(false, true, true, true);
+
+      session.createQueue("address", "queue1", null, false);
+      
+      ClientProducer prod1 = session.createProducer("address");
+      assertEquals(1, ((ClientSessionInternal)session).getProducerCreditManager().creditsMapSize());
+      assertEquals(0, ((ClientSessionInternal)session).getProducerCreditManager().unReferencedCreditsSize());
+      
+      ClientProducer prod2 = session.createProducer("address");
+      assertEquals(1, ((ClientSessionInternal)session).getProducerCreditManager().creditsMapSize());
+      assertEquals(0, ((ClientSessionInternal)session).getProducerCreditManager().unReferencedCreditsSize());
+      
+      ClientProducer prod3 = session.createProducer("address");
+      assertEquals(1, ((ClientSessionInternal)session).getProducerCreditManager().creditsMapSize());
+      assertEquals(0, ((ClientSessionInternal)session).getProducerCreditManager().unReferencedCreditsSize());
+      
+      prod1.close();
+      
+      assertEquals(1, ((ClientSessionInternal)session).getProducerCreditManager().creditsMapSize());
+      assertEquals(0, ((ClientSessionInternal)session).getProducerCreditManager().unReferencedCreditsSize());
+      
+      prod2.close();
+      
+      assertEquals(1, ((ClientSessionInternal)session).getProducerCreditManager().creditsMapSize());
+      assertEquals(0, ((ClientSessionInternal)session).getProducerCreditManager().unReferencedCreditsSize());
+      
+      prod3.close();
+      
+      assertEquals(1, ((ClientSessionInternal)session).getProducerCreditManager().creditsMapSize());
+      assertEquals(1, ((ClientSessionInternal)session).getProducerCreditManager().unReferencedCreditsSize());
+      
+      session.close();
+
+      server.stop();
+   }
+   
 }

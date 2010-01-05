@@ -31,11 +31,11 @@ public class ClientProducerCreditManagerImpl implements ClientProducerCreditMana
 {
    private static final Logger log = Logger.getLogger(ClientProducerCreditManagerImpl.class);
 
-   private static final int MAX_ANON_CREDITS_CACHE_SIZE = 1000;
+   public static final int MAX_UNREFERENCED_CREDITS_CACHE_SIZE = 1000;
 
    private final Map<SimpleString, ClientProducerCredits> producerCredits = new LinkedHashMap<SimpleString, ClientProducerCredits>();
 
-   private final Map<SimpleString, ClientProducerCredits> anonCredits = new LinkedHashMap<SimpleString, ClientProducerCredits>();
+   private final Map<SimpleString, ClientProducerCredits> unReferencedCredits = new LinkedHashMap<SimpleString, ClientProducerCredits>();
 
    private final ClientSessionInternal session;
 
@@ -47,7 +47,7 @@ public class ClientProducerCreditManagerImpl implements ClientProducerCreditMana
 
       this.windowSize = windowSize;
    }
-      
+
    public synchronized ClientProducerCredits getCredits(final SimpleString address, final boolean anon)
    {
       ClientProducerCredits credits = producerCredits.get(address);
@@ -58,25 +58,20 @@ public class ClientProducerCreditManagerImpl implements ClientProducerCreditMana
          credits = new ClientProducerCreditsImpl(session, address, windowSize);
 
          producerCredits.put(address, credits);
-
-         if (anon)
-         {
-            addToAnonCache(address, credits);
-         }
       }
 
       if (!anon)
       {
          credits.incrementRefCount();
-         
-         //Remove from anon credits (if there)
-         anonCredits.remove(address);                     
+
+         // Remove from anon credits (if there)
+         unReferencedCredits.remove(address);
       }
       else
       {
-         credits.setAnon();
+         addToUnReferencedCache(address, credits);
       }
-      
+
       return credits;
    }
 
@@ -86,15 +81,7 @@ public class ClientProducerCreditManagerImpl implements ClientProducerCreditMana
 
       if (credits != null && credits.decrementRefCount() == 0)
       {
-         if (!credits.isAnon())
-         {
-            removeEntry(address, credits);
-         }
-         else
-         {
-            //All the producer refs have been removed but it's been used anonymously too so we add to the anon cache
-            addToAnonCache(address, credits);
-         }
+         addToUnReferencedCache(address, credits);
       }
    }
 
@@ -124,30 +111,42 @@ public class ClientProducerCreditManagerImpl implements ClientProducerCreditMana
       }
 
       producerCredits.clear();
+      
+      unReferencedCredits.clear();
    }
    
-   private void addToAnonCache(final SimpleString address, final ClientProducerCredits credits)
+   public synchronized int creditsMapSize()
    {
-      anonCredits.put(address, credits);
-      
-      if (anonCredits.size() > MAX_ANON_CREDITS_CACHE_SIZE)
+      return producerCredits.size();
+   }
+   
+   public synchronized int unReferencedCreditsSize()
+   {
+      return unReferencedCredits.size();
+   }
+
+   private void addToUnReferencedCache(final SimpleString address, final ClientProducerCredits credits)
+   {
+      unReferencedCredits.put(address, credits);
+
+      if (unReferencedCredits.size() > MAX_UNREFERENCED_CREDITS_CACHE_SIZE)
       {
-         //Remove the oldest entry
-         
-         Iterator<Map.Entry<SimpleString, ClientProducerCredits>> iter = anonCredits.entrySet().iterator();
-         
+         // Remove the oldest entry
+
+         Iterator<Map.Entry<SimpleString, ClientProducerCredits>> iter = unReferencedCredits.entrySet().iterator();
+
          Map.Entry<SimpleString, ClientProducerCredits> oldest = iter.next();
-         
+
          iter.remove();
-         
-         removeEntry(oldest.getKey(), oldest.getValue());
+
+         removeEntry(oldest.getKey(), oldest.getValue());                 
       }
    }
-   
+
    private void removeEntry(final SimpleString address, final ClientProducerCredits credits)
    {
       producerCredits.remove(address);
-      
+
       credits.releaseOutstanding();
 
       credits.close();

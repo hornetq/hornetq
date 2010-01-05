@@ -533,4 +533,9 @@ public class DelegatingSession implements ClientSessionInternal
    {
       session.handleReceiveProducerCredits(address, credits, offset);
    }
+
+   public ClientProducerCreditManager getProducerCreditManager()
+   {
+      return session.getProducerCreditManager();
+   }
 }

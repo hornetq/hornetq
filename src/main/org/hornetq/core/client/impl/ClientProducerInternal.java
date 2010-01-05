@@ -25,4 +25,6 @@ import org.hornetq.api.core.client.ClientProducer;
 public interface ClientProducerInternal extends ClientProducer
 {
    void cleanUp();
+   
+   ClientProducerCredits getProducerCredits();
 }

@@ -34,9 +34,5 @@ public interface ClientProducerCredits
    
    int decrementRefCount();
    
-   void setAnon();
-   
-   boolean isAnon();
-   
    void releaseOutstanding();
 }

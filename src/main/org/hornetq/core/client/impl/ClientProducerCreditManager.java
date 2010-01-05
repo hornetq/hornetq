@@ -33,4 +33,8 @@ public interface ClientProducerCreditManager
    void reset();
 
    void close();
+   
+   int creditsMapSize();
+   
+   int unReferencedCreditsSize();
 }

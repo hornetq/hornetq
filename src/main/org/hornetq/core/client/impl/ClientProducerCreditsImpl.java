@@ -41,8 +41,6 @@ public class ClientProducerCreditsImpl implements ClientProducerCredits
    
    private int refCount;
    
-   private boolean anon;
-   
    public ClientProducerCreditsImpl(final ClientSessionInternal session,
                                     final SimpleString address,
                                     final int windowSize)
@@ -114,16 +112,6 @@ public class ClientProducerCreditsImpl implements ClientProducerCredits
       int permits = semaphore.drainPermits();
       
       session.sendProducerCreditsMessage(permits, address);
-   }
-   
-   public synchronized boolean isAnon()
-   {
-      return anon;
-   }
-   
-   public synchronized void setAnon()
-   {
-      this.anon = true;
    }
    
    private void checkCredits(final int credits)
