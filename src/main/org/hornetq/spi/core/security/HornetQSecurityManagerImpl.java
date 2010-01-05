@@ -11,7 +11,7 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.core.security.impl;
+package org.hornetq.spi.core.security;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -22,7 +22,6 @@ import java.util.Set;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.security.CheckType;
 import org.hornetq.core.security.Role;
-import org.hornetq.spi.core.security.HornetQSecurityManager;
 
 /**
  * A basic implementation of the HornetQSecurityManager. This can be used within an appserver and be deployed by

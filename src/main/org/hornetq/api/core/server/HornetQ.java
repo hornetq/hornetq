@@ -19,10 +19,10 @@ import javax.management.MBeanServer;
 
 import org.hornetq.api.core.config.Configuration;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.security.impl.HornetQSecurityManagerImpl;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.impl.HornetQServerImpl;
 import org.hornetq.spi.core.security.HornetQSecurityManager;
+import org.hornetq.spi.core.security.HornetQSecurityManagerImpl;
 
 /**
  * A HornetQ

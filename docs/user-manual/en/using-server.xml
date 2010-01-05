@@ -224,7 +224,7 @@
 
 &lt;!-- The security manager --&gt;
 &lt;bean name="HornetQSecurityManager" 
-      class="org.hornetq.core.security.impl.HornetQSecurityManagerImpl"&gt;
+      class="org.hornetq.spi.core.security.HornetQSecurityManagerImpl"&gt;
    &lt;start ignored="true"/&gt;
    &lt;stop ignored="true"/&gt;
 &lt;/bean&gt;

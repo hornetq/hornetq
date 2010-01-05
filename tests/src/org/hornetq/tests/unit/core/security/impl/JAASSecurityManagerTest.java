@@ -36,7 +36,7 @@ import junit.framework.Assert;
 
 import org.hornetq.core.security.CheckType;
 import org.hornetq.core.security.Role;
-import org.hornetq.core.security.impl.JAASSecurityManager;
+import org.hornetq.spi.core.security.JAASSecurityManager;
 import org.hornetq.tests.util.UnitTestCase;
 import org.jboss.security.SimpleGroup;
 

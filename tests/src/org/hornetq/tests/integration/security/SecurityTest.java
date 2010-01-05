@@ -40,11 +40,11 @@ import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.config.Configuration;
 import org.hornetq.api.core.exception.HornetQException;
 import org.hornetq.core.security.Role;
-import org.hornetq.core.security.impl.JAASSecurityManager;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.settings.HierarchicalRepository;
 import org.hornetq.spi.core.security.HornetQSecurityManager;
+import org.hornetq.spi.core.security.JAASSecurityManager;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.jboss.security.SimpleGroup;
 

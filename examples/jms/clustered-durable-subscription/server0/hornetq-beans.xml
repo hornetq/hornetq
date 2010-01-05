@@ -25,7 +25,7 @@
    <bean name="Configuration" class="org.hornetq.api.core.config.FileConfiguration"/>
 
 	<!-- The security manager -->
-   <bean name="HornetQSecurityManager" class="org.hornetq.core.security.impl.HornetQSecurityManagerImpl">
+   <bean name="HornetQSecurityManager" class="org.hornetq.spi.core.security.HornetQSecurityManagerImpl">
       <start ignored="true"/>
       <stop ignored="true"/>
    </bean>

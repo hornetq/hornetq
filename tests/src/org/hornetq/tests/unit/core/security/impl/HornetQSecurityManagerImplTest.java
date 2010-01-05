@@ -19,7 +19,7 @@ import junit.framework.Assert;
 
 import org.hornetq.core.security.CheckType;
 import org.hornetq.core.security.Role;
-import org.hornetq.core.security.impl.HornetQSecurityManagerImpl;
+import org.hornetq.spi.core.security.HornetQSecurityManagerImpl;
 import org.hornetq.tests.util.UnitTestCase;
 
 /**

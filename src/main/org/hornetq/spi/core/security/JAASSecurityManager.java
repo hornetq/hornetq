@@ -11,7 +11,7 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.core.security.impl;
+package org.hornetq.spi.core.security;
 
 import java.security.Principal;
 import java.security.acl.Group;
@@ -29,7 +29,6 @@ import org.hornetq.core.logging.Logger;
 import org.hornetq.core.security.CheckType;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.server.HornetQComponent;
-import org.hornetq.spi.core.security.HornetQSecurityManager;
 
 /**
  * This implementation delegates to the JAAS security interfaces.

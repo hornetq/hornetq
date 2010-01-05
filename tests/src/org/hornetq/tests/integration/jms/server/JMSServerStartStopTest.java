@@ -28,11 +28,11 @@ import org.hornetq.api.jms.HornetQConnectionFactory;
 import org.hornetq.api.jms.server.JMSServerManager;
 import org.hornetq.api.jms.server.JMSServerManagerImpl;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.security.impl.HornetQSecurityManagerImpl;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.impl.HornetQServerImpl;
 import org.hornetq.integration.transports.netty.NettyConnectorFactory;
 import org.hornetq.spi.core.security.HornetQSecurityManager;
+import org.hornetq.spi.core.security.HornetQSecurityManagerImpl;
 import org.hornetq.tests.util.UnitTestCase;
 
 /**

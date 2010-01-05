@@ -21,9 +21,9 @@ import org.hornetq.api.core.config.TransportConfiguration;
 import org.hornetq.api.core.server.HornetQ;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.security.Role;
-import org.hornetq.core.security.impl.HornetQSecurityManagerImpl;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.settings.HierarchicalRepository;
+import org.hornetq.spi.core.security.HornetQSecurityManagerImpl;
 
 /**
  * A SecurityManagementTest
