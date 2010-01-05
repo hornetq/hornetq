@@ -409,6 +409,7 @@
          <include name="**/hornetq/api/*.java"/>
          <include name="**/hornetq/api/core/**/*.java"/>
          <include name="**/hornetq/core/**/*.java"/>
+         <include name="**/hornetq/spi/**/*.java"/>
          <include name="**/hornetq/utils/**/*.java"/>
       	 <classpath refid="core.compilation.classpath"/>
       </javac>
