@@ -31,8 +31,8 @@ import javax.resource.spi.work.WorkManager;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.jms.HornetQConnectionFactory;
-import org.hornetq.jms.HornetQDestination;
+import org.hornetq.jms.client.HornetQConnectionFactory;
+import org.hornetq.jms.client.HornetQDestination;
 import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.ra.HornetQResourceAdapter;

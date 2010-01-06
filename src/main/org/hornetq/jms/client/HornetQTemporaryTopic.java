@@ -11,62 +11,50 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.jms;
+package org.hornetq.jms.client;
 
 import javax.jms.JMSException;
-import javax.jms.Queue;
+import javax.jms.TemporaryTopic;
 
-import org.hornetq.api.core.SimpleString;
-import org.hornetq.jms.HornetQDestination;
-import org.hornetq.core.logging.Logger;
 
 /**
- * HornetQ implementation of a JMS Queue.
+ * HornetQ implementation of a JMS TemporaryTopic.
  * <br>
  * This class can be instantiated directly.
  * 
- * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @version <tt>$Revision$</tt>
+ * @version <tt>$Revision: 3569 $</tt>
  *
- * $Id$
+ * $Id: HornetQQueue.java 3569 2008-01-15 21:14:04Z timfox $
  */
-public class HornetQQueue extends HornetQDestination implements Queue
+public class HornetQTemporaryTopic extends HornetQTopic implements TemporaryTopic
 {
    // Constants -----------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(HornetQQueue.class);
+   private static final long serialVersionUID = 845450764835635266L;
 
-   private static final long serialVersionUID = -1106092883162295462L;
-
-   public static final String JMS_QUEUE_ADDRESS_PREFIX = "jms.queue.";
+   public static final String JMS_TEMP_TOPIC_ADDRESS_PREFIX = "jms.temptopic.";
 
    // Static --------------------------------------------------------
 
-   public static SimpleString createAddressFromName(final String name)
-   {
-      return new SimpleString(HornetQQueue.JMS_QUEUE_ADDRESS_PREFIX + name);
-   }
-
    // Attributes ----------------------------------------------------
+
+   private final transient HornetQSession session;
 
    // Constructors --------------------------------------------------
 
-   public HornetQQueue(final String name)
+   public HornetQTemporaryTopic(final HornetQSession session, final String name)
    {
-      super(HornetQQueue.JMS_QUEUE_ADDRESS_PREFIX + name, name);
+      super(HornetQTemporaryTopic.JMS_TEMP_TOPIC_ADDRESS_PREFIX + name, name);
+
+      this.session = session;
    }
 
-   protected HornetQQueue(final String address, final String name)
-   {
-      super(address, name);
-   }
+   // TemporaryTopic implementation ------------------------------------------
 
-   // Queue implementation ------------------------------------------
-
-   public String getQueueName() throws JMSException
+   public void delete() throws JMSException
    {
-      return name;
+      session.deleteTemporaryTopic(this);
    }
 
    // Public --------------------------------------------------------
@@ -74,13 +62,13 @@ public class HornetQQueue extends HornetQDestination implements Queue
    @Override
    public boolean isTemporary()
    {
-      return false;
+      return true;
    }
 
    @Override
    public String toString()
    {
-      return "HornetQQueue[" + name + "]";
+      return "HornetQTemporaryTopic[" + name + "]";
    }
 
    // Package protected ---------------------------------------------

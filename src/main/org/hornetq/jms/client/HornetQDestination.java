@@ -11,7 +11,7 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.jms;
+package org.hornetq.jms.client;
 
 import java.io.Serializable;
 

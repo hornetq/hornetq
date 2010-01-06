@@ -19,7 +19,7 @@ import javax.management.MBeanInfo;
 import javax.management.NotCompliantMBeanException;
 import javax.management.StandardMBean;
 
-import org.hornetq.jms.HornetQConnectionFactory;
+import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.api.jms.management.ConnectionFactoryControl;
 import org.hornetq.core.management.impl.MBeanInfoHelper;
 

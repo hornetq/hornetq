@@ -28,7 +28,7 @@ import javax.resource.spi.ResourceAdapterAssociation;
 import javax.security.auth.Subject;
 
 import org.hornetq.core.logging.Logger;
-import org.hornetq.jms.HornetQConnectionFactory;
+import org.hornetq.jms.client.HornetQConnectionFactory;
 
 /**
  * HornetQ ManagedConectionFactory

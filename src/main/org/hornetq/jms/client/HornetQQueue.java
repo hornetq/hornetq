@@ -11,51 +11,62 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.jms;
+package org.hornetq.jms.client;
 
 import javax.jms.JMSException;
-import javax.jms.TemporaryQueue;
+import javax.jms.Queue;
 
-import org.hornetq.jms.client.HornetQSession;
+import org.hornetq.api.core.SimpleString;
+import org.hornetq.jms.client.HornetQDestination;
+import org.hornetq.core.logging.Logger;
 
 /**
- * HornetQ implementation of a JMS TemporaryQueue.
+ * HornetQ implementation of a JMS Queue.
  * <br>
  * This class can be instantiated directly.
  * 
+ * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @version <tt>$Revision: 3569 $</tt>
+ * @version <tt>$Revision$</tt>
  *
- * $Id: HornetQQueue.java 3569 2008-01-15 21:14:04Z timfox $
+ * $Id$
  */
-public class HornetQTemporaryQueue extends HornetQQueue implements TemporaryQueue
+public class HornetQQueue extends HornetQDestination implements Queue
 {
    // Constants -----------------------------------------------------
 
-   private static final long serialVersionUID = -4624930377557954624L;
+   private static final Logger log = Logger.getLogger(HornetQQueue.class);
 
-   public static final String JMS_TEMP_QUEUE_ADDRESS_PREFIX = "jms.tempqueue.";
+   private static final long serialVersionUID = -1106092883162295462L;
+
+   public static final String JMS_QUEUE_ADDRESS_PREFIX = "jms.queue.";
 
    // Static --------------------------------------------------------
 
-   // Attributes ----------------------------------------------------
+   public static SimpleString createAddressFromName(final String name)
+   {
+      return new SimpleString(HornetQQueue.JMS_QUEUE_ADDRESS_PREFIX + name);
+   }
 
-   private final transient HornetQSession session;
+   // Attributes ----------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public HornetQTemporaryQueue(final HornetQSession session, final String name)
+   public HornetQQueue(final String name)
    {
-      super(HornetQTemporaryQueue.JMS_TEMP_QUEUE_ADDRESS_PREFIX + name, name);
-
-      this.session = session;
+      super(HornetQQueue.JMS_QUEUE_ADDRESS_PREFIX + name, name);
    }
 
-   // TemporaryQueue implementation ------------------------------------------
-
-   public void delete() throws JMSException
+   protected HornetQQueue(final String address, final String name)
    {
-      session.deleteTemporaryQueue(this);
+      super(address, name);
+   }
+
+   // Queue implementation ------------------------------------------
+
+   public String getQueueName() throws JMSException
+   {
+      return name;
    }
 
    // Public --------------------------------------------------------
@@ -63,13 +74,13 @@ public class HornetQTemporaryQueue extends HornetQQueue implements TemporaryQueu
    @Override
    public boolean isTemporary()
    {
-      return true;
+      return false;
    }
 
    @Override
    public String toString()
    {
-      return "HornetQTemporaryQueue[" + name + "]";
+      return "HornetQQueue[" + name + "]";
    }
 
    // Package protected ---------------------------------------------

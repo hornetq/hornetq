@@ -11,15 +11,14 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.jms;
+package org.hornetq.jms.client;
 
 import javax.jms.JMSException;
-import javax.jms.TemporaryTopic;
+import javax.jms.TemporaryQueue;
 
-import org.hornetq.jms.client.HornetQSession;
 
 /**
- * HornetQ implementation of a JMS TemporaryTopic.
+ * HornetQ implementation of a JMS TemporaryQueue.
  * <br>
  * This class can be instantiated directly.
  * 
@@ -28,13 +27,13 @@ import org.hornetq.jms.client.HornetQSession;
  *
  * $Id: HornetQQueue.java 3569 2008-01-15 21:14:04Z timfox $
  */
-public class HornetQTemporaryTopic extends HornetQTopic implements TemporaryTopic
+public class HornetQTemporaryQueue extends HornetQQueue implements TemporaryQueue
 {
    // Constants -----------------------------------------------------
 
-   private static final long serialVersionUID = 845450764835635266L;
+   private static final long serialVersionUID = -4624930377557954624L;
 
-   public static final String JMS_TEMP_TOPIC_ADDRESS_PREFIX = "jms.temptopic.";
+   public static final String JMS_TEMP_QUEUE_ADDRESS_PREFIX = "jms.tempqueue.";
 
    // Static --------------------------------------------------------
 
@@ -44,18 +43,18 @@ public class HornetQTemporaryTopic extends HornetQTopic implements TemporaryTopi
 
    // Constructors --------------------------------------------------
 
-   public HornetQTemporaryTopic(final HornetQSession session, final String name)
+   public HornetQTemporaryQueue(final HornetQSession session, final String name)
    {
-      super(HornetQTemporaryTopic.JMS_TEMP_TOPIC_ADDRESS_PREFIX + name, name);
+      super(HornetQTemporaryQueue.JMS_TEMP_QUEUE_ADDRESS_PREFIX + name, name);
 
       this.session = session;
    }
 
-   // TemporaryTopic implementation ------------------------------------------
+   // TemporaryQueue implementation ------------------------------------------
 
    public void delete() throws JMSException
    {
-      session.deleteTemporaryTopic(this);
+      session.deleteTemporaryQueue(this);
    }
 
    // Public --------------------------------------------------------
@@ -69,7 +68,7 @@ public class HornetQTemporaryTopic extends HornetQTopic implements TemporaryTopi
    @Override
    public String toString()
    {
-      return "HornetQTemporaryTopic[" + name + "]";
+      return "HornetQTemporaryQueue[" + name + "]";
    }
 
    // Package protected ---------------------------------------------

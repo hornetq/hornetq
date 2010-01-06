@@ -21,7 +21,7 @@ import javax.naming.InitialContext;
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.HornetQClient;
-import org.hornetq.jms.HornetQConnectionFactory;
+import org.hornetq.jms.client.HornetQConnectionFactory;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>

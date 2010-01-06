@@ -72,10 +72,10 @@
       <fileset dir="${hornetq.jars.dir}">
          <include name="**/*client*.jar"/>
          <include  name="**/jboss-jms-api.jar"/>
-         <include name="**/netty.jar"/>
       </fileset>
        <fileset dir="${jars.dir}">
-         <include  name="**/jboss-jms-api.jar"/>
+         <include name="**/jboss-jms-api.jar"/>
+         <include name="**/netty.jar"/>
       </fileset>
       <path refid="extra.classpath"/>
    </path>

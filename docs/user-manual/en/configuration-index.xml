@@ -223,7 +223,7 @@
                             <entry>String</entry>
                             <entry>the name of the management address to send management messages
                                 to</entry>
-                            <entry>hornetq.management</entry>
+                            <entry>jms.queue.hornetq.management</entry>
                         </row>
                         <row>
                             <entry><link linkend="management.replication"

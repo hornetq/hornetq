@@ -17,9 +17,9 @@ import javax.naming.Reference;
 
 import junit.framework.Assert;
 
-import org.hornetq.jms.HornetQDestination;
 import org.hornetq.api.jms.HornetQJMSClient;
-import org.hornetq.jms.HornetQQueue;
+import org.hornetq.jms.client.HornetQDestination;
+import org.hornetq.jms.client.HornetQQueue;
 import org.hornetq.jms.referenceable.DestinationObjectFactory;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;

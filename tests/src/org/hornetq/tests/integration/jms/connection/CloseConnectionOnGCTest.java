@@ -23,7 +23,7 @@ import javax.jms.Session;
 import junit.framework.Assert;
 
 import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.jms.HornetQConnectionFactory;
+import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.CloseListener;

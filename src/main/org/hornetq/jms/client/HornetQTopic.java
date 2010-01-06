@@ -11,14 +11,14 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.jms;
+package org.hornetq.jms.client;
 
 import javax.jms.JMSException;
 import javax.jms.Topic;
 
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.jms.HornetQDestination;
+import org.hornetq.jms.client.HornetQDestination;
 
 /**
  * HornetQ implementation of a JMS Topic.

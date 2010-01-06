@@ -132,7 +132,8 @@ public class ConfigurationImpl implements Configuration
 
    public static final long DEFAULT_TRANSACTION_TIMEOUT_SCAN_PERIOD = 1000;
 
-   public static final SimpleString DEFAULT_MANAGEMENT_ADDRESS = new SimpleString("hornetq.management");
+   // the management address is prefix with jms.queue so that JMS clients can send messages to it too.
+   public static final SimpleString DEFAULT_MANAGEMENT_ADDRESS = new SimpleString("jms.queue.hornetq.management");
 
    public static final SimpleString DEFAULT_MANAGEMENT_NOTIFICATION_ADDRESS = new SimpleString("hornetq.notifications");
 

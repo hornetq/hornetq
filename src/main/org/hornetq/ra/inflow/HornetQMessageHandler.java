@@ -27,9 +27,9 @@ import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.MessageHandler;
 import org.hornetq.api.core.client.ClientSession.QueueQuery;
-import org.hornetq.jms.HornetQTopic;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.jms.client.HornetQMessage;
+import org.hornetq.jms.client.HornetQTopic;
 
 /**
  * The message handler

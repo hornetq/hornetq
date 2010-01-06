@@ -25,11 +25,11 @@ import junit.framework.Assert;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.jms.HornetQConnectionFactory;
 import org.hornetq.api.jms.HornetQJMSClient;
-import org.hornetq.jms.HornetQQueue;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.Queue;
+import org.hornetq.jms.client.HornetQConnectionFactory;
+import org.hornetq.jms.client.HornetQQueue;
 import org.hornetq.jms.client.HornetQSession;
 import org.hornetq.tests.util.JMSTestBase;
 

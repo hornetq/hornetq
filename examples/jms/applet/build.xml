@@ -19,6 +19,12 @@
 
    <import file="../../common/build.xml"/>
 
+   <path id="extra.classpath">
+      <fileset dir="${jars.dir}">
+         <include name="**/netty.jar" />
+      </fileset>
+   </path>
+   
    <path id="applet.classpath">
       <fileset dir="build/classes" />
 	  <fileset dir="build/classes">
@@ -28,10 +34,12 @@
 	
    <target name="init">
       <mkdir dir="build/classes" />
-	  <copy todir="build/classes">
-	     <fileset dir="${hornetq.jars.dir}">
-	        <include name="hornetq-core-client.jar"/>
-	        <include name="hornetq-jms-client.jar"/>
+	  <copy todir="build/classes" flatten="true">
+  	     <fileset dir="${client.jars.dir}">
+  	        <include name="hornetq-core-client.jar"/>
+  	        <include name="hornetq-jms-client.jar"/>
+  	     </fileset>
+  	     <fileset dir="${hornetq.jars.dir}">
 	        <include name="hornetq-transports.jar"/>
 	     </fileset>
 	     <fileset dir="${jars.dir}">

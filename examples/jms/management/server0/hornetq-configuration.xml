@@ -2,7 +2,7 @@
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
             xsi:schemaLocation="urn:hornetq /schema/hornetq-configuration.xsd">
 
-   <management-address>hornetq.management</management-address>
+   <management-address>jms.queue.hornetq.management</management-address>
 
    <connectors>
       <connector name="netty">
@@ -30,7 +30,7 @@
       </security-setting>
 
       <!--security for management queue-->
-      <security-setting match="hornetq.management">
+      <security-setting match="jms.queue.hornetq.management">
          <permission type="manage" roles="guest" />
       </security-setting>
 
