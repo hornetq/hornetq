@@ -12,10 +12,7 @@
  */
 
 /**
- * Management API for HornetQ JMS resources.
- * <br>
- * HornetQ JMS resources can be managed either using JMX or by sending JMS management messages to the 
- * server's special management address. Please refer to the user manual for more information.
+ * HornetQ client side connection load balancing policies
  */
-package org.hornetq.api.jms.management;
+package org.hornetq.api.core.client.loadbalance;
 

@@ -12,10 +12,7 @@
  */
 
 /**
- * Implementation of the JMS Destinations.
- * <br>
- * Classes in this package can be instantiated directly
- * if JMS destinations are not looked up in JNDI.
+ * This package contains classes that relate to the HornetQ JMS implementation
  * 
  */
 package org.hornetq.api.jms;

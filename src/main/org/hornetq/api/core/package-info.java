@@ -12,10 +12,9 @@
  */
 
 /**
- * Management API for HornetQ JMS resources.
+ * HornetQ core messaging API
  * <br>
- * HornetQ JMS resources can be managed either using JMX or by sending JMS management messages to the 
- * server's special management address. Please refer to the user manual for more information.
+ * This package defines the core API
  */
-package org.hornetq.api.jms.management;
+package org.hornetq.api.core;
 
