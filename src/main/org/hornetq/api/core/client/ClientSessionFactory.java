@@ -163,7 +163,7 @@ public interface ClientSessionFactory
    /**
     * Returns the period used to check if a client has failed to receive pings from the server.
     *   
-    * Period is in milliseconds, default value is {@value HornetQClient#DEFAULT_CLIENT_FAILURE_CHECK_PERIOD}.
+    * Period is in milliseconds, default value is {@link HornetQClient#DEFAULT_CLIENT_FAILURE_CHECK_PERIOD}.
     * 
     * @return the period used to check if a client has failed to receive pings from the server
     */
@@ -183,7 +183,7 @@ public interface ClientSessionFactory
     * 
     * There is 1 temporary file created for each large message.
     * 
-    * Default value is {@value HornetQClient#DEFAULT_CACHE_LARGE_MESSAGE_CLIENT}.
+    * Default value is {@link HornetQClient#DEFAULT_CACHE_LARGE_MESSAGE_CLIENT}.
     * 
     * @return <code>true</code> if consumers created through this factory will cache large messages in temporary files, <code>false</code> else
     */
@@ -200,7 +200,7 @@ public interface ClientSessionFactory
     * Returns the connection <em>time-to-live</em>.
     * This TTL determines how long the server will keep a connection alive in the absence of any data arriving from the client.
     * 
-    * Value is in milliseconds, default value is {@value HornetQClient#DEFAULT_CONNECTION_TTL}.
+    * Value is in milliseconds, default value is {@link HornetQClient#DEFAULT_CONNECTION_TTL}.
     * 
     * @return the connection time-to-live in milliseconds
     */
@@ -219,7 +219,7 @@ public interface ClientSessionFactory
     * Returns the blocking calls timeout.
     * 
     * If client's blocking calls to the server take more than this timeout, the call will throw a {@link HornetQException} with the code {@link HornetQException#CONNECTION_TIMEDOUT}.
-    * Value is in milliseconds, default value is {@value HornetQClient#DEFAULT_CALL_TIMEOUT}.
+    * Value is in milliseconds, default value is {@link HornetQClient#DEFAULT_CALL_TIMEOUT}.
     * 
     * @return the blocking calls timeout
     */
@@ -239,7 +239,7 @@ public interface ClientSessionFactory
     * 
     * Messages whose size is if greater than this value will be handled as <em>large messages</em>.
     * 
-    * Value is in bytes, default value is {@value HornetQClient#DEFAULT_MIN_LARGE_MESSAGE_SIZE}.
+    * Value is in bytes, default value is {@link HornetQClient#DEFAULT_MIN_LARGE_MESSAGE_SIZE}.
     * 
     * @return the message size threshold to treat messages as large messages.
     */
@@ -257,7 +257,7 @@ public interface ClientSessionFactory
    /**
     * Returns the window size for flow control of the consumers created through this factory.
     * 
-    * Value is in bytes, default value is {@value HornetQClient#DEFAULT_CONSUMER_WINDOW_SIZE}.
+    * Value is in bytes, default value is {@link HornetQClient#DEFAULT_CONSUMER_WINDOW_SIZE}.
     * 
     * @return the window size used for consumer flow control
     */
@@ -278,7 +278,7 @@ public interface ClientSessionFactory
     * This value controls the rate at which a consumer can consume messages. A consumer will never consume messages at a rate faster than the rate specified.
     * 
     * Value is -1 (to disable) or a positive integer corresponding to the maximum desired message consumption rate specified in units of messages per second.
-    * Default value is {@value HornetQClient#DEFAULT_CONSUMER_MAX_RATE}.
+    * Default value is {@link HornetQClient#DEFAULT_CONSUMER_MAX_RATE}.
     * 
     * @return the consumer max rate
     */
@@ -296,7 +296,7 @@ public interface ClientSessionFactory
    /**
     * Returns the size for the confirmation window of clients using this factory.
     * 
-    * Value is in bytes or -1 (to disable the window). Default value is {@value HornetQClient#DEFAULT_CONFIRMATION_WINDOW_SIZE}.
+    * Value is in bytes or -1 (to disable the window). Default value is {@link HornetQClient#DEFAULT_CONFIRMATION_WINDOW_SIZE}.
     * 
     * @return the size for the confirmation window of clients using this factory
     */
@@ -315,7 +315,7 @@ public interface ClientSessionFactory
     * Returns the window size for flow control of the producers created through this factory.
     * 
     * Value must be -1 (to disable flow control) or greater than 0 to determine the maximum amount of bytes at any give time (to prevent overloading the connection).
-    * Default value is {@value HornetQClient#DEFAULT_PRODUCER_WINDOW_SIZE}.
+    * Default value is {@link HornetQClient#DEFAULT_PRODUCER_WINDOW_SIZE}.
     * 
     * @return the window size for flow control of the producers created through this factory.
     */
@@ -336,7 +336,7 @@ public interface ClientSessionFactory
     * This value controls the rate at which a producer can produce messages. A producer will never produce messages at a rate faster than the rate specified.
     * 
     * Value is -1 (to disable) or a positive integer corresponding to the maximum desired message production rate specified in units of messages per second.
-    * Default value is {@value HornetQClient#DEFAULT_PRODUCER_MAX_RATE}.
+    * Default value is {@link HornetQClient#DEFAULT_PRODUCER_MAX_RATE}.
     * 
     * @return  maximum rate of message production (in messages per seconds)
     */
@@ -354,7 +354,7 @@ public interface ClientSessionFactory
    /**
     * Returns whether consumers created through this factory will block while sending message acknowledgements or do it asynchronously.
     * 
-    * Default value is {@value HornetQClient#DEFAULT_BLOCK_ON_ACKNOWLEDGE}.
+    * Default value is {@link HornetQClient#DEFAULT_BLOCK_ON_ACKNOWLEDGE}.
     * 
     * @return whether consumers will block while sending message acknowledgements or do it asynchronously
     */
@@ -373,7 +373,7 @@ public interface ClientSessionFactory
     * If the session is configured to send durable message asynchronously, the client can set a SendAcknowledgementHandler on the ClientSession
     * to be notified once the message has been handled by the server.
     * 
-    * Default value is {@value HornetQClient#DEFAULT_BLOCK_ON_DURABLE_SEND}.
+    * Default value is {@link HornetQClient#DEFAULT_BLOCK_ON_DURABLE_SEND}.
     *
     * @return whether producers will block while sending persistent messages or do it asynchronously
     */
@@ -392,7 +392,7 @@ public interface ClientSessionFactory
     * If the session is configured to send non-durable message asynchronously, the client can set a SendAcknowledgementHandler on the ClientSession
     * to be notified once the message has been handled by the server.
     * 
-    * Default value is {@value HornetQClient#DEFAULT_BLOCK_ON_NON_DURABLE_SEND}.
+    * Default value is {@link HornetQClient#DEFAULT_BLOCK_ON_NON_DURABLE_SEND}.
     *
     * @return whether producers will block while sending non-durable messages or do it asynchronously
     */
@@ -411,7 +411,7 @@ public interface ClientSessionFactory
     * 
     * if <code>true</code>, a random unique group ID is created and set on each message for the property
     * {@link org.hornetq.api.core.message.Message#HDR_GROUP_ID}.
-    * Default value is {@value HornetQClient#DEFAULT_AUTO_GROUP}.
+    * Default value is {@link HornetQClient#DEFAULT_AUTO_GROUP}.
     * 
     * @return whether producers will automatically assign a group ID to their messages
     */
@@ -444,7 +444,7 @@ public interface ClientSessionFactory
    /**
     * Returns whether messages will pre-acknowledged on the server before they are sent to the consumers or not.
     *
-    * Default value is {@value HornetQClient#DEFAULT_PRE_ACKNOWLEDGE}
+    * Default value is {@link HornetQClient#DEFAULT_PRE_ACKNOWLEDGE}
     */
    boolean isPreAcknowledge();
 
@@ -459,7 +459,7 @@ public interface ClientSessionFactory
    /**
     * Returns the acknowledgements batch size.
     * 
-    * Default value is  {@value HornetQClient#DEFAULT_ACK_BATCH_SIZE}.
+    * Default value is  {@link HornetQClient#DEFAULT_ACK_BATCH_SIZE}.
     * 
     * @return the acknowledgements batch size
     */
@@ -511,7 +511,7 @@ public interface ClientSessionFactory
     * If this factory uses discovery to find HornetQ servers, the list of discovered servers
     * will be refreshed according to this timeout.
     * 
-    * Value is in milliseconds, default value is {@value HornetQClient#DEFAULT_DISCOVERY_REFRESH_TIMEOUT}.
+    * Value is in milliseconds, default value is {@link HornetQClient#DEFAULT_DISCOVERY_REFRESH_TIMEOUT}.
     * 
     * @return the refresh timeout for discovered HornetQ servers
     */
@@ -529,7 +529,7 @@ public interface ClientSessionFactory
    /**
     * Returns the initial wait timeout if this factory is configured to use discovery.
     * 
-    * Value is in milliseconds, default value is  {@value HornetQClient#DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT}.
+    * Value is in milliseconds, default value is  {@link HornetQClient#DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT}.
     * 
     * @return the initial wait timeout if this factory is configured to use discovery 
     */
@@ -548,7 +548,7 @@ public interface ClientSessionFactory
     * Returns whether this factory will use global thread pools (shared among all the factories in the same JVM)
     * or its own pools.
     * 
-    * Default value is {@value HornetQClient#DEFAULT_USE_GLOBAL_POOLS}.
+    * Default value is {@link HornetQClient#DEFAULT_USE_GLOBAL_POOLS}.
     * 
     * @return <code>true</code> if this factory uses global thread pools, <code>false</code> else
     */
@@ -565,7 +565,7 @@ public interface ClientSessionFactory
    /**
     * Returns the maximum size of the scheduled thread pool.
     * 
-    * Default value is {@value HornetQClient#DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE}.
+    * Default value is {@link HornetQClient#DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE}.
     * 
     * @return the maximum size of the scheduled thread pool.
     */
@@ -584,7 +584,7 @@ public interface ClientSessionFactory
    /**
     * Returns the maximum size of the thread pool.
     * 
-    * Default value is {@value HornetQClient#DEFAULT_THREAD_POOL_MAX_SIZE}.
+    * Default value is {@link HornetQClient#DEFAULT_THREAD_POOL_MAX_SIZE}.
     * 
     * @return the maximum size of the thread pool.
     */
@@ -603,7 +603,7 @@ public interface ClientSessionFactory
    /**
     * Returns the time to retry connections created by this factory after failure. 
     * 
-    * Value is in milliseconds, default is {@value HornetQClient#DEFAULT_RETRY_INTERVAL}.
+    * Value is in milliseconds, default is {@link HornetQClient#DEFAULT_RETRY_INTERVAL}.
     * 
     * @return the time to retry connections created by this factory after failure
     */
@@ -621,7 +621,7 @@ public interface ClientSessionFactory
    /**
     * Returns the multiplier to apply to successive retry intervals.
     * 
-    * Default value is  {@value HornetQClient#DEFAULT_RETRY_INTERVAL_MULTIPLIER}.
+    * Default value is  {@link HornetQClient#DEFAULT_RETRY_INTERVAL_MULTIPLIER}.
     * 
     * @return the multiplier to apply to successive retry intervals
     */
@@ -639,7 +639,7 @@ public interface ClientSessionFactory
    /**
     * Returns the maximum retry interval (in the case a retry interval multiplier has been specified).
     * 
-    * Value is in milliseconds, default value is  {@value HornetQClient#DEFAULT_MAX_RETRY_INTERVAL}.
+    * Value is in milliseconds, default value is  {@link HornetQClient#DEFAULT_MAX_RETRY_INTERVAL}.
     * 
     * @return the maximum retry interval
     */
@@ -657,7 +657,7 @@ public interface ClientSessionFactory
    /**
     * Returns the maximum number of attempts to retry connection in case of failure.
     * 
-    * Default value is {@value HornetQClient#DEFAULT_RECONNECT_ATTEMPTS}.
+    * Default value is {@link HornetQClient#DEFAULT_RECONNECT_ATTEMPTS}.
     * 
     * @return the maximum number of attempts to retry connection in case of failure.
     */
@@ -676,7 +676,7 @@ public interface ClientSessionFactory
     * Returns whether connections created by this factory must failover in case the server they are
     * connected to <em>has normally shut down</em>.
     * 
-    * Default value is {@value HornetQClient#DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN}.
+    * Default value is {@link HornetQClient#DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN}.
     * 
     * @return <code>true</code> if connections must failover if the server has normally shut down, else <code>false</code>
     */
@@ -711,7 +711,7 @@ public interface ClientSessionFactory
    /**
     * Returns the initial size of messages created through this factory.
     * 
-    * Value is in bytes, default value is  {@value HornetQClient#DEFAULT_INITIAL_MESSAGE_PACKET_SIZE}.
+    * Value is in bytes, default value is  {@link HornetQClient#DEFAULT_INITIAL_MESSAGE_PACKET_SIZE}.
     * 
     * @return the initial size of messages created through this factory
     */
