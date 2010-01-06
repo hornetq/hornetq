@@ -49,7 +49,9 @@ public class AsynchronousFileImpl implements AsynchronousFile
 
    private static boolean loaded = false;
 
-   private static int EXPECTED_NATIVE_VERSION = 27;
+   /** This definition needs to match Version.h on the native sources.
+       Or else the native module won't be loaded because of version mismatches */
+   private static int EXPECTED_NATIVE_VERSION = 28;
 
    /** Used to determine the next writing sequence */
    private final AtomicLong nextWritingSequence = new AtomicLong(0);
