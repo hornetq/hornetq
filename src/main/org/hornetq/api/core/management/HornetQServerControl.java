@@ -16,7 +16,7 @@ package org.hornetq.api.core.management;
 import javax.management.MBeanOperationInfo;
 
 import org.hornetq.api.core.HornetQException;
-import org.hornetq.core.config.Configuration;
+import org.hornetq.api.core.Interceptor;
 
 /**
  * A HornetQServerControl is used to manage HornetQ servers.
@@ -26,7 +26,9 @@ public interface HornetQServerControl
    // Attributes ----------------------------------------------------
 
    /**
-    * @see Configuration#getBackupConnectorName()
+    * Returns the name of the connector used to connect to the backup.
+    * <br>
+    * If this server has no backup or is itself a backup, the value is {@code null}.
     */
    String getBackupConnectorName();
 
@@ -46,233 +48,239 @@ public interface HornetQServerControl
    boolean isStarted();
 
    /**
-    * @see Configuration#getInterceptorClassNames()
+    * Returns the list of interceptors used by this server.
+    * 
+    * @see Interceptor
     */
    String[] getInterceptorClassNames();
 
    /**
-    * @see Configuration#isClustered()
+    * Returns whether this server is clustered.
     */
    boolean isClustered();
 
    /**
-    * @see Configuration#getScheduledThreadPoolMaxSize()
+    * Returns the maximum number of threads in the <em>scheduled</em> thread pool.
     */
    int getScheduledThreadPoolMaxSize();
 
    /**
-    * @see Configuration#getThreadPoolMaxSize()
+    * Returns the maximum number of threads in the thread pool.
     */
    int getThreadPoolMaxSize();
 
    /**
-    * @see Configuration#getSecurityInvalidationInterval()
+    * Returns the interval time (in milliseconds) to invalidate security credentials.
     */
    long getSecurityInvalidationInterval();
 
    /**
-    * @see Configuration#isSecurityEnabled()
+    * Returns whether security is enabled for this server.
     */
    boolean isSecurityEnabled();
 
    /**
-    * @see Configuration#getBindingsDirectory()
+    * Returns the file system directory used to store bindings.
     */
    String getBindingsDirectory();
 
    /**
-    * @see Configuration#getJournalDirectory()
+    * Returns the file system directory used to store journal log.
     */
    String getJournalDirectory();
 
    /**
-    * @see Configuration#getJournalType()
+    * Returns the type of journal used by this server (either {@code NIO} or {@code ASYNCIO}).
     */
    String getJournalType();
 
    /**
-    * @see Configuration#isJournalSyncTransactional()
+    * Returns whether the journal is synchronized when receiving transactional data.
     */
    boolean isJournalSyncTransactional();
 
    /**
-    * @see Configuration#isJournalSyncNonTransactional()()
+    * Returns whether the journal is synchronized when receiving non-transactional data.
     */
    boolean isJournalSyncNonTransactional();
 
    /**
-    * @see Configuration#getJournalFileSize()
+    * Returns the size (in bytes) of each journal files.
     */
    int getJournalFileSize();
 
    /**
-    * @see Configuration#getJournalMinFiles()
+    * Returns the number of journal files to pre-create.
     */
    int getJournalMinFiles();
 
    /**
-    * Returns the maximum number of write requests that can be in the journal at any given time.
-    *
-    * @see Configuration#getJournalMaxIO_AIO()
-    * @see Configuration#getJournalMaxIO_NIO()
+    * Returns the maximum number of write requests that can be in the AIO queue at any given time.
     */
    int getJournalMaxIO();
 
    /**
     * Returns the size of the internal buffer on the journal.
-    * 
-    * @see Configuration#getJournalBufferSize_AIO()
-    * @see Configuration#getJournalBufferSize_NIO()
     */
    int getJournalBufferSize();
 
    /**
     * Returns the timeout (in nanoseconds) used to flush internal buffers on the journal.
-    * 
-    * @see Configuration#getJournalBufferTimeout_AIO()
-    * @see Configuration#getJournalBufferTimeout_NIO()
     */
    int getJournalBufferTimeout();
 
    /**
-    * @see Configuration#getJournalCompactMinFiles()
+    * Returns the minimal number of journal files before compacting.
     */
    int getJournalCompactMinFiles();
 
    /**
-    * @see Configuration#getJournalCompactPercentage()
+    * Return the percentage of live data before compacting the journal.
     */
    int getJournalCompactPercentage();
 
    /**
-    * @see Configuration#isPersistenceEnabled()
+    * Returns whether this server is using persistence and store data.
     */
    boolean isPersistenceEnabled();
 
    /**
-    * @see Configuration#isCreateBindingsDir()
+    * Returns whether the bindings directory is created on this server startup.
     */
    boolean isCreateBindingsDir();
 
    /**
-    * @see Configuration#isCreateJournalDir()
+    * Returns whether the journal directory is created on this server startup.
     */
    boolean isCreateJournalDir();
 
    /**
-    * @see Configuration#isMessageCounterEnabled()
+    * Returns whether message counter is enabled for this server.
     */
    boolean isMessageCounterEnabled();
 
    /**
-    * @see Configuration#getMessageCounterMaxDayHistory()
+    * Returns the maximum number of days kept in memory for message counter.
     */
    int getMessageCounterMaxDayCount();
 
    /**
-    * @see Configuration#setMessageCounterMaxDayHistory(int)
+    * Sets the maximum number of days kept in memory for message counter.
+    * 
+    * @param count value must be greater than 0
     */
    void setMessageCounterMaxDayCount(int count) throws Exception;
 
    /**
-    * @see Configuration#getMessageCounterSamplePeriod()
+    * Returns the sample period (in milliseconds) to take message counter snapshot.
     */
    long getMessageCounterSamplePeriod();
 
    /**
-    * @see Configuration#setMessageCounterSamplePeriod(long)
+    * Sets the sample period to take message counter snapshot.
+    * 
+    * @param newPeriod value must be greater than 1000ms
     */
    void setMessageCounterSamplePeriod(long newPeriod) throws Exception;
 
    /**
-    * @see Configuration#isBackup()
+    * Returns {@code true} if this server is a backup, {@code false} if it is a live server.
+    * <br>
+    * If a backup server has been activated, returns {@code false}.
     */
    boolean isBackup();
 
    /**
-    * @see Configuration#isSharedStore()
+    * Returns whether this server shares its data store with a corresponding live or backup server.
     */
    boolean isSharedStore();
 
    /**
-    * @see Configuration#getPagingDirectory()
+    * Returns the file system directory used to store paging files.
     */
    String getPagingDirectory();
 
    /**
-    * @see Configuration#isPersistDeliveryCountBeforeDelivery()
+    * Returns whether delivery count is persisted before messages are delivered to the consumers.
     */
    boolean isPersistDeliveryCountBeforeDelivery();
 
    /**
-    * @see Configuration#getConnectionTTLOverride()
+    * Returns the connection time to live.
+    * <br>
+    * This value overrides the connection time to live <em>sent by the client</em>.
     */
    long getConnectionTTLOverride();
 
    /**
-    * @see Configuration#getManagementAddress()
+    * Returns the management address of this server.
+    * <br>
+    * Clients can send management messages to this address to manage this server.
     */
    String getManagementAddress();
 
    /**
-    * @see Configuration#getManagementNotificationAddress()
+    * Returns the management notification address of this server.
+    * <br>
+    * Clients can bind queues to this address to receive management notifications emitted by this server.
     */
    String getManagementNotificationAddress();
 
    /**
-    * @see Configuration#getIDCacheSize()
+    * Returns the size of the cache for pre-creating message IDs.
     */
    int getIDCacheSize();
 
    /**
-    * @see Configuration#isPersistIDCache()
+    * Returns whether message ID cache is persisted.
     */
    boolean isPersistIDCache();
 
    /**
-    * @see Configuration#getLargeMessagesDirectory()
+    * Returns the file system directory used to store large messages.
     */
    String getLargeMessagesDirectory();
 
    /**
-    * @see Configuration#isWildcardRoutingEnabled()
+    * Returns whether wildcard routing is supported by this server.
     */
    boolean isWildcardRoutingEnabled();
 
    /**
-    * @see Configuration#getTransactionTimeout()
+    * Returns the timeout (in milliseconds) after which transactions is removed 
+    * from the resource manager after it was created.
     */
    long getTransactionTimeout();
 
    /**
-    * @see Configuration#getTransactionTimeoutScanPeriod()
+    * Returns the frequency (in milliseconds)  to scan transactions to detect which transactions 
+    * have timed out.
     */
    long getTransactionTimeoutScanPeriod();
 
    /**
-    * @see Configuration#getMessageExpiryScanPeriod()
+    * Returns the frequency (in milliseconds)  to scan messages to detect which messages 
+    * have expired.
     */
    long getMessageExpiryScanPeriod();
 
    /**
-    * @see Configuration#getMessageExpiryThreadPriority()
+    * Returns the priority of the thread used to scan message expiration.
     */
    long getMessageExpiryThreadPriority();
 
    /**
-    * @see Configuration#isAsyncConnectionExecutionEnabled()
+    * Returns whether code coming from connection is executed asynchronously or not.
     */
    boolean isAsyncConnectionExecutionEnabled();
 
    /**
-    * @see Configuration#getConnectorConfigurations()
+    * Returns the connectors configured for this server.
     */
    Object[] getConnectors() throws Exception;
 
    /**
     * Returns the connectors configured for this server using JSON serialization.
-    * 
-    * @see Configuration#getConnectorConfigurations()
     */
    String getConnectorsAsJSON() throws Exception;
 

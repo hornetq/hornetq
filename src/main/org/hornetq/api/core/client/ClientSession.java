@@ -417,7 +417,7 @@ public interface ClientSession extends XAResource
     * 
     * @return a ClientProducer
     *
-    * @see ClientProducer#send(SimpleString, org.hornetq.api.core.message.Message)
+    * @see ClientProducer#send(SimpleString, org.hornetq.api.core.Message)
     */
    ClientProducer createProducer() throws HornetQException;
 
