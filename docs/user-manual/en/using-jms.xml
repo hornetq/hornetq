@@ -182,7 +182,7 @@ TransportConfiguration transportConfiguration =
 ConnectionFactory cf = HornetQJMSClient.createConnectionFactory(transportConfiguration);
         </programlisting>
         <para>We create the JMS Queue Object via the HornetQJMSClient Utility class:</para>
-        <programlisting>Queue orderQueue = HornetQJMSClient.createHornetQQueue("OrderQueue");</programlisting>
+        <programlisting>Queue orderQueue = HornetQJMSClient.createQueue("OrderQueue");</programlisting>
         <para>Next we create a JMS connection using the connection factory:</para>
         <programlisting>Connection connection = cf.createConnection();</programlisting>
         <para>And we create a non transacted JMS Session, with AUTO_ACKNOWLEDGE acknowledge
