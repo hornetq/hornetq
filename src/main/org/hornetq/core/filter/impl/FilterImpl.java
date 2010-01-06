@@ -16,6 +16,7 @@ package org.hornetq.core.filter.impl;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.hornetq.api.core.FilterConstants;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.filter.Filter;
@@ -58,24 +59,6 @@ public class FilterImpl implements Filter
    // Constants -----------------------------------------------------
 
    private static final Logger log = Logger.getLogger(FilterImpl.class);
-
-   private static final SimpleString HORNETQ_EXPIRATION = new SimpleString("HQExpiration");
-
-   private static final SimpleString HORNETQ_DURABLE = new SimpleString("HQDurable");
-
-   private static final SimpleString NON_DURABLE = new SimpleString("NON_DURABLE");
-
-   private static final SimpleString DURABLE = new SimpleString("DURABLE");
-
-   private static final SimpleString HORNETQ_TIMESTAMP = new SimpleString("HQTimestamp");
-
-   private static final SimpleString HORNETQ_PRIORITY = new SimpleString("HQPriority");
-
-   private static final SimpleString HORNETQ_SIZE = new SimpleString("HQSize");
-
-   private static final SimpleString HORNETQ_PREFIX = new SimpleString("HQ");
-
-   // Attributes -----------------------------------------------------
 
    private final SimpleString sfilterString;
 
@@ -147,7 +130,7 @@ public class FilterImpl implements Filter
          {
             Object val = null;
 
-            if (id.getName().startsWith(FilterImpl.HORNETQ_PREFIX))
+            if (id.getName().startsWith(FilterConstants.HORNETQ_PREFIX))
             {
                // Look it up as header fields
                val = getHeaderFieldValue(message, id.getName());
@@ -189,23 +172,23 @@ public class FilterImpl implements Filter
 
    private Object getHeaderFieldValue(final ServerMessage msg, final SimpleString fieldName)
    {
-      if (FilterImpl.HORNETQ_PRIORITY.equals(fieldName))
+      if (FilterConstants.HORNETQ_PRIORITY.equals(fieldName))
       {
          return new Integer(msg.getPriority());
       }
-      else if (FilterImpl.HORNETQ_TIMESTAMP.equals(fieldName))
+      else if (FilterConstants.HORNETQ_TIMESTAMP.equals(fieldName))
       {
          return msg.getTimestamp();
       }
-      else if (FilterImpl.HORNETQ_DURABLE.equals(fieldName))
+      else if (FilterConstants.HORNETQ_DURABLE.equals(fieldName))
       {
-         return msg.isDurable() ? FilterImpl.DURABLE : FilterImpl.NON_DURABLE;
+         return msg.isDurable() ? FilterConstants.DURABLE : FilterConstants.NON_DURABLE;
       }
-      else if (FilterImpl.HORNETQ_EXPIRATION.equals(fieldName))
+      else if (FilterConstants.HORNETQ_EXPIRATION.equals(fieldName))
       {
          return msg.getExpiration();
       }
-      else if (FilterImpl.HORNETQ_SIZE.equals(fieldName))
+      else if (FilterConstants.HORNETQ_SIZE.equals(fieldName))
       {
          return msg.getEncodeSize();
       }
