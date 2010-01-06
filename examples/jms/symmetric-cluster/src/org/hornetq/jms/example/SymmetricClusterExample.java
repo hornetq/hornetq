@@ -85,9 +85,9 @@ public class SymmetricClusterExample extends HornetQExample
          Thread.sleep(2000);
 
          // Step 2. Directly instantiate JMS Queue and Topic objects
-         Queue queue = HornetQJMSClient.createHornetQQueue("exampleQueue");
+         Queue queue = HornetQJMSClient.createQueue("exampleQueue");
 
-         Topic topic = HornetQJMSClient.createHornetQTopic("exampleTopic");
+         Topic topic = HornetQJMSClient.createTopic("exampleTopic");
 
          // Step 3. We create six connections, they should be to different nodes of the cluster in a round-robin fashion
          // and start them

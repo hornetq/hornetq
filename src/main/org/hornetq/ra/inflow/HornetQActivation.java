@@ -398,11 +398,11 @@ public class HornetQActivation
                // If there is no binding on naming, we will just create a new instance
                if (isTopic)
                {
-                  destination = (HornetQDestination) HornetQJMSClient.createHornetQTopic(destinationName.substring(destinationName.lastIndexOf('/') + 1));
+                  destination = (HornetQDestination) HornetQJMSClient.createTopic(destinationName.substring(destinationName.lastIndexOf('/') + 1));
                }
                else
                {
-                  destination = (HornetQDestination) HornetQJMSClient.createHornetQQueue(destinationName.substring(destinationName.lastIndexOf('/') + 1));
+                  destination = (HornetQDestination) HornetQJMSClient.createQueue(destinationName.substring(destinationName.lastIndexOf('/') + 1));
                }
             }
          }
@@ -424,11 +424,11 @@ public class HornetQActivation
       {
          if (Topic.class.getName().equals(spec.getDestinationType()))
          {
-            destination = (HornetQDestination) HornetQJMSClient.createHornetQTopic(spec.getDestination());
+            destination = (HornetQDestination) HornetQJMSClient.createTopic(spec.getDestination());
          }
          else
          {
-            destination = (HornetQDestination) HornetQJMSClient.createHornetQQueue(spec.getDestination());
+            destination = (HornetQDestination) HornetQJMSClient.createQueue(spec.getDestination());
          }
       }
 

@@ -57,7 +57,7 @@ public class HornetQQueue extends HornetQDestination implements Queue
       super(HornetQQueue.JMS_QUEUE_ADDRESS_PREFIX + name, name);
    }
 
-   public HornetQQueue(final String address, final String name)
+   protected HornetQQueue(final String address, final String name)
    {
       super(address, name);
    }

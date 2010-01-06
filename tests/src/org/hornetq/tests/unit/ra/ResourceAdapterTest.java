@@ -387,7 +387,7 @@ public class ResourceAdapterTest extends ServiceTestBase
 
          ClientSessionFactory factory = createInVMFactory();
          ClientSession session = factory.createSession(false, false, false);
-         HornetQQueue queue = (HornetQQueue) HornetQJMSClient.createHornetQQueue("test");
+         HornetQQueue queue = (HornetQQueue) HornetQJMSClient.createQueue("test");
          session.createQueue(queue.getSimpleAddress(), queue.getSimpleAddress(), true);
          session.close();
 

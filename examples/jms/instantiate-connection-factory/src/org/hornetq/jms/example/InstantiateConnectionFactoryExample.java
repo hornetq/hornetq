@@ -53,7 +53,7 @@ public class InstantiateConnectionFactoryExample extends HornetQExample
       try
       {
          // Step 1. Directly instantiate the JMS Queue object.
-         Queue queue = HornetQJMSClient.createHornetQQueue("exampleQueue");
+         Queue queue = HornetQJMSClient.createQueue("exampleQueue");
 
          // Step 2. Instantiate the TransportConfiguration object which contains the knowledge of what transport to use,
          // The server port etc.

@@ -40,14 +40,14 @@ public class HornetQQueueTest extends UnitTestCase
 
    public void testIsTemporary() throws Exception
    {
-      HornetQQueue queue = (HornetQQueue) HornetQJMSClient.createHornetQQueue(RandomUtil.randomString());
+      HornetQQueue queue = (HornetQQueue) HornetQJMSClient.createQueue(RandomUtil.randomString());
       Assert.assertFalse(queue.isTemporary());
    }
 
    public void testGetQueueName() throws Exception
    {
       String queueName = RandomUtil.randomString();
-      HornetQQueue queue = (HornetQQueue) HornetQJMSClient.createHornetQQueue(queueName);
+      HornetQQueue queue = (HornetQQueue) HornetQJMSClient.createQueue(queueName);
       Assert.assertEquals(queueName, queue.getQueueName());
    }
 

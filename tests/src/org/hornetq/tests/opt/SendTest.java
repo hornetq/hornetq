@@ -156,7 +156,7 @@ public class SendTest
 
       coreSession.createQueue("jms.queue.test_queue", "jms.queue.test_queue");
 
-      Queue queue = HornetQJMSClient.createHornetQQueue("test_queue");
+      Queue queue = HornetQJMSClient.createQueue("test_queue");
 
       MessageProducer prod = sess.createProducer(queue);
 
@@ -254,7 +254,7 @@ public class SendTest
 
       coreSession.createQueue("jms.queue.test_queue", "jms.queue.test_queue");
 
-      Queue queue = HornetQJMSClient.createHornetQQueue("test_queue");
+      Queue queue = HornetQJMSClient.createQueue("test_queue");
 
       MessageConsumer cons = sess.createConsumer(queue);
 
@@ -375,7 +375,7 @@ public class SendTest
 
       coreSession.createQueue("jms.queue.test_queue", "jms.queue.test_queue");
 
-      Queue queue = HornetQJMSClient.createHornetQQueue("test_queue");
+      Queue queue = HornetQJMSClient.createQueue("test_queue");
 
       MessageProducer prod = sess.createProducer(queue);
 
@@ -473,7 +473,7 @@ public class SendTest
 
       coreSession.createQueue("jms.queue.test_queue", "jms.queue.test_queue");
 
-      Queue queue = HornetQJMSClient.createHornetQQueue("test_queue");
+      Queue queue = HornetQJMSClient.createQueue("test_queue");
 
       MessageConsumer cons = sess.createConsumer(queue);
 

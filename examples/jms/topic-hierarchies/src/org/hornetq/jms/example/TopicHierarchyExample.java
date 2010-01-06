@@ -59,7 +59,7 @@ public class TopicHierarchyExample extends HornetQExample
          Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
          // Step 6. Instantiate a topic representing the wildcard we're going to subscribe to
-         Topic topicSubscribe = HornetQJMSClient.createHornetQTopic("news.europe.#");
+         Topic topicSubscribe = HornetQJMSClient.createTopic("news.europe.#");
 
          // Step 7. Create a consumer (topic subscriber) that will consume using that wildcard
          // The consumer will receive any messages sent to any topic that starts with news.europe
@@ -70,11 +70,11 @@ public class TopicHierarchyExample extends HornetQExample
 
          // Step 9. Instantiate some more topic objects corresponding to the individual topics
          // we're going to send messages to
-         Topic topicNewsUsaWrestling = HornetQJMSClient.createHornetQTopic("news.usa.wrestling");
+         Topic topicNewsUsaWrestling = HornetQJMSClient.createTopic("news.usa.wrestling");
 
-         Topic topicNewsEuropeSport = HornetQJMSClient.createHornetQTopic("news.europe.sport");
+         Topic topicNewsEuropeSport = HornetQJMSClient.createTopic("news.europe.sport");
 
-         Topic topicNewsEuropeEntertainment = HornetQJMSClient.createHornetQTopic("news.europe.entertainment");
+         Topic topicNewsEuropeEntertainment = HornetQJMSClient.createTopic("news.europe.entertainment");
 
          // Step 10. Send a message destined for the usa wrestling topic
          TextMessage messageWrestlingNews = session.createTextMessage("Hulk Hogan starts ballet classes");

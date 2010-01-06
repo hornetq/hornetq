@@ -403,7 +403,7 @@ public class MessageProducerTest extends JMSTestCase
          Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          try
          {
-            ps.createProducer(HornetQJMSClient.createHornetQTopic("NoSuchTopic"));
+            ps.createProducer(HornetQJMSClient.createTopic("NoSuchTopic"));
             ProxyAssertSupport.fail("should throw exception");
          }
          catch (InvalidDestinationException e)

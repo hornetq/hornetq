@@ -182,8 +182,8 @@ public class JMSBridgeImplTest extends UnitTestCase
 
       ConnectionFactoryFactory sourceCFF = JMSBridgeImplTest.newConnectionFactoryFactory(failingSourceCF);
       ConnectionFactoryFactory targetCFF = JMSBridgeImplTest.newConnectionFactoryFactory(JMSBridgeImplTest.createConnectionFactory());
-      DestinationFactory sourceDF = JMSBridgeImplTest.newDestinationFactory(HornetQJMSClient.createHornetQQueue(JMSBridgeImplTest.SOURCE));
-      DestinationFactory targetDF = JMSBridgeImplTest.newDestinationFactory(HornetQJMSClient.createHornetQQueue(JMSBridgeImplTest.TARGET));
+      DestinationFactory sourceDF = JMSBridgeImplTest.newDestinationFactory(HornetQJMSClient.createQueue(JMSBridgeImplTest.SOURCE));
+      DestinationFactory targetDF = JMSBridgeImplTest.newDestinationFactory(HornetQJMSClient.createQueue(JMSBridgeImplTest.TARGET));
       TransactionManager tm = JMSBridgeImplTest.newTransactionManager();
 
       JMSBridgeImpl bridge = new JMSBridgeImpl();
@@ -237,8 +237,8 @@ public class JMSBridgeImplTest extends UnitTestCase
 
       ConnectionFactoryFactory sourceCFF = JMSBridgeImplTest.newConnectionFactoryFactory(failingSourceCF);
       ConnectionFactoryFactory targetCFF = JMSBridgeImplTest.newConnectionFactoryFactory(JMSBridgeImplTest.createConnectionFactory());
-      DestinationFactory sourceDF = JMSBridgeImplTest.newDestinationFactory(HornetQJMSClient.createHornetQQueue(JMSBridgeImplTest.SOURCE));
-      DestinationFactory targetDF = JMSBridgeImplTest.newDestinationFactory(HornetQJMSClient.createHornetQQueue(JMSBridgeImplTest.TARGET));
+      DestinationFactory sourceDF = JMSBridgeImplTest.newDestinationFactory(HornetQJMSClient.createQueue(JMSBridgeImplTest.SOURCE));
+      DestinationFactory targetDF = JMSBridgeImplTest.newDestinationFactory(HornetQJMSClient.createQueue(JMSBridgeImplTest.TARGET));
       TransactionManager tm = JMSBridgeImplTest.newTransactionManager();
 
       JMSBridgeImpl bridge = new JMSBridgeImpl();
@@ -277,8 +277,8 @@ public class JMSBridgeImplTest extends UnitTestCase
 
       ConnectionFactoryFactory sourceCFF = JMSBridgeImplTest.newConnectionFactoryFactory(JMSBridgeImplTest.createConnectionFactory());
       ConnectionFactoryFactory targetCFF = JMSBridgeImplTest.newConnectionFactoryFactory(JMSBridgeImplTest.createConnectionFactory());
-      DestinationFactory sourceDF = JMSBridgeImplTest.newDestinationFactory(HornetQJMSClient.createHornetQQueue(JMSBridgeImplTest.SOURCE));
-      DestinationFactory targetDF = JMSBridgeImplTest.newDestinationFactory(HornetQJMSClient.createHornetQQueue(JMSBridgeImplTest.TARGET));
+      DestinationFactory sourceDF = JMSBridgeImplTest.newDestinationFactory(HornetQJMSClient.createQueue(JMSBridgeImplTest.SOURCE));
+      DestinationFactory targetDF = JMSBridgeImplTest.newDestinationFactory(HornetQJMSClient.createQueue(JMSBridgeImplTest.TARGET));
       TransactionManager tm = JMSBridgeImplTest.newTransactionManager();
 
       JMSBridgeImpl bridge = new JMSBridgeImpl();
@@ -337,8 +337,8 @@ public class JMSBridgeImplTest extends UnitTestCase
 
       ConnectionFactoryFactory sourceCFF = JMSBridgeImplTest.newConnectionFactoryFactory(JMSBridgeImplTest.createConnectionFactory());
       ConnectionFactoryFactory targetCFF = JMSBridgeImplTest.newConnectionFactoryFactory(JMSBridgeImplTest.createConnectionFactory());
-      DestinationFactory sourceDF = JMSBridgeImplTest.newDestinationFactory(HornetQJMSClient.createHornetQQueue(JMSBridgeImplTest.SOURCE));
-      DestinationFactory targetDF = JMSBridgeImplTest.newDestinationFactory(HornetQJMSClient.createHornetQQueue(JMSBridgeImplTest.TARGET));
+      DestinationFactory sourceDF = JMSBridgeImplTest.newDestinationFactory(HornetQJMSClient.createQueue(JMSBridgeImplTest.SOURCE));
+      DestinationFactory targetDF = JMSBridgeImplTest.newDestinationFactory(HornetQJMSClient.createQueue(JMSBridgeImplTest.TARGET));
       TransactionManager tm = JMSBridgeImplTest.newTransactionManager();
 
       JMSBridgeImpl bridge = new JMSBridgeImpl();
@@ -426,8 +426,8 @@ public class JMSBridgeImplTest extends UnitTestCase
 
       ConnectionFactoryFactory sourceCFF = JMSBridgeImplTest.newConnectionFactoryFactory(failingSourceCF);
       ConnectionFactoryFactory targetCFF = JMSBridgeImplTest.newConnectionFactoryFactory(JMSBridgeImplTest.createConnectionFactory());
-      DestinationFactory sourceDF = JMSBridgeImplTest.newDestinationFactory(HornetQJMSClient.createHornetQQueue(JMSBridgeImplTest.SOURCE));
-      DestinationFactory targetDF = JMSBridgeImplTest.newDestinationFactory(HornetQJMSClient.createHornetQQueue(JMSBridgeImplTest.TARGET));
+      DestinationFactory sourceDF = JMSBridgeImplTest.newDestinationFactory(HornetQJMSClient.createQueue(JMSBridgeImplTest.SOURCE));
+      DestinationFactory targetDF = JMSBridgeImplTest.newDestinationFactory(HornetQJMSClient.createQueue(JMSBridgeImplTest.TARGET));
       TransactionManager tm = JMSBridgeImplTest.newTransactionManager();
 
       JMSBridgeImpl bridge = new JMSBridgeImpl();
@@ -486,8 +486,8 @@ public class JMSBridgeImplTest extends UnitTestCase
 
       ConnectionFactoryFactory sourceCFF = JMSBridgeImplTest.newConnectionFactoryFactory(failingSourceCF);
       ConnectionFactoryFactory targetCFF = JMSBridgeImplTest.newConnectionFactoryFactory(JMSBridgeImplTest.createConnectionFactory());
-      DestinationFactory sourceDF = JMSBridgeImplTest.newDestinationFactory(HornetQJMSClient.createHornetQQueue(JMSBridgeImplTest.SOURCE));
-      DestinationFactory targetDF = JMSBridgeImplTest.newDestinationFactory(HornetQJMSClient.createHornetQQueue(JMSBridgeImplTest.TARGET));
+      DestinationFactory sourceDF = JMSBridgeImplTest.newDestinationFactory(HornetQJMSClient.createQueue(JMSBridgeImplTest.SOURCE));
+      DestinationFactory targetDF = JMSBridgeImplTest.newDestinationFactory(HornetQJMSClient.createQueue(JMSBridgeImplTest.TARGET));
       TransactionManager tm = JMSBridgeImplTest.newTransactionManager();
 
       JMSBridgeImpl bridge = new JMSBridgeImpl();

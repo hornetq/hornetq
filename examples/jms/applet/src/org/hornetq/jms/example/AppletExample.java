@@ -110,7 +110,7 @@ public class AppletExample extends JApplet implements ActionListener
       TransportConfiguration connector = new TransportConfiguration(NettyConnectorFactory.class.getName(), params);
       ClientSessionFactory sf = HornetQClient.createClientSessionFactory(connector);
       ConnectionFactory cf = HornetQJMSClient.createConnectionFactory(sf);
-      destination = HornetQJMSClient.createHornetQTopic("exampleTopic");
+      destination = HornetQJMSClient.createTopic("exampleTopic");
 
       try
       {

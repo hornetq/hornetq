@@ -41,14 +41,14 @@ public class HornetQTopicTest extends UnitTestCase
 
    public void testIsTemporary() throws Exception
    {
-      HornetQTopic topic = (HornetQTopic) HornetQJMSClient.createHornetQTopic(RandomUtil.randomString());
+      HornetQTopic topic = (HornetQTopic) HornetQJMSClient.createTopic(RandomUtil.randomString());
       Assert.assertFalse(topic.isTemporary());
    }
 
    public void testGetTopicName() throws Exception
    {
       String topicName = RandomUtil.randomString();
-      HornetQTopic queue = (HornetQTopic) HornetQJMSClient.createHornetQTopic(topicName);
+      HornetQTopic queue = (HornetQTopic) HornetQJMSClient.createTopic(topicName);
       Assert.assertEquals(topicName, queue.getTopicName());
    }
 

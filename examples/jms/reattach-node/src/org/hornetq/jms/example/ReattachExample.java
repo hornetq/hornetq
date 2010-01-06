@@ -141,7 +141,7 @@ public class ReattachExample extends HornetQExample
 
          Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         Queue managementQueue = HornetQJMSClient.createHornetQQueue("hornetq.management", "hornetq.management");
+         Queue managementQueue = HornetQJMSClient.createQueue("hornetq.management");
 
          MessageProducer producer = session.createProducer(managementQueue);
 

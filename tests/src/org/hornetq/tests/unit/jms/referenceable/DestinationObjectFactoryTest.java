@@ -44,7 +44,7 @@ public class DestinationObjectFactoryTest extends UnitTestCase
 
    public void testReference() throws Exception
    {
-      HornetQDestination queue = (HornetQQueue) HornetQJMSClient.createHornetQQueue(RandomUtil.randomString());
+      HornetQDestination queue = (HornetQQueue) HornetQJMSClient.createQueue(RandomUtil.randomString());
       Reference reference = queue.getReference();
 
       DestinationObjectFactory factory = new DestinationObjectFactory();

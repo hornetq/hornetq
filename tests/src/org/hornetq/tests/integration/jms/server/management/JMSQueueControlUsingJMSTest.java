@@ -57,7 +57,7 @@ public class JMSQueueControlUsingJMSTest extends JMSQueueControlTest
    {
       super.setUp();
 
-      HornetQConnectionFactory cf = (HornetQConnectionFactory) HornetQJMSClient.createConnectionFactory(new TransportConfiguration(InVMConnectorFactory.class.getName()));
+      HornetQConnectionFactory cf = (HornetQConnectionFactory)HornetQJMSClient.createConnectionFactory(new TransportConfiguration(InVMConnectorFactory.class.getName()));
       connection = cf.createQueueConnection();
       session = connection.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
       connection.start();
@@ -78,8 +78,8 @@ public class JMSQueueControlUsingJMSTest extends JMSQueueControlTest
    @Override
    protected JMSQueueControl createManagementControl() throws Exception
    {
-      HornetQQueue managementQueue = (HornetQQueue) HornetQJMSClient.createHornetQQueue(ConfigurationImpl.DEFAULT_MANAGEMENT_ADDRESS.toString(),
-                                                      ConfigurationImpl.DEFAULT_MANAGEMENT_ADDRESS.toString());
+      HornetQQueue managementQueue = (HornetQQueue)HornetQJMSClient.createQueue(ConfigurationImpl.DEFAULT_MANAGEMENT_ADDRESS.toString());
+
       final JMSMessagingProxy proxy = new JMSMessagingProxy(session,
                                                             managementQueue,
                                                             ResourceNames.JMS_QUEUE + queue.getQueueName());

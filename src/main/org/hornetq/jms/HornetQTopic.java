@@ -110,7 +110,7 @@ public class HornetQTopic extends HornetQDestination implements Topic
       super(HornetQTopic.JMS_TOPIC_ADDRESS_PREFIX + name, name);
    }
 
-   public HornetQTopic(final String address, final String name)
+   protected HornetQTopic(final String address, final String name)
    {
       super(address, name);
    }

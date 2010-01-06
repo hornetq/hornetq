@@ -62,8 +62,8 @@ public abstract class MessageHeaderTestBase extends HornetQServerTestCase
       m.setJMSMessageID("ID:messageID777");
       m.setJMSTimestamp(123456789l);
       m.setJMSCorrelationID("correlationID777");
-      m.setJMSReplyTo(HornetQJMSClient.createHornetQQueue("ReplyToQueue"));
-      m.setJMSDestination(HornetQJMSClient.createHornetQQueue("DestinationQueue"));
+      m.setJMSReplyTo(HornetQJMSClient.createQueue("ReplyToQueue"));
+      m.setJMSDestination(HornetQJMSClient.createQueue("DestinationQueue"));
       m.setJMSDeliveryMode(DeliveryMode.PERSISTENT);
       m.setJMSExpiration(987654321l);
       m.setJMSPriority(9);

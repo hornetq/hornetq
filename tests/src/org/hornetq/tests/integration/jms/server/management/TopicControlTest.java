@@ -428,7 +428,7 @@ public class TopicControlTest extends ManagementTestBase
 
       String topicName = RandomUtil.randomString();
       serverManager.createTopic(topicName, topicName);
-      topic = (HornetQTopic) HornetQJMSClient.createHornetQTopic(topicName);
+      topic = (HornetQTopic) HornetQJMSClient.createTopic(topicName);
    }
 
    @Override

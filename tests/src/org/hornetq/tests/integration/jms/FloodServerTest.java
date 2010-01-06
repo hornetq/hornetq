@@ -230,7 +230,7 @@ public class FloodServerTest extends UnitTestCase
 
          session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         producer = session.createProducer(HornetQJMSClient.createHornetQTopic("my-topic"));
+         producer = session.createProducer(HornetQJMSClient.createTopic("my-topic"));
 
          producer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
 
@@ -285,7 +285,7 @@ public class FloodServerTest extends UnitTestCase
 
          session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         consumer = session.createConsumer(HornetQJMSClient.createHornetQTopic("my-topic"));
+         consumer = session.createConsumer(HornetQJMSClient.createTopic("my-topic"));
 
          this.numMessages = numMessages;
       }

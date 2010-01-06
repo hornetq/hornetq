@@ -210,7 +210,7 @@ public class JMSReconnectTest extends UnitTestCase
       {      
          coreSession.createQueue(HornetQTopic.JMS_TOPIC_ADDRESS_PREFIX + "mytopic", "blahblah", null, false);
    
-         dest = HornetQJMSClient.createHornetQTopic("mytopic");
+         dest = HornetQJMSClient.createTopic("mytopic");
       }
       else
       {
@@ -279,7 +279,7 @@ public class JMSReconnectTest extends UnitTestCase
 
       coreSession.createQueue(HornetQTopic.JMS_TOPIC_ADDRESS_PREFIX + "mytopic", "blahblah", null, false);
 
-      Topic topic = HornetQJMSClient.createHornetQTopic("mytopic");
+      Topic topic = HornetQJMSClient.createTopic("mytopic");
       
       //Create a non durable subscriber
       MessageConsumer consumer = sess.createConsumer(topic);      

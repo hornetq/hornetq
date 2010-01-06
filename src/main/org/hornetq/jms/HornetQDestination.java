@@ -21,11 +21,6 @@ import javax.naming.Reference;
 import javax.naming.Referenceable;
 
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.jms.HornetQJMSClient;
-import org.hornetq.jms.HornetQQueue;
-import org.hornetq.jms.HornetQTemporaryQueue;
-import org.hornetq.jms.HornetQTemporaryTopic;
-import org.hornetq.jms.HornetQTopic;
 import org.hornetq.jms.referenceable.DestinationObjectFactory;
 import org.hornetq.jms.referenceable.SerializableObjectRefAddr;
 
@@ -70,7 +65,7 @@ public abstract class HornetQDestination implements Destination, Serializable, R
       {
          String name = address.substring(HornetQTopic.JMS_TOPIC_ADDRESS_PREFIX.length());
 
-         return HornetQJMSClient.createHornetQTopic(address, name);
+         return new HornetQTopic(address, name);
       }
       else if (address.startsWith(HornetQTemporaryQueue.JMS_TEMP_QUEUE_ADDRESS_PREFIX))
       {

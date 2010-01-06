@@ -12,17 +12,19 @@
  */
 package org.hornetq.api.jms;
 
-import org.hornetq.api.core.Pair;
-import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.core.client.ClientSessionFactory;
-import org.hornetq.jms.HornetQConnectionFactory;
-import org.hornetq.jms.HornetQQueue;
-import org.hornetq.jms.HornetQTopic;
+import java.util.List;
 
 import javax.jms.ConnectionFactory;
 import javax.jms.Queue;
 import javax.jms.Topic;
-import java.util.List;
+
+import org.hornetq.api.core.Pair;
+import org.hornetq.api.core.TransportConfiguration;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.core.logging.Logger;
+import org.hornetq.jms.HornetQConnectionFactory;
+import org.hornetq.jms.HornetQQueue;
+import org.hornetq.jms.HornetQTopic;
 
 /**
  * A utility class for creating HornetQ Client Side JMS Objects.
@@ -32,6 +34,8 @@ import java.util.List;
  */
 public class HornetQJMSClient
 {
+   private static final Logger log = Logger.getLogger(HornetQJMSClient.class);
+
    /**
     * Creates a ConnectionFactory using all the defaults.
     *
@@ -106,21 +110,9 @@ public class HornetQJMSClient
     * @param name the name of the topic
     * @return The Topic
     */
-   public static Topic createHornetQTopic(final String name)
+   public static Topic createTopic(final String name)
    {
       return new HornetQTopic(name);
-   }
-
-   /**
-    * Create a client side representation of a JMS Topic.
-    *
-    * @param address the address of the topic.
-    * @param name the name of the topic.
-    * @return The Topic.
-    */
-   public static Topic createHornetQTopic(final String address, final String name)
-   {
-      return new HornetQTopic(address, name);
    }
 
    /**
@@ -129,20 +121,10 @@ public class HornetQJMSClient
     * @param name the name of the queue
     * @return The Queue
     */
-   public static Queue createHornetQQueue(final String name)
+   public static Queue createQueue(final String name)
    {
+      log.info("calling create queue " + name, new Exception());
       return new HornetQQueue(name);
    }
 
-   /**
-    * Create a client side representation of a JMS Queue.
-    *
-    * @param address the address of the queue.
-    * @param name the name of the queue.
-    * @return The Queue.
-    */
-   public static Queue createHornetQQueue(final String address, final String name)
-   {
-      return new HornetQQueue(address, name);
-   }
 }

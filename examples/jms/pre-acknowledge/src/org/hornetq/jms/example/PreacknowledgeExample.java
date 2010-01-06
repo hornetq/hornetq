@@ -128,7 +128,7 @@ public class PreacknowledgeExample extends HornetQExample
    {
       QueueSession session = ((QueueConnection)connection).createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
 
-      Queue managementQueue = HornetQJMSClient.createHornetQQueue("hornetq.management", "hornetq.management");
+      Queue managementQueue = HornetQJMSClient.createQueue("hornetq.management");
 
       QueueRequestor requestor = new QueueRequestor(session, managementQueue);
 

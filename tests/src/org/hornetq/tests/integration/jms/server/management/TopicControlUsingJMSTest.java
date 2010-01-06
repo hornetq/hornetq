@@ -352,15 +352,14 @@ public class TopicControlUsingJMSTest extends ManagementTestBase
 
       String topicName = RandomUtil.randomString();
       serverManager.createTopic(topicName, topicName);
-      topic = (HornetQTopic) HornetQJMSClient.createHornetQTopic(topicName);
+      topic = (HornetQTopic)HornetQJMSClient.createTopic(topicName);
 
-      HornetQConnectionFactory cf = (HornetQConnectionFactory) HornetQJMSClient.createConnectionFactory(new TransportConfiguration(InVMConnectorFactory.class.getName()));
+      HornetQConnectionFactory cf = (HornetQConnectionFactory)HornetQJMSClient.createConnectionFactory(new TransportConfiguration(InVMConnectorFactory.class.getName()));
       connection = cf.createQueueConnection();
       session = connection.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
       connection.start();
 
-      HornetQQueue managementQueue = (HornetQQueue) HornetQJMSClient.createHornetQQueue(ConfigurationImpl.DEFAULT_MANAGEMENT_ADDRESS.toString(),
-                                                      ConfigurationImpl.DEFAULT_MANAGEMENT_ADDRESS.toString());
+      HornetQQueue managementQueue = (HornetQQueue)HornetQJMSClient.createQueue(ConfigurationImpl.DEFAULT_MANAGEMENT_ADDRESS.toString());
       proxy = new JMSMessagingProxy(session, managementQueue, ResourceNames.JMS_TOPIC + topic.getTopicName());
    }
 

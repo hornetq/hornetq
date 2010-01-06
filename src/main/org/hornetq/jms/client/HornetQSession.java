@@ -401,7 +401,7 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
          throw new IllegalStateException("Cannot create a queue using a TopicSession");
       }
 
-      HornetQQueue queue = (HornetQQueue) HornetQJMSClient.createHornetQQueue(queueName);
+      HornetQQueue queue = (HornetQQueue) HornetQJMSClient.createQueue(queueName);
 
       try
       {
@@ -430,7 +430,7 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
          throw new IllegalStateException("Cannot create a topic on a QueueSession");
       }
 
-      HornetQTopic topic = (HornetQTopic) HornetQJMSClient.createHornetQTopic(topicName);
+      HornetQTopic topic = (HornetQTopic) HornetQJMSClient.createTopic(topicName);
 
       try
       {

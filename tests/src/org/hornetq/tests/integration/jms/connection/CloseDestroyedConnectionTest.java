@@ -84,7 +84,7 @@ public class CloseDestroyedConnectionTest extends JMSTestBase
 
       String queueName = "myqueue";
 
-      Queue queue = HornetQJMSClient.createHornetQQueue(queueName);
+      Queue queue = HornetQJMSClient.createQueue(queueName);
 
       super.createQueue(queueName);
 
