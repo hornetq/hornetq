@@ -123,7 +123,6 @@ public class HornetQJMSClient
     */
    public static Queue createQueue(final String name)
    {
-      log.info("calling create queue " + name, new Exception());
       return new HornetQQueue(name);
    }
 
