@@ -129,6 +129,7 @@ public class HornetQException extends Exception
     */
    public static final int SESSION_CREATION_REJECTED = 112;
 
+   
    // Native Error codes ----------------------------------------------
 
    /**
