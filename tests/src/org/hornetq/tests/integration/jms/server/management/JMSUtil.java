@@ -27,7 +27,8 @@ import javax.jms.TopicSubscriber;
 import junit.framework.Assert;
 
 import org.hornetq.api.core.config.TransportConfiguration;
-import org.hornetq.api.jms.HornetQConnectionFactory;
+import org.hornetq.jms.HornetQConnectionFactory;
+import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.tests.util.RandomUtil;
 
@@ -51,7 +52,7 @@ public class JMSUtil
 
    public static Connection createConnection(final String connectorFactory) throws JMSException
    {
-      HornetQConnectionFactory cf = new HornetQConnectionFactory(new TransportConfiguration(connectorFactory));
+      HornetQConnectionFactory cf = (HornetQConnectionFactory) HornetQJMSClient.createConnectionFactory(new TransportConfiguration(connectorFactory));
 
       cf.setBlockOnNonDurableSend(true);
       cf.setBlockOnDurableSend(true);
@@ -64,7 +65,7 @@ public class JMSUtil
                                                  final long connectionTTL,
                                                  final long clientFailureCheckPeriod) throws JMSException
    {
-      HornetQConnectionFactory cf = new HornetQConnectionFactory(new TransportConfiguration(connectorFactory));
+      HornetQConnectionFactory cf = (HornetQConnectionFactory) HornetQJMSClient.createConnectionFactory(new TransportConfiguration(connectorFactory));
 
       cf.setBlockOnNonDurableSend(true);
       cf.setBlockOnDurableSend(true);
@@ -102,7 +103,7 @@ public class JMSUtil
 
    public static String[] sendMessages(final Destination destination, final int messagesToSend) throws Exception
    {
-      HornetQConnectionFactory cf = new HornetQConnectionFactory(new TransportConfiguration(InVMConnectorFactory.class.getName()));
+      HornetQConnectionFactory cf = (HornetQConnectionFactory) HornetQJMSClient.createConnectionFactory(new TransportConfiguration(InVMConnectorFactory.class.getName()));
       return JMSUtil.sendMessages(cf, destination, messagesToSend);
    }
 

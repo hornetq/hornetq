@@ -1,14 +1,14 @@
 /*
  * Copyright 2009 Red Hat, Inc.
- * Red Hat licenses this file to you under the Apache License, version
- * 2.0 (the "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- *    http://www.apache.org/licenses/LICENSE-2.0
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- * implied.  See the License for the specific language governing
- * permissions and limitations under the License.
+ *  Red Hat licenses this file to you under the Apache License, version
+ *  2.0 (the "License"); you may not use this file except in compliance
+ *  with the License.  You may obtain a copy of the License at
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+ *  implied.  See the License for the specific language governing
+ *  permissions and limitations under the License.
  */
 
 package org.hornetq.jms.server.impl;
@@ -28,9 +28,10 @@ import javax.naming.NamingException;
 
 import org.hornetq.api.Pair;
 import org.hornetq.api.core.config.TransportConfiguration;
-import org.hornetq.api.jms.HornetQConnectionFactory;
-import org.hornetq.api.jms.HornetQQueue;
-import org.hornetq.api.jms.HornetQTopic;
+import org.hornetq.jms.HornetQConnectionFactory;
+import org.hornetq.api.jms.HornetQJMSClient;
+import org.hornetq.jms.HornetQQueue;
+import org.hornetq.jms.HornetQTopic;
 import org.hornetq.core.deployers.DeploymentManager;
 import org.hornetq.core.deployers.impl.FileDeploymentManager;
 import org.hornetq.core.deployers.impl.XmlDeployer;
@@ -357,7 +358,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       HornetQConnectionFactory cf = connectionFactories.get(name);
       if (cf == null)
       {
-         cf = new HornetQConnectionFactory(connectorConfigs);
+         cf = (HornetQConnectionFactory) HornetQJMSClient.createConnectionFactory(connectorConfigs);
       }
 
       bindConnectionFactory(cf, name, jndiBindings);
@@ -372,7 +373,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       HornetQConnectionFactory cf = connectionFactories.get(name);
       if (cf == null)
       {
-         cf = new HornetQConnectionFactory(connectorConfigs);
+         cf = (HornetQConnectionFactory) HornetQJMSClient.createConnectionFactory(connectorConfigs);
          cf.setClientID(clientID);
       }
 
@@ -415,7 +416,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       HornetQConnectionFactory cf = connectionFactories.get(name);
       if (cf == null)
       {
-         cf = new HornetQConnectionFactory(connectorConfigs);
+         cf = (HornetQConnectionFactory) HornetQJMSClient.createConnectionFactory(connectorConfigs);
          cf.setClientID(clientID);
          cf.setClientFailureCheckPeriod(clientFailureCheckPeriod);
          cf.setConnectionTTL(connectionTTL);
@@ -488,7 +489,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       HornetQConnectionFactory cf = connectionFactories.get(name);
       if (cf == null)
       {
-         cf = new HornetQConnectionFactory(discoveryAddress, discoveryPort);
+         cf = (HornetQConnectionFactory) HornetQJMSClient.createConnectionFactory(discoveryAddress, discoveryPort);
          cf.setClientID(clientID);
          cf.setDiscoveryRefreshTimeout(discoveryRefreshTimeout);
          cf.setClientFailureCheckPeriod(clientFailureCheckPeriod);
@@ -532,7 +533,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       HornetQConnectionFactory cf = connectionFactories.get(name);
       if (cf == null)
       {
-         cf = new HornetQConnectionFactory(discoveryAddress, discoveryPort);
+         cf = (HornetQConnectionFactory) HornetQJMSClient.createConnectionFactory(discoveryAddress, discoveryPort);
       }
 
       bindConnectionFactory(cf, name, jndiBindings);
@@ -548,7 +549,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       HornetQConnectionFactory cf = connectionFactories.get(name);
       if (cf == null)
       {
-         cf = new HornetQConnectionFactory(discoveryAddress, discoveryPort);
+         cf = (HornetQConnectionFactory) HornetQJMSClient.createConnectionFactory(discoveryAddress, discoveryPort);
          cf.setClientID(clientID);
       }
 
@@ -563,7 +564,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       HornetQConnectionFactory cf = connectionFactories.get(name);
       if (cf == null)
       {
-         cf = new HornetQConnectionFactory(liveTC);
+         cf = (HornetQConnectionFactory) HornetQJMSClient.createConnectionFactory(liveTC);
       }
 
       bindConnectionFactory(cf, name, jndiBindings);
@@ -578,7 +579,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       HornetQConnectionFactory cf = connectionFactories.get(name);
       if (cf == null)
       {
-         cf = new HornetQConnectionFactory(liveTC);
+         cf = (HornetQConnectionFactory) HornetQJMSClient.createConnectionFactory(liveTC);
          cf.setClientID(clientID);
       }
 
@@ -594,7 +595,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       HornetQConnectionFactory cf = connectionFactories.get(name);
       if (cf == null)
       {
-         cf = new HornetQConnectionFactory(liveTC, backupTC);
+         cf = (HornetQConnectionFactory) HornetQJMSClient.createConnectionFactory(liveTC, backupTC);
       }
 
       bindConnectionFactory(cf, name, jndiBindings);
@@ -610,7 +611,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       HornetQConnectionFactory cf = connectionFactories.get(name);
       if (cf == null)
       {
-         cf = new HornetQConnectionFactory(liveTC, backupTC);
+         cf = (HornetQConnectionFactory) HornetQJMSClient.createConnectionFactory(liveTC, backupTC);
          cf.setClientID(clientID);
       }
 

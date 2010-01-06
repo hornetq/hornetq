@@ -17,12 +17,7 @@ import java.util.HashMap;
 import junit.framework.Assert;
 
 import org.hornetq.api.SimpleString;
-import org.hornetq.api.core.client.ClientConsumer;
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.ClientProducer;
-import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.api.core.client.ClientSessionFactory;
-import org.hornetq.api.core.client.ClientSessionFactoryImpl;
+import org.hornetq.api.core.client.*;
 import org.hornetq.api.core.config.TransportConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
@@ -53,7 +48,7 @@ public class CoreClientOverHttpTest extends UnitTestCase
 
       server.start();
 
-      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(UnitTestCase.NETTY_CONNECTOR_FACTORY,
+      ClientSessionFactory sf = HornetQClient.createClientSessionFactory(new TransportConfiguration(UnitTestCase.NETTY_CONNECTOR_FACTORY,
                                                                                         params));
 
       ClientSession session = sf.createSession(false, true, true);
@@ -109,7 +104,7 @@ public class CoreClientOverHttpTest extends UnitTestCase
 
       server.start();
 
-      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(UnitTestCase.NETTY_CONNECTOR_FACTORY,
+      ClientSessionFactory sf = HornetQClient.createClientSessionFactory(new TransportConfiguration(UnitTestCase.NETTY_CONNECTOR_FACTORY,
                                                                                         params));
       sf.setConnectionTTL(500);
 

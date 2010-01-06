@@ -24,7 +24,8 @@ import junit.framework.Assert;
 
 import org.hornetq.api.core.config.TransportConfiguration;
 import org.hornetq.api.core.exception.HornetQException;
-import org.hornetq.api.jms.HornetQConnectionFactory;
+import org.hornetq.jms.HornetQConnectionFactory;
+import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
@@ -69,7 +70,7 @@ public class ExceptionListenerTest extends UnitTestCase
       jmsServer.setContext(new NullInitialContext());
       jmsServer.start();
       jmsServer.createQueue(ExceptionListenerTest.Q_NAME, ExceptionListenerTest.Q_NAME, null, true);
-      cf = new HornetQConnectionFactory(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
+      cf = (HornetQConnectionFactory) HornetQJMSClient.createConnectionFactory(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
       cf.setBlockOnDurableSend(true);
       cf.setPreAcknowledge(true);
    }

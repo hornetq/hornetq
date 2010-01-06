@@ -18,12 +18,7 @@ import java.util.Map;
 
 import junit.framework.Assert;
 
-import org.hornetq.api.core.client.ClientConsumer;
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.ClientProducer;
-import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.api.core.client.ClientSessionFactory;
-import org.hornetq.api.core.client.ClientSessionFactoryImpl;
+import org.hornetq.api.core.client.*;
 import org.hornetq.api.core.config.TransportConfiguration;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
@@ -68,7 +63,7 @@ public class ReplicationOrderTest extends FailoverTestBase
       String address = RandomUtil.randomString();
       String queue = RandomUtil.randomString();
 
-      ClientSessionFactory csf = new ClientSessionFactoryImpl(getConnectorTransportConfiguration(true));
+      ClientSessionFactory csf = HornetQClient.createClientSessionFactory(getConnectorTransportConfiguration(true));
       csf.setBlockOnNonDurableSend(false);
       csf.setBlockOnDurableSend(false);
       ClientSession session = null;
@@ -107,7 +102,7 @@ public class ReplicationOrderTest extends FailoverTestBase
       }
       session.close();
 
-      csf = new ClientSessionFactoryImpl(getConnectorTransportConfiguration(true));
+      csf = HornetQClient.createClientSessionFactory(getConnectorTransportConfiguration(true));
       session = csf.createSession(true, true);
       session.start();
       ClientConsumer consumer = session.createConsumer(queue);

@@ -15,12 +15,7 @@ package org.hornetq.tests.integration.client;
 import junit.framework.Assert;
 
 import org.hornetq.api.SimpleString;
-import org.hornetq.api.core.client.ClientConsumer;
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.ClientProducer;
-import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.api.core.client.ClientSessionFactory;
-import org.hornetq.api.core.client.ClientSessionFactoryImpl;
+import org.hornetq.api.core.client.*;
 import org.hornetq.api.core.config.TransportConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.logging.Logger;
@@ -70,7 +65,7 @@ public class TransactionDurabilityTest extends ServiceTestBase
 
       server.start();
 
-      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
+      ClientSessionFactory sf = HornetQClient.createClientSessionFactory(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
 
       ClientSession session1 = sf.createSession(false, true, true);
 
@@ -118,7 +113,7 @@ public class TransactionDurabilityTest extends ServiceTestBase
 
       server.start();
 
-      sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
+      sf = HornetQClient.createClientSessionFactory(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
 
       session1 = sf.createSession(false, true, true);
 
@@ -150,7 +145,7 @@ public class TransactionDurabilityTest extends ServiceTestBase
 
       server.start();
 
-      sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
+      sf = HornetQClient.createClientSessionFactory(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
 
       session1 = sf.createSession(false, true, true);
 

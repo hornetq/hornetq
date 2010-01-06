@@ -33,8 +33,9 @@ import org.hornetq.api.SimpleString;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.config.TransportConfiguration;
 import org.hornetq.api.core.exception.HornetQException;
-import org.hornetq.api.jms.HornetQConnectionFactory;
-import org.hornetq.api.jms.HornetQQueue;
+import org.hornetq.jms.HornetQConnectionFactory;
+import org.hornetq.api.jms.HornetQJMSClient;
+import org.hornetq.jms.HornetQQueue;
 import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
@@ -83,7 +84,7 @@ public class JMSFailoverTest extends UnitTestCase
 
    public void testAutomaticFailover() throws Exception
    {
-      HornetQConnectionFactory jbcf = new HornetQConnectionFactory(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"),
+      HornetQConnectionFactory jbcf = (HornetQConnectionFactory) HornetQJMSClient.createConnectionFactory(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"),
                                                                    new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory",
                                                                                               backupParams));
 
@@ -169,12 +170,12 @@ public class JMSFailoverTest extends UnitTestCase
 
    public void testManualFailover() throws Exception
    {
-      HornetQConnectionFactory jbcfLive = new HornetQConnectionFactory(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
+      HornetQConnectionFactory jbcfLive = (HornetQConnectionFactory) HornetQJMSClient.createConnectionFactory(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
 
       jbcfLive.setBlockOnNonDurableSend(true);
       jbcfLive.setBlockOnDurableSend(true);
 
-      HornetQConnectionFactory jbcfBackup = new HornetQConnectionFactory(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory",
+      HornetQConnectionFactory jbcfBackup = (HornetQConnectionFactory) HornetQJMSClient.createConnectionFactory(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory",
                                                                                                     backupParams));
       jbcfBackup.setBlockOnNonDurableSend(true);
       jbcfBackup.setBlockOnDurableSend(true);

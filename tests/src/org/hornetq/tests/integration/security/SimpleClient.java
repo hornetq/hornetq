@@ -13,12 +13,7 @@
 
 package org.hornetq.tests.integration.security;
 
-import org.hornetq.api.core.client.ClientConsumer;
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.ClientProducer;
-import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.api.core.client.ClientSessionFactory;
-import org.hornetq.api.core.client.ClientSessionFactoryImpl;
+import org.hornetq.api.core.client.*;
 import org.hornetq.api.core.config.TransportConfiguration;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.jms.client.HornetQTextMessage;
@@ -52,7 +47,7 @@ public class SimpleClient
          String queueName = RandomUtil.randomString();
          String messageText = RandomUtil.randomString();
 
-         ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(connectorFactoryClassName));
+         ClientSessionFactory sf = HornetQClient.createClientSessionFactory(new TransportConfiguration(connectorFactoryClassName));
          ClientSession session = sf.createSession(false, true, true);
 
          session.createQueue(queueName, queueName, null, false);

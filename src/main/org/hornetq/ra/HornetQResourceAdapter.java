@@ -29,9 +29,11 @@ import javax.transaction.xa.XAResource;
 
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
-import org.hornetq.api.core.client.ClientSessionFactoryImpl;
+import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.config.TransportConfiguration;
 import org.hornetq.api.core.exception.HornetQException;
+import org.hornetq.jms.HornetQConnectionFactory;
+import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.ra.inflow.HornetQActivation;
 import org.hornetq.ra.inflow.HornetQActivationSpec;
@@ -86,7 +88,7 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
     */
    private final Map<ActivationSpec, HornetQActivation> activations;
 
-   private org.hornetq.api.jms.HornetQConnectionFactory defaultHornetQConnectionFactory;
+   private HornetQConnectionFactory defaultHornetQConnectionFactory;
 
    /**
     * Constructor
@@ -1288,7 +1290,7 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       if (deliveryTransacted || useLocalTx)
       {
          int actTxBatchSize = transactionBatchSize != null ? transactionBatchSize
-                                                          : ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE;
+                                                          : HornetQClient.DEFAULT_ACK_BATCH_SIZE;
          if (useLocalTx)
          {
             result = parameterFactory.createSession(user, pass, false, false, false, false, actTxBatchSize);
@@ -1314,7 +1316,7 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
                   break;
                case Session.DUPS_OK_ACKNOWLEDGE:
                   int actDupsOkBatchSize = dupsOkBatchSize != null ? dupsOkBatchSize
-                                                                  : ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE;
+                                                                  : HornetQClient.DEFAULT_ACK_BATCH_SIZE;
                   result = parameterFactory.createSession(user, pass, false, true, true, false, actDupsOkBatchSize);
                   break;
                default:
@@ -1353,7 +1355,7 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       sessionFactory = defaultHornetQConnectionFactory.getCoreFactory();
    }
 
-   public org.hornetq.api.jms.HornetQConnectionFactory getDefaultHornetQConnectionFactory() throws ResourceException
+   public HornetQConnectionFactory getDefaultHornetQConnectionFactory() throws ResourceException
    {
       if (!configured.getAndSet(true))
       {
@@ -1369,9 +1371,9 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       return defaultHornetQConnectionFactory;
    }
 
-   public org.hornetq.api.jms.HornetQConnectionFactory createHornetQConnectionFactory(final ConnectionFactoryProperties overrideProperties)
+   public HornetQConnectionFactory createHornetQConnectionFactory(final ConnectionFactoryProperties overrideProperties)
    {
-      org.hornetq.api.jms.HornetQConnectionFactory cf;
+      HornetQConnectionFactory cf;
       String connectorClassName = overrideProperties.getConnectorClassName() != null ? overrideProperties.getConnectorClassName()
                                                                                     : getConnectorClassName();
       String discoveryAddress = overrideProperties.getDiscoveryAddress() != null ? overrideProperties.getDiscoveryAddress()
@@ -1390,13 +1392,13 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
                                                                          : new TransportConfiguration(backUpCOnnectorClassname,
                                                                                                       backupConnectionParams);
 
-         cf = new org.hornetq.api.jms.HornetQConnectionFactory(transportConf, backup);
+         cf = (HornetQConnectionFactory) HornetQJMSClient.createConnectionFactory(transportConf, backup);
       }
       else if (discoveryAddress != null)
       {
          Integer discoveryPort = overrideProperties.getDiscoveryPort() != null ? overrideProperties.getDiscoveryPort()
                                                                               : getDiscoveryPort();
-         cf = new org.hornetq.api.jms.HornetQConnectionFactory(discoveryAddress, discoveryPort);
+         cf = (HornetQConnectionFactory) HornetQJMSClient.createConnectionFactory(discoveryAddress, discoveryPort);
       }
       else
       {
@@ -1406,7 +1408,7 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       return cf;
    }
 
-   private void setParams(final org.hornetq.api.jms.HornetQConnectionFactory cf,
+   private void setParams(final HornetQConnectionFactory cf,
                           final ConnectionFactoryProperties overrideProperties)
    {
       Boolean val = overrideProperties.isAutoGroup() != null ? overrideProperties.isAutoGroup()

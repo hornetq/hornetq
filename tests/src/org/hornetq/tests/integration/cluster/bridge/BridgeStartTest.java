@@ -22,12 +22,7 @@ import junit.framework.Assert;
 
 import org.hornetq.api.Pair;
 import org.hornetq.api.SimpleString;
-import org.hornetq.api.core.client.ClientConsumer;
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.ClientProducer;
-import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.api.core.client.ClientSessionFactory;
-import org.hornetq.api.core.client.ClientSessionFactoryImpl;
+import org.hornetq.api.core.client.*;
 import org.hornetq.api.core.config.TransportConfiguration;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.impl.invm.TransportConstants;
@@ -111,7 +106,7 @@ public class BridgeStartTest extends ServiceTestBase
                                                                         true,
                                                                         true,
                                                                         1024,
-                                                                        ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
+                                                                        HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
                                                                         connectorPair);
 
       List<BridgeConfiguration> bridgeConfigs = new ArrayList<BridgeConfiguration>();
@@ -131,9 +126,9 @@ public class BridgeStartTest extends ServiceTestBase
       server1.start();
       server0.start();
 
-      ClientSessionFactory sf0 = new ClientSessionFactoryImpl(server0tc);
+      ClientSessionFactory sf0 = HornetQClient.createClientSessionFactory(server0tc);
 
-      ClientSessionFactory sf1 = new ClientSessionFactoryImpl(server1tc);
+      ClientSessionFactory sf1 = HornetQClient.createClientSessionFactory(server1tc);
 
       ClientSession session0 = sf0.createSession(false, true, true);
 
@@ -261,7 +256,7 @@ public class BridgeStartTest extends ServiceTestBase
                                                                         true,
                                                                         true,
                                                                         1024,
-                                                                        ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
+                                                                        HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
                                                                         connectorPair);
 
       List<BridgeConfiguration> bridgeConfigs = new ArrayList<BridgeConfiguration>();
@@ -284,7 +279,7 @@ public class BridgeStartTest extends ServiceTestBase
 
          server0.start();
 
-         ClientSessionFactory sf0 = new ClientSessionFactoryImpl(server0tc);
+         ClientSessionFactory sf0 = HornetQClient.createClientSessionFactory(server0tc);
 
          ClientSession session0 = sf0.createSession(false, true, true);
 
@@ -308,7 +303,7 @@ public class BridgeStartTest extends ServiceTestBase
 
          server1.start();
 
-         ClientSessionFactory sf1 = new ClientSessionFactoryImpl(server1tc);
+         ClientSessionFactory sf1 = HornetQClient.createClientSessionFactory(server1tc);
 
          ClientSession session1 = sf1.createSession(false, true, true);
 
@@ -376,7 +371,7 @@ public class BridgeStartTest extends ServiceTestBase
 
          BridgeStartTest.log.info("started server1");
 
-         sf1 = new ClientSessionFactoryImpl(server1tc);
+         sf1 = HornetQClient.createClientSessionFactory(server1tc);
 
          session1 = sf1.createSession(false, true, true);
 
@@ -458,7 +453,7 @@ public class BridgeStartTest extends ServiceTestBase
                                                                         false,
                                                                         false,
                                                                         1024,
-                                                                        ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
+                                                                        HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
                                                                         connectorPair);
 
       List<BridgeConfiguration> bridgeConfigs = new ArrayList<BridgeConfiguration>();
@@ -479,7 +474,7 @@ public class BridgeStartTest extends ServiceTestBase
 
       server0.start();
 
-      ClientSessionFactory sf0 = new ClientSessionFactoryImpl(server0tc);
+      ClientSessionFactory sf0 = HornetQClient.createClientSessionFactory(server0tc);
 
       ClientSession session0 = sf0.createSession(false, true, true);
 
@@ -505,7 +500,7 @@ public class BridgeStartTest extends ServiceTestBase
 
       server1.start();
 
-      ClientSessionFactory sf1 = new ClientSessionFactoryImpl(server1tc);
+      ClientSessionFactory sf1 = HornetQClient.createClientSessionFactory(server1tc);
 
       ClientSession session1 = sf1.createSession(false, true, true);
 
@@ -593,7 +588,7 @@ public class BridgeStartTest extends ServiceTestBase
                                                                         false,
                                                                         true,
                                                                         1024,
-                                                                        ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
+                                                                        HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
                                                                         connectorPair);
 
       List<BridgeConfiguration> bridgeConfigs = new ArrayList<BridgeConfiguration>();
@@ -614,7 +609,7 @@ public class BridgeStartTest extends ServiceTestBase
 
       server0.start();
 
-      ClientSessionFactory sf0 = new ClientSessionFactoryImpl(server0tc);
+      ClientSessionFactory sf0 = HornetQClient.createClientSessionFactory(server0tc);
 
       ClientSession session0 = sf0.createSession(false, true, true);
 
@@ -633,7 +628,7 @@ public class BridgeStartTest extends ServiceTestBase
          producer0.send(message);
       }
 
-      ClientSessionFactory sf1 = new ClientSessionFactoryImpl(server1tc);
+      ClientSessionFactory sf1 = HornetQClient.createClientSessionFactory(server1tc);
 
       ClientSession session1 = sf1.createSession(false, true, true);
 

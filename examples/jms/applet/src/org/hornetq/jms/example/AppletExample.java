@@ -43,10 +43,10 @@ import javax.swing.JTextArea;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 
-import org.hornetq.api.core.client.ClientSessionFactoryImpl;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.config.TransportConfiguration;
-import org.hornetq.api.jms.HornetQConnectionFactory;
-import org.hornetq.api.jms.HornetQTopic;
+import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.integration.transports.netty.NettyConnectorFactory;
 
 /**
@@ -108,9 +108,9 @@ public class AppletExample extends JApplet implements ActionListener
 
       Map<String, Object> params = new HashMap<String, Object>();
       TransportConfiguration connector = new TransportConfiguration(NettyConnectorFactory.class.getName(), params);
-      ClientSessionFactoryImpl sf = new ClientSessionFactoryImpl(connector);
-      ConnectionFactory cf = new HornetQConnectionFactory(sf);
-      destination = new HornetQTopic("exampleTopic");
+      ClientSessionFactory sf = HornetQClient.createClientSessionFactory(connector);
+      ConnectionFactory cf = HornetQJMSClient.createConnectionFactory(sf);
+      destination = HornetQJMSClient.createHornetQTopic("exampleTopic");
 
       try
       {

@@ -15,11 +15,7 @@ package org.hornetq.tests.integration.management;
 
 import junit.framework.Assert;
 
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.ClientRequestor;
-import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.api.core.client.ClientSessionFactory;
-import org.hornetq.api.core.client.ClientSessionFactoryImpl;
+import org.hornetq.api.core.client.*;
 import org.hornetq.api.core.config.TransportConfiguration;
 import org.hornetq.api.core.management.ManagementHelper;
 import org.hornetq.api.core.management.ResourceNames;
@@ -75,7 +71,7 @@ public abstract class SecurityManagementTestBase extends UnitTestCase
 
    protected void doSendManagementMessage(final String user, final String password, final boolean expectSuccess) throws Exception
    {
-      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
+      ClientSessionFactory sf = HornetQClient.createClientSessionFactory(new TransportConfiguration(InVMConnectorFactory.class.getName()));
       try
       {
          ClientSession session = null;

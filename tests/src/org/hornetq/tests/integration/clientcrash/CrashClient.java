@@ -15,11 +15,7 @@ package org.hornetq.tests.integration.clientcrash;
 
 import java.util.Arrays;
 
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.ClientProducer;
-import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.api.core.client.ClientSessionFactory;
-import org.hornetq.api.core.client.ClientSessionFactoryImpl;
+import org.hornetq.api.core.client.*;
 import org.hornetq.api.core.config.TransportConfiguration;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.jms.client.HornetQTextMessage;
@@ -48,7 +44,7 @@ public class CrashClient
       {
          CrashClient.log.debug("args = " + Arrays.asList(args));
 
-         ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.hornetq.integration.transports.netty.NettyConnectorFactory"));
+         ClientSessionFactory sf = HornetQClient.createClientSessionFactory(new TransportConfiguration("org.hornetq.integration.transports.netty.NettyConnectorFactory"));
 
          sf.setClientFailureCheckPeriod(ClientCrashTest.PING_PERIOD);
          sf.setConnectionTTL(ClientCrashTest.CONNECTION_TTL);

@@ -1,14 +1,14 @@
 /*
  * Copyright 2009 Red Hat, Inc.
- * Red Hat licenses this file to you under the Apache License, version
- * 2.0 (the "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- *    http://www.apache.org/licenses/LICENSE-2.0
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- * implied.  See the License for the specific language governing
- * permissions and limitations under the License.
+ *  Red Hat licenses this file to you under the Apache License, version
+ *  2.0 (the "License"); you may not use this file except in compliance
+ *  with the License.  You may obtain a copy of the License at
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+ *  implied.  See the License for the specific language governing
+ *  permissions and limitations under the License.
  */
 
 package org.hornetq.jms.server.config.impl;
@@ -18,6 +18,7 @@ import java.util.List;
 
 import org.hornetq.api.Pair;
 import org.hornetq.api.core.client.ClientSessionFactoryImpl;
+import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.config.TransportConfiguration;
 import org.hornetq.jms.server.config.ConnectionFactoryConfiguration;
 
@@ -46,61 +47,61 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
 
    private String clientID = null;
 
-   private long discoveryRefreshTimeout = ClientSessionFactoryImpl.DEFAULT_DISCOVERY_REFRESH_TIMEOUT;
+   private long discoveryRefreshTimeout = HornetQClient.DEFAULT_DISCOVERY_REFRESH_TIMEOUT;
 
-   private long clientFailureCheckPeriod = ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD;
+   private long clientFailureCheckPeriod = HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD;
 
-   private long connectionTTL = ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL;
+   private long connectionTTL = HornetQClient.DEFAULT_CONNECTION_TTL;
 
-   private long callTimeout = ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT;
+   private long callTimeout = HornetQClient.DEFAULT_CALL_TIMEOUT;
 
-   private boolean cacheLargeMessagesClient = ClientSessionFactoryImpl.DEFAULT_CACHE_LARGE_MESSAGE_CLIENT;
+   private boolean cacheLargeMessagesClient = HornetQClient.DEFAULT_CACHE_LARGE_MESSAGE_CLIENT;
 
-   private int minLargeMessageSize = ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE;
+   private int minLargeMessageSize = HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE;
 
-   private int consumerWindowSize = ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE;
+   private int consumerWindowSize = HornetQClient.DEFAULT_CONSUMER_WINDOW_SIZE;
 
-   private int consumerMaxRate = ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE;
+   private int consumerMaxRate = HornetQClient.DEFAULT_CONSUMER_MAX_RATE;
 
-   private int confirmationWindowSize = ClientSessionFactoryImpl.DEFAULT_CONFIRMATION_WINDOW_SIZE;
+   private int confirmationWindowSize = HornetQClient.DEFAULT_CONFIRMATION_WINDOW_SIZE;
 
-   private int producerWindowSize = ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE;
+   private int producerWindowSize = HornetQClient.DEFAULT_PRODUCER_WINDOW_SIZE;
 
-   private int producerMaxRate = ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE;
+   private int producerMaxRate = HornetQClient.DEFAULT_PRODUCER_MAX_RATE;
 
-   private boolean blockOnAcknowledge = ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE;
+   private boolean blockOnAcknowledge = HornetQClient.DEFAULT_BLOCK_ON_ACKNOWLEDGE;
 
-   private boolean blockOnDurableSend = ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_DURABLE_SEND;
+   private boolean blockOnDurableSend = HornetQClient.DEFAULT_BLOCK_ON_DURABLE_SEND;
 
-   private boolean blockOnNonDurableSend = ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_DURABLE_SEND;
+   private boolean blockOnNonDurableSend = HornetQClient.DEFAULT_BLOCK_ON_NON_DURABLE_SEND;
 
-   private boolean autoGroup = ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP;
+   private boolean autoGroup = HornetQClient.DEFAULT_AUTO_GROUP;
 
-   private boolean preAcknowledge = ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE;
+   private boolean preAcknowledge = HornetQClient.DEFAULT_PRE_ACKNOWLEDGE;
 
-   private String loadBalancingPolicyClassName = ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME;
+   private String loadBalancingPolicyClassName = HornetQClient.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME;
 
-   private int transactionBatchSize = ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE;
+   private int transactionBatchSize = HornetQClient.DEFAULT_ACK_BATCH_SIZE;
 
-   private int dupsOKBatchSize = ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE;
+   private int dupsOKBatchSize = HornetQClient.DEFAULT_ACK_BATCH_SIZE;
 
-   private long initialWaitTimeout = ClientSessionFactoryImpl.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT;
+   private long initialWaitTimeout = HornetQClient.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT;
 
-   private boolean useGlobalPools = ClientSessionFactoryImpl.DEFAULT_USE_GLOBAL_POOLS;
+   private boolean useGlobalPools = HornetQClient.DEFAULT_USE_GLOBAL_POOLS;
 
-   private int scheduledThreadPoolMaxSize = ClientSessionFactoryImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE;
+   private int scheduledThreadPoolMaxSize = HornetQClient.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE;
 
-   private int threadPoolMaxSize = ClientSessionFactoryImpl.DEFAULT_THREAD_POOL_MAX_SIZE;
+   private int threadPoolMaxSize = HornetQClient.DEFAULT_THREAD_POOL_MAX_SIZE;
 
-   private long retryInterval = ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL;
+   private long retryInterval = HornetQClient.DEFAULT_RETRY_INTERVAL;
 
-   private double retryIntervalMultiplier = ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER;
+   private double retryIntervalMultiplier = HornetQClient.DEFAULT_RETRY_INTERVAL_MULTIPLIER;
 
-   private long maxRetryInterval = ClientSessionFactoryImpl.DEFAULT_MAX_RETRY_INTERVAL;
+   private long maxRetryInterval = HornetQClient.DEFAULT_MAX_RETRY_INTERVAL;
 
-   private int reconnectAttempts = ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS;
+   private int reconnectAttempts = HornetQClient.DEFAULT_RECONNECT_ATTEMPTS;
 
-   private boolean failoverOnServerShutdown = ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN;
+   private boolean failoverOnServerShutdown = HornetQClient.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN;
 
    private String groupID = null;
 

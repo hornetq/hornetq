@@ -11,12 +11,13 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.api.jms;
+package org.hornetq.jms;
 
 import javax.jms.JMSException;
 import javax.jms.Queue;
 
 import org.hornetq.api.SimpleString;
+import org.hornetq.jms.HornetQDestination;
 import org.hornetq.core.logging.Logger;
 
 /**

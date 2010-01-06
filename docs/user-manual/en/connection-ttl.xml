@@ -34,7 +34,7 @@ ClientSession session = null;
 
 try
 {
-   sf = new ClientSessionFactoryImpl(...);
+   sf = HornetQClient.createClientSessionFactory(...);
 
    session = sf.createSession(...);
    
@@ -59,7 +59,7 @@ Connection jmsConnection = null;
 
 try
 {
-   ConnectionFactory jmsConnectionFactory = new HornetQConnectionFactory(...);
+   ConnectionFactory jmsConnectionFactory = HornetQJMSClient.createConnectionFactory(...);
 
    jmsConnection = jmsConnectionFactory.createConnection();
 

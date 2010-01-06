@@ -20,7 +20,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
 import org.hornetq.api.core.client.ClientSessionFactory;
-import org.hornetq.api.core.client.ClientSessionFactoryImpl;
+import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.config.TransportConfiguration;
 import org.hornetq.api.core.exception.HornetQException;
 import org.hornetq.core.client.impl.FailoverManagerImpl;
@@ -67,20 +67,20 @@ public class IncompatibleVersionTest extends ServiceTestBase
       server.start();
 
       TransportConfiguration config = new TransportConfiguration(InVMConnectorFactory.class.getName());
-      ClientSessionFactory csf = new ClientSessionFactoryImpl(config);
+      ClientSessionFactory csf = HornetQClient.createClientSessionFactory(config);
       ExecutorService executorService = Executors.newFixedThreadPool(1);
       ScheduledExecutorService scheduledexecutorService = Executors.newScheduledThreadPool(1);
       FailoverManagerImpl failoverManager = new FailoverManagerImpl(csf,
                                                                     config,
                                                                     null,
-                                                                    ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN,
-                                                                    ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,
-                                                                    ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
+                                                                    HornetQClient.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN,
+                                                                    HornetQClient.DEFAULT_CALL_TIMEOUT,
+                                                                    HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
                                                                     500,
-                                                                    ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL,
-                                                                    ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER,
-                                                                    ClientSessionFactoryImpl.DEFAULT_MAX_RETRY_INTERVAL,
-                                                                    ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS,
+                                                                    HornetQClient.DEFAULT_RETRY_INTERVAL,
+                                                                    HornetQClient.DEFAULT_RETRY_INTERVAL_MULTIPLIER,
+                                                                    HornetQClient.DEFAULT_MAX_RETRY_INTERVAL,
+                                                                    HornetQClient.DEFAULT_RECONNECT_ATTEMPTS,
                                                                     executorService,
                                                                     scheduledexecutorService,
                                                                     null);
@@ -119,12 +119,12 @@ public class IncompatibleVersionTest extends ServiceTestBase
                                                 version,
                                                 null,
                                                 null,
-                                                ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
+                                                HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
                                                 false,
                                                 true,
                                                 true,
                                                 false,
-                                                ClientSessionFactoryImpl.DEFAULT_CONFIRMATION_WINDOW_SIZE);
+                                                HornetQClient.DEFAULT_CONFIRMATION_WINDOW_SIZE);
 
       if (compatible)
       {

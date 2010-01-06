@@ -23,8 +23,8 @@ import junit.framework.Assert;
 
 import org.hornetq.api.core.config.TransportConfiguration;
 import org.hornetq.api.core.exception.HornetQException;
-import org.hornetq.api.jms.HornetQConnectionFactory;
-import org.hornetq.api.jms.HornetQQueue;
+import org.hornetq.jms.HornetQConnectionFactory;
+import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.RemotingConnection;
@@ -50,7 +50,7 @@ public class CloseDestroyedConnectionTest extends JMSTestBase
    {
       super.setUp();
 
-      cf = new HornetQConnectionFactory(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
+      cf = (HornetQConnectionFactory) HornetQJMSClient.createConnectionFactory(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
       cf.setBlockOnDurableSend(true);
       cf.setPreAcknowledge(true);
    }
@@ -84,7 +84,7 @@ public class CloseDestroyedConnectionTest extends JMSTestBase
 
       String queueName = "myqueue";
 
-      Queue queue = new HornetQQueue(queueName);
+      Queue queue = HornetQJMSClient.createHornetQQueue(queueName);
 
       super.createQueue(queueName);
 

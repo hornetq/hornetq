@@ -14,12 +14,7 @@ package org.hornetq.core.example;
 
 import java.util.Date;
 
-import org.hornetq.api.core.client.ClientConsumer;
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.ClientProducer;
-import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.api.core.client.ClientSessionFactory;
-import org.hornetq.api.core.client.ClientSessionFactoryImpl;
+import org.hornetq.api.core.client.*;
 import org.hornetq.api.core.config.TransportConfiguration;
 import org.hornetq.common.example.SpawnedVMSupport;
 import org.hornetq.integration.transports.netty.NettyConnectorFactory;
@@ -47,7 +42,7 @@ public class EmbeddedRemoteExample
          process = EmbeddedRemoteExample.startRemoteEmbedded();
 
          // Step 4. As we are not using a JNDI environment we instantiate the objects directly
-         ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(NettyConnectorFactory.class.getName()));
+         ClientSessionFactory sf = HornetQClient.createClientSessionFactory(new TransportConfiguration(NettyConnectorFactory.class.getName()));
 
          // Step 5. Create a core queue
          ClientSession coreSession = sf.createSession(false, false, false);

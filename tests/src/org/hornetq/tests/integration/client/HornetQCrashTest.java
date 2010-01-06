@@ -3,12 +3,7 @@ package org.hornetq.tests.integration.client;
 import junit.framework.Assert;
 import junit.framework.TestCase;
 
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.ClientProducer;
-import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.api.core.client.ClientSessionFactory;
-import org.hornetq.api.core.client.ClientSessionFactoryImpl;
-import org.hornetq.api.core.client.SendAcknowledgementHandler;
+import org.hornetq.api.core.client.*;
 import org.hornetq.api.core.config.TransportConfiguration;
 import org.hornetq.api.core.exception.HornetQException;
 import org.hornetq.api.core.interceptor.Interceptor;
@@ -50,7 +45,7 @@ public class HornetQCrashTest extends TestCase
 
       server.getRemotingService().addInterceptor(new AckInterceptor(server));
 
-      ClientSessionFactory clientSessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
+      ClientSessionFactory clientSessionFactory = HornetQClient.createClientSessionFactory(new TransportConfiguration(InVMConnectorFactory.class.getName()));
 
       // Force an ack at once - this means the send call will block
       clientSessionFactory.setConfirmationWindowSize(1);

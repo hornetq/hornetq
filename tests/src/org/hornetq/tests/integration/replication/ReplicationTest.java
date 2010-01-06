@@ -32,7 +32,7 @@ import org.hornetq.api.SimpleString;
 import org.hornetq.api.core.buffers.HornetQBuffer;
 import org.hornetq.api.core.buffers.HornetQBuffers;
 import org.hornetq.api.core.client.ClientSessionFactory;
-import org.hornetq.api.core.client.ClientSessionFactoryImpl;
+import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.config.TransportConfiguration;
 import org.hornetq.api.core.exception.HornetQException;
 import org.hornetq.api.core.interceptor.Interceptor;
@@ -720,9 +720,9 @@ public class ReplicationTest extends ServiceTestBase
                                      connectorConfig,
                                      null,
                                      false,
-                                     ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,
-                                     ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
-                                     ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL,
+                                     HornetQClient.DEFAULT_CALL_TIMEOUT,
+                                     HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
+                                     HornetQClient.DEFAULT_CONNECTION_TTL,
                                      0,
                                      1.0d,
                                      0,

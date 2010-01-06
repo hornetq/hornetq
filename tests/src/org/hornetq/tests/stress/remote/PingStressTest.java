@@ -18,6 +18,7 @@ import java.util.concurrent.CountDownLatch;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.ClientSessionFactoryImpl;
+import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.config.TransportConfiguration;
 import org.hornetq.api.core.exception.HornetQException;
 import org.hornetq.api.core.interceptor.Interceptor;
@@ -120,7 +121,7 @@ public class PingStressTest extends ServiceTestBase
 
       server.getRemotingService().addInterceptor(noPongInterceptor);
 
-      final ClientSessionFactory csf1 = new ClientSessionFactoryImpl(transportConfig);
+      final ClientSessionFactory csf1 = HornetQClient.createClientSessionFactory(transportConfig);
 
       csf1.setClientFailureCheckPeriod(PingStressTest.PING_INTERVAL);
       csf1.setConnectionTTL((long)(PingStressTest.PING_INTERVAL * 1.5));
@@ -150,7 +151,7 @@ public class PingStressTest extends ServiceTestBase
             try
             {
 
-               final ClientSessionFactory csf2 = new ClientSessionFactoryImpl(transportConfig);
+               final ClientSessionFactory csf2 = HornetQClient.createClientSessionFactory(transportConfig);
 
                csf2.setClientFailureCheckPeriod(PingStressTest.PING_INTERVAL);
                csf2.setConnectionTTL((long)(PingStressTest.PING_INTERVAL * 1.5));

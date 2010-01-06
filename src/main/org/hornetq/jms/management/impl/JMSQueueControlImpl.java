@@ -21,7 +21,8 @@ import javax.management.StandardMBean;
 import org.hornetq.api.core.exception.HornetQException;
 import org.hornetq.api.core.management.MessageCounterInfo;
 import org.hornetq.api.core.management.QueueControl;
-import org.hornetq.api.jms.HornetQQueue;
+import org.hornetq.api.jms.HornetQJMSClient;
+import org.hornetq.jms.HornetQQueue;
 import org.hornetq.api.jms.management.JMSQueueControl;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.management.impl.MBeanInfoHelper;
@@ -274,7 +275,7 @@ public class JMSQueueControlImpl extends StandardMBean implements JMSQueueContro
    public boolean moveMessage(final String messageID, final String otherQueueName) throws Exception
    {
       String filter = JMSQueueControlImpl.createFilterForJMSMessageID(messageID);
-      HornetQQueue otherQueue = new HornetQQueue(otherQueueName);
+      HornetQQueue otherQueue = (HornetQQueue) HornetQJMSClient.createHornetQQueue(otherQueueName);
       int moved = coreQueueControl.moveMessages(filter, otherQueue.getAddress());
       if (moved != 1)
       {
@@ -287,7 +288,7 @@ public class JMSQueueControlImpl extends StandardMBean implements JMSQueueContro
    public int moveMessages(final String filterStr, final String otherQueueName) throws Exception
    {
       String filter = JMSQueueControlImpl.createFilterFromJMSSelector(filterStr);
-      HornetQQueue otherQueue = new HornetQQueue(otherQueueName);
+      HornetQQueue otherQueue = (HornetQQueue) HornetQJMSClient.createHornetQQueue(otherQueueName);
       return coreQueueControl.moveMessages(filter, otherQueue.getAddress());
    }
 

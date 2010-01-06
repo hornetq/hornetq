@@ -26,12 +26,7 @@ import junit.framework.Assert;
 
 import org.hornetq.api.Pair;
 import org.hornetq.api.SimpleString;
-import org.hornetq.api.core.client.ClientConsumer;
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.ClientProducer;
-import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.api.core.client.ClientSessionFactory;
-import org.hornetq.api.core.client.ClientSessionFactoryImpl;
+import org.hornetq.api.core.client.*;
 import org.hornetq.api.core.config.TransportConfiguration;
 import org.hornetq.api.core.message.Message;
 import org.hornetq.core.config.Configuration;
@@ -1102,7 +1097,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
          serverTotc = new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY, params);
       }
 
-      ClientSessionFactory sf = new ClientSessionFactoryImpl(serverTotc);
+      ClientSessionFactory sf = HornetQClient.createClientSessionFactory(serverTotc);
 
       sf.setBlockOnNonDurableSend(true);
       sf.setBlockOnDurableSend(true);
@@ -1146,7 +1141,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
          }
       }
 
-      ClientSessionFactory sf = new ClientSessionFactoryImpl(serverTotc, serverBackuptc);
+      ClientSessionFactory sf = HornetQClient.createClientSessionFactory(serverTotc, serverBackuptc);
 
       sf.setFailoverOnServerShutdown(false);
       sf.setRetryInterval(100);

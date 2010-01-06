@@ -24,7 +24,7 @@
      
         <li>As we are not using a JNDI environment we instantiate the objects directly</li>
         <pre class="prettyprint">
-           ClientSessionFactory sf = new ClientSessionFactoryImpl (new TransportConfiguration(NettyConnectorFactory.class.getName()));
+           ClientSessionFactory sf = HornetQClient.createClientSessionFactory (new TransportConfiguration(NettyConnectorFactory.class.getName()));
         </pre>
 
         <li>Create a Core Queue</li>

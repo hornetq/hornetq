@@ -20,11 +20,10 @@ import javax.jms.Topic;
 
 import junit.framework.Assert;
 
-import org.hornetq.api.jms.HornetQDestination;
-import org.hornetq.api.jms.HornetQQueue;
-import org.hornetq.api.jms.HornetQTemporaryQueue;
-import org.hornetq.api.jms.HornetQTemporaryTopic;
-import org.hornetq.api.jms.HornetQTopic;
+import org.hornetq.jms.HornetQDestination;
+import org.hornetq.jms.HornetQQueue;
+import org.hornetq.jms.*;
+import org.hornetq.jms.HornetQTopic;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
 
@@ -50,9 +49,9 @@ public class HornetQDestinationTest extends UnitTestCase
    {
       String destinationName = RandomUtil.randomString();
       String address = HornetQQueue.JMS_QUEUE_ADDRESS_PREFIX + destinationName;
-      HornetQDestination destination = HornetQDestination.fromAddress(address);
-      HornetQDestination sameDestination = HornetQDestination.fromAddress(address);
-      HornetQDestination differentDestination = HornetQDestination.fromAddress(address + RandomUtil.randomString());
+      HornetQDestination destination = (HornetQDestination) HornetQDestination.fromAddress(address);
+      HornetQDestination sameDestination = (HornetQDestination) HornetQDestination.fromAddress(address);
+      HornetQDestination differentDestination = (HornetQDestination) HornetQDestination.fromAddress(address + RandomUtil.randomString());
 
       Assert.assertFalse(destination.equals(null));
       Assert.assertTrue(destination.equals(destination));
@@ -64,7 +63,7 @@ public class HornetQDestinationTest extends UnitTestCase
    {
       String destinationName = RandomUtil.randomString();
       String address = HornetQQueue.JMS_QUEUE_ADDRESS_PREFIX + destinationName;
-      HornetQDestination destination = HornetQDestination.fromAddress(address);
+      HornetQDestination destination = (HornetQDestination) HornetQDestination.fromAddress(address);
       Assert.assertTrue(destination instanceof Queue);
       Assert.assertEquals(destinationName, ((Queue)destination).getQueueName());
    }
@@ -73,7 +72,7 @@ public class HornetQDestinationTest extends UnitTestCase
    {
       String destinationName = RandomUtil.randomString();
       String address = HornetQTopic.JMS_TOPIC_ADDRESS_PREFIX + destinationName;
-      HornetQDestination destination = HornetQDestination.fromAddress(address);
+      HornetQDestination destination = (HornetQDestination) HornetQDestination.fromAddress(address);
       Assert.assertTrue(destination instanceof Topic);
       Assert.assertEquals(destinationName, ((Topic)destination).getTopicName());
    }
@@ -82,7 +81,7 @@ public class HornetQDestinationTest extends UnitTestCase
    {
       String destinationName = RandomUtil.randomString();
       String address = HornetQTemporaryQueue.JMS_TEMP_QUEUE_ADDRESS_PREFIX + destinationName;
-      HornetQDestination destination = HornetQDestination.fromAddress(address);
+      HornetQDestination destination = (HornetQDestination) HornetQDestination.fromAddress(address);
       Assert.assertTrue(destination instanceof TemporaryQueue);
       Assert.assertEquals(destinationName, ((TemporaryQueue)destination).getQueueName());
    }
@@ -91,7 +90,7 @@ public class HornetQDestinationTest extends UnitTestCase
    {
       String destinationName = RandomUtil.randomString();
       String address = HornetQTemporaryTopic.JMS_TEMP_TOPIC_ADDRESS_PREFIX + destinationName;
-      HornetQDestination destination = HornetQDestination.fromAddress(address);
+      HornetQDestination destination = (HornetQDestination) HornetQDestination.fromAddress(address);
       Assert.assertTrue(destination instanceof TemporaryTopic);
       Assert.assertEquals(destinationName, ((TemporaryTopic)destination).getTopicName());
    }

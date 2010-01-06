@@ -22,14 +22,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Logger;
 
-import org.hornetq.api.core.client.ClientConsumer;
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.ClientProducer;
-import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.api.core.client.ClientSessionFactory;
-import org.hornetq.api.core.client.ClientSessionFactoryImpl;
-import org.hornetq.api.core.client.MessageHandler;
-import org.hornetq.api.core.client.SendAcknowledgementHandler;
+import org.hornetq.api.core.client.*;
 import org.hornetq.api.core.config.TransportConfiguration;
 import org.hornetq.api.core.message.Message;
 import org.hornetq.integration.transports.netty.NettyConnectorFactory;
@@ -202,7 +195,7 @@ public abstract class PerfBase
       params.put(TransportConstants.HOST_PROP_NAME, perfParams.getHost());
       params.put(TransportConstants.PORT_PROP_NAME, perfParams.getPort());
 
-      factory = new ClientSessionFactoryImpl(new TransportConfiguration(NettyConnectorFactory.class.getName(), params));
+      factory = HornetQClient.createClientSessionFactory(new TransportConfiguration(NettyConnectorFactory.class.getName(), params));
       factory.setPreAcknowledge(perfParams.isPreAck());
       factory.setConfirmationWindowSize(perfParams.getConfirmationWindow());
       factory.setProducerWindowSize(perfParams.getProducerWindow());

@@ -19,12 +19,7 @@ import java.util.Map;
 import junit.framework.Assert;
 
 import org.hornetq.api.SimpleString;
-import org.hornetq.api.core.client.ClientConsumer;
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.ClientProducer;
-import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.api.core.client.ClientSessionFactory;
-import org.hornetq.api.core.client.ClientSessionFactoryImpl;
+import org.hornetq.api.core.client.*;
 import org.hornetq.api.core.config.TransportConfiguration;
 import org.hornetq.api.core.exception.HornetQException;
 import org.hornetq.api.core.message.Message;
@@ -75,7 +70,7 @@ public class CoreClientOverSSLTest extends UnitTestCase
       tc.getParams().put(TransportConstants.KEYSTORE_PATH_PROP_NAME, TransportConstants.DEFAULT_KEYSTORE_PATH);
       tc.getParams().put(TransportConstants.KEYSTORE_PASSWORD_PROP_NAME, TransportConstants.DEFAULT_KEYSTORE_PASSWORD);
 
-      ClientSessionFactory sf = new ClientSessionFactoryImpl(tc);
+      ClientSessionFactory sf = HornetQClient.createClientSessionFactory(tc);
       ClientSession session = sf.createSession(false, true, true);
       session.createQueue(CoreClientOverSSLTest.QUEUE, CoreClientOverSSLTest.QUEUE, false);
       ClientProducer producer = session.createProducer(CoreClientOverSSLTest.QUEUE);
@@ -98,7 +93,7 @@ public class CoreClientOverSSLTest extends UnitTestCase
       tc.getParams().put(TransportConstants.KEYSTORE_PATH_PROP_NAME, TransportConstants.DEFAULT_KEYSTORE_PATH);
       tc.getParams().put(TransportConstants.KEYSTORE_PASSWORD_PROP_NAME, "invalid password");
 
-      ClientSessionFactory sf = new ClientSessionFactoryImpl(tc);
+      ClientSessionFactory sf = HornetQClient.createClientSessionFactory(tc);
       try
       {
          sf.createSession(false, true, true);
@@ -116,7 +111,7 @@ public class CoreClientOverSSLTest extends UnitTestCase
       TransportConfiguration tc = new TransportConfiguration(NettyConnectorFactory.class.getName());
       tc.getParams().put(TransportConstants.SSL_ENABLED_PROP_NAME, false);
 
-      ClientSessionFactory sf = new ClientSessionFactoryImpl(tc);
+      ClientSessionFactory sf = HornetQClient.createClientSessionFactory(tc);
       sf.setCallTimeout(2000);
       try
       {

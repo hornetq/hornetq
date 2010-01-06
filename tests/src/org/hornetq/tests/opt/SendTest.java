@@ -29,8 +29,8 @@ import javax.jms.TextMessage;
 
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.config.TransportConfiguration;
-import org.hornetq.api.jms.HornetQConnectionFactory;
-import org.hornetq.api.jms.HornetQQueue;
+import org.hornetq.jms.HornetQConnectionFactory;
+import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.logging.Logger;
@@ -144,7 +144,7 @@ public class SendTest
 
       // TransportConfiguration tc = new TransportConfiguration(InVMConnectorFactory.class.getCanonicalName(), params);
 
-      HornetQConnectionFactory cf = new HornetQConnectionFactory(tc);
+      HornetQConnectionFactory cf = (HornetQConnectionFactory) HornetQJMSClient.createConnectionFactory(tc);
 
       cf.setProducerWindowSize(1024 * 1024);
 
@@ -156,7 +156,7 @@ public class SendTest
 
       coreSession.createQueue("jms.queue.test_queue", "jms.queue.test_queue");
 
-      Queue queue = new HornetQQueue("test_queue");
+      Queue queue = HornetQJMSClient.createHornetQQueue("test_queue");
 
       MessageProducer prod = sess.createProducer(queue);
 
@@ -242,7 +242,7 @@ public class SendTest
 
       // TransportConfiguration tc = new TransportConfiguration(InVMConnectorFactory.class.getCanonicalName(), params);
 
-      HornetQConnectionFactory cf = new HornetQConnectionFactory(tc);
+      HornetQConnectionFactory cf = (HornetQConnectionFactory) HornetQJMSClient.createConnectionFactory(tc);
 
       cf.setProducerWindowSize(1024 * 1024);
 
@@ -254,7 +254,7 @@ public class SendTest
 
       coreSession.createQueue("jms.queue.test_queue", "jms.queue.test_queue");
 
-      Queue queue = new HornetQQueue("test_queue");
+      Queue queue = HornetQJMSClient.createHornetQQueue("test_queue");
 
       MessageConsumer cons = sess.createConsumer(queue);
 
@@ -363,7 +363,7 @@ public class SendTest
 
       // TransportConfiguration tc = new TransportConfiguration(InVMConnectorFactory.class.getCanonicalName(), params);
 
-      HornetQConnectionFactory cf = new HornetQConnectionFactory(tc);
+      HornetQConnectionFactory cf = (HornetQConnectionFactory) HornetQJMSClient.createConnectionFactory(tc);
 
       cf.setProducerWindowSize(1024 * 1024);
 
@@ -375,7 +375,7 @@ public class SendTest
 
       coreSession.createQueue("jms.queue.test_queue", "jms.queue.test_queue");
 
-      Queue queue = new HornetQQueue("test_queue");
+      Queue queue = HornetQJMSClient.createHornetQQueue("test_queue");
 
       MessageProducer prod = sess.createProducer(queue);
 
@@ -463,7 +463,7 @@ public class SendTest
 
       // TransportConfiguration tc = new TransportConfiguration(InVMConnectorFactory.class.getCanonicalName(), params);
 
-      HornetQConnectionFactory cf = new HornetQConnectionFactory(tc);
+      HornetQConnectionFactory cf = (HornetQConnectionFactory) HornetQJMSClient.createConnectionFactory(tc);
 
       Connection conn = cf.createConnection();
 
@@ -473,7 +473,7 @@ public class SendTest
 
       coreSession.createQueue("jms.queue.test_queue", "jms.queue.test_queue");
 
-      Queue queue = new HornetQQueue("test_queue");
+      Queue queue = HornetQJMSClient.createHornetQQueue("test_queue");
 
       MessageConsumer cons = sess.createConsumer(queue);
 

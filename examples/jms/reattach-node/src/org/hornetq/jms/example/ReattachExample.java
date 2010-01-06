@@ -22,7 +22,7 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
-import org.hornetq.api.jms.HornetQQueue;
+import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.api.jms.management.JMSManagementHelper;
 import org.hornetq.common.example.HornetQExample;
 
@@ -141,7 +141,7 @@ public class ReattachExample extends HornetQExample
 
          Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         Queue managementQueue = new HornetQQueue("hornetq.management", "hornetq.management");
+         Queue managementQueue = HornetQJMSClient.createHornetQQueue("hornetq.management", "hornetq.management");
 
          MessageProducer producer = session.createProducer(managementQueue);
 

@@ -57,13 +57,10 @@ import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSession.BindingQuery;
 import org.hornetq.api.core.client.ClientSession.QueueQuery;
 import org.hornetq.api.core.exception.HornetQException;
-import org.hornetq.api.jms.HornetQDestination;
-import org.hornetq.api.jms.HornetQQueue;
-import org.hornetq.api.jms.HornetQTemporaryQueue;
-import org.hornetq.api.jms.HornetQTemporaryTopic;
-import org.hornetq.api.jms.HornetQTopic;
+import org.hornetq.api.jms.*;
 import org.hornetq.core.filter.impl.FilterImpl;
 import org.hornetq.core.logging.Logger;
+import org.hornetq.jms.*;
 
 /**
  * HornetQ implementation of a JMS Session.
@@ -404,7 +401,7 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
          throw new IllegalStateException("Cannot create a queue using a TopicSession");
       }
 
-      HornetQQueue queue = new HornetQQueue(queueName);
+      HornetQQueue queue = (HornetQQueue) HornetQJMSClient.createHornetQQueue(queueName);
 
       try
       {
@@ -433,7 +430,7 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
          throw new IllegalStateException("Cannot create a topic on a QueueSession");
       }
 
-      HornetQTopic topic = new HornetQTopic(topicName);
+      HornetQTopic topic = (HornetQTopic) HornetQJMSClient.createHornetQTopic(topicName);
 
       try
       {

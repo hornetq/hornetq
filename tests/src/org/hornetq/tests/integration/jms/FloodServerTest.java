@@ -25,9 +25,9 @@ import javax.jms.MessageProducer;
 import javax.jms.Session;
 
 import org.hornetq.api.Pair;
-import org.hornetq.api.core.client.ClientSessionFactoryImpl;
+import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.config.TransportConfiguration;
-import org.hornetq.api.jms.HornetQTopic;
+import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.logging.Logger;
@@ -135,26 +135,26 @@ public class FloodServerTest extends UnitTestCase
                                             connectorConfigs,
                                             null,
                                             1000,
-                                            ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL,
+                                            HornetQClient.DEFAULT_CONNECTION_TTL,
                                             callTimeout,
-                                            ClientSessionFactoryImpl.DEFAULT_CACHE_LARGE_MESSAGE_CLIENT,
-                                            ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
-                                            ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE,
-                                            ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE,
-                                            ClientSessionFactoryImpl.DEFAULT_CONFIRMATION_WINDOW_SIZE,
-                                            ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE,
-                                            ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE,
+                                            HornetQClient.DEFAULT_CACHE_LARGE_MESSAGE_CLIENT,
+                                            HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
+                                            HornetQClient.DEFAULT_CONSUMER_WINDOW_SIZE,
+                                            HornetQClient.DEFAULT_CONSUMER_MAX_RATE,
+                                            HornetQClient.DEFAULT_CONFIRMATION_WINDOW_SIZE,
+                                            HornetQClient.DEFAULT_PRODUCER_WINDOW_SIZE,
+                                            HornetQClient.DEFAULT_PRODUCER_MAX_RATE,
                                             false,
                                             false,
                                             false,
-                                            ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP,
+                                            HornetQClient.DEFAULT_AUTO_GROUP,
                                             false,
-                                            ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
-                                            ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE,
-                                            ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE,
-                                            ClientSessionFactoryImpl.DEFAULT_USE_GLOBAL_POOLS,
-                                            ClientSessionFactoryImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE,
-                                            ClientSessionFactoryImpl.DEFAULT_THREAD_POOL_MAX_SIZE,
+                                            HornetQClient.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
+                                            HornetQClient.DEFAULT_ACK_BATCH_SIZE,
+                                            HornetQClient.DEFAULT_ACK_BATCH_SIZE,
+                                            HornetQClient.DEFAULT_USE_GLOBAL_POOLS,
+                                            HornetQClient.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE,
+                                            HornetQClient.DEFAULT_THREAD_POOL_MAX_SIZE,
                                             retryInterval,
                                             retryIntervalMultiplier,
                                             1000,
@@ -230,7 +230,7 @@ public class FloodServerTest extends UnitTestCase
 
          session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         producer = session.createProducer(new HornetQTopic("my-topic"));
+         producer = session.createProducer(HornetQJMSClient.createHornetQTopic("my-topic"));
 
          producer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
 
@@ -285,7 +285,7 @@ public class FloodServerTest extends UnitTestCase
 
          session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         consumer = session.createConsumer(new HornetQTopic("my-topic"));
+         consumer = session.createConsumer(HornetQJMSClient.createHornetQTopic("my-topic"));
 
          this.numMessages = numMessages;
       }

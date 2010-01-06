@@ -29,6 +29,7 @@ import junit.framework.Assert;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.ClientSessionFactoryImpl;
+import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.config.TransportConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.server.HornetQServer;
@@ -202,7 +203,7 @@ public abstract class NetworkAddressTestBase extends ServiceTestBase
 
       try
       {
-         ClientSessionFactory sf = new ClientSessionFactoryImpl(connectorConfig);
+         ClientSessionFactory sf = HornetQClient.createClientSessionFactory(connectorConfig);
 
          if (mustConnect)
          {

@@ -35,7 +35,7 @@ import javax.management.MBeanServer;
 import org.hornetq.api.Pair;
 import org.hornetq.api.SimpleString;
 import org.hornetq.api.core.client.ClientSessionFactory;
-import org.hornetq.api.core.client.ClientSessionFactoryImpl;
+import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.config.TransportConfiguration;
 import org.hornetq.api.core.exception.HornetQException;
 import org.hornetq.core.client.impl.FailoverManager;
@@ -870,9 +870,9 @@ public class HornetQServerImpl implements HornetQServer
                                      backupConnector,
                                      null,
                                      false,
-                                     ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,
-                                     ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
-                                     ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL,
+                                     HornetQClient.DEFAULT_CALL_TIMEOUT,
+                                     HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
+                                     HornetQClient.DEFAULT_CONNECTION_TTL,
                                      0,
                                      1.0d,
                                      0,

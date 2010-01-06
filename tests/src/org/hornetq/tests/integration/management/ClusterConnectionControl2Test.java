@@ -24,7 +24,7 @@ import javax.management.MBeanServerFactory;
 import junit.framework.Assert;
 
 import org.hornetq.api.Pair;
-import org.hornetq.api.core.client.ClientSessionFactoryImpl;
+import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.config.TransportConfiguration;
 import org.hornetq.api.core.management.ClusterConnectionControl;
 import org.hornetq.core.config.Configuration;
@@ -150,7 +150,7 @@ public class ClusterConnectionControl2Test extends ManagementTestBase
       DiscoveryGroupConfiguration discoveryGroupConfig = new DiscoveryGroupConfiguration(discoveryName,
                                                                                          groupAddress,
                                                                                          groupPort,
-                                                                                         ClientSessionFactoryImpl.DEFAULT_DISCOVERY_REFRESH_TIMEOUT);
+                                                                                         HornetQClient.DEFAULT_DISCOVERY_REFRESH_TIMEOUT);
 
       Configuration conf_1 = new ConfigurationImpl();
       conf_1.setSecurityEnabled(false);

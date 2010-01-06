@@ -62,7 +62,7 @@
         
         <pre class="prettyprint">
            <code>
-   ConnectionFactory cf = new HornetQConnectionFactory("231.7.7.7", 9876); 
+   ConnectionFactory cf = HornetQJMSClient.createConnectionFactory("231.7.7.7", 9876); 
    </code>
         </pre>
 
@@ -71,7 +71,7 @@
            <code>
    Queue queue = new HornetQQueue("exampleQueue");
          
-   Topic topic = new HornetQTopic("exampleTopic");           
+   Topic topic = HornetQJMSClient.createHornetQTopic("exampleTopic");           
            </code>
         </pre>
 

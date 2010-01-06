@@ -32,9 +32,10 @@ import org.hornetq.api.SimpleString;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.config.TransportConfiguration;
 import org.hornetq.api.core.exception.HornetQException;
-import org.hornetq.api.jms.HornetQConnectionFactory;
-import org.hornetq.api.jms.HornetQQueue;
-import org.hornetq.api.jms.HornetQTopic;
+import org.hornetq.jms.HornetQConnectionFactory;
+import org.hornetq.api.jms.HornetQJMSClient;
+import org.hornetq.jms.HornetQQueue;
+import org.hornetq.jms.HornetQTopic;
 import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
@@ -85,7 +86,7 @@ public class JMSReconnectTest extends UnitTestCase
       
    private void testReconnectOrReattachSameNode(boolean reattach) throws Exception
    {
-      HornetQConnectionFactory jbcf = new HornetQConnectionFactory(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));                       
+      HornetQConnectionFactory jbcf = (HornetQConnectionFactory) HornetQJMSClient.createConnectionFactory(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
 
       jbcf.setBlockOnDurableSend(true);
       jbcf.setBlockOnNonDurableSend(true);
@@ -189,7 +190,7 @@ public class JMSReconnectTest extends UnitTestCase
    //Test that non durable JMS sub gets recreated in auto reconnect
    private void testReconnectSameNodeServerRestartedWithNonDurableSubOrTempQueue(final boolean durableSub) throws Exception
    {
-      HornetQConnectionFactory jbcf = new HornetQConnectionFactory(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));                       
+      HornetQConnectionFactory jbcf = (HornetQConnectionFactory) HornetQJMSClient.createConnectionFactory(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
 
       jbcf.setReconnectAttempts(-1);
            
@@ -209,7 +210,7 @@ public class JMSReconnectTest extends UnitTestCase
       {      
          coreSession.createQueue(HornetQTopic.JMS_TOPIC_ADDRESS_PREFIX + "mytopic", "blahblah", null, false);
    
-         dest = new HornetQTopic("mytopic");
+         dest = HornetQJMSClient.createHornetQTopic("mytopic");
       }
       else
       {
@@ -266,7 +267,7 @@ public class JMSReconnectTest extends UnitTestCase
    //If the server is shutdown after a non durable sub is created, then close on the connection should proceed normally
    public void testNoReconnectCloseAfterFailToReconnectWithTopicConsumer() throws Exception
    {
-      HornetQConnectionFactory jbcf = new HornetQConnectionFactory(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));                       
+      HornetQConnectionFactory jbcf = (HornetQConnectionFactory) HornetQJMSClient.createConnectionFactory(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
 
       jbcf.setReconnectAttempts(0);
       
@@ -278,7 +279,7 @@ public class JMSReconnectTest extends UnitTestCase
 
       coreSession.createQueue(HornetQTopic.JMS_TOPIC_ADDRESS_PREFIX + "mytopic", "blahblah", null, false);
 
-      Topic topic = new HornetQTopic("mytopic");
+      Topic topic = HornetQJMSClient.createHornetQTopic("mytopic");
       
       //Create a non durable subscriber
       MessageConsumer consumer = sess.createConsumer(topic);      
@@ -297,7 +298,7 @@ public class JMSReconnectTest extends UnitTestCase
    //If server is shutdown, and then connection is closed, after a temp queue has been created, the close should complete normally
    public void testNoReconnectCloseAfterFailToReconnectWithTempQueue() throws Exception
    {
-      HornetQConnectionFactory jbcf = new HornetQConnectionFactory(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));                       
+      HornetQConnectionFactory jbcf = (HornetQConnectionFactory) HornetQJMSClient.createConnectionFactory(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
 
       jbcf.setReconnectAttempts(0);
       

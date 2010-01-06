@@ -118,7 +118,7 @@ public class ClusteredGroupingExample extends HornetQExample
          {
             TextMessage message = session0.createTextMessage("This is text message " + i);
 
-            message.setStringProperty(HornetQMessage.JMSXGROUPID, "Group-0");
+            message.setStringProperty("JMSXGroupID", "Group-0");
 
             producer0.send(message);
 
@@ -129,7 +129,7 @@ public class ClusteredGroupingExample extends HornetQExample
          {
             TextMessage message = session1.createTextMessage("This is text message " + (i + 10));
 
-            message.setStringProperty(HornetQMessage.JMSXGROUPID, "Group-0");
+            message.setStringProperty("JMSXGroupID", "Group-0");
 
             producer1.send(message);
 
@@ -141,7 +141,7 @@ public class ClusteredGroupingExample extends HornetQExample
          {
             TextMessage message = session2.createTextMessage("This is text message " + (i + 20));
 
-            message.setStringProperty(HornetQMessage.JMSXGROUPID, "Group-0");
+            message.setStringProperty("JMSXGroupID", "Group-0");
 
             producer2.send(message);
 

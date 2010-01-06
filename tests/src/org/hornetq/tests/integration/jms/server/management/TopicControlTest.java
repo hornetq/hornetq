@@ -22,7 +22,8 @@ import javax.jms.TopicSubscriber;
 import junit.framework.Assert;
 
 import org.hornetq.api.core.config.TransportConfiguration;
-import org.hornetq.api.jms.HornetQTopic;
+import org.hornetq.api.jms.HornetQJMSClient;
+import org.hornetq.jms.HornetQTopic;
 import org.hornetq.api.jms.management.SubscriptionInfo;
 import org.hornetq.api.jms.management.TopicControl;
 import org.hornetq.core.config.Configuration;
@@ -427,7 +428,7 @@ public class TopicControlTest extends ManagementTestBase
 
       String topicName = RandomUtil.randomString();
       serverManager.createTopic(topicName, topicName);
-      topic = new HornetQTopic(topicName);
+      topic = (HornetQTopic) HornetQJMSClient.createHornetQTopic(topicName);
    }
 
    @Override

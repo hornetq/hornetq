@@ -16,7 +16,8 @@ package org.hornetq.tests.unit.jms;
 import junit.framework.Assert;
 
 import org.hornetq.api.Pair;
-import org.hornetq.api.jms.HornetQTopic;
+import org.hornetq.api.jms.HornetQJMSClient;
+import org.hornetq.jms.HornetQTopic;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
 
@@ -40,14 +41,14 @@ public class HornetQTopicTest extends UnitTestCase
 
    public void testIsTemporary() throws Exception
    {
-      HornetQTopic topic = new HornetQTopic(RandomUtil.randomString());
+      HornetQTopic topic = (HornetQTopic) HornetQJMSClient.createHornetQTopic(RandomUtil.randomString());
       Assert.assertFalse(topic.isTemporary());
    }
 
    public void testGetTopicName() throws Exception
    {
       String topicName = RandomUtil.randomString();
-      HornetQTopic queue = new HornetQTopic(topicName);
+      HornetQTopic queue = (HornetQTopic) HornetQJMSClient.createHornetQTopic(topicName);
       Assert.assertEquals(topicName, queue.getTopicName());
    }
 

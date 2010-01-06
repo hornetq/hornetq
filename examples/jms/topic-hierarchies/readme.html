@@ -75,7 +75,7 @@
 
         <li>Instantiate a topic representing the wildcard we're going to subscribe to.</li>
         <pre class="prettyprint">
-           <code>Topic topicSubscribe = new HornetQTopic("news.europe.#");</code>
+           <code>Topic topicSubscribe = HornetQJMSClient.createHornetQTopic("news.europe.#");</code>
         </pre>
 
         <li>Create a consumer (topic subscriber) that will consume using that wildcard.
@@ -93,11 +93,11 @@
          we're going to send messages to. You could look these up from JNDI if you wanted to.</li>
         <pre class="prettyprint">
            <code>
-         Topic topicNewsUsaWrestling = new HornetQTopic("news.usa.wrestling");
+         Topic topicNewsUsaWrestling = HornetQJMSClient.createHornetQTopic("news.usa.wrestling");
          
-         Topic topicNewsEuropeSport = new HornetQTopic("news.europe.sport");
+         Topic topicNewsEuropeSport = HornetQJMSClient.createHornetQTopic("news.europe.sport");
          
-         Topic topicNewsEuropeEntertainment = new HornetQTopic("news.europe.entertainment");</code>
+         Topic topicNewsEuropeEntertainment = HornetQJMSClient.createHornetQTopic("news.europe.entertainment");</code>
         </pre>
 
         <li>Send a message destined for the usa wrestling topic.</li>

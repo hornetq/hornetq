@@ -24,8 +24,7 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 
 import org.hornetq.api.core.config.TransportConfiguration;
-import org.hornetq.api.jms.HornetQConnectionFactory;
-import org.hornetq.api.jms.HornetQQueue;
+import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.common.example.HornetQExample;
 import org.hornetq.integration.transports.netty.NettyConnectorFactory;
 import org.hornetq.integration.transports.netty.TransportConstants;
@@ -54,7 +53,7 @@ public class InstantiateConnectionFactoryExample extends HornetQExample
       try
       {
          // Step 1. Directly instantiate the JMS Queue object.
-         Queue queue = new HornetQQueue("exampleQueue");
+         Queue queue = HornetQJMSClient.createHornetQQueue("exampleQueue");
 
          // Step 2. Instantiate the TransportConfiguration object which contains the knowledge of what transport to use,
          // The server port etc.
@@ -66,7 +65,7 @@ public class InstantiateConnectionFactoryExample extends HornetQExample
                                                                                     connectionParams);
 
          // Step 3 Directly instantiate the JMS ConnectionFactory object using that TransportConfiguration
-         ConnectionFactory cf = new HornetQConnectionFactory(transportConfiguration);
+         ConnectionFactory cf = HornetQJMSClient.createConnectionFactory(transportConfiguration);
 
          // Step 4.Create a JMS Connection
          connection = cf.createConnection();

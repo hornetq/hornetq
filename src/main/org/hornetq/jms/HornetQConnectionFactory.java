@@ -11,7 +11,7 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.api.jms;
+package org.hornetq.jms;
 
 import java.io.Serializable;
 import java.util.List;
@@ -35,7 +35,7 @@ import javax.naming.Referenceable;
 
 import org.hornetq.api.Pair;
 import org.hornetq.api.core.client.ClientSessionFactory;
-import org.hornetq.api.core.client.ClientSessionFactoryImpl;
+import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.config.TransportConfiguration;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.jms.client.HornetQConnection;
@@ -66,9 +66,9 @@ public class HornetQConnectionFactory implements ConnectionFactory, QueueConnect
 
    private String clientID;
 
-   private int dupsOKBatchSize = ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE;
+   private int dupsOKBatchSize = HornetQClient.DEFAULT_ACK_BATCH_SIZE;
 
-   private int transactionBatchSize = ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE;
+   private int transactionBatchSize = HornetQClient.DEFAULT_ACK_BATCH_SIZE;
 
    private boolean readOnly;
 
@@ -76,7 +76,7 @@ public class HornetQConnectionFactory implements ConnectionFactory, QueueConnect
 
    public HornetQConnectionFactory()
    {
-      sessionFactory = new ClientSessionFactoryImpl();
+      sessionFactory = HornetQClient.createClientSessionFactory();
    }
 
    public HornetQConnectionFactory(final ClientSessionFactory sessionFactory)
@@ -86,18 +86,18 @@ public class HornetQConnectionFactory implements ConnectionFactory, QueueConnect
 
    public HornetQConnectionFactory(final String discoveryAddress, final int discoveryPort)
    {
-      sessionFactory = new ClientSessionFactoryImpl(discoveryAddress, discoveryPort);
+      sessionFactory = HornetQClient.createClientSessionFactory(discoveryAddress, discoveryPort);
    }
 
    public HornetQConnectionFactory(final List<Pair<TransportConfiguration, TransportConfiguration>> staticConnectors)
    {
-      sessionFactory = new ClientSessionFactoryImpl(staticConnectors);
+      sessionFactory = HornetQClient.createClientSessionFactory(staticConnectors);
    }
 
    public HornetQConnectionFactory(final TransportConfiguration connectorConfig,
                                    final TransportConfiguration backupConnectorConfig)
    {
-      sessionFactory = new ClientSessionFactoryImpl(connectorConfig, backupConnectorConfig);
+      sessionFactory = HornetQClient.createClientSessionFactory(connectorConfig, backupConnectorConfig);
    }
 
    public HornetQConnectionFactory(final TransportConfiguration connectorConfig)

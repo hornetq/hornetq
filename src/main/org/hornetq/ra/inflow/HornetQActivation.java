@@ -31,9 +31,9 @@ import javax.resource.spi.work.WorkManager;
 
 import org.hornetq.api.SimpleString;
 import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.api.jms.HornetQDestination;
-import org.hornetq.api.jms.HornetQQueue;
-import org.hornetq.api.jms.HornetQTopic;
+import org.hornetq.jms.HornetQConnectionFactory;
+import org.hornetq.jms.HornetQDestination;
+import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.ra.HornetQResourceAdapter;
 import org.hornetq.ra.Util;
@@ -97,7 +97,7 @@ public class HornetQActivation
 
    private final List<HornetQMessageHandler> handlers = new ArrayList<HornetQMessageHandler>();
 
-   private org.hornetq.api.jms.HornetQConnectionFactory factory;
+   private HornetQConnectionFactory factory;
 
    static
    {
@@ -398,11 +398,11 @@ public class HornetQActivation
                // If there is no binding on naming, we will just create a new instance
                if (isTopic)
                {
-                  destination = new HornetQTopic(destinationName.substring(destinationName.lastIndexOf('/') + 1));
+                  destination = (HornetQDestination) HornetQJMSClient.createHornetQTopic(destinationName.substring(destinationName.lastIndexOf('/') + 1));
                }
                else
                {
-                  destination = new HornetQQueue(destinationName.substring(destinationName.lastIndexOf('/') + 1));
+                  destination = (HornetQDestination) HornetQJMSClient.createHornetQQueue(destinationName.substring(destinationName.lastIndexOf('/') + 1));
                }
             }
          }
@@ -424,11 +424,11 @@ public class HornetQActivation
       {
          if (Topic.class.getName().equals(spec.getDestinationType()))
          {
-            destination = new HornetQTopic(spec.getDestination());
+            destination = (HornetQDestination) HornetQJMSClient.createHornetQTopic(spec.getDestination());
          }
          else
          {
-            destination = new HornetQQueue(spec.getDestination());
+            destination = (HornetQDestination) HornetQJMSClient.createHornetQQueue(spec.getDestination());
          }
       }
 

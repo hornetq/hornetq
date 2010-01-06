@@ -29,7 +29,7 @@ import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.MessageHandler;
 import org.hornetq.api.core.exception.HornetQException;
-import org.hornetq.api.jms.HornetQDestination;
+import org.hornetq.jms.HornetQDestination;
 import org.hornetq.core.logging.Logger;
 
 /**

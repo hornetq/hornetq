@@ -25,6 +25,7 @@ import junit.framework.Assert;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactoryImpl;
+import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.config.TransportConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
@@ -347,7 +348,7 @@ public abstract class ServiceTestBase extends UnitTestCase
 
    protected ClientSessionFactoryImpl createFactory(final String connectorClass)
    {
-      return new ClientSessionFactoryImpl(new TransportConfiguration(connectorClass), null);
+      return (ClientSessionFactoryImpl) HornetQClient.createClientSessionFactory(new TransportConfiguration(connectorClass), null);
 
    }
 

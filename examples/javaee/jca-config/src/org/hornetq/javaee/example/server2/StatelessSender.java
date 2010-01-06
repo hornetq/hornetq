@@ -16,15 +16,12 @@ package org.hornetq.javaee.example.server2;
 
 
 
-import org.hornetq.api.jms.HornetQQueue;
+import org.hornetq.api.jms.HornetQJMSClient;
 
 import javax.annotation.Resource;
 import javax.ejb.Remote;
 import javax.ejb.Stateless;
-import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
-import javax.jms.MessageProducer;
-import javax.jms.Session;
+import javax.jms.*;
 
 /**
  * A Stateless Bean that will connect to a remote JBM.
@@ -51,8 +48,8 @@ public class StatelessSender implements StatelessSenderService
    public void sendHello(String message) throws Exception
    {
       // Step 4. Define the destinations that will receive the message (instead of using JNDI to the remote server)
-      HornetQQueue destQueueA = new HornetQQueue("A");
-      HornetQQueue destQueueB = new HornetQQueue("B");
+      Queue destQueueA = HornetQJMSClient.createHornetQQueue("A");
+      Queue destQueueB = HornetQJMSClient.createHornetQQueue("B");
 
       // Step 5. Create a connection to a remote server using a connection-factory (look at the deployed file jms-remote-ds.xml)
       Connection conn = connectionFactory.createConnection("guest", "guest");

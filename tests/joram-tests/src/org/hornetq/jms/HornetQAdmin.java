@@ -29,6 +29,7 @@ import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientRequestor;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactoryImpl;
+import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.config.TransportConfiguration;
 import org.hornetq.api.core.management.ManagementHelper;
 import org.hornetq.api.core.management.ResourceNames;
@@ -72,7 +73,7 @@ public class HornetQAdmin implements Admin
 
    public void start() throws Exception
    {
-      ClientSessionFactoryImpl sf = new ClientSessionFactoryImpl(new TransportConfiguration(NettyConnectorFactory.class.getName()));
+      ClientSessionFactoryImpl sf = (ClientSessionFactoryImpl) HornetQClient.createClientSessionFactory(new TransportConfiguration(NettyConnectorFactory.class.getName()));
       clientSession = sf.createSession(ConfigurationImpl.DEFAULT_MANAGEMENT_CLUSTER_USER,
                                        ConfigurationImpl.DEFAULT_MANAGEMENT_CLUSTER_PASSWORD,
                                        false,
@@ -207,7 +208,7 @@ public class HornetQAdmin implements Admin
 
    public void startServer() throws Exception
    {
-      String[] vmArgs = new String[] { "-Dorg.hornetq.logger-delegate-factory-class-name=org.hornetq.api.jms.SysoutLoggerDelegateFactory" };
+      String[] vmArgs = new String[] { "-Dorg.hornetq.logger-delegate-factory-class-name=org.hornetq.jms.SysoutLoggerDelegateFactory" };
       serverProcess = SpawnedVMSupport.spawnVM(SpawnedJMSServer.class.getName(), vmArgs, false);
       InputStreamReader isr = new InputStreamReader(serverProcess.getInputStream());
 

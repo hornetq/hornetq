@@ -22,12 +22,7 @@ import junit.framework.Assert;
 
 import org.hornetq.api.Pair;
 import org.hornetq.api.SimpleString;
-import org.hornetq.api.core.client.ClientConsumer;
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.ClientProducer;
-import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.api.core.client.ClientSessionFactory;
-import org.hornetq.api.core.client.ClientSessionFactoryImpl;
+import org.hornetq.api.core.client.*;
 import org.hornetq.api.core.config.TransportConfiguration;
 import org.hornetq.api.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
@@ -126,7 +121,7 @@ public class BridgeReconnectTest extends BridgeTestBase
                                                                         true,
                                                                         false,
                                                                         confirmationWindowSize,
-                                                                        ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
+                                                                        HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
                                                                         connectorPair);
 
       List<BridgeConfiguration> bridgeConfigs = new ArrayList<BridgeConfiguration>();
@@ -148,10 +143,10 @@ public class BridgeReconnectTest extends BridgeTestBase
       server1.start();
       server0.start();
 
-      ClientSessionFactory csf0 = new ClientSessionFactoryImpl(server0tc);
+      ClientSessionFactory csf0 = HornetQClient.createClientSessionFactory(server0tc);
       ClientSession session0 = csf0.createSession(false, true, true);
 
-      ClientSessionFactory csf2 = new ClientSessionFactoryImpl(server2tc);
+      ClientSessionFactory csf2 = HornetQClient.createClientSessionFactory(server2tc);
       ClientSession session2 = csf2.createSession(false, true, true);
 
       ClientProducer prod0 = session0.createProducer(testAddress);
@@ -249,7 +244,7 @@ public class BridgeReconnectTest extends BridgeTestBase
                                                                         true,
                                                                         false,
                                                                         confirmationWindowSize,
-                                                                        ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
+                                                                        HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
                                                                         connectorPair);
 
       List<BridgeConfiguration> bridgeConfigs = new ArrayList<BridgeConfiguration>();
@@ -271,10 +266,10 @@ public class BridgeReconnectTest extends BridgeTestBase
       server1.start();
       server0.start();
 
-      ClientSessionFactory csf0 = new ClientSessionFactoryImpl(server0tc);
+      ClientSessionFactory csf0 = HornetQClient.createClientSessionFactory(server0tc);
       ClientSession session0 = csf0.createSession(false, true, true);
 
-      ClientSessionFactory csf2 = new ClientSessionFactoryImpl(server2tc);
+      ClientSessionFactory csf2 = HornetQClient.createClientSessionFactory(server2tc);
       ClientSession session2 = csf2.createSession(false, true, true);
 
       ClientProducer prod0 = session0.createProducer(testAddress);
@@ -367,7 +362,7 @@ public class BridgeReconnectTest extends BridgeTestBase
                                                                         true,
                                                                         false,
                                                                         confirmationWindowSize,
-                                                                        ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
+                                                                        HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
                                                                         connectorPair);
 
       List<BridgeConfiguration> bridgeConfigs = new ArrayList<BridgeConfiguration>();
@@ -387,10 +382,10 @@ public class BridgeReconnectTest extends BridgeTestBase
       server1.start();
       server0.start();
 
-      ClientSessionFactory csf0 = new ClientSessionFactoryImpl(server0tc);
+      ClientSessionFactory csf0 = HornetQClient.createClientSessionFactory(server0tc);
       ClientSession session0 = csf0.createSession(false, true, true);
 
-      ClientSessionFactory csf1 = new ClientSessionFactoryImpl(server1tc);
+      ClientSessionFactory csf1 = HornetQClient.createClientSessionFactory(server1tc);
       ClientSession session1 = csf1.createSession(false, true, true);
 
       ClientProducer prod0 = session0.createProducer(testAddress);
@@ -513,7 +508,7 @@ public class BridgeReconnectTest extends BridgeTestBase
       server1.start();
       server0.start();
 
-      ClientSessionFactory csf0 = new ClientSessionFactoryImpl(server0tc);
+      ClientSessionFactory csf0 = HornetQClient.createClientSessionFactory(server0tc);
       ClientSession session0 = csf0.createSession(false, true, true);
 
       ClientProducer prod0 = session0.createProducer(testAddress);
@@ -530,7 +525,7 @@ public class BridgeReconnectTest extends BridgeTestBase
       server1.start();
       BridgeReconnectTest.log.info("server 1 restarted");
 
-      ClientSessionFactory csf1 = new ClientSessionFactoryImpl(server1tc);
+      ClientSessionFactory csf1 = HornetQClient.createClientSessionFactory(server1tc);
       ClientSession session1 = csf1.createSession(false, true, true);
 
       ClientConsumer cons1 = session1.createConsumer(queueName0);
@@ -612,7 +607,7 @@ public class BridgeReconnectTest extends BridgeTestBase
                                                                         true,
                                                                         false,
                                                                         confirmationWindowSize,
-                                                                        ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
+                                                                        HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
                                                                         connectorPair);
 
       List<BridgeConfiguration> bridgeConfigs = new ArrayList<BridgeConfiguration>();
@@ -632,10 +627,10 @@ public class BridgeReconnectTest extends BridgeTestBase
       server1.start();
       server0.start();
 
-      ClientSessionFactory csf0 = new ClientSessionFactoryImpl(server0tc);
+      ClientSessionFactory csf0 = HornetQClient.createClientSessionFactory(server0tc);
       ClientSession session0 = csf0.createSession(false, true, true);
 
-      ClientSessionFactory csf1 = new ClientSessionFactoryImpl(server1tc);
+      ClientSessionFactory csf1 = HornetQClient.createClientSessionFactory(server1tc);
       ClientSession session1 = csf1.createSession(false, true, true);
 
       ClientProducer prod0 = session0.createProducer(testAddress);

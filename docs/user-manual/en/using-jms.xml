@@ -179,10 +179,10 @@ System.out.println("Got order: " + receivedMessage.getText());
         <programlisting>              
 TransportConfiguration transportConfiguration = 
                      new TransportConfiguration(NettyConnectorFactory.class.getName());                
-ConnectionFactory cf = new HornetQConnectionFactory(transportConfiguration);
+ConnectionFactory cf = HornetQJMSClient.createConnectionFactory(transportConfiguration);
         </programlisting>
         <para>We create the JMS Queue Object directly:</para>
-        <programlisting>Queue orderQueue = new HornetQQueue("OrderQueue");</programlisting>
+        <programlisting>Queue orderQueue = HornetQJMSClient.createHornetQQueue("OrderQueue");</programlisting>
         <para>Next we create a JMS connection using the connection factory:</para>
         <programlisting>Connection connection = cf.createConnection();</programlisting>
         <para>And we create a non transacted JMS Session, with AUTO_ACKNOWLEDGE acknowledge

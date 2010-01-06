@@ -27,6 +27,7 @@ import org.hornetq.api.Pair;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.ClientSessionFactoryImpl;
+import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.config.TransportConfiguration;
 import org.hornetq.api.core.exception.HornetQException;
 import org.hornetq.core.config.Configuration;
@@ -85,7 +86,7 @@ public class SessionFactoryTest extends ServiceTestBase
 
    public void testSerializable() throws Exception
    {
-      ClientSessionFactory cf = new ClientSessionFactoryImpl();
+      ClientSessionFactory cf = HornetQClient.createClientSessionFactory();
 
       ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
@@ -108,7 +109,7 @@ public class SessionFactoryTest extends ServiceTestBase
 
    public void testCloseUnusedClientSessionFactoryWithoutGlobalPools() throws Exception
    {
-      ClientSessionFactoryImpl csf = new ClientSessionFactoryImpl();
+      ClientSessionFactoryImpl csf = (ClientSessionFactoryImpl) HornetQClient.createClientSessionFactory();
       csf.setUseGlobalPools(false);
       csf.close();
    }
@@ -118,35 +119,35 @@ public class SessionFactoryTest extends ServiceTestBase
       try
       {
          startLiveAndBackup();
-         ClientSessionFactory cf = new ClientSessionFactoryImpl();
+         ClientSessionFactory cf = HornetQClient.createClientSessionFactory();
          assertFactoryParams(cf,
                              null,
                              null,
                              0,
-                             ClientSessionFactoryImpl.DEFAULT_DISCOVERY_REFRESH_TIMEOUT,
-                             ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
-                             ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL,
-                             ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,
-                             ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
-                             ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE,
-                             ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE,
-                             ClientSessionFactoryImpl.DEFAULT_CONFIRMATION_WINDOW_SIZE,
-                             ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE,
-                             ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE,
-                             ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_DURABLE_SEND,
-                             ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_DURABLE_SEND,
-                             ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP,
-                             ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE,
-                             ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
-                             ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE,
-                             ClientSessionFactoryImpl.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT,
-                             ClientSessionFactoryImpl.DEFAULT_USE_GLOBAL_POOLS,
-                             ClientSessionFactoryImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE,
-                             ClientSessionFactoryImpl.DEFAULT_THREAD_POOL_MAX_SIZE,
-                             ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL,
-                             ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER,
-                             ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS,
-                             ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN);
+                             HornetQClient.DEFAULT_DISCOVERY_REFRESH_TIMEOUT,
+                             HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
+                             HornetQClient.DEFAULT_CONNECTION_TTL,
+                             HornetQClient.DEFAULT_CALL_TIMEOUT,
+                             HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
+                             HornetQClient.DEFAULT_CONSUMER_WINDOW_SIZE,
+                             HornetQClient.DEFAULT_CONSUMER_MAX_RATE,
+                             HornetQClient.DEFAULT_CONFIRMATION_WINDOW_SIZE,
+                             HornetQClient.DEFAULT_PRODUCER_MAX_RATE,
+                             HornetQClient.DEFAULT_BLOCK_ON_ACKNOWLEDGE,
+                             HornetQClient.DEFAULT_BLOCK_ON_DURABLE_SEND,
+                             HornetQClient.DEFAULT_BLOCK_ON_NON_DURABLE_SEND,
+                             HornetQClient.DEFAULT_AUTO_GROUP,
+                             HornetQClient.DEFAULT_PRE_ACKNOWLEDGE,
+                             HornetQClient.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
+                             HornetQClient.DEFAULT_ACK_BATCH_SIZE,
+                             HornetQClient.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT,
+                             HornetQClient.DEFAULT_USE_GLOBAL_POOLS,
+                             HornetQClient.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE,
+                             HornetQClient.DEFAULT_THREAD_POOL_MAX_SIZE,
+                             HornetQClient.DEFAULT_RETRY_INTERVAL,
+                             HornetQClient.DEFAULT_RETRY_INTERVAL_MULTIPLIER,
+                             HornetQClient.DEFAULT_RECONNECT_ATTEMPTS,
+                             HornetQClient.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN);
          try
          {
             ClientSession session = cf.createSession(false, true, true);
@@ -178,35 +179,35 @@ public class SessionFactoryTest extends ServiceTestBase
       try
       {
          startLiveAndBackup();
-         ClientSessionFactory cf = new ClientSessionFactoryImpl(groupAddress, groupPort);
+         ClientSessionFactory cf = HornetQClient.createClientSessionFactory(groupAddress, groupPort);
          assertFactoryParams(cf,
                              null,
                              groupAddress,
                              groupPort,
-                             ClientSessionFactoryImpl.DEFAULT_DISCOVERY_REFRESH_TIMEOUT,
-                             ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
-                             ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL,
-                             ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,
-                             ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
-                             ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE,
-                             ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE,
-                             ClientSessionFactoryImpl.DEFAULT_CONFIRMATION_WINDOW_SIZE,
-                             ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE,
-                             ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE,
-                             ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_DURABLE_SEND,
-                             ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_DURABLE_SEND,
-                             ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP,
-                             ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE,
-                             ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
-                             ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE,
-                             ClientSessionFactoryImpl.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT,
-                             ClientSessionFactoryImpl.DEFAULT_USE_GLOBAL_POOLS,
-                             ClientSessionFactoryImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE,
-                             ClientSessionFactoryImpl.DEFAULT_THREAD_POOL_MAX_SIZE,
-                             ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL,
-                             ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER,
-                             ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS,
-                             ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN);
+                             HornetQClient.DEFAULT_DISCOVERY_REFRESH_TIMEOUT,
+                             HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
+                             HornetQClient.DEFAULT_CONNECTION_TTL,
+                             HornetQClient.DEFAULT_CALL_TIMEOUT,
+                             HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
+                             HornetQClient.DEFAULT_CONSUMER_WINDOW_SIZE,
+                             HornetQClient.DEFAULT_CONSUMER_MAX_RATE,
+                             HornetQClient.DEFAULT_CONFIRMATION_WINDOW_SIZE,
+                             HornetQClient.DEFAULT_PRODUCER_MAX_RATE,
+                             HornetQClient.DEFAULT_BLOCK_ON_ACKNOWLEDGE,
+                             HornetQClient.DEFAULT_BLOCK_ON_DURABLE_SEND,
+                             HornetQClient.DEFAULT_BLOCK_ON_NON_DURABLE_SEND,
+                             HornetQClient.DEFAULT_AUTO_GROUP,
+                             HornetQClient.DEFAULT_PRE_ACKNOWLEDGE,
+                             HornetQClient.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
+                             HornetQClient.DEFAULT_ACK_BATCH_SIZE,
+                             HornetQClient.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT,
+                             HornetQClient.DEFAULT_USE_GLOBAL_POOLS,
+                             HornetQClient.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE,
+                             HornetQClient.DEFAULT_THREAD_POOL_MAX_SIZE,
+                             HornetQClient.DEFAULT_RETRY_INTERVAL,
+                             HornetQClient.DEFAULT_RETRY_INTERVAL_MULTIPLIER,
+                             HornetQClient.DEFAULT_RECONNECT_ATTEMPTS,
+                             HornetQClient.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN);
          ClientSession session = cf.createSession(false, true, true);
          Assert.assertNotNull(session);
          session.close();
@@ -228,35 +229,35 @@ public class SessionFactoryTest extends ServiceTestBase
                                                                                                                                backupTC);
          staticConnectors.add(pair0);
 
-         ClientSessionFactory cf = new ClientSessionFactoryImpl(staticConnectors);
+         ClientSessionFactory cf = HornetQClient.createClientSessionFactory(staticConnectors);
          assertFactoryParams(cf,
                              staticConnectors,
                              null,
                              0,
-                             ClientSessionFactoryImpl.DEFAULT_DISCOVERY_REFRESH_TIMEOUT,
-                             ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
-                             ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL,
-                             ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,
-                             ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
-                             ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE,
-                             ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE,
-                             ClientSessionFactoryImpl.DEFAULT_CONFIRMATION_WINDOW_SIZE,
-                             ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE,
-                             ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE,
-                             ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_DURABLE_SEND,
-                             ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_DURABLE_SEND,
-                             ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP,
-                             ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE,
-                             ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
-                             ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE,
-                             ClientSessionFactoryImpl.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT,
-                             ClientSessionFactoryImpl.DEFAULT_USE_GLOBAL_POOLS,
-                             ClientSessionFactoryImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE,
-                             ClientSessionFactoryImpl.DEFAULT_THREAD_POOL_MAX_SIZE,
-                             ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL,
-                             ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER,
-                             ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS,
-                             ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN);
+                             HornetQClient.DEFAULT_DISCOVERY_REFRESH_TIMEOUT,
+                             HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
+                             HornetQClient.DEFAULT_CONNECTION_TTL,
+                             HornetQClient.DEFAULT_CALL_TIMEOUT,
+                             HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
+                             HornetQClient.DEFAULT_CONSUMER_WINDOW_SIZE,
+                             HornetQClient.DEFAULT_CONSUMER_MAX_RATE,
+                             HornetQClient.DEFAULT_CONFIRMATION_WINDOW_SIZE,
+                             HornetQClient.DEFAULT_PRODUCER_MAX_RATE,
+                             HornetQClient.DEFAULT_BLOCK_ON_ACKNOWLEDGE,
+                             HornetQClient.DEFAULT_BLOCK_ON_DURABLE_SEND,
+                             HornetQClient.DEFAULT_BLOCK_ON_NON_DURABLE_SEND,
+                             HornetQClient.DEFAULT_AUTO_GROUP,
+                             HornetQClient.DEFAULT_PRE_ACKNOWLEDGE,
+                             HornetQClient.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
+                             HornetQClient.DEFAULT_ACK_BATCH_SIZE,
+                             HornetQClient.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT,
+                             HornetQClient.DEFAULT_USE_GLOBAL_POOLS,
+                             HornetQClient.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE,
+                             HornetQClient.DEFAULT_THREAD_POOL_MAX_SIZE,
+                             HornetQClient.DEFAULT_RETRY_INTERVAL,
+                             HornetQClient.DEFAULT_RETRY_INTERVAL_MULTIPLIER,
+                             HornetQClient.DEFAULT_RECONNECT_ATTEMPTS,
+                             HornetQClient.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN);
          ClientSession session = cf.createSession(false, true, true);
          Assert.assertNotNull(session);
          session.close();
@@ -278,35 +279,35 @@ public class SessionFactoryTest extends ServiceTestBase
                                                                                                                                backupTC);
          staticConnectors.add(pair0);
 
-         ClientSessionFactory cf = new ClientSessionFactoryImpl(liveTC, backupTC);
+         ClientSessionFactory cf = HornetQClient.createClientSessionFactory(liveTC, backupTC);
          assertFactoryParams(cf,
                              staticConnectors,
                              null,
                              0,
-                             ClientSessionFactoryImpl.DEFAULT_DISCOVERY_REFRESH_TIMEOUT,
-                             ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
-                             ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL,
-                             ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,
-                             ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
-                             ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE,
-                             ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE,
-                             ClientSessionFactoryImpl.DEFAULT_CONFIRMATION_WINDOW_SIZE,
-                             ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE,
-                             ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE,
-                             ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_DURABLE_SEND,
-                             ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_DURABLE_SEND,
-                             ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP,
-                             ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE,
-                             ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
-                             ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE,
-                             ClientSessionFactoryImpl.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT,
-                             ClientSessionFactoryImpl.DEFAULT_USE_GLOBAL_POOLS,
-                             ClientSessionFactoryImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE,
-                             ClientSessionFactoryImpl.DEFAULT_THREAD_POOL_MAX_SIZE,
-                             ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL,
-                             ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER,
-                             ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS,
-                             ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN);
+                             HornetQClient.DEFAULT_DISCOVERY_REFRESH_TIMEOUT,
+                             HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
+                             HornetQClient.DEFAULT_CONNECTION_TTL,
+                             HornetQClient.DEFAULT_CALL_TIMEOUT,
+                             HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
+                             HornetQClient.DEFAULT_CONSUMER_WINDOW_SIZE,
+                             HornetQClient.DEFAULT_CONSUMER_MAX_RATE,
+                             HornetQClient.DEFAULT_CONFIRMATION_WINDOW_SIZE,
+                             HornetQClient.DEFAULT_PRODUCER_MAX_RATE,
+                             HornetQClient.DEFAULT_BLOCK_ON_ACKNOWLEDGE,
+                             HornetQClient.DEFAULT_BLOCK_ON_DURABLE_SEND,
+                             HornetQClient.DEFAULT_BLOCK_ON_NON_DURABLE_SEND,
+                             HornetQClient.DEFAULT_AUTO_GROUP,
+                             HornetQClient.DEFAULT_PRE_ACKNOWLEDGE,
+                             HornetQClient.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
+                             HornetQClient.DEFAULT_ACK_BATCH_SIZE,
+                             HornetQClient.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT,
+                             HornetQClient.DEFAULT_USE_GLOBAL_POOLS,
+                             HornetQClient.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE,
+                             HornetQClient.DEFAULT_THREAD_POOL_MAX_SIZE,
+                             HornetQClient.DEFAULT_RETRY_INTERVAL,
+                             HornetQClient.DEFAULT_RETRY_INTERVAL_MULTIPLIER,
+                             HornetQClient.DEFAULT_RECONNECT_ATTEMPTS,
+                             HornetQClient.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN);
          ClientSession session = cf.createSession(false, true, true);
          Assert.assertNotNull(session);
          session.close();
@@ -328,35 +329,35 @@ public class SessionFactoryTest extends ServiceTestBase
                                                                                                                                null);
          staticConnectors.add(pair0);
 
-         ClientSessionFactory cf = new ClientSessionFactoryImpl(liveTC);
+         ClientSessionFactory cf = HornetQClient.createClientSessionFactory(liveTC);
          assertFactoryParams(cf,
                              staticConnectors,
                              null,
                              0,
-                             ClientSessionFactoryImpl.DEFAULT_DISCOVERY_REFRESH_TIMEOUT,
-                             ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
-                             ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL,
-                             ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,
-                             ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
-                             ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE,
-                             ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE,
-                             ClientSessionFactoryImpl.DEFAULT_CONFIRMATION_WINDOW_SIZE,
-                             ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE,
-                             ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE,
-                             ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_DURABLE_SEND,
-                             ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_DURABLE_SEND,
-                             ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP,
-                             ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE,
-                             ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
-                             ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE,
-                             ClientSessionFactoryImpl.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT,
-                             ClientSessionFactoryImpl.DEFAULT_USE_GLOBAL_POOLS,
-                             ClientSessionFactoryImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE,
-                             ClientSessionFactoryImpl.DEFAULT_THREAD_POOL_MAX_SIZE,
-                             ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL,
-                             ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER,
-                             ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS,
-                             ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN);
+                             HornetQClient.DEFAULT_DISCOVERY_REFRESH_TIMEOUT,
+                             HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
+                             HornetQClient.DEFAULT_CONNECTION_TTL,
+                             HornetQClient.DEFAULT_CALL_TIMEOUT,
+                             HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
+                             HornetQClient.DEFAULT_CONSUMER_WINDOW_SIZE,
+                             HornetQClient.DEFAULT_CONSUMER_MAX_RATE,
+                             HornetQClient.DEFAULT_CONFIRMATION_WINDOW_SIZE,
+                             HornetQClient.DEFAULT_PRODUCER_MAX_RATE,
+                             HornetQClient.DEFAULT_BLOCK_ON_ACKNOWLEDGE,
+                             HornetQClient.DEFAULT_BLOCK_ON_DURABLE_SEND,
+                             HornetQClient.DEFAULT_BLOCK_ON_NON_DURABLE_SEND,
+                             HornetQClient.DEFAULT_AUTO_GROUP,
+                             HornetQClient.DEFAULT_PRE_ACKNOWLEDGE,
+                             HornetQClient.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
+                             HornetQClient.DEFAULT_ACK_BATCH_SIZE,
+                             HornetQClient.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT,
+                             HornetQClient.DEFAULT_USE_GLOBAL_POOLS,
+                             HornetQClient.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE,
+                             HornetQClient.DEFAULT_THREAD_POOL_MAX_SIZE,
+                             HornetQClient.DEFAULT_RETRY_INTERVAL,
+                             HornetQClient.DEFAULT_RETRY_INTERVAL_MULTIPLIER,
+                             HornetQClient.DEFAULT_RECONNECT_ATTEMPTS,
+                             HornetQClient.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN);
          ClientSession session = cf.createSession(false, true, true);
          Assert.assertNotNull(session);
          session.close();
@@ -370,7 +371,7 @@ public class SessionFactoryTest extends ServiceTestBase
 
    public void testGettersAndSetters()
    {
-      ClientSessionFactory cf = new ClientSessionFactoryImpl();
+      ClientSessionFactory cf = HornetQClient.createClientSessionFactory();
 
       List<Pair<TransportConfiguration, TransportConfiguration>> staticConnectors = new ArrayList<Pair<TransportConfiguration, TransportConfiguration>>();
       Pair<TransportConfiguration, TransportConfiguration> pair0 = new Pair<TransportConfiguration, TransportConfiguration>(liveTC,

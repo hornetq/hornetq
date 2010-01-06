@@ -22,6 +22,7 @@ import org.hornetq.api.SimpleString;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.ClientSessionFactoryImpl;
+import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.config.TransportConfiguration;
 import org.hornetq.api.core.management.AddressControl;
 import org.hornetq.api.core.management.ResourceNames;
@@ -314,7 +315,7 @@ public class AddressControlUsingCoreTest extends ManagementTestBase
       server = HornetQServers.newHornetQServer(conf, mbeanServer, false);
       server.start();
 
-      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
+      ClientSessionFactory sf = HornetQClient.createClientSessionFactory(new TransportConfiguration(InVMConnectorFactory.class.getName()));
       sf.setBlockOnNonDurableSend(true);
       sf.setBlockOnNonDurableSend(true);
       session = sf.createSession(false, true, false);

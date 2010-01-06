@@ -11,7 +11,7 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.api.jms;
+package org.hornetq.jms;
 
 import javax.jms.JMSException;
 import javax.jms.TemporaryQueue;

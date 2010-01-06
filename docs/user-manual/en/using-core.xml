@@ -125,7 +125,7 @@
         <para>Here's a very simple program using the core messaging API to send and receive a
             message:</para>
         <programlisting>
-ClientSessionFactory factory =  new ClientSessionFactoryImpl(
+ClientSessionFactory factory =  HornetQClient.createClientSessionFactory(
                                         new TransportConfiguration(
                                            InVMConnectorFactory.class.getName()));
 

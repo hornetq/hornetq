@@ -15,12 +15,7 @@ package org.hornetq.tests.integration.largemessage;
 
 import junit.framework.Assert;
 
-import org.hornetq.api.core.client.ClientConsumer;
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.ClientProducer;
-import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.api.core.client.ClientSessionFactory;
-import org.hornetq.api.core.client.ClientSessionFactoryImpl;
+import org.hornetq.api.core.client.*;
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager;
 import org.hornetq.core.persistence.impl.journal.LargeServerMessageImpl;
 import org.hornetq.core.server.HornetQServer;
@@ -64,7 +59,7 @@ public class ServerLargeMessageTest extends ServiceTestBase
 
          fileMessage.setMessageID(1005);
 
-         for (int i = 0; i < 2 * ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE; i++)
+         for (int i = 0; i < 2 * HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE; i++)
          {
             fileMessage.addBytes(new byte[] { UnitTestCase.getSamplebyte(i) });
          }
@@ -89,9 +84,9 @@ public class ServerLargeMessageTest extends ServiceTestBase
 
          Assert.assertNotNull(msg);
 
-         Assert.assertEquals(msg.getBodySize(), 2 * ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE);
+         Assert.assertEquals(msg.getBodySize(), 2 * HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE);
 
-         for (int i = 0; i < 2 * ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE; i++)
+         for (int i = 0; i < 2 * HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE; i++)
          {
             Assert.assertEquals(UnitTestCase.getSamplebyte(i), msg.getBodyBuffer().readByte());
          }

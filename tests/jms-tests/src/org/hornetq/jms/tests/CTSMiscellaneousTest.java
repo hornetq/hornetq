@@ -22,9 +22,9 @@ import javax.jms.MessageProducer;
 import javax.jms.Session;
 
 import org.hornetq.api.Pair;
-import org.hornetq.api.core.client.ClientSessionFactoryImpl;
+import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.config.TransportConfiguration;
-import org.hornetq.api.jms.HornetQConnectionFactory;
+import org.hornetq.jms.HornetQConnectionFactory;
 
 /**
  * Safeguards for previously detected TCK failures.
@@ -69,32 +69,32 @@ public class CTSMiscellaneousTest extends HornetQServerTestCase
          getJmsServerManager().createConnectionFactory("StrictTCKConnectionFactory",
                                                        connectorConfigs,
                                                        null,
-                                                       ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
-                                                       ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL,
-                                                       ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,
-                                                       ClientSessionFactoryImpl.DEFAULT_CACHE_LARGE_MESSAGE_CLIENT,
-                                                       ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
-                                                       ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE,
-                                                       ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE,
-                                                       ClientSessionFactoryImpl.DEFAULT_CONFIRMATION_WINDOW_SIZE,
-                                                       ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE,
-                                                       ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE,
+                                                       HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
+                                                       HornetQClient.DEFAULT_CONNECTION_TTL,
+                                                       HornetQClient.DEFAULT_CALL_TIMEOUT,
+                                                       HornetQClient.DEFAULT_CACHE_LARGE_MESSAGE_CLIENT,
+                                                       HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
+                                                       HornetQClient.DEFAULT_CONSUMER_WINDOW_SIZE,
+                                                       HornetQClient.DEFAULT_CONSUMER_MAX_RATE,
+                                                       HornetQClient.DEFAULT_CONFIRMATION_WINDOW_SIZE,
+                                                       HornetQClient.DEFAULT_PRODUCER_WINDOW_SIZE,
+                                                       HornetQClient.DEFAULT_PRODUCER_MAX_RATE,
                                                        true,
                                                        true,
                                                        true,
-                                                       ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP,
-                                                       ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE,
-                                                       ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
-                                                       ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE,
-                                                       ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE,
-                                                       ClientSessionFactoryImpl.DEFAULT_USE_GLOBAL_POOLS,
-                                                       ClientSessionFactoryImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE,
-                                                       ClientSessionFactoryImpl.DEFAULT_THREAD_POOL_MAX_SIZE,
-                                                       ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL,
-                                                       ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER,
-                                                       ClientSessionFactoryImpl.DEFAULT_MAX_RETRY_INTERVAL,
-                                                       ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS,
-                                                       ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN,
+                                                       HornetQClient.DEFAULT_AUTO_GROUP,
+                                                       HornetQClient.DEFAULT_PRE_ACKNOWLEDGE,
+                                                       HornetQClient.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
+                                                       HornetQClient.DEFAULT_ACK_BATCH_SIZE,
+                                                       HornetQClient.DEFAULT_ACK_BATCH_SIZE,
+                                                       HornetQClient.DEFAULT_USE_GLOBAL_POOLS,
+                                                       HornetQClient.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE,
+                                                       HornetQClient.DEFAULT_THREAD_POOL_MAX_SIZE,
+                                                       HornetQClient.DEFAULT_RETRY_INTERVAL,
+                                                       HornetQClient.DEFAULT_RETRY_INTERVAL_MULTIPLIER,
+                                                       HornetQClient.DEFAULT_MAX_RETRY_INTERVAL,
+                                                       HornetQClient.DEFAULT_RECONNECT_ATTEMPTS,
+                                                       HornetQClient.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN,
                                                        null,
                                                        jndiBindings);
 

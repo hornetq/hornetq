@@ -19,11 +19,7 @@ import java.util.Set;
 import junit.framework.Assert;
 
 import org.hornetq.api.SimpleString;
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.ClientProducer;
-import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.api.core.client.ClientSessionFactory;
-import org.hornetq.api.core.client.ClientSessionFactoryImpl;
+import org.hornetq.api.core.client.*;
 import org.hornetq.api.core.config.TransportConfiguration;
 import org.hornetq.api.core.management.AddressControl;
 import org.hornetq.api.core.management.RoleInfo;
@@ -348,7 +344,7 @@ public class AddressControlTest extends ManagementTestBase
       server.getAddressSettingsRepository().addMatch(address.toString(), addressSettings);
       server.start();
 
-      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
+      ClientSessionFactory sf = HornetQClient.createClientSessionFactory(new TransportConfiguration(InVMConnectorFactory.class.getName()));
       session = sf.createSession(false, true, false);
       session.start();
       session.createQueue(address, address, true);
@@ -404,7 +400,7 @@ public class AddressControlTest extends ManagementTestBase
 
       server.getAddressSettingsRepository().addMatch(address.toString(), addressSettings);
       server.start();
-      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
+      ClientSessionFactory sf = HornetQClient.createClientSessionFactory(new TransportConfiguration(InVMConnectorFactory.class.getName()));
       session = sf.createSession(false, true, false);
       session.createQueue(address, address, true);
       Assert.assertEquals(1024, addressControl.getNumberOfBytesPerPage());
@@ -426,7 +422,7 @@ public class AddressControlTest extends ManagementTestBase
       server = HornetQServers.newHornetQServer(conf, mbeanServer, false);
       server.start();
 
-      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
+      ClientSessionFactory sf = HornetQClient.createClientSessionFactory(new TransportConfiguration(InVMConnectorFactory.class.getName()));
       sf.setBlockOnNonDurableSend(true);
       sf.setBlockOnNonDurableSend(true);
       session = sf.createSession(false, true, false);

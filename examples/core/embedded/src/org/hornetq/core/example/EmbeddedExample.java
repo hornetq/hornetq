@@ -15,12 +15,7 @@ package org.hornetq.core.example;
 import java.util.Date;
 import java.util.HashMap;
 
-import org.hornetq.api.core.client.ClientConsumer;
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.ClientProducer;
-import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.api.core.client.ClientSessionFactory;
-import org.hornetq.api.core.client.ClientSessionFactoryImpl;
+import org.hornetq.api.core.client.*;
 import org.hornetq.api.core.config.TransportConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
@@ -56,7 +51,7 @@ public class EmbeddedExample
          server.start();
 
          // Step 3. As we are not using a JNDI environment we instantiate the objects directly
-         ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
+         ClientSessionFactory sf = HornetQClient.createClientSessionFactory(new TransportConfiguration(InVMConnectorFactory.class.getName()));
 
          // Step 4. Create a core queue
          ClientSession coreSession = sf.createSession(false, false, false);
@@ -120,7 +115,7 @@ public class EmbeddedExample
       map.put("host", "localhost");
       map.put("port", 5445);
       TransportConfiguration config = new TransportConfiguration(InVMConnectorFactory.class.getName(), map);
-      ClientSessionFactory sf = new ClientSessionFactoryImpl(config);
+      ClientSessionFactory sf = HornetQClient.createClientSessionFactory(config);
    }
 
 }

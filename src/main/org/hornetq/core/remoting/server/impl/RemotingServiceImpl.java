@@ -23,7 +23,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 
 import org.hornetq.api.core.buffers.HornetQBuffer;
-import org.hornetq.api.core.client.ClientSessionFactoryImpl;
+import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.config.TransportConfiguration;
 import org.hornetq.api.core.exception.HornetQException;
 import org.hornetq.api.core.interceptor.Interceptor;
@@ -323,7 +323,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
       channel1.setHandler(handler);
 
-      long ttl = ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL;
+      long ttl = HornetQClient.DEFAULT_CONNECTION_TTL;
 
       if (config.getConnectionTTLOverride() != -1)
       {

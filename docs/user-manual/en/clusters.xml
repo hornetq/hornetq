@@ -242,7 +242,7 @@
 final int groupPort = 9876;
 
 ConnectionFactory jmsConnectionFactory = 
-        new HornetQConnectionFactory(groupAddress, groupPort);
+        HornetQJMSClient.createConnectionFactory(groupAddress, groupPort);
 
 Connection jmsConnection1 = jmsConnectionFactory.createConnection();
 
@@ -264,7 +264,7 @@ Connection jmsConnection2 = jmsConnectionFactory.createConnection();</programlis
                         >ClientSessionFactory</literal> instances, then you can specify the
                     discovery group parameters directly when creating the session factory. Here's an
                     example:final String groupAddress = "231.7.7.7"; final int groupPort = 9876;
-                    SessionFactory factory = new ClientSessionFactoryImpl(groupAddress, groupPort);
+                    SessionFactory factory = HornetQClient.createClientSessionFactory(groupAddress, groupPort);
                     ClientSession session1 = factory.createClientSession(...); ClientSession
                     session2 = factory.createClientSession(...); </para>
                 <para>The <literal>refresh-timeout</literal> can be set directly on the session
@@ -464,13 +464,13 @@ Connection jmsConnection2 = jmsConnectionFactory.createConnection();</programlis
             client side then you can set the load balancing policy using the setter on the <literal
                 >HornetQConnectionFactory</literal> before using it:
             <programlisting>
-ConnectionFactory jmsConnectionFactory = new HornetQConnectionFactory(...);
+ConnectionFactory jmsConnectionFactory = HornetQJMSClient.createConnectionFactory(...);
 jmsConnectionFactory.setLoadBalancingPolicyClassName("com.acme.MyLoadBalancingPolicy");
         </programlisting></para>
         <para>If you're using the core API, you can set the load balancing policy directly on the
                 <literal>ClientSessionFactory</literal> instance you are using:
             <programlisting>
-ClientSessionFactory factory = new ClientSessionFactoryImpl(...);
+ClientSessionFactory factory = HornetQClient.createClientSessionFactory(...);
 factory.setLoadBalancingPolicyClassName("com.acme.MyLoadBalancingPolicy");
             </programlisting></para>
         <para>The set of servers over which the factory load balances can be determined in one of
@@ -539,7 +539,7 @@ serverList.add(new Pair&lt;TransportConfiguration,
 serverList.add(new Pair&lt;TransportConfiguration, 
         TransportConfiguration>(liveTC2, backupTC2));
 
-ConnectionFactory jmsConnectionFactory = new HornetQConnectionFactory(serverList);
+ConnectionFactory jmsConnectionFactory = HornetQJMSClient.createConnectionFactory(serverList);
 
 Connection jmsConnection1 = jmsConnectionFactory.createConnection();
 
@@ -568,7 +568,7 @@ serverList.add(new Pair&lt;TransportConfiguration,
 serverList.add(new Pair&lt;TransportConfiguration, 
         TransportConfiguration>(liveTC2, backupTC2));
 
-ClientSessionFactory factory = new ClientSessionFactoryImpl(serverList);
+ClientSessionFactory factory = HornetQClient.createClientSessionFactory(serverList);
 
 ClientSession sesison1 = factory.createClientSession(...);
 

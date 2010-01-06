@@ -125,7 +125,7 @@ server.start();</programlisting>
             <title>Core API</title>
             <para>If using the core API, just create the <literal>ClientSessionFactory</literal> and
                 use the regular core API.</para>
-            <programlisting>ClientSessionFactory nettyFactory =  new ClientSessionFactoryImpl(
+            <programlisting>ClientSessionFactory nettyFactory =  HornetQClient.createClientSessionFactory(
                                         new TransportConfiguration(
                                            InVMConnectorFactory.class.getName()));
 
@@ -154,10 +154,10 @@ session.close();</programlisting>
         <section>
             <title>JMS API</title>
             <para>Connection on an Embedded HornetQ through JMS is also simple. Just instantiate
-                    <literal>HornetQConnectionFactory</literal> directly. The following example
+                    <literal>ConnectionFactory</literal> directly. The following example
                 illustrates that.</para>
-            <programlisting>HornetQConnectionFactory cf = 
-    new HornetQConnectionFactory(
+            <programlisting>ConnectionFactory cf =
+    HornetQJMSClient.createConnectionFactory(
        new TransportConfiguration(InVMConnectorFactory.class.getName()));
 
 Connection conn = cf.createConnection();

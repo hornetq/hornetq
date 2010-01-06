@@ -19,12 +19,7 @@ import java.util.List;
 import junit.framework.Assert;
 
 import org.hornetq.api.SimpleString;
-import org.hornetq.api.core.client.ClientConsumer;
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.ClientProducer;
-import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.api.core.client.ClientSessionFactory;
-import org.hornetq.api.core.client.ClientSessionFactoryImpl;
+import org.hornetq.api.core.client.*;
 import org.hornetq.api.core.config.TransportConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.logging.Logger;
@@ -47,7 +42,7 @@ public class PersistentDivertTest extends ServiceTestBase
 {
    private static final Logger log = Logger.getLogger(DivertTest.class);
 
-   final int minLargeMessageSize = ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE * 2;
+   final int minLargeMessageSize = HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE * 2;
 
    public void testPersistentDivert() throws Exception
    {
@@ -109,7 +104,7 @@ public class PersistentDivertTest extends ServiceTestBase
 
       messagingService.start();
 
-      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
+      ClientSessionFactory sf = HornetQClient.createClientSessionFactory(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
 
       sf.setBlockOnAcknowledge(true);
       sf.setBlockOnNonDurableSend(true);
@@ -312,7 +307,7 @@ public class PersistentDivertTest extends ServiceTestBase
 
       messagingService.start();
 
-      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
+      ClientSessionFactory sf = HornetQClient.createClientSessionFactory(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
 
       sf.setBlockOnAcknowledge(true);
       sf.setBlockOnNonDurableSend(true);
@@ -364,7 +359,7 @@ public class PersistentDivertTest extends ServiceTestBase
 
       messagingService.start();
 
-      sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
+      sf = HornetQClient.createClientSessionFactory(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
 
       sf.setBlockOnDurableSend(true);
 
@@ -460,7 +455,7 @@ public class PersistentDivertTest extends ServiceTestBase
 
       messagingService.start();
 
-      sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
+      sf = HornetQClient.createClientSessionFactory(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
 
       sf.setBlockOnDurableSend(true);
 

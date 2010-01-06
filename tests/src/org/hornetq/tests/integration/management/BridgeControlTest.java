@@ -23,7 +23,7 @@ import junit.framework.Assert;
 
 import org.hornetq.api.Pair;
 import org.hornetq.api.SimpleString;
-import org.hornetq.api.core.client.ClientSessionFactoryImpl;
+import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.config.TransportConfiguration;
 import org.hornetq.api.core.management.BridgeControl;
 import org.hornetq.api.core.management.NotificationType;
@@ -171,7 +171,7 @@ public class BridgeControlTest extends ManagementTestBase
                                              RandomUtil.randomBoolean(),
                                              RandomUtil.randomBoolean(),
                                              RandomUtil.randomPositiveInt(),
-                                             ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
+                                             HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
                                              connectorPair);
 
       Configuration conf_1 = new ConfigurationImpl();

@@ -28,6 +28,7 @@ import javax.resource.spi.ResourceAdapterAssociation;
 import javax.security.auth.Subject;
 
 import org.hornetq.core.logging.Logger;
+import org.hornetq.jms.HornetQConnectionFactory;
 
 /**
  * HornetQ ManagedConectionFactory
@@ -72,7 +73,7 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
    /**
     * Connection Factory used if properties are set
     */
-   private org.hornetq.api.jms.HornetQConnectionFactory connectionFactory;
+   private HornetQConnectionFactory connectionFactory;
 
    /**
     * Constructor
@@ -758,7 +759,7 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
     *
     * @return The factory
     */
-   protected synchronized org.hornetq.api.jms.HornetQConnectionFactory getHornetQConnectionFactory() throws ResourceException
+   protected synchronized HornetQConnectionFactory getHornetQConnectionFactory() throws ResourceException
    {
 
       if (connectionFactory == null)

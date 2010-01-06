@@ -1,14 +1,14 @@
 /*
  * Copyright 2009 Red Hat, Inc.
- * Red Hat licenses this file to you under the Apache License, version
- * 2.0 (the "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- *    http://www.apache.org/licenses/LICENSE-2.0
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- * implied.  See the License for the specific language governing
- * permissions and limitations under the License.
+ *  Red Hat licenses this file to you under the Apache License, version
+ *  2.0 (the "License"); you may not use this file except in compliance
+ *  with the License.  You may obtain a copy of the License at
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+ *  implied.  See the License for the specific language governing
+ *  permissions and limitations under the License.
  */
 
 package org.hornetq.core.config.impl;
@@ -24,6 +24,7 @@ import java.util.Map;
 import org.hornetq.api.Pair;
 import org.hornetq.api.SimpleString;
 import org.hornetq.api.core.client.ClientSessionFactoryImpl;
+import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.config.TransportConfiguration;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.JournalType;
@@ -698,7 +699,7 @@ public class FileConfiguration extends ConfigurationImpl
 
       long retryInterval = XMLConfigurationUtil.getLong(brNode,
                                                         "retry-interval",
-                                                        ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL,
+                                                        HornetQClient.DEFAULT_RETRY_INTERVAL,
                                                         Validators.GT_ZERO);
 
       // Default bridge conf
@@ -709,7 +710,7 @@ public class FileConfiguration extends ConfigurationImpl
 
       double retryIntervalMultiplier = XMLConfigurationUtil.getDouble(brNode,
                                                                       "retry-interval-multiplier",
-                                                                      ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER,
+                                                                      HornetQClient.DEFAULT_RETRY_INTERVAL_MULTIPLIER,
                                                                       Validators.GT_ZERO);
 
       int reconnectAttempts = XMLConfigurationUtil.getInteger(brNode,
@@ -719,7 +720,7 @@ public class FileConfiguration extends ConfigurationImpl
 
       boolean failoverOnServerShutdown = XMLConfigurationUtil.getBoolean(brNode,
                                                                          "failover-on-server-shutdown",
-                                                                         ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN);
+                                                                         HornetQClient.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN);
 
       boolean useDuplicateDetection = XMLConfigurationUtil.getBoolean(brNode,
                                                                       "use-duplicate-detection",
@@ -777,7 +778,7 @@ public class FileConfiguration extends ConfigurationImpl
                                           failoverOnServerShutdown,
                                           useDuplicateDetection,
                                           confirmationWindowSize,
-                                          ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
+                                          HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
                                           connectorPair);
       }
       else
@@ -793,7 +794,7 @@ public class FileConfiguration extends ConfigurationImpl
                                           failoverOnServerShutdown,
                                           useDuplicateDetection,
                                           confirmationWindowSize,
-                                          ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
+                                          HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
                                           discoveryGroupName);
       }
 

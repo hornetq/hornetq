@@ -19,10 +19,7 @@ import java.util.concurrent.TimeUnit;
 
 import junit.framework.Assert;
 
-import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.api.core.client.ClientSessionFactory;
-import org.hornetq.api.core.client.ClientSessionFactoryImpl;
-import org.hornetq.api.core.client.SessionFailureListener;
+import org.hornetq.api.core.client.*;
 import org.hornetq.api.core.config.TransportConfiguration;
 import org.hornetq.api.core.exception.HornetQException;
 import org.hornetq.api.core.interceptor.Interceptor;
@@ -106,7 +103,7 @@ public class PingTest extends ServiceTestBase
    {
       TransportConfiguration transportConfig = new TransportConfiguration("org.hornetq.integration.transports.netty.NettyConnectorFactory");
 
-      ClientSessionFactory csf = new ClientSessionFactoryImpl(transportConfig);
+      ClientSessionFactory csf = HornetQClient.createClientSessionFactory(transportConfig);
 
       csf.setClientFailureCheckPeriod(PingTest.CLIENT_FAILURE_CHECK_PERIOD);
       csf.setConnectionTTL(PingTest.CLIENT_FAILURE_CHECK_PERIOD * 2);
@@ -165,7 +162,7 @@ public class PingTest extends ServiceTestBase
    {
       TransportConfiguration transportConfig = new TransportConfiguration("org.hornetq.integration.transports.netty.NettyConnectorFactory");
 
-      ClientSessionFactory csf = new ClientSessionFactoryImpl(transportConfig);
+      ClientSessionFactory csf = HornetQClient.createClientSessionFactory(transportConfig);
       csf.setClientFailureCheckPeriod(-1);
       csf.setConnectionTTL(-1);
 
@@ -197,7 +194,7 @@ public class PingTest extends ServiceTestBase
 
       serverConn.addFailureListener(serverListener);
 
-      Thread.sleep(ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD);
+      Thread.sleep(HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD);
 
       Assert.assertNull(clientListener.getException());
 
@@ -221,7 +218,7 @@ public class PingTest extends ServiceTestBase
    {
       TransportConfiguration transportConfig = new TransportConfiguration("org.hornetq.integration.transports.netty.NettyConnectorFactory");
 
-      ClientSessionFactoryImpl csf = new ClientSessionFactoryImpl(transportConfig);
+      ClientSessionFactoryImpl csf = (ClientSessionFactoryImpl) HornetQClient.createClientSessionFactory(transportConfig);
 
       csf.setClientFailureCheckPeriod(PingTest.CLIENT_FAILURE_CHECK_PERIOD);
       csf.setConnectionTTL(PingTest.CLIENT_FAILURE_CHECK_PERIOD * 2);
@@ -314,7 +311,7 @@ public class PingTest extends ServiceTestBase
 
       TransportConfiguration transportConfig = new TransportConfiguration("org.hornetq.integration.transports.netty.NettyConnectorFactory");
 
-      ClientSessionFactory csf = new ClientSessionFactoryImpl(transportConfig);
+      ClientSessionFactory csf = HornetQClient.createClientSessionFactory(transportConfig);
 
       csf.setClientFailureCheckPeriod(PingTest.CLIENT_FAILURE_CHECK_PERIOD);
       csf.setConnectionTTL(PingTest.CLIENT_FAILURE_CHECK_PERIOD * 2);

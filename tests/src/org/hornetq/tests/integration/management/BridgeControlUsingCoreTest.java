@@ -23,7 +23,7 @@ import junit.framework.Assert;
 import org.hornetq.api.Pair;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
-import org.hornetq.api.core.client.ClientSessionFactoryImpl;
+import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.config.TransportConfiguration;
 import org.hornetq.api.core.management.ObjectNameBuilder;
 import org.hornetq.api.core.management.ResourceNames;
@@ -149,7 +149,7 @@ public class BridgeControlUsingCoreTest extends ManagementTestBase
                                              RandomUtil.randomBoolean(),
                                              RandomUtil.randomBoolean(),
                                              RandomUtil.randomPositiveInt(),
-                                             ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
+                                             HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
                                              connectorPair);
 
       Configuration conf_1 = new ConfigurationImpl();
@@ -174,7 +174,7 @@ public class BridgeControlUsingCoreTest extends ManagementTestBase
       server_0 = HornetQServers.newHornetQServer(conf_0, mbeanServer, false);
       server_0.start();
 
-      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
+      ClientSessionFactory sf = HornetQClient.createClientSessionFactory(new TransportConfiguration(InVMConnectorFactory.class.getName()));
       session = sf.createSession(false, true, true);
       session.start();
    }

@@ -39,7 +39,7 @@ import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.exception.HornetQException;
 import org.hornetq.api.core.message.PropertyConversionException;
-import org.hornetq.api.jms.HornetQDestination;
+import org.hornetq.jms.HornetQDestination;
 import org.hornetq.api.jms.HornetQMessageConstants;
 import org.hornetq.core.client.impl.ClientMessageImpl;
 import org.hornetq.core.logging.Logger;

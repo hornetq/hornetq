@@ -30,7 +30,7 @@ import javax.jms.Session;
 import javax.jms.StreamMessage;
 import javax.jms.TextMessage;
 
-import org.hornetq.api.jms.HornetQQueue;
+import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.jms.client.HornetQBytesMessage;
 import org.hornetq.jms.client.HornetQMapMessage;
 import org.hornetq.jms.client.HornetQMessage;
@@ -62,8 +62,8 @@ public abstract class MessageHeaderTestBase extends HornetQServerTestCase
       m.setJMSMessageID("ID:messageID777");
       m.setJMSTimestamp(123456789l);
       m.setJMSCorrelationID("correlationID777");
-      m.setJMSReplyTo(new HornetQQueue("ReplyToQueue"));
-      m.setJMSDestination(new HornetQQueue("DestinationQueue"));
+      m.setJMSReplyTo(HornetQJMSClient.createHornetQQueue("ReplyToQueue"));
+      m.setJMSDestination(HornetQJMSClient.createHornetQQueue("DestinationQueue"));
       m.setJMSDeliveryMode(DeliveryMode.PERSISTENT);
       m.setJMSExpiration(987654321l);
       m.setJMSPriority(9);

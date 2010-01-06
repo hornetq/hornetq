@@ -15,7 +15,8 @@ package org.hornetq.tests.unit.jms;
 
 import junit.framework.Assert;
 
-import org.hornetq.api.jms.HornetQQueue;
+import org.hornetq.api.jms.HornetQJMSClient;
+import org.hornetq.jms.HornetQQueue;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
 
@@ -39,14 +40,14 @@ public class HornetQQueueTest extends UnitTestCase
 
    public void testIsTemporary() throws Exception
    {
-      HornetQQueue queue = new HornetQQueue(RandomUtil.randomString());
+      HornetQQueue queue = (HornetQQueue) HornetQJMSClient.createHornetQQueue(RandomUtil.randomString());
       Assert.assertFalse(queue.isTemporary());
    }
 
    public void testGetQueueName() throws Exception
    {
       String queueName = RandomUtil.randomString();
-      HornetQQueue queue = new HornetQQueue(queueName);
+      HornetQQueue queue = (HornetQQueue) HornetQJMSClient.createHornetQQueue(queueName);
       Assert.assertEquals(queueName, queue.getQueueName());
    }
 

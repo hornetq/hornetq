@@ -19,10 +19,7 @@ import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
-import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.api.core.client.ClientSessionFactory;
-import org.hornetq.api.core.client.ClientSessionFactoryImpl;
-import org.hornetq.api.core.client.SessionFailureListener;
+import org.hornetq.api.core.client.*;
 import org.hornetq.api.core.config.TransportConfiguration;
 import org.hornetq.api.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
@@ -277,7 +274,7 @@ public class HornetQXAResourceWrapper implements XAResource, SessionFailureListe
       }
 
       TransportConfiguration config = new TransportConfiguration(connectorFactoryClassName, connectorConfig);
-      csf = new ClientSessionFactoryImpl(config);
+      csf = HornetQClient.createClientSessionFactory(config);
       ClientSession cs = null;
 
       if (username == null)

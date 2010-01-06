@@ -20,6 +20,7 @@ import junit.framework.Assert;
 
 import org.hornetq.api.SimpleString;
 import org.hornetq.api.core.client.ClientSessionFactoryImpl;
+import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.config.TransportConfiguration;
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.config.Configuration;
@@ -227,8 +228,7 @@ public abstract class FailoverTestBase extends ServiceTestBase
 
    protected ClientSessionFactoryInternal getSessionFactory()
    {
-      return new ClientSessionFactoryImpl(getConnectorTransportConfiguration(true),
-                                          getConnectorTransportConfiguration(false));
+      return (ClientSessionFactoryInternal) HornetQClient.createClientSessionFactory(getConnectorTransportConfiguration(true), getConnectorTransportConfiguration(false));
    }
 
    // Private -------------------------------------------------------

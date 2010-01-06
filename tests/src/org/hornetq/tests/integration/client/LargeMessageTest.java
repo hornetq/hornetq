@@ -21,12 +21,7 @@ import javax.transaction.xa.Xid;
 import junit.framework.Assert;
 
 import org.hornetq.api.SimpleString;
-import org.hornetq.api.core.client.ClientConsumer;
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.ClientProducer;
-import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.api.core.client.ClientSessionFactory;
-import org.hornetq.api.core.client.ClientSessionFactoryImpl;
+import org.hornetq.api.core.client.*;
 import org.hornetq.api.core.message.Message;
 import org.hornetq.core.client.impl.ClientConsumerInternal;
 import org.hornetq.core.config.Configuration;
@@ -75,7 +70,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
    public void testCloseConsumer() throws Exception
    {
-      final int messageSize = (int)(3.5 * ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE);
+      final int messageSize = (int)(3.5 * HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE);
 
       ClientSession session = null;
 
@@ -144,7 +139,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
    public void testDLALargeMessage() throws Exception
    {
-      final int messageSize = (int)(3.5 * ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE);
+      final int messageSize = (int)(3.5 * HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE);
 
       ClientSession session = null;
 
@@ -271,7 +266,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
    public void testDeliveryCount() throws Exception
    {
-      final int messageSize = (int)(3.5 * ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE);
+      final int messageSize = (int)(3.5 * HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE);
 
       ClientSession session = null;
 
@@ -354,7 +349,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
    public void testDLAOnExpiryNonDurableMessage() throws Exception
    {
-      final int messageSize = (int)(3.5 * ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE);
+      final int messageSize = (int)(3.5 * HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE);
 
       ClientSession session = null;
 
@@ -489,7 +484,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
    public void testDLAOnExpiry() throws Exception
    {
-      final int messageSize = (int)(3.5 * ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE);
+      final int messageSize = (int)(3.5 * HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE);
 
       ClientSession session = null;
 
@@ -624,7 +619,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
    public void testExpiryLargeMessage() throws Exception
    {
-      final int messageSize = 3 * ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE;
+      final int messageSize = 3 * HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE;
 
       ClientSession session = null;
 

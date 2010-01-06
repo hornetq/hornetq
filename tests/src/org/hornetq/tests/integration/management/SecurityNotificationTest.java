@@ -22,11 +22,7 @@ import java.util.Set;
 import junit.framework.Assert;
 
 import org.hornetq.api.SimpleString;
-import org.hornetq.api.core.client.ClientConsumer;
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.api.core.client.ClientSessionFactory;
-import org.hornetq.api.core.client.ClientSessionFactoryImpl;
+import org.hornetq.api.core.client.*;
 import org.hornetq.api.core.config.TransportConfiguration;
 import org.hornetq.api.core.exception.HornetQException;
 import org.hornetq.api.core.management.ManagementHelper;
@@ -75,7 +71,7 @@ public class SecurityNotificationTest extends UnitTestCase
 
       SecurityNotificationTest.flush(notifConsumer);
 
-      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
+      ClientSessionFactory sf = HornetQClient.createClientSessionFactory(new TransportConfiguration(InVMConnectorFactory.class.getName()));
 
       try
       {
@@ -107,7 +103,7 @@ public class SecurityNotificationTest extends UnitTestCase
 
       SecurityNotificationTest.flush(notifConsumer);
 
-      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
+      ClientSessionFactory sf = HornetQClient.createClientSessionFactory(new TransportConfiguration(InVMConnectorFactory.class.getName()));
       ClientSession guestSession = sf.createSession("guest", "guest", false, true, true, false, 1);
 
       try
@@ -163,7 +159,7 @@ public class SecurityNotificationTest extends UnitTestCase
 
       securityManager.addRole("admin", "notif");
 
-      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
+      ClientSessionFactory sf = HornetQClient.createClientSessionFactory(new TransportConfiguration(InVMConnectorFactory.class.getName()));
       adminSession = sf.createSession("admin", "admin", false, true, true, false, 1);
       adminSession.start();
 

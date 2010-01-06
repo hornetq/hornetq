@@ -138,7 +138,7 @@ TransportConfiguration transportConfiguration =
     "org.hornetq.integration.transports.netty.NettyConnectorFactory", 
     connectionParams);
 
-ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(transportConfiguration);
+ClientSessionFactory sessionFactory = HornetQClient.createClientSessionFactory(transportConfiguration);
 
 ClientSession session = sessionFactory.createSession(...);
 
@@ -157,7 +157,7 @@ TransportConfiguration transportConfiguration =
     "org.hornetq.integration.transports.netty.NettyConnectorFactory", 
     connectionParams);
 
-ConnectionFactory connectionFactory = new HornetQConnectionFactory(transportConfiguration);
+ConnectionFactory connectionFactory = HornetQJMSClient.createConnectionFactory(transportConfiguration);
 
 Connection jmsConnection = connectionFactory.createConnection();
 

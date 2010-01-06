@@ -56,7 +56,7 @@
         <li>Directly instantiate the JMS ConnectionFactory object using that TransportConfiguration.</li>
         <pre class="prettyprint">
            <code>
-     ConnectionFactory cf = new HornetQConnectionFactory(transportConfiguration);           
+     ConnectionFactory cf = HornetQJMSClient.createConnectionFactory(transportConfiguration);           
            </code>
         </pre>
 

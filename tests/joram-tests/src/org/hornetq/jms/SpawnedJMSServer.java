@@ -107,8 +107,9 @@ public class SpawnedJMSServer
       }
       catch (Throwable t)
       {
-         String allStack = t.getMessage() + "|";
-         StackTraceElement[] stackTrace = t.getStackTrace();
+         t.printStackTrace();
+         String allStack = t.getCause().getMessage() + "|";
+         StackTraceElement[] stackTrace = t.getCause().getStackTrace();
          for (StackTraceElement stackTraceElement : stackTrace)
          {
             allStack += stackTraceElement.toString() + "|";

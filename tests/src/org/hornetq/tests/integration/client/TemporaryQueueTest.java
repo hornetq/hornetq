@@ -20,12 +20,7 @@ import java.util.concurrent.TimeUnit;
 import junit.framework.Assert;
 
 import org.hornetq.api.SimpleString;
-import org.hornetq.api.core.client.ClientConsumer;
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.ClientProducer;
-import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.api.core.client.ClientSessionFactory;
-import org.hornetq.api.core.client.ClientSessionFactoryImpl;
+import org.hornetq.api.core.client.*;
 import org.hornetq.api.core.config.TransportConfiguration;
 import org.hornetq.api.core.exception.HornetQException;
 import org.hornetq.api.core.interceptor.Interceptor;
@@ -235,7 +230,7 @@ public class TemporaryQueueTest extends ServiceTestBase
          }
       });
 
-      sf = new ClientSessionFactoryImpl(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));
+      sf = HornetQClient.createClientSessionFactory(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));
       sf.setConnectionTTL(TemporaryQueueTest.CONNECTION_TTL);
       session = sf.createSession(false, true, true);
 
@@ -268,7 +263,7 @@ public class TemporaryQueueTest extends ServiceTestBase
       session.close();
 
       sf.close();
-      sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
+      sf = HornetQClient.createClientSessionFactory(new TransportConfiguration(InVMConnectorFactory.class.getName()));
       session = sf.createSession(false, true, true);
       session.start();
 
@@ -299,7 +294,7 @@ public class TemporaryQueueTest extends ServiceTestBase
       server = createServer(false, configuration);
       server.start();
 
-      sf = new ClientSessionFactoryImpl(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));
+      sf = HornetQClient.createClientSessionFactory(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));
       sf.setConnectionTTL(TemporaryQueueTest.CONNECTION_TTL);
       session = sf.createSession(false, true, true);
    }

@@ -14,12 +14,7 @@ package org.hornetq.core.example;
 
 import java.util.Date;
 
-import org.hornetq.api.core.client.ClientConsumer;
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.ClientProducer;
-import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.api.core.client.ClientSessionFactory;
-import org.hornetq.api.core.client.ClientSessionFactoryImpl;
+import org.hornetq.api.core.client.*;
 import org.hornetq.api.core.config.TransportConfiguration;
 import org.hornetq.integration.bootstrap.HornetQBootstrapServer;
 import org.hornetq.integration.transports.netty.NettyConnectorFactory;
@@ -47,7 +42,7 @@ public class EmbeddedMicroContainerExample
          hornetQ.run();
 
          // Step 2. As we are not using a JNDI environment we instantiate the objects directly
-         ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(NettyConnectorFactory.class.getName()));
+         ClientSessionFactory sf = HornetQClient.createClientSessionFactory(new TransportConfiguration(NettyConnectorFactory.class.getName()));
 
          // Step 3. Create a core queue
          ClientSession coreSession = sf.createSession(false, false, false);

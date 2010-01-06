@@ -16,10 +16,7 @@ package org.hornetq.tests.integration.clientcrash;
 import junit.framework.Assert;
 
 import org.hornetq.api.SimpleString;
-import org.hornetq.api.core.client.ClientConsumer;
-import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.api.core.client.ClientSessionFactory;
-import org.hornetq.api.core.client.ClientSessionFactoryImpl;
+import org.hornetq.api.core.client.*;
 import org.hornetq.api.core.config.TransportConfiguration;
 import org.hornetq.api.core.message.Message;
 import org.hornetq.core.logging.Logger;
@@ -104,7 +101,7 @@ public class ClientExitTest extends ClientTestBase
    {
       super.setUp();
 
-      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(NettyConnectorFactory.class.getName()));
+      ClientSessionFactory sf = HornetQClient.createClientSessionFactory(new TransportConfiguration(NettyConnectorFactory.class.getName()));
       session = sf.createSession(false, true, true);
       session.createQueue(ClientExitTest.QUEUE, ClientExitTest.QUEUE, null, false);
       consumer = session.createConsumer(ClientExitTest.QUEUE);

@@ -25,7 +25,7 @@ import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
-import org.hornetq.api.jms.HornetQTopic;
+import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.jms.tests.message.SimpleJMSMessage;
 import org.hornetq.jms.tests.message.SimpleJMSTextMessage;
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
@@ -403,7 +403,7 @@ public class MessageProducerTest extends JMSTestCase
          Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          try
          {
-            ps.createProducer(new HornetQTopic("NoSuchTopic"));
+            ps.createProducer(HornetQJMSClient.createHornetQTopic("NoSuchTopic"));
             ProxyAssertSupport.fail("should throw exception");
          }
          catch (InvalidDestinationException e)

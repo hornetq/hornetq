@@ -31,7 +31,7 @@ import javax.jms.TextMessage;
 import junit.framework.Assert;
 
 import org.hornetq.api.Pair;
-import org.hornetq.api.core.client.ClientSessionFactoryImpl;
+import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.config.TransportConfiguration;
 import org.hornetq.api.jms.HornetQMessageConstants;
 import org.hornetq.tests.util.JMSTestBase;
@@ -73,7 +73,7 @@ public class ReSendLargeMessageTest extends JMSTestBase
          {
             BytesMessage bm = sess.createBytesMessage();
             bm.setObjectProperty(HornetQMessageConstants.JMS_HORNETQ_INPUT_STREAM,
-                                 UnitTestCase.createFakeLargeStream(2 * ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE));
+                                 UnitTestCase.createFakeLargeStream(2 * HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE));
             msgs.add(bm);
 
             MapMessage mm = sess.createMapMessage();
@@ -247,30 +247,30 @@ public class ReSendLargeMessageTest extends JMSTestBase
       jmsServer.createConnectionFactory("ManualReconnectionToSingleServerTest",
                                         connectorConfigs,
                                         null,
-                                        ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
-                                        ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL,
+                                        HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
+                                        HornetQClient.DEFAULT_CONNECTION_TTL,
                                         callTimeout,
                                         true,
-                                        ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
-                                        ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE,
-                                        ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE,
-                                        ClientSessionFactoryImpl.DEFAULT_CONFIRMATION_WINDOW_SIZE,
-                                        ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE,
-                                        ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE,
-                                        ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE,
-                                        ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_DURABLE_SEND,
-                                        ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_DURABLE_SEND,
-                                        ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP,
-                                        ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE,
-                                        ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
-                                        ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE,
-                                        ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE,
-                                        ClientSessionFactoryImpl.DEFAULT_USE_GLOBAL_POOLS,
-                                        ClientSessionFactoryImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE,
-                                        ClientSessionFactoryImpl.DEFAULT_THREAD_POOL_MAX_SIZE,
+                                        HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
+                                        HornetQClient.DEFAULT_CONSUMER_WINDOW_SIZE,
+                                        HornetQClient.DEFAULT_CONSUMER_MAX_RATE,
+                                        HornetQClient.DEFAULT_CONFIRMATION_WINDOW_SIZE,
+                                        HornetQClient.DEFAULT_PRODUCER_WINDOW_SIZE,
+                                        HornetQClient.DEFAULT_PRODUCER_MAX_RATE,
+                                        HornetQClient.DEFAULT_BLOCK_ON_ACKNOWLEDGE,
+                                        HornetQClient.DEFAULT_BLOCK_ON_DURABLE_SEND,
+                                        HornetQClient.DEFAULT_BLOCK_ON_NON_DURABLE_SEND,
+                                        HornetQClient.DEFAULT_AUTO_GROUP,
+                                        HornetQClient.DEFAULT_PRE_ACKNOWLEDGE,
+                                        HornetQClient.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
+                                        HornetQClient.DEFAULT_ACK_BATCH_SIZE,
+                                        HornetQClient.DEFAULT_ACK_BATCH_SIZE,
+                                        HornetQClient.DEFAULT_USE_GLOBAL_POOLS,
+                                        HornetQClient.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE,
+                                        HornetQClient.DEFAULT_THREAD_POOL_MAX_SIZE,
                                         retryInterval,
                                         retryIntervalMultiplier,
-                                        ClientSessionFactoryImpl.DEFAULT_MAX_RETRY_INTERVAL,
+                                        HornetQClient.DEFAULT_MAX_RETRY_INTERVAL,
                                         reconnectAttempts,
                                         failoverOnServerShutdown,
                                         null,

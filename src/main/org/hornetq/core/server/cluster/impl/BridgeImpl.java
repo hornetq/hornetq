@@ -22,13 +22,7 @@ import java.util.concurrent.ScheduledExecutorService;
 
 import org.hornetq.api.Pair;
 import org.hornetq.api.SimpleString;
-import org.hornetq.api.core.client.ClientConsumer;
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.ClientProducer;
-import org.hornetq.api.core.client.ClientSessionFactory;
-import org.hornetq.api.core.client.ClientSessionFactoryImpl;
-import org.hornetq.api.core.client.SendAcknowledgementHandler;
-import org.hornetq.api.core.client.SessionFailureListener;
+import org.hornetq.api.core.client.*;
 import org.hornetq.api.core.config.TransportConfiguration;
 import org.hornetq.api.core.exception.HornetQException;
 import org.hornetq.api.core.management.ManagementHelper;
@@ -651,11 +645,11 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
          {
             if (discoveryAddress != null)
             {
-               csf = new ClientSessionFactoryImpl(discoveryAddress, discoveryPort);
+               csf = HornetQClient.createClientSessionFactory(discoveryAddress, discoveryPort);
             }
             else
             {
-               csf = new ClientSessionFactoryImpl(connectorPair.a, connectorPair.b);
+               csf = HornetQClient.createClientSessionFactory(connectorPair.a, connectorPair.b);
             }
 
             csf.setFailoverOnServerShutdown(failoverOnServerShutdown);

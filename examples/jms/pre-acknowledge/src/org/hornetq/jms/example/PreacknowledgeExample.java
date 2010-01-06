@@ -25,7 +25,7 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
-import org.hornetq.api.jms.HornetQQueue;
+import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.api.jms.management.JMSManagementHelper;
 import org.hornetq.common.example.HornetQExample;
 import org.hornetq.jms.client.HornetQSession;
@@ -128,7 +128,7 @@ public class PreacknowledgeExample extends HornetQExample
    {
       QueueSession session = ((QueueConnection)connection).createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
 
-      Queue managementQueue = new HornetQQueue("hornetq.management", "hornetq.management");
+      Queue managementQueue = HornetQJMSClient.createHornetQQueue("hornetq.management", "hornetq.management");
 
       QueueRequestor requestor = new QueueRequestor(session, managementQueue);
 

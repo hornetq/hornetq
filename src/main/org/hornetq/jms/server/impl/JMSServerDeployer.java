@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.hornetq.api.Pair;
-import org.hornetq.api.core.client.ClientSessionFactoryImpl;
+import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.config.TransportConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.Validators;
@@ -121,104 +121,104 @@ public class JMSServerDeployer extends XmlDeployer
 
          long clientFailureCheckPeriod = XMLConfigurationUtil.getLong(e,
                                                                       "client-failure-check-period",
-                                                                      ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
+                                                                      HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
                                                                       Validators.MINUS_ONE_OR_GT_ZERO);
          long connectionTTL = XMLConfigurationUtil.getLong(e,
                                                            "connection-ttl",
-                                                           ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL,
+                                                           HornetQClient.DEFAULT_CONNECTION_TTL,
                                                            Validators.MINUS_ONE_OR_GE_ZERO);
          long callTimeout = XMLConfigurationUtil.getLong(e,
                                                          "call-timeout",
-                                                         ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,
+                                                         HornetQClient.DEFAULT_CALL_TIMEOUT,
                                                          Validators.GE_ZERO);
          String clientID = XMLConfigurationUtil.getString(e, "client-id", null, Validators.NO_CHECK);
          int dupsOKBatchSize = XMLConfigurationUtil.getInteger(e,
                                                                "dups-ok-batch-size",
-                                                               ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE,
+                                                               HornetQClient.DEFAULT_ACK_BATCH_SIZE,
                                                                Validators.GT_ZERO);
          int transactionBatchSize = XMLConfigurationUtil.getInteger(e,
                                                                     "transaction-batch-size",
-                                                                    ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE,
+                                                                    HornetQClient.DEFAULT_ACK_BATCH_SIZE,
                                                                     Validators.GT_ZERO);
          int consumerWindowSize = XMLConfigurationUtil.getInteger(e,
                                                                   "consumer-window-size",
-                                                                  ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE,
+                                                                  HornetQClient.DEFAULT_CONSUMER_WINDOW_SIZE,
                                                                   Validators.MINUS_ONE_OR_GE_ZERO);
          int producerWindowSize = XMLConfigurationUtil.getInteger(e,
                                                                   "producer-window-size",
-                                                                  ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE,
+                                                                  HornetQClient.DEFAULT_PRODUCER_WINDOW_SIZE,
                                                                   Validators.MINUS_ONE_OR_GT_ZERO);
          int consumerMaxRate = XMLConfigurationUtil.getInteger(e,
                                                                "consumer-max-rate",
-                                                               ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE,
+                                                               HornetQClient.DEFAULT_CONSUMER_MAX_RATE,
                                                                Validators.MINUS_ONE_OR_GT_ZERO);
          int confirmationWindowSize = XMLConfigurationUtil.getInteger(e,
                                                                       "confirmation-window-size",
-                                                                      ClientSessionFactoryImpl.DEFAULT_CONFIRMATION_WINDOW_SIZE,
+                                                                      HornetQClient.DEFAULT_CONFIRMATION_WINDOW_SIZE,
                                                                       Validators.MINUS_ONE_OR_GT_ZERO);
          int producerMaxRate = XMLConfigurationUtil.getInteger(e,
                                                                "producer-max-rate",
-                                                               ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE,
+                                                               HornetQClient.DEFAULT_PRODUCER_MAX_RATE,
                                                                Validators.MINUS_ONE_OR_GT_ZERO);
          boolean cacheLargeMessagesClient = XMLConfigurationUtil.getBoolean(e,
                                                                             "cache-large-message-client",
-                                                                            ClientSessionFactoryImpl.DEFAULT_CACHE_LARGE_MESSAGE_CLIENT);
+                                                                            HornetQClient.DEFAULT_CACHE_LARGE_MESSAGE_CLIENT);
          int minLargeMessageSize = XMLConfigurationUtil.getInteger(e,
                                                                    "min-large-message-size",
-                                                                   ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
+                                                                   HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
                                                                    Validators.GT_ZERO);
          boolean blockOnAcknowledge = XMLConfigurationUtil.getBoolean(e,
                                                                       "block-on-acknowledge",
-                                                                      ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE);
+                                                                      HornetQClient.DEFAULT_BLOCK_ON_ACKNOWLEDGE);
          boolean blockOnNonDurableSend = XMLConfigurationUtil.getBoolean(e,
                                                                             "block-on-non-durable-send",
-                                                                            ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_DURABLE_SEND);
+                                                                            HornetQClient.DEFAULT_BLOCK_ON_NON_DURABLE_SEND);
          boolean blockOnDurableSend = XMLConfigurationUtil.getBoolean(e,
                                                                          "block-on-durable-send",
-                                                                         ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_DURABLE_SEND);
+                                                                         HornetQClient.DEFAULT_BLOCK_ON_DURABLE_SEND);
          boolean autoGroup = XMLConfigurationUtil.getBoolean(e,
                                                              "auto-group",
-                                                             ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP);
+                                                             HornetQClient.DEFAULT_AUTO_GROUP);
          boolean preAcknowledge = XMLConfigurationUtil.getBoolean(e,
                                                                   "pre-acknowledge",
-                                                                  ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE);
+                                                                  HornetQClient.DEFAULT_PRE_ACKNOWLEDGE);
          long retryInterval = XMLConfigurationUtil.getLong(e,
                                                            "retry-interval",
-                                                           ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL,
+                                                           HornetQClient.DEFAULT_RETRY_INTERVAL,
                                                            Validators.GT_ZERO);
          double retryIntervalMultiplier = XMLConfigurationUtil.getDouble(e,
                                                                          "retry-interval-multiplier",
-                                                                         ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER,
+                                                                         HornetQClient.DEFAULT_RETRY_INTERVAL_MULTIPLIER,
                                                                          Validators.GT_ZERO);
          long maxRetryInterval = XMLConfigurationUtil.getLong(e,
                                                               "max-retry-interval",
-                                                              ClientSessionFactoryImpl.DEFAULT_MAX_RETRY_INTERVAL,
+                                                              HornetQClient.DEFAULT_MAX_RETRY_INTERVAL,
                                                               Validators.GT_ZERO);
          int reconnectAttempts = XMLConfigurationUtil.getInteger(e,
                                                                  "reconnect-attempts",
-                                                                 ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS,
+                                                                 HornetQClient.DEFAULT_RECONNECT_ATTEMPTS,
                                                                  Validators.MINUS_ONE_OR_GE_ZERO);
          boolean failoverOnServerShutdown = XMLConfigurationUtil.getBoolean(e,
                                                                             "failover-on-server-shutdown",
-                                                                            ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN);
+                                                                            HornetQClient.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN);
          boolean useGlobalPools = XMLConfigurationUtil.getBoolean(e,
                                                                   "use-global-pools",
-                                                                  ClientSessionFactoryImpl.DEFAULT_USE_GLOBAL_POOLS);
+                                                                  HornetQClient.DEFAULT_USE_GLOBAL_POOLS);
          int scheduledThreadPoolMaxSize = XMLConfigurationUtil.getInteger(e,
                                                                           "scheduled-thread-pool-max-size",
-                                                                          ClientSessionFactoryImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE,
+                                                                          HornetQClient.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE,
                                                                           Validators.MINUS_ONE_OR_GT_ZERO);
          int threadPoolMaxSize = XMLConfigurationUtil.getInteger(e,
                                                                  "thread-pool-max-size",
-                                                                 ClientSessionFactoryImpl.DEFAULT_THREAD_POOL_MAX_SIZE,
+                                                                 HornetQClient.DEFAULT_THREAD_POOL_MAX_SIZE,
                                                                  Validators.MINUS_ONE_OR_GT_ZERO);
          String connectionLoadBalancingPolicyClassName = XMLConfigurationUtil.getString(e,
                                                                                         "connection-load-balancing-policy-class-name",
-                                                                                        ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
+                                                                                        HornetQClient.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
                                                                                         Validators.NOT_NULL_OR_EMPTY);
          long discoveryInitialWaitTimeout = XMLConfigurationUtil.getLong(e,
                                                                          "discovery-initial-wait-timeout",
-                                                                         ClientSessionFactoryImpl.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT,
+                                                                         HornetQClient.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT,
                                                                          Validators.GT_ZERO);
          String groupid = XMLConfigurationUtil.getString(e, "group-id", null, Validators.NO_CHECK);
          List<String> jndiBindings = new ArrayList<String>();
