@@ -17,8 +17,8 @@ import java.util.Map;
 
 import javax.management.MBeanOperationInfo;
 
-import org.hornetq.core.server.management.Operation;
-import org.hornetq.core.server.management.Parameter;
+import org.hornetq.api.core.management.Operation;
+import org.hornetq.api.core.management.Parameter;
 
 /**
  * A JMSQueueControl is used to manage a JMS queue.

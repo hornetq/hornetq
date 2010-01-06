@@ -19,8 +19,8 @@ import javax.management.MBeanOperationInfo;
 
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.config.TransportConfiguration;
-import org.hornetq.core.server.management.Operation;
-import org.hornetq.core.server.management.Parameter;
+import org.hornetq.api.core.management.Operation;
+import org.hornetq.api.core.management.Parameter;
 import org.hornetq.spi.core.remoting.ConnectorFactory;
 
 /**

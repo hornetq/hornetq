@@ -21,8 +21,8 @@ import java.util.List;
 import javax.management.MBeanOperationInfo;
 import javax.management.MBeanParameterInfo;
 
-import org.hornetq.core.server.management.Operation;
-import org.hornetq.core.server.management.Parameter;
+import org.hornetq.api.core.management.Operation;
+import org.hornetq.api.core.management.Parameter;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>

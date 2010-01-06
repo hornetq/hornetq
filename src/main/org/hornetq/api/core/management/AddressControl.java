@@ -13,8 +13,6 @@
 
 package org.hornetq.api.core.management;
 
-import org.hornetq.core.server.management.Operation;
-import org.hornetq.core.server.management.Parameter;
 
 /**
  * An AddressControl is used to manage an address.
