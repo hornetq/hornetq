@@ -34,16 +34,13 @@
         <listitem>
             <para>libHornetQAIO64.so - x86 64 bits</para>
         </listitem>
-        <listitem>
-            <para>libHornetQAIO_ia64.so - Itanium 64 bits</para>
-        </listitem>
     </itemizedlist>
     <para>When using libaio, HornetQ will always try loading these files as long as they are on the
             <link linkend="using-server.library.path">library path</link>.</para>
     <section>
         <title>Compiling the native libraries</title>
-        <para>In the case that you are using Linux on a platform other than x86_32, x86_64 or IA64
-            (Itanium), (for example IBM POWER) you may need to compile the native library, since we
+        <para>In the case that you are using Linux on a platform other than x86_32 or x86_64
+            (for example Itanium 64 bits or IBM Power) you may need to compile the native library, since we
             do not distribute binaries for those platforms with the release.</para>
         <section>
             <title>Install requirements</title>
