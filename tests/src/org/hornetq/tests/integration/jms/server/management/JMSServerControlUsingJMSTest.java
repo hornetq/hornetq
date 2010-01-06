@@ -86,7 +86,7 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
    @Override
    protected JMSServerControl createManagementControl() throws Exception
    {
-      HornetQQueue managementQueue = (HornetQQueue) HornetQJMSClient.createQueue(ConfigurationImpl.DEFAULT_MANAGEMENT_ADDRESS.toString());
+      HornetQQueue managementQueue = (HornetQQueue) HornetQJMSClient.createQueue("hornetq.management");
       final JMSMessagingProxy proxy = new JMSMessagingProxy(session, managementQueue, ResourceNames.JMS_SERVER);
 
       return new JMSServerControl()
