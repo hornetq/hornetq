@@ -18,7 +18,7 @@ import java.util.Set;
 
 import javax.management.MBeanServer;
 
-import org.hornetq.api.SimpleString;
+import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.management.impl.HornetQServerControlImpl;
 import org.hornetq.core.persistence.StorageManager;

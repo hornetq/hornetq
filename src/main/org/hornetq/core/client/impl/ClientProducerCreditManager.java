@@ -13,7 +13,7 @@
 
 package org.hornetq.core.client.impl;
 
-import org.hornetq.api.SimpleString;
+import org.hornetq.api.core.SimpleString;
 
 /**
  * A ClientProducerCreditManager

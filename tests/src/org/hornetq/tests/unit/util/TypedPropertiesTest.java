@@ -17,9 +17,9 @@ import java.util.Iterator;
 
 import junit.framework.Assert;
 
-import org.hornetq.api.SimpleString;
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
+import org.hornetq.api.core.SimpleString;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.TypedProperties;

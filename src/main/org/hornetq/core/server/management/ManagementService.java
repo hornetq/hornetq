@@ -18,7 +18,7 @@ import java.util.concurrent.ScheduledExecutorService;
 
 import javax.management.ObjectName;
 
-import org.hornetq.api.SimpleString;
+import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.management.ObjectNameBuilder;
 import org.hornetq.core.cluster.DiscoveryGroup;

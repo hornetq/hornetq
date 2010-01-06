@@ -23,8 +23,8 @@ import java.util.concurrent.ScheduledExecutorService;
 
 import junit.framework.Assert;
 
-import org.hornetq.api.Pair;
-import org.hornetq.api.SimpleString;
+import org.hornetq.api.core.Pair;
+import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.paging.PageTransactionInfo;

@@ -22,8 +22,8 @@ import javax.jms.JMSException;
 import javax.jms.MapMessage;
 import javax.jms.MessageFormatException;
 
-import org.hornetq.api.SimpleString;
 import org.hornetq.api.core.PropertyConversionException;
+import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.utils.TypedProperties;

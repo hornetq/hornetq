@@ -18,7 +18,7 @@ import java.util.Set;
 
 import junit.framework.Assert;
 
-import org.hornetq.api.SimpleString;
+import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.*;
 import org.hornetq.api.core.management.AddressControl;

@@ -23,7 +23,7 @@ import javax.jms.Session;
 
 import junit.framework.Assert;
 
-import org.hornetq.api.Pair;
+import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;

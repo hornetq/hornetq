@@ -20,10 +20,10 @@ import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 
-import org.hornetq.api.Pair;
-import org.hornetq.api.SimpleString;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Message;
+import org.hornetq.api.core.Pair;
+import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.*;
 import org.hornetq.api.core.management.ManagementHelper;

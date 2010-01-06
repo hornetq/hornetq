@@ -13,7 +13,7 @@
 
 package org.hornetq.core.deployers.impl;
 
-import org.hornetq.api.SimpleString;
+import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.config.impl.Validators;
 import org.hornetq.core.deployers.DeploymentManager;
 import org.hornetq.core.logging.Logger;

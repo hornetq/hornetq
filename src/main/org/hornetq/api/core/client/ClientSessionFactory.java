@@ -15,9 +15,9 @@ package org.hornetq.api.core.client;
 
 import java.util.List;
 
-import org.hornetq.api.Pair;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Interceptor;
+import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.loadbalance.ConnectionLoadBalancingPolicy;
 
@@ -142,8 +142,8 @@ public interface ClientSessionFactory
     * that sessions created by this factory will use to connect
     * to HornetQ servers or <code>null</code> if the factory is using discovery group.
     * 
-    * The backup configuration (returned by {@link org.hornetq.api.Pair#b}) can be <code>null</code> if there is no
-    * backup for the corresponding live configuration (returned by {@link org.hornetq.api.Pair#a})
+    * The backup configuration (returned by {@link org.hornetq.api.core.Pair#b}) can be <code>null</code> if there is no
+    * backup for the corresponding live configuration (returned by {@link org.hornetq.api.core.Pair#a})
     * 
     * @return a list of pair of TransportConfiguration corresponding to the live - backup nodes
     */

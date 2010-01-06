@@ -21,8 +21,8 @@ import java.util.Map;
 import javax.management.MBeanInfo;
 import javax.management.StandardMBean;
 
-import org.hornetq.api.Pair;
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.management.AddressControl;
 import org.hornetq.api.core.management.HornetQServerControl;
 import org.hornetq.api.core.management.QueueControl;

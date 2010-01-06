@@ -15,7 +15,7 @@ package org.hornetq.tests.unit.core.config.impl;
 
 import junit.framework.Assert;
 
-import org.hornetq.api.SimpleString;
+import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.FileConfiguration;

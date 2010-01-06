@@ -23,8 +23,8 @@ import javax.management.MBeanServerFactory;
 
 import junit.framework.Assert;
 
-import org.hornetq.api.Pair;
-import org.hornetq.api.SimpleString;
+import org.hornetq.api.core.Pair;
+import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.management.ClusterConnectionControl;
 import org.hornetq.api.core.management.NotificationType;

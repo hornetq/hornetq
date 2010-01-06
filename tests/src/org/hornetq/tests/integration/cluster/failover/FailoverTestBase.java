@@ -18,7 +18,7 @@ import java.util.Map;
 
 import junit.framework.Assert;
 
-import org.hornetq.api.SimpleString;
+import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSessionFactoryImpl;
 import org.hornetq.api.core.client.HornetQClient;

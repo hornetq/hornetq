@@ -16,8 +16,8 @@ package org.hornetq.core.remoting.impl.wireformat;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.hornetq.api.SimpleString;
 import org.hornetq.api.core.HornetQBuffer;
+import org.hornetq.api.core.SimpleString;
 
 /**
  * 

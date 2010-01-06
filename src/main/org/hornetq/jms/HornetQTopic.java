@@ -16,8 +16,8 @@ package org.hornetq.jms;
 import javax.jms.JMSException;
 import javax.jms.Topic;
 
-import org.hornetq.api.Pair;
-import org.hornetq.api.SimpleString;
+import org.hornetq.api.core.Pair;
+import org.hornetq.api.core.SimpleString;
 import org.hornetq.jms.HornetQDestination;
 
 /**

@@ -13,7 +13,7 @@
 
 package org.hornetq.core.server.cluster;
 
-import org.hornetq.api.Pair;
+import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.core.server.management.NotificationService;

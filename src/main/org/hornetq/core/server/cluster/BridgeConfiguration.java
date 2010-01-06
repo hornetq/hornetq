@@ -15,7 +15,7 @@ package org.hornetq.core.server.cluster;
 
 import java.io.Serializable;
 
-import org.hornetq.api.Pair;
+import org.hornetq.api.core.Pair;
 
 /**
  * A BridgeConfiguration

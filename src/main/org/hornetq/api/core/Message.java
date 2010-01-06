@@ -16,7 +16,6 @@ package org.hornetq.api.core;
 import java.util.Map;
 import java.util.Set;
 
-import org.hornetq.api.SimpleString;
 
 /**
  * A Message is a routable instance that has a payload.

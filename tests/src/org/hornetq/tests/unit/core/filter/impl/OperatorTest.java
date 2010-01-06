@@ -17,7 +17,7 @@ import java.util.HashSet;
 
 import junit.framework.Assert;
 
-import org.hornetq.api.SimpleString;
+import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.filter.impl.Operator;
 import org.hornetq.tests.util.UnitTestCase;
 

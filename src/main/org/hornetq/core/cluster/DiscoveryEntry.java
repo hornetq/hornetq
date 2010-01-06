@@ -13,7 +13,7 @@
 
 package org.hornetq.core.cluster;
 
-import org.hornetq.api.Pair;
+import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
 
 /**

@@ -16,8 +16,8 @@ package org.hornetq.jms.client;
 import javax.jms.JMSException;
 import javax.jms.TextMessage;
 
-import org.hornetq.api.SimpleString;
 import org.hornetq.api.core.HornetQBuffer;
+import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.core.logging.Logger;

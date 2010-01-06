@@ -14,7 +14,7 @@ package org.hornetq.tests.integration.cluster.restart;
 
 import java.util.Collection;
 
-import org.hornetq.api.SimpleString;
+import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.tests.integration.cluster.distribution.ClusterTestBase;
 

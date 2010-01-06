@@ -13,7 +13,7 @@
 
 package org.hornetq.core.paging;
 
-import org.hornetq.api.SimpleString;
+import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.ServerMessage;

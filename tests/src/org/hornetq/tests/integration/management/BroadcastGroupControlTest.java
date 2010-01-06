@@ -18,7 +18,7 @@ import java.util.List;
 
 import junit.framework.Assert;
 
-import org.hornetq.api.Pair;
+import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.management.BroadcastGroupControl;
 import org.hornetq.core.config.Configuration;

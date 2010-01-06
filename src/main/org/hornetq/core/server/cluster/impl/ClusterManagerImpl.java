@@ -25,8 +25,8 @@ import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 
-import org.hornetq.api.Pair;
-import org.hornetq.api.SimpleString;
+import org.hornetq.api.core.Pair;
+import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.cluster.DiscoveryGroup;
 import org.hornetq.core.cluster.impl.DiscoveryGroupImpl;

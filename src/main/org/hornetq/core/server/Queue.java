@@ -18,7 +18,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.Executor;
 
-import org.hornetq.api.SimpleString;
+import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.transaction.Transaction;
 

@@ -22,7 +22,7 @@
 
 package org.hornetq.core.filter.impl;
 
-import org.hornetq.api.SimpleString;
+import org.hornetq.api.core.SimpleString;
 
 /**
  * 

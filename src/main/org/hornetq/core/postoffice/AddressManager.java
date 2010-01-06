@@ -14,7 +14,7 @@ package org.hornetq.core.postoffice;
 
 import java.util.Map;
 
-import org.hornetq.api.SimpleString;
+import org.hornetq.api.core.SimpleString;
 
 /**
  * Used to maintain addresses and Bindings.

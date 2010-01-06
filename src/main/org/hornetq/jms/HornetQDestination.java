@@ -20,7 +20,7 @@ import javax.naming.NamingException;
 import javax.naming.Reference;
 import javax.naming.Referenceable;
 
-import org.hornetq.api.SimpleString;
+import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.jms.HornetQQueue;
 import org.hornetq.jms.HornetQTemporaryQueue;

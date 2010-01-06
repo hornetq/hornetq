@@ -15,8 +15,8 @@ package org.hornetq.core.buffers.impl;
 
 import java.nio.ByteBuffer;
 
-import org.hornetq.api.SimpleString;
 import org.hornetq.api.core.HornetQBuffer;
+import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.impl.MessageInternal;
 

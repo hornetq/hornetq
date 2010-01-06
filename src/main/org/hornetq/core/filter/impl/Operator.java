@@ -24,7 +24,7 @@ package org.hornetq.core.filter.impl;
 
 import java.util.HashSet;
 
-import org.hornetq.api.SimpleString;
+import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.logging.Logger;
 
 /**

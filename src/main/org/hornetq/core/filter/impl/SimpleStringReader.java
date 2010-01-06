@@ -11,12 +11,12 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq;
+package org.hornetq.core.filter.impl;
 
 import java.io.IOException;
 import java.io.Reader;
 
-import org.hornetq.api.SimpleString;
+import org.hornetq.api.core.SimpleString;
 
 
 /**

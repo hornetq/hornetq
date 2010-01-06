@@ -16,7 +16,7 @@ package org.hornetq.jms.server.config.impl;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.hornetq.api.Pair;
+import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSessionFactoryImpl;
 import org.hornetq.api.core.client.HornetQClient;

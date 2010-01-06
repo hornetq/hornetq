@@ -14,7 +14,7 @@ package org.hornetq.core.postoffice;
 
 import java.util.List;
 
-import org.hornetq.api.SimpleString;
+import org.hornetq.api.core.SimpleString;
 
 /**
  * USed to hold a hierarchichal style address, delimited by a '.'.

@@ -26,7 +26,7 @@ import javax.management.MBeanServerInvocationHandler;
 import javax.management.ObjectName;
 import javax.naming.InitialContext;
 
-import org.hornetq.api.Pair;
+import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.management.ObjectNameBuilder;

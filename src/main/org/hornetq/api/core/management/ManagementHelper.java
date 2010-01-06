@@ -18,8 +18,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import org.hornetq.api.SimpleString;
 import org.hornetq.api.core.Message;
+import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.utils.json.JSONArray;
 import org.hornetq.utils.json.JSONObject;

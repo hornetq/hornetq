@@ -18,7 +18,7 @@ import java.util.Set;
 
 import javax.management.MBeanOperationInfo;
 
-import org.hornetq.api.SimpleString;
+import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.management.AddressControl;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.paging.PagingManager;

@@ -19,7 +19,7 @@ import javax.management.MBeanServer;
 import javax.management.MBeanServerInvocationHandler;
 import javax.management.ObjectName;
 
-import org.hornetq.api.SimpleString;
+import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.management.AcceptorControl;
 import org.hornetq.api.core.management.AddressControl;
 import org.hornetq.api.core.management.BridgeControl;

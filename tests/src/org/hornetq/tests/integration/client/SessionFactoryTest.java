@@ -23,8 +23,8 @@ import java.util.Map;
 
 import junit.framework.Assert;
 
-import org.hornetq.api.Pair;
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;

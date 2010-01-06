@@ -15,7 +15,7 @@ package org.hornetq.core.server.cluster;
 
 import java.util.Map;
 
-import org.hornetq.api.SimpleString;
+import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.server.HornetQComponent;
 
 /**

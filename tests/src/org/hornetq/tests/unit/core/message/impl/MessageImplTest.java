@@ -17,8 +17,8 @@ import java.util.Set;
 
 import junit.framework.Assert;
 
-import org.hornetq.api.SimpleString;
 import org.hornetq.api.core.Message;
+import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.client.impl.ClientMessageImpl;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.tests.util.RandomUtil;

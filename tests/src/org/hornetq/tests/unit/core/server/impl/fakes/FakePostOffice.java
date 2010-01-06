@@ -13,7 +13,7 @@
 
 package org.hornetq.tests.unit.core.server.impl.fakes;
 
-import org.hornetq.api.SimpleString;
+import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.paging.PagingManager;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.Bindings;

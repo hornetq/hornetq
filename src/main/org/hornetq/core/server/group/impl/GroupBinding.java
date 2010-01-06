@@ -12,7 +12,7 @@
  */
 package org.hornetq.core.server.group.impl;
 
-import org.hornetq.api.SimpleString;
+import org.hornetq.api.core.SimpleString;
 
 /**
  * A group binding

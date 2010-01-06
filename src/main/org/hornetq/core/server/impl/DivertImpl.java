@@ -13,7 +13,7 @@
 
 package org.hornetq.core.server.impl;
 
-import org.hornetq.api.SimpleString;
+import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.persistence.StorageManager;

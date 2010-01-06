@@ -23,7 +23,7 @@ import javax.jms.TextMessage;
 
 import junit.framework.Assert;
 
-import org.hornetq.api.SimpleString;
+import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.jms.HornetQConnectionFactory;
 import org.hornetq.api.jms.HornetQJMSClient;

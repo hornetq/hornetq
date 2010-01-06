@@ -14,7 +14,7 @@ package org.hornetq.api.core.client;
 
 import java.util.UUID;
 
-import org.hornetq.api.SimpleString;
+import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.client.impl.ClientMessageImpl;
 
 /**

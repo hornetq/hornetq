@@ -16,8 +16,8 @@ package org.hornetq.tests.performance.paging;
 import java.util.HashMap;
 import java.util.concurrent.CountDownLatch;
 
-import org.hornetq.api.SimpleString;
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;

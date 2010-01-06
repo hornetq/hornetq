@@ -16,8 +16,8 @@ package org.hornetq.core.filter.impl;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.hornetq.api.SimpleString;
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.ServerMessage;

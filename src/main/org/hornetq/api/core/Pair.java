@@ -11,7 +11,7 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.api;
+package org.hornetq.api.core;
 
 import java.io.Serializable;
 
