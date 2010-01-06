@@ -39,7 +39,6 @@ Copyright 2009 Red Hat, Inc.
    <mkdir dir="${dest.bin.dir}/native"/>
    <copy todir="${dest.bin.dir}/native" file="${src.bin.dir}/libHornetQAIO32.so"/>
    <copy todir="${dest.bin.dir}/native" file="${src.bin.dir}/libHornetQAIO64.so"/>
-   <copy todir="${dest.bin.dir}/native" file="${src.bin.dir}/libHornetQAIO_ia64.so"/>
    </target>
 
    <target name="create-profile">
