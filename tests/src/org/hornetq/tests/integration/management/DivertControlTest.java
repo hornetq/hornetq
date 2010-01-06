@@ -16,7 +16,7 @@ package org.hornetq.tests.integration.management;
 import junit.framework.Assert;
 
 import org.hornetq.api.SimpleString;
-import org.hornetq.api.core.config.TransportConfiguration;
+import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.management.DivertControl;
 import org.hornetq.api.core.management.ObjectNameBuilder;
 import org.hornetq.core.config.Configuration;

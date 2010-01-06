@@ -34,9 +34,9 @@ import javax.naming.Reference;
 import javax.naming.Referenceable;
 
 import org.hornetq.api.Pair;
+import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
-import org.hornetq.api.core.config.TransportConfiguration;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.jms.client.HornetQConnection;
 import org.hornetq.jms.referenceable.ConnectionFactoryObjectFactory;

@@ -14,7 +14,7 @@ package org.hornetq.core.remoting;
 
 import java.util.concurrent.locks.Lock;
 
-import org.hornetq.api.core.exception.HornetQException;
+import org.hornetq.api.core.HornetQException;
 
 /**
  * A channel is a way of interleaving data meant for different endpoints over the same {@link org.hornetq.core.remoting.RemotingConnection}.

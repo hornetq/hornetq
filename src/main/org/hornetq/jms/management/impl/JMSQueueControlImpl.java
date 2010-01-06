@@ -18,7 +18,7 @@ import java.util.Map;
 import javax.management.MBeanInfo;
 import javax.management.StandardMBean;
 
-import org.hornetq.api.core.exception.HornetQException;
+import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.management.MessageCounterInfo;
 import org.hornetq.api.core.management.QueueControl;
 import org.hornetq.api.jms.HornetQJMSClient;

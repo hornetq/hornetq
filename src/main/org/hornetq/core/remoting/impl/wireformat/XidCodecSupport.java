@@ -15,7 +15,7 @@ package org.hornetq.core.remoting.impl.wireformat;
 
 import javax.transaction.xa.Xid;
 
-import org.hornetq.api.core.buffers.HornetQBuffer;
+import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.core.transaction.impl.XidImpl;
 import org.hornetq.utils.DataConstants;
 

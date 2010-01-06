@@ -26,7 +26,7 @@
  * 
  * <h2>Usage</h2>
  * 
- * Always use the static methods declared at {@link  org.hornetq.api.core.buffers.HornetQBuffers} to create the buffers.
+ * Always use the static methods declared at {@link  org.hornetq.api.core.HornetQBuffers} to create the buffers.
 */
 package org.hornetq.api.core.buffers;
 

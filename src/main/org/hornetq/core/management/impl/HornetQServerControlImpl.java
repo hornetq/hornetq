@@ -34,8 +34,8 @@ import javax.management.NotificationListener;
 import javax.transaction.xa.Xid;
 
 import org.hornetq.api.SimpleString;
-import org.hornetq.api.core.config.TransportConfiguration;
-import org.hornetq.api.core.exception.HornetQException;
+import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.management.AddressControl;
 import org.hornetq.api.core.management.HornetQServerControl;
 import org.hornetq.api.core.management.NotificationType;

@@ -3,11 +3,11 @@ package org.hornetq.tests.integration.client;
 import junit.framework.Assert;
 import junit.framework.TestCase;
 
+import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.Interceptor;
+import org.hornetq.api.core.Message;
+import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.*;
-import org.hornetq.api.core.config.TransportConfiguration;
-import org.hornetq.api.core.exception.HornetQException;
-import org.hornetq.api.core.interceptor.Interceptor;
-import org.hornetq.api.core.message.Message;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.logging.Logger;

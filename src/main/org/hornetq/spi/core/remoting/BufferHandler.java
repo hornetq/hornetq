@@ -12,7 +12,7 @@
  */
 package org.hornetq.spi.core.remoting;
 
-import org.hornetq.api.core.buffers.HornetQBuffer;
+import org.hornetq.api.core.HornetQBuffer;
 
 /**
  * A BufferHandler that will handle buffers received by an acceptor.
@@ -32,7 +32,7 @@ public interface BufferHandler
    void bufferReceived(Object connectionID, HornetQBuffer buffer);
 
    /**
-    * called by the remoting connection prior to {@link org.hornetq.spi.core.remoting.BufferHandler#bufferReceived(Object, org.hornetq.api.core.buffers.HornetQBuffer)}.
+    * called by the remoting connection prior to {@link org.hornetq.spi.core.remoting.BufferHandler#bufferReceived(Object, org.hornetq.api.core.HornetQBuffer)}.
     * <p/>
     * The implementation should return true if there is enough data in the buffer to decode. otherwise false.
     *

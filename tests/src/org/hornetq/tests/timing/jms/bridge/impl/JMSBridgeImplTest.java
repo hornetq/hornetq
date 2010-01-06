@@ -40,7 +40,7 @@ import javax.transaction.TransactionManager;
 
 import junit.framework.Assert;
 
-import org.hornetq.api.core.config.TransportConfiguration;
+import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.jms.HornetQConnectionFactory;
 import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.core.config.Configuration;

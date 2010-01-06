@@ -13,8 +13,8 @@
 
 package org.hornetq.spi.core.remoting;
 
-import org.hornetq.api.core.buffers.HornetQBuffer;
-import org.hornetq.api.core.exception.HornetQException;
+import org.hornetq.api.core.HornetQBuffer;
+import org.hornetq.api.core.HornetQException;
 
 /**
  * The connection used by a channel to write data to.

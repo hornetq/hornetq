@@ -22,9 +22,9 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Logger;
 
+import org.hornetq.api.core.Message;
+import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.*;
-import org.hornetq.api.core.config.TransportConfiguration;
-import org.hornetq.api.core.message.Message;
 import org.hornetq.integration.transports.netty.NettyConnectorFactory;
 import org.hornetq.integration.transports.netty.TransportConstants;
 import org.hornetq.utils.TokenBucketLimiter;

@@ -13,7 +13,7 @@
 
 package org.hornetq.api.core.client;
 
-import org.hornetq.api.core.exception.HornetQException;
+import org.hornetq.api.core.HornetQException;
 import org.hornetq.core.remoting.FailureListener;
 
 /**

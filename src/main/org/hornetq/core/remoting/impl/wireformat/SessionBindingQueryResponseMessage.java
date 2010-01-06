@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.hornetq.api.SimpleString;
-import org.hornetq.api.core.buffers.HornetQBuffer;
+import org.hornetq.api.core.HornetQBuffer;
 
 /**
  * 

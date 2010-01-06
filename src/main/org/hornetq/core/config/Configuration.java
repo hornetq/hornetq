@@ -19,8 +19,8 @@ import java.util.Map;
 import java.util.Set;
 
 import org.hornetq.api.SimpleString;
-import org.hornetq.api.core.config.TransportConfiguration;
-import org.hornetq.api.core.interceptor.Interceptor;
+import org.hornetq.api.core.Interceptor;
+import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.server.JournalType;
 import org.hornetq.core.server.cluster.BridgeConfiguration;

@@ -18,11 +18,11 @@ import java.util.HashMap;
 import junit.framework.Assert;
 
 import org.hornetq.api.SimpleString;
+import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.ClientSessionFactoryImpl;
 import org.hornetq.api.core.client.HornetQClient;
-import org.hornetq.api.core.config.TransportConfiguration;
 import org.hornetq.api.core.management.AcceptorControl;
 import org.hornetq.api.core.management.NotificationType;
 import org.hornetq.core.config.Configuration;

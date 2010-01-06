@@ -16,9 +16,9 @@ package org.hornetq.tests.integration.clientcrash;
 import junit.framework.Assert;
 
 import org.hornetq.api.SimpleString;
+import org.hornetq.api.core.Message;
+import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.*;
-import org.hornetq.api.core.config.TransportConfiguration;
-import org.hornetq.api.core.message.Message;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.integration.transports.netty.NettyConnectorFactory;
 import org.hornetq.tests.util.RandomUtil;

@@ -22,8 +22,8 @@ import javax.jms.MessageProducer;
 import javax.jms.Session;
 
 import org.hornetq.api.Pair;
+import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.HornetQClient;
-import org.hornetq.api.core.config.TransportConfiguration;
 import org.hornetq.jms.HornetQConnectionFactory;
 
 /**

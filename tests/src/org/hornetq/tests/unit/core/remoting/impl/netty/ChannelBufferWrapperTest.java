@@ -13,7 +13,7 @@
 
 package org.hornetq.tests.unit.core.remoting.impl.netty;
 
-import org.hornetq.api.core.buffers.HornetQBuffer;
+import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.core.buffers.impl.ChannelBufferWrapper;
 import org.hornetq.tests.unit.core.remoting.HornetQBufferTestBase;
 import org.jboss.netty.buffer.ChannelBuffer;

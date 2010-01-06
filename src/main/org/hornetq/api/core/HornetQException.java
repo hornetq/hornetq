@@ -11,7 +11,7 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.api.core.exception;
+package org.hornetq.api.core;
 
 /**
  * 

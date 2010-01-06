@@ -19,9 +19,9 @@ import java.util.List;
 
 import junit.framework.Assert;
 
-import org.hornetq.api.core.buffers.HornetQBuffer;
-import org.hornetq.api.core.buffers.HornetQBuffers;
-import org.hornetq.api.core.exception.HornetQException;
+import org.hornetq.api.core.HornetQBuffer;
+import org.hornetq.api.core.HornetQBuffers;
+import org.hornetq.api.core.HornetQException;
 import org.hornetq.integration.transports.netty.NettyConnection;
 import org.hornetq.spi.core.remoting.Connection;
 import org.hornetq.spi.core.remoting.ConnectionLifeCycleListener;

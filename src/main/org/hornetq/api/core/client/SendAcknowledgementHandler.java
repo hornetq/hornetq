@@ -13,7 +13,7 @@
 
 package org.hornetq.api.core.client;
 
-import org.hornetq.api.core.message.Message;
+import org.hornetq.api.core.Message;
 
 /**
  * A SendAcknowledgementHandler notifies a client when an message sent asynchronously has been received by the server.

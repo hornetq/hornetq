@@ -15,8 +15,8 @@ package org.hornetq.core.remoting;
 
 import java.util.List;
 
-import org.hornetq.api.core.buffers.HornetQBuffer;
-import org.hornetq.api.core.exception.HornetQException;
+import org.hornetq.api.core.HornetQBuffer;
+import org.hornetq.api.core.HornetQException;
 import org.hornetq.spi.core.remoting.BufferHandler;
 import org.hornetq.spi.core.remoting.Connection;
 

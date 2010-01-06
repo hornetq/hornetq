@@ -23,9 +23,9 @@ import java.util.Map;
 
 import org.hornetq.api.Pair;
 import org.hornetq.api.SimpleString;
+import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSessionFactoryImpl;
 import org.hornetq.api.core.client.HornetQClient;
-import org.hornetq.api.core.config.TransportConfiguration;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.JournalType;
 import org.hornetq.core.server.cluster.BridgeConfiguration;

@@ -27,9 +27,9 @@ import javax.jms.Session;
 import junit.framework.Assert;
 
 import org.hornetq.api.Pair;
+import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.HornetQClient;
-import org.hornetq.api.core.config.TransportConfiguration;
-import org.hornetq.api.core.exception.HornetQException;
 import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.RemotingConnection;

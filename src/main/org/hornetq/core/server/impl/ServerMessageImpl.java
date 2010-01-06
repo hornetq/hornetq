@@ -17,7 +17,7 @@ import java.io.InputStream;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.hornetq.api.SimpleString;
-import org.hornetq.api.core.message.Message;
+import org.hornetq.api.core.Message;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.paging.PagingStore;

@@ -17,7 +17,7 @@ import java.util.Map;
 
 import javax.management.MBeanOperationInfo;
 
-import org.hornetq.api.core.config.TransportConfiguration;
+import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.management.AcceptorControl;
 import org.hornetq.api.core.management.AddressControl;
 import org.hornetq.core.persistence.StorageManager;

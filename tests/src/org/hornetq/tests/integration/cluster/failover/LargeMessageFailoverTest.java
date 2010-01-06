@@ -16,7 +16,7 @@ package org.hornetq.tests.integration.cluster.failover;
 import junit.framework.Assert;
 import junit.framework.TestSuite;
 
-import org.hornetq.api.core.buffers.HornetQBuffer;
+import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.tests.util.UnitTestCase;

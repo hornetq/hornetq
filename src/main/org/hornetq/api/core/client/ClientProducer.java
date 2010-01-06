@@ -14,8 +14,8 @@
 package org.hornetq.api.core.client;
 
 import org.hornetq.api.SimpleString;
-import org.hornetq.api.core.exception.HornetQException;
-import org.hornetq.api.core.message.Message;
+import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.Message;
 
 /**
  * A ClientProducer is ised to send messages to a specific address. Messages are then routed on the server to any queues

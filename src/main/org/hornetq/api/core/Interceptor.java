@@ -11,9 +11,8 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.api.core.interceptor;
+package org.hornetq.api.core;
 
-import org.hornetq.api.core.exception.HornetQException;
 import org.hornetq.core.remoting.Packet;
 import org.hornetq.core.remoting.RemotingConnection;
 

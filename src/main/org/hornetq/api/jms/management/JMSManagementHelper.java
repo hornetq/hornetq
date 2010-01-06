@@ -33,7 +33,7 @@ public class JMSManagementHelper
 
    // Static --------------------------------------------------------
 
-   private static org.hornetq.api.core.message.Message getCoreMessage(final Message jmsMessage)
+   private static org.hornetq.api.core.Message getCoreMessage(final Message jmsMessage)
    {
       if (jmsMessage instanceof HornetQMessage == false)
       {

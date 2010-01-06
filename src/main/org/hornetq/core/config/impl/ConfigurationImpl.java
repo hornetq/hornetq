@@ -22,7 +22,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.hornetq.api.SimpleString;
-import org.hornetq.api.core.config.TransportConfiguration;
+import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.logging.impl.JULLogDelegateFactory;
 import org.hornetq.core.server.JournalType;

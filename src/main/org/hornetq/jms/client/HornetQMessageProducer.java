@@ -31,10 +31,10 @@ import javax.jms.Topic;
 import javax.jms.TopicPublisher;
 
 import org.hornetq.api.SimpleString;
+import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.api.core.exception.HornetQException;
 import org.hornetq.jms.HornetQDestination;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.utils.UUIDGenerator;

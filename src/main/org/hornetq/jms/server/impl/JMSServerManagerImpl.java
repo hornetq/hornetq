@@ -27,7 +27,7 @@ import javax.naming.NameNotFoundException;
 import javax.naming.NamingException;
 
 import org.hornetq.api.Pair;
-import org.hornetq.api.core.config.TransportConfiguration;
+import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.jms.HornetQConnectionFactory;
 import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.jms.HornetQQueue;

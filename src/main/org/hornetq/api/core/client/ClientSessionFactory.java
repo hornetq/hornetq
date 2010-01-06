@@ -16,10 +16,10 @@ package org.hornetq.api.core.client;
 import java.util.List;
 
 import org.hornetq.api.Pair;
+import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.Interceptor;
+import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.loadbalance.ConnectionLoadBalancingPolicy;
-import org.hornetq.api.core.config.TransportConfiguration;
-import org.hornetq.api.core.exception.HornetQException;
-import org.hornetq.api.core.interceptor.Interceptor;
 
 /**
  * A ClientSessionFactory is the entry point to create and configure HornetQ resources to produce and consume messages.
@@ -410,7 +410,7 @@ public interface ClientSessionFactory
     * assign a group ID to the messages they sent.
     * 
     * if <code>true</code>, a random unique group ID is created and set on each message for the property
-    * {@link org.hornetq.api.core.message.Message#HDR_GROUP_ID}.
+    * {@link org.hornetq.api.core.Message#HDR_GROUP_ID}.
     * Default value is {@link HornetQClient#DEFAULT_AUTO_GROUP}.
     * 
     * @return whether producers will automatically assign a group ID to their messages
@@ -426,7 +426,7 @@ public interface ClientSessionFactory
    void setAutoGroup(boolean autoGroup);
 
    /**
-    * Returns the group ID that will be eventually set on each message for the property {@link org.hornetq.api.core.message.Message#HDR_GROUP_ID}.
+    * Returns the group ID that will be eventually set on each message for the property {@link org.hornetq.api.core.Message#HDR_GROUP_ID}.
     * 
     * Default value is is <code>null</code> and no group ID will be set on the messages.
     * 

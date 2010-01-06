@@ -17,7 +17,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledExecutorService;
 
 import org.hornetq.api.SimpleString;
-import org.hornetq.api.core.message.Message;
+import org.hornetq.api.core.Message;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.persistence.StorageManager;

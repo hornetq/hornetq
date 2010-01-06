@@ -11,13 +11,12 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.api.core.message;
+package org.hornetq.api.core;
 
 import java.util.Map;
 import java.util.Set;
 
 import org.hornetq.api.SimpleString;
-import org.hornetq.api.core.buffers.HornetQBuffer;
 
 /**
  * A Message is a routable instance that has a payload.

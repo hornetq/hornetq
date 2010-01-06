@@ -13,8 +13,8 @@
 package org.hornetq.api.core.client;
 
 import org.hornetq.api.Pair;
+import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.loadbalance.RoundRobinConnectionLoadBalancingPolicy;
-import org.hornetq.api.core.config.TransportConfiguration;
 
 import java.util.List;
 

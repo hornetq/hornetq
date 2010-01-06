@@ -14,7 +14,7 @@
 package org.hornetq.core.cluster;
 
 import org.hornetq.api.Pair;
-import org.hornetq.api.core.config.TransportConfiguration;
+import org.hornetq.api.core.TransportConfiguration;
 
 /**
  * A DiscoveryEntry

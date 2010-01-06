@@ -15,7 +15,7 @@ package org.hornetq.utils;
 
 import java.lang.ref.SoftReference;
 
-import org.hornetq.api.core.buffers.HornetQBuffer;
+import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.core.logging.Logger;
 
 /**

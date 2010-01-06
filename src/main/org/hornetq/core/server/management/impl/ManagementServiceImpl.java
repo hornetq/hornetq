@@ -29,7 +29,7 @@ import javax.management.ObjectName;
 import javax.management.StandardMBean;
 
 import org.hornetq.api.SimpleString;
-import org.hornetq.api.core.config.TransportConfiguration;
+import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.management.AcceptorControl;
 import org.hornetq.api.core.management.BridgeControl;
 import org.hornetq.api.core.management.BroadcastGroupControl;

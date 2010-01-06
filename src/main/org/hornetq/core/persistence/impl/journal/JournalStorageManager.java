@@ -26,10 +26,10 @@ import javax.transaction.xa.Xid;
 
 import org.hornetq.api.Pair;
 import org.hornetq.api.SimpleString;
-import org.hornetq.api.core.buffers.HornetQBuffer;
-import org.hornetq.api.core.buffers.HornetQBuffers;
-import org.hornetq.api.core.exception.HornetQException;
-import org.hornetq.api.core.message.Message;
+import org.hornetq.api.core.HornetQBuffer;
+import org.hornetq.api.core.HornetQBuffers;
+import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.Message;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.journal.EncodingSupport;

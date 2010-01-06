@@ -11,7 +11,7 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.api.core.message;
+package org.hornetq.api.core;
 
 /**
  * A PropertyConversionException is thrown by Message methods

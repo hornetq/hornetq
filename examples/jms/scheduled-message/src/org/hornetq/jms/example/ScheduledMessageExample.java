@@ -24,7 +24,7 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
-import org.hornetq.api.core.message.Message;
+import org.hornetq.api.core.Message;
 import org.hornetq.common.example.HornetQExample;
 
 /**

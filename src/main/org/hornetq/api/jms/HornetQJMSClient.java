@@ -13,8 +13,8 @@
 package org.hornetq.api.jms;
 
 import org.hornetq.api.Pair;
+import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSessionFactory;
-import org.hornetq.api.core.config.TransportConfiguration;
 import org.hornetq.jms.HornetQConnectionFactory;
 import org.hornetq.jms.HornetQQueue;
 import org.hornetq.jms.HornetQTopic;

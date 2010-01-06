@@ -15,8 +15,8 @@ package org.hornetq.tests.integration.clientcrash;
 
 import java.util.Arrays;
 
+import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.*;
-import org.hornetq.api.core.config.TransportConfiguration;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.jms.client.HornetQTextMessage;
 

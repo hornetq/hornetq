@@ -18,7 +18,7 @@ import java.util.List;
 
 import javax.transaction.xa.Xid;
 
-import org.hornetq.api.core.buffers.HornetQBuffer;
+import org.hornetq.api.core.HornetQBuffer;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>

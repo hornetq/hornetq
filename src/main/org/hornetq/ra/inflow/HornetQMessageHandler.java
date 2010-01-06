@@ -21,12 +21,12 @@ import javax.resource.spi.endpoint.MessageEndpoint;
 import javax.resource.spi.endpoint.MessageEndpointFactory;
 
 import org.hornetq.api.SimpleString;
+import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.MessageHandler;
 import org.hornetq.api.core.client.ClientSession.QueueQuery;
-import org.hornetq.api.core.exception.HornetQException;
 import org.hornetq.jms.HornetQTopic;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.jms.client.HornetQMessage;

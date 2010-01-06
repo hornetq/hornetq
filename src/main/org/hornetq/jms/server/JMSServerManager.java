@@ -18,7 +18,7 @@ import java.util.List;
 import javax.naming.Context;
 
 import org.hornetq.api.Pair;
-import org.hornetq.api.core.config.TransportConfiguration;
+import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.core.server.HornetQServer;
 

@@ -15,7 +15,7 @@ package org.hornetq.core.remoting.server;
 
 import java.util.Set;
 
-import org.hornetq.api.core.interceptor.Interceptor;
+import org.hornetq.api.core.Interceptor;
 import org.hornetq.core.remoting.RemotingConnection;
 import org.hornetq.core.server.HornetQComponent;
 

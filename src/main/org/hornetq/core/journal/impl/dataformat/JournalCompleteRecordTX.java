@@ -13,7 +13,7 @@
 
 package org.hornetq.core.journal.impl.dataformat;
 
-import org.hornetq.api.core.buffers.HornetQBuffer;
+import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.core.journal.EncodingSupport;
 import org.hornetq.core.journal.impl.JournalImpl;
 

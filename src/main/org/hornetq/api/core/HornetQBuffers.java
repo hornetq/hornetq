@@ -11,7 +11,7 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.api.core.buffers;
+package org.hornetq.api.core;
 
 import java.nio.ByteBuffer;
 

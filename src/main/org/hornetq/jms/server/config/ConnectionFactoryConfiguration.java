@@ -16,7 +16,7 @@ package org.hornetq.jms.server.config;
 import java.util.List;
 
 import org.hornetq.api.Pair;
-import org.hornetq.api.core.config.TransportConfiguration;
+import org.hornetq.api.core.TransportConfiguration;
 
 /**
  * A ConnectionFactoryConfiguration

@@ -19,8 +19,8 @@ import java.util.Map;
 import junit.framework.Assert;
 import junit.framework.TestCase;
 
+import org.hornetq.api.core.Message;
 import org.hornetq.api.core.management.ManagementHelper;
-import org.hornetq.api.core.message.Message;
 import org.hornetq.core.client.impl.ClientMessageImpl;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.tests.util.RandomUtil;

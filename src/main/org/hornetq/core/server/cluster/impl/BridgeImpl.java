@@ -22,13 +22,13 @@ import java.util.concurrent.ScheduledExecutorService;
 
 import org.hornetq.api.Pair;
 import org.hornetq.api.SimpleString;
+import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.Message;
+import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.*;
-import org.hornetq.api.core.config.TransportConfiguration;
-import org.hornetq.api.core.exception.HornetQException;
 import org.hornetq.api.core.management.ManagementHelper;
 import org.hornetq.api.core.management.NotificationType;
 import org.hornetq.api.core.management.ResourceNames;
-import org.hornetq.api.core.message.Message;
 import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.filter.impl.FilterImpl;

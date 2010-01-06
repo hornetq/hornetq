@@ -17,7 +17,7 @@ import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
-import org.hornetq.api.core.buffers.HornetQBuffer;
+import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.core.remoting.impl.invm.InVMConnection;
 import org.hornetq.core.remoting.impl.invm.InVMConnector;
 import org.hornetq.spi.core.remoting.BufferHandler;

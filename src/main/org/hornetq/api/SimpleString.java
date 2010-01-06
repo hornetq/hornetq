@@ -30,11 +30,6 @@ import org.hornetq.utils.DataConstants;
  *
  */
 
- // TODO - implement an intern() method like in java.lang.String, since many Strings e.g. addresses, queue names, remote node ids are duplicated heavily
- //in bindings taking up more memory than they should
- //Intern can be called when receiving a sent message at the server (destination)
- //Also when receiving bindings remotely via bridge, the address, queue name and node id can be interned
- //
 public class SimpleString implements CharSequence, Serializable, Comparable<SimpleString>
 {
    private static final long serialVersionUID = 4204223851422244307L;

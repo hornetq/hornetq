@@ -34,11 +34,11 @@ import javax.jms.MessageNotReadableException;
 import javax.jms.MessageNotWriteableException;
 
 import org.hornetq.api.SimpleString;
-import org.hornetq.api.core.buffers.HornetQBuffer;
+import org.hornetq.api.core.HornetQBuffer;
+import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.PropertyConversionException;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.api.core.exception.HornetQException;
-import org.hornetq.api.core.message.PropertyConversionException;
 import org.hornetq.jms.HornetQDestination;
 import org.hornetq.api.jms.HornetQMessageConstants;
 import org.hornetq.core.client.impl.ClientMessageImpl;
@@ -570,7 +570,7 @@ public class HornetQMessage implements javax.jms.Message
    {
       return message.containsProperty(new SimpleString(name)) || name.equals(HornetQMessage.JMSXDELIVERYCOUNT) ||
              HornetQMessage.JMSXGROUPID.equals(name) &&
-             message.containsProperty(org.hornetq.api.core.message.Message.HDR_GROUP_ID);
+             message.containsProperty(org.hornetq.api.core.Message.HDR_GROUP_ID);
    }
 
    public boolean getBooleanProperty(final String name) throws JMSException
@@ -678,7 +678,7 @@ public class HornetQMessage implements javax.jms.Message
       {
          if (HornetQMessage.JMSXGROUPID.equals(name))
          {
-            return message.getStringProperty(org.hornetq.api.core.message.Message.HDR_GROUP_ID);
+            return message.getStringProperty(org.hornetq.api.core.Message.HDR_GROUP_ID);
          }
          else
          {
@@ -779,7 +779,7 @@ public class HornetQMessage implements javax.jms.Message
 
       if (HornetQMessage.JMSXGROUPID.equals(name))
       {
-         message.putStringProperty(org.hornetq.api.core.message.Message.HDR_GROUP_ID, new SimpleString(value));
+         message.putStringProperty(org.hornetq.api.core.Message.HDR_GROUP_ID, new SimpleString(value));
       }
       else
       {

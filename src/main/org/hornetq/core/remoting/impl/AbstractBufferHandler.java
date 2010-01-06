@@ -12,7 +12,7 @@
  */
 package org.hornetq.core.remoting.impl;
 
-import org.hornetq.api.core.buffers.HornetQBuffer;
+import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.spi.core.remoting.BufferHandler;
 import org.hornetq.utils.DataConstants;

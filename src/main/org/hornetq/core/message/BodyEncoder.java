@@ -15,8 +15,8 @@ package org.hornetq.core.message;
 
 import java.nio.ByteBuffer;
 
-import org.hornetq.api.core.buffers.HornetQBuffer;
-import org.hornetq.api.core.exception.HornetQException;
+import org.hornetq.api.core.HornetQBuffer;
+import org.hornetq.api.core.HornetQException;
 
 /**
  * Class used to encode message body into buffers.

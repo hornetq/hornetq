@@ -16,7 +16,7 @@ package org.hornetq.tests.integration.management;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.hornetq.api.core.config.TransportConfiguration;
+import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.management.ObjectNameBuilder;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.ConfigurationImpl;

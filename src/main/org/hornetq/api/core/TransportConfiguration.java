@@ -10,13 +10,12 @@
  * implied.  See the License for the specific language governing
  * permissions and limitations under the License.
  */
-package org.hornetq.api.core.config;
+package org.hornetq.api.core;
 
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.hornetq.api.core.buffers.HornetQBuffer;
 import org.hornetq.utils.UUIDGenerator;
 
 /**

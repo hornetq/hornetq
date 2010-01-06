@@ -32,8 +32,8 @@ import java.util.Set;
 import java.util.Map.Entry;
 
 import org.hornetq.api.SimpleString;
-import org.hornetq.api.core.buffers.HornetQBuffer;
-import org.hornetq.api.core.message.PropertyConversionException;
+import org.hornetq.api.core.HornetQBuffer;
+import org.hornetq.api.core.PropertyConversionException;
 import org.hornetq.core.logging.Logger;
 
 /**

@@ -15,8 +15,8 @@ package org.hornetq.tests.timing.util;
 
 import junit.framework.Assert;
 
-import org.hornetq.api.core.buffers.HornetQBuffer;
-import org.hornetq.api.core.buffers.HornetQBuffers;
+import org.hornetq.api.core.HornetQBuffer;
+import org.hornetq.api.core.HornetQBuffers;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.UTF8Util;
 
