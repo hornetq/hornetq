@@ -359,7 +359,7 @@ public class TopicControlUsingJMSTest extends ManagementTestBase
       session = connection.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
       connection.start();
 
-      HornetQQueue managementQueue = (HornetQQueue)HornetQJMSClient.createQueue(ConfigurationImpl.DEFAULT_MANAGEMENT_ADDRESS.toString());
+      HornetQQueue managementQueue = (HornetQQueue)HornetQJMSClient.createQueue("hornetq.management");
       proxy = new JMSMessagingProxy(session, managementQueue, ResourceNames.JMS_TOPIC + topic.getTopicName());
    }
 
