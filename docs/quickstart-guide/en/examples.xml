@@ -21,14 +21,14 @@
    <para>In the directory <literal>examples</literal> there are 2 sets of examples, these are </para>
    <itemizedlist>
       <listitem>
-         <para>JMS Examples - these demonstrate functionality by sending and consuming JMS
+         <para>JMS Examples - these demonstrate functionality while sending and consumng JMS
             messages.</para>
       </listitem>
       <listitem>
          <para>Java EE Examples - these demonstrate application server integration, e.g. MDBs, EJBs,
             Servlets, etc.</para>
       </listitem>
-   </itemizedlist>   
+   </itemizedlist>
    <section id="examples.jms">
       <title>The JMS examples</title>
       <para>The JMS Examples all follow the same format. Each examples is contained in its own
@@ -55,7 +55,8 @@
          user manual.</para>
       <para>Firstly open a Shell or a Command prompt and navigate to the <literal
             >examples/jms/queue</literal> directory.</para>
-      <para>Type the command <literal>./build.sh</literal> (or <literal>build.bat</literal> if you are running on Windows), and you should see the following output:</para>
+      <para>Type the command <literal>./build.sh</literal> (or <literal>build.bat</literal> if you
+         are running on Windows), and you should see the following output:</para>
       <programlisting>Buildfile: build.xml
 
 run:
@@ -117,11 +118,11 @@ Total time: 13 seconds
    </section>
    <section id="examples.messaging">
       <title>The Java EE Examples</title>
-      <para>The Java EE Examples are examples that require an Application Server to run. They
-         include MDB, Servlet, EJB examples etc. For this you will need The JBoss Application Server
+      <para>The Java EE Examples are examples that require a JEE application server to run. They
+         include MDB, Servlet, EJB examples etc. For this you will need the JBoss Application Server
          installed. How to do this is explained in the previous chapters.</para>
       <para>We'll use the MDB example for the purposes of this guide. For the other examples refer
-         to the user guide. Before going any further ensure that the Jboss Application Server is
+         to the user guide. Before going any further ensure that the JBoss Application Server is
          running.</para>
       <para>Like the other Java EE examples the MDB example is a JEE Application which first needs
          deploying in the JBoss Application Server. The first thing we need to do is set the

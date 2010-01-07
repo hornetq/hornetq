@@ -29,7 +29,7 @@
             >bin/run.sh</literal> accordingly.</para>
       <para>For persistence, HornetQ uses its own fast journal, which you can configure to use
          libaio (which is the default when running on Linux) or Java NIO. In order to use the libaio
-         module on Linux, it's required to install libaio.</para>
+         module on Linux, you'll need to install libaio, if it's not already installed.</para>
       <para>If you're not running on Linux then you don't need to worry about this.</para>
       <para>You can install libaio using the following steps as the root user:</para>
       <para>Using yum, (e.g. on Fedora or Red Hat Enterprise Linux):</para>
@@ -43,26 +43,31 @@
          it should be possible to <link linkend="running.standalone">run straight out of the
             box</link>, the following describes the directory structure: </para>
       <programlisting>
-         |-- bin
-         |-- config
-         | |-- jboss-as
-         | `-- stand-alone 
-         |-- docs
-         | |-- api
-         | |-- quickstart-guide
-         | `-- user-manual
-         |-- examples
-         | |-- core
-         | |-- javaee
-         | `-- jms
-         |-- lib
-         |-- licenses
-         `-- schemas
+         |___ bin
+         |
+         |___ config
+         |      |___ jboss-as
+         | `    |___ stand-alone
+         |
+         |___ docs
+         |      |___ api
+         |      |___ quickstart-guide
+         |      |___ user-manual
+         |
+         |___ examples
+         |      |___ core
+         |      |___ javaee
+         |      |___ jms
+         |
+         |___ lib
+         |
+         |___ licenses
+         |
+         |___ schemas
       </programlisting>
       <itemizedlist>
          <listitem>
-            <para><literal>bin</literal> -- binaries and scripts needed to run JBoss
-               Messaging</para>
+            <para><literal>bin</literal> -- binaries and scripts needed to run HornetQ.</para>
          </listitem>
          <listitem>
             <para><literal>config</literal> -- configuration files needed to configure HornetQ. This
@@ -91,8 +96,9 @@
    <section id="installation.jboss.as5">
       <title>HornetQ In JBoss Application Server 5.x</title>
       <para>HornetQ can also be deployed in <ulink url="http://www.jboss.org/jbossas/">JBoss AS
-            5</ulink>. It is not shipped by default with the application server and you need to
-         create new AS 5 profiles to run AS 5 with HornetQ.</para>
+            5</ulink>. It is not currently shipped by default with the application server (it is
+         scheduled to be shipped as default JMS provider in JBoss Application Server 6.0), so you
+         will need to create new AS 5 profiles to run AS 5 with HornetQ.</para>
       <para>To create AS 5 profiles:</para>
       <orderedlist>
          <listitem>
@@ -120,16 +126,13 @@
                is <emphasis>clustered</emphasis></para>
          </listitem>
       </itemizedlist>
-      <para>You can then start JBoss AS 5 using one of these profiles:</para>
+      <para>You can then start JBoss AS 5 using one of these profiles, e.g. :</para>
       <programlisting>$JBOSS_HOME/bin/run.sh -c default-with-hornetq</programlisting>
    </section>
    <section id="installation.jboss.as4">
       <title>HornetQ In JBoss Application Server 4.x</title>
-      <note>
-         <para>HornetQ can be deployed on AS 4 but isn't recommended</para>
-      </note>
-      <para>As in AS 4, it is not shipped by default with the application server and you need to
-         create new AS 4 profiles to run AS 4 with HornetQ.</para>
+      <para>As in AS 4, it is not shipped by default with the application server, so you will need
+         to create new AS 4 profiles to run AS 4 with HornetQ.</para>
       <para>To create AS 4 profiles:</para>
       <orderedlist>
          <listitem>
