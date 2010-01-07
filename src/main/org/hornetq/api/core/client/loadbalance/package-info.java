@@ -12,7 +12,11 @@
  */
 
 /**
- * HornetQ client side connection load balancing policies
+ * Client load-balancing API.
+ * <br>
+ * This package defines the policies supported by
+ * HornetQ to load-balance client connections across
+ * HornetQ servers.
  */
 package org.hornetq.api.core.client.loadbalance;
 

@@ -12,9 +12,10 @@
  */
 
 /**
- * Core Client Messaging API.
+ * Logging SPI.
  * <br>
- * This package defines the API used by HornetQ clients to produce and consume messages.
+ * This package defines the Service Provide Interface to
+ * support different logging implementation.
  */
-package org.hornetq.api.core.client;
+package org.hornetq.spi.core.logging;
 

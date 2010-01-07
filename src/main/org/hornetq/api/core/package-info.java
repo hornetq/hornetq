@@ -12,9 +12,10 @@
  */
 
 /**
- * HornetQ core messaging API
+ * Core Messaging API.
  * <br>
- * This package defines the core API
+ * This package defines base classes and interfaces used
+ * throughout HornetQ API
  */
 package org.hornetq.api.core;
 

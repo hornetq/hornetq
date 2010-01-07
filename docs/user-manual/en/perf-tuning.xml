@@ -116,7 +116,7 @@
             <listitem>
                 <para>Use pre-acknowledge mode. With pre-acknowledge mode, messages are acknowledged
                         <literal>before</literal> they are sent to the client. This reduces the
-                    amount of acknowledgment traffic on the wire. For more information on this, see
+                    amount of acknowledgement traffic on the wire. For more information on this, see
                         <xref linkend="pre-acknowledge"/>.</para>
             </listitem>
             <listitem>

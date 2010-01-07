@@ -1019,7 +1019,7 @@
          <classpath refid="javadoc.classpath"/>
          <doctitle><![CDATA[<h2>HornetQ  ${module.version}</h2>]]></doctitle>
          <bottom><![CDATA[<i>Copyright &#169; 2009 Red Hat Inc. All Rights Reserved.</i>]]></bottom>
-         <group title="HornetQ Core" packages="org.hornetq.api, org.hornetq.api.core.*"/>
+         <group title="HornetQ Core" packages="org.hornetq.api, org.hornetq.api.core, org.hornetq.api.core.*"/>
          <group title="JMS" packages="org.hornetq.api.jms, org.hornetq.api.jms.*"/>
          <group title="HornetQ SPI" packages="org.hornetq.spi.*"/>
       	<link href="http://java.sun.com/j2se/1.5.0/docs/api"/>

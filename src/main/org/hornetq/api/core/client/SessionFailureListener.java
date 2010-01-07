@@ -17,7 +17,7 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.core.remoting.FailureListener;
 
 /**
- * A SessionFailureListener notifies the client when a failure occured on the session.
+ * A SessionFailureListener notifies the client when a failure occurred on the session.
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  */

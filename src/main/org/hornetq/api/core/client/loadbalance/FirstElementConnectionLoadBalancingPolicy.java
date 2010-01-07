@@ -15,13 +15,11 @@ package org.hornetq.api.core.client.loadbalance;
 
 
 /**
- * A FirstElementConnectionLoadBalancingPolicy
+ * A {@link FirstElementConnectionLoadBalancingPolicy#select(int)} always returns 0.
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * 
  * Created 28 Nov 2008 10:56:59
- *
- *
  */
 public class FirstElementConnectionLoadBalancingPolicy implements ConnectionLoadBalancingPolicy
 {

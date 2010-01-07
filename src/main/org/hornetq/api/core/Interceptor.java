@@ -13,13 +13,15 @@
 
 package org.hornetq.api.core;
 
+import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.core.remoting.Packet;
 import org.hornetq.core.remoting.RemotingConnection;
 
 /**
- * This is class is a simple way to intercepting server calls on HornetQ.
+ * This is class is a simple way to intercepting calls on HornetQ client and servers.
  * <p/>
- * To Add this interceptor, you have to modify hornetq-configuration.xml
+ * To add an interceptor to HornetQ server, you have to modify hornetq-configuration.xml.
+ * To add it to a client, use {@link ClientSessionFactory#addInterceptor(Interceptor)}
  *
  * @author clebert.suconic@jboss.com
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -27,12 +29,12 @@ import org.hornetq.core.remoting.RemotingConnection;
 public interface Interceptor
 {
    /**
-    * gets called when a packet is received prior to be sent to the channel
+    * Intercepts a packet which is received before it is sent to the channel
     *
     * @param packet     the packet being received
     * @param connection the connection the packet was received on
-    * @return true to process the next interceptor and handle the packet,
-    *         false to abort processing of the packet
+    * @return {@code true} to process the next interceptor and handle the packet,
+    *         {@code false} to abort processing of the packet
     * @throws HornetQException
     */
    boolean intercept(Packet packet, RemotingConnection connection) throws HornetQException;

@@ -18,7 +18,7 @@ import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
 
 /**
- * A ClientProducer is ised to send messages to a specific address. Messages are then routed on the server to any queues
+ * A ClientProducer is used to send messages to a specific address. Messages are then routed on the server to any queues
  * that are bound to the address. A ClientProducer can either be created with a specific address in mind or with none.
  * With the latter the address must be provided using the appropriate send() method.  <br><br>
  *

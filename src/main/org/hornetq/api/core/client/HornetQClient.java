@@ -20,10 +20,13 @@ import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import java.util.List;
 
 /**
- * A utility class for creating core HornetQ ClientSessionFactory's.
- *
+ * Utility class for creating HornetQ {@link ClientSessionFactory} objects.
+ * 
+ * Once a {@link ClientSessionFactory} has been created, it can be further configured
+ * using its setter methods before creating the sessions. Once a session is created,
+ * the factory can no longer be modified (its setter methods will throw a {@link IllegalStateException}.
+ * 
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
- *         Created Jan 5, 2010
  */
 public class HornetQClient
 {
@@ -98,7 +101,7 @@ public class HornetQClient
    }
 
    /**
-    * Creates a new CLientSessionFactory using the same settings as the one passed in.
+    * Creates a new ClientSessionFactory using the same configuration as the one passed in.
     *
     * @param other The ClientSessionFactory to copy
     * @return The new ClientSessionFactory
@@ -109,7 +112,7 @@ public class HornetQClient
    }
 
    /**
-    * Create a ClientSessionFactory that uses discovery to connect to the server.
+    * Creates a ClientSessionFactory that uses discovery to connect to the servers.
     *
     * @param discoveryAddress The address to use for discovery
     * @param discoveryPort The port to use for discovery.
@@ -132,10 +135,10 @@ public class HornetQClient
    }
 
    /**
-    * Create a ClientConnectionFactory using a TransportConfiguration of the server and a backup if needed.
+    * Creates a ClientConnectionFactory using a TransportConfiguration of the server and a backup if needed.
     *
     * @param connectorConfig The TransportConfiguration of the server to connect to.
-    * @param backupConnectorConfig The TransportConfiguration of the backup server to connect to. can be null.
+    * @param backupConnectorConfig The TransportConfiguration of the backup server to connect to (or {@code null}Êif there is no backup)
     * @return The ClientSessionFactory.
     */
    public static ClientSessionFactory createClientSessionFactory(final TransportConfiguration connectorConfig,
@@ -145,7 +148,7 @@ public class HornetQClient
    }
 
    /**
-    * Create a ClientSessionFactory using the TransportConfiguration of the server to connect to.
+    * Creates a ClientSessionFactory using the TransportConfiguration of the server to connect to.
     *
     * @param connectorConfig The TransportConfiguration of the server.
     * @return The ClientSessionFactory.

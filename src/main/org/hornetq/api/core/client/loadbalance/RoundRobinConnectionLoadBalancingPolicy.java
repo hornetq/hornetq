@@ -16,7 +16,11 @@ package org.hornetq.api.core.client.loadbalance;
 import org.hornetq.utils.Random;
 
 /**
- * A RoundRobinConnectionLoadBalancingPolicy
+ * RoundRobinConnectionLoadBalancingPolicy corresponds to a round-robin load-balancing policy.
+ * 
+ * <br>
+ * The first call to {@link #select(int)} will return a random integer between {@code 0} (inclusive) and {@code max}Ê(exclusive).
+ * Subsequent calls will then return an integer in a round-robin fashion.
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * 

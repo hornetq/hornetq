@@ -16,7 +16,7 @@ package org.hornetq.api.core.client.loadbalance;
 import org.hornetq.utils.Random;
 
 /**
- * A RandomConnectionLoadBalancingPolicy
+ * {@link RandomConnectionLoadBalancingPolicy#select(int)} returns a random integer between {@code 0} (inclusive) and {@code max} (exclusive)
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * 

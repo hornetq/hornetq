@@ -12,9 +12,11 @@
  */
 
 /**
- * Core Client Messaging API.
+ * Security SPI.
  * <br>
- * This package defines the API used by HornetQ clients to produce and consume messages.
+ * This package defines the Service Provide Interface 
+ * that secuity providers can implement to plug their
+ * implementation into HornetQ.
  */
-package org.hornetq.api.core.client;
+package org.hornetq.spi.core.security;
 

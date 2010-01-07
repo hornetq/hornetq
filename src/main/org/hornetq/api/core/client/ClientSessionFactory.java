@@ -55,10 +55,9 @@ public interface ClientSessionFactory
 
    /**
     * Creates a <em>non-transacted</em> session.
-    * 
-    * Message sends and acknowledgments are automatically committed by the session. <em>This does not
+    * Message sends and acknowledgements are automatically committed by the session. <em>This does not
     * mean that messages are automatically acknowledged</em>, only that when messages are acknowledged, 
-    * the session will automatically commit the transaction containing the acknowledgments.
+    * the session will automatically commit the transaction containing the acknowledgements.
 
     * @return a non-transacted ClientSession
     * @throws HornetQException if an exception occurs while creating the session

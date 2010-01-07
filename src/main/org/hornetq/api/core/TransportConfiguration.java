@@ -19,10 +19,10 @@ import java.util.Map;
 import org.hornetq.utils.UUIDGenerator;
 
 /**
- * A TransportConfiguration is used by a client to specify a connections to a server and its back up if one exists.<br><br>
+ * A TransportConfiguration is used by a client to specify a connections to a server and its backup if one exists.<br><br>
  * <p/>
- * Typically the constructors take the classname and paramaters for needed to create the connection. These will be
- * different dependant on what connector is beingused i.e. Netty or InVM etc. An example:<br><br>
+ * Typically the constructors take the class name and parameters for needed to create the connection. These will be
+ * different dependent on which connector is being used, i.e. Netty or InVM etc. For example:<br><br>
  * <p/>
  * <code>
  * HashMap<String, Object> map = new HashMap<String, Object>();<br>
@@ -82,10 +82,10 @@ public class TransportConfiguration implements Serializable
 
    /**
     * Creates a TransportConfiguration with a specific name providing the class name of the {@link org.hornetq.spi.core.remoting.ConnectorFactory}
-    * and any params needed.
+    * and any parameters needed.
     *
     * @param className The class name of the ConnectorFactory
-    * @param params    The params needed by the ConnectorFactory
+    * @param params    The parameters needed by the ConnectorFactory
     * @param name      The name of this TransportConfiguration
     */
    public TransportConfiguration(final String className, final Map<String, Object> params, final String name)
@@ -99,10 +99,10 @@ public class TransportConfiguration implements Serializable
 
    /**
     * Creates a TransportConfiguration providing the class name of the {@link org.hornetq.spi.core.remoting.ConnectorFactory}
-    * and any params needed.
+    * and any parameters needed.
     *
     * @param className The class name of the ConnectorFactory
-    * @param params    The params needed by the ConnectorFactory
+    * @param params    The parameters needed by the ConnectorFactory
     */
    public TransportConfiguration(final String className, final Map<String, Object> params)
    {
@@ -132,7 +132,7 @@ public class TransportConfiguration implements Serializable
    /**
     * Returns the class name of ConnectorFactory being used by this TransportConfiguration
     *
-    * @return The classname
+    * @return The factory's class name
     */
    public String getFactoryClassName()
    {
@@ -140,9 +140,9 @@ public class TransportConfiguration implements Serializable
    }
 
    /**
-    * Returns any params set for this TransportConfiguration
+    * Returns any parameters set for this TransportConfiguration
     *
-    * @return the params
+    * @return the parameters
     */
    public Map<String, Object> getParams()
    {
@@ -292,7 +292,7 @@ public class TransportConfiguration implements Serializable
     * <p/>
     * Note this is only used internally by HornetQ
     *
-    * @param buffer the biffer to decode from
+    * @param buffer the buffer to decode from
     */
    public void decode(final HornetQBuffer buffer)
    {

@@ -40,15 +40,11 @@ public interface ClientSession extends XAResource
    {
       /**
        * Returns <code>true</code> if the binding exists, <code>false</code> else.
-       *
-       * @return <code>true</code> if the binding exists, <code>false</code> else
        */
       boolean isExists();
 
       /**
        * Returns the names of the queues bound to the binding.
-       * 
-       * @return the names of the queues bound to the binding
        */
       public List<SimpleString> getQueueNames();
    }
@@ -62,43 +58,31 @@ public interface ClientSession extends XAResource
    {
       /**
        * Returns <code>true</code> if the queue exists, <code>false</code> else.
-       * 
-       * @return <code>true</code> if the queue exists, <code>false</code> else
        */
       boolean isExists();
 
       /**
        * Returns <code>true</code> if the queue is durable, <code>false</code> else.
-       * 
-       * @return <code>true</code> if the queue is durable, <code>false</code> else
        */
       boolean isDurable();
 
       /**
        * Returns the number of consumers attached to the queue.
-       * 
-       * @return the number of consumers attached to the queue
        */
       int getConsumerCount();
 
       /**
        * Returns the number of messages in the queue.
-       * 
-       * @return the number of messages in the queue
        */
       int getMessageCount();
 
       /**
        * Returns the queue's filter string (or <code>null</code> if the queue has no filter).
-       * 
-       * @return the queue's filter string (or <code>null</code> if the queue has no filter)
        */
       SimpleString getFilterString();
 
       /**
        * Returns the address that the queue is bound to.
-       * 
-       * @return the address that the queue is bound to
        */
       SimpleString getAddress();
    }

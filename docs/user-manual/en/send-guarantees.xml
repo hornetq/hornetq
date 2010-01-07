@@ -136,7 +136,7 @@
                 instance on your <literal>ClientSession</literal>.</para>
             <para>Then, you just send messages as normal using your <literal
                 >ClientSession</literal>, and as messages reach the server, the server will send
-                back an acknowledgment of the send asynchronously, and some time later you are
+                back an acknowledgement of the send asynchronously, and some time later you are
                 informed at the client side by HornetQ calling your handler's <literal
                     >sendAcknowledged(ClientMessage message)</literal> method, passing in a
                     reference to the message that was sent.</para>
