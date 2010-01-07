@@ -351,27 +351,25 @@
         <itemizedlist>
             <listitem>
                 <para>HornetQFileConfigurationService</para>
-                <para>This services instances the configuration object that reads the Configuration
-                    File inside the SAR archive and configure the HornetQ instance.</para>
+                <para>This is an MBean Service that takes care of the life cycle of the <literal>FileConfiguration POJO</literal></para>
             </listitem>
             <listitem>
                 <para>JBossASSecurityManagerService</para>
-                <para>The service that starts the Security Manager as the Microcontainer
-                    Bean.</para>
+                <para>This is an MBean Service that takes care of the lifecycle of the <literal>JBossASSecurityManager</literal> POJO</para>
             </listitem>
             <listitem>
                 <para>HornetQStarterService</para>
-                <para>The HornetQ core server that depends on JBossASSecurityManagerService and
-                    HornetQFileConfigurationService MBeans</para>
+                <para>This is an MBean Service that controls the main <literal>HornetQServer</literal> POJO.
+                   this has a dependency on JBossASSecurityManagerService and HornetQFileConfigurationService MBeans</para>
             </listitem>
             <listitem>
                 <para>HornetQJMSStarterService</para>
-                <para>This is the core server. It's where 99% of the magic happens</para>
+                <para>This is an MBean Service that controls the <literal>JMSServerManagerImpl</literal> POJO.
+                   If you aren't using jms this can be removed.</para>
             </listitem>
             <listitem>
                 <para>JMSServerManager</para>
-                <para>Has the responsibility to start the JMSServerManager and the same behaviour
-                    that JMSServerManager Bean</para>
+                <para>Has the responsability to start the JMSServerManager and the same behaviour that JMSServerManager Bean</para>
             </listitem>
         </itemizedlist>
     </section>
