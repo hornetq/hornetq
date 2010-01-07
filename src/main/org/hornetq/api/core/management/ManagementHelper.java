@@ -81,12 +81,30 @@ public class ManagementHelper
 
    // Static --------------------------------------------------------
 
+   /**
+    * Stores a resource attribute in a message to retrieve the value from the server resource.
+    * 
+    * @param message message
+    * @param resourceName the name of the resource
+    * @param attribute the name of the attribute
+    * 
+    * @see ResourceNames
+    */
    public static void putAttribute(final Message message, final String resourceName, final String attribute)
    {
       message.putStringProperty(ManagementHelper.HDR_RESOURCE_NAME, new SimpleString(resourceName));
       message.putStringProperty(ManagementHelper.HDR_ATTRIBUTE, new SimpleString(attribute));
    }
 
+   /**
+    * Stores a operation invocation in a message to invoke the corresponding operation the value from the server resource.
+    * 
+    * @param message  message
+    * @param resourceName the name of the resource
+    * @param operationName the name of the operation to invoke on the resource
+    *
+    * @see ResourceNames
+    */
    public static void putOperationInvocation(final Message message,
                                              final String resourceName,
                                              final String operationName) throws Exception
@@ -94,6 +112,16 @@ public class ManagementHelper
       ManagementHelper.putOperationInvocation(message, resourceName, operationName, (Object[])null);
    }
 
+   /**
+    * Stores a operation invocation in a  message to invoke the corresponding operation the value from the server resource.
+    * 
+    * @param message  message
+    * @param resourceName the name of the server resource
+    * @param operationName the name of the operation to invoke on the server resource
+    * @param parameters the parameters to use to invoke the server resource
+    *
+    * @see ResourceNames
+    */
    public static void putOperationInvocation(final Message message,
                                              final String resourceName,
                                              final String operationName,
@@ -271,6 +299,9 @@ public class ManagementHelper
       }
    }
 
+   /**
+    * Used by HornetQ management service.
+    */
    public static Object[] retrieveOperationParameters(final Message message) throws Exception
    {
       String jsonString = message.getBodyBuffer().readNullableString();
@@ -287,16 +318,25 @@ public class ManagementHelper
       }
    }
 
+   /**
+    * Returns whether the JMS message corresponds to the result of a management operation invocation.
+    */
    public static boolean isOperationResult(final Message message)
    {
       return message.containsProperty(ManagementHelper.HDR_OPERATION_SUCCEEDED);
    }
 
+   /**
+    * Returns whether the JMS message corresponds to the result of a management attribute value.
+    */
    public static boolean isAttributesResult(final Message message)
    {
       return !ManagementHelper.isOperationResult(message);
    }
 
+   /**
+    * Used by HornetQ management service.
+    */
    public static void storeResult(final Message message, final Object result) throws Exception
    {
       String resultString;
@@ -317,6 +357,12 @@ public class ManagementHelper
       message.getBodyBuffer().writeNullableString(resultString);
    }
 
+   /**
+    * Returns the result of an operation invocation or an attribute value.
+    * 
+    * If an error occurred on the server, {@link #hasOperationSucceeded(Message)} will return {@ code false}.
+    * and the result will be a String corresponding to the server exception.
+    */
    public static Object[] getResults(final Message message) throws Exception
    {
       String jsonString = message.getBodyBuffer().readNullableString();
@@ -335,6 +381,12 @@ public class ManagementHelper
       }
    }
 
+   /**
+    * Returns the result of an operation invocation or an attribute value.
+    * 
+    * If an error occurred on the server, {@link #hasOperationSucceeded(Message)} will return {@ code false}.
+    * and the result will be a String corresponding to the server exception.
+    */
    public static Object getResult(final Message message) throws Exception
    {
       Object[] res = ManagementHelper.getResults(message);
@@ -349,6 +401,9 @@ public class ManagementHelper
       }
    }
 
+   /**
+    * Returns whether the invocation of the management operation on the server resource succeeded.
+    */
    public static boolean hasOperationSucceeded(final Message message)
    {
       if (!ManagementHelper.isOperationResult(message))
@@ -362,6 +417,9 @@ public class ManagementHelper
       return false;
    }
 
+   /**
+    * Used by HornetQ management service.
+    */   
    public static Map<String, Object> fromCommaSeparatedKeyValues(final String str) throws Exception
    {
       if (str == null || str.trim().length() == 0)
@@ -375,6 +433,9 @@ public class ManagementHelper
       return params;
    }
 
+   /**
+    * Used by HornetQ management service.
+    */
    public static Object[] fromCommaSeparatedArrayOfCommaSeparatedKeyValues(final String str) throws Exception
    {
       if (str == null || str.trim().length() == 0)

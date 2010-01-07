@@ -15,6 +15,9 @@ package org.hornetq.api.core.management;
 
 /**
  * Helper class used to build resource names used by management messages.
+ * 
+ * Resource's name is build by appending its <em>name</em> to its corresponding type.
+ * For example, the resource name of the "foo" queue is {@code CORE_QUEUE + "foo"}.
  *
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  */
