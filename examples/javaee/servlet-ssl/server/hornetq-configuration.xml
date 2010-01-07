@@ -16,11 +16,11 @@
          <factory-class>org.hornetq.integration.transports.netty.NettyConnectorFactory</factory-class>
          <param key="host" value="localhost"/>
          <param key="port" value="8443"/>
-         <param key="useservlet" value="true"/>
-         <param key="servletpath" value="/hornetq/HornetQServlet"/>
-         <param key="sslenabled" value="true"/>
-         <param key="keystorepath" value="server/hornetq.example.keystore"/>
-         <param key="keystorepassword" value="hornetqexample"/>
+         <param key="use-servlet" value="true"/>
+         <param key="servlet-path" value="/hornetq/HornetQServlet"/>
+         <param key="ssl-enabled" value="true"/>
+         <param key="key-store-path" value="server/hornetq.example.keystore"/>
+         <param key="key-store-password" value="hornetqexample"/>
       </connector>
 
    </connectors>
@@ -29,13 +29,13 @@
 
       <acceptor name="netty-servlet">
          <factory-class>org.hornetq.integration.transports.netty.NettyAcceptorFactory</factory-class>
-         <param key="useinvm" value="true"/>
+         <param key="use-invm" value="true"/>
          <param key="host" value="org.hornetq"/>
       </acceptor>
 
       <acceptor name="netty-invm">
          <factory-class>org.hornetq.integration.transports.netty.NettyAcceptorFactory</factory-class>
-         <param key="useinvm" value="true"/>
+         <param key="use-invm" value="true"/>
          <param key="host" value="org.hornetq"/>
       </acceptor>
 

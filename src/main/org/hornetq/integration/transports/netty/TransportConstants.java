@@ -24,45 +24,45 @@ import java.util.Set;
  */
 public class TransportConstants
 {
-   public static final String SSL_ENABLED_PROP_NAME = "sslenabled";
+   public static final String SSL_ENABLED_PROP_NAME = "ssl-enabled";
 
-   public static final String HTTP_ENABLED_PROP_NAME = "httpenabled";
+   public static final String HTTP_ENABLED_PROP_NAME = "http-enabled";
 
-   public static final String HTTP_CLIENT_IDLE_PROP_NAME = "httpclientidletime";
+   public static final String HTTP_CLIENT_IDLE_PROP_NAME = "http-client-idle-time";
 
-   public static final String HTTP_CLIENT_IDLE_SCAN_PERIOD = "httpclientidlescanperiod";
+   public static final String HTTP_CLIENT_IDLE_SCAN_PERIOD = "http-client-idle-scan-period";
 
-   public static final String HTTP_RESPONSE_TIME_PROP_NAME = "httpresponsetime";
+   public static final String HTTP_RESPONSE_TIME_PROP_NAME = "http-response-time";
 
-   public static final String HTTP_SERVER_SCAN_PERIOD_PROP_NAME = "httpserverscanperiod";
+   public static final String HTTP_SERVER_SCAN_PERIOD_PROP_NAME = "http-server-scan-period";
 
-   public static final String HTTP_REQUIRES_SESSION_ID = "httprequiressessionid";
+   public static final String HTTP_REQUIRES_SESSION_ID = "http-requires-session-id";
 
-   public static final String USE_SERVLET_PROP_NAME = "useservlet";
+   public static final String USE_SERVLET_PROP_NAME = "use-servlet";
 
-   public static final String SERVLET_PATH = "servletpath";
+   public static final String SERVLET_PATH = "servlet-path";
 
-   public static final String USE_NIO_PROP_NAME = "usenio";
+   public static final String USE_NIO_PROP_NAME = "use-nio";
 
-   public static final String USE_INVM_PROP_NAME = "useinvm";
+   public static final String USE_INVM_PROP_NAME = "use-invm";
 
    public static final String HOST_PROP_NAME = "host";
 
    public static final String PORT_PROP_NAME = "port";
 
-   public static final String KEYSTORE_PATH_PROP_NAME = "keystorepath";
+   public static final String KEYSTORE_PATH_PROP_NAME = "key-store-path";
 
-   public static final String KEYSTORE_PASSWORD_PROP_NAME = "keystorepassword";
+   public static final String KEYSTORE_PASSWORD_PROP_NAME = "key-store-password";
 
-   public static final String TRUSTSTORE_PATH_PROP_NAME = "truststorepath";
+   public static final String TRUSTSTORE_PATH_PROP_NAME = "trust-store-path";
 
-   public static final String TRUSTSTORE_PASSWORD_PROP_NAME = "truststorepassword";
+   public static final String TRUSTSTORE_PASSWORD_PROP_NAME = "trust-store-password";
 
-   public static final String TCP_NODELAY_PROPNAME = "tcpnodelay";
+   public static final String TCP_NODELAY_PROPNAME = "tcp-no-delay";
 
-   public static final String TCP_SENDBUFFER_SIZE_PROPNAME = "tcpsendbuffersize";
+   public static final String TCP_SENDBUFFER_SIZE_PROPNAME = "tcp-send-buffer-size";
 
-   public static final String TCP_RECEIVEBUFFER_SIZE_PROPNAME = "tcpreceivebuffersize";
+   public static final String TCP_RECEIVEBUFFER_SIZE_PROPNAME = "tcp-receive-buffer-size";
 
    public static final boolean DEFAULT_SSL_ENABLED = false;
 

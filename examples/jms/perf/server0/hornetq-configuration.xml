@@ -5,9 +5,9 @@
    <connectors>
       <connector name="netty-connector">
          <factory-class>org.hornetq.integration.transports.netty.NettyConnectorFactory</factory-class>    
-         <param key="tcpnodelay" value="false"/>
-         <param key="tcpsendbuffersize" value="1048576"/>
-         <param key="tcpreceivebuffersize" value="1048576"/>
+         <param key="tcp-no-delay" value="false"/>
+         <param key="tcp-send-buffer-size" value="1048576"/>
+         <param key="tcp-receive-buffer-size" value="1048576"/>
       </connector>
    </connectors>
    
@@ -15,9 +15,9 @@
    <acceptors>
       <acceptor name="netty-acceptor">
          <factory-class>org.hornetq.integration.transports.netty.NettyAcceptorFactory</factory-class>    
-         <param key="tcpnodelay" value="false"/>
-         <param key="tcpsendbuffersize" value="1048576"/>
-         <param key="tcpreceivebuffersize" value="1048576"/>
+         <param key="tcp-no-delay" value="false"/>
+         <param key="tcp-send-buffer-size" value="1048576"/>
+         <param key="tcp-receive-buffer-size" value="1048576"/>
       </acceptor>
    </acceptors>
 

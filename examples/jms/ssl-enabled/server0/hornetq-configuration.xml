@@ -9,9 +9,9 @@
          <factory-class>org.hornetq.integration.transports.netty.NettyConnectorFactory</factory-class>
          <param key="host" value="localhost"/>
          <param key="port" value="5500"/>
-         <param key="sslenabled" value="true"/>
-         <param key="keystorepath" value="server0/hornetq.example.keystore"/>
-         <param key="keystorepassword" value="hornetqexample"/>
+         <param key="ssl-enabled" value="true"/>
+         <param key="key-store-path" value="server0/hornetq.example.keystore"/>
+         <param key="key-store-password" value="hornetqexample"/>
       </connector>
    </connectors>
    
@@ -21,11 +21,11 @@
          <factory-class>org.hornetq.integration.transports.netty.NettyAcceptorFactory</factory-class>
          <param key="host" value="localhost"/>
          <param key="port" value="5500"/>
-         <param key="sslenabled" value="true"/>
-         <param key="keystorepath" value="hornetq.example.keystore"/>
-         <param key="keystorepassword" value="hornetqexample"/>
-         <param key="truststorepath" value="hornetq.example.truststore"/>
-         <param key="truststorepassword" value="hornetqexample"/>
+         <param key="ssl-enabled" value="true"/>
+         <param key="key-store-path" value="hornetq.example.keystore"/>
+         <param key="key-store-password" value="hornetqexample"/>
+         <param key="trust-store-path" value="hornetq.example.truststore"/>
+         <param key="trust-store-password" value="hornetqexample"/>
       </acceptor>
    </acceptors>
 

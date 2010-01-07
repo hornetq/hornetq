@@ -53,7 +53,7 @@ public class HornetQXAResourceRecoveryTest extends TestCase
 
    public void testConfigWithConnectorFactoryClassNameAndParamsWithoutUserCredentials() throws Exception
    {
-      String config = "org.hornetq.core.remoting.impl.invm.InVMConnectorFactory, , , serverid=99";
+      String config = "org.hornetq.core.remoting.impl.invm.InVMConnectorFactory, , , server-id=99";
       HornetQXAResourceRecovery.ConfigParser parser = new HornetQXAResourceRecovery.ConfigParser(config);
 
       Assert.assertEquals(InVMConnectorFactory.class.getName(), parser.getConnectorFactoryClassName());
@@ -65,7 +65,7 @@ public class HornetQXAResourceRecoveryTest extends TestCase
 
    public void testConfigWithConnectorFactoryClassNameAndParamsAndUserCredentials() throws Exception
    {
-      String config = "org.hornetq.core.remoting.impl.invm.InVMConnectorFactory, foo, bar, serverid=99, key=val";
+      String config = "org.hornetq.core.remoting.impl.invm.InVMConnectorFactory, foo, bar, server-id=99, key=val";
       HornetQXAResourceRecovery.ConfigParser parser = new HornetQXAResourceRecovery.ConfigParser(config);
 
       Assert.assertEquals(InVMConnectorFactory.class.getName(), parser.getConnectorFactoryClassName());

@@ -43,7 +43,7 @@ Copyright 2009 Red Hat, Inc.
          <description>The transport configuration. These values must be in the form of key=val;key=val;</description>
          <config-property-name>ConnectionParameters</config-property-name>
          <config-property-type>java.lang.String</config-property-type>
-         <config-property-value>serverid=0</config-property-value>
+         <config-property-value>server-id=0</config-property-value>
       </config-property>
       <config-property>
         <description>Use XA?</description>

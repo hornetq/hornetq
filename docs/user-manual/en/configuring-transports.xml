@@ -193,7 +193,7 @@ etc
                 can be used to configure Netty for simple TCP:</para>
             <itemizedlist>
                 <listitem>
-                    <para><literal>usenio</literal>. If this is <literal>true</literal> then Java
+                    <para><literal>use-nio</literal>. If this is <literal>true</literal> then Java
                         non blocking NIO will be used. If set to <literal>false</literal> than old
                         blocking Java IO will be used.</para>
                     <para>We highly recommend that you use non blocking Java NIO. Java NIO does not
@@ -227,13 +227,13 @@ etc
                         default value for this property is <literal>5445</literal>.</para>
                 </listitem>
                 <listitem>
-                    <para><literal>tcpnodelay</literal>. If this is <literal>true</literal> then
+                    <para><literal>tcp-no-delay</literal>. If this is <literal>true</literal> then
                             <ulink url="http://en.wikipedia.org/wiki/Nagle's_algorithm">Nagle's
                             algorithm</ulink> will be enabled. The default value for this property
                         is <literal>true</literal>.</para>
                 </listitem>
                 <listitem>
-                    <para><literal>tcpsendbuffersize</literal>. This parameter determines the size
+                    <para><literal>tcp-send-buffer-size</literal>. This parameter determines the size
                         of the TCP send buffer in bytes. The default value for this property is
                             <literal>32768</literal> bytes (32KiB).</para>
                     <para>TCP buffer sizes should be tuned according to the bandwidth and latency of
@@ -250,7 +250,7 @@ etc
                         defaults.</para>
                 </listitem>
                 <listitem>
-                    <para><literal>tcpreceivebuffersize</literal>. This parameter determines the
+                    <para><literal>tcp-receive-buffer-size</literal>. This parameter determines the
                         size of the TCP receive buffer in bytes. The default value for this property
                         is <literal>32768</literal> bytes (32KiB).</para>
                 </listitem>
@@ -265,23 +265,23 @@ etc
                 additional properties:</para>
             <itemizedlist>
                 <listitem>
-                    <para><literal>sslenabled</literal>. Must be <literal>true</literal> to enable
+                    <para><literal>ssl-enabled</literal>. Must be <literal>true</literal> to enable
                         SSL.</para>
                 </listitem>
                 <listitem>
-                    <para><literal>keystorepath</literal>. This is the path to the SSL key store on
+                    <para><literal>key-store-path</literal>. This is the path to the SSL key store on
                         the client which holds the client certificates.</para>
                 </listitem>
                 <listitem>
-                    <para><literal>keystorepassword</literal>. This is the password for the client
+                    <para><literal>key-store-password</literal>. This is the password for the client
                         certificate key store on the client.</para>
                 </listitem>
                 <listitem>
-                    <para><literal>truststorepath</literal>. This is the path to the trusted client
+                    <para><literal>trust-store-path</literal>. This is the path to the trusted client
                         certificate store on the server.</para>
                 </listitem>
                 <listitem>
-                    <para><literal>truststorepassword</literal>. This is the password to the trusted
+                    <para><literal>trust-store-password</literal>. This is the password to the trusted
                         client certificate store on the server.</para>
                 </listitem>
             </itemizedlist>
@@ -295,27 +295,27 @@ etc
                 properties:</para>
             <itemizedlist>
                 <listitem>
-                    <para><literal>httpenabled</literal>. Must be <literal>true</literal> to enable
+                    <para><literal>http-enabled</literal>. Must be <literal>true</literal> to enable
                         HTTP.</para>
                 </listitem>
                 <listitem>
-                    <para><literal>httpclientidletime</literal>. How long a client can be idle
+                    <para><literal>http-client-idle-time</literal>. How long a client can be idle
                         before sending an empty http request to keep the connection alive</para>
                 </listitem>
                 <listitem>
-                    <para><literal>httpclientidlescanperiod</literal>. How often, in milliseconds,
+                    <para><literal>http-client-idle-scan-period</literal>. How often, in milliseconds,
                         to scan for idle clients</para>
                 </listitem>
                 <listitem>
-                    <para><literal>httpresponsetime</literal>. How long the server can wait before
+                    <para><literal>http-response-time</literal>. How long the server can wait before
                         sending an empty http response to keep the connection alive</para>
                 </listitem>
                 <listitem>
-                    <para><literal>httpserverscanperiod</literal>. How often, in milliseconds, to
+                    <para><literal>http-server-scan-period</literal>. How often, in milliseconds, to
                         scan for clients needing responses</para>
                 </listitem>
                 <listitem>
-                    <para><literal>httprequiressessionid</literal>. If true the client will wait
+                    <para><literal>http-requires-session-id</literal>. If true the client will wait
                         after the first call to receive a session id. Used the http connector is
                         connecting to servlet acceptor (not recommended) </para>
                 </listitem>
@@ -375,7 +375,7 @@ etc
          &lt;factory-class>
             org.hornetq.integration.transports.netty.NettyAcceptorFactory
          &lt;/factory-class>
-         &lt;param key="useinvm" value="true"/>
+         &lt;param key="use-invm" value="true"/>
          &lt;param key="host" value="org.hornetq"/>
       &lt;/acceptor>
 
@@ -393,8 +393,8 @@ etc
          &lt;/factory-class>
          &lt;param key="host" value="localhost"/>
          &lt;param key="port" value="8080"/>
-         &lt;param key="useservlet" value="true"/>
-         &lt;param key="servletpath" value="/messaging/HornetQServlet"/>
+         &lt;param key="use-servlet" value="true"/>
+         &lt;param key="servlet-path" value="/messaging/HornetQServlet"/>
       &lt;/connector>
 
  &lt;/connectors></programlisting>
@@ -409,7 +409,7 @@ etc
                 </listitem>
             </itemizedlist>
             <para>The servlet pattern configured in the <literal>web.xml</literal> is the path of
-                the URL that is used. The connector param <literal>servletpath</literal> on the
+                the URL that is used. The connector param <literal>servlet-path</literal> on the
                 connector config must match this using the application context of the web app if
                 there is one.</para>
             <para>Its also possible to use the servlet transport over SSL. simply add the following
@@ -418,11 +418,11 @@ etc
          &lt;factory-class>org.hornetq.integration.transports.netty.NettyConnectorFactory&lt;/factory-class>
          &lt;param key="host" value="localhost"/>
          &lt;param key="port" value="8443"/>
-         &lt;param key="useservlet" value="true"/>
-         &lt;param key="servletpath" value="/messaging/HornetQServlet"/>
-         &lt;param key="sslenabled" value="true"/>
-         &lt;param key="keystorepath" value="path to a keystoree"/>
-         &lt;param key="keystorepassword" value="keystore password"/>
+         &lt;param key="use-servlet" value="true"/>
+         &lt;param key="servlet-path" value="/messaging/HornetQServlet"/>
+         &lt;param key="ssl-enabled" value="true"/>
+         &lt;param key="key-store-path" value="path to a keystoree"/>
+         &lt;param key="key-store-password" value="keystore password"/>
       &lt;/connector>
 </programlisting></para>
             <para>You will also have to configure the Application server to use a KeyStore. Edit the

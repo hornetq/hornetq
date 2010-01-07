@@ -29,7 +29,7 @@
       <!-- In VM acceptor -->
       <acceptor name="in-vm">
          <factory-class>org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory</factory-class>
-         <param key="serverid" value="0"/>
+         <param key="server-id" value="0"/>
       </acceptor>
 
       <!-- Netty TCP Acceptor -->
