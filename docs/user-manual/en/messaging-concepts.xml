@@ -22,15 +22,15 @@
             url="http://en.wikipedia.org/wiki/Message_oriented_middleware">Message Oriented
             Middleware</ulink> , we'll just call them messaging systems in the remainder of this
         book.</para>
-    <para>We'll first present a brief overview of what kind of things messaging systems do and and
-        where they're useful, and the kind of concepts you'll hear about in the messaging
+    <para>We'll first present a brief overview of what kind of things messaging systems do,
+        where they're useful and the kind of concepts you'll hear about in the messaging
         world.</para>
     <para>If you're already familiar with what a messaging system is and what it's capable of, then
         you can skip this chapter.</para>
     <section>
         <title>Messaging Concepts</title>
         <para>Messaging systems allow you to loosely couple heteregenous systems together, whilst
-            typically providing reliability, transactions, and many other features.</para>
+            typically providing reliability, transactions and many other features.</para>
         <para>Unlike systems based on a <ulink
                 url="http://en.wikipedia.org/wiki/Remote_procedure_call">Remote Procedure
                 Call</ulink> (RPC) pattern, messaging systems primarily use an asynchronous message
