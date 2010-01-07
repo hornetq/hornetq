@@ -369,7 +369,7 @@
             </listitem>
             <listitem>
                 <para>JMSServerManager</para>
-                <para>Has the responsability to start the JMSServerManager and the same behaviour that JMSServerManager Bean</para>
+                <para>Has the responsibility to start the JMSServerManager and the same behaviour that JMSServerManager Bean</para>
             </listitem>
         </itemizedlist>
     </section>
