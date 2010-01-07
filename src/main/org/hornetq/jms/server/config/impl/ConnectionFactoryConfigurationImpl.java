@@ -18,8 +18,8 @@ import java.util.List;
 
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.core.client.ClientSessionFactoryImpl;
 import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.jms.server.config.ConnectionFactoryConfiguration;
 
 /**

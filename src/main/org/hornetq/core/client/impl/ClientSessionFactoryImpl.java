@@ -10,7 +10,7 @@
  * implied.  See the License for the specific language governing
  * permissions and limitations under the License.
  */
-package org.hornetq.api.core.client;
+package org.hornetq.core.client.impl;
 
 import java.io.Serializable;
 import java.net.InetAddress;
@@ -32,10 +32,10 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Interceptor;
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.loadbalance.ConnectionLoadBalancingPolicy;
-import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
-import org.hornetq.core.client.impl.FailoverManager;
-import org.hornetq.core.client.impl.FailoverManagerImpl;
 import org.hornetq.core.cluster.DiscoveryEntry;
 import org.hornetq.core.cluster.DiscoveryGroup;
 import org.hornetq.core.cluster.DiscoveryListener;

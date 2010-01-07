@@ -15,6 +15,7 @@ package org.hornetq.api.core.client;
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.loadbalance.RoundRobinConnectionLoadBalancingPolicy;
+import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 
 import java.util.List;
 
