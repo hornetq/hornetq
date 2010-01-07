@@ -21,7 +21,7 @@
     <para>Although HornetQ provides a JMS agnostic messaging API, many users will be more
         comfortable using JMS.</para>
     <para>JMS is a very popular API standard for messaging, and most messaging systems provide a JMS
-        API. If you are completely new to JMS we suggest you following the<ulink
+        API. If you are completely new to JMS we suggest you follow the<ulink
             url="http://java.sun.com/products/jms/tutorial/1_3_1-fcs/doc/jms_tutorialTOC.html"> Sun
             JMS tutorial</ulink> - a full JMS tutorial is out of scope for this guide.</para>
     <para>HornetQ also ships with a wide range of examples, many of which demonstrate JMS API usage.
@@ -107,7 +107,8 @@ java.naming.factory.url.pkgs=org.jboss.naming:org.jnp.interfaces
             is the port used by the JNDI server and may vary depending on how you have configured
             your JNDI server.</para>
         <para>In the default standalone configuration, JNDI server ports are configured in the file
-                <literal>hornetq-beans.xml</literal> by setting properties on the <literal>JNDIServer</literal> bean:</para>
+                <literal>hornetq-beans.xml</literal> by setting properties on the <literal
+                >JNDIServer</literal> bean:</para>
         <programlisting>
 &lt;bean name="JNDIServer" class="org.jnp.server.Main"&gt;
     &lt;property name="namingInfo"&gt;
@@ -125,11 +126,11 @@ java.naming.factory.url.pkgs=org.jboss.naming:org.jnp.interfaces
                 >localhost</literal>!</para>
         </note>
         <note>
-            <para>The JNDIServer bean must be defined <emphasis>only when HornetQ is running in stand-alone mode</emphasis>.
-               When HornetQ is integrated to JBoss Application Server, JBoss AS will provide a ready-to-use
-               JNDI server without any additional configuration.</para>
+            <para>The JNDIServer bean must be defined <emphasis>only when HornetQ is running in
+                    stand-alone mode</emphasis>. When HornetQ is integrated to JBoss Application
+                Server, JBoss AS will provide a ready-to-use JNDI server without any additional
+                configuration.</para>
         </note>
-        
     </section>
     <section>
         <title>The code</title>
@@ -160,28 +161,38 @@ System.out.println("Got order: " + receivedMessage.getText());
         </programlisting>
         <para>It's as simple as that. For a wide range of working JMS examples please see the
             examples directory in the distribution.</para>
+        <warning>
+            <para>Please note that JMS connections, sessions, producers and consumers are
+                    <emphasis>designed to be re-used</emphasis>.</para>
+            <para>It's an anti-pattern to create new connections, sessions, producers and consumers
+                for each message you produce or consume. If you do this, your application will
+                perform very poorly. This is discussed further in the section on performance tuning
+                    <xref linkend="perf-tuning"/>.</para>
+        </warning>
     </section>
     <section>
         <title>Directly instantiating JMS Resources without using JNDI</title>
         <para>Although it's a very common JMS usage pattern to lookup JMS <emphasis>Administered
-                Objects</emphasis> (that's JMS Queues, Topics and Connection Factories) from JNDI,
-            in some cases a JNDI server is not available and you still want to use JMS, or you just
-            think "Why do I need JNDI? Why can't I just instantiate these objects directly?"</para>
+                Objects</emphasis> (that's JMS Queue, Topic and ConnectionFactory instances) from
+            JNDI, in some cases a JNDI server is not available and you still want to use JMS, or you
+            just think "Why do I need JNDI? Why can't I just instantiate these objects
+            directly?"</para>
         <para>With HornetQ you can do exactly that. HornetQ supports the direct instantiation of JMS
-            Queue, Topic and Connection Factory instances, so you don't have to use JNDI at
+            Queue, Topic and ConnectionFactory instances, so you don't have to use JNDI at
             all.</para>
         <para>For a full working example of direct instantiation please see the JMS examples in
                 <xref linkend="examples"/>.</para>
         <para>Here's our simple example, rewritten to not use JNDI at all:</para>
-        <para>We create the JMS ConnectionFactory object via the HornetQJMSClient Utility class, note we need to provide
-            connection parameters and specify which transport we are using, for more information on
-            connectors please see <xref linkend="configuring-transports"/>.</para>
+        <para>We create the JMS ConnectionFactory object via the HornetQJMSClient Utility class,
+            note we need to provide connection parameters and specify which transport we are using,
+            for more information on connectors please see <xref linkend="configuring-transports"
+            />.</para>
         <programlisting>              
 TransportConfiguration transportConfiguration = 
                      new TransportConfiguration(NettyConnectorFactory.class.getName());                
 ConnectionFactory cf = HornetQJMSClient.createConnectionFactory(transportConfiguration);
         </programlisting>
-        <para>We create the JMS Queue Object via the HornetQJMSClient Utility class:</para>
+        <para>We also create the JMS Queue object via the HornetQJMSClient Utility class:</para>
         <programlisting>Queue orderQueue = HornetQJMSClient.createQueue("OrderQueue");</programlisting>
         <para>Next we create a JMS connection using the connection factory:</para>
         <programlisting>Connection connection = cf.createConnection();</programlisting>
@@ -212,10 +223,10 @@ System.out.println("Got order: " + receivedMessage.getText());
     <section id="using-jms.dupsokbatchsize">
         <title>Setting The Batch Size for DUPS_OK </title>
         <para>When the JMS acknowledge mode is set to <literal>DUPS_OK</literal> it is possible to
-            configure the consumer so that it sends the acknowledgements in batches rather that one
-            at a time, saving valuable bandwidth. This can be configured via the connection factory
-            via the <literal>dups-ok-batch-size</literal> element and is set in bytes. The default
-            is 1024 * 1024 bytes = 1 MiB.</para>
+            configure the consumer so that it sends acknowledgements in batches rather that one at a
+            time, saving valuable bandwidth. This can be configured via the connection factory via
+            the <literal>dups-ok-batch-size</literal> element and is set in bytes. The default is
+            1024 * 1024 bytes = 1 MiB.</para>
     </section>
     <section id="using-jms.txbatchsize">
         <title>Setting The Transaction Batch Size</title>
