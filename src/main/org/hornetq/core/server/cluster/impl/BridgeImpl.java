@@ -121,9 +121,9 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
 
    private final SimpleString managementNotificationAddress;
 
-   private final String clusterUser;
+   private final String user;
 
-   private final String clusterPassword;
+   private final String password;
 
    private boolean activated;
 
@@ -161,8 +161,8 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
                      final int confirmationWindowSize,
                      final SimpleString managementAddress,
                      final SimpleString managementNotificationAddress,
-                     final String clusterUser,
-                     final String clusterPassword,
+                     final String user,
+                     final String password,
                      final MessageFlowRecord flowRecord,
                      final boolean activated,
                      final StorageManager storageManager) throws Exception
@@ -210,9 +210,9 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
 
       this.managementNotificationAddress = managementNotificationAddress;
 
-      this.clusterUser = clusterUser;
+      this.user = user;
 
-      this.clusterPassword = clusterPassword;
+      this.password = password;
 
       this.flowRecord = flowRecord;
 
@@ -663,7 +663,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
             csf.setConfirmationWindowSize(confirmationWindowSize);
 
             // Session is pre-acknowledge
-            session = (ClientSessionInternal)csf.createSession(clusterUser, clusterPassword, false, true, true, true, 1);
+            session = (ClientSessionInternal)csf.createSession(user, password, false, true, true, true, 1);
 
             if (session == null)
             {

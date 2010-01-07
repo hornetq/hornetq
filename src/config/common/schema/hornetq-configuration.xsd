@@ -312,6 +312,10 @@
 			</xsd:element>
 			<xsd:element maxOccurs="1" minOccurs="0" name="confirmation-window-size" type="xsd:int">
 			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="0" name="user" type="xsd:string">
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="0" name="password" type="xsd:string">
+			</xsd:element>
 			<xsd:choice>
 				<xsd:element maxOccurs="1" minOccurs="1" name="connector-ref" type="connector-refType">
 				</xsd:element>

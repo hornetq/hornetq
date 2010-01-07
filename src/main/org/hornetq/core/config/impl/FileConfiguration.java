@@ -173,12 +173,12 @@ public class FileConfiguration extends ConfigurationImpl
       clusterPassword = XMLConfigurationUtil.getString(e,
                                                        "cluster-password",
                                                        clusterPassword,
-                                                       Validators.NOT_NULL_OR_EMPTY);
+                                                       Validators.NO_CHECK);
 
       clusterUser = XMLConfigurationUtil.getString(e,
                                                    "cluster-user",
                                                    clusterUser,
-                                                   Validators.NOT_NULL_OR_EMPTY);
+                                                   Validators.NO_CHECK);
 
       logDelegateFactoryClassName = XMLConfigurationUtil.getString(e,
                                                                    "log-delegate-factory-class-name",
@@ -684,7 +684,7 @@ public class FileConfiguration extends ConfigurationImpl
    {
       String name = brNode.getAttribute("name");
 
-      String queueName = XMLConfigurationUtil.getString(brNode, "queue-name", null, Validators.NOT_NULL_OR_EMPTY);
+      String queueName = XMLConfigurationUtil.getString(brNode, "queue-name", null, Validators.NOT_NULL_OR_EMPTY);           
 
       String forwardingAddress = XMLConfigurationUtil.getString(brNode,
                                                                 "forwarding-address",
@@ -725,6 +725,10 @@ public class FileConfiguration extends ConfigurationImpl
                                                                       "use-duplicate-detection",
                                                                       ConfigurationImpl.DEFAULT_BRIDGE_DUPLICATE_DETECTION);
 
+      String user = XMLConfigurationUtil.getString(brNode, "user", ConfigurationImpl.DEFAULT_CLUSTER_USER, Validators.NO_CHECK);
+      
+      String password = XMLConfigurationUtil.getString(brNode, "password", ConfigurationImpl.DEFAULT_CLUSTER_PASSWORD, Validators.NO_CHECK);
+      
       String filterString = null;
 
       Pair<String, String> connectorPair = null;
@@ -778,7 +782,9 @@ public class FileConfiguration extends ConfigurationImpl
                                           useDuplicateDetection,
                                           confirmationWindowSize,
                                           HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
-                                          connectorPair);
+                                          connectorPair,
+                                          user,
+                                          password);
       }
       else
       {
@@ -794,7 +800,9 @@ public class FileConfiguration extends ConfigurationImpl
                                           useDuplicateDetection,
                                           confirmationWindowSize,
                                           HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
-                                          discoveryGroupName);
+                                          discoveryGroupName,
+                                          user,
+                                          password);
       }
 
       bridgeConfigurations.add(config);

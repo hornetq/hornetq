@@ -57,6 +57,10 @@ public class BridgeConfiguration implements Serializable
    private int confirmationWindowSize;
 
    private final long clientFailureCheckPeriod;
+   
+   private String user;
+   
+   private String password;
 
    public BridgeConfiguration(final String name,
                               final String queueName,
@@ -70,7 +74,9 @@ public class BridgeConfiguration implements Serializable
                               final boolean useDuplicateDetection,
                               final int confirmationWindowSize,
                               final long clientFailureCheckPeriod,
-                              final Pair<String, String> connectorPair)
+                              final Pair<String, String> connectorPair,
+                              final String user,
+                              final String password)
    {
       this.name = name;
       this.queueName = queueName;
@@ -85,6 +91,8 @@ public class BridgeConfiguration implements Serializable
       this.confirmationWindowSize = confirmationWindowSize;
       this.clientFailureCheckPeriod = clientFailureCheckPeriod;
       this.connectorPair = connectorPair;
+      this.user = user;
+      this.password = password;
       discoveryGroupName = null;
    }
 
@@ -100,7 +108,9 @@ public class BridgeConfiguration implements Serializable
                               final boolean useDuplicateDetection,
                               final int confirmationWindowSize,
                               final long clientFailureCheckPeriod,
-                              final String discoveryGroupName)
+                              final String discoveryGroupName,
+                              final String user,
+                              final String password)
    {
       this.name = name;
       this.queueName = queueName;
@@ -116,6 +126,8 @@ public class BridgeConfiguration implements Serializable
       this.clientFailureCheckPeriod = clientFailureCheckPeriod;
       connectorPair = null;
       this.discoveryGroupName = discoveryGroupName;
+      this.user = user;
+      this.password = password;
    }
 
    public String getName()
@@ -290,5 +302,25 @@ public class BridgeConfiguration implements Serializable
    public void setConfirmationWindowSize(final int confirmationWindowSize)
    {
       this.confirmationWindowSize = confirmationWindowSize;
+   }
+
+   public String getUser()
+   {
+      return user;
+   }
+
+   public String getPassword()
+   {
+      return password;
+   }
+
+   public void setUser(String user)
+   {
+      this.user = user;
+   }
+
+   public void setPassword(String password)
+   {
+      this.password = password;
    }
 }

@@ -61,7 +61,9 @@
     &lt;use-duplicate-detection&gt;true&lt;/use-duplicate-detection&gt;
     &lt;confirmation-window-size&gt;10000000&lt;/confirmation-window-size&gt;
     &lt;connector-ref connector-name="remote-connector" 
-        backup-connector-name="backup-remote-connector"/&gt;          
+        backup-connector-name="backup-remote-connector"/&gt;     
+    &lt;user&gt;foouser&lt;/user&gt;
+    &lt;password&gt;foopassword&lt;/password&gt;
 &lt;/bridge&gt;                        
         </programlisting>
         <para>In the above example we have shown all the parameters its possible to configure for a
@@ -168,15 +170,16 @@
                 <para>The default value for this parameter is <literal>true</literal>.</para>
             </listitem>
             <listitem>
-                <para><literal>confirmation-window-size</literal>. This optional parameter determines
-                the <literal>confirmation-window-size</literal> to use for the connection used to forward messages to the target node.
-                This attribute is described in section <xref linkend="client-reconnection"/></para>
+                <para><literal>confirmation-window-size</literal>. This optional parameter
+                    determines the <literal>confirmation-window-size</literal> to use for the
+                    connection used to forward messages to the target node. This attribute is
+                    described in section <xref linkend="client-reconnection"/></para>
                 <para>
-                <warning>When using the bridge to forward messages from a queue which has a max-size-bytes set it's important
-                that confirmation-window-size is less than or equal to <literal>max-size-bytes</literal> to prevent the flow of messages from ceasing.
-                </warning>
+                    <warning>When using the bridge to forward messages from a queue which has a
+                        max-size-bytes set it's important that confirmation-window-size is less than
+                        or equal to <literal>max-size-bytes</literal> to prevent the flow of
+                        messages from ceasing. </warning>
                 </para>
-                
             </listitem>
             <listitem>
                 <para><literal>connector-ref</literal>. This mandatory parameter determines which
@@ -207,6 +210,17 @@
                             connector if the live target server is cleanly shut-down.</para>
                     </listitem>
                 </itemizedlist>
+            </listitem>
+            <listitem>
+                <para><literal>user</literal>. This optional parameter determines the user name to
+                    use when creating the bridge connection to the remote server. If it is not
+                    specified the default cluster user specified by <literal>cluster-user</literal>
+                    in <literal>hornetq-configuration.xml</literal> will be used. </para>
+                <para><literal>password</literal>. This optional parameter determines the password
+                    to use when creating the bridge connection to the remote server. If it is not
+                    specified the default cluster password specified by <literal
+                        >cluster-password</literal> in <literal>hornetq-configuration.xml</literal>
+                    will be used. </para>
             </listitem>
         </itemizedlist>
     </section>

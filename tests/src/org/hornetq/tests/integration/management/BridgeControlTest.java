@@ -172,7 +172,9 @@ public class BridgeControlTest extends ManagementTestBase
                                              RandomUtil.randomBoolean(),
                                              RandomUtil.randomPositiveInt(),
                                              HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
-                                             connectorPair);
+                                             connectorPair,
+                                             ConfigurationImpl.DEFAULT_CLUSTER_USER,
+                                             ConfigurationImpl.DEFAULT_CLUSTER_PASSWORD);
 
       Configuration conf_1 = new ConfigurationImpl();
       conf_1.setSecurityEnabled(false);

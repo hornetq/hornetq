@@ -25,6 +25,7 @@ import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.*;
+import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.RemotingConnection;
 import org.hornetq.core.remoting.impl.invm.InVMConnector;
@@ -122,7 +123,9 @@ public class BridgeReconnectTest extends BridgeTestBase
                                                                         false,
                                                                         confirmationWindowSize,
                                                                         HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
-                                                                        connectorPair);
+                                                                        connectorPair,
+                                                                        ConfigurationImpl.DEFAULT_CLUSTER_USER,
+                                                                        ConfigurationImpl.DEFAULT_CLUSTER_PASSWORD);
 
       List<BridgeConfiguration> bridgeConfigs = new ArrayList<BridgeConfiguration>();
       bridgeConfigs.add(bridgeConfiguration);
@@ -245,7 +248,9 @@ public class BridgeReconnectTest extends BridgeTestBase
                                                                         false,
                                                                         confirmationWindowSize,
                                                                         HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
-                                                                        connectorPair);
+                                                                        connectorPair,
+                                                                        ConfigurationImpl.DEFAULT_CLUSTER_USER,
+                                                                        ConfigurationImpl.DEFAULT_CLUSTER_PASSWORD);
 
       List<BridgeConfiguration> bridgeConfigs = new ArrayList<BridgeConfiguration>();
       bridgeConfigs.add(bridgeConfiguration);
@@ -363,7 +368,9 @@ public class BridgeReconnectTest extends BridgeTestBase
                                                                         false,
                                                                         confirmationWindowSize,
                                                                         HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
-                                                                        connectorPair);
+                                                                        connectorPair,
+                                                                        ConfigurationImpl.DEFAULT_CLUSTER_USER,
+                                                                        ConfigurationImpl.DEFAULT_CLUSTER_PASSWORD);
 
       List<BridgeConfiguration> bridgeConfigs = new ArrayList<BridgeConfiguration>();
       bridgeConfigs.add(bridgeConfiguration);
@@ -489,7 +496,9 @@ public class BridgeReconnectTest extends BridgeTestBase
                                                                         false,
                                                                         confirmationWindowSize,
                                                                         clientFailureCheckPeriod,
-                                                                        connectorPair);
+                                                                        connectorPair,
+                                                                        ConfigurationImpl.DEFAULT_CLUSTER_USER,
+                                                                        ConfigurationImpl.DEFAULT_CLUSTER_PASSWORD);
 
       List<BridgeConfiguration> bridgeConfigs = new ArrayList<BridgeConfiguration>();
       bridgeConfigs.add(bridgeConfiguration);
@@ -608,7 +617,9 @@ public class BridgeReconnectTest extends BridgeTestBase
                                                                         false,
                                                                         confirmationWindowSize,
                                                                         HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
-                                                                        connectorPair);
+                                                                        connectorPair,
+                                                                        ConfigurationImpl.DEFAULT_CLUSTER_USER,
+                                                                        ConfigurationImpl.DEFAULT_CLUSTER_PASSWORD);
 
       List<BridgeConfiguration> bridgeConfigs = new ArrayList<BridgeConfiguration>();
       bridgeConfigs.add(bridgeConfiguration);

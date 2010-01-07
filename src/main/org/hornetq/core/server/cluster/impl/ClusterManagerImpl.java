@@ -425,8 +425,8 @@ public class ClusterManagerImpl implements ClusterManager
                                  config.getConfirmationWindowSize(),
                                  managementService.getManagementAddress(),
                                  managementService.getManagementNotificationAddress(),
-                                 server.getConfiguration().getClusterUser(),
-                                 server.getConfiguration().getClusterPassword(),
+                                 config.getUser(),
+                                 config.getPassword(),
                                  null,
                                  !backup,
                                  server.getStorageManager());
