@@ -18,7 +18,7 @@
 <!-- ============================================================================= -->
 <chapter id="examples">
     <title>Examples</title>
-    <para>The HornetQ distribution comes with over 65 run out-of-the-box examples demonstrating many
+    <para>The HornetQ distribution comes with over 70 run out-of-the-box examples demonstrating many
         of the features.</para>
     <para>The examples are available in the distribution, in the <literal>examples</literal>
         directory. Examples are split into JMS and core examples. JMS examples show how a particular

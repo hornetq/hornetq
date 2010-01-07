@@ -29,4 +29,6 @@
             >transaction-timeout</literal> property in <literal>hornetq-configuration.xml</literal> (value must be in milliseconds).
         The property <literal>transaction-timeout-scan-period</literal> configures how often, in
         milliseconds, to scan for old transactions.</para>
+    <para>Please note that HornetQ will not unilaterally rollback any XA transactions in a prepared state - this must be heuristically rolled
+    back via the management API if you are sure they will never be resolved by the transaction manager.</para>
 </chapter>

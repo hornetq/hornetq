@@ -176,7 +176,10 @@ etc
             <title>Configuring Netty TCP</title>
             <para>Netty TCP is a simple unencrypted TCP sockets based transport. Netty TCP can be
                 configured to use old blocking Java IO or non blocking Java NIO. We recommend you
-                use the default Java NIO for better scalability. </para>
+                use the Java NIO on the server side for better scalability with many concurrent
+                connections. However using Java old IO can sometimes give you better latency than
+                NIO when you're not so worried about supporting many thousands of concurrent
+                connections. </para>
             <para>If you're running connections across an untrusted network please bear in mind this
                 transport is unencrypted. You may want to look at the SSL or HTTPS
                 configurations.</para>
@@ -190,25 +193,26 @@ etc
                 can be used to configure Netty for simple TCP:</para>
             <itemizedlist>
                 <listitem>
-                    <para><literal>usenio</literal>. If this is <literal
-                            >true</literal> then Java non blocking NIO will be used. If set to
-                            <literal>false</literal> than old blocking Java IO will be used.</para>
+                    <para><literal>usenio</literal>. If this is <literal>true</literal> then Java
+                        non blocking NIO will be used. If set to <literal>false</literal> than old
+                        blocking Java IO will be used.</para>
                     <para>We highly recommend that you use non blocking Java NIO. Java NIO does not
                         maintain a thread per connection so can scale to many more concurrent
                         connections than with old blocking IO. We recommend the usage of Java 6 for
                         NIO and the best scalability. The default value for this property is
-                            <literal>true</literal>.</para>
+                            <literal>true</literal> on the server side and <literal>false</literal>
+                        on the client side.</para>
                 </listitem>
                 <listitem>
-                    <para><literal>host</literal>. This specified the host
-                        name or IP address to connect to (when configuring a connector) or to listen
-                        on (when configuring an acceptor). The default value for this property is
-                            <literal>localhost</literal>. When configuring acceptors, multiple hosts
-                        or IP addresses can be specified by separating them with commas. It is also
-                        possible to specify <code>0.0.0.0</code> to accept connection from all
-                        the host network interfaces. It's not
-                        valid to specify multiple addresses when specifying the host for a
-                        connector; a connector makes a connection to one specific address.</para>
+                    <para><literal>host</literal>. This specifies the host name or IP address to
+                        connect to (when configuring a connector) or to listen on (when configuring
+                        an acceptor). The default value for this property is <literal
+                            >localhost</literal>. When configuring acceptors, multiple hosts or IP
+                        addresses can be specified by separating them with commas. It is also
+                        possible to specify <code>0.0.0.0</code> to accept connection from all the
+                        host's network interfaces. It's not valid to specify multiple addresses when
+                        specifying the host for a connector; a connector makes a connection to one
+                        specific address.</para>
                     <note>
                         <para>Don't forget to specify a host name or ip address! If you want your
                             server able to accept connections from other nodes you must specify a
@@ -218,22 +222,20 @@ etc
                     </note>
                 </listitem>
                 <listitem>
-                    <para><literal>port</literal>. This specified the port to
-                        connect to (when configuring a connector) or to listen on (when configuring
-                        an acceptor). The default value for this property is <literal
-                        >5445</literal>.</para>
+                    <para><literal>port</literal>. This specified the port to connect to (when
+                        configuring a connector) or to listen on (when configuring an acceptor). The
+                        default value for this property is <literal>5445</literal>.</para>
                 </listitem>
                 <listitem>
-                    <para><literal>tcpnodelay</literal>. If this is <literal
-                            >true</literal> then <ulink
-                            url="http://en.wikipedia.org/wiki/Nagle's_algorithm">Nagle's
+                    <para><literal>tcpnodelay</literal>. If this is <literal>true</literal> then
+                            <ulink url="http://en.wikipedia.org/wiki/Nagle's_algorithm">Nagle's
                             algorithm</ulink> will be enabled. The default value for this property
                         is <literal>true</literal>.</para>
                 </listitem>
                 <listitem>
-                    <para><literal>tcpsendbuffersize</literal>. This
-                        parameter determines the size of the TCP send buffer in bytes. The default
-                        value for this property is <literal>32768</literal> bytes (32KiB).</para>
+                    <para><literal>tcpsendbuffersize</literal>. This parameter determines the size
+                        of the TCP send buffer in bytes. The default value for this property is
+                            <literal>32768</literal> bytes (32KiB).</para>
                     <para>TCP buffer sizes should be tuned according to the bandwidth and latency of
                         your network. Here's a good link that explains the theory behind <ulink
                             url="http://www-didc.lbl.gov/TCP-tuning/">this</ulink>.</para>
@@ -248,10 +250,9 @@ etc
                         defaults.</para>
                 </listitem>
                 <listitem>
-                    <para><literal>tcpreceivebuffersize</literal>. This
-                        parameter determines the size of the TCP receive buffer in bytes. The
-                        default value for this property is <literal>32768</literal> bytes
-                        (32KiB).</para>
+                    <para><literal>tcpreceivebuffersize</literal>. This parameter determines the
+                        size of the TCP receive buffer in bytes. The default value for this property
+                        is <literal>32768</literal> bytes (32KiB).</para>
                 </listitem>
             </itemizedlist>
         </section>
@@ -264,25 +265,24 @@ etc
                 additional properties:</para>
             <itemizedlist>
                 <listitem>
-                    <para><literal>sslenabled</literal>. Must be <literal
-                            >true</literal> to enable SSL.</para>
+                    <para><literal>sslenabled</literal>. Must be <literal>true</literal> to enable
+                        SSL.</para>
                 </listitem>
                 <listitem>
-                    <para><literal>keystorepath</literal>. This is the path
-                        to the SSL key store on the client which holds the client
-                        certificates.</para>
+                    <para><literal>keystorepath</literal>. This is the path to the SSL key store on
+                        the client which holds the client certificates.</para>
                 </listitem>
                 <listitem>
-                    <para><literal>keystorepassword</literal>. This is the
-                        password for the client certificate key store on the client.</para>
+                    <para><literal>keystorepassword</literal>. This is the password for the client
+                        certificate key store on the client.</para>
                 </listitem>
                 <listitem>
-                    <para><literal>truststorepath</literal>. This is the path
-                        to the trusted client certificate store on the server.</para>
+                    <para><literal>truststorepath</literal>. This is the path to the trusted client
+                        certificate store on the server.</para>
                 </listitem>
                 <listitem>
-                    <para><literal>truststorepassword</literal>. This is the
-                        password to the trusted client certificate store on the server.</para>
+                    <para><literal>truststorepassword</literal>. This is the password to the trusted
+                        client certificate store on the server.</para>
                 </listitem>
             </itemizedlist>
         </section>
@@ -295,31 +295,29 @@ etc
                 properties:</para>
             <itemizedlist>
                 <listitem>
-                    <para><literal>httpenabled</literal>. Must be <literal
-                            >true</literal> to enable HTTP.</para>
+                    <para><literal>httpenabled</literal>. Must be <literal>true</literal> to enable
+                        HTTP.</para>
                 </listitem>
                 <listitem>
-                    <para><literal>httpclientidletime</literal>. How long a
-                        client can be idle before sending an empty http request to keep the
-                        connection alive</para>
+                    <para><literal>httpclientidletime</literal>. How long a client can be idle
+                        before sending an empty http request to keep the connection alive</para>
                 </listitem>
                 <listitem>
-                    <para><literal>httpclientidlescanperiod</literal>. How
-                        often, in milliseconds, to scan for idle clients</para>
+                    <para><literal>httpclientidlescanperiod</literal>. How often, in milliseconds,
+                        to scan for idle clients</para>
                 </listitem>
                 <listitem>
-                    <para><literal>httpresponsetime</literal>. How long the
-                        server can wait before sending an empty http response to keep the connection
-                        alive</para>
+                    <para><literal>httpresponsetime</literal>. How long the server can wait before
+                        sending an empty http response to keep the connection alive</para>
                 </listitem>
                 <listitem>
-                    <para><literal>httpserverscanperiod</literal>. How often,
-                        in milliseconds, to scan for clients needing responses</para>
+                    <para><literal>httpserverscanperiod</literal>. How often, in milliseconds, to
+                        scan for clients needing responses</para>
                 </listitem>
                 <listitem>
-                    <para><literal>httprequiressessionid</literal>. If true
-                        the client will wait after the first call to receive a session id. Used the
-                        http connector is connecting to servlet acceptor (not recommended) </para>
+                    <para><literal>httprequiressessionid</literal>. If true the client will wait
+                        after the first call to receive a session id. Used the http connector is
+                        connecting to servlet acceptor (not recommended) </para>
                 </listitem>
             </itemizedlist>
         </section>
@@ -411,9 +409,9 @@ etc
                 </listitem>
             </itemizedlist>
             <para>The servlet pattern configured in the <literal>web.xml</literal> is the path of
-                the URL that is used. The connector param <literal
-                    >servletpath</literal> on the connector config must match
-                this using the application context of the web app if there is one.</para>
+                the URL that is used. The connector param <literal>servletpath</literal> on the
+                connector config must match this using the application context of the web app if
+                there is one.</para>
             <para>Its also possible to use the servlet transport over SSL. simply add the following
                 configuration to the
                 connector:<programlisting>    &lt;connector name="netty-servlet">

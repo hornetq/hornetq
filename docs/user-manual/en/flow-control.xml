@@ -19,7 +19,7 @@
 <chapter id="flow-control">
    <title>Flow Control</title>
    <para>Flow control is used to limit the flow of data between a client and server, or a server and
-      a server in order to prevent the client or server being overwhelmed with data.</para>
+      another server in order to prevent the client or server being overwhelmed with data.</para>
    <section>
       <title>Consumer Flow Control</title>
       <para>This controls the flow of data between the server and the client as the client consumes
@@ -79,16 +79,18 @@
                   <para>Slow consumers takes significant time to process each message and it is
                      desirable to prevent buffering messages on the client side so that they can be
                      delivered to another consumer instead.</para>
-                  <para>Consider a situation where a queue has 2 consumers 1 of which is very slow.
+                  <para>Consider a situation where a queue has 2 consumers; 1 of which is very slow.
                      Messages are delivered in a round robin fashion to both consumers, the fast
                      consumer processes all of its messages very quickly until its buffer is empty.
-                     At this point there are still messages awaiting to be processed by the slow
-                     consumer which could be being consumed by the other consumer.</para>
+                     At this point there are still messages awaiting to be processed in the buffer
+                     of the slow consumer thus preventing them being processed by the fast consumer.
+                     The fast consumer is therefore sitting idle when it could be processing the
+                     other messages. </para>
                   <para>To allow slow consumers, set the <literal>consumer-window-size</literal> to
                      0 (for no buffer at all). This will prevent the slow consumer from buffering
                      any messages on the client side. Messages will remain on the server side ready
                      to be consumed by other consumers.</para>
-                  <para>Setting this to -1 can give deterministic distribution between multiple
+                  <para>Setting this to 0 can give deterministic distribution between multiple
                      consumers on a queue.</para>
                </listitem>
             </varlistentry>
@@ -130,13 +132,13 @@
       </section>
       <section>
          <title>Rate limited flow control</title>
-         <para>It is also possible to control the rate at which a consumer can consumer messages.
-            This is a form of throttling and can be used to make sure that a consumer never consumes
-            messages at a rate faster than the rate specified. </para>
-         <para>The rate must be a positive integer to enable and is the maximum desired message
-            consumption rate specified in units of messages per second. Setting this to <literal
-               >-1</literal> disables rate limited flow control. The default value is <literal
-               >-1</literal>.</para>
+         <para>It is also possible to control the <emphasis>rate</emphasis> at which a consumer can
+            consume messages. This is a form of throttling and can be used to make sure that a
+            consumer never consumes messages at a rate faster than the rate specified. </para>
+         <para>The rate must be a positive integer to enable this functionality and is the maximum
+            desired message consumption rate specified in units of messages per second. Setting this
+            to <literal>-1</literal> disables rate limited flow control. The default value is
+               <literal>-1</literal>.</para>
          <para>Please see <xref linkend="examples.consumer-rate-limit"/> for a working example of
             limiting consumer rate.</para>
          <section id="flow-control.rate.core.api">
@@ -192,12 +194,12 @@
             sends them more credits they can send more messages.</para>
          <para>The amount of credits a producer requests in one go is known as the <emphasis
                role="italic">window size</emphasis>.</para>
-         <para>The window size therefore determines the amount of bytes that can be inflight at any
+         <para>The window size therefore determines the amount of bytes that can be in-flight at any
             one time before more need to be requested - this prevents the remoting connection from
             getting overloaded.</para>
          <section>
             <title>Using Core API</title>
-            <para>If the HornetQ core API is being window size can be set via the <literal
+            <para>If the HornetQ core API is being used, window size can be set via the <literal
                   >ClientSessionFactory.setProducerWindowSize(int producerWindowSize)</literal>
                method.</para>
          </section>
@@ -258,6 +260,8 @@
             <para>The above example would set the max size of the JMS queue "exampleQueue" to be
                100000 bytes and would block any producers sending to that address to prevent that
                max size being exceeded.</para>
+            <para>Note the policy must be set to <literal>DROP</literal> to enable blocking producer
+               flow control.</para>
             <para>Please note the default value for <literal>address-full-policy</literal> is to
                   <literal>PAGE</literal>. Please see the chapter on paging for more information on
                paging.</para>
@@ -268,10 +272,10 @@
          <para>HornetQ also allows the rate a producer can emit message to be limited, in units of
             messages per second. By specifying such a rate, HornetQ will ensure that producer never
             produces messages at a rate higher than that specified.</para>
-         <para>The rate must be a positive integer to enable and is the maximum desired message
-            consumption rate specified in units of messages per second. Setting this to <literal
-               >-1</literal> disables rate limited flow control. The default value is <literal
-               >-1</literal>.</para>
+         <para>The rate must be a positive integer to enable this functionality and is the maximum
+            desired message consumption rate specified in units of messages per second. Setting this
+            to <literal>-1</literal> disables rate limited flow control. The default value is
+               <literal>-1</literal>.</para>
          <para>Please see the <xref linkend="producer-rate-limiting-example"/> for a working example
             of limiting producer rate.</para>
          <section id="flow-control.producer.rate.core.api">

@@ -150,20 +150,20 @@ at org.acme.yourproject.YourClass (YourClass.java:666)
             deploying JMS connection factory instances direct into JNDI on the server side, you can
             specify it in the <literal>hornetq-jms.xml </literal> configuration file, using the
             parameter <literal>client-failure-check-period</literal>.</para>
-        <para>The default value for client failure check period is <literal>30000</literal>ms, i.e. 30
-            seconds. A value of <literal>-1</literal> means the client will never fail the
+        <para>The default value for client failure check period is <literal>30000</literal>ms, i.e.
+            30 seconds. A value of <literal>-1</literal> means the client will never fail the
             connection on the client side if no data is received from the server. Typically this is
             much lower than connection TTL to allow clients to reconnect in case of transitory
             failure.</para>
     </section>
     <section id="connection-ttl.async-connection-execution">
         <title>Configuring Asynchronous Connection Execution</title>
-        <para>By default, packets received on the server side are handed off by the remoting thread
-           for processing.</para>
+        <para>By default, packets received on the server side are executed on the remoting
+            thread.</para>
         <para>It is possible instead to use a thread from a thread pool to handle the packents so
-           that the remoting thread is not tied up for too long. However, please note that processing 
-           operations asynchronously on another thread adds a little more
-            latency. To enable asynchronous connection execution, set the parameter <literal
+            that the remoting thread is not tied up for too long. However, please note that
+            processing operations asynchronously on another thread adds a little more latency. To
+            enable asynchronous connection execution, set the parameter <literal
                 >async-connection-execution-enabled</literal> in <literal
                 >hornetq-configuration.xml</literal> to <literal>true</literal> (default value is
                 <literal>false</literal>).</para>
