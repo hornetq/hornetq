@@ -41,13 +41,13 @@ public class SecurityManagementWithModifiedConfigurationTest extends SecurityMan
 
    public void testSendManagementMessageWithModifiedClusterAdminUser() throws Exception
    {
-      doSendManagementMessage(ConfigurationImpl.DEFAULT_MANAGEMENT_CLUSTER_USER, configuredClusterPassword, true);
+      doSendManagementMessage(ConfigurationImpl.DEFAULT_CLUSTER_USER, configuredClusterPassword, true);
    }
 
    public void testSendManagementMessageWithDefaultClusterAdminUser() throws Exception
    {
-      doSendManagementMessage(ConfigurationImpl.DEFAULT_MANAGEMENT_CLUSTER_USER,
-                              ConfigurationImpl.DEFAULT_MANAGEMENT_CLUSTER_PASSWORD,
+      doSendManagementMessage(ConfigurationImpl.DEFAULT_CLUSTER_USER,
+                              ConfigurationImpl.DEFAULT_CLUSTER_PASSWORD,
                               false);
    }
 
@@ -70,7 +70,7 @@ public class SecurityManagementWithModifiedConfigurationTest extends SecurityMan
    {
       ConfigurationImpl conf = new ConfigurationImpl();
       conf.setSecurityEnabled(true);
-      conf.setManagementClusterPassword(configuredClusterPassword);
+      conf.setClusterPassword(configuredClusterPassword);
       conf.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
       HornetQServer server = HornetQServers.newHornetQServer(conf, false);
       server.start();

@@ -425,8 +425,8 @@ public class ClusterManagerImpl implements ClusterManager
                                  config.getConfirmationWindowSize(),
                                  managementService.getManagementAddress(),
                                  managementService.getManagementNotificationAddress(),
-                                 managementService.getClusterUser(),
-                                 managementService.getClusterPassword(),
+                                 server.getConfiguration().getClusterUser(),
+                                 server.getConfiguration().getClusterPassword(),
                                  null,
                                  !backup,
                                  server.getStorageManager());
@@ -479,8 +479,8 @@ public class ClusterManagerImpl implements ClusterManager
                                  config.getConfirmationWindowSize(),
                                  managementService.getManagementAddress(),
                                  managementService.getManagementNotificationAddress(),
-                                 managementService.getClusterUser(),
-                                 managementService.getClusterPassword(),
+                                 server.getConfiguration().getClusterUser(),
+                                 server.getConfiguration().getClusterPassword(),
                                  null,
                                  !backup,
                                  server.getStorageManager());
@@ -562,7 +562,9 @@ public class ClusterManagerImpl implements ClusterManager
                                                        connectors,
                                                        config.getMaxHops(),
                                                        nodeUUID,
-                                                       backup);
+                                                       backup,
+                                                       server.getConfiguration().getClusterUser(),
+                                                       server.getConfiguration().getClusterPassword());
       }
       else
       {
@@ -588,7 +590,9 @@ public class ClusterManagerImpl implements ClusterManager
                                                        dg,
                                                        config.getMaxHops(),
                                                        nodeUUID,
-                                                       backup);
+                                                       backup,
+                                                       server.getConfiguration().getClusterUser(),
+                                                       server.getConfiguration().getClusterPassword());
       }
 
       managementService.registerCluster(clusterConnection, config);

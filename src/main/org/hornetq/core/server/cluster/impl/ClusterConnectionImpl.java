@@ -101,6 +101,10 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
    private boolean backup;
 
    private volatile boolean started;
+   
+   private final String clusterUser;
+   
+   private final String clusterPassword;
 
    /*
     * Constructor using static list of connectors
@@ -119,7 +123,9 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
                                 final List<Pair<TransportConfiguration, TransportConfiguration>> connectors,
                                 final int maxHops,
                                 final UUID nodeUUID,
-                                final boolean backup) throws Exception
+                                final boolean backup,
+                                final String clusterUser,
+                                final String clusterPassword) throws Exception
    {
       this.name = name;
 
@@ -157,6 +163,10 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
       this.backup = backup;
 
       staticConnectors = connectors;
+      
+      this.clusterUser = clusterUser;
+      
+      this.clusterPassword = clusterPassword;
 
       if (!backup)
       {
@@ -181,7 +191,9 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
                                 final DiscoveryGroup discoveryGroup,
                                 final int maxHops,
                                 final UUID nodeUUID,
-                                final boolean backup) throws Exception
+                                final boolean backup,
+                                final String clusterUser,
+                                final String clusterPassword) throws Exception
    {
       this.name = name;
 
@@ -212,6 +224,10 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
       this.nodeUUID = nodeUUID;
 
       this.backup = backup;
+      
+      this.clusterUser = clusterUser;
+      
+      this.clusterPassword = clusterPassword;
 
       staticConnectors = null;
    }
@@ -443,8 +459,8 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
                                      confirmationWindowSize,
                                      managementService.getManagementAddress(),
                                      managementService.getManagementNotificationAddress(),
-                                     managementService.getClusterUser(),
-                                     managementService.getClusterPassword(),
+                                     clusterUser,
+                                     clusterPassword,
                                      record,
                                      !backup,
                                      server.getStorageManager());

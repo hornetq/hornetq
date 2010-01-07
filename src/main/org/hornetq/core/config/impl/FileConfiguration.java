@@ -25,7 +25,6 @@ import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.HornetQClient;
-import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.JournalType;
 import org.hornetq.core.server.cluster.BridgeConfiguration;
@@ -171,15 +170,15 @@ public class FileConfiguration extends ConfigurationImpl
                                                                                       managementNotificationAddress.toString(),
                                                                                       Validators.NOT_NULL_OR_EMPTY));
 
-      managementClusterPassword = XMLConfigurationUtil.getString(e,
-                                                                 "management-cluster-password",
-                                                                 managementClusterPassword,
-                                                                 Validators.NOT_NULL_OR_EMPTY);
+      clusterPassword = XMLConfigurationUtil.getString(e,
+                                                       "cluster-password",
+                                                       clusterPassword,
+                                                       Validators.NOT_NULL_OR_EMPTY);
 
-      managementClusterUser = XMLConfigurationUtil.getString(e,
-                                                             "management-cluster-user",
-                                                             managementClusterUser,
-                                                             Validators.NOT_NULL_OR_EMPTY);
+      clusterUser = XMLConfigurationUtil.getString(e,
+                                                   "cluster-user",
+                                                   clusterUser,
+                                                   Validators.NOT_NULL_OR_EMPTY);
 
       logDelegateFactoryClassName = XMLConfigurationUtil.getString(e,
                                                                    "log-delegate-factory-class-name",

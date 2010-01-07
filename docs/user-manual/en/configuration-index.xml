@@ -227,15 +227,15 @@
                         </row>
                         <row>
                             <entry><link linkend="management.replication"
-                                    >management-cluster-user</link></entry>
+                                    >cluster-user</link></entry>
                             <entry>String</entry>
                             <entry>the user used to for replicating management operations between
                                 clustered nodes</entry>
-                            <entry>HORNETQ.MANAGEMENT.ADMIN.USER</entry>
+                            <entry>HORNETQ.CLUSTER.ADMIN.USER</entry>
                         </row>
                         <row>
                             <entry><link linkend="management.replication"
-                                    >management-cluster-password</link></entry>
+                                    >cluster-password</link></entry>
                             <entry>String</entry>
                             <entry>the password used to for replicating management operations
                                 between clustered nodes</entry>

@@ -47,8 +47,8 @@ public class FileConfigurationTest extends ConfigurationImplTest
       Assert.assertEquals(true, conf.isWildcardRoutingEnabled());
       Assert.assertEquals(new SimpleString("Giraffe"), conf.getManagementAddress());
       Assert.assertEquals(new SimpleString("Whatever"), conf.getManagementNotificationAddress());
-      Assert.assertEquals("Frog", conf.getManagementClusterUser());
-      Assert.assertEquals("Wombat", conf.getManagementClusterPassword());
+      Assert.assertEquals("Frog", conf.getClusterUser());
+      Assert.assertEquals("Wombat", conf.getClusterPassword());
       Assert.assertEquals(false, conf.isJMXManagementEnabled());
       Assert.assertEquals("gro.qtenroh", conf.getJMXDomain());
       Assert.assertEquals(true, conf.isMessageCounterEnabled());

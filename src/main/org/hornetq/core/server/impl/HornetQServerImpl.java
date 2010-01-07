@@ -1037,12 +1037,18 @@ public class HornetQServerImpl implements HornetQServer
       securityRepository = new HierarchicalObjectRepository<Set<Role>>();
       securityRepository.setDefault(new HashSet<Role>());
 
+      if (ConfigurationImpl.DEFAULT_CLUSTER_USER.equals(configuration.getClusterUser()) && ConfigurationImpl.DEFAULT_CLUSTER_PASSWORD.equals(configuration.getClusterPassword()))
+      {
+         log.warn("It has been detected that the cluster admin user and password which are used to " + "replicate management operation from one node to the other have not been changed from the installation default. "
+                  + "Please see the HornetQ user guide for instructions on how to do this.");
+      }
+
       securityStore = new SecurityStoreImpl(securityRepository,
                                             securityManager,
                                             configuration.getSecurityInvalidationInterval(),
                                             configuration.isSecurityEnabled(),
-                                            configuration.getManagementClusterUser(),
-                                            configuration.getManagementClusterPassword(),
+                                            configuration.getClusterUser(),
+                                            configuration.getClusterPassword(),
                                             managementService);
 
       queueFactory = new QueueFactoryImpl(executorFactory, scheduledPool, addressSettingsRepository, storageManager);

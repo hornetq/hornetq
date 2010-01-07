@@ -61,10 +61,6 @@ public interface ManagementService extends NotificationService, HornetQComponent
 
    MessageCounterManager getMessageCounterManager();
 
-   String getClusterUser();
-
-   String getClusterPassword();
-
    SimpleString getManagementAddress();
 
    SimpleString getManagementNotificationAddress();

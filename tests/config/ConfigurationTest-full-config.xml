@@ -12,8 +12,8 @@
       <wild-card-routing-enabled>true</wild-card-routing-enabled>
       <management-address>Giraffe</management-address>
       <management-notification-address>Whatever</management-notification-address>
-      <management-cluster-user>Frog</management-cluster-user>
-      <management-cluster-password>Wombat</management-cluster-password>
+      <cluster-user>Frog</cluster-user>
+      <cluster-password>Wombat</cluster-password>
       <jmx-management-enabled>false</jmx-management-enabled>
       <jmx-domain>gro.qtenroh</jmx-domain>
       <log-delegate-factory-class-name>ocelot</log-delegate-factory-class-name>

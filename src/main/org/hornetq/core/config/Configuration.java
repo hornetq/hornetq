@@ -373,28 +373,28 @@ public interface Configuration extends Serializable
    void setManagementNotificationAddress(SimpleString address);
 
    /**
-    * Returns the management cluster user for this server.
+    * Returns the cluster user for this server.
     * <br>
-    * Default value is {@value org.hornetq.core.config.impl.ConfigurationImpl#DEFAULT_MANAGEMENT_CLUSTER_USER}.
+    * Default value is {@value org.hornetq.core.config.impl.ConfigurationImpl#DEFAULT_CLUSTER_USER}.
     */
-   String getManagementClusterUser();
+   String getClusterUser();
 
    /**
-    * Sets the management cluster user for this server.
+    * Sets the cluster user for this server.
     */
-   void setManagementClusterUser(String user);
+   void setClusterUser(String user);
 
    /**
-    * Returns the management cluster password for this server.
+    * Returns the cluster password for this server.
     * <br>
-    * Default value is {@value org.hornetq.core.config.impl.ConfigurationImpl#DEFAULT_MANAGEMENT_CLUSTER_PASSWORD}.
+    * Default value is {@value org.hornetq.core.config.impl.ConfigurationImpl#DEFAULT_CLUSTER_PASSWORD}.
     */
-   String getManagementClusterPassword();
+   String getClusterPassword();
 
    /**
-    * Sets the management cluster password for this server.
+    * Sets the cluster password for this server.
     */
-   void setManagementClusterPassword(String password);
+   void setClusterPassword(String password);
 
    /**
     * Returns the size of the cache for pre-creating message IDs.

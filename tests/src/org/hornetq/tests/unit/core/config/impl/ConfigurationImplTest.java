@@ -72,8 +72,8 @@ public class ConfigurationImplTest extends UnitTestCase
       Assert.assertEquals(ConfigurationImpl.DEFAULT_MANAGEMENT_ADDRESS, conf.getManagementAddress()); // OK
       Assert.assertEquals(ConfigurationImpl.DEFAULT_MANAGEMENT_NOTIFICATION_ADDRESS,
                           conf.getManagementNotificationAddress()); // OK
-      Assert.assertEquals(ConfigurationImpl.DEFAULT_MANAGEMENT_CLUSTER_USER, conf.getManagementClusterUser()); // OK
-      Assert.assertEquals(ConfigurationImpl.DEFAULT_MANAGEMENT_CLUSTER_PASSWORD, conf.getManagementClusterPassword()); // OK
+      Assert.assertEquals(ConfigurationImpl.DEFAULT_CLUSTER_USER, conf.getClusterUser()); // OK
+      Assert.assertEquals(ConfigurationImpl.DEFAULT_CLUSTER_PASSWORD, conf.getClusterPassword()); // OK
       Assert.assertEquals(ConfigurationImpl.DEFAULT_PERSISTENCE_ENABLED, conf.isPersistenceEnabled());
       Assert.assertEquals(ConfigurationImpl.DEFAULT_FILE_DEPLOYMENT_ENABLED, conf.isFileDeploymentEnabled());
       Assert.assertEquals(ConfigurationImpl.DEFAULT_PERSIST_DELIVERY_COUNT_BEFORE_DELIVERY,
@@ -230,8 +230,8 @@ public class ConfigurationImplTest extends UnitTestCase
          Assert.assertEquals(ss, conf.getManagementNotificationAddress());
 
          s = RandomUtil.randomString();
-         conf.setManagementClusterUser(s);
-         Assert.assertEquals(s, conf.getManagementClusterUser());
+         conf.setClusterUser(s);
+         Assert.assertEquals(s, conf.getClusterUser());
 
          i = RandomUtil.randomInt();
          conf.setIDCacheSize(i);
@@ -310,8 +310,8 @@ public class ConfigurationImplTest extends UnitTestCase
          Assert.assertEquals(l, conf.getTransactionTimeoutScanPeriod());
 
          s = RandomUtil.randomString();
-         conf.setManagementClusterPassword(s);
-         Assert.assertEquals(s, conf.getManagementClusterPassword());
+         conf.setClusterPassword(s);
+         Assert.assertEquals(s, conf.getClusterPassword());
       }
    }
 
@@ -451,8 +451,8 @@ public class ConfigurationImplTest extends UnitTestCase
       Assert.assertEquals(ss, conf.getManagementNotificationAddress());
 
       s = RandomUtil.randomString();
-      conf.setManagementClusterUser(s);
-      Assert.assertEquals(s, conf.getManagementClusterUser());
+      conf.setClusterUser(s);
+      Assert.assertEquals(s, conf.getClusterUser());
 
       i = RandomUtil.randomInt();
       conf.setIDCacheSize(i);
@@ -531,8 +531,8 @@ public class ConfigurationImplTest extends UnitTestCase
       Assert.assertEquals(l, conf.getTransactionTimeoutScanPeriod());
 
       s = RandomUtil.randomString();
-      conf.setManagementClusterPassword(s);
-      Assert.assertEquals(s, conf.getManagementClusterPassword());
+      conf.setClusterPassword(s);
+      Assert.assertEquals(s, conf.getClusterPassword());
 
       ByteArrayOutputStream baos = new ByteArrayOutputStream();
       ObjectOutputStream oos = new ObjectOutputStream(baos);

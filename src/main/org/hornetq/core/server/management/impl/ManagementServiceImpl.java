@@ -41,7 +41,6 @@ import org.hornetq.api.core.management.ObjectNameBuilder;
 import org.hornetq.api.core.management.ResourceNames;
 import org.hornetq.core.cluster.DiscoveryGroup;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.management.impl.AcceptorControlImpl;
 import org.hornetq.core.management.impl.AddressControlImpl;
@@ -123,10 +122,6 @@ public class ManagementServiceImpl implements ManagementService
 
    private final SimpleString managementAddress;
 
-   private final String managementClusterUser;
-
-   private final String managementClusterPassword;
-
    private boolean started = false;
 
    private final boolean messageCounterEnabled;
@@ -139,15 +134,6 @@ public class ManagementServiceImpl implements ManagementService
 
    // Static --------------------------------------------------------
 
-   private static void checkDefaultManagementClusterCredentials(final String user, final String password)
-   {
-      if (ConfigurationImpl.DEFAULT_MANAGEMENT_CLUSTER_USER.equals(user) && ConfigurationImpl.DEFAULT_MANAGEMENT_CLUSTER_PASSWORD.equals(password))
-      {
-         ManagementServiceImpl.log.warn("It has been detected that the cluster admin user and password which are used to " + "replicate management operation from one node to the other have not been changed from the installation default. "
-                                        + "Please see the HornetQ user guide for instructions on how to do this.");
-      }
-   }
-
    // Constructor ----------------------------------------------------
 
    public ManagementServiceImpl(final MBeanServer mbeanServer, final Configuration configuration)
@@ -157,10 +143,6 @@ public class ManagementServiceImpl implements ManagementService
       messageCounterEnabled = configuration.isMessageCounterEnabled();
       managementAddress = configuration.getManagementAddress();
       managementNotificationAddress = configuration.getManagementNotificationAddress();
-      managementClusterUser = configuration.getManagementClusterUser();
-      managementClusterPassword = configuration.getManagementClusterPassword();
-
-      ManagementServiceImpl.checkDefaultManagementClusterCredentials(managementClusterUser, managementClusterPassword);
 
       registry = new HashMap<String, Object>();
       broadcaster = new NotificationBroadcasterSupport();
@@ -591,16 +573,6 @@ public class ManagementServiceImpl implements ManagementService
    public SimpleString getManagementNotificationAddress()
    {
       return managementNotificationAddress;
-   }
-
-   public String getClusterUser()
-   {
-      return managementClusterUser;
-   }
-
-   public String getClusterPassword()
-   {
-      return managementClusterPassword;
    }
 
    // HornetQComponent implementation -----------------------------

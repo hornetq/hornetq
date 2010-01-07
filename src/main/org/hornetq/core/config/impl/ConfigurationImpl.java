@@ -137,9 +137,9 @@ public class ConfigurationImpl implements Configuration
 
    public static final SimpleString DEFAULT_MANAGEMENT_NOTIFICATION_ADDRESS = new SimpleString("hornetq.notifications");
 
-   public static final String DEFAULT_MANAGEMENT_CLUSTER_USER = "HORNETQ.MANAGEMENT.ADMIN.USER";
+   public static final String DEFAULT_CLUSTER_USER = "HORNETQ.CLUSTER.ADMIN.USER";
 
-   public static final String DEFAULT_MANAGEMENT_CLUSTER_PASSWORD = "CHANGE ME!!";
+   public static final String DEFAULT_CLUSTER_PASSWORD = "CHANGE ME!!";
 
    public static final long DEFAULT_BROADCAST_PERIOD = 1000;
 
@@ -303,9 +303,9 @@ public class ConfigurationImpl implements Configuration
 
    protected SimpleString managementNotificationAddress = ConfigurationImpl.DEFAULT_MANAGEMENT_NOTIFICATION_ADDRESS;
 
-   protected String managementClusterUser = ConfigurationImpl.DEFAULT_MANAGEMENT_CLUSTER_USER;
+   protected String clusterUser = ConfigurationImpl.DEFAULT_CLUSTER_USER;
 
-   protected String managementClusterPassword = ConfigurationImpl.DEFAULT_MANAGEMENT_CLUSTER_PASSWORD;
+   protected String clusterPassword = ConfigurationImpl.DEFAULT_CLUSTER_PASSWORD;
 
    protected long serverDumpInterval = ConfigurationImpl.DEFAULT_SERVER_DUMP_INTERVAL;
 
@@ -841,24 +841,24 @@ public class ConfigurationImpl implements Configuration
       managementNotificationAddress = address;
    }
 
-   public String getManagementClusterUser()
+   public String getClusterUser()
    {
-      return managementClusterUser;
+      return clusterUser;
    }
 
-   public void setManagementClusterUser(final String user)
+   public void setClusterUser(final String user)
    {
-      managementClusterUser = user;
+      clusterUser = user;
    }
 
-   public String getManagementClusterPassword()
+   public String getClusterPassword()
    {
-      return managementClusterPassword;
+      return clusterPassword;
    }
 
-   public void setManagementClusterPassword(final String clusterPassword)
+   public void setClusterPassword(final String theclusterPassword)
    {
-      managementClusterPassword = clusterPassword;
+      clusterPassword = theclusterPassword;
    }
 
    public int getJournalCompactMinFiles()
@@ -1166,25 +1166,25 @@ public class ConfigurationImpl implements Configuration
       {
          return false;
       }
-      if (managementClusterPassword == null)
+      if (clusterPassword == null)
       {
-         if (other.managementClusterPassword != null)
+         if (other.clusterPassword != null)
          {
             return false;
          }
       }
-      else if (!managementClusterPassword.equals(other.managementClusterPassword))
+      else if (!clusterPassword.equals(other.clusterPassword))
       {
          return false;
       }
-      if (managementClusterUser == null)
+      if (clusterUser == null)
       {
-         if (other.managementClusterUser != null)
+         if (other.clusterUser != null)
          {
             return false;
          }
       }
-      else if (!managementClusterUser.equals(other.managementClusterUser))
+      else if (!clusterUser.equals(other.clusterUser))
       {
          return false;
       }

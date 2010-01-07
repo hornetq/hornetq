@@ -216,7 +216,7 @@
                   <para>Retrieving the queue attributes</para>
                   <para>The <literal>QueueControl</literal> exposes Core queue settings through its
                      attributes (e.g. <literal>getFilter()</literal> to retrieve the queue's filter
-                     if it was created with one, <literal>isDurable()</literal> to know wether the
+                     if it was created with one, <literal>isDurable()</literal> to know whether the
                      queue is durable or not, etc.)</para>
                </listitem>
                <listitem>
@@ -376,9 +376,9 @@
                   <para>The <literal>ConnectionFactoryControl</literal> exposes JMS
                      ConnectionFactory configuration through its attributes (e.g. <literal
                         >getConsumerWindowSize()</literal> to retrieve the consumer window size for
-                     flow control, <literal>isBlockOnNonDurableSend()</literal> to know wether
-                     the producers created from the connection factory will block or not when
-                     sending non-durable messages, etc.)</para>
+                     flow control, <literal>isBlockOnNonDurableSend()</literal> to know wether the
+                     producers created from the connection factory will block or not when sending
+                     non-durable messages, etc.)</para>
                </listitem>
             </itemizedlist>
          </section>
@@ -587,9 +587,8 @@
       <para>A <literal>ClientConsumer</literal> can be used to consume the management reply and
          retrieve the result of the operation (if any) stored in the reply's body. For portability,
          results are returned as a <ulink url="http://json.org">JSON</ulink> String rather than Java
-         Serialization (the <literal
-            >org.hornetq.api.core.management.ManagementHelper</literal> can be used to
-         convert the JSON string to Java objects).</para>
+         Serialization (the <literal>org.hornetq.api.core.management.ManagementHelper</literal> can
+         be used to convert the JSON string to Java objects).</para>
       <para>These steps can be simplified to make it easier to invoke management operations using
          Core messages:</para>
       <orderedlist>
@@ -602,16 +601,16 @@
          </listitem>
          <listitem>
             <para>Use the helper class <literal
-                  >org.hornetq.api.core.management.ManagementHelper</literal> to fill the
-               message with the management properties</para>
+                  >org.hornetq.api.core.management.ManagementHelper</literal> to fill the message
+               with the management properties</para>
          </listitem>
          <listitem>
             <para>Send the message using the <literal>ClientRequestor</literal></para>
          </listitem>
          <listitem>
             <para>Use the helper class <literal
-                  >org.hornetq.api.core.management.ManagementHelper</literal> to retrieve
-               the operation result from the management reply</para>
+                  >org.hornetq.api.core.management.ManagementHelper</literal> to retrieve the
+               operation result from the management reply</para>
          </listitem>
       </orderedlist>
       <para>For example, to find out the number of messages in the core queue <literal
@@ -628,10 +627,10 @@
       <para>Management operation name and parameters must conform to the Java interfaces defined in
          the <literal>management</literal> packages.</para>
       <para>Names of the resources are built using the helper class <literal
-            >org.hornetq.api.core.management.ResourceNames</literal> and are straightforward (<literal
-            >core.queue.exampleQueue</literal> for the Core Queue <literal>exampleQueue</literal>,
-            <literal>jms.topic.exampleTopic</literal> for the JMS Topic <literal
-            >exampleTopic</literal>, etc.).</para>
+            >org.hornetq.api.core.management.ResourceNames</literal> and are straightforward
+            (<literal>core.queue.exampleQueue</literal> for the Core Queue <literal
+            >exampleQueue</literal>, <literal>jms.topic.exampleTopic</literal> for the JMS Topic
+            <literal>exampleTopic</literal>, etc.).</para>
       <section id="management.core.configuration">
          <title>Configuring Core Management</title>
          <para>The management address to send management messages is configured in <literal
@@ -639,8 +638,8 @@
          <programlisting>
    &lt;management-address&gt;jms.queue.hornetq.management&lt;/management-address&gt;
          </programlisting>
-         <para>By default, the address is <literal>jms.queue.hornetq.management</literal>
-         (it is prepended by "jms.queue" so that JMS clients can also send management messages).</para>
+         <para>By default, the address is <literal>jms.queue.hornetq.management</literal> (it is
+            prepended by "jms.queue" so that JMS clients can also send management messages).</para>
          <para>The management address requires a <emphasis>special</emphasis> user permission
                <literal>manage</literal> to be able to receive and handle management messages. This
             is also configured in hornetq-configuration.xml:</para>
@@ -675,16 +674,16 @@
          </listitem>
          <listitem>
             <para>use the helper class <literal
-                  >org.hornetq.api.jms.management.JMSManagementHelper</literal> to fill the
-               message with the management properties</para>
+                  >org.hornetq.api.jms.management.JMSManagementHelper</literal> to fill the message
+               with the management properties</para>
          </listitem>
          <listitem>
             <para>send the message using the <literal>QueueRequestor</literal></para>
          </listitem>
          <listitem>
             <para>use the helper class <literal
-                  >org.hornetq.api.jms.management.JMSManagementHelper</literal> to retrieve
-               the operation result from the management reply</para>
+                  >org.hornetq.api.jms.management.JMSManagementHelper</literal> to retrieve the
+               operation result from the management reply</para>
          </listitem>
       </orderedlist>
       <para>For example, to know the number of messages in the JMS queue <literal
@@ -712,33 +711,7 @@
             messages to manage HornetQ server.</para>
       </section>
    </section>
-   <section id="management.replication">
-      <title>Management Cluster Credentials</title>
-      <para>HornetQ allows <emphasis>replication</emphasis> of a live server to a backup server.
-         This impacts management as resources created on the live server (e.g. a core address) must
-         also be created on the backup server. Otherwise, when failover occurs, the backup server
-         will not be able to handle messages sent to this address since its resources will have been
-         created on the live server only and not on the backup.</para>
-      <para>HornetQ <emphasis>replicates management operations</emphasis> regardless of the
-         management API used (JMX, Core messages, JMS messages). Any management operation invoked on
-         a live server will also be invoked on its backup server to ensure a proper replication of
-         resources and state. For example, you only need to manage the live server: if a queue is
-         created on the live server, HornetQ will ensure that the same resource will also be created
-         on the backup server.</para>
-      <para>If core or JMS messages are used to invoke management operations, replication is handled
-         automatically by HornetQ.</para>
-      <para>To allow this management replication with JMX, HornetQ defines <emphasis>management
-            cluster credentials</emphasis>: this special user/password <emphasis>must be shared by
-            all nodes</emphasis>. To configure it, change the value in <literal
-            >hornetq-configuration.xml</literal>:</para>
-      <programlisting>
-   &lt;management-cluster-user&gt;HORNETQ.MANAGEMENT.ADMIN.USER&lt;/management-cluster-user&gt;
-   &lt;management-cluster-password&gt;CHANGE ME!!&lt;/management-cluster-password&gt;
-      </programlisting>
-      <para>It is strongly suggested to change these values from their default. If they are not
-         changed from the default, HornetQ will detect this and pester you with a warning on every
-         start-up.</para>
-   </section>
+ 
    <section id="management.notifications">
       <title>Management Notifications</title>
       <para>HornetQ emits <emphasis>notifications</emphasis> to inform listeners of potentially

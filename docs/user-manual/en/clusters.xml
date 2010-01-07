@@ -417,6 +417,20 @@ Connection jmsConnection2 = jmsConnectionFactory.createConnection();</programlis
                 </listitem>
             </itemizedlist>
         </section>
+        <section id="clusters.clusteruser">
+            <title>Cluster User Credentials</title>
+            
+            <para>When creating connections between nodes of a cluster to form a cluster connection,
+                HornetQ uses a cluster user and cluster password which is defined in <literal>hornetq-configuration.xml</literal>:</para>
+            <programlisting>
+                &lt;management-cluster-user&gt;HORNETQ.CLUSTER.ADMIN.USER&lt;/management-cluster-user&gt;
+                &lt;management-cluster-password&gt;CHANGE ME!!&lt;/management-cluster-password&gt;
+            </programlisting>
+            <para>It is imperative that these values are changed from their default, or remote clients will be able to make connections
+                to the server using the default values. If they are not
+                changed from the default, HornetQ will detect this and pester you with a warning on every
+                start-up.</para>
+        </section>
     </section>
     <section id="clusters.client.loadbalancing">
         <title>Client-Side Load balancing</title>

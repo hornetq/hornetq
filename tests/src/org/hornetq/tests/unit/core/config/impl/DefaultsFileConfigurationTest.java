@@ -82,9 +82,9 @@ public class DefaultsFileConfigurationTest extends ConfigurationImplTest
       Assert.assertEquals(ConfigurationImpl.DEFAULT_MANAGEMENT_NOTIFICATION_ADDRESS,
                           conf.getManagementNotificationAddress());
 
-      Assert.assertEquals(ConfigurationImpl.DEFAULT_MANAGEMENT_CLUSTER_USER, conf.getManagementClusterUser());
+      Assert.assertEquals(ConfigurationImpl.DEFAULT_CLUSTER_USER, conf.getClusterUser());
 
-      Assert.assertEquals(ConfigurationImpl.DEFAULT_MANAGEMENT_CLUSTER_PASSWORD, conf.getManagementClusterPassword());
+      Assert.assertEquals(ConfigurationImpl.DEFAULT_CLUSTER_PASSWORD, conf.getClusterPassword());
 
       Assert.assertEquals(ConfigurationImpl.DEFAULT_ID_CACHE_SIZE, conf.getIDCacheSize());
 

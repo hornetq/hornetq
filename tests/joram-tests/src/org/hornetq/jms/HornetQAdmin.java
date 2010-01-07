@@ -74,8 +74,8 @@ public class HornetQAdmin implements Admin
    public void start() throws Exception
    {
       ClientSessionFactoryImpl sf = (ClientSessionFactoryImpl) HornetQClient.createClientSessionFactory(new TransportConfiguration(NettyConnectorFactory.class.getName()));
-      clientSession = sf.createSession(ConfigurationImpl.DEFAULT_MANAGEMENT_CLUSTER_USER,
-                                       ConfigurationImpl.DEFAULT_MANAGEMENT_CLUSTER_PASSWORD,
+      clientSession = sf.createSession(ConfigurationImpl.DEFAULT_CLUSTER_USER,
+                                       ConfigurationImpl.DEFAULT_CLUSTER_PASSWORD,
                                        false,
                                        true,
                                        true,
