@@ -21,7 +21,7 @@
     <para>What is HornetQ?</para>
     <itemizedlist>
         <listitem>
-            <para>HornetQ is an open source project to build a multi-protocol, embeddable, high
+            <para>HornetQ is an open source project to build a multi-protocol, embeddable, very high
                 performance, clustered, asynchronous messaging system.</para>
         </listitem>
         <listitem>
@@ -30,8 +30,8 @@
                 />.</para>
         </listitem>
         <listitem>
-            <para>For answers to more questions about what HornetQ is and isn't please visit the
-                    <ulink url="http://www.jboss.org/community/wiki/HornetQGeneralFAQs">FAQs wiki
+            <para>For answers to more questions about what HornetQ is and what it isn't please visit
+                the <ulink url="http://www.jboss.org/community/wiki/HornetQGeneralFAQs">FAQs wiki
                     page</ulink>.</para>
         </listitem>
     </itemizedlist>
@@ -49,7 +49,7 @@
                 from Windows desktops to IBM mainframes.</para>
         </listitem>
         <listitem>
-            <para>Superb performance. Our ground-breaking high performance journal provides
+            <para>Amazing performance. Our ground-breaking high performance journal provides
                 persistent messaging performance at rates normally seen for non-persistent
                 messaging, our non-persistent messaging performance rocks the boat too.</para>
         </listitem>
@@ -58,9 +58,9 @@
                 and others you won't find anywhere else.</para>
         </listitem>
         <listitem>
-            <para>Elegant POJO based design with minimal third party dependencies. Run HornetQ
+            <para>Elegant, clean-cut design with minimal third party dependencies. Run HornetQ
                 stand-alone, run it in integrated in your favourite JEE application server, or run
-                it embedded inside your own product.</para>
+                it embedded inside your own product. It's up to you.</para>
         </listitem>
         <listitem>
             <para>Seamless high availability. We provide a HA solution with automatic client

@@ -118,13 +118,13 @@
                     what beans the Microcontainer should create and what dependencies to enforce
                     between them. Remember that HornetQ is just a set of POJOs. In the stand-alone
                     server, it's the JBoss Microcontainer which instantiates these POJOs and
-                    enforces dependencies between them and other beans. Please see <xref
-                        linkend="usingserver.mainconfig"/> for more information on this file.</para>
+                    enforces dependencies between them and other beans. </para>
             </listitem>
             <listitem>
                 <para><literal>hornetq-configuration.xml</literal>. This is the main HornetQ
                     configuration file. All the parameters in this file are described in <xref
-                        linkend="configuration-index"/>.</para>
+                        linkend="configuration-index"/>. Please see <xref
+                        linkend="usingserver.mainconfig"/> for more information on this file.</para>
             </listitem>
             <listitem>
                 <para><literal>hornetq-queues.xml</literal>. This file contains predefined queues,
@@ -138,8 +138,8 @@
                     will be loaded if found.</para>
             </listitem>
             <listitem>
-                <para><literal>hornetq-users.xml</literal> HornetQ ships with a security manager
-                    implementation which obtains user credentials from the <literal
+                <para><literal>hornetq-users.xml</literal> HornetQ ships with a basic security
+                    manager implementation which obtains user credentials from the <literal
                         >hornetq-users.xml</literal> file. This file contains user, password and
                     role information. For more information on security ,please see <xref
                         linkend="security"/>.</para>
@@ -176,7 +176,7 @@
          &lt;param key="host"  value="${hornetq.remoting.netty.host:localhost}" type="String"/>
          &lt;param key="port"  value="${hornetq.remoting.netty.port:5445}" type="Integer"/>
 &lt;/connector></programlisting>
-        <para>here you can see we have replaced 2 values with system properties <literal
+        <para>Here you can see we have replaced 2 values with system properties <literal
                 >hornetq.remoting.netty.host</literal> and <literal
                 >hornetq.remoting.netty.port</literal>. These values will be replaced by the value
             found in the system property if there is one, if not they default back to localhost or
@@ -310,7 +310,8 @@
     <section id="server.microkernel.configuration">
         <title>JBoss AS4 MBean Service.</title>
         <note>
-            <para>The section is only to configure HornetQ on JBoss AS4. The service funtionality is similar to Microcontainer Beans</para>
+            <para>The section is only to configure HornetQ on JBoss AS4. The service funtionality is
+                similar to Microcontainer Beans</para>
         </note>
         <para>
             <programlisting>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
@@ -344,21 +345,24 @@
 &lt;/server&gt;
             </programlisting>
         </para>
-        <para>This jboss-service.xml configuration file is included inside the hornetq-service.sar on AS4 with embebbed HornetQ.
-        As you can see, on this configuration file we are starting various services:</para>
+        <para>This jboss-service.xml configuration file is included inside the hornetq-service.sar
+            on AS4 with embebbed HornetQ. As you can see, on this configuration file we are starting
+            various services:</para>
         <itemizedlist>
             <listitem>
                 <para>HornetQFileConfigurationService</para>
-                <para>This services instances the configuration object that reads the Configuration File 
-                inside the SAR archive and configure the HornetQ instance.</para>
+                <para>This services instances the configuration object that reads the Configuration
+                    File inside the SAR archive and configure the HornetQ instance.</para>
             </listitem>
             <listitem>
                 <para>JBossASSecurityManagerService</para>
-                <para>The service that starts the Security Manager as the Microcontainer Bean.</para>
+                <para>The service that starts the Security Manager as the Microcontainer
+                    Bean.</para>
             </listitem>
             <listitem>
                 <para>HornetQStarterService</para>
-                <para>The HornetQ core server that depends on JBossASSecurityManagerService and HornetQFileConfigurationService MBeans</para>
+                <para>The HornetQ core server that depends on JBossASSecurityManagerService and
+                    HornetQFileConfigurationService MBeans</para>
             </listitem>
             <listitem>
                 <para>HornetQJMSStarterService</para>
@@ -366,7 +370,8 @@
             </listitem>
             <listitem>
                 <para>JMSServerManager</para>
-                <para>Has the responsability to start the JMSServerManager and the same behaviour that JMSServerManager Bean</para>
+                <para>Has the responsibility to start the JMSServerManager and the same behaviour
+                    that JMSServerManager Bean</para>
             </listitem>
         </itemizedlist>
     </section>

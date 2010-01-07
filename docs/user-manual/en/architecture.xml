@@ -21,7 +21,8 @@
     <para>In this section we will give an overview of the HornetQ high level architecture.</para>
     <section>
         <title>Core Architecture</title>
-        <para>HornetQ core is designed simply as set of Plain Old Java Objects (POJOs).</para>
+        <para>HornetQ core is designed simply as set of Plain Old Java Objects (POJOs) - we hope you
+            like it's clean-cut design.</para>
         <para>We've also designed it to have as few dependencies on external jars as possible. In
             fact, HornetQ core has only one jar dependency, netty.jar,
             other than the standard JDK classes! This is because we use some of the netty buffer classes
@@ -29,8 +30,8 @@
         <para>This allows HornetQ to be easily embedded in your own project, or instantiated in any
             dependency injection framework such as JBoss Microcontainer, Spring or Google
             Guice.</para>
-        <para>A HornetQ server has its own high performance persistent journal, which it uses for
-            message and other persistence.</para>
+        <para>Each HornetQ server has its own ultra high performance persistent journal, which it
+            uses for message and other persistence.</para>
         <para>Using a high performance journal allows outrageous persistence message performance,
             something not achievable when using a relational database for persistence.</para>
         <para>HornetQ clients, potentially on different physical machines interact with the HornetQ
@@ -91,7 +92,9 @@
                 role="italic">consuming</emphasis> messages via MDBs, it is also used when sending
             message to the JMS messaging system e.g. from inside an EJB or servlet.</para>
         <para>When integrating with a JMS messaging system from inside a JEE application server it
-            is always recommended that this is done via a JCA adaptor.</para>
+            is always recommended that this is done via a JCA adaptor. In fact, communicating with a
+            JMS messaging system directly, without using JCA would be illegal according to the JEE
+            specification.</para>
         <para>The application server's JCA service provides extra functionality such as connection
             pooling and automatic transaction enlistment, which are desirable when using messaging,
             say, from inside an EJB. It is possible to talk to a JMS messaging system directly from
@@ -118,14 +121,14 @@
             messaging server not dependent on a JEE application server.</para>
         <para>The standard stand-alone messaging server configuration comprises a core messaging
             server, a JMS service and a JNDI service.</para>
-        <para>The role of the JMS Service is to deploy any JMS Queues, Topics and ConnectionFactory
+        <para>The role of the JMS Service is to deploy any JMS Queue, Topic and ConnectionFactory
             instances from any server side <literal>hornetq-jms.xml</literal> configuration files.
             It also provides a simple management API for creating and destroying Queues, Topics and
             ConnectionFactory instances which can be accessed via JMX or the connection. It is a
             separate service to the HornetQ core server, since the core server is JMS agnostic. If
-            you don't want to deploy any JMS Queues, Topics and ConnectionFactory instances via
-            server side XML configuration and don't require a JMS management API on the server side
-            then you can disable this service.</para>
+            you don't want to deploy any JMS Queue, Topic or ConnectionFactory instances via server
+            side XML configuration and don't require a JMS management API on the server side then
+            you can disable this service.</para>
         <para>We also include a JNDI server since JNDI is a common requirement when using JMS to
             lookup Queues, Topics and ConnectionFactory instances. If you do not require JNDI then
             this service can also be disabled. HornetQ allows you to programmatically create JMS and
