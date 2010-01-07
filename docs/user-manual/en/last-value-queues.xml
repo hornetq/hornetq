@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!-- ============================================================================= -->
 <!-- Copyright © 2009 Red Hat, Inc. and others.                                    -->
 <!--                                                                               -->
@@ -17,7 +16,6 @@
 <!-- and agrees not to assert, Section 4d of CC-BY-SA to the fullest extent        -->
 <!-- permitted by applicable law.                                                  -->
 <!-- ============================================================================= -->
-
 <chapter id="last-value-queues">
    <title>Last-Value Queues</title>
    <para>Last-Value queues are special queues which discard any messages when a newer message with
@@ -40,8 +38,7 @@
    <section>
       <title>Using Last-Value Property</title>
       <para>The property name used to identify the last value is <literal>"_HQ_LVQ_NAME"</literal>
-         (or the constant <literal>MessageImpl.HDR_LAST_VALUE_NAME</literal> from the Core
-         API).</para>
+         (or the constant <literal>Message.HDR_LAST_VALUE_NAME</literal> from the Core API).</para>
       <para>For example, if two messages with the same value for the Last-Value property are sent to
          a Last-Value queue, only the latest message will be kept in the queue:</para>
       <programlisting>
@@ -67,7 +64,7 @@ System.out.format("Received message: %s\n", messageReceived.getText());
    </section>
    <section>
       <title>Example</title>
-      <para>See <xref linkend="examples.last-value-queue" /> for an example which
-         shows how last value queues are configured and used with JMS.</para>
+      <para>See <xref linkend="examples.last-value-queue"/> for an example which shows how last
+         value queues are configured and used with JMS.</para>
    </section>
 </chapter>

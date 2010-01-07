@@ -53,7 +53,7 @@ public class HornetQBuffers
    }
 
    /**
-    * Creates a HornetQBuffer wrapping the underlying NIO ByteBuffer
+    * Creates a HornetQBuffer wrapping an underlying NIO ByteBuffer
     * 
     * The position on this buffer won't affect the position on the inner buffer
     * 
@@ -70,7 +70,7 @@ public class HornetQBuffers
    }
 
    /**
-    * Creates a HornetQBuffer wrapping the underlying byte array
+    * Creates a HornetQBuffer wrapping an underlying byte array
     *
     * @param underlying the underlying byte array
     * @return a HornetQBuffer wrapping the underlying byte array

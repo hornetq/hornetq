@@ -26,9 +26,9 @@ import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
 import org.hornetq.api.jms.HornetQJMSClient;
+import org.hornetq.api.jms.HornetQJMSConstants;
 import org.hornetq.api.jms.management.JMSManagementHelper;
 import org.hornetq.common.example.HornetQExample;
-import org.hornetq.jms.client.HornetQSession;
 
 /**
  * 
@@ -66,7 +66,7 @@ public class PreacknowledgeExample extends HornetQExample
          // Step 3. Create a the JMS objects
          connection = cf.createConnection();
 
-         Session session = connection.createSession(false, HornetQSession.PRE_ACKNOWLEDGE);
+         Session session = connection.createSession(false, HornetQJMSConstants.PRE_ACKNOWLEDGE);
 
          MessageProducer producer = session.createProducer(queue);
 

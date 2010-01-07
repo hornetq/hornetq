@@ -39,7 +39,7 @@ import org.hornetq.api.core.PropertyConversionException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.api.jms.HornetQMessageConstants;
+import org.hornetq.api.jms.HornetQJMSConstants;
 import org.hornetq.core.client.impl.ClientMessageImpl;
 import org.hornetq.core.logging.Logger;
 
@@ -788,13 +788,13 @@ public class HornetQMessage implements javax.jms.Message
 
    public void setObjectProperty(final String name, final Object value) throws JMSException
    {
-      if (HornetQMessageConstants.JMS_HORNETQ_OUTPUT_STREAM.equals(name))
+      if (HornetQJMSConstants.JMS_HORNETQ_OUTPUT_STREAM.equals(name))
       {
          setOutputStream((OutputStream)value);
 
          return;
       }
-      else if (HornetQMessageConstants.JMS_HORNETQ_SAVE_STREAM.equals(name))
+      else if (HornetQJMSConstants.JMS_HORNETQ_SAVE_STREAM.equals(name))
       {
          saveToOutputStream((OutputStream)value);
 
@@ -809,7 +809,7 @@ public class HornetQMessage implements javax.jms.Message
          return;
       }
 
-      if (HornetQMessageConstants.JMS_HORNETQ_INPUT_STREAM.equals(name))
+      if (HornetQJMSConstants.JMS_HORNETQ_INPUT_STREAM.equals(name))
       {
          setInputStream((InputStream)value);
 
@@ -977,11 +977,11 @@ public class HornetQMessage implements javax.jms.Message
    {
       if (propertiesReadOnly)
       {
-         if (name.equals(HornetQMessageConstants.JMS_HORNETQ_INPUT_STREAM))
+         if (name.equals(HornetQJMSConstants.JMS_HORNETQ_INPUT_STREAM))
          {
-            throw new MessageNotWriteableException("You cannot set the Input Stream on received messages. Did you mean " + HornetQMessageConstants.JMS_HORNETQ_OUTPUT_STREAM +
+            throw new MessageNotWriteableException("You cannot set the Input Stream on received messages. Did you mean " + HornetQJMSConstants.JMS_HORNETQ_OUTPUT_STREAM +
                                                    " or " +
-                                                   HornetQMessageConstants.JMS_HORNETQ_SAVE_STREAM +
+                                                   HornetQJMSConstants.JMS_HORNETQ_SAVE_STREAM +
                                                    "?");
          }
          else

@@ -31,7 +31,7 @@ import javax.transaction.TransactionManager;
 
 import junit.framework.Assert;
 
-import org.hornetq.api.jms.HornetQMessageConstants;
+import org.hornetq.api.jms.HornetQJMSConstants;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.jms.bridge.QualityOfServiceMode;
 import org.hornetq.jms.bridge.impl.JMSBridgeImpl;
@@ -959,7 +959,7 @@ public class JMSBridgeTest extends BridgeTestBase
 
             if (on)
             {
-               String header = tm.getStringProperty(HornetQMessageConstants.JBOSS_MESSAGING_BRIDGE_MESSAGE_ID_LIST);
+               String header = tm.getStringProperty(HornetQJMSConstants.JBOSS_MESSAGING_BRIDGE_MESSAGE_ID_LIST);
 
                Assert.assertNotNull(header);
 
@@ -1002,7 +1002,7 @@ public class JMSBridgeTest extends BridgeTestBase
 
                Assert.assertEquals("mygroup543", tm.getStringProperty("JMSXGroupID"));
 
-               String header = tm.getStringProperty(HornetQMessageConstants.JBOSS_MESSAGING_BRIDGE_MESSAGE_ID_LIST);
+               String header = tm.getStringProperty(HornetQJMSConstants.JBOSS_MESSAGING_BRIDGE_MESSAGE_ID_LIST);
 
                Assert.assertNotNull(header);
 
@@ -1299,7 +1299,7 @@ public class JMSBridgeTest extends BridgeTestBase
             Assert.assertTrue(tm.getBooleanProperty("cheese"));
             Assert.assertEquals(23, tm.getIntProperty("Sausages"));
 
-            String header = tm.getStringProperty(HornetQMessageConstants.JBOSS_MESSAGING_BRIDGE_MESSAGE_ID_LIST);
+            String header = tm.getStringProperty(HornetQJMSConstants.JBOSS_MESSAGING_BRIDGE_MESSAGE_ID_LIST);
 
             Assert.assertNull(header);
          }

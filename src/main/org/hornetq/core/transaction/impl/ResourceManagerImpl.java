@@ -212,7 +212,7 @@ public class ResourceManagerImpl implements ResourceManager, HornetQComponent
       return xids;
    }
 
-   class TxTimeoutHandler implements Runnable
+   private class TxTimeoutHandler implements Runnable
    {
       private boolean closed = false;
 

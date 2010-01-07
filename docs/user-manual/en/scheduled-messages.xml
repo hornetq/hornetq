@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!-- ============================================================================= -->
 <!-- Copyright © 2009 Red Hat, Inc. and others.                                    -->
 <!--                                                                               -->
@@ -17,7 +16,6 @@
 <!-- and agrees not to assert, Section 4d of CC-BY-SA to the fullest extent        -->
 <!-- permitted by applicable law.                                                  -->
 <!-- ============================================================================= -->
-
 <chapter id="scheduled-messages">
    <title>Scheduled Messages</title>
    <para>Scheduled messages differ from normal messages in that they won't be delivered until a
@@ -27,7 +25,7 @@
       <title>Scheduled Delivery Property</title>
       <para>The property name used to identify a scheduled message is <literal
             >"_HQ_SCHED_DELIVERY"</literal> (or the constant <literal
-            >MessageImpl.HDR_SCHEDULED_DELIVERY_TIME</literal>).</para>
+            >Message.HDR_SCHEDULED_DELIVERY_TIME</literal>).</para>
       <para>The specified value must be a <literal>long</literal> corresponding to the time the
          message must be delivered (in milliseconds). An example of sending a scheduled message
          using the JMS API is as follows.</para>
@@ -43,11 +41,12 @@
   // message will not be received immediately but 5 seconds later
   TextMessage messageReceived = (TextMessage) consumer.receive();
       </programlisting>
-      <para>Scheduled messages can also be sent using the core API, by setting the same property on the core message before sending.</para>
+      <para>Scheduled messages can also be sent using the core API, by setting the same property on
+         the core message before sending.</para>
    </section>
    <section>
       <title>Example</title>
-      <para>See <xref linkend="examples.scheduled-message" /> for an example which 
-         shows how scheduled messages can be used with JMS.</para>
+      <para>See <xref linkend="examples.scheduled-message"/> for an example which shows how
+         scheduled messages can be used with JMS.</para>
    </section>
 </chapter>

@@ -86,8 +86,6 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
 
    public static final int TYPE_TOPIC_SESSION = 2;
 
-   public static final int PRE_ACKNOWLEDGE = 100;
-
    private static SimpleString REJECTING_FILTER = new SimpleString("_HQX=-1");
 
    // Static --------------------------------------------------------

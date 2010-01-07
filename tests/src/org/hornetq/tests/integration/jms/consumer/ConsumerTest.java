@@ -26,11 +26,11 @@ import junit.framework.Assert;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.jms.HornetQJMSClient;
+import org.hornetq.api.jms.HornetQJMSConstants;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.Queue;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.client.HornetQQueue;
-import org.hornetq.jms.client.HornetQSession;
 import org.hornetq.tests.util.JMSTestBase;
 
 /**
@@ -64,7 +64,7 @@ public class ConsumerTest extends JMSTestBase
    public void testPreCommitAcks() throws Exception
    {
       Connection conn = cf.createConnection();
-      Session session = conn.createSession(false, HornetQSession.PRE_ACKNOWLEDGE);
+      Session session = conn.createSession(false, HornetQJMSConstants.PRE_ACKNOWLEDGE);
       jBossQueue = (HornetQQueue) HornetQJMSClient.createQueue(ConsumerTest.Q_NAME);
       MessageProducer producer = session.createProducer(jBossQueue);
       MessageConsumer consumer = session.createConsumer(jBossQueue);
@@ -121,7 +121,7 @@ public class ConsumerTest extends JMSTestBase
       ConsumerTest.log.info("starting test");
 
       Connection conn = cf.createConnection();
-      Session session = conn.createSession(false, HornetQSession.PRE_ACKNOWLEDGE);
+      Session session = conn.createSession(false, HornetQJMSConstants.PRE_ACKNOWLEDGE);
       jBossQueue = (HornetQQueue) HornetQJMSClient.createQueue(ConsumerTest.Q_NAME);
       MessageProducer producer = session.createProducer(jBossQueue);
       MessageConsumer consumer = session.createConsumer(jBossQueue);

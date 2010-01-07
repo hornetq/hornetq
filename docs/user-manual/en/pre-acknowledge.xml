@@ -30,16 +30,11 @@
          <para><literal>DUPS_OK_ACKNOWLEDGE</literal></para>
       </listitem>
    </itemizedlist>
-   <para>The acknowledgement modes all involve sending acknowledgements from the client to the
-      server. However, in the case where you can afford to lose messages in event of failure, it
-      would make sense to acknowledge the message on the server <emphasis>before</emphasis>
-      delivering it to the client.</para>
-   <note>
-      <para>Please note, that if you use pre-acknowledge mode, then you will lose transactional
-         semantics for messages being consumed, since clearly they are being acknowledged first on
-         the server, not when you commit the transaction. This may be stating the obvious but we
-         like to be clear on these things to avoid confusion!</para>
-   </note>
+   <para>However there is another case which is not supported by JMS: In some cases you can afford
+      to lose messages in event of failure, so it would make sense to acknowledge the message on the
+      server <emphasis>before</emphasis> delivering it to the client.</para>
+   <para>This extra mode is supported by HornetQ and will call it
+         <emphasis>pre-acknowledge</emphasis> mode.</para>
    <para>The disadvantage of acknowledging on the server before delivery is that the message will be
       lost if the system crashes <emphasis>after</emphasis> acknowledging the message on the server
       but <emphasis>before</emphasis> it is delivered to the client. In that case, the message is
@@ -49,6 +44,12 @@
    <para>An example of a use case for pre-acknowledgement is for stock price update messages. With
       these messages it might be reasonable to lose a message in event of crash, since the next
       price update message will arrive soon, overriding the previous price. </para>
+   <note>
+      <para>Please note, that if you use pre-acknowledge mode, then you will lose transactional
+         semantics for messages being consumed, since clearly they are being acknowledged first on
+         the server, not when you commit the transaction. This may be stating the obvious but we
+         like to be clear on these things to avoid confusion!</para>
+   </note>
    <section id="pre-acknowledge.configure">
       <title>Using PRE_ACKNOWLEDGE</title>
       <para>This can be configured in the <literal>hornetq-jms.xml</literal> file on the <literal
@@ -62,8 +63,8 @@
       &lt;/entries>
       &lt;pre-acknowledge>true&lt;/pre-acknowledge>
 &lt;/connection-factory></programlisting>
-      <para>Alternatively use pre-acknowledgement mode using the JMS API, create a JMS Session with
-         the <literal>HornetQSession.PRE_ACKNOWLEDGE</literal> constant.</para>
+      <para>Alternatively, to use pre-acknowledgement mode using the JMS API, create a JMS Session
+         with the <literal>HornetQSession.PRE_ACKNOWLEDGE</literal> constant.</para>
       <programlisting>
 // messages will be acknowledge on the server *before* being delivered to the client
 Session session = connection.createSession(false, HornetQSession.PRE_ACKNOWLEDGE);

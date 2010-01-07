@@ -20,7 +20,7 @@ package org.hornetq.api.jms;
  *
  *
  */
-public class HornetQMessageConstants
+public class HornetQJMSConstants
 {
    public static final String JMS_HORNETQ_INPUT_STREAM = "JMS_HQ_InputStream";
    
@@ -29,4 +29,6 @@ public class HornetQMessageConstants
    public static final String JMS_HORNETQ_SAVE_STREAM = "JMS_HQ_SaveStream";
    
    public static final String JBOSS_MESSAGING_BRIDGE_MESSAGE_ID_LIST = "HQ_BRIDGE_MSG_ID_LIST";
+
+   public static final int PRE_ACKNOWLEDGE = 100;
 }

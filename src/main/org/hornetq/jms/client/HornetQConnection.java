@@ -44,6 +44,7 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.SessionFailureListener;
+import org.hornetq.api.jms.HornetQJMSConstants;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.version.Version;
 import org.hornetq.utils.UUIDGenerator;
@@ -508,7 +509,7 @@ public class HornetQConnection implements Connection, QueueConnection, TopicConn
                                                    sessionFactory.isPreAcknowledge(),
                                                    transactionBatchSize);
          }
-         else if (acknowledgeMode == HornetQSession.PRE_ACKNOWLEDGE)
+         else if (acknowledgeMode == HornetQJMSConstants.PRE_ACKNOWLEDGE)
          {
             session = sessionFactory.createSession(username, password, isXA, true, false, true, transactionBatchSize);
          }
