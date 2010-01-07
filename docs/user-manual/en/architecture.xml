@@ -23,8 +23,9 @@
         <title>Core Architecture</title>
         <para>HornetQ core is designed simply as set of Plain Old Java Objects (POJOs).</para>
         <para>We've also designed it to have as few dependencies on external jars as possible. In
-            fact, HornetQ core has <emphasis role="italic">zero</emphasis> dependencies on any jars
-            other than the standard JDK classes!</para>
+            fact, HornetQ core has only one jar dependency, netty.jar,
+            other than the standard JDK classes! This is because we use some of the netty buffer classes
+        internally.</para>
         <para>This allows HornetQ to be easily embedded in your own project, or instantiated in any
             dependency injection framework such as JBoss Microcontainer, Spring or Google
             Guice.</para>
