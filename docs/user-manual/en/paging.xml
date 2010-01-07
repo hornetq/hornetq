@@ -25,6 +25,8 @@
         they are needed, thus allowing massive queues with a low memory footprint.</para>
     <para>HornetQ will start paging messages to disk, when the size of all messages in memory for an
         address exceeds a configured maximum size.</para>
+    <para>By default, HornetQ does not page messages - this must be explicitly configured to
+        activate it.</para>
     <section>
         <title>Page Files</title>
         <para>Messages are stored per address on the file system. Each address has an individual
@@ -73,6 +75,7 @@
             </table>
         </para>
     </section>
+    
     <section id="paging.mode">
         <title>Paging Mode</title>
         <para>As soon as messages delivered to an address exceed the configured size, that address
@@ -118,9 +121,11 @@
                             </row>
                             <row>
                                 <entry><literal>address-full-message-policy</literal></entry>
-                                <entry>This must be set to PAGE for paging to enable. If the value is PAGE then further messages will be paged to disk.
-                                    If the value is DROP then further messages will be silently dropped. 
-                                    If the value is BLOCK then client message producers will block when they try and send further messages.</entry>
+                                <entry>This must be set to PAGE for paging to enable. If the value
+                                    is PAGE then further messages will be paged to disk. If the
+                                    value is DROP then further messages will be silently dropped. If
+                                    the value is BLOCK then client message producers will block when
+                                    they try and send further messages.</entry>
                                 <entry>PAGE</entry>
                             </row>
                         </tbody>
@@ -128,6 +133,19 @@
                 </table>
             </para>
         </section>
+    </section>
+    <section>
+        <title>Dropping messages</title>
+        <para>Instead of paging messages when the max size is reached, an address can also be configured to just drop messages when the address
+            is full.</para>
+        <para>To do this just set the <literal>address-full-policy</literal> to <literal>DROP</literal> in the address settings</para>
+    </section>
+    <section>
+        <title>Blocking producers</title>
+        <para>Instead of paging messages when the max size is reached, an address can also be configured to block producers from sending further
+            messages when the address is full, thus preventing the memory being exhausted on the server.</para>
+        <para>When memory is freed up on the server, producers will automatically unblock and be able to continue sending.</para>
+        <para>To do this just set the <literal>address-full-policy</literal> to <literal>BLOCK</literal> in the address settings</para>
     </section>
     <section>
         <title>Caution with Addresses with Multiple Queues</title>
@@ -156,6 +174,37 @@
             messages before we depage and the other queues finally receive some more
             messages.</para>
     </section>
+    <section>
+        <title>Paging and message selectors</title>
+        <note><para>Please note that message selectors will only operate on messages in memory. If you have a large amount of messages paged to disk and
+        a selector that only matches some of the paged messages, then those messages won't be consumed until the messages in memory have been consumed.
+        HornetQ does not scan through page files on disk to locate matching messages. To do this efficiently would mean implementing and managing indexes amongst other things.
+        Effectively we would be writing a relational database! This is not the primary role of a messaging system. If you find yourself using selectors which only
+        select small subsets of messages in very large queues which are too large to fit in memory at any one time, then you probably want a relational database
+        not a messaging system - you're effectively executing queries over tables.</para></note>
+    </section>
+    <section>
+        <title>Paging and browsers</title>
+        <note><para>Please note that message browsers only operate over messages in memory. They do not operate over messages paged to disk.
+        Messages are paged to disk <emphasis>before</emphasis> they are routed to any queues, so when they are paged, they are not in any queues, so 
+            will not appear when browsing any queues.
+        
+        
+        </para></note>
+    </section>
+    <section>
+        <title>Paging and unacknowledged messages</title>
+        <note><para>
+            Please note that until messages are acknowledged they are still in memory on the server, so they contribute to the size of messages on
+            a particular address. If messages are paged to disk for an address, and are being consumed, they will be depaged from disk when enough
+            memory has been freed up in that address after messages have been consumed and acknowledged. However if messages are not acknowledged
+            then more messages will not be depaged since there is no free space in memory. In this case message consumption can appear to hang.
+            If not acknowledging explictly messages are acknowledged according to the <literal>ack-batch-size</literal> setting. Be careful not to set your paging
+            max size to a figure lower than ack-batch-size or your system may appear to hang!
+        </para></note>
+    </section>
+    
+    
     <section>
         <title>Example</title>
         <para>See <xref linkend="examples.paging"/> for an example which shows how to use paging
