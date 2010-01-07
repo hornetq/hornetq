@@ -171,7 +171,8 @@
             files. by replacing a value with the name of a system property. Here is an example of
             this with a connector configuration:</para>
         <programlisting>&lt;connector name="netty">
-         &lt;factory-class>org.hornetq.integration.transports.netty.NettyConnectorFactory&lt;/factory-class>
+         &lt;factory-class>org.hornetq.integration.transports.netty.NettyConnectorFactory
+           &lt;/factory-class>
          &lt;param key="host"  value="${hornetq.remoting.netty.host:localhost}" type="String"/>
          &lt;param key="port"  value="${hornetq.remoting.netty.port:5445}" type="Integer"/>
 &lt;/connector></programlisting>
