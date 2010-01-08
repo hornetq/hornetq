@@ -6,8 +6,8 @@
     <script type="text/javascript" src="../../common/prettify.js"></script>
   </head>
   <body onload="prettyPrint()">
-     <h1>HornetQ JMS Durable Subscription Example</h1>
-     <br>
+     <h1>JMS Durable Subscription Example</h1>
+
      <p>This example demonstrates a clustered JMS durable subscription.
      Normally durable subscriptions exist on a single node and can only have one subscriber at any one time,
      however, with HornetQ it's possible to create durable subscription instances with the same name and client-id
@@ -38,10 +38,11 @@
      </code>
      </pre>    
      <p>For more information on HornetQ load balancing, and clustering in general, please see the clustering
-     section of the user manual.</p>      
+     section of the user manual.</p>    
+       
      <h2>Example step-by-step</h2>
      <p><i>To run the example, simply type <code>./build.sh</code> (or <code>build.bat</code> on windows) from this directory</i></p>
-     <br>
+
      <ol>
         <li> Get an initial context for looking up JNDI from server 0.</li>
         <pre class="prettyprint">

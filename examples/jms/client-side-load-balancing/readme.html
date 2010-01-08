@@ -1,13 +1,13 @@
 <html>
   <head>
-    <title>HornetQ JMS Client Side Load-Balancing Example</title>
+    <title>HornetQ JMS Client-Side Load-Balancing Example</title>
     <link rel="stylesheet" type="text/css" href="../../common/common.css" />
     <link rel="stylesheet" type="text/css" href="../../common/prettify.css" />
     <script type="text/javascript" src="../../common/prettify.js"></script>
   </head>
   <body onload="prettyPrint()">
-     <h1>HornetQ JMS Client Side Load-Balancing Example</h1>
-     <br>
+     <h1>JMS Client-Side Load-Balancing Example</h1>
+
      <p>This example demonstrates how subsequent connections created from a JMS Connection Factory can be created
      to different nodes of the cluster. In other words it demonstrates how HornetQ does <b>client side load balancing</b> of
      connections across the cluster.</p>
@@ -24,9 +24,10 @@
      connection factory.</p>      
      <p>For more information on HornetQ load balancing, and clustering in general, please see the clustering
      section of the user manual.</p>      
+
      <h2>Example step-by-step</h2>
      <p><i>To run the example, simply type <code>./build.sh</code> (or <code>build.bat</code> on windows) from this directory</i></p>
-     <br>
+
      <ol>
         <li> Get an initial context for looking up JNDI from server 0.</li>
         <pre class="prettyprint">>

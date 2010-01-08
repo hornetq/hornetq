@@ -7,7 +7,7 @@
   </head>
   <body onload="prettyPrint()">
      <h1>JMS XA with JTA Example</h1>
-     <br>
+
      <p>This example shows you how to use JTA interfaces to control transactions with HornetQ. JTA provides
      facilities to start and stop a transaction, enlist XA resources into a transaction.</p>
      
@@ -22,11 +22,11 @@
       a new transaction with the same XAResource enlisted, but this time we commit the transaction after receiving the 
       messages. Then we check that no more messages are to be received. In each transaction a dummy XAResource is also 
       enlisted to show the transaction processing information.</p>
-     <br>
+
      <h2>Example step-by-step</h2>
      <p><i>To run the example, simply type <code>./build.sh</code> (or <code>build.bat</code> on windows) from this directory. It will download the JBoss JTA jars before
      it launches the example.</i></p>
-     <br>
+
      <ol>
         <li>First we need to get an initial context so we can look-up the JMS connection factory and destination objects from JNDI. This initial context will get it's properties from the <code>client-jndi.properties</code> file in the directory <code>../common/config</code></li>
         <pre class="prettyprint">

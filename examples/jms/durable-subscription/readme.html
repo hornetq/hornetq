@@ -7,14 +7,14 @@
   </head>
   <body onload="prettyPrint()">
      <h1>JMS Durable Subscription Example</h1>
-     <br>
+
      <p>This example shows you how to use a durable subscription with HornetQ.</p>
      <p>Durable subscriptions are a standard part of JMS, please consult the JMS 1.1 specification for full details.</p>
      <p>Unlike non durable subscriptions, the key function of durable subscriptions is that the messages contained in them persist longer than the lifetime of the subscriber - i.e. they will accumulate messages sent to the topic even if there is no active subscriber on them. They will also survive server restarts. Note that for the messages to be persisted, the messages sent to them must be marked as persistent messages.</p>
-     <br>
+
      <h2>Example step-by-step</h2>
      <p><i>To run the example, simply type <code>./build.sh</code> (or <code>build.bat</code> on windows) from this directory</i></p>
-     <br>
+
      <ol>
         <li>First we need to get an initial context so we can look-up the JMS connection factory and destination objects from JNDI. This initial context will get it's properties from the <code>client-jndi.properties</code> file in the directory <code>../common/config</code></li>
         <pre class="prettyprint">
@@ -78,10 +78,10 @@
         </pre>
 
         <li>We create and send another text message, message 2, to the same topic</li>
-	<pre class="prettyprint">
-           <code>TextMessage message2 = session.createTextMessage("This is a text message 2");</code>
-	   <br>
-           <code>messageProducer.send(message2);</code>
+        <pre class="prettyprint">
+           <code>TextMessage message2 = session.createTextMessage("This is a text message 2");
+              
+           messageProducer.send(message2);</code>
         </pre>
          
         <li>Now we close the subscriber. Since the subscription is durable it will continue to survive even though there is no subscriber attached to it. At this point you could even stop and restart the server and the subscription would survive!</li>

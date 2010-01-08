@@ -7,7 +7,7 @@
   </head>
   <body onload="prettyPrint()">
      <h1>Java EE MDB Send Example</h1>
-     <br>
+
      <p>This example shows you how to send a message to an MDB that returns a reply using the same XA transaction</p>
      <p>
          The example will send deploy a simple MDB and demonstrate sending a message and the MDB consuming it
@@ -21,8 +21,8 @@
      <p><i>To deploy and start the server, simply type <code>./build.sh deploy</code> (or <code>build.bat deploy</code> on windows) from the example directory</i></p>
      <p><i>To run the example, simply type <code>./build.sh</code> (or <code>build.bat</code> on windows) from the example directory</i></p>
      <p><i>To remove the example profile, simply type <code>./build.sh undeploy</code> (or <code>build.bat undeploy</code> on windows) from the example directory</i></p>
-     <p><i> ** make sure that JBOSS_HOME is set to the Jboss installation directory</i></p>
-     <br>
+     <p><i> ** make sure that JBOSS_HOME is set to the JBoss installation directory</i></p>
+
      <ol>
         <li>First we need to get an initial context so we can look-up the JMS connection factory and destination objects from JNDI. This initial context will get it's properties from the <code>jndi.properties</code> file in the directory <code>config</code></li>
         <pre class="prettyprint">

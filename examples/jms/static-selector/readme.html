@@ -7,7 +7,7 @@
   </head>
   <body onload="prettyPrint()">
      <h1>Static Message Selector Example</h1>
-     <br>
+
      <p>This example shows you how to configure a HornetQ queue with static message selectors (filters)
         (to configure a static selector directly on a <em>JMS</em> queue, please see the
         <a href="../static-selector-jms/readme.html">static-selector-jms example</a>).</p>
@@ -34,10 +34,10 @@
      is created to receive messages from the queue. Of the five sent messages, two are of 'red' color properties, one is 'blue', 
      one is 'green' and one has not the 'color' propery at all. The result is that the consumer only gets the two 'red' messages.</p>
      
-     <br>
+
      <h2>Example step-by-step</h2>
      <p><i>To run the example, simply type <code>./build.sh</code> (or <code>build.bat</code> on windows) from this directory</i></p>
-     <br>
+
      <ol>
         <li>First we need to get an initial context so we can look-up the JMS connection factory and destination objects from JNDI. This initial context will get it's properties from the <code>client-jndi.properties</code> file in the directory <code>../common/config</code></li>
         <pre class="prettyprint">

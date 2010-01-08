@@ -7,7 +7,6 @@
   </head>
   <body onload="prettyPrint()">
      <h1>JMS XA Heuristic Example</h1>
-     <br>
      <p>This example shows you how to make an XA heuristic decision through HornetQ Management Interface.</p>
      
      <p>A heuristic decision is a unilateral decision to commit or rollback an XA transaction branch after it has 
@@ -24,10 +23,8 @@
      <p>This example uses JMX to manipulate transactions in a HornetQ Server. For details on JMX facilities with HornetQ,
      please look at the JMX Example.</p>
      
-     <br>
      <h2>Example step-by-step</h2>
      <p><i>To run the example, simply type <code>./build.sh</code> (or <code>build.bat</code> on windows) from this directory</i></p>
-     <br>
      <ol>
         <li>First we need to get an initial context so we can look-up the JMS connection factory and destination objects from JNDI. This initial context will get it's properties from the <code>client-jndi.properties</code> file in the directory <code>../common/config</code></li>
         <pre class="prettyprint">

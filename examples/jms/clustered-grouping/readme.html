@@ -4,8 +4,8 @@
     <link rel="stylesheet" type="text/css" href="../../common/common.css">
   </head>
   <body>
-     <h1>HornetQ JMS Clustered Grouping Example</h1>
-     <br>
+     <h1>JMS Clustered Grouping Example</h1>
+
      <p>This example demonstrates how to ensure strict ordering across a cluster using clustered message grouping</p>
      <p>We create 3 nodes each with a grouping message handler, one with a Local handler and 2 with a Remote handler.</p>
      <p>The local handler acts as an arbitrator for the 2 remote handlers, holding the information on routes and communicating that with the remote handlers</p>
@@ -57,7 +57,7 @@
      section of the user manual.</p>      
      <h2>Example step-by-step</h2>
      <p><i>To run the example, simply type <code>./build.sh</code> (or <code>build.bat</code> on windows) from this directory</i></p>
-     <br>
+
       <ol>
         <li> Get an initial context for looking up JNDI from server 0.</li>
         <pre class="prettyprint">

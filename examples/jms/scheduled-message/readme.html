@@ -7,7 +7,7 @@
   </head>
   <body onload="prettyPrint()">
      <h1>JMS Scheduled Message Example</h1>
-     <br>
+
      <p>This example shows you how to send a scheduled message to a JMS Queue with HornetQ.</p>
      <p>A Scheduled Message is a message that will be delivered at a time specified by the sender. To do this, 
      simply set a HDR_SCHEDULED_DELIVERY_TIME header property. The value of the property should be the time of 
@@ -15,10 +15,10 @@
      
      <p>In this example, a message is created with the scheduled delivery time set to 5 seconds after.</p>
 
-     <br>
+
      <h2>Example step-by-step</h2>
      <p><i>To run the example, simply type <code>./build.sh</code> (or <code>build.bat</code> on windows) from this directory</i></p>
-     <br>
+
      <ol>
         <li>First we need to get an initial context so we can look-up the JMS connection factory and destination objects from JNDI. This initial context will get it's properties from the <code>client-jndi.properties</code> file in the directory <code>../common/config</code></li>
         <pre class="prettyprint">

@@ -8,13 +8,13 @@
   <body onload="prettyPrint()">
      <h1>Java EE Resource Adapter Configuration Example</h1>
      <p>This example demonstrates how to configure several properties on the HornetQ Resource Adapter. We setup two JBoss Servers. The enterprise application is being deployed in one application server while the MDBs and JMS Connections are pointing to a remote server</p>
-     <p>This example is composed by two MDBs (MDBQueueA and MDBQueueB) and a StatlessSessionBean (StatelessSender). The main class (MDBRemoteClientExample) will call a method on StatelessSender and send a Message to Queue B.<p>
-     <p>StatelessSender will send a message to Queue A and it is getting the connection out of the JavaConnectionArchitecture (JCA) ConnectionFactory, and sending a message to QueueA which will be received on MDBQueueA.</p>
+     <p>This example is composed by two message-driven beans (MDB), MDBQueueA and MDBQueueB, and a stateless session bean StatelessSender. The main class, MDBRemoteClientExample, will call a method on StatelessSender and send a Message to Queue B.<p>
+     <p>StatelessSender will send a message to Queue A and it is getting the connection out of the Java Connection Architecture (JCA) ConnectionFactory, and sending a message to QueueA which will be received on MDBQueueA.</p>
      <p>MDBQueueB is connected to a different HornetQ resource-adapter, and it will receive the message sent by the main Class.</p>
      <p>All the MDBs and JMS Connections are referring to the remote server</p> 
      <p>A Resource Adapter is a way to connect any system provider to an application server, and is integral part of the Java Connectors Architecture specification.</p>
      <p>HornetQ provides its own adapter and this example will provide you a quick tutorial on how to configure some of the default properties, and how to change the default values on MDB Inbound Properties, or on ConnectionFactory Outbound Properties.</p>
-     <p>This ResourceAdapter is what provides integration for Message Drive Beans (MDBs) or DataSource integration on the application server.</p>
+     <p>This ResourceAdapter is what provides integration for Message-Driven Beans or DataSource integration on the application server.</p>
      <h2>MDB Properties</h2>
      <p>You can configure the adapter through ActivactionConfigProperties on the MDB. Example:</p>
         <pre class="prettyprint">
@@ -137,7 +137,7 @@ public class MDBRemoteExample implements MessageListener
      <p><i>To run the example, simply type <code>./build.sh run</code> (or <code>build.bat run</code> on windows) from the example directory</i></p>
      <p><i>To undeploy the example, simply type <code>./build.sh undeploy undeploy2</code> (or <code>build.bat undeploy undeploy2</code> on windows) from the example directory</i></p>
      <p><i> ** make sure that JBOSS_HOME is set to the JBoss installation directory</i></p>
-     <br>
+
      <ol>
          <li>First we need to get an initial context so we can look-up the EJB on the second server from JNDI. This initial context will get it's properties from the <code>jndi.properties</code> file in the directory <code>config</code></li>
          <pre class="prettyprint">

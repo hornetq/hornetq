@@ -6,8 +6,8 @@
     <script type="text/javascript" src="../../common/prettify.js"></script>
   </head>
   <body onload="prettyPrint()">
-     <h1>HornetQ <br>No Consumer Buffering Example</h1>
-     <br><br>
+     <h1>No Consumer Buffering Example</h1>
+
      <p>By default, HornetQ consumers buffer messages from the server in a client side buffer
      before you actually receive them on the client side.</p>
      <p>This improves performance since otherwise every time you called receive() or had processed the last
@@ -50,9 +50,9 @@
      are consumed in the order they were sent.</p>
      <p>If the messages had been buffered in each consumer they would not be available to be consumed
      in an order determined afer delivery.</p>    
-     <br>
+
      <p><i>To run the example, simply type <code>./build.sh</code> (or <code>build.bat</code> on windows) from this directory</i></p>
-     <br>
+
      <ol>
         <li>Create an initial context to perform the JNDI lookup.</li>
         <pre class="prettyprint">

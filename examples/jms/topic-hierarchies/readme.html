@@ -6,8 +6,8 @@
     <script type="text/javascript" src="../../common/prettify.js"></script>
   </head>
   <body onload="prettyPrint()">
-     <h1>HornetQ Topic Hierarchy Example</h1>
-     <br>
+     <h1>Topic Hierarchy Example</h1>
+
      <p>HornetQ supports topic hierarchies. With a topic hierarchy you can register a subscriber with a wild-card
      and that subscriber will receive any messages sent to an address that matches the wildcard.</p>
      <p>HornetQ wild-cards can use the character '#' which means "match any number of words", and
@@ -51,7 +51,7 @@
      and one to the address news.europe.entertainment.</p>
      <p>We will verify that the message sent to news.usa.wrestling does not get received since it does not match, 
      but the messages sent to the other two addresses do get received since they match.</p>
-     <br>
+
      <ol>
         <li>Create an initial context to perform the JNDI lookup.</code></li>
         <pre class="prettyprint">

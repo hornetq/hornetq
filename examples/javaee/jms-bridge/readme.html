@@ -32,7 +32,7 @@
 
      <h3>JMS Bridge configuration</h3>
 
-     <p>The JMS Bridge is configured using JBoss microcontainer (<a href="config/jms-bridge-jboss-beans.xml">jms-bridge-jboss-beans.xml</a> contains comments about the various parameters 
+     <p>The JMS Bridge is configured using JBoss microcontainer (<a href="server/jms-bridge-jboss-beans.xml">jms-bridge-jboss-beans.xml</a> contains comments about the various parameters 
          used to configure the bridge).<br />
      <p>The Bridge is deployed in the application server when you simply type <code>./build.sh deploy</code> (or <code>build.bat deploy</code> on windows) (it is copied to <code>${JBOSS_HOME}/server/default-with-hornetq/deploy/</code>).</p>
          
@@ -43,7 +43,7 @@
      
      <p>The example is simple: the application will send a message to the <em>source</em> queue and consume the same message
          from the <em>target</em> queue.</p>
-     <p>The bridge was configured in <a href="config/jms-bridge-jboss-beans.xml">jms-bridge-jboss-beans.xml</a> to bridge these two queues.</p>
+     <p>The bridge was configured in <a href="server/jms-bridge-jboss-beans.xml">jms-bridge-jboss-beans.xml</a> to bridge these two queues.</p>
          
      <ol>
          <li>First we need to get an initial context so we can look up the JMS resources

@@ -6,8 +6,8 @@
     <script type="text/javascript" src="../../common/prettify.js"></script>
   </head>
   <body onload="prettyPrint()">
-     <h1>JMS Queue Example</h1>
-     <br>
+     <h1>JMS QueueBrowser Example</h1>
+
      <p>This example shows you how to use a JMS <a href="http://java.sun.com/javaee/5/docs/api/javax/jms/QueueBrowser.html">QueueBrowser</a> with HornetQ.<br />
      Queues are a standard part of JMS, please consult the JMS 1.1 specification for full details.<br />
      A QueueBrowser is used to look at messages on the queue without removing them. 
@@ -18,7 +18,7 @@
      </p>
      <h2>Example step-by-step</h2>
      <p><i>To run the example, simply type <code>./build.sh</code> (or <code>build.bat</code> on windows) from this directory</i></p>
-     <br>
+
      <ol>
         <li>First we need to get an initial context so we can look-up the JMS connection factory and destination objects from JNDI. This initial context will get it's properties from the <code>client-jndi.properties</code> file in the directory <code>../common/config</code></li>
         <pre class="prettyprint">

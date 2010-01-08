@@ -7,7 +7,7 @@
   </head>
   <body onload="prettyPrint()">
      <h1>Large Message Example</h1>
-     <br>
+
      <p>This example shows you how to send and receive very large messages with HornetQ.</p>
      <p>HornetQ supports the sending and receiving of huge messages, much larger than can fit in available RAM
      on the client or server. Effectively the only limit to message size is the amount of disk space you have on the server.</p>
@@ -15,7 +15,7 @@
      do a simple socket stream from the sender to the consumer.</p>
      <p>In order to do this HornetQ provides an extension to JMS where you can use an InputStream or OutputStream as the source and destination for your messages. You can send messages as large as it would fit in your disk.</p>
      <p>You may also choose to read LargeMessages using the regular ByteStream or ByteMessage methods, but using the InputStream and OutputStream will provide you a much better performance</p>
-     <br>
+
      <h2>Example step-by-step</h2>     
      <p><i>To run the example, simply type <code>./build.sh</code> (or <code>build.bat</code> on windows) from this directory</i></p>
      <p>In this example we limit both the server and the client to be running in a maximum of 50MB of RAM,
@@ -26,7 +26,7 @@
      a FileInputStream on that file and set that InputStream as the body of the message before sending.</p>
      <p>The message is sent, then we stop the server, and restart it. This demonstrates the large message will survive a restart of the server.</p>
      <p>Once the server is restarted we receive the message and stream it's body to another file on disk.</p>
-     <br>
+
      <ol>
         <li>Create an initial context to perform the JNDI lookup.</li>
         <pre class="prettyprint">

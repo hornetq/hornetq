@@ -6,8 +6,7 @@
     <script type="text/javascript" src="../../common/prettify.js"></script>
   </head>
   <body onload="prettyPrint()">
-     <h1>HornetQ Core Bridge Example</h1>
-     <br>
+     <h1>Core Bridge Example</h1>
      
      <p>This example demonstrates a core bridge deployed on one server, which consumes messages from a
      local queue and forwards them to an address on a second server.</p>
@@ -25,7 +24,7 @@
      between HornetQ instances, but may provide better performance than the JMS bridge. The JMS bridge is covered in
      a separate example.</p>
      <p>For more information on bridges, please see the HornetQ user manual.</p>
-     <br>
+
      <p>In this example we will demonstrate a simple sausage factory for aardvarks.</p>
      <p>We have a JMS queue on server 0 named <code>sausage-factory</code>, and we have a 
      JMS queue on server 1 named <code>mincing-machine</code></p>
@@ -51,7 +50,7 @@
      </pre>              
      <h2>Example step-by-step</h2>
      <p><i>To run the example, simply type <code>./build.sh</code> (or <code>build.bat</code> on windows) from this directory</i></p>
-     <br>
+
      <ol>
         <li>We create an initial context for looking up JNDI on node 0</li>
         <pre class="prettyprint">

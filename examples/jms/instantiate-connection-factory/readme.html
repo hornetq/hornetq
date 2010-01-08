@@ -6,8 +6,7 @@
     <script type="text/javascript" src="../../common/prettify.js"></script>
   </head>
   <body onload="prettyPrint()">
-     <h1>HornetQ JMS Instantiate Connection Factory Example</h1>
-     <br>
+     <h1>JMS Instantiate Connection Factory Example</h1>
      
      <p>Usually, JMS Objects such as ConnectionFactory, Queue and Topic instances are looked up from JNDI
      before being used by the client code. This objects are called "administered objects" in JMS specification
@@ -28,7 +27,7 @@
      
      <h2>Example step-by-step</h2>
      <p><i>To run the example, simply type <code>./build.sh</code> (or <code>build.bat</code> on windows) from this directory</i></p>
-     <br>
+
      <ol>
         <li>Instead of looking it up from JNDI we directly instantiate the JMS Queue object. We
         pass in the name of the JMS Queue in the constructor. The actual JMS Queue must already be deployed on

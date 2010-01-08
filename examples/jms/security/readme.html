@@ -7,7 +7,7 @@
   </head>
   <body onload="prettyPrint()">
      <h1>JMS Security Example</h1>
-     <br>
+
      <p>This example shows you how configure and use security with HornetQ.</p>
      
      <p>With security properly configured, HornetQ can restrict client access to its resouces, including 
@@ -111,10 +111,10 @@
      check out the hornetq-beans.xml for how to do. In this example we just use the basic HornetQSecurityManagerImpl which reads users/roles/passwords from the xml
      file <code>hornetq-users.xml</code>.
 
-     <br>
+
      <h2>Example step-by-step</h2>
      <p><i>To run the example, simply type <code>./build.sh</code> (or <code>build.bat</code> on windows) from this directory</i></p>
-     <br>
+
      <ol>
         <li>First we need to get an initial context so we can look-up the JMS connection factory and destination objects from JNDI. This initial context will get it's properties from the <code>client-jndi.properties</code> file in the directory <code>../common/config</code></li>
         <pre class="prettyprint">

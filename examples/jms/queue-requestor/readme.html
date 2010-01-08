@@ -7,7 +7,7 @@
   </head>
   <body onload="prettyPrint()">
      <h1>JMS QueueRequestor Example</h1>
-     <br>
+
      <p>This example shows you how to use a <a href="http://java.sun.com/javaee/5/docs/api/javax/jms/QueueRequestor.html">QueueRequestor</a> with HornetQ.</p>
      <p>JMS is mainly used to send messages asynchronously so that the producer of a message is not waiting for the result of the message consumption.
         However, there are cases where it is necessary to have a synchronous behavior: the code sending a message requires a reply for this message
@@ -20,11 +20,11 @@
          <dt><code>QueueRequestorExample</code></dt>
          <dd>A JMS Client which uses a QueueRequestor to send text requests to a queue and receive replies with the reversed text in a synchronous fashion</dd>
     </dl>
-         
+
          
      <h2>Example step-by-step</h2>
      <p><i>To run the example, simply type <code>./build.sh</code> (or <code>build.bat</code> on windows) from this directory</i></p>
-     <br>
+
      <ol>
         <li>First we need to get an initial context so we can look-up the JMS connection factory from JNDI. This initial context will get it's properties from the <code>client-jndi.properties</code> file in the directory <code>../common/config</code></li>
         <pre class="prettyprint">

@@ -7,18 +7,18 @@
   </head>
   <body onload="prettyPrint()">
      <h1>Asynchronous Send Acknowledgements Example</h1>
-     <br>
+
      <p>Asynchronous Send Acknowledgements are an advanced feature of HornetQ which allow you to
      receive acknowledgements that messages were successfully received at the server in a separate stream
      to the stream of messages being sent to the server.<p/>
      <p>In this example we create a normal JMS session, then set a SendAcknowledgementHandler on the JMS 
      session's underlying core session. We send many messages to the server without blocking, and asynchronously
      the server calls the handler when it has successfully received each message.
-     <br>
+
      <p>For more information on Asynchronous Send Acknowledgements please see the user manual</p>
      <h2>Example step-by-step</h2>
      <p><i>To run the example, simply type <code>./build.sh</code> (or <code>build.bat</code> on windows) from this directory</i></p>
-     <br>
+
      <ol>
         <li>First we need to get an initial context so we can look-up the JMS connection factory and destination objects from JNDI. This initial context will get it's properties from the <code>client-jndi.properties</code> file in the directory <code>../common/config</code></li>
         <pre class="prettyprint">

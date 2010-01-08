@@ -6,8 +6,8 @@
     <script type="text/javascript" src="../../common/prettify.js"></script>
   </head>
   <body onload="prettyPrint()">
-     <h1>HornetQ Application-Layer Failover Example</h1>
-     <br>
+     <h1>Application-Layer Failover Example</h1>
+
      <p>HornetQ implements fully transparent <b>automatic</b> failover of connections from a live to backup node, this requires
      no special coding for failover, and is described in a different example. Automatic failover requires server replication.</p>
      <p>However, HornetQ also supports <b>Application-Layer</b> failover, useful in the case that replication is not enabled
@@ -22,13 +22,14 @@
      work in the old Session will be lost, and any unacknowledged messages might be redelivered.</p>    
      <p>For more information on HornetQ failover and HA, and clustering in general, please see the clustering
      section of the user manual.</p>      
+
      <h2>Example step-by-step</h2>
      <p><i>To run the example, simply type <code>./build.sh</code> (or <code>build.bat</code> on windows) from this directory</i></p>
      <p>In this example, the live server is server 1, which will failover onto server 0.</p>
      <p>The connection will initially be created to server1, server 1 will crash, and the client will carry on
      on server 0, the new  server. With Application-Layer failover the node that is failed over onto, does not need to
      be specially configured as a backup server, it can be any node.</p>
-     <br>
+
      <ol>
         <li> We create our JMS Connection, Session, MessageProducer and MessageConsumer on server 1</li>
         <pre class="prettyprint">

@@ -7,7 +7,6 @@
   </head>
   <body onload="prettyPrint()">
      <h1>JMS XA Send Example</h1>
-     <br>
      <p>This example shows you how message sending behaves in an XA transaction in HornetQ. In an XA
      Transaction, only if the associated XAResource are commited, will the messages be sent to the queue. 
      Otherwise, the messages to be sent will be discarded.</p>
@@ -20,10 +19,10 @@
      and enlist it in a transaction through its XAResource. We then send two words, 'hello' and 'world', with 
      the session, let the transaction roll back. The messages are discarded and never be received. Next we start
      a new transaction with the same XAResource, but this time we commit the transaction. Both messages are received.</p>
-     <br>
+
      <h2>Example step-by-step</h2>
      <p><i>To run the example, simply type <code>./build.sh</code> (or <code>build.bat</code> on windows) from this directory</i></p>
-     <br>
+
      <ol>
         <li>First we need to get an initial context so we can look-up the JMS connection factory and destination objects from JNDI. This initial context will get it's properties from the <code>client-jndi.properties</code> file in the directory <code>../common/config</code></li>
         <pre class="prettyprint">

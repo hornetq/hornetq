@@ -7,15 +7,15 @@
   </head>
   <body onload="prettyPrint()">
      <h1>JMS Transactional Session Example</h1>
-     <br>
+
      <p>This example shows you how to use a transactional Session with HornetQ. It creates a transactional session. At first it sends out two messages and tries to receive without session commit. Then it commits the sending session and receives only one messages before it rolls back the receiving session. It then receives all the messages and commits the session.</p>
 
      <p>Messages can be sent and received over transactional sessions. Messages in a transactional session will not be sent or acknowledged until the session is committed. It a session is rolled back, the produced messages will be destroyed and consumed messages will be recovered. Please consult the JMS 1.1 specification for full details.</p>
 
-     <br>
+
      <h2>Example step-by-step</h2>
      <p><i>To run the example, simply type <code>./build.sh</code> (or <code>build.bat</code> on windows) from this directory</i></p>
-     <br>
+
      <ol>
         <li>First we need to get an initial context so we can look-up the JMS connection factory and destination objects from JNDI. This initial context will get it's properties from the <code>client-jndi.properties</code> file in the directory <code>../common/config</code></li>
         <pre class="prettyprint">
