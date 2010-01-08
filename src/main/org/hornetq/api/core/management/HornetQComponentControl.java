@@ -14,7 +14,7 @@
 package org.hornetq.api.core.management;
 
 /**
- * A HornetQComponentControl is used to manage the lifecycle of a HornetQ components.
+ * A HornetQComponentControl is used to manage the life cycle of a HornetQ component.
  *
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  */

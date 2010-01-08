@@ -152,7 +152,7 @@ public class JMSManagementHelper
 
    /**
     * Returns the result of an operation invocation or an attribute value.
-    * 
+    * <br>
     * If an error occurred on the server, {@link #hasOperationSucceeded(Message)} will return {@code false}.
     * and the result will be a String corresponding to the server exception.
     */
@@ -163,7 +163,7 @@ public class JMSManagementHelper
 
    /**
     * Returns the result of an operation invocation or an attribute value.
-    * 
+    * <br>
     * If an error occurred on the server, {@link #hasOperationSucceeded(Message)} will return {@code false}.
     * and the result will be a String corresponding to the server exception.
     */
@@ -173,6 +173,10 @@ public class JMSManagementHelper
    }
 
    // Constructors --------------------------------------------------
+
+   private JMSManagementHelper()
+   {
+   }
 
    // Public --------------------------------------------------------
 

@@ -138,7 +138,7 @@ public class HornetQClient
     * Creates a ClientConnectionFactory using a TransportConfiguration of the server and a backup if needed.
     *
     * @param connectorConfig The TransportConfiguration of the server to connect to.
-    * @param backupConnectorConfig The TransportConfiguration of the backup server to connect to (or {@code null}Êif there is no backup)
+    * @param backupConnectorConfig The TransportConfiguration of the backup server to connect to (or {@code null} if there is no backup)
     * @return The ClientSessionFactory.
     */
    public static ClientSessionFactory createClientSessionFactory(final TransportConfiguration connectorConfig,
@@ -158,5 +158,7 @@ public class HornetQClient
       return new ClientSessionFactoryImpl(connectorConfig);
    }
 
-   
+   private HornetQClient()
+   {
+   }
 }

@@ -20,11 +20,11 @@ import java.lang.annotation.Target;
 
 /**
  * Info for a MBean Operation Parameter.
+ * <b>
+ * This annotation is used only for methods which can be invoked
+ * through a GUI.
  * 
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- * 
- * @version <tt>$Revision$</tt>
- * 
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.PARAMETER)

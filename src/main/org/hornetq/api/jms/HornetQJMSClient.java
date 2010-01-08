@@ -27,10 +27,9 @@ import org.hornetq.jms.client.HornetQQueue;
 import org.hornetq.jms.client.HornetQTopic;
 
 /**
- * A utility class for creating HornetQ Client Side JMS Objects.
+ * A utility class for creating HornetQ client-side JMS managed resources.
  *
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
- *         Created Jan 5, 2010
  */
 public class HornetQJMSClient
 {
@@ -72,7 +71,7 @@ public class HornetQJMSClient
    /**
     * Creates a ClientSessionFactory using a List of TransportConfigurations and backups.
     *
-    * @param staticConnectors The list of TransportConfiguration's to use.
+    * @param staticConnectors The list of TransportConfiguration to use.
     * @return The ConnectionFactory.
     */
    public static ConnectionFactory createConnectionFactory(final List<Pair<TransportConfiguration, TransportConfiguration>> staticConnectors)
@@ -81,7 +80,7 @@ public class HornetQJMSClient
    }
 
    /**
-    * Creates a ConnectionFactory using a List of TransportConfigurations and backups.
+    * Creates a ConnectionFactory using a single pair of live-backup TransportConfiguration.
     *
     * @param connectorConfig The TransportConfiguration of the server to connect to.
     * @param backupConnectorConfig The TransportConfiguration of the backup server to connect to. can be null.
@@ -94,7 +93,7 @@ public class HornetQJMSClient
    }
 
    /**
-    * Create a ConnectionFactory using the TransportConfiguration of the server to connect to.
+    * Creates a ConnectionFactory to connect to a single live server.
     *
     * @param connectorConfig The TransportConfiguration of the server.
     * @return The ConnectionFactory.
@@ -105,7 +104,7 @@ public class HornetQJMSClient
    }
 
    /**
-    * Create a client side representation of a JMS Topic.
+    * Creates a client-side representation of a JMS Topic.
     *
     * @param name the name of the topic
     * @return The Topic
@@ -116,7 +115,7 @@ public class HornetQJMSClient
    }
 
    /**
-    * Create a client side representation of a JMS Queue.
+    * Creates a client-side representation of a JMS Queue.
     *
     * @param name the name of the queue
     * @return The Queue
@@ -126,4 +125,7 @@ public class HornetQJMSClient
       return new HornetQQueue(name);
    }
 
+   private HornetQJMSClient()
+   {
+   }
 }

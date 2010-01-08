@@ -24,9 +24,8 @@ import org.hornetq.core.logging.Logger;
 import org.hornetq.utils.json.JSONArray;
 import org.hornetq.utils.json.JSONObject;
 
-/*
- * 
- * Operation params and results are encoded as JSON arrays
+/**
+ * Helper class to use HornetQ Core messages to manage server resources.
  * 
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -359,7 +358,7 @@ public class ManagementHelper
 
    /**
     * Returns the result of an operation invocation or an attribute value.
-    * 
+    * <br>
     * If an error occurred on the server, {@link #hasOperationSucceeded(Message)} will return {@code false}.
     * and the result will be a String corresponding to the server exception.
     */
@@ -383,7 +382,7 @@ public class ManagementHelper
 
    /**
     * Returns the result of an operation invocation or an attribute value.
-    * 
+    * <br>
     * If an error occurred on the server, {@link #hasOperationSucceeded(Message)} will return {@code false}.
     * and the result will be a String corresponding to the server exception.
     */
@@ -455,6 +454,10 @@ public class ManagementHelper
    }
 
    // Constructors --------------------------------------------------
+
+   private ManagementHelper()
+   {
+   }
 
    // Public --------------------------------------------------------
 

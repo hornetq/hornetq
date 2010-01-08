@@ -14,7 +14,7 @@
 package org.hornetq.api.jms;
 
 /**
- * Constants for HornetQ for property keys used for HornetQ specific extensions to JMS
+ * Constants for HornetQ for property keys used for HornetQ specific extensions to JMS.
  *
  * @author Tim Fox
  *

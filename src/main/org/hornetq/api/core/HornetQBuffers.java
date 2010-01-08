@@ -90,4 +90,8 @@ public class HornetQBuffers
    {
       return new ChannelBufferWrapper(ChannelBuffers.buffer(size));
    }
+   
+   private HornetQBuffers()
+   {
+   }
 }

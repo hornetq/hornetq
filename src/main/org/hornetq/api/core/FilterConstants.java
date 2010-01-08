@@ -15,7 +15,7 @@ package org.hornetq.api.core;
 
 /**
  * Constants representing pre-defined message attributes that can be referenced in HornetQ core
- * filter expressions
+ * filter expressions.
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
@@ -23,19 +23,47 @@ package org.hornetq.api.core;
  */
 public class FilterConstants
 {
+   /**
+    * Name of the HornetQ Message expiration header.
+    */
    public static final SimpleString HORNETQ_EXPIRATION = new SimpleString("HQExpiration");
    
+   /**
+    * Name of the HornetQ Message durable header.
+    */
    public static final SimpleString HORNETQ_DURABLE = new SimpleString("HQDurable");
    
+   /**
+    * Value for the Durable header when the message is non-durable.
+    */
    public static final SimpleString NON_DURABLE = new SimpleString("NON_DURABLE");
    
+   /**
+    * Value for the Durable header when the message is durable.
+    */
    public static final SimpleString DURABLE = new SimpleString("DURABLE");
    
+   /**
+    * Name of the HornetQ Message timestamp header.
+    */
    public static final SimpleString HORNETQ_TIMESTAMP = new SimpleString("HQTimestamp");
    
+   /**
+    * Name of the HornetQ Message priority header.
+    */
    public static final SimpleString HORNETQ_PRIORITY = new SimpleString("HQPriority");
    
+   /**
+    * Name of the HornetQ Message size header.
+    */
    public static final SimpleString HORNETQ_SIZE = new SimpleString("HQSize");
    
+   /**
+    * All HornetQ headers are prepended by this prefix.
+    */
    public static final SimpleString HORNETQ_PREFIX = new SimpleString("HQ");
+   
+   private FilterConstants()
+   {
+   }
 }

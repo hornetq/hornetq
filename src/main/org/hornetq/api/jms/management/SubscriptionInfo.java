@@ -13,7 +13,6 @@
 
 package org.hornetq.api.jms.management;
 
-import org.hornetq.api.core.management.AddressControl;
 import org.hornetq.utils.json.JSONArray;
 import org.hornetq.utils.json.JSONObject;
 
