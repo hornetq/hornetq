@@ -631,15 +631,6 @@ public class HornetQServerImpl implements HornetQServer
          securityStore.authenticate(username, password);
       }
 
-      ServerSession currentSession = sessions.remove(name);
-
-      if (currentSession != null)
-      {
-         // This session may well be on a different connection and different channel id, so we must get rid
-         // of it and create another
-         currentSession.getChannel().close();
-      }
-
       Channel channel = connection.getChannel(channelID, sendWindowSize);
 
       Executor sessionExecutor = executorFactory.getExecutor();
