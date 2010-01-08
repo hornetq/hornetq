@@ -13,9 +13,9 @@
          Such a message goes back to the JMS destination ready to be redelivered.
          However, this means it is possible for a message to be delivered again and again without any success and remain in the destination, clogging the system.</p>
      <p>To prevent this, messaging systems define dead letter messages: after a specified unsuccessful delivery attempts, the message is removed from the destination
-         and put instead in a <em>dead letter address</em> where they can be consumed for further investigation.
+         and instead routed to a <em>dead letter address</em> where they can be consumed for further investigation.
      <p>
-         The example will show how to configure HornetQ to send a message to a dead letter destination after 3 unsuccessful delivery attempts.<br />
+         The example will show how to configure HornetQ to route a message to a dead letter address after 3 unsuccessful delivery attempts.<br />
          The example will send 1 message to a queue. We will deliver the message 3 times and rollback the session every time.<br />
          On the 4th attempt, there won't be any message to consume: it will have been moved to a <em>dead letter address</em>.<br />
          We will then consume this dead letter message.

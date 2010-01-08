@@ -9,7 +9,7 @@
      <h1>Delayed Redelivery Example</h1>
      
      <p>This example demonstrates how HornetQ can be configured to provide a delayed redelivery in the case
-     a message needs to be redelivered.</p>
+     where a message needs to be redelivered.</p>
      <p>Delaying redelivery can often be useful in the case that clients regularly fail or roll-back. Without a delayed
      redelivery, the system can get into a "thrashing" state, with delivery being attempted, the client rolling back, and
      delivery being re-attempted ad infinitum in quick succession, using up valuable CPU and network resources.</p>

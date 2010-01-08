@@ -12,7 +12,7 @@
          using <a href="http://java.sun.com/javase/technologies/core/mntr-mgmt/javamanagement/">JMX</a></p>
 
      <p>The example will connect to HornetQ. Using JMX, we will list the remote addresses connected to the 
-         server and close the corresponding connections. The client will be kicked off from HornetQ and receives
+         server and close the corresponding connections. The client will be kicked off from HornetQ receiving
          an exception that its JMS connection was interrupted.</p>
 
      <h2>Example configuration</h2>
@@ -26,7 +26,7 @@
              -Dcom.sun.management.jmxremote.authenticate=false</code>
         </pre>
         <p>These properties are explained in the Java 5 <a href="http://java.sun.com/j2se/1.5.0/docs/guide/management/agent.html#remote">Management guide</a>
-            (please note that for this example, we will disable user authentication for simplicity sake).</p>        
+            (please note that for this example, we will disable user authentication for simplicity).</p>        
         <p>With these properties, HornetQ server will be manageable remotely using standard JMX URL on port <code>3000</code>.</p> 
      </p>
          
