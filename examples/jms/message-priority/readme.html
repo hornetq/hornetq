@@ -8,9 +8,9 @@
   <body onload="prettyPrint()">
      <h1>JMS Message Priority Example</h1>
 
-     <p>This example shows how messages with priorities are delivered.</p>
+     <p>This example shows how messages with different priorities are delivered in different orders.</p>
      
-     <p>Message Priority carries the delivery preference of messages. It can be retrieved by the message's
+     <p>The Message Priority property carries the delivery preference of sent messages. It can be set by the message's
      standard header field 'JMSPriority' as defined in JMS specification version 1.1. The value is of type
      integer, ranging from 0 (the lowest) to 9 (the highest). When messages are being delivered, their priorities
      will effect their order of delivery. Messages of higher priorities will likely be delivered before those 

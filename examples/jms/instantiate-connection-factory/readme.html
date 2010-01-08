@@ -8,7 +8,7 @@
   <body onload="prettyPrint()">
      <h1>JMS Instantiate Connection Factory Example</h1>
      
-     <p>Usually, JMS Objects such as ConnectionFactory, Queue and Topic instances are looked up from JNDI
+     <p>Usually, JMS Objects such as ConnectionFactories, Queue and Topic instances are looked up from JNDI
      before being used by the client code. This objects are called "administered objects" in JMS specification
      terminology.</p>
      <p>However, in some cases a JNDI server may not be available or desired. To come to the rescue HornetQ
@@ -16,10 +16,10 @@
      <p>This allows the full set of JMS functionality to be available without requiring a JNDI server!</p>
      <p>This example is very simple and based on the simple Queue example, however in this example we
      instantiate the JMS Queue and ConnectionFactory objects directly.</p>
-     <p>A wide variety of constructors are available for instantiating ConnectionFactory objects. In this example
-     we use a simple constructor which just takes the server connection details so it knows where to make the
+     <p>A wide variety of methods are available for instantiating ConnectionFactory objects. In this example
+     we use a simple method which just takes the server connection details so it knows where to make the
      connection to.</p>
-     <p>Other constructors are avilable so all the connection factory parameters can be specified
+     <p>Other methods are available so all the connection factory parameters can be specified
      including specifying UDP discovery so the client does not need hard-wired knowledge of where the servers
      are that it wishes to connect to, or for specifying live-backup pairs of servers for failover.</p>
      <p>For more information on instantiating ConnectionFactories directly please consult the user manual and
