@@ -88,8 +88,6 @@ public class QueueImpl implements Queue
 
    private final List<MessageHandler> handlers = new ArrayList<MessageHandler>();
 
-   private final ConcurrentSet<MessageReference> expiringMessageReferences = new ConcurrentHashSet<MessageReference>();
-
    private final ScheduledDeliveryHandler scheduledDeliveryHandler;
 
    private boolean direct;
@@ -432,7 +430,7 @@ public class QueueImpl implements Queue
       }
    }
 
-   public synchronized MessageReference removeReferenceWithID(final long id) throws Exception
+   public MessageReference removeReferenceWithID(final long id) throws Exception
    {
       Iterator<MessageReference> iterator = messageReferences.iterator();
 
@@ -447,8 +445,6 @@ public class QueueImpl implements Queue
             iterator.remove();
 
             removed = ref;
-
-            removeExpiringReference(removed);
 
             break;
          }
@@ -481,7 +477,7 @@ public class QueueImpl implements Queue
       return ref;
    }
 
-   public synchronized MessageReference getReference(final long id)
+   public MessageReference getReference(final long id)
    {
       Iterator<MessageReference> iterator = messageReferences.iterator();
 
@@ -633,44 +629,40 @@ public class QueueImpl implements Queue
    {
       int count = 0;
 
-      synchronized (this)
+      Transaction tx = new TransactionImpl(storageManager);
+
+      Iterator<MessageReference> iter = messageReferences.iterator();
+
+      while (iter.hasNext())
       {
+         MessageReference ref = iter.next();
 
-         Transaction tx = new TransactionImpl(storageManager);
-
-         Iterator<MessageReference> iter = messageReferences.iterator();
-
-         while (iter.hasNext())
+         if (filter == null || filter.match(ref.getMessage()))
          {
-            MessageReference ref = iter.next();
-
-            if (filter == null || filter.match(ref.getMessage()))
-            {
-               deliveringCount.incrementAndGet();
-               acknowledge(tx, ref);
-               iter.remove();
-               count++;
-            }
+            deliveringCount.incrementAndGet();
+            acknowledge(tx, ref);
+            iter.remove();
+            count++;
          }
-
-         List<MessageReference> cancelled = scheduledDeliveryHandler.cancel();
-         for (MessageReference messageReference : cancelled)
-         {
-            if (filter == null || filter.match(messageReference.getMessage()))
-            {
-               deliveringCount.incrementAndGet();
-               acknowledge(tx, messageReference);
-               count++;
-            }
-         }
-
-         tx.commit();
       }
+
+      List<MessageReference> cancelled = scheduledDeliveryHandler.cancel();
+      for (MessageReference messageReference : cancelled)
+      {
+         if (filter == null || filter.match(messageReference.getMessage()))
+         {
+            deliveringCount.incrementAndGet();
+            acknowledge(tx, messageReference);
+            count++;
+         }
+      }
+
+      tx.commit();
 
       return count;
    }
 
-   public synchronized boolean deleteReference(final long messageID) throws Exception
+   public boolean deleteReference(final long messageID) throws Exception
    {
       boolean deleted = false;
 
@@ -696,7 +688,7 @@ public class QueueImpl implements Queue
       return deleted;
    }
 
-   public synchronized boolean expireReference(final long messageID) throws Exception
+   public boolean expireReference(final long messageID) throws Exception
    {
       Iterator<MessageReference> iter = messageReferences.iterator();
 
@@ -714,7 +706,7 @@ public class QueueImpl implements Queue
       return false;
    }
 
-   public synchronized int expireReferences(final Filter filter) throws Exception
+   public int expireReferences(final Filter filter) throws Exception
    {
       Transaction tx = new TransactionImpl(storageManager);
 
@@ -738,18 +730,23 @@ public class QueueImpl implements Queue
       return count;
    }
 
-   public synchronized void expireReferences() throws Exception
+   public void expireReferences() throws Exception
    {
-      for (MessageReference expiringMessageReference : expiringMessageReferences)
+      Iterator<MessageReference> iter = messageReferences.iterator();
+
+      while (iter.hasNext())
       {
-         if (expiringMessageReference.getMessage().isExpired())
+         MessageReference ref = iter.next();
+         if (ref.getMessage().isExpired())
          {
-            expireReference(expiringMessageReference.getMessage().getMessageID());
+            deliveringCount.incrementAndGet();
+            expire(ref);
+            iter.remove();
          }
       }
    }
 
-   public synchronized boolean sendMessageToDeadLetterAddress(final long messageID) throws Exception
+   public boolean sendMessageToDeadLetterAddress(final long messageID) throws Exception
    {
       Iterator<MessageReference> iter = messageReferences.iterator();
 
@@ -767,7 +764,7 @@ public class QueueImpl implements Queue
       return false;
    }
 
-   public synchronized boolean moveReference(final long messageID, final SimpleString toAddress) throws Exception
+   public boolean moveReference(final long messageID, final SimpleString toAddress) throws Exception
    {
       Iterator<MessageReference> iter = messageReferences.iterator();
 
@@ -785,7 +782,7 @@ public class QueueImpl implements Queue
       return false;
    }
 
-   public synchronized int moveReferences(final Filter filter, final SimpleString toAddress) throws Exception
+   public int moveReferences(final Filter filter, final SimpleString toAddress) throws Exception
    {
       Transaction tx = new TransactionImpl(storageManager);
 
@@ -821,7 +818,7 @@ public class QueueImpl implements Queue
       return count;
    }
 
-   public synchronized boolean changeReferencePriority(final long messageID, final byte newPriority) throws Exception
+   public boolean changeReferencePriority(final long messageID, final byte newPriority) throws Exception
    {
       Iterator<MessageReference> iter = messageReferences.iterator();
 
@@ -1165,13 +1162,6 @@ public class QueueImpl implements Queue
                      busyCount++;
 
                      handler.reset();
-
-                     // if (groupID != null )
-                     // {
-                     // // group id being set seems to make delivery stop
-                     // // FIXME !!! why??
-                     // break;
-                     // }
                   }
                   else if (status == HandleStatus.NO_MATCH)
                   {
@@ -1214,6 +1204,11 @@ public class QueueImpl implements Queue
          return false;
       }
 
+      if (checkExpired(reference))
+      {
+         return true;
+      }
+
       int startPos = pos;
       int busyCount = 0;
       boolean setPromptDelivery = false;
@@ -1223,49 +1218,46 @@ public class QueueImpl implements Queue
 
          Consumer consumer = handler.getConsumer();
 
-         if (!checkExpired(reference))
+         SimpleString groupID = reference.getMessage().getSimpleStringProperty(Message.HDR_GROUP_ID);
+
+         boolean tryHandle = true;
+
+         if (groupID != null)
          {
-            SimpleString groupID = reference.getMessage().getSimpleStringProperty(Message.HDR_GROUP_ID);
+            Consumer groupConsumer = groups.putIfAbsent(groupID, consumer);
 
-            boolean tryHandle = true;
-
-            if (groupID != null)
+            if (groupConsumer != null && groupConsumer != consumer)
             {
-               Consumer groupConsumer = groups.putIfAbsent(groupID, consumer);
+               tryHandle = false;
+            }
+         }
 
-               if (groupConsumer != null && groupConsumer != consumer)
+         if (tryHandle)
+         {
+            HandleStatus status = handle(reference, consumer);
+
+            if (status == HandleStatus.HANDLED)
+            {
+               return true;
+            }
+            else if (status == HandleStatus.BUSY)
+            {
+               busyCount++;
+
+               if (groupID != null)
                {
-                  tryHandle = false;
+                  return false;
                }
             }
-
-            if (tryHandle)
+            else if (status == HandleStatus.NO_MATCH)
             {
-               HandleStatus status = handle(reference, consumer);
-
-               if (status == HandleStatus.HANDLED)
+               // if consumer filter reject the message make sure it won't be assigned the message group
+               if (groupID != null)
                {
-                  return true;
+                  groups.remove(groupID);
                }
-               else if (status == HandleStatus.BUSY)
-               {
-                  busyCount++;
 
-                  if (groupID != null)
-                  {
-                     return false;
-                  }
-               }
-               else if (status == HandleStatus.NO_MATCH)
-               {
-                  // if consumer filter reject the message make sure it won't be assigned the message group
-                  if (groupID != null)
-                  {
-                     groups.remove(groupID);
-                  }
-
-                  setPromptDelivery = true;
-               }
+               setPromptDelivery = true;
             }
          }
 
@@ -1320,11 +1312,6 @@ public class QueueImpl implements Queue
 
       if (add)
       {
-         if (ref.getMessage().getExpiration() != 0)
-         {
-            expiringMessageReferences.addIfAbsent(ref);
-         }
-
          if (first)
          {
             messageReferences.addFirst(ref, ref.getMessage().getPriority());
@@ -1377,14 +1364,6 @@ public class QueueImpl implements Queue
       return status;
    }
 
-   private void removeExpiringReference(final MessageReference ref)
-   {
-      if (ref.getMessage().getExpiration() > 0)
-      {
-         expiringMessageReferences.remove(ref);
-      }
-   }
-
    private void postAcknowledge(final MessageReference ref) throws Exception
    {
       final ServerMessage message = ref.getMessage();
@@ -1419,8 +1398,6 @@ public class QueueImpl implements Queue
             }
          }
       }
-
-      queue.removeExpiringReference(ref);
 
       queue.deliveringCount.decrementAndGet();
 

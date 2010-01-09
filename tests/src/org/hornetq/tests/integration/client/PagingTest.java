@@ -28,6 +28,7 @@ import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.MessageHandler;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.paging.impl.TestSupportPageStore;
@@ -808,6 +809,105 @@ public class PagingTest extends ServiceTestBase
                                       .getPageStore(PagingTest.ADDRESS)
                                       .getAddressSize());
 
+      }
+      finally
+      {
+         try
+         {
+            server.stop();
+         }
+         catch (Throwable ignored)
+         {
+         }
+      }
+
+   }
+   
+   public void testDropMessagesExpiring() throws Exception
+   {
+      clearData();
+
+      Configuration config = createDefaultConfig();
+
+      HashMap<String, AddressSettings> settings = new HashMap<String, AddressSettings>();
+
+      AddressSettings set = new AddressSettings();
+      set.setAddressFullMessagePolicy(AddressFullMessagePolicy.DROP);
+
+      settings.put(PagingTest.ADDRESS.toString(), set);
+
+      HornetQServer server = createServer(true, config, 1024,  1024 * 1024, settings);
+
+      server.start();
+
+      final int numberOfMessages = 30000;
+
+      try
+      {
+         ClientSessionFactory sf = createInVMFactory();
+         
+         sf.setAckBatchSize(0);
+
+         ClientSession session = sf.createSession();
+
+         session.createQueue(PagingTest.ADDRESS, PagingTest.ADDRESS, null, true);
+
+         ClientProducer producer = session.createProducer(PagingTest.ADDRESS);
+
+         ClientMessage message = null;
+         
+         class MyHandler implements MessageHandler
+         {
+            int count;
+
+            public void onMessage(ClientMessage message)
+            {
+               try
+               {
+                  Thread.sleep(1);
+               }
+               catch (Exception e)
+               {
+                  
+               }
+               
+               count++;
+               
+               if (count % 1000 == 0)
+               {
+                  log.info("received " + count);
+               }
+               
+               try
+               {
+                  message.acknowledge();
+               }
+               catch (Exception e)
+               {
+                  e.printStackTrace();
+               }
+            }           
+         }
+         
+         ClientConsumer consumer = session.createConsumer(PagingTest.ADDRESS);
+
+         session.start();
+         
+         consumer.setMessageHandler(new MyHandler());
+
+         for (int i = 0; i < numberOfMessages; i++)
+         {
+            byte[] body = new byte[1024];
+
+            message = session.createMessage(false);
+            message.getBodyBuffer().writeBytes(body);
+            
+            message.setExpiration(System.currentTimeMillis() + 100);
+
+            producer.send(message);
+         }
+         
+         session.close();
       }
       finally
       {
