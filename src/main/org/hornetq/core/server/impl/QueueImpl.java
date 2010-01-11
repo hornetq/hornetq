@@ -54,7 +54,6 @@ import org.hornetq.core.transaction.TransactionOperation;
 import org.hornetq.core.transaction.TransactionPropertyIndexes;
 import org.hornetq.core.transaction.impl.TransactionImpl;
 import org.hornetq.utils.ConcurrentHashSet;
-import org.hornetq.utils.ConcurrentSet;
 
 /**
  * Implementation of a Queue
@@ -646,15 +645,12 @@ public class QueueImpl implements Queue
          }
       }
 
-      List<MessageReference> cancelled = scheduledDeliveryHandler.cancel();
+      List<MessageReference> cancelled = scheduledDeliveryHandler.cancel(filter);
       for (MessageReference messageReference : cancelled)
       {
-         if (filter == null || filter.match(messageReference.getMessage()))
-         {
-            deliveringCount.incrementAndGet();
-            acknowledge(tx, messageReference);
-            count++;
-         }
+         deliveringCount.incrementAndGet();
+         acknowledge(tx, messageReference);
+         count++;
       }
 
       tx.commit();
@@ -801,16 +797,13 @@ public class QueueImpl implements Queue
          }
       }
 
-      List<MessageReference> cancelled = scheduledDeliveryHandler.cancel();
+      List<MessageReference> cancelled = scheduledDeliveryHandler.cancel(filter);
       for (MessageReference ref : cancelled)
       {
-         if (filter == null || filter.match(ref.getMessage()))
-         {
-            deliveringCount.incrementAndGet();
-            move(toAddress, tx, ref, false);
-            acknowledge(tx, ref);
-            count++;
-         }
+         deliveringCount.incrementAndGet();
+         move(toAddress, tx, ref, false);
+         acknowledge(tx, ref);
+         count++;
       }
 
       tx.commit();

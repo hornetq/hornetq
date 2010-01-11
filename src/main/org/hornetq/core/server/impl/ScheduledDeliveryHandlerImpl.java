@@ -20,6 +20,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import org.hornetq.core.filter.Filter;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.ScheduledDeliveryHandler;
@@ -41,8 +42,6 @@ public class ScheduledDeliveryHandlerImpl implements ScheduledDeliveryHandler
    private final ScheduledExecutorService scheduledExecutor;
 
    private final Map<Long, ScheduledDeliveryRunnable> scheduledRunnables = new LinkedHashMap<Long, ScheduledDeliveryRunnable>();
-
-   private boolean rescheduled;
 
    public ScheduledDeliveryHandlerImpl(final ScheduledExecutorService scheduledExecutor)
    {
@@ -74,22 +73,6 @@ public class ScheduledDeliveryHandlerImpl implements ScheduledDeliveryHandler
       return false;
    }
 
-   public void reSchedule()
-   {
-      synchronized (scheduledRunnables)
-      {
-         if (!rescheduled)
-         {
-            for (ScheduledDeliveryRunnable runnable : scheduledRunnables.values())
-            {
-               scheduleDelivery(runnable, runnable.getReference().getScheduledDeliveryTime());
-            }
-
-            rescheduled = true;
-         }
-      }
-   }
-
    public int getScheduledCount()
    {
       return scheduledRunnables.size();
@@ -109,20 +92,26 @@ public class ScheduledDeliveryHandlerImpl implements ScheduledDeliveryHandler
       return refs;
    }
 
-   public List<MessageReference> cancel()
+   public List<MessageReference> cancel(final Filter filter)
    {
       List<MessageReference> refs = new ArrayList<MessageReference>();
 
       synchronized (scheduledRunnables)
       {
-         for (ScheduledDeliveryRunnable runnable : scheduledRunnables.values())
+         Map<Long, ScheduledDeliveryRunnable> copy = new LinkedHashMap<Long, ScheduledDeliveryRunnable>(scheduledRunnables);
+         for (ScheduledDeliveryRunnable runnable : copy.values())
          {
-            runnable.cancel();
+            if (filter == null || filter.match(runnable.getReference().getMessage()))
+            {
+               runnable.cancel();
 
-            refs.add(runnable.getReference());
+               refs.add(runnable.getReference());
+            }
          }
-
-         scheduledRunnables.clear();
+         for (MessageReference ref : refs)
+         {
+            scheduledRunnables.remove(ref.getMessage().getMessageID());
+         }
       }
       return refs;
    }

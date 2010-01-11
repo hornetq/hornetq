@@ -12,6 +12,8 @@
  */
 package org.hornetq.core.server;
 
+import org.hornetq.core.filter.Filter;
+
 import java.util.List;
 
 /**
@@ -21,13 +23,11 @@ public interface ScheduledDeliveryHandler
 {
    boolean checkAndSchedule(MessageReference ref);
 
-   void reSchedule();
-
    int getScheduledCount();
 
    List<MessageReference> getScheduledReferences();
 
-   List<MessageReference> cancel();
+   List<MessageReference> cancel(Filter filter);
 
    MessageReference removeReferenceWithID(long id);
 }
