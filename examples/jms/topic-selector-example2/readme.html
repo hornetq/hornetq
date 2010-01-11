@@ -11,7 +11,7 @@
      <p>This example shows you how to selectively consume messages using message selectors with topic consumers.</p>
      
      <p>Message selectors are strings with special syntax that can be used in creating consumers. Message consumers
-     that are thus created only receive messages that match its selector. On message delivering, the JBoss Message
+     that are thus created only receive messages that match its selector. On message delivering, the HornetQ
      Server evaluates the corresponding message headers of the messages against each selector, if any, and then delivers
      the 'matched' messages to its consumer. Please consult the JMS 1.1 specification for full details.</p>
      
@@ -19,7 +19,7 @@
      <code>'color=red'</code>, it only receives messages that
      have a 'color' string property of 'red' value; the second is created with selector <code>'color=green'</code>, it 
      only receives messages who have a 'color' string property of 
-     'green' value; and the thrid without a selector, which means it receives all messages. To illustrate, three messages 
+     'green' value; and the third without a selector, which means it receives all messages. To illustrate, three messages 
      with different 'color' property values are created and sent.</p>
 
      <h2>Example step-by-step</h2>

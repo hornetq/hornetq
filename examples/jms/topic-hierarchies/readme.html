@@ -9,10 +9,10 @@
      <h1>Topic Hierarchy Example</h1>
 
      <p>HornetQ supports topic hierarchies. With a topic hierarchy you can register a subscriber with a wild-card
-     and that subscriber will receive any messages sent to an address that matches the wildcard.</p>
+     and that subscriber will receive any messages routed to an address that match the wildcard.</p>
      <p>HornetQ wild-cards can use the character '#' which means "match any number of words", and
      the character '*' which means "match a single word". Words are delimited by the character "."</p>
-     <p>For example if I subscribe using the wild-card "news.europe.#", then that matches messages sent to the addresses
+     <p>For example if I subscribe using the wild-card "news.europe.#", then that would match messages sent to the addresses
      "news.europe", "news.europe.sport" and "news.europe.entertainment", but it does not match messages sent to the
      address "news.usa.wrestling"</p>
      <p>For more information on the wild-card syntax please consult the user manual.</p>

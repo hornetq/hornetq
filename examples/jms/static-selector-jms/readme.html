@@ -1,6 +1,6 @@
 <html>
   <head>
-    <title>HornetQ Static Message Selector Example</title>
+    <title>HornetQ Static Message Selector JMS Example</title>
     <link rel="stylesheet" type="text/css" href="../../common/common.css" />
     <link rel="stylesheet" type="text/css" href="../../common/prettify.css" />
     <script type="text/javascript" src="../../common/prettify.js"></script>
@@ -22,7 +22,7 @@
       	&lt;/queue&gt;
      </code></pre>
      
-     <p>Once thus configured, as this example does, the queue <code>selectorQueue</code> only delivers messages that are 
+     <p>Once configured the queue <code>selectorQueue</code> only delivers messages that are 
         that match the selector; i.e. only the messages whose <code>color</code> property is equal to <code>'red'</code> can be received by its consumers.
         Those that don't match the selector will be dropped by the queue and therefore will never be delivered to any of its consumers.</p>
       

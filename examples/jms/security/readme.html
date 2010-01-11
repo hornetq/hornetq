@@ -8,14 +8,14 @@
   <body onload="prettyPrint()">
      <h1>JMS Security Example</h1>
 
-     <p>This example shows you how configure and use security with HornetQ.</p>
+     <p>This example shows how to configure and use security using HornetQ.</p>
      
-     <p>With security properly configured, HornetQ can restrict client access to its resouces, including 
+     <p>With security properly configured, HornetQ can restrict client access to its resources, including 
      connection creation, message sending/receiving, etc. This is done by configuring users and roles as well as permissions in 
      the configuration files. </p>
 
-     <p>HornetQ supports wild-card in security configuration. This feature makes security configuration very much 
-     flexible and it enables fine-grained control over permissions in an efficient way.</p>
+     <p>HornetQ supports wild-card security configuration. This feature makes security configuration very
+     flexible and enables fine-grained control over permissions in an efficient way.</p>
      
      <p>For a full description of how to configure security with HornetQ, please consult the user
      manual.</p>
@@ -51,14 +51,14 @@
      </pre>
      
      <p>
-     Each user has three properties available: user name, password, and roles it belongs to. It should be noticed that
-     a user can belong to more than one roles. In the above configuration, all users belong to role 'user'. User 'andrew' also
-     belongs to role 'europe-user', user 'frank' also belongs to 'us-user' and 'news-user', and user 'sam' also belongs to 'news-user'.
+     Each user has three properties available: user name, password, and roles it belongs to. It should be noted that
+     a user can belong to more than one role. In the above configuration, all users belong to role 'user'. User 'andrew' also
+     belongs to role 'europe-user', user 'frank' also belongs to 'us-user' and 'news-user' and user 'sam' also belongs to 'news-user'.
      </p>
      <p>
      User name and password consists of a valid account that can be used to establish connections to a HornetQ server, while 
-     roles are used in controling the access privileges against HornetQ topics and queues. You can achieve this control by
-     configuring proper permissions in <code>hornetq-configuration.xml</code>, like in the following
+     roles are used in controlling the access privileges against HornetQ topics and queues. You can achieve this control by
+     configuring proper permissions in <code>hornetq-configuration.xml</code>, like the following
      </p>
      <pre class="prettyprint"><code>
       &lt;security-settings&gt;
@@ -96,8 +96,8 @@
      wildcards to apply certain permissions to a set of matching queues and topics. In the above configuration
      we have created four sets of permissions, each set matches against a special group of targets, indicated by wild-card match attributes.</p>
      
-     <p>You can provide a very loose permission control for a very general group of destinations. Then you add more strict control
-     over specific topics. By the above we define the following access rules:</p>
+     <p>You can provide a very broad permission control as a default and then add more strict control
+     over specific addresses. By the above we define the following access rules:</p>
      
          <li>Only role 'us-user' can create/delete and pulish messages to topics whose names match wild-card pattern 'news.us.#'.</li>
          <li>Only role 'europe-user' can create/delete and publish messages to topics whose names match wild-card pattern 'news.europe.#'.</li>

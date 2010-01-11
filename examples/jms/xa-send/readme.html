@@ -7,9 +7,9 @@
   </head>
   <body onload="prettyPrint()">
      <h1>JMS XA Send Example</h1>
-     <p>This example shows you how message sending behaves in an XA transaction in HornetQ. In an XA
-     Transaction, only if the associated XAResource are commited, will the messages be sent to the queue. 
-     Otherwise, the messages to be sent will be discarded.</p>
+     <p>This example shows you how message sending behaves in an XA transaction in HornetQ. When a message is sent within
+         the scope of an XA transaction, it will only reach the queue once the transaction is committed.
+     If the transaction is rolled back the sent messages will be discarded by the server.</p>
      
      <p>HornetQ is JTA aware, meaning you can use HornetQ in a XA transactional environment
      and participate in XA transactions. It provides the javax.transaction.xa.XAResource interface for that

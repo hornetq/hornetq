@@ -26,9 +26,9 @@
       &lt;/queues&gt;
      </code></pre>
      
-     <p>Once thus configured, as this example does, the queue 'selectorQueue' only delivers messages that are selected against the filter, i.e.,
+     <p>Once configured the queue 'selectorQueue' only delivers messages that are selected against the filter, i.e.,
      only the messages whose 'color' properties are of 'red' values can be received by its consumers. Those that don't match
-     the filter will be dropped by queue and therefore will never be delivered to any of its consumers.</p>
+     the filter will be dropped by the queue and therefore will never be delivered to any of its consumers.</p>
       
      <p>In the example code, five messages with different 'color' property values are sent to queue 'selectorQueue'. One consumer
      is created to receive messages from the queue. Of the five sent messages, two are of 'red' color properties, one is 'blue', 

@@ -8,10 +8,12 @@
   <body onload="prettyPrint()">
      <h1>JMS Transactional Session Example</h1>
 
-     <p>This example shows you how to use a transactional Session with HornetQ. It creates a transactional session. At first it sends out two messages and tries to receive without session commit. Then it commits the sending session and receives only one messages before it rolls back the receiving session. It then receives all the messages and commits the session.</p>
-
-     <p>Messages can be sent and received over transactional sessions. Messages in a transactional session will not be sent or acknowledged until the session is committed. It a session is rolled back, the produced messages will be destroyed and consumed messages will be recovered. Please consult the JMS 1.1 specification for full details.</p>
-
+     <p>This example shows you how to use a transacted Session with HornetQ.</p>
+     <p>Firstly 2 messages are sent via the transacted sending session before being committed. This ensures that both message
+     are sent</p>
+     <p>Secondly the receiving session receives the messages firstly demonstrating a message being redelivered after the session
+     being rolled back and then acknowledging receipt of the messages via the commit method.</p>
+    
 
      <h2>Example step-by-step</h2>
      <p><i>To run the example, simply type <code>./build.sh</code> (or <code>build.bat</code> on windows) from this directory</i></p>

@@ -7,16 +7,16 @@
   </head>
   <body onload="prettyPrint()">
      <h1>JMS XA Receive Example</h1>
-     <p>This example shows you how message receiving behaves in an XA transaction in HornetQ. In an XA
-     Transaction, only if the associated XAResource are commited, will the messages be removed from the queue. 
-     Otherwise, the messages maybe redelivered after rollback or during the XA recovery.</p>
+     <p>This example demonstrates receiving a message within the scope of an XA transaction. When using an XA transaction
+         the message will only be acknowledged and removed from the queue when the transaction is committed.
+     If the transaction is not committed the message maybe redelivered after rollback or during XA recovery.</p>
      
-     <p>HornetQ is JTA aware, meaning you can use HornetQ in a XA transactional environment
+     <p>HornetQ is JTA aware, meaning you can use HornetQ in an XA transactional environment
      and participate in XA transactions. It provides the javax.transaction.xa.XAResource interface for that
      purpose. Users can get a XAConnectionFactory to create XAConnections and XASessions.</p>
      
      <p>In this example we simulate a transaction manager to control the transactions. First we create an XASession
-      for receiiving and a normal session for sending. Then it starts a new xa transaction and enlist the receiving
+      for receiving and a normal session for sending. Then we start a new xa transaction and enlist the receiving
       XASession through its XAResource. We then send two words, 'hello' and 'world', receive them, and let the 
       transaction roll back. The received messages are cancelled back to the queue. Next we start
       a new transaction with the same XAResource enlisted, but this time we commit the transaction after receiving the 

@@ -9,11 +9,10 @@
      <h1>No Consumer Buffering Example</h1>
 
      <p>By default, HornetQ consumers buffer messages from the server in a client side buffer
-     before you actually receive them on the client side.</p>
+     before actual delivery actually occurs.</p>
      <p>This improves performance since otherwise every time you called receive() or had processed the last
      message in a MessageListener onMessage() method, the HornetQ client would have to go the
-     server to request the next message, which would then get sent to the client side, if one was available.</p>
-     <p>This would involve a network round trip for every message and really reduce performance.</p>
+     server to request the next message involving a network round trip for every message reducing performance.</p>
      <p>Therefore, by default, HornetQ pre-fetches messages into a buffer on each consumer. The total maximum size of
      messages in bytes that will be buffered on each consumer is determined by the <code>consumer-window-size</code>
      parameter on the connection factory.</p>

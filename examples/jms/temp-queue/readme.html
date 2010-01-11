@@ -8,8 +8,12 @@
   <body onload="prettyPrint()">
      <h1>JMS Temporary Queue Example</h1>
 
-     <p>This example shows you how to use a TemporaryQueue object with HornetQ. First it creates a temporary queue to send and receive a message, then delete it. Then it creates another temporary queue and tries to use it after its connection is closed -- to illustrate its scope.</p>
-     <p>TemporaryQueue is a JMS queue that lives within lifetime of its connection. It is often used in request-reply type messaging where the reply is sent through a temporary destination. The temporary queue is often created as a server resource, so after using, the user should call delete() method to release the resources. Please consult the JMS 1.1 specification for full details.</p>
+     <p>This example shows you how to use a TemporaryQueue with HornetQ. First a temporary queue is created to send and receive a message and then deleted.
+         Then another temporary queue is created and used after its connection is closed to illustrate its scope.</p>
+     <p>A TemporaryQueue is a JMS queue that exists only within the lifetime of its connection. It is often used in request-reply
+         type messaging where the reply is sent through a temporary destination. The temporary queue is often created as
+         a server resource, so after using, the user should call delete() method to release the resources.
+         Please consult the JMS 1.1 specification for full details.</p>
 
      <h2>Example step-by-step</h2>
      <p><i>To run the example, simply type <code>./build.sh</code> (or <code>build.bat</code> on windows) from this directory</i></p>
