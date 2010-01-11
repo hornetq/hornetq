@@ -17,8 +17,8 @@
          <connector-ref connector-name="in-vm"/>
       </connectors>
       <entries>
-         <entry name="java:/ConnectionFactory"/>
-         <entry name="java:/XAConnectionFactory"/>
+         <entry name="/ConnectionFactory"/>
+         <entry name="/XAConnectionFactory"/>
       </entries>
    </connection-factory>
    

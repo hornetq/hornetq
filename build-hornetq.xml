@@ -326,7 +326,19 @@
    <path id="jms.standalone.server.classpath">
       <pathelement location="${src.schema.dir}"/>
       <path location="${build.jars.dir}/${transports.jar.name}"/>
-      <path refid="jms.test.execution.classpath"/>
+      <pathelement location="${src.schema.dir}"/>
+      <path location="${build.jars.dir}/${transports.jar.name}"/>
+      <path refid="jms.test.compilation.classpath"/>
+      <path refid="sun.jaxb.classpath"/>
+      <path refid="org.jboss.logging.classpath"/>
+      <path refid="org.jboss.naming.classpath"/>
+      <path refid="jboss.jbossts.classpath"/>
+      <path refid="apache.xerces.classpath"/>
+      <path refid="log4j.log4j.classpath"/>
+	  <!-- we must include Apache commons logging   -->
+	  <!-- as a transitive dependency from JBoss TM -->
+   	  <path refid="apache.logging.classpath"/>
+      <pathelement location="${src.config.dir}/common"/>
       <path refid="org.jboss.naming.classpath"/>
       <!--<path refid="jboss.jboss.reflect.classpath"/>
       <path refid="jboss.jboss.mdr.classpath"/>

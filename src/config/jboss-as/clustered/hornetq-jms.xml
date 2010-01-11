@@ -7,8 +7,8 @@
          <connector-ref connector-name="netty"/>
       </connectors>
       <entries>
-         <entry name="ConnectionFactory"/>
-         <entry name="XAConnectionFactory"/>
+         <entry name="/ConnectionFactory"/>
+         <entry name="/XAConnectionFactory"/>
       </entries>
    </connection-factory>
    
