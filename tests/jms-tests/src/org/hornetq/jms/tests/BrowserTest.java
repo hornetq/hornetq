@@ -47,6 +47,7 @@ public class BrowserTest extends JMSTestCase
 
    // Public ---------------------------------------------------------------------------------------
 
+   
    public void testCreateBrowserOnNullDestination() throws Exception
    {
       Connection conn = null;

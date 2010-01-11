@@ -111,8 +111,6 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
    private final Object notificationLock = new Object();
 
-   private final org.hornetq.utils.ExecutorFactory redistributorExecutorFactory;
-
    private final HierarchicalRepository<AddressSettings> addressSettingsRepository;
 
    private final HornetQServer server;
@@ -127,7 +125,6 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
                          final boolean enableWildCardRouting,
                          final int idCacheSize,
                          final boolean persistIDCache,
-                         final ExecutorFactory orderedExecutorFactory,
                          final HierarchicalRepository<AddressSettings> addressSettingsRepository)
 
    {
@@ -155,8 +152,6 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
       this.idCacheSize = idCacheSize;
 
       this.persistIDCache = persistIDCache;
-
-      redistributorExecutorFactory = orderedExecutorFactory;
 
       this.addressSettingsRepository = addressSettingsRepository;
 
@@ -350,7 +345,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
                      if (redistributionDelay != -1)
                      {
-                        queue.addRedistributor(redistributionDelay, redistributorExecutorFactory.getExecutor());
+                        queue.addRedistributor(redistributionDelay);
                      }
                   }
                }
@@ -420,7 +415,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
                      if (redistributionDelay != -1)
                      {
-                        queue.addRedistributor(redistributionDelay, redistributorExecutorFactory.getExecutor());
+                        queue.addRedistributor(redistributionDelay);
                      }
                   }
                }

@@ -13,6 +13,8 @@
 
 package org.hornetq.tests.integration.cluster.failover;
 
+import org.hornetq.core.logging.Logger;
+
 /**
  * A ReplicatedLargeMessageFailoverTest
  *
@@ -22,6 +24,7 @@ package org.hornetq.tests.integration.cluster.failover;
  */
 public class ReplicatedLargeMessageFailoverTest extends LargeMessageFailoverTest
 {
+   private static final Logger log = Logger.getLogger(ReplicatedLargeMessageFailoverTest.class);
 
    // Constants -----------------------------------------------------
 
@@ -31,6 +34,7 @@ public class ReplicatedLargeMessageFailoverTest extends LargeMessageFailoverTest
 
    // Constructors --------------------------------------------------
 
+  
    public ReplicatedLargeMessageFailoverTest()
    {
       super();

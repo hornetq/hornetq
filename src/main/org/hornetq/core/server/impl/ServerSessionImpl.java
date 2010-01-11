@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executor;
 
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
@@ -137,8 +136,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
 
    private final Map<Long, ServerConsumer> consumers = new ConcurrentHashMap<Long, ServerConsumer>();
 
-   private final Executor executor;
-
    private Transaction tx;
 
    private final StorageManager storageManager;
@@ -190,7 +187,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
                             final PostOffice postOffice,
                             final ResourceManager resourceManager,
                             final SecurityStore securityStore,
-                            final Executor executor,
                             final Channel channel,
                             final ManagementService managementService,
                             final HornetQServer server,
@@ -219,8 +215,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       this.resourceManager = resourceManager;
 
       this.securityStore = securityStore;
-
-      this.executor = executor;
 
       if (!xa)
       {
@@ -338,11 +332,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       }
    }
 
-   public void promptDelivery(final Queue queue)
-   {
-      queue.deliverAsync(executor);
-   }
-
    public void handleCreateConsumer(final SessionCreateConsumerMessage packet)
    {
       SimpleString name = packet.getQueueName();
@@ -376,7 +365,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
                                                           channel,
                                                           preAcknowledge,
                                                           strictUpdateDeliveryCount,
-                                                          executor,
                                                           managementService);
 
          consumers.put(consumer.getID(), consumer);

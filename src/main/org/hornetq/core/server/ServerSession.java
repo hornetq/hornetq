@@ -68,8 +68,6 @@ public interface ServerSession
 
    void close() throws Exception;
 
-   void promptDelivery(Queue queue);
-
    void handleAcknowledge(final SessionAcknowledgeMessage packet);
 
    void handleExpired(final SessionExpiredMessage packet);

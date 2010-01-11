@@ -44,6 +44,12 @@ public class SessionCloseMessage extends PacketImpl
 
       return super.equals(other);
    }
+   
+   @Override
+   public boolean isAsyncExec()
+   {
+      return true;
+   }
 
    // Package protected ---------------------------------------------
 

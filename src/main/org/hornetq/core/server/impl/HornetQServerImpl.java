@@ -633,8 +633,6 @@ public class HornetQServerImpl implements HornetQServer
 
       Channel channel = connection.getChannel(channelID, sendWindowSize);
 
-      Executor sessionExecutor = executorFactory.getExecutor();
-
       final ServerSessionImpl session = new ServerSessionImpl(name,
                                                               username,
                                                               password,
@@ -649,7 +647,6 @@ public class HornetQServerImpl implements HornetQServer
                                                               postOffice,
                                                               resourceManager,
                                                               securityStore,
-                                                              sessionExecutor,
                                                               channel,
                                                               managementService,
                                                               this,
@@ -657,10 +654,8 @@ public class HornetQServerImpl implements HornetQServer
 
       sessions.put(name, session);
 
-      // The executor on the OperationContext here has to be the same as the session, or we would have ordering issues
-      // on messages
       ServerSessionPacketHandler handler = new ServerSessionPacketHandler(session,
-                                                                          storageManager.newContext(sessionExecutor),
+                                                                          storageManager.newContext(executorFactory.getExecutor()),
                                                                           storageManager);
 
       session.setHandler(handler);
@@ -1030,8 +1025,9 @@ public class HornetQServerImpl implements HornetQServer
 
       if (ConfigurationImpl.DEFAULT_CLUSTER_USER.equals(configuration.getClusterUser()) && ConfigurationImpl.DEFAULT_CLUSTER_PASSWORD.equals(configuration.getClusterPassword()))
       {
-         log.warn("It has been detected that the cluster admin user and password which are used to " + "replicate management operation from one node to the other have not been changed from the installation default. "
-                  + "Please see the HornetQ user guide for instructions on how to do this.");
+         log.warn("Security risk! It has been detected that the cluster admin user and password "
+                  + "have not been changed from the installation default. "
+                  + "Please see the HornetQ user guide, cluster chapter, for instructions on how to do this.");
       }
 
       securityStore = new SecurityStoreImpl(securityRepository,
@@ -1059,7 +1055,6 @@ public class HornetQServerImpl implements HornetQServer
                                       configuration.isWildcardRoutingEnabled(),
                                       configuration.getIDCacheSize(),
                                       configuration.isPersistIDCache(),
-                                      executorFactory,
                                       addressSettingsRepository);
 
       messagingServerControl = managementService.registerServer(postOffice,

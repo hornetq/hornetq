@@ -52,6 +52,7 @@ public class FakeQueueFactory implements QueueFactory
                            scheduledExecutor,
                            postOffice,
                            null,
+                           null,
                            null);
    }
 

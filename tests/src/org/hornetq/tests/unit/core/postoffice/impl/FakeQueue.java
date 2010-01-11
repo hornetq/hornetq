@@ -82,9 +82,9 @@ public class FakeQueue implements Queue
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.server.Queue#addRedistributor(long, java.util.concurrent.Executor)
+    * @see org.hornetq.core.server.Queue#addRedistributor(long)
     */
-   public void addRedistributor(final long delay, final Executor executor)
+   public void addRedistributor(final long delay)
    {
       // TODO Auto-generated method stub
 
@@ -172,9 +172,9 @@ public class FakeQueue implements Queue
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.server.Queue#deliverAsync(java.util.concurrent.Executor)
+    * @see org.hornetq.core.server.Queue#deliverAsync()
     */
-   public void deliverAsync(final Executor executor)
+   public void deliverAsync()
    {
       // TODO Auto-generated method stub
 
@@ -518,6 +518,12 @@ public class FakeQueue implements Queue
    {
       // TODO Auto-generated method stub
       return false;
+   }
+
+   public Executor getExecutor()
+   {
+      // TODO Auto-generated method stub
+      return null;
    }
 
 }

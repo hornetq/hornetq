@@ -127,7 +127,7 @@ public class QueueImpl implements Queue
 
    private int pos;
 
-   private final boolean dontAdd;
+   private final Executor executor;
 
    public QueueImpl(final long id,
                     final SimpleString address,
@@ -138,7 +138,8 @@ public class QueueImpl implements Queue
                     final ScheduledExecutorService scheduledExecutor,
                     final PostOffice postOffice,
                     final StorageManager storageManager,
-                    final HierarchicalRepository<AddressSettings> addressSettingsRepository)
+                    final HierarchicalRepository<AddressSettings> addressSettingsRepository,
+                    final Executor executor)
    {
       this.id = id;
 
@@ -173,7 +174,7 @@ public class QueueImpl implements Queue
          expiryAddress = null;
       }
 
-      dontAdd = System.getProperty("org.hornetq.opt.dontadd") != null;
+      this.executor = executor;
    }
 
    // Bindable implementation -------------------------------------------------------------------------------------
@@ -235,7 +236,7 @@ public class QueueImpl implements Queue
       add(ref, true);
    }
 
-   public void deliverAsync(final Executor executor)
+   public void deliverAsync()
    {
       // Prevent too many executors running at once
 
@@ -244,7 +245,12 @@ public class QueueImpl implements Queue
          executor.execute(deliverRunner);
       }
    }
-
+   
+   public Executor getExecutor()
+   {
+      return executor;
+   }
+   
    public synchronized void deliverNow()
    {
       deliverRunner.run();
@@ -295,7 +301,7 @@ public class QueueImpl implements Queue
       return removed;
    }
 
-   public synchronized void addRedistributor(final long delay, final Executor executor)
+   public synchronized void addRedistributor(final long delay)
    {
       if (future != null)
       {
@@ -307,7 +313,7 @@ public class QueueImpl implements Queue
       if (redistributor != null)
       {
          // Just prompt delivery
-         deliverAsync(executor);
+         deliverAsync();
       }
 
       if (delay > 0)
@@ -919,7 +925,7 @@ public class QueueImpl implements Queue
 
          redistributor.start();
 
-         deliverAsync(executor);
+         deliverAsync();
       }
    }
 
@@ -1284,11 +1290,6 @@ public class QueueImpl implements Queue
 
    protected synchronized void add(final MessageReference ref, final boolean first)
    {
-      if (dontAdd)
-      {
-         return;
-      }
-
       if (!first)
       {
          messagesAdded.incrementAndGet();
@@ -1335,7 +1336,7 @@ public class QueueImpl implements Queue
             // We have consumers with filters which don't match, so we need
             // to prompt delivery every time
             // a new message arrives
-            deliver();
+            deliverAsync();
          }
       }
    }
@@ -1424,7 +1425,7 @@ public class QueueImpl implements Queue
             add(ref, true);
          }
 
-         deliver();
+         deliverAsync();
       }
    }
 
@@ -1549,7 +1550,7 @@ public class QueueImpl implements Queue
    {
       paused = false;
 
-      deliver();
+      deliverAsync();
    }
 
    public synchronized boolean isPaused()

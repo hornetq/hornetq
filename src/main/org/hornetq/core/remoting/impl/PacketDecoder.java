@@ -110,6 +110,7 @@ import org.hornetq.core.remoting.impl.wireformat.SessionAcknowledgeMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionBindingQueryMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionBindingQueryResponseMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionCloseMessage;
+import org.hornetq.core.remoting.impl.wireformat.SessionCommitMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionConsumerCloseMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionConsumerFlowCreditMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionCreateConsumerMessage;
@@ -221,7 +222,7 @@ public class PacketDecoder
          }
          case SESS_COMMIT:
          {
-            packet = new PacketImpl(PacketImpl.SESS_COMMIT);
+            packet = new SessionCommitMessage();
             break;
          }
          case SESS_ROLLBACK:

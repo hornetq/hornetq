@@ -52,6 +52,7 @@ public class SessionXARollbackMessage extends PacketImpl
    {
       return xid;
    }
+   
 
    @Override
    public void encodeRest(final HornetQBuffer buffer)
@@ -63,6 +64,11 @@ public class SessionXARollbackMessage extends PacketImpl
    public void decodeRest(final HornetQBuffer buffer)
    {
       xid = XidCodecSupport.decodeXid(buffer);
+   }
+   
+   public boolean isAsyncExec()
+   {
+      return true;
    }
 
    @Override

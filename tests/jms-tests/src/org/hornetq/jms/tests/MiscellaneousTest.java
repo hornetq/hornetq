@@ -55,6 +55,7 @@ public class MiscellaneousTest extends JMSTestCase
 
    // Public --------------------------------------------------------
 
+  
    public void testBrowser() throws Exception
    {
       Connection conn = null;

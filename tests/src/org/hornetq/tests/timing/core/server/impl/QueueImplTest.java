@@ -15,6 +15,7 @@ package org.hornetq.tests.timing.core.server.impl;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -84,7 +85,8 @@ public class QueueImplTest extends UnitTestCase
                                   scheduledExecutor,
                                   null,
                                   null,
-                                  null);
+                                  null,
+                                  Executors.newSingleThreadExecutor());
 
       // Send one scheduled
 
@@ -158,7 +160,8 @@ public class QueueImplTest extends UnitTestCase
                                   scheduledExecutor,
                                   null,
                                   null,
-                                  null);
+                                  null,
+                                  Executors.newSingleThreadExecutor());
 
       FakeConsumer consumer = null;
 
@@ -273,7 +276,8 @@ public class QueueImplTest extends UnitTestCase
                                   scheduledExecutor,
                                   null,
                                   null,
-                                  null);
+                                  null,
+                                  Executors.newSingleThreadExecutor());
       MessageReference messageReference = generateReference(queue, 1);
       queue.addConsumer(consumer);
       messageReference.setScheduledDeliveryTime(System.currentTimeMillis() + 2000);

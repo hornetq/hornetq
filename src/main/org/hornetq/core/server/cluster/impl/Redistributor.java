@@ -189,7 +189,7 @@ public class Redistributor implements Consumer
          {
             active = true;
 
-            queue.deliverAsync(executor);
+            queue.deliverAsync();
          }
       }
    }

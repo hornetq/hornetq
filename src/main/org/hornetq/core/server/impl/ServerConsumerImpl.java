@@ -136,7 +136,6 @@ public class ServerConsumerImpl implements ServerConsumer
                              final Channel channel,
                              final boolean preAcknowledge,
                              final boolean strictUpdateDeliveryCount,
-                             final Executor executor,
                              final ManagementService managementService) throws Exception
    {
 
@@ -150,7 +149,7 @@ public class ServerConsumerImpl implements ServerConsumer
 
       messageQueue = binding.getQueue();
 
-      this.executor = executor;
+      this.executor = messageQueue.getExecutor();
 
       this.started = browseOnly || started;
 
@@ -598,7 +597,7 @@ public class ServerConsumerImpl implements ServerConsumer
             }
             else
             {
-               session.promptDelivery(messageQueue);
+               messageQueue.deliverAsync();
             }
          }
       }
@@ -660,7 +659,8 @@ public class ServerConsumerImpl implements ServerConsumer
                else
                {
                   // prompt Delivery only if chunk was finished
-                  session.promptDelivery(messageQueue);
+         
+                  messageQueue.deliverAsync();
                }
             }
          }

@@ -14,6 +14,7 @@ package org.hornetq.core.server.impl;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 
 import org.hornetq.api.core.Message;
@@ -53,7 +54,8 @@ public class LastValueQueue extends QueueImpl
                          final ScheduledExecutorService scheduledExecutor,
                          final PostOffice postOffice,
                          final StorageManager storageManager,
-                         final HierarchicalRepository<AddressSettings> addressSettingsRepository)
+                         final HierarchicalRepository<AddressSettings> addressSettingsRepository,
+                         final Executor executor)
    {
       super(persistenceID,
             address,
@@ -64,7 +66,8 @@ public class LastValueQueue extends QueueImpl
             scheduledExecutor,
             postOffice,
             storageManager,
-            addressSettingsRepository);
+            addressSettingsRepository,
+            executor);
    }
 
    @Override

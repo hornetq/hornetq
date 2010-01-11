@@ -540,7 +540,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
 
                if (queue != null)
                {
-                  queue.deliverAsync(executor);
+                  queue.deliverAsync();
                }
             }
          }
@@ -683,7 +683,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
 
             queue.addConsumer(BridgeImpl.this);
 
-            queue.deliverAsync(executor);
+            queue.deliverAsync();
 
             BridgeImpl.log.info("Bridge " + name + " is connected to its destination");
 
@@ -762,7 +762,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
 
             if (queue != null)
             {
-               queue.deliverAsync(executor);
+               queue.deliverAsync();
             }
          }
          catch (Exception e)

@@ -160,10 +160,12 @@ at org.acme.yourproject.YourClass (YourClass.java:666)
         <title>Configuring Asynchronous Connection Execution</title>
         <para>By default, packets received on the server side are executed on the remoting
             thread.</para>
-        <para>It is possible instead to use a thread from a thread pool to handle the packents so
+        <para>It is possible instead to use a thread from a thread pool to handle some packets so
             that the remoting thread is not tied up for too long. However, please note that
-            processing operations asynchronously on another thread adds a little more latency. To
-            enable asynchronous connection execution, set the parameter <literal
+            processing operations asynchronously on another thread adds a little more latency.
+            Please note that most short running operations are always handled on the remoting thread for performance reasons.
+           
+            To enable asynchronous connection execution, set the parameter <literal
                 >async-connection-execution-enabled</literal> in <literal
                 >hornetq-configuration.xml</literal> to <literal>true</literal> (default value is
                 <literal>false</literal>).</para>

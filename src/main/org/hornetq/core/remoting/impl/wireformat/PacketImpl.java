@@ -262,6 +262,11 @@ public class PacketImpl implements Packet
    {
       return true;
    }
+   
+   public boolean isAsyncExec()
+   {
+      return false;
+   }
 
    @Override
    public String toString()

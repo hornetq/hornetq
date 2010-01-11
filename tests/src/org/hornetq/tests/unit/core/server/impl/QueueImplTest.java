@@ -18,6 +18,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -35,6 +36,7 @@ import org.hornetq.tests.unit.core.server.impl.fakes.FakeConsumer;
 import org.hornetq.tests.unit.core.server.impl.fakes.FakeFilter;
 import org.hornetq.tests.unit.core.server.impl.fakes.FakePostOffice;
 import org.hornetq.tests.util.UnitTestCase;
+import org.hornetq.utils.Future;
 
 /**
  * A QueueTest
@@ -46,18 +48,22 @@ public class QueueImplTest extends UnitTestCase
    // The tests ----------------------------------------------------------------
 
    private ScheduledExecutorService scheduledExecutor;
+   
+   private ExecutorService executor;
 
    @Override
    protected void setUp() throws Exception
    {
       super.setUp();
       scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
+      executor = Executors.newSingleThreadExecutor();
    }
 
    @Override
    protected void tearDown() throws Exception
    {
-      scheduledExecutor.shutdown();
+      scheduledExecutor.shutdownNow();
+      executor.shutdownNow();
       super.tearDown();
    }
 
@@ -70,15 +76,16 @@ public class QueueImplTest extends UnitTestCase
       final SimpleString name = new SimpleString("oobblle");
 
       QueueImpl queue = new QueueImpl(1,
-                                  QueueImplTest.address1,
-                                  name,
-                                  null,
-                                  false,
-                                  true,
-                                  scheduledExecutor,
-                                  null,
-                                  null,
-                                  null);
+                                      QueueImplTest.address1,
+                                      name,
+                                      null,
+                                      false,
+                                      true,
+                                      scheduledExecutor,
+                                      null,
+                                      null,
+                                      null,
+                                      executor);
 
       Assert.assertEquals(name, queue.getName());
    }
@@ -86,15 +93,16 @@ public class QueueImplTest extends UnitTestCase
    public void testDurable()
    {
       QueueImpl queue = new QueueImpl(1,
-                                  QueueImplTest.address1,
-                                  QueueImplTest.queue1,
-                                  null,
-                                  false,
-                                  false,
-                                  scheduledExecutor,
-                                  null,
-                                  null,
-                                  null);
+                                      QueueImplTest.address1,
+                                      QueueImplTest.queue1,
+                                      null,
+                                      false,
+                                      false,
+                                      scheduledExecutor,
+                                      null,
+                                      null,
+                                      null,
+                                      executor);
 
       Assert.assertFalse(queue.isDurable());
 
@@ -107,7 +115,8 @@ public class QueueImplTest extends UnitTestCase
                             scheduledExecutor,
                             null,
                             null,
-                            null);
+                            null,
+                            executor);
 
       Assert.assertTrue(queue.isDurable());
    }
@@ -121,15 +130,16 @@ public class QueueImplTest extends UnitTestCase
       Consumer cons3 = new FakeConsumer();
 
       QueueImpl queue = new QueueImpl(1,
-                                  QueueImplTest.address1,
-                                  QueueImplTest.queue1,
-                                  null,
-                                  false,
-                                  true,
-                                  scheduledExecutor,
-                                  null,
-                                  null,
-                                  null);
+                                      QueueImplTest.address1,
+                                      QueueImplTest.queue1,
+                                      null,
+                                      false,
+                                      true,
+                                      scheduledExecutor,
+                                      null,
+                                      null,
+                                      null,
+                                      executor);
 
       Assert.assertEquals(0, queue.getConsumerCount());
 
@@ -171,15 +181,16 @@ public class QueueImplTest extends UnitTestCase
    public void testGetFilter()
    {
       QueueImpl queue = new QueueImpl(1,
-                                  QueueImplTest.address1,
-                                  QueueImplTest.queue1,
-                                  null,
-                                  false,
-                                  true,
-                                  scheduledExecutor,
-                                  null,
-                                  null,
-                                  null);
+                                      QueueImplTest.address1,
+                                      QueueImplTest.queue1,
+                                      null,
+                                      false,
+                                      true,
+                                      scheduledExecutor,
+                                      null,
+                                      null,
+                                      null,
+                                      executor);
 
       Assert.assertNull(queue.getFilter());
 
@@ -205,7 +216,8 @@ public class QueueImplTest extends UnitTestCase
                             scheduledExecutor,
                             null,
                             null,
-                            null);
+                            null,
+                            executor);
 
       Assert.assertEquals(filter, queue.getFilter());
 
@@ -214,15 +226,16 @@ public class QueueImplTest extends UnitTestCase
    public void testSimpleadd()
    {
       QueueImpl queue = new QueueImpl(1,
-                                  QueueImplTest.address1,
-                                  QueueImplTest.queue1,
-                                  null,
-                                  false,
-                                  true,
-                                  scheduledExecutor,
-                                  null,
-                                  null,
-                                  null);
+                                      QueueImplTest.address1,
+                                      QueueImplTest.queue1,
+                                      null,
+                                      false,
+                                      true,
+                                      scheduledExecutor,
+                                      null,
+                                      null,
+                                      null,
+                                      executor);
 
       final int numMessages = 10;
 
@@ -242,15 +255,16 @@ public class QueueImplTest extends UnitTestCase
    public void testSimpleDirectDelivery() throws Exception
    {
       QueueImpl queue = new QueueImpl(1,
-                                  QueueImplTest.address1,
-                                  QueueImplTest.queue1,
-                                  null,
-                                  false,
-                                  true,
-                                  scheduledExecutor,
-                                  null,
-                                  null,
-                                  null);
+                                      QueueImplTest.address1,
+                                      QueueImplTest.queue1,
+                                      null,
+                                      false,
+                                      true,
+                                      scheduledExecutor,
+                                      null,
+                                      null,
+                                      null,
+                                      executor);
 
       FakeConsumer consumer = new FakeConsumer();
 
@@ -279,15 +293,16 @@ public class QueueImplTest extends UnitTestCase
    public void testSimpleNonDirectDelivery() throws Exception
    {
       QueueImpl queue = new QueueImpl(1,
-                                  QueueImplTest.address1,
-                                  QueueImplTest.queue1,
-                                  null,
-                                  false,
-                                  true,
-                                  scheduledExecutor,
-                                  null,
-                                  null,
-                                  null);
+                                      QueueImplTest.address1,
+                                      QueueImplTest.queue1,
+                                      null,
+                                      false,
+                                      true,
+                                      scheduledExecutor,
+                                      null,
+                                      null,
+                                      null,
+                                      executor);
 
       final int numMessages = 10;
 
@@ -326,15 +341,16 @@ public class QueueImplTest extends UnitTestCase
    public void testBusyConsumer() throws Exception
    {
       QueueImpl queue = new QueueImpl(1,
-                                  QueueImplTest.address1,
-                                  QueueImplTest.queue1,
-                                  null,
-                                  false,
-                                  true,
-                                  scheduledExecutor,
-                                  null,
-                                  null,
-                                  null);
+                                      QueueImplTest.address1,
+                                      QueueImplTest.queue1,
+                                      null,
+                                      false,
+                                      true,
+                                      scheduledExecutor,
+                                      null,
+                                      null,
+                                      null,
+                                      executor);
 
       FakeConsumer consumer = new FakeConsumer();
 
@@ -379,15 +395,16 @@ public class QueueImplTest extends UnitTestCase
    public void testBusyConsumerThenAddMoreMessages() throws Exception
    {
       QueueImpl queue = new QueueImpl(1,
-                                  QueueImplTest.address1,
-                                  QueueImplTest.queue1,
-                                  null,
-                                  false,
-                                  true,
-                                  scheduledExecutor,
-                                  null,
-                                  null,
-                                  null);
+                                      QueueImplTest.address1,
+                                      QueueImplTest.queue1,
+                                      null,
+                                      false,
+                                      true,
+                                      scheduledExecutor,
+                                      null,
+                                      null,
+                                      null,
+                                      executor);
 
       FakeConsumer consumer = new FakeConsumer();
 
@@ -455,15 +472,16 @@ public class QueueImplTest extends UnitTestCase
    public void testAddFirstadd() throws Exception
    {
       QueueImpl queue = new QueueImpl(1,
-                                  QueueImplTest.address1,
-                                  QueueImplTest.queue1,
-                                  null,
-                                  false,
-                                  true,
-                                  scheduledExecutor,
-                                  null,
-                                  null,
-                                  null);
+                                      QueueImplTest.address1,
+                                      QueueImplTest.queue1,
+                                      null,
+                                      false,
+                                      true,
+                                      scheduledExecutor,
+                                      null,
+                                      null,
+                                      null,
+                                      executor);
 
       final int numMessages = 10;
 
@@ -518,15 +536,16 @@ public class QueueImplTest extends UnitTestCase
    public void testChangeConsumersAndDeliver() throws Exception
    {
       QueueImpl queue = new QueueImpl(1,
-                                  QueueImplTest.address1,
-                                  QueueImplTest.queue1,
-                                  null,
-                                  false,
-                                  true,
-                                  scheduledExecutor,
-                                  new FakePostOffice(),
-                                  null,
-                                  null);
+                                      QueueImplTest.address1,
+                                      QueueImplTest.queue1,
+                                      null,
+                                      false,
+                                      true,
+                                      scheduledExecutor,
+                                      new FakePostOffice(),
+                                      null,
+                                      null,
+                                      executor);
 
       final int numMessages = 10;
 
@@ -681,15 +700,16 @@ public class QueueImplTest extends UnitTestCase
    public void testConsumerReturningNull() throws Exception
    {
       QueueImpl queue = new QueueImpl(1,
-                                  QueueImplTest.address1,
-                                  QueueImplTest.queue1,
-                                  null,
-                                  false,
-                                  true,
-                                  scheduledExecutor,
-                                  null,
-                                  null,
-                                  null);
+                                      QueueImplTest.address1,
+                                      QueueImplTest.queue1,
+                                      null,
+                                      false,
+                                      true,
+                                      scheduledExecutor,
+                                      null,
+                                      null,
+                                      null,
+                                      executor);
 
       class NullConsumer implements Consumer
       {
@@ -723,15 +743,16 @@ public class QueueImplTest extends UnitTestCase
    public void testRoundRobinWithQueueing() throws Exception
    {
       QueueImpl queue = new QueueImpl(1,
-                                  QueueImplTest.address1,
-                                  QueueImplTest.queue1,
-                                  null,
-                                  false,
-                                  true,
-                                  scheduledExecutor,
-                                  null,
-                                  null,
-                                  null);
+                                      QueueImplTest.address1,
+                                      QueueImplTest.queue1,
+                                      null,
+                                      false,
+                                      true,
+                                      scheduledExecutor,
+                                      null,
+                                      null,
+                                      null,
+                                      executor);
 
       final int numMessages = 10;
 
@@ -775,15 +796,16 @@ public class QueueImplTest extends UnitTestCase
    public void testRoundRobinDirect() throws Exception
    {
       QueueImpl queue = new QueueImpl(1,
-                                  QueueImplTest.address1,
-                                  QueueImplTest.queue1,
-                                  null,
-                                  false,
-                                  true,
-                                  scheduledExecutor,
-                                  null,
-                                  null,
-                                  null);
+                                      QueueImplTest.address1,
+                                      QueueImplTest.queue1,
+                                      null,
+                                      false,
+                                      true,
+                                      scheduledExecutor,
+                                      null,
+                                      null,
+                                      null,
+                                      executor);
 
       final int numMessages = 10;
 
@@ -825,15 +847,16 @@ public class QueueImplTest extends UnitTestCase
    public void testWithPriorities() throws Exception
    {
       QueueImpl queue = new QueueImpl(1,
-                                  QueueImplTest.address1,
-                                  QueueImplTest.queue1,
-                                  null,
-                                  false,
-                                  true,
-                                  scheduledExecutor,
-                                  null,
-                                  null,
-                                  null);
+                                      QueueImplTest.address1,
+                                      QueueImplTest.queue1,
+                                      null,
+                                      false,
+                                      true,
+                                      scheduledExecutor,
+                                      null,
+                                      null,
+                                      null,
+                                      executor);
 
       final int numMessages = 10;
 
@@ -901,15 +924,16 @@ public class QueueImplTest extends UnitTestCase
    public void testConsumerWithFilterAddAndRemove()
    {
       QueueImpl queue = new QueueImpl(1,
-                                  QueueImplTest.address1,
-                                  QueueImplTest.queue1,
-                                  null,
-                                  false,
-                                  true,
-                                  scheduledExecutor,
-                                  null,
-                                  null,
-                                  null);
+                                      QueueImplTest.address1,
+                                      QueueImplTest.queue1,
+                                      null,
+                                      false,
+                                      true,
+                                      scheduledExecutor,
+                                      null,
+                                      null,
+                                      null,
+                                      executor);
 
       Filter filter = new FakeFilter("fruit", "orange");
 
@@ -919,15 +943,16 @@ public class QueueImplTest extends UnitTestCase
    public void testIterator()
    {
       QueueImpl queue = new QueueImpl(1,
-                                  QueueImplTest.address1,
-                                  QueueImplTest.queue1,
-                                  null,
-                                  false,
-                                  true,
-                                  scheduledExecutor,
-                                  null,
-                                  null,
-                                  null);
+                                      QueueImplTest.address1,
+                                      QueueImplTest.queue1,
+                                      null,
+                                      false,
+                                      true,
+                                      scheduledExecutor,
+                                      null,
+                                      null,
+                                      null,
+                                      executor);
 
       final int numMessages = 20;
 
@@ -952,19 +977,30 @@ public class QueueImplTest extends UnitTestCase
       }
       assertRefListsIdenticalRefs(refs, list);
    }
+   
+   private void awaitExecution()
+   {
+      Future future = new Future();
+      
+      executor.execute(future);
+      
+      future.await(10000);
+   }
 
    public void testConsumeWithFiltersAddAndRemoveConsumer() throws Exception
    {
+    
       QueueImpl queue = new QueueImpl(1,
-                                  QueueImplTest.address1,
-                                  QueueImplTest.queue1,
-                                  null,
-                                  false,
-                                  true,
-                                  scheduledExecutor,
-                                  new FakePostOffice(),
-                                  null,
-                                  null);
+                                      QueueImplTest.address1,
+                                      QueueImplTest.queue1,
+                                      null,
+                                      false,
+                                      true,
+                                      scheduledExecutor,
+                                      new FakePostOffice(),
+                                      null,
+                                      null,
+                                      executor);
 
       Filter filter = new FakeFilter("fruit", "orange");
 
@@ -989,6 +1025,8 @@ public class QueueImplTest extends UnitTestCase
       refs.add(ref2);
 
       Assert.assertEquals(2, queue.getMessageCount());
+      
+      awaitExecution();;
 
       Assert.assertEquals(1, consumer.getReferences().size());
 
@@ -1023,6 +1061,8 @@ public class QueueImplTest extends UnitTestCase
       refs.add(ref4);
 
       Assert.assertEquals(3, queue.getMessageCount());
+      
+      awaitExecution();;
 
       Assert.assertEquals(1, consumer.getReferences().size());
 
@@ -1034,15 +1074,16 @@ public class QueueImplTest extends UnitTestCase
    public void testBusyConsumerWithFilterFirstCallBusy() throws Exception
    {
       QueueImpl queue = new QueueImpl(1,
-                                  QueueImplTest.address1,
-                                  QueueImplTest.queue1,
-                                  null,
-                                  false,
-                                  true,
-                                  scheduledExecutor,
-                                  null,
-                                  null,
-                                  null);
+                                      QueueImplTest.address1,
+                                      QueueImplTest.queue1,
+                                      null,
+                                      false,
+                                      true,
+                                      scheduledExecutor,
+                                      null,
+                                      null,
+                                      null,
+                                      executor);
 
       FakeConsumer consumer = new FakeConsumer(FilterImpl.createFilter("color = 'green'"));
 
@@ -1084,15 +1125,16 @@ public class QueueImplTest extends UnitTestCase
    public void testBusyConsumerWithFilterThenAddMoreMessages() throws Exception
    {
       QueueImpl queue = new QueueImpl(1,
-                                  QueueImplTest.address1,
-                                  QueueImplTest.queue1,
-                                  null,
-                                  false,
-                                  true,
-                                  scheduledExecutor,
-                                  null,
-                                  null,
-                                  null);
+                                      QueueImplTest.address1,
+                                      QueueImplTest.queue1,
+                                      null,
+                                      false,
+                                      true,
+                                      scheduledExecutor,
+                                      null,
+                                      null,
+                                      null,
+                                      executor);
 
       FakeConsumer consumer = new FakeConsumer(FilterImpl.createFilter("color = 'green'"));
 
@@ -1167,15 +1209,16 @@ public class QueueImplTest extends UnitTestCase
    public void testConsumerWithFilterThenAddMoreMessages() throws Exception
    {
       QueueImpl queue = new QueueImpl(1,
-                                  QueueImplTest.address1,
-                                  QueueImplTest.queue1,
-                                  null,
-                                  false,
-                                  true,
-                                  scheduledExecutor,
-                                  null,
-                                  null,
-                                  null);
+                                      QueueImplTest.address1,
+                                      QueueImplTest.queue1,
+                                      null,
+                                      false,
+                                      true,
+                                      scheduledExecutor,
+                                      null,
+                                      null,
+                                      null,
+                                      executor);
 
       final int numMessages = 10;
       List<MessageReference> refs = new ArrayList<MessageReference>();
@@ -1240,15 +1283,16 @@ public class QueueImplTest extends UnitTestCase
    private void testConsumerWithFilters(final boolean direct) throws Exception
    {
       QueueImpl queue = new QueueImpl(1,
-                                  QueueImplTest.address1,
-                                  QueueImplTest.queue1,
-                                  null,
-                                  false,
-                                  true,
-                                  scheduledExecutor,
-                                  new FakePostOffice(),
-                                  null,
-                                  null);
+                                      QueueImplTest.address1,
+                                      QueueImplTest.queue1,
+                                      null,
+                                      false,
+                                      true,
+                                      scheduledExecutor,
+                                      new FakePostOffice(),
+                                      null,
+                                      null,
+                                      executor);
 
       Filter filter = new FakeFilter("fruit", "orange");
 
@@ -1309,6 +1353,8 @@ public class QueueImplTest extends UnitTestCase
       }
 
       Assert.assertEquals(6, queue.getMessageCount());
+      
+      awaitExecution();;
 
       Assert.assertEquals(2, consumer.getReferences().size());
 
@@ -1338,15 +1384,16 @@ public class QueueImplTest extends UnitTestCase
    {
       FakeConsumer consumer = new FakeConsumer();
       QueueImpl queue = new QueueImpl(1,
-                                  QueueImplTest.address1,
-                                  QueueImplTest.queue1,
-                                  null,
-                                  false,
-                                  true,
-                                  scheduledExecutor,
-                                  null,
-                                  null,
-                                  null);
+                                      QueueImplTest.address1,
+                                      QueueImplTest.queue1,
+                                      null,
+                                      false,
+                                      true,
+                                      scheduledExecutor,
+                                      null,
+                                      null,
+                                      null,
+                                      executor);
       MessageReference messageReference = generateReference(queue, 1);
       MessageReference messageReference2 = generateReference(queue, 2);
       MessageReference messageReference3 = generateReference(queue, 3);
@@ -1367,15 +1414,16 @@ public class QueueImplTest extends UnitTestCase
    public void testMessagesAdded() throws Exception
    {
       QueueImpl queue = new QueueImpl(1,
-                                  QueueImplTest.address1,
-                                  QueueImplTest.queue1,
-                                  null,
-                                  false,
-                                  true,
-                                  scheduledExecutor,
-                                  null,
-                                  null,
-                                  null);
+                                      QueueImplTest.address1,
+                                      QueueImplTest.queue1,
+                                      null,
+                                      false,
+                                      true,
+                                      scheduledExecutor,
+                                      null,
+                                      null,
+                                      null,
+                                      executor);
       MessageReference messageReference = generateReference(queue, 1);
       MessageReference messageReference2 = generateReference(queue, 2);
       MessageReference messageReference3 = generateReference(queue, 3);
@@ -1388,15 +1436,16 @@ public class QueueImplTest extends UnitTestCase
    public void testGetReference() throws Exception
    {
       QueueImpl queue = new QueueImpl(1,
-                                  QueueImplTest.address1,
-                                  QueueImplTest.queue1,
-                                  null,
-                                  false,
-                                  true,
-                                  scheduledExecutor,
-                                  null,
-                                  null,
-                                  null);
+                                      QueueImplTest.address1,
+                                      QueueImplTest.queue1,
+                                      null,
+                                      false,
+                                      true,
+                                      scheduledExecutor,
+                                      null,
+                                      null,
+                                      null,
+                                      executor);
       MessageReference messageReference = generateReference(queue, 1);
       MessageReference messageReference2 = generateReference(queue, 2);
       MessageReference messageReference3 = generateReference(queue, 3);
@@ -1410,15 +1459,16 @@ public class QueueImplTest extends UnitTestCase
    public void testGetNonExistentReference() throws Exception
    {
       QueueImpl queue = new QueueImpl(1,
-                                  QueueImplTest.address1,
-                                  QueueImplTest.queue1,
-                                  null,
-                                  false,
-                                  true,
-                                  scheduledExecutor,
-                                  null,
-                                  null,
-                                  null);
+                                      QueueImplTest.address1,
+                                      QueueImplTest.queue1,
+                                      null,
+                                      false,
+                                      true,
+                                      scheduledExecutor,
+                                      null,
+                                      null,
+                                      null,
+                                      executor);
       MessageReference messageReference = generateReference(queue, 1);
       MessageReference messageReference2 = generateReference(queue, 2);
       MessageReference messageReference3 = generateReference(queue, 3);
@@ -1436,15 +1486,16 @@ public class QueueImplTest extends UnitTestCase
    public void testPauseAndResumeWithAsync() throws Exception
    {
       QueueImpl queue = new QueueImpl(1,
-                                  QueueImplTest.address1,
-                                  QueueImplTest.queue1,
-                                  null,
-                                  false,
-                                  true,
-                                  scheduledExecutor,
-                                  null,
-                                  null,
-                                  null);
+                                      QueueImplTest.address1,
+                                      QueueImplTest.queue1,
+                                      null,
+                                      false,
+                                      true,
+                                      scheduledExecutor,
+                                      null,
+                                      null,
+                                      null,
+                                      executor);
 
       // pauses the queue
       queue.pause();
@@ -1483,6 +1534,8 @@ public class QueueImplTest extends UnitTestCase
       Assert.assertEquals(0, queue.getDeliveringCount());
       // resuming work
       queue.resume();
+      
+      awaitExecution();;
 
       // after resuming the delivery begins.
       assertRefListsIdenticalRefs(refs, consumer.getReferences());
@@ -1500,15 +1553,16 @@ public class QueueImplTest extends UnitTestCase
    public void testPauseAndResumeWithDirect() throws Exception
    {
       QueueImpl queue = new QueueImpl(1,
-                                  QueueImplTest.address1,
-                                  QueueImplTest.queue1,
-                                  null,
-                                  false,
-                                  true,
-                                  scheduledExecutor,
-                                  null,
-                                  null,
-                                  null);
+                                      QueueImplTest.address1,
+                                      QueueImplTest.queue1,
+                                      null,
+                                      false,
+                                      true,
+                                      scheduledExecutor,
+                                      null,
+                                      null,
+                                      null,
+                                      executor);
 
       // Now add a consumer
       FakeConsumer consumer = new FakeConsumer();
@@ -1538,6 +1592,10 @@ public class QueueImplTest extends UnitTestCase
 
       // brings the queue to resumed state.
       queue.resume();
+      
+      
+      awaitExecution();;
+      
       // resuming delivery of messages
       assertRefListsIdenticalRefs(refs, consumer.getReferences());
       Assert.assertEquals(numMessages, queue.getMessageCount());

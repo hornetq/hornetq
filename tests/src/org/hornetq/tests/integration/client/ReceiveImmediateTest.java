@@ -65,7 +65,7 @@ public class ReceiveImmediateTest extends ServiceTestBase
    {
       doConsumerReceiveImmediateWithNoMessages(false);
    }
-
+   
    public void testConsumerReceiveImmediate() throws Exception
    {
       doConsumerReceiveImmediate(false);

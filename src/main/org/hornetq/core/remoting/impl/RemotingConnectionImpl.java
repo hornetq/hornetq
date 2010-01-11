@@ -334,12 +334,12 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
          channels.clear();
       }
    }
-   
+
    public void flushConfirmations()
    {
       synchronized (transferLock)
       {
-         for (Channel channel: channels.values())
+         for (Channel channel : channels.values())
          {
             channel.flushConfirmations();
          }
@@ -349,18 +349,16 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
    // Buffer Handler implementation
    // ----------------------------------------------------
 
+   private volatile boolean executing;
+
    public void bufferReceived(final Object connectionID, final HornetQBuffer buffer)
    {
       final Packet packet = decoder.decode(buffer);
 
-      if (executor == null || packet.getType() == PacketImpl.PING)
+      if (packet.isAsyncExec() && executor != null)
       {
-         // Pings must always be handled out of band so we can send pings back to the client quickly
-         // otherwise they would get in the queue with everything else which might give an intolerable delay
-         doBufferReceived(packet);
-      }
-      else
-      {
+         executing = true;
+
          executor.execute(new Runnable()
          {
             public void run()
@@ -373,10 +371,24 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
                {
                   RemotingConnectionImpl.log.error("Unexpected error", t);
                }
+
+               executing = false;
             }
          });
       }
-
+      else
+      {
+         //To prevent out of order execution if interleaving sync and async operations on same connection
+         while (executing)
+         {
+            Thread.yield();
+         }
+         
+         // Pings must always be handled out of band so we can send pings back to the client quickly
+         // otherwise they would get in the queue with everything else which might give an intolerable delay
+         doBufferReceived(packet);
+      }
+     
       dataReceived = true;
    }
 

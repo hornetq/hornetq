@@ -64,6 +64,11 @@ public class SessionXAPrepareMessage extends PacketImpl
    {
       xid = XidCodecSupport.decodeXid(buffer);
    }
+   
+   public boolean isAsyncExec()
+   {
+      return true;
+   }
 
    @Override
    public boolean equals(final Object other)

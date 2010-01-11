@@ -72,6 +72,11 @@ public class RollbackMessage extends PacketImpl
    {
       considerLastMessageAsDelivered = buffer.readBoolean();
    }
+   
+   public boolean isAsyncExec()
+   {
+      return true;
+   }
 
    // Static --------------------------------------------------------
 

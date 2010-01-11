@@ -72,7 +72,7 @@ public class ConfigurationImpl implements Configuration
 
    public static final long DEFAULT_CONNECTION_TTL_OVERRIDE = -1;
 
-   public static final boolean DEFAULT_ASYNC_CONNECTION_EXECUTION_ENABLED = false;
+   public static final boolean DEFAULT_ASYNC_CONNECTION_EXECUTION_ENABLED = true;
 
    public static final String DEFAULT_BINDINGS_DIRECTORY = "data/bindings";
 

@@ -63,7 +63,7 @@ public interface Queue extends Bindable
 
    void cancel(MessageReference reference) throws Exception;
 
-   void deliverAsync(Executor executor);
+   void deliverAsync();
 
    int getMessageCount();
 
@@ -116,7 +116,7 @@ public interface Queue extends Bindable
 
    int moveReferences(Filter filter, SimpleString toAddress) throws Exception;
 
-   void addRedistributor(long delay, Executor executor);
+   void addRedistributor(long delay);
 
    void cancelRedistributor() throws Exception;
 
@@ -152,6 +152,8 @@ public interface Queue extends Bindable
     * @return true if paused, false otherwise.
     */
    boolean isPaused();
+   
+   Executor getExecutor();
 
 
 }
