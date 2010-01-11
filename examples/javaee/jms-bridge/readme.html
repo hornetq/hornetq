@@ -9,7 +9,7 @@
      <h1>JMS Bridge Example</h1>
      
      <p>This example shows how to configure and run a JMS Bridge in JBoss AS 5.<br />
-         A bridge receives messages from a <em>source</em> JMS destination and resend them to a <em>target</em> destination.</p>
+         A bridge receives messages from a <em>source</em> JMS destination and forwards them to a <em>target</em> destination.</p>
      <p>The source and target destinations can be on different servers, even from different JMS providers. For example, you can use this
          JMS Bridge to bridge a legacy JMS provider to HornetQ during migration.</p>
          
@@ -17,7 +17,7 @@
      <ul>
          <li>the source and target destinations are hosted by a single JBoss AS 5 instance</li>
          <li>the bridge is run on the same JBoss AS 5 instance</li>
-         <li>every time a message is consumed by the bridge from the source, it is resent to the target</li>
+         <li>every time a message is consumed by the bridge from the source, it is forward to the target</li>
          <li>The application client will send a message to the source and consume the "same" message from the target to
              show that the two destinations were indeed bridged.</li>
      </ul>

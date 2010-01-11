@@ -8,13 +8,18 @@
   <body onload="prettyPrint()">
      <h1>Java EE Resource Adapter Configuration Example</h1>
      <p>This example demonstrates how to configure several properties on the HornetQ Resource Adapter. We setup two JBoss Servers. The enterprise application is being deployed in one application server while the MDBs and JMS Connections are pointing to a remote server</p>
-     <p>This example is composed by two message-driven beans (MDB), MDBQueueA and MDBQueueB, and a stateless session bean StatelessSender. The main class, MDBRemoteClientExample, will call a method on StatelessSender and send a Message to Queue B.<p>
-     <p>StatelessSender will send a message to Queue A and it is getting the connection out of the Java Connection Architecture (JCA) ConnectionFactory, and sending a message to QueueA which will be received on MDBQueueA.</p>
-     <p>MDBQueueB is connected to a different HornetQ resource-adapter, and it will receive the message sent by the main Class.</p>
-     <p>All the MDBs and JMS Connections are referring to the remote server</p> 
-     <p>A Resource Adapter is a way to connect any system provider to an application server, and is integral part of the Java Connectors Architecture specification.</p>
-     <p>HornetQ provides its own adapter and this example will provide you a quick tutorial on how to configure some of the default properties, and how to change the default values on MDB Inbound Properties, or on ConnectionFactory Outbound Properties.</p>
-     <p>This ResourceAdapter is what provides integration for Message-Driven Beans or DataSource integration on the application server.</p>
+     <p>This example is composed of two message-driven beans (MDB), MDBQueueA and MDBQueueB, and a stateless session
+         bean StatelessSender and a main class MDBRemoteClientExample.<p>
+     <p>MDBRemoteClientExample will invoke the StatelessSender bean which will in tirun send a message to 2 queues which
+         will then be consumed by each MDB.</p>
+     <p>MDBQueueA is on the same server as the StatelessSender bean and consumes the message locally.</p>
+     <p>MDBQueueB is on the second server who's JCA Adapter is configured to consume remotely from the first server</p> 
+     <p>A Resource Adapter is a way to connect any system provider to an application server, and is integral part of the
+         Java Connectors Architecture specification.</p>
+     <p>HornetQ provides its own adapter and this example will provide you a quick tutorial on how to configure some of
+         the default properties, and how to change the default values on MDB Inbound Properties, or on ConnectionFactory Outbound Properties.</p>
+     <p>This ResourceAdapter is what provides integration for Message-Driven Beans or DataSource integration on the
+         application server.</p>
      <h2>MDB Properties</h2>
      <p>You can configure the adapter through ActivactionConfigProperties on the MDB. Example:</p>
         <pre class="prettyprint">
