@@ -407,28 +407,6 @@ public class QueueImpl implements Queue
       };
    }
 
-   public synchronized List<MessageReference> list(final Filter filter)
-   {
-      if (filter == null)
-      {
-         return new ArrayList<MessageReference>(messageReferences.getAll());
-      }
-      else
-      {
-         ArrayList<MessageReference> list = new ArrayList<MessageReference>();
-
-         for (MessageReference ref : messageReferences.getAll())
-         {
-            if (filter.match(ref.getMessage()))
-            {
-               list.add(ref);
-            }
-         }
-
-         return list;
-      }
-   }
-
    public MessageReference removeReferenceWithID(final long id) throws Exception
    {
       Iterator<MessageReference> iterator = messageReferences.iterator();
@@ -759,6 +737,25 @@ public class QueueImpl implements Queue
       }
       return false;
    }
+   
+   public int sendMessagesToDeadLetterAddress(Filter filter) throws Exception
+   {
+      int count = 0;
+      Iterator<MessageReference> iter = messageReferences.iterator();
+
+      while (iter.hasNext())
+      {
+         MessageReference ref = iter.next();
+         if (filter == null || filter.match(ref.getMessage()))
+         {
+            deliveringCount.incrementAndGet();
+            sendToDeadLetterAddress(ref);
+            iter.remove();
+            count ++;
+         }
+      }
+      return count;
+   }
 
    public boolean moveReference(final long messageID, final SimpleString toAddress) throws Exception
    {
@@ -828,6 +825,25 @@ public class QueueImpl implements Queue
       }
 
       return false;
+   }
+   
+   public int changeReferencesPriority(final Filter filter, final byte newPriority) throws Exception
+   {
+      Iterator<MessageReference> iter = messageReferences.iterator();
+
+      int count = 0;
+      while (iter.hasNext())
+      {
+         MessageReference ref = iter.next();
+         if (filter == null || filter.match(ref.getMessage()))
+         {
+            count ++;
+            iter.remove();
+            ref.getMessage().setPriority(newPriority);
+            addLast(ref);
+         }
+      }
+      return count;
    }
 
    // Public

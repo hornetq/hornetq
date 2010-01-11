@@ -125,6 +125,15 @@ public class FakeQueue implements Queue
       // TODO Auto-generated method stub
       return false;
    }
+   
+/* (non-Javadoc)
+    * @see org.hornetq.core.server.Queue#changeReferencesPriority(org.hornetq.core.filter.Filter, byte)
+    */
+   public int changeReferencesPriority(Filter filter, byte newPriority) throws Exception
+   {
+      // TODO Auto-generated method stub
+      return 0;
+   }
 
    /* (non-Javadoc)
     * @see org.hornetq.core.server.Queue#checkDLQ(org.hornetq.core.server.MessageReference)
@@ -456,6 +465,15 @@ public class FakeQueue implements Queue
    {
       // TODO Auto-generated method stub
       return false;
+   }
+   
+   /* (non-Javadoc)
+    * @see org.hornetq.core.server.Queue#sendMessagesToDeadLetterAddress(org.hornetq.core.filter.Filter)
+    */
+   public int sendMessagesToDeadLetterAddress(Filter filter) throws Exception
+   {
+      // TODO Auto-generated method stub
+      return 0;
    }
 
    /* (non-Javadoc)

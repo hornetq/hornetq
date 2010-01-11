@@ -13,6 +13,8 @@
 
 package org.hornetq.core.management.impl;
 
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -359,15 +361,18 @@ public class QueueControlImpl extends AbstractControl implements QueueControl
       try
       {
          Filter filter = FilterImpl.createFilter(filterStr);
-         List<MessageReference> refs = queue.list(filter);
-         Map<String, Object>[] messages = new Map[refs.size()];
-         int i = 0;
-         for (MessageReference ref : refs)
+         List<Map<String, Object>> messages = new ArrayList<Map<String,Object>>();
+         Iterator<MessageReference> iterator = queue.iterator();
+         while (iterator.hasNext())
          {
-            Message message = ref.getMessage();
-            messages[i++] = message.toMap();
+            MessageReference ref = (MessageReference)iterator.next();
+            if (filter == null || filter.match(ref.getMessage()))
+            {
+               Message message = ref.getMessage();
+               messages.add(message.toMap());
+            }
          }
-         return messages;
+         return (Map<String, Object>[])messages.toArray(new Map[messages.size()]);
       }
       catch (HornetQException e)
       {
@@ -398,8 +403,24 @@ public class QueueControlImpl extends AbstractControl implements QueueControl
       try
       {
          Filter filter = FilterImpl.createFilter(filterStr);
-         List<MessageReference> refs = queue.list(filter);
-         return refs.size();
+         if (filter == null)
+         {
+            return getMessageCount();
+         }
+         else
+         {
+            Iterator<MessageReference> iterator = queue.iterator();
+            int count = 0;
+            while (iterator.hasNext())
+            {
+               MessageReference ref = (MessageReference)iterator.next();
+               if (filter.match(ref.getMessage()))
+               {
+                  count ++;
+               }
+            }
+            return count;
+         }
       }
       finally
       {
@@ -523,14 +544,7 @@ public class QueueControlImpl extends AbstractControl implements QueueControl
       {
          Filter filter = FilterImpl.createFilter(filterStr);
 
-         List<MessageReference> refs = queue.list(filter);
-
-         for (MessageReference ref : refs)
-         {
-            sendMessageToDeadLetterAddress(ref.getMessage().getMessageID());
-         }
-
-         return refs.size();
+         return queue.sendMessagesToDeadLetterAddress(filter);
       }
       finally
       {
@@ -543,10 +557,7 @@ public class QueueControlImpl extends AbstractControl implements QueueControl
       clearIO();
       try
       {
-
-         boolean retValue = queue.sendMessageToDeadLetterAddress(messageID);
-
-         return retValue;
+         return queue.sendMessageToDeadLetterAddress(messageID);
       }
       finally
       {
@@ -559,16 +570,14 @@ public class QueueControlImpl extends AbstractControl implements QueueControl
       clearIO();
       try
       {
+         if (newPriority < 0 || newPriority > 9)
+         {
+            throw new IllegalArgumentException("invalid newPriority value: " + newPriority +
+                                               ". It must be between 0 and 9 (both included)");
+         }
          Filter filter = FilterImpl.createFilter(filterStr);
 
-         List<MessageReference> refs = queue.list(filter);
-
-         for (MessageReference ref : refs)
-         {
-            changeMessagePriority(ref.getMessage().getMessageID(), newPriority);
-         }
-
-         return refs.size();
+         return queue.changeReferencesPriority(filter, (byte)newPriority);
       }
       finally
       {

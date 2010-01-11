@@ -65,8 +65,6 @@ public interface Queue extends Bindable
 
    void deliverAsync(Executor executor);
 
-   List<MessageReference> list(Filter filter);
-
    int getMessageCount();
 
    int getDeliveringCount();
@@ -108,7 +106,11 @@ public interface Queue extends Bindable
 
    boolean sendMessageToDeadLetterAddress(long messageID) throws Exception;
 
+   int sendMessagesToDeadLetterAddress(Filter filter) throws Exception;
+
    boolean changeReferencePriority(long messageID, byte newPriority) throws Exception;
+
+   int changeReferencesPriority(Filter filter, byte newPriority) throws Exception;
 
    boolean moveReference(long messageID, SimpleString toAddress) throws Exception;
 
@@ -150,5 +152,6 @@ public interface Queue extends Bindable
     * @return true if paused, false otherwise.
     */
    boolean isPaused();
+
 
 }

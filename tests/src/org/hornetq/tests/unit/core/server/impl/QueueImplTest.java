@@ -14,6 +14,7 @@
 package org.hornetq.tests.unit.core.server.impl;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -915,7 +916,7 @@ public class QueueImplTest extends UnitTestCase
       FakeConsumer consumer = new FakeConsumer(filter);
    }
 
-   public void testList()
+   public void testIterator()
    {
       QueueImpl queue = new QueueImpl(1,
                                   QueueImplTest.address1,
@@ -943,54 +944,13 @@ public class QueueImplTest extends UnitTestCase
 
       Assert.assertEquals(numMessages, queue.getMessageCount());
 
-      List<MessageReference> list = queue.list(null);
-
+      Iterator<MessageReference> iterator = queue.iterator();      
+      List<MessageReference> list = new ArrayList<MessageReference>();
+      while (iterator.hasNext())
+      {
+         list.add(iterator.next());
+      }
       assertRefListsIdenticalRefs(refs, list);
-   }
-
-   public void testListWithFilter()
-   {
-      QueueImpl queue = new QueueImpl(1,
-                                  QueueImplTest.address1,
-                                  QueueImplTest.queue1,
-                                  null,
-                                  false,
-                                  true,
-                                  scheduledExecutor,
-                                  null,
-                                  null,
-                                  null);
-
-      final int numMessages = 20;
-
-      List<MessageReference> refs = new ArrayList<MessageReference>();
-
-      for (int i = 0; i < numMessages; i++)
-      {
-         MessageReference ref = generateReference(queue, i);
-
-         if (i % 2 == 0)
-         {
-            ref.getMessage().putStringProperty(new SimpleString("god"), new SimpleString("dog"));
-         }
-
-         queue.addLast(ref);
-
-         refs.add(ref);
-      }
-
-      Assert.assertEquals(numMessages, queue.getMessageCount());
-
-      Filter filter = new FakeFilter("god", "dog");
-
-      List<MessageReference> list = queue.list(filter);
-
-      Assert.assertEquals(numMessages / 2, list.size());
-
-      for (int i = 0; i < numMessages; i += 2)
-      {
-         Assert.assertEquals(refs.get(i), list.get(i / 2));
-      }
    }
 
    public void testConsumeWithFiltersAddAndRemoveConsumer() throws Exception
