@@ -337,33 +337,38 @@ public class ServerConsumerImpl implements ServerConsumer
     * and knows that there are no other messages to be delivered.
     */
    public synchronized void forceDelivery(final long sequence)
-   {      
+   {
       promptDelivery();
-      
-      executor.execute(new Runnable()
+
+      Future future = new Future();
+
+      executor.execute(future);
+
+      boolean ok = future.await(10000);
+
+      if (!ok)
       {
-         public void run()
-         {
-            try
-            {
-               // We execute this on the same executor to make sure the force delivery message is written after
-               // any delivery is completed
-               
-               ServerMessage forcedDeliveryMessage = new ServerMessageImpl(storageManager.generateUniqueID(), 50);
+         log.warn("Timed out waiting for executor");
+      }
 
-               forcedDeliveryMessage.putLongProperty(ClientConsumerImpl.FORCED_DELIVERY_MESSAGE, sequence);
-               forcedDeliveryMessage.setAddress(messageQueue.getName());
+      try
+      {
+         // We execute this on the same executor to make sure the force delivery message is written after
+         // any delivery is completed
 
-               final SessionReceiveMessage packet = new SessionReceiveMessage(id, forcedDeliveryMessage, 0);
+         ServerMessage forcedDeliveryMessage = new ServerMessageImpl(storageManager.generateUniqueID(), 50);
 
-               channel.send(packet);
-            }
-            catch (Exception e)
-            {
-               ServerConsumerImpl.log.error("Failed to send forced delivery message", e);
-            }
-         }
-      });
+         forcedDeliveryMessage.putLongProperty(ClientConsumerImpl.FORCED_DELIVERY_MESSAGE, sequence);
+         forcedDeliveryMessage.setAddress(messageQueue.getName());
+
+         final SessionReceiveMessage packet = new SessionReceiveMessage(id, forcedDeliveryMessage, 0);
+
+         channel.send(packet);
+      }
+      catch (Exception e)
+      {
+         ServerConsumerImpl.log.error("Failed to send forced delivery message", e);
+      }
    }
 
    public LinkedList<MessageReference> cancelRefs(final boolean lastConsumedAsDelivered, final Transaction tx) throws Exception
@@ -442,7 +447,7 @@ public class ServerConsumerImpl implements ServerConsumer
          lock.unlock();
       }
 
-      //Outside the lock
+      // Outside the lock
       if (transferring)
       {
          // And we must wait for any force delivery to be executed - this is executed async so we add a future to the
@@ -659,7 +664,7 @@ public class ServerConsumerImpl implements ServerConsumer
                else
                {
                   // prompt Delivery only if chunk was finished
-         
+
                   messageQueue.deliverAsync();
                }
             }
