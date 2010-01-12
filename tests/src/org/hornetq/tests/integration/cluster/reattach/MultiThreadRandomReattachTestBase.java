@@ -25,7 +25,13 @@ import junit.framework.Assert;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.core.client.*;
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.api.core.client.MessageHandler;
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.impl.invm.InVMRegistry;
@@ -228,6 +234,19 @@ public abstract class MultiThreadRandomReattachTestBase extends MultiThreadReatt
          public void run(final ClientSessionFactory sf, final int threadNum) throws Exception
          {
             doTestN(sf, threadNum);
+         }
+      }, NUM_THREADS, false);
+   }
+
+   // Added do replicate HORNETQ-264
+   public void testO() throws Exception
+   {
+      runTestMultipleThreads(new RunnableT()
+      {
+         @Override
+         public void run(final ClientSessionFactory sf, final int threadNum) throws Exception
+         {
+            doTestO(sf, threadNum);
          }
       }, NUM_THREADS, false);
    }
@@ -1018,11 +1037,7 @@ public abstract class MultiThreadRandomReattachTestBase extends MultiThreadReatt
 
       ClientProducer producer = sess.createProducer(MultiThreadRandomReattachTestBase.ADDRESS);
 
-      ClientMessage message = sess.createMessage(HornetQTextMessage.TYPE,
-                                                       false,
-                                                       0,
-                                                       System.currentTimeMillis(),
-                                                       (byte)1);
+      ClientMessage message = sess.createMessage(HornetQTextMessage.TYPE, false, 0, System.currentTimeMillis(), (byte)1);
       producer.send(message);
 
       ClientMessage message2 = consumer.receive(MultiThreadRandomReattachTestBase.RECEIVE_TIMEOUT);
@@ -1055,11 +1070,7 @@ public abstract class MultiThreadRandomReattachTestBase extends MultiThreadReatt
 
       ClientProducer producer = sess.createProducer(MultiThreadRandomReattachTestBase.ADDRESS);
 
-      ClientMessage message = sess.createMessage(HornetQTextMessage.TYPE,
-                                                       false,
-                                                       0,
-                                                       System.currentTimeMillis(),
-                                                       (byte)1);
+      ClientMessage message = sess.createMessage(HornetQTextMessage.TYPE, false, 0, System.currentTimeMillis(), (byte)1);
       producer.send(message);
 
       ClientMessage message2 = consumer.receive(MultiThreadRandomReattachTestBase.RECEIVE_TIMEOUT);
@@ -1134,11 +1145,7 @@ public abstract class MultiThreadRandomReattachTestBase extends MultiThreadReatt
 
       ClientProducer producer = sess.createProducer(MultiThreadRandomReattachTestBase.ADDRESS);
 
-      ClientMessage message = sess.createMessage(HornetQTextMessage.TYPE,
-                                                       false,
-                                                       0,
-                                                       System.currentTimeMillis(),
-                                                       (byte)1);
+      ClientMessage message = sess.createMessage(HornetQTextMessage.TYPE, false, 0, System.currentTimeMillis(), (byte)1);
       producer.send(message);
 
       sess.start();
@@ -1152,6 +1159,33 @@ public abstract class MultiThreadRandomReattachTestBase extends MultiThreadReatt
       sess.stop();
 
       sess.start();
+
+      sess.close();
+
+      sessCreate.deleteQueue(new SimpleString(threadNum + MultiThreadRandomReattachTestBase.ADDRESS.toString()));
+
+      sessCreate.close();
+   }
+
+   protected void doTestO(final ClientSessionFactory sf, final int threadNum) throws Exception
+   {
+      ClientSession sessCreate = sf.createSession(false, true, true);
+
+      sessCreate.createQueue(MultiThreadRandomReattachTestBase.ADDRESS,
+                             new SimpleString(threadNum + MultiThreadRandomReattachTestBase.ADDRESS.toString()),
+                             null,
+                             false);
+
+      ClientSession sess = sf.createSession(false, true, true);
+
+      sess.start();
+
+      ClientConsumer consumer = sess.createConsumer(new SimpleString(threadNum + MultiThreadRandomReattachTestBase.ADDRESS.toString()));
+
+      for (int i = 0; i < 100; i++)
+      {
+         Assert.assertNull(consumer.receiveImmediate());
+      }
 
       sess.close();
 
@@ -1215,7 +1249,7 @@ public abstract class MultiThreadRandomReattachTestBase extends MultiThreadReatt
    @Override
    protected ClientSessionFactoryInternal createSessionFactory()
    {
-      final ClientSessionFactoryInternal sf = (ClientSessionFactoryInternal) HornetQClient.createClientSessionFactory(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
+      final ClientSessionFactoryInternal sf = (ClientSessionFactoryInternal)HornetQClient.createClientSessionFactory(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
       sf.setReconnectAttempts(-1);
       sf.setConfirmationWindowSize(1024 * 1024);
 
@@ -1240,10 +1274,10 @@ public abstract class MultiThreadRandomReattachTestBase extends MultiThreadReatt
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = sessSend.createMessage(HornetQBytesMessage.TYPE,
-                                                              false,
-                                                              0,
-                                                              System.currentTimeMillis(),
-                                                              (byte)1);
+                                                        false,
+                                                        0,
+                                                        System.currentTimeMillis(),
+                                                        (byte)1);
          message.putIntProperty(new SimpleString("threadnum"), threadNum);
          message.putIntProperty(new SimpleString("count"), i);
          setBody(message);
