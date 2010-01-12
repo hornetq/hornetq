@@ -8,7 +8,7 @@
   <body onload="prettyPrint()">
      <h1>JMS Client-Side Load-Balancing Example</h1>
 
-     <p>This example demonstrates how subsequent connections created from a JMS Connection Factory can be created
+     <p>This example demonstrates how sessions created from a single JMS Connection can be created
      to different nodes of the cluster. In other words it demonstrates how HornetQ does <b>client side load balancing</b> of
      connections across the cluster.</p>
      <p>The particular load-balancing policy can be chosen to be random, round-robin or user-defined. Please see the user
@@ -44,58 +44,28 @@
            <code>ConnectionFactory connectionFactory = (ConnectionFactory)initialContext.lookup("/ConnectionFactory");</code>
         </pre>
 
-        <li>We create three connections, since we are using round-robin load-balancing this should
-        result in each connection being connected to a different node of the cluster</li>
+        <li>We create a single connection</li>
         <pre class="prettyprint">
            <code>
-        connectionA = connectionFactory.createConnection();
-         
-        connectionB = connectionFactory.createConnection();
-         
-        connectionC = connectionFactory.createConnection();
+        connection = connectionFactory.createConnection();
            </code>
         </pre>
 
-        <li>We create a JMS Session on each of those connections</li>
+        <li>We create 3 JMS Sessions from the same connection. Since we are using round-robin 
+           load-balancing this should result in each sessions being connected to a different node of the cluster</li>
         <pre class="prettyprint">
            <code>
-        Session sessionA = connectionA.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
-        Session sessionB = connectionB.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
-        Session sessionC = connectionC.createSession(false, Session.AUTO_ACKNOWLEDGE);
+        Session sessionA = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+        Session sessionB = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+        Session sessionC = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
            </code>
-        </pre>
-
-        <li>We start the connections to ensure delivery occurs on them</li>
-        <pre class="prettyprint">
-          <code>
-        connectionA.start();
-
-        connectionB.start();
-         
-        connectionC.start();
-          </code>
-        </pre>
-        
-        <li>We create JMS MessageConsumer objects on the sessions</li>
-        <pre class="prettyprint">
-          <code>
-         MessageConsumer consumerA = sessionA.createConsumer(queue);
-         
-         MessageConsumer consumerB = sessionB.createConsumer(queue);
-         
-         MessageConsumer consumerC = sessionC.createConsumer(queue);
-          </code>
         </pre>
 
         <li>We create JMS MessageProducer objects on the sessions</li>
         <pre class="prettyprint">
            <code>
         MessageProducer producerA = sessionA.createProducer(queue);
-         
         MessageProducer producerB = sessionB.createProducer(queue);
-         
         MessageProducer producerC = sessionC.createProducer(queue);
            </code>
         </pre>
@@ -108,46 +78,38 @@
          for (int i = 0; i < numMessages; i++)
          {
             TextMessage messageA = sessionA.createTextMessage("A:This is text message " + i);
-
             producerA.send(messageA);
-
             System.out.println("Sent message: " + messageA.getText());
             
             TextMessage messageB = sessionB.createTextMessage("B:This is text message " + i);
-
             producerB.send(messageB);
-
             System.out.println("Sent message: " + messageB.getText());
             
             TextMessage messageC = sessionC.createTextMessage("C:This is text message " + i);
-
             producerC.send(messageC);
-
             System.out.println("Sent message: " + messageC.getText());            
          }
             </code>
         </pre>
-
-        <li>We now consume the messages from each node. The connections must be on different nodes
-         since if they shared nodes then the consumers would receive the messages sent from different connections.</li>
+        
+        <li>We start the connection to consume messages</li>
         <pre class="prettyprint">
            <code>
-         for (int i = 0; i < numMessages; i ++)
-         {
-            TextMessage messageA = (TextMessage)consumerA.receive(5000);
-
-            System.out.println("Got message: " + messageA.getText() + " from node A");
-            
-            TextMessage messageB = (TextMessage)consumerB.receive(5000);
-
-            System.out.println("Got message: " + messageB.getText() + " from node B");
-            
-            TextMessage messageC = (TextMessage)consumerC.receive(5000);
-
-            System.out.println("Got message: " + messageC.getText() + " from node C");
-         }
+       connection.start();
            </code>
         </pre>
+
+         <li>We consume messages from the 3 session, one at a time.<br>
+            We try to consume one more message than expected from each session. If
+            the session were not properly load-balanced, we would be missing a 
+            message from one of the sessions at the end.</li>
+         <pre class="prettyprint">
+            <code>
+         consume(sessionA, queue, numMessages, "A");
+         consume(sessionB, queue, numMessages, "B");
+         consume(sessionC, queue, numMessages, "C");
+            </code>
+         </pre>
 
         <li>And finally (no pun intended), <b>always</b> remember to close your JMS resources after use, in a <code>finally</code> block. Closing a JMS connection will automatically close all of its sessions, consumers, producer and browser objects</li>
 

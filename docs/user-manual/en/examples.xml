@@ -74,11 +74,11 @@
                 connections given an IP address using the JMX management API.</para>
         </section>
         <section>
-            <title>Client Side Load-Balancing</title>
+            <title>Client-Side Load-Balancing</title>
             <para>The <literal>client-side-load-balancing</literal> example demonstrates how
-                subsequent connections created from a JMS <literal>ConnectionFactory</literal> can
+                sessions created from a single JMS <literal>Connection</literal> can
                 be created to different nodes of the cluster. In other words it demonstrates how
-                HornetQ does client side load balancing of connections across the cluster.</para>
+                HornetQ does client-side load-balancing of sessions across the cluster.</para>
         </section>
         <section id="examples.clustered.grouping">
             <title>Clustered Grouping</title>
