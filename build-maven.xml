@@ -159,7 +159,7 @@
             message="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&lt;project&gt;${line.separator}
  &lt;modelVersion&gt;4.0.0&lt;/modelVersion&gt;${line.separator}
  &lt;groupId&gt;org.hornetq&lt;/groupId&gt;${line.separator}
- &lt;artifactId&gt;hornetq-bootstrap&lt;/artifactId&gt;${line.separator}
+ &lt;artifactId&gt;${jarName}&lt;/artifactId&gt;${line.separator}
  &lt;version&gt;${hornetq.version}&lt;/version&gt;${line.separator}&lt;/project&gt;"/>
       <copy file="${libDir}/${jarName}.jar" tofile="${dest.dir}/${jarName}/${hornetq.version}/${jarName}-${hornetq.version}.jar"/>
       <checksum file="${dest.dir}/${jarName}/${hornetq.version}/${jarName}-${hornetq.version}.jar" algorithm="md5"/>
