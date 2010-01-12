@@ -18,8 +18,8 @@
 <!-- ============================================================================= -->
 <chapter id="logging">
     <title>Logging</title>
-    <para>HornetQ has its own Logging Delegate that has no dependencies on any particular logging
-        framework. The default Delegate delegates all its logs to the standard <ulink
+    <para>HornetQ has its own logging delegate that has no dependencies on any particular logging
+        framework. The default delegate delegates all its logs to the standard <ulink
             url="http://java.sun.com/j2se/1.4.2/docs/guide/util/logging/">JDK logging</ulink>,
         (a.k.a Java-Util-Logging: JUL). By default the server picks up its JUL configuration from a
             <literal>logging.properties</literal> file found in the config directories. This is

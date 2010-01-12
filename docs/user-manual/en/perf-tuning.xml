@@ -74,14 +74,14 @@
                 <para>Disable message timestamp. Use the <literal
                         >setDisableMessageTimeStamp()</literal> method on the <literal
                         >MessageProducer</literal> class to disable message timestamps if you don't
-                    need them. Again this makes the message smaller.</para>
+                    need them.</para>
             </listitem>
             <listitem>
                 <para>Avoid <literal>ObjectMessage</literal>. <literal>ObjectMessage</literal> is
                     convenient but it comes at a cost. The body of a <literal
                         >ObjectMessage</literal> uses Java serialization to serialize it to bytes.
                     The Java serialized form of even small objects is very verbose so takes up a lot
-                    of space on the wire, also Java serialization is slow compared to customer
+                    of space on the wire, also Java serialization is slow compared to custom
                     marshalling techniques. Only use <literal>ObjectMessage</literal> if you really
                     can't use one of the other message types, i.e. if you really don't know the type
                     of the payload until run-time.</para>
@@ -272,17 +272,6 @@ serveruser     hard    nofile  20000
                 <para>Avoid fat messages. Verbose formats such as XML take up a lot of space on the
                     wire and performance will suffer as result. Avoid XML in message bodies if you
                     can.</para>
-            </listitem>
-            <listitem>
-                <para>Avoid many selectors on a queue. Another common anti-pattern is a single queue
-                    which has many consumers, each one with a distinct message selector. As messages
-                    come into the queue they will typically only match one of the consumers. This
-                    does not normally give good performance since as new consumers are added the
-                    entire queue has to be scanned for matching messages.</para>
-                <para>This anti-pattern can normally be avoided by instead using a topic with many
-                    durable subscriptions, each subscription defines a message selector. With topic
-                    subscriptions the selector expression is evaluated by HornetQ before the message
-                    goes into the subscription, so no scanning is involved.</para>
             </listitem>
             <listitem>
                 <para>Don't create temporary queues for each request. This common anti-pattern

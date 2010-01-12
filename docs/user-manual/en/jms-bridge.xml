@@ -246,10 +246,6 @@
                     <para>This represents a JMS selector expression used for consuming messages from
                         the source destination. Only messages that match the selector expression
                         will be bridged from the source to the target destination</para>
-                    <para>
-                        <note>Ut is always more efficient to apply selectors on source topic
-                            subscriptions to source queue consumers</note>
-                    </para>
                     <para>The selector expression must follow the <ulink
                             url="http://java.sun.com/j2ee/1.4/docs/api/javax/jms/Message.html">JMS
                             selector syntax</ulink></para>

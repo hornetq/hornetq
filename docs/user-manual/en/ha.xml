@@ -268,7 +268,7 @@
                     global order to ensure a consistent replica state. This is extremely hard to do
                     in a performant and scalable way, especially when one considers that multiple
                     threads are changing the live server state concurrently.</para>
-                <para>Some messaging systems which provide full state machine replication use
+                <para>It is possible to provide full state machine replication using
                     techniques such as <emphasis role="italic">virtual synchrony</emphasis>, but
                     this does not scale well and effectively serializes all operations to a single
                     thread, dramatically reducing concurrency.</para>

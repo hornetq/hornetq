@@ -216,6 +216,8 @@
                     use when creating the bridge connection to the remote server. If it is not
                     specified the default cluster user specified by <literal>cluster-user</literal>
                     in <literal>hornetq-configuration.xml</literal> will be used. </para>
+            </listitem>
+            <listitem>
                 <para><literal>password</literal>. This optional parameter determines the password
                     to use when creating the bridge connection to the remote server. If it is not
                     specified the default cluster password specified by <literal

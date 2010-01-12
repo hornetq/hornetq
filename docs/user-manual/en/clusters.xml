@@ -263,10 +263,16 @@ Connection jmsConnection2 = jmsConnectionFactory.createConnection();</programlis
                 <para>If you're using the core API to directly instantiate <literal
                         >ClientSessionFactory</literal> instances, then you can specify the
                     discovery group parameters directly when creating the session factory. Here's an
-                    example:final String groupAddress = "231.7.7.7"; final int groupPort = 9876;
+                    example:
+                    <programlisting>
+                    final String groupAddress = "231.7.7.7"; 
+                    final int groupPort = 9876;
                     SessionFactory factory = HornetQClient.createClientSessionFactory(groupAddress, groupPort);
                     ClientSession session1 = factory.createClientSession(...); ClientSession
-                    session2 = factory.createClientSession(...); </para>
+                    session2 = factory.createClientSession(...);
+                
+                </programlisting>
+                </para>
                 <para>The <literal>refresh-timeout</literal> can be set directly on the session
                     factory by using the setter method <literal>setDiscoveryRefreshTimeout() if you
                         want to change the default value.</literal></para>
@@ -283,7 +289,7 @@ Connection jmsConnection2 = jmsConnectionFactory.createConnection();</programlis
     <section>
         <title>Server-Side Message Load Balancing</title>
         <para>If cluster connections are defined between nodes of a cluster, then HornetQ
-            will load balance messages arriving from at a particular node from a client.</para>
+            will load balance messages arriving at a particular node from a client.</para>
         <para>Let's take a simple example of a cluster of four nodes A, B, C, and D arranged in a
                 <emphasis>symmetric cluster</emphasis> (described in <xref linkend="symmetric-cluster" />).
                  We have a queue called
@@ -423,13 +429,13 @@ Connection jmsConnection2 = jmsConnectionFactory.createConnection();</programlis
             <para>When creating connections between nodes of a cluster to form a cluster connection,
                 HornetQ uses a cluster user and cluster password which is defined in <literal>hornetq-configuration.xml</literal>:</para>
             <programlisting>
-                &lt;management-cluster-user&gt;HORNETQ.CLUSTER.ADMIN.USER&lt;/management-cluster-user&gt;
-                &lt;management-cluster-password&gt;CHANGE ME!!&lt;/management-cluster-password&gt;
+                &lt;cluster-user&gt;HORNETQ.CLUSTER.ADMIN.USER&lt;/cluster-user&gt;
+                &lt;cluster-password&gt;CHANGE ME!!&lt;/cluster-password&gt;
             </programlisting>
-            <para>It is imperative that these values are changed from their default, or remote clients will be able to make connections
+            <warning><para>It is imperative that these values are changed from their default, or remote clients will be able to make connections
                 to the server using the default values. If they are not
                 changed from the default, HornetQ will detect this and pester you with a warning on every
-                start-up.</para>
+                start-up.</para></warning>
         </section>
     </section>
     <section id="clusters.client.loadbalancing">

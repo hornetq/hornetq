@@ -172,7 +172,7 @@
     
 &lt;/configuration&gt;
         </programlisting>
-        <para>The first thing to note is the element <literal>default-user</literal>. This defines
+        <para>The first thing to note is the element <literal>defaultuser</literal>. This defines
             what user will be assumed when the client does not specify a username/password when
             creating a session. In this case they will be the user <literal>guest</literal> and have
             the role also called <literal>guest</literal>. Multiple roles can be specified for a
@@ -197,7 +197,7 @@
 &lt;/bean&gt;            
         </programlisting>
         <para>The class <literal>org.hornetq.spi.core.security.HornetQSecurityManagerImpl</literal>
-            is the default security manager that reads used by the standalone server.</para>
+            is the default security manager that is used by the standalone server.</para>
         <para>HornetQ ships with two other security manager implementations you can use
             off-the-shelf; one a JAAS security manager and another for integrating with JBoss
             Application Sever security, alternatively you could write your own implementation by
@@ -263,12 +263,10 @@
             is configured.</para>
     </section>
     <section>
-        <title>Changing the Management Password for Clustering</title>
-        <para>In order for cluster connections to work correctly, each node in the cluster must
-            register for management notifications from other nodes. To do this they must perform
-            these actions as a user with a role that has <literal>admin</literal> permissions on the
-            management addresses.</para>
-        <para>This password should always be changed from its default after installation. Please see
-                <xref linkend="management"/> for instructions on how to do this.</para>
+        <title>Changing the username/password for clustering</title>
+        <para>In order for cluster connections to work correctly, each node in the cluster must make
+            connections to the other nodes. The username/password they use for this should always be
+            changed from the installation default to prevent a security risk.</para>
+        <para>Please see <xref linkend="management"/> for instructions on how to do this.</para>
     </section>
 </chapter>

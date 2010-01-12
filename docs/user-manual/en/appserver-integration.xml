@@ -18,11 +18,11 @@
 <!-- ============================================================================= -->
 <chapter id="appserver-integration">
     <title>Application Server Integration and Java EE</title>
-    <para>HornetQ can be easily installed in JBoss Application Server 5.1 or later. For details on
+    <para>HornetQ can be easily installed in JBoss Application Server 4 or later. For details on
         installing HornetQ in the JBoss Application Server please refer to quick-start guide.</para>
     <para>Since HornetQ also provides a JCA adaptor, it should also be possible to integrate HornetQ
         as a JMS provider in other JEE compliant app servers. For instructions on how to integrate a
-        remote JCA adaptor into another application sever, please consult that application server's
+        remote JCA adaptor into another application sever, please consult the other application server's
         instructions.</para>
     <para>A JCA Adapter basically controls the inflow of messages to Message Driven Beans and the
         outflow of messages sent from other JEE components, e.g. EJBs and Servlets.</para>
@@ -51,7 +51,7 @@ public class MDBExample implements MessageListener
         <para>In this example you can see that the MDB will consume messages from a queue that is
             mapped into JNDI with the binding <literal>queue/testQueue</literal>. This queue must be
             preconfigured in the usual way using the HornetQ configuration files.</para>
-        <para>The <literal>ResourceAdapter</literal> annotation is used to specify which ra adapter
+        <para>The <literal>ResourceAdapter</literal> annotation is used to specify which adaptor
             should be used. To use this you will need to import <literal
                 >org.jboss.ejb3.annotation.ResourceAdapter</literal> which can be found in the
                 <literal>jboss-ejb3-ext-api.jar</literal> which can be found in the jboss
@@ -150,11 +150,11 @@ public class MDB_BMPExample implements MessageListener
 {
    public void onMessage(Message message)
 }</programlisting>
-            <para>When using Bean Managed Transactions the message delivery to the MBD will occur
+            <para>When using Bean Managed Transactions the message delivery to the MDB will occur
                 outside the scope of the user transaction and use the acknowledge mode specified by
                 the user with the <literal>acknowledgeMode</literal> property. There are only 2
                 acceptable values for this <literal>Auto-acknowledge</literal> and <literal
-                    >Dups-ok-acknowledge</literal>.Not that because the message delivery is outside
+                    >Dups-ok-acknowledge</literal>. Please note that because the message delivery is outside
                 the scope of the transaction a failure within the MDB will not cause the message to
                 be redelivered.</para>
             <para>A user would control the lifecycle of the transaction something like the
@@ -174,8 +174,9 @@ public class MDB_BMPExample implements MessageListener
          UserTransaction tx = ctx.getUserTransaction();
 
          tx.begin();
+         
          //do some stuff within the transaction
-         tx.xommit();
+         tx.commit();
 
       }
       catch (Exception e)
@@ -225,7 +226,7 @@ public class MDBMessageSelectorExample implements MessageListener
 @ResourceAdapter("hornetq-ra.rar")
 public class MDBMessageSendTxExample implements MessageListener
 {
-   @Resource(mappedName = "java:JmsXA")
+   @Resource(mappedName = "java:/JmsXA")
    ConnectionFactory connectionFactory;
 
    @Resource(mappedName = "queue/replyQueue")
@@ -283,7 +284,7 @@ public class MDBMessageSendTxExample implements MessageListener
             consume messages from the HornetQ server and also how components such as EJB's or
             Servlet's can send messages.</para>
         <para>The HornetQ JCA adapter is deployed via the <literal>jms-ra.rar</literal> archive. The
-            configuration of the Adapter is found in this archive under <literal
+            configuration of the adapter is found in this archive under <literal
                 >META-INF/ra.xml</literal>.</para>
         <para>The configuration will look something like the following:</para>
         <programlisting>&lt;resourceadapter>
@@ -358,7 +359,7 @@ public class MDBMessageSendTxExample implements MessageListener
         <para>There are 3 main parts to this configuration.</para>
         <orderedlist>
             <listitem>
-                <para>A set of global properties for the Adapter</para>
+                <para>A set of global properties for the adapter</para>
             </listitem>
             <listitem>
                 <para>The configuration for the outbound part of the adapter. This is used for

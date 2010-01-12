@@ -168,6 +168,6 @@ at org.acme.yourproject.YourClass (YourClass.java:666)
             To enable asynchronous connection execution, set the parameter <literal
                 >async-connection-execution-enabled</literal> in <literal
                 >hornetq-configuration.xml</literal> to <literal>true</literal> (default value is
-                <literal>false</literal>).</para>
+                <literal>true</literal>).</para>
     </section>
 </chapter>
