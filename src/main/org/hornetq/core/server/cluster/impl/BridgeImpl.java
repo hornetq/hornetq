@@ -427,8 +427,6 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
             }
 
             message.putBytesProperty(MessageImpl.HDR_ROUTE_TO_IDS, queueIds);
-
-            message.putBooleanProperty(MessageImpl.HDR_FROM_CLUSTER, Boolean.TRUE);
          }
 
          if (useDuplicateDetection && !message.containsProperty(Message.HDR_DUPLICATE_DETECTION_ID))

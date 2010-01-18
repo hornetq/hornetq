@@ -53,8 +53,6 @@ public abstract class MessageImpl implements MessageInternal
 
    public static final SimpleString HDR_ROUTE_TO_IDS = new SimpleString("_HQ_ROUTE_TO");
 
-   public static final SimpleString HDR_FROM_CLUSTER = new SimpleString("_HQ_FROM_CLUSTER");
-
    protected long messageID;
 
    protected SimpleString address;

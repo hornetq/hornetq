@@ -238,7 +238,9 @@ public class BindingsImpl implements Bindings
 
       if (!routed)
       {
-         if (message.containsProperty(MessageImpl.HDR_FROM_CLUSTER))
+         //TODO this is a little inefficient since we do the lookup once to see if the property
+         //is there, then do it again to remove the actual property
+         if (message.containsProperty(MessageImpl.HDR_ROUTE_TO_IDS))
          {
             routeFromCluster(message, context);
          }
