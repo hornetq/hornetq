@@ -30,6 +30,7 @@ import javax.net.ssl.SSLException;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.core.logging.Logger;
+import org.hornetq.core.remoting.ProtocolType;
 import org.hornetq.core.remoting.impl.ssl.SSLSupport;
 import org.hornetq.spi.core.remoting.BufferHandler;
 import org.hornetq.spi.core.remoting.Connection;
@@ -598,7 +599,7 @@ public class NettyConnector implements Connector
 
    private class Listener implements ConnectionLifeCycleListener
    {
-      public void connectionCreated(final Connection connection)
+      public void connectionCreated(final Connection connection, final ProtocolType protocol)
       {
          if (connections.putIfAbsent(connection.getID(), connection) != null)
          {

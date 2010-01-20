@@ -19,7 +19,7 @@ import javax.transaction.xa.Xid;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.remoting.Channel;
-import org.hornetq.core.remoting.RemotingConnection;
+import org.hornetq.core.remoting.CoreRemotingConnection;
 
 /**
  *
@@ -109,7 +109,7 @@ public interface ServerSession
 
    void close() throws Exception;
 
-   int transferConnection(RemotingConnection newConnection, int lastReceivedCommandID);
+   int transferConnection(CoreRemotingConnection newConnection, int lastReceivedCommandID);
 
    Channel getChannel();
 

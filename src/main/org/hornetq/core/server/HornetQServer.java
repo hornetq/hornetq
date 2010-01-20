@@ -24,7 +24,7 @@ import org.hornetq.core.management.impl.HornetQServerControlImpl;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.remoting.Channel;
-import org.hornetq.core.remoting.RemotingConnection;
+import org.hornetq.core.remoting.CoreRemotingConnection;
 import org.hornetq.core.remoting.impl.wireformat.CreateSessionResponseMessage;
 import org.hornetq.core.remoting.impl.wireformat.ReattachSessionResponseMessage;
 import org.hornetq.core.remoting.server.RemotingService;
@@ -70,7 +70,7 @@ public interface HornetQServer extends HornetQComponent
 
    void unregisterActivateCallback(ActivateCallback callback);
 
-   ReattachSessionResponseMessage reattachSession(RemotingConnection connection, String name, int lastConfirmedCommandID) throws Exception;
+   ReattachSessionResponseMessage reattachSession(CoreRemotingConnection connection, String name, int lastConfirmedCommandID) throws Exception;
 
    /** The journal at the backup server has to be equivalent as the journal used on the live node. 
     *  Or else the backup node is out of sync. */
@@ -82,7 +82,7 @@ public interface HornetQServer extends HornetQComponent
                                               String password,
                                               int minLargeMessageSize,
                                               int incrementingVersion,
-                                              RemotingConnection remotingConnection,
+                                              CoreRemotingConnection remotingConnection,
                                               boolean autoCommitSends,
                                               boolean autoCommitAcks,
                                               boolean preAcknowledge,

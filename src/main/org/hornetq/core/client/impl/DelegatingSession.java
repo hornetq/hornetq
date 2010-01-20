@@ -27,6 +27,7 @@ import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.SendAcknowledgementHandler;
 import org.hornetq.api.core.client.SessionFailureListener;
 import org.hornetq.core.logging.Logger;
+import org.hornetq.core.remoting.CoreRemotingConnection;
 import org.hornetq.core.remoting.RemotingConnection;
 import org.hornetq.core.remoting.impl.wireformat.SessionReceiveContinuationMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionReceiveLargeMessage;
@@ -364,7 +365,7 @@ public class DelegatingSession implements ClientSessionInternal
       return session.getXAResource();
    }
 
-   public void handleFailover(final RemotingConnection backupConnection)
+   public void handleFailover(final CoreRemotingConnection backupConnection)
    {
       session.handleFailover(backupConnection);
    }

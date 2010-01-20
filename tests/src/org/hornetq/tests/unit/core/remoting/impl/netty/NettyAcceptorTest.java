@@ -22,6 +22,7 @@ import junit.framework.Assert;
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.core.config.impl.ConfigurationImpl;
+import org.hornetq.core.remoting.ProtocolType;
 import org.hornetq.core.remoting.impl.AbstractBufferHandler;
 import org.hornetq.integration.transports.netty.NettyAcceptor;
 import org.hornetq.integration.transports.netty.TransportConstants;
@@ -77,7 +78,7 @@ public class NettyAcceptorTest extends UnitTestCase
          {
          }
 
-         public void connectionCreated(final Connection connection)
+         public void connectionCreated(final Connection connection, final ProtocolType protocol)
          {
          }
       };

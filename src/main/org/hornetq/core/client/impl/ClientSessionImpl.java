@@ -35,6 +35,7 @@ import org.hornetq.api.core.client.SessionFailureListener;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.Channel;
 import org.hornetq.core.remoting.CommandConfirmationHandler;
+import org.hornetq.core.remoting.CoreRemotingConnection;
 import org.hornetq.core.remoting.FailureListener;
 import org.hornetq.core.remoting.Packet;
 import org.hornetq.core.remoting.RemotingConnection;
@@ -117,7 +118,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
    private final Executor executor;
 
-   private volatile RemotingConnection remotingConnection;
+   private volatile CoreRemotingConnection remotingConnection;
 
    private final Set<ClientProducerInternal> producers = new ConcurrentHashSet<ClientProducerInternal>();
 
@@ -203,7 +204,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
                             final int minLargeMessageSize,
                             final int initialMessagePacketSize,
                             final String groupID,
-                            final RemotingConnection remotingConnection,
+                            final CoreRemotingConnection remotingConnection,
                             final int version,
                             final Channel channel,
                             final Executor executor) throws HornetQException
@@ -834,7 +835,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
    // Needs to be synchronized to prevent issues with occurring concurrently with close()
 
-   public synchronized void handleFailover(final RemotingConnection backupConnection)
+   public synchronized void handleFailover(final CoreRemotingConnection backupConnection)
    {
       if (closed)
       {

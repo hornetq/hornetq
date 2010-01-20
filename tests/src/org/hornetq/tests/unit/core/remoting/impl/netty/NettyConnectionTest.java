@@ -22,6 +22,7 @@ import junit.framework.Assert;
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.core.remoting.ProtocolType;
 import org.hornetq.integration.transports.netty.NettyConnection;
 import org.hornetq.spi.core.remoting.Connection;
 import org.hornetq.spi.core.remoting.ConnectionLifeCycleListener;
@@ -219,7 +220,7 @@ public class NettyConnectionTest extends UnitTestCase
    class MyListener implements ConnectionLifeCycleListener
    {
 
-      public void connectionCreated(final Connection connection)
+      public void connectionCreated(final Connection connection, final ProtocolType protocol)
       {
 
       }

@@ -13,6 +13,7 @@
 package org.hornetq.spi.core.remoting;
 
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.core.remoting.ProtocolType;
 
 /**
  * A ConnectionLifeCycleListener is called by the remoting implementation to notify of connection events.
@@ -26,7 +27,7 @@ public interface ConnectionLifeCycleListener
     *
     * @param connection the connection that has been created
     */
-   void connectionCreated(Connection connection);
+   void connectionCreated(Connection connection, ProtocolType protocol);
 
    /**
     * called when a connection is destroyed.

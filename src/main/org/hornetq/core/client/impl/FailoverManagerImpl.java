@@ -37,9 +37,10 @@ import org.hornetq.api.core.client.SessionFailureListener;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.Channel;
 import org.hornetq.core.remoting.ChannelHandler;
+import org.hornetq.core.remoting.CoreRemotingConnection;
 import org.hornetq.core.remoting.FailureListener;
 import org.hornetq.core.remoting.Packet;
-import org.hornetq.core.remoting.RemotingConnection;
+import org.hornetq.core.remoting.ProtocolType;
 import org.hornetq.core.remoting.impl.AbstractBufferHandler;
 import org.hornetq.core.remoting.impl.RemotingConnectionImpl;
 import org.hornetq.core.remoting.impl.wireformat.CreateSessionMessage;
@@ -77,7 +78,7 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
 
    // debug
 
-   private static Map<TransportConfiguration, Set<RemotingConnection>> debugConns;
+   private static Map<TransportConfiguration, Set<CoreRemotingConnection>> debugConns;
 
    private static boolean debug = false;
 
@@ -85,7 +86,7 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
    {
       FailoverManagerImpl.debug = true;
 
-      FailoverManagerImpl.debugConns = new ConcurrentHashMap<TransportConfiguration, Set<RemotingConnection>>();
+      FailoverManagerImpl.debugConns = new ConcurrentHashMap<TransportConfiguration, Set<CoreRemotingConnection>>();
    }
 
    public static void disableDebug()
@@ -96,9 +97,9 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
       FailoverManagerImpl.debugConns = null;
    }
 
-   private void checkAddDebug(final RemotingConnection conn)
+   private void checkAddDebug(final CoreRemotingConnection conn)
    {
-      Set<RemotingConnection> conns;
+      Set<CoreRemotingConnection> conns;
 
       synchronized (FailoverManagerImpl.debugConns)
       {
@@ -106,7 +107,7 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
 
          if (conns == null)
          {
-            conns = new HashSet<RemotingConnection>();
+            conns = new HashSet<CoreRemotingConnection>();
 
             FailoverManagerImpl.debugConns.put(connectorConfig, conns);
          }
@@ -117,7 +118,7 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
 
    public static void failAllConnectionsForConnector(final TransportConfiguration config)
    {
-      Set<RemotingConnection> conns;
+      Set<CoreRemotingConnection> conns;
 
       synchronized (FailoverManagerImpl.debugConns)
       {
@@ -125,13 +126,13 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
 
          if (conns != null)
          {
-            conns = new HashSet<RemotingConnection>(FailoverManagerImpl.debugConns.get(config));
+            conns = new HashSet<CoreRemotingConnection>(FailoverManagerImpl.debugConns.get(config));
          }
       }
 
       if (conns != null)
       {
-         for (RemotingConnection conn : conns)
+         for (CoreRemotingConnection conn : conns)
          {
             conn.fail(new HornetQException(HornetQException.INTERNAL_ERROR, "simulated connection failure"));
          }
@@ -175,7 +176,7 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
 
    private final Executor closeExecutor;
 
-   private RemotingConnection connection;
+   private CoreRemotingConnection connection;
 
    private final long retryInterval;
 
@@ -272,7 +273,7 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
 
    // ConnectionLifeCycleListener implementation --------------------------------------------------
 
-   public void connectionCreated(final Connection connection)
+   public void connectionCreated(final Connection connection, final ProtocolType protocol)
    {
    }
 
@@ -319,7 +320,7 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
          {
             Version clientVersion = VersionLoader.getVersion();
 
-            RemotingConnection theConnection = null;
+            CoreRemotingConnection theConnection = null;
 
             Lock lock = null;
 
@@ -651,7 +652,7 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
 
             // So.. do failover / reconnection
 
-            RemotingConnection oldConnection = connection;
+            CoreRemotingConnection oldConnection = connection;
 
             connection = null;
 
@@ -753,9 +754,9 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
    /*
     * Re-attach sessions all pre-existing sessions to the new remoting connection
     */
-   private void reconnectSessions(final RemotingConnection oldConnection, final int reconnectAttempts)
+   private void reconnectSessions(final CoreRemotingConnection oldConnection, final int reconnectAttempts)
    {
-      RemotingConnection newConnection = getConnectionWithRetry(reconnectAttempts);
+      CoreRemotingConnection newConnection = getConnectionWithRetry(reconnectAttempts);
 
       if (newConnection == null)
       {
@@ -786,7 +787,7 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
       }
    }
 
-   private RemotingConnection getConnectionWithRetry(final int reconnectAttempts)
+   private CoreRemotingConnection getConnectionWithRetry(final int reconnectAttempts)
    {
       long interval = retryInterval;
 
@@ -799,7 +800,7 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
             return null;
          }
 
-         RemotingConnection theConnection = getConnection();
+         CoreRemotingConnection theConnection = getConnection();
 
          if (theConnection == null)
          {
@@ -897,7 +898,7 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
       }
    }
 
-   public RemotingConnection getConnection()
+   public CoreRemotingConnection getConnection()
    {
       if (connection == null)
       {
@@ -1057,9 +1058,9 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
 
    private class Channel0Handler implements ChannelHandler
    {
-      private final RemotingConnection conn;
+      private final CoreRemotingConnection conn;
 
-      private Channel0Handler(final RemotingConnection conn)
+      private Channel0Handler(final CoreRemotingConnection conn)
       {
          this.conn = conn;
       }
@@ -1088,7 +1089,7 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
    {
       public void bufferReceived(final Object connectionID, final HornetQBuffer buffer)
       {
-         RemotingConnection theConn = connection;
+         CoreRemotingConnection theConn = connection;
 
          if (theConn != null && connectionID == theConn.getID())
          {

@@ -31,6 +31,7 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.management.NotificationType;
 import org.hornetq.core.logging.Logger;
+import org.hornetq.core.remoting.ProtocolType;
 import org.hornetq.core.remoting.impl.ssl.SSLSupport;
 import org.hornetq.core.server.management.Notification;
 import org.hornetq.core.server.management.NotificationService;
@@ -513,14 +514,14 @@ public class NettyAcceptor implements Acceptor
 
    private class Listener implements ConnectionLifeCycleListener
    {
-      public void connectionCreated(final Connection connection)
+      public void connectionCreated(final Connection connection, final ProtocolType protocol)
       {
          if (connections.putIfAbsent(connection.getID(), connection) != null)
          {
             throw new IllegalArgumentException("Connection already exists with id " + connection.getID());
          }
 
-         listener.connectionCreated(connection);
+         listener.connectionCreated(connection, protocol);
       }
 
       public void connectionDestroyed(final Object connectionID)

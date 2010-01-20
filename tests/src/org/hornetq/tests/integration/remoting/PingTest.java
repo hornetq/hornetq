@@ -22,13 +22,17 @@ import junit.framework.Assert;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Interceptor;
 import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.core.client.*;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.api.core.client.SessionFailureListener;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.client.impl.FailoverManagerImpl;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.CloseListener;
+import org.hornetq.core.remoting.CoreRemotingConnection;
 import org.hornetq.core.remoting.Packet;
 import org.hornetq.core.remoting.RemotingConnection;
 import org.hornetq.core.remoting.impl.wireformat.PacketImpl;
@@ -345,14 +349,14 @@ public class PingTest extends ServiceTestBase
 
       session.addFailureListener(clientListener);
 
-      RemotingConnection serverConn = null;
+      CoreRemotingConnection serverConn = null;
       while (serverConn == null)
       {
          Set<RemotingConnection> conns = server.getRemotingService().getConnections();
 
          if (!conns.isEmpty())
          {
-            serverConn = server.getRemotingService().getConnections().iterator().next();
+            serverConn = (CoreRemotingConnection)server.getRemotingService().getConnections().iterator().next();
          }
          else
          {

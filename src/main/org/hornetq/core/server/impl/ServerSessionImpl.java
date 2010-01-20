@@ -44,8 +44,8 @@ import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.postoffice.QueueBinding;
 import org.hornetq.core.remoting.Channel;
 import org.hornetq.core.remoting.CloseListener;
+import org.hornetq.core.remoting.CoreRemotingConnection;
 import org.hornetq.core.remoting.FailureListener;
-import org.hornetq.core.remoting.RemotingConnection;
 import org.hornetq.core.security.CheckType;
 import org.hornetq.core.security.SecurityStore;
 import org.hornetq.core.server.BindingQueryResult;
@@ -100,7 +100,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
 
    private final boolean strictUpdateDeliveryCount;
 
-   private RemotingConnection remotingConnection;
+   private CoreRemotingConnection remotingConnection;
 
    private Channel channel;
 
@@ -152,7 +152,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
                             final boolean preAcknowledge,
                             final boolean strictUpdateDeliveryCount,
                             final boolean xa,
-                            final RemotingConnection remotingConnection,
+                            final CoreRemotingConnection remotingConnection,
                             final Channel channel,
                             final StorageManager storageManager,
                             final PostOffice postOffice,
@@ -1037,7 +1037,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       }
    }
 
-   public int transferConnection(final RemotingConnection newConnection, final int lastReceivedCommandID)
+   public int transferConnection(final CoreRemotingConnection newConnection, final int lastReceivedCommandID)
    {
       // We need to disable delivery on all the consumers while the transfer is occurring- otherwise packets might get
       // delivered

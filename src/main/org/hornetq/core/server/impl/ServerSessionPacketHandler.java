@@ -59,9 +59,9 @@ import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.remoting.Channel;
 import org.hornetq.core.remoting.ChannelHandler;
 import org.hornetq.core.remoting.CloseListener;
+import org.hornetq.core.remoting.CoreRemotingConnection;
 import org.hornetq.core.remoting.FailureListener;
 import org.hornetq.core.remoting.Packet;
-import org.hornetq.core.remoting.RemotingConnection;
 import org.hornetq.core.remoting.impl.wireformat.CreateQueueMessage;
 import org.hornetq.core.remoting.impl.wireformat.HornetQExceptionMessage;
 import org.hornetq.core.remoting.impl.wireformat.NullResponseMessage;
@@ -126,7 +126,7 @@ public class ServerSessionPacketHandler implements ChannelHandler, CloseListener
 
    private final Channel channel;
 
-   private volatile RemotingConnection remotingConnection;
+   private volatile CoreRemotingConnection remotingConnection;
 
    public ServerSessionPacketHandler(final ServerSession session,
                                      final OperationContext sessionContext,
@@ -205,44 +205,7 @@ public class ServerSessionPacketHandler implements ChannelHandler, CloseListener
       return channel;
    }
 
-   public int transferConnection(final RemotingConnection newConnection, final int lastReceivedCommandID)
-   {
-      // We need to disable delivery on all the consumers while the transfer is occurring- otherwise packets might get
-      // delivered
-      // after the channel has transferred but *before* packets have been replayed - this will give the client the wrong
-      // sequence of packets.
-      // It is not sufficient to just stop the session, since right after stopping the session, another session start
-      // might be executed
-      // before we have transferred the connection, leaving it in a started state
-      session.setTransferring(true);
-
-      removeConnectionListeners();
-
-      // Note. We do not destroy the replicating connection here. In the case the live server has really crashed
-      // then the connection will get cleaned up anyway when the server ping timeout kicks in.
-      // In the case the live server is really still up, i.e. a split brain situation (or in tests), then closing
-      // the replicating connection will cause the outstanding responses to be be replayed on the live server,
-      // if these reach the client who then subsequently fails over, on reconnection to backup, it will have
-      // received responses that the backup did not know about.
-
-      channel.transferConnection(newConnection);
-
-      newConnection.syncIDGeneratorSequence(remotingConnection.getIDGeneratorSequence());
-
-      remotingConnection = newConnection;
-
-      addConnectionListeners();
-
-      int serverLastReceivedCommandID = channel.getLastConfirmedCommandID();
-
-      channel.replayCommands(lastReceivedCommandID);
-
-      channel.setTransferring(false);
-
-      session.setTransferring(false);
-
-      return serverLastReceivedCommandID;
-   }
+  
 
    public void handlePacket(final Packet packet)
    {

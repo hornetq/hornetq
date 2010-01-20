@@ -31,8 +31,8 @@ import org.hornetq.core.persistence.OperationContext;
 import org.hornetq.core.persistence.impl.journal.OperationContextImpl;
 import org.hornetq.core.remoting.Channel;
 import org.hornetq.core.remoting.ChannelHandler;
+import org.hornetq.core.remoting.CoreRemotingConnection;
 import org.hornetq.core.remoting.Packet;
-import org.hornetq.core.remoting.RemotingConnection;
 import org.hornetq.core.remoting.impl.wireformat.CreateReplicationSessionMessage;
 import org.hornetq.core.remoting.impl.wireformat.PacketImpl;
 import org.hornetq.core.remoting.impl.wireformat.ReplicationAddMessage;
@@ -69,7 +69,7 @@ public class ReplicationManagerImpl implements ReplicationManager
 
    private final FailoverManager failoverManager;
 
-   private RemotingConnection replicatingConnection;
+   private CoreRemotingConnection replicatingConnection;
 
    private Channel replicatingChannel;
 

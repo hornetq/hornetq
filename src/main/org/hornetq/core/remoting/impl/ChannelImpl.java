@@ -25,6 +25,7 @@ import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.Channel;
 import org.hornetq.core.remoting.ChannelHandler;
 import org.hornetq.core.remoting.CommandConfirmationHandler;
+import org.hornetq.core.remoting.CoreRemotingConnection;
 import org.hornetq.core.remoting.Packet;
 import org.hornetq.core.remoting.RemotingConnection;
 import org.hornetq.core.remoting.impl.wireformat.HornetQExceptionMessage;
@@ -52,7 +53,7 @@ public class ChannelImpl implements Channel
 
    private volatile int lastConfirmedCommandID = -1;
 
-   private volatile RemotingConnection connection;
+   private volatile CoreRemotingConnection connection;
 
    private volatile boolean closed;
 
@@ -76,7 +77,7 @@ public class ChannelImpl implements Channel
       
    private volatile boolean transferring;
  
-   public ChannelImpl(final RemotingConnection connection, final long id, final int confWindowSize)
+   public ChannelImpl(final CoreRemotingConnection connection, final long id, final int confWindowSize)
    {
       this.connection = connection;
 
@@ -316,7 +317,7 @@ public class ChannelImpl implements Channel
       closed = true;
    }
    
-   public void transferConnection(final RemotingConnection newConnection)
+   public void transferConnection(final CoreRemotingConnection newConnection)
    {
       // Needs to synchronize on the connection to make sure no packets from
       // the old connection get processed after transfer has occurred
@@ -326,7 +327,7 @@ public class ChannelImpl implements Channel
 
          // And switch it
 
-         final RemotingConnectionImpl rnewConnection = (RemotingConnectionImpl)newConnection;
+         final CoreRemotingConnection rnewConnection = (CoreRemotingConnection)newConnection;
 
          rnewConnection.putChannel(id, this);
 
@@ -369,7 +370,7 @@ public class ChannelImpl implements Channel
       lock.unlock();
    }
 
-   public RemotingConnection getConnection()
+   public CoreRemotingConnection getConnection()
    {
       return connection;
    }

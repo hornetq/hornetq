@@ -26,20 +26,15 @@ import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Interceptor;
 import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.remoting.Channel;
-import org.hornetq.core.remoting.ChannelHandler;
-import org.hornetq.core.remoting.Packet;
+import org.hornetq.core.remoting.ProtocolType;
 import org.hornetq.core.remoting.RemotingConnection;
 import org.hornetq.core.remoting.impl.AbstractBufferHandler;
-import org.hornetq.core.remoting.impl.RemotingConnectionImpl;
-import org.hornetq.core.remoting.impl.wireformat.PacketImpl;
-import org.hornetq.core.remoting.impl.wireformat.Ping;
+import org.hornetq.core.remoting.server.ConnectionEntry;
+import org.hornetq.core.remoting.server.ProtocolManager;
 import org.hornetq.core.remoting.server.RemotingService;
 import org.hornetq.core.server.HornetQServer;
-import org.hornetq.core.server.impl.HornetQPacketHandler;
 import org.hornetq.core.server.management.ManagementService;
 import org.hornetq.spi.core.remoting.Acceptor;
 import org.hornetq.spi.core.remoting.AcceptorFactory;
@@ -89,7 +84,10 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
    private final ScheduledExecutorService scheduledThreadPool;
 
    private FailureCheckAndFlushThread failureCheckAndFlushThread;
-
+   
+   private Map<ProtocolType, ProtocolManager> protocolMap = 
+      new ConcurrentHashMap<ProtocolType, ProtocolManager>();
+   
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -122,6 +120,8 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       this.managementService = managementService;
       this.threadPool = threadPool;
       this.scheduledThreadPool = scheduledThreadPool;
+      
+      this.protocolMap.put(ProtocolType.CORE, new CoreProtocolManager(server, interceptors));
    }
 
    // RemotingService implementation -------------------------------
@@ -170,6 +170,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
             if (managementService != null)
             {
                acceptor.setNotificationService(managementService);
+               
                managementService.registerAcceptor(acceptor, info);
             }
          }
@@ -235,17 +236,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       {
          RemotingConnection conn = entry.connection;
 
-         Channel channel0 = conn.getChannel(0, -1);
-
-         // And we remove all channels from the connection, this ensures no more packets will be processed after this
-         // method is
-         // complete
-
-         conn.removeAllChannels();
-
-         // Now we are 100% sure that no more packets will be processed we can send the disconnect
-
-         channel0.sendAndFlush(new PacketImpl(PacketImpl.DISCONNECT));
+         conn.disconnect();
       }
 
       for (Acceptor acceptor : acceptors)
@@ -304,61 +295,32 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
    // ConnectionLifeCycleListener implementation -----------------------------------
 
-   public void connectionCreated(final Connection connection)
+   private ProtocolManager getProtocolManager(ProtocolType protocol)
+   {
+      return protocolMap.get(protocol);
+   }
+   
+   public void connectionCreated(final Connection connection, final ProtocolType protocol)
    {
       if (server == null)
       {
          throw new IllegalStateException("Unable to create connection, server hasn't finished starting up");
       }
-
-      RemotingConnection rc = new RemotingConnectionImpl(connection,
-                                                         interceptors,
-                                                         config.isAsyncConnectionExecutionEnabled() ? server.getExecutorFactory()
-                                                                                                            .getExecutor()
-                                                                                                   : null);
-
-      Channel channel1 = rc.getChannel(1, -1);
-
-      ChannelHandler handler = createHandler(rc, channel1);
-
-      channel1.setHandler(handler);
-
-      long ttl = HornetQClient.DEFAULT_CONNECTION_TTL;
-
-      if (config.getConnectionTTLOverride() != -1)
+      
+      ProtocolManager pmgr = this.getProtocolManager(protocol);
+      
+      if (pmgr == null)
       {
-         ttl = config.getConnectionTTLOverride();
+         throw new IllegalArgumentException("Unknown protocol " + protocol);
       }
 
-      final ConnectionEntry entry = new ConnectionEntry(rc, System.currentTimeMillis(), ttl);
-
+      ConnectionEntry entry = pmgr.createConnectionEntry(connection);
+      
       connections.put(connection.getID(), entry);
-
-      final Channel channel0 = rc.getChannel(0, -1);
-
-      channel0.setHandler(new ChannelHandler()
-      {
-         public void handlePacket(final Packet packet)
-         {
-            if (packet.getType() == PacketImpl.PING)
-            {
-               Ping ping = (Ping)packet;
-
-               if (config.getConnectionTTLOverride() == -1)
-               {
-                  // Allow clients to specify connection ttl
-                  entry.ttl = ping.getConnectionTTL();
-               }
-
-               // Just send a ping back
-               channel0.send(packet);
-            }
-         }
-      });
 
       if (config.isBackup())
       {
-         serverSideReplicatingConnection = rc;
+         serverSideReplicatingConnection = entry.connection;
       }
    }
 
@@ -409,14 +371,6 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
    // Protected -----------------------------------------------------
 
-   /**
-    * Subclasses (on tests) may use this to create a different channel.
-    */
-   protected ChannelHandler createHandler(final RemotingConnection rc, final Channel channel)
-   {
-      return new HornetQPacketHandler(server, channel, rc);
-   }
-
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------
@@ -431,24 +385,6 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
          {
             conn.connection.bufferReceived(connectionID, buffer);
          }
-      }
-   }
-
-   private static final class ConnectionEntry
-   {
-      final RemotingConnection connection;
-
-      volatile long lastCheck;
-
-      volatile long ttl;
-
-      ConnectionEntry(final RemotingConnection connection, final long lastCheck, final long ttl)
-      {
-         this.connection = connection;
-
-         this.lastCheck = lastCheck;
-
-         this.ttl = ttl;
       }
    }
 
@@ -516,11 +452,8 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
                }
                
                if (flush)
-               {
-                  //We flush any confirmations on the connection - this prevents idle bridges for example
-                  //sitting there with many unacked messages
-                                    
-                  conn.flushConfirmations();
+               {                                   
+                  conn.flush();
                }
             }
 

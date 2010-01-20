@@ -17,8 +17,8 @@ import java.util.concurrent.RejectedExecutionException;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
-import org.hornetq.api.core.HornetQException;
 import org.hornetq.core.logging.Logger;
+import org.hornetq.core.remoting.ProtocolType;
 import org.hornetq.spi.core.remoting.BufferHandler;
 import org.hornetq.spi.core.remoting.Connection;
 import org.hornetq.spi.core.remoting.ConnectionLifeCycleListener;
@@ -70,7 +70,7 @@ public class InVMConnection implements Connection
 
       this.executor = executor;
 
-      listener.connectionCreated(this);
+      listener.connectionCreated(this, ProtocolType.CORE);
    }
 
    private volatile boolean closing;

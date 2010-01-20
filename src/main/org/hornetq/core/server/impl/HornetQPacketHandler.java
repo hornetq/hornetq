@@ -22,8 +22,8 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.Channel;
 import org.hornetq.core.remoting.ChannelHandler;
+import org.hornetq.core.remoting.CoreRemotingConnection;
 import org.hornetq.core.remoting.Packet;
-import org.hornetq.core.remoting.RemotingConnection;
 import org.hornetq.core.remoting.impl.wireformat.CreateQueueMessage;
 import org.hornetq.core.remoting.impl.wireformat.CreateReplicationSessionMessage;
 import org.hornetq.core.remoting.impl.wireformat.CreateSessionMessage;
@@ -48,9 +48,9 @@ public class HornetQPacketHandler implements ChannelHandler
 
    private final Channel channel1;
 
-   private final RemotingConnection connection;
+   private final CoreRemotingConnection connection;
 
-   public HornetQPacketHandler(final HornetQServer server, final Channel channel1, final RemotingConnection connection)
+   public HornetQPacketHandler(final HornetQServer server, final Channel channel1, final CoreRemotingConnection connection)
    {
       this.server = server;
 

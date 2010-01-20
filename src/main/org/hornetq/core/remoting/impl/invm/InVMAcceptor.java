@@ -21,6 +21,7 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.management.NotificationType;
 import org.hornetq.core.logging.Logger;
+import org.hornetq.core.remoting.ProtocolType;
 import org.hornetq.core.server.management.Notification;
 import org.hornetq.core.server.management.NotificationService;
 import org.hornetq.spi.core.remoting.Acceptor;
@@ -215,14 +216,14 @@ public class InVMAcceptor implements Acceptor
          this.connector = connector;
       }
 
-      public void connectionCreated(final Connection connection)
+      public void connectionCreated(final Connection connection, final ProtocolType protocol)
       {
          if (connections.putIfAbsent((String)connection.getID(), connection) != null)
          {
             throw new IllegalArgumentException("Connection already exists with id " + connection.getID());
          }
 
-         listener.connectionCreated(connection);
+         listener.connectionCreated(connection, protocol);
       }
 
       public void connectionDestroyed(final Object connectionID)

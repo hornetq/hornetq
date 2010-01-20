@@ -25,8 +25,8 @@ import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.core.client.impl.FailoverManagerImpl;
 import org.hornetq.core.remoting.Channel;
+import org.hornetq.core.remoting.CoreRemotingConnection;
 import org.hornetq.core.remoting.Packet;
-import org.hornetq.core.remoting.RemotingConnection;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.remoting.impl.wireformat.CreateSessionMessage;
 import org.hornetq.core.remoting.impl.wireformat.CreateSessionResponseMessage;
@@ -51,7 +51,7 @@ public class IncompatibleVersionTest extends ServiceTestBase
 
    private HornetQServer server;
 
-   private RemotingConnection connection;
+   private CoreRemotingConnection connection;
 
    // Static --------------------------------------------------------
 

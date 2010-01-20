@@ -69,7 +69,7 @@ import org.hornetq.core.postoffice.impl.DivertBinding;
 import org.hornetq.core.postoffice.impl.LocalQueueBinding;
 import org.hornetq.core.postoffice.impl.PostOfficeImpl;
 import org.hornetq.core.remoting.Channel;
-import org.hornetq.core.remoting.RemotingConnection;
+import org.hornetq.core.remoting.CoreRemotingConnection;
 import org.hornetq.core.remoting.impl.wireformat.CreateSessionResponseMessage;
 import org.hornetq.core.remoting.impl.wireformat.ReattachSessionResponseMessage;
 import org.hornetq.core.remoting.server.RemotingService;
@@ -536,7 +536,7 @@ public class HornetQServerImpl implements HornetQServer
       return clusterManager;
    }
 
-   public ReattachSessionResponseMessage reattachSession(final RemotingConnection connection,
+   public ReattachSessionResponseMessage reattachSession(final CoreRemotingConnection connection,
                                                          final String name,
                                                          final int lastConfirmedCommandID) throws Exception
    {
@@ -593,7 +593,7 @@ public class HornetQServerImpl implements HornetQServer
                                                      final String password,
                                                      final int minLargeMessageSize,
                                                      final int incrementingVersion,
-                                                     final RemotingConnection connection,
+                                                     final CoreRemotingConnection connection,
                                                      final boolean autoCommitSends,
                                                      final boolean autoCommitAcks,
                                                      final boolean preAcknowledge,

@@ -17,10 +17,10 @@ import java.util.concurrent.locks.Lock;
 import org.hornetq.api.core.HornetQException;
 
 /**
- * A channel is a way of interleaving data meant for different endpoints over the same {@link org.hornetq.core.remoting.RemotingConnection}.
+ * A channel is a way of interleaving data meant for different endpoints over the same {@link org.hornetq.core.remoting.CoreRemotingConnection}.
  * <p/>
  * Any packet sent will have its channel id set to the specific channel sending so it can be routed to its correct channel
- * when received by the {@link org.hornetq.core.remoting.RemotingConnection}. see {@link org.hornetq.core.remoting.Packet#setChannelID(long)}.
+ * when received by the {@link org.hornetq.core.remoting.CoreRemotingConnection}. see {@link org.hornetq.core.remoting.Packet#setChannelID(long)}.
  * <p/>
  * Each Channel should will forward any packets received to its {@link org.hornetq.core.remoting.ChannelHandler}.
  * <p/>
@@ -81,7 +81,7 @@ public interface Channel
     *
     * @param newConnection the new connection
     */
-   void transferConnection(RemotingConnection newConnection);
+   void transferConnection(CoreRemotingConnection newConnection);
 
    /**
     * resends any packets that have not received confirmations yet.
@@ -126,7 +126,7 @@ public interface Channel
    /**
     * returns the Remoting Connection being used by the channel
     */
-   RemotingConnection getConnection();
+   CoreRemotingConnection getConnection();
 
    /**
     * sends a confirmation of a packet being received.
@@ -148,7 +148,7 @@ public interface Channel
    void flushConfirmations();
 
    /**
-    * Called by {@link org.hornetq.core.remoting.RemotingConnection} when a packet is received.
+    * Called by {@link org.hornetq.core.remoting.CoreRemotingConnection} when a packet is received.
     * <p/>
     * This method should then call its {@link org.hornetq.core.remoting.ChannelHandler} after appropriate processing of
     * the packet

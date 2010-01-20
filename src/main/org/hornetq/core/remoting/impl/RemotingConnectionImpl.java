@@ -26,9 +26,9 @@ import org.hornetq.api.core.Interceptor;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.Channel;
 import org.hornetq.core.remoting.CloseListener;
+import org.hornetq.core.remoting.CoreRemotingConnection;
 import org.hornetq.core.remoting.FailureListener;
 import org.hornetq.core.remoting.Packet;
-import org.hornetq.core.remoting.RemotingConnection;
 import org.hornetq.core.remoting.impl.wireformat.PacketImpl;
 import org.hornetq.spi.core.remoting.Connection;
 import org.hornetq.utils.SimpleIDGenerator;
@@ -38,7 +38,7 @@ import org.hornetq.utils.SimpleIDGenerator;
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * @version <tt>$Revision$</tt> $Id$
  */
-public class RemotingConnectionImpl extends AbstractBufferHandler implements RemotingConnection
+public class RemotingConnectionImpl extends AbstractBufferHandler implements CoreRemotingConnection
 {
    // Constants
    // ------------------------------------------------------------------------------------
@@ -84,6 +84,8 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
    private volatile boolean dataReceived;
 
    private final Executor executor;
+   
+   private volatile boolean executing;
 
    // Constructors
    // ---------------------------------------------------------------------------------
@@ -275,6 +277,21 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
 
       callClosingListeners();
    }
+   
+   public void disconnect()
+   {
+      Channel channel0 = getChannel(0, -1);
+
+      // And we remove all channels from the connection, this ensures no more packets will be processed after this
+      // method is
+      // complete
+
+      removeAllChannels();
+
+      // Now we are 100% sure that no more packets will be processed we can send the disconnect
+
+      channel0.sendAndFlush(new PacketImpl(PacketImpl.DISCONNECT));
+   }
 
    public long generateChannelID()
    {
@@ -325,17 +342,9 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
       return res;
    }
 
-   public void removeAllChannels()
-   {
-      // We get the transfer lock first - this ensures no packets are being processed AND
-      // it's guaranteed no more packets will be processed once this method is complete
-      synchronized (transferLock)
-      {
-         channels.clear();
-      }
-   }
-
-   public void flushConfirmations()
+   //We flush any confirmations on the connection - this prevents idle bridges for example
+   //sitting there with many unacked messages
+   public void flush()
    {
       synchronized (transferLock)
       {
@@ -348,8 +357,6 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
 
    // Buffer Handler implementation
    // ----------------------------------------------------
-
-   private volatile boolean executing;
 
    public void bufferReceived(final Object connectionID, final HornetQBuffer buffer)
    {
@@ -434,6 +441,15 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
    // Private
    // --------------------------------------------------------------------------------------
 
+   private void removeAllChannels()
+   {
+      // We get the transfer lock first - this ensures no packets are being processed AND
+      // it's guaranteed no more packets will be processed once this method is complete
+      synchronized (transferLock)
+      {
+         channels.clear();
+      }
+   }  
    private void callFailureListeners(final HornetQException me)
    {
       final List<FailureListener> listenersClone = new ArrayList<FailureListener>(failureListeners);
