@@ -170,7 +170,6 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
             if (managementService != null)
             {
                acceptor.setNotificationService(managementService);
-               
                managementService.registerAcceptor(acceptor, info);
             }
          }
@@ -236,7 +235,17 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       {
          RemotingConnection conn = entry.connection;
 
-         conn.disconnect();
+         Channel channel0 = conn.getChannel(0, -1);
+
+         // And we remove all channels from the connection, this ensures no more packets will be processed after this
+         // method is
+         // complete
+
+         conn.removeAllChannels();
+
+         // Now we are 100% sure that no more packets will be processed we can send the disconnect
+
+         channel0.sendAndFlush(new PacketImpl(PacketImpl.DISCONNECT));
       }
 
       for (Acceptor acceptor : acceptors)

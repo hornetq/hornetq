@@ -46,6 +46,40 @@ public interface RemotingConnection extends BufferHandler
    String getRemoteAddress();
 
    /**
+    * return the channel with the channel id specified.
+    * <p/>
+    * If it does not exist create it with the confirmation window size.
+    *
+    * @param channelID      the channel id
+    * @param confWindowSize the confirmation window size
+    * @return the channel
+    */
+   Channel getChannel(long channelID, int confWindowSize);
+
+   /**
+    * add the channel with the specified channel id
+    *
+    * @param channelID the channel id
+    * @param channel   the channel
+    */
+   void putChannel(long channelID, Channel channel);
+
+   /**
+    * remove the channel with the specified channel id
+    *
+    * @param channelID the channel id
+    * @return true if removed
+    */
+   boolean removeChannel(long channelID);
+
+   /**
+    * generate a unique (within this connection) channel id
+    *
+    * @return the id
+    */
+   long generateChannelID();
+
+   /**
     * add a failure listener.
     * <p/>
     * The listener will be called in the event of connection failure.
@@ -116,6 +150,20 @@ public interface RemotingConnection extends BufferHandler
    void destroy();
 
    /**
+    * resets the id generator used to when generating id's
+    *
+    * @param id the first id to set it to
+    */
+   void syncIDGeneratorSequence(long id);
+
+   /**
+    * return the next id that will be chosen.
+    *
+    * @return the id
+    */
+   long getIDGeneratorSequence();
+
+   /**
     * return the underlying Connection.
     *
     * @return the connection
@@ -134,7 +182,36 @@ public interface RemotingConnection extends BufferHandler
     *
     * @return true if destroyed, otherwise false
     */
-   boolean isDestroyed();    
-   
-   void disconnect();
+   boolean isDestroyed();
+
+   /**
+    * return the current tomeout for blocking calls
+    *
+    * @return the timeout in milliseconds
+    */
+   long getBlockingCallTimeout();
+
+   /**
+    * return the transfer lock used when transferring connections.
+    *
+    * @return the lock
+    */
+   Object getTransferLock();
+
+   /**
+    * returns true if any data has been received since the last time this method was called.
+    *
+    * @return true if data has been received.
+    */
+   boolean checkDataReceived();
+
+   /**
+    * remove all channels from the remoting connection
+    */
+   void removeAllChannels();
+
+   /**
+    * flush all outstanding confirmations onto the connection.
+    */
+   void flushConfirmations();
 }
