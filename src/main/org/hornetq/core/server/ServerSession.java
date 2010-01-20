@@ -43,73 +43,71 @@ public interface ServerSession
 
    void removeConsumer(ServerConsumer consumer) throws Exception;
 
-   void close() throws Exception;
+   void acknowledge(long consumerID, long messageID) throws Exception;
 
-   void handleAcknowledge(long consumerID, long messageID) throws Exception;
+   void expire(long consumerID, long messageID) throws Exception;
 
-   void handleExpired(long consumerID, long messageID) throws Exception;
+   void rollback(boolean considerLastMessageAsDelivered) throws Exception;
 
-   void handleRollback(boolean considerLastMessageAsDelivered) throws Exception;
+   void commit() throws Exception;
 
-   void handleCommit() throws Exception;
+   void xaCommit(Xid xid, boolean onePhase) throws Exception;
 
-   void handleXACommit(Xid xid, boolean onePhase) throws Exception;
+   void xaEnd(Xid xid) throws Exception;
 
-   void handleXAEnd(Xid xid) throws Exception;
+   void xaForget(Xid xid) throws Exception;
 
-   void handleXAForget(Xid xid) throws Exception;
+   void xaJoin(Xid xid) throws Exception;
 
-   void handleXAJoin(Xid xid) throws Exception;
+   void xaPrepare(Xid xid) throws Exception;
 
-   void handleXAPrepare(Xid xid) throws Exception;
+   void xaResume(Xid xid) throws Exception;
 
-   void handleXAResume(Xid xid) throws Exception;
+   void xaRollback(Xid xid) throws Exception;
 
-   void handleXARollback(Xid xid) throws Exception;
+   void xaStart(Xid xid) throws Exception;
 
-   void handleXAStart(Xid xid) throws Exception;
+   void xaSuspend() throws Exception;
 
-   void handleXASuspend() throws Exception;
+   List<Xid> xaGetInDoubtXids();
 
-   List<Xid> handleGetInDoubtXids();
+   int xaGetTimeout();
 
-   int handleGetXATimeout();
+   void xaSetTimeout(int timeout);
 
-   void handleSetXATimeout(int timeout);
+   void start();
 
-   void handleStart();
+   void stop();
 
-   void handleStop();
-
-   void handleCreateQueue(SimpleString address,
+   void createQueue(SimpleString address,
                           SimpleString name,
                           SimpleString filterString,
                           boolean temporary,
                           boolean durable) throws Exception;
 
-   void handleDeleteQueue(SimpleString name) throws Exception;
+   void deleteQueue(SimpleString name) throws Exception;
 
-   void handleCreateConsumer(long consumerID, SimpleString name, SimpleString filterString, boolean browseOnly) throws Exception;
+   void createConsumer(long consumerID, SimpleString name, SimpleString filterString, boolean browseOnly) throws Exception;
 
-   QueueQueryResult handleExecuteQueueQuery(SimpleString name) throws Exception;
+   QueueQueryResult executeQueueQuery(SimpleString name) throws Exception;
 
-   BindingQueryResult handleExecuteBindingQuery(SimpleString address);
+   BindingQueryResult executeBindingQuery(SimpleString address);
 
-   void handleCloseConsumer(long consumerID) throws Exception;
+   void closeConsumer(long consumerID) throws Exception;
 
-   void handleReceiveConsumerCredits(long consumerID, int credits) throws Exception;
+   void receiveConsumerCredits(long consumerID, int credits) throws Exception;
 
-   void handleSendContinuations(int packetSize, byte[] body, boolean continues) throws Exception;
+   void sendContinuations(int packetSize, byte[] body, boolean continues) throws Exception;
 
-   void handleSend(ServerMessage message) throws Exception;
+   void send(ServerMessage message) throws Exception;
 
-   void handleSendLargeMessage(byte[] largeMessageHeader) throws Exception;
+   void sendLarge(byte[] largeMessageHeader) throws Exception;
 
-   void handleForceConsumerDelivery(long consumerID, long sequence) throws Exception;
+   void forceConsumerDelivery(long consumerID, long sequence) throws Exception;
 
-   void handleRequestProducerCredits(SimpleString address, int credits) throws Exception;
+   void requestProducerCredits(SimpleString address, int credits) throws Exception;
 
-   void handleClose() throws Exception;
+   void close() throws Exception;
 
    int transferConnection(RemotingConnection newConnection, int lastReceivedCommandID);
 

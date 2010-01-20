@@ -84,7 +84,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
 
    // Attributes ----------------------------------------------------------------------------
 
-   //private final long id;
+   // private final long id;
 
    private final String username;
 
@@ -101,7 +101,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
    private final boolean strictUpdateDeliveryCount;
 
    private RemotingConnection remotingConnection;
-   
+
    private Channel channel;
 
    private final Map<Long, ServerConsumer> consumers = new ConcurrentHashMap<Long, ServerConsumer>();
@@ -131,14 +131,14 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
    // The current currentLargeMessage being processed
    private volatile LargeServerMessage currentLargeMessage;
 
-  // private ServerSessionPacketHandler handler;
+   // private ServerSessionPacketHandler handler;
 
    private boolean closed;
 
    private final Map<SimpleString, CreditManagerHolder> creditManagerHolders = new HashMap<SimpleString, CreditManagerHolder>();
 
    private final RoutingContext routingContext = new RoutingContextImpl(null);
-   
+
    private SessionCallback callback;
 
    // Constructors ---------------------------------------------------------------------------------
@@ -157,7 +157,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
                             final StorageManager storageManager,
                             final PostOffice postOffice,
                             final ResourceManager resourceManager,
-                            final SecurityStore securityStore,                         
+                            final SecurityStore securityStore,
                             final ManagementService managementService,
                             final HornetQServer server,
                             final SimpleString managementAddress) throws Exception
@@ -175,7 +175,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       this.preAcknowledge = preAcknowledge;
 
       this.remotingConnection = remotingConnection;
-      
+
       this.channel = channel;
 
       this.storageManager = storageManager;
@@ -200,7 +200,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       this.server = server;
 
       this.managementAddress = managementAddress;
-      
+
       remotingConnection.addFailureListener(this);
 
       remotingConnection.addCloseListener(this);
@@ -212,7 +212,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
    {
       this.callback = callback;
    }
-   
+
    public String getUsername()
    {
       return username;
@@ -246,7 +246,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       }
    }
 
-   public synchronized void close() throws Exception
+   private synchronized void doClose() throws Exception
    {
       if (tx != null && tx.getXid() == null)
       {
@@ -290,7 +290,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       }
    }
 
-   public void handleCreateConsumer(final long consumerID,
+   public void createConsumer(final long consumerID,
                                     final SimpleString name,
                                     final SimpleString filterString,
                                     final boolean browseOnly) throws Exception
@@ -347,7 +347,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       }
    }
 
-   public void handleCreateQueue(final SimpleString address,
+   public void createQueue(final SimpleString address,
                                  final SimpleString name,
                                  final SimpleString filterString,
                                  final boolean temporary,
@@ -398,7 +398,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       }
    }
 
-   public void handleDeleteQueue(final SimpleString name) throws Exception
+   public void deleteQueue(final SimpleString name) throws Exception
    {
       Binding binding = postOffice.getBinding(name);
 
@@ -417,7 +417,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       }
    }
 
-   public QueueQueryResult handleExecuteQueueQuery(final SimpleString name) throws Exception
+   public QueueQueryResult executeQueueQuery(final SimpleString name) throws Exception
    {
       if (name == null)
       {
@@ -457,7 +457,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       return response;
    }
 
-   public BindingQueryResult handleExecuteBindingQuery(final SimpleString address)
+   public BindingQueryResult executeBindingQuery(final SimpleString address)
    {
       if (address == null)
       {
@@ -479,21 +479,21 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       return new BindingQueryResult(!names.isEmpty(), names);
    }
 
-   public void handleForceConsumerDelivery(final long consumerID, final long sequence) throws Exception
+   public void forceConsumerDelivery(final long consumerID, final long sequence) throws Exception
    {
       ServerConsumer consumer = consumers.get(consumerID);
 
       consumer.forceDelivery(sequence);
    }
 
-   public void handleAcknowledge(final long consumerID, final long messageID) throws Exception
+   public void acknowledge(final long consumerID, final long messageID) throws Exception
    {
       ServerConsumer consumer = consumers.get(consumerID);
 
       consumer.acknowledge(autoCommitAcks, tx, messageID);
    }
 
-   public void handleExpired(final long consumerID, final long messageID) throws Exception
+   public void expire(final long consumerID, final long messageID) throws Exception
    {
       MessageReference ref = consumers.get(consumerID).getExpired(messageID);
 
@@ -503,7 +503,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       }
    }
 
-   public void handleCommit() throws Exception
+   public void commit() throws Exception
    {
       try
       {
@@ -515,12 +515,21 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       }
    }
 
-   public void handleRollback(final boolean considerLastMessageAsDelivered) throws Exception
+   public void rollback(final boolean considerLastMessageAsDelivered) throws Exception
    {
-      rollback(considerLastMessageAsDelivered);
+      if (tx == null)
+      {
+         // Might be null if XA
+
+         tx = new TransactionImpl(storageManager);
+      }
+
+      doRollback(considerLastMessageAsDelivered, tx);
+
+      tx = new TransactionImpl(storageManager);
    }
 
-   public void handleXACommit(final Xid xid, final boolean onePhase) throws Exception
+   public void xaCommit(final Xid xid, final boolean onePhase) throws Exception
    {
       if (tx != null)
       {
@@ -568,7 +577,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       }
    }
 
-   public void handleXAEnd(final Xid xid) throws Exception
+   public void xaEnd(final Xid xid) throws Exception
    {
       if (tx != null && tx.getXid().equals(xid))
       {
@@ -613,7 +622,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       }
    }
 
-   public void handleXAForget(final Xid xid) throws Exception
+   public void xaForget(final Xid xid) throws Exception
    {
       long id = resourceManager.removeHeuristicCompletion(xid);
 
@@ -636,7 +645,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       }
    }
 
-   public void handleXAJoin(final Xid xid) throws Exception
+   public void xaJoin(final Xid xid) throws Exception
    {
       Transaction theTx = resourceManager.getTransaction(xid);
 
@@ -659,7 +668,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       }
    }
 
-   public void handleXAResume(final Xid xid) throws Exception
+   public void xaResume(final Xid xid) throws Exception
    {
       if (tx != null)
       {
@@ -694,7 +703,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       }
    }
 
-   public void handleXARollback(final Xid xid) throws Exception
+   public void xaRollback(final Xid xid) throws Exception
    {
       if (tx != null)
       {
@@ -743,7 +752,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       }
    }
 
-   public void handleXAStart(final Xid xid) throws Exception
+   public void xaStart(final Xid xid) throws Exception
    {
       if (tx != null)
       {
@@ -766,7 +775,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       }
    }
 
-   public void handleXASuspend() throws Exception
+   public void xaSuspend() throws Exception
    {
       if (tx == null)
       {
@@ -791,7 +800,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       }
    }
 
-   public void handleXAPrepare(final Xid xid) throws Exception
+   public void xaPrepare(final Xid xid) throws Exception
    {
       if (tx != null)
       {
@@ -824,7 +833,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       }
    }
 
-   public List<Xid> handleGetInDoubtXids()
+   public List<Xid> xaGetInDoubtXids()
    {
       List<Xid> xids = new ArrayList<Xid>();
 
@@ -835,27 +844,27 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       return xids;
    }
 
-   public int handleGetXATimeout()
+   public int xaGetTimeout()
    {
       return resourceManager.getTimeoutSeconds();
    }
 
-   public void handleSetXATimeout(final int timeout)
+   public void xaSetTimeout(final int timeout)
    {
       resourceManager.setTimeoutSeconds(timeout);
    }
 
-   public void handleStart()
+   public void start()
    {
       setStarted(true);
    }
 
-   public void handleStop()
+   public void stop()
    {
       setStarted(false);
    }
 
-   public void handleClose()
+   public void close()
    {
       storageManager.afterCompleteOperations(new IOAsyncTask()
       {
@@ -867,7 +876,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
          {
             try
             {
-               close();
+               doClose();
             }
             catch (Exception e)
             {
@@ -877,7 +886,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       });
    }
 
-   public void handleCloseConsumer(final long consumerID) throws Exception
+   public void closeConsumer(final long consumerID) throws Exception
    {
       final ServerConsumer consumer = consumers.get(consumerID);
 
@@ -891,7 +900,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       }
    }
 
-   public void handleReceiveConsumerCredits(final long consumerID, final int credits) throws Exception
+   public void receiveConsumerCredits(final long consumerID, final int credits) throws Exception
    {
       ServerConsumer consumer = consumers.get(consumerID);
 
@@ -905,7 +914,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       consumer.receiveCredits(credits);
    }
 
-   public void handleSendLargeMessage(final byte[] largeMessageHeader) throws Exception
+   public void sendLarge(final byte[] largeMessageHeader) throws Exception
    {
       // need to create the LargeMessage before continue
       long id = storageManager.generateUniqueID();
@@ -920,7 +929,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       currentLargeMessage = msg;
    }
 
-   public void handleSend(final ServerMessage message) throws Exception
+   public void send(final ServerMessage message) throws Exception
    {
       try
       {
@@ -937,7 +946,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
          }
          else
          {
-            send(message);
+            doSend(message);
          }
       }
       finally
@@ -953,7 +962,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       }
    }
 
-   public void handleSendContinuations(final int packetSize, final byte[] body, final boolean continues) throws Exception
+   public void sendContinuations(final int packetSize, final byte[] body, final boolean continues) throws Exception
    {
       if (currentLargeMessage == null)
       {
@@ -971,7 +980,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       {
          currentLargeMessage.releaseResources();
 
-         send(currentLargeMessage);
+         doSend(currentLargeMessage);
 
          releaseOutStanding(currentLargeMessage, currentLargeMessage.getEncodeSize());
 
@@ -979,7 +988,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       }
    }
 
-   public void handleRequestProducerCredits(final SimpleString address, final int credits) throws Exception
+   public void requestProducerCredits(final SimpleString address, final int credits) throws Exception
    {
       final CreditManagerHolder holder = getCreditManagerHolder(address);
 
@@ -1017,7 +1026,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
          }
       }
    }
-   
+
    public void setTransferring(final boolean transferring)
    {
       Set<ServerConsumer> consumersClone = new HashSet<ServerConsumer>(consumers.values());
@@ -1073,7 +1082,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
    {
       return channel;
    }
-   
+
    public void runConnectionFailureRunners()
    {
       for (Runnable runner : failureRunners.values())
@@ -1110,7 +1119,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
             }
          }
 
-         handleClose();
+         close();
 
          ServerSessionImpl.log.warn("Cleared up resources for session " + name);
       }
@@ -1160,7 +1169,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
 
       started = s;
    }
-   
+
    private void handleManagementMessage(final ServerMessage message) throws Exception
    {
       try
@@ -1184,7 +1193,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       {
          reply.setAddress(replyTo);
 
-         send(reply);
+         doSend(reply);
       }
    }
 
@@ -1218,20 +1227,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
             consumer.setStarted(true);
          }
       }
-   }
-
-   private void rollback(final boolean lastMessageAsDelived) throws Exception
-   {
-      if (tx == null)
-      {
-         // Might be null if XA
-
-         tx = new TransactionImpl(storageManager);
-      }
-
-      doRollback(lastMessageAsDelived, tx);
-
-      tx = new TransactionImpl(storageManager);
    }
 
    /*
@@ -1282,7 +1277,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       callback.sendProducerCreditsMessage(credits, address, -1);
    }
 
-   private void send(final ServerMessage msg) throws Exception
+   private void doSend(final ServerMessage msg) throws Exception
    {
       // Look up the paging store
 

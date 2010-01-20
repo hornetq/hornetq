@@ -157,7 +157,14 @@ public class ServerSessionPacketHandler implements ChannelHandler, CloseListener
 
       session.runConnectionFailureRunners();
 
-      handleCloseSession();
+      try
+      {
+         session.close();
+      }
+      catch (Exception e)
+      {
+         log.error("Failed to close session", e);
+      }
 
       log.warn("Cleared up resources for session " + session.getName());
    }
@@ -166,7 +173,14 @@ public class ServerSessionPacketHandler implements ChannelHandler, CloseListener
    {
       channel.flushConfirmations();
 
-      handleCloseSession();
+      try
+      {
+         session.close();
+      }
+      catch (Exception e)
+      {
+         log.error("Failed to close session", e);
+      }
    }
 
    public void connectionClosed()
@@ -249,15 +263,15 @@ public class ServerSessionPacketHandler implements ChannelHandler, CloseListener
                case SESS_CREATECONSUMER:
                {
                   SessionCreateConsumerMessage request = (SessionCreateConsumerMessage)packet;
-                  session.handleCreateConsumer(request.getID(),
-                                               request.getQueueName(),
-                                               request.getFilterString(),
-                                               request.isBrowseOnly());
+                  session.createConsumer(request.getID(),
+                                         request.getQueueName(),
+                                         request.getFilterString(),
+                                         request.isBrowseOnly());
                   if (request.isRequiresResponse())
                   {
                      // We send back queue information on the queue as a response- this allows the queue to
                      // be automaticall recreated on failover
-                     response = new SessionQueueQueryResponseMessage(session.handleExecuteQueueQuery(request.getQueueName()));
+                     response = new SessionQueueQueryResponseMessage(session.executeQueueQuery(request.getQueueName()));
                   }
 
                   break;
@@ -265,11 +279,11 @@ public class ServerSessionPacketHandler implements ChannelHandler, CloseListener
                case CREATE_QUEUE:
                {
                   CreateQueueMessage request = (CreateQueueMessage)packet;
-                  session.handleCreateQueue(request.getAddress(),
-                                            request.getQueueName(),
-                                            request.getFilterString(),
-                                            request.isTemporary(),
-                                            request.isDurable());
+                  session.createQueue(request.getAddress(),
+                                      request.getQueueName(),
+                                      request.getFilterString(),
+                                      request.isTemporary(),
+                                      request.isDurable());
                   if (request.isRequiresResponse())
                   {
                      response = new NullResponseMessage();
@@ -279,28 +293,28 @@ public class ServerSessionPacketHandler implements ChannelHandler, CloseListener
                case DELETE_QUEUE:
                {
                   SessionDeleteQueueMessage request = (SessionDeleteQueueMessage)packet;
-                  session.handleDeleteQueue(request.getQueueName());
+                  session.deleteQueue(request.getQueueName());
                   response = new NullResponseMessage();
                   break;
                }
                case SESS_QUEUEQUERY:
                {
                   SessionQueueQueryMessage request = (SessionQueueQueryMessage)packet;
-                  QueueQueryResult result = session.handleExecuteQueueQuery(request.getQueueName());
+                  QueueQueryResult result = session.executeQueueQuery(request.getQueueName());
                   response = new SessionQueueQueryResponseMessage(result);
                   break;
                }
                case SESS_BINDINGQUERY:
                {
                   SessionBindingQueryMessage request = (SessionBindingQueryMessage)packet;
-                  BindingQueryResult result = session.handleExecuteBindingQuery(request.getAddress());
+                  BindingQueryResult result = session.executeBindingQuery(request.getAddress());
                   response = new SessionBindingQueryResponseMessage(result.isExists(), result.getQueueNames());
                   break;
                }
                case SESS_ACKNOWLEDGE:
                {
                   SessionAcknowledgeMessage message = (SessionAcknowledgeMessage)packet;
-                  session.handleAcknowledge(message.getConsumerID(), message.getMessageID());
+                  session.acknowledge(message.getConsumerID(), message.getMessageID());
                   if (message.isRequiresResponse())
                   {
                      response = new NullResponseMessage();
@@ -310,116 +324,116 @@ public class ServerSessionPacketHandler implements ChannelHandler, CloseListener
                case SESS_EXPIRED:
                {
                   SessionExpiredMessage message = (SessionExpiredMessage)packet;
-                  session.handleExpired(message.getConsumerID(), message.getMessageID());
+                  session.expire(message.getConsumerID(), message.getMessageID());
                   break;
                }
                case SESS_COMMIT:
                {
-                  session.handleCommit();
+                  session.commit();
                   response = new NullResponseMessage();
                   break;
                }
                case SESS_ROLLBACK:
                {
-                  session.handleRollback(((RollbackMessage)packet).isConsiderLastMessageAsDelivered());
+                  session.rollback(((RollbackMessage)packet).isConsiderLastMessageAsDelivered());
                   response = new NullResponseMessage();
                   break;
                }
                case SESS_XA_COMMIT:
                {
                   SessionXACommitMessage message = (SessionXACommitMessage)packet;
-                  session.handleXACommit(message.getXid(), message.isOnePhase());
+                  session.xaCommit(message.getXid(), message.isOnePhase());
                   response = new SessionXAResponseMessage(false, XAResource.XA_OK, null);
                   break;
                }
                case SESS_XA_END:
                {
                   SessionXAEndMessage message = (SessionXAEndMessage)packet;
-                  session.handleXAEnd(message.getXid());
+                  session.xaEnd(message.getXid());
                   response = new SessionXAResponseMessage(false, XAResource.XA_OK, null);
                   break;
                }
                case SESS_XA_FORGET:
                {
                   SessionXAForgetMessage message = (SessionXAForgetMessage)packet;
-                  session.handleXAForget(message.getXid());
+                  session.xaForget(message.getXid());
                   response = new SessionXAResponseMessage(false, XAResource.XA_OK, null);
                   break;
                }
                case SESS_XA_JOIN:
                {
                   SessionXAJoinMessage message = (SessionXAJoinMessage)packet;
-                  session.handleXAJoin(message.getXid());
+                  session.xaJoin(message.getXid());
                   response = new SessionXAResponseMessage(false, XAResource.XA_OK, null);
                   break;
                }
                case SESS_XA_RESUME:
                {
                   SessionXAResumeMessage message = (SessionXAResumeMessage)packet;
-                  session.handleXAResume(message.getXid());
+                  session.xaResume(message.getXid());
                   response = new SessionXAResponseMessage(false, XAResource.XA_OK, null);
                   break;
                }
                case SESS_XA_ROLLBACK:
                {
                   SessionXARollbackMessage message = (SessionXARollbackMessage)packet;
-                  session.handleXARollback(message.getXid());
+                  session.xaRollback(message.getXid());
                   response = new SessionXAResponseMessage(false, XAResource.XA_OK, null);
                   break;
                }
                case SESS_XA_START:
                {
                   SessionXAStartMessage message = (SessionXAStartMessage)packet;
-                  session.handleXAStart(message.getXid());
+                  session.xaStart(message.getXid());
                   response = new SessionXAResponseMessage(false, XAResource.XA_OK, null);
                   break;
                }
                case SESS_XA_SUSPEND:
                {
-                  session.handleXASuspend();
+                  session.xaSuspend();
                   response = new SessionXAResponseMessage(false, XAResource.XA_OK, null);
                   break;
                }
                case SESS_XA_PREPARE:
                {
                   SessionXAPrepareMessage message = (SessionXAPrepareMessage)packet;
-                  session.handleXAPrepare(message.getXid());
+                  session.xaPrepare(message.getXid());
                   response = new SessionXAResponseMessage(false, XAResource.XA_OK, null);
                   break;
                }
                case SESS_XA_INDOUBT_XIDS:
                {
-                  List<Xid> xids = session.handleGetInDoubtXids();
+                  List<Xid> xids = session.xaGetInDoubtXids();
                   response = new SessionXAGetInDoubtXidsResponseMessage(xids);
                   break;
                }
                case SESS_XA_GET_TIMEOUT:
                {
-                  int timeout = session.handleGetXATimeout();
+                  int timeout = session.xaGetTimeout();
                   response = new SessionXAGetTimeoutResponseMessage(timeout);
                   break;
                }
                case SESS_XA_SET_TIMEOUT:
                {
                   SessionXASetTimeoutMessage message = (SessionXASetTimeoutMessage)packet;
-                  session.handleSetXATimeout(message.getTimeoutSeconds());
+                  session.xaSetTimeout(message.getTimeoutSeconds());
                   response = new SessionXASetTimeoutResponseMessage(true);
                   break;
                }
                case SESS_START:
                {
-                  session.handleStart();
+                  session.start();
                   break;
                }
                case SESS_STOP:
                {
-                  session.handleStop();
+                  session.stop();
                   response = new NullResponseMessage();
                   break;
                }
                case SESS_CLOSE:
                {
-                  handleCloseSession();
+                  session.close();
                   removeConnectionListeners();
                   response = new NullResponseMessage();
                   flush = true;
@@ -429,20 +443,20 @@ public class ServerSessionPacketHandler implements ChannelHandler, CloseListener
                case SESS_CONSUMER_CLOSE:
                {
                   SessionConsumerCloseMessage message = (SessionConsumerCloseMessage)packet;
-                  session.handleCloseConsumer(message.getConsumerID());
+                  session.closeConsumer(message.getConsumerID());
                   response = new NullResponseMessage();
                   break;
                }
                case SESS_FLOWTOKEN:
                {
                   SessionConsumerFlowCreditMessage message = (SessionConsumerFlowCreditMessage)packet;
-                  session.handleReceiveConsumerCredits(message.getConsumerID(), message.getCredits());
+                  session.receiveConsumerCredits(message.getConsumerID(), message.getCredits());
                   break;
                }
                case SESS_SEND:
                {
                   SessionSendMessage message = (SessionSendMessage)packet;
-                  session.handleSend((ServerMessage)message.getMessage());
+                  session.send((ServerMessage)message.getMessage());
                   if (message.isRequiresResponse())
                   {
                      response = new NullResponseMessage();
@@ -452,13 +466,13 @@ public class ServerSessionPacketHandler implements ChannelHandler, CloseListener
                case SESS_SEND_LARGE:
                {
                   SessionSendLargeMessage message = (SessionSendLargeMessage)packet;
-                  session.handleSendLargeMessage(message.getLargeMessageHeader());
+                  session.sendLarge(message.getLargeMessageHeader());
                   break;
                }
                case SESS_SEND_CONTINUATION:
                {
                   SessionSendContinuationMessage message = (SessionSendContinuationMessage)packet;
-                  session.handleSendContinuations(message.getPacketSize(), message.getBody(), message.isContinues());
+                  session.sendContinuations(message.getPacketSize(), message.getBody(), message.isContinues());
                   if (message.isRequiresResponse())
                   {
                      response = new NullResponseMessage();
@@ -468,13 +482,13 @@ public class ServerSessionPacketHandler implements ChannelHandler, CloseListener
                case SESS_FORCE_CONSUMER_DELIVERY:
                {
                   SessionForceConsumerDelivery message = (SessionForceConsumerDelivery)packet;
-                  session.handleForceConsumerDelivery(message.getConsumerID(), message.getSequence());
+                  session.forceConsumerDelivery(message.getConsumerID(), message.getSequence());
                   break;
                }
                case PacketImpl.SESS_PRODUCER_REQUEST_CREDITS:
                {
                   SessionRequestProducerCreditsMessage message = (SessionRequestProducerCreditsMessage)packet;
-                  session.handleRequestProducerCredits(message.getAddress(), message.getCredits());
+                  session.requestProducerCredits(message.getAddress(), message.getCredits());
                   break;
                }
             }
@@ -491,7 +505,7 @@ public class ServerSessionPacketHandler implements ChannelHandler, CloseListener
          {
             log.error("Caught unexpected exception", t);
          }
-         
+
          sendResponse(packet, response, flush, closeChannel);
       }
       finally
@@ -549,28 +563,6 @@ public class ServerSessionPacketHandler implements ChannelHandler, CloseListener
       {
          channel.close();
       }
-   }
-
-   private void handleCloseSession()
-   {
-      storageManager.afterCompleteOperations(new IOAsyncTask()
-      {
-         public void onError(int errorCode, String errorMessage)
-         {
-         }
-
-         public void done()
-         {
-            try
-            {
-               session.close();
-            }
-            catch (Exception e)
-            {
-               log.error("Failed to close session", e);
-            }
-         }
-      });
    }
 
    public int sendLargeMessage(long consumerID, byte[] headerBuffer, long bodySize, int deliveryCount)
