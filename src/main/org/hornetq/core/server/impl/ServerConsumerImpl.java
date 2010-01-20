@@ -23,7 +23,6 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
-import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.management.ManagementHelper;
 import org.hornetq.api.core.management.NotificationType;
 import org.hornetq.core.client.impl.ClientConsumerImpl;
@@ -33,10 +32,6 @@ import org.hornetq.core.message.BodyEncoder;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.QueueBinding;
-import org.hornetq.core.remoting.Channel;
-import org.hornetq.core.remoting.impl.wireformat.SessionReceiveContinuationMessage;
-import org.hornetq.core.remoting.impl.wireformat.SessionReceiveLargeMessage;
-import org.hornetq.core.remoting.impl.wireformat.SessionReceiveMessage;
 import org.hornetq.core.server.HandleStatus;
 import org.hornetq.core.server.LargeServerMessage;
 import org.hornetq.core.server.MessageReference;
@@ -44,6 +39,7 @@ import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.ServerConsumer;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.ServerSession;
+import org.hornetq.core.server.SessionCallback;
 import org.hornetq.core.server.management.ManagementService;
 import org.hornetq.core.server.management.Notification;
 import org.hornetq.core.transaction.Transaction;
@@ -112,7 +108,7 @@ public class ServerConsumerImpl implements ServerConsumer
 
    private final java.util.Queue<MessageReference> deliveringRefs = new ConcurrentLinkedQueue<MessageReference>();
 
-   private final Channel channel;
+   private final SessionCallback callback;
 
    private volatile boolean closed;
 
@@ -133,12 +129,11 @@ public class ServerConsumerImpl implements ServerConsumer
                              final boolean started,
                              final boolean browseOnly,
                              final StorageManager storageManager,
-                             final Channel channel,
+                             final SessionCallback callback,
                              final boolean preAcknowledge,
                              final boolean strictUpdateDeliveryCount,
                              final ManagementService managementService) throws Exception
    {
-
       this.id = id;
 
       this.filter = filter;
@@ -157,7 +152,7 @@ public class ServerConsumerImpl implements ServerConsumer
 
       this.storageManager = storageManager;
 
-      this.channel = channel;
+      this.callback = callback;
 
       this.preAcknowledge = preAcknowledge;
 
@@ -361,9 +356,7 @@ public class ServerConsumerImpl implements ServerConsumer
          forcedDeliveryMessage.putLongProperty(ClientConsumerImpl.FORCED_DELIVERY_MESSAGE, sequence);
          forcedDeliveryMessage.setAddress(messageQueue.getName());
 
-         final SessionReceiveMessage packet = new SessionReceiveMessage(id, forcedDeliveryMessage, 0);
-
-         channel.send(packet);
+         callback.sendMessage(forcedDeliveryMessage, id, 0);
       }
       catch (Exception e)
       {
@@ -634,15 +627,12 @@ public class ServerConsumerImpl implements ServerConsumer
     */
    private void deliverStandardMessage(final MessageReference ref, final ServerMessage message)
    {
-      final SessionReceiveMessage packet = new SessionReceiveMessage(id, message, ref.getDeliveryCount());
-
-      channel.send(packet);
+      int packetSize = callback.sendMessage(message, id, ref.getDeliveryCount());
 
       if (availableCredits != null)
       {
-         availableCredits.addAndGet(-packet.getPacketSize());
+         availableCredits.addAndGet(-packetSize);
       }
-
    }
 
    // Inner classes
@@ -732,21 +722,18 @@ public class ServerConsumerImpl implements ServerConsumer
 
                sizePendingLargeMessage = context.getLargeBodySize();
 
-               SessionReceiveLargeMessage initialPacket = new SessionReceiveLargeMessage(id,
-                                                                                         headerBuffer.toByteBuffer()
-                                                                                                     .array(),
-                                                                                         context.getLargeBodySize(),
-                                                                                         ref.getDeliveryCount());
-
                context.open();
 
                sentInitialPacket = true;
 
-               channel.send(initialPacket);
+               int packetSize = callback.sendLargeMessage(id,
+                                                          headerBuffer.toByteBuffer().array(),
+                                                          context.getLargeBodySize(),
+                                                          ref.getDeliveryCount());
 
                if (availableCredits != null)
                {
-                  availableCredits.addAndGet(-initialPacket.getPacketSize());
+                  availableCredits.addAndGet(-packetSize);
                }
 
                // Execute the rest of the large message on a different thread so as not to tie up the delivery thread
@@ -768,22 +755,33 @@ public class ServerConsumerImpl implements ServerConsumer
                   return false;
                }
 
-               SessionReceiveContinuationMessage chunk = createChunkSend(context);
+               int localChunkLen = 0;
 
-               int chunkLen = chunk.getBody().length;
+               localChunkLen = (int)Math.min(sizePendingLargeMessage - positionPendingLargeMessage, minLargeMessageSize);
 
-               channel.send(chunk);
+               HornetQBuffer bodyBuffer = HornetQBuffers.fixedBuffer(localChunkLen);
+
+               context.encode(bodyBuffer, localChunkLen);
+
+               byte[] body = bodyBuffer.toByteBuffer().array();
+
+               int packetSize = callback.sendLargeMessageContinuation(id,
+                                                                      body,
+                                                                      positionPendingLargeMessage + localChunkLen < sizePendingLargeMessage,
+                                                                      false);
+
+               int chunkLen = body.length;
 
                if (ServerConsumerImpl.trace)
                {
-                  ServerConsumerImpl.trace("deliverLargeMessage: Sending " + chunk.getPacketSize() +
+                  ServerConsumerImpl.trace("deliverLargeMessage: Sending " + packetSize +
                                            " availableCredits now is " +
                                            availableCredits);
                }
 
                if (availableCredits != null)
                {
-                  availableCredits.addAndGet(-chunk.getPacketSize());
+                  availableCredits.addAndGet(-packetSize);
                }
 
                positionPendingLargeMessage += chunkLen;
@@ -845,26 +843,6 @@ public class ServerConsumerImpl implements ServerConsumer
          {
             lock.unlock();
          }
-      }
-
-      private SessionReceiveContinuationMessage createChunkSend(final BodyEncoder context) throws HornetQException
-      {
-         SessionReceiveContinuationMessage chunk;
-
-         int localChunkLen = 0;
-
-         localChunkLen = (int)Math.min(sizePendingLargeMessage - positionPendingLargeMessage, minLargeMessageSize);
-
-         HornetQBuffer bodyBuffer = HornetQBuffers.fixedBuffer(localChunkLen);
-
-         context.encode(bodyBuffer, localChunkLen);
-
-         chunk = new SessionReceiveContinuationMessage(id,
-                                                       bodyBuffer.toByteBuffer().array(),
-                                                       positionPendingLargeMessage + localChunkLen < sizePendingLargeMessage,
-                                                       false);
-
-         return chunk;
       }
    }
 

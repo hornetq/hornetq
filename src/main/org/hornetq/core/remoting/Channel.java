@@ -89,9 +89,8 @@ public interface Channel
     * Typically called after a connection has been transferred.
     *
     * @param lastConfirmedCommandID the last confirmed packet
-    * @param newID                  the new id to use
     */
-   void replayCommands(int lastConfirmedCommandID, final long newID);
+   void replayCommands(int lastConfirmedCommandID);
 
    /**
     * returns the last confirmed packet command id

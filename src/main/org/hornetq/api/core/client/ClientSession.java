@@ -455,6 +455,7 @@ public interface ClientSession extends XAResource
    /**
     * Creates a ClientMessage.
     * 
+    * @param type type of the message
     * @param durable whether the created message is durable or not
     * @param expiration the message expiration
     * @param timestamp the message timestamp

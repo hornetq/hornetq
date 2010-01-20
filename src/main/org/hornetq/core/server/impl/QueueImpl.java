@@ -245,12 +245,12 @@ public class QueueImpl implements Queue
          executor.execute(deliverRunner);
       }
    }
-   
+
    public Executor getExecutor()
    {
       return executor;
    }
-   
+
    public synchronized void deliverNow()
    {
       deliverRunner.run();
@@ -743,7 +743,7 @@ public class QueueImpl implements Queue
       }
       return false;
    }
-   
+
    public int sendMessagesToDeadLetterAddress(Filter filter) throws Exception
    {
       int count = 0;
@@ -757,7 +757,7 @@ public class QueueImpl implements Queue
             deliveringCount.incrementAndGet();
             sendToDeadLetterAddress(ref);
             iter.remove();
-            count ++;
+            count++;
          }
       }
       return count;
@@ -832,7 +832,7 @@ public class QueueImpl implements Queue
 
       return false;
    }
-   
+
    public int changeReferencesPriority(final Filter filter, final byte newPriority) throws Exception
    {
       Iterator<MessageReference> iter = messageReferences.iterator();
@@ -843,7 +843,7 @@ public class QueueImpl implements Queue
          MessageReference ref = iter.next();
          if (filter == null || filter.match(ref.getMessage()))
          {
-            count ++;
+            count++;
             iter.remove();
             ref.getMessage().setPriority(newPriority);
             addLast(ref);
@@ -1404,7 +1404,8 @@ public class QueueImpl implements Queue
             }
             catch (Exception e)
             {
-               QueueImpl.log.warn("Unable to remove message id = " + message.getMessageID() + " please remove manually");
+               QueueImpl.log.warn("Unable to remove message id = " + message.getMessageID() + " please remove manually",
+                                  e);
             }
          }
       }

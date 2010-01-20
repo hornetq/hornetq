@@ -866,7 +866,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
          {
             // The session was found on the server - we reattached transparently ok
 
-            channel.replayCommands(response.getLastConfirmedCommandID(), channel.getID());                        
+            channel.replayCommands(response.getLastConfirmedCommandID());                        
          }
          else
          {

@@ -160,6 +160,8 @@ public class BasicXaTest extends ServiceTestBase
 
       clientSession = sessionFactory.createSession(true, false, false);
 
+      log.info("committing");
+      
       clientSession.commit(xid, false);
       clientSession.start();
       ClientConsumer clientConsumer = clientSession.createConsumer(atestq);

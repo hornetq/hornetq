@@ -11,20 +11,18 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.core.remoting.impl.wireformat;
+package org.hornetq.core.server;
 
-import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.core.server.QueueQueryResult;
 
 /**
  * 
- * A SessionQueueQueryResponseMessage
+ * A QueueQueryResult
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public class SessionQueueQueryResponseMessage extends PacketImpl
+public class QueueQueryResult
 {
    private SimpleString name;
    
@@ -42,18 +40,23 @@ public class SessionQueueQueryResponseMessage extends PacketImpl
    
    private boolean temporary;
 
-   public SessionQueueQueryResponseMessage(final QueueQueryResult result)
+   public QueueQueryResult(final SimpleString name,
+                                           final SimpleString address,                                           
+                                           final boolean durable,
+                                           final boolean temporary,
+                                           final SimpleString filterString,
+                                           final int consumerCount,
+                                           final int messageCount)
    {
-      this(result.getName(), result.getAddress(), result.isDurable(), result.isTemporary(),
-           result.getFilterString(), result.getConsumerCount(), result.getMessageCount(), result.isExists());
+      this(name, address, durable, temporary, filterString, consumerCount, messageCount, true);
    }
 
-   public SessionQueueQueryResponseMessage()
+   public QueueQueryResult()
    {
       this(null, null, false, false, null, 0, 0, false);
    }
 
-   private SessionQueueQueryResponseMessage(final SimpleString name,
+   private QueueQueryResult(final SimpleString name,
                                             final SimpleString address,
                                             final boolean durable,
                                             final boolean temporary,
@@ -62,8 +65,6 @@ public class SessionQueueQueryResponseMessage extends PacketImpl
                                             final int messageCount,
                                             final boolean exists)
    {
-      super(PacketImpl.SESS_QUEUEQUERY_RESP);
-
       this.durable = durable;
       
       this.temporary = temporary;
@@ -79,12 +80,6 @@ public class SessionQueueQueryResponseMessage extends PacketImpl
       this.name = name;
 
       this.exists = exists;
-   }
-
-   @Override
-   public boolean isResponse()
-   {
-      return true;
    }
 
    public boolean isExists()
@@ -125,51 +120,6 @@ public class SessionQueueQueryResponseMessage extends PacketImpl
    public boolean isTemporary()
    {
       return temporary;
-   }
-
-   @Override
-   public void encodeRest(final HornetQBuffer buffer)
-   {
-      buffer.writeBoolean(exists);
-      buffer.writeBoolean(durable);
-      buffer.writeBoolean(temporary);
-      buffer.writeInt(consumerCount);
-      buffer.writeInt(messageCount);
-      buffer.writeNullableSimpleString(filterString);
-      buffer.writeNullableSimpleString(address);
-      buffer.writeNullableSimpleString(name);
-   }
-
-   @Override
-   public void decodeRest(final HornetQBuffer buffer)
-   {
-      exists = buffer.readBoolean();
-      durable = buffer.readBoolean();
-      temporary = buffer.readBoolean();
-      consumerCount = buffer.readInt();
-      messageCount = buffer.readInt();
-      filterString = buffer.readNullableSimpleString();
-      address = buffer.readNullableSimpleString();
-      name = buffer.readNullableSimpleString();
-   }
-
-   @Override
-   public boolean equals(final Object other)
-   {
-      if (other instanceof SessionQueueQueryResponseMessage == false)
-      {
-         return false;
-      }
-
-      SessionQueueQueryResponseMessage r = (SessionQueueQueryResponseMessage)other;
-
-      return super.equals(other) && exists == r.exists &&
-             durable == r.durable &&
-             consumerCount == r.consumerCount &&
-             messageCount == r.messageCount &&
-             filterString == null ? r.filterString == null
-                                 : filterString.equals(r.filterString) && address == null ? r.address == null
-                                                                                         : address.equals(r.address);
    }
 
 }

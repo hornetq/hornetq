@@ -22,7 +22,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -643,11 +642,11 @@ public class HornetQServerImpl implements HornetQServer
                                                               configuration.isPersistDeliveryCountBeforeDelivery(),
                                                               xa,
                                                               connection,
+                                                              channel,
                                                               storageManager,
                                                               postOffice,
                                                               resourceManager,
-                                                              securityStore,
-                                                              channel,
+                                                              securityStore,                                                            
                                                               managementService,
                                                               this,
                                                               configuration.getManagementAddress());
@@ -656,9 +655,10 @@ public class HornetQServerImpl implements HornetQServer
 
       ServerSessionPacketHandler handler = new ServerSessionPacketHandler(session,
                                                                           storageManager.newContext(executorFactory.getExecutor()),
-                                                                          storageManager);
-
-      session.setHandler(handler);
+                                                                          storageManager,
+                                                                          channel);
+      
+      session.setCallback(handler);
 
       channel.setHandler(handler);
 

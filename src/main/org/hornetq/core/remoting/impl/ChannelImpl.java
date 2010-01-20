@@ -336,7 +336,7 @@ public class ChannelImpl implements Channel
       }
    }
 
-   public void replayCommands(final int otherLastConfirmedCommandID, final long newChannelID)
+   public void replayCommands(final int otherLastConfirmedCommandID)
    {
       if (resendCache != null)
       {
@@ -344,8 +344,6 @@ public class ChannelImpl implements Channel
 
          for (final Packet packet : resendCache)
          {
-            packet.setChannelID(newChannelID);
-            
             doWrite(packet);
          }
       }

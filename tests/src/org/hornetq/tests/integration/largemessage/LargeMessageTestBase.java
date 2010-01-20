@@ -152,8 +152,7 @@ public abstract class LargeMessageTestBase extends ServiceTestBase
          ClientSessionFactory sf = createInVMFactory();
 
          if (sendingBlocking)
-         {
-            sf.setBlockOnNonDurableSend(true);
+         {            sf.setBlockOnNonDurableSend(true);
             sf.setBlockOnDurableSend(true);
             sf.setBlockOnAcknowledge(true);
          }
@@ -523,7 +522,7 @@ public abstract class LargeMessageTestBase extends ServiceTestBase
          }
 
          session.close();
-
+         
          long globalSize = server.getPostOffice().getPagingManager().getTotalMemory();
          Assert.assertEquals(0l, globalSize);
          Assert.assertEquals(0, ((Queue)server.getPostOffice().getBinding(ADDRESS).getBindable()).getDeliveringCount());
