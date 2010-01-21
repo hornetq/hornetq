@@ -46,6 +46,7 @@ import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.SESS_XA_SUSPE
 
 import java.util.List;
 
+import javax.security.auth.message.callback.PrivateKeyCallback.Request;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
@@ -204,9 +205,7 @@ public class ServerSessionPacketHandler implements ChannelHandler, CloseListener
    {
       return channel;
    }
-
   
-
    public void handlePacket(final Packet packet)
    {
       byte type = packet.getType();
@@ -216,7 +215,8 @@ public class ServerSessionPacketHandler implements ChannelHandler, CloseListener
       Packet response = null;
       boolean flush = false;
       boolean closeChannel = false;
-
+      boolean requiresResponse = false;
+      
       try
       {
          try
@@ -224,13 +224,14 @@ public class ServerSessionPacketHandler implements ChannelHandler, CloseListener
             switch (type)
             {
                case SESS_CREATECONSUMER:
-               {
-                  SessionCreateConsumerMessage request = (SessionCreateConsumerMessage)packet;
+               {                  
+                  SessionCreateConsumerMessage request = (SessionCreateConsumerMessage)packet; 
+                  requiresResponse = request.isRequiresResponse();
                   session.createConsumer(request.getID(),
                                          request.getQueueName(),
                                          request.getFilterString(),
                                          request.isBrowseOnly());
-                  if (request.isRequiresResponse())
+                  if (requiresResponse)
                   {
                      // We send back queue information on the queue as a response- this allows the queue to
                      // be automaticall recreated on failover
@@ -242,19 +243,21 @@ public class ServerSessionPacketHandler implements ChannelHandler, CloseListener
                case CREATE_QUEUE:
                {
                   CreateQueueMessage request = (CreateQueueMessage)packet;
+                  requiresResponse = request.isRequiresResponse();
                   session.createQueue(request.getAddress(),
                                       request.getQueueName(),
                                       request.getFilterString(),
                                       request.isTemporary(),
                                       request.isDurable());
-                  if (request.isRequiresResponse())
+                  if (requiresResponse)
                   {
                      response = new NullResponseMessage();
                   }
                   break;
                }
                case DELETE_QUEUE:
-               {
+               {                  
+                  requiresResponse = true;
                   SessionDeleteQueueMessage request = (SessionDeleteQueueMessage)packet;
                   session.deleteQueue(request.getQueueName());
                   response = new NullResponseMessage();
@@ -262,6 +265,7 @@ public class ServerSessionPacketHandler implements ChannelHandler, CloseListener
                }
                case SESS_QUEUEQUERY:
                {
+                  requiresResponse = true;
                   SessionQueueQueryMessage request = (SessionQueueQueryMessage)packet;
                   QueueQueryResult result = session.executeQueueQuery(request.getQueueName());
                   response = new SessionQueueQueryResponseMessage(result);
@@ -269,6 +273,7 @@ public class ServerSessionPacketHandler implements ChannelHandler, CloseListener
                }
                case SESS_BINDINGQUERY:
                {
+                  requiresResponse = true;
                   SessionBindingQueryMessage request = (SessionBindingQueryMessage)packet;
                   BindingQueryResult result = session.executeBindingQuery(request.getAddress());
                   response = new SessionBindingQueryResponseMessage(result.isExists(), result.getQueueNames());
@@ -277,8 +282,9 @@ public class ServerSessionPacketHandler implements ChannelHandler, CloseListener
                case SESS_ACKNOWLEDGE:
                {
                   SessionAcknowledgeMessage message = (SessionAcknowledgeMessage)packet;
+                  requiresResponse = message.isRequiresResponse();
                   session.acknowledge(message.getConsumerID(), message.getMessageID());
-                  if (message.isRequiresResponse())
+                  if (requiresResponse)
                   {
                      response = new NullResponseMessage();
                   }
@@ -292,18 +298,21 @@ public class ServerSessionPacketHandler implements ChannelHandler, CloseListener
                }
                case SESS_COMMIT:
                {
+                  requiresResponse = true;
                   session.commit();
                   response = new NullResponseMessage();
                   break;
                }
                case SESS_ROLLBACK:
                {
+                  requiresResponse = true;
                   session.rollback(((RollbackMessage)packet).isConsiderLastMessageAsDelivered());
                   response = new NullResponseMessage();
                   break;
                }
                case SESS_XA_COMMIT:
                {
+                  requiresResponse = true;
                   SessionXACommitMessage message = (SessionXACommitMessage)packet;
                   session.xaCommit(message.getXid(), message.isOnePhase());
                   response = new SessionXAResponseMessage(false, XAResource.XA_OK, null);
@@ -311,6 +320,7 @@ public class ServerSessionPacketHandler implements ChannelHandler, CloseListener
                }
                case SESS_XA_END:
                {
+                  requiresResponse = true;
                   SessionXAEndMessage message = (SessionXAEndMessage)packet;
                   session.xaEnd(message.getXid());
                   response = new SessionXAResponseMessage(false, XAResource.XA_OK, null);
@@ -318,6 +328,7 @@ public class ServerSessionPacketHandler implements ChannelHandler, CloseListener
                }
                case SESS_XA_FORGET:
                {
+                  requiresResponse = true;
                   SessionXAForgetMessage message = (SessionXAForgetMessage)packet;
                   session.xaForget(message.getXid());
                   response = new SessionXAResponseMessage(false, XAResource.XA_OK, null);
@@ -325,6 +336,7 @@ public class ServerSessionPacketHandler implements ChannelHandler, CloseListener
                }
                case SESS_XA_JOIN:
                {
+                  requiresResponse = true;
                   SessionXAJoinMessage message = (SessionXAJoinMessage)packet;
                   session.xaJoin(message.getXid());
                   response = new SessionXAResponseMessage(false, XAResource.XA_OK, null);
@@ -332,6 +344,7 @@ public class ServerSessionPacketHandler implements ChannelHandler, CloseListener
                }
                case SESS_XA_RESUME:
                {
+                  requiresResponse = true;
                   SessionXAResumeMessage message = (SessionXAResumeMessage)packet;
                   session.xaResume(message.getXid());
                   response = new SessionXAResponseMessage(false, XAResource.XA_OK, null);
@@ -339,6 +352,7 @@ public class ServerSessionPacketHandler implements ChannelHandler, CloseListener
                }
                case SESS_XA_ROLLBACK:
                {
+                  requiresResponse = true;
                   SessionXARollbackMessage message = (SessionXARollbackMessage)packet;
                   session.xaRollback(message.getXid());
                   response = new SessionXAResponseMessage(false, XAResource.XA_OK, null);
@@ -346,6 +360,7 @@ public class ServerSessionPacketHandler implements ChannelHandler, CloseListener
                }
                case SESS_XA_START:
                {
+                  requiresResponse = true;
                   SessionXAStartMessage message = (SessionXAStartMessage)packet;
                   session.xaStart(message.getXid());
                   response = new SessionXAResponseMessage(false, XAResource.XA_OK, null);
@@ -353,12 +368,14 @@ public class ServerSessionPacketHandler implements ChannelHandler, CloseListener
                }
                case SESS_XA_SUSPEND:
                {
+                  requiresResponse = true;
                   session.xaSuspend();
                   response = new SessionXAResponseMessage(false, XAResource.XA_OK, null);
                   break;
                }
                case SESS_XA_PREPARE:
                {
+                  requiresResponse = true;
                   SessionXAPrepareMessage message = (SessionXAPrepareMessage)packet;
                   session.xaPrepare(message.getXid());
                   response = new SessionXAResponseMessage(false, XAResource.XA_OK, null);
@@ -366,18 +383,21 @@ public class ServerSessionPacketHandler implements ChannelHandler, CloseListener
                }
                case SESS_XA_INDOUBT_XIDS:
                {
+                  requiresResponse = true;
                   List<Xid> xids = session.xaGetInDoubtXids();
                   response = new SessionXAGetInDoubtXidsResponseMessage(xids);
                   break;
                }
                case SESS_XA_GET_TIMEOUT:
                {
+                  requiresResponse = true;
                   int timeout = session.xaGetTimeout();
                   response = new SessionXAGetTimeoutResponseMessage(timeout);
                   break;
                }
                case SESS_XA_SET_TIMEOUT:
                {
+                  requiresResponse = true;
                   SessionXASetTimeoutMessage message = (SessionXASetTimeoutMessage)packet;
                   session.xaSetTimeout(message.getTimeoutSeconds());
                   response = new SessionXASetTimeoutResponseMessage(true);
@@ -390,12 +410,14 @@ public class ServerSessionPacketHandler implements ChannelHandler, CloseListener
                }
                case SESS_STOP:
                {
+                  requiresResponse = true;
                   session.stop();
                   response = new NullResponseMessage();
                   break;
                }
                case SESS_CLOSE:
                {
+                  requiresResponse = true;
                   session.close();
                   removeConnectionListeners();
                   response = new NullResponseMessage();
@@ -405,6 +427,7 @@ public class ServerSessionPacketHandler implements ChannelHandler, CloseListener
                }
                case SESS_CONSUMER_CLOSE:
                {
+                  requiresResponse = true;
                   SessionConsumerCloseMessage message = (SessionConsumerCloseMessage)packet;
                   session.closeConsumer(message.getConsumerID());
                   response = new NullResponseMessage();
@@ -419,8 +442,9 @@ public class ServerSessionPacketHandler implements ChannelHandler, CloseListener
                case SESS_SEND:
                {
                   SessionSendMessage message = (SessionSendMessage)packet;
+                  requiresResponse = message.isRequiresResponse();
                   session.send((ServerMessage)message.getMessage());
-                  if (message.isRequiresResponse())
+                  if (requiresResponse)
                   {
                      response = new NullResponseMessage();
                   }
@@ -435,8 +459,9 @@ public class ServerSessionPacketHandler implements ChannelHandler, CloseListener
                case SESS_SEND_CONTINUATION:
                {
                   SessionSendContinuationMessage message = (SessionSendContinuationMessage)packet;
+                  requiresResponse = message.isRequiresResponse();
                   session.sendContinuations(message.getPacketSize(), message.getBody(), message.isContinues());
-                  if (message.isRequiresResponse())
+                  if (requiresResponse)
                   {
                      response = new NullResponseMessage();
                   }
@@ -458,11 +483,25 @@ public class ServerSessionPacketHandler implements ChannelHandler, CloseListener
          }
          catch (HornetQXAException e)
          {
-            response = new SessionXAResponseMessage(true, e.errorCode, e.getMessage());
+            if (requiresResponse)
+            {
+               response = new SessionXAResponseMessage(true, e.errorCode, e.getMessage());
+            }
+            else
+            {
+               log.error("Caught XA exception", e);
+            }
          }
          catch (HornetQException e)
          {
-            response = new HornetQExceptionMessage((HornetQException)e);
+            if (requiresResponse)
+            {
+               response = new HornetQExceptionMessage((HornetQException)e);
+            }
+            else
+            {
+               log.error("Caught exception", e);
+            }
          }
          catch (Throwable t)
          {
