@@ -46,7 +46,6 @@ import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.SESS_XA_SUSPE
 
 import java.util.List;
 
-import javax.security.auth.message.callback.PrivateKeyCallback.Request;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
