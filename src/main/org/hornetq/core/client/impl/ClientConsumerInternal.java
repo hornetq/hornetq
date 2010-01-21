@@ -17,9 +17,9 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
-import org.hornetq.core.remoting.impl.wireformat.SessionReceiveContinuationMessage;
-import org.hornetq.core.remoting.impl.wireformat.SessionReceiveLargeMessage;
+import org.hornetq.core.protocol.core.wireformat.SessionQueueQueryResponseMessage;
+import org.hornetq.core.protocol.core.wireformat.SessionReceiveContinuationMessage;
+import org.hornetq.core.protocol.core.wireformat.SessionReceiveLargeMessage;
 
 /**
  * 

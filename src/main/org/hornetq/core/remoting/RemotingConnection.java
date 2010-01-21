@@ -23,7 +23,7 @@ import org.hornetq.spi.core.remoting.Connection;
 /**
  * A RemotingConnection is a connection between a client and a server.
  * <p/>
- * It allows multiple {@link org.hornetq.core.remoting.Channel}'s to be created and data multiplexed over them. It uses
+ * It allows multiple {@link org.hornetq.core.protocol.core.Channel}'s to be created and data multiplexed over them. It uses
  * and a {@link Connection} implementation and takes care of failures etc.
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>

@@ -25,12 +25,12 @@ import org.hornetq.api.core.client.MessageHandler;
 import org.hornetq.core.list.PriorityLinkedList;
 import org.hornetq.core.list.impl.PriorityLinkedListImpl;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.remoting.Channel;
-import org.hornetq.core.remoting.impl.wireformat.SessionConsumerCloseMessage;
-import org.hornetq.core.remoting.impl.wireformat.SessionConsumerFlowCreditMessage;
-import org.hornetq.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
-import org.hornetq.core.remoting.impl.wireformat.SessionReceiveContinuationMessage;
-import org.hornetq.core.remoting.impl.wireformat.SessionReceiveLargeMessage;
+import org.hornetq.core.protocol.core.Channel;
+import org.hornetq.core.protocol.core.wireformat.SessionConsumerCloseMessage;
+import org.hornetq.core.protocol.core.wireformat.SessionConsumerFlowCreditMessage;
+import org.hornetq.core.protocol.core.wireformat.SessionQueueQueryResponseMessage;
+import org.hornetq.core.protocol.core.wireformat.SessionReceiveContinuationMessage;
+import org.hornetq.core.protocol.core.wireformat.SessionReceiveLargeMessage;
 import org.hornetq.utils.Future;
 import org.hornetq.utils.TokenBucketLimiter;
 

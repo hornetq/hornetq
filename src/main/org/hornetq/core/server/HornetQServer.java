@@ -23,10 +23,8 @@ import org.hornetq.core.config.Configuration;
 import org.hornetq.core.management.impl.HornetQServerControlImpl;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.PostOffice;
-import org.hornetq.core.remoting.Channel;
-import org.hornetq.core.remoting.CoreRemotingConnection;
-import org.hornetq.core.remoting.impl.wireformat.CreateSessionResponseMessage;
-import org.hornetq.core.remoting.impl.wireformat.ReattachSessionResponseMessage;
+import org.hornetq.core.protocol.core.Channel;
+import org.hornetq.core.protocol.core.CoreRemotingConnection;
 import org.hornetq.core.remoting.server.RemotingService;
 import org.hornetq.core.replication.ReplicationEndpoint;
 import org.hornetq.core.security.Role;
@@ -70,24 +68,19 @@ public interface HornetQServer extends HornetQComponent
 
    void unregisterActivateCallback(ActivateCallback callback);
 
-   ReattachSessionResponseMessage reattachSession(CoreRemotingConnection connection, String name, int lastConfirmedCommandID) throws Exception;
-
    /** The journal at the backup server has to be equivalent as the journal used on the live node. 
     *  Or else the backup node is out of sync. */
    ReplicationEndpoint connectToReplicationEndpoint(Channel channel) throws Exception;
 
-   CreateSessionResponseMessage createSession(String name,
-                                              long channelID,
-                                              String username,
-                                              String password,
-                                              int minLargeMessageSize,
-                                              int incrementingVersion,
-                                              CoreRemotingConnection remotingConnection,
-                                              boolean autoCommitSends,
-                                              boolean autoCommitAcks,
-                                              boolean preAcknowledge,
-                                              boolean xa,
-                                              int confirmationWindowSize) throws Exception;
+   ServerSession createSession(String name,
+                               String username,
+                               String password,
+                               int minLargeMessageSize,
+                               CoreRemotingConnection remotingConnection,
+                               boolean autoCommitSends,
+                               boolean autoCommitAcks,
+                               boolean preAcknowledge,
+                               boolean xa) throws Exception;
 
    void removeSession(String name) throws Exception;
 
@@ -136,4 +129,6 @@ public interface HornetQServer extends HornetQComponent
    void setGroupingHandler(GroupingHandler groupingHandler);
 
    GroupingHandler getGroupingHandler();
+
+   boolean checkActivate() throws Exception;
 }

@@ -30,7 +30,7 @@ import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.remoting.impl.wireformat.SessionReceiveContinuationMessage;
+import org.hornetq.core.protocol.core.wireformat.SessionReceiveContinuationMessage;
 import org.hornetq.utils.DataConstants;
 import org.hornetq.utils.UTF8Util;
 import org.jboss.netty.buffer.ChannelBuffer;

@@ -68,10 +68,8 @@ import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.postoffice.impl.DivertBinding;
 import org.hornetq.core.postoffice.impl.LocalQueueBinding;
 import org.hornetq.core.postoffice.impl.PostOfficeImpl;
-import org.hornetq.core.remoting.Channel;
-import org.hornetq.core.remoting.CoreRemotingConnection;
-import org.hornetq.core.remoting.impl.wireformat.CreateSessionResponseMessage;
-import org.hornetq.core.remoting.impl.wireformat.ReattachSessionResponseMessage;
+import org.hornetq.core.protocol.core.Channel;
+import org.hornetq.core.protocol.core.CoreRemotingConnection;
 import org.hornetq.core.remoting.server.RemotingService;
 import org.hornetq.core.remoting.server.impl.RemotingServiceImpl;
 import org.hornetq.core.replication.ReplicationEndpoint;
@@ -341,12 +339,12 @@ public class HornetQServerImpl implements HornetQServer
             managementService.removeNotificationListener(groupingHandler);
             groupingHandler = null;
          }
-         // Need to flush all sessions to make sure all confirmations get sent back to client
-
-         for (ServerSession session : sessions.values())
-         {
-            session.getChannel().flushConfirmations();
-         }
+         // // Need to flush all sessions to make sure all confirmations get sent back to client
+         //
+         // for (ServerSession session : sessions.values())
+         // {
+         // session.getChannel().flushConfirmations();
+         // }
       }
 
       // we stop the remoting service outside a lock
@@ -536,101 +534,20 @@ public class HornetQServerImpl implements HornetQServer
       return clusterManager;
    }
 
-   public ReattachSessionResponseMessage reattachSession(final CoreRemotingConnection connection,
-                                                         final String name,
-                                                         final int lastConfirmedCommandID) throws Exception
+   public ServerSession createSession(final String name,
+                                      final String username,
+                                      final String password,
+                                      final int minLargeMessageSize,
+                                      final CoreRemotingConnection connection,
+                                      final boolean autoCommitSends,
+                                      final boolean autoCommitAcks,
+                                      final boolean preAcknowledge,
+                                      final boolean xa) throws Exception
    {
-      if (!started)
-      {
-         return new ReattachSessionResponseMessage(-1, false);
-      }
-
-      ServerSession session = sessions.get(name);
-
-      if (!checkActivate())
-      {
-         return new ReattachSessionResponseMessage(-1, false);
-      }
-
-      if (session == null)
-      {
-         return new ReattachSessionResponseMessage(-1, false);
-      }
-      else
-      {
-         if (session.getChannel().getConfirmationWindowSize() == -1)
-         {
-            // Even though session exists, we can't reattach since confi window size == -1,
-            // i.e. we don't have a resend cache for commands, so we just close the old session
-            // and let the client recreate
-
-            try
-            {
-               session.close();
-            }
-            catch (Exception e)
-            {
-               HornetQServerImpl.log.error("Failed to close session", e);
-            }
-
-            sessions.remove(name);
-
-            return new ReattachSessionResponseMessage(-1, false);
-         }
-         else
-         {
-            // Reconnect the channel to the new connection
-            int serverLastConfirmedCommandID = session.transferConnection(connection, lastConfirmedCommandID);
-
-            return new ReattachSessionResponseMessage(serverLastConfirmedCommandID, true);
-         }
-      }
-   }
-
-   public CreateSessionResponseMessage createSession(final String name,
-                                                     final long channelID,
-                                                     final String username,
-                                                     final String password,
-                                                     final int minLargeMessageSize,
-                                                     final int incrementingVersion,
-                                                     final CoreRemotingConnection connection,
-                                                     final boolean autoCommitSends,
-                                                     final boolean autoCommitAcks,
-                                                     final boolean preAcknowledge,
-                                                     final boolean xa,
-                                                     final int sendWindowSize) throws Exception
-   {
-      if (!started)
-      {
-         throw new HornetQException(HornetQException.SESSION_CREATION_REJECTED, "Server not started");
-      }
-
-      if (version.getIncrementingVersion() != incrementingVersion)
-      {
-         HornetQServerImpl.log.warn("Client with version " + incrementingVersion +
-                                    " and address " +
-                                    connection.getRemoteAddress() +
-                                    " is not compatible with server version " +
-                                    version.getFullVersion() +
-                                    ". " +
-                                    "Please ensure all clients and servers are upgraded to the same version for them to " +
-                                    "interoperate properly");
-         throw new HornetQException(HornetQException.INCOMPATIBLE_CLIENT_SERVER_VERSIONS,
-                                    "Server and client versions incompatible");
-      }
-
-      if (!checkActivate())
-      {
-         throw new HornetQException(HornetQException.SESSION_CREATION_REJECTED,
-                                    "Server will not accept create session requests");
-      }
-
       if (securityStore != null)
       {
          securityStore.authenticate(username, password);
       }
-
-      Channel channel = connection.getChannel(channelID, sendWindowSize);
 
       final ServerSessionImpl session = new ServerSessionImpl(name,
                                                               username,
@@ -642,27 +559,17 @@ public class HornetQServerImpl implements HornetQServer
                                                               configuration.isPersistDeliveryCountBeforeDelivery(),
                                                               xa,
                                                               connection,
-                                                              channel,
                                                               storageManager,
                                                               postOffice,
                                                               resourceManager,
-                                                              securityStore,                                                            
+                                                              securityStore,
                                                               managementService,
                                                               this,
                                                               configuration.getManagementAddress());
 
       sessions.put(name, session);
 
-      ServerSessionPacketHandler handler = new ServerSessionPacketHandler(session,
-                                                                          storageManager.newContext(executorFactory.getExecutor()),
-                                                                          storageManager,
-                                                                          channel);
-      
-      session.setCallback(handler);
-
-      channel.setHandler(handler);
-
-      return new CreateSessionResponseMessage(version.getIncrementingVersion());
+      return session;
    }
 
    public synchronized ReplicationEndpoint connectToReplicationEndpoint(final Channel channel) throws Exception
@@ -937,7 +844,7 @@ public class HornetQServerImpl implements HornetQServer
       }
    }
 
-   private synchronized boolean checkActivate() throws Exception
+   public synchronized boolean checkActivate() throws Exception
    {
       if (configuration.isBackup())
       {
@@ -1025,8 +932,7 @@ public class HornetQServerImpl implements HornetQServer
 
       if (ConfigurationImpl.DEFAULT_CLUSTER_USER.equals(configuration.getClusterUser()) && ConfigurationImpl.DEFAULT_CLUSTER_PASSWORD.equals(configuration.getClusterPassword()))
       {
-         log.warn("Security risk! It has been detected that the cluster admin user and password "
-                  + "have not been changed from the installation default. "
+         log.warn("Security risk! It has been detected that the cluster admin user and password " + "have not been changed from the installation default. "
                   + "Please see the HornetQ user guide, cluster chapter, for instructions on how to do this.");
       }
 

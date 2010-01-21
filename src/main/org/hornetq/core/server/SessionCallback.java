@@ -24,12 +24,13 @@ import org.hornetq.api.core.SimpleString;
  */
 public interface SessionCallback
 {
-   public void sendProducerCreditsMessage(int credits, SimpleString address, int offset);
+   void sendProducerCreditsMessage(int credits, SimpleString address, int offset);
 
-   public int sendMessage(ServerMessage message, long consumerID, int deliveryCount);
+   int sendMessage(ServerMessage message, long consumerID, int deliveryCount);
 
-   public int sendLargeMessage(long consumerID, byte[] headerBuffer, long bodySize, int deliveryCount);
+   int sendLargeMessage(long consumerID, byte[] headerBuffer, long bodySize, int deliveryCount);
 
-   public int sendLargeMessageContinuation(long consumerID, byte[] body, boolean continues, boolean requiresResponse);
-
+   int sendLargeMessageContinuation(long consumerID, byte[] body, boolean continues, boolean requiresResponse);
+   
+   void closed();
 }

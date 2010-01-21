@@ -42,9 +42,8 @@ import org.hornetq.core.postoffice.BindingType;
 import org.hornetq.core.postoffice.Bindings;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.postoffice.QueueBinding;
-import org.hornetq.core.remoting.Channel;
+import org.hornetq.core.protocol.core.CoreRemotingConnection;
 import org.hornetq.core.remoting.CloseListener;
-import org.hornetq.core.remoting.CoreRemotingConnection;
 import org.hornetq.core.remoting.FailureListener;
 import org.hornetq.core.security.CheckType;
 import org.hornetq.core.security.SecurityStore;
@@ -102,8 +101,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
 
    private CoreRemotingConnection remotingConnection;
 
-   private Channel channel;
-
    private final Map<Long, ServerConsumer> consumers = new ConcurrentHashMap<Long, ServerConsumer>();
 
    private Transaction tx;
@@ -131,8 +128,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
    // The current currentLargeMessage being processed
    private volatile LargeServerMessage currentLargeMessage;
 
-   // private ServerSessionPacketHandler handler;
-
    private boolean closed;
 
    private final Map<SimpleString, CreditManagerHolder> creditManagerHolders = new HashMap<SimpleString, CreditManagerHolder>();
@@ -152,8 +147,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
                             final boolean preAcknowledge,
                             final boolean strictUpdateDeliveryCount,
                             final boolean xa,
-                            final CoreRemotingConnection remotingConnection,
-                            final Channel channel,
+                            final CoreRemotingConnection remotingConnection,                     
                             final StorageManager storageManager,
                             final PostOffice postOffice,
                             final ResourceManager resourceManager,
@@ -175,8 +169,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       this.preAcknowledge = preAcknowledge;
 
       this.remotingConnection = remotingConnection;
-
-      this.channel = channel;
 
       this.storageManager = storageManager;
 
@@ -288,6 +280,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       {
          holder.store.returnProducerCredits(holder.outstandingCredits);
       }
+      
+      callback.closed();
    }
 
    public void createConsumer(final long consumerID,
@@ -1035,52 +1029,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       {
          consumer.setTransferring(transferring);
       }
-   }
-
-   public int transferConnection(final CoreRemotingConnection newConnection, final int lastReceivedCommandID)
-   {
-      // We need to disable delivery on all the consumers while the transfer is occurring- otherwise packets might get
-      // delivered
-      // after the channel has transferred but *before* packets have been replayed - this will give the client the wrong
-      // sequence of packets.
-      // It is not sufficient to just stop the session, since right after stopping the session, another session start
-      // might be executed
-      // before we have transferred the connection, leaving it in a started state
-      setTransferring(true);
-
-      remotingConnection.removeFailureListener(this);
-      remotingConnection.removeCloseListener(this);
-
-      // Note. We do not destroy the replicating connection here. In the case the live server has really crashed
-      // then the connection will get cleaned up anyway when the server ping timeout kicks in.
-      // In the case the live server is really still up, i.e. a split brain situation (or in tests), then closing
-      // the replicating connection will cause the outstanding responses to be be replayed on the live server,
-      // if these reach the client who then subsequently fails over, on reconnection to backup, it will have
-      // received responses that the backup did not know about.
-
-      channel.transferConnection(newConnection);
-
-      newConnection.syncIDGeneratorSequence(remotingConnection.getIDGeneratorSequence());
-
-      remotingConnection = newConnection;
-
-      remotingConnection.addFailureListener(this);
-      remotingConnection.addCloseListener(this);
-
-      int serverLastReceivedCommandID = channel.getLastConfirmedCommandID();
-
-      channel.replayCommands(lastReceivedCommandID);
-
-      channel.setTransferring(false);
-
-      setTransferring(false);
-
-      return serverLastReceivedCommandID;
-   }
-
-   public Channel getChannel()
-   {
-      return channel;
    }
 
    public void runConnectionFailureRunners()

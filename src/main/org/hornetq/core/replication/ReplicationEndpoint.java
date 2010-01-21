@@ -15,8 +15,8 @@ package org.hornetq.core.replication;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.core.journal.JournalLoadInformation;
-import org.hornetq.core.remoting.Channel;
-import org.hornetq.core.remoting.ChannelHandler;
+import org.hornetq.core.protocol.core.Channel;
+import org.hornetq.core.protocol.core.ChannelHandler;
 import org.hornetq.core.server.HornetQComponent;
 
 /**

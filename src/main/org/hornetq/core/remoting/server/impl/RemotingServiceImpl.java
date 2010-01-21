@@ -28,6 +28,7 @@ import org.hornetq.api.core.Interceptor;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.logging.Logger;
+import org.hornetq.core.protocol.core.CoreProtocolManager;
 import org.hornetq.core.remoting.ProtocolType;
 import org.hornetq.core.remoting.RemotingConnection;
 import org.hornetq.core.remoting.impl.AbstractBufferHandler;

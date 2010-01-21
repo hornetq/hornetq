@@ -26,7 +26,7 @@ import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.remoting.impl.RemotingConnectionImpl;
+import org.hornetq.core.protocol.core.RemotingConnectionImpl;
 import org.hornetq.core.remoting.impl.invm.InVMConnector;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.UnitTestCase;

@@ -17,9 +17,9 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Interceptor;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.core.remoting.Packet;
+import org.hornetq.core.protocol.core.Packet;
+import org.hornetq.core.protocol.core.wireformat.SessionSendMessage;
 import org.hornetq.core.remoting.RemotingConnection;
-import org.hornetq.core.remoting.impl.wireformat.SessionSendMessage;
 
 /**
  * A simple Interceptor implementation

@@ -14,7 +14,7 @@
 package org.hornetq.api.core;
 
 import org.hornetq.api.core.client.ClientSessionFactory;
-import org.hornetq.core.remoting.Packet;
+import org.hornetq.core.protocol.core.Packet;
 import org.hornetq.core.remoting.RemotingConnection;
 
 /**

@@ -13,21 +13,21 @@
 
 package org.hornetq.core.client.impl;
 
-import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.EXCEPTION;
-import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.SESS_RECEIVE_CONTINUATION;
-import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.SESS_RECEIVE_LARGE_MSG;
-import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.SESS_RECEIVE_MSG;
+import static org.hornetq.core.protocol.core.PacketImpl.EXCEPTION;
+import static org.hornetq.core.protocol.core.PacketImpl.SESS_RECEIVE_CONTINUATION;
+import static org.hornetq.core.protocol.core.PacketImpl.SESS_RECEIVE_LARGE_MSG;
+import static org.hornetq.core.protocol.core.PacketImpl.SESS_RECEIVE_MSG;
 
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.remoting.Channel;
-import org.hornetq.core.remoting.ChannelHandler;
-import org.hornetq.core.remoting.Packet;
-import org.hornetq.core.remoting.impl.wireformat.HornetQExceptionMessage;
-import org.hornetq.core.remoting.impl.wireformat.PacketImpl;
-import org.hornetq.core.remoting.impl.wireformat.SessionProducerCreditsMessage;
-import org.hornetq.core.remoting.impl.wireformat.SessionReceiveContinuationMessage;
-import org.hornetq.core.remoting.impl.wireformat.SessionReceiveLargeMessage;
-import org.hornetq.core.remoting.impl.wireformat.SessionReceiveMessage;
+import org.hornetq.core.protocol.core.Channel;
+import org.hornetq.core.protocol.core.ChannelHandler;
+import org.hornetq.core.protocol.core.Packet;
+import org.hornetq.core.protocol.core.PacketImpl;
+import org.hornetq.core.protocol.core.wireformat.HornetQExceptionMessage;
+import org.hornetq.core.protocol.core.wireformat.SessionProducerCreditsMessage;
+import org.hornetq.core.protocol.core.wireformat.SessionReceiveContinuationMessage;
+import org.hornetq.core.protocol.core.wireformat.SessionReceiveLargeMessage;
+import org.hornetq.core.protocol.core.wireformat.SessionReceiveMessage;
 
 /**
  *

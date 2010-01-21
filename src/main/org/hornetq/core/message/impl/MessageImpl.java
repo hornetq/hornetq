@@ -27,7 +27,7 @@ import org.hornetq.core.buffers.impl.ResetLimitWrappedHornetQBuffer;
 import org.hornetq.core.client.impl.LargeMessageBufferInternal;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.BodyEncoder;
-import org.hornetq.core.remoting.impl.wireformat.PacketImpl;
+import org.hornetq.core.protocol.core.PacketImpl;
 import org.hornetq.utils.DataConstants;
 import org.hornetq.utils.TypedProperties;
 

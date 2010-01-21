@@ -21,7 +21,7 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.paging.PagingStore;
-import org.hornetq.core.remoting.impl.wireformat.PacketImpl;
+import org.hornetq.core.protocol.core.PacketImpl;
 import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.ServerMessage;
