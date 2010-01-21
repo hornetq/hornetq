@@ -18,6 +18,8 @@ import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 
+import org.hornetq.spi.core.protocol.ProtocolType;
+
 /**
  * A factory for creating acceptors.
  * <p/>
@@ -43,7 +45,8 @@ public interface AcceptorFactory
                            BufferHandler handler,
                            ConnectionLifeCycleListener listener,
                            Executor threadPool,
-                           ScheduledExecutorService scheduledThreadPool);
+                           ScheduledExecutorService scheduledThreadPool,
+                           ProtocolType protocol);
 
    /**
     * Returns the allowable properties for this acceptor.

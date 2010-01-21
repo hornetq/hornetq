@@ -13,7 +13,7 @@
 package org.hornetq.spi.core.remoting;
 
 import org.hornetq.api.core.HornetQException;
-import org.hornetq.core.remoting.ProtocolType;
+import org.hornetq.spi.core.protocol.ProtocolType;
 
 /**
  * A ConnectionLifeCycleListener is called by the remoting implementation to notify of connection events.

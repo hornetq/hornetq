@@ -39,11 +39,11 @@ import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.ServerConsumer;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.ServerSession;
-import org.hornetq.core.server.SessionCallback;
 import org.hornetq.core.server.management.ManagementService;
 import org.hornetq.core.server.management.Notification;
 import org.hornetq.core.transaction.Transaction;
 import org.hornetq.core.transaction.impl.TransactionImpl;
+import org.hornetq.spi.core.protocol.SessionCallback;
 import org.hornetq.utils.Future;
 import org.hornetq.utils.TypedProperties;
 

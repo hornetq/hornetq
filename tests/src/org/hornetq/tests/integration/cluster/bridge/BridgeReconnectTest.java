@@ -27,7 +27,6 @@ import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.*;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.remoting.RemotingConnection;
 import org.hornetq.core.remoting.impl.invm.InVMConnector;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.server.HornetQServer;
@@ -36,6 +35,7 @@ import org.hornetq.core.server.cluster.BridgeConfiguration;
 import org.hornetq.core.server.cluster.QueueConfiguration;
 import org.hornetq.core.server.cluster.impl.BridgeImpl;
 import org.hornetq.integration.transports.netty.NettyConnectorFactory;
+import org.hornetq.spi.core.protocol.RemotingConnection;
 
 /**
  * A BridgeReconnectTest

@@ -19,7 +19,7 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Interceptor;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.protocol.core.Packet;
-import org.hornetq.core.remoting.RemotingConnection;
+import org.hornetq.spi.core.protocol.RemotingConnection;
 
 /**
  * 

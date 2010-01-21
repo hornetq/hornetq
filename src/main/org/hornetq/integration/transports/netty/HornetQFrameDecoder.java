@@ -49,29 +49,32 @@ public class HornetQFrameDecoder extends FrameDecoder
    @Override
    protected Object decode(final ChannelHandlerContext ctx, final Channel channel, final ChannelBuffer in) throws Exception
    {
-      // TODO - we can avoid this entirely if we maintain fragmented packets in the handler
+      log.info("dewcoding!!");
+           
       int start = in.readerIndex();
 
       int length = handler.isReadyToHandle(new ChannelBufferWrapper(in));
+      
+      log.info("length is " + length);
 
       in.readerIndex(start);
+      
+      log.info("length is 2 " + length);
 
       if (length == -1)
       {
          return null;
       }
+      
+      log.info("creating buffer");
 
-      // in.readerIndex(start + SIZE_INT);
-
-      ChannelBuffer buffer = in.readBytes(length + DataConstants.SIZE_INT);
-
-      // FIXME - we should get Netty to give us a DynamicBuffer - seems to currently give us a non resizable buffer
+      ChannelBuffer buffer = in.readBytes(length);
 
       ChannelBuffer newBuffer = ChannelBuffers.dynamicBuffer(buffer.writerIndex());
 
       newBuffer.writeBytes(buffer);
-
-      newBuffer.readInt();
+      
+      log.info("got the buffer");
 
       return newBuffer;
    }

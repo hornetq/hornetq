@@ -31,10 +31,10 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.management.NotificationType;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.remoting.ProtocolType;
 import org.hornetq.core.remoting.impl.ssl.SSLSupport;
 import org.hornetq.core.server.management.Notification;
 import org.hornetq.core.server.management.NotificationService;
+import org.hornetq.spi.core.protocol.ProtocolType;
 import org.hornetq.spi.core.remoting.Acceptor;
 import org.hornetq.spi.core.remoting.BufferHandler;
 import org.hornetq.spi.core.remoting.Connection;
@@ -130,17 +130,24 @@ public class NettyAcceptor implements Acceptor
    private NotificationService notificationService;
 
    private VirtualExecutorService bossExecutor;
+   
+   private final ProtocolType protocol;
+   
+   private boolean paused;
 
    public NettyAcceptor(final Map<String, Object> configuration,
                         final BufferHandler handler,
                         final ConnectionLifeCycleListener listener,
                         final Executor threadPool,
-                        final ScheduledExecutorService scheduledThreadPool)
+                        final ScheduledExecutorService scheduledThreadPool,
+                        final ProtocolType protocol)
    {
       this.handler = handler;
 
       this.listener = listener;
-
+      
+      this.protocol = protocol;
+      
       sslEnabled = ConfigurationHelper.getBooleanProperty(TransportConstants.SSL_ENABLED_PROP_NAME,
                                                           TransportConstants.DEFAULT_SSL_ENABLED,
                                                           configuration);
@@ -281,7 +288,7 @@ public class NettyAcceptor implements Acceptor
                pipeline.addLast("httphandler", new HttpAcceptorHandler(httpKeepAliveRunnable, httpResponseTime));
             }
 
-            ChannelPipelineSupport.addCodecFilter(pipeline, handler);
+            ChannelPipelineSupport.addCodecFilter(protocol, pipeline, handler);
             pipeline.addLast("handler", new HornetQServerChannelHandler(channelGroup, handler, new Listener()));
             return pipeline;
          }
@@ -420,8 +427,6 @@ public class NettyAcceptor implements Acceptor
       return channelFactory != null;
    }
 
-   private boolean paused;
-
    public void pause()
    {
       if (paused)
@@ -454,7 +459,6 @@ public class NettyAcceptor implements Acceptor
       bossExecutor.shutdown();
       try
       {
-
          bossExecutor.awaitTermination(30, TimeUnit.SECONDS);
       }
       catch (InterruptedException e)
@@ -521,7 +525,7 @@ public class NettyAcceptor implements Acceptor
             throw new IllegalArgumentException("Connection already exists with id " + connection.getID());
          }
 
-         listener.connectionCreated(connection, protocol);
+         listener.connectionCreated(connection, NettyAcceptor.this.protocol);
       }
 
       public void connectionDestroyed(final Object connectionID)

@@ -18,8 +18,8 @@ import org.hornetq.api.core.Interceptor;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.protocol.core.Packet;
-import org.hornetq.core.protocol.core.wireformat.SessionSendMessage;
-import org.hornetq.core.remoting.RemotingConnection;
+import org.hornetq.core.protocol.core.impl.wireformat.SessionSendMessage;
+import org.hornetq.spi.core.protocol.RemotingConnection;
 
 /**
  * A simple Interceptor implementation

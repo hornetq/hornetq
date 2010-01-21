@@ -16,8 +16,8 @@ package org.hornetq.tests.integration.cluster.failover;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Interceptor;
 import org.hornetq.core.protocol.core.Packet;
-import org.hornetq.core.protocol.core.PacketImpl;
-import org.hornetq.core.remoting.RemotingConnection;
+import org.hornetq.core.protocol.core.impl.PacketImpl;
+import org.hornetq.spi.core.protocol.RemotingConnection;
 
 /**
  * A DelayInterceptor

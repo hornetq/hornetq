@@ -28,15 +28,15 @@ import org.hornetq.api.core.Interceptor;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.protocol.core.CoreProtocolManager;
-import org.hornetq.core.remoting.ProtocolType;
-import org.hornetq.core.remoting.RemotingConnection;
-import org.hornetq.core.remoting.impl.AbstractBufferHandler;
-import org.hornetq.core.remoting.server.ConnectionEntry;
-import org.hornetq.core.remoting.server.ProtocolManager;
+import org.hornetq.core.protocol.aardvark.impl.AardvarkProtocolManagerFactory;
+import org.hornetq.core.protocol.core.impl.CoreProtocolManagerFactory;
 import org.hornetq.core.remoting.server.RemotingService;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.management.ManagementService;
+import org.hornetq.spi.core.protocol.ConnectionEntry;
+import org.hornetq.spi.core.protocol.ProtocolManager;
+import org.hornetq.spi.core.protocol.ProtocolType;
+import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.spi.core.remoting.Acceptor;
 import org.hornetq.spi.core.remoting.AcceptorFactory;
 import org.hornetq.spi.core.remoting.BufferHandler;
@@ -70,7 +70,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
    private final Map<Object, ConnectionEntry> connections = new ConcurrentHashMap<Object, ConnectionEntry>();
 
-   private final BufferHandler bufferHandler = new DelegatingBufferHandler();
+   //private final BufferHandler bufferHandler = new DelegatingBufferHandler();
 
    private final Configuration config;
 
@@ -122,7 +122,8 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       this.threadPool = threadPool;
       this.scheduledThreadPool = scheduledThreadPool;
       
-      this.protocolMap.put(ProtocolType.CORE, new CoreProtocolManager(server, interceptors));
+      this.protocolMap.put(ProtocolType.CORE, new CoreProtocolManagerFactory().createProtocolManager(server, interceptors));
+      this.protocolMap.put(ProtocolType.AARDVARK, new AardvarkProtocolManagerFactory().createProtocolManager(server, interceptors));
    }
 
    // RemotingService implementation -------------------------------
@@ -159,12 +160,19 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
                   continue;
                }
             }
+            
+            //TODO - allow protocol type to be configured from Configuration for each acceptor
 
+            ProtocolType protocol = hackProtocol;
+            
+            ProtocolManager manager = protocolMap.get(protocol);
+            
             Acceptor acceptor = factory.createAcceptor(info.getParams(),
-                                                       bufferHandler,
+                                                       new DelegatingBufferHandler(manager),
                                                        this,
                                                        threadPool,
-                                                       scheduledThreadPool);
+                                                       scheduledThreadPool,
+                                                       protocol);
 
             acceptors.add(acceptor);
 
@@ -193,6 +201,9 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
       started = true;
    }
+   
+   //FIXME - temp hack so we can choose AARDVARK as protocol
+   public static ProtocolType hackProtocol = ProtocolType.CORE;
 
    public synchronized void freeze()
    {
@@ -376,8 +387,15 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
    // Inner classes -------------------------------------------------
 
-   private final class DelegatingBufferHandler extends AbstractBufferHandler
+   private final class DelegatingBufferHandler implements BufferHandler
    {
+      private ProtocolManager manager;
+      
+      DelegatingBufferHandler(final ProtocolManager manager)
+      {
+         this.manager = manager;
+      }
+      
       public void bufferReceived(final Object connectionID, final HornetQBuffer buffer)
       {
          ConnectionEntry conn = connections.get(connectionID);
@@ -386,6 +404,11 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
          {
             conn.connection.bufferReceived(connectionID, buffer);
          }
+      }
+
+      public int isReadyToHandle(HornetQBuffer buffer)
+      {
+         return manager.isReadyToHandle(buffer);
       }
    }
 

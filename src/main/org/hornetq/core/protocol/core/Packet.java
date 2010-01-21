@@ -14,7 +14,7 @@
 package org.hornetq.core.protocol.core;
 
 import org.hornetq.api.core.HornetQBuffer;
-import org.hornetq.core.remoting.RemotingConnection;
+import org.hornetq.spi.core.protocol.RemotingConnection;
 
 /**
  * A Packet represents a pcaket of data transmitted over a connection.

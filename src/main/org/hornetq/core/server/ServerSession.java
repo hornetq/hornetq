@@ -18,6 +18,7 @@ import java.util.List;
 import javax.transaction.xa.Xid;
 
 import org.hornetq.api.core.SimpleString;
+import org.hornetq.spi.core.protocol.SessionCallback;
 
 /**
  *
@@ -85,7 +86,7 @@ public interface ServerSession
 
    void deleteQueue(SimpleString name) throws Exception;
 
-   void createConsumer(long consumerID, SimpleString name, SimpleString filterString, boolean browseOnly) throws Exception;
+   void createConsumer(long consumerID, SimpleString queueName, SimpleString filterString, boolean browseOnly) throws Exception;
 
    QueueQueryResult executeQueueQuery(SimpleString name) throws Exception;
 

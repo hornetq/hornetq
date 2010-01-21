@@ -21,7 +21,6 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.paging.PagingStore;
-import org.hornetq.core.protocol.core.PacketImpl;
 import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.ServerMessage;
@@ -313,7 +312,7 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
    {
       // We first set the message id - this needs to be set on the buffer since this buffer will be re-used
 
-      buffer.setLong(buffer.getInt(PacketImpl.PACKET_HEADERS_SIZE) + DataConstants.SIZE_INT, messageID);
+      buffer.setLong(buffer.getInt(MessageImpl.BUFFER_HEADER_SPACE) + DataConstants.SIZE_INT, messageID);
    }
 
 }

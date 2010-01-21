@@ -16,8 +16,8 @@ package org.hornetq.core.remoting.server;
 import java.util.Set;
 
 import org.hornetq.api.core.Interceptor;
-import org.hornetq.core.remoting.RemotingConnection;
 import org.hornetq.core.server.HornetQComponent;
+import org.hornetq.spi.core.protocol.RemotingConnection;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>

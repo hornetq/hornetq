@@ -20,8 +20,8 @@ import org.hornetq.api.core.Interceptor;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.protocol.core.Packet;
-import org.hornetq.core.protocol.core.wireformat.SessionReceiveMessage;
-import org.hornetq.core.remoting.RemotingConnection;
+import org.hornetq.core.protocol.core.impl.wireformat.SessionReceiveMessage;
+import org.hornetq.spi.core.protocol.RemotingConnection;
 
 /**
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>

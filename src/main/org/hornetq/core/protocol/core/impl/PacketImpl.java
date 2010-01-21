@@ -1,0 +1,311 @@
+/*
+ * Copyright 2009 Red Hat, Inc.
+ * Red Hat licenses this file to you under the Apache License, version
+ * 2.0 (the "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+ * implied.  See the License for the specific language governing
+ * permissions and limitations under the License.
+ */
+
+package org.hornetq.core.protocol.core.impl;
+
+import org.hornetq.api.core.HornetQBuffer;
+import org.hornetq.core.logging.Logger;
+import org.hornetq.core.protocol.core.Packet;
+import org.hornetq.spi.core.protocol.RemotingConnection;
+import org.hornetq.utils.DataConstants;
+
+/**
+ * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @version <tt>$Revision$</tt>
+ */
+public class PacketImpl implements Packet
+{
+   // Constants -------------------------------------------------------------------------
+
+   private static final Logger log = Logger.getLogger(PacketImpl.class);
+
+   // The minimal size for all the packets, Common data for all the packets (look at PacketImpl.encode)
+   public static final int PACKET_HEADERS_SIZE = DataConstants.SIZE_INT + DataConstants.SIZE_BYTE +
+                                                 DataConstants.SIZE_LONG;
+
+   private static final int INITIAL_PACKET_SIZE = 1500;
+
+   protected long channelID;
+
+   protected final byte type;
+
+   protected int size = -1;
+
+   // The packet types
+   // -----------------------------------------------------------------------------------
+
+   public static final byte PING = 10;
+
+   public static final byte DISCONNECT = 11;
+
+   // Miscellaneous
+   public static final byte EXCEPTION = 20;
+
+   public static final byte NULL_RESPONSE = 21;
+
+   public static final byte PACKETS_CONFIRMED = 22;
+
+   // Server
+   public static final byte CREATESESSION = 30;
+
+   public static final byte CREATESESSION_RESP = 31;
+
+   public static final byte REATTACH_SESSION = 32;
+
+   public static final byte REATTACH_SESSION_RESP = 33;
+
+   public static final byte CREATE_QUEUE = 34;
+
+   public static final byte DELETE_QUEUE = 35;
+
+   public static final byte CREATE_REPLICATION = 36;
+
+   // Session
+   public static final byte SESS_CREATECONSUMER = 40;
+
+   public static final byte SESS_ACKNOWLEDGE = 41;
+
+   public static final byte SESS_EXPIRED = 42;
+
+   public static final byte SESS_COMMIT = 43;
+
+   public static final byte SESS_ROLLBACK = 44;
+
+   public static final byte SESS_QUEUEQUERY = 45;
+
+   public static final byte SESS_QUEUEQUERY_RESP = 46;
+
+   public static final byte SESS_BINDINGQUERY = 49;
+
+   public static final byte SESS_BINDINGQUERY_RESP = 50;
+
+   public static final byte SESS_XA_START = 51;
+
+   public static final byte SESS_XA_END = 52;
+
+   public static final byte SESS_XA_COMMIT = 53;
+
+   public static final byte SESS_XA_PREPARE = 54;
+
+   public static final byte SESS_XA_RESP = 55;
+
+   public static final byte SESS_XA_ROLLBACK = 56;
+
+   public static final byte SESS_XA_JOIN = 57;
+
+   public static final byte SESS_XA_SUSPEND = 58;
+
+   public static final byte SESS_XA_RESUME = 59;
+
+   public static final byte SESS_XA_FORGET = 60;
+
+   public static final byte SESS_XA_INDOUBT_XIDS = 61;
+
+   public static final byte SESS_XA_INDOUBT_XIDS_RESP = 62;
+
+   public static final byte SESS_XA_SET_TIMEOUT = 63;
+
+   public static final byte SESS_XA_SET_TIMEOUT_RESP = 64;
+
+   public static final byte SESS_XA_GET_TIMEOUT = 65;
+
+   public static final byte SESS_XA_GET_TIMEOUT_RESP = 66;
+
+   public static final byte SESS_START = 67;
+
+   public static final byte SESS_STOP = 68;
+
+   public static final byte SESS_CLOSE = 69;
+
+   public static final byte SESS_FLOWTOKEN = 70;
+
+   public static final byte SESS_SEND = 71;
+
+   public static final byte SESS_SEND_LARGE = 72;
+
+   public static final byte SESS_SEND_CONTINUATION = 73;
+
+   public static final byte SESS_CONSUMER_CLOSE = 74;
+
+   public static final byte SESS_RECEIVE_MSG = 75;
+
+   public static final byte SESS_RECEIVE_LARGE_MSG = 76;
+
+   public static final byte SESS_RECEIVE_CONTINUATION = 77;
+
+   public static final byte SESS_FORCE_CONSUMER_DELIVERY = 78;
+
+   public static final byte SESS_PRODUCER_REQUEST_CREDITS = 79;
+
+   public static final byte SESS_PRODUCER_CREDITS = 80;
+
+   // Replication
+
+   public static final byte REPLICATION_RESPONSE = 90;
+
+   public static final byte REPLICATION_APPEND = 91;
+
+   public static final byte REPLICATION_APPEND_TX = 92;
+
+   public static final byte REPLICATION_DELETE = 93;
+
+   public static final byte REPLICATION_DELETE_TX = 94;
+
+   public static final byte REPLICATION_PREPARE = 95;
+
+   public static final byte REPLICATION_COMMIT_ROLLBACK = 96;
+
+   public static final byte REPLICATION_PAGE_WRITE = 97;
+
+   public static final byte REPLICATION_PAGE_EVENT = 98;
+
+   public static final byte REPLICATION_LARGE_MESSAGE_BEGIN = 99;
+
+   public static final byte REPLICATION_LARGE_MESSAGE_END = 100;
+
+   public static final byte REPLICATION_LARGE_MESSAGE_WRITE = 101;
+
+   public static final byte REPLICATION_COMPARE_DATA = 102;
+
+   public static final byte REPLICATION_SYNC = 103;
+
+   // Static --------------------------------------------------------
+
+   public PacketImpl(final byte type)
+   {
+      this.type = type;
+   }
+
+   // Public --------------------------------------------------------
+
+   public byte getType()
+   {
+      return type;
+   }
+
+   public long getChannelID()
+   {
+      return channelID;
+   }
+
+   public void setChannelID(final long channelID)
+   {
+      this.channelID = channelID;
+   }
+
+   public HornetQBuffer encode(final RemotingConnection connection)
+   {
+      HornetQBuffer buffer = connection.createBuffer(PacketImpl.INITIAL_PACKET_SIZE);
+
+      // The standard header fields
+
+      buffer.writeInt(0); // The length gets filled in at the end
+      buffer.writeByte(type);
+      buffer.writeLong(channelID);
+
+      encodeRest(buffer);
+
+      size = buffer.writerIndex();
+
+      // The length doesn't include the actual length byte
+      int len = size - DataConstants.SIZE_INT;
+
+      buffer.setInt(0, len);
+
+      return buffer;
+   }
+
+   public void decode(final HornetQBuffer buffer)
+   {
+      channelID = buffer.readLong();
+
+      decodeRest(buffer);
+
+      size = buffer.readerIndex();
+   }
+
+   public int getPacketSize()
+   {
+      if (size == -1)
+      {
+         throw new IllegalStateException("Packet hasn't been encoded/decoded yet");
+      }
+
+      return size;
+   }
+
+   public boolean isResponse()
+   {
+      return false;
+   }
+
+   public void encodeRest(final HornetQBuffer buffer)
+   {
+   }
+
+   public void decodeRest(final HornetQBuffer buffer)
+   {
+   }
+
+   public boolean isRequiresConfirmations()
+   {
+      return true;
+   }
+   
+   public boolean isAsyncExec()
+   {
+      return false;
+   }
+
+   @Override
+   public String toString()
+   {
+      return getParentString() + "]";
+   }
+
+   @Override
+   public boolean equals(final Object other)
+   {
+      if (other instanceof PacketImpl == false)
+      {
+         return false;
+      }
+
+      PacketImpl r = (PacketImpl)other;
+
+      return r.type == type && r.channelID == channelID;
+   }
+
+   // Package protected ---------------------------------------------
+
+   protected String getParentString()
+   {
+      return "PACKET[type=" + type + ", channelID=" + channelID + "]";
+   }
+
+   // Protected -----------------------------------------------------
+
+   protected int stringEncodeSize(final String str)
+   {
+      return DataConstants.SIZE_INT + str.length() * 2;
+   }
+
+   protected int nullableStringEncodeSize(final String str)
+   {
+      return DataConstants.SIZE_BOOLEAN + (str != null ? stringEncodeSize(str) : 0);
+   }
+   // Private -------------------------------------------------------
+
+   // Inner classes -------------------------------------------------
+}

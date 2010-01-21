@@ -21,9 +21,9 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.management.NotificationType;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.remoting.ProtocolType;
 import org.hornetq.core.server.management.Notification;
 import org.hornetq.core.server.management.NotificationService;
+import org.hornetq.spi.core.protocol.ProtocolType;
 import org.hornetq.spi.core.remoting.Acceptor;
 import org.hornetq.spi.core.remoting.BufferHandler;
 import org.hornetq.spi.core.remoting.Connection;
@@ -58,11 +58,14 @@ public class InVMAcceptor implements Acceptor
    private boolean paused;
 
    private NotificationService notificationService;
+   
+   private final ProtocolType protocol;
 
    public InVMAcceptor(final Map<String, Object> configuration,
                        final BufferHandler handler,
                        final ConnectionLifeCycleListener listener,
-                       final Executor threadPool)
+                       final Executor threadPool,
+                       final ProtocolType protocol)
    {
       this.handler = handler;
 
@@ -71,6 +74,8 @@ public class InVMAcceptor implements Acceptor
       id = ConfigurationHelper.getIntProperty(TransportConstants.SERVER_ID_PROP_NAME, 0, configuration);
 
       executorFactory = new OrderedExecutorFactory(threadPool);
+      
+      this.protocol = protocol;
    }
 
    public synchronized void start() throws Exception

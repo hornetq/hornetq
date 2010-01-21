@@ -16,6 +16,7 @@ package org.hornetq.integration.transports.netty;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
 
+import org.hornetq.spi.core.protocol.ProtocolType;
 import org.hornetq.spi.core.remoting.BufferHandler;
 import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.handler.ssl.SslHandler;
@@ -44,10 +45,19 @@ public class ChannelPipelineSupport
 
    // Public --------------------------------------------------------
 
-   public static void addCodecFilter(final ChannelPipeline pipeline, final BufferHandler handler)
+   public static void addCodecFilter(final ProtocolType protocol, final ChannelPipeline pipeline, final BufferHandler handler)
    {
       assert pipeline != null;
-      pipeline.addLast("decoder", new HornetQFrameDecoder2());
+      
+      if (protocol == ProtocolType.CORE)
+      {
+         pipeline.addLast("decoder", new HornetQFrameDecoder2());
+      }
+      else
+      {
+         //Use the old frame decoder for other protocols
+         pipeline.addLast("decoder", new HornetQFrameDecoder(handler));
+      }
    }
 
    public static void addSSLFilter(final ChannelPipeline pipeline, final SSLContext context, final boolean client) throws Exception

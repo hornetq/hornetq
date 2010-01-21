@@ -31,7 +31,7 @@ import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.client.impl.DelegatingSession;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.remoting.RemotingConnection;
+import org.hornetq.spi.core.protocol.RemotingConnection;
 
 /**
  * A MultiThreadFailoverTest

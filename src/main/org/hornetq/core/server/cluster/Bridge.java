@@ -14,11 +14,11 @@
 package org.hornetq.core.server.cluster;
 
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.core.remoting.RemotingConnection;
 import org.hornetq.core.server.Consumer;
 import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.management.NotificationService;
+import org.hornetq.spi.core.protocol.RemotingConnection;
 
 /**
  * A Core Bridge

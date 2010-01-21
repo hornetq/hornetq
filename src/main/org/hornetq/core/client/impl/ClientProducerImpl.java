@@ -25,9 +25,9 @@ import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.BodyEncoder;
 import org.hornetq.core.message.impl.MessageInternal;
 import org.hornetq.core.protocol.core.Channel;
-import org.hornetq.core.protocol.core.wireformat.SessionSendContinuationMessage;
-import org.hornetq.core.protocol.core.wireformat.SessionSendLargeMessage;
-import org.hornetq.core.protocol.core.wireformat.SessionSendMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.SessionSendContinuationMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.SessionSendLargeMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.SessionSendMessage;
 import org.hornetq.utils.TokenBucketLimiter;
 import org.hornetq.utils.UUIDGenerator;
 

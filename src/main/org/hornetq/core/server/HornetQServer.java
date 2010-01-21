@@ -24,7 +24,6 @@ import org.hornetq.core.management.impl.HornetQServerControlImpl;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.protocol.core.Channel;
-import org.hornetq.core.protocol.core.CoreRemotingConnection;
 import org.hornetq.core.remoting.server.RemotingService;
 import org.hornetq.core.replication.ReplicationEndpoint;
 import org.hornetq.core.security.Role;
@@ -35,6 +34,7 @@ import org.hornetq.core.settings.HierarchicalRepository;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.core.transaction.ResourceManager;
 import org.hornetq.core.version.Version;
+import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.spi.core.security.HornetQSecurityManager;
 import org.hornetq.utils.ExecutorFactory;
 
@@ -76,7 +76,7 @@ public interface HornetQServer extends HornetQComponent
                                String username,
                                String password,
                                int minLargeMessageSize,
-                               CoreRemotingConnection remotingConnection,
+                               RemotingConnection remotingConnection,
                                boolean autoCommitSends,
                                boolean autoCommitAcks,
                                boolean preAcknowledge,

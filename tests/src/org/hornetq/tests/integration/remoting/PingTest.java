@@ -33,11 +33,11 @@ import org.hornetq.core.config.Configuration;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.protocol.core.CoreRemotingConnection;
 import org.hornetq.core.protocol.core.Packet;
-import org.hornetq.core.protocol.core.PacketImpl;
+import org.hornetq.core.protocol.core.impl.PacketImpl;
 import org.hornetq.core.remoting.CloseListener;
-import org.hornetq.core.remoting.RemotingConnection;
 import org.hornetq.core.remoting.server.impl.RemotingServiceImpl;
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.tests.util.ServiceTestBase;
 
 /**
