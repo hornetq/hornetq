@@ -50,13 +50,11 @@ import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
 import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.exception.HornetQXAException;
 import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.persistence.OperationContext;
 import org.hornetq.core.persistence.StorageManager;
-import org.hornetq.core.protocol.core.impl.CoreProtocolManager;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
 import org.hornetq.core.protocol.core.impl.wireformat.CreateQueueMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.HornetQExceptionMessage;
@@ -71,12 +69,8 @@ import org.hornetq.core.protocol.core.impl.wireformat.SessionCreateConsumerMessa
 import org.hornetq.core.protocol.core.impl.wireformat.SessionDeleteQueueMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionExpiredMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionForceConsumerDelivery;
-import org.hornetq.core.protocol.core.impl.wireformat.SessionProducerCreditsMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionQueueQueryMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionQueueQueryResponseMessage;
-import org.hornetq.core.protocol.core.impl.wireformat.SessionReceiveContinuationMessage;
-import org.hornetq.core.protocol.core.impl.wireformat.SessionReceiveLargeMessage;
-import org.hornetq.core.protocol.core.impl.wireformat.SessionReceiveMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionRequestProducerCreditsMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionSendContinuationMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionSendLargeMessage;
@@ -100,7 +94,6 @@ import org.hornetq.core.server.BindingQueryResult;
 import org.hornetq.core.server.QueueQueryResult;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.ServerSession;
-import org.hornetq.spi.core.protocol.SessionCallback;
 
 /**
  * A ServerSessionPacketHandler
@@ -110,12 +103,10 @@ import org.hornetq.spi.core.protocol.SessionCallback;
  * @author <a href="mailto:andy.taylor@jboss.org>Andy Taylor</a>
  * @author <a href="mailto:clebert.suconic@jboss.org>Clebert Suconic</a>
  */
-public class ServerSessionPacketHandler implements ChannelHandler, CloseListener, FailureListener, SessionCallback
+public class ServerSessionPacketHandler implements ChannelHandler, CloseListener, FailureListener
 {
    private static final Logger log = Logger.getLogger(ServerSessionPacketHandler.class);
 
-   private final CoreProtocolManager protocolManager;
-   
    private final ServerSession session;
 
    private final OperationContext sessionContext;
@@ -127,14 +118,11 @@ public class ServerSessionPacketHandler implements ChannelHandler, CloseListener
 
    private volatile CoreRemotingConnection remotingConnection;
 
-   public ServerSessionPacketHandler(final CoreProtocolManager protocolManager,
-                                     final ServerSession session,
+   public ServerSessionPacketHandler(final ServerSession session,
                                      final OperationContext sessionContext,
                                      final StorageManager storageManager,
                                      final Channel channel)
    {
-      this.protocolManager = protocolManager;
-      
       this.session = session;
 
       this.storageManager = storageManager;
@@ -566,45 +554,6 @@ public class ServerSessionPacketHandler implements ChannelHandler, CloseListener
       {
          channel.close();
       }
-   }
-
-   public int sendLargeMessage(long consumerID, byte[] headerBuffer, long bodySize, int deliveryCount)
-   {
-      Packet packet = new SessionReceiveLargeMessage(consumerID, headerBuffer, bodySize, deliveryCount);
-
-      channel.send(packet);
-
-      return packet.getPacketSize();
-   }
-
-   public int sendLargeMessageContinuation(long consumerID, byte[] body, boolean continues, boolean requiresResponse)
-   {
-      Packet packet = new SessionReceiveContinuationMessage(consumerID, body, continues, requiresResponse);
-
-      channel.send(packet);
-
-      return packet.getPacketSize();
-   }
-
-   public int sendMessage(ServerMessage message, long consumerID, int deliveryCount)
-   {
-      Packet packet = new SessionReceiveMessage(consumerID, message, deliveryCount);
-
-      channel.send(packet);
-
-      return packet.getPacketSize();
-   }
-
-   public void sendProducerCreditsMessage(int credits, SimpleString address, int offset)
-   {
-      Packet packet = new SessionProducerCreditsMessage(credits, address, offset);
-
-      channel.send(packet);
-   }
-   
-   public void closed()
-   {
-      protocolManager.removeHandler(session.getName());
    }
    
    public int transferConnection(final CoreRemotingConnection newConnection, final int lastReceivedCommandID)

@@ -1,5 +1,5 @@
 /*
- * Copyright 2010 Red Hat, Inc.
+ * Copyright 2009 Red Hat, Inc.
  * Red Hat licenses this file to you under the Apache License, version
  * 2.0 (the "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
@@ -11,27 +11,23 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.spi.core.protocol;
+package org.hornetq.core.protocol.stomp;
 
-import org.hornetq.api.core.HornetQBuffer;
-import org.hornetq.spi.core.remoting.BufferDecoder;
-import org.hornetq.spi.core.remoting.Connection;
+import org.jboss.netty.handler.codec.frame.DelimiterBasedFrameDecoder;
+import org.jboss.netty.handler.codec.frame.Delimiters;
 
 /**
- * A ProtocolManager
+ * A StompFrameDelimiter
  *
- * @author Tim Fox
- *
- *
+ * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  */
-public interface ProtocolManager extends BufferDecoder
+public class StompFrameDelimiter extends DelimiterBasedFrameDecoder
 {
-   ConnectionEntry createConnectionEntry(Connection connection);
-   
-   public void removeHandler(final String name);
 
-   public int isReadyToHandle(HornetQBuffer buffer);
-   
-   void handleBuffer(RemotingConnection connection, HornetQBuffer buffer);
+   private static final int MAX_DATA_LENGTH = 1024 * 1024 * 100;
 
+   public StompFrameDelimiter()
+   {
+      super(MAX_DATA_LENGTH, false, Delimiters.nulDelimiter());
+   }
 }

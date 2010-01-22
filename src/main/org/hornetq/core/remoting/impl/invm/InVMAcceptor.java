@@ -58,14 +58,11 @@ public class InVMAcceptor implements Acceptor
    private boolean paused;
 
    private NotificationService notificationService;
-   
-   private final ProtocolType protocol;
 
    public InVMAcceptor(final Map<String, Object> configuration,
                        final BufferHandler handler,                       
                        final ConnectionLifeCycleListener listener,
-                       final Executor threadPool,
-                       final ProtocolType protocol)
+                       final Executor threadPool)
    {
       this.handler = handler;
       
@@ -74,8 +71,6 @@ public class InVMAcceptor implements Acceptor
       id = ConfigurationHelper.getIntProperty(TransportConstants.SERVER_ID_PROP_NAME, 0, configuration);
 
       executorFactory = new OrderedExecutorFactory(threadPool);
-      
-      this.protocol = protocol;
    }
 
    public synchronized void start() throws Exception

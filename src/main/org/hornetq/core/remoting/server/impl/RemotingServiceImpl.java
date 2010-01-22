@@ -30,9 +30,11 @@ import org.hornetq.core.config.Configuration;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.protocol.aardvark.impl.AardvarkProtocolManagerFactory;
 import org.hornetq.core.protocol.core.impl.CoreProtocolManagerFactory;
+import org.hornetq.core.protocol.stomp.StompProtocolManagerFactory;
 import org.hornetq.core.remoting.server.RemotingService;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.management.ManagementService;
+import org.hornetq.integration.transports.netty.TransportConstants;
 import org.hornetq.spi.core.protocol.ConnectionEntry;
 import org.hornetq.spi.core.protocol.ProtocolManager;
 import org.hornetq.spi.core.protocol.ProtocolType;
@@ -121,6 +123,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       this.scheduledThreadPool = scheduledThreadPool;
       
       this.protocolMap.put(ProtocolType.CORE, new CoreProtocolManagerFactory().createProtocolManager(server, interceptors));
+      this.protocolMap.put(ProtocolType.STOMP, new StompProtocolManagerFactory().createProtocolManager(server, interceptors));
       this.protocolMap.put(ProtocolType.AARDVARK, new AardvarkProtocolManagerFactory().createProtocolManager(server, interceptors));
    }
 
@@ -159,9 +162,9 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
                }
             }
             
-            //TODO - allow protocol type to be configured from Configuration for each acceptor
+            String protocolString = ConfigurationHelper.getStringProperty(TransportConstants.PROTOCOL_PROP_NAME, TransportConstants.DEFAULT_PROTOCOL, info.getParams());
 
-            ProtocolType protocol = hackProtocol;
+            ProtocolType protocol = ProtocolType.valueOf(protocolString.toUpperCase());
             
             ProtocolManager manager = protocolMap.get(protocol);
             
@@ -170,8 +173,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
                                                        manager,
                                                        this,
                                                        threadPool,
-                                                       scheduledThreadPool,
-                                                       protocol);
+                                                       scheduledThreadPool);
 
             acceptors.add(acceptor);
 
@@ -200,9 +202,6 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
       started = true;
    }
-   
-   //FIXME - temp hack so we can choose AARDVARK as protocol
-   public static ProtocolType hackProtocol = ProtocolType.CORE;
 
    public synchronized void freeze()
    {

@@ -30,6 +30,7 @@ import org.hornetq.core.protocol.core.impl.wireformat.Ping;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.spi.core.protocol.ConnectionEntry;
 import org.hornetq.spi.core.protocol.ProtocolManager;
+import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.spi.core.remoting.Connection;
 
 /**
@@ -120,7 +121,7 @@ public class CoreProtocolManager implements ProtocolManager
       sessionHandlers.remove(name);
    }
 
-   public void bufferReceived(Object connectionID, HornetQBuffer buffer)
+   public void handleBuffer(RemotingConnection connection, HornetQBuffer buffer)
    {
    }
 

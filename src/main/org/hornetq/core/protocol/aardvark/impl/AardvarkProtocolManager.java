@@ -56,6 +56,10 @@ public class AardvarkProtocolManager implements ProtocolManager
 
       return new ConnectionEntry(conn, 0, 0);
    }
+   
+   public void removeHandler(String name)
+   {
+   }
 
    public void handleBuffer(final RemotingConnection conn, final HornetQBuffer buffer)
    {                 
@@ -69,9 +73,8 @@ public class AardvarkProtocolManager implements ProtocolManager
                                                       true,
                                                       true,
                                                       true,
-                                                      false);
-         
-         session.setCallback(new AardvarkSessionCallback(conn.getTransportConnection()));
+                                                      false,
+                                                      new AardvarkSessionCallback(conn.getTransportConnection()));
          
          final SimpleString name = new SimpleString("hornetq.aardvark");
          

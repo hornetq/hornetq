@@ -16,6 +16,7 @@ package org.hornetq.integration.transports.netty;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
 
+import org.hornetq.core.protocol.stomp.StompFrameDelimiter;
 import org.hornetq.spi.core.protocol.ProtocolType;
 import org.hornetq.spi.core.remoting.BufferDecoder;
 import org.jboss.netty.channel.ChannelPipeline;
@@ -54,9 +55,12 @@ public class ChannelPipelineSupport
          //Core protocol uses it's own optimised decoder
          pipeline.addLast("decoder", new HornetQFrameDecoder2());
       }
+      else if (protocol == ProtocolType.STOMP)
+      {
+         pipeline.addLast("decoder", new StompFrameDelimiter());
+      }
       else
       {
-         //Use the old frame decoder for other protocols
          pipeline.addLast("decoder", new HornetQFrameDecoder(decoder));
       }
    }

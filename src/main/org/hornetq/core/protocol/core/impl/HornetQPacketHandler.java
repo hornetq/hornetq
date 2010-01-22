@@ -163,18 +163,15 @@ public class HornetQPacketHandler implements ChannelHandler
                                                       request.isAutoCommitSends(),
                                                       request.isAutoCommitAcks(),
                                                       request.isPreAcknowledge(),
-                                                      request.isXA());
+                                                      request.isXA(),
+                                                      new CoreSessionCallback(request.getName(), protocolManager, channel));
 
-         ServerSessionPacketHandler handler = new ServerSessionPacketHandler(protocolManager,
-                                                                             session,
+         ServerSessionPacketHandler handler = new ServerSessionPacketHandler(session,
                                                                              server.getStorageManager()
                                                                                    .newContext(server.getExecutorFactory()
                                                                                                      .getExecutor()),
                                                                              server.getStorageManager(),
                                                                              channel);
-
-         session.setCallback(handler);
-
          channel.setHandler(handler);
 
          // TODO - where is this removed?

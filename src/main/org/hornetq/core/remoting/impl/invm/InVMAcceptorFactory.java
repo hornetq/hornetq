@@ -17,7 +17,6 @@ import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 
-import org.hornetq.spi.core.protocol.ProtocolType;
 import org.hornetq.spi.core.remoting.Acceptor;
 import org.hornetq.spi.core.remoting.AcceptorFactory;
 import org.hornetq.spi.core.remoting.BufferDecoder;
@@ -37,10 +36,9 @@ public class InVMAcceptorFactory implements AcceptorFactory
                                   final BufferDecoder decoder,
                                   final ConnectionLifeCycleListener listener,
                                   final Executor threadPool,
-                                  final ScheduledExecutorService scheduledThreadPool,
-                                  final ProtocolType protocol)
+                                  final ScheduledExecutorService scheduledThreadPool)
    {
-      return new InVMAcceptor(configuration, handler, listener, threadPool, protocol);
+      return new InVMAcceptor(configuration, handler, listener, threadPool);
    }
 
    public Set<String> getAllowableProperties()

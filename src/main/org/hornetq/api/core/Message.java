@@ -70,6 +70,18 @@ public interface Message
 
    public static final SimpleString HDR_LAST_VALUE_NAME = new SimpleString("_HQ_LVQ_NAME");
 
+   public static final byte DEFAULT_TYPE = 0;
+
+   public static final byte OBJECT_TYPE = 2;
+
+   public static final byte TEXT_TYPE = 3;
+
+   public static final byte BYTES_TYPE = 4;
+
+   public static final byte MAP_TYPE = 5;
+
+   public static final byte STREAM_TYPE = 6;
+   
    /**
     * Returns the messageID.
     * <br>

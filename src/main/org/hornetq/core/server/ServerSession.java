@@ -111,6 +111,4 @@ public interface ServerSession
    void setTransferring(boolean transferring);
    
    void runConnectionFailureRunners();
-   
-   void setCallback(SessionCallback callback);
 }

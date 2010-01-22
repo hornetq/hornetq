@@ -83,7 +83,7 @@ public class HornetQMessage implements javax.jms.Message
 
    private static final String JMSXGROUPID = "JMSXGroupID";
 
-   public static final byte TYPE = 0;
+   public static final byte TYPE = org.hornetq.api.core.Message.DEFAULT_TYPE;
 
    public static Map<String, Object> coreMaptoJMSMap(final Map<String, Object> coreMessage)
    {

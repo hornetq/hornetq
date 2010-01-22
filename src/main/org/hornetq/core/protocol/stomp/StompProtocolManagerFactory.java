@@ -11,27 +11,28 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.spi.core.protocol;
+package org.hornetq.core.protocol.stomp;
 
-import org.hornetq.api.core.HornetQBuffer;
-import org.hornetq.spi.core.remoting.BufferDecoder;
-import org.hornetq.spi.core.remoting.Connection;
+import java.util.List;
+
+import org.hornetq.api.core.Interceptor;
+import org.hornetq.core.server.HornetQServer;
+import org.hornetq.spi.core.protocol.ProtocolManager;
+import org.hornetq.spi.core.protocol.ProtocolManagerFactory;
 
 /**
- * A ProtocolManager
+ * A StompProtocolManagerFactory
  *
- * @author Tim Fox
+ * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  *
  *
  */
-public interface ProtocolManager extends BufferDecoder
+public class StompProtocolManagerFactory implements ProtocolManagerFactory
 {
-   ConnectionEntry createConnectionEntry(Connection connection);
-   
-   public void removeHandler(final String name);
 
-   public int isReadyToHandle(HornetQBuffer buffer);
-   
-   void handleBuffer(RemotingConnection connection, HornetQBuffer buffer);
+   public ProtocolManager createProtocolManager(final HornetQServer server, final List<Interceptor> interceptors)
+   {
+      return new StompProtocolManager(server, interceptors);
+   }
 
 }

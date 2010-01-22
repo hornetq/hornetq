@@ -86,8 +86,7 @@ public class NettyAcceptorTest extends UnitTestCase
                                                  null,
                                                  listener,
                                                  Executors.newCachedThreadPool(),
-                                                 Executors.newScheduledThreadPool(ConfigurationImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE),
-                                                 ProtocolType.CORE);
+                                                 Executors.newScheduledThreadPool(ConfigurationImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE));
 
       acceptor.start();
       Assert.assertTrue(acceptor.isStarted());

@@ -35,6 +35,7 @@ import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.core.transaction.ResourceManager;
 import org.hornetq.core.version.Version;
 import org.hornetq.spi.core.protocol.RemotingConnection;
+import org.hornetq.spi.core.protocol.SessionCallback;
 import org.hornetq.spi.core.security.HornetQSecurityManager;
 import org.hornetq.utils.ExecutorFactory;
 
@@ -80,11 +81,10 @@ public interface HornetQServer extends HornetQComponent
                                boolean autoCommitSends,
                                boolean autoCommitAcks,
                                boolean preAcknowledge,
-                               boolean xa) throws Exception;
+                               boolean xa,
+                               final SessionCallback callback) throws Exception;
 
    void removeSession(String name) throws Exception;
-
-   ServerSession getSession(String name);
 
    Set<ServerSession> getSessions();
 

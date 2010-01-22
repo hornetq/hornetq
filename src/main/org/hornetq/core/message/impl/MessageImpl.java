@@ -252,6 +252,12 @@ public abstract class MessageImpl implements MessageInternal
       return type;
    }
 
+   public void setType(byte type)
+   {
+      this.type = type;
+   }
+
+
    public boolean isDurable()
    {
       return durable;

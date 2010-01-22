@@ -78,7 +78,7 @@ import org.jboss.netty.util.VirtualExecutorService;
  */
 public class NettyAcceptor implements Acceptor
 {
-   private static final Logger log = Logger.getLogger(NettyAcceptor.class);
+   static final Logger log = Logger.getLogger(NettyAcceptor.class);
 
    private ChannelFactory channelFactory;
 
@@ -105,6 +105,8 @@ public class NettyAcceptor implements Acceptor
    private final boolean useNio;
 
    private final boolean useInvm;
+
+   private final ProtocolType protocol;
 
    private final String host;
 
@@ -134,8 +136,6 @@ public class NettyAcceptor implements Acceptor
 
    private VirtualExecutorService bossExecutor;
    
-   private final ProtocolType protocol;
-   
    private boolean paused;
 
    public NettyAcceptor(final Map<String, Object> configuration,
@@ -143,16 +143,13 @@ public class NettyAcceptor implements Acceptor
                         final BufferDecoder decoder,
                         final ConnectionLifeCycleListener listener,
                         final Executor threadPool,
-                        final ScheduledExecutorService scheduledThreadPool,
-                        final ProtocolType protocol)
+                        final ScheduledExecutorService scheduledThreadPool)
    {
       this.handler = handler;
       
       this.decoder = decoder;
 
       this.listener = listener;
-      
-      this.protocol = protocol;
       
       sslEnabled = ConfigurationHelper.getBooleanProperty(TransportConstants.SSL_ENABLED_PROP_NAME,
                                                           TransportConstants.DEFAULT_SSL_ENABLED,
@@ -190,6 +187,11 @@ public class NettyAcceptor implements Acceptor
       useInvm = ConfigurationHelper.getBooleanProperty(TransportConstants.USE_INVM_PROP_NAME,
                                                        TransportConstants.DEFAULT_USE_INVM,
                                                        configuration);
+      String protocolStr = ConfigurationHelper.getStringProperty(TransportConstants.PROTOCOL_PROP_NAME,
+                                                       TransportConstants.DEFAULT_PROTOCOL,
+                                                       configuration);
+      protocol = ProtocolType.valueOf(protocolStr);
+      
       host = ConfigurationHelper.getStringProperty(TransportConstants.HOST_PROP_NAME,
                                                    TransportConstants.DEFAULT_HOST,
                                                    configuration);

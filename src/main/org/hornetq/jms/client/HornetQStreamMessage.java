@@ -19,6 +19,7 @@ import javax.jms.MessageFormatException;
 import javax.jms.StreamMessage;
 
 import org.hornetq.api.core.HornetQBuffer;
+import org.hornetq.api.core.Message;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.core.client.impl.ClientMessageImpl;
@@ -48,7 +49,7 @@ public class HornetQStreamMessage extends HornetQMessage implements StreamMessag
 
    private static final Logger log = Logger.getLogger(HornetQStreamMessage.class);
 
-   public static final byte TYPE = 6;
+   public static final byte TYPE = Message.STREAM_TYPE;
 
    // Attributes ----------------------------------------------------
 

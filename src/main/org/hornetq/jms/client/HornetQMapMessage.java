@@ -22,6 +22,7 @@ import javax.jms.JMSException;
 import javax.jms.MapMessage;
 import javax.jms.MessageFormatException;
 
+import org.hornetq.api.core.Message;
 import org.hornetq.api.core.PropertyConversionException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientMessage;
@@ -45,7 +46,7 @@ public class HornetQMapMessage extends HornetQMessage implements MapMessage
 {
    // Constants -----------------------------------------------------
 
-   public static final byte TYPE = 5;
+   public static final byte TYPE = Message.MAP_TYPE;
 
    // Attributes ----------------------------------------------------
 

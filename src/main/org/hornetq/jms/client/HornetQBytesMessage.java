@@ -19,6 +19,7 @@ import javax.jms.MessageEOFException;
 import javax.jms.MessageFormatException;
 
 import org.hornetq.api.core.HornetQBuffer;
+import org.hornetq.api.core.Message;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.core.logging.Logger;
@@ -42,7 +43,7 @@ public class HornetQBytesMessage extends HornetQMessage implements BytesMessage
 
    private static final Logger log = Logger.getLogger(HornetQBytesMessage.class);
 
-   public static final byte TYPE = 4;
+   public static final byte TYPE = Message.BYTES_TYPE;
 
    // Attributes ----------------------------------------------------
 

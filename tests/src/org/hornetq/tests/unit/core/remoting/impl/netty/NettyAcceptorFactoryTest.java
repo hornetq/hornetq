@@ -73,8 +73,7 @@ public class NettyAcceptorFactoryTest extends UnitTestCase
                                                  null,
                                                  listener,
                                                  Executors.newCachedThreadPool(),
-                                                 Executors.newScheduledThreadPool(ConfigurationImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE),
-                                                 ProtocolType.CORE);
+                                                 Executors.newScheduledThreadPool(ConfigurationImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE));
 
       Assert.assertTrue(acceptor instanceof NettyAcceptor);
    }

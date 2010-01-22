@@ -45,8 +45,6 @@ public class AardvarkProtocolTest extends ServiceTestBase
 
    public void testAardvark() throws Exception
    {
-      RemotingServiceImpl.hackProtocol = ProtocolType.AARDVARK;
-      
       Configuration config = new ConfigurationImpl();
       
       config.setSecurityEnabled(false);
@@ -56,6 +54,7 @@ public class AardvarkProtocolTest extends ServiceTestBase
       
       params.put(TransportConstants.PORT_PROP_NAME, 9876);
       params.put(TransportConstants.HOST_PROP_NAME, "127.0.0.1");
+      params.put(TransportConstants.PROTOCOL_PROP_NAME, ProtocolType.AARDVARK.toString());
       
       TransportConfiguration tc = new TransportConfiguration(NettyAcceptorFactory.class.getCanonicalName(),
                                                              params);
@@ -95,7 +94,5 @@ public class AardvarkProtocolTest extends ServiceTestBase
       socket.close();
       
       server.stop();
-      
-      RemotingServiceImpl.hackProtocol = ProtocolType.CORE;
    }
 }

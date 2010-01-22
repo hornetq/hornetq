@@ -22,6 +22,7 @@ import java.io.Serializable;
 import javax.jms.JMSException;
 import javax.jms.ObjectMessage;
 
+import org.hornetq.api.core.Message;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientSession;
 
@@ -44,7 +45,7 @@ public class HornetQObjectMessage extends HornetQMessage implements ObjectMessag
 {
    // Constants -----------------------------------------------------
 
-   public static final byte TYPE = 2;
+   public static final byte TYPE = Message.OBJECT_TYPE;
 
    // Attributes ----------------------------------------------------
 

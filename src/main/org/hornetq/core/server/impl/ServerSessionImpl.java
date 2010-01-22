@@ -134,7 +134,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
 
    private final RoutingContext routingContext = new RoutingContextImpl(null);
 
-   private SessionCallback callback;
+   private final SessionCallback callback;
 
    // Constructors ---------------------------------------------------------------------------------
 
@@ -154,7 +154,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
                             final SecurityStore securityStore,
                             final ManagementService managementService,
                             final HornetQServer server,
-                            final SimpleString managementAddress) throws Exception
+                            final SimpleString managementAddress,
+                            final SessionCallback callback) throws Exception
    {
       this.username = username;
 
@@ -193,17 +194,14 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
 
       this.managementAddress = managementAddress;
 
+      this.callback = callback;
+      
       remotingConnection.addFailureListener(this);
 
       remotingConnection.addCloseListener(this);
    }
 
    // ServerSession implementation ----------------------------------------------------------------------------
-
-   public void setCallback(final SessionCallback callback)
-   {
-      this.callback = callback;
-   }
 
    public String getUsername()
    {

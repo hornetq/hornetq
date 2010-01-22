@@ -106,6 +106,7 @@ import org.hornetq.core.transaction.impl.ResourceManagerImpl;
 import org.hornetq.core.version.Version;
 import org.hornetq.spi.core.logging.LogDelegateFactory;
 import org.hornetq.spi.core.protocol.RemotingConnection;
+import org.hornetq.spi.core.protocol.SessionCallback;
 import org.hornetq.spi.core.security.HornetQSecurityManager;
 import org.hornetq.utils.ExecutorFactory;
 import org.hornetq.utils.HornetQThreadFactory;
@@ -542,7 +543,8 @@ public class HornetQServerImpl implements HornetQServer
                                       final boolean autoCommitSends,
                                       final boolean autoCommitAcks,
                                       final boolean preAcknowledge,
-                                      final boolean xa) throws Exception
+                                      final boolean xa,
+                                      final SessionCallback callback) throws Exception
    {
       if (securityStore != null)
       {
@@ -565,7 +567,8 @@ public class HornetQServerImpl implements HornetQServer
                                                               securityStore,
                                                               managementService,
                                                               this,
-                                                              configuration.getManagementAddress());
+                                                              configuration.getManagementAddress(),
+                                                              callback);
 
       sessions.put(name, session);
 
@@ -593,11 +596,6 @@ public class HornetQServerImpl implements HornetQServer
    public void removeSession(final String name) throws Exception
    {
       sessions.remove(name);
-   }
-
-   public ServerSession getSession(final String name)
-   {
-      return sessions.get(name);
    }
 
    public synchronized List<ServerSession> getSessions(final String connectionID)

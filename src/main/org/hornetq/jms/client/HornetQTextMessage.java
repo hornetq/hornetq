@@ -17,6 +17,7 @@ import javax.jms.JMSException;
 import javax.jms.TextMessage;
 
 import org.hornetq.api.core.HornetQBuffer;
+import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientSession;
@@ -42,7 +43,7 @@ public class HornetQTextMessage extends HornetQMessage implements TextMessage
 {
    // Constants -----------------------------------------------------
 
-   public static final byte TYPE = 3;
+   public static final byte TYPE = Message.TEXT_TYPE;
 
    public static final Logger log = Logger.getLogger(HornetQTextMessage.class);
 
