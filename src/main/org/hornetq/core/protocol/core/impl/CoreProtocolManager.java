@@ -124,6 +124,8 @@ public class CoreProtocolManager implements ProtocolManager
    {
    }
 
+   //This is never called using the core protocol, since we override the HornetQFrameDecoder with our core
+   //optimised version HornetQFrameDecoder2, which nevers calls this
    public int isReadyToHandle(HornetQBuffer buffer)
    {
       return -1;

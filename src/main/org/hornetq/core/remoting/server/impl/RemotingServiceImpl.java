@@ -70,8 +70,6 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
    private final Map<Object, ConnectionEntry> connections = new ConcurrentHashMap<Object, ConnectionEntry>();
 
-   //private final BufferHandler bufferHandler = new DelegatingBufferHandler();
-
    private final Configuration config;
 
    private final HornetQServer server;
@@ -169,6 +167,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
             
             Acceptor acceptor = factory.createAcceptor(info.getParams(),
                                                        new DelegatingBufferHandler(manager),
+                                                       manager,
                                                        this,
                                                        threadPool,
                                                        scheduledThreadPool,
@@ -404,11 +403,6 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
          {
             conn.connection.bufferReceived(connectionID, buffer);
          }
-      }
-
-      public int isReadyToHandle(HornetQBuffer buffer)
-      {
-         return manager.isReadyToHandle(buffer);
       }
    }
 

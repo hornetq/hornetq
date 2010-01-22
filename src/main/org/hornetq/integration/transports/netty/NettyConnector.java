@@ -311,7 +311,7 @@ public class NettyConnector implements Connector
                pipeline.addLast("httpResponseDecoder", new HttpResponseDecoder());
                pipeline.addLast("httphandler", new HttpHandler());
             }
-            ChannelPipelineSupport.addCodecFilter(ProtocolType.CORE, pipeline, handler);
+            ChannelPipelineSupport.addCodecFilter(ProtocolType.CORE, pipeline, null);
             pipeline.addLast("handler", new HornetQClientChannelHandler(channelGroup, handler, new Listener()));
             return pipeline;
          }

@@ -21,7 +21,6 @@ import junit.framework.Assert;
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.core.config.impl.ConfigurationImpl;
-import org.hornetq.core.protocol.core.impl.AbstractBufferHandler;
 import org.hornetq.integration.transports.netty.NettyAcceptor;
 import org.hornetq.integration.transports.netty.NettyAcceptorFactory;
 import org.hornetq.spi.core.protocol.ProtocolType;
@@ -45,7 +44,7 @@ public class NettyAcceptorFactoryTest extends UnitTestCase
       NettyAcceptorFactory factory = new NettyAcceptorFactory();
 
       Map<String, Object> params = new HashMap<String, Object>();
-      BufferHandler handler = new AbstractBufferHandler()
+      BufferHandler handler = new BufferHandler()
       {
 
          public void bufferReceived(final Object connectionID, final HornetQBuffer buffer)
@@ -71,6 +70,7 @@ public class NettyAcceptorFactoryTest extends UnitTestCase
 
       Acceptor acceptor = factory.createAcceptor(params,
                                                  handler,
+                                                 null,
                                                  listener,
                                                  Executors.newCachedThreadPool(),
                                                  Executors.newScheduledThreadPool(ConfigurationImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE),

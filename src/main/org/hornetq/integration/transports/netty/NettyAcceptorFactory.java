@@ -21,6 +21,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import org.hornetq.spi.core.protocol.ProtocolType;
 import org.hornetq.spi.core.remoting.Acceptor;
 import org.hornetq.spi.core.remoting.AcceptorFactory;
+import org.hornetq.spi.core.remoting.BufferDecoder;
 import org.hornetq.spi.core.remoting.BufferHandler;
 import org.hornetq.spi.core.remoting.ConnectionLifeCycleListener;
 
@@ -33,12 +34,13 @@ public class NettyAcceptorFactory implements AcceptorFactory
 {
    public Acceptor createAcceptor(final Map<String, Object> configuration,
                                   final BufferHandler handler,
+                                  final BufferDecoder decoder,
                                   final ConnectionLifeCycleListener listener,
                                   final Executor threadPool,
                                   final ScheduledExecutorService scheduledThreadPool,
                                   final ProtocolType protocol)
    {
-      return new NettyAcceptor(configuration, handler, listener, threadPool, scheduledThreadPool,
+      return new NettyAcceptor(configuration, handler, decoder, listener, threadPool, scheduledThreadPool,
                                protocol);
    }
 

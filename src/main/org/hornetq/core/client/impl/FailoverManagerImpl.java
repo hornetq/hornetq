@@ -39,7 +39,6 @@ import org.hornetq.core.protocol.core.Channel;
 import org.hornetq.core.protocol.core.ChannelHandler;
 import org.hornetq.core.protocol.core.CoreRemotingConnection;
 import org.hornetq.core.protocol.core.Packet;
-import org.hornetq.core.protocol.core.impl.AbstractBufferHandler;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
 import org.hornetq.core.protocol.core.impl.RemotingConnectionImpl;
 import org.hornetq.core.protocol.core.impl.wireformat.CreateSessionMessage;
@@ -48,6 +47,7 @@ import org.hornetq.core.protocol.core.impl.wireformat.Ping;
 import org.hornetq.core.remoting.FailureListener;
 import org.hornetq.core.version.Version;
 import org.hornetq.spi.core.protocol.ProtocolType;
+import org.hornetq.spi.core.remoting.BufferHandler;
 import org.hornetq.spi.core.remoting.Connection;
 import org.hornetq.spi.core.remoting.ConnectionLifeCycleListener;
 import org.hornetq.spi.core.remoting.Connector;
@@ -1085,7 +1085,7 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
       }
    }
 
-   private class DelegatingBufferHandler extends AbstractBufferHandler
+   private class DelegatingBufferHandler implements BufferHandler
    {
       public void bufferReceived(final Object connectionID, final HornetQBuffer buffer)
       {

@@ -15,8 +15,7 @@ package org.hornetq.integration.transports.netty;
 
 import org.hornetq.core.buffers.impl.ChannelBufferWrapper;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.spi.core.remoting.BufferHandler;
-import org.hornetq.utils.DataConstants;
+import org.hornetq.spi.core.remoting.BufferDecoder;
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.Channel;
@@ -36,11 +35,11 @@ public class HornetQFrameDecoder extends FrameDecoder
 {
    private static final Logger log = Logger.getLogger(HornetQFrameDecoder.class);
 
-   private final BufferHandler handler;
+   private final BufferDecoder decoder;
 
-   public HornetQFrameDecoder(final BufferHandler handler)
+   public HornetQFrameDecoder(final BufferDecoder decoder)
    {
-      this.handler = handler;
+      this.decoder = decoder;
    }
 
    // FrameDecoder overrides
@@ -48,34 +47,24 @@ public class HornetQFrameDecoder extends FrameDecoder
 
    @Override
    protected Object decode(final ChannelHandlerContext ctx, final Channel channel, final ChannelBuffer in) throws Exception
-   {
-      log.info("dewcoding!!");
-           
+   {    
       int start = in.readerIndex();
 
-      int length = handler.isReadyToHandle(new ChannelBufferWrapper(in));
+      int length = decoder.isReadyToHandle(new ChannelBufferWrapper(in));
       
-      log.info("length is " + length);
-
       in.readerIndex(start);
       
-      log.info("length is 2 " + length);
-
       if (length == -1)
       {
          return null;
       }
       
-      log.info("creating buffer");
-
       ChannelBuffer buffer = in.readBytes(length);
 
       ChannelBuffer newBuffer = ChannelBuffers.dynamicBuffer(buffer.writerIndex());
 
       newBuffer.writeBytes(buffer);
       
-      log.info("got the buffer");
-
       return newBuffer;
    }
 }

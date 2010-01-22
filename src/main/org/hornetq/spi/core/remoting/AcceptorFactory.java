@@ -36,6 +36,7 @@ public interface AcceptorFactory
     *
     * @param configuration       the configuration
     * @param handler             the handler
+    * @param decoder             the decoder
     * @param listener            the listener
     * @param threadPool          the threadpool
     * @param scheduledThreadPool a scheduled thread pool
@@ -43,6 +44,7 @@ public interface AcceptorFactory
     */
    Acceptor createAcceptor(final Map<String, Object> configuration,
                            BufferHandler handler,
+                           BufferDecoder decoder,
                            ConnectionLifeCycleListener listener,
                            Executor threadPool,
                            ScheduledExecutorService scheduledThreadPool,

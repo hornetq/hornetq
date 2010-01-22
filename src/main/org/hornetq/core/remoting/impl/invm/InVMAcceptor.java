@@ -46,7 +46,7 @@ public class InVMAcceptor implements Acceptor
    private final int id;
 
    private final BufferHandler handler;
-
+   
    private final ConnectionLifeCycleListener listener;
 
    private final ConcurrentMap<String, Connection> connections = new ConcurrentHashMap<String, Connection>();
@@ -62,13 +62,13 @@ public class InVMAcceptor implements Acceptor
    private final ProtocolType protocol;
 
    public InVMAcceptor(final Map<String, Object> configuration,
-                       final BufferHandler handler,
+                       final BufferHandler handler,                       
                        final ConnectionLifeCycleListener listener,
                        final Executor threadPool,
                        final ProtocolType protocol)
    {
       this.handler = handler;
-
+      
       this.listener = listener;
 
       id = ConfigurationHelper.getIntProperty(TransportConstants.SERVER_ID_PROP_NAME, 0, configuration);

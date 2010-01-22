@@ -11,20 +11,26 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.spi.core.protocol;
+package org.hornetq.spi.core.remoting;
 
-import org.hornetq.spi.core.remoting.BufferDecoder;
-import org.hornetq.spi.core.remoting.BufferHandler;
-import org.hornetq.spi.core.remoting.Connection;
+import org.hornetq.api.core.HornetQBuffer;
 
 /**
- * A ProtocolManager
+ * A BufferDecoder
  *
- * @author Tim Fox
+ * @author tim
  *
  *
  */
-public interface ProtocolManager extends BufferHandler, BufferDecoder
+public interface BufferDecoder
 {
-   ConnectionEntry createConnectionEntry(Connection connection);
+   /**
+    * called by the remoting system prior to {@link org.hornetq.spi.core.remoting.BufferHandler#bufferReceived(Object, org.hornetq.api.core.HornetQBuffer)}.
+    * <p/>
+    * The implementation should return true if there is enough data in the buffer to decode. otherwise false.
+    *
+    * @param buffer the buffer
+    * @return true id the buffer can be decoded..
+    */
+   int isReadyToHandle(HornetQBuffer buffer);
 }

@@ -130,10 +130,4 @@ public class AardvarkConnection implements RemotingConnection
    {
       manager.handleBuffer(this, buffer);
    }
-
-   public int isReadyToHandle(HornetQBuffer buffer)
-   {
-      return -1;
-   }
-
 }
