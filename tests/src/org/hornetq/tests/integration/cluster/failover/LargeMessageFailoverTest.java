@@ -56,10 +56,10 @@ public class LargeMessageFailoverTest extends FailoverTest
       suite.addTest(new LargeMessageFailoverTest("testCreateNewFactoryAfterFailover"));
 
       // Those tests are temporarily disabled for LargeMessage
-      // suite.addTest(new LargeMessageFailoverTest("testFailoverMultipleSessionsWithConsumers"));
-      // suite.addTest(new LargeMessageFailoverTest("testFailWithBrowser"));
-      // suite.addTest(new LargeMessageFailoverTest("testFailThenReceiveMoreMessagesAfterFailover"));
-      // suite.addTest(new LargeMessageFailoverTest("testFailThenReceiveMoreMessagesAfterFailover2"));
+      suite.addTest(new LargeMessageFailoverTest("testFailoverMultipleSessionsWithConsumers"));
+      suite.addTest(new LargeMessageFailoverTest("testFailWithBrowser"));
+      suite.addTest(new LargeMessageFailoverTest("testFailThenReceiveMoreMessagesAfterFailover"));
+      suite.addTest(new LargeMessageFailoverTest("testFailThenReceiveMoreMessagesAfterFailover2"));
 
       suite.addTest(new LargeMessageFailoverTest("testForceBlockingReturn"));
       suite.addTest(new LargeMessageFailoverTest("testCommitOccurredUnblockedAndResendNoDuplicates"));
