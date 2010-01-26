@@ -454,6 +454,41 @@ public class StompTest extends TestCase {
                         Stomp.NULL;
         sendFrame(frame);
     }
+    
+    public void testSubscribeWithID() throws Exception {
+
+       String frame =
+               "CONNECT\n" +
+                       "login: brianm\n" +
+                       "passcode: wombats\n\n" +
+                       Stomp.NULL;
+       sendFrame(frame);
+
+       frame = receiveFrame(100000);
+       Assert.assertTrue(frame.startsWith("CONNECTED"));
+
+       frame =
+               "SUBSCRIBE\n" +
+                       "destination:/queue/" + getQueueName() + "\n" +
+                       "ack:auto\n" +
+                       "id: mysubid\n\n" +
+                       Stomp.NULL;
+       sendFrame(frame);
+
+       sendMessage(getName());
+
+       frame = receiveFrame(10000);
+       Assert.assertTrue(frame.startsWith("MESSAGE"));
+       Assert.assertTrue(frame.indexOf("destination:") > 0);
+       Assert.assertTrue(frame.indexOf("subscription:") > 0);
+       Assert.assertTrue(frame.indexOf(getName()) > 0);
+
+       frame =
+               "DISCONNECT\n" +
+                       "\n\n" +
+                       Stomp.NULL;
+       sendFrame(frame);
+   }
 
     public void testMessagesAreInOrder() throws Exception {
         int ctr = 10;
@@ -622,7 +657,7 @@ public class StompTest extends TestCase {
         Assert.assertNotNull(message);
         Assert.assertTrue(message.getJMSRedelivered());
     }
-
+    
     public void testSubscribeWithClientAckThenConsumingAgainWithAutoAckWithNoDisconnectFrame() throws Exception {
         assertSubscribeWithClientAckThenConsumeWithAutoAck(false);
     }
@@ -771,6 +806,55 @@ public class StompTest extends TestCase {
         }
     }
 
+    public void testUnsubscribeWithID() throws Exception {
+
+        String frame =
+                "CONNECT\n" +
+                        "login: brianm\n" +
+                        "passcode: wombats\n\n" +
+                        Stomp.NULL;
+        sendFrame(frame);
+        frame = receiveFrame(100000);
+        Assert.assertTrue(frame.startsWith("CONNECTED"));
+
+        frame =
+                "SUBSCRIBE\n" +
+                        "destination:/queue/" + getQueueName() + "\n" +
+                        "id: mysubid\n" +
+                        "ack:auto\n\n" +
+                        Stomp.NULL;
+        sendFrame(frame);
+
+        //send a message to our queue
+        sendMessage("first message");
+
+        //receive message from socket
+        frame = receiveFrame(10000);
+        Assert.assertTrue(frame.startsWith("MESSAGE"));
+
+        //remove suscription
+        frame =
+                "UNSUBSCRIBE\n" +
+                        "id:mysubid\n" +
+                        "\n\n" +
+                        Stomp.NULL;
+        sendFrame(frame);
+
+        waitForFrameToTakeEffect();
+
+        //send a message to our queue
+        sendMessage("second message");
+
+        try {
+            frame = receiveFrame(1000);
+            log.info("Received frame: " + frame);
+            Assert.fail("No message should have been received since subscription was removed");
+        }
+        catch (SocketTimeoutException e) {
+
+        }
+    }
+
     public void testTransactionCommit() throws Exception {
         MessageConsumer consumer = session.createConsumer(queue);
 
@@ -816,6 +900,105 @@ public class StompTest extends TestCase {
         TextMessage message = (TextMessage) consumer.receive(1000);
         Assert.assertNotNull("Should have received a message", message);
     }
+    
+    public void testSuccessiveTransactionsWithSameID() throws Exception {
+       MessageConsumer consumer = session.createConsumer(queue);
+
+       String frame =
+               "CONNECT\n" +
+                       "login: brianm\n" +
+                       "passcode: wombats\n\n" +
+                       Stomp.NULL;
+       sendFrame(frame);
+
+       String f = receiveFrame(1000);
+       Assert.assertTrue(f.startsWith("CONNECTED"));
+
+       // first tx
+       frame =
+               "BEGIN\n" +
+                       "transaction: tx1\n" +
+                       "\n\n" +
+                       Stomp.NULL;
+       sendFrame(frame);
+
+       frame =
+               "SEND\n" +
+                       "destination:/queue/" + getQueueName() + "\n" +
+                       "transaction: tx1\n" +
+                       "\n\n" +
+                       "Hello World" +
+                       Stomp.NULL;
+       sendFrame(frame);
+
+       frame =
+               "COMMIT\n" +
+                       "transaction: tx1\n" +
+                       "\n\n" +
+                       Stomp.NULL;
+       sendFrame(frame);
+
+       TextMessage message = (TextMessage) consumer.receive(1000);
+       Assert.assertNotNull("Should have received a message", message);
+
+       // 2nd tx with same tx ID
+       frame =
+               "BEGIN\n" +
+                       "transaction: tx1\n" +
+                       "\n\n" +
+                       Stomp.NULL;
+       sendFrame(frame);
+
+       frame =
+               "SEND\n" +
+                       "destination:/queue/" + getQueueName() + "\n" +
+                       "transaction: tx1\n" +
+                       "\n\n" +
+                       "Hello World" +
+                       Stomp.NULL;
+       sendFrame(frame);
+
+       frame =
+               "COMMIT\n" +
+                       "transaction: tx1\n" +
+                       "\n\n" +
+                       Stomp.NULL;
+       sendFrame(frame);
+
+       message = (TextMessage) consumer.receive(1000);
+       Assert.assertNotNull("Should have received a message", message);
+}
+    
+    public void testBeginSameTransactionTwice() throws Exception {
+       String frame =
+               "CONNECT\n" +
+                       "login: brianm\n" +
+                       "passcode: wombats\n\n" +
+                       Stomp.NULL;
+       sendFrame(frame);
+
+       String f = receiveFrame(1000);
+       Assert.assertTrue(f.startsWith("CONNECTED"));
+
+       frame =
+               "BEGIN\n" +
+                       "transaction: tx1\n" +
+                       "\n\n" +
+                       Stomp.NULL;
+       sendFrame(frame);
+
+       // begin the tx a 2nd time
+       frame =
+          "BEGIN\n" +
+                  "transaction: tx1\n" +
+                  "\n\n" +
+                  Stomp.NULL;
+       sendFrame(frame);
+
+       f = receiveFrame(1000);
+       Assert.assertTrue(f.startsWith("ERROR"));
+
+   }
 
     public void testTransactionRollback() throws Exception {
         MessageConsumer consumer = session.createConsumer(queue);

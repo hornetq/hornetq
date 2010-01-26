@@ -26,8 +26,6 @@ public class StompSubscription
 
    // Attributes ----------------------------------------------------
 
-   private final long consumerID;
-
    private final String subID;
 
    private final String destination;
@@ -38,9 +36,8 @@ public class StompSubscription
 
    // Constructors --------------------------------------------------
 
-   public StompSubscription(long consumerID, String subID, String destination, String ack)
+   public StompSubscription(String subID, String destination, String ack)
    {
-      this.consumerID = consumerID;
       this.subID = subID;
       this.destination = destination;
       this.ack = ack;
@@ -56,6 +53,11 @@ public class StompSubscription
    public String getDestination()
    {
       return destination;
+   }
+   
+   public String getID()
+   {
+      return subID;
    }
 
    // Package protected ---------------------------------------------

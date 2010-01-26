@@ -70,9 +70,15 @@ class StompSession implements SessionCallback
    {
       try
       {
+         StompSubscription subscription = subscriptions.get(consumerID);
+
          Map<String, Object> headers = new HashMap<String, Object>();
          headers.put(Stomp.Headers.Message.DESTINATION, StompUtils.toStompDestination(serverMessage.getAddress()
                                                                                                    .toString()));
+         if (subscription.getID() != null)
+         {
+            headers.put(Stomp.Headers.Message.SUBSCRIPTION, subscription.getID());
+         }
          byte[] data = new byte[] {};
          if (serverMessage.getType() == Message.TEXT_TYPE)
          {
@@ -91,14 +97,14 @@ class StompSession implements SessionCallback
             buffer.readBytes(data);
             headers.put(Headers.CONTENT_LENGTH, data.length);
          }
+         
          StompFrame frame = new StompFrame(Stomp.Responses.MESSAGE, headers, data);
          StompUtils.copyStandardHeadersFromMessageToFrame(serverMessage, frame, deliveryCount);
+         
          System.out.println(">>> " + frame);
          byte[] bytes = marshaller.marshal(frame);
          HornetQBuffer buffer = HornetQBuffers.wrappedBuffer(bytes);
          connection.getTransportConnection().write(buffer, true);
-
-         StompSubscription subscription = subscriptions.get(consumerID);
 
          if (subscription.getAck().equals(Stomp.Headers.Subscribe.AckModeValues.AUTO))
          {
@@ -142,7 +148,7 @@ class StompSession implements SessionCallback
       session.commit();
    }
 
-   public void addSubscription(long consumerID, String clientID, String destination, String selector, String ack) throws Exception
+   public void addSubscription(long consumerID, String subscriptionID, String destination, String selector, String ack) throws Exception
    {
       String queue = StompUtils.toHornetQAddress(destination);
       synchronized (session)
@@ -152,7 +158,7 @@ class StompSession implements SessionCallback
                                 SimpleString.toSimpleString(selector),
                                 false);
          session.receiveConsumerCredits(consumerID, -1);
-         StompSubscription subscription = new StompSubscription(consumerID, clientID, destination, ack);
+         StompSubscription subscription = new StompSubscription(subscriptionID, destination, ack);
          subscriptions.put(consumerID, subscription);
          // FIXME not very smart: since we can't start the consumer, we start the session
          // everytime to start the new consumer (and all previous consumers...)
@@ -160,7 +166,7 @@ class StompSession implements SessionCallback
       }
    }
 
-   public void unsubscribe(String destination) throws Exception
+   public boolean unsubscribe(String id) throws Exception
    {
       Iterator<Entry<Long, StompSubscription>> iterator = subscriptions.entrySet().iterator();
       while (iterator.hasNext())
@@ -168,11 +174,33 @@ class StompSession implements SessionCallback
          Map.Entry<Long, StompSubscription> entry = (Map.Entry<Long, StompSubscription>)iterator.next();
          long consumerID = entry.getKey();
          StompSubscription sub = entry.getValue();
-         if (sub.getDestination().equals(destination))
+         if (id != null && id.equals(sub.getID()))
          {
             iterator.remove();
             session.closeConsumer(consumerID);
+            return true;
          }
       }
+      return false;
+   }
+
+   boolean containsSubscription(String subscriptionID)
+   {     
+      Iterator<Entry<Long, StompSubscription>> iterator = subscriptions.entrySet().iterator();
+      while (iterator.hasNext())
+      {
+         Map.Entry<Long, StompSubscription> entry = (Map.Entry<Long, StompSubscription>)iterator.next();
+         StompSubscription sub = entry.getValue();
+         if (sub.getID().equals(subscriptionID))
+         {
+            return true;
+         }
+      }
+      return false;
+   }
+
+   public RemotingConnection getConnection()
+   {
+      return connection;
    }
 }
