@@ -226,19 +226,19 @@
                             <entry>jms.queue.hornetq.management</entry>
                         </row>
                         <row>
-                            <entry><link linkend="management.replication"
+                            <entry><link linkend="clusters.clusteruser"
                                     >cluster-user</link></entry>
                             <entry>String</entry>
-                            <entry>the user used to for replicating management operations between
+                            <entry>the user used by cluster connections to communicate between the
                                 clustered nodes</entry>
                             <entry>HORNETQ.CLUSTER.ADMIN.USER</entry>
                         </row>
                         <row>
-                            <entry><link linkend="management.replication"
+                            <entry><link linkend="clusters.clusteruser"
                                     >cluster-password</link></entry>
                             <entry>String</entry>
-                            <entry>the password used to for replicating management operations
-                                between clustered nodes</entry>
+                            <entry>the password used by cluster connections to communicate between the
+                                clustered nodes</entry>
                             <entry>CHANGE ME!!</entry>
                         </row>
                         <row>
