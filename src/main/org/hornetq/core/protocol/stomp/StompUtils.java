@@ -13,7 +13,16 @@
 
 package org.hornetq.core.protocol.stomp;
 
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.Message;
+import org.hornetq.api.core.SimpleString;
+import org.hornetq.core.client.impl.ClientMessageImpl;
+import org.hornetq.core.server.impl.ServerMessageImpl;
 
 /**
  * A StompUtils
@@ -71,9 +80,9 @@ class StompUtils
       }
       else
       {
-         throw new HornetQException(HornetQException.ILLEGAL_STATE, "Illegal destination name: [" + stompDestination +
-                                                                    "] -- StompConnect destinations " +
-                                                                    "must begin with one of: /queue/ /topic/ /temp-queue/ /temp-topic/");
+         // it is also possible the STOMP client send a message directly to a HornetQ address
+         // in that case, we do nothing:
+         return stompDestination;
       }
    }
 
@@ -101,17 +110,85 @@ class StompUtils
       }
       else
       {
-         throw new HornetQException(HornetQException.ILLEGAL_STATE, "Illegal address name: [" + hornetqAddress +
-                                                                    "] -- Acceptable address must comply to JMS semantics");
+         // do nothing
+         return hornetqAddress;
       }
    }
-   
-   private static String convert(String str, String oldPrefix, String newPrefix) 
+
+   private static String convert(String str, String oldPrefix, String newPrefix)
    {
       String sub = str.substring(oldPrefix.length(), str.length());
       return new String(newPrefix + sub);
    }
 
+   public static void copyStandardHeadersFromFrameToMessage(StompFrame frame, ServerMessageImpl msg) throws Exception
+   {
+      Map<String, Object> headers = new HashMap<String, Object>(frame.getHeaders());
+      
+      String priority = (String)headers.remove(Stomp.Headers.Send.PRIORITY);
+      if (priority != null)
+      {
+      msg.setPriority(Byte.parseByte(priority));
+      }
+      String persistent = (String)headers.remove(Stomp.Headers.Send.PERSISTENT);
+      if (persistent != null)
+      {
+         msg.setDurable(Boolean.parseBoolean(persistent));
+      }
+      // FIXME should use a proper constant
+      msg.putObjectProperty("JMSCorrelationID", headers.remove(Stomp.Headers.Send.CORRELATION_ID));
+      msg.putObjectProperty("JMSType", headers.remove(Stomp.Headers.Send.TYPE));
+
+      String groupID = (String)headers.remove("JMSXGroupID");
+      if (groupID != null)
+      {
+         msg.putStringProperty(Message.HDR_GROUP_ID, SimpleString.toSimpleString(groupID));
+      }
+      Object o = headers.remove(Stomp.Headers.Send.REPLY_TO);
+      if (o != null)
+      {
+         msg.putStringProperty(ClientMessageImpl.REPLYTO_HEADER_NAME, SimpleString.toSimpleString((String)o));
+      }
+
+      // now the general headers
+      for (Iterator<Map.Entry<String, Object>> iter = headers.entrySet().iterator(); iter.hasNext();)
+      {
+         Map.Entry<String, Object> entry = iter.next();
+         String name = (String)entry.getKey();
+         Object value = entry.getValue();
+         System.out.println(name + "=" + value);   
+         msg.putObjectProperty(name, value);
+      }
+   }
+
+   public static void copyStandardHeadersFromMessageToFrame(Message message, StompFrame command, int deliveryCount) throws Exception {
+      final Map<String, Object> headers = command.getHeaders();
+      headers.put(Stomp.Headers.Message.DESTINATION, toStompDestination(message.getAddress().toString()));
+      headers.put(Stomp.Headers.Message.MESSAGE_ID, message.getMessageID());
+
+      if (message.getObjectProperty("JMSCorrelationID") != null) {
+          headers.put(Stomp.Headers.Message.CORRELATION_ID, message.getObjectProperty("JMSCorrelationID"));
+      }
+      headers.put(Stomp.Headers.Message.EXPIRATION_TIME, "" + message.getExpiration());
+      headers.put(Stomp.Headers.Message.REDELIVERED, deliveryCount > 1);
+      headers.put(Stomp.Headers.Message.PRORITY, "" + message.getPriority());
+
+      if (message.getStringProperty(ClientMessageImpl.REPLYTO_HEADER_NAME) != null) {
+          headers.put(Stomp.Headers.Message.REPLY_TO, toStompDestination(message.getStringProperty(ClientMessageImpl.REPLYTO_HEADER_NAME)));
+      }
+      headers.put(Stomp.Headers.Message.TIMESTAMP, "" + message.getTimestamp());
+
+      if (message.getObjectProperty("JMSType") != null) {
+          headers.put(Stomp.Headers.Message.TYPE, message.getObjectProperty("JMSType"));
+      }
+
+      // now lets add all the message headers
+      Set<SimpleString> names = message.getPropertyNames();
+      for (SimpleString name : names)
+      {
+          headers.put(name.toString(), message.getObjectProperty(name));
+      }
+  }
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------

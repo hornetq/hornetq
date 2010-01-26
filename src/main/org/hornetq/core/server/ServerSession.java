@@ -40,7 +40,7 @@ public interface ServerSession
 
    Object getConnectionID();
 
-   void removeConsumer(ServerConsumer consumer) throws Exception;
+   void removeConsumer(long consumerID) throws Exception;
 
    void acknowledge(long consumerID, long messageID) throws Exception;
 

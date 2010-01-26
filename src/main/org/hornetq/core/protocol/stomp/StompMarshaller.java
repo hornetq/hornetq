@@ -31,7 +31,7 @@ import org.hornetq.api.core.HornetQBuffer;
  * Implements marshalling and unmarsalling the <a href="http://stomp.codehaus.org/">Stomp</a> protocol.
  */
 class StompMarshaller {
-    private static final byte[] NO_DATA = new byte[]{};
+    public static final byte[] NO_DATA = new byte[]{};
     private static final byte[] END_OF_FRAME = new byte[]{0, '\n'};
     private static final int MAX_COMMAND_LENGTH = 1024;
     private static final int MAX_HEADER_LENGTH = 1024 * 10;

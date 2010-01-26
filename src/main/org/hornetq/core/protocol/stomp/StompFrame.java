@@ -65,6 +65,6 @@ class StompFrame
    @Override
    public String toString()
    {
-      return "StompFrame[command=" + command + ", headers=" + headers + ",content-length=" + content.length + "]";
+      return "StompFrame[command=" + command + ", headers=" + headers + ", content-length=" + content.length + "]";
    }
 }

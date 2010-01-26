@@ -284,7 +284,7 @@ public class ServerConsumerImpl implements ServerConsumer
          messageQueue.removeConsumer(this);
       }
 
-      session.removeConsumer(this);
+      session.removeConsumer(id);
 
       LinkedList<MessageReference> refs = cancelRefs(false, null);
 

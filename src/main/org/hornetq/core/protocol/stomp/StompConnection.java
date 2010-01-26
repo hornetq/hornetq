@@ -33,15 +33,23 @@ import org.hornetq.spi.core.remoting.Connection;
  *
  *
  */
-public class StompConnection implements RemotingConnection
+class StompConnection implements RemotingConnection
 {
    private static final Logger log = Logger.getLogger(StompConnection.class);
 
-   private final ProtocolManager manager;
+   private final StompProtocolManager manager;
    
    private final Connection transportConnection;
       
-   StompConnection(final Connection transportConnection, final ProtocolManager manager)
+   private String login;
+   
+   private String passcode;
+
+   private String clientID;
+
+   private boolean valid;
+
+   StompConnection(final Connection transportConnection, final StompProtocolManager manager)
    {
       this.transportConnection = transportConnection;
       
@@ -68,6 +76,8 @@ public class StompConnection implements RemotingConnection
 
    public void destroy()
    {
+      manager.cleanup(this);
+      transportConnection.close();
    }
 
    public void disconnect()
@@ -84,7 +94,7 @@ public class StompConnection implements RemotingConnection
 
    public List<FailureListener> getFailureListeners()
    {
-      return Collections.EMPTY_LIST;
+      return Collections.emptyList();
    }
 
    public Object getID()
@@ -132,9 +142,38 @@ public class StompConnection implements RemotingConnection
       manager.handleBuffer(this, buffer);
    }
 
-   public int isReadyToHandle(HornetQBuffer buffer)
+   public void setLogin(String login)
    {
-      return -1;
+      this.login = login;
    }
 
+   public String getLogin()
+   {
+      return login;
+   }
+
+   public void setPasscode(String passcode)
+   {
+      this.passcode = passcode;
+   }
+
+   public String getPasscode()
+   {
+      return passcode;
+   }
+
+   public void setClientID(String clientID)
+   {
+      this.clientID = clientID;
+   }
+
+   public boolean isValid()
+   {
+      return valid;
+   }
+   
+   public void setValid(boolean valid)
+   {
+      this.valid = valid;
+   }
 }

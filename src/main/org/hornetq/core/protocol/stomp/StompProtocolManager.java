@@ -31,7 +31,6 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQServer;
-import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.ServerSession;
 import org.hornetq.core.server.impl.ServerMessageImpl;
 import org.hornetq.spi.core.protocol.ConnectionEntry;
@@ -43,27 +42,63 @@ import org.hornetq.utils.UUIDGenerator;
 /**
  * StompProtocolManager
  * 
- * A stupid protocol to demonstrate how to implement a new protocol in HornetQ
- *
- * @author Tim Fox
- *
- *
+ * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  */
-public class StompProtocolManager implements ProtocolManager
+class StompProtocolManager implements ProtocolManager
 {
+   // Constants -----------------------------------------------------
+
    private static final Logger log = Logger.getLogger(StompProtocolManager.class);
+
+   // Attributes ----------------------------------------------------
 
    private final HornetQServer server;
 
    private final StompMarshaller marshaller;
 
-   private final Map<RemotingConnection, ServerSession> sessions = new HashMap<RemotingConnection, ServerSession>();
+   private final Map<String, StompSession> transactedSessions = new HashMap<String, StompSession>();
+
+   private final Map<RemotingConnection, StompSession> sessions = new HashMap<RemotingConnection, StompSession>();
+
+   // Static --------------------------------------------------------
+
+   private static StompFrame createError(Exception e, StompFrame request)
+   {
+      ByteArrayOutputStream baos = new ByteArrayOutputStream();
+      try
+      {
+         // Let the stomp client know about any protocol errors.
+         PrintWriter stream = new PrintWriter(new OutputStreamWriter(baos, "UTF-8"));
+         e.printStackTrace(stream);
+         stream.close();
+
+         Map<String, Object> headers = new HashMap<String, Object>();
+         headers.put(Stomp.Headers.Error.MESSAGE, e.getMessage());
+
+         final String receiptId = (String)request.getHeaders().get(Stomp.Headers.RECEIPT_REQUESTED);
+         if (receiptId != null)
+         {
+            headers.put(Stomp.Headers.Response.RECEIPT_ID, receiptId);
+         }
+
+         return new StompFrame(Stomp.Responses.ERROR, headers, baos.toByteArray());
+      }
+      catch (UnsupportedEncodingException ex)
+      {
+         log.warn("Unable to create ERROR frame from the exception", ex);
+         return null;
+      }
+   }
+
+   // Constructors --------------------------------------------------
 
    public StompProtocolManager(final HornetQServer server, final List<Interceptor> interceptors)
    {
       this.server = server;
       this.marshaller = new StompMarshaller();
    }
+
+   // ProtocolManager implementation --------------------------------
 
    public ConnectionEntry createConnectionEntry(final Connection connection)
    {
@@ -76,39 +111,76 @@ public class StompProtocolManager implements ProtocolManager
    {
    }
 
+   public int isReadyToHandle(HornetQBuffer buffer)
+   {
+      return -1;
+   }
+
    public void handleBuffer(RemotingConnection connection, HornetQBuffer buffer)
    {
-      StompFrame frame = null;
+      StompConnection conn = (StompConnection)connection;
+      StompFrame request = null;
       try
       {
-         frame = marshaller.unmarshal(buffer);
-         System.out.println("RECEIVED " + frame);
+         request = marshaller.unmarshal(buffer);
+         System.out.println("<<< " + request);
 
-         String command = frame.getCommand();
+         String command = request.getCommand();
 
          StompFrame response = null;
          if (Stomp.Commands.CONNECT.equals(command))
          {
-            response = onConnect(frame, server, connection);
+            response = onConnect(request, server, conn);
          }
          else if (Stomp.Commands.DISCONNECT.equals(command))
          {
-            response = onDisconnect(frame, server, connection);
+            response = onDisconnect(request, server, conn);
          }
          else if (Stomp.Commands.SEND.equals(command))
          {
-            response = onSend(frame, server, connection);
+            response = onSend(request, server, conn);
          }
          else if (Stomp.Commands.SUBSCRIBE.equals(command))
          {
-            response = onSubscribe(frame, server, connection);
+            response = onSubscribe(request, server, conn);
+         }
+         else if (Stomp.Commands.UNSUBSCRIBE.equals(command))
+         {
+            response = onUnsubscribe(request, server, conn);
+         }
+         else if (Stomp.Commands.ACK.equals(command))
+         {
+            response = onAck(request, server, conn);
+         }
+         else if (Stomp.Commands.BEGIN.equals(command))
+         {
+            response = onBegin(request, server, conn);
+         }
+         else if (Stomp.Commands.COMMIT.equals(command))
+         {
+            response = onCommit(request, server, conn);
+         }
+         else if (Stomp.Commands.ABORT.equals(command))
+         {
+            response = onAbort(request, server, conn);
          }
          else
          {
-            log.error("Unsupported Stomp frame: " + frame);
+
+            log.error("Unsupported Stomp frame: " + request);
             response = new StompFrame(Stomp.Responses.ERROR,
                                       new HashMap<String, Object>(),
                                       ("Unsupported frame: " + command).getBytes());
+         }
+
+         if (request.getHeaders().containsKey(Stomp.Headers.RECEIPT_REQUESTED))
+         {
+            if (response == null) 
+            {
+               Map<String, Object> h = new HashMap<String, Object>();
+               response = new StompFrame(Stomp.Responses.RECEIPT, h, StompMarshaller.NO_DATA);
+            }
+            response.getHeaders().put(Stomp.Headers.Response.RECEIPT_ID, request.getHeaders().get(Stomp.Headers.RECEIPT_REQUESTED));
          }
 
          if (response != null)
@@ -116,120 +188,216 @@ public class StompProtocolManager implements ProtocolManager
             send(connection, response);
          }
       }
-      catch (StompException ex)
+      catch (Exception e)
       {
-         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-         try
+         StompFrame error = createError(e, request);
+         if (error != null)
          {
-            // Let the stomp client know about any protocol errors.
-            PrintWriter stream = new PrintWriter(new OutputStreamWriter(baos, "UTF-8"));
-            ex.printStackTrace(stream);
-            stream.close();
+            send(connection, error);
          }
-         catch (UnsupportedEncodingException e)
-         {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-         }
-
-         Map<String, Object> headers = new HashMap<String, Object>();
-         headers.put(Stomp.Headers.Error.MESSAGE, ex.getMessage());
-
-         final String receiptId = (String)frame.getHeaders().get(Stomp.Headers.RECEIPT_REQUESTED);
-         if (receiptId != null)
-         {
-            headers.put(Stomp.Headers.Response.RECEIPT_ID, receiptId);
-         }
-
-         StompFrame errorMessage = new StompFrame(Stomp.Responses.ERROR, headers, baos.toByteArray());
-         try
-         {
-            send(connection, errorMessage);
-         }
-         catch (IOException e)
-         {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-         }
-      }
-      catch (Exception ex)
-      {
-         ex.printStackTrace();
       }
    }
 
-   private StompFrame onSubscribe(StompFrame frame, HornetQServer server, RemotingConnection connection) throws Exception,
-                                                                                                        StompException,
-                                                                                                        HornetQException
+   // Public --------------------------------------------------------
+
+   // Package protected ---------------------------------------------
+
+   // Protected -----------------------------------------------------
+
+   // Private -------------------------------------------------------
+
+   private StompFrame onSubscribe(StompFrame frame, HornetQServer server, StompConnection connection) throws Exception,
+                                                                                                     StompException,
+                                                                                                     HornetQException
    {
       Map<String, Object> headers = frame.getHeaders();
-      String queue = (String)headers.get(Stomp.Headers.Send.DESTINATION);
-      SimpleString queueName = SimpleString.toSimpleString(StompUtils.toHornetQAddress(queue));
+      String destination = (String)headers.get(Stomp.Headers.Subscribe.DESTINATION);
+      String selector = (String)headers.get(Stomp.Headers.Subscribe.SELECTOR);
+      String ack = (String)headers.get(Stomp.Headers.Subscribe.ACK_MODE);
+      String subID = (String)headers.get(Stomp.Headers.Subscribe.DURABLE_SUBSCRIPTION_NAME);
 
-      ServerSession session = checkAndGetSession(connection);
+      if (ack == null)
+      {
+         ack = Stomp.Headers.Subscribe.AckModeValues.AUTO;
+      }
+      StompSession stompSession = getSession(connection);
       long consumerID = server.getStorageManager().generateUniqueID();
-      session.createConsumer(consumerID, queueName, null, false);
-      session.receiveConsumerCredits(consumerID, -1);
-      session.start();
+      stompSession.addSubscription(consumerID, subID, destination, selector, ack);
 
       return null;
    }
 
-   private ServerSession checkAndGetSession(RemotingConnection connection) throws StompException
+   private StompFrame onUnsubscribe(StompFrame frame, HornetQServer server, StompConnection connection) throws Exception,
+                                                                                                       StompException,
+                                                                                                       HornetQException
    {
-      ServerSession session = sessions.get(connection);
+      Map<String, Object> headers = frame.getHeaders();
+      String destination = (String)headers.get(Stomp.Headers.Unsubscribe.DESTINATION);
+      String id = (String)headers.get(Stomp.Headers.Unsubscribe.ID);
+
+      StompSession stompSession = getSession(connection);
+      stompSession.unsubscribe(destination);
+
+      return null;
+   }
+
+   private StompFrame onAck(StompFrame frame, HornetQServer server, StompConnection connection) throws Exception,
+                                                                                               StompException,
+                                                                                               HornetQException
+   {
+      Map<String, Object> headers = frame.getHeaders();
+      String messageID = (String)headers.get(Stomp.Headers.Ack.MESSAGE_ID);
+      String txID = (String)headers.get(Stomp.Headers.TRANSACTION);
+
+      StompSession stompSession = getSession(connection);
+      stompSession.acknowledge(messageID);
+
+      return null;
+   }
+
+   private StompFrame onBegin(StompFrame frame, HornetQServer server, StompConnection connection) throws Exception
+   {
+      Map<String, Object> headers = frame.getHeaders();
+      String txID = (String)headers.get(Stomp.Headers.TRANSACTION);
+
+      if (transactedSessions.containsKey(txID))
+      {
+         throw new StompException("Transaction already started: " + txID);
+      }
+      StompSession stompSession = getTransactedSession(connection, txID);
+      return null;
+   }
+
+   private StompFrame onCommit(StompFrame frame, HornetQServer server, StompConnection connection) throws Exception,
+                                                                                                  StompException,
+                                                                                                  HornetQException
+   {
+      Map<String, Object> headers = frame.getHeaders();
+      String txID = (String)headers.get(Stomp.Headers.TRANSACTION);
+
+      StompSession session = transactedSessions.remove(txID);
+
       if (session == null)
+      {
+         throw new StompException("No transaction started: " + txID);
+      }
+
+      session.getSession().commit();
+
+      return null;
+   }
+
+   private StompFrame onAbort(StompFrame frame, HornetQServer server, StompConnection connection) throws Exception,
+                                                                                                    StompException,
+                                                                                                    HornetQException
+   {
+      Map<String, Object> headers = frame.getHeaders();
+      String txID = (String)headers.get(Stomp.Headers.TRANSACTION);
+
+      StompSession session = transactedSessions.remove(txID);
+
+      if (session == null)
+      {
+         throw new StompException("No transaction started: " + txID);
+      }
+      session.getSession().rollback(false);
+
+      return null;
+   }
+
+   private void checkConnected(StompConnection connection) throws StompException
+   {
+      if (!connection.isValid())
       {
          throw new StompException("Not connected");
       }
-      return session;
    }
 
-   private StompFrame onDisconnect(StompFrame frame, HornetQServer server, RemotingConnection connection) throws StompException
+   private StompSession getSession(StompConnection connection) throws Exception
    {
-      ServerSession session = checkAndGetSession(connection);
+      StompSession stompSession = sessions.get(connection);
+      if (stompSession == null)
+      {
+         stompSession = new StompSession(marshaller, connection);
+         String name = UUIDGenerator.getInstance().generateStringUUID();
+         ServerSession session = server.createSession(name,
+                                                      connection.getLogin(),
+                                                      connection.getPasscode(),
+                                                      HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
+                                                      connection,
+                                                      true,
+                                                      false,
+                                                      false,
+                                                      false,
+                                                      stompSession);
+         stompSession.setServerSession(session);
+         sessions.put(connection, stompSession);
+      }
+      return stompSession;
+   }
+
+   private StompSession getTransactedSession(StompConnection connection, String txID) throws Exception
+   {
+      StompSession stompSession = transactedSessions.get(txID);
+      if (stompSession == null)
+      {
+         stompSession = new StompSession(marshaller, connection);
+         String name = UUIDGenerator.getInstance().generateStringUUID();
+         ServerSession session = server.createSession(name,
+                                                      connection.getLogin(),
+                                                      connection.getPasscode(),
+                                                      HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
+                                                      connection,
+                                                      false,
+                                                      false,
+                                                      false,
+                                                      false,
+                                                      stompSession);
+         stompSession.setServerSession(session);
+         transactedSessions.put(txID, stompSession);
+      }
+      return stompSession;
+   }
+
+   private StompFrame onDisconnect(StompFrame frame, HornetQServer server, StompConnection connection) throws Exception
+   {
+      StompSession session = getSession(connection);
       if (session != null)
       {
          try
          {
-            session.close();
+            session.getSession().rollback(true);
+            session.getSession().close();
          }
          catch (Exception e)
          {
             throw new StompException(e.getMessage());
          }
          sessions.remove(connection);
+         connection.setValid(false);
       }
       return null;
    }
 
-   private StompFrame onSend(StompFrame frame, HornetQServer server, RemotingConnection connection) throws Exception
+   private StompFrame onSend(StompFrame frame, HornetQServer server, StompConnection connection) throws Exception
    {
-      ServerSession session = checkAndGetSession(connection);
-
+      checkConnected(connection);
       Map<String, Object> headers = frame.getHeaders();
-      String queue = (String)headers.get(Stomp.Headers.Send.DESTINATION);
-      /*
-      String type = (String)headers.get(Stomp.Headers.Send.TYPE);
-      long expiration = (Long)headers.get(Stomp.Headers.Send.EXPIRATION_TIME);
-      byte priority = (Byte)headers.get(Stomp.Headers.Send.PRIORITY);
-      boolean durable = (Boolean)headers.get(Stomp.Headers.Send.PERSISTENT);
-      */
+      String queue = (String)headers.remove(Stomp.Headers.Send.DESTINATION);
+      String txID = (String)headers.remove(Stomp.Headers.TRANSACTION);
       byte type = Message.TEXT_TYPE;
       if (headers.containsKey(Stomp.Headers.CONTENT_LENGTH))
       {
          type = Message.BYTES_TYPE;
       }
       long timestamp = System.currentTimeMillis();
-      boolean durable = false;
-      long expiration = -1;
-      byte priority = 9;
       SimpleString address = SimpleString.toSimpleString(StompUtils.toHornetQAddress(queue));
 
       ServerMessageImpl message = new ServerMessageImpl(server.getStorageManager().generateUniqueID(), 512);
       message.setType(type);
       message.setTimestamp(timestamp);
       message.setAddress(address);
+      StompUtils.copyStandardHeadersFromFrameToMessage(frame, message);
       byte[] content = frame.getContent();
       if (type == Message.TEXT_TYPE)
       {
@@ -240,56 +408,75 @@ public class StompProtocolManager implements ProtocolManager
          message.getBodyBuffer().writeBytes(content);
       }
 
+      ServerSession session = null;
+      if (txID == null)
+      {
+         session = getSession(connection).getSession();
+      } else
+      {
+         session = transactedSessions.get(txID).getSession();
+      }
+
       session.send(message);
-      if (headers.containsKey(Stomp.Headers.RECEIPT_REQUESTED))
-      {
-         Map<String, Object> h = new HashMap<String, Object>();
-         h.put(Stomp.Headers.Response.RECEIPT_ID, headers.get(Stomp.Headers.RECEIPT_REQUESTED));
-         return new StompFrame(Stomp.Responses.RECEIPT, h, new byte[] {});
-      }
-      else
-      {
-         return null;
-      }
+      return null;
    }
 
-   private StompFrame onConnect(StompFrame frame, HornetQServer server, final RemotingConnection connection) throws Exception
+   private StompFrame onConnect(StompFrame frame, HornetQServer server, final StompConnection connection) throws Exception
    {
       Map<String, Object> headers = frame.getHeaders();
       String login = (String)headers.get(Stomp.Headers.Connect.LOGIN);
       String passcode = (String)headers.get(Stomp.Headers.Connect.PASSCODE);
+      String clientID = (String)headers.get(Stomp.Headers.Connect.CLIENT_ID);
       String requestID = (String)headers.get(Stomp.Headers.Connect.REQUEST_ID);
 
-      String name = UUIDGenerator.getInstance().generateStringUUID();
-      ServerSession session = server.createSession(name,
-                                                   login,
-                                                   passcode,
-                                                   HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
-                                                   connection,
-                                                   true,
-                                                   true,
-                                                   false,
-                                                   false,
-                                                   new StompSessionCallback(marshaller, connection));
-      sessions.put(connection, session);
-      System.out.println(">>> created session " + session);
+      server.getSecurityManager().validateUser(login, passcode);
+
+      connection.setLogin(login);
+      connection.setPasscode(passcode);
+      connection.setClientID(clientID);
+      connection.setValid(true);
+
       HashMap<String, Object> h = new HashMap<String, Object>();
-      h.put(Stomp.Headers.Connected.SESSION, name);
-      h.put(Stomp.Headers.Connected.RESPONSE_ID, requestID);
-      return new StompFrame(Stomp.Responses.CONNECTED, h, new byte[] {});
+      h.put(Stomp.Headers.Connected.SESSION, connection.getID());
+      if (requestID != null)
+      {
+         h.put(Stomp.Headers.Connected.RESPONSE_ID, requestID);
+      }
+      return new StompFrame(Stomp.Responses.CONNECTED, h, StompMarshaller.NO_DATA);
    }
 
-   private void send(RemotingConnection connection, StompFrame frame) throws IOException
+   private void send(RemotingConnection connection, StompFrame frame)
    {
-      System.out.println("SENDING >>> " + frame);
-      byte[] bytes = marshaller.marshal(frame);
-      HornetQBuffer buffer = HornetQBuffers.wrappedBuffer(bytes);
-      System.out.println("ready to send reply: " + buffer);
-      connection.getTransportConnection().write(buffer, true);
+      System.out.println(">>> " + frame);
+
+      try
+      {
+         byte[] bytes = marshaller.marshal(frame);
+         HornetQBuffer buffer = HornetQBuffers.wrappedBuffer(bytes);
+         connection.getTransportConnection().write(buffer, true);
+      }
+      catch (IOException e)
+      {
+         log.error("Unable to send frame " + frame, e);
+      }
    }
 
-   public int isReadyToHandle(HornetQBuffer buffer)
+   public synchronized void cleanup(StompConnection conn)
    {
-      return -1;
+      StompSession session = sessions.remove(conn);
+      if (session != null)
+      {
+         try
+         {
+            session.getSession().rollback(true);
+            session.getSession().close();
+         }
+         catch (Exception e)
+         {
+            log.error(e);
+         }
+      }
    }
+
+   // Inner classes -------------------------------------------------
 }

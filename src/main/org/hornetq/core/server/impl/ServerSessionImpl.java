@@ -228,11 +228,11 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       return remotingConnection.getID();
    }
 
-   public void removeConsumer(final ServerConsumer consumer) throws Exception
+   public void removeConsumer(final long consumerID) throws Exception
    {
-      if (consumers.remove(consumer.getID()) == null)
+      if (consumers.remove(consumerID) == null)
       {
-         throw new IllegalStateException("Cannot find consumer with id " + consumer.getID() + " to remove");
+         throw new IllegalStateException("Cannot find consumer with id " + consumerID + " to remove");
       }
    }
 

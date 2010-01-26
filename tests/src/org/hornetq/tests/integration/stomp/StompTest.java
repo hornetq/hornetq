@@ -31,6 +31,7 @@ import java.util.regex.Pattern;
 import javax.jms.BytesMessage;
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
+import javax.jms.DeliveryMode;
 import javax.jms.JMSException;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
@@ -217,7 +218,7 @@ public class StompTest extends TestCase {
        Assert.assertTrue(Math.abs(tnow - tmsg) < 1000);
    }
 
-    public void _testJMSXGroupIdCanBeSet() throws Exception {
+    public void testJMSXGroupIdCanBeSet() throws Exception {
 
         MessageConsumer consumer = session.createConsumer(queue);
 
@@ -242,11 +243,11 @@ public class StompTest extends TestCase {
 
         TextMessage message = (TextMessage) consumer.receive(1000);
         Assert.assertNotNull(message);
-        // TODO do we support it?
-        //Assert.assertEquals("TEST", ((TextMessage) message).getGroupID());
+        // differ from StompConnect
+        Assert.assertEquals("TEST", ((TextMessage) message).getStringProperty("JMSXGroupID"));
     }
 
-    public void _testSendMessageWithCustomHeadersAndSelector() throws Exception {
+    public void testSendMessageWithCustomHeadersAndSelector() throws Exception {
 
         MessageConsumer consumer = session.createConsumer(queue, "foo = 'abc'");
 
@@ -277,7 +278,7 @@ public class StompTest extends TestCase {
         Assert.assertEquals("bar", "123", message.getStringProperty("bar"));
     }
 
-    public void _testSendMessageWithStandardHeaders() throws Exception {
+    public void testSendMessageWithStandardHeaders() throws Exception {
 
         MessageConsumer consumer = session.createConsumer(queue);
 
@@ -294,6 +295,7 @@ public class StompTest extends TestCase {
         frame =
                 "SEND\n" +
                         "correlation-id:c123\n" +
+                        "persistent:true\n" +
                         "priority:3\n" +
                         "type:t345\n" +
                         "JMSXGroupID:abc\n" +
@@ -311,6 +313,7 @@ public class StompTest extends TestCase {
         Assert.assertEquals("JMSCorrelationID", "c123", message.getJMSCorrelationID());
         Assert.assertEquals("getJMSType", "t345", message.getJMSType());
         Assert.assertEquals("getJMSPriority", 3, message.getJMSPriority());
+        Assert.assertEquals(DeliveryMode.PERSISTENT, message.getJMSDeliveryMode());
         Assert.assertEquals("foo", "abc", message.getStringProperty("foo"));
         Assert.assertEquals("bar", "123", message.getStringProperty("bar"));
 
@@ -350,9 +353,15 @@ public class StompTest extends TestCase {
                         "\n\n" +
                         Stomp.NULL;
         sendFrame(frame);
+        
+        // message should not be received as it was auto-acked
+        MessageConsumer consumer = session.createConsumer(queue);
+        TextMessage message = (TextMessage) consumer.receive(1000);
+        Assert.assertNull(message);
+
     }
 
-    public void _testSubscribeWithAutoAckAndBytesMessage() throws Exception {
+    public void testSubscribeWithAutoAckAndBytesMessage() throws Exception {
 
         String frame =
                 "CONNECT\n" +
@@ -371,7 +380,8 @@ public class StompTest extends TestCase {
                         Stomp.NULL;
         sendFrame(frame);
 
-        sendBytesMessage(new byte[]{1, 2, 3, 4, 5});
+        byte[] payload = new byte[]{1, 2, 3, 4, 5}; 
+        sendBytesMessage(payload);
 
         frame = receiveFrame(10000);
         Assert.assertTrue(frame.startsWith("MESSAGE"));
@@ -382,7 +392,8 @@ public class StompTest extends TestCase {
         Assert.assertEquals("5", cl_matcher.group(1));
 
         Assert.assertFalse(Pattern.compile("type:\\s*null", Pattern.CASE_INSENSITIVE).matcher(frame).find());
-
+        Assert.assertTrue(frame.indexOf(new String(payload)) > -1);
+        
         frame =
                 "DISCONNECT\n" +
                         "\n\n" +
@@ -390,7 +401,7 @@ public class StompTest extends TestCase {
         sendFrame(frame);
     }
 
-    public void _testSubscribeWithMessageSentWithProperties() throws Exception {
+    public void testSubscribeWithMessageSentWithProperties() throws Exception {
 
         String frame =
                 "CONNECT\n" +
@@ -422,6 +433,8 @@ public class StompTest extends TestCase {
         producer.send(message);
 
         frame = receiveFrame(10000);
+        Assert.assertNotNull(frame);
+        System.out.println(frame);
         Assert.assertTrue(frame.startsWith("MESSAGE"));
         Assert.assertTrue(frame.indexOf("S:") > 0);
         Assert.assertTrue(frame.indexOf("n:") > 0);
@@ -442,7 +455,7 @@ public class StompTest extends TestCase {
         sendFrame(frame);
     }
 
-    public void _testMessagesAreInOrder() throws Exception {
+    public void testMessagesAreInOrder() throws Exception {
         int ctr = 10;
         String[] data = new String[ctr];
 
@@ -493,7 +506,7 @@ public class StompTest extends TestCase {
         sendFrame(frame);
     }
 
-    public void _testSubscribeWithAutoAckAndSelector() throws Exception {
+    public void testSubscribeWithAutoAckAndSelector() throws Exception {
 
         String frame =
                 "CONNECT\n" +
@@ -527,7 +540,53 @@ public class StompTest extends TestCase {
         sendFrame(frame);
     }
 
-    public void _testSubscribeWithClientAck() throws Exception {
+    public void testSubscribeWithClientAck() throws Exception {
+
+       String frame =
+               "CONNECT\n" +
+                       "login: brianm\n" +
+                       "passcode: wombats\n\n" +
+                       Stomp.NULL;
+       sendFrame(frame);
+
+       frame = receiveFrame(10000);
+       Assert.assertTrue(frame.startsWith("CONNECTED"));
+
+       frame =
+               "SUBSCRIBE\n" +
+                       "destination:/queue/" + getQueueName() + "\n" +
+                       "ack:client\n\n" +
+                       Stomp.NULL;
+
+       sendFrame(frame);
+       
+       sendMessage(getName());
+       frame = receiveFrame(10000);
+       Assert.assertTrue(frame.startsWith("MESSAGE"));
+       Pattern cl = Pattern.compile("message-id:\\s*(\\d+)", Pattern.CASE_INSENSITIVE);
+       Matcher cl_matcher = cl.matcher(frame);
+       Assert.assertTrue(cl_matcher.find());
+       String messageID = cl_matcher.group(1);
+
+       frame =
+          "ACK\n" +
+                  "message-id: " + messageID + "\n\n" +
+                  Stomp.NULL;
+       sendFrame(frame);
+
+       frame =
+               "DISCONNECT\n" +
+                       "\n\n" +
+                       Stomp.NULL;
+       sendFrame(frame);
+
+       // message should not be received since message was acknowledged by the client
+       MessageConsumer consumer = session.createConsumer(queue);
+       TextMessage message = (TextMessage) consumer.receive(1000);
+       Assert.assertNull(message);
+   }
+    
+    public void testRedeliveryWithClientAck() throws Exception {
 
         String frame =
                 "CONNECT\n" +
@@ -546,6 +605,7 @@ public class StompTest extends TestCase {
                         Stomp.NULL;
 
         sendFrame(frame);
+        
         sendMessage(getName());
         frame = receiveFrame(10000);
         Assert.assertTrue(frame.startsWith("MESSAGE"));
@@ -563,11 +623,11 @@ public class StompTest extends TestCase {
         Assert.assertTrue(message.getJMSRedelivered());
     }
 
-    public void _testSubscribeWithClientAckThenConsumingAgainWithAutoAckWithNoDisconnectFrame() throws Exception {
+    public void testSubscribeWithClientAckThenConsumingAgainWithAutoAckWithNoDisconnectFrame() throws Exception {
         assertSubscribeWithClientAckThenConsumeWithAutoAck(false);
     }
 
-    public void _testSubscribeWithClientAckThenConsumingAgainWithAutoAckWithExplicitDisconnect() throws Exception {
+    public void testSubscribeWithClientAckThenConsumingAgainWithAutoAckWithExplicitDisconnect() throws Exception {
         assertSubscribeWithClientAckThenConsumeWithAutoAck(true);
     }
 
@@ -663,7 +723,7 @@ public class StompTest extends TestCase {
         Assert.assertTrue(frame.contains("shouldBeNextMessage"));
     }
 
-    public void _testUnsubscribe() throws Exception {
+    public void testUnsubscribe() throws Exception {
 
         String frame =
                 "CONNECT\n" +
@@ -685,7 +745,7 @@ public class StompTest extends TestCase {
         sendMessage("first message");
 
         //receive message from socket
-        frame = receiveFrame(1000);
+        frame = receiveFrame(10000);
         Assert.assertTrue(frame.startsWith("MESSAGE"));
 
         //remove suscription
@@ -711,7 +771,7 @@ public class StompTest extends TestCase {
         }
     }
 
-    public void _testTransactionCommit() throws Exception {
+    public void testTransactionCommit() throws Exception {
         MessageConsumer consumer = session.createConsumer(queue);
 
         String frame =
@@ -757,7 +817,7 @@ public class StompTest extends TestCase {
         Assert.assertNotNull("Should have received a message", message);
     }
 
-    public void _testTransactionRollback() throws Exception {
+    public void testTransactionRollback() throws Exception {
         MessageConsumer consumer = session.createConsumer(queue);
 
         String frame =
