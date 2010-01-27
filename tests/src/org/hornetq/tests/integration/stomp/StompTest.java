@@ -98,6 +98,8 @@ public class StompTest extends UnitTestCase {
        connect_frame = "DISCONNECT\n\n" + Stomp.NULL;
        sendFrame(connect_frame);
        
+       waitForFrameToTakeEffect();
+       
        // sending a message will result in an error
        String frame =
           "SEND\n" +
@@ -1193,7 +1195,7 @@ public class StompTest extends UnitTestCase {
        
        frame =
           "UNSUBSCRIBE\n" +
-                  "destination:/topic/" + getQueueName() + "\n" +
+                  "destination:/queue/" + getQueueName() + "\n" +
                   "\n\n" +
                   Stomp.NULL;
        sendFrame(frame);

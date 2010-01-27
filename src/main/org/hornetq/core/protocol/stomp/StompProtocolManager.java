@@ -277,7 +277,7 @@ class StompProtocolManager implements ProtocolManager
       boolean unsubscribed = stompSession.unsubscribe(subscriptionID);
       if (!unsubscribed)
       {
-         throw new StompException("Cannot unsubscribe as o subscription exists for id: " + subscriptionID);
+         throw new StompException("Cannot unsubscribe as a subscription exists for id: " + subscriptionID);
       }
       return null;
    }
@@ -412,6 +412,8 @@ class StompProtocolManager implements ProtocolManager
 
    private StompFrame onDisconnect(StompFrame frame, HornetQServer server, StompConnection connection) throws Exception
    {
+      connection.setValid(false);
+
       StompSession session = sessions.remove(connection);
       if (session != null)
       {
@@ -439,7 +441,6 @@ class StompProtocolManager implements ProtocolManager
             iterator.remove();
          }
       }
-      connection.setValid(false);
 
       return null;
    }

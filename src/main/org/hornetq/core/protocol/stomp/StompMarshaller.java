@@ -61,8 +61,8 @@ class StompMarshaller {
         buffer.append(Stomp.NEWLINE);
 
         // Output the headers.
-        for (Iterator iter = stomp.getHeaders().entrySet().iterator(); iter.hasNext();) {
-            Map.Entry entry = (Map.Entry) iter.next();
+        for (Iterator<Map.Entry<String, Object>> iter = stomp.getHeaders().entrySet().iterator(); iter.hasNext();) {
+            Map.Entry<String, Object> entry = iter.next();
             buffer.append(entry.getKey());
             buffer.append(Stomp.Headers.SEPERATOR);
             buffer.append(entry.getValue());
@@ -97,7 +97,7 @@ class StompMarshaller {
             }
 
             // Parse the headers
-            HashMap headers = new HashMap(25);
+            HashMap<String, Object> headers = new HashMap<String, Object>(25);
             while (true) {
                 String line = readLine(in, MAX_HEADER_LENGTH, "The maximum header length was exceeded");
                 if (line != null && line.trim().length() > 0) {
@@ -177,15 +177,22 @@ class StompMarshaller {
     }
 
     protected String readLine(HornetQBuffer in, int maxLength, String errorMessage) throws IOException {
-        byte b;
-        ByteArrayOutputStream baos = new ByteArrayOutputStream(maxLength);
-        while ((b = in.readByte()) != '\n') {
-            if (baos.size() > maxLength) {
-                throw new StompException(errorMessage, true);
-            }
-            baos.write(b);
-        }
-        byte[] sequence = baos.toByteArray();
-        return new String(sequence, "UTF-8");
+       char[] chars = new char[MAX_HEADER_LENGTH];
+       
+       int count = 0;
+       while (in.readable())
+       {
+          byte b = in.readByte();
+          
+          if (b == (byte)'\n')
+          {
+             break;
+          }             
+          else
+          {
+             chars[count++] = (char)b;
+          }
+       }
+       return new String(chars, 0, count);
     }
 }
