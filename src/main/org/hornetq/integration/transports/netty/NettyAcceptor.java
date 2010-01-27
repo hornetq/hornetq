@@ -190,7 +190,7 @@ public class NettyAcceptor implements Acceptor
       String protocolStr = ConfigurationHelper.getStringProperty(TransportConstants.PROTOCOL_PROP_NAME,
                                                        TransportConstants.DEFAULT_PROTOCOL,
                                                        configuration);
-      protocol = ProtocolType.valueOf(protocolStr);
+      protocol = ProtocolType.valueOf(protocolStr.toUpperCase());
       
       host = ConfigurationHelper.getStringProperty(TransportConstants.HOST_PROP_NAME,
                                                    TransportConstants.DEFAULT_HOST,
