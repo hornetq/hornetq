@@ -32,15 +32,16 @@ import javax.jms.BytesMessage;
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.DeliveryMode;
+import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
+import javax.jms.Topic;
 
 import junit.framework.Assert;
-import junit.framework.TestCase;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.config.Configuration;
@@ -58,6 +59,7 @@ import org.hornetq.jms.server.JMSServerManager;
 import org.hornetq.jms.server.config.JMSConfiguration;
 import org.hornetq.jms.server.config.impl.JMSConfigurationImpl;
 import org.hornetq.jms.server.config.impl.QueueConfigurationImpl;
+import org.hornetq.jms.server.config.impl.TopicConfigurationImpl;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.hornetq.spi.core.protocol.ProtocolType;
 import org.hornetq.tests.util.UnitTestCase;
@@ -71,6 +73,7 @@ public class StompTest extends UnitTestCase {
     private Connection connection;
     private Session session;
     private Queue queue;
+    private Topic topic;
     private JMSServerManager server;
 
     public void testConnect() throws Exception {
@@ -101,10 +104,12 @@ public class StompTest extends UnitTestCase {
                   "destination:/queue/" + getQueueName() + "\n\n" +
                   "Hello World" +
                   Stomp.NULL;
-       sendFrame(frame);
-
-       f = receiveFrame(10000);
-       Assert.assertTrue(f.startsWith("ERROR"));
+       try {
+          sendFrame(frame);
+          Assert.fail("the socket must have been closed when the server handled the DISCONNECT");
+       } catch (IOException e)
+       {
+       }
    }
 
 
@@ -599,7 +604,7 @@ public class StompTest extends UnitTestCase {
        sendMessage(getName());
        frame = receiveFrame(10000);
        Assert.assertTrue(frame.startsWith("MESSAGE"));
-       Pattern cl = Pattern.compile("message-id:\\s*(\\d+)", Pattern.CASE_INSENSITIVE);
+       Pattern cl = Pattern.compile("message-id:\\s*(\\S+)", Pattern.CASE_INSENSITIVE);
        Matcher cl_matcher = cl.matcher(frame);
        Assert.assertTrue(cl_matcher.find());
        String messageID = cl_matcher.group(1);
@@ -1069,7 +1074,137 @@ public class StompTest extends UnitTestCase {
         Assert.assertNotNull(message);
         Assert.assertEquals("second message", message.getText().trim());
     }
+    
+    public void testSubscribeToTopic() throws Exception {
 
+       String frame =
+               "CONNECT\n" +
+                       "login: brianm\n" +
+                       "passcode: wombats\n\n" +
+                       Stomp.NULL;
+       sendFrame(frame);
+
+       frame = receiveFrame(100000);
+       Assert.assertTrue(frame.startsWith("CONNECTED"));
+
+       frame =
+               "SUBSCRIBE\n" +
+                       "destination:/topic/" + getTopicName() + "\n" +
+                       "\n\n" +
+                       Stomp.NULL;
+       sendFrame(frame);
+
+       sendMessage(getName(), topic);
+
+       frame = receiveFrame(10000);
+       Assert.assertTrue(frame.startsWith("MESSAGE"));
+       Assert.assertTrue(frame.indexOf("destination:") > 0);
+       Assert.assertTrue(frame.indexOf(getName()) > 0);
+
+       frame =
+          "UNSUBSCRIBE\n" +
+                  "destination:/topic/" + getTopicName() + "\n" +
+                  "\n\n" +
+                  Stomp.NULL;
+       sendFrame(frame);
+  
+       sendMessage(getName(), topic);
+
+       try {
+          frame = receiveFrame(1000);
+          log.info("Received frame: " + frame);
+          Assert.fail("No message should have been received since subscription was removed");
+      }
+      catch (SocketTimeoutException e) {
+
+      }
+       
+      frame =
+               "DISCONNECT\n" +
+                       "\n\n" +
+                       Stomp.NULL;
+       sendFrame(frame);
+   }
+    
+    public void testClientAckNotPartOfTransaction() throws Exception {
+
+       String frame =
+               "CONNECT\n" +
+                       "login: brianm\n" +
+                       "passcode: wombats\n\n" +
+                       Stomp.NULL;
+       sendFrame(frame);
+
+       frame = receiveFrame(100000);
+       Assert.assertTrue(frame.startsWith("CONNECTED"));
+
+       frame =
+               "SUBSCRIBE\n" +
+                       "destination:/queue/" + getQueueName() + "\n" +
+                       "ack:client\n" +
+                       "\n\n" +
+                       Stomp.NULL;
+       sendFrame(frame);
+
+       sendMessage(getName());
+
+       frame = receiveFrame(10000);
+       System.out.println(frame);
+       Assert.assertTrue(frame.startsWith("MESSAGE"));
+       Assert.assertTrue(frame.indexOf("destination:") > 0);
+       Assert.assertTrue(frame.indexOf(getName()) > 0);
+       Assert.assertTrue(frame.indexOf("message-id:") > 0);
+       Pattern cl = Pattern.compile("message-id:\\s*(\\S+)", Pattern.CASE_INSENSITIVE);
+       Matcher cl_matcher = cl.matcher(frame);
+       Assert.assertTrue(cl_matcher.find());
+       String messageID = cl_matcher.group(1);
+       System.out.println(messageID);
+
+       frame =
+          "BEGIN\n" +
+                  "transaction: tx1\n" +
+                  "\n\n" +
+                  Stomp.NULL;
+       sendFrame(frame);
+
+       frame =
+          "ACK\n" +
+                  "message-id:" + messageID + "\n" +
+                  "transaction: tx1\n" +
+                  "\n" +
+                  "second message" +
+                  Stomp.NULL;
+       sendFrame(frame);
+
+       frame =
+          "ABORT\n" +
+                  "transaction: tx1\n" +
+                  "\n\n" +
+                  Stomp.NULL;
+       sendFrame(frame);
+  
+       try {
+           frame = receiveFrame(1000);
+           log.info("Received frame: " + frame);
+           Assert.fail("No message should have been received as the message was acked even though the transaction has been aborted");
+       }
+       catch (SocketTimeoutException e) {
+       }
+       
+       frame =
+          "UNSUBSCRIBE\n" +
+                  "destination:/topic/" + getQueueName() + "\n" +
+                  "\n\n" +
+                  Stomp.NULL;
+       sendFrame(frame);
+       
+      frame =
+               "DISCONNECT\n" +
+                       "\n\n" +
+                       Stomp.NULL;
+       sendFrame(frame);
+   }
+   
     // Implementation methods
     //-------------------------------------------------------------------------
     protected void setUp() throws Exception {
@@ -1083,6 +1218,7 @@ public class StompTest extends UnitTestCase {
         connection = connectionFactory.createConnection();
         session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
         queue = session.createQueue(getQueueName());
+        topic = session.createTopic(getTopicName());
         connection.start();
     }
 
@@ -1106,6 +1242,7 @@ public class StompTest extends UnitTestCase {
        
        JMSConfiguration jmsConfig = new JMSConfigurationImpl();
        jmsConfig.getQueueConfigurations().add(new QueueConfigurationImpl(getQueueName(), null, false, getQueueName()));
+       jmsConfig.getTopicConfigurations().add(new TopicConfigurationImpl(getTopicName(), getTopicName()));
        server = new JMSServerManagerImpl(hornetQServer, jmsConfig);
        server.setContext(null);
        return server;
@@ -1145,6 +1282,10 @@ public class StompTest extends UnitTestCase {
         return "test";
     }
 
+    protected String getTopicName() {
+       return "testtopic";
+   }
+    
     public void sendFrame(String data) throws Exception {
         byte[] bytes = data.getBytes("UTF-8");
         OutputStream outputStream = stompSocket.getOutputStream();
@@ -1182,11 +1323,19 @@ public class StompTest extends UnitTestCase {
     }
 
     public void sendMessage(String msg) throws Exception {
-        sendMessage(msg, "foo", "xyz");
+       sendMessage(msg, "foo", "xyz", queue);
+   }
+
+    public void sendMessage(String msg, Destination destination) throws Exception {
+        sendMessage(msg, "foo", "xyz", destination);
     }
 
     public void sendMessage(String msg, String propertyName, String propertyValue) throws JMSException {
-        MessageProducer producer = session.createProducer(queue);
+       sendMessage(msg, propertyName, propertyValue, queue);
+    }
+    
+    public void sendMessage(String msg, String propertyName, String propertyValue, Destination destination) throws JMSException {
+        MessageProducer producer = session.createProducer(destination);
         TextMessage message = session.createTextMessage(msg);
         message.setStringProperty(propertyName, propertyValue);
         producer.send(message);

@@ -26,6 +26,7 @@ import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.ServerSession;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.spi.core.protocol.SessionCallback;
+import org.hornetq.utils.UUIDGenerator;
 
 /**
  * A StompSession
@@ -146,17 +147,23 @@ class StompSession implements SessionCallback
 
    public void addSubscription(long consumerID, String subscriptionID, String destination, String selector, String ack) throws Exception
    {
-      String queue = StompUtils.toHornetQAddress(destination);
-         session.createConsumer(consumerID,
-                                SimpleString.toSimpleString(queue),
-                                SimpleString.toSimpleString(selector),
-                                false);
-         session.receiveConsumerCredits(consumerID, -1);
-         StompSubscription subscription = new StompSubscription(subscriptionID, destination, ack);
-         subscriptions.put(consumerID, subscription);
-         // FIXME not very smart: since we can't start the consumer, we start the session
-         // everytime to start the new consumer (and all previous consumers...)
-         session.start();
+      SimpleString queue = SimpleString.toSimpleString(destination);
+      if (destination.startsWith(StompUtils.HQ_TOPIC_PREFIX))
+      {
+         //subscribes to a topic
+         queue = UUIDGenerator.getInstance().generateSimpleStringUUID();
+         session.createQueue(SimpleString.toSimpleString(destination), queue, null, true, false);
+      }
+      session.createConsumer(consumerID,
+                             queue,
+                             SimpleString.toSimpleString(selector),
+                             false);
+      session.receiveConsumerCredits(consumerID, -1);
+      StompSubscription subscription = new StompSubscription(subscriptionID, destination, ack);
+      subscriptions.put(consumerID, subscription);
+      // FIXME not very smart: since we can't start the consumer, we start the session
+      // every time to start the new consumer (and all previous consumers...)
+      session.start();
    }
 
    public boolean unsubscribe(String id) throws Exception

@@ -189,7 +189,12 @@ class StompProtocolManager implements ProtocolManager
 
          if (response != null)
          {
-            send(connection, response);
+            send(conn, response);
+         }
+         
+         if (Stomp.Commands.DISCONNECT.equals(command))
+         {
+            conn.destroy();
          }
       }
       catch (Exception e)
@@ -197,7 +202,7 @@ class StompProtocolManager implements ProtocolManager
          StompFrame error = createError(e, request);
          if (error != null)
          {
-            send(connection, error);
+            send(conn, error);
          }
       }
    }
@@ -235,6 +240,7 @@ class StompProtocolManager implements ProtocolManager
          }
          subscriptionID = "subscription/" + destination;
       }
+      String hornetqDestination = StompUtils.toHornetQAddress(destination);
       StompSession stompSession = getSession(connection);
       if (stompSession.containsSubscription(subscriptionID))
       {
@@ -242,7 +248,7 @@ class StompProtocolManager implements ProtocolManager
                                   ". Either use unique subscription IDs or do not create multiple subscriptions for the same destination");
       }
       long consumerID = server.getStorageManager().generateUniqueID();
-      stompSession.addSubscription(consumerID, subscriptionID, destination, selector, ack);
+      stompSession.addSubscription(consumerID, subscriptionID, hornetqDestination, selector, ack);
 
       return null;
    }
@@ -284,12 +290,9 @@ class StompProtocolManager implements ProtocolManager
       StompSession stompSession = null;
       if (txID != null)
       {
-         throw new StompException("transactional ACK are not supported");
+         log.warn("Transactional acknowledgement is not supported");
       }
-      else
-      {
-         stompSession = getSession(connection);
-      }
+      stompSession = getSession(connection);
       stompSession.acknowledge(messageID);
       
       return null;
@@ -508,12 +511,12 @@ class StompProtocolManager implements ProtocolManager
       return new StompFrame(Stomp.Responses.CONNECTED, h, StompMarshaller.NO_DATA);
    }
 
-   public int send(RemotingConnection connection, StompFrame frame)
+   public int send(StompConnection connection, StompFrame frame)
    {
       System.out.println(">>> " + frame);
       synchronized (connection)
       {
-         if (connection.isDestroyed())
+         if (connection.isDestroyed() || !connection.isValid())
          {
             log.warn("Connection closed " + connection);
             return 0;
