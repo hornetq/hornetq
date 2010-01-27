@@ -156,7 +156,6 @@ class StompUtils
          Map.Entry<String, Object> entry = iter.next();
          String name = (String)entry.getKey();
          Object value = entry.getValue();
-         System.out.println(name + "=" + value);   
          msg.putObjectProperty(name, value);
       }
    }

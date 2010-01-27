@@ -366,7 +366,7 @@ class StompProtocolManager implements ProtocolManager
       StompSession stompSession = sessions.get(connection);
       if (stompSession == null)
       {
-         stompSession = new StompSession(marshaller, connection);
+         stompSession = new StompSession(connection, this);
          String name = UUIDGenerator.getInstance().generateStringUUID();
          ServerSession session = server.createSession(name,
                                                       connection.getLogin(),
@@ -389,7 +389,7 @@ class StompProtocolManager implements ProtocolManager
       StompSession stompSession = transactedSessions.get(txID);
       if (stompSession == null)
       {
-         stompSession = new StompSession(marshaller, connection);
+         stompSession = new StompSession(connection, this);
          String name = UUIDGenerator.getInstance().generateStringUUID();
          ServerSession session = server.createSession(name,
                                                       connection.getLogin(),
@@ -508,35 +508,27 @@ class StompProtocolManager implements ProtocolManager
       return new StompFrame(Stomp.Responses.CONNECTED, h, StompMarshaller.NO_DATA);
    }
 
-   private void send(RemotingConnection connection, StompFrame frame)
+   public int send(RemotingConnection connection, StompFrame frame)
    {
       System.out.println(">>> " + frame);
-
-      try
+      synchronized (connection)
       {
-         byte[] bytes = marshaller.marshal(frame);
-         HornetQBuffer buffer = HornetQBuffers.wrappedBuffer(bytes);
-         connection.getTransportConnection().write(buffer, true);
-      }
-      catch (IOException e)
-      {
-         log.error("Unable to send frame " + frame, e);
-      }
-   }
-
-   synchronized void cleanup(StompConnection conn)
-   {
-      StompSession session = sessions.remove(conn);
-      if (session != null)
-      {
+         if (connection.isDestroyed())
+         {
+            log.warn("Connection closed " + connection);
+            return 0;
+         }
          try
          {
-            session.getSession().rollback(true);
-            session.getSession().close();
+            byte[] bytes = marshaller.marshal(frame);
+            HornetQBuffer buffer = HornetQBuffers.wrappedBuffer(bytes);
+            connection.getTransportConnection().write(buffer, true);
+            return bytes.length;
          }
-         catch (Exception e)
+         catch (IOException e)
          {
-            log.error(e);
+            log.error("Unable to send frame " + frame, e);
+            return 0;
          }
       }
    }

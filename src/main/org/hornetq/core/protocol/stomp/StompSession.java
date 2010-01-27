@@ -18,7 +18,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.hornetq.api.core.HornetQBuffer;
-import org.hornetq.api.core.HornetQBuffers;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.message.impl.MessageImpl;
@@ -35,9 +34,9 @@ import org.hornetq.spi.core.protocol.SessionCallback;
  */
 class StompSession implements SessionCallback
 {
-   private final RemotingConnection connection;
+   private final StompProtocolManager manager;
 
-   private final StompMarshaller marshaller;
+   private final StompConnection connection;
 
    private ServerSession session;
 
@@ -46,10 +45,10 @@ class StompSession implements SessionCallback
    // key = message ID, value = consumer ID
    private final Map<Long, Long> messagesToAck = new HashMap<Long, Long>();
 
-   StompSession(final StompMarshaller marshaller, final RemotingConnection connection)
+   StompSession(final StompConnection connection, final StompProtocolManager manager)
    {
-      this.marshaller = marshaller;
       this.connection = connection;
+      this.manager = manager;
    }
 
    void setServerSession(ServerSession session)
@@ -101,10 +100,7 @@ class StompSession implements SessionCallback
          StompFrame frame = new StompFrame(Stomp.Responses.MESSAGE, headers, data);
          StompUtils.copyStandardHeadersFromMessageToFrame(serverMessage, frame, deliveryCount);
          
-         System.out.println(">>> " + frame);
-         byte[] bytes = marshaller.marshal(frame);
-         HornetQBuffer buffer = HornetQBuffers.wrappedBuffer(bytes);
-         connection.getTransportConnection().write(buffer, true);
+         int length = manager.send(connection, frame);
 
          if (subscription.getAck().equals(Stomp.Headers.Subscribe.AckModeValues.AUTO))
          {
@@ -115,7 +111,7 @@ class StompSession implements SessionCallback
          {
             messagesToAck.put(serverMessage.getMessageID(), consumerID);
          }
-         return bytes.length;
+         return length;
 
       }
       catch (Exception e)
@@ -151,8 +147,6 @@ class StompSession implements SessionCallback
    public void addSubscription(long consumerID, String subscriptionID, String destination, String selector, String ack) throws Exception
    {
       String queue = StompUtils.toHornetQAddress(destination);
-      synchronized (session)
-      {
          session.createConsumer(consumerID,
                                 SimpleString.toSimpleString(queue),
                                 SimpleString.toSimpleString(selector),
@@ -163,7 +157,6 @@ class StompSession implements SessionCallback
          // FIXME not very smart: since we can't start the consumer, we start the session
          // everytime to start the new consumer (and all previous consumers...)
          session.start();
-      }
    }
 
    public boolean unsubscribe(String id) throws Exception

@@ -60,8 +60,9 @@ import org.hornetq.jms.server.config.impl.JMSConfigurationImpl;
 import org.hornetq.jms.server.config.impl.QueueConfigurationImpl;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.hornetq.spi.core.protocol.ProtocolType;
+import org.hornetq.tests.util.UnitTestCase;
 
-public class StompTest extends TestCase {
+public class StompTest extends UnitTestCase {
     private static final transient Logger log = Logger.getLogger(StompTest.class);
     private int port = 61613;
     private Socket stompSocket;
