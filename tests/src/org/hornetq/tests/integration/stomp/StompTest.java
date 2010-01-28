@@ -442,7 +442,6 @@ public class StompTest extends UnitTestCase {
 
         frame = receiveFrame(10000);
         Assert.assertNotNull(frame);
-        System.out.println(frame);
         Assert.assertTrue(frame.startsWith("MESSAGE"));
         Assert.assertTrue(frame.indexOf("S:") > 0);
         Assert.assertTrue(frame.indexOf("n:") > 0);
@@ -1101,14 +1100,18 @@ public class StompTest extends UnitTestCase {
        frame = receiveFrame(10000);
        Assert.assertTrue(frame.startsWith("MESSAGE"));
        Assert.assertTrue(frame.indexOf("destination:") > 0);
-       Assert.assertTrue(frame.indexOf(getName()) > 0);
+       Assert.assertTrue(frame.indexOf(getTopicName()) > 0);
 
        frame =
           "UNSUBSCRIBE\n" +
                   "destination:/topic/" + getTopicName() + "\n" +
+                  "receipt: 1234\n" +
                   "\n\n" +
                   Stomp.NULL;
        sendFrame(frame);
+       // wait for UNSUBSCRIPE's receipt
+       frame = receiveFrame(10000);
+       Assert.assertTrue(frame.startsWith("RECEIPT"));
   
        sendMessage(getName(), topic);
 
@@ -1151,7 +1154,6 @@ public class StompTest extends UnitTestCase {
        sendMessage(getName());
 
        frame = receiveFrame(10000);
-       System.out.println(frame);
        Assert.assertTrue(frame.startsWith("MESSAGE"));
        Assert.assertTrue(frame.indexOf("destination:") > 0);
        Assert.assertTrue(frame.indexOf(getName()) > 0);
@@ -1160,7 +1162,6 @@ public class StompTest extends UnitTestCase {
        Matcher cl_matcher = cl.matcher(frame);
        Assert.assertTrue(cl_matcher.find());
        String messageID = cl_matcher.group(1);
-       System.out.println(messageID);
 
        frame =
           "BEGIN\n" +
