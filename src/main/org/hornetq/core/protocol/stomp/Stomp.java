@@ -17,108 +17,165 @@
  */
 package org.hornetq.core.protocol.stomp;
 
-
 /**
  * The standard verbs and headers used for the <a href="http://stomp.codehaus.org/">STOMP</a> protocol.
  *
  * @version $Revision: 57 $
  */
-public interface Stomp {
-    String NULL = "\u0000";
-    String NEWLINE = "\n";
+public interface Stomp
+{
+   String NULL = "\u0000";
 
-    public static interface Commands {
-        String CONNECT = "CONNECT";
-        String SEND = "SEND";
-        String DISCONNECT = "DISCONNECT";
-        String SUBSCRIBE = "SUBSCRIBE";
-        String UNSUBSCRIBE = "UNSUBSCRIBE";
-        String BEGIN_TRANSACTION = "BEGIN";
-        String COMMIT_TRANSACTION = "COMMIT";
-        String ABORT_TRANSACTION = "ABORT";
-        String BEGIN = "BEGIN";
-        String COMMIT = "COMMIT";
-        String ABORT = "ABORT";
-        String ACK = "ACK";
-    }
+   String NEWLINE = "\n";
 
-    public interface Responses {
-        String CONNECTED = "CONNECTED";
-        String ERROR = "ERROR";
-        String MESSAGE = "MESSAGE";
-        String RECEIPT = "RECEIPT";
-    }
+   public static interface Commands
+   {
+      String CONNECT = "CONNECT";
 
-    public interface Headers {
-        String SEPERATOR = ":";
-        String RECEIPT_REQUESTED = "receipt";
-        String TRANSACTION = "transaction";
-        String CONTENT_LENGTH = "content-length";
+      String SEND = "SEND";
 
-        public interface Response {
-            String RECEIPT_ID = "receipt-id";
-        }
+      String DISCONNECT = "DISCONNECT";
 
-        public interface Send {
-            String DESTINATION = "destination";
-            String CORRELATION_ID = "correlation-id";
-            String REPLY_TO = "reply-to";
-            String EXPIRATION_TIME = "expires";
-            String PRIORITY = "priority";
-            String TYPE = "type";
-            Object PERSISTENT = "persistent";
-        }
+      String SUBSCRIBE = "SUBSCRIBE";
 
-        public interface Message {
-            String MESSAGE_ID = "message-id";
-            String DESTINATION = "destination";
-            String CORRELATION_ID = "correlation-id";
-            String EXPIRATION_TIME = "expires";
-            String REPLY_TO = "reply-to";
-            String PRORITY = "priority";
-            String REDELIVERED = "redelivered";
-            String TIMESTAMP = "timestamp";
-            String TYPE = "type";
-            String SUBSCRIPTION = "subscription";
-        }
+      String UNSUBSCRIBE = "UNSUBSCRIBE";
 
-        public interface Subscribe {
-            String DESTINATION = "destination";
-            String ACK_MODE = "ack";
-            String ID = "id";
-            String SELECTOR = "selector";
-            String DURABLE_SUBSCRIPTION_NAME = "durable-subscription-name";
-            String NO_LOCAL = "no-local";
+      String BEGIN_TRANSACTION = "BEGIN";
 
-            public interface AckModeValues {
-                String AUTO = "auto";
-                String CLIENT = "client";
-            }
-        }
+      String COMMIT_TRANSACTION = "COMMIT";
 
-        public interface Unsubscribe {
-            String DESTINATION = "destination";
-            String ID = "id";
-        }
+      String ABORT_TRANSACTION = "ABORT";
 
-        public interface Connect {
-            String LOGIN = "login";
-            String PASSCODE = "passcode";
-            String CLIENT_ID = "client-id";
-            String REQUEST_ID = "request-id";
-        }
+      String BEGIN = "BEGIN";
 
-        public interface Error {
-            String MESSAGE = "message";
-        }
+      String COMMIT = "COMMIT";
 
-        public interface Connected {
-            String SESSION = "session";
-            String RESPONSE_ID = "response-id";
-        }
+      String ABORT = "ABORT";
 
-        public interface Ack {
-            String MESSAGE_ID = "message-id";
-        }
-    }
+      String ACK = "ACK";
+   }
+
+   public interface Responses
+   {
+      String CONNECTED = "CONNECTED";
+
+      String ERROR = "ERROR";
+
+      String MESSAGE = "MESSAGE";
+
+      String RECEIPT = "RECEIPT";
+   }
+
+   public interface Headers
+   {
+      String SEPERATOR = ":";
+
+      String RECEIPT_REQUESTED = "receipt";
+
+      String TRANSACTION = "transaction";
+
+      String CONTENT_LENGTH = "content-length";
+
+      public interface Response
+      {
+         String RECEIPT_ID = "receipt-id";
+      }
+
+      public interface Send
+      {
+         String DESTINATION = "destination";
+
+         String CORRELATION_ID = "correlation-id";
+
+         String REPLY_TO = "reply-to";
+
+         String EXPIRATION_TIME = "expires";
+
+         String PRIORITY = "priority";
+
+         String TYPE = "type";
+
+         Object PERSISTENT = "persistent";
+      }
+
+      public interface Message
+      {
+         String MESSAGE_ID = "message-id";
+
+         String DESTINATION = "destination";
+
+         String CORRELATION_ID = "correlation-id";
+
+         String EXPIRATION_TIME = "expires";
+
+         String REPLY_TO = "reply-to";
+
+         String PRORITY = "priority";
+
+         String REDELIVERED = "redelivered";
+
+         String TIMESTAMP = "timestamp";
+
+         String TYPE = "type";
+
+         String SUBSCRIPTION = "subscription";
+      }
+
+      public interface Subscribe
+      {
+         String DESTINATION = "destination";
+
+         String ACK_MODE = "ack";
+
+         String ID = "id";
+
+         String SELECTOR = "selector";
+
+         String DURABLE_SUBSCRIPTION_NAME = "durable-subscription-name";
+
+         String NO_LOCAL = "no-local";
+
+         public interface AckModeValues
+         {
+            String AUTO = "auto";
+
+            String CLIENT = "client";
+         }
+      }
+
+      public interface Unsubscribe
+      {
+         String DESTINATION = "destination";
+
+         String ID = "id";
+      }
+
+      public interface Connect
+      {
+         String LOGIN = "login";
+
+         String PASSCODE = "passcode";
+
+         String CLIENT_ID = "client-id";
+
+         String REQUEST_ID = "request-id";
+      }
+
+      public interface Error
+      {
+         String MESSAGE = "message";
+      }
+
+      public interface Connected
+      {
+         String SESSION = "session";
+
+         String RESPONSE_ID = "response-id";
+      }
+
+      public interface Ack
+      {
+         String MESSAGE_ID = "message-id";
+      }
+   }
 }

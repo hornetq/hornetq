@@ -97,10 +97,10 @@ class StompSession implements SessionCallback
             buffer.readBytes(data);
             headers.put(Headers.CONTENT_LENGTH, data.length);
          }
-         
+
          StompFrame frame = new StompFrame(Stomp.Responses.MESSAGE, headers, data);
          StompUtils.copyStandardHeadersFromMessageToFrame(serverMessage, frame, deliveryCount);
-         
+
          int length = manager.send(connection, frame);
 
          if (subscription.getAck().equals(Stomp.Headers.Subscribe.AckModeValues.AUTO))
@@ -150,14 +150,11 @@ class StompSession implements SessionCallback
       SimpleString queue = SimpleString.toSimpleString(destination);
       if (destination.startsWith(StompUtils.HQ_TOPIC_PREFIX))
       {
-         //subscribes to a topic
+         // subscribes to a topic
          queue = UUIDGenerator.getInstance().generateSimpleStringUUID();
          session.createQueue(SimpleString.toSimpleString(destination), queue, null, true, false);
       }
-      session.createConsumer(consumerID,
-                             queue,
-                             SimpleString.toSimpleString(selector),
-                             false);
+      session.createConsumer(consumerID, queue, SimpleString.toSimpleString(selector), false);
       session.receiveConsumerCredits(consumerID, -1);
       StompSubscription subscription = new StompSubscription(subscriptionID, destination, ack);
       subscriptions.put(consumerID, subscription);
@@ -185,7 +182,7 @@ class StompSession implements SessionCallback
    }
 
    boolean containsSubscription(String subscriptionID)
-   {     
+   {
       Iterator<Entry<Long, StompSubscription>> iterator = subscriptions.entrySet().iterator();
       while (iterator.hasNext())
       {

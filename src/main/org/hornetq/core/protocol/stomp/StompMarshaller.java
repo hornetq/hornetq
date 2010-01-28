@@ -30,169 +30,206 @@ import org.hornetq.api.core.HornetQBuffer;
 /**
  * Implements marshalling and unmarsalling the <a href="http://stomp.codehaus.org/">Stomp</a> protocol.
  */
-class StompMarshaller {
-    public static final byte[] NO_DATA = new byte[]{};
-    private static final byte[] END_OF_FRAME = new byte[]{0, '\n'};
-    private static final int MAX_COMMAND_LENGTH = 1024;
-    private static final int MAX_HEADER_LENGTH = 1024 * 10;
-    private static final int MAX_HEADERS = 1000;
-    private static final int MAX_DATA_LENGTH = 1024 * 1024 * 100;
-    private int version = 1;
+class StompMarshaller
+{
+   public static final byte[] NO_DATA = new byte[] {};
 
-    public int getVersion() {
-        return version;
-    }
+   private static final byte[] END_OF_FRAME = new byte[] { 0, '\n' };
 
-    public void setVersion(int version) {
-        this.version = version;
-    }
+   private static final int MAX_COMMAND_LENGTH = 1024;
 
-    public byte[] marshal(StompFrame command) throws IOException {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        DataOutputStream dos = new DataOutputStream(baos);
-        marshal(command, dos);
-        dos.close();
-        return baos.toByteArray();
-    }
+   private static final int MAX_HEADER_LENGTH = 1024 * 10;
 
-    public void marshal(StompFrame stomp, DataOutput os) throws IOException {
-        StringBuffer buffer = new StringBuffer();
-        buffer.append(stomp.getCommand());
-        buffer.append(Stomp.NEWLINE);
+   private static final int MAX_HEADERS = 1000;
 
-        // Output the headers.
-        for (Iterator<Map.Entry<String, Object>> iter = stomp.getHeaders().entrySet().iterator(); iter.hasNext();) {
-            Map.Entry<String, Object> entry = iter.next();
-            buffer.append(entry.getKey());
-            buffer.append(Stomp.Headers.SEPERATOR);
-            buffer.append(entry.getValue());
-            buffer.append(Stomp.NEWLINE);
-        }
+   private static final int MAX_DATA_LENGTH = 1024 * 1024 * 100;
 
-        // Add a newline to seperate the headers from the content.
-        buffer.append(Stomp.NEWLINE);
+   private int version = 1;
 
-        os.write(buffer.toString().getBytes("UTF-8"));
-        os.write(stomp.getContent());
-        os.write(END_OF_FRAME);
-    }
+   public int getVersion()
+   {
+      return version;
+   }
 
-    public StompFrame unmarshal(HornetQBuffer in) throws IOException {
+   public void setVersion(int version)
+   {
+      this.version = version;
+   }
 
-        try {
-            String action = null;
+   public byte[] marshal(StompFrame command) throws IOException
+   {
+      ByteArrayOutputStream baos = new ByteArrayOutputStream();
+      DataOutputStream dos = new DataOutputStream(baos);
+      marshal(command, dos);
+      dos.close();
+      return baos.toByteArray();
+   }
 
-            // skip white space to next real action line
-            while (true) {
-                action = readLine(in, MAX_COMMAND_LENGTH, "The maximum command length was exceeded");
-                if (action == null) {
-                    throw new IOException("connection was closed");
-                }
-                else {
-                    action = action.trim();
-                    if (action.length() > 0) {
-                        break;
-                    }
-                }
+   public void marshal(StompFrame stomp, DataOutput os) throws IOException
+   {
+      StringBuffer buffer = new StringBuffer();
+      buffer.append(stomp.getCommand());
+      buffer.append(Stomp.NEWLINE);
+
+      // Output the headers.
+      for (Iterator<Map.Entry<String, Object>> iter = stomp.getHeaders().entrySet().iterator(); iter.hasNext();)
+      {
+         Map.Entry<String, Object> entry = iter.next();
+         buffer.append(entry.getKey());
+         buffer.append(Stomp.Headers.SEPERATOR);
+         buffer.append(entry.getValue());
+         buffer.append(Stomp.NEWLINE);
+      }
+
+      // Add a newline to seperate the headers from the content.
+      buffer.append(Stomp.NEWLINE);
+
+      os.write(buffer.toString().getBytes("UTF-8"));
+      os.write(stomp.getContent());
+      os.write(END_OF_FRAME);
+   }
+
+   public StompFrame unmarshal(HornetQBuffer in) throws IOException
+   {
+
+      try
+      {
+         String action = null;
+
+         // skip white space to next real action line
+         while (true)
+         {
+            action = readLine(in, MAX_COMMAND_LENGTH, "The maximum command length was exceeded");
+            if (action == null)
+            {
+               throw new IOException("connection was closed");
+            }
+            else
+            {
+               action = action.trim();
+               if (action.length() > 0)
+               {
+                  break;
+               }
+            }
+         }
+
+         // Parse the headers
+         HashMap<String, Object> headers = new HashMap<String, Object>(25);
+         while (true)
+         {
+            String line = readLine(in, MAX_HEADER_LENGTH, "The maximum header length was exceeded");
+            if (line != null && line.trim().length() > 0)
+            {
+
+               if (headers.size() > MAX_HEADERS)
+               {
+                  throw new StompException("The maximum number of headers was exceeded", true);
+               }
+
+               try
+               {
+                  int seperator_index = line.indexOf(Stomp.Headers.SEPERATOR);
+                  String name = line.substring(0, seperator_index).trim();
+                  String value = line.substring(seperator_index + 1, line.length()).trim();
+                  headers.put(name, value);
+               }
+               catch (Exception e)
+               {
+                  throw new StompException("Unable to parser header line [" + line + "]", true);
+               }
+            }
+            else
+            {
+               break;
+            }
+         }
+
+         // Read in the data part.
+         byte[] data = NO_DATA;
+         String contentLength = (String)headers.get(Stomp.Headers.CONTENT_LENGTH);
+         if (contentLength != null)
+         {
+
+            // Bless the client, he's telling us how much data to read in.
+            int length;
+            try
+            {
+               length = Integer.parseInt(contentLength.trim());
+            }
+            catch (NumberFormatException e)
+            {
+               throw new StompException("Specified content-length is not a valid integer", true);
             }
 
-            // Parse the headers
-            HashMap<String, Object> headers = new HashMap<String, Object>(25);
-            while (true) {
-                String line = readLine(in, MAX_HEADER_LENGTH, "The maximum header length was exceeded");
-                if (line != null && line.trim().length() > 0) {
-
-                    if (headers.size() > MAX_HEADERS) {
-                        throw new StompException("The maximum number of headers was exceeded", true);
-                    }
-
-                    try {
-                        int seperator_index = line.indexOf(Stomp.Headers.SEPERATOR);
-                        String name = line.substring(0, seperator_index).trim();
-                        String value = line.substring(seperator_index + 1, line.length()).trim();
-                        headers.put(name, value);
-                    }
-                    catch (Exception e) {
-                        throw new StompException("Unable to parser header line [" + line + "]", true);
-                    }
-                }
-                else {
-                    break;
-                }
+            if (length > MAX_DATA_LENGTH)
+            {
+               throw new StompException("The maximum data length was exceeded", true);
             }
 
-            // Read in the data part.
-            byte[] data = NO_DATA;
-            String contentLength = (String) headers.get(Stomp.Headers.CONTENT_LENGTH);
-            if (contentLength != null) {
+            data = new byte[length];
+            in.readBytes(data);
 
-                // Bless the client, he's telling us how much data to read in.
-                int length;
-                try {
-                    length = Integer.parseInt(contentLength.trim());
-                }
-                catch (NumberFormatException e) {
-                    throw new StompException("Specified content-length is not a valid integer", true);
-                }
-
-                if (length > MAX_DATA_LENGTH) {
-                    throw new StompException("The maximum data length was exceeded", true);
-                }
-
-                data = new byte[length];
-                in.readBytes(data);
-
-                if (in.readByte() != 0) {
-                    throw new StompException(Stomp.Headers.CONTENT_LENGTH + " bytes were read and " + "there was no trailing null byte", true);
-                }
+            if (in.readByte() != 0)
+            {
+               throw new StompException(Stomp.Headers.CONTENT_LENGTH + " bytes were read and " +
+                                        "there was no trailing null byte", true);
             }
-            else {
+         }
+         else
+         {
 
-                // We don't know how much to read.. data ends when we hit a 0
-                byte b;
-                ByteArrayOutputStream baos = null;
-                while (in.readableBytes() > 0 && (b = in.readByte()) != 0) {
+            // We don't know how much to read.. data ends when we hit a 0
+            byte b;
+            ByteArrayOutputStream baos = null;
+            while (in.readableBytes() > 0 && (b = in.readByte()) != 0)
+            {
 
-                    if (baos == null) {
-                        baos = new ByteArrayOutputStream();
-                    }
-                    else if (baos.size() > MAX_DATA_LENGTH) {
-                        throw new StompException("The maximum data length was exceeded", true);
-                    }
+               if (baos == null)
+               {
+                  baos = new ByteArrayOutputStream();
+               }
+               else if (baos.size() > MAX_DATA_LENGTH)
+               {
+                  throw new StompException("The maximum data length was exceeded", true);
+               }
 
-                    baos.write(b);
-                }
-
-                if (baos != null) {
-                    baos.close();
-                    data = baos.toByteArray();
-                }
+               baos.write(b);
             }
 
-            return new StompFrame(action, headers, data);
-        }
-        catch (StompException e) {
-            return new StompFrameError(e);
-        }
-    }
+            if (baos != null)
+            {
+               baos.close();
+               data = baos.toByteArray();
+            }
+         }
 
-    protected String readLine(HornetQBuffer in, int maxLength, String errorMessage) throws IOException {
-       char[] chars = new char[MAX_HEADER_LENGTH];
-       
-       int count = 0;
-       while (in.readable())
-       {
-          byte b = in.readByte();
-          
-          if (b == (byte)'\n')
-          {
-             break;
-          }             
-          else
-          {
-             chars[count++] = (char)b;
-          }
-       }
-       return new String(chars, 0, count);
-    }
+         return new StompFrame(action, headers, data);
+      }
+      catch (StompException e)
+      {
+         return new StompFrameError(e);
+      }
+   }
+
+   protected String readLine(HornetQBuffer in, int maxLength, String errorMessage) throws IOException
+   {
+      char[] chars = new char[MAX_HEADER_LENGTH];
+
+      int count = 0;
+      while (in.readable())
+      {
+         byte b = in.readByte();
+
+         if (b == (byte)'\n')
+         {
+            break;
+         }
+         else
+         {
+            chars[count++] = (char)b;
+         }
+      }
+      return new String(chars, 0, count);
+   }
 }

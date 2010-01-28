@@ -191,7 +191,7 @@ class StompProtocolManager implements ProtocolManager
          {
             send(conn, response);
          }
-         
+
          if (Stomp.Commands.DISCONNECT.equals(command))
          {
             conn.destroy();
@@ -285,7 +285,7 @@ class StompProtocolManager implements ProtocolManager
    private StompFrame onAck(StompFrame frame, HornetQServer server, StompConnection connection) throws Exception
    {
       Map<String, Object> headers = frame.getHeaders();
-      String messageID = (String)headers.get(Stomp.Headers.Ack.MESSAGE_ID);      
+      String messageID = (String)headers.get(Stomp.Headers.Ack.MESSAGE_ID);
       String txID = (String)headers.get(Stomp.Headers.TRANSACTION);
       StompSession stompSession = null;
       if (txID != null)
@@ -294,7 +294,7 @@ class StompProtocolManager implements ProtocolManager
       }
       stompSession = getSession(connection);
       stompSession.acknowledge(messageID);
-      
+
       return null;
    }
 
@@ -533,6 +533,48 @@ class StompProtocolManager implements ProtocolManager
          {
             log.error("Unable to send frame " + frame, e);
             return 0;
+         }
+      }
+   }
+
+   public void cleanup(StompConnection connection)
+   {
+      connection.setValid(false);
+
+      StompSession session = sessions.remove(connection);
+      if (session != null)
+      {
+         try
+         {
+            session.getSession().rollback(true);
+            session.getSession().close();
+            session.getSession().runConnectionFailureRunners();
+         }
+         catch (Exception e)
+         {
+            log.warn(e.getMessage(), e);
+         }
+      }
+
+      // removed the transacted session belonging to the connection
+      Iterator<Entry<String, StompSession>> iterator = transactedSessions.entrySet().iterator();
+      while (iterator.hasNext())
+      {
+         Map.Entry<String, StompSession> entry = (Map.Entry<String, StompSession>)iterator.next();
+         if (entry.getValue().getConnection() == connection)
+         {
+            ServerSession serverSession = entry.getValue().getSession();
+            try
+            {
+               serverSession.rollback(true);
+               serverSession.close();
+               serverSession.runConnectionFailureRunners();
+            }
+            catch (Exception e)
+            {
+               log.warn(e.getMessage(), e);
+            }
+            iterator.remove();
          }
       }
    }

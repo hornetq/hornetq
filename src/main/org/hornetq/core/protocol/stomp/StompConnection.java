@@ -39,11 +39,11 @@ class StompConnection implements RemotingConnection
    private static final Logger log = Logger.getLogger(StompConnection.class);
 
    private final StompProtocolManager manager;
-   
+
    private final Connection transportConnection;
-      
+
    private String login;
-   
+
    private String passcode;
 
    private String clientID;
@@ -52,12 +52,10 @@ class StompConnection implements RemotingConnection
 
    private boolean destroyed = false;
 
-   private final List<FailureListener> failureListeners = new CopyOnWriteArrayList<FailureListener>();
-
    StompConnection(final Connection transportConnection, final StompProtocolManager manager)
    {
       this.transportConnection = transportConnection;
-      
+
       this.manager = manager;
    }
 
@@ -67,12 +65,6 @@ class StompConnection implements RemotingConnection
 
    public void addFailureListener(FailureListener listener)
    {
-      if (listener == null)
-      {
-         throw new IllegalStateException("FailureListener cannot be null");
-      }
-
-      failureListeners.add(listener);
    }
 
    public boolean checkDataReceived()
@@ -95,8 +87,8 @@ class StompConnection implements RemotingConnection
       destroyed = true;
 
       transportConnection.close();
-      
-      callFailureListeners(new HornetQException(HornetQException.INTERNAL_ERROR, "Stomp connection destroyed"));
+
+      manager.cleanup(this);
    }
 
    public void disconnect()
@@ -108,7 +100,7 @@ class StompConnection implements RemotingConnection
    }
 
    public void flush()
-   {  
+   {
    }
 
    public List<FailureListener> getFailureListeners()
@@ -124,7 +116,7 @@ class StompConnection implements RemotingConnection
    }
 
    public String getRemoteAddress()
-   {      
+   {
       return transportConnection.getRemoteAddress();
    }
 
@@ -150,22 +142,13 @@ class StompConnection implements RemotingConnection
 
    public boolean removeFailureListener(FailureListener listener)
    {
-      if (listener == null)
-      {
-         throw new IllegalStateException("FailureListener cannot be null");
-      }
-
-      return failureListeners.remove(listener);
+      return false;
    }
 
    public void setFailureListeners(List<FailureListener> listeners)
    {
-      failureListeners.clear();
-
-      failureListeners.addAll(listeners);
    }
 
-   
    public void bufferReceived(Object connectionID, HornetQBuffer buffer)
    {
       manager.handleBuffer(this, buffer);
@@ -200,30 +183,9 @@ class StompConnection implements RemotingConnection
    {
       return valid;
    }
-   
+
    public void setValid(boolean valid)
    {
       this.valid = valid;
    }
-   
-   private void callFailureListeners(final HornetQException me)
-   {
-      final List<FailureListener> listenersClone = new ArrayList<FailureListener>(failureListeners);
-
-      for (final FailureListener listener : listenersClone)
-      {
-         try
-         {
-            listener.connectionFailed(me);
-         }
-         catch (final Throwable t)
-         {
-            // Failure of one listener to execute shouldn't prevent others
-            // from
-            // executing
-            log.error("Failed to execute failure listener", t);
-         }
-      }
-   }
-
 }

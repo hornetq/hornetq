@@ -22,14 +22,17 @@ package org.hornetq.core.protocol.stomp;
  *
  * @author <a href="http://hiramchirino.com">chirino</a>
  */
-class StompFrameError extends StompFrame {
-    private final StompException exception;
+class StompFrameError extends StompFrame
+{
+   private final StompException exception;
 
-    public StompFrameError(StompException exception) {
-        this.exception = exception;
-    }
+   public StompFrameError(StompException exception)
+   {
+      this.exception = exception;
+   }
 
-    public StompException getException() {
-        return exception;
-    }
+   public StompException getException()
+   {
+      return exception;
+   }
 }

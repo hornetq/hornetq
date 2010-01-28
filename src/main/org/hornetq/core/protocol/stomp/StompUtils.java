@@ -124,11 +124,11 @@ class StompUtils
    public static void copyStandardHeadersFromFrameToMessage(StompFrame frame, ServerMessageImpl msg) throws Exception
    {
       Map<String, Object> headers = new HashMap<String, Object>(frame.getHeaders());
-      
+
       String priority = (String)headers.remove(Stomp.Headers.Send.PRIORITY);
       if (priority != null)
       {
-      msg.setPriority(Byte.parseByte(priority));
+         msg.setPriority(Byte.parseByte(priority));
       }
       String persistent = (String)headers.remove(Stomp.Headers.Send.PERSISTENT);
       if (persistent != null)
@@ -160,34 +160,39 @@ class StompUtils
       }
    }
 
-   public static void copyStandardHeadersFromMessageToFrame(Message message, StompFrame command, int deliveryCount) throws Exception {
+   public static void copyStandardHeadersFromMessageToFrame(Message message, StompFrame command, int deliveryCount) throws Exception
+   {
       final Map<String, Object> headers = command.getHeaders();
       headers.put(Stomp.Headers.Message.DESTINATION, toStompDestination(message.getAddress().toString()));
       headers.put(Stomp.Headers.Message.MESSAGE_ID, message.getMessageID());
 
-      if (message.getObjectProperty("JMSCorrelationID") != null) {
-          headers.put(Stomp.Headers.Message.CORRELATION_ID, message.getObjectProperty("JMSCorrelationID"));
+      if (message.getObjectProperty("JMSCorrelationID") != null)
+      {
+         headers.put(Stomp.Headers.Message.CORRELATION_ID, message.getObjectProperty("JMSCorrelationID"));
       }
       headers.put(Stomp.Headers.Message.EXPIRATION_TIME, "" + message.getExpiration());
       headers.put(Stomp.Headers.Message.REDELIVERED, deliveryCount > 1);
       headers.put(Stomp.Headers.Message.PRORITY, "" + message.getPriority());
 
-      if (message.getStringProperty(ClientMessageImpl.REPLYTO_HEADER_NAME) != null) {
-          headers.put(Stomp.Headers.Message.REPLY_TO, toStompDestination(message.getStringProperty(ClientMessageImpl.REPLYTO_HEADER_NAME)));
+      if (message.getStringProperty(ClientMessageImpl.REPLYTO_HEADER_NAME) != null)
+      {
+         headers.put(Stomp.Headers.Message.REPLY_TO,
+                     toStompDestination(message.getStringProperty(ClientMessageImpl.REPLYTO_HEADER_NAME)));
       }
       headers.put(Stomp.Headers.Message.TIMESTAMP, "" + message.getTimestamp());
 
-      if (message.getObjectProperty("JMSType") != null) {
-          headers.put(Stomp.Headers.Message.TYPE, message.getObjectProperty("JMSType"));
+      if (message.getObjectProperty("JMSType") != null)
+      {
+         headers.put(Stomp.Headers.Message.TYPE, message.getObjectProperty("JMSType"));
       }
 
       // now lets add all the message headers
       Set<SimpleString> names = message.getPropertyNames();
       for (SimpleString name : names)
       {
-          headers.put(name.toString(), message.getObjectProperty(name));
+         headers.put(name.toString(), message.getObjectProperty(name));
       }
-  }
+   }
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------

@@ -54,7 +54,7 @@ public class StompSubscription
    {
       return destination;
    }
-   
+
    public String getID()
    {
       return subID;

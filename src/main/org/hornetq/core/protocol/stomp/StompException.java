@@ -22,29 +22,36 @@ import java.io.IOException;
 /**
  * @author <a href="http://hiramchirino.com">chirino</a>
  */
-class StompException extends IOException {
-    private static final long serialVersionUID = -2869735532997332242L;
-    private final boolean fatal;
+class StompException extends IOException
+{
+   private static final long serialVersionUID = -2869735532997332242L;
 
-    public StompException() {
-        this(null);
-    }
+   private final boolean fatal;
 
-    public StompException(String s) {
-        this(s, false);
-    }
+   public StompException()
+   {
+      this(null);
+   }
 
-    public StompException(String s, boolean fatal) {
-        this(s, fatal, null);
-    }
+   public StompException(String s)
+   {
+      this(s, false);
+   }
 
-    public StompException(String s, boolean fatal, Throwable cause) {
-        super(s);
-        this.fatal = fatal;
-        initCause(cause);
-    }
+   public StompException(String s, boolean fatal)
+   {
+      this(s, fatal, null);
+   }
 
-    public boolean isFatal() {
-        return fatal;
-    }
+   public StompException(String s, boolean fatal, Throwable cause)
+   {
+      super(s);
+      this.fatal = fatal;
+      initCause(cause);
+   }
+
+   public boolean isFatal()
+   {
+      return fatal;
+   }
 }
