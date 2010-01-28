@@ -705,6 +705,7 @@ public class StompTest extends UnitTestCase {
                             "\n\n" +
                             Stomp.NULL;
             sendFrame(frame);
+            waitForFrameToTakeEffect();
             reconnect();
         }
         else {
@@ -738,7 +739,8 @@ public class StompTest extends UnitTestCase {
                         "\n\n" +
                         Stomp.NULL;
         sendFrame(frame);
-
+        waitForFrameToTakeEffect();
+        
         // now lets make sure we don't see the message again
         reconnect();
 

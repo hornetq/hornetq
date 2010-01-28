@@ -66,6 +66,7 @@
 	<classpathentry kind="src" path="examples/jms/ssl-enabled/src"/>
 	<classpathentry kind="src" path="examples/jms/static-selector/src"/>
 	<classpathentry kind="src" path="examples/jms/static-selector-jms/src"/>
+	<classpathentry kind="src" path="examples/jms/stomp/src"/>
 	<classpathentry kind="src" path="examples/jms/symmetric-cluster/src"/>
 	<classpathentry kind="src" path="examples/jms/temp-queue/src"/>
 	<classpathentry kind="src" path="examples/jms/topic/src"/>
