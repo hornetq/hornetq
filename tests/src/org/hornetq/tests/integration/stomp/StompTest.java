@@ -1098,16 +1098,20 @@ public class StompTest extends UnitTestCase {
        frame =
                "SUBSCRIBE\n" +
                        "destination:/topic/" + getTopicName() + "\n" +
+                       "receipt: 12\n" +
                        "\n\n" +
                        Stomp.NULL;
        sendFrame(frame);
+       // wait for SUBSCRIBE's receipt
+       frame = receiveFrame(10000);
+       Assert.assertTrue(frame.startsWith("RECEIPT"));
 
        sendMessage(getName(), topic);
 
        frame = receiveFrame(10000);
        Assert.assertTrue(frame.startsWith("MESSAGE"));
        Assert.assertTrue(frame.indexOf("destination:") > 0);
-       Assert.assertTrue(frame.indexOf(getTopicName()) > 0);
+       Assert.assertTrue(frame.indexOf(getName()) > 0);
 
        frame =
           "UNSUBSCRIBE\n" +
