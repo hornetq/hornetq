@@ -754,10 +754,15 @@ public class StompTest extends UnitTestCase {
 
         frame =
                 "SUBSCRIBE\n" +
-                        "destination:/queue/" + getQueueName() + "\n\n" +
+                        "destination:/queue/" + getQueueName() + "\n" +
+                        "receipt: 1234\n\n" +
                         Stomp.NULL;
 
         sendFrame(frame);
+        // wait for SUBSCRIBE's receipt
+        frame = receiveFrame(10000);
+        Assert.assertTrue(frame.startsWith("RECEIPT"));
+
         sendMessage("shouldBeNextMessage");
 
         frame = receiveFrame(10000);
@@ -1109,7 +1114,7 @@ public class StompTest extends UnitTestCase {
                   "\n\n" +
                   Stomp.NULL;
        sendFrame(frame);
-       // wait for UNSUBSCRIPE's receipt
+       // wait for UNSUBSCRIBE's receipt
        frame = receiveFrame(10000);
        Assert.assertTrue(frame.startsWith("RECEIPT"));
   
