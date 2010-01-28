@@ -1216,6 +1216,8 @@ public class StompTest extends UnitTestCase {
     // Implementation methods
     //-------------------------------------------------------------------------
     protected void setUp() throws Exception {
+       super.setUp();
+       
        server = createServer();
        server.start();
         connectionFactory = createConnectionFactory();
@@ -1262,6 +1264,8 @@ public class StompTest extends UnitTestCase {
             stompSocket.close();
         }
         server.stop();
+        
+        super.tearDown();
     }
 
     protected void reconnect() throws Exception {
