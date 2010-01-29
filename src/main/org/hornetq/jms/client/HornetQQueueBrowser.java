@@ -49,13 +49,13 @@ public class HornetQQueueBrowser implements QueueBrowser
 
    private ClientConsumer consumer;
 
-   private final HornetQQueue queue;
+   private final HornetQDestination queue;
 
    private SimpleString filterString;
 
    // Constructors ---------------------------------------------------------------------------------
 
-   protected HornetQQueueBrowser(final HornetQQueue queue, final String messageSelector, final ClientSession session) throws JMSException
+   protected HornetQQueueBrowser(final HornetQDestination queue, final String messageSelector, final ClientSession session) throws JMSException
    {
       this.session = session;
       this.queue = queue;

@@ -14,12 +14,17 @@
 package org.hornetq.jms.client;
 
 import java.io.Serializable;
+import java.util.UUID;
 
 import javax.jms.Destination;
+import javax.jms.JMSException;
+import javax.jms.TemporaryQueue;
+import javax.jms.TemporaryTopic;
 import javax.naming.NamingException;
 import javax.naming.Reference;
 import javax.naming.Referenceable;
 
+import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.jms.referenceable.DestinationObjectFactory;
 import org.hornetq.jms.referenceable.SerializableObjectRefAddr;
@@ -27,13 +32,12 @@ import org.hornetq.jms.referenceable.SerializableObjectRefAddr;
 /**
  * HornetQ implementation of a JMS Destination.
  * 
- * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
  */
-public abstract class HornetQDestination implements Destination, Serializable, Referenceable
+public class HornetQDestination implements TemporaryQueue, TemporaryTopic, Serializable, Referenceable
 {
    // Constants -----------------------------------------------------
 
@@ -43,7 +47,13 @@ public abstract class HornetQDestination implements Destination, Serializable, R
     * 
     */
    private static final long serialVersionUID = 5027962425462382883L;
-
+   
+   public static final String JMS_QUEUE_ADDRESS_PREFIX = "jms.queue.";
+   
+   public static final String JMS_TOPIC_ADDRESS_PREFIX = "jms.topic.";
+   
+   private static final char SEPARATOR = '.';
+      
    protected static String escape(final String input)
    {
       if (input == null)
@@ -55,55 +65,155 @@ public abstract class HornetQDestination implements Destination, Serializable, R
 
    public static Destination fromAddress(final String address)
    {
-      if (address.startsWith(HornetQQueue.JMS_QUEUE_ADDRESS_PREFIX))
+      if (address.startsWith(HornetQDestination.JMS_QUEUE_ADDRESS_PREFIX))
       {
-         String name = address.substring(HornetQQueue.JMS_QUEUE_ADDRESS_PREFIX.length());
+         String name = address.substring(HornetQDestination.JMS_QUEUE_ADDRESS_PREFIX.length());
 
-         return new HornetQQueue(address, name);
+         return createQueue(name);
       }
-      else if (address.startsWith(HornetQTopic.JMS_TOPIC_ADDRESS_PREFIX))
+      else if (address.startsWith(HornetQDestination.JMS_TOPIC_ADDRESS_PREFIX))
       {
-         String name = address.substring(HornetQTopic.JMS_TOPIC_ADDRESS_PREFIX.length());
+         String name = address.substring(HornetQDestination.JMS_TOPIC_ADDRESS_PREFIX.length());
 
-         return new HornetQTopic(address, name);
-      }
-      else if (address.startsWith(HornetQTemporaryQueue.JMS_TEMP_QUEUE_ADDRESS_PREFIX))
-      {
-         String name = address.substring(HornetQTemporaryQueue.JMS_TEMP_QUEUE_ADDRESS_PREFIX.length());
-
-         return new HornetQTemporaryQueue(null, name);
-      }
-      else if (address.startsWith(HornetQTemporaryTopic.JMS_TEMP_TOPIC_ADDRESS_PREFIX))
-      {
-         String name = address.substring(HornetQTemporaryTopic.JMS_TEMP_TOPIC_ADDRESS_PREFIX.length());
-
-         return new HornetQTemporaryTopic(null, name);
+         return createTopic(name);
       }
       else
       {
          throw new IllegalArgumentException("Invalid address " + address);
       }
    }
+   
+   public static String createQueueNameForDurableSubscription(final String clientID, final String subscriptionName)
+   {
+      return HornetQDestination.escape(clientID) + SEPARATOR + HornetQDestination.escape(subscriptionName);
+   }
+   
+   public static Pair<String, String> decomposeQueueNameForDurableSubscription(final String queueName)
+   {
+      StringBuffer[] parts = new StringBuffer[2];
+      int currentPart = 0;
 
+      parts[0] = new StringBuffer();
+      parts[1] = new StringBuffer();
+
+      int pos = 0;
+      while (pos < queueName.length())
+      {
+         char ch = queueName.charAt(pos);
+         pos++;
+
+         if (ch == SEPARATOR)
+         {
+            currentPart++;
+            if (currentPart >= parts.length)
+            {
+               throw new IllegalArgumentException("Invalid message queue name: " + queueName);
+            }
+
+            continue;
+         }
+
+         if (ch == '\\')
+         {
+            if (pos >= queueName.length())
+            {
+               throw new IllegalArgumentException("Invalid message queue name: " + queueName);
+            }
+            ch = queueName.charAt(pos);
+            pos++;
+         }
+
+         parts[currentPart].append(ch);
+      }
+
+      if (currentPart != 1)
+      {
+         throw new IllegalArgumentException("Invalid message queue name: " + queueName);
+      }
+
+      Pair<String, String> pair = new Pair<String, String>(parts[0].toString(), parts[1].toString());
+
+      return pair;
+   }
+   
+   public static SimpleString createQueueAddressFromName(final String name)
+   {
+      return new SimpleString(JMS_QUEUE_ADDRESS_PREFIX + name);
+   }
+   
+   public static SimpleString createTopicAddressFromName(final String name)
+   {
+      return new SimpleString(JMS_TOPIC_ADDRESS_PREFIX + name);
+   }
+   
+   public static HornetQDestination createQueue(final String name)
+   {
+      return new HornetQDestination(JMS_QUEUE_ADDRESS_PREFIX.concat(name), name, false, true, null);
+   }
+   
+   public static HornetQDestination createTopic(final String name)
+   {
+      return new HornetQDestination(JMS_TOPIC_ADDRESS_PREFIX.concat(name), name, false, false, null);
+   }
+   
+   public static HornetQDestination createTemporaryQueue(final HornetQSession session)
+   {
+      String name = UUID.randomUUID().toString();
+      
+      return new HornetQDestination(JMS_QUEUE_ADDRESS_PREFIX.concat(name), name, true, true, session);
+   }
+   
+   public static HornetQDestination createTemporaryTopic(final HornetQSession session)
+   {
+      String name = UUID.randomUUID().toString();
+      
+      return new HornetQDestination(JMS_TOPIC_ADDRESS_PREFIX.concat(name), name, true, false, session);
+   }
+
+   
    // Attributes ----------------------------------------------------
 
+   /**
+    * The JMS name
+    */
    protected final String name;
 
+   /**
+    * The core address
+    */
    private final String address;
 
+   /**
+    * SimpleString version of address
+    */
    private final SimpleString simpleAddress;
-
+   
+   private final boolean temporary;
+   
+   private final boolean queue;
+   
+   private final HornetQSession session;
+   
    // Constructors --------------------------------------------------
 
-   public HornetQDestination(final String address, final String name)
+   private HornetQDestination(final String address, final String name,
+                                final boolean temporary,
+                                final boolean queue,
+                                final HornetQSession session)
    {
       this.address = address;
 
       this.name = name;
 
       simpleAddress = new SimpleString(address);
+      
+      this.temporary = temporary;
+      
+      this.queue = queue;
+      
+      this.session = session;
    }
-
+   
    // Referenceable implementation ---------------------------------------
 
    public Reference getReference() throws NamingException
@@ -114,6 +224,36 @@ public abstract class HornetQDestination implements Destination, Serializable, R
                            null);
    }
 
+   public String getQueueName()
+   {
+      return name;
+   }
+   
+   public String getTopicName()
+   {
+      return name;
+   }
+   
+   public void delete() throws JMSException
+   {
+      if (session != null)
+      {
+         if (queue)
+         {
+            session.deleteTemporaryQueue(this);
+         }
+         else
+         {
+            session.deleteTemporaryTopic(this);
+         }
+      }
+   }
+   
+   public boolean isQueue()
+   {
+      return queue;
+   }
+   
    // Public --------------------------------------------------------
 
    public String getAddress()
@@ -131,8 +271,11 @@ public abstract class HornetQDestination implements Destination, Serializable, R
       return name;
    }
 
-   public abstract boolean isTemporary();
-
+   public boolean isTemporary()
+   {
+      return temporary;
+   }
+      
    @Override
    public boolean equals(final Object o)
    {

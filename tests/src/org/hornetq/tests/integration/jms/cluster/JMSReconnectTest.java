@@ -41,9 +41,8 @@ import org.hornetq.core.remoting.impl.invm.InVMRegistry;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
 import org.hornetq.jms.client.HornetQConnectionFactory;
-import org.hornetq.jms.client.HornetQQueue;
+import org.hornetq.jms.client.HornetQDestination;
 import org.hornetq.jms.client.HornetQSession;
-import org.hornetq.jms.client.HornetQTopic;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
@@ -120,7 +119,7 @@ public class JMSReconnectTest extends UnitTestCase
 
       RemotingConnection coreConn = ((ClientSessionInternal)coreSession).getConnection();
 
-      SimpleString jmsQueueName = new SimpleString(HornetQQueue.JMS_QUEUE_ADDRESS_PREFIX + "myqueue");
+      SimpleString jmsQueueName = new SimpleString(HornetQDestination.JMS_QUEUE_ADDRESS_PREFIX + "myqueue");
 
       coreSession.createQueue(jmsQueueName, jmsQueueName, null, true);
 
@@ -145,8 +144,6 @@ public class JMSReconnectTest extends UnitTestCase
 
       conn.start();
 
-      log.info("sent messages and started connection");
-
       Thread.sleep(2000);
 
       HornetQException me = new HornetQException(HornetQException.NOT_CONNECTED);
@@ -157,8 +154,6 @@ public class JMSReconnectTest extends UnitTestCase
 
       for (int i = 0; i < numMessages; i++)
       {
-         log.info("got message " + i);
-
          BytesMessage bm = (BytesMessage)consumer.receive(1000);
 
          Assert.assertNotNull(bm);
@@ -188,7 +183,7 @@ public class JMSReconnectTest extends UnitTestCase
    }
    
    //Test that non durable JMS sub gets recreated in auto reconnect
-   private void testReconnectSameNodeServerRestartedWithNonDurableSubOrTempQueue(final boolean durableSub) throws Exception
+   private void testReconnectSameNodeServerRestartedWithNonDurableSubOrTempQueue(final boolean nonDurableSub) throws Exception
    {
       HornetQConnectionFactory jbcf = (HornetQConnectionFactory) HornetQJMSClient.createConnectionFactory(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
 
@@ -206,9 +201,9 @@ public class JMSReconnectTest extends UnitTestCase
 
       Destination dest;
       
-      if (durableSub)
-      {      
-         coreSession.createQueue(HornetQTopic.JMS_TOPIC_ADDRESS_PREFIX + "mytopic", "blahblah", null, false);
+      if (nonDurableSub)
+      {            
+         coreSession.createQueue(HornetQDestination.JMS_TOPIC_ADDRESS_PREFIX + "mytopic", "blahblah", null, false);
    
          dest = HornetQJMSClient.createTopic("mytopic");
       }
@@ -228,8 +223,6 @@ public class JMSReconnectTest extends UnitTestCase
       
       //Allow client some time to reconnect
       Thread.sleep(3000);
-      
-      log.info("now sending some messages");
       
       final int numMessages = 100;
       
@@ -277,7 +270,7 @@ public class JMSReconnectTest extends UnitTestCase
 
       ClientSession coreSession = ((HornetQSession)sess).getCoreSession();
 
-      coreSession.createQueue(HornetQTopic.JMS_TOPIC_ADDRESS_PREFIX + "mytopic", "blahblah", null, false);
+      coreSession.createQueue(HornetQDestination.JMS_TOPIC_ADDRESS_PREFIX + "mytopic", "blahblah", null, false);
 
       Topic topic = HornetQJMSClient.createTopic("mytopic");
       

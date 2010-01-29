@@ -19,7 +19,6 @@ import junit.framework.Assert;
 
 import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.jms.client.HornetQDestination;
-import org.hornetq.jms.client.HornetQQueue;
 import org.hornetq.jms.referenceable.DestinationObjectFactory;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
@@ -44,7 +43,7 @@ public class DestinationObjectFactoryTest extends UnitTestCase
 
    public void testReference() throws Exception
    {
-      HornetQDestination queue = (HornetQQueue) HornetQJMSClient.createQueue(RandomUtil.randomString());
+      HornetQDestination queue = (HornetQDestination) HornetQJMSClient.createQueue(RandomUtil.randomString());
       Reference reference = queue.getReference();
 
       DestinationObjectFactory factory = new DestinationObjectFactory();

@@ -19,6 +19,7 @@ import java.util.List;
 import javax.jms.Connection;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
+import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
@@ -27,7 +28,6 @@ import junit.framework.Assert;
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.HornetQClient;
-import org.hornetq.jms.client.HornetQQueue;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.server.cluster.DivertConfiguration;
 import org.hornetq.tests.util.JMSTestBase;
@@ -56,8 +56,8 @@ public class DivertAndACKClientTest extends JMSTestBase
 
    public void testAutoACK() throws Exception
    {
-      HornetQQueue queueSource = (HornetQQueue)createQueue("Source");
-      HornetQQueue queueTarget = (HornetQQueue)createQueue("Dest");
+      Queue queueSource = createQueue("Source");
+      Queue queueTarget = createQueue("Dest");
 
       Connection connection = cf.createConnection();
       Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -79,8 +79,8 @@ public class DivertAndACKClientTest extends JMSTestBase
 
    public void testClientACK() throws Exception
    {
-      HornetQQueue queueSource = (HornetQQueue)createQueue("Source");
-      HornetQQueue queueTarget = (HornetQQueue)createQueue("Dest");
+      Queue queueSource = createQueue("Source");
+      Queue queueTarget = createQueue("Dest");
 
       Connection connection = cf.createConnection();
       Session session = connection.createSession(false, Session.CLIENT_ACKNOWLEDGE);

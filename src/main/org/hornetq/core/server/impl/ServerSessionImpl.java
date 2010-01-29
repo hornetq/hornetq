@@ -147,7 +147,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
                             final boolean preAcknowledge,
                             final boolean strictUpdateDeliveryCount,
                             final boolean xa,
-                            final RemotingConnection remotingConnection,                     
+                            final RemotingConnection remotingConnection,
                             final StorageManager storageManager,
                             final PostOffice postOffice,
                             final ResourceManager resourceManager,
@@ -195,7 +195,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       this.managementAddress = managementAddress;
 
       this.callback = callback;
-      
+
       remotingConnection.addFailureListener(this);
 
       remotingConnection.addCloseListener(this);
@@ -278,14 +278,14 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       {
          holder.store.returnProducerCredits(holder.outstandingCredits);
       }
-      
+
       callback.closed();
    }
 
    public void createConsumer(final long consumerID,
-                                    final SimpleString queueName,
-                                    final SimpleString filterString,
-                                    final boolean browseOnly) throws Exception
+                              final SimpleString queueName,
+                              final SimpleString filterString,
+                              final boolean browseOnly) throws Exception
    {
       Binding binding = postOffice.getBinding(queueName);
 
@@ -340,11 +340,11 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
    }
 
    public void createQueue(final SimpleString address,
-                                 final SimpleString name,
-                                 final SimpleString filterString,
-                                 final boolean temporary,
-                                 final boolean durable) throws Exception
-   {
+                           final SimpleString name,
+                           final SimpleString filterString,
+                           final boolean temporary,
+                           final boolean durable) throws Exception
+   {      
       if (durable)
       {
          // make sure the user has privileges to create this queue

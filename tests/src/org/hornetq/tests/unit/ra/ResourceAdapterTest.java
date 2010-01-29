@@ -35,11 +35,11 @@ import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.jms.HornetQJMSClient;
-import org.hornetq.jms.client.HornetQConnectionFactory;
-import org.hornetq.jms.client.HornetQQueue;
 import org.hornetq.core.remoting.impl.invm.InVMConnector;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.integration.transports.netty.NettyConnector;
+import org.hornetq.jms.client.HornetQConnectionFactory;
+import org.hornetq.jms.client.HornetQDestination;
 import org.hornetq.ra.ConnectionFactoryProperties;
 import org.hornetq.ra.HornetQRAManagedConnectionFactory;
 import org.hornetq.ra.HornetQResourceAdapter;
@@ -387,7 +387,7 @@ public class ResourceAdapterTest extends ServiceTestBase
 
          ClientSessionFactory factory = createInVMFactory();
          ClientSession session = factory.createSession(false, false, false);
-         HornetQQueue queue = (HornetQQueue) HornetQJMSClient.createQueue("test");
+         HornetQDestination queue = (HornetQDestination) HornetQJMSClient.createQueue("test");
          session.createQueue(queue.getSimpleAddress(), queue.getSimpleAddress(), true);
          session.close();
 

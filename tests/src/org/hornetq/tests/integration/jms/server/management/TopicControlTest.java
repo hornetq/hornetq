@@ -30,7 +30,7 @@ import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
-import org.hornetq.jms.client.HornetQTopic;
+import org.hornetq.jms.client.HornetQDestination;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.hornetq.tests.integration.management.ManagementControlHelper;
 import org.hornetq.tests.integration.management.ManagementTestBase;
@@ -61,7 +61,7 @@ public class TopicControlTest extends ManagementTestBase
 
    private String subscriptionName;
 
-   protected HornetQTopic topic;
+   protected HornetQDestination topic;
 
    // Static --------------------------------------------------------
 
@@ -338,8 +338,8 @@ public class TopicControlTest extends ManagementTestBase
       JMSUtil.sendMessages(topic, 3);
 
       TopicControl topicControl = createManagementControl();
-      Map<String, Object>[] messages = topicControl.listMessagesForSubscription(HornetQTopic.createQueueNameForDurableSubscription(clientID,
-                                                                                                                                   subscriptionName));
+      Map<String, Object>[] messages = topicControl.listMessagesForSubscription(HornetQDestination.createQueueNameForDurableSubscription(clientID,
+                                                                                                                                         subscriptionName));
       Assert.assertEquals(3, messages.length);
 
       connection.close();
@@ -354,8 +354,8 @@ public class TopicControlTest extends ManagementTestBase
       String[] ids = JMSUtil.sendMessages(topic, 3);
 
       TopicControl topicControl = createManagementControl();
-      String jsonString = topicControl.listMessagesForSubscriptionAsJSON(HornetQTopic.createQueueNameForDurableSubscription(clientID,
-                                                                                                                            subscriptionName));
+      String jsonString = topicControl.listMessagesForSubscriptionAsJSON(HornetQDestination.createQueueNameForDurableSubscription(clientID,
+                                                                                                                                  subscriptionName));
       Assert.assertNotNull(jsonString);
       JSONArray array = new JSONArray(jsonString);
       Assert.assertEquals(3, array.length());
@@ -375,8 +375,8 @@ public class TopicControlTest extends ManagementTestBase
 
       try
       {
-         topicControl.listMessagesForSubscription(HornetQTopic.createQueueNameForDurableSubscription(unknownClientID,
-                                                                                                     subscriptionName));
+         topicControl.listMessagesForSubscription(HornetQDestination.createQueueNameForDurableSubscription(unknownClientID,
+                                                                                                           subscriptionName));
          Assert.fail();
       }
       catch (Exception e)
@@ -392,8 +392,8 @@ public class TopicControlTest extends ManagementTestBase
 
       try
       {
-         topicControl.listMessagesForSubscription(HornetQTopic.createQueueNameForDurableSubscription(clientID,
-                                                                                                     unknownSubscription));
+         topicControl.listMessagesForSubscription(HornetQDestination.createQueueNameForDurableSubscription(clientID,
+                                                                                                           unknownSubscription));
          Assert.fail();
       }
       catch (Exception e)
@@ -428,7 +428,7 @@ public class TopicControlTest extends ManagementTestBase
 
       String topicName = RandomUtil.randomString();
       serverManager.createTopic(topicName, topicName);
-      topic = (HornetQTopic) HornetQJMSClient.createTopic(topicName);
+      topic = (HornetQDestination)HornetQJMSClient.createTopic(topicName);
    }
 
    @Override

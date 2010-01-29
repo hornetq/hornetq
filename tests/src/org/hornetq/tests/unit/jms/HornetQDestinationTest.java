@@ -14,18 +14,11 @@
 package org.hornetq.tests.unit.jms;
 
 import javax.jms.Queue;
-import javax.jms.TemporaryQueue;
-import javax.jms.TemporaryTopic;
 import javax.jms.Topic;
 
 import junit.framework.Assert;
 
-import org.hornetq.jms.*;
 import org.hornetq.jms.client.HornetQDestination;
-import org.hornetq.jms.client.HornetQQueue;
-import org.hornetq.jms.client.HornetQTemporaryQueue;
-import org.hornetq.jms.client.HornetQTemporaryTopic;
-import org.hornetq.jms.client.HornetQTopic;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
 
@@ -50,7 +43,7 @@ public class HornetQDestinationTest extends UnitTestCase
    public void testEquals() throws Exception
    {
       String destinationName = RandomUtil.randomString();
-      String address = HornetQQueue.JMS_QUEUE_ADDRESS_PREFIX + destinationName;
+      String address = HornetQDestination.JMS_QUEUE_ADDRESS_PREFIX + destinationName;
       HornetQDestination destination = (HornetQDestination) HornetQDestination.fromAddress(address);
       HornetQDestination sameDestination = (HornetQDestination) HornetQDestination.fromAddress(address);
       HornetQDestination differentDestination = (HornetQDestination) HornetQDestination.fromAddress(address + RandomUtil.randomString());
@@ -64,7 +57,7 @@ public class HornetQDestinationTest extends UnitTestCase
    public void testFromAddressWithQueueAddressPrefix() throws Exception
    {
       String destinationName = RandomUtil.randomString();
-      String address = HornetQQueue.JMS_QUEUE_ADDRESS_PREFIX + destinationName;
+      String address = HornetQDestination.JMS_QUEUE_ADDRESS_PREFIX + destinationName;
       HornetQDestination destination = (HornetQDestination) HornetQDestination.fromAddress(address);
       Assert.assertTrue(destination instanceof Queue);
       Assert.assertEquals(destinationName, ((Queue)destination).getQueueName());
@@ -73,30 +66,12 @@ public class HornetQDestinationTest extends UnitTestCase
    public void testFromAddressWithTopicAddressPrefix() throws Exception
    {
       String destinationName = RandomUtil.randomString();
-      String address = HornetQTopic.JMS_TOPIC_ADDRESS_PREFIX + destinationName;
+      String address = HornetQDestination.JMS_TOPIC_ADDRESS_PREFIX + destinationName;
       HornetQDestination destination = (HornetQDestination) HornetQDestination.fromAddress(address);
       Assert.assertTrue(destination instanceof Topic);
       Assert.assertEquals(destinationName, ((Topic)destination).getTopicName());
    }
-
-   public void testFromAddressWithTemporaryQueueAddressPrefix() throws Exception
-   {
-      String destinationName = RandomUtil.randomString();
-      String address = HornetQTemporaryQueue.JMS_TEMP_QUEUE_ADDRESS_PREFIX + destinationName;
-      HornetQDestination destination = (HornetQDestination) HornetQDestination.fromAddress(address);
-      Assert.assertTrue(destination instanceof TemporaryQueue);
-      Assert.assertEquals(destinationName, ((TemporaryQueue)destination).getQueueName());
-   }
-
-   public void testFromAddressWithTemporaryTopicAddressPrefix() throws Exception
-   {
-      String destinationName = RandomUtil.randomString();
-      String address = HornetQTemporaryTopic.JMS_TEMP_TOPIC_ADDRESS_PREFIX + destinationName;
-      HornetQDestination destination = (HornetQDestination) HornetQDestination.fromAddress(address);
-      Assert.assertTrue(destination instanceof TemporaryTopic);
-      Assert.assertEquals(destinationName, ((TemporaryTopic)destination).getTopicName());
-   }
-
+  
    public void testFromAddressWithInvalidPrefix() throws Exception
    {
       String invalidPrefix = "junk";

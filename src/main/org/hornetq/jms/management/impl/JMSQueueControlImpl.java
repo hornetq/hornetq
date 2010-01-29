@@ -27,8 +27,8 @@ import org.hornetq.core.logging.Logger;
 import org.hornetq.core.management.impl.MBeanInfoHelper;
 import org.hornetq.core.messagecounter.MessageCounter;
 import org.hornetq.core.messagecounter.impl.MessageCounterHelper;
+import org.hornetq.jms.client.HornetQDestination;
 import org.hornetq.jms.client.HornetQMessage;
-import org.hornetq.jms.client.HornetQQueue;
 import org.hornetq.jms.client.SelectorTranslator;
 import org.hornetq.utils.json.JSONArray;
 import org.hornetq.utils.json.JSONObject;
@@ -47,7 +47,7 @@ public class JMSQueueControlImpl extends StandardMBean implements JMSQueueContro
 
    // Attributes ----------------------------------------------------
 
-   private final HornetQQueue managedQueue;
+   private final HornetQDestination managedQueue;
 
    private final QueueControl coreQueueControl;
 
@@ -83,7 +83,7 @@ public class JMSQueueControlImpl extends StandardMBean implements JMSQueueContro
 
    // Constructors --------------------------------------------------
 
-   public JMSQueueControlImpl(final HornetQQueue managedQueue,
+   public JMSQueueControlImpl(final HornetQDestination managedQueue,
                               final QueueControl coreQueueControl,
                               final String jndiBinding,
                               final MessageCounter counter) throws Exception
@@ -275,7 +275,7 @@ public class JMSQueueControlImpl extends StandardMBean implements JMSQueueContro
    public boolean moveMessage(final String messageID, final String otherQueueName) throws Exception
    {
       String filter = JMSQueueControlImpl.createFilterForJMSMessageID(messageID);
-      HornetQQueue otherQueue = (HornetQQueue) HornetQJMSClient.createQueue(otherQueueName);
+      HornetQDestination otherQueue = HornetQDestination.createQueue(otherQueueName);
       int moved = coreQueueControl.moveMessages(filter, otherQueue.getAddress());
       if (moved != 1)
       {
@@ -288,7 +288,7 @@ public class JMSQueueControlImpl extends StandardMBean implements JMSQueueContro
    public int moveMessages(final String filterStr, final String otherQueueName) throws Exception
    {
       String filter = JMSQueueControlImpl.createFilterFromJMSSelector(filterStr);
-      HornetQQueue otherQueue = (HornetQQueue) HornetQJMSClient.createQueue(otherQueueName);
+      HornetQDestination otherQueue = HornetQDestination.createQueue(otherQueueName);
       return coreQueueControl.moveMessages(filter, otherQueue.getAddress());
    }
 

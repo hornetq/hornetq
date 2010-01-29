@@ -28,8 +28,7 @@ import org.hornetq.core.messagecounter.MessageCounter;
 import org.hornetq.core.messagecounter.MessageCounterManager;
 import org.hornetq.core.server.management.ManagementService;
 import org.hornetq.jms.client.HornetQConnectionFactory;
-import org.hornetq.jms.client.HornetQQueue;
-import org.hornetq.jms.client.HornetQTopic;
+import org.hornetq.jms.client.HornetQDestination;
 import org.hornetq.jms.management.impl.JMSConnectionFactoryControlImpl;
 import org.hornetq.jms.management.impl.JMSQueueControlImpl;
 import org.hornetq.jms.management.impl.JMSServerControlImpl;
@@ -78,7 +77,7 @@ public class JMSManagementServiceImpl implements JMSManagementService
       managementService.unregisterFromRegistry(ResourceNames.JMS_SERVER);
    }
 
-   public synchronized void registerQueue(final HornetQQueue queue, final String jndiBinding) throws Exception
+   public synchronized void registerQueue(final HornetQDestination queue, final String jndiBinding) throws Exception
    {
       QueueControl coreQueueControl = (QueueControl)managementService.getResource(ResourceNames.CORE_QUEUE + queue.getAddress());
       MessageCounterManager messageCounterManager = managementService.getMessageCounterManager();
@@ -102,7 +101,7 @@ public class JMSManagementServiceImpl implements JMSManagementService
       managementService.unregisterFromRegistry(ResourceNames.JMS_QUEUE + name);
    }
 
-   public synchronized void registerTopic(final HornetQTopic topic, final String jndiBinding) throws Exception
+   public synchronized void registerTopic(final HornetQDestination topic, final String jndiBinding) throws Exception
    {
       ObjectName objectName = managementService.getObjectNameBuilder().getJMSTopicObjectName(topic.getTopicName());
       AddressControl addressControl = (AddressControl)managementService.getResource(ResourceNames.CORE_ADDRESS + topic.getAddress());

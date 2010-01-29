@@ -31,8 +31,8 @@ import org.hornetq.api.jms.management.TopicControl;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.management.impl.MBeanInfoHelper;
 import org.hornetq.core.server.management.ManagementService;
+import org.hornetq.jms.client.HornetQDestination;
 import org.hornetq.jms.client.HornetQMessage;
-import org.hornetq.jms.client.HornetQTopic;
 import org.hornetq.jms.client.SelectorTranslator;
 import org.hornetq.utils.json.JSONArray;
 import org.hornetq.utils.json.JSONObject;
@@ -51,7 +51,7 @@ public class JMSTopicControlImpl extends StandardMBean implements TopicControl
 
    // Attributes ----------------------------------------------------
 
-   private final HornetQTopic managedTopic;
+   private final HornetQDestination managedTopic;
 
    private final String binding;
 
@@ -69,7 +69,7 @@ public class JMSTopicControlImpl extends StandardMBean implements TopicControl
 
    // Constructors --------------------------------------------------
 
-   public JMSTopicControlImpl(final HornetQTopic topic,
+   public JMSTopicControlImpl(final HornetQDestination topic,
                               final AddressControl addressControl,
                               final String jndiBinding,
                               final ManagementService managementService) throws Exception
@@ -191,7 +191,7 @@ public class JMSTopicControlImpl extends StandardMBean implements TopicControl
 
    public int countMessagesForSubscription(final String clientID, final String subscriptionName, final String filterStr) throws Exception
    {
-      String queueName = HornetQTopic.createQueueNameForDurableSubscription(clientID, subscriptionName);
+      String queueName = HornetQDestination.createQueueNameForDurableSubscription(clientID, subscriptionName);
       QueueControl coreQueueControl = (QueueControl)managementService.getResource(ResourceNames.CORE_QUEUE + queueName);
       if (coreQueueControl == null)
       {
@@ -217,7 +217,7 @@ public class JMSTopicControlImpl extends StandardMBean implements TopicControl
 
    public void dropDurableSubscription(final String clientID, final String subscriptionName) throws Exception
    {
-      String queueName = HornetQTopic.createQueueNameForDurableSubscription(clientID, subscriptionName);
+      String queueName = HornetQDestination.createQueueNameForDurableSubscription(clientID, subscriptionName);
       QueueControl coreQueueControl = (QueueControl)managementService.getResource(ResourceNames.CORE_QUEUE + queueName);
       if (coreQueueControl == null)
       {
@@ -255,7 +255,7 @@ public class JMSTopicControlImpl extends StandardMBean implements TopicControl
 
          if (queue.isDurable())
          {
-            Pair<String, String> pair = HornetQTopic.decomposeQueueNameForDurableSubscription(queue.getName()
+            Pair<String, String> pair = HornetQDestination.decomposeQueueNameForDurableSubscription(queue.getName()
                                                                                                    .toString());
             clientID = pair.a;
             subName = pair.b;
@@ -287,7 +287,7 @@ public class JMSTopicControlImpl extends StandardMBean implements TopicControl
 
          if (queue.isDurable())
          {
-            Pair<String, String> pair = HornetQTopic.decomposeQueueNameForDurableSubscription(queue.getName()
+            Pair<String, String> pair = HornetQDestination.decomposeQueueNameForDurableSubscription(queue.getName()
                                                                                                    .toString());
             clientID = pair.a;
             subName = pair.b;

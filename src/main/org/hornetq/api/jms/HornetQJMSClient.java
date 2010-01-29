@@ -23,8 +23,7 @@ import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.jms.client.HornetQConnectionFactory;
-import org.hornetq.jms.client.HornetQQueue;
-import org.hornetq.jms.client.HornetQTopic;
+import org.hornetq.jms.client.HornetQDestination;
 
 /**
  * A utility class for creating HornetQ client-side JMS managed resources.
@@ -111,7 +110,7 @@ public class HornetQJMSClient
     */
    public static Topic createTopic(final String name)
    {
-      return new HornetQTopic(name);
+      return HornetQDestination.createTopic(name);
    }
 
    /**
@@ -122,7 +121,7 @@ public class HornetQJMSClient
     */
    public static Queue createQueue(final String name)
    {
-      return new HornetQQueue(name);
+      return HornetQDestination.createQueue(name);
    }
 
    private HornetQJMSClient()

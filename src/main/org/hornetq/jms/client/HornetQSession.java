@@ -57,10 +57,8 @@ import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSession.BindingQuery;
 import org.hornetq.api.core.client.ClientSession.QueueQuery;
-import org.hornetq.api.jms.*;
 import org.hornetq.core.filter.impl.FilterImpl;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.jms.*;
 
 /**
  * HornetQ implementation of a JMS Session.
@@ -324,7 +322,7 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
 
          if (jbd != null)
          {
-            if (jbd instanceof Queue)
+            if (jbd.isQueue())
             {
                QueueQuery response = session.queueQuery(jbd.getSimpleAddress());
 
@@ -399,8 +397,8 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
          throw new IllegalStateException("Cannot create a queue using a TopicSession");
       }
 
-      HornetQQueue queue = (HornetQQueue) HornetQJMSClient.createQueue(queueName);
-
+      HornetQDestination queue = HornetQDestination.createQueue(queueName);
+      
       try
       {
          QueueQuery response = session.queueQuery(queue.getSimpleAddress());
@@ -428,8 +426,8 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
          throw new IllegalStateException("Cannot create a topic on a QueueSession");
       }
 
-      HornetQTopic topic = (HornetQTopic) HornetQJMSClient.createTopic(topicName);
-
+      HornetQDestination topic = HornetQDestination.createTopic(topicName);
+      
       try
       {
          BindingQuery query = session.bindingQuery(topic.getSimpleAddress());
@@ -468,7 +466,7 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
       {
          throw new InvalidDestinationException("Cannot create a durable subscriber on a null topic");
       }
-      if (!(topic instanceof HornetQTopic))
+      if (!(topic instanceof HornetQDestination))
       {
          throw new InvalidDestinationException("Not a HornetQTopic:" + topic);
       }
@@ -478,6 +476,11 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
       }
 
       HornetQDestination jbdest = (HornetQDestination)topic;
+      
+      if (jbdest.isQueue())
+      {
+         throw new InvalidDestinationException("Cannot create a subscriber on a queue");
+      }
 
       return createConsumer(jbdest, name, messageSelector, noLocal);
    }
@@ -486,7 +489,7 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
                                                  final String subscriptionName,
                                                  String selectorString,
                                                  final boolean noLocal) throws JMSException
-   {
+   {     
       try
       {
          selectorString = "".equals(selectorString) ? null : selectorString;
@@ -520,8 +523,8 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
 
          SimpleString autoDeleteQueueName = null;
 
-         if (dest instanceof Queue)
-         {
+         if (dest.isQueue())
+         {            
             QueueQuery response = session.queueQuery(dest.getSimpleAddress());
 
             if (!response.isExists())
@@ -568,7 +571,7 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
                   throw new InvalidDestinationException("Cannot create a durable subscription on a temporary topic");
                }
 
-               queueName = new SimpleString(HornetQTopic.createQueueNameForDurableSubscription(connection.getClientID(),
+               queueName = new SimpleString(HornetQDestination.createQueueNameForDurableSubscription(connection.getClientID(),
                                                                                                subscriptionName));
 
                QueueQuery subResponse = session.queueQuery(queueName);
@@ -654,7 +657,7 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
       {
          throw new InvalidDestinationException("Cannot create a browser with a null queue");
       }
-      if (!(queue instanceof HornetQQueue))
+      if (!(queue instanceof HornetQDestination))
       {
          throw new InvalidDestinationException("Not a HornetQQueue:" + queue);
       }
@@ -673,7 +676,12 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
          throw JMSExceptionHelper.convertFromHornetQException(e);
       }
 
-      HornetQQueue jbq = (HornetQQueue)queue;
+      HornetQDestination jbq = (HornetQDestination)queue;
+      
+      if (!jbq.isQueue())
+      {
+         throw new InvalidDestinationException("Cannot create a browser on a topic");  
+      }
 
       try
       {
@@ -700,11 +708,9 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
          throw new IllegalStateException("Cannot create a temporary queue using a TopicSession");
       }
 
-      String queueName = UUID.randomUUID().toString();
-
       try
       {
-         HornetQTemporaryQueue queue = new HornetQTemporaryQueue(this, queueName);
+         HornetQDestination queue = HornetQDestination.createTemporaryQueue(this);
 
          SimpleString simpleAddress = queue.getSimpleAddress();
 
@@ -728,11 +734,9 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
          throw new IllegalStateException("Cannot create a temporary topic on a QueueSession");
       }
 
-      String topicName = UUID.randomUUID().toString();
-
       try
       {
-         HornetQTemporaryTopic topic = new HornetQTemporaryTopic(this, topicName);
+         HornetQDestination topic = HornetQDestination.createTemporaryTopic(this);
 
          SimpleString simpleAddress = topic.getSimpleAddress();
 
@@ -761,7 +765,7 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
          throw new IllegalStateException("Cannot unsubscribe using a QueueSession");
       }
 
-      SimpleString queueName = new SimpleString(HornetQTopic.createQueueNameForDurableSubscription(connection.getClientID(),
+      SimpleString queueName = new SimpleString(HornetQDestination.createQueueNameForDurableSubscription(connection.getClientID(),
                                                                                                    name));
 
       try
@@ -876,8 +880,13 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
       this.recoverCalled = recoverCalled;
    }
 
-   public void deleteTemporaryTopic(final HornetQTemporaryTopic tempTopic) throws JMSException
+   public void deleteTemporaryTopic(final HornetQDestination tempTopic) throws JMSException
    {
+      if (!tempTopic.isTemporary())
+      {
+         throw new InvalidDestinationException("Not a temporary topic " + tempTopic);
+      }
+      
       try
       {
          BindingQuery response = session.bindingQuery(tempTopic.getSimpleAddress());
@@ -906,8 +915,12 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
       }
    }
 
-   public void deleteTemporaryQueue(final HornetQTemporaryQueue tempQueue) throws JMSException
+   public void deleteTemporaryQueue(final HornetQDestination tempQueue) throws JMSException
    {
+      if (!tempQueue.isTemporary())
+      {
+         throw new InvalidDestinationException("Not a temporary queue " + tempQueue);
+      }
       try
       {
          QueueQuery response = session.queueQuery(tempQueue.getSimpleAddress());

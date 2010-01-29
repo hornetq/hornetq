@@ -18,6 +18,7 @@ import java.util.List;
 
 import javax.jms.ConnectionFactory;
 import javax.jms.Queue;
+import javax.jms.Topic;
 import javax.naming.NamingException;
 
 import org.hornetq.api.core.Pair;
@@ -87,6 +88,13 @@ public class JMSTestBase extends ServiceTestBase
       jmsServer.createQueue(name, "/jms/" + name, null, true);
 
       return (Queue)context.lookup("/jms/" + name);
+   }
+   
+   protected Topic createTopic(final String name) throws Exception, NamingException
+   {
+      jmsServer.createTopic(name, "/jms/" + name);
+
+      return (Topic)context.lookup("/jms/" + name);
    }
 
    @Override

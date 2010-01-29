@@ -17,8 +17,7 @@ import java.util.List;
 
 import org.hornetq.api.jms.management.JMSServerControl;
 import org.hornetq.jms.client.HornetQConnectionFactory;
-import org.hornetq.jms.client.HornetQQueue;
-import org.hornetq.jms.client.HornetQTopic;
+import org.hornetq.jms.client.HornetQDestination;
 import org.hornetq.jms.server.JMSServerManager;
 
 /**
@@ -33,11 +32,11 @@ public interface JMSManagementService
 
    void unregisterJMSServer() throws Exception;
 
-   void registerQueue(HornetQQueue queue, String jndiBinding) throws Exception;
+   void registerQueue(HornetQDestination queue, String jndiBinding) throws Exception;
 
    void unregisterQueue(String name) throws Exception;
 
-   void registerTopic(HornetQTopic topic, String jndiBinding) throws Exception;
+   void registerTopic(HornetQDestination topic, String jndiBinding) throws Exception;
 
    void unregisterTopic(String name) throws Exception;
 

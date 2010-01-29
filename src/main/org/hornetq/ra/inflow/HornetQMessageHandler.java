@@ -28,8 +28,8 @@ import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.MessageHandler;
 import org.hornetq.api.core.client.ClientSession.QueueQuery;
 import org.hornetq.core.logging.Logger;
+import org.hornetq.jms.client.HornetQDestination;
 import org.hornetq.jms.client.HornetQMessage;
-import org.hornetq.jms.client.HornetQTopic;
 
 /**
  * The message handler
@@ -95,7 +95,7 @@ public class HornetQMessageHandler implements MessageHandler
             throw new InvalidClientIDException("Cannot create durable subscription - client ID has not been set");
          }
 
-         SimpleString queueName = new SimpleString(HornetQTopic.createQueueNameForDurableSubscription(activation.getActivationSpec()
+         SimpleString queueName = new SimpleString(HornetQDestination.createQueueNameForDurableSubscription(activation.getActivationSpec()
                                                                                                                 .getClientID(),
                                                                                                       subscriptionName));
 

@@ -30,8 +30,7 @@ import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
 import org.hornetq.jms.client.HornetQConnectionFactory;
-import org.hornetq.jms.client.HornetQQueue;
-import org.hornetq.jms.client.HornetQTopic;
+import org.hornetq.jms.client.HornetQDestination;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.hornetq.tests.integration.management.ManagementTestBase;
 import org.hornetq.tests.util.RandomUtil;
@@ -51,7 +50,7 @@ public class TopicControlUsingJMSTest extends ManagementTestBase
 
    private String subscriptionName;
 
-   protected HornetQTopic topic;
+   protected HornetQDestination topic;
 
    protected JMSMessagingProxy proxy;
 
@@ -288,7 +287,7 @@ public class TopicControlUsingJMSTest extends ManagementTestBase
       JMSUtil.sendMessages(topic, 3);
 
       Object[] data = (Object[])proxy.invokeOperation("listMessagesForSubscription",
-                                                      HornetQTopic.createQueueNameForDurableSubscription(clientID,
+                                                      HornetQDestination.createQueueNameForDurableSubscription(clientID,
                                                                                                          subscriptionName));
       Assert.assertEquals(3, data.length);
 
@@ -302,7 +301,7 @@ public class TopicControlUsingJMSTest extends ManagementTestBase
       try
       {
          proxy.invokeOperation("listMessagesForSubscription",
-                               HornetQTopic.createQueueNameForDurableSubscription(unknownClientID, subscriptionName));
+                               HornetQDestination.createQueueNameForDurableSubscription(unknownClientID, subscriptionName));
          Assert.fail();
       }
       catch (Exception e)
@@ -317,7 +316,7 @@ public class TopicControlUsingJMSTest extends ManagementTestBase
       try
       {
          proxy.invokeOperation("listMessagesForSubscription",
-                               HornetQTopic.createQueueNameForDurableSubscription(clientID, unknownSubscription));
+                               HornetQDestination.createQueueNameForDurableSubscription(clientID, unknownSubscription));
          Assert.fail();
       }
       catch (Exception e)
@@ -352,14 +351,14 @@ public class TopicControlUsingJMSTest extends ManagementTestBase
 
       String topicName = RandomUtil.randomString();
       serverManager.createTopic(topicName, topicName);
-      topic = (HornetQTopic)HornetQJMSClient.createTopic(topicName);
+      topic = (HornetQDestination)HornetQJMSClient.createTopic(topicName);
 
       HornetQConnectionFactory cf = (HornetQConnectionFactory)HornetQJMSClient.createConnectionFactory(new TransportConfiguration(InVMConnectorFactory.class.getName()));
       connection = cf.createQueueConnection();
       session = connection.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
       connection.start();
 
-      HornetQQueue managementQueue = (HornetQQueue)HornetQJMSClient.createQueue("hornetq.management");
+      HornetQDestination managementQueue = (HornetQDestination)HornetQJMSClient.createQueue("hornetq.management");
       proxy = new JMSMessagingProxy(session, managementQueue, ResourceNames.JMS_TOPIC + topic.getTopicName());
    }
 

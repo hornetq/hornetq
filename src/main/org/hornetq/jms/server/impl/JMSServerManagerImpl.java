@@ -36,8 +36,7 @@ import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.ActivateCallback;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.jms.client.HornetQConnectionFactory;
-import org.hornetq.jms.client.HornetQQueue;
-import org.hornetq.jms.client.HornetQTopic;
+import org.hornetq.jms.client.HornetQDestination;
 import org.hornetq.jms.client.SelectorTranslator;
 import org.hornetq.jms.server.JMSServerManager;
 import org.hornetq.jms.server.config.ConnectionFactoryConfiguration;
@@ -258,7 +257,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
                                            final boolean durable) throws Exception
    {
       checkInitialised();
-      HornetQQueue jBossQueue = new HornetQQueue(queueName);
+      HornetQDestination jBossQueue = HornetQDestination.createQueue(queueName);
 
       // Convert from JMS selector to core filter
       String coreFilterString = null;
@@ -287,7 +286,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
    public synchronized boolean createTopic(final String topicName, final String jndiBinding) throws Exception
    {
       checkInitialised();
-      HornetQTopic jBossTopic = new HornetQTopic(topicName);
+      HornetQDestination jBossTopic = HornetQDestination.createTopic(topicName);
       // We create a dummy subscription on the topic, that never receives messages - this is so we can perform JMS
       // checks when routing messages to a topic that
       // does not exist - otherwise we would not be able to distinguish from a non existent topic and one with no
@@ -333,7 +332,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
 
       destinations.remove(name);
       jmsManagementService.unregisterQueue(name);
-      server.getHornetQServerControl().destroyQueue(HornetQQueue.createAddressFromName(name).toString());
+      server.getHornetQServerControl().destroyQueue(HornetQDestination.createQueueAddressFromName(name).toString());
 
       return true;
    }
@@ -345,7 +344,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
 
       destinations.remove(name);
       jmsManagementService.unregisterTopic(name);
-      server.getHornetQServerControl().destroyQueue(HornetQTopic.createAddressFromName(name).toString());
+      server.getHornetQServerControl().destroyQueue(HornetQDestination.createTopicAddressFromName(name).toString());
 
       return true;
    }
