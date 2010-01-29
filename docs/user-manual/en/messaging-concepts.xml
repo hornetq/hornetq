@@ -203,15 +203,14 @@
             <title>STOMP</title>
             <para><ulink
                     url="http://en.wikipedia.org/wiki/Streaming_Text_Orientated_Messaging_Protocol"
-                    >STOMP</ulink> is a very simple protocol for interoperating with messaging
-                systems. It defines a wire format, so theoretically any STOMP client can work with
-                any messaging system that supports STOMP. STOMP clients are available in many
+                    >Stomp</ulink> is a very simple protocol for interoperating with messaging
+                systems. It defines a wire format, so theoretically any Stomp client can work with
+                any messaging system that supports Stomp. Stomp clients are available in many
                 different programming languages.</para>
-            <para>HornetQ can be used by any STOMP client when using the <ulink
+            <para>HornetQ can be used by any Stomp client when using the <ulink
                     url="http://stomp.codehaus.org/StompConnect">StompConnect</ulink> broker which
                 translates the STOMP protocol to the JMS API.</para>
-            <para>HornetQ will be shortly implementing the STOMP protocol on the broker, thus
-                avoiding having to use StompConnect.</para>
+            <para>Please see <xref linkend="stomp"/> for using STOMP with HornetQ.</para>
         </section>
         <section>
             <title>AMQP</title>

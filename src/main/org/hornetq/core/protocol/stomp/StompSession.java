@@ -80,6 +80,7 @@ class StompSession implements SessionCallback
             headers.put(Stomp.Headers.Message.SUBSCRIPTION, subscription.getID());
          }
          byte[] data = new byte[] {};
+         serverMessage.getBodyBuffer().markReaderIndex();
          if (serverMessage.getType() == Message.TEXT_TYPE)
          {
             SimpleString text = serverMessage.getBodyBuffer().readNullableSimpleString();
@@ -97,6 +98,7 @@ class StompSession implements SessionCallback
             buffer.readBytes(data);
             headers.put(Headers.CONTENT_LENGTH, data.length);
          }
+         serverMessage.getBodyBuffer().resetReaderIndex();
 
          StompFrame frame = new StompFrame(Stomp.Responses.MESSAGE, headers, data);
          StompUtils.copyStandardHeadersFromMessageToFrame(serverMessage, frame, deliveryCount);

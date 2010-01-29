@@ -769,6 +769,7 @@ public class StompTest extends UnitTestCase {
 
         frame = receiveFrame(10000);
         Assert.assertTrue(frame.startsWith("MESSAGE"));
+        System.out.println(frame);
         Assert.assertTrue(frame.contains("shouldBeNextMessage"));
     }
 
@@ -801,11 +802,11 @@ public class StompTest extends UnitTestCase {
         frame =
                 "UNSUBSCRIBE\n" +
                         "destination:/queue/" + getQueueName() + "\n" +
+                        "receipt:567\n" +
                         "\n\n" +
                         Stomp.NULL;
         sendFrame(frame);
-
-        waitForFrameToTakeEffect();
+        waitForReceipt();
 
         //send a message to our queue
         sendMessage("second message");
@@ -850,11 +851,11 @@ public class StompTest extends UnitTestCase {
         frame =
                 "UNSUBSCRIBE\n" +
                         "id:mysubid\n" +
+                        "receipt: 345\n" +
                         "\n\n" +
                         Stomp.NULL;
         sendFrame(frame);
-
-        waitForFrameToTakeEffect();
+        waitForReceipt();
 
         //send a message to our queue
         sendMessage("second message");
@@ -893,23 +894,24 @@ public class StompTest extends UnitTestCase {
                 "SEND\n" +
                         "destination:/queue/" + getQueueName() + "\n" +
                         "transaction: tx1\n" +
+                        "receipt: 123\n" +
                         "\n\n" +
                         "Hello World" +
                         Stomp.NULL;
         sendFrame(frame);
-
-        waitForFrameToTakeEffect();
+        waitForReceipt();
+        
         // check the message is not committed
         assertNull(consumer.receive(100));
         
         frame =
                 "COMMIT\n" +
                         "transaction: tx1\n" +
+                        "receipt:456\n" +
                         "\n\n" +
                         Stomp.NULL;
         sendFrame(frame);
-
-        waitForFrameToTakeEffect();
+        waitForReceipt();
 
         TextMessage message = (TextMessage) consumer.receive(1000);
         Assert.assertNotNull("Should have received a message", message);
@@ -1070,12 +1072,11 @@ public class StompTest extends UnitTestCase {
         frame =
                 "COMMIT\n" +
                         "transaction: tx1\n" +
+                        "receipt:789\n" +
                         "\n\n" +
                         Stomp.NULL;
         sendFrame(frame);
-
-        // This test case is currently failing
-        waitForFrameToTakeEffect();
+        waitForReceipt();
 
         //only second msg should be received since first msg was rolled back
         TextMessage message = (TextMessage) consumer.receive(1000);
@@ -1366,6 +1367,12 @@ public class StompTest extends UnitTestCase {
         producer.send(message);
     }
 
+    protected void waitForReceipt() throws Exception {
+       String frame = receiveFrame(50000);
+       assertNotNull(frame);
+       assertTrue(frame.indexOf("RECEIPT") > -1);
+   }
+    
     protected void waitForFrameToTakeEffect() throws InterruptedException {
         // bit of a dirty hack :)
         // another option would be to force some kind of receipt to be returned

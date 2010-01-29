@@ -126,8 +126,11 @@ class StompProtocolManager implements ProtocolManager
       try
       {
          request = marshaller.unmarshal(buffer);
-         System.out.println("<<< " + request);
-
+         if (log.isTraceEnabled())
+         {
+            log.trace("received " + request);
+         }
+         
          String command = request.getCommand();
 
          StompFrame response = null;
@@ -514,7 +517,10 @@ class StompProtocolManager implements ProtocolManager
 
    public int send(StompConnection connection, StompFrame frame)
    {
-      System.out.println(">>> " + frame);
+      if (log.isTraceEnabled())
+      {
+         log.trace("sent " + frame);
+      }
       synchronized (connection)
       {
          if (connection.isDestroyed() || !connection.isValid())
