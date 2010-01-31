@@ -191,7 +191,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          // Effectively infinite
          timeout = Long.MAX_VALUE;
       }
-
+      
       boolean deliveryForced = false;
 
       long start = -1;

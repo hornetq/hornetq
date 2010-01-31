@@ -123,17 +123,17 @@ public class HornetQMessageConsumer implements MessageConsumer, QueueReceiver, T
 
    public Message receive() throws JMSException
    {
-      return getMessage(0);
+      return getMessage(0, false);
    }
 
    public Message receive(final long timeout) throws JMSException
    {
-      return getMessage(timeout);
+      return getMessage(timeout, false);
    }
 
    public Message receiveNoWait() throws JMSException
    {
-      return getMessage(-1);
+      return getMessage(0, true);
    }
 
    public void close() throws JMSException
@@ -197,11 +197,20 @@ public class HornetQMessageConsumer implements MessageConsumer, QueueReceiver, T
       }
    }
 
-   private HornetQMessage getMessage(final long timeout) throws JMSException
+   private HornetQMessage getMessage(final long timeout, final boolean noWait) throws JMSException
    {
       try
       {
-         ClientMessage message = consumer.receive(timeout);
+         ClientMessage message;
+         
+         if (noWait)
+         {
+            message = consumer.receiveImmediate();
+         }
+         else
+         {
+            message = consumer.receive(timeout);
+         }
 
          HornetQMessage msg = null;
 
