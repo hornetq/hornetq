@@ -292,14 +292,6 @@ public class JournalStorageManager implements StorageManager
       perfBlastPages = config.getJournalPerfBlastPages();
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.persistence.StorageManager#completeReplication()
-    */
-   public void completeOperations()
-   {
-      getContext().complete();
-   }
-
    public void clearContext()
    {
       OperationContextImpl.clearContext();

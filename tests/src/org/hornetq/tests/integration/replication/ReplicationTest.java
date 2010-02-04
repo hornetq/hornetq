@@ -463,9 +463,6 @@ public class ReplicationTest extends ServiceTestBase
 
       Assert.assertEquals(msg, msgsResult.get(1));
 
-      // Clearing any exception from the Context, so we can use the context again
-      ctx.complete();
-
       final CountDownLatch latch3 = new CountDownLatch(1);
 
       ctx.executeOnCompletion(new IOAsyncTask()

@@ -584,8 +584,6 @@ public class QueueImpl implements Queue
       {
          acknowledge(ref);
       }
-
-      storageManager.completeOperations();
    }
 
    public void setExpiryAddress(final SimpleString expiryAddress)

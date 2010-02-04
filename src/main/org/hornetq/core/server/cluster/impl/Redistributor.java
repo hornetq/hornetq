@@ -160,8 +160,6 @@ public class Redistributor implements Consumer
             execPrompter();
          }
       });
-
-      storageManager.completeOperations();
    }
 
    private void execPrompter()

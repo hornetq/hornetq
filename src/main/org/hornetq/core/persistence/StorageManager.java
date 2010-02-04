@@ -78,9 +78,6 @@ public interface StorageManager extends HornetQComponent
     * @throws Exception */
    void waitOnOperations() throws Exception;
 
-   /** To close the OperationsContext */
-   void completeOperations();
-
    void clearContext();
 
    UUID getPersistentID();

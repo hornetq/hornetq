@@ -501,7 +501,6 @@ public class ServerSessionPacketHandler implements ChannelHandler, CloseListener
       }
       finally
       {
-         storageManager.completeOperations();
          storageManager.clearContext();
       }
    }
