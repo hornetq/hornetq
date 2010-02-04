@@ -637,7 +637,7 @@
    <!-- ======================================================================================== -->
 
    <target name="jar"
-           depends="jar-core, jar-core-client, jar-jms, jar-jms-client, jar-transports, jar-jboss-integration, jar-jboss-service, jar-bootstrap, jar-logging, jar-ra, jar-mc, jar-jnp-client">
+           depends="jar-core, jar-core-client, jar-jms, jar-jms-client, jar-transports, jar-jboss-integration, jar-jboss-service, jar-bootstrap, jar-logging, jar-ra, jar-mc, jar-jnp-client, jar-resources">
    </target>
 	
    <target name="jar-jnp-client" depends="init">
@@ -792,7 +792,7 @@
    </target>
 
    <property name="build.examples.dir" value="${build.dir}/examples"/>
-   <target name="jar-resources" depends="clean,init">
+   <target name="jar-resources" depends="init">
       <jar jarfile="${build.jars.dir}/${resources.jar.name}">
          <fileset dir=".">
            <include name="examples/**"/>

@@ -13,7 +13,7 @@
   -->
 
 <project default="upload" name="HornetQ">
-   <property name="hornetq.version" value="2.0.0.CR3"/>
+   <property name="hornetq.version" value="2.0.0.snapshot"/>
    <property name="build.dir" value="build"/>
    <property name="jars.dir" value="${build.dir}/jars"/>
 
@@ -87,6 +87,60 @@
       </antcall>
    </target>
 
+
+   <target name="install">
+      <antcall target="upload-local-target">
+          <param name="artifact.id" value="hornetq-resources"/>
+      </antcall>
+
+      <antcall target="upload-local-target">
+          <param name="artifact.id" value="hornetq-jms"/>
+      </antcall>
+
+      <antcall target="upload-local-target">
+          <param name="artifact.id" value="hornetq-jms-client"/>
+      </antcall>
+
+      <antcall target="upload-local-target">
+          <param name="artifact.id" value="hornetq-core"/>
+      </antcall>
+
+      <antcall target="upload-local-target">
+          <param name="artifact.id" value="hornetq-jboss-as-integration"/>
+      </antcall>
+
+      <antcall target="upload-local-target">
+          <param name="artifact.id" value="hornetq-bootstrap"/>
+      </antcall>
+
+      <antcall target="upload-local-target">
+          <param name="artifact.id" value="hornetq-core-client"/>
+      </antcall>
+
+      <antcall target="upload-local-target">
+          <param name="artifact.id" value="hornetq-logging"/>
+      </antcall>
+
+      <antcall target="upload-local-target">
+          <param name="artifact.id" value="hornetq-ra"/>
+      </antcall>
+
+      <antcall target="upload-local-target">
+          <param name="artifact.id" value="hornetq-transports"/>
+      </antcall>
+
+   </target>
+
+   <target name="upload-local-target">
+       <exec executable="mvn">
+        <arg value="install:install-file"/>
+        <arg value="-DgroupId=org.hornetq"/>
+        <arg value="-DartifactId=${artifact.id}"/>
+        <arg value="-Dversion=${hornetq.version}"/>
+        <arg value="-Dpackaging=jar"/>
+        <arg value="-Dfile=./build/jars/${artifact.id}.jar"/>
+       </exec>
+   </target>
 
    <target name="upload">
       <exec executable="mvn">

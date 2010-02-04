@@ -19,7 +19,6 @@ import java.util.List;
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.HornetQClient;
-import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.jms.server.config.ConnectionFactoryConfiguration;
 
 /**
@@ -138,7 +137,6 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
 
    public ConnectionFactoryConfigurationImpl(final String name,
                                              final List<Pair<TransportConfiguration, TransportConfiguration>> transportConfigs,
-                                             final TransportConfiguration backupConfig,
                                              final String... bindings)
    {
       this(name, bindings);
