@@ -269,7 +269,7 @@ public class JMSTopicControlImpl extends StandardMBean implements TopicControl
          subscriptionInfo[2] = subName;
          subscriptionInfo[3] = queue.isDurable();
          subscriptionInfo[4] = queue.getMessageCount();
-
+         subscriptionInfo[5] = filter;
          subInfos.add(subscriptionInfo);
       }
       return subInfos.toArray(new Object[subInfos.size()]);
