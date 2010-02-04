@@ -27,6 +27,7 @@ import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.Validators;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.cluster.DiscoveryGroupConfiguration;
+import org.hornetq.jms.server.JMSServerConfigParser;
 import org.hornetq.jms.server.config.ConnectionFactoryConfiguration;
 import org.hornetq.jms.server.config.JMSConfiguration;
 import org.hornetq.jms.server.config.QueueConfiguration;
@@ -49,7 +50,7 @@ import org.w3c.dom.NodeList;
  *
  *
  */
-public class JMSServerConfigParserImpl
+public class JMSServerConfigParserImpl implements JMSServerConfigParser 
 {
    private static final Logger log = Logger.getLogger(JMSServerConfigParserImpl.class);
 

@@ -18,6 +18,7 @@ import java.net.URL;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.config.Configuration;
+import org.hornetq.jms.server.JMSServerConfigParser;
 import org.hornetq.jms.server.config.ConnectionFactoryConfiguration;
 import org.hornetq.jms.server.config.JMSConfiguration;
 import org.hornetq.jms.server.config.QueueConfiguration;
@@ -53,7 +54,7 @@ public class JMSServerConfigParserTest extends ServiceTestBase
       // anything so the parsing will work
       config.getConnectorConfigurations().put("netty", new TransportConfiguration());
       
-      JMSServerConfigParserImpl parser = new JMSServerConfigParserImpl(config);
+      JMSServerConfigParser parser = new JMSServerConfigParserImpl(config);
       
       String conf = "hornetq-jms-for-JMSServerDeployerTest.xml";
       URL confURL = Thread.currentThread().getContextClassLoader().getResource(conf);

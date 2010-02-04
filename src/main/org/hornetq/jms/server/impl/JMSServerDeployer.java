@@ -19,6 +19,7 @@ import org.hornetq.core.config.Configuration;
 import org.hornetq.core.deployers.DeploymentManager;
 import org.hornetq.core.deployers.impl.XmlDeployer;
 import org.hornetq.core.logging.Logger;
+import org.hornetq.jms.server.JMSServerConfigParser;
 import org.hornetq.jms.server.JMSServerManager;
 import org.hornetq.jms.server.config.ConnectionFactoryConfiguration;
 import org.hornetq.jms.server.config.QueueConfiguration;
@@ -36,7 +37,7 @@ public class JMSServerDeployer extends XmlDeployer
 
    private final Configuration configuration;
    
-   private final JMSServerConfigParserImpl parser;
+   private final JMSServerConfigParser parser;
 
    private final JMSServerManager jmsServerControl;
 
