@@ -71,7 +71,7 @@ public class JMSServerDeployer extends XmlDeployer
 
       configuration = config;
       
-      parser = new JMSServerConfigParserImpl(configuration);
+      parser = new JMSServerConfigParserImpl();
    }
 
    /**
@@ -195,84 +195,7 @@ public class JMSServerDeployer extends XmlDeployer
    private void deployConnectionFactory(final Node node) throws Exception
    {
       ConnectionFactoryConfiguration cfConfig = parser.parseConnectionFactoryConfiguration(node);
-
-      ArrayList<String> listBindings = new ArrayList<String>();
-      for (String str: cfConfig.getBindings())
-      {
-         listBindings.add(str);
-      }
-      
-      if (cfConfig.getDiscoveryAddress() != null)
-      {
-         jmsServerControl.createConnectionFactory(cfConfig.getName(),
-                                                  cfConfig.getDiscoveryAddress(),
-                                                  cfConfig.getDiscoveryPort(),
-                                                  cfConfig.getClientID(),
-                                                  cfConfig.getDiscoveryRefreshTimeout(),
-                                                  cfConfig.getClientFailureCheckPeriod(),
-                                                  cfConfig.getConnectionTTL(),
-                                                  cfConfig.getCallTimeout(),
-                                                  cfConfig.isCacheLargeMessagesClient(),
-                                                  cfConfig.getMinLargeMessageSize(),
-                                                  cfConfig.getConsumerWindowSize(),
-                                                  cfConfig.getConsumerMaxRate(),
-                                                  cfConfig.getConfirmationWindowSize(),
-                                                  cfConfig.getProducerWindowSize(),
-                                                  cfConfig.getProducerMaxRate(),
-                                                  cfConfig.isBlockOnAcknowledge(),
-                                                  cfConfig.isBlockOnDurableSend(),
-                                                  cfConfig.isBlockOnNonDurableSend(),
-                                                  cfConfig.isAutoGroup(),
-                                                  cfConfig.isPreAcknowledge(),
-                                                  cfConfig.getLoadBalancingPolicyClassName(),
-                                                  cfConfig.getTransactionBatchSize(),
-                                                  cfConfig.getDupsOKBatchSize(),
-                                                  cfConfig.getInitialWaitTimeout(),
-                                                  cfConfig.isUseGlobalPools(),
-                                                  cfConfig.getScheduledThreadPoolMaxSize(),
-                                                  cfConfig.getThreadPoolMaxSize(),
-                                                  cfConfig.getRetryInterval(),
-                                                  cfConfig.getRetryIntervalMultiplier(),
-                                                  cfConfig.getMaxRetryInterval(),
-                                                  cfConfig.getReconnectAttempts(),
-                                                  cfConfig.isFailoverOnServerShutdown(),
-                                                  cfConfig.getGroupID(),
-                                                  listBindings);
-      }
-      else
-      {
-         jmsServerControl.createConnectionFactory(cfConfig.getName(),
-                                                  cfConfig.getConnectorConfigs(),
-                                                  cfConfig.getClientID(),
-                                                  cfConfig.getClientFailureCheckPeriod(),
-                                                  cfConfig.getConnectionTTL(),
-                                                  cfConfig.getCallTimeout(),
-                                                  cfConfig.isCacheLargeMessagesClient(),
-                                                  cfConfig.getMinLargeMessageSize(),
-                                                  cfConfig.getConsumerWindowSize(),
-                                                  cfConfig.getConsumerMaxRate(),
-                                                  cfConfig.getConfirmationWindowSize(),
-                                                  cfConfig.getProducerWindowSize(),
-                                                  cfConfig.getProducerMaxRate(),
-                                                  cfConfig.isBlockOnAcknowledge(),
-                                                  cfConfig.isBlockOnDurableSend(),
-                                                  cfConfig.isBlockOnNonDurableSend(),
-                                                  cfConfig.isAutoGroup(),
-                                                  cfConfig.isPreAcknowledge(),
-                                                  cfConfig.getLoadBalancingPolicyClassName(),
-                                                  cfConfig.getTransactionBatchSize(),
-                                                  cfConfig.getDupsOKBatchSize(),
-                                                  cfConfig.isUseGlobalPools(),
-                                                  cfConfig.getScheduledThreadPoolMaxSize(),
-                                                  cfConfig.getThreadPoolMaxSize(),
-                                                  cfConfig.getRetryInterval(),
-                                                  cfConfig.getRetryIntervalMultiplier(),
-                                                  cfConfig.getMaxRetryInterval(),
-                                                  cfConfig.getReconnectAttempts(),
-                                                  cfConfig.isFailoverOnServerShutdown(),
-                                                  cfConfig.getGroupID(),
-                                                  listBindings);
-      }
+      jmsServerControl.createConnectionFactory(cfConfig);
    }
 
    

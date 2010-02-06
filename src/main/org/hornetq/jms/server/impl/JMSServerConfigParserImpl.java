@@ -21,12 +21,9 @@ import java.util.List;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Pair;
-import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.HornetQClient;
-import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.Validators;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.server.cluster.DiscoveryGroupConfiguration;
 import org.hornetq.jms.server.JMSServerConfigParser;
 import org.hornetq.jms.server.config.ConnectionFactoryConfiguration;
 import org.hornetq.jms.server.config.JMSConfiguration;
@@ -60,16 +57,9 @@ public class JMSServerConfigParserImpl implements JMSServerConfigParser
 
    // Attributes ----------------------------------------------------
 
-   private final Configuration configuration;
-
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
-
-   public JMSServerConfigParserImpl(final Configuration configuration)
-   {
-      this.configuration = configuration;
-   }
 
    // Public --------------------------------------------------------
 
@@ -317,8 +307,8 @@ public class JMSServerConfigParserImpl implements JMSServerConfigParser
                                                                       Validators.GT_ZERO);
       String groupid = XMLConfigurationUtil.getString(e, "group-id", null, Validators.NO_CHECK);
       List<String> jndiBindings = new ArrayList<String>();
-      List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs = new ArrayList<Pair<TransportConfiguration, TransportConfiguration>>();
-      DiscoveryGroupConfiguration discoveryGroupConfiguration = null;
+      List<Pair<String, String>> connectorNames = new ArrayList<Pair<String,String>>();
+      String discoveryGroupName = null;
 
       NodeList children = node.getChildNodes();
 
@@ -349,53 +339,26 @@ public class JMSServerConfigParserImpl implements JMSServerConfigParser
                if (JMSServerDeployer.CONNECTOR_REF_ELEMENT.equals(entry.getNodeName()))
                {
                   String connectorName = entry.getAttributes().getNamedItem("connector-name").getNodeValue();
-                  TransportConfiguration connector = configuration.getConnectorConfigurations().get(connectorName);
 
-                  if (connector == null)
-                  {
-                     JMSServerConfigParserImpl.log.warn("There is no connector with name '" + connectorName +
-                                                        "' deployed.");
-                     throw new HornetQException(HornetQException.ILLEGAL_STATE,
-                                                "There is no connector with name '" + connectorName + "' deployed.");
-                  }
+                  String backupConnectorName = null;
 
-                  TransportConfiguration backupConnector = null;
                   Node backupNode = entry.getAttributes().getNamedItem("backup-connector-name");
                   if (backupNode != null)
                   {
-                     String backupConnectorName = backupNode.getNodeValue();
-                     backupConnector = configuration.getConnectorConfigurations().get(backupConnectorName);
-
-                     if (backupConnector == null)
-                     {
-                        JMSServerConfigParserImpl.log.warn("There is no backup connector with name '" + backupConnectorName +
-                                                           "' deployed.");
-                        throw new HornetQException(HornetQException.ILLEGAL_STATE,
-                                                   "There is no backup connector with name '" + backupConnectorName +
-                                                            "' deployed.");
-                     }
+                     backupConnectorName = backupNode.getNodeValue();
                   }
-
-                  connectorConfigs.add(new Pair<TransportConfiguration, TransportConfiguration>(connector,
-                                                                                                backupConnector));
+                  
+                  
+                  connectorNames.add(new Pair<String, String>(connectorName, backupConnectorName));
+                  
+                  
                }
             }
          }
          else if (JMSServerDeployer.DISCOVERY_GROUP_ELEMENT.equals(child.getNodeName()))
          {
-            String discoveryGroupName = child.getAttributes().getNamedItem("discovery-group-name").getNodeValue();
+            discoveryGroupName = child.getAttributes().getNamedItem("discovery-group-name").getNodeValue();
 
-            discoveryGroupConfiguration = configuration.getDiscoveryGroupConfigurations().get(discoveryGroupName);
-
-            if (discoveryGroupConfiguration == null)
-            {
-               JMSServerConfigParserImpl.log.warn("There is no discovery group with name '" + discoveryGroupName +
-                                                  "' deployed.");
-
-               throw new HornetQException(HornetQException.ILLEGAL_STATE,
-                                          "There is no discovery group with name '" + discoveryGroupName +
-                                                   "' deployed.");
-            }
          }
       }
 
@@ -403,13 +366,17 @@ public class JMSServerConfigParserImpl implements JMSServerConfigParser
 
       String[] strbindings = jndiBindings.toArray(new String[jndiBindings.size()]);
 
-      if (discoveryGroupConfiguration != null)
+      if (discoveryGroupName != null)
       {
-         cfConfig = newCF(name, discoveryInitialWaitTimeout, discoveryGroupConfiguration, strbindings);
+         cfConfig = new ConnectionFactoryConfigurationImpl(name,
+                                                           strbindings);
+         cfConfig.setInitialWaitTimeout(discoveryInitialWaitTimeout);
+         cfConfig.setDiscoveryGroupName(discoveryGroupName);
       }
       else
       {
-         cfConfig = newCF(name, connectorConfigs, strbindings);
+         cfConfig = new ConnectionFactoryConfigurationImpl(name, strbindings);
+         cfConfig.setConnectorNames(connectorNames);
       }
       
       cfConfig.setInitialWaitTimeout(discoveryInitialWaitTimeout);
@@ -444,44 +411,6 @@ public class JMSServerConfigParserImpl implements JMSServerConfigParser
       return cfConfig;
    }
 
-   /**
-    * hook for integration layers 
-    * @param name
-    * @param connectorConfigs
-    * @param strbindings
-    * @return
-    */
-   protected ConnectionFactoryConfiguration newCF(final String name,
-                                                  final List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs,
-                                                  final String[] strbindings)
-   {
-      ConnectionFactoryConfigurationImpl cfConfig;
-      cfConfig = new ConnectionFactoryConfigurationImpl(name, connectorConfigs, strbindings);
-      return cfConfig;
-   }
-
-   /**
-    * hook for integration layers 
-    * @param name
-    * @param discoveryInitialWaitTimeout
-    * @param discoveryGroupConfiguration
-    * @param strbindings
-    * @return
-    */
-   protected ConnectionFactoryConfigurationImpl newCF(final String name,
-                                                      final long discoveryInitialWaitTimeout,
-                                                      final DiscoveryGroupConfiguration discoveryGroupConfiguration,
-                                                      final String[] strbindings)
-   {
-      ConnectionFactoryConfigurationImpl cfConfig;
-      cfConfig = new ConnectionFactoryConfigurationImpl(name,
-                                                        discoveryGroupConfiguration.getGroupAddress(),
-                                                        discoveryGroupConfiguration.getGroupPort(),
-                                                        strbindings);
-      cfConfig.setDiscoveryRefreshTimeout(discoveryGroupConfiguration.getRefreshTimeout());
-      cfConfig.setInitialWaitTimeout(discoveryInitialWaitTimeout);
-      return cfConfig;
-   }
 
    /**
     * hook for integration layers 

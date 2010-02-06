@@ -17,6 +17,7 @@ import java.util.List;
 
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
+import org.hornetq.jms.server.JMSServerManager;
 
 /**
  * A ConnectionFactoryConfiguration
@@ -38,6 +39,34 @@ public interface ConnectionFactoryConfiguration
    int getDiscoveryPort();
 
    void setDiscoveryPort(int discoveryPort);
+
+
+   /**
+    * A Reference to the group configuration.
+    */
+   String getDiscoveryGroupName();
+   
+   /**
+    * A Reference to the group configuration.
+    */
+   void setDiscoveryGroupName(String groupName);
+   
+   
+   /**
+    * A List of connector names that will be converted into ConnnectorConfigs.
+    * This is useful when using the method {@link JMSServerManager#createConnectionFactory(ConnectionFactoryConfiguration)}
+    * 
+    * @return
+    */
+   List<Pair<String, String>> getConnectorNames();
+
+   /**
+    * A List of connector names that will be converted into ConnnectorConfigs.
+    * This is useful when using the method {@link JMSServerManager#createConnectionFactory(ConnectionFactoryConfiguration)}
+    * 
+    * @return
+    */
+   void setConnectorNames(List<Pair<String, String>> connectors);
 
    List<Pair<TransportConfiguration, TransportConfiguration>> getConnectorConfigs();
 

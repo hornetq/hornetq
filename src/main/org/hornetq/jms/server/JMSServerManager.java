@@ -21,6 +21,7 @@ import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.jms.server.config.ConnectionFactoryConfiguration;
 
 /**
  * The JMS Management interface.
@@ -202,6 +203,8 @@ public interface JMSServerManager extends HornetQComponent
                                 boolean failoverOnServerShutdown,
                                 String groupId,
                                 List<String> jndiBindings) throws Exception;
+   
+   void createConnectionFactory(ConnectionFactoryConfiguration cfConfig) throws Exception;
 
    /**
     * destroys a connection factory.

@@ -37,11 +37,15 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
    private final String[] bindings;
 
    private final String name;
+   
+   private String discoveryGroupName;
 
    private String discoveryAddress;
 
    private int discoveryPort;
 
+   private List<Pair<String, String>> connectorNames;
+   
    private List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs;
 
    private String clientID = null;
@@ -144,7 +148,7 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
       connectorConfigs.addAll(transportConfigs);
    }
 
-   private ConnectionFactoryConfigurationImpl(final String name, final String... bindings)
+   public ConnectionFactoryConfigurationImpl(final String name, final String... bindings)
    {
       this.name = name;
       this.bindings = new String[bindings.length];
@@ -491,6 +495,39 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
    public void setGroupID(final String groupID)
    {
       this.groupID = groupID;
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.jms.server.config.ConnectionFactoryConfiguration#getConnectorNames()
+    */
+   public List<Pair<String, String>> getConnectorNames()
+   {
+      return connectorNames;
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.jms.server.config.ConnectionFactoryConfiguration#setConnectorNames(java.util.List)
+    */
+   public void setConnectorNames(List<Pair<String, String>> connectors)
+   {
+      this.connectorNames = connectors;
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.jms.server.config.ConnectionFactoryConfiguration#getDiscoveryGroupName()
+    */
+   public String getDiscoveryGroupName()
+   {
+      return discoveryGroupName;
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.jms.server.config.ConnectionFactoryConfiguration#setDiscoveryGroupName(java.lang.String)
+    */
+   public void setDiscoveryGroupName(String groupName)
+   {
+      this.discoveryGroupName = groupName;
+      
    }
 
    // Public --------------------------------------------------------
