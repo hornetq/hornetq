@@ -23,6 +23,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.Executor;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
@@ -60,6 +61,8 @@ class StompProtocolManager implements ProtocolManager
    private final Map<String, StompSession> transactedSessions = new HashMap<String, StompSession>();
 
    private final Map<RemotingConnection, StompSession> sessions = new HashMap<RemotingConnection, StompSession>();
+
+   private Executor executor;
 
    // Static --------------------------------------------------------
 
@@ -99,6 +102,7 @@ class StompProtocolManager implements ProtocolManager
    {
       this.server = server;
       this.marshaller = new StompMarshaller();
+      this.executor = server.getExecutorFactory().getExecutor();
    }
 
    // ProtocolManager implementation --------------------------------
@@ -119,7 +123,18 @@ class StompProtocolManager implements ProtocolManager
       return -1;
    }
 
-   public void handleBuffer(RemotingConnection connection, HornetQBuffer buffer)
+   public void handleBuffer(final RemotingConnection connection, final HornetQBuffer buffer)
+   {
+      executor.execute(new Runnable()
+      {
+         public void run()
+         {
+            doHandleBuffer(connection, buffer);
+         }
+      });
+   }
+   
+   private void doHandleBuffer(RemotingConnection connection, HornetQBuffer buffer)
    {
       StompConnection conn = (StompConnection)connection;
       StompFrame request = null;
