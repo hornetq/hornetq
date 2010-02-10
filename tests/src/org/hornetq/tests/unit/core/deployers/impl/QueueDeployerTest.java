@@ -20,9 +20,9 @@ import junit.framework.Assert;
 
 import org.hornetq.api.core.management.HornetQServerControl;
 import org.hornetq.core.config.Configuration;
+import org.hornetq.core.config.CoreQueueConfiguration;
 import org.hornetq.core.deployers.DeploymentManager;
 import org.hornetq.core.deployers.impl.QueueDeployer;
-import org.hornetq.core.server.cluster.QueueConfiguration;
 import org.hornetq.tests.util.UnitTestCase;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -69,7 +69,7 @@ public class QueueDeployerTest extends UnitTestCase
 
       Assert.assertEquals(1, serverControl.configs.size());
 
-      QueueConfiguration queueConfiguration = serverControl.configs.get(0);
+      CoreQueueConfiguration queueConfiguration = serverControl.configs.get(0);
       Assert.assertEquals("foo", queueConfiguration.getName());
       Assert.assertEquals("bar", queueConfiguration.getAddress());
       Assert.assertEquals("speed > 88", queueConfiguration.getFilterString());
@@ -179,11 +179,11 @@ public class QueueDeployerTest extends UnitTestCase
          return null;
       }
 
-      List<QueueConfiguration> configs = new ArrayList<QueueConfiguration>();
+      List<CoreQueueConfiguration> configs = new ArrayList<CoreQueueConfiguration>();
 
       public void deployQueue(final String address, final String name, final String filter, final boolean durable) throws Exception
       {
-         QueueConfiguration config = new QueueConfiguration(address, name, filter, durable);
+         CoreQueueConfiguration config = new CoreQueueConfiguration(address, name, filter, durable);
 
          configs.add(config);
       }

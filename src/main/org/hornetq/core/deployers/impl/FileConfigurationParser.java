@@ -27,19 +27,19 @@ import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.core.config.BridgeConfiguration;
+import org.hornetq.core.config.BroadcastGroupConfiguration;
+import org.hornetq.core.config.ClusterConnectionConfiguration;
 import org.hornetq.core.config.Configuration;
+import org.hornetq.core.config.DiscoveryGroupConfiguration;
+import org.hornetq.core.config.DivertConfiguration;
+import org.hornetq.core.config.CoreQueueConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.config.impl.FileConfiguration;
 import org.hornetq.core.config.impl.Validators;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.server.JournalType;
-import org.hornetq.core.server.cluster.BridgeConfiguration;
-import org.hornetq.core.server.cluster.BroadcastGroupConfiguration;
-import org.hornetq.core.server.cluster.ClusterConnectionConfiguration;
-import org.hornetq.core.server.cluster.DiscoveryGroupConfiguration;
-import org.hornetq.core.server.cluster.DivertConfiguration;
-import org.hornetq.core.server.cluster.QueueConfiguration;
 import org.hornetq.core.server.group.impl.GroupingHandlerConfiguration;
 import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.hornetq.core.settings.impl.AddressSettings;
@@ -561,7 +561,7 @@ public class FileConfigurationParser
          NodeList list = node.getElementsByTagName("queue");
          for (int i = 0 ; i < list.getLength(); i++)
          {
-            QueueConfiguration queueConfig = parseQueueConfiguration(list.item(i));
+            CoreQueueConfiguration queueConfig = parseQueueConfiguration(list.item(i));
             config.getQueueConfigurations().add(queueConfig);
          }
       }
@@ -757,7 +757,7 @@ public class FileConfigurationParser
       return setting;
    }
 
-   public QueueConfiguration parseQueueConfiguration(final Node node)
+   public CoreQueueConfiguration parseQueueConfiguration(final Node node)
    {
       String name = node.getAttributes().getNamedItem("name").getNodeValue();
       String address = null;
@@ -784,7 +784,7 @@ public class FileConfigurationParser
          }
       }
 
-      return new QueueConfiguration(address, name, filterString, durable);
+      return new CoreQueueConfiguration(address, name, filterString, durable);
    }
 
    // Package protected ---------------------------------------------

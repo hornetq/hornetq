@@ -20,7 +20,7 @@ import javax.naming.Context;
 
 import org.hornetq.jms.server.config.ConnectionFactoryConfiguration;
 import org.hornetq.jms.server.config.JMSConfiguration;
-import org.hornetq.jms.server.config.QueueConfiguration;
+import org.hornetq.jms.server.config.JMSQueueConfiguration;
 import org.hornetq.jms.server.config.TopicConfiguration;
 
 
@@ -36,7 +36,7 @@ public class JMSConfigurationImpl implements JMSConfiguration
 
    private final List<ConnectionFactoryConfiguration> connectionFactoryConfigurations = new ArrayList<ConnectionFactoryConfiguration>();
 
-   private final List<QueueConfiguration> queueConfigurations = new ArrayList<QueueConfiguration>();
+   private final List<JMSQueueConfiguration> queueConfigurations = new ArrayList<JMSQueueConfiguration>();
 
    private final List<TopicConfiguration> topicConfigurations = new ArrayList<TopicConfiguration>();
 
@@ -55,7 +55,7 @@ public class JMSConfigurationImpl implements JMSConfiguration
    }
 
    public JMSConfigurationImpl(final List<ConnectionFactoryConfiguration> connectionFactoryConfigurations,
-                               final List<QueueConfiguration> queueConfigurations,
+                               final List<JMSQueueConfiguration> queueConfigurations,
                                final List<TopicConfiguration> topicConfigurations)
    {
       this.connectionFactoryConfigurations.addAll(connectionFactoryConfigurations);
@@ -70,7 +70,7 @@ public class JMSConfigurationImpl implements JMSConfiguration
       return connectionFactoryConfigurations;
    }
 
-   public List<QueueConfiguration> getQueueConfigurations()
+   public List<JMSQueueConfiguration> getQueueConfigurations()
    {
       return queueConfigurations;
    }

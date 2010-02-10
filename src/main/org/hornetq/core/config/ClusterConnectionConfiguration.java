@@ -11,7 +11,7 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.core.server.cluster;
+package org.hornetq.core.config;
 
 import java.io.Serializable;
 import java.util.List;

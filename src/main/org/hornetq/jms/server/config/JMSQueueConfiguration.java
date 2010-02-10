@@ -20,7 +20,7 @@ package org.hornetq.jms.server.config;
  *
  *
  */
-public interface QueueConfiguration
+public interface JMSQueueConfiguration
 {
    String getName();
 

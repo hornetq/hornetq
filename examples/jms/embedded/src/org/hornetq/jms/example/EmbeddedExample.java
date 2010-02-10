@@ -35,7 +35,7 @@ import org.hornetq.integration.transports.netty.NettyConnectorFactory;
 import org.hornetq.jms.server.JMSServerManager;
 import org.hornetq.jms.server.config.ConnectionFactoryConfiguration;
 import org.hornetq.jms.server.config.JMSConfiguration;
-import org.hornetq.jms.server.config.QueueConfiguration;
+import org.hornetq.jms.server.config.JMSQueueConfiguration;
 import org.hornetq.jms.server.config.impl.ConnectionFactoryConfigurationImpl;
 import org.hornetq.jms.server.config.impl.JMSConfigurationImpl;
 import org.hornetq.jms.server.config.impl.QueueConfigurationImpl;
@@ -96,7 +96,7 @@ public class EmbeddedExample
          jmsConfig.getConnectionFactoryConfigurations().add(cfConfig);
 
          // Step 7. Configure the JMS Queue
-         QueueConfiguration queueConfig = new QueueConfigurationImpl("queue1", null, false, "/queue/queue1");
+         JMSQueueConfiguration queueConfig = new QueueConfigurationImpl("queue1", null, false, "/queue/queue1");
          jmsConfig.getQueueConfigurations().add(queueConfig);
 
          // Step 8. Start the JMS Server using the HornetQ core server and the JMS configuration

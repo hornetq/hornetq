@@ -18,8 +18,8 @@ import javax.management.MBeanOperationInfo;
 import org.hornetq.api.core.management.AddressControl;
 import org.hornetq.api.core.management.DiscoveryGroupControl;
 import org.hornetq.core.cluster.DiscoveryGroup;
+import org.hornetq.core.config.DiscoveryGroupConfiguration;
 import org.hornetq.core.persistence.StorageManager;
-import org.hornetq.core.server.cluster.DiscoveryGroupConfiguration;
 
 /**
  * A AcceptorControl

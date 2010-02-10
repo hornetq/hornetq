@@ -22,7 +22,7 @@ import org.hornetq.core.logging.Logger;
 import org.hornetq.jms.server.JMSServerConfigParser;
 import org.hornetq.jms.server.JMSServerManager;
 import org.hornetq.jms.server.config.ConnectionFactoryConfiguration;
-import org.hornetq.jms.server.config.QueueConfiguration;
+import org.hornetq.jms.server.config.JMSQueueConfiguration;
 import org.hornetq.jms.server.config.TopicConfiguration;
 import org.w3c.dom.Node;
 
@@ -181,7 +181,7 @@ public class JMSServerDeployer extends XmlDeployer
     */
    private void deployQueue(final Node node) throws Exception
    {
-      QueueConfiguration queueconfig = parser.parseQueueConfiguration(node);
+      JMSQueueConfiguration queueconfig = parser.parseQueueConfiguration(node);
       for (String jndiName : queueconfig.getBindings())
       {
          jmsServerControl.createQueue(queueconfig.getName(), jndiName, queueconfig.getSelector(), queueconfig.isDurable());

@@ -27,15 +27,15 @@ import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.management.ClusterConnectionControl;
+import org.hornetq.core.config.BroadcastGroupConfiguration;
+import org.hornetq.core.config.ClusterConnectionConfiguration;
 import org.hornetq.core.config.Configuration;
+import org.hornetq.core.config.DiscoveryGroupConfiguration;
+import org.hornetq.core.config.CoreQueueConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
-import org.hornetq.core.server.cluster.BroadcastGroupConfiguration;
-import org.hornetq.core.server.cluster.ClusterConnectionConfiguration;
-import org.hornetq.core.server.cluster.DiscoveryGroupConfiguration;
-import org.hornetq.core.server.cluster.QueueConfiguration;
 import org.hornetq.integration.transports.netty.NettyAcceptorFactory;
 import org.hornetq.integration.transports.netty.NettyConnectorFactory;
 import org.hornetq.integration.transports.netty.TransportConstants;
@@ -125,7 +125,7 @@ public class ClusterConnectionControl2Test extends ManagementTestBase
 
       TransportConfiguration connectorConfig_0 = new TransportConfiguration(NettyConnectorFactory.class.getName());
 
-      QueueConfiguration queueConfig = new QueueConfiguration(RandomUtil.randomString(),
+      CoreQueueConfiguration queueConfig = new CoreQueueConfiguration(RandomUtil.randomString(),
                                                               RandomUtil.randomString(),
                                                               null,
                                                               false);

@@ -11,7 +11,7 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.core.server.cluster;
+package org.hornetq.core.config;
 
 import java.io.Serializable;
 
@@ -24,7 +24,7 @@ import java.io.Serializable;
  *
  *
  */
-public class QueueConfiguration implements Serializable
+public class CoreQueueConfiguration implements Serializable
 {
    private static final long serialVersionUID = 650404974977490254L;
 
@@ -36,7 +36,7 @@ public class QueueConfiguration implements Serializable
 
    private boolean durable;
 
-   public QueueConfiguration(final String address, final String name, final String filterString, final boolean durable)
+   public CoreQueueConfiguration(final String address, final String name, final String filterString, final boolean durable)
    {
       this.address = address;
       this.name = name;

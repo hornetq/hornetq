@@ -30,7 +30,7 @@ public interface JMSConfiguration
 
    Context getContext();
 
-   List<QueueConfiguration> getQueueConfigurations();
+   List<JMSQueueConfiguration> getQueueConfigurations();
 
    List<TopicConfiguration> getTopicConfigurations();
 

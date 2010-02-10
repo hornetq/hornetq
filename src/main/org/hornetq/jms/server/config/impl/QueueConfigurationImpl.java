@@ -13,7 +13,7 @@
 
 package org.hornetq.jms.server.config.impl;
 
-import org.hornetq.jms.server.config.QueueConfiguration;
+import org.hornetq.jms.server.config.JMSQueueConfiguration;
 
 
 /**
@@ -23,7 +23,7 @@ import org.hornetq.jms.server.config.QueueConfiguration;
  *
  *
  */
-public class QueueConfigurationImpl implements QueueConfiguration
+public class QueueConfigurationImpl implements JMSQueueConfiguration
 {
 
    // Constants -----------------------------------------------------

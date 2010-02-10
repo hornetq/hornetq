@@ -30,20 +30,20 @@ import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.core.config.Configuration;
+import org.hornetq.core.config.DiscoveryGroupConfiguration;
 import org.hornetq.core.deployers.DeploymentManager;
 import org.hornetq.core.deployers.impl.FileDeploymentManager;
 import org.hornetq.core.deployers.impl.XmlDeployer;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.ActivateCallback;
 import org.hornetq.core.server.HornetQServer;
-import org.hornetq.core.server.cluster.DiscoveryGroupConfiguration;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.client.HornetQDestination;
 import org.hornetq.jms.client.SelectorTranslator;
 import org.hornetq.jms.server.JMSServerManager;
 import org.hornetq.jms.server.config.ConnectionFactoryConfiguration;
 import org.hornetq.jms.server.config.JMSConfiguration;
-import org.hornetq.jms.server.config.QueueConfiguration;
+import org.hornetq.jms.server.config.JMSQueueConfiguration;
 import org.hornetq.jms.server.config.TopicConfiguration;
 import org.hornetq.jms.server.management.JMSManagementService;
 import org.hornetq.jms.server.management.impl.JMSManagementServiceImpl;
@@ -887,8 +887,8 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
          createConnectionFactory(config);
       }
 
-      List<QueueConfiguration> queueConfigs = config.getQueueConfigurations();
-      for (QueueConfiguration config : queueConfigs)
+      List<JMSQueueConfiguration> queueConfigs = config.getQueueConfigurations();
+      for (JMSQueueConfiguration config : queueConfigs)
       {
          String[] bindings = config.getBindings();
          for (String binding : bindings)
@@ -919,7 +919,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       {
          return cfConfig.getConnectorConfigs();
       }
-      else
+      else if (cfConfig.getConnectorNames() != null)
       {
          Configuration configuration = server.getConfiguration();
          List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs = new ArrayList<Pair<TransportConfiguration, TransportConfiguration>>();
@@ -958,6 +958,10 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
          }
          return connectorConfigs;
 
+      }
+      else
+      {
+         return null;
       }
    }
 

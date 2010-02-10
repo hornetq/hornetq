@@ -1504,6 +1504,7 @@
 
    <target name="runServer" depends="jar">
       <mkdir dir="logs"/>
+   	  <property name="server.config" value="${src.config.trunk.non-clustered.dir}"/>
       <java classname="org.hornetq.integration.bootstrap.HornetQBootstrapServer" fork="true">
          <jvmarg value="-XX:+UseParallelGC"/>
          <jvmarg value="-Xms512M"/>
@@ -1515,7 +1516,7 @@
          <jvmarg value="-Djava.library.path=${native.bin.dir}"/>
          <!--<jvmarg line="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000"/>-->
          <arg line="hornetq-beans.xml"/>
-         <classpath path="${src.config.trunk.non-clustered.dir}" />
+         <classpath path="${server.config}" />
          <classpath refid="jms.standalone.server.classpath"/>
       </java>
    </target>
@@ -1542,6 +1543,7 @@
    </target>
 
    <target name="debugServer" depends="jar">
+ 	  <property name="server.config" value="${src.config.trunk.non-clustered.dir}"/>
       <mkdir dir="logs"/>
       <java classname="org.hornetq.integration.bootstrap.HornetQBootstrapServer" fork="true">
          <jvmarg value="-XX:+UseParallelGC"/>
@@ -1554,7 +1556,7 @@
          <jvmarg value="-Djava.library.path=${native.bin.dir}"/>
          <jvmarg line="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000"/>
          <arg line="hornetq-beans.xml"/>
-         <classpath path="${src.config.trunk.non-clustered.dir}" />
+         <classpath path="${server.config}" />
          <classpath refid="jms.standalone.server.classpath"/>
       </java>
    </target>

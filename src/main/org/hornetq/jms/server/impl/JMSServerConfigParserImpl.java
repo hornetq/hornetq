@@ -27,7 +27,7 @@ import org.hornetq.core.logging.Logger;
 import org.hornetq.jms.server.JMSServerConfigParser;
 import org.hornetq.jms.server.config.ConnectionFactoryConfiguration;
 import org.hornetq.jms.server.config.JMSConfiguration;
-import org.hornetq.jms.server.config.QueueConfiguration;
+import org.hornetq.jms.server.config.JMSQueueConfiguration;
 import org.hornetq.jms.server.config.TopicConfiguration;
 import org.hornetq.jms.server.config.impl.ConnectionFactoryConfigurationImpl;
 import org.hornetq.jms.server.config.impl.JMSConfigurationImpl;
@@ -80,7 +80,7 @@ public class JMSServerConfigParserImpl implements JMSServerConfigParser
    public JMSConfiguration parseConfiguration(final Node rootnode) throws Exception
    {
 
-      ArrayList<QueueConfiguration> queues = new ArrayList<QueueConfiguration>();
+      ArrayList<JMSQueueConfiguration> queues = new ArrayList<JMSQueueConfiguration>();
       ArrayList<TopicConfiguration> topics = new ArrayList<TopicConfiguration>();
       ArrayList<ConnectionFactoryConfiguration> cfs = new ArrayList<ConnectionFactoryConfiguration>();
 
@@ -158,7 +158,7 @@ public class JMSServerConfigParserImpl implements JMSServerConfigParser
     * @return
     * @throws Exception
     */
-   public QueueConfiguration parseQueueConfiguration(final Node node) throws Exception
+   public JMSQueueConfiguration parseQueueConfiguration(final Node node) throws Exception
    {
       Element e = (Element)node;
       NamedNodeMap atts = node.getAttributes();
@@ -431,7 +431,7 @@ public class JMSServerConfigParserImpl implements JMSServerConfigParser
     * @param jndiArray
     * @return
     */
-   protected QueueConfiguration newQueue(final String queueName,
+   protected JMSQueueConfiguration newQueue(final String queueName,
                                          final String selectorString,
                                          final boolean durable,
                                          final String[] jndiArray)
@@ -446,7 +446,7 @@ public class JMSServerConfigParserImpl implements JMSServerConfigParser
     * @param cfs
     * @return
     */
-   protected JMSConfiguration newConfig(final ArrayList<QueueConfiguration> queues,
+   protected JMSConfiguration newConfig(final ArrayList<JMSQueueConfiguration> queues,
                                         final ArrayList<TopicConfiguration> topics,
                                         final ArrayList<ConnectionFactoryConfiguration> cfs)
    {

@@ -18,9 +18,9 @@ import javax.management.MBeanOperationInfo;
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.management.AddressControl;
 import org.hornetq.api.core.management.BroadcastGroupControl;
+import org.hornetq.core.config.BroadcastGroupConfiguration;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.server.cluster.BroadcastGroup;
-import org.hornetq.core.server.cluster.BroadcastGroupConfiguration;
 import org.hornetq.utils.json.JSONArray;
 import org.hornetq.utils.json.JSONObject;
 

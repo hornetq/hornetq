@@ -17,7 +17,7 @@ import java.io.InputStream;
 
 import org.hornetq.jms.server.config.ConnectionFactoryConfiguration;
 import org.hornetq.jms.server.config.JMSConfiguration;
-import org.hornetq.jms.server.config.QueueConfiguration;
+import org.hornetq.jms.server.config.JMSQueueConfiguration;
 import org.hornetq.jms.server.config.TopicConfiguration;
 import org.w3c.dom.Node;
 
@@ -54,7 +54,7 @@ public interface JMSServerConfigParser
     * @return
     * @throws Exception
     */
-   QueueConfiguration parseQueueConfiguration(final Node node) throws Exception;
+   JMSQueueConfiguration parseQueueConfiguration(final Node node) throws Exception;
 
    /**
     * Parse the Connection Configuration node as a ConnectionFactoryConfiguration object

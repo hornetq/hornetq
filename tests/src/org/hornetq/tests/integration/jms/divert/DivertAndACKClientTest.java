@@ -29,7 +29,7 @@ import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.server.cluster.DivertConfiguration;
+import org.hornetq.core.config.DivertConfiguration;
 import org.hornetq.tests.util.JMSTestBase;
 
 /**

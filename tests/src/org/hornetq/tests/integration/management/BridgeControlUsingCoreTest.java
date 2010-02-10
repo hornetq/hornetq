@@ -27,15 +27,15 @@ import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.management.ObjectNameBuilder;
 import org.hornetq.api.core.management.ResourceNames;
+import org.hornetq.core.config.BridgeConfiguration;
 import org.hornetq.core.config.Configuration;
+import org.hornetq.core.config.CoreQueueConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.remoting.impl.invm.TransportConstants;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
-import org.hornetq.core.server.cluster.BridgeConfiguration;
-import org.hornetq.core.server.cluster.QueueConfiguration;
 import org.hornetq.tests.util.RandomUtil;
 
 /**
@@ -129,11 +129,11 @@ public class BridgeControlUsingCoreTest extends ManagementTestBase
                                                                           acceptorParams,
                                                                           RandomUtil.randomString());
 
-      QueueConfiguration sourceQueueConfig = new QueueConfiguration(RandomUtil.randomString(),
+      CoreQueueConfiguration sourceQueueConfig = new CoreQueueConfiguration(RandomUtil.randomString(),
                                                                     RandomUtil.randomString(),
                                                                     null,
                                                                     false);
-      QueueConfiguration targetQueueConfig = new QueueConfiguration(RandomUtil.randomString(),
+      CoreQueueConfiguration targetQueueConfig = new CoreQueueConfiguration(RandomUtil.randomString(),
                                                                     RandomUtil.randomString(),
                                                                     null,
                                                                     false);

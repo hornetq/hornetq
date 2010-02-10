@@ -20,13 +20,13 @@ import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.management.DivertControl;
 import org.hornetq.api.core.management.ObjectNameBuilder;
 import org.hornetq.core.config.Configuration;
+import org.hornetq.core.config.DivertConfiguration;
+import org.hornetq.core.config.CoreQueueConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
-import org.hornetq.core.server.cluster.DivertConfiguration;
-import org.hornetq.core.server.cluster.QueueConfiguration;
 import org.hornetq.tests.util.RandomUtil;
 
 /**
@@ -84,11 +84,11 @@ public class DivertControlTest extends ManagementTestBase
 
       TransportConfiguration connectorConfig = new TransportConfiguration(InVMConnectorFactory.class.getName());
 
-      QueueConfiguration queueConfig = new QueueConfiguration(RandomUtil.randomString(),
+      CoreQueueConfiguration queueConfig = new CoreQueueConfiguration(RandomUtil.randomString(),
                                                               RandomUtil.randomString(),
                                                               null,
                                                               false);
-      QueueConfiguration fowardQueueConfig = new QueueConfiguration(RandomUtil.randomString(),
+      CoreQueueConfiguration fowardQueueConfig = new CoreQueueConfiguration(RandomUtil.randomString(),
                                                                     RandomUtil.randomString(),
                                                                     null,
                                                                     false);

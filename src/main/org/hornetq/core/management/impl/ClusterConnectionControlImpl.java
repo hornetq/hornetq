@@ -21,9 +21,9 @@ import javax.management.MBeanOperationInfo;
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.management.AddressControl;
 import org.hornetq.api.core.management.ClusterConnectionControl;
+import org.hornetq.core.config.ClusterConnectionConfiguration;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.server.cluster.ClusterConnection;
-import org.hornetq.core.server.cluster.ClusterConnectionConfiguration;
 import org.hornetq.utils.json.JSONArray;
 import org.hornetq.utils.json.JSONObject;
 

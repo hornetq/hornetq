@@ -40,6 +40,8 @@ import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.core.client.impl.FailoverManager;
 import org.hornetq.core.client.impl.FailoverManagerImpl;
 import org.hornetq.core.config.Configuration;
+import org.hornetq.core.config.DivertConfiguration;
+import org.hornetq.core.config.CoreQueueConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.deployers.Deployer;
 import org.hornetq.core.deployers.DeploymentManager;
@@ -87,8 +89,6 @@ import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.QueueFactory;
 import org.hornetq.core.server.ServerSession;
 import org.hornetq.core.server.cluster.ClusterManager;
-import org.hornetq.core.server.cluster.DivertConfiguration;
-import org.hornetq.core.server.cluster.QueueConfiguration;
 import org.hornetq.core.server.cluster.Transformer;
 import org.hornetq.core.server.cluster.impl.ClusterManagerImpl;
 import org.hornetq.core.server.group.GroupingHandler;
@@ -1102,7 +1102,7 @@ public class HornetQServerImpl implements HornetQServer
 
    private void deployQueuesFromConfiguration() throws Exception
    {
-      for (QueueConfiguration config : configuration.getQueueConfigurations())
+      for (CoreQueueConfiguration config : configuration.getQueueConfigurations())
       {
          messagingServerControl.deployQueue(config.getAddress(),
                                             config.getName(),

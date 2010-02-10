@@ -29,15 +29,15 @@ import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.management.ClusterConnectionControl;
 import org.hornetq.api.core.management.NotificationType;
 import org.hornetq.api.core.management.ObjectNameBuilder;
+import org.hornetq.core.config.ClusterConnectionConfiguration;
 import org.hornetq.core.config.Configuration;
+import org.hornetq.core.config.CoreQueueConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.remoting.impl.invm.TransportConstants;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
-import org.hornetq.core.server.cluster.ClusterConnectionConfiguration;
-import org.hornetq.core.server.cluster.QueueConfiguration;
 import org.hornetq.core.server.management.Notification;
 import org.hornetq.tests.integration.SimpleNotificationService;
 import org.hornetq.tests.util.RandomUtil;
@@ -199,7 +199,7 @@ public class ClusterConnectionControlTest extends ManagementTestBase
                                                                           acceptorParams,
                                                                           RandomUtil.randomString());
 
-      QueueConfiguration queueConfig = new QueueConfiguration(RandomUtil.randomString(),
+      CoreQueueConfiguration queueConfig = new CoreQueueConfiguration(RandomUtil.randomString(),
                                                               RandomUtil.randomString(),
                                                               null,
                                                               false);

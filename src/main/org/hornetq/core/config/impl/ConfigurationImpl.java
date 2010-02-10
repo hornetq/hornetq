@@ -23,16 +23,16 @@ import java.util.Set;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
+import org.hornetq.core.config.BridgeConfiguration;
+import org.hornetq.core.config.BroadcastGroupConfiguration;
+import org.hornetq.core.config.ClusterConnectionConfiguration;
 import org.hornetq.core.config.Configuration;
+import org.hornetq.core.config.DiscoveryGroupConfiguration;
+import org.hornetq.core.config.DivertConfiguration;
+import org.hornetq.core.config.CoreQueueConfiguration;
 import org.hornetq.core.logging.impl.JULLogDelegateFactory;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.server.JournalType;
-import org.hornetq.core.server.cluster.BridgeConfiguration;
-import org.hornetq.core.server.cluster.BroadcastGroupConfiguration;
-import org.hornetq.core.server.cluster.ClusterConnectionConfiguration;
-import org.hornetq.core.server.cluster.DiscoveryGroupConfiguration;
-import org.hornetq.core.server.cluster.DivertConfiguration;
-import org.hornetq.core.server.cluster.QueueConfiguration;
 import org.hornetq.core.server.group.impl.GroupingHandlerConfiguration;
 import org.hornetq.core.settings.impl.AddressSettings;
 
@@ -233,7 +233,7 @@ public class ConfigurationImpl implements Configuration
 
    protected List<ClusterConnectionConfiguration> clusterConfigurations = new ArrayList<ClusterConnectionConfiguration>();
 
-   protected List<QueueConfiguration> queueConfigurations = new ArrayList<QueueConfiguration>();
+   protected List<CoreQueueConfiguration> queueConfigurations = new ArrayList<CoreQueueConfiguration>();
 
    protected List<BroadcastGroupConfiguration> broadcastGroupConfigurations = new ArrayList<BroadcastGroupConfiguration>();
 
@@ -537,12 +537,12 @@ public class ConfigurationImpl implements Configuration
       divertConfigurations = configs;
    }
 
-   public List<QueueConfiguration> getQueueConfigurations()
+   public List<CoreQueueConfiguration> getQueueConfigurations()
    {
       return queueConfigurations;
    }
 
-   public void setQueueConfigurations(final List<QueueConfiguration> configs)
+   public void setQueueConfigurations(final List<CoreQueueConfiguration> configs)
    {
       queueConfigurations = configs;
    }

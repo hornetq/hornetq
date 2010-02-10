@@ -23,12 +23,6 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.server.JournalType;
-import org.hornetq.core.server.cluster.BridgeConfiguration;
-import org.hornetq.core.server.cluster.BroadcastGroupConfiguration;
-import org.hornetq.core.server.cluster.ClusterConnectionConfiguration;
-import org.hornetq.core.server.cluster.DiscoveryGroupConfiguration;
-import org.hornetq.core.server.cluster.DivertConfiguration;
-import org.hornetq.core.server.cluster.QueueConfiguration;
 import org.hornetq.core.server.group.impl.GroupingHandlerConfiguration;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.spi.core.logging.LogDelegateFactory;
@@ -338,12 +332,12 @@ public interface Configuration extends Serializable
    /**
     * Returns the queues configured for this server.
     */
-   List<QueueConfiguration> getQueueConfigurations();
+   List<CoreQueueConfiguration> getQueueConfigurations();
 
    /**
     * Sets the queues configured for this server.
     */
-   void setQueueConfigurations(final List<QueueConfiguration> configs);
+   void setQueueConfigurations(final List<CoreQueueConfiguration> configs);
 
    /**
     * Returns the management address of this server.

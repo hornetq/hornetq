@@ -14,8 +14,8 @@
 package org.hornetq.core.deployers.impl;
 
 import org.hornetq.api.core.management.HornetQServerControl;
+import org.hornetq.core.config.CoreQueueConfiguration;
 import org.hornetq.core.deployers.DeploymentManager;
-import org.hornetq.core.server.cluster.QueueConfiguration;
 import org.w3c.dom.Node;
 
 /**
@@ -62,7 +62,7 @@ public class QueueDeployer extends XmlDeployer
    @Override
    public void deploy(final Node node) throws Exception
    {
-      QueueConfiguration queueConfig = parser.parseQueueConfiguration(node);
+      CoreQueueConfiguration queueConfig = parser.parseQueueConfiguration(node);
 
       serverControl.deployQueue(queueConfig.getAddress(),
                                 queueConfig.getName(),

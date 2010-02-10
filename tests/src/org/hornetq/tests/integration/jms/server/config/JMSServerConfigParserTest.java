@@ -21,7 +21,7 @@ import org.hornetq.core.config.Configuration;
 import org.hornetq.jms.server.JMSServerConfigParser;
 import org.hornetq.jms.server.config.ConnectionFactoryConfiguration;
 import org.hornetq.jms.server.config.JMSConfiguration;
-import org.hornetq.jms.server.config.QueueConfiguration;
+import org.hornetq.jms.server.config.JMSQueueConfiguration;
 import org.hornetq.jms.server.config.TopicConfiguration;
 import org.hornetq.jms.server.impl.JMSServerConfigParserImpl;
 import org.hornetq.tests.util.ServiceTestBase;
@@ -95,7 +95,7 @@ public class JMSServerConfigParserTest extends ServiceTestBase
       
       assertEquals(1, jmsconfig.getQueueConfigurations().size());
 
-      QueueConfiguration queueConfig = jmsconfig.getQueueConfigurations().get(0);
+      JMSQueueConfiguration queueConfig = jmsconfig.getQueueConfigurations().get(0);
       assertEquals("fullConfigurationQueue", queueConfig.getName());
       assertEquals(2, queueConfig.getBindings().length);
       assertEquals("/fullConfigurationQueue", queueConfig.getBindings()[0]);
