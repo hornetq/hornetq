@@ -17,7 +17,6 @@ import org.hornetq.api.core.management.HornetQServerControl;
 import org.hornetq.core.deployers.DeploymentManager;
 import org.hornetq.core.server.cluster.QueueConfiguration;
 import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 /**
  * A QueueDeployer
@@ -29,6 +28,8 @@ import org.w3c.dom.NodeList;
 public class QueueDeployer extends XmlDeployer
 {
    private final HornetQServerControl serverControl;
+
+   private final FileConfigurationParser parser = new FileConfigurationParser();
 
    public QueueDeployer(final DeploymentManager deploymentManager, final HornetQServerControl serverControl)
    {
@@ -61,7 +62,7 @@ public class QueueDeployer extends XmlDeployer
    @Override
    public void deploy(final Node node) throws Exception
    {
-      QueueConfiguration queueConfig = parseQueueConfiguration(node);
+      QueueConfiguration queueConfig = parser.parseQueueConfiguration(node);
 
       serverControl.deployQueue(queueConfig.getAddress(),
                                 queueConfig.getName(),
@@ -84,36 +85,6 @@ public class QueueDeployer extends XmlDeployer
    public String[] getDefaultConfigFileNames()
    {
       return new String[] { "hornetq-configuration.xml", "hornetq-queues.xml" };
-   }
-
-   private QueueConfiguration parseQueueConfiguration(final Node node)
-   {
-      String name = node.getAttributes().getNamedItem("name").getNodeValue();
-      String address = null;
-      String filterString = null;
-      boolean durable = true;
-
-      NodeList children = node.getChildNodes();
-
-      for (int j = 0; j < children.getLength(); j++)
-      {
-         Node child = children.item(j);
-
-         if (child.getNodeName().equals("address"))
-         {
-            address = child.getTextContent().trim();
-         }
-         else if (child.getNodeName().equals("filter"))
-         {
-            filterString = child.getAttributes().getNamedItem("string").getNodeValue();
-         }
-         else if (child.getNodeName().equals("durable"))
-         {
-            durable = Boolean.parseBoolean(child.getTextContent().trim());
-         }
-      }
-
-      return new QueueConfiguration(address, name, filterString, durable);
    }
 
 }

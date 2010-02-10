@@ -975,6 +975,8 @@ public class HornetQServerImpl implements HornetQServer
                                                                 configuration.isBackup());
 
       // Address settings need to deployed initially, since they're require on paging manager.start()
+      
+      deployAddressSettingsFromConfiguration();
 
       if (configuration.isFileDeploymentEnabled())
       {
@@ -997,6 +999,8 @@ public class HornetQServerImpl implements HornetQServer
       managementService.start();
 
       resourceManager.start();
+
+      deploySecurityFromConfiguration();
 
       // Deploy all security related config
       if (configuration.isFileDeploymentEnabled())
@@ -1088,6 +1092,14 @@ public class HornetQServerImpl implements HornetQServer
       }
    }
 
+   private void deploySecurityFromConfiguration()
+   {
+      for (Map.Entry<String, Set<Role>> entry : configuration.getSecurityRoles().entrySet())
+      {
+         securityRepository.addMatch(entry.getKey(), entry.getValue());
+      }
+   }
+
    private void deployQueuesFromConfiguration() throws Exception
    {
       for (QueueConfiguration config : configuration.getQueueConfigurations())
@@ -1098,6 +1110,15 @@ public class HornetQServerImpl implements HornetQServer
                                             config.isDurable());
       }
    }
+
+   private void deployAddressSettingsFromConfiguration()
+   {
+      for (Map.Entry<String, AddressSettings> entry : configuration.getAddressesSettings().entrySet())
+      {
+         addressSettingsRepository.addMatch(entry.getKey(), entry.getValue());
+      }
+   }
+
 
    private JournalLoadInformation[] loadJournals() throws Exception
    {

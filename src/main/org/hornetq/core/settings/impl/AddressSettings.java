@@ -13,6 +13,8 @@
 
 package org.hornetq.core.settings.impl;
 
+import java.io.Serializable;
+
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.settings.Mergeable;
@@ -23,8 +25,10 @@ import org.hornetq.core.settings.Mergeable;
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  */
-public class AddressSettings implements Mergeable<AddressSettings>
+public class AddressSettings implements Mergeable<AddressSettings>, Serializable
 {
+   private static final long serialVersionUID = 1607502280582336366L;
+
    private static Logger log = Logger.getLogger(AddressSettings.class);
 
    /**

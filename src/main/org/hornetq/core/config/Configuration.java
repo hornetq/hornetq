@@ -21,7 +21,7 @@ import java.util.Set;
 import org.hornetq.api.core.Interceptor;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.core.config.impl.ConfigurationImpl;
+import org.hornetq.core.security.Role;
 import org.hornetq.core.server.JournalType;
 import org.hornetq.core.server.cluster.BridgeConfiguration;
 import org.hornetq.core.server.cluster.BroadcastGroupConfiguration;
@@ -30,6 +30,7 @@ import org.hornetq.core.server.cluster.DiscoveryGroupConfiguration;
 import org.hornetq.core.server.cluster.DivertConfiguration;
 import org.hornetq.core.server.cluster.QueueConfiguration;
 import org.hornetq.core.server.group.impl.GroupingHandlerConfiguration;
+import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.spi.core.logging.LogDelegateFactory;
 
 /**
@@ -803,5 +804,28 @@ public interface Configuration extends Serializable
     * Sets the priority of the thread used to scan message expiration.
     */
    void setMessageExpiryThreadPriority(int messageExpiryThreadPriority);
+
+   /**
+    * 
+    * @return A list of AddressSettings per matching to be deployed to the address settings repository
+    */
+   Map<String, AddressSettings> getAddressesSettings();
+
+   /**
+    * @param A list of AddressSettings per matching to be deployed to the address settings repository
+    */
+   void setAddressesSettings(Map<String, AddressSettings> addressesSettings);
+
+   /**
+    * 
+    * @param roles a list of roles per matching
+    */
+   void setSecurityRoles(Map<String, Set<Role>> roles);
+
+   /**
+    * 
+    * @return a list of roles per matching
+    */
+   Map<String, Set<Role>> getSecurityRoles();
 
 }

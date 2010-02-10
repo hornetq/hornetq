@@ -182,4 +182,33 @@
              <discovery-group-ref discovery-group-name="dg1"/>
          </cluster-connection>
       </cluster-connections>
+      
+    <security-settings>
+      <security-setting match="a1">
+         <permission type="createTempQueue" roles="a1.1"/>
+      </security-setting>
+      <security-setting match="a2">
+         <permission type="deleteTempQueue" roles="a2.1"/>
+      </security-setting>
+   </security-settings>
+
+   <address-settings>
+      <address-setting match="a1">
+         <dead-letter-address>a1.1</dead-letter-address>
+         <expiry-address>a1.2</expiry-address>
+         <redelivery-delay>1</redelivery-delay>
+         <max-size-bytes>2</max-size-bytes>
+         <page-size-bytes>3</page-size-bytes>
+         <message-counter-history-day-limit>4</message-counter-history-day-limit>
+      </address-setting>
+      <address-setting match="a2">
+         <dead-letter-address>a2.1</dead-letter-address>
+         <expiry-address>a2.2</expiry-address>
+         <redelivery-delay>5</redelivery-delay>
+         <max-size-bytes>6</max-size-bytes>
+         <page-size-bytes>7</page-size-bytes>
+         <message-counter-history-day-limit>8</message-counter-history-day-limit>
+      </address-setting>
+   </address-settings>
+   
 </configuration>

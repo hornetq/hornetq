@@ -19,6 +19,7 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.FileConfiguration;
+import org.hornetq.core.security.Role;
 import org.hornetq.core.server.JournalType;
 import org.hornetq.core.server.cluster.BridgeConfiguration;
 import org.hornetq.core.server.cluster.BroadcastGroupConfiguration;
@@ -258,6 +259,66 @@ public class FileConfigurationTest extends ConfigurationImplTest
             Assert.assertEquals("dg1", ccc.getDiscoveryGroupName());
          }
       }
+      
+      
+      assertEquals(2, conf.getAddressesSettings().size());
+      
+      assertTrue(conf.getAddressesSettings().get("a1") != null);
+      assertTrue(conf.getAddressesSettings().get("a2") != null);
+      
+      assertEquals("a1.1", conf.getAddressesSettings().get("a1").getDeadLetterAddress().toString());
+      assertEquals("a1.2", conf.getAddressesSettings().get("a1").getExpiryAddress().toString());
+      assertEquals(1, conf.getAddressesSettings().get("a1").getRedeliveryDelay());
+      assertEquals(2, conf.getAddressesSettings().get("a1").getMaxSizeBytes());
+      assertEquals(3, conf.getAddressesSettings().get("a1").getPageSizeBytes());
+      assertEquals(4, conf.getAddressesSettings().get("a1").getMessageCounterHistoryDayLimit());
+
+      assertEquals("a2.1", conf.getAddressesSettings().get("a2").getDeadLetterAddress().toString());
+      assertEquals("a2.2", conf.getAddressesSettings().get("a2").getExpiryAddress().toString());
+      assertEquals(5, conf.getAddressesSettings().get("a2").getRedeliveryDelay());
+      assertEquals(6, conf.getAddressesSettings().get("a2").getMaxSizeBytes());
+      assertEquals(7, conf.getAddressesSettings().get("a2").getPageSizeBytes());
+      assertEquals(8, conf.getAddressesSettings().get("a2").getMessageCounterHistoryDayLimit());
+      
+      
+      assertEquals(2, conf.getQueueConfigurations().size());
+      
+      assertEquals("queue1", conf.getQueueConfigurations().get(0).getName());
+      assertEquals("address1", conf.getQueueConfigurations().get(0).getAddress());
+      assertEquals("color='red'", conf.getQueueConfigurations().get(0).getFilterString());
+      assertEquals(false, conf.getQueueConfigurations().get(0).isDurable());
+      
+      assertEquals("queue2", conf.getQueueConfigurations().get(1).getName());
+      assertEquals("address2", conf.getQueueConfigurations().get(1).getAddress());
+      assertEquals("color='blue'", conf.getQueueConfigurations().get(1).getFilterString());
+      assertEquals(false, conf.getQueueConfigurations().get(1).isDurable());
+      
+      assertEquals(2, conf.getSecurityRoles().size());
+
+      assertTrue(conf.getSecurityRoles().containsKey("a1"));
+      
+      assertTrue(conf.getSecurityRoles().containsKey("a2"));
+      
+      Role a1Role = conf.getSecurityRoles().get("a1").toArray(new Role[1])[0];
+      
+      assertFalse(a1Role.isSend());
+      assertFalse(a1Role.isConsume());
+      assertFalse(a1Role.isCreateDurableQueue());
+      assertFalse(a1Role.isDeleteDurableQueue());
+      assertTrue(a1Role.isCreateNonDurableQueue());
+      assertFalse(a1Role.isDeleteNonDurableQueue());
+      assertFalse(a1Role.isManage());
+      
+      Role a2Role = conf.getSecurityRoles().get("a2").toArray(new Role[1])[0];
+      
+      assertFalse(a2Role.isSend());
+      assertFalse(a2Role.isConsume());
+      assertFalse(a2Role.isCreateDurableQueue());
+      assertFalse(a2Role.isDeleteDurableQueue());
+      assertFalse(a2Role.isCreateNonDurableQueue());
+      assertTrue(a2Role.isDeleteNonDurableQueue());
+      assertFalse(a2Role.isManage());
+      
 
    }
 

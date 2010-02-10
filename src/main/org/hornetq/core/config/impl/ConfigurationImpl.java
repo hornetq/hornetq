@@ -25,6 +25,7 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.logging.impl.JULLogDelegateFactory;
+import org.hornetq.core.security.Role;
 import org.hornetq.core.server.JournalType;
 import org.hornetq.core.server.cluster.BridgeConfiguration;
 import org.hornetq.core.server.cluster.BroadcastGroupConfiguration;
@@ -33,6 +34,7 @@ import org.hornetq.core.server.cluster.DiscoveryGroupConfiguration;
 import org.hornetq.core.server.cluster.DivertConfiguration;
 import org.hornetq.core.server.cluster.QueueConfiguration;
 import org.hornetq.core.server.group.impl.GroupingHandlerConfiguration;
+import org.hornetq.core.settings.impl.AddressSettings;
 
 /**
  * @author <a href="mailto:ataylor@redhat.com>Andy Taylor</a>
@@ -315,6 +317,10 @@ public class ConfigurationImpl implements Configuration
    protected long memoryMeasureInterval = ConfigurationImpl.DEFAULT_MEMORY_MEASURE_INTERVAL;
 
    protected GroupingHandlerConfiguration groupingHandlerConfiguration;
+
+   private Map<String, AddressSettings> addressesSettings = new HashMap<String, AddressSettings>();
+
+   private Map<String, Set<Role>> securitySettings = new HashMap<String, Set<Role>>();
 
    // Public -------------------------------------------------------------------------
 
@@ -805,10 +811,10 @@ public class ConfigurationImpl implements Configuration
    {
       return messageCounterSamplePeriod;
    }
-   
-   public void setMessageCounterSamplePeriod(long period)
+
+   public void setMessageCounterSamplePeriod(final long period)
    {
-      this.messageCounterSamplePeriod = period;
+      messageCounterSamplePeriod = period;
    }
 
    public int getMessageCounterMaxDayHistory()
@@ -1275,6 +1281,38 @@ public class ConfigurationImpl implements Configuration
          return false;
       }
       return true;
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.config.Configuration#getAddressesSettings()
+    */
+   public Map<String, AddressSettings> getAddressesSettings()
+   {
+      return addressesSettings;
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.config.Configuration#setAddressesSettings(java.util.Map)
+    */
+   public void setAddressesSettings(final Map<String, AddressSettings> addressesSettings)
+   {
+      this.addressesSettings = addressesSettings;
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.config.Configuration#getSecurityRoles()
+    */
+   public Map<String, Set<Role>> getSecurityRoles()
+   {
+      return securitySettings;
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.config.Configuration#setSecuritySettings(java.util.Map)
+    */
+   public void setSecurityRoles(final Map<String, Set<Role>> securitySettings)
+   {
+      this.securitySettings = securitySettings;
    }
 
 }

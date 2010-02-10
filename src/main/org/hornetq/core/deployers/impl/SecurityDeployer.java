@@ -13,16 +13,14 @@
 
 package org.hornetq.core.deployers.impl;
 
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Set;
 
+import org.hornetq.api.core.Pair;
 import org.hornetq.core.deployers.DeploymentManager;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.settings.HierarchicalRepository;
 import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 /**
  * Deploys the security settings into a security repository and adds them to the security store.
@@ -33,31 +31,11 @@ public class SecurityDeployer extends XmlDeployer
 {
    private static final Logger log = Logger.getLogger(SecurityDeployer.class);
 
-   private static final String PERMISSION_ELEMENT_NAME = "permission";
-
-   private static final String TYPE_ATTR_NAME = "type";
-
-   private static final String ROLES_ATTR_NAME = "roles";
-
    private static final String QUEUES_XML = "hornetq-queues.xml";
 
    private static final String MATCH = "match";
 
-   private static final String SECURITY_ELEMENT_NAME = "security-setting";
-
-   public static final String SEND_NAME = "send";
-
-   public static final String CONSUME_NAME = "consume";
-
-   public static final String CREATEDURABLEQUEUE_NAME = "createDurableQueue";
-
-   public static final String DELETEDURABLEQUEUE_NAME = "deleteDurableQueue";
-
-   public static final String CREATETEMPQUEUE_NAME = "createTempQueue";
-
-   public static final String DELETETEMPQUEUE_NAME = "deleteTempQueue";
-
-   public static final String MANAGE_NAME = "manage";
+   private final FileConfigurationParser parser = new FileConfigurationParser(); 
 
    /**
     * The repository to add to
@@ -80,7 +58,7 @@ public class SecurityDeployer extends XmlDeployer
    @Override
    public String[] getElementTagName()
    {
-      return new String[] { SecurityDeployer.SECURITY_ELEMENT_NAME };
+      return new String[] { FileConfigurationParser.SECURITY_ELEMENT_NAME };
    }
 
    @Override
@@ -109,76 +87,8 @@ public class SecurityDeployer extends XmlDeployer
    @Override
    public void deploy(final Node node) throws Exception
    {
-      HashSet<Role> securityRoles = new HashSet<Role>();
-      ArrayList<String> send = new ArrayList<String>();
-      ArrayList<String> consume = new ArrayList<String>();
-      ArrayList<String> createDurableQueue = new ArrayList<String>();
-      ArrayList<String> deleteDurableQueue = new ArrayList<String>();
-      ArrayList<String> createTempQueue = new ArrayList<String>();
-      ArrayList<String> deleteTempQueue = new ArrayList<String>();
-      ArrayList<String> manageRoles = new ArrayList<String>();
-      ArrayList<String> allRoles = new ArrayList<String>();
-      String match = node.getAttributes().getNamedItem(getKeyAttribute()).getNodeValue();
-      NodeList children = node.getChildNodes();
-      for (int i = 0; i < children.getLength(); i++)
-      {
-         Node child = children.item(i);
-
-         if (SecurityDeployer.PERMISSION_ELEMENT_NAME.equalsIgnoreCase(child.getNodeName()))
-         {
-            String type = child.getAttributes().getNamedItem(SecurityDeployer.TYPE_ATTR_NAME).getNodeValue();
-            String roleString = child.getAttributes().getNamedItem(SecurityDeployer.ROLES_ATTR_NAME).getNodeValue();
-            String[] roles = roleString.split(",");
-            for (String role : roles)
-            {
-               if (SecurityDeployer.SEND_NAME.equals(type))
-               {
-                  send.add(role.trim());
-               }
-               else if (SecurityDeployer.CONSUME_NAME.equals(type))
-               {
-                  consume.add(role.trim());
-               }
-               else if (SecurityDeployer.CREATEDURABLEQUEUE_NAME.equals(type))
-               {
-                  createDurableQueue.add(role);
-               }
-               else if (SecurityDeployer.DELETEDURABLEQUEUE_NAME.equals(type))
-               {
-                  deleteDurableQueue.add(role);
-               }
-               else if (SecurityDeployer.CREATETEMPQUEUE_NAME.equals(type))
-               {
-                  createTempQueue.add(role);
-               }
-               else if (SecurityDeployer.DELETETEMPQUEUE_NAME.equals(type))
-               {
-                  deleteTempQueue.add(role);
-               }
-               else if (SecurityDeployer.MANAGE_NAME.equals(type))
-               {
-                  manageRoles.add(role);
-               }
-               if (!allRoles.contains(role.trim()))
-               {
-                  allRoles.add(role.trim());
-               }
-            }
-         }
-
-      }
-      for (String role : allRoles)
-      {
-         securityRoles.add(new Role(role,
-                                    send.contains(role),
-                                    consume.contains(role),
-                                    createDurableQueue.contains(role),
-                                    deleteDurableQueue.contains(role),
-                                    createTempQueue.contains(role),
-                                    deleteTempQueue.contains(role),
-                                    manageRoles.contains(role)));
-      }
-      securityRepository.addMatch(match, securityRoles);
+      Pair<String, Set<Role>> securityMatch = parser.parseSecurityRoles(node);
+      securityRepository.addMatch(securityMatch.a, securityMatch.b);
    }
 
    /**
