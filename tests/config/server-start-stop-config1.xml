@@ -23,9 +23,11 @@
 	   	<address>myAddress</address>
 	   </queue>
 	   
+	   <!--  temporary fix until I investigate the cause of a failure
 	   <queue name="jms.queue.myJMSQueue">
 	   	<address>jms.queue.myJMSAddress</address>
 	   </queue>
+	    -->
    </queues>
 
 </configuration>
