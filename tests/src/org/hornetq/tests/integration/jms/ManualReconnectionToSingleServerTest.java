@@ -45,7 +45,7 @@ import org.hornetq.jms.server.config.ConnectionFactoryConfiguration;
 import org.hornetq.jms.server.config.JMSConfiguration;
 import org.hornetq.jms.server.config.impl.ConnectionFactoryConfigurationImpl;
 import org.hornetq.jms.server.config.impl.JMSConfigurationImpl;
-import org.hornetq.jms.server.config.impl.QueueConfigurationImpl;
+import org.hornetq.jms.server.config.impl.JMSQueueConfigurationImpl;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.hornetq.tests.unit.util.InVMContext;
 import org.hornetq.tests.util.UnitTestCase;
@@ -164,7 +164,7 @@ public class ManualReconnectionToSingleServerTest extends UnitTestCase
       JMSConfiguration configuration = new JMSConfigurationImpl();
       context = new InVMContext();
       configuration.setContext(context);
-      configuration.getQueueConfigurations().add(new QueueConfigurationImpl(queueName, null, false, queueName));
+      configuration.getQueueConfigurations().add(new JMSQueueConfigurationImpl(queueName, null, false, queueName));
 
       ConnectionFactoryConfiguration cfConfig = new ConnectionFactoryConfigurationImpl("cf",
                                                                                        new TransportConfiguration(NettyConnectorFactory.class.getName()),

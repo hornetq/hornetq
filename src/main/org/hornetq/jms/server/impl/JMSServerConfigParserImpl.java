@@ -31,7 +31,7 @@ import org.hornetq.jms.server.config.JMSQueueConfiguration;
 import org.hornetq.jms.server.config.TopicConfiguration;
 import org.hornetq.jms.server.config.impl.ConnectionFactoryConfigurationImpl;
 import org.hornetq.jms.server.config.impl.JMSConfigurationImpl;
-import org.hornetq.jms.server.config.impl.QueueConfigurationImpl;
+import org.hornetq.jms.server.config.impl.JMSQueueConfigurationImpl;
 import org.hornetq.jms.server.config.impl.TopicConfigurationImpl;
 import org.hornetq.utils.XMLConfigurationUtil;
 import org.hornetq.utils.XMLUtil;
@@ -436,7 +436,7 @@ public class JMSServerConfigParserImpl implements JMSServerConfigParser
                                          final boolean durable,
                                          final String[] jndiArray)
    {
-      return new QueueConfigurationImpl(queueName, selectorString, durable, jndiArray);
+      return new JMSQueueConfigurationImpl(queueName, selectorString, durable, jndiArray);
    }
 
    /**

@@ -58,7 +58,7 @@ import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.server.JMSServerManager;
 import org.hornetq.jms.server.config.JMSConfiguration;
 import org.hornetq.jms.server.config.impl.JMSConfigurationImpl;
-import org.hornetq.jms.server.config.impl.QueueConfigurationImpl;
+import org.hornetq.jms.server.config.impl.JMSQueueConfigurationImpl;
 import org.hornetq.jms.server.config.impl.TopicConfigurationImpl;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.hornetq.spi.core.protocol.ProtocolType;
@@ -1258,7 +1258,7 @@ public class StompTest extends UnitTestCase {
        HornetQServer hornetQServer = HornetQServers.newHornetQServer(config);
        
        JMSConfiguration jmsConfig = new JMSConfigurationImpl();
-       jmsConfig.getQueueConfigurations().add(new QueueConfigurationImpl(getQueueName(), null, false, getQueueName()));
+       jmsConfig.getQueueConfigurations().add(new JMSQueueConfigurationImpl(getQueueName(), null, false, getQueueName()));
        jmsConfig.getTopicConfigurations().add(new TopicConfigurationImpl(getTopicName(), getTopicName()));
        server = new JMSServerManagerImpl(hornetQServer, jmsConfig);
        server.setContext(null);

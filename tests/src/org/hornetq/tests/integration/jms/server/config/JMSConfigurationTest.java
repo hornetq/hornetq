@@ -32,7 +32,7 @@ import org.hornetq.jms.server.config.JMSConfiguration;
 import org.hornetq.jms.server.config.TopicConfiguration;
 import org.hornetq.jms.server.config.impl.ConnectionFactoryConfigurationImpl;
 import org.hornetq.jms.server.config.impl.JMSConfigurationImpl;
-import org.hornetq.jms.server.config.impl.QueueConfigurationImpl;
+import org.hornetq.jms.server.config.impl.JMSQueueConfigurationImpl;
 import org.hornetq.jms.server.config.impl.TopicConfigurationImpl;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.hornetq.tests.unit.util.InVMContext;
@@ -72,7 +72,7 @@ public class JMSConfigurationTest extends ServiceTestBase
                                                                                        "/cf/binding1",
                                                                                        "/cf/binding2");
       jmsConfiguration.getConnectionFactoryConfigurations().add(cfConfig);
-      QueueConfigurationImpl queueConfig = new QueueConfigurationImpl(RandomUtil.randomString(),
+      JMSQueueConfigurationImpl queueConfig = new JMSQueueConfigurationImpl(RandomUtil.randomString(),
                                                                       null,
                                                                       false,
                                                                       "/queue/binding1",

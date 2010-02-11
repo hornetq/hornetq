@@ -23,7 +23,7 @@ import org.hornetq.jms.server.config.JMSQueueConfiguration;
  *
  *
  */
-public class QueueConfigurationImpl implements JMSQueueConfiguration
+public class JMSQueueConfigurationImpl implements JMSQueueConfiguration
 {
 
    // Constants -----------------------------------------------------
@@ -42,7 +42,7 @@ public class QueueConfigurationImpl implements JMSQueueConfiguration
 
    // Constructors --------------------------------------------------
 
-   public QueueConfigurationImpl(final String name,
+   public JMSQueueConfigurationImpl(final String name,
                                  final String selector,
                                  final boolean durable,
                                  final String... bindings)

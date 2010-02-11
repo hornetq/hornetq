@@ -165,7 +165,7 @@ public class HornetQServerImpl implements HornetQServer
 
    private volatile ExecutorFactory executorFactory;
 
-   private volatile HierarchicalRepository<Set<Role>> securityRepository;
+   private final HierarchicalRepository<Set<Role>> securityRepository;
 
    private volatile ResourceManager resourceManager;
 
@@ -258,6 +258,11 @@ public class HornetQServerImpl implements HornetQServer
       addressSettingsRepository = new HierarchicalObjectRepository<AddressSettings>();
 
       addressSettingsRepository.setDefault(new AddressSettings());
+      
+      securityRepository = new HierarchicalObjectRepository<Set<Role>>();
+
+      securityRepository.setDefault(new HashSet<Role>());
+
    }
 
    // lifecycle methods
@@ -429,12 +434,15 @@ public class HornetQServerImpl implements HornetQServer
          {
             memoryManager.stop();
          }
+         
+         addressSettingsRepository.clear();
+         
+         securityRepository.clear();
 
          pagingManager = null;
          securityStore = null;
          resourceManager = null;
          postOffice = null;
-         securityRepository = null;
          securityStore = null;
          queueFactory = null;
          resourceManager = null;
@@ -924,9 +932,6 @@ public class HornetQServerImpl implements HornetQServer
       startReplication();
 
       storageManager = createStorageManager();
-
-      securityRepository = new HierarchicalObjectRepository<Set<Role>>();
-      securityRepository.setDefault(new HashSet<Role>());
 
       if (ConfigurationImpl.DEFAULT_CLUSTER_USER.equals(configuration.getClusterUser()) && ConfigurationImpl.DEFAULT_CLUSTER_PASSWORD.equals(configuration.getClusterPassword()))
       {
