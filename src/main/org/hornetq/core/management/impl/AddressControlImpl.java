@@ -13,6 +13,7 @@
 
 package org.hornetq.core.management.impl;
 
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -193,6 +194,9 @@ public class AddressControlImpl extends AbstractControl implements AddressContro
       try
       {
          Set<Role> roles = securityRepository.getMatch(address.toString());
+         HashSet<Role> newroles = new HashSet<Role>();
+         newroles.addAll(roles);
+         
          Role newRole = new Role(name,
                                  send,
                                  consume,
@@ -201,12 +205,12 @@ public class AddressControlImpl extends AbstractControl implements AddressContro
                                  createNonDurableQueue,
                                  deleteNonDurableQueue,
                                  manage);
-         boolean added = roles.add(newRole);
+         boolean added = newroles.add(newRole);
          if (!added)
          {
             throw new IllegalArgumentException("Role " + name + " already exists");
          }
-         securityRepository.addMatch(address.toString(), roles);
+         securityRepository.addMatch(address.toString(), newroles);
       }
       finally
       {
@@ -220,7 +224,11 @@ public class AddressControlImpl extends AbstractControl implements AddressContro
       try
       {
          Set<Role> roles = securityRepository.getMatch(address.toString());
-         Iterator<Role> it = roles.iterator();
+         
+         HashSet<Role> newroles = new HashSet<Role>();
+         newroles.addAll(roles);
+
+         Iterator<Role> it = newroles.iterator();
          boolean removed = false;
          while (it.hasNext())
          {
@@ -236,7 +244,10 @@ public class AddressControlImpl extends AbstractControl implements AddressContro
          {
             throw new IllegalArgumentException("Role " + role + " does not exist");
          }
-         securityRepository.addMatch(address.toString(), roles);
+
+         securityRepository.removeMatch(address.toString());
+         
+         securityRepository.addMatch(address.toString(), newroles);
       }
       finally
       {
@@ -244,6 +255,15 @@ public class AddressControlImpl extends AbstractControl implements AddressContro
       }
    }
    
+   /* (non-Javadoc)
+    * @see org.hornetq.api.core.management.AddressControl#resetSecurity()
+    */
+   public void resetSecurity()
+   {
+      securityRepository.removeMatch(address.toString());
+   }
+
+
    @Override
    MBeanOperationInfo[] fillMBeanOperationInfo()
    {

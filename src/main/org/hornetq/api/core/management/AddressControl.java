@@ -88,4 +88,10 @@ public interface AddressControl
     */
    @Operation(desc = "Remove a Role from this address")
    void removeRole(@Parameter(name = "name", desc = "Name of the role to remove") String name) throws Exception;
+   
+   /**
+    * This method will remove any matching associated with this address. This will basically reset the security for this address.
+    */
+   @Operation(desc = "Reset the security configuration for this address by using default values")
+   void resetSecurity();
 }
