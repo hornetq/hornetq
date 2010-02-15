@@ -13,10 +13,8 @@
 
 package org.hornetq.core.protocol.stomp;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
@@ -179,6 +177,11 @@ class StompConnection implements RemotingConnection
       this.clientID = clientID;
    }
 
+   public String getClientID()
+   {
+      return clientID;
+   }
+   
    public boolean isValid()
    {
       return valid;

@@ -34,6 +34,7 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.logging.Logger;
+import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.ServerSession;
 import org.hornetq.core.server.impl.ServerMessageImpl;
@@ -153,6 +154,7 @@ class StompProtocolManager implements ProtocolManager
       try
       {
          request = marshaller.unmarshal(buffer);
+         System.out.println("received " + request);
          if (log.isTraceEnabled())
          {
             log.trace("received " + request);
@@ -229,6 +231,7 @@ class StompProtocolManager implements ProtocolManager
       }
       catch (Exception e)
       {
+         e.printStackTrace();
          StompFrame error = createError(e, request);
          if (error != null)
          {
@@ -252,6 +255,7 @@ class StompProtocolManager implements ProtocolManager
       String selector = (String)headers.get(Stomp.Headers.Subscribe.SELECTOR);
       String ack = (String)headers.get(Stomp.Headers.Subscribe.ACK_MODE);
       String id = (String)headers.get(Stomp.Headers.Subscribe.ID);
+      String durableSubscriptionName = (String)headers.get(Stomp.Headers.Subscribe.DURABLE_SUBSCRIPTION_NAME);
       boolean noLocal = false;
       if (headers.containsKey(Stomp.Headers.Subscribe.NO_LOCAL))
       {
@@ -294,7 +298,8 @@ class StompProtocolManager implements ProtocolManager
       }
       server.getStorageManager().setContext(stompSession.getContext());
       long consumerID = server.getStorageManager().generateUniqueID();
-      stompSession.addSubscription(consumerID, subscriptionID, destination, selector, ack);
+      String clientID = (connection.getClientID() != null) ? connection.getClientID() : null;
+      stompSession.addSubscription(consumerID, subscriptionID, clientID, durableSubscriptionName, destination, selector, ack);
 
       return null;
    }
@@ -586,46 +591,53 @@ class StompProtocolManager implements ProtocolManager
    {
       connection.setValid(false);
 
-      StompSession session = sessions.remove(connection);
-      if (session != null)
-      {
-         try
+      try {
+         StompSession session = sessions.remove(connection);
+         if (session != null)
          {
-            session.getSession().rollback(true);
-            session.getSession().close();
-            session.getSession().runConnectionFailureRunners();
-         }
-         catch (Exception e)
-         {
-            log.warn(e.getMessage(), e);
-         }
-      }
-
-      // removed the transacted session belonging to the connection
-      Iterator<Entry<String, StompSession>> iterator = transactedSessions.entrySet().iterator();
-      while (iterator.hasNext())
-      {
-         Map.Entry<String, StompSession> entry = (Map.Entry<String, StompSession>)iterator.next();
-         if (entry.getValue().getConnection() == connection)
-         {
-            ServerSession serverSession = entry.getValue().getSession();
             try
             {
-               serverSession.rollback(true);
-               serverSession.close();
-               serverSession.runConnectionFailureRunners();
+               session.getSession().rollback(true);
+               session.getSession().close();
+               session.getSession().runConnectionFailureRunners();
             }
             catch (Exception e)
             {
                log.warn(e.getMessage(), e);
             }
-            iterator.remove();
+         }
+
+         // removed the transacted session belonging to the connection
+         Iterator<Entry<String, StompSession>> iterator = transactedSessions.entrySet().iterator();
+         while (iterator.hasNext())
+         {
+            Map.Entry<String, StompSession> entry = (Map.Entry<String, StompSession>)iterator.next();
+            if (entry.getValue().getConnection() == connection)
+            {
+               ServerSession serverSession = entry.getValue().getSession();
+               try
+               {
+                  serverSession.rollback(true);
+                  serverSession.close();
+                  serverSession.runConnectionFailureRunners();
+               }
+               catch (Exception e)
+               {
+                  log.warn(e.getMessage(), e);
+               }
+               iterator.remove();
+            }
          }
       }
+      finally
+      {
+         server.getStorageManager().clearContext();
+      }
    }
-   
+
    private void doSend(final StompConnection connection, final StompFrame frame)
    {
+      System.out.println("sent " + frame);
       if (log.isTraceEnabled())
       {
          log.trace("sent " + frame);

@@ -88,15 +88,15 @@ public class StompTest extends UnitTestCase {
     
     public void testDisconnectAndError() throws Exception {
 
-       String connect_frame = "CONNECT\n" + "login: brianm\n" + "passcode: wombats\n" + "request-id: 1\n" + "\n" + Stomp.NULL;
-       sendFrame(connect_frame);
+       String connectFrame = "CONNECT\n" + "login: brianm\n" + "passcode: wombats\n" + "request-id: 1\n" + "\n" + Stomp.NULL;
+       sendFrame(connectFrame);
 
        String f = receiveFrame(10000);
        Assert.assertTrue(f.startsWith("CONNECTED"));
        Assert.assertTrue(f.indexOf("response-id:1") >= 0);
        
-       connect_frame = "DISCONNECT\n\n" + Stomp.NULL;
-       sendFrame(connect_frame);
+       String disconnectFrame = "DISCONNECT\n\n" + Stomp.NULL;
+       sendFrame(disconnectFrame);
        
        waitForFrameToTakeEffect();
        
@@ -665,11 +665,11 @@ public class StompTest extends UnitTestCase {
         Assert.assertTrue(message.getJMSRedelivered());
     }
     
-    public void testSubscribeWithClientAckThenConsumingAgainWithAutoAckWithNoDisconnectFrame() throws Exception {
+    public void _testSubscribeWithClientAckThenConsumingAgainWithAutoAckWithNoDisconnectFrame() throws Exception {
         assertSubscribeWithClientAckThenConsumeWithAutoAck(false);
     }
 
-    public void testSubscribeWithClientAckThenConsumingAgainWithAutoAckWithExplicitDisconnect() throws Exception {
+    public void _testSubscribeWithClientAckThenConsumingAgainWithAutoAckWithExplicitDisconnect() throws Exception {
         assertSubscribeWithClientAckThenConsumeWithAutoAck(true);
     }
 
@@ -710,6 +710,7 @@ public class StompTest extends UnitTestCase {
         }
         else {
             reconnect(1000);
+            waitForFrameToTakeEffect();
         }
 
 
@@ -1137,6 +1138,108 @@ public class StompTest extends UnitTestCase {
       }
        
       frame =
+               "DISCONNECT\n" +
+                       "\n\n" +
+                       Stomp.NULL;
+       sendFrame(frame);
+   }
+    
+    public void testDurableSubscriberWithReconnection() throws Exception {
+
+       String connectFame =
+               "CONNECT\n" +
+                       "login: brianm\n" +
+                       "passcode: wombats\n" +
+                       "client-id: myclientid\n\n" +
+                       Stomp.NULL;
+       sendFrame(connectFame);
+
+       String frame = receiveFrame(100000);
+       Assert.assertTrue(frame.startsWith("CONNECTED"));
+
+       String subscribeFrame =
+               "SUBSCRIBE\n" +
+                       "destination:" + getTopicPrefix() + getTopicName() + "\n" +
+                       "receipt: 12\n" +
+                       "durable-subscription-name: " + getName() + "\n" + 
+                       "\n\n" +
+                       Stomp.NULL;
+       sendFrame(subscribeFrame);
+       // wait for SUBSCRIBE's receipt
+       frame = receiveFrame(10000);
+       Assert.assertTrue(frame.startsWith("RECEIPT"));
+
+       String disconnectFrame =
+          "DISCONNECT\n" +
+                  "\n\n" +
+                  Stomp.NULL;
+       sendFrame(disconnectFrame);
+
+       // send the message when the durable subscriber is disconnected
+       sendMessage(getName(), topic);
+  
+
+       reconnect(1000);
+       sendFrame(connectFame);
+       frame = receiveFrame(100000);
+       Assert.assertTrue(frame.startsWith("CONNECTED"));
+       
+       sendFrame(subscribeFrame);
+       // wait for SUBSCRIBE's receipt
+       frame = receiveFrame(10000);
+       Assert.assertTrue(frame.startsWith("RECEIPT"));
+
+       // we must have received the message 
+       frame = receiveFrame(10000);
+       Assert.assertTrue(frame.startsWith("MESSAGE"));
+       Assert.assertTrue(frame.indexOf("destination:") > 0);
+       Assert.assertTrue(frame.indexOf(getName()) > 0);
+
+       String unsubscribeFrame =
+          "UNSUBSCRIBE\n" +
+                  "destination:" + getTopicPrefix() + getTopicName() + "\n" +
+                  "receipt: 1234\n" +
+                  "\n\n" +
+                  Stomp.NULL;
+       sendFrame(unsubscribeFrame);
+       // wait for UNSUBSCRIBE's receipt
+       frame = receiveFrame(10000);
+       Assert.assertTrue(frame.startsWith("RECEIPT"));
+       
+       sendFrame(disconnectFrame);
+   }
+    
+    public void testDurableSubscriber() throws Exception {
+
+       String frame =
+               "CONNECT\n" +
+                       "login: brianm\n" +
+                       "passcode: wombats\n" +
+                       "client-id: myclientid\n\n" +
+                       Stomp.NULL;
+       sendFrame(frame);
+
+       frame = receiveFrame(100000);
+       Assert.assertTrue(frame.startsWith("CONNECTED"));
+
+       String subscribeFrame =
+               "SUBSCRIBE\n" +
+                       "destination:" + getTopicPrefix() + getTopicName() + "\n" +
+                       "receipt: 12\n" +
+                       "durable-subscription-name: " + getName() + "\n" + 
+                       "\n\n" +
+                       Stomp.NULL;
+       sendFrame(subscribeFrame);
+       // wait for SUBSCRIBE's receipt
+       frame = receiveFrame(10000);
+       Assert.assertTrue(frame.startsWith("RECEIPT"));
+
+       // creating a subscriber with the same durable-subscriber-name must fail
+       sendFrame(subscribeFrame);
+       frame = receiveFrame(10000);
+       Assert.assertTrue(frame.startsWith("ERROR"));
+       
+       frame =
                "DISCONNECT\n" +
                        "\n\n" +
                        Stomp.NULL;

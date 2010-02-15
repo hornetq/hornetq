@@ -17,12 +17,15 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import javax.jms.IllegalStateException;
+
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.persistence.OperationContext;
 import org.hornetq.core.protocol.stomp.Stomp.Headers;
+import org.hornetq.core.server.QueueQueryResult;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.ServerSession;
 import org.hornetq.spi.core.protocol.RemotingConnection;
@@ -153,14 +156,43 @@ class StompSession implements SessionCallback
       session.commit();
    }
 
-   public void addSubscription(long consumerID, String subscriptionID, String destination, String selector, String ack) throws Exception
+   public void addSubscription(long consumerID,
+                               String subscriptionID,
+                               String clientID,
+                               String durableSubscriptionName,
+                               String destination, 
+                               String selector,
+                               String ack) throws Exception
    {
       SimpleString queue = SimpleString.toSimpleString(destination);
       if (destination.startsWith("jms.topic"))
       {
          // subscribes to a topic
-         queue = UUIDGenerator.getInstance().generateSimpleStringUUID();
-         session.createQueue(SimpleString.toSimpleString(destination), queue, null, true, false);
+         if (durableSubscriptionName != null)
+         {
+            if (clientID == null) 
+            {
+               throw new IllegalStateException("Cannot create a subscriber on the durable subscription if the client-id of the connection is not set");
+            }
+            queue = SimpleString.toSimpleString(clientID + "." + durableSubscriptionName);
+            QueueQueryResult query = session.executeQueueQuery(queue);
+            if (!query.isExists())
+            {
+               session.createQueue(SimpleString.toSimpleString(destination), queue, null, false, true);
+            }
+            else
+            {
+               // Already exists
+               if (query.getConsumerCount() > 0)
+               {
+                  throw new IllegalStateException("Cannot create a subscriber on the durable subscription since it already has subscriber(s)");
+               }
+            }
+         } else
+         {
+            queue = UUIDGenerator.getInstance().generateSimpleStringUUID();
+            session.createQueue(SimpleString.toSimpleString(destination), queue, null, true, false);
+         }
       }
       session.createConsumer(consumerID, queue, SimpleString.toSimpleString(selector), false);
       session.receiveConsumerCredits(consumerID, -1);
