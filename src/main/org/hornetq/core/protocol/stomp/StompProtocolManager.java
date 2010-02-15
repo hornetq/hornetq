@@ -258,7 +258,6 @@ class StompProtocolManager implements ProtocolManager
          }
          subscriptionID = "subscription/" + destination;
       }
-      String hornetqDestination = StompUtils.toHornetQAddress(destination);
       StompSession stompSession = getSession(connection);
       if (stompSession.containsSubscription(subscriptionID))
       {
@@ -266,7 +265,7 @@ class StompProtocolManager implements ProtocolManager
                                   ". Either use unique subscription IDs or do not create multiple subscriptions for the same destination");
       }
       long consumerID = server.getStorageManager().generateUniqueID();
-      stompSession.addSubscription(consumerID, subscriptionID, hornetqDestination, selector, ack);
+      stompSession.addSubscription(consumerID, subscriptionID, destination, selector, ack);
 
       return null;
    }
@@ -467,7 +466,7 @@ class StompProtocolManager implements ProtocolManager
    {
       checkConnected(connection);
       Map<String, Object> headers = frame.getHeaders();
-      String queue = (String)headers.remove(Stomp.Headers.Send.DESTINATION);
+      String destination = (String)headers.remove(Stomp.Headers.Send.DESTINATION);
       String txID = (String)headers.remove(Stomp.Headers.TRANSACTION);
       byte type = Message.TEXT_TYPE;
       if (headers.containsKey(Stomp.Headers.CONTENT_LENGTH))
@@ -475,12 +474,11 @@ class StompProtocolManager implements ProtocolManager
          type = Message.BYTES_TYPE;
       }
       long timestamp = System.currentTimeMillis();
-      SimpleString address = SimpleString.toSimpleString(StompUtils.toHornetQAddress(queue));
 
       ServerMessageImpl message = new ServerMessageImpl(server.getStorageManager().generateUniqueID(), 512);
       message.setType(type);
       message.setTimestamp(timestamp);
-      message.setAddress(address);
+      message.setAddress(SimpleString.toSimpleString(destination));
       StompUtils.copyStandardHeadersFromFrameToMessage(frame, message);
       byte[] content = frame.getContent();
       if (type == Message.TEXT_TYPE)

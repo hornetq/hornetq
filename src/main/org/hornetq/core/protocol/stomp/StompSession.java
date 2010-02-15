@@ -73,8 +73,7 @@ class StompSession implements SessionCallback
          StompSubscription subscription = subscriptions.get(consumerID);
 
          Map<String, Object> headers = new HashMap<String, Object>();
-         headers.put(Stomp.Headers.Message.DESTINATION, StompUtils.toStompDestination(serverMessage.getAddress()
-                                                                                                   .toString()));
+         headers.put(Stomp.Headers.Message.DESTINATION, serverMessage.getAddress().toString());
          if (subscription.getID() != null)
          {
             headers.put(Stomp.Headers.Message.SUBSCRIPTION, subscription.getID());
@@ -150,7 +149,7 @@ class StompSession implements SessionCallback
    public void addSubscription(long consumerID, String subscriptionID, String destination, String selector, String ack) throws Exception
    {
       SimpleString queue = SimpleString.toSimpleString(destination);
-      if (destination.startsWith(StompUtils.HQ_TOPIC_PREFIX))
+      if (destination.startsWith("jms.topic"))
       {
          // subscribes to a topic
          queue = UUIDGenerator.getInstance().generateSimpleStringUUID();

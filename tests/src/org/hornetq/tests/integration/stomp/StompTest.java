@@ -103,7 +103,7 @@ public class StompTest extends UnitTestCase {
        // sending a message will result in an error
        String frame =
           "SEND\n" +
-                  "destination:/queue/" + getQueueName() + "\n\n" +
+                  "destination:" + getQueuePrefix() + getQueueName() + "\n\n" +
                   "Hello World" +
                   Stomp.NULL;
        try {
@@ -131,7 +131,7 @@ public class StompTest extends UnitTestCase {
 
         frame =
                 "SEND\n" +
-                        "destination:/queue/" + getQueueName() + "\n\n" +
+                        "destination:" + getQueuePrefix() + getQueueName() + "\n\n" +
                         "Hello World" +
                         Stomp.NULL;
 
@@ -164,7 +164,7 @@ public class StompTest extends UnitTestCase {
 
        frame =
                "SEND\n" +
-                       "destination:/queue/" + getQueueName() + "\n" +
+                       "destination:" + getQueuePrefix() + getQueueName() + "\n" +
                        "receipt: 1234\n\n" +
                        "Hello World" +
                        Stomp.NULL;
@@ -204,7 +204,7 @@ public class StompTest extends UnitTestCase {
         
        frame =
                "SEND\n" +
-                       "destination:/queue/" + getQueueName() + "\n" +
+                       "destination:" + getQueuePrefix() + getQueueName() + "\n" +
                        "content-length:" + data.length + "\n\n" +
                        new String(data) +
                        Stomp.NULL;
@@ -242,7 +242,7 @@ public class StompTest extends UnitTestCase {
 
         frame =
                 "SEND\n" +
-                        "destination:/queue/" + getQueueName() + "\n" +
+                        "destination:" + getQueuePrefix() + getQueueName() + "\n" +
                         "JMSXGroupID: TEST\n\n" +
                         "Hello World" +
                         Stomp.NULL;
@@ -273,7 +273,7 @@ public class StompTest extends UnitTestCase {
                 "SEND\n" +
                         "foo:abc\n" +
                         "bar:123\n" +
-                        "destination:/queue/" + getQueueName() + "\n\n" +
+                        "destination:" + getQueuePrefix() + getQueueName() + "\n\n" +
                         "Hello World" +
                         Stomp.NULL;
 
@@ -309,7 +309,7 @@ public class StompTest extends UnitTestCase {
                         "JMSXGroupID:abc\n" +
                         "foo:abc\n" +
                         "bar:123\n" +
-                        "destination:/queue/" + getQueueName() + "\n\n" +
+                        "destination:" + getQueuePrefix() + getQueueName() + "\n\n" +
                         "Hello World" +
                         Stomp.NULL;
 
@@ -344,7 +344,7 @@ public class StompTest extends UnitTestCase {
 
         frame =
                 "SUBSCRIBE\n" +
-                        "destination:/queue/" + getQueueName() + "\n" +
+                        "destination:" + getQueuePrefix() + getQueueName() + "\n" +
                         "ack:auto\n\n" +
                         Stomp.NULL;
         sendFrame(frame);
@@ -383,7 +383,7 @@ public class StompTest extends UnitTestCase {
 
         frame =
                 "SUBSCRIBE\n" +
-                        "destination:/queue/" + getQueueName() + "\n" +
+                        "destination:" + getQueuePrefix() + getQueueName() + "\n" +
                         "ack:auto\n\n" +
                         Stomp.NULL;
         sendFrame(frame);
@@ -423,7 +423,7 @@ public class StompTest extends UnitTestCase {
 
         frame =
                 "SUBSCRIBE\n" +
-                        "destination:/queue/" + getQueueName() + "\n" +
+                        "destination:" + getQueuePrefix() + getQueueName() + "\n" +
                         "ack:auto\n\n" +
                         Stomp.NULL;
         sendFrame(frame);
@@ -476,7 +476,7 @@ public class StompTest extends UnitTestCase {
 
        frame =
                "SUBSCRIBE\n" +
-                       "destination:/queue/" + getQueueName() + "\n" +
+                       "destination:" + getQueuePrefix() + getQueueName() + "\n" +
                        "ack:auto\n" +
                        "id: mysubid\n\n" +
                        Stomp.NULL;
@@ -513,7 +513,7 @@ public class StompTest extends UnitTestCase {
 
         frame =
                 "SUBSCRIBE\n" +
-                        "destination:/queue/" + getQueueName() + "\n" +
+                        "destination:" + getQueuePrefix() + getQueueName() + "\n" +
                         "ack:auto\n\n" +
                         Stomp.NULL;
         sendFrame(frame);
@@ -562,7 +562,7 @@ public class StompTest extends UnitTestCase {
 
         frame =
                 "SUBSCRIBE\n" +
-                        "destination:/queue/" + getQueueName() + "\n" +
+                        "destination:" + getQueuePrefix() + getQueueName() + "\n" +
                         "selector: foo = 'zzz'\n" +
                         "ack:auto\n\n" +
                         Stomp.NULL;
@@ -596,7 +596,7 @@ public class StompTest extends UnitTestCase {
 
        frame =
                "SUBSCRIBE\n" +
-                       "destination:/queue/" + getQueueName() + "\n" +
+                       "destination:" + getQueuePrefix() + getQueueName() + "\n" +
                        "ack:client\n\n" +
                        Stomp.NULL;
 
@@ -642,7 +642,7 @@ public class StompTest extends UnitTestCase {
 
         frame =
                 "SUBSCRIBE\n" +
-                        "destination:/queue/" + getQueueName() + "\n" +
+                        "destination:" + getQueuePrefix() + getQueueName() + "\n" +
                         "ack:client\n\n" +
                         Stomp.NULL;
 
@@ -687,7 +687,7 @@ public class StompTest extends UnitTestCase {
 
         frame =
                 "SUBSCRIBE\n" +
-                        "destination:/queue/" + getQueueName() + "\n" +
+                        "destination:" + getQueuePrefix() + getQueueName() + "\n" +
                         "ack:client\n\n" +
                         Stomp.NULL;
 
@@ -726,7 +726,7 @@ public class StompTest extends UnitTestCase {
 
         frame =
                 "SUBSCRIBE\n" +
-                        "destination:/queue/" + getQueueName() + "\n\n" +
+                        "destination:" + getQueuePrefix() + getQueueName() + "\n\n" +
                         Stomp.NULL;
 
         sendFrame(frame);
@@ -756,7 +756,7 @@ public class StompTest extends UnitTestCase {
 
         frame =
                 "SUBSCRIBE\n" +
-                        "destination:/queue/" + getQueueName() + "\n" +
+                        "destination:" + getQueuePrefix() + getQueueName() + "\n" +
                         "receipt: 1234\n\n" +
                         Stomp.NULL;
 
@@ -786,7 +786,7 @@ public class StompTest extends UnitTestCase {
 
         frame =
                 "SUBSCRIBE\n" +
-                        "destination:/queue/" + getQueueName() + "\n" +
+                        "destination:" + getQueuePrefix() + getQueueName() + "\n" +
                         "ack:auto\n\n" +
                         Stomp.NULL;
         sendFrame(frame);
@@ -801,7 +801,7 @@ public class StompTest extends UnitTestCase {
         //remove suscription
         frame =
                 "UNSUBSCRIBE\n" +
-                        "destination:/queue/" + getQueueName() + "\n" +
+                        "destination:" + getQueuePrefix() + getQueueName() + "\n" +
                         "receipt:567\n" +
                         "\n\n" +
                         Stomp.NULL;
@@ -834,7 +834,7 @@ public class StompTest extends UnitTestCase {
 
         frame =
                 "SUBSCRIBE\n" +
-                        "destination:/queue/" + getQueueName() + "\n" +
+                        "destination:" + getQueuePrefix() + getQueueName() + "\n" +
                         "id: mysubid\n" +
                         "ack:auto\n\n" +
                         Stomp.NULL;
@@ -892,7 +892,7 @@ public class StompTest extends UnitTestCase {
 
         frame =
                 "SEND\n" +
-                        "destination:/queue/" + getQueueName() + "\n" +
+                        "destination:" + getQueuePrefix() + getQueueName() + "\n" +
                         "transaction: tx1\n" +
                         "receipt: 123\n" +
                         "\n\n" +
@@ -940,7 +940,7 @@ public class StompTest extends UnitTestCase {
 
        frame =
                "SEND\n" +
-                       "destination:/queue/" + getQueueName() + "\n" +
+                       "destination:" + getQueuePrefix() + getQueueName() + "\n" +
                        "transaction: tx1\n" +
                        "\n\n" +
                        "Hello World" +
@@ -967,7 +967,7 @@ public class StompTest extends UnitTestCase {
 
        frame =
                "SEND\n" +
-                       "destination:/queue/" + getQueueName() + "\n" +
+                       "destination:" + getQueuePrefix() + getQueueName() + "\n" +
                        "transaction: tx1\n" +
                        "\n\n" +
                        "Hello World" +
@@ -1038,7 +1038,7 @@ public class StompTest extends UnitTestCase {
 
         frame =
                 "SEND\n" +
-                        "destination:/queue/" + getQueueName() + "\n" +
+                        "destination:" + getQueuePrefix() + getQueueName() + "\n" +
                         "transaction: tx1\n" +
                         "\n" +
                         "first message" +
@@ -1062,7 +1062,7 @@ public class StompTest extends UnitTestCase {
 
         frame =
                 "SEND\n" +
-                        "destination:/queue/" + getQueueName() + "\n" +
+                        "destination:" + getQueuePrefix() + getQueueName() + "\n" +
                         "transaction: tx1\n" +
                         "\n" +
                         "second message" +
@@ -1098,7 +1098,7 @@ public class StompTest extends UnitTestCase {
 
        frame =
                "SUBSCRIBE\n" +
-                       "destination:/topic/" + getTopicName() + "\n" +
+                       "destination:" + getTopicPrefix() + getTopicName() + "\n" +
                        "receipt: 12\n" +
                        "\n\n" +
                        Stomp.NULL;
@@ -1116,7 +1116,7 @@ public class StompTest extends UnitTestCase {
 
        frame =
           "UNSUBSCRIBE\n" +
-                  "destination:/topic/" + getTopicName() + "\n" +
+                  "destination:" + getTopicPrefix() + getTopicName() + "\n" +
                   "receipt: 1234\n" +
                   "\n\n" +
                   Stomp.NULL;
@@ -1157,7 +1157,7 @@ public class StompTest extends UnitTestCase {
 
        frame =
                "SUBSCRIBE\n" +
-                       "destination:/queue/" + getQueueName() + "\n" +
+                       "destination:" + getQueuePrefix() + getQueueName() + "\n" +
                        "ack:client\n" +
                        "\n\n" +
                        Stomp.NULL;
@@ -1208,7 +1208,7 @@ public class StompTest extends UnitTestCase {
        
        frame =
           "UNSUBSCRIBE\n" +
-                  "destination:/queue/" + getQueueName() + "\n" +
+                  "destination:" + getQueuePrefix() + getQueueName() + "\n" +
                   "\n\n" +
                   Stomp.NULL;
        sendFrame(frame);
@@ -1301,10 +1301,18 @@ public class StompTest extends UnitTestCase {
         return "test";
     }
 
+    protected String getQueuePrefix() {
+       return "jms.queue.";
+   }
+    
     protected String getTopicName() {
        return "testtopic";
    }
-    
+
+    protected String getTopicPrefix() {
+       return "jms.topic.";
+   }
+
     public void sendFrame(String data) throws Exception {
         byte[] bytes = data.getBytes("UTF-8");
         OutputStream outputStream = stompSocket.getOutputStream();

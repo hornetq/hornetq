@@ -18,7 +18,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.client.impl.ClientMessageImpl;
@@ -33,93 +32,11 @@ import org.hornetq.core.server.impl.ServerMessageImpl;
  */
 class StompUtils
 {
-
-   public static String HQ_QUEUE_PREFIX = "jms.queue.";
-
-   public static String STOMP_QUEUE_PREFIX = "/queue/";
-
-   public static String HQ_TEMP_QUEUE_PREFIX = "jms.tempqueue.";
-
-   public static String STOMP_TEMP_QUEUE_PREFIX = "/temp-queue/";
-
-   public static String HQ_TOPIC_PREFIX = "jms.topic.";
-
-   public static String STOMP_TOPIC_PREFIX = "/topic/";
-
-   public static String HQ_TEMP_TOPIC_PREFIX = "jms.temptopic.";
-
-   public static String STOMP_TEMP_TOPIC_PREFIX = "/temp-topic/";
-
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
 
    // Static --------------------------------------------------------
-
-   public static String toHornetQAddress(String stompDestination) throws HornetQException
-   {
-      if (stompDestination == null)
-      {
-         throw new HornetQException(HornetQException.ILLEGAL_STATE, "No destination is specified!");
-      }
-      else if (stompDestination.startsWith(STOMP_QUEUE_PREFIX))
-      {
-         return convert(stompDestination, STOMP_QUEUE_PREFIX, HQ_QUEUE_PREFIX);
-      }
-      else if (stompDestination.startsWith(STOMP_TOPIC_PREFIX))
-      {
-         return convert(stompDestination, STOMP_TOPIC_PREFIX, HQ_TOPIC_PREFIX);
-      }
-      else if (stompDestination.startsWith(STOMP_TEMP_QUEUE_PREFIX))
-      {
-         return convert(stompDestination, STOMP_TEMP_QUEUE_PREFIX, HQ_TEMP_QUEUE_PREFIX);
-      }
-      else if (stompDestination.startsWith(STOMP_TEMP_TOPIC_PREFIX))
-      {
-         return convert(stompDestination, STOMP_TEMP_TOPIC_PREFIX, HQ_TEMP_TOPIC_PREFIX);
-      }
-      else
-      {
-         // it is also possible the STOMP client send a message directly to a HornetQ address
-         // in that case, we do nothing:
-         return stompDestination;
-      }
-   }
-
-   public static String toStompDestination(String hornetqAddress) throws HornetQException
-   {
-      if (hornetqAddress == null)
-      {
-         throw new HornetQException(HornetQException.ILLEGAL_STATE, "No destination is specified!");
-      }
-      else if (hornetqAddress.startsWith(HQ_QUEUE_PREFIX))
-      {
-         return convert(hornetqAddress, HQ_QUEUE_PREFIX, STOMP_QUEUE_PREFIX);
-      }
-      else if (hornetqAddress.startsWith(HQ_TOPIC_PREFIX))
-      {
-         return convert(hornetqAddress, HQ_TOPIC_PREFIX, STOMP_TOPIC_PREFIX);
-      }
-      else if (hornetqAddress.startsWith(HQ_TEMP_QUEUE_PREFIX))
-      {
-         return convert(hornetqAddress, HQ_TEMP_QUEUE_PREFIX, STOMP_TEMP_QUEUE_PREFIX);
-      }
-      else if (hornetqAddress.startsWith(HQ_TEMP_TOPIC_PREFIX))
-      {
-         return convert(hornetqAddress, HQ_TEMP_TOPIC_PREFIX, STOMP_TEMP_TOPIC_PREFIX);
-      }
-      else
-      {
-         // do nothing
-         return hornetqAddress;
-      }
-   }
-
-   private static String convert(String str, String oldPrefix, String newPrefix)
-   {
-      String sub = str.substring(oldPrefix.length(), str.length());
-      return new String(newPrefix + sub);
-   }
 
    public static void copyStandardHeadersFromFrameToMessage(StompFrame frame, ServerMessageImpl msg) throws Exception
    {
@@ -144,12 +61,17 @@ class StompUtils
       {
          msg.putStringProperty(Message.HDR_GROUP_ID, SimpleString.toSimpleString(groupID));
       }
-      Object o = headers.remove(Stomp.Headers.Send.REPLY_TO);
-      if (o != null)
+      Object replyTo = headers.remove(Stomp.Headers.Send.REPLY_TO);
+      if (replyTo != null)
       {
-         msg.putStringProperty(ClientMessageImpl.REPLYTO_HEADER_NAME, SimpleString.toSimpleString((String)o));
+         msg.putStringProperty(ClientMessageImpl.REPLYTO_HEADER_NAME, SimpleString.toSimpleString((String)replyTo));
       }
-
+      String expiration = (String)headers.remove(Stomp.Headers.Send.REPLY_TO);
+      if (expiration != null)
+      {
+         msg.setExpiration(Long.parseLong(expiration));
+      }
+      
       // now the general headers
       for (Iterator<Map.Entry<String, Object>> iter = headers.entrySet().iterator(); iter.hasNext();)
       {
@@ -163,7 +85,7 @@ class StompUtils
    public static void copyStandardHeadersFromMessageToFrame(Message message, StompFrame command, int deliveryCount) throws Exception
    {
       final Map<String, Object> headers = command.getHeaders();
-      headers.put(Stomp.Headers.Message.DESTINATION, toStompDestination(message.getAddress().toString()));
+      headers.put(Stomp.Headers.Message.DESTINATION, message.getAddress().toString());
       headers.put(Stomp.Headers.Message.MESSAGE_ID, message.getMessageID());
 
       if (message.getObjectProperty("JMSCorrelationID") != null)
@@ -173,11 +95,10 @@ class StompUtils
       headers.put(Stomp.Headers.Message.EXPIRATION_TIME, "" + message.getExpiration());
       headers.put(Stomp.Headers.Message.REDELIVERED, deliveryCount > 1);
       headers.put(Stomp.Headers.Message.PRORITY, "" + message.getPriority());
-
       if (message.getStringProperty(ClientMessageImpl.REPLYTO_HEADER_NAME) != null)
       {
          headers.put(Stomp.Headers.Message.REPLY_TO,
-                     toStompDestination(message.getStringProperty(ClientMessageImpl.REPLYTO_HEADER_NAME)));
+                     message.getStringProperty(ClientMessageImpl.REPLYTO_HEADER_NAME));
       }
       headers.put(Stomp.Headers.Message.TIMESTAMP, "" + message.getTimestamp());
 
