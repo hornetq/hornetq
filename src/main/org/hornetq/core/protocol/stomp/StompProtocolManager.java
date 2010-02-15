@@ -27,10 +27,12 @@ import java.util.concurrent.Executor;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
+import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Interceptor;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.ServerSession;
@@ -52,17 +54,20 @@ class StompProtocolManager implements ProtocolManager
 
    private static final Logger log = Logger.getLogger(StompProtocolManager.class);
 
+   // TODO use same value than HornetQConnection
+   private static final String CONNECTION_ID_PROP = "__HQ_CID";
+   
    // Attributes ----------------------------------------------------
 
    private final HornetQServer server;
 
    private final StompMarshaller marshaller;
 
+   private final Executor executor;
+
    private final Map<String, StompSession> transactedSessions = new HashMap<String, StompSession>();
 
    private final Map<RemotingConnection, StompSession> sessions = new HashMap<RemotingConnection, StompSession>();
-
-   private Executor executor;
 
    // Static --------------------------------------------------------
 
@@ -129,7 +134,14 @@ class StompProtocolManager implements ProtocolManager
       {
          public void run()
          {
-            doHandleBuffer(connection, buffer);
+            try
+            {
+               doHandleBuffer(connection, buffer);
+            } 
+            finally
+            {
+               server.getStorageManager().clearContext();
+            }
          }
       });
    }
@@ -240,7 +252,22 @@ class StompProtocolManager implements ProtocolManager
       String selector = (String)headers.get(Stomp.Headers.Subscribe.SELECTOR);
       String ack = (String)headers.get(Stomp.Headers.Subscribe.ACK_MODE);
       String id = (String)headers.get(Stomp.Headers.Subscribe.ID);
-
+      boolean noLocal = false;
+      if (headers.containsKey(Stomp.Headers.Subscribe.NO_LOCAL))
+      {
+         noLocal = Boolean.parseBoolean((String)headers.get(Stomp.Headers.Subscribe.NO_LOCAL));
+      }
+      if (noLocal)
+      {
+         String noLocalFilter = CONNECTION_ID_PROP + " <> '"  + connection.getID().toString() + "'";
+         if (selector == null)
+         {
+            selector = noLocalFilter; 
+         } else
+         {
+            selector += " AND " + noLocalFilter;
+         }
+      }
       if (ack == null)
       {
          ack = Stomp.Headers.Subscribe.AckModeValues.AUTO;
@@ -259,11 +286,13 @@ class StompProtocolManager implements ProtocolManager
          subscriptionID = "subscription/" + destination;
       }
       StompSession stompSession = getSession(connection);
+      stompSession.setNoLocal(noLocal);
       if (stompSession.containsSubscription(subscriptionID))
       {
          throw new StompException("There already is a subscription for: " + subscriptionID +
                                   ". Either use unique subscription IDs or do not create multiple subscriptions for the same destination");
       }
+      server.getStorageManager().setContext(stompSession.getContext());
       long consumerID = server.getStorageManager().generateUniqueID();
       stompSession.addSubscription(consumerID, subscriptionID, destination, selector, ack);
 
@@ -291,6 +320,7 @@ class StompProtocolManager implements ProtocolManager
       }
 
       StompSession stompSession = getSession(connection);
+      server.getStorageManager().setContext(stompSession.getContext());
       boolean unsubscribed = stompSession.unsubscribe(subscriptionID);
       if (!unsubscribed)
       {
@@ -310,6 +340,7 @@ class StompProtocolManager implements ProtocolManager
          log.warn("Transactional acknowledgement is not supported");
       }
       stompSession = getSession(connection);
+      server.getStorageManager().setContext(stompSession.getContext());
       stompSession.acknowledge(messageID);
 
       return null;
@@ -386,7 +417,7 @@ class StompProtocolManager implements ProtocolManager
       StompSession stompSession = sessions.get(connection);
       if (stompSession == null)
       {
-         stompSession = new StompSession(connection, this);
+         stompSession = new StompSession(connection, this, server.getStorageManager().newContext(executor));
          String name = UUIDGenerator.getInstance().generateStringUUID();
          ServerSession session = server.createSession(name,
                                                       connection.getLogin(),
@@ -409,7 +440,7 @@ class StompProtocolManager implements ProtocolManager
       StompSession stompSession = transactedSessions.get(txID);
       if (stompSession == null)
       {
-         stompSession = new StompSession(connection, this);
+         stompSession = new StompSession(connection, this, server.getStorageManager().newContext(executor));
          String name = UUIDGenerator.getInstance().generateStringUUID();
          ServerSession session = server.createSession(name,
                                                       connection.getLogin(),
@@ -490,17 +521,21 @@ class StompProtocolManager implements ProtocolManager
          message.getBodyBuffer().writeBytes(content);
       }
 
-      ServerSession session = null;
+      StompSession stompSession = null;
       if (txID == null)
       {
-         session = getSession(connection).getSession();
+         stompSession = getSession(connection);
       }
       else
       {
-         session = transactedSessions.get(txID).getSession();
+         stompSession = transactedSessions.get(txID);
       }
-
-      session.send(message);
+      server.getStorageManager().setContext(stompSession.getContext());
+      if (stompSession.isNoLocal())
+      {
+         message.putStringProperty(CONNECTION_ID_PROP, connection.getID().toString());
+      }
+      stompSession.getSession().send(message);
       return null;
    }
 
@@ -528,32 +563,23 @@ class StompProtocolManager implements ProtocolManager
       return new StompFrame(Stomp.Responses.CONNECTED, h, StompMarshaller.NO_DATA);
    }
 
-   public int send(StompConnection connection, StompFrame frame)
+   public void send(final StompConnection connection, final StompFrame frame)
    {
-      if (log.isTraceEnabled())
+      server.getStorageManager().afterCompleteOperations(new IOAsyncTask()
       {
-         log.trace("sent " + frame);
-      }
-      synchronized (connection)
-      {
-         if (connection.isDestroyed() || !connection.isValid())
+         public void onError(final int errorCode, final String errorMessage)
          {
-            log.warn("Connection closed " + connection);
-            return 0;
+            log.warn("Error processing IOCallback code = " + errorCode + " message = " + errorMessage);
+
+            StompFrame error = createError(new HornetQException(errorCode, errorMessage), frame);
+            doSend(connection, error);
          }
-         try
+
+         public void done()
          {
-            byte[] bytes = marshaller.marshal(frame);
-            HornetQBuffer buffer = HornetQBuffers.wrappedBuffer(bytes);
-            connection.getTransportConnection().write(buffer, true);
-            return bytes.length;
+            doSend(connection, frame);
          }
-         catch (IOException e)
-         {
-            log.error("Unable to send frame " + frame, e);
-            return 0;
-         }
-      }
+      });
    }
 
    public void cleanup(StompConnection connection)
@@ -594,6 +620,31 @@ class StompProtocolManager implements ProtocolManager
                log.warn(e.getMessage(), e);
             }
             iterator.remove();
+         }
+      }
+   }
+   
+   private void doSend(final StompConnection connection, final StompFrame frame)
+   {
+      if (log.isTraceEnabled())
+      {
+         log.trace("sent " + frame);
+      }
+      synchronized (connection)
+      {
+         if (connection.isDestroyed() || !connection.isValid())
+         {
+            log.warn("Connection closed " + connection);
+         }
+         try
+         {
+            byte[] bytes = marshaller.marshal(frame);
+            HornetQBuffer buffer = HornetQBuffers.wrappedBuffer(bytes);
+            connection.getTransportConnection().write(buffer, true);
+         }
+         catch (IOException e)
+         {
+            log.error("Unable to send frame " + frame, e);
          }
       }
    }

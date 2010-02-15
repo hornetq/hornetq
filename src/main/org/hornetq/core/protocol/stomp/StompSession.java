@@ -21,6 +21,7 @@ import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.message.impl.MessageImpl;
+import org.hornetq.core.persistence.OperationContext;
 import org.hornetq.core.protocol.stomp.Stomp.Headers;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.ServerSession;
@@ -41,15 +42,20 @@ class StompSession implements SessionCallback
 
    private ServerSession session;
 
+   private final OperationContext sessionContext;
+
    private final Map<Long, StompSubscription> subscriptions = new HashMap<Long, StompSubscription>();
 
    // key = message ID, value = consumer ID
    private final Map<Long, Long> messagesToAck = new HashMap<Long, Long>();
 
-   StompSession(final StompConnection connection, final StompProtocolManager manager)
+   private boolean noLocal = false;
+
+   StompSession(final StompConnection connection, final StompProtocolManager manager, OperationContext sessionContext)
    {
       this.connection = connection;
       this.manager = manager;
+      this.sessionContext = sessionContext;
    }
 
    void setServerSession(ServerSession session)
@@ -102,8 +108,9 @@ class StompSession implements SessionCallback
          StompFrame frame = new StompFrame(Stomp.Responses.MESSAGE, headers, data);
          StompUtils.copyStandardHeadersFromMessageToFrame(serverMessage, frame, deliveryCount);
 
-         int length = manager.send(connection, frame);
-
+         manager.send(connection, frame);
+         int size =  frame.getEncodedSize();
+         
          if (subscription.getAck().equals(Stomp.Headers.Subscribe.AckModeValues.AUTO))
          {
             session.acknowledge(consumerID, serverMessage.getMessageID());
@@ -113,7 +120,7 @@ class StompSession implements SessionCallback
          {
             messagesToAck.put(serverMessage.getMessageID(), consumerID);
          }
-         return length;
+         return size;
 
       }
       catch (Exception e)
@@ -200,5 +207,20 @@ class StompSession implements SessionCallback
    public RemotingConnection getConnection()
    {
       return connection;
+   }
+
+   public OperationContext getContext()
+   {
+      return sessionContext;
+   }
+
+   public boolean isNoLocal()
+   {
+      return noLocal;
+   }
+   
+   public void setNoLocal(boolean noLocal)
+   {
+      this.noLocal = noLocal;
    }
 }

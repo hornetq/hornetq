@@ -89,7 +89,7 @@ hello queue orders
                 </programlisting>
               </listitem>
               <listitem>
-                <para>send or subscribe to a JMS <emphasis>Queue</emphasis> by prepending the topic name by <literal>jms.topic.</literal>.</para>
+                <para>send or subscribe to a JMS <emphasis>Topic</emphasis> by prepending the topic name by <literal>jms.topic.</literal>.</para>
                 <para>For example to subscribe to the <literal>stocks</literal> JMS Topic, the Stomp client must send the frame:</para>
                 <programlisting>
 SUBSCRIBE

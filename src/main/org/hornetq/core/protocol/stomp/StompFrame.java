@@ -35,6 +35,8 @@ class StompFrame
 
    private byte[] content = StompFrame.NO_DATA;
 
+   private int size = -1;
+
    public StompFrame()
    {
       this.headers = new HashMap<String, Object>();
@@ -62,9 +64,25 @@ class StompFrame
       return headers;
    }
 
+   public int getEncodedSize()
+   {
+      if (size == -1)
+      {
+         throw new IllegalStateException("Frame has not been encoded yet");
+      }
+
+      return size ;
+   }
+
+   public void setEncodedSize(int size)
+   {
+      this.size = size;
+   }
+
    @Override
    public String toString()
    {
       return "StompFrame[command=" + command + ", headers=" + headers + ", content-length=" + content.length + "]";
    }
+
 }

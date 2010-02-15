@@ -1143,6 +1143,59 @@ public class StompTest extends UnitTestCase {
        sendFrame(frame);
    }
     
+    public void testSubscribeToTopicWithNoLocal() throws Exception {
+
+       String frame =
+               "CONNECT\n" +
+                       "login: brianm\n" +
+                       "passcode: wombats\n\n" +
+                       Stomp.NULL;
+       sendFrame(frame);
+
+       frame = receiveFrame(100000);
+       Assert.assertTrue(frame.startsWith("CONNECTED"));
+
+       frame =
+               "SUBSCRIBE\n" +
+                       "destination:" + getTopicPrefix() + getTopicName() + "\n" +
+                       "receipt: 12\n" +
+                       "no-local: true\n" +
+                       "\n\n" +
+                       Stomp.NULL;
+       sendFrame(frame);
+       // wait for SUBSCRIBE's receipt
+       frame = receiveFrame(10000);
+       Assert.assertTrue(frame.startsWith("RECEIPT"));
+
+       // send a message on the same connection => it should not be received
+       frame = "SEND\n" +
+          "destination:" + getTopicPrefix() + getTopicName() + "\n\n" +
+                  "Hello World" +
+                  Stomp.NULL;
+       sendFrame(frame);
+  
+       try {
+          frame = receiveFrame(2000);
+          log.info("Received frame: " + frame);
+          Assert.fail("No message should have been received since subscription is noLocal");
+      }
+      catch (SocketTimeoutException e) {
+      }
+      
+      // send message on another JMS connection => it should be received
+      sendMessage(getName(), topic);
+      frame = receiveFrame(10000);
+      Assert.assertTrue(frame.startsWith("MESSAGE"));
+      Assert.assertTrue(frame.indexOf("destination:") > 0);
+      Assert.assertTrue(frame.indexOf(getName()) > 0);
+      
+      frame =
+               "DISCONNECT\n" +
+                       "\n\n" +
+                       Stomp.NULL;
+       sendFrame(frame);
+   }
+    
     public void testClientAckNotPartOfTransaction() throws Exception {
 
        String frame =
