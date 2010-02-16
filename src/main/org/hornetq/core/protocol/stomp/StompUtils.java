@@ -111,6 +111,13 @@ class StompUtils
       Set<SimpleString> names = message.getPropertyNames();
       for (SimpleString name : names)
       {
+         if (name.equals(ClientMessageImpl.REPLYTO_HEADER_NAME) ||
+                  name.toString().equals("JMSType") ||
+                  name.toString().equals("JMSCorrelationID"))
+         {
+            continue;
+         }
+
          headers.put(name.toString(), message.getObjectProperty(name));
       }
    }
