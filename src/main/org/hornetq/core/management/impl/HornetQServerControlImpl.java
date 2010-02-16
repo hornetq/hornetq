@@ -1073,12 +1073,12 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
    }
    
    public void addSecuritySettings(String addressMatch,
+                                   String sendRoles,
+                                   String consumeRoles,
                                    String createDurableQueueRoles,
                                    String deleteDurableQueueRoles,
                                    String createTempQueueRoles,
                                    String deleteTempQueueRoles,
-                                   String sendRoles,
-                                   String consumeRoles,
                                    String manageRoles)
    {
       clearIO();

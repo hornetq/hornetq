@@ -448,18 +448,18 @@ public class HornetQServerControlUsingCoreTest extends HornetQServerControlTest
          }
          
          public void addSecuritySettings(String addressMatch,
+                                         String sendRoles,
+                                         String consumeRoles,
                                          String createDurableQueueRoles,
                                          String deleteDurableQueueRoles,
                                          String createTempQueueRoles,
                                          String deleteTempQueueRoles,
-                                         String sendRoles,
-                                         String consumeRoles,
                                          String manageRoles) throws Exception
          {
             proxy.invokeOperation("addSecuritySettings", addressMatch, 
+                                  sendRoles, consumeRoles,
                                   createDurableQueueRoles, deleteDurableQueueRoles,
                                   createTempQueueRoles, deleteTempQueueRoles,
-                                  sendRoles, consumeRoles,
                                   manageRoles);
          }
          

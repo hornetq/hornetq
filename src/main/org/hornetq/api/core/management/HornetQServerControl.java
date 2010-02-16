@@ -480,12 +480,12 @@ public interface HornetQServerControl
    @Operation(desc= "Add security settings for addresses matching the addressMatch", impact = MBeanOperationInfo.ACTION)
    void addSecuritySettings(
                             @Parameter(desc="an address match", name="addressMatch") String addressMatch, 
+                            @Parameter(desc="a comma-separated list of roles allowed to send messages", name="send") String sendRoles,
+                            @Parameter(desc="a comma-separated list of roles allowed to consume messages", name="consume") String consumeRoles,
                             @Parameter(desc="a comma-separated list of roles allowed to create durable queues", name="createDurableQueueRoles") String createDurableQueueRoles,
                             @Parameter(desc="a comma-separated list of roles allowed to delete durable queues", name="deleteDurableQueueRoles") String deleteDurableQueueRoles,
                             @Parameter(desc="a comma-separated list of roles allowed to create temporary queues", name="createTempQueueRoles") String createTempQueueRoles,
                             @Parameter(desc="a comma-separated list of roles allowed to delete temporary queues", name="deleteTempQueueRoles") String deleteTempQueueRoles,
-                            @Parameter(desc="a comma-separated list of roles allowed to send messages", name="send") String sendRoles,
-                            @Parameter(desc="a comma-separated list of roles allowed to consume messages", name="consume") String consumeRoles,
                             @Parameter(desc="a comma-separated list of roles allowed to send management messages messages", name="manage") String manageRoles) throws Exception;
    
    void removeSecuritySettings(String addressMatch) throws Exception;

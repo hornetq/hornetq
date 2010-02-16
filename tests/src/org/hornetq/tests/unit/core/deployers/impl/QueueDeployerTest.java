@@ -562,12 +562,12 @@ public class QueueDeployerTest extends UnitTestCase
       }
       
       public void addSecuritySettings(String addressMatch,
+                                      String sendRoles,
+                                      String consumeRoles,
                                       String createDurableQueueRoles,
                                       String deleteDurableQueueRoles,
                                       String createTempQueueRoles,
                                       String deleteTempQueueRoles,
-                                      String sendRoles,
-                                      String consumeRoles,
                                       String manageRoles) throws Exception
       {
       }

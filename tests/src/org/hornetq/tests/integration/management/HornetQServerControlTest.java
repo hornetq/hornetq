@@ -399,7 +399,7 @@ public class HornetQServerControlTest extends ManagementTestBase
       String exactAddress = "test.whatever";
       
       assertEquals(0, serverControl.getRoles(addressMatch).length);
-      serverControl.addSecuritySettings(addressMatch, "foo", "bar", "foo, bar", "", "foo", "foo, bar", "");
+      serverControl.addSecuritySettings(addressMatch, "foo", "foo, bar", "foo", "bar", "foo, bar", "", "");
       
       String rolesAsJSON = serverControl.getRolesAsJSON(exactAddress);
       RoleInfo[] roleInfos = RoleInfo.from(rolesAsJSON);
@@ -416,20 +416,20 @@ public class HornetQServerControlTest extends ManagementTestBase
          fooRole = roleInfos[1];
          barRole = roleInfos[0];
       }
+      assertTrue(fooRole.isSend());
+      assertTrue(fooRole.isConsume());
       assertTrue(fooRole.isCreateDurableQueue());
       assertFalse(fooRole.isDeleteDurableQueue());
       assertTrue(fooRole.isCreateNonDurableQueue());
       assertFalse(fooRole.isDeleteNonDurableQueue());
-      assertTrue(fooRole.isSend());
-      assertTrue(fooRole.isConsume());
       assertFalse(fooRole.isManage());
    
+      assertFalse(barRole.isSend());
+      assertTrue(barRole.isConsume());
       assertFalse(barRole.isCreateDurableQueue());
       assertTrue(barRole.isDeleteDurableQueue());
       assertTrue(barRole.isCreateNonDurableQueue());
       assertFalse(barRole.isDeleteNonDurableQueue());
-      assertFalse(barRole.isSend());
-      assertTrue(barRole.isConsume());
       assertFalse(barRole.isManage());
       
       serverControl.removeSecuritySettings(addressMatch);
