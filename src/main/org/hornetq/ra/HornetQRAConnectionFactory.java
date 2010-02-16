@@ -21,7 +21,7 @@ import javax.jms.TopicConnectionFactory;
 import javax.jms.XAConnectionFactory;
 import javax.jms.XAQueueConnectionFactory;
 import javax.jms.XATopicConnectionFactory;
-import javax.naming.Referenceable;
+import javax.resource.Referenceable;
 
 /**
  * An aggregate interface for the JMS connection factories

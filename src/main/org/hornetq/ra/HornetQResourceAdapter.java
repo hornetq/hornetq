@@ -72,6 +72,11 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
     * The resource adapter properties
     */
    private final HornetQRAProperties raProperties;
+   
+   /**
+    * The resource adapter properties before parsing
+    */
+   private String unparsedProperties;
 
    /**
     * The JBoss connection factory
@@ -234,15 +239,16 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       return raProperties.getConnectorClassName();
    }
 
-   public Map<String, Object> getConnectionParameters()
+   public String getConnectionParameters()
    {
-      return raProperties.getParsedConnectionParameters();
+      return unparsedProperties;
    }
 
    public void setConnectionParameters(final String config)
    {
       if (config != null)
       {
+         this.unparsedProperties = config;
          raProperties.setParsedConnectionParameters(Util.parseConfig(config));
       }
    }
@@ -1381,7 +1387,7 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       if (connectorClassName != null)
       {
          Map<String, Object> connectionParams = overrideProperties.getParsedConnectionParameters() != null ? overrideProperties.getParsedConnectionParameters()
-                                                                                                          : getConnectionParameters();
+                                                                                                          : raProperties.getParsedConnectionParameters();
          TransportConfiguration transportConf = new TransportConfiguration(connectorClassName, connectionParams);
 
          String backUpCOnnectorClassname = overrideProperties.getBackupConnectorClassName() != null ? overrideProperties.getBackupConnectorClassName()

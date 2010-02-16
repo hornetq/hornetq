@@ -333,7 +333,7 @@ public class ResourceAdapterTest extends ServiceTestBase
 
    public void testValidateProperties() throws Exception
    {
-      validateGettersAndSetters(new HornetQResourceAdapter(), "backupTransportConfiguration");
+      validateGettersAndSetters(new HornetQResourceAdapter(), "backupTransportConfiguration", "connectionParameters");
       validateGettersAndSetters(new HornetQRAManagedConnectionFactory(),
                                 "connectionParameters",
                                 "sessionDefaultType",
