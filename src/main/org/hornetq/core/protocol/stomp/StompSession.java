@@ -92,7 +92,7 @@ class StompSession implements SessionCallback
             SimpleString text = serverMessage.getBodyBuffer().readNullableSimpleString();
             if (text != null)
             {
-               data = text.toString().getBytes();
+               data = text.toString().getBytes("UTF-8");
             }
          }
          else

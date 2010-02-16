@@ -497,6 +497,49 @@ public class StompTest extends UnitTestCase {
        sendFrame(frame);
    }
 
+    public void testBodyWithUTF8() throws Exception {
+
+       String frame =
+               "CONNECT\n" +
+                       "login: brianm\n" +
+                       "passcode: wombats\n\n" +
+                       Stomp.NULL;
+       sendFrame(frame);
+
+       frame = receiveFrame(100000);
+       Assert.assertTrue(frame.startsWith("CONNECTED"));
+
+       frame =
+               "SUBSCRIBE\n" +
+                       "destination:" + getQueuePrefix() + getQueueName() + "\n" +
+                       "ack:auto\n\n" +
+                       Stomp.NULL;
+       sendFrame(frame);
+
+       String text = "A" + "\u00ea" + "\u00f1" + 
+              "\u00fc" + "C";
+       System.out.println(text);
+       sendMessage(text);
+
+       frame = receiveFrame(10000);
+       System.out.println(frame);
+       Assert.assertTrue(frame.startsWith("MESSAGE"));
+       Assert.assertTrue(frame.indexOf("destination:") > 0);
+       Assert.assertTrue(frame.indexOf(text) > 0);
+
+       frame =
+               "DISCONNECT\n" +
+                       "\n\n" +
+                       Stomp.NULL;
+       sendFrame(frame);
+       
+       // message should not be received as it was auto-acked
+       MessageConsumer consumer = session.createConsumer(queue);
+       TextMessage message = (TextMessage) consumer.receive(1000);
+       Assert.assertNull(message);
+
+   }
+    
     public void testMessagesAreInOrder() throws Exception {
         int ctr = 10;
         String[] data = new String[ctr];
