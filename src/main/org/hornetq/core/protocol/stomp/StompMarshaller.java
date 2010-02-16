@@ -62,9 +62,7 @@ class StompMarshaller
       DataOutputStream dos = new DataOutputStream(baos);
       marshal(command, dos);
       dos.close();
-      byte[] bytes = baos.toByteArray();
-      command.setEncodedSize(bytes.length);
-      return bytes;
+      return baos.toByteArray();
    }
 
    public void marshal(StompFrame stomp, DataOutput os) throws IOException

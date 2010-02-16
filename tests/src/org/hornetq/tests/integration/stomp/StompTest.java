@@ -665,11 +665,11 @@ public class StompTest extends UnitTestCase {
         Assert.assertTrue(message.getJMSRedelivered());
     }
     
-    public void _testSubscribeWithClientAckThenConsumingAgainWithAutoAckWithNoDisconnectFrame() throws Exception {
+    public void testSubscribeWithClientAckThenConsumingAgainWithAutoAckWithNoDisconnectFrame() throws Exception {
         assertSubscribeWithClientAckThenConsumeWithAutoAck(false);
     }
 
-    public void _testSubscribeWithClientAckThenConsumingAgainWithAutoAckWithExplicitDisconnect() throws Exception {
+    public void testSubscribeWithClientAckThenConsumingAgainWithAutoAckWithExplicitDisconnect() throws Exception {
         assertSubscribeWithClientAckThenConsumeWithAutoAck(true);
     }
 
@@ -1174,7 +1174,8 @@ public class StompTest extends UnitTestCase {
                   "\n\n" +
                   Stomp.NULL;
        sendFrame(disconnectFrame);
-
+       stompSocket.close();
+       
        // send the message when the durable subscriber is disconnected
        sendMessage(getName(), topic);
   

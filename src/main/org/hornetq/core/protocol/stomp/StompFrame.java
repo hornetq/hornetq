@@ -17,6 +17,7 @@
  */
 package org.hornetq.core.protocol.stomp;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -68,15 +69,18 @@ class StompFrame
    {
       if (size == -1)
       {
-         throw new IllegalStateException("Frame has not been encoded yet");
+         StompMarshaller marshaller = new StompMarshaller();
+         try
+         {
+            size = marshaller.marshal(this).length;
+         }
+         catch (IOException e)
+         {
+            return -1;
+         }
       }
 
       return size ;
-   }
-
-   public void setEncodedSize(int size)
-   {
-      this.size = size;
    }
 
    @Override

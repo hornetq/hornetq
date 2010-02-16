@@ -34,7 +34,6 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.ServerSession;
 import org.hornetq.core.server.impl.ServerMessageImpl;
@@ -154,7 +153,6 @@ class StompProtocolManager implements ProtocolManager
       try
       {
          request = marshaller.unmarshal(buffer);
-         System.out.println("received " + request);
          if (log.isTraceEnabled())
          {
             log.trace("received " + request);
@@ -165,27 +163,27 @@ class StompProtocolManager implements ProtocolManager
          StompFrame response = null;
          if (Stomp.Commands.CONNECT.equals(command))
          {
-            response = onConnect(request, server, conn);
+            response = onConnect(request, conn);
          }
          else if (Stomp.Commands.DISCONNECT.equals(command))
          {
-            response = onDisconnect(request, server, conn);
+            response = onDisconnect(request, conn);
          }
          else if (Stomp.Commands.SEND.equals(command))
          {
-            response = onSend(request, server, conn);
+            response = onSend(request, conn);
          }
          else if (Stomp.Commands.SUBSCRIBE.equals(command))
          {
-            response = onSubscribe(request, server, conn);
+            response = onSubscribe(request, conn);
          }
          else if (Stomp.Commands.UNSUBSCRIBE.equals(command))
          {
-            response = onUnsubscribe(request, server, conn);
+            response = onUnsubscribe(request, conn);
          }
          else if (Stomp.Commands.ACK.equals(command))
          {
-            response = onAck(request, server, conn);
+            response = onAck(request, conn);
          }
          else if (Stomp.Commands.BEGIN.equals(command))
          {
@@ -193,11 +191,11 @@ class StompProtocolManager implements ProtocolManager
          }
          else if (Stomp.Commands.COMMIT.equals(command))
          {
-            response = onCommit(request, server, conn);
+            response = onCommit(request, conn);
          }
          else if (Stomp.Commands.ABORT.equals(command))
          {
-            response = onAbort(request, server, conn);
+            response = onAbort(request, conn);
          }
          else
          {
@@ -248,7 +246,7 @@ class StompProtocolManager implements ProtocolManager
 
    // Private -------------------------------------------------------
 
-   private StompFrame onSubscribe(StompFrame frame, HornetQServer server, StompConnection connection) throws Exception
+   private StompFrame onSubscribe(StompFrame frame, StompConnection connection) throws Exception
    {
       Map<String, Object> headers = frame.getHeaders();
       String destination = (String)headers.get(Stomp.Headers.Subscribe.DESTINATION);
@@ -296,7 +294,6 @@ class StompProtocolManager implements ProtocolManager
          throw new StompException("There already is a subscription for: " + subscriptionID +
                                   ". Either use unique subscription IDs or do not create multiple subscriptions for the same destination");
       }
-      server.getStorageManager().setContext(stompSession.getContext());
       long consumerID = server.getStorageManager().generateUniqueID();
       String clientID = (connection.getClientID() != null) ? connection.getClientID() : null;
       stompSession.addSubscription(consumerID, subscriptionID, clientID, durableSubscriptionName, destination, selector, ack);
@@ -304,7 +301,7 @@ class StompProtocolManager implements ProtocolManager
       return null;
    }
 
-   private StompFrame onUnsubscribe(StompFrame frame, HornetQServer server, StompConnection connection) throws Exception
+   private StompFrame onUnsubscribe(StompFrame frame, StompConnection connection) throws Exception
    {
       Map<String, Object> headers = frame.getHeaders();
       String destination = (String)headers.get(Stomp.Headers.Unsubscribe.DESTINATION);
@@ -325,7 +322,6 @@ class StompProtocolManager implements ProtocolManager
       }
 
       StompSession stompSession = getSession(connection);
-      server.getStorageManager().setContext(stompSession.getContext());
       boolean unsubscribed = stompSession.unsubscribe(subscriptionID);
       if (!unsubscribed)
       {
@@ -334,7 +330,7 @@ class StompProtocolManager implements ProtocolManager
       return null;
    }
 
-   private StompFrame onAck(StompFrame frame, HornetQServer server, StompConnection connection) throws Exception
+   private StompFrame onAck(StompFrame frame, StompConnection connection) throws Exception
    {
       Map<String, Object> headers = frame.getHeaders();
       String messageID = (String)headers.get(Stomp.Headers.Ack.MESSAGE_ID);
@@ -345,7 +341,6 @@ class StompProtocolManager implements ProtocolManager
          log.warn("Transactional acknowledgement is not supported");
       }
       stompSession = getSession(connection);
-      server.getStorageManager().setContext(stompSession.getContext());
       stompSession.acknowledge(messageID);
 
       return null;
@@ -369,7 +364,7 @@ class StompProtocolManager implements ProtocolManager
       return null;
    }
 
-   private StompFrame onCommit(StompFrame frame, HornetQServer server, StompConnection connection) throws Exception
+   private StompFrame onCommit(StompFrame frame, StompConnection connection) throws Exception
    {
       Map<String, Object> headers = frame.getHeaders();
       String txID = (String)headers.get(Stomp.Headers.TRANSACTION);
@@ -378,18 +373,18 @@ class StompProtocolManager implements ProtocolManager
          throw new StompException("transaction header is mandatory to COMMIT a transaction");
       }
 
-      StompSession session = transactedSessions.remove(txID);
+      StompSession session = getTransactedSession(connection, txID);
       if (session == null)
       {
          throw new StompException("No transaction started: " + txID);
       }
-
+      transactedSessions.remove(txID);
       session.getSession().commit();
 
       return null;
    }
 
-   private StompFrame onAbort(StompFrame frame, HornetQServer server, StompConnection connection) throws Exception
+   private StompFrame onAbort(StompFrame frame, StompConnection connection) throws Exception
    {
       Map<String, Object> headers = frame.getHeaders();
       String txID = (String)headers.get(Stomp.Headers.TRANSACTION);
@@ -398,12 +393,13 @@ class StompProtocolManager implements ProtocolManager
          throw new StompException("transaction header is mandatory to ABORT a transaction");
       }
 
-      StompSession session = transactedSessions.remove(txID);
-
+      StompSession session = getTransactedSession(connection, txID);
+      
       if (session == null)
       {
          throw new StompException("No transaction started: " + txID);
       }
+      transactedSessions.remove(txID);
       session.getSession().rollback(false);
 
       return null;
@@ -437,6 +433,7 @@ class StompProtocolManager implements ProtocolManager
          stompSession.setServerSession(session);
          sessions.put(connection, stompSession);
       }
+      server.getStorageManager().setContext(stompSession.getContext());
       return stompSession;
    }
 
@@ -460,45 +457,17 @@ class StompProtocolManager implements ProtocolManager
          stompSession.setServerSession(session);
          transactedSessions.put(txID, stompSession);
       }
+      server.getStorageManager().setContext(stompSession.getContext());
       return stompSession;
    }
 
-   private StompFrame onDisconnect(StompFrame frame, HornetQServer server, StompConnection connection) throws Exception
+   private StompFrame onDisconnect(StompFrame frame, StompConnection connection) throws Exception
    {
-      connection.setValid(false);
-
-      StompSession session = sessions.remove(connection);
-      if (session != null)
-      {
-         try
-         {
-            session.getSession().rollback(true);
-            session.getSession().close();
-         }
-         catch (Exception e)
-         {
-            throw new StompException(e.getMessage());
-         }
-      }
-
-      // removed the transacted session belonging to the connection
-      Iterator<Entry<String, StompSession>> iterator = transactedSessions.entrySet().iterator();
-      while (iterator.hasNext())
-      {
-         Map.Entry<String, StompSession> entry = (Map.Entry<String, StompSession>)iterator.next();
-         if (entry.getValue().getConnection() == connection)
-         {
-            ServerSession serverSession = entry.getValue().getSession();
-            serverSession.rollback(true);
-            serverSession.close();
-            iterator.remove();
-         }
-      }
-
+      cleanup(connection);
       return null;
    }
 
-   private StompFrame onSend(StompFrame frame, HornetQServer server, StompConnection connection) throws Exception
+   private StompFrame onSend(StompFrame frame, StompConnection connection) throws Exception
    {
       checkConnected(connection);
       Map<String, Object> headers = frame.getHeaders();
@@ -533,9 +502,8 @@ class StompProtocolManager implements ProtocolManager
       }
       else
       {
-         stompSession = transactedSessions.get(txID);
+         stompSession = getTransactedSession(connection, txID);
       }
-      server.getStorageManager().setContext(stompSession.getContext());
       if (stompSession.isNoLocal())
       {
          message.putStringProperty(CONNECTION_ID_PROP, connection.getID().toString());
@@ -544,7 +512,7 @@ class StompProtocolManager implements ProtocolManager
       return null;
    }
 
-   private StompFrame onConnect(StompFrame frame, HornetQServer server, final StompConnection connection) throws Exception
+   private StompFrame onConnect(StompFrame frame, final StompConnection connection) throws Exception
    {
       Map<String, Object> headers = frame.getHeaders();
       String login = (String)headers.get(Stomp.Headers.Connect.LOGIN);
@@ -637,7 +605,6 @@ class StompProtocolManager implements ProtocolManager
 
    private void doSend(final StompConnection connection, final StompFrame frame)
    {
-      System.out.println("sent " + frame);
       if (log.isTraceEnabled())
       {
          log.trace("sent " + frame);
@@ -647,7 +614,9 @@ class StompProtocolManager implements ProtocolManager
          if (connection.isDestroyed() || !connection.isValid())
          {
             log.warn("Connection closed " + connection);
+            return;
          }
+
          try
          {
             byte[] bytes = marshaller.marshal(frame);
