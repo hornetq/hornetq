@@ -560,6 +560,31 @@ public class QueueDeployerTest extends UnitTestCase
       {
          return false;
       }
+      
+      public void addSecuritySettings(String addressMatch,
+                                      String createDurableQueueRoles,
+                                      String deleteDurableQueueRoles,
+                                      String createTempQueueRoles,
+                                      String deleteTempQueueRoles,
+                                      String sendRoles,
+                                      String consumeRoles,
+                                      String manageRoles) throws Exception
+      {
+      }
+      
+      public void removeSecuritySettings(String addressMatch) throws Exception
+      {
+      }
+      
+      public Object[] getRoles(String addressMatch) throws Exception
+      {
+         return null;
+      }
+      
+      public String getRolesAsJSON(String addressMatch) throws Exception
+      {
+         return null;
+      }
 
    }
 

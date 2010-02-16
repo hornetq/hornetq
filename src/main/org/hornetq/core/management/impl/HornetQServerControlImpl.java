@@ -19,6 +19,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -47,6 +48,8 @@ import org.hornetq.core.messagecounter.impl.MessageCounterManagerImpl;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.remoting.server.RemotingService;
+import org.hornetq.core.security.CheckType;
+import org.hornetq.core.security.Role;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.JournalType;
 import org.hornetq.core.server.ServerSession;
@@ -87,6 +90,21 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
 
    // Static --------------------------------------------------------
 
+   private static List<String> toList(final String commaSeparatedString)
+   {
+      List<String> list = new ArrayList<String>();
+      if (commaSeparatedString == null || commaSeparatedString.trim().length() == 0)
+      {
+         return list;
+      }
+      String[] values = commaSeparatedString.split(",");
+      for (int i = 0; i < values.length; i++)
+      {
+         list.add(values[i].trim());
+      }
+      return list;
+   }
+   
    // Constructors --------------------------------------------------
 
    public HornetQServerControlImpl(final PostOffice postOffice,
@@ -1047,6 +1065,118 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
          }
 
          return array.toString();
+      }
+      finally
+      {
+         blockOnIO();
+      }
+   }
+   
+   public void addSecuritySettings(String addressMatch,
+                                   String createDurableQueueRoles,
+                                   String deleteDurableQueueRoles,
+                                   String createTempQueueRoles,
+                                   String deleteTempQueueRoles,
+                                   String sendRoles,
+                                   String consumeRoles,
+                                   String manageRoles)
+   {
+      clearIO();
+      try
+      {
+         List<String> createDurableQueue = toList(createDurableQueueRoles);
+         List<String> deleteDurableQueue = toList(deleteDurableQueueRoles);
+         List<String> createTempQueue = toList(createTempQueueRoles);
+         List<String> deleteTempQueue = toList(deleteTempQueueRoles);
+         List<String> send = toList(sendRoles);
+         List<String> consume = toList(consumeRoles);
+         List<String> manage = toList(manageRoles); 
+
+         Set<String> allRoles = new HashSet<String>();
+         allRoles.addAll(createDurableQueue);
+         allRoles.addAll(deleteDurableQueue);
+         allRoles.addAll(createTempQueue);
+         allRoles.addAll(deleteTempQueue);
+         allRoles.addAll(send);
+         allRoles.addAll(consume);
+         allRoles.addAll(manage);
+
+         Set<Role> roles = new HashSet<Role>();
+         for (String role : allRoles)
+         {
+            roles.add(new Role(role,
+                               send.contains(role),
+                               consume.contains(role),
+                               createDurableQueue.contains(role),
+                               deleteDurableQueue.contains(role),
+                               createTempQueue.contains(role),
+                               deleteTempQueue.contains(role),
+                               manageRoles.contains(role)));
+         }
+
+         server.getSecurityRepository().addMatch(addressMatch, roles );
+      }
+      finally
+      {
+         blockOnIO();
+      }
+   }
+
+   public void removeSecuritySettings(String addressMatch)
+   {
+      clearIO();
+      try
+      {
+         server.getSecurityRepository().removeMatch(addressMatch);
+      }
+      finally
+      {
+         blockOnIO();
+      }
+   }
+   
+   public Object[] getRoles(String addressMatch) throws Exception
+   {
+      clearIO();
+      try
+      {
+         Set<Role> roles = server.getSecurityRepository().getMatch(addressMatch);
+
+         Object[] objRoles = new Object[roles.size()];
+
+         int i = 0;
+         for (Role role : roles)
+         {
+            objRoles[i++] = new Object[] { role.getName(),
+                                          CheckType.SEND.hasRole(role),
+                                          CheckType.CONSUME.hasRole(role),
+                                          CheckType.CREATE_DURABLE_QUEUE.hasRole(role),
+                                          CheckType.DELETE_DURABLE_QUEUE.hasRole(role),
+                                          CheckType.CREATE_NON_DURABLE_QUEUE.hasRole(role),
+                                          CheckType.DELETE_NON_DURABLE_QUEUE.hasRole(role),
+                                          CheckType.MANAGE.hasRole(role) };
+         }
+         return objRoles;
+      }
+      finally
+      {
+         blockOnIO();
+      }
+   }
+
+   public String getRolesAsJSON(String addressMatch) throws Exception
+   {
+      clearIO();
+      try
+      {
+         JSONArray json = new JSONArray();
+         Set<Role> roles = server.getSecurityRepository().getMatch(addressMatch);
+
+         for (Role role : roles)
+         {
+            json.put(new JSONObject(role));
+         }
+         return json.toString();
       }
       finally
       {

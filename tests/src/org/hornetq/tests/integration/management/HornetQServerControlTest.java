@@ -23,6 +23,7 @@ import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.management.HornetQServerControl;
 import org.hornetq.api.core.management.ObjectNameBuilder;
 import org.hornetq.api.core.management.QueueControl;
+import org.hornetq.api.core.management.RoleInfo;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.messagecounter.impl.MessageCounterManagerImpl;
@@ -389,6 +390,50 @@ public class HornetQServerControlTest extends ManagementTestBase
       }
 
       Assert.assertEquals(newSample, serverControl.getMessageCounterSamplePeriod());
+   }
+   
+   public void testSecuritySettings() throws Exception
+   {
+      HornetQServerControl serverControl = createManagementControl();
+      String addressMatch = "test.#";
+      String exactAddress = "test.whatever";
+      
+      assertEquals(0, serverControl.getRoles(addressMatch).length);
+      serverControl.addSecuritySettings(addressMatch, "foo", "bar", "foo, bar", "", "foo", "foo, bar", "");
+      
+      String rolesAsJSON = serverControl.getRolesAsJSON(exactAddress);
+      RoleInfo[] roleInfos = RoleInfo.from(rolesAsJSON);
+      assertEquals(2, roleInfos.length);
+      RoleInfo fooRole = null;
+      RoleInfo barRole = null;
+      if (roleInfos[0].getName().equals("foo"))
+      {
+         fooRole = roleInfos[0];
+         barRole = roleInfos[1];
+      }
+      else
+      {
+         fooRole = roleInfos[1];
+         barRole = roleInfos[0];
+      }
+      assertTrue(fooRole.isCreateDurableQueue());
+      assertFalse(fooRole.isDeleteDurableQueue());
+      assertTrue(fooRole.isCreateNonDurableQueue());
+      assertFalse(fooRole.isDeleteNonDurableQueue());
+      assertTrue(fooRole.isSend());
+      assertTrue(fooRole.isConsume());
+      assertFalse(fooRole.isManage());
+   
+      assertFalse(barRole.isCreateDurableQueue());
+      assertTrue(barRole.isDeleteDurableQueue());
+      assertTrue(barRole.isCreateNonDurableQueue());
+      assertFalse(barRole.isDeleteNonDurableQueue());
+      assertFalse(barRole.isSend());
+      assertTrue(barRole.isConsume());
+      assertFalse(barRole.isManage());
+      
+      serverControl.removeSecuritySettings(addressMatch);
+      assertEquals(0, serverControl.getRoles(exactAddress).length);
    }
 
    // Package protected ---------------------------------------------

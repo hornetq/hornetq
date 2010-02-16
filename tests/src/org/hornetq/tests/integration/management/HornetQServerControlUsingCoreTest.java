@@ -19,7 +19,6 @@ import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.management.HornetQServerControl;
 import org.hornetq.api.core.management.ResourceNames;
-import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 
@@ -447,7 +446,36 @@ public class HornetQServerControlUsingCoreTest extends HornetQServerControlTest
          {
             return (Boolean)proxy.retrieveAttributeValue("PersistenceEnabled");
          }
-
+         
+         public void addSecuritySettings(String addressMatch,
+                                         String createDurableQueueRoles,
+                                         String deleteDurableQueueRoles,
+                                         String createTempQueueRoles,
+                                         String deleteTempQueueRoles,
+                                         String sendRoles,
+                                         String consumeRoles,
+                                         String manageRoles) throws Exception
+         {
+            proxy.invokeOperation("addSecuritySettings", addressMatch, 
+                                  createDurableQueueRoles, deleteDurableQueueRoles,
+                                  createTempQueueRoles, deleteTempQueueRoles,
+                                  sendRoles, consumeRoles,
+                                  manageRoles);
+         }
+         
+         public void removeSecuritySettings(String addressMatch) throws Exception {
+            proxy.invokeOperation("removeSecuritySettings", addressMatch); 
+         };
+         
+         public Object[] getRoles(String addressMatch) throws Exception
+         {
+            return (Object[])proxy.invokeOperation("getRoles", addressMatch);
+         }
+         
+         public String getRolesAsJSON(String addressMatch) throws Exception
+         {
+            return (String)proxy.invokeOperation("getRolesAsJSON", addressMatch);
+         }
       };
    }
    // Package protected ---------------------------------------------
