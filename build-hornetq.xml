@@ -804,6 +804,9 @@
            <include name="ra.xml"/>
            <exclude  name="**/build.xml"/>
          </fileset>
+         <fileset dir="${src.config.dir}">
+           <include  name="jboss-6/**"/>
+         </fileset>
          <fileset dir="${native.bin.dir}">
            <include  name="**/*.so"/>
          </fileset>

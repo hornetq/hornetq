@@ -58,40 +58,4 @@ public interface AddressControl
 
    // Operations ----------------------------------------------------
 
-   /**
-    * Adds a role to this address.
-    * 
-    * @param name name of the role
-    * @param send can the user send to this address?
-    * @param consume can the user consume from a queue bound to this address?
-    * @param createDurableQueue can the user create a durable queue bound to this address?
-    * @param deleteDurableQueue can the user delete a durable queue bound to this address?
-    * @param createNonDurableQueue can the user create a non-durable queue bound to this address?
-    * @param deleteNonDurableQueue can the user delete a non-durable queue bound to this address?
-    * @param manage can the user send management messages to this address?
-    * @throws Exception if an exception occurred while adding the role
-    */
-   @Operation(desc = "Add a Role to this address")
-   void addRole(@Parameter(name = "name", desc = "Name of the role to add") String name,
-                @Parameter(name = "send", desc = "Can the user send to this address?") boolean send,
-                @Parameter(name = "consume", desc = "Can the user consume from this address?") boolean consume,
-                @Parameter(name = "createDurableQueue", desc = "Can the user create a durable queue?") boolean createDurableQueue,
-                @Parameter(name = "deleteDurableQueue", desc = "Can the user delete a durable queue?") boolean deleteDurableQueue,
-                @Parameter(name = "createNonDurableQueue", desc = "Can the user create a temp queue?") boolean createNonDurableQueue,
-                @Parameter(name = "deleteNonDurableQueue", desc = "Can the user delete a temp queue?") boolean deleteNonDurableQueue,
-                @Parameter(name = "manage", desc = "Can the user send management messages?") boolean manage) throws Exception;
-
-   /**
-    * Removes the role corresponding to the specified name from this address.
-    * 
-    * @throws Exception if an exception occurred while removing the role
-    */
-   @Operation(desc = "Remove a Role from this address")
-   void removeRole(@Parameter(name = "name", desc = "Name of the role to remove") String name) throws Exception;
-   
-   /**
-    * This method will remove any matching associated with this address. This will basically reset the security for this address.
-    */
-   @Operation(desc = "Reset the security configuration for this address by using default values")
-   void resetSecurity();
 }

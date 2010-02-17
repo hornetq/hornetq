@@ -92,7 +92,7 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
 
    /* use local tx instead of XA*/
    private Boolean localTx;
-
+   
    /**
     * Constructor
     */
@@ -735,4 +735,20 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
    {
 
    }
+
+   /**
+    * @param keepAlive the keepAlive to set
+    */
+   public void setKeepAlive(boolean keepAlive)
+   {
+   }
+
+    /**
+    * @param keepAliveMillis the keepAliveMillis to set
+    */
+   public void setKeepAliveMillis(long keepAliveMillis)
+   {
+   }
+   
+   
 }

@@ -13,8 +13,6 @@
 
 package org.hornetq.core.management.impl;
 
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 
 import javax.management.MBeanOperationInfo;
@@ -180,89 +178,6 @@ public class AddressControlImpl extends AbstractControl implements AddressContro
          blockOnIO();
       }
    }
-
-   public synchronized void addRole(final String name,
-                                    final boolean send,
-                                    final boolean consume,
-                                    final boolean createDurableQueue,
-                                    final boolean deleteDurableQueue,
-                                    final boolean createNonDurableQueue,
-                                    final boolean deleteNonDurableQueue,
-                                    final boolean manage) throws Exception
-   {
-      clearIO();
-      try
-      {
-         Set<Role> roles = securityRepository.getMatch(address.toString());
-         HashSet<Role> newroles = new HashSet<Role>();
-         newroles.addAll(roles);
-         
-         Role newRole = new Role(name,
-                                 send,
-                                 consume,
-                                 createDurableQueue,
-                                 deleteDurableQueue,
-                                 createNonDurableQueue,
-                                 deleteNonDurableQueue,
-                                 manage);
-         boolean added = newroles.add(newRole);
-         if (!added)
-         {
-            throw new IllegalArgumentException("Role " + name + " already exists");
-         }
-         securityRepository.addMatch(address.toString(), newroles);
-      }
-      finally
-      {
-         blockOnIO();
-      }
-   }
-
-   public synchronized void removeRole(final String role) throws Exception
-   {
-      clearIO();
-      try
-      {
-         Set<Role> roles = securityRepository.getMatch(address.toString());
-         
-         HashSet<Role> newroles = new HashSet<Role>();
-         newroles.addAll(roles);
-
-         Iterator<Role> it = newroles.iterator();
-         boolean removed = false;
-         while (it.hasNext())
-         {
-            Role r = it.next();
-            if (r.getName().equals(role))
-            {
-               it.remove();
-               removed = true;
-               break;
-            }
-         }
-         if (!removed)
-         {
-            throw new IllegalArgumentException("Role " + role + " does not exist");
-         }
-
-         securityRepository.removeMatch(address.toString());
-         
-         securityRepository.addMatch(address.toString(), newroles);
-      }
-      finally
-      {
-         blockOnIO();
-      }
-   }
-   
-   /* (non-Javadoc)
-    * @see org.hornetq.api.core.management.AddressControl#resetSecurity()
-    */
-   public void resetSecurity()
-   {
-      securityRepository.removeMatch(address.toString());
-   }
-
 
    @Override
    MBeanOperationInfo[] fillMBeanOperationInfo()
