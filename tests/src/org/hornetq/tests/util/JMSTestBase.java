@@ -107,6 +107,7 @@ public class JMSTestBase extends ServiceTestBase
       conf.setJMXManagementEnabled(true);
 
       conf.getAcceptorConfigurations().add(new TransportConfiguration(NettyAcceptorFactory.class.getName()));
+      conf.getConnectorConfigurations().put("netty", new TransportConfiguration(NettyConnectorFactory.class.getName()));
 
       server = HornetQServers.newHornetQServer(conf, usePersistence());
 
