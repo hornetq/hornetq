@@ -48,10 +48,13 @@ public class CoreSelectorTest extends ServiceTestBase
       server.start();
       
       ClientSessionFactory factory = createInVMFactory();
-      ClientSession session = factory.createSession();
+      ClientSession session = null;
       
       try
       {
+         
+         session = factory.createSession();
+         
          session.createQueue("queue", "queue");
          ClientProducer prod = session.createProducer("queue");
          
@@ -93,7 +96,12 @@ public class CoreSelectorTest extends ServiceTestBase
       }
       finally
       {
-         session.close();
+         if (session != null)
+         {
+            session.close();
+         }
+         
+         factory.close();
          server.stop();
       }
    }
