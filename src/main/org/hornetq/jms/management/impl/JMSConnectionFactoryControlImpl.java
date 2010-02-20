@@ -19,6 +19,9 @@ import javax.management.MBeanInfo;
 import javax.management.NotCompliantMBeanException;
 import javax.management.StandardMBean;
 
+import org.hornetq.api.core.Pair;
+import org.hornetq.api.core.TransportConfiguration;
+import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.api.jms.management.ConnectionFactoryControl;
 import org.hornetq.core.management.impl.MBeanInfoHelper;
@@ -72,6 +75,246 @@ public class JMSConnectionFactoryControlImpl extends StandardMBean implements Co
    public long getClientFailureCheckPeriod()
    {
       return cf.getClientFailureCheckPeriod();
+   }
+
+   public long getDiscoveryRefreshTimeout()
+   {
+      return cf.getDiscoveryRefreshTimeout();
+   }
+
+   public String getConnectionLoadBalancingPolicyClassName()
+   {
+      return cf.getConnectionLoadBalancingPolicyClassName();
+   }
+
+   public void setDiscoveryRefreshTimeout(long discoveryRefreshTimeout)
+   {
+      cf.setDiscoveryRefreshTimeout(discoveryRefreshTimeout);
+   }
+
+   public long getDiscoveryInitialWaitTimeout()
+   {
+      return cf.getDiscoveryInitialWaitTimeout();
+   }
+
+   public void setDiscoveryInitialWaitTimeout(long discoveryInitialWaitTimeout)
+   {
+      cf.setDiscoveryInitialWaitTimeout(discoveryInitialWaitTimeout);
+   }
+
+   public void setClientID(String clientID)
+   {
+      cf.setClientID(clientID);
+   }
+
+   public void setDupsOKBatchSize(int dupsOKBatchSize)
+   {
+      cf.setDupsOKBatchSize(dupsOKBatchSize);
+   }
+
+   public void setTransactionBatchSize(int transactionBatchSize)
+   {
+      cf.setTransactionBatchSize(transactionBatchSize);
+   }
+
+   public void setClientFailureCheckPeriod(long clientFailureCheckPeriod)
+   {
+      cf.setClientFailureCheckPeriod(clientFailureCheckPeriod);
+   }
+
+   public void setConnectionTTL(long connectionTTL)
+   {
+      cf.setConnectionTTL(connectionTTL);
+   }
+
+   public void setCallTimeout(long callTimeout)
+   {
+      cf.setCallTimeout(callTimeout);
+   }
+
+   public void setConsumerWindowSize(int consumerWindowSize)
+   {
+      cf.setConsumerWindowSize(consumerWindowSize);
+   }
+
+   public void setConsumerMaxRate(int consumerMaxRate)
+   {
+      cf.setConsumerMaxRate(consumerMaxRate);
+   }
+
+   public void setConfirmationWindowSize(int confirmationWindowSize)
+   {
+      cf.setConfirmationWindowSize(confirmationWindowSize);
+   }
+
+   public void setProducerMaxRate(int producerMaxRate)
+   {
+      cf.setProducerMaxRate(producerMaxRate);
+   }
+
+   public int getProducerWindowSize()
+   {
+      return cf.getProducerWindowSize();
+   }
+
+   public void setProducerWindowSize(int producerWindowSize)
+   {
+      cf.setProducerWindowSize(producerWindowSize);
+   }
+
+   public void setCacheLargeMessagesClient(boolean cacheLargeMessagesClient)
+   {
+      cf.setCacheLargeMessagesClient(cacheLargeMessagesClient);
+   }
+
+   public boolean isCacheLargeMessagesClient()
+   {
+      return cf.isCacheLargeMessagesClient();
+   }
+
+   public void setMinLargeMessageSize(int minLargeMessageSize)
+   {
+      cf.setMinLargeMessageSize(minLargeMessageSize);
+   }
+
+   public void setBlockOnNonDurableSend(boolean blockOnNonDurableSend)
+   {
+      cf.setBlockOnNonDurableSend(blockOnNonDurableSend);
+   }
+
+   public void setBlockOnAcknowledge(boolean blockOnAcknowledge)
+   {
+      cf.setBlockOnAcknowledge(blockOnAcknowledge);
+   }
+
+   public void setBlockOnDurableSend(boolean blockOnDurableSend)
+   {
+      cf.setBlockOnDurableSend(blockOnDurableSend);
+   }
+
+   public void setAutoGroup(boolean autoGroup)
+   {
+      cf.setAutoGroup(autoGroup);
+   }
+
+   public void setPreAcknowledge(boolean preAcknowledge)
+   {
+      cf.setPreAcknowledge(preAcknowledge);
+   }
+
+   public void setMaxRetryInterval(long retryInterval)
+   {
+      cf.setMaxRetryInterval(retryInterval);
+   }
+
+   public void setRetryIntervalMultiplier(double retryIntervalMultiplier)
+   {
+      cf.setRetryIntervalMultiplier(retryIntervalMultiplier);
+   }
+
+   public void setReconnectAttempts(int reconnectAttempts)
+   {
+      cf.setReconnectAttempts(reconnectAttempts);
+   }
+
+   public void setFailoverOnServerShutdown(boolean failoverOnServerShutdown)
+   {
+      cf.setFailoverOnServerShutdown(failoverOnServerShutdown);
+   }
+
+   public boolean isUseGlobalPools()
+   {
+      return cf.isUseGlobalPools();
+   }
+
+   public void setScheduledThreadPoolMaxSize(int scheduledThreadPoolMaxSize)
+   {
+      cf.setScheduledThreadPoolMaxSize(scheduledThreadPoolMaxSize);
+   }
+
+   public int getThreadPoolMaxSize()
+   {
+      return cf.getThreadPoolMaxSize();
+   }
+
+   public void setThreadPoolMaxSize(int threadPoolMaxSize)
+   {
+      cf.setThreadPoolMaxSize(threadPoolMaxSize);
+   }
+
+   public int getInitialMessagePacketSize()
+   {
+      return cf.getInitialMessagePacketSize();
+   }
+
+   public void setGroupID(String groupID)
+   {
+      cf.setGroupID(groupID);
+   }
+
+   public String getGroupID()
+   {
+      return cf.getGroupID();
+   }
+
+   public void setInitialMessagePacketSize(int size)
+   {
+      cf.setInitialMessagePacketSize(size);
+   }
+
+   public void setUseGlobalPools(boolean useGlobalPools)
+   {
+      cf.setUseGlobalPools(useGlobalPools);
+   }
+
+   public int getScheduledThreadPoolMaxSize()
+   {
+      return cf.getScheduledThreadPoolMaxSize();
+   }
+
+   public void setRetryInterval(long retryInterval)
+   {
+      cf.setRetryInterval(retryInterval);
+   }
+
+   public long getMaxRetryInterval()
+   {
+      return cf.getMaxRetryInterval();
+   }
+
+   public void setConnectionLoadBalancingPolicyClassName(String connectionLoadBalancingPolicyClassName)
+   {
+      cf.setConnectionLoadBalancingPolicyClassName(connectionLoadBalancingPolicyClassName);
+   }
+
+   public List<Pair<TransportConfiguration, TransportConfiguration>> getStaticConnectors()
+   {
+      return cf.getStaticConnectors();
+   }
+
+   public void setStaticConnectors(List<Pair<TransportConfiguration, TransportConfiguration>> staticConnectors)
+   {
+      cf.setStaticConnectors(staticConnectors);
+   }
+
+   public String getDiscoveryAddress()
+   {
+      return cf.getDiscoveryAddress();
+   }
+
+   public void setDiscoveryAddress(String discoveryAddress)
+   {
+      cf.setDiscoveryAddress(discoveryAddress);
+   }
+
+   public int getDiscoveryPort()
+   {
+      return cf.getDiscoveryPort();
+   }
+
+   public void setDiscoveryPort(int discoveryPort)
+   {
+      cf.setDiscoveryPort(discoveryPort);
    }
 
    public long getCallTimeout()
@@ -144,7 +387,7 @@ public class JMSConnectionFactoryControlImpl extends StandardMBean implements Co
       return cf.isFailoverOnServerShutdown();
    }
 
-   public long getMinLargeMessageSize()
+   public int getMinLargeMessageSize()
    {
       return cf.getMinLargeMessageSize();
    }
@@ -159,7 +402,7 @@ public class JMSConnectionFactoryControlImpl extends StandardMBean implements Co
       return cf.getRetryIntervalMultiplier();
    }
 
-   public long getTransactionBatchSize()
+   public int getTransactionBatchSize()
    {
       return cf.getTransactionBatchSize();
    }

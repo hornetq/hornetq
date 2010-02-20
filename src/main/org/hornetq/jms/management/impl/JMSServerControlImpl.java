@@ -148,6 +148,18 @@ public class JMSServerControlImpl extends StandardMBean implements JMSServerCont
    // Public --------------------------------------------------------
 
    // JMSServerControlMBean implementation --------------------------
+   public void createConnectionFactory(final String name,
+                                       final String liveTransportClassName,
+                                       final Map<String, Object> liveTransportParams,
+                                       final Object[] jndiBindings) throws Exception
+   {
+      List<String> jndiBindingsList = JMSServerControlImpl.convert(jndiBindings);
+      TransportConfiguration liveTC = new TransportConfiguration(liveTransportClassName, liveTransportParams);
+
+      server.createConnectionFactory(name, liveTC, jndiBindingsList);
+
+      sendNotification(NotificationType.CONNECTION_FACTORY_CREATED, name);
+   }
 
    public void createConnectionFactory(final String name,
                                        final Object[] liveConnectorsTransportClassNames,
@@ -182,206 +194,16 @@ public class JMSServerControlImpl extends StandardMBean implements JMSServerCont
       createConnectionFactory(name, liveClassNames, liveParams, backupClassNames, backupParams, bindings);
    }
 
-   public void createConnectionFactory(final String name,
-                                       final Object[] liveConnectorsTransportClassNames,
-                                       final Object[] liveConnectorTransportParams,
-                                       final Object[] backupConnectorsTransportClassNames,
-                                       final Object[] backupConnectorTransportParams,
-                                       final String clientID,
-                                       final Object[] jndiBindings) throws Exception
-   {
-      List<Pair<TransportConfiguration, TransportConfiguration>> pairs = JMSServerControlImpl.convertToConnectorPairs(liveConnectorsTransportClassNames,
-                                                                                                                      liveConnectorTransportParams,
-                                                                                                                      backupConnectorsTransportClassNames,
-                                                                                                                      backupConnectorTransportParams);
 
-      List<String> jndiBindingsList = JMSServerControlImpl.convert(jndiBindings);
-
-      server.createConnectionFactory(name, pairs, clientID, jndiBindingsList);
-
-      sendNotification(NotificationType.CONNECTION_FACTORY_CREATED, name);
-   }
-
-   public void createConnectionFactory(final String name,
-                                       final String liveTransportClassNames,
-                                       final String liveTransportParams,
-                                       final String backupTransportClassNames,
-                                       final String backupTransportParams,
-                                       final String clientID,
-                                       final String jndiBindings) throws Exception
-   {
-      Object[] liveClassNames = JMSServerControlImpl.toArray(liveTransportClassNames);
-      Object[] liveParams = ManagementHelper.fromCommaSeparatedArrayOfCommaSeparatedKeyValues(liveTransportParams);
-      Object[] backupClassNames = JMSServerControlImpl.toArray(backupTransportClassNames);
-      Object[] backupParams = ManagementHelper.fromCommaSeparatedArrayOfCommaSeparatedKeyValues(backupTransportParams);;
-      Object[] bindings = JMSServerControlImpl.toArray(jndiBindings);
-
-      createConnectionFactory(name, liveClassNames, liveParams, backupClassNames, backupParams, clientID, bindings);
-   }
-
-   public void createConnectionFactory(final String name,
-                                       final Object[] liveConnectorsTransportClassNames,
-                                       final Object[] liveConnectorTransportParams,
-                                       final Object[] backupConnectorsTransportClassNames,
-                                       final Object[] backupConnectorTransportParams,
-                                       final String clientID,
-                                       final long clientFailureCheckPeriod,
-                                       final long connectionTTL,
-                                       final long callTimeout,
-                                       final boolean cacheLargeMessageClient,
-                                       final int minLargeMessageSize,
-                                       final int consumerWindowSize,
-                                       final int consumerMaxRate,
-                                       final int confirmationWindowSize,
-                                       final int producerWindowSize,
-                                       final int producerMaxRate,
-                                       final boolean blockOnAcknowledge,
-                                       final boolean blockOnDurableSend,
-                                       final boolean blockOnNonDurableSend,
-                                       final boolean autoGroup,
-                                       final boolean preAcknowledge,
-                                       final String loadBalancingPolicyClassName,
-                                       final int transactionBatchSize,
-                                       final int dupsOKBatchSize,
-                                       final boolean useGlobalPools,
-                                       final int scheduledThreadPoolMaxSize,
-                                       final int threadPoolMaxSize,
-                                       final long retryInterval,
-                                       final double retryIntervalMultiplier,
-                                       final long maxRetryInterval,
-                                       final int reconnectAttempts,
-                                       final boolean failoverOnServerShutdown,
-                                       final String groupID,
-                                       final Object[] jndiBindings) throws Exception
-   {
-      List<Pair<TransportConfiguration, TransportConfiguration>> pairs = JMSServerControlImpl.convertToConnectorPairs(liveConnectorsTransportClassNames,
-                                                                                                                      liveConnectorTransportParams,
-                                                                                                                      backupConnectorsTransportClassNames,
-                                                                                                                      backupConnectorTransportParams);
-
-      List<String> jndiBindingsList = JMSServerControlImpl.convert(jndiBindings);
-
-      server.createConnectionFactory(name,
-                                     pairs,
-                                     clientID,
-                                     clientFailureCheckPeriod,
-                                     connectionTTL,
-                                     callTimeout,
-                                     cacheLargeMessageClient,
-                                     minLargeMessageSize,
-                                     consumerWindowSize,
-                                     consumerMaxRate,
-                                     confirmationWindowSize,
-                                     producerWindowSize,
-                                     producerMaxRate,
-                                     blockOnAcknowledge,
-                                     blockOnDurableSend,
-                                     blockOnNonDurableSend,
-                                     autoGroup,
-                                     preAcknowledge,
-                                     loadBalancingPolicyClassName,
-                                     transactionBatchSize,
-                                     dupsOKBatchSize,
-                                     useGlobalPools,
-                                     scheduledThreadPoolMaxSize,
-                                     threadPoolMaxSize,
-                                     retryInterval,
-                                     retryIntervalMultiplier,
-                                     maxRetryInterval,
-                                     reconnectAttempts,
-                                     failoverOnServerShutdown,
-                                     groupID,
-                                     jndiBindingsList);
-
-      sendNotification(NotificationType.CONNECTION_FACTORY_CREATED, name);
-   }
-
-   public void createConnectionFactory(final String name,
-                                       final String liveTransportClassNames,
-                                       final String liveTransportParams,
-                                       final String backupTransportClassNames,
-                                       final String backupTransportParams,
-                                       final String clientID,
-                                       final long clientFailureCheckPeriod,
-                                       final long connectionTTL,
-                                       final long callTimeout,
-                                       final boolean cacheLargeMessageClient,
-                                       final int minLargeMessageSize,
-                                       final int consumerWindowSize,
-                                       final int consumerMaxRate,
-                                       final int confirmationWindowSize,
-                                       final int producerWindowSize,
-                                       final int producerMaxRate,
-                                       final boolean blockOnAcknowledge,
-                                       final boolean blockOnDurableSend,
-                                       final boolean blockOnNonDurableSend,
-                                       final boolean autoGroup,
-                                       final boolean preAcknowledge,
-                                       final String loadBalancingPolicyClassName,
-                                       final int transactionBatchSize,
-                                       final int dupsOKBatchSize,
-                                       final boolean useGlobalPools,
-                                       final int scheduledThreadPoolMaxSize,
-                                       final int threadPoolMaxSize,
-                                       final long retryInterval,
-                                       final double retryIntervalMultiplier,
-                                       final long maxRetryInterval,
-                                       final int reconnectAttempts,
-                                       final boolean failoverOnServerShutdown,
-                                       final String groupID,
-                                       final String jndiBindings) throws Exception
-   {
-      Object[] liveClassNames = JMSServerControlImpl.toArray(liveTransportClassNames);
-      Object[] liveParams = ManagementHelper.fromCommaSeparatedArrayOfCommaSeparatedKeyValues(liveTransportParams);
-      Object[] backupClassNames = JMSServerControlImpl.toArray(backupTransportClassNames);
-      Object[] backupParams = ManagementHelper.fromCommaSeparatedArrayOfCommaSeparatedKeyValues(backupTransportParams);
-      Object[] bindings = JMSServerControlImpl.toArray(jndiBindings);
-
-      createConnectionFactory(name,
-                              liveClassNames,
-                              liveParams,
-                              backupClassNames,
-                              backupParams,
-                              clientID,
-                              clientFailureCheckPeriod,
-                              connectionTTL,
-                              callTimeout,
-                              cacheLargeMessageClient,
-                              minLargeMessageSize,
-                              consumerWindowSize,
-                              consumerMaxRate,
-                              confirmationWindowSize,
-                              producerWindowSize,
-                              producerMaxRate,
-                              blockOnAcknowledge,
-                              blockOnDurableSend,
-                              blockOnNonDurableSend,
-                              autoGroup,
-                              preAcknowledge,
-                              loadBalancingPolicyClassName,
-                              transactionBatchSize,
-                              dupsOKBatchSize,
-                              useGlobalPools,
-                              scheduledThreadPoolMaxSize,
-                              threadPoolMaxSize,
-                              retryInterval,
-                              retryIntervalMultiplier,
-                              maxRetryInterval,
-                              reconnectAttempts,
-                              failoverOnServerShutdown,
-                              groupID,
-                              bindings);
-   }
 
    public void createConnectionFactory(final String name,
                                        final String discoveryAddress,
                                        final int discoveryPort,
-                                       final String clientID,
                                        final Object[] jndiBindings) throws Exception
    {
       List<String> jndiBindingsList = JMSServerControlImpl.convert(jndiBindings);
 
-      server.createConnectionFactory(name, discoveryAddress, discoveryPort, clientID, jndiBindingsList);
+      server.createConnectionFactory(name, discoveryAddress, discoveryPort, jndiBindingsList);
 
       sendNotification(NotificationType.CONNECTION_FACTORY_CREATED, name);
    }
@@ -389,249 +211,13 @@ public class JMSServerControlImpl extends StandardMBean implements JMSServerCont
    public void createConnectionFactory(final String name,
                                        final String discoveryAddress,
                                        final int discoveryPort,
-                                       final String clientID,
                                        final String jndiBindings) throws Exception
    {
       Object[] bindings = JMSServerControlImpl.toArray(jndiBindings);
 
-      createConnectionFactory(name, discoveryAddress, discoveryPort, clientID, bindings);
+      createConnectionFactory(name, discoveryAddress, discoveryPort, bindings);
    }
 
-   public void createConnectionFactory(final String name,
-                                       final String discoveryAddress,
-                                       final int discoveryPort,
-                                       final String clientID,
-                                       final long discoveryRefreshTimeout,
-                                       final long clientFailureCheckPeriod,
-                                       final long connectionTTL,
-                                       final long callTimeout,
-                                       final boolean cacheLargeMessageClient,
-                                       final int minLargeMessageSize,
-                                       final int consumerWindowSize,
-                                       final int consumerMaxRate,
-                                       final int confirmationWindowSize,
-                                       final int producerWindowSize,
-                                       final int producerMaxRate,
-                                       final boolean blockOnAcknowledge,
-                                       final boolean blockOnDurableSend,
-                                       final boolean blockOnNonDurableSend,
-                                       final boolean autoGroup,
-                                       final boolean preAcknowledge,
-                                       final String loadBalancingPolicyClassName,
-                                       final int transactionBatchSize,
-                                       final int dupsOKBatchSize,
-                                       final long initialWaitTimeout,
-                                       final boolean useGlobalPools,
-                                       final int scheduledThreadPoolMaxSize,
-                                       final int threadPoolMaxSize,
-                                       final long retryInterval,
-                                       final double retryIntervalMultiplier,
-                                       final long maxRetryInterval,
-                                       final int reconnectAttempts,
-                                       final boolean failoverOnServerShutdown,
-                                       final String groupID,
-                                       final Object[] jndiBindings) throws Exception
-   {
-      List<String> jndiBindingsList = JMSServerControlImpl.convert(jndiBindings);
-
-      server.createConnectionFactory(name,
-                                     discoveryAddress,
-                                     discoveryPort,
-                                     clientID,
-                                     discoveryRefreshTimeout,
-                                     clientFailureCheckPeriod,
-                                     connectionTTL,
-                                     callTimeout,
-                                     cacheLargeMessageClient,
-                                     minLargeMessageSize,
-                                     consumerWindowSize,
-                                     consumerMaxRate,
-                                     confirmationWindowSize,
-                                     producerWindowSize,
-                                     producerMaxRate,
-                                     blockOnAcknowledge,
-                                     blockOnDurableSend,
-                                     blockOnNonDurableSend,
-                                     autoGroup,
-                                     preAcknowledge,
-                                     loadBalancingPolicyClassName,
-                                     transactionBatchSize,
-                                     dupsOKBatchSize,
-                                     initialWaitTimeout,
-                                     useGlobalPools,
-                                     scheduledThreadPoolMaxSize,
-                                     threadPoolMaxSize,
-                                     retryInterval,
-                                     retryIntervalMultiplier,
-                                     maxRetryInterval,
-                                     reconnectAttempts,
-                                     failoverOnServerShutdown,
-                                     groupID,
-                                     jndiBindingsList);
-
-      sendNotification(NotificationType.CONNECTION_FACTORY_CREATED, name);
-   }
-
-   public void createConnectionFactory(final String name,
-                                       final String discoveryAddress,
-                                       final int discoveryPort,
-                                       final String clientID,
-                                       final long discoveryRefreshTimeout,
-                                       final long clientFailureCheckPeriod,
-                                       final long connectionTTL,
-                                       final long callTimeout,
-                                       final boolean cacheLargeMessageClient,
-                                       final int minLargeMessageSize,
-                                       final int consumerWindowSize,
-                                       final int consumerMaxRate,
-                                       final int confirmationWindowSize,
-                                       final int producerWindowSize,
-                                       final int producerMaxRate,
-                                       final boolean blockOnAcknowledge,
-                                       final boolean blockOnDurableSend,
-                                       final boolean blockOnNonDurableSend,
-                                       final boolean autoGroup,
-                                       final boolean preAcknowledge,
-                                       final String loadBalancingPolicyClassName,
-                                       final int transactionBatchSize,
-                                       final int dupsOKBatchSize,
-                                       final long initialWaitTimeout,
-                                       final boolean useGlobalPools,
-                                       final int scheduledThreadPoolMaxSize,
-                                       final int threadPoolMaxSize,
-                                       final long retryInterval,
-                                       final double retryIntervalMultiplier,
-                                       final long maxRetryInterval,
-                                       final int reconnectAttempts,
-                                       final boolean failoverOnServerShutdown,
-                                       final String groupID,
-                                       final String jndiBindings) throws Exception
-   {
-      Object[] bindings = JMSServerControlImpl.toArray(jndiBindings);
-
-      createConnectionFactory(name,
-                              discoveryAddress,
-                              discoveryPort,
-                              clientID,
-                              discoveryRefreshTimeout,
-                              clientFailureCheckPeriod,
-                              connectionTTL,
-                              callTimeout,
-                              cacheLargeMessageClient,
-                              minLargeMessageSize,
-                              consumerWindowSize,
-                              consumerMaxRate,
-                              confirmationWindowSize,
-                              producerWindowSize,
-                              producerMaxRate,
-                              blockOnAcknowledge,
-                              blockOnDurableSend,
-                              blockOnNonDurableSend,
-                              autoGroup,
-                              preAcknowledge,
-                              loadBalancingPolicyClassName,
-                              transactionBatchSize,
-                              dupsOKBatchSize,
-                              initialWaitTimeout,
-                              useGlobalPools,
-                              scheduledThreadPoolMaxSize,
-                              threadPoolMaxSize,
-                              retryInterval,
-                              retryIntervalMultiplier,
-                              maxRetryInterval,
-                              reconnectAttempts,
-                              failoverOnServerShutdown,
-                              groupID,
-                              bindings);
-   }
-
-   public void createConnectionFactory(final String name,
-                                       final String liveTransportClassName,
-                                       final Map<String, Object> liveTransportParams,
-                                       final Object[] jndiBindings) throws Exception
-   {
-      List<String> jndiBindingsList = JMSServerControlImpl.convert(jndiBindings);
-      TransportConfiguration liveTC = new TransportConfiguration(liveTransportClassName, liveTransportParams);
-
-      server.createConnectionFactory(name, liveTC, jndiBindingsList);
-
-      sendNotification(NotificationType.CONNECTION_FACTORY_CREATED, name);
-   }
-
-   public void createConnectionFactory(final String name,
-                                       final String liveTransportClassName,
-                                       final String liveTransportParams,
-                                       final String jndiBindings) throws Exception
-   {
-      Map<String, Object> params = ManagementHelper.fromCommaSeparatedKeyValues(liveTransportParams);
-      String[] bindings = JMSServerControlImpl.toArray(jndiBindings);
-
-      createConnectionFactory(name, liveTransportClassName, params, bindings);
-   }
-
-   public void createConnectionFactory(final String name,
-                                       final String liveTransportClassName,
-                                       final Map<String, Object> liveTransportParams,
-                                       final String clientID,
-                                       final Object[] jndiBindings) throws Exception
-   {
-      List<String> jndiBindingsList = JMSServerControlImpl.convert(jndiBindings);
-
-      TransportConfiguration liveTC = new TransportConfiguration(liveTransportClassName, liveTransportParams);
-
-      server.createConnectionFactory(name, liveTC, clientID, jndiBindingsList);
-
-      sendNotification(NotificationType.CONNECTION_FACTORY_CREATED, name);
-   }
-
-   public void createConnectionFactory(final String name,
-                                       final String liveTransportClassName,
-                                       final String liveTransportParams,
-                                       final String clientID,
-                                       final String jndiBindings) throws Exception
-   {
-      Map<String, Object> params = ManagementHelper.fromCommaSeparatedKeyValues(liveTransportParams);
-      String[] bindings = JMSServerControlImpl.toArray(jndiBindings);
-
-      createConnectionFactory(name, liveTransportClassName, params, clientID, bindings);
-   }
-
-   public void createConnectionFactory(final String name,
-                                       final String liveTransportClassName,
-                                       final Map<String, Object> liveTransportParams,
-                                       final String backupTransportClassName,
-                                       final Map<String, Object> backupTransportParams,
-                                       final Object[] jndiBindings) throws Exception
-   {
-      TransportConfiguration liveTC = new TransportConfiguration(liveTransportClassName, liveTransportParams);
-
-      TransportConfiguration backupTC = new TransportConfiguration(backupTransportClassName, backupTransportParams);
-
-      List<String> jndiBindingsList = JMSServerControlImpl.convert(jndiBindings);
-
-      server.createConnectionFactory(name, liveTC, backupTC, jndiBindingsList);
-
-      sendNotification(NotificationType.CONNECTION_FACTORY_CREATED, name);
-   }
-
-   public void createConnectionFactory(final String name,
-                                       final String liveTransportClassName,
-                                       final Map<String, Object> liveTransportParams,
-                                       final String backupTransportClassName,
-                                       final Map<String, Object> backupTransportParams,
-                                       final String clientID,
-                                       final Object[] jndiBindings) throws Exception
-   {
-      TransportConfiguration liveTC = new TransportConfiguration(liveTransportClassName, liveTransportParams);
-
-      TransportConfiguration backupTC = new TransportConfiguration(backupTransportClassName, backupTransportParams);
-
-      List<String> jndiBindingsList = JMSServerControlImpl.convert(jndiBindings);
-
-      server.createConnectionFactory(name, liveTC, backupTC, clientID, jndiBindingsList);
-
-      sendNotification(NotificationType.CONNECTION_FACTORY_CREATED, name);
-   }
 
    public boolean createQueue(final String name, final String jndiBinding) throws Exception
    {
