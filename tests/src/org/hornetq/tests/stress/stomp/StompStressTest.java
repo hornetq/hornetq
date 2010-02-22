@@ -40,7 +40,7 @@ public class StompStressTest extends UnitTestCase
 {
    private static final transient Logger log = Logger.getLogger(StompStressTest.class);
 
-   private static final int COUNT = 100;
+   private static final int COUNT = 1000;
 
    private int port = 61613;
 
@@ -60,22 +60,24 @@ public class StompStressTest extends UnitTestCase
       frame = receiveFrame(10000);
       Assert.assertTrue(frame.startsWith("CONNECTED"));
 
-      frame = "SEND\n" + "destination:" + destination + "\n\n";
-
-      for (int i = 0; i < COUNT; i++)
-      {
-         sendFrame(frame + "count=" + i + Stomp.NULL);
-      }
-
       frame = "SUBSCRIBE\n" + "destination:" + destination + "\n" + "ack:auto\n\n" + Stomp.NULL;
       sendFrame(frame);
 
+      frame = "SEND\n" + "destination:" + destination + "\n";
+
       for (int i = 0; i < COUNT; i++)
       {
+         System.out.println(">>> " + i);
+         sendFrame(frame + "count:" + i + "\n\n" + Stomp.NULL);
+      }
+
+      for (int i = 0; i < COUNT; i++)
+      {
+         System.out.println("<<< " + i);
          frame = receiveFrame(10000);
          Assert.assertTrue(frame.startsWith("MESSAGE"));
          Assert.assertTrue(frame.indexOf("destination:") > 0);
-         Assert.assertTrue(frame.indexOf("count=" + i) > 0);
+         Assert.assertTrue(frame.indexOf("count:" + i) > 0);
       }
 
       frame = "DISCONNECT\n" + "\n\n" + Stomp.NULL;
