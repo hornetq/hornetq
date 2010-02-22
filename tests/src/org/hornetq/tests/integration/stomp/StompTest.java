@@ -1433,8 +1433,7 @@ public class StompTest extends UnitTestCase {
        
        frame =
           "UNSUBSCRIBE\n" +
-                  "destination:" + getQueuePrefix() + getQueueName() + "\n" +
-                  "\n\n" +
+                  "destination:" + getQueuePrefix() + getQueueName() + "\n\n" +
                   Stomp.NULL;
        sendFrame(frame);
        

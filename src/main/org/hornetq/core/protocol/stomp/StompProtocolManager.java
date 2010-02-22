@@ -65,7 +65,8 @@ class StompProtocolManager implements ProtocolManager
 
    private final Map<String, StompSession> transactedSessions = new HashMap<String, StompSession>();
 
-   private final Map<RemotingConnection, StompSession> sessions = new HashMap<RemotingConnection, StompSession>();
+   // key => connection ID, value => Stomp session
+   private final Map<Object, StompSession> sessions = new HashMap<Object, StompSession>();
 
    // Static --------------------------------------------------------
 
@@ -140,20 +141,14 @@ class StompProtocolManager implements ProtocolManager
 
    public void handleBuffer(final RemotingConnection connection, final HornetQBuffer buffer)
    {
-      executor.execute(new Runnable()
+      try
       {
-         public void run()
-         {
-            try
-            {
-               doHandleBuffer(connection, buffer);
-            } 
-            finally
-            {
-               server.getStorageManager().clearContext();
-            }
-         }
-      });
+         doHandleBuffer(connection, buffer);
+      } 
+      finally
+      {
+         server.getStorageManager().clearContext();
+      }
    }
    
    private void doHandleBuffer(final RemotingConnection connection, final HornetQBuffer buffer)
@@ -424,7 +419,7 @@ class StompProtocolManager implements ProtocolManager
 
    private StompSession getSession(StompConnection connection) throws Exception
    {
-      StompSession stompSession = sessions.get(connection);
+      StompSession stompSession = sessions.get(connection.getID());
       if (stompSession == null)
       {
          stompSession = new StompSession(connection, this, server.getStorageManager().newContext(executor));
@@ -440,7 +435,7 @@ class StompProtocolManager implements ProtocolManager
                                                       false,
                                                       stompSession);
          stompSession.setServerSession(session);
-         sessions.put(connection, stompSession);
+         sessions.put(connection.getID(), stompSession);
       }
       server.getStorageManager().setContext(stompSession.getContext());
       return stompSession;
@@ -557,7 +552,7 @@ class StompProtocolManager implements ProtocolManager
       connection.setValid(false);
 
       try {
-         StompSession session = sessions.remove(connection);
+         StompSession session = sessions.remove(connection.getID());
          if (session != null)
          {
             try

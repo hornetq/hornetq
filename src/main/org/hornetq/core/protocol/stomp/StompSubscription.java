@@ -52,6 +52,12 @@ public class StompSubscription
       return subID;
    }
 
+   @Override
+   public String toString()
+   {
+      return "StompSubscription[id=" + subID + ", ack=" + ack + "]";
+   }
+   
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

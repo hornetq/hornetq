@@ -19,6 +19,7 @@ import java.util.Map.Entry;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.SimpleString;
+import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.persistence.OperationContext;
 import org.hornetq.core.protocol.stomp.Stomp.Headers;
@@ -37,6 +38,8 @@ import org.hornetq.utils.UUIDGenerator;
  */
 class StompSession implements SessionCallback
 {
+   private static final Logger log = Logger.getLogger(StompSession.class);
+
    private final StompProtocolManager manager;
 
    private final StompConnection connection;
