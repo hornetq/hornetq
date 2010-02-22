@@ -149,6 +149,18 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
                   jndiBindings);
          }
 
+         public void createConnectionFactory(String name,
+                                             String liveTransportClassName,
+                                             Map<String, Object> liveTransportParams,
+                                             Object[] jndiBindings) throws Exception
+         {
+            proxy.invokeOperation("createConnectionFactory",
+                                  name,
+                                  liveTransportClassName,
+                                  liveTransportParams,
+                                  jndiBindings);
+         }
+
          public boolean closeConnectionsForAddress(final String ipAddress) throws Exception
          {
             return (Boolean)proxy.invokeOperation("closeConnectionsForAddress", ipAddress);
