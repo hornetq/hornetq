@@ -17,9 +17,10 @@
  */
 package org.hornetq.core.protocol.stomp;
 
-import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
+
+import org.hornetq.api.core.HornetQBuffer;
+import org.hornetq.api.core.HornetQBuffers;
 
 /**
  * Represents all the data in a STOMP frame.
@@ -28,26 +29,28 @@ import java.util.Map;
  */
 class StompFrame
 {
-   private static final byte[] NO_DATA = new byte[] {};
+   public static final byte[] NO_DATA = new byte[] {};
+   private static final byte[] END_OF_FRAME = new byte[] { 0, '\n' };
 
-   private String command;
-
-   private Map<String, Object> headers;
-
-   private byte[] content = StompFrame.NO_DATA;
-
-   private int size = -1;
-
-   public StompFrame()
-   {
-      this.headers = new HashMap<String, Object>();
-   }
+   private final String command;
+   private final Map<String, Object> headers;
+   private final byte[] content;
+   
+   private HornetQBuffer buffer = null;
+   private int size;
 
    public StompFrame(String command, Map<String, Object> headers, byte[] data)
    {
       this.command = command;
       this.headers = headers;
       this.content = data;
+   }
+   
+   public StompFrame(String command, Map<String, Object> headers)
+   {
+      this.command = command;
+      this.headers = headers;
+      this.content = NO_DATA;
    }
 
    public String getCommand()
@@ -65,22 +68,13 @@ class StompFrame
       return headers;
    }
 
-   public int getEncodedSize()
+   public int getEncodedSize() throws Exception
    {
-      if (size == -1)
+      if (buffer == null)
       {
-         StompMarshaller marshaller = new StompMarshaller();
-         try
-         {
-            size = marshaller.marshal(this).length;
-         }
-         catch (IOException e)
-         {
-            return -1;
-         }
+         buffer = toHornetQBuffer();
       }
-
-      return size ;
+      return size;
    }
 
    @Override
@@ -88,5 +82,33 @@ class StompFrame
    {
       return "StompFrame[command=" + command + ", headers=" + headers + ", content-length=" + content.length + "]";
    }
+   
+   public HornetQBuffer toHornetQBuffer() throws Exception
+   {
+      if (buffer == null)
+      {
+         buffer = HornetQBuffers.dynamicBuffer(content.length + 512);
 
+         StringBuffer head = new StringBuffer();
+         head.append(command);
+         head.append(Stomp.NEWLINE);
+         // Output the headers.
+         for (Map.Entry<String, Object> header : headers.entrySet())
+         {
+            head.append(header.getKey());
+            head.append(Stomp.Headers.SEPARATOR);
+            head.append(header.getValue());
+            head.append(Stomp.NEWLINE);
+         }
+         // Add a newline to separate the headers from the content.
+         head.append(Stomp.NEWLINE);
+
+         buffer.writeBytes(head.toString().getBytes("UTF-8"));
+         buffer.writeBytes(content);
+         buffer.writeBytes(END_OF_FRAME);
+
+         size = buffer.writerIndex();
+      }
+      return buffer;
+   }
 }

@@ -72,11 +72,14 @@ java.naming.factory.url.pkgs=org.jboss.naming:org.jnp.interfaces</programlisting
             to an address.
             When a Stomp client subscribes (or unsubscribes) for a destination (using a <literal>SUBSCRIBE</literal>
             or <literal>UNSUBSCRIBE</literal> frame), the destination is mapped to a HornetQ queue.</para>
-           <section>
-             <title>Using JMS destinations</title>
-             <para>As explained in <xref linkend="jms-core-mapping" />, JMS destinations are also mapped to HornetQ addresses and queues.
-             If you want to use Stomp to send messages to JMS destinations, the Stomp destinations must follow the same convention:</para>
-             <itemizedlist>
+        </section>
+        <section>
+          <title>Stomp and JMS interoperabilty</title>
+          <section>
+            <title>Using JMS destinations</title>
+            <para>As explained in <xref linkend="jms-core-mapping" />, JMS destinations are also mapped to HornetQ addresses and queues.
+              If you want to use Stomp to send messages to JMS destinations, the Stomp destinations must follow the same convention:</para>
+            <itemizedlist>
               <listitem>
                 <para>send or subscribe to a JMS <emphasis>Queue</emphasis> by prepending the queue name by <literal>jms.queue.</literal>.</para>
                 <para>For example, to send a message to the <literal>orders</literal> JMS Queue, the Stomp client must send the frame:</para>
@@ -92,15 +95,34 @@ hello queue orders
                 <para>send or subscribe to a JMS <emphasis>Topic</emphasis> by prepending the topic name by <literal>jms.topic.</literal>.</para>
                 <para>For example to subscribe to the <literal>stocks</literal> JMS Topic, the Stomp client must send the frame:</para>
                 <programlisting>
-SUBSCRIBE
-destination:jms.topic.stocks
-
-^@
+  SUBSCRIBE
+  destination:jms.topic.stocks
+  
+  ^@
                 </programlisting>
               </listitem>
              </itemizedlist>
-             
            </section>
+
+           <section>
+             <title>Send and consuming Stomp message from JMS</title>
+             <para>Stomp messages can be sent and consumed from a JMS Destination by using <literal>BytesMessage</literal> where
+                the Stomp message body is stored in the JMS BytesMessage body.</para>
+             <para>If the Stomp message contained a UTF-8 String, the corresponding code to read the string from a JMS BytesMessage is:</para>
+             <programlisting>
+BytesMessage message = (BytesMessage)consumer.receive();
+byte[] data = new byte[1024];
+int size = message.readBytes(data);
+String text = new String(data, 0, size, "UTF-8");
+             </programlisting>
+             <para>Conversely, to send a JMS BytesMessage destined to be consumed by Stomp as a UTF-8 String, the code is:</para>
+             <programlisting>
+String text = ...
+BytesMessage message = session.createBytesMessage();
+message.writeBytes(text.getBytes("UTF-8"));
+producer.send(message);
+             </programlisting>
+          </section>
         </section>
     </section>
     <section>

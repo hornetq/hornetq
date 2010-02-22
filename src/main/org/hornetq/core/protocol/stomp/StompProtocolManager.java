@@ -14,7 +14,6 @@
 package org.hornetq.core.protocol.stomp;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
@@ -26,7 +25,6 @@ import java.util.Map.Entry;
 import java.util.concurrent.Executor;
 
 import org.hornetq.api.core.HornetQBuffer;
-import org.hornetq.api.core.HornetQBuffers;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Interceptor;
 import org.hornetq.api.core.Message;
@@ -61,7 +59,7 @@ class StompProtocolManager implements ProtocolManager
 
    private final HornetQServer server;
 
-   private final StompMarshaller marshaller;
+   private final StompFrameDecoder frameDecoder;
 
    private final Executor executor;
 
@@ -106,7 +104,7 @@ class StompProtocolManager implements ProtocolManager
    public StompProtocolManager(final HornetQServer server, final List<Interceptor> interceptors)
    {
       this.server = server;
-      this.marshaller = new StompMarshaller();
+      this.frameDecoder = new StompFrameDecoder();
       this.executor = server.getExecutorFactory().getExecutor();
    }
 
@@ -125,8 +123,20 @@ class StompProtocolManager implements ProtocolManager
 
    public int isReadyToHandle(HornetQBuffer buffer)
    {
-      return -1;
+      int start = buffer.readerIndex();
+
+      StompFrame frame = frameDecoder.decode(buffer);
+
+      if (frame == null)
+      {
+         return -1;
+      } 
+      else
+      {
+         return buffer.readerIndex() - start;
+      }
    }
+
 
    public void handleBuffer(final RemotingConnection connection, final HornetQBuffer buffer)
    {
@@ -146,21 +156,21 @@ class StompProtocolManager implements ProtocolManager
       });
    }
    
-   private void doHandleBuffer(RemotingConnection connection, HornetQBuffer buffer)
+   private void doHandleBuffer(final RemotingConnection connection, final HornetQBuffer buffer)
    {
       StompConnection conn = (StompConnection)connection;
       StompFrame request = null;
       try
       {
-         request = marshaller.unmarshal(buffer);
+         request = frameDecoder.decode(buffer);
          if (log.isTraceEnabled())
          {
             log.trace("received " + request);
          }
          
          String command = request.getCommand();
-
          StompFrame response = null;
+
          if (Stomp.Commands.CONNECT.equals(command))
          {
             response = onConnect(request, conn);
@@ -199,7 +209,6 @@ class StompProtocolManager implements ProtocolManager
          }
          else
          {
-
             log.error("Unsupported Stomp frame: " + request);
             response = new StompFrame(Stomp.Responses.ERROR,
                                       new HashMap<String, Object>(),
@@ -211,7 +220,7 @@ class StompProtocolManager implements ProtocolManager
             if (response == null)
             {
                Map<String, Object> h = new HashMap<String, Object>();
-               response = new StompFrame(Stomp.Responses.RECEIPT, h, StompMarshaller.NO_DATA);
+               response = new StompFrame(Stomp.Responses.RECEIPT, h);
             }
             response.getHeaders().put(Stomp.Headers.Response.RECEIPT_ID,
                                       request.getHeaders().get(Stomp.Headers.RECEIPT_REQUESTED));
@@ -325,7 +334,7 @@ class StompProtocolManager implements ProtocolManager
       boolean unsubscribed = stompSession.unsubscribe(subscriptionID);
       if (!unsubscribed)
       {
-         throw new StompException("Cannot unsubscribe as a subscription exists for id: " + subscriptionID);
+         throw new StompException("Cannot unsubscribe as no subscription exists for id: " + subscriptionID);
       }
       return null;
    }
@@ -473,11 +482,7 @@ class StompProtocolManager implements ProtocolManager
       Map<String, Object> headers = frame.getHeaders();
       String destination = (String)headers.remove(Stomp.Headers.Send.DESTINATION);
       String txID = (String)headers.remove(Stomp.Headers.TRANSACTION);
-      byte type = Message.TEXT_TYPE;
-      if (headers.containsKey(Stomp.Headers.CONTENT_LENGTH))
-      {
-         type = Message.BYTES_TYPE;
-      }
+      byte type = Message.BYTES_TYPE;
       long timestamp = System.currentTimeMillis();
 
       ServerMessageImpl message = new ServerMessageImpl(server.getStorageManager().generateUniqueID(), 512);
@@ -485,15 +490,7 @@ class StompProtocolManager implements ProtocolManager
       message.setTimestamp(timestamp);
       message.setAddress(SimpleString.toSimpleString(destination));
       StompUtils.copyStandardHeadersFromFrameToMessage(frame, message);
-      byte[] content = frame.getContent();
-      if (type == Message.TEXT_TYPE)
-      {
-         message.getBodyBuffer().writeNullableSimpleString(SimpleString.toSimpleString(new String(content)));
-      }
-      else
-      {
-         message.getBodyBuffer().writeBytes(content);
-      }
+      message.getBodyBuffer().writeBytes(frame.getContent());
 
       StompSession stompSession = null;
       if (txID == null)
@@ -533,7 +530,7 @@ class StompProtocolManager implements ProtocolManager
       {
          h.put(Stomp.Headers.Connected.RESPONSE_ID, requestID);
       }
-      return new StompFrame(Stomp.Responses.CONNECTED, h, StompMarshaller.NO_DATA);
+      return new StompFrame(Stomp.Responses.CONNECTED, h);
    }
 
    public void send(final StompConnection connection, final StompFrame frame)
@@ -619,16 +616,16 @@ class StompProtocolManager implements ProtocolManager
 
          try
          {
-            byte[] bytes = marshaller.marshal(frame);
-            HornetQBuffer buffer = HornetQBuffers.wrappedBuffer(bytes);
+            HornetQBuffer buffer = frame.toHornetQBuffer();
             connection.getTransportConnection().write(buffer, true);
          }
-         catch (IOException e)
+         catch (Exception e)
          {
             log.error("Unable to send frame " + frame, e);
          }
       }
    }
+
 
    // Inner classes -------------------------------------------------
 }

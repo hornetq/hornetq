@@ -68,7 +68,7 @@ public interface Stomp
 
    public interface Headers
    {
-      String SEPERATOR = ":";
+      String SEPARATOR = ":";
 
       String RECEIPT_REQUESTED = "receipt";
 

@@ -18,7 +18,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.hornetq.api.core.HornetQBuffer;
-import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.persistence.OperationContext;
@@ -28,6 +27,7 @@ import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.ServerSession;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.spi.core.protocol.SessionCallback;
+import org.hornetq.utils.DataConstants;
 import org.hornetq.utils.UUIDGenerator;
 
 /**
@@ -85,32 +85,20 @@ class StompSession implements SessionCallback
          {
             headers.put(Stomp.Headers.Message.SUBSCRIPTION, subscription.getID());
          }
-         byte[] data = new byte[] {};
-         serverMessage.getBodyBuffer().markReaderIndex();
-         if (serverMessage.getType() == Message.TEXT_TYPE)
-         {
-            SimpleString text = serverMessage.getBodyBuffer().readNullableSimpleString();
-            if (text != null)
-            {
-               data = text.toString().getBytes("UTF-8");
-            }
-         }
-         else
-         {
-            HornetQBuffer buffer = serverMessage.getBodyBuffer();
-            buffer.readerIndex(MessageImpl.BUFFER_HEADER_SPACE);
-            int size = serverMessage.getEndOfBodyPosition() - buffer.readerIndex();
-            data = new byte[size];
-            buffer.readBytes(data);
-            headers.put(Headers.CONTENT_LENGTH, data.length);
-         }
+         HornetQBuffer buffer = serverMessage.getBodyBuffer();
+         buffer.readerIndex(MessageImpl.BUFFER_HEADER_SPACE + DataConstants.SIZE_INT);
+         int bodyPos = serverMessage.getEndOfBodyPosition() == -1 ? buffer.writerIndex() : serverMessage.getEndOfBodyPosition();
+         int size = bodyPos - buffer.readerIndex();
+         byte[] data = new byte[size];
+         buffer.readBytes(data);
+         headers.put(Headers.CONTENT_LENGTH, data.length);
          serverMessage.getBodyBuffer().resetReaderIndex();
-
+         
          StompFrame frame = new StompFrame(Stomp.Responses.MESSAGE, headers, data);
          StompUtils.copyStandardHeadersFromMessageToFrame(serverMessage, frame, deliveryCount);
 
          manager.send(connection, frame);
-         int size =  frame.getEncodedSize();
+         int length =  frame.getEncodedSize();
          
          if (subscription.getAck().equals(Stomp.Headers.Subscribe.AckModeValues.AUTO))
          {
@@ -121,7 +109,7 @@ class StompSession implements SessionCallback
          {
             messagesToAck.put(serverMessage.getMessageID(), consumerID);
          }
-         return size;
+         return length;
 
       }
       catch (Exception e)
@@ -183,7 +171,7 @@ class StompSession implements SessionCallback
                // Already exists
                if (query.getConsumerCount() > 0)
                {
-                  throw new IllegalStateException("Cannot create a subscriber on the durable subscription since it already has subscriber(s)");
+                  throw new IllegalStateException("Cannot create a subscriber on the durable subscription since it already has a subscriber: " + queue);
                }
             }
          } else
@@ -194,7 +182,7 @@ class StompSession implements SessionCallback
       }
       session.createConsumer(consumerID, queue, SimpleString.toSimpleString(selector), false);
       session.receiveConsumerCredits(consumerID, -1);
-      StompSubscription subscription = new StompSubscription(subscriptionID, destination, ack);
+      StompSubscription subscription = new StompSubscription(subscriptionID, ack);
       subscriptions.put(consumerID, subscription);
       // FIXME not very smart: since we can't start the consumer, we start the session
       // every time to start the new consumer (and all previous consumers...)

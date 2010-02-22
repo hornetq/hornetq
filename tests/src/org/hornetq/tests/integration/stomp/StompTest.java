@@ -25,6 +25,8 @@ import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -33,12 +35,12 @@ import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.DeliveryMode;
 import javax.jms.Destination;
-import javax.jms.JMSException;
+import javax.jms.Message;
 import javax.jms.MessageConsumer;
+import javax.jms.MessageListener;
 import javax.jms.MessageProducer;
 import javax.jms.Queue;
 import javax.jms.Session;
-import javax.jms.TextMessage;
 import javax.jms.Topic;
 
 import junit.framework.Assert;
@@ -76,6 +78,45 @@ public class StompTest extends UnitTestCase {
     private Topic topic;
     private JMSServerManager server;
 
+    public void _testSendManyMessages() throws Exception {
+       MessageConsumer consumer = session.createConsumer(queue);
+ 
+       String frame =
+               "CONNECT\n" +
+                       "login: brianm\n" +
+                       "passcode: wombats\n\n" +
+                       Stomp.NULL;
+       sendFrame(frame);
+       frame = receiveFrame(10000);
+       
+       Assert.assertTrue(frame.startsWith("CONNECTED"));    
+       int count = 1000;
+       final CountDownLatch latch = new CountDownLatch(count);
+       consumer.setMessageListener(new MessageListener()
+      {
+         
+         public void onMessage(Message arg0)
+         {
+            System.out.println("<<< " + (1000 - latch.getCount()));
+            latch.countDown();
+         }
+      });
+       
+       frame =
+               "SEND\n" +
+                       "destination:" + getQueuePrefix() + getQueueName() + "\n\n" +
+                       "Hello World" +
+                       Stomp.NULL;    
+       for (int i=1; i <= count; i++) {
+          // Thread.sleep(1);
+          System.out.println(">>> " + i);
+          sendFrame(frame);
+       }
+       
+       assertTrue(latch.await(60, TimeUnit.SECONDS));
+        
+    }
+    
     public void testConnect() throws Exception {
 
        String connect_frame = "CONNECT\n" + "login: brianm\n" + "passcode: wombats\n" + "request-id: 1\n" + "\n" + Stomp.NULL;
@@ -137,9 +178,9 @@ public class StompTest extends UnitTestCase {
 
         sendFrame(frame);
         
-        TextMessage message = (TextMessage) consumer.receive(1000);
+        BytesMessage message = (BytesMessage) consumer.receive(1000);
         Assert.assertNotNull(message);
-        Assert.assertEquals("Hello World", message.getText());
+        Assert.assertEquals("Hello World", readContent(message));
 
         // Make sure that the timestamp is valid - should
         // be very close to the current time.
@@ -175,9 +216,9 @@ public class StompTest extends UnitTestCase {
        Assert.assertTrue(f.startsWith("RECEIPT"));
        Assert.assertTrue(f.indexOf("receipt-id:1234") >= 0);
 
-       TextMessage message = (TextMessage) consumer.receive(1000);
+       BytesMessage message = (BytesMessage) consumer.receive(1000);
        Assert.assertNotNull(message);
-       Assert.assertEquals("Hello World", message.getText());
+       Assert.assertEquals("Hello World", readContent(message));
 
        // Make sure that the timestamp is valid - should
        // be very close to the current time.
@@ -200,16 +241,17 @@ public class StompTest extends UnitTestCase {
        frame = receiveFrame(10000);
        Assert.assertTrue(frame.startsWith("CONNECTED"));
 
-       byte[] data = new byte[] {1, 2, 3, 4};
-        
+       byte[] data = new byte[] {1, 0, 0, 4};
+       
        frame =
                "SEND\n" +
                        "destination:" + getQueuePrefix() + getQueueName() + "\n" +
-                       "content-length:" + data.length + "\n\n" +
-                       new String(data) +
-                       Stomp.NULL;
-
-       sendFrame(frame);
+                       "content-length:" + data.length + "\n\n";
+       ByteArrayOutputStream baos = new ByteArrayOutputStream();
+       baos.write(frame.getBytes("UTF-8"));
+       baos.write(data);
+       baos.write('\0');
+       sendFrame(baos.toByteArray());
        
        BytesMessage message = (BytesMessage) consumer.receive(1000);
        Assert.assertNotNull(message);
@@ -218,12 +260,6 @@ public class StompTest extends UnitTestCase {
        assertEquals(data[1], message.readByte());
        assertEquals(data[2], message.readByte());
        assertEquals(data[3], message.readByte());
-
-       // Make sure that the timestamp is valid - should
-       // be very close to the current time.
-       long tnow = System.currentTimeMillis();
-       long tmsg = message.getJMSTimestamp();
-       Assert.assertTrue(Math.abs(tnow - tmsg) < 1000);
    }
 
     public void testJMSXGroupIdCanBeSet() throws Exception {
@@ -249,10 +285,11 @@ public class StompTest extends UnitTestCase {
 
         sendFrame(frame);
 
-        TextMessage message = (TextMessage) consumer.receive(1000);
+        BytesMessage message = (BytesMessage) consumer.receive(1000);
         Assert.assertNotNull(message);
+        Assert.assertEquals("Hello World", readContent(message));
         // differ from StompConnect
-        Assert.assertEquals("TEST", ((TextMessage) message).getStringProperty("JMSXGroupID"));
+        Assert.assertEquals("TEST", message.getStringProperty("JMSXGroupID"));
     }
 
     public void testSendMessageWithCustomHeadersAndSelector() throws Exception {
@@ -279,9 +316,9 @@ public class StompTest extends UnitTestCase {
 
         sendFrame(frame);
 
-        TextMessage message = (TextMessage) consumer.receive(1000);
+        BytesMessage message = (BytesMessage) consumer.receive(1000);
         Assert.assertNotNull(message);
-        Assert.assertEquals("Hello World", message.getText());
+        Assert.assertEquals("Hello World", readContent(message));
         Assert.assertEquals("foo", "abc", message.getStringProperty("foo"));
         Assert.assertEquals("bar", "123", message.getStringProperty("bar"));
     }
@@ -315,9 +352,9 @@ public class StompTest extends UnitTestCase {
 
         sendFrame(frame);
 
-        TextMessage message = (TextMessage) consumer.receive(1000);
+        BytesMessage message = (BytesMessage) consumer.receive(1000);
         Assert.assertNotNull(message);
-        Assert.assertEquals("Hello World", message.getText());
+        Assert.assertEquals("Hello World", readContent(message));
         Assert.assertEquals("JMSCorrelationID", "c123", message.getJMSCorrelationID());
         Assert.assertEquals("getJMSType", "t345", message.getJMSType());
         Assert.assertEquals("getJMSPriority", 3, message.getJMSPriority());
@@ -364,7 +401,7 @@ public class StompTest extends UnitTestCase {
         
         // message should not be received as it was auto-acked
         MessageConsumer consumer = session.createConsumer(queue);
-        TextMessage message = (TextMessage) consumer.receive(1000);
+        Message message = consumer.receive(1000);
         Assert.assertNull(message);
 
     }
@@ -389,7 +426,7 @@ public class StompTest extends UnitTestCase {
         sendFrame(frame);
 
         byte[] payload = new byte[]{1, 2, 3, 4, 5}; 
-        sendBytesMessage(payload);
+        sendMessage(payload, queue);
 
         frame = receiveFrame(10000);
         Assert.assertTrue(frame.startsWith("MESSAGE"));
@@ -429,7 +466,7 @@ public class StompTest extends UnitTestCase {
         sendFrame(frame);
 
         MessageProducer producer = session.createProducer(queue);
-        TextMessage message = session.createTextMessage("Hello World");
+        BytesMessage message = session.createBytesMessage();
         message.setStringProperty("S", "value");
         message.setBooleanProperty("n", false);
         message.setByteProperty("byte", (byte) 9);
@@ -438,6 +475,7 @@ public class StompTest extends UnitTestCase {
         message.setIntProperty("i", 10);
         message.setLongProperty("l", 121);
         message.setShortProperty("s", (short) 12);
+        message.writeBytes("Hello World".getBytes("UTF-8"));
         producer.send(message);
 
         frame = receiveFrame(10000);
@@ -532,12 +570,6 @@ public class StompTest extends UnitTestCase {
                        "\n\n" +
                        Stomp.NULL;
        sendFrame(frame);
-       
-       // message should not be received as it was auto-acked
-       MessageConsumer consumer = session.createConsumer(queue);
-       TextMessage message = (TextMessage) consumer.receive(1000);
-       Assert.assertNull(message);
-
    }
     
     public void testMessagesAreInOrder() throws Exception {
@@ -667,7 +699,7 @@ public class StompTest extends UnitTestCase {
 
        // message should not be received since message was acknowledged by the client
        MessageConsumer consumer = session.createConsumer(queue);
-       TextMessage message = (TextMessage) consumer.receive(1000);
+       Message message = consumer.receive(1000);
        Assert.assertNull(message);
    }
     
@@ -703,7 +735,7 @@ public class StompTest extends UnitTestCase {
 
         // message should be received since message was not acknowledged
         MessageConsumer consumer = session.createConsumer(queue);
-        TextMessage message = (TextMessage) consumer.receive(1000);
+        Message message = consumer.receive(1000);
         Assert.assertNotNull(message);
         Assert.assertTrue(message.getJMSRedelivered());
     }
@@ -957,7 +989,7 @@ public class StompTest extends UnitTestCase {
         sendFrame(frame);
         waitForReceipt();
 
-        TextMessage message = (TextMessage) consumer.receive(1000);
+        Message message = consumer.receive(1000);
         Assert.assertNotNull("Should have received a message", message);
     }
     
@@ -998,7 +1030,7 @@ public class StompTest extends UnitTestCase {
                        Stomp.NULL;
        sendFrame(frame);
 
-       TextMessage message = (TextMessage) consumer.receive(1000);
+       Message message = consumer.receive(1000);
        Assert.assertNotNull("Should have received a message", message);
 
        // 2nd tx with same tx ID
@@ -1025,7 +1057,7 @@ public class StompTest extends UnitTestCase {
                        Stomp.NULL;
        sendFrame(frame);
 
-       message = (TextMessage) consumer.receive(1000);
+       message = consumer.receive(1000);
        Assert.assertNotNull("Should have received a message", message);
 }
     
@@ -1123,9 +1155,9 @@ public class StompTest extends UnitTestCase {
         waitForReceipt();
 
         //only second msg should be received since first msg was rolled back
-        TextMessage message = (TextMessage) consumer.receive(1000);
+        BytesMessage message = (BytesMessage) consumer.receive(1000);
         Assert.assertNotNull(message);
-        Assert.assertEquals("second message", message.getText().trim());
+        Assert.assertEquals("second message", readContent(message));
     }
     
     public void testSubscribeToTopic() throws Exception {
@@ -1203,25 +1235,21 @@ public class StompTest extends UnitTestCase {
        String subscribeFrame =
                "SUBSCRIBE\n" +
                        "destination:" + getTopicPrefix() + getTopicName() + "\n" +
-                       "receipt: 12\n" +
                        "durable-subscription-name: " + getName() + "\n" + 
                        "\n\n" +
                        Stomp.NULL;
        sendFrame(subscribeFrame);
-       // wait for SUBSCRIBE's receipt
-       frame = receiveFrame(10000);
-       Assert.assertTrue(frame.startsWith("RECEIPT"));
+       waitForFrameToTakeEffect();
 
        String disconnectFrame =
           "DISCONNECT\n" +
                   "\n\n" +
                   Stomp.NULL;
        sendFrame(disconnectFrame);
-       stompSocket.close();
+       waitForFrameToTakeEffect();
        
        // send the message when the durable subscriber is disconnected
        sendMessage(getName(), topic);
-  
 
        reconnect(1000);
        sendFrame(connectFame);
@@ -1229,9 +1257,6 @@ public class StompTest extends UnitTestCase {
        Assert.assertTrue(frame.startsWith("CONNECTED"));
        
        sendFrame(subscribeFrame);
-       // wait for SUBSCRIBE's receipt
-       frame = receiveFrame(10000);
-       Assert.assertTrue(frame.startsWith("RECEIPT"));
 
        // we must have received the message 
        frame = receiveFrame(10000);
@@ -1522,6 +1547,14 @@ public class StompTest extends UnitTestCase {
         outputStream.flush();
     }
 
+    public void sendFrame(byte[] data) throws Exception {
+        OutputStream outputStream = stompSocket.getOutputStream();
+        for (int i = 0; i < data.length; i++) {
+            outputStream.write(data[i]);
+        }
+        outputStream.flush();
+    }
+    
     public String receiveFrame(long timeOut) throws Exception {
         stompSocket.setSoTimeout((int) timeOut);
         InputStream is = stompSocket.getInputStream();
@@ -1550,31 +1583,36 @@ public class StompTest extends UnitTestCase {
     }
 
     public void sendMessage(String msg) throws Exception {
-       sendMessage(msg, "foo", "xyz", queue);
+       sendMessage(msg.getBytes("UTF-8"), "foo", "xyz", queue);
    }
 
     public void sendMessage(String msg, Destination destination) throws Exception {
-        sendMessage(msg, "foo", "xyz", destination);
+        sendMessage(msg.getBytes("UTF-8"), "foo", "xyz", destination);
     }
 
-    public void sendMessage(String msg, String propertyName, String propertyValue) throws JMSException {
-       sendMessage(msg, propertyName, propertyValue, queue);
+    public void sendMessage(byte[] data, Destination destination) throws Exception {
+       sendMessage(data, "foo", "xyz", destination);
+   }
+    
+    public void sendMessage(String msg, String propertyName, String propertyValue) throws Exception {
+       sendMessage(msg.getBytes("UTF-8"), propertyName, propertyValue, queue);
+    }
+
+    public void sendMessage(byte[] data, String propertyName, String propertyValue, Destination destination) throws Exception {
+        MessageProducer producer = session.createProducer(destination);
+        BytesMessage message = session.createBytesMessage();
+        message.setStringProperty(propertyName, propertyValue);
+        message.writeBytes(data);
+        producer.send(message);
     }
     
-    public void sendMessage(String msg, String propertyName, String propertyValue, Destination destination) throws JMSException {
-        MessageProducer producer = session.createProducer(destination);
-        TextMessage message = session.createTextMessage(msg);
-        message.setStringProperty(propertyName, propertyValue);
-        producer.send(message);
+    public String readContent(BytesMessage message) throws Exception
+    {
+       byte[] data = new byte[1024];
+       int size = message.readBytes(data);
+       return new String(data, 0, size, "UTF-8");
     }
-
-    public void sendBytesMessage(byte[] msg) throws Exception {
-        MessageProducer producer = session.createProducer(queue);
-        BytesMessage message = session.createBytesMessage();
-        message.writeBytes(msg);
-        producer.send(message);
-    }
-
+    
     protected void waitForReceipt() throws Exception {
        String frame = receiveFrame(50000);
        assertNotNull(frame);

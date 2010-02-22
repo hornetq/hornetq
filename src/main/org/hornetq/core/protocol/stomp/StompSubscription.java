@@ -28,18 +28,15 @@ public class StompSubscription
 
    private final String subID;
 
-   private final String destination;
-
    private final String ack;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public StompSubscription(String subID, String destination, String ack)
+   public StompSubscription(String subID, String ack)
    {
       this.subID = subID;
-      this.destination = destination;
       this.ack = ack;
    }
 
@@ -48,11 +45,6 @@ public class StompSubscription
    public String getAck()
    {
       return ack;
-   }
-
-   public String getDestination()
-   {
-      return destination;
    }
 
    public String getID()
