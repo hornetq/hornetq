@@ -542,7 +542,13 @@ class StompProtocolManager implements ProtocolManager
 
          public void done()
          {
-            doSend(connection, frame);
+            executor.execute(new Runnable()
+            {
+               public void run()
+               {
+                  doSend(connection, frame);
+               }
+            });
          }
       });
    }
