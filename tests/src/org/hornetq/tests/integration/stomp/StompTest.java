@@ -171,7 +171,7 @@ public class StompTest extends UnitTestCase {
         Assert.assertTrue(frame.startsWith("CONNECTED"));
 
         frame =
-                "SEND\n" +
+                "\nSEND\n" +
                         "destination:" + getQueuePrefix() + getQueueName() + "\n\n" +
                         "Hello World" +
                         Stomp.NULL;

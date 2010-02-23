@@ -42,15 +42,20 @@ class StompFrameDecoder
    {
       try
       {
-         String command = StompFrameDecoder.readLine(buffer, StompFrameDecoder.MAX_COMMAND_LENGTH, "The maximum command length was exceeded");
-         if (command == null)
-         {
-            return null;
-         }
-         command = command.trim();
-         if (command.length() == 0)
-         {
-            return null;
+         String command = null;
+
+         // skip white space to next real action line
+         while (true) {
+            command = StompFrameDecoder.readLine(buffer, StompFrameDecoder.MAX_COMMAND_LENGTH, "The maximum command length was exceeded");
+             if (command == null) {
+                return null;
+             }
+             else {
+                command = command.trim();
+                 if (command.length() > 0) {
+                     break;
+                 }
+             }
          }
          
          // Parse the headers
