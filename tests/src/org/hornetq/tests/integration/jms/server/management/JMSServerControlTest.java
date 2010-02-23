@@ -13,18 +13,19 @@
 
 package org.hornetq.tests.integration.jms.server.management;
 
-import java.util.Map;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.Queue;
+import javax.jms.Session;
 import javax.jms.Topic;
 
 import junit.framework.Assert;
 
 import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.api.core.management.AddressControl;
 import org.hornetq.api.core.management.ObjectNameBuilder;
+import org.hornetq.api.core.management.ResourceNames;
 import org.hornetq.api.jms.management.JMSServerControl;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.DiscoveryGroupConfiguration;
@@ -35,6 +36,8 @@ import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.remoting.impl.invm.TransportConstants;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
+import org.hornetq.jms.client.HornetQConnectionFactory;
+import org.hornetq.jms.client.HornetQDestination;
 import org.hornetq.jms.server.JMSServerManager;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.hornetq.tests.integration.management.ManagementControlHelper;
@@ -176,15 +179,29 @@ public class JMSServerControlTest extends ManagementTestBase
 
       UnitTestCase.checkNoBinding(context, topicJNDIBinding);
       checkNoResource(ObjectNameBuilder.DEFAULT.getJMSTopicObjectName(topicName));
-
+      
       JMSServerControl control = createManagementControl();
       control.createTopic(topicName, topicJNDIBinding);
 
-      UnitTestCase.checkBinding(context, topicJNDIBinding);
       checkResource(ObjectNameBuilder.DEFAULT.getJMSTopicObjectName(topicName));
+      Topic topic = (Topic)context.lookup(topicJNDIBinding);
+      assertNotNull(topic);
+      HornetQConnectionFactory cf = new HornetQConnectionFactory(new TransportConfiguration(InVMConnectorFactory.class.getName()));
+      Connection connection = cf.createConnection();
+      Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      // create a consumer will create a Core queue bound to the topic address
+      session.createConsumer(topic);
 
+      String topicAddress = HornetQDestination.createTopicAddressFromName(topicName).toString();
+      AddressControl addressControl = (AddressControl)server.getManagementService().getResource(ResourceNames.CORE_ADDRESS + topicAddress);
+      assertNotNull(addressControl);
+      
+      assertTrue(addressControl.getQueueNames().length > 0);
+      
+      connection.close();
       control.destroyTopic(topicName);
-
+      
+      assertNull(server.getManagementService().getResource(ResourceNames.CORE_ADDRESS + topicAddress));
       UnitTestCase.checkNoBinding(context, topicJNDIBinding);
       checkNoResource(ObjectNameBuilder.DEFAULT.getJMSTopicObjectName(topicName));
    }

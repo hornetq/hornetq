@@ -28,6 +28,8 @@ import javax.naming.NamingException;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
+import org.hornetq.api.core.management.AddressControl;
+import org.hornetq.api.core.management.ResourceNames;
 import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.DiscoveryGroupConfiguration;
@@ -346,8 +348,14 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
 
       destinations.remove(name);
       jmsManagementService.unregisterTopic(name);
-      server.getHornetQServerControl().destroyQueue(HornetQDestination.createTopicAddressFromName(name).toString());
-
+      AddressControl addressControl = (AddressControl)server.getManagementService().getResource(ResourceNames.CORE_ADDRESS + HornetQDestination.createTopicAddressFromName(name));
+      if (addressControl != null)
+      {
+         for (String queueName : addressControl.getQueueNames())
+         {
+            server.getHornetQServerControl().destroyQueue(queueName);
+         }
+      }
       return true;
    }
 
