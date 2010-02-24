@@ -141,14 +141,20 @@ class StompProtocolManager implements ProtocolManager
 
    public void handleBuffer(final RemotingConnection connection, final HornetQBuffer buffer)
    {
-      try
+      executor.execute(new Runnable()
       {
-         doHandleBuffer(connection, buffer);
-      } 
-      finally
-      {
-         server.getStorageManager().clearContext();
-      }
+         public void run()
+         {
+            try
+            {
+               doHandleBuffer(connection, buffer);
+            } 
+            finally
+            {
+               server.getStorageManager().clearContext();
+            }
+         }
+      });
    }
    
    private void doHandleBuffer(final RemotingConnection connection, final HornetQBuffer buffer)
@@ -542,13 +548,7 @@ class StompProtocolManager implements ProtocolManager
 
          public void done()
          {
-            executor.execute(new Runnable()
-            {
-               public void run()
-               {
-                  doSend(connection, frame);
-               }
-            });
+            doSend(connection, frame);
          }
       });
    }
