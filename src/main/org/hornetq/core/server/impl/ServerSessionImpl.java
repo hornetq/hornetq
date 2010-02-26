@@ -523,7 +523,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
 
    public void xaCommit(final Xid xid, final boolean onePhase) throws Exception
    {
-      if (tx != null)
+      if (tx != null && tx.getXid().equals(xid))
       {
          final String msg = "Cannot commit, session is currently doing work in transaction " + tx.getXid();
 
@@ -557,7 +557,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
             if (theTx.getState() == Transaction.State.SUSPENDED)
             {
                // Put it back
-               resourceManager.putTransaction(xid, tx);
+               resourceManager.putTransaction(xid, theTx);
 
                throw new HornetQXAException(XAException.XAER_PROTO, "Cannot commit transaction, it is suspended " + xid);
             }
@@ -697,7 +697,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
 
    public void xaRollback(final Xid xid) throws Exception
    {
-      if (tx != null)
+      if (tx != null && tx.getXid().equals(xid))
       {
          final String msg = "Cannot roll back, session is currently doing work in a transaction " + tx.getXid();
 
@@ -794,7 +794,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
 
    public void xaPrepare(final Xid xid) throws Exception
    {
-      if (tx != null)
+      if (tx != null && tx.getXid().equals(xid))
       {
          final String msg = "Cannot commit, session is currently doing work in a transaction " + tx.getXid();
 

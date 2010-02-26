@@ -139,6 +139,64 @@ public class BasicXaTest extends ServiceTestBase
       session2.close();
    }
 
+   
+
+   public void testXAInterleaveResourceSuspendWorkCommit() throws Exception
+   {
+      Xid xid = newXID();
+      Xid xid2 = newXID();
+      ClientProducer clientProducer = clientSession.createProducer(atestq);
+      ClientSession recSession = sessionFactory.createSession();
+      recSession.start();
+      ClientConsumer clientConsumer = recSession.createConsumer(atestq);
+      ClientMessage m1 = createTextMessage(clientSession, "m1");
+      ClientMessage m2 = createTextMessage(clientSession, "m2");
+      clientSession.start(xid, XAResource.TMNOFLAGS);
+      clientProducer.send(m1);
+      clientSession.end(xid, XAResource.TMSUSPEND);
+      clientSession.start(xid2, XAResource.TMNOFLAGS);
+      clientProducer.send(m2);
+      clientSession.end(xid, XAResource.TMSUCCESS);
+      clientSession.commit(xid, true);
+      ClientMessage message = clientConsumer.receiveImmediate();
+      assertNotNull(message);
+      message = clientConsumer.receiveImmediate();
+      assertNull(message);
+      clientSession.end(xid2, XAResource.TMSUCCESS);
+      clientSession.commit(xid2, true);
+      message = clientConsumer.receiveImmediate();
+      assertNotNull(message);
+   }
+
+   public void testXAInterleaveResourceRollbackAfterPrepare() throws Exception
+   {
+      Xid xid = newXID();
+      Xid xid2 = newXID();
+      Xid xid3 = newXID();
+      ClientProducer clientProducer = clientSession.createProducer(atestq);
+      ClientConsumer clientConsumer = clientSession.createConsumer(atestq);
+      ClientMessage m1 = createTextMessage(clientSession, "m1");
+      clientSession.start(xid, XAResource.TMNOFLAGS);
+      clientProducer.send(m1);
+      clientSession.end(xid, XAResource.TMSUCCESS);
+      clientSession.prepare(xid);
+      clientSession.commit(xid, false);
+      clientSession.start();
+      clientSession.start(xid2, XAResource.TMNOFLAGS);
+      ClientMessage m2 = clientConsumer.receiveImmediate();
+      assertNotNull(m2);
+      clientSession.end(xid2, XAResource.TMSUCCESS);
+      clientSession.prepare(xid2);
+      clientSession.rollback(xid2);
+
+      clientSession.start(xid3, XAResource.TMNOFLAGS);
+      m2 = clientConsumer.receiveImmediate();
+      assertNotNull(m2);
+      clientSession.end(xid3, XAResource.TMSUCCESS);
+      clientSession.prepare(xid3);
+      clientSession.commit(xid3, false);
+   }
+   
    public void testSendPrepareDoesntRollbackOnClose() throws Exception
    {
       Xid xid = newXID();
