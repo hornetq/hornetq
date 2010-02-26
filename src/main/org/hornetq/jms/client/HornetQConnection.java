@@ -311,7 +311,21 @@ public class HornetQConnection implements Connection, QueueConnection, TopicConn
                                                       final int maxMessages) throws JMSException
    {
       checkClosed();
+
+      checkTempQueues(destination);
       return null;
+   }
+
+   private void checkTempQueues(Destination destination)
+         throws JMSException
+   {
+      HornetQDestination jbdest = (HornetQDestination)destination;
+
+      if (jbdest.isTemporary() && !containsTemporaryQueue(jbdest.getSimpleAddress()))
+      {
+         throw new JMSException("Can not create consumer for temporary destination " + destination +
+                                " from another JMS connection");
+      }
    }
 
    public ConnectionConsumer createDurableConnectionConsumer(final Topic topic,
@@ -327,7 +341,7 @@ public class HornetQConnection implements Connection, QueueConnection, TopicConn
          String msg = "Cannot create a durable connection consumer on a QueueConnection";
          throw new javax.jms.IllegalStateException(msg);
       }
-
+      checkTempQueues(topic);
       // TODO
       return null;
    }
@@ -346,7 +360,7 @@ public class HornetQConnection implements Connection, QueueConnection, TopicConn
                                                       final int maxMessages) throws JMSException
    {
       checkClosed();
-
+      checkTempQueues(queue);
       return null;
    }
 
@@ -364,7 +378,7 @@ public class HornetQConnection implements Connection, QueueConnection, TopicConn
                                                       final int maxMessages) throws JMSException
    {
       checkClosed();
-
+      checkTempQueues(topic);
       return null;
    }
 
