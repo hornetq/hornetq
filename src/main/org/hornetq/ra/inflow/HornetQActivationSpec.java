@@ -718,22 +718,22 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
    // here for backwards compatibilty
    public void setUseDLQ(final boolean b)
    {
-
    }
 
    public void setDLQJNDIName(final String name)
    {
-
+   }
+   
+   public void setDLQHandler(final String handler)
+   {
    }
 
    public void setDLQMaxResent(final int maxResent)
    {
-
    }
 
    public void setProviderAdapterJNDI(final String jndi)
    {
-
    }
 
    /**
@@ -747,6 +747,11 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
     * @param keepAliveMillis the keepAliveMillis to set
     */
    public void setKeepAliveMillis(long keepAliveMillis)
+   {
+   }
+   
+   
+   public void setReconnectInterval(long interval)
    {
    }
    

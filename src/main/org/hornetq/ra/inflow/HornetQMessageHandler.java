@@ -107,12 +107,6 @@ public class HornetQMessageHandler implements MessageHandler
          }
          else
          {
-            // Already exists
-            if (subResponse.getConsumerCount() > 0)
-            {
-               throw new javax.jms.IllegalStateException("Cannot create a subscriber on the durable subscription since it already has subscriber(s)");
-            }
-
             SimpleString oldFilterString = subResponse.getFilterString();
 
             boolean selectorChanged = selector == null && oldFilterString != null ||
