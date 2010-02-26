@@ -273,6 +273,12 @@ public class ConnectionFactoryProperties
       this.clientID = clientID;
    }
 
+   /** This is for backward compatibility */
+   public void setClientId(final String clientID)
+   {
+      setClientID(clientID);
+   }
+
    public Integer getDupsOKBatchSize()
    {
       if (ConnectionFactoryProperties.trace)
