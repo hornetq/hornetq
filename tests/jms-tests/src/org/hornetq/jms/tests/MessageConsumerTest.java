@@ -1572,6 +1572,7 @@ public class MessageConsumerTest extends JMSTestCase
          try
          {
             topicConsumer.getMessageSelector();
+            fail("must throw a JMS IllegalStateException");
          }
          catch (javax.jms.IllegalStateException e)
          {
@@ -1629,6 +1630,7 @@ public class MessageConsumerTest extends JMSTestCase
          try
          {
             ((TopicSubscriber)topicConsumer).getTopic();
+            fail("must throw a JMS IllegalStateException");
          }
          catch (javax.jms.IllegalStateException e)
          {
@@ -1686,6 +1688,7 @@ public class MessageConsumerTest extends JMSTestCase
          try
          {
             ((QueueReceiver)queueConsumer).getQueue();
+            fail("must throw a JMS IllegalStateException");
          }
          catch (javax.jms.IllegalStateException e)
          {
