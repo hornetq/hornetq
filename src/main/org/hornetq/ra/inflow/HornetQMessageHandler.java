@@ -64,11 +64,14 @@ public class HornetQMessageHandler implements MessageHandler
    private final HornetQActivation activation;
 
    private boolean useLocalTx;
+   
+   private final int sessionNr;
 
-   public HornetQMessageHandler(final HornetQActivation activation, final ClientSession session)
+   public HornetQMessageHandler(final HornetQActivation activation, final ClientSession session, final int sessionNr)
    {
       this.activation = activation;
       this.session = session;
+      this.sessionNr = sessionNr;
    }
 
    public void setup() throws Exception
@@ -107,6 +110,13 @@ public class HornetQMessageHandler implements MessageHandler
          }
          else
          {
+            // The check for already exists should be done only at the first session
+            // As a deployed MDB could set up multiple instances in order to process messages in parallel.
+            if (sessionNr == 0 && subResponse.getConsumerCount() > 0)
+            {
+               throw new javax.jms.IllegalStateException("Cannot create a subscriber on the durable subscription since it already has subscriber(s)");
+            }
+
             SimpleString oldFilterString = subResponse.getFilterString();
 
             boolean selectorChanged = selector == null && oldFilterString != null ||
