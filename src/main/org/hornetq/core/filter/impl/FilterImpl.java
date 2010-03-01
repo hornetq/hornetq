@@ -107,7 +107,7 @@ public class FilterImpl implements Filter
       }
       catch (Throwable e)
       {
-         FilterImpl.log.error("Invalid filter", e);
+         FilterImpl.log.error("Invalid filter: " + str, e);
 
          throw new HornetQException(HornetQException.INVALID_FILTER_EXPRESSION, "Invalid filter: " + sfilterString);
       }
