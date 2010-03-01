@@ -347,7 +347,7 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
       {
          if (defaultDestination == null)
          {
-            throw new InvalidDestinationException("Destination must be specified on send with an anonymous producer");
+            throw new UnsupportedOperationException("Destination must be specified on send with an anonymous producer");
          }
 
          destination = defaultDestination;
@@ -358,7 +358,7 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
          {
             if (!destination.equals(defaultDestination))
             {
-               throw new JMSException("Where a default destination is specified " + "for the sender and a destination is "
+               throw new UnsupportedOperationException("Where a default destination is specified " + "for the sender and a destination is "
                                       + "specified in the arguments to the send, "
                                       + "these destinations must be equal");
             }
