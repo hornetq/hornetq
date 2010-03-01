@@ -40,6 +40,8 @@ import javax.jms.Session;
 import javax.jms.StreamMessage;
 import javax.jms.TextMessage;
 import javax.jms.Topic;
+import javax.jms.TopicConnection;
+import javax.jms.TopicSession;
 import javax.jms.TopicSubscriber;
 
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
@@ -1588,6 +1590,40 @@ public class MessageConsumerTest extends JMSTestCase
       }
    }
 
+   public void testGetNoLocalOnClosedConsumer() throws Exception
+   {
+      Connection consumerConnection = null;
+
+      try
+      {
+         consumerConnection = JMSTestCase.cf.createConnection();
+         TopicConnection tc = (TopicConnection)consumerConnection;
+
+         TopicSession consumerSession = tc.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
+
+         TopicSubscriber topicConsumer = consumerSession.createSubscriber(HornetQServerTestCase.topic1);
+
+         topicConsumer.close();
+
+         try
+         {
+            topicConsumer.getNoLocal();
+            fail("must throw a JMS IllegalStateException");
+         }
+         catch (javax.jms.IllegalStateException e)
+         {
+            // OK
+         }
+      }
+      finally
+      {
+         if (consumerConnection != null)
+         {
+            consumerConnection.close();
+         }
+      }
+   }
+   
    public void testGetTopic() throws Exception
    {
       Connection consumerConnection = null;

@@ -182,6 +182,8 @@ public class HornetQMessageConsumer implements MessageConsumer, QueueReceiver, T
 
    public boolean getNoLocal() throws JMSException
    {
+      checkClosed();
+
       return noLocal;
    }
 
