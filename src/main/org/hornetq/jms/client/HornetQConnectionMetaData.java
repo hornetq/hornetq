@@ -33,7 +33,7 @@ public class HornetQConnectionMetaData implements ConnectionMetaData
 {
    // Constants -----------------------------------------------------
 
-   public static final String JBOSS_MESSAGING = "HornetQ";
+   private static final String HORNETQ = "HornetQ";
 
    // Static --------------------------------------------------------
 
@@ -70,7 +70,7 @@ public class HornetQConnectionMetaData implements ConnectionMetaData
 
    public String getJMSProviderName() throws JMSException
    {
-      return HornetQConnectionMetaData.JBOSS_MESSAGING;
+      return HornetQConnectionMetaData.HORNETQ;
    }
 
    public String getProviderVersion() throws JMSException
@@ -92,7 +92,7 @@ public class HornetQConnectionMetaData implements ConnectionMetaData
    {
       Vector v = new Vector();
       v.add("JMSXGroupID");
-      // v.add("JMSXGroupSeq");
+      v.add("JMSXGroupSeq");
       v.add("JMSXDeliveryCount");
       return v.elements();
    }
