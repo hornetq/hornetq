@@ -155,7 +155,6 @@ public class FilterImpl implements Filter
          else if (resultType.equals(Operator.class))
          {
             Operator op = (Operator) result;
-            System.out.println(result);
             return (Boolean)op.apply();
          } else
          {
