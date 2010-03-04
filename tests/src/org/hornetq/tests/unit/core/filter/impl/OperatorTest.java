@@ -417,7 +417,7 @@ public class OperatorTest extends UnitTestCase
       OperatorTest.assertSuccess(Operator.LIKE, new SimpleString("lose"), pattern, true);
       OperatorTest.assertSuccess(Operator.LIKE, new SimpleString("loose"), pattern, false);
 
-      OperatorTest.assertSuccess(Operator.LIKE, null, pattern, false);
+      OperatorTest.assertSuccess(Operator.LIKE, null, pattern, null);
    }
 
    public void test_LIKE_ESCAPE() throws Exception
@@ -426,7 +426,7 @@ public class OperatorTest extends UnitTestCase
       SimpleString escapeChar = new SimpleString("\\");
       OperatorTest.assertSuccess(Operator.LIKE_ESCAPE, new SimpleString("_foo"), pattern, escapeChar, true);
       OperatorTest.assertSuccess(Operator.LIKE_ESCAPE, new SimpleString("bar"), pattern, escapeChar, false);
-      OperatorTest.assertSuccess(Operator.LIKE_ESCAPE, null, pattern, escapeChar, false);
+      OperatorTest.assertSuccess(Operator.LIKE_ESCAPE, null, pattern, escapeChar, null);
 
       OperatorTest.assertFailure(Operator.LIKE_ESCAPE,
                                  new SimpleString("_foo"),
@@ -440,7 +440,7 @@ public class OperatorTest extends UnitTestCase
       OperatorTest.assertSuccess(Operator.NOT_LIKE, new SimpleString("123"), pattern, false);
       OperatorTest.assertSuccess(Operator.NOT_LIKE, new SimpleString("12993"), pattern, false);
       OperatorTest.assertSuccess(Operator.NOT_LIKE, new SimpleString("1234"), pattern, true);
-      OperatorTest.assertSuccess(Operator.NOT_LIKE, null, pattern, false);
+      OperatorTest.assertSuccess(Operator.NOT_LIKE, null, pattern, null);
    }
 
    public void test_NOT_LIKE_ESCAPE() throws Exception
@@ -449,7 +449,7 @@ public class OperatorTest extends UnitTestCase
       SimpleString escapeChar = new SimpleString("\\");
       OperatorTest.assertSuccess(Operator.NOT_LIKE_ESCAPE, new SimpleString("_foo"), pattern, escapeChar, false);
       OperatorTest.assertSuccess(Operator.NOT_LIKE_ESCAPE, new SimpleString("bar"), pattern, escapeChar, true);
-      OperatorTest.assertSuccess(Operator.NOT_LIKE_ESCAPE, null, pattern, escapeChar, false);
+      OperatorTest.assertSuccess(Operator.NOT_LIKE_ESCAPE, null, pattern, escapeChar, null);
 
       OperatorTest.assertFailure(Operator.NOT_LIKE_ESCAPE,
                                  new SimpleString("_foo"),

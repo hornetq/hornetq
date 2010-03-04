@@ -59,9 +59,6 @@ public class FilterTest extends UnitTestCase
 
    public void testInvalidString() throws Exception
    {
-      testInvalidFilter("invalid");
-      testInvalidFilter(new SimpleString("invalid"));
-
       testInvalidFilter("color = 'red");
       testInvalidFilter(new SimpleString("color = 'red"));
 
@@ -161,6 +158,13 @@ public class FilterTest extends UnitTestCase
       testBoolean("MyBoolean", true);
    }
 
+   public void testIdentifier() throws Exception
+   {
+      filter = FilterImpl.createFilter(new SimpleString("MyBoolean"));
+
+      testBoolean("MyBoolean", true);
+   }
+   
    public void testDifferentNullString() throws Exception
    {
       filter = FilterImpl.createFilter(new SimpleString("prop <> 'foo'"));
@@ -227,6 +231,36 @@ public class FilterTest extends UnitTestCase
 
    }
 
+   public void testNOT_INWithNullProperty() throws Exception
+   {
+      filter = FilterImpl.createFilter(new SimpleString("myNullProp NOT IN ('foo','jms','test')"));
+
+      assertFalse(filter.match(message));
+      
+      message.putStringProperty("myNullProp", "JMS");
+      assertTrue(filter.match(message));
+   }
+   
+   public void testNOT_LIKEWithNullProperty() throws Exception
+   {
+      filter = FilterImpl.createFilter(new SimpleString("myNullProp NOT LIKE '1_3'"));
+
+      assertFalse(filter.match(message));
+      
+      message.putStringProperty("myNullProp", "JMS");
+      assertTrue(filter.match(message));
+   }
+   
+   public void testIS_NOT_NULLWithNullProperty() throws Exception
+   {
+      filter = FilterImpl.createFilter(new SimpleString("myNullProp IS NOT NULL"));
+      
+      assertFalse(filter.match(message));
+      
+      message.putStringProperty("myNullProp", "JMS");
+      assertTrue(filter.match(message));
+   }
+   
    public void testStringLike() throws Exception
    {
       // test LIKE operator with no wildcards
@@ -410,10 +444,10 @@ public class FilterTest extends UnitTestCase
 
    public void testNotLikeExpression() throws Exception
    {
-      // Should evaluate to true since the property MyString does not exist
+      // Should evaluate to false when the property MyString is not set
       filter = FilterImpl.createFilter(new SimpleString("NOT (MyString LIKE '%')"));
 
-      Assert.assertTrue(filter.match(message));
+      Assert.assertFalse(filter.match(message));
    }
 
    public void testStringLikePercentWildcard() throws Exception

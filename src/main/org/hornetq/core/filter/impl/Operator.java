@@ -911,7 +911,7 @@ public class Operator
 
       if (arg1 == null)
       {
-         return Boolean.FALSE;
+         return null;
       }
 
       if (class1 != Operator.SIMPLE_STRING)
@@ -1002,7 +1002,7 @@ public class Operator
       computeArgument1();
       if (arg1 == null)
       {
-         return true;
+         return null;
       }
       if (class1 != Operator.SIMPLE_STRING)
       {

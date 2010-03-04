@@ -64,9 +64,11 @@ public class FilterImpl implements Filter
 
    private final Map<SimpleString, Identifier> identifiers = new HashMap<SimpleString, Identifier>();
 
-   private final Operator operator;
-
    private final FilterParser parser = new FilterParser();
+
+   private final Object result;
+
+   private final Class<? extends Object> resultType;
 
    // Static ---------------------------------------------------------
 
@@ -103,7 +105,10 @@ public class FilterImpl implements Filter
 
       try
       {
-         operator = (Operator)parser.parse(sfilterString, identifiers);
+         
+         result = parser.parse(sfilterString, identifiers);
+         resultType = result.getClass();
+
       }
       catch (Throwable e)
       {
@@ -145,11 +150,17 @@ public class FilterImpl implements Filter
 
          }
 
-         // Compute the result of this operator
-
-         boolean res = (Boolean)operator.apply();
-
-         return res;
+         if (resultType.equals(Identifier.class))
+            return (Boolean)((Identifier)result).getValue();
+         else if (resultType.equals(Operator.class))
+         {
+            Operator op = (Operator) result;
+            System.out.println(result);
+            return (Boolean)op.apply();
+         } else
+         {
+            throw new Exception("Bad object type: " + result);
+         }
       }
       catch (Exception e)
       {
