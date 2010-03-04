@@ -56,6 +56,8 @@ public class HornetQMessageHandler implements MessageHandler
     */
    private final ClientSession session;
 
+   private ClientConsumer consumer;
+
    /**
     * The endpoint
     */
@@ -85,7 +87,6 @@ public class HornetQMessageHandler implements MessageHandler
       String selector = spec.getMessageSelector();
 
       // Create the message consumer
-      ClientConsumer consumer;
       SimpleString selectorString = selector == null || selector.trim().equals("") ? null : new SimpleString(selector);
       if (activation.isTopic() && spec.isSubscriptionDurable())
       {
@@ -193,11 +194,31 @@ public class HornetQMessageHandler implements MessageHandler
          if (endpoint != null)
          {
             endpoint.release();
+            endpoint = null;
          }
       }
       catch (Throwable t)
       {
          HornetQMessageHandler.log.debug("Error releasing endpoint " + endpoint, t);
+      }
+      
+      try
+      {
+         consumer.close();
+         if (activation.getTopicTemporaryQueue() != null)
+         {
+            // We need to delete temporary topics when the activation is stopped or messages will build up on the server
+            SimpleString tmpQueue = activation.getTopicTemporaryQueue();
+            QueueQuery subResponse = session.queueQuery(tmpQueue);
+            if (subResponse.getConsumerCount() == 0)
+            {
+               session.deleteQueue(tmpQueue);
+            }
+         }
+      }
+      catch (Throwable t)
+      {
+         HornetQMessageHandler.log.debug("Error closing core-queue consumer", t);
       }
 
       try
