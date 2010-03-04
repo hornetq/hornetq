@@ -146,8 +146,16 @@ public class HornetQMessageHandler implements MessageHandler
          SimpleString queueName;
          if (activation.isTopic())
          {
-            queueName = new SimpleString(UUID.randomUUID().toString());
-            session.createQueue(activation.getAddress(), queueName, selectorString, false);
+            if (activation.getTopicTemporaryQueue() == null)
+            {
+               queueName = new SimpleString(UUID.randomUUID().toString());
+               session.createQueue(activation.getAddress(), queueName, selectorString, false);
+               activation.setTopicTemporaryQueue(queueName);
+            }
+            else
+            {
+               queueName = activation.getTopicTemporaryQueue(); 
+            }
          }
          else
          {

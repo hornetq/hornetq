@@ -94,6 +94,9 @@ public class HornetQActivation
    private boolean isDeliveryTransacted;
 
    private HornetQDestination destination;
+   
+   /** The name of the temporary subscription name that all the sessions will share */
+   private SimpleString topicTemporaryQueue;
 
    private final List<HornetQMessageHandler> handlers = new ArrayList<HornetQMessageHandler>();
 
@@ -216,6 +219,8 @@ public class HornetQActivation
       return isTopic;
    }
 
+   
+   
    /**
     * Start the activation
     *
@@ -229,6 +234,22 @@ public class HornetQActivation
       }
       deliveryActive.set(true);
       ra.getWorkManager().scheduleWork(new SetupActivation());
+   }
+   
+   /**
+    * @return the topicTemporaryQueue
+    */
+   public SimpleString getTopicTemporaryQueue()
+   {
+      return topicTemporaryQueue;
+   }
+
+   /**
+    * @param topicTemporaryQueue the topicTemporaryQueue to set
+    */
+   public void setTopicTemporaryQueue(SimpleString topicTemporaryQueue)
+   {
+      this.topicTemporaryQueue = topicTemporaryQueue;
    }
 
    /**
