@@ -150,7 +150,10 @@ public class HornetQRAConnectionMetaData implements ConnectionMetaData
     */
    public Enumeration<Object> getJMSXPropertyNames()
    {
-      Vector<Object> v = new Vector<Object>();
+      Vector v = new Vector();
+      v.add("JMSXGroupID");
+      v.add("JMSXGroupSeq");
+      v.add("JMSXDeliveryCount");
       return v.elements();
    }
 }
