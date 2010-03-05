@@ -114,7 +114,7 @@ public class SessionCreateConsumerTest extends ServiceTestBase
          clientSession.createQueue(queueName, queueName, false);
          try
          {
-            clientSession.createConsumer(queueName, "foobar");
+            clientSession.createConsumer(queueName, "this is not valid filter");
             Assert.fail("should throw exception");
          }
          catch (HornetQException e)
