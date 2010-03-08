@@ -353,7 +353,7 @@ public class HornetQStreamMessageTest extends UnitTestCase
          message.readChar();
          fail();
       }
-      catch (MessageFormatException e)
+      catch (NullPointerException e)
       {
       }
    }

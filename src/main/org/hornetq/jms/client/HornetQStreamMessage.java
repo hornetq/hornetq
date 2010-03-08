@@ -191,6 +191,16 @@ public class HornetQStreamMessage extends HornetQMessage implements StreamMessag
          {
             case DataConstants.CHAR:
                return (char)getBuffer().readShort();
+            case DataConstants.STRING:
+               String str = getBuffer().readNullableString();
+               if (str == null)
+               {
+                  throw new NullPointerException("Invalid conversion");
+               }
+               else
+               {
+                  throw new MessageFormatException("Invalid conversion");
+               }
             default:
                throw new MessageFormatException("Invalid conversion");
          }
