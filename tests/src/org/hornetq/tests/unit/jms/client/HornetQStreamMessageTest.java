@@ -340,6 +340,23 @@ public class HornetQStreamMessageTest extends UnitTestCase
 
       Assert.assertEquals(value, message.readChar());
    }
+   
+   public void testReadCharFromNull() throws Exception
+   {
+      HornetQStreamMessage message = new HornetQStreamMessage();
+
+      message.writeString(null);
+      message.reset();
+
+      try
+      {
+         message.readChar();
+         fail();
+      }
+      catch (MessageFormatException e)
+      {
+      }
+   }
 
    public void testReadLongFromByte() throws Exception
    {
@@ -550,6 +567,27 @@ public class HornetQStreamMessageTest extends UnitTestCase
       Assert.assertEquals(Byte.toString(value), message.readString());
    }
 
+   public void testString() throws Exception
+   {
+      String value = RandomUtil.randomString();
+      HornetQStreamMessage message = new HornetQStreamMessage();
+
+      message.writeString(value);
+      message.reset();
+
+      try
+      {
+         message.readByte();
+         fail("must throw a NumberFormatException");
+      }
+      catch (NumberFormatException e)
+      {
+      }
+
+      // we can read the String without resetting the message
+      Assert.assertEquals(value, message.readString());
+   }
+   
    public void testReadStringFromShort() throws Exception
    {
       short value = RandomUtil.randomShort();
@@ -754,14 +792,7 @@ public class HornetQStreamMessageTest extends UnitTestCase
    {
       HornetQStreamMessage message = new HornetQStreamMessage();
 
-      try
-      {
-         message.writeObject(null);
-         Assert.fail("NullPointerException");
-      }
-      catch (NullPointerException e)
-      {
-      }
+      message.writeObject(null);
    }
 
    public void testWriteObjectWithInvalidType() throws Exception

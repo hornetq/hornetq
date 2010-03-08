@@ -130,6 +130,7 @@ public class HornetQStreamMessage extends HornetQMessage implements StreamMessag
    public byte readByte() throws JMSException
    {
       checkRead();
+      int index = getBuffer().readerIndex();
       try
       {
          byte type = getBuffer().readByte();
@@ -147,6 +148,11 @@ public class HornetQStreamMessage extends HornetQMessage implements StreamMessag
       catch (IndexOutOfBoundsException e)
       {
          throw new MessageEOFException("");
+      }
+      catch (NumberFormatException e)
+      {
+         getBuffer().readerIndex(index);
+         throw e;
       }
    }
 
@@ -493,10 +499,6 @@ public class HornetQStreamMessage extends HornetQMessage implements StreamMessag
 
    public void writeObject(final Object value) throws JMSException
    {
-      if (value == null)
-      {
-         throw new NullPointerException("Attempt to write a null value");
-      }
       if (value instanceof String)
       {
          writeString((String)value);
@@ -536,6 +538,10 @@ public class HornetQStreamMessage extends HornetQMessage implements StreamMessag
       else if (value instanceof Character)
       {
          writeChar((Character)value);
+      }
+      else if (value == null)
+      {
+         writeString(null);
       }
       else
       {
