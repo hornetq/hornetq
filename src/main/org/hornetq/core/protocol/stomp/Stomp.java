@@ -131,7 +131,7 @@ public interface Stomp
 
          String SELECTOR = "selector";
 
-         String DURABLE_SUBSCRIPTION_NAME = "durable-subscription-name";
+         String DURABLE_SUBSCRIBER_NAME = "durable-subscriber-name";
 
          String NO_LOCAL = "no-local";
 

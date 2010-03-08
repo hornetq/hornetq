@@ -1235,7 +1235,7 @@ public class StompTest extends UnitTestCase {
        String subscribeFrame =
                "SUBSCRIBE\n" +
                        "destination:" + getTopicPrefix() + getTopicName() + "\n" +
-                       "durable-subscription-name: " + getName() + "\n" + 
+                       "durable-subscriber-name: " + getName() + "\n" + 
                        "\n\n" +
                        Stomp.NULL;
        sendFrame(subscribeFrame);
@@ -1295,7 +1295,7 @@ public class StompTest extends UnitTestCase {
                "SUBSCRIBE\n" +
                        "destination:" + getTopicPrefix() + getTopicName() + "\n" +
                        "receipt: 12\n" +
-                       "durable-subscription-name: " + getName() + "\n" + 
+                       "durable-subscriber-name: " + getName() + "\n" + 
                        "\n\n" +
                        Stomp.NULL;
        sendFrame(subscribeFrame);

@@ -257,7 +257,7 @@ class StompProtocolManager implements ProtocolManager
       String selector = (String)headers.get(Stomp.Headers.Subscribe.SELECTOR);
       String ack = (String)headers.get(Stomp.Headers.Subscribe.ACK_MODE);
       String id = (String)headers.get(Stomp.Headers.Subscribe.ID);
-      String durableSubscriptionName = (String)headers.get(Stomp.Headers.Subscribe.DURABLE_SUBSCRIPTION_NAME);
+      String durableSubscriptionName = (String)headers.get(Stomp.Headers.Subscribe.DURABLE_SUBSCRIBER_NAME);
       boolean noLocal = false;
       if (headers.containsKey(Stomp.Headers.Subscribe.NO_LOCAL))
       {
