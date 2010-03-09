@@ -247,7 +247,7 @@ public class HornetQRAConnectionRequestInfo implements ConnectionRequestInfo
    {
       if (HornetQRAConnectionRequestInfo.trace)
       {
-         HornetQRAConnectionRequestInfo.log.trace("isUseXA()");
+         HornetQRAConnectionRequestInfo.log.trace("isUseXA() " + useXA);
       }
 
       return useXA;
@@ -261,7 +261,7 @@ public class HornetQRAConnectionRequestInfo implements ConnectionRequestInfo
    {
       if (HornetQRAConnectionRequestInfo.trace)
       {
-         HornetQRAConnectionRequestInfo.log.trace("isTransacted()");
+         HornetQRAConnectionRequestInfo.log.trace("isTransacted() " + transacted);
       }
 
       return transacted;
@@ -337,5 +337,13 @@ public class HornetQRAConnectionRequestInfo implements ConnectionRequestInfo
       hash += 31 * hash + Integer.valueOf(acknowledgeMode).hashCode();
 
       return hash;
+   }
+   
+   @Override
+   public String toString()
+   {
+      return "HornetQRAConnectionRequestInfo[type=" + type +
+         ", useXA=" + useXA + ", transacted=" + transacted + ", acknowledgeMode=" + acknowledgeMode +
+         ", clientID=" + clientID + ", userName=" + userName + ", password=" + password + "]";
    }
 }

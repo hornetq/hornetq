@@ -183,4 +183,11 @@ public class HornetQRAProperties extends ConnectionFactoryProperties implements 
 
       return useXA != null && useXA;
    }
+   
+   @Override
+   public String toString()
+   {
+      return "HornetQRAProperties[useXA=" + useXA + ", localTx=" + localTx +
+         ", userName=" + userName + ", password=" + password + "]";
+   }
 }
