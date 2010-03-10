@@ -27,6 +27,7 @@ import javax.naming.NamingException;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Pair;
+import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.management.AddressControl;
 import org.hornetq.api.core.management.ResourceNames;
@@ -37,6 +38,8 @@ import org.hornetq.core.deployers.DeploymentManager;
 import org.hornetq.core.deployers.impl.FileDeploymentManager;
 import org.hornetq.core.deployers.impl.XmlDeployer;
 import org.hornetq.core.logging.Logger;
+import org.hornetq.core.postoffice.Binding;
+import org.hornetq.core.postoffice.BindingType;
 import org.hornetq.core.server.ActivateCallback;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.jms.client.HornetQConnectionFactory;
@@ -353,7 +356,18 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       {
          for (String queueName : addressControl.getQueueNames())
          {
-            server.getHornetQServerControl().destroyQueue(queueName);
+            Binding binding = server.getPostOffice().getBinding(new SimpleString(queueName));
+            if (binding == null)
+            {
+               log.warn("Queue " + queueName + " doesn't exist on the topic " + name + ". It was deleted manually probably.");
+               continue;
+            }
+            
+            // We can't remove the remote binding. As this would be the bridge associated with the topic on this case
+            if (binding.getType() != BindingType.REMOTE_QUEUE)
+            {
+               server.getHornetQServerControl().destroyQueue(queueName);
+            }
          }
       }
       return true;

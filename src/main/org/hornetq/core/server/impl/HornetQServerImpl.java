@@ -691,7 +691,7 @@ public class HornetQServerImpl implements HornetQServer
 
       if (queue.getConsumerCount() != 0)
       {
-         throw new HornetQException(HornetQException.ILLEGAL_STATE, "Cannot delete queue - it has consumers");
+         throw new HornetQException(HornetQException.ILLEGAL_STATE, "Cannot delete queue "  + queue.getName() + " on binding " + queueName + " - it has consumers = " + binding.getClass().getName());
       }
 
       if (session != null)

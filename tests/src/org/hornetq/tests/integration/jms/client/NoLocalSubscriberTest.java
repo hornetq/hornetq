@@ -11,7 +11,7 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.jms.tests;
+package org.hornetq.tests.integration.jms.client;
 
 import javax.jms.Connection;
 import javax.jms.Message;
@@ -19,16 +19,22 @@ import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
+import javax.jms.Topic;
 
+import org.hornetq.core.logging.Logger;
+import org.hornetq.tests.util.JMSTestBase;
 import org.hornetq.tests.util.RandomUtil;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * 
  */
-public class NoLocalSubscriberTest extends JMSTestCase
+public class NoLocalSubscriberTest extends JMSTestBase
 {
    // Constants -----------------------------------------------------
+
+   private static final Logger log = Logger.getLogger(NoLocalSubscriberTest.class);
+
 
    // Static --------------------------------------------------------
 
@@ -54,11 +60,12 @@ public class NoLocalSubscriberTest extends JMSTestCase
 
       try
       {
-         defaultConn = JMSTestCase.cf.createConnection();
+         Topic topic1 = createTopic("topic1");
+         defaultConn = cf.createConnection();
          Session defaultSess = defaultConn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageConsumer defaultConsumer = defaultSess.createConsumer(HornetQServerTestCase.topic1);
-         MessageConsumer noLocalConsumer = defaultSess.createConsumer(HornetQServerTestCase.topic1, null, true);
-         MessageProducer defaultProd = defaultSess.createProducer(HornetQServerTestCase.topic1);
+         MessageConsumer defaultConsumer = defaultSess.createConsumer(topic1);
+         MessageConsumer noLocalConsumer = defaultSess.createConsumer(topic1, null, true);
+         MessageProducer defaultProd = defaultSess.createProducer(topic1);
          
          defaultConn.start();
 
@@ -78,10 +85,10 @@ public class NoLocalSubscriberTest extends JMSTestCase
             assertEquals(text, ((TextMessage)received).getText());
          }
 
-         newConn = JMSTestCase.cf.createConnection();
+         newConn = cf.createConnection();
          Session newSession = newConn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer newProd = newSession.createProducer(HornetQServerTestCase.topic1);
-         MessageConsumer newConsumer = newSession.createConsumer(HornetQServerTestCase.topic1);
+         MessageProducer newProd = newSession.createProducer(topic1);
+         MessageConsumer newConsumer = newSession.createConsumer(topic1);
 
          newConn.start();
          

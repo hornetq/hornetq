@@ -290,7 +290,7 @@ public class AsynchronousFileTest extends AIOTestBase
 
          callbackLocal.latch.await();
 
-         // assertTrue(callbackLocal.error);
+         assertTrue(callbackLocal.error);
 
          callbackLocal = new LocalCallback();
 
