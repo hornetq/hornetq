@@ -15,7 +15,7 @@
    <connectors>
       <connector name="netty">
          <factory-class>org.hornetq.integration.transports.netty.NettyConnectorFactory</factory-class>
-         <param key="host"  value="${hornetq.remoting.netty.host:localhost}"/>
+         <param key="host"  value="${jboss.bind.address:localhost}"/>
          <param key="port"  value="${hornetq.remoting.netty.port:5445}"/>
       </connector>
 
@@ -28,7 +28,7 @@
    <acceptors>   
       <acceptor name="netty">
          <factory-class>org.hornetq.integration.transports.netty.NettyAcceptorFactory</factory-class>
-         <param key="host"  value="${hornetq.remoting.netty.host:localhost}"/>
+         <param key="host"  value="${jboss.bind.address:localhost}"/>
          <param key="port"  value="${hornetq.remoting.netty.port:5445}"/>
       </acceptor>
 
