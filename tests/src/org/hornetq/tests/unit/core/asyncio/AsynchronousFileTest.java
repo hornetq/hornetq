@@ -109,7 +109,7 @@ public class AsynchronousFileTest extends AIOTestBase
             controller.open("/non-existent/IDontExist.error", 10000);
             Assert.fail("Exception expected! The test could create a file called /non-existent/IDontExist.error when it was supposed to fail.");
          }
-         catch (Throwable ignored)
+         catch (Exception ignored)
          {
          }
          try
@@ -117,7 +117,7 @@ public class AsynchronousFileTest extends AIOTestBase
             controller.close();
             Assert.fail("Supposed to throw exception as the file wasn't opened");
          }
-         catch (Throwable ignored)
+         catch (Exception ignored)
          {
          }
 
