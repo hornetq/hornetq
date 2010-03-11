@@ -699,6 +699,7 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
       }
       buffer.append(" ack=").append(getAcknowledgeMode());
       buffer.append(" durable=").append(subscriptionDurability);
+      buffer.append(" clientID=").append(getClientID());
       if (subscriptionName != null)
       {
          buffer.append(" subscription=").append(subscriptionName);

@@ -91,17 +91,15 @@ public class HornetQMessageHandler implements MessageHandler
       if (activation.isTopic() && spec.isSubscriptionDurable())
       {
          String subscriptionName = spec.getSubscriptionName();
-
+         String clientID = spec.getClientID();
+         
          // Durable sub
-
-         if (activation.getActivationSpec().getClientID() == null)
+         if (clientID == null)
          {
-            throw new InvalidClientIDException("Cannot create durable subscription - client ID has not been set");
+            throw new InvalidClientIDException("Cannot create durable subscription for " + subscriptionName + " - client ID has not been set");
          }
 
-         SimpleString queueName = new SimpleString(HornetQDestination.createQueueNameForDurableSubscription(activation.getActivationSpec()
-                                                                                                                .getClientID(),
-                                                                                                      subscriptionName));
+         SimpleString queueName = new SimpleString(HornetQDestination.createQueueNameForDurableSubscription(clientID, subscriptionName));
 
          QueueQuery subResponse = session.queueQuery(queueName);
 
