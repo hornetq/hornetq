@@ -104,6 +104,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
    private final Map<Long, ServerConsumer> consumers = new ConcurrentHashMap<Long, ServerConsumer>();
 
    private Transaction tx;
+   
+   private final boolean xa;
 
    private final StorageManager storageManager;
 
@@ -183,6 +185,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       {
          tx = new TransactionImpl(storageManager);
       }
+      
+      this.xa = xa;
 
       this.strictUpdateDeliveryCount = strictUpdateDeliveryCount;
 
@@ -481,6 +485,11 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
    public void acknowledge(final long consumerID, final long messageID) throws Exception
    {
       ServerConsumer consumer = consumers.get(consumerID);
+      
+      if (this.xa && tx == null)
+      {
+         throw new HornetQXAException(XAException.XAER_PROTO, "Invalid transaction state");
+      }
 
       consumer.acknowledge(autoCommitAcks, tx, messageID);
    }
@@ -1241,6 +1250,11 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
          throw e;
       }
 
+      if (this.xa && tx == null)
+      {
+         throw new HornetQXAException(XAException.XAER_PROTO, "Invalid transaction state");
+      }
+      
       if (tx == null || autoCommitSends)
       {
       }
