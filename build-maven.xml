@@ -86,6 +86,29 @@
          <param name="artifact.type" value="jar"/>
       </antcall>
    </target>
+	
+	
+	<target name="upload-snapshot">
+		<antcall target="uploadHornetQBootstrap"/>
+		
+		<antcall target="uploadHornetQCore"/>
+		
+		<antcall target="uploadHornetQLogging"/>
+		
+		<antcall target="uploadHornetQTransports"/>
+		
+		<antcall target="uploadHornetQCoreClient"/>
+		
+		<antcall target="uploadHornetQJms"/>
+		
+		<antcall target="uploadHornetQJmsClient"/>
+		
+		<antcall target="uploadHornetQSecurity"/>
+		
+		<antcall target="uploadHornetQRa"/>
+		
+		<antcall target="uploadHornetQResources"/>
+	</target>
 
 
    <target name="install">
@@ -144,8 +167,8 @@
 
    <target name="upload">
       <exec executable="mvn">
-         <arg value="-s settings.xml"/>
          <arg value="deploy:deploy-file"/>
+      	 <arg value="-e"/>
          <arg value="-DgroupId=org.hornetq"/>
          <arg value="-DartifactId=${artifact.id}"/>
          <arg value="-Dversion=${hornetq.version}"/>
