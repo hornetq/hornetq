@@ -283,7 +283,7 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
 
       try
       {
-         session.rollback();
+         session.rollback(true);
       }
       catch (HornetQException e)
       {
