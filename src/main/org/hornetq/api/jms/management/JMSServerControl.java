@@ -21,6 +21,7 @@ import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.management.Operation;
 import org.hornetq.api.core.management.Parameter;
+import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.spi.core.remoting.ConnectorFactory;
 
 /**
@@ -200,4 +201,45 @@ public interface JMSServerControl
     */
    @Operation(desc = "List the sessions for the given connectionID", impact = MBeanOperationInfo.INFO)
    String[] listSessions(@Parameter(desc = "a connection ID", name = "connectionID") String connectionID) throws Exception;
+
+   /**
+    * adds a new address setting for a specific address
+    */
+   @Operation(desc= "Add address settings for addresses matching the addressMatch", impact = MBeanOperationInfo.ACTION)
+   void addAddressSettings(@Parameter(desc="an address match", name="addressMatch") String addressMatch,
+                           @Parameter(desc="the dead letter address setting", name="DLA") String DLA,
+                           @Parameter(desc="the expiry address setting", name="expiryAddress") String expiryAddress,
+                           @Parameter(desc="are any queues created for this address a last value queue", name="lastValueQueue") boolean lastValueQueue,
+                           @Parameter(desc="the delivery attempts", name="deliveryAttempts") int deliveryAttempts,
+                           @Parameter(desc="the max size in bytes", name="maxSizeBytes") long maxSizeBytes,
+                           @Parameter(desc="the page size in bytes", name="pageSizeBytes") int pageSizeBytes,
+                           @Parameter(desc="the redelivery delay", name="redeliveryDelay") long redeliveryDelay,
+                           @Parameter(desc="the redistribution delay", name="redistributionDelay") long redistributionDelay,
+                           @Parameter(desc="do we send to the DLA when there is no where to route the message", name="sendToDLAOnNoRoute") boolean sendToDLAOnNoRoute,
+                           @Parameter(desc="the ploicy to use when the address is full", name="addressFullMessagePolicy") String addressFullMessagePolicy) throws Exception;
+
+   AddressSettings getAddressSettings(String address);
+
+   /**
+    * returns the address settings as a JSON string
+    */
+   @Operation(desc = "returns the address settings as a JSON string for an address match", impact = MBeanOperationInfo.INFO)
+   String getAddressSettingsAsJSON(@Parameter(desc="an address match", name="addressMatch") String addressMatch) throws Exception;
+
+   @Operation(desc= "Add security settings for addresses matching the addressMatch", impact = MBeanOperationInfo.ACTION)
+   void addSecuritySettings(
+                            @Parameter(desc="an address match", name="addressMatch") String addressMatch,
+                            @Parameter(desc="a comma-separated list of roles allowed to send messages", name="send") String sendRoles,
+                            @Parameter(desc="a comma-separated list of roles allowed to consume messages", name="consume") String consumeRoles,
+                            @Parameter(desc="a comma-separated list of roles allowed to create durable queues", name="createDurableQueueRoles") String createDurableQueueRoles,
+                            @Parameter(desc="a comma-separated list of roles allowed to delete durable queues", name="deleteDurableQueueRoles") String deleteDurableQueueRoles,
+                            @Parameter(desc="a comma-separated list of roles allowed to create temporary queues", name="createTempQueueRoles") String createTempQueueRoles,
+                            @Parameter(desc="a comma-separated list of roles allowed to delete temporary queues", name="deleteTempQueueRoles") String deleteTempQueueRoles,
+                            @Parameter(desc="a comma-separated list of roles allowed to send management messages messages", name="manage") String manageRoles) throws Exception;
+
+   /**
+    * removes the address settings as a JSON string
+    */
+   @Operation(desc = "removes the address settings for an address match", impact = MBeanOperationInfo.INFO)
+   void removeSecuritySettings(@Parameter(desc="an address match", name="addressMatch") String addressMatch) throws Exception;
 }

@@ -17,6 +17,11 @@ import javax.management.MBeanOperationInfo;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Interceptor;
+import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
+import org.hornetq.core.settings.impl.AddressSettings;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * A HornetQServerControl is used to manage HornetQ servers.
@@ -487,10 +492,17 @@ public interface HornetQServerControl
                             @Parameter(desc="a comma-separated list of roles allowed to create temporary queues", name="createTempQueueRoles") String createTempQueueRoles,
                             @Parameter(desc="a comma-separated list of roles allowed to delete temporary queues", name="deleteTempQueueRoles") String deleteTempQueueRoles,
                             @Parameter(desc="a comma-separated list of roles allowed to send management messages messages", name="manage") String manageRoles) throws Exception;
-   
-   void removeSecuritySettings(String addressMatch) throws Exception;
 
-   Object[] getRoles(String addressMatch) throws Exception;
+   @Operation(desc = "Remove security settings for an address", impact = MBeanOperationInfo.ACTION)
+   void removeSecuritySettings(@Parameter(desc = "an address match", name = "addressMatch") String addressMatch) throws Exception;
 
-   String getRolesAsJSON(String addressMatch) throws Exception;
+   @Operation(desc = "get roles for a specific address match", impact = MBeanOperationInfo.INFO)
+   Object[] getRoles(@Parameter(desc = "an address match", name = "addressMatch") String addressMatch) throws Exception;
+
+   @Operation(desc = "get roles (as a JSON string) for a specific address match", impact = MBeanOperationInfo.INFO)
+   String getRolesAsJSON(@Parameter(desc = "an address match", name = "addressMatch") String addressMatch) throws Exception;
+
+   @Operation(desc = "get address settings (as a JSON string) for a specific address match", impact = MBeanOperationInfo.INFO)
+   String getAddressSettingsAsJSON(@Parameter(desc = "an address match", name = "addressMatch") String addressMatch) throws Exception;
+
 }

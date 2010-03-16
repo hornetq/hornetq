@@ -69,6 +69,11 @@ public interface JMSQueueControl extends DestinationControl
     */
    int getDeliveringCount();
 
+   /**
+    * returns the selector for the queue
+    */
+   String getSelector();
+
    // Operations ----------------------------------------------------
 
    /**

@@ -18,6 +18,7 @@ import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.management.HornetQServerControl;
+import org.hornetq.api.core.management.Parameter;
 import org.hornetq.api.core.management.ResourceNames;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
@@ -475,6 +476,11 @@ public class HornetQServerControlUsingCoreTest extends HornetQServerControlTest
          public String getRolesAsJSON(String addressMatch) throws Exception
          {
             return (String)proxy.invokeOperation("getRolesAsJSON", addressMatch);
+         }
+
+         public String getAddressSettingsAsJSON(@Parameter(desc = "an address match", name = "addressMatch") String addressMatch) throws Exception
+         {
+            return (String)proxy.invokeOperation("getAddressSettingsAsJSON", addressMatch);
          }
       };
    }

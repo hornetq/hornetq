@@ -13,9 +13,7 @@
 
 package org.hornetq.jms.management.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 
 import javax.management.ListenerNotFoundException;
@@ -29,14 +27,21 @@ import javax.management.NotificationListener;
 import javax.management.StandardMBean;
 
 import org.hornetq.api.core.Pair;
+import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.management.ManagementHelper;
+import org.hornetq.api.core.management.Parameter;
 import org.hornetq.api.jms.management.ConnectionFactoryControl;
 import org.hornetq.api.jms.management.JMSQueueControl;
 import org.hornetq.api.jms.management.JMSServerControl;
 import org.hornetq.api.jms.management.TopicControl;
 import org.hornetq.core.management.impl.MBeanInfoHelper;
+import org.hornetq.core.security.Role;
+import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
+import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.jms.server.JMSServerManager;
+import org.hornetq.jms.server.config.JMSQueueConfiguration;
+import org.hornetq.utils.SecurityFormatter;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -367,6 +372,76 @@ public class JMSServerControlImpl extends StandardMBean implements JMSServerCont
       return server.listSessions(connectionID);
    }
 
+
+   public void addAddressSettings(final String address,
+                                  final String DLA,
+                                  final String expiryAddress,
+                                  final boolean lastValueQueue,
+                                  final int deliveryAttempts,
+                                  final long maxSizeBytes,
+                                  final int pageSizeBytes,
+                                  final long redeliveryDelay,
+                                  final long redistributionDelay,
+                                  final boolean sendToDLAOnNoRoute,
+                                  final String addressFullMessagePolicy) throws Exception
+   {
+      AddressSettings addressSettings = new AddressSettings();
+      addressSettings.setDeadLetterAddress(DLA == null?null:new SimpleString(DLA));
+      addressSettings.setExpiryAddress(expiryAddress == null?null:new SimpleString(expiryAddress));
+      addressSettings.setLastValueQueue(lastValueQueue);
+      addressSettings.setMaxDeliveryAttempts(deliveryAttempts);
+      addressSettings.setMaxSizeBytes(maxSizeBytes);
+      addressSettings.setPageSizeBytes(pageSizeBytes);
+      addressSettings.setRedeliveryDelay(redeliveryDelay);
+      addressSettings.setRedistributionDelay(redistributionDelay);
+      addressSettings.setSendToDLAOnNoRoute(sendToDLAOnNoRoute);
+      if(addressFullMessagePolicy == null)
+      {
+         addressSettings.setAddressFullMessagePolicy(AddressFullMessagePolicy.PAGE);
+      }
+      else if(addressFullMessagePolicy.equalsIgnoreCase("PAGE"))
+      {
+         addressSettings.setAddressFullMessagePolicy(AddressFullMessagePolicy.PAGE);
+      }
+      else if(addressFullMessagePolicy.equalsIgnoreCase("DROP"))
+      {
+         addressSettings.setAddressFullMessagePolicy(AddressFullMessagePolicy.DROP);
+      }
+      else if(addressFullMessagePolicy.equalsIgnoreCase("BLOCK"))
+      {
+         addressSettings.setAddressFullMessagePolicy(AddressFullMessagePolicy.BLOCK);
+      }
+      server.addAddressSettings(address, addressSettings);
+   }
+
+   public AddressSettings getAddressSettings(final String address)
+   {
+      return server.getAddressSettings(address);
+   }
+
+   public String getAddressSettingsAsJSON(final String address) throws Exception
+   {
+      return server.getHornetQServer().getHornetQServerControl().getAddressSettingsAsJSON(address);
+   }
+
+   public void addSecuritySettings(final String addressMatch,
+                                   final String sendRoles,
+                                   final String consumeRoles,
+                                   final String createDurableQueueRoles,
+                                   final String deleteDurableQueueRoles,
+                                   final String createTempQueueRoles,
+                                   final String deleteTempQueueRoles,
+                                   final String manageRoles) throws Exception
+   {
+         Set<Role> roles = SecurityFormatter.createSecurity(sendRoles, consumeRoles, createDurableQueueRoles, deleteDurableQueueRoles, createTempQueueRoles, deleteTempQueueRoles, manageRoles);
+         server.addSecurity(addressMatch, roles);
+   }
+
+   public void removeSecuritySettings(String addressMatch) throws Exception
+   {
+      //To change body of implemented methods use File | Settings | File Templates.
+   }
+
    @Override
    public MBeanInfo getMBeanInfo()
    {
@@ -403,4 +478,18 @@ public class JMSServerControlImpl extends StandardMBean implements JMSServerCont
       CONNECTION_FACTORY_DESTROYED;
    }
 
+    private static List<String> toList(final String commaSeparatedString)
+   {
+      List<String> list = new ArrayList<String>();
+      if (commaSeparatedString == null || commaSeparatedString.trim().length() == 0)
+      {
+         return list;
+      }
+      String[] values = commaSeparatedString.split(",");
+      for (int i = 0; i < values.length; i++)
+      {
+         list.add(values[i].trim());
+      }
+      return list;
+   }
 }

@@ -13,12 +13,7 @@
 
 package org.hornetq.jms.server.impl;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -40,8 +35,10 @@ import org.hornetq.core.deployers.impl.XmlDeployer;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.BindingType;
+import org.hornetq.core.security.Role;
 import org.hornetq.core.server.ActivateCallback;
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.client.HornetQDestination;
 import org.hornetq.jms.client.SelectorTranslator;
@@ -242,6 +239,21 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
    public HornetQServer getHornetQServer()
    {
       return server;
+   }
+
+   public void addAddressSettings(final String address, final AddressSettings addressSettings)
+   {
+      server.getAddressSettingsRepository().addMatch(address, addressSettings);
+   }
+
+   public AddressSettings getAddressSettings(final String address)
+   {
+      return server.getAddressSettingsRepository().getMatch(address);
+   }
+
+   public void addSecurity(final String addressMatch, final Set<Role> roles)
+   {
+      server.getSecurityRepository().addMatch(addressMatch, roles);
    }
 
    public synchronized void setContext(final Context context)
@@ -786,7 +798,6 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       checkInitialised();
       return server.getHornetQServerControl().listSessions(connectionID);
    }
-
    // Public --------------------------------------------------------
 
    // Private -------------------------------------------------------

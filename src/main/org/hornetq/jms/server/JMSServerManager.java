@@ -14,13 +14,16 @@
 package org.hornetq.jms.server;
 
 import java.util.List;
+import java.util.Set;
 
 import javax.naming.Context;
 
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
+import org.hornetq.core.security.Role;
 import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.jms.server.config.ConnectionFactoryConfiguration;
 
 /**
@@ -230,4 +233,10 @@ public interface JMSServerManager extends HornetQComponent
    void setContext(final Context context);
 
    HornetQServer getHornetQServer();
+
+   void addAddressSettings(String address, AddressSettings addressSettings);
+
+   AddressSettings getAddressSettings(String address);
+
+   void addSecurity(String addressMatch, Set<Role> roles);
 }

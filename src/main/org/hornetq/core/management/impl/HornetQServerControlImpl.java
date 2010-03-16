@@ -14,15 +14,7 @@
 package org.hornetq.core.management.impl;
 
 import java.text.DateFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.Map.Entry;
 
 import javax.management.ListenerNotFoundException;
@@ -53,10 +45,13 @@ import org.hornetq.core.security.Role;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.JournalType;
 import org.hornetq.core.server.ServerSession;
+import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
+import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.core.transaction.ResourceManager;
 import org.hornetq.core.transaction.Transaction;
 import org.hornetq.core.transaction.impl.XidImpl;
 import org.hornetq.spi.core.protocol.RemotingConnection;
+import org.hornetq.utils.SecurityFormatter;
 import org.hornetq.utils.json.JSONArray;
 import org.hornetq.utils.json.JSONObject;
 
@@ -90,20 +85,6 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
 
    // Static --------------------------------------------------------
 
-   private static List<String> toList(final String commaSeparatedString)
-   {
-      List<String> list = new ArrayList<String>();
-      if (commaSeparatedString == null || commaSeparatedString.trim().length() == 0)
-      {
-         return list;
-      }
-      String[] values = commaSeparatedString.split(",");
-      for (int i = 0; i < values.length; i++)
-      {
-         list.add(values[i].trim());
-      }
-      return list;
-   }
    
    // Constructors --------------------------------------------------
 
@@ -1084,35 +1065,7 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
       clearIO();
       try
       {
-         List<String> createDurableQueue = toList(createDurableQueueRoles);
-         List<String> deleteDurableQueue = toList(deleteDurableQueueRoles);
-         List<String> createTempQueue = toList(createTempQueueRoles);
-         List<String> deleteTempQueue = toList(deleteTempQueueRoles);
-         List<String> send = toList(sendRoles);
-         List<String> consume = toList(consumeRoles);
-         List<String> manage = toList(manageRoles); 
-
-         Set<String> allRoles = new HashSet<String>();
-         allRoles.addAll(createDurableQueue);
-         allRoles.addAll(deleteDurableQueue);
-         allRoles.addAll(createTempQueue);
-         allRoles.addAll(deleteTempQueue);
-         allRoles.addAll(send);
-         allRoles.addAll(consume);
-         allRoles.addAll(manage);
-
-         Set<Role> roles = new HashSet<Role>();
-         for (String role : allRoles)
-         {
-            roles.add(new Role(role,
-                               send.contains(role),
-                               consume.contains(role),
-                               createDurableQueue.contains(role),
-                               deleteDurableQueue.contains(role),
-                               createTempQueue.contains(role),
-                               deleteTempQueue.contains(role),
-                               manageRoles.contains(role)));
-         }
+         Set<Role> roles = SecurityFormatter.createSecurity(sendRoles, consumeRoles, createDurableQueueRoles, deleteDurableQueueRoles, createTempQueueRoles, deleteTempQueueRoles, manageRoles);
 
          server.getSecurityRepository().addMatch(addressMatch, roles );
       }
@@ -1121,6 +1074,7 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
          blockOnIO();
       }
    }
+
 
    public void removeSecuritySettings(String addressMatch)
    {
@@ -1182,6 +1136,32 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
       {
          blockOnIO();
       }
+   }
+
+   public String getAddressSettingsAsJSON(final String address) throws Exception
+   {
+      AddressSettings addressSettings = server.getAddressSettingsRepository().getMatch(address);
+      Map<String, Object> settings = new HashMap<String, Object>();
+      if(addressSettings.getDeadLetterAddress() != null)
+      {
+         settings.put("DLA", addressSettings.getDeadLetterAddress());
+      }
+      if(addressSettings.getExpiryAddress() != null)
+      {
+         settings.put("expiryAddress", addressSettings.getExpiryAddress());
+      }
+      settings.put("maxDeliveryAttempts", addressSettings.getMaxDeliveryAttempts());
+      settings.put("maxSizeBytes", addressSettings.getMaxSizeBytes());
+      settings.put("pageSizeBytes", addressSettings.getPageSizeBytes());
+      settings.put("redeliveryDelay", addressSettings.getRedeliveryDelay());
+      settings.put("redistributionDelay", addressSettings.getRedistributionDelay());
+      settings.put("lastValueQueue", addressSettings.isLastValueQueue());
+      settings.put("sendToDLAOnNoRoute", addressSettings.isSendToDLAOnNoRoute());
+      String policy = addressSettings.getAddressFullMessagePolicy() == AddressFullMessagePolicy.PAGE?"PAGE":addressSettings.getAddressFullMessagePolicy() == AddressFullMessagePolicy.BLOCK?"BLOCK":"DROP";
+      settings.put("addressFullMessagePolicy", policy);
+
+      JSONObject jsonObject = new JSONObject(settings);
+      return jsonObject.toString();
    }
 
    public void sendQueueInfoToQueue(final String queueName, final String address) throws Exception

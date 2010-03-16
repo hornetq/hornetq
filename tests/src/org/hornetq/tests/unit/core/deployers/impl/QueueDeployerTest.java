@@ -19,6 +19,7 @@ import java.util.List;
 import junit.framework.Assert;
 
 import org.hornetq.api.core.management.HornetQServerControl;
+import org.hornetq.api.core.management.Parameter;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.CoreQueueConfiguration;
 import org.hornetq.core.deployers.DeploymentManager;
@@ -586,6 +587,10 @@ public class QueueDeployerTest extends UnitTestCase
          return null;
       }
 
+      public String getAddressSettingsAsJSON(@Parameter(desc = "an address match", name = "addressMatch") String addressMatch) throws Exception
+      {
+         return null;  //To change body of implemented methods use File | Settings | File Templates.
+      }
    }
 
 }

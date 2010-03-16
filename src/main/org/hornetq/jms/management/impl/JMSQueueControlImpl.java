@@ -339,6 +339,11 @@ public class JMSQueueControlImpl extends StandardMBean implements JMSQueueContro
       coreQueueControl.resume();
    }
 
+   public String getSelector()
+   {
+      return coreQueueControl.getFilter();
+   }
+
    @Override
    public MBeanInfo getMBeanInfo()
    {
