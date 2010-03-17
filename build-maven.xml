@@ -13,7 +13,7 @@
   -->
 
 <project default="upload" name="HornetQ">
-   <property name="hornetq.version" value="2.1.0.snapshot"/>
+   <property name="hornetq.version" value="2.1.0.r8931"/>
    <property name="build.dir" value="build"/>
    <property name="jars.dir" value="${build.dir}/jars"/>
 
@@ -181,72 +181,74 @@
    </target>
 
    <target name="updateMavenRepos">
-      <fail unless="hornetq.distro" message="*** Please set the hornetq.distro property i.e. -Dhornetq.distro=foo ***"/>
       <fail unless="hornetq.repos" message="*** Please set the hornetq.repos property i.e. -Dhornetq.repos=foo ***"/>
-      <property name="src.dir" value="${hornetq.distro}"/>
       <property name="dest.dir" value="${hornetq.repos}"/>
+   	
+   	
+    <antcall target="deploy-jar">
+        <param name="artifact.id" value="hornetq-resources"/>
+    </antcall>
 
-      <tstamp>
-         <format property="TIMESTAMP" pattern="yyyyMMddhhmmss" locale="en,UK"/>
-      </tstamp>
-      <antcall target="copyJar">
-         <param name="jarName" value="hornetq-bootstrap"/>
-         <param name="libDir" value="${src.dir}/lib"/>
-      </antcall>
-      <antcall target="copyJar">
-         <param name="jarName" value="hornetq-core"/>
-         <param name="libDir" value="${src.dir}/lib"/>
-      </antcall>
-      <antcall target="copyJar">
-         <param name="jarName" value="hornetq-jboss-as-integration"/>
-         <param name="libDir" value="${src.dir}/lib"/>
-      </antcall>
-      <antcall target="copyJar">
-         <param name="jarName" value="hornetq-jms"/>
-         <param name="libDir" value="${src.dir}/lib"/>
-      </antcall>
-      <antcall target="copyJar">
-         <param name="jarName" value="hornetq-logging"/>
-         <param name="libDir" value="${src.dir}/lib"/>
-      </antcall>
-      <antcall target="copyJar">
-         <param name="jarName" value="hornetq-transports"/>
-         <param name="libDir" value="${src.dir}/lib"/>
-      </antcall>
-      <mkdir dir="tmpLib"/>
-      <unjar src="${src.dir}/lib/hornetq-ra.rar" dest="tmpLib"/>
-      <antcall target="copyJar">
-         <param name="jarName" value="hornetq-ra"/>
-         <param name="libDir" value="tmpLib"/>
-      </antcall>
-      <delete dir="tmpLib"/>
-      <antcall target="copyJar">
-         <param name="jarName" value="hornetq-core-client"/>
-         <param name="libDir" value="${src.dir}/client"/>
-      </antcall>
-      <antcall target="copyJar">
-         <param name="jarName" value="hornetq-jms-client"/> 
-         <param name="libDir" value="${src.dir}/client"/>
-      </antcall>
+    <antcall target="deploy-jar">
+        <param name="artifact.id" value="hornetq-jms"/>
+    </antcall>
+
+    <antcall target="deploy-jar">
+        <param name="artifact.id" value="hornetq-jms-client"/>
+    </antcall>
+
+    <antcall target="deploy-jar">
+        <param name="artifact.id" value="hornetq-core"/>
+    </antcall>
+
+    <antcall target="deploy-jar">
+        <param name="artifact.id" value="hornetq-jboss-as-integration"/>
+    </antcall>
+
+    <antcall target="deploy-jar">
+        <param name="artifact.id" value="hornetq-bootstrap"/>
+    </antcall>
+
+    <antcall target="deploy-jar">
+        <param name="artifact.id" value="hornetq-core-client"/>
+    </antcall>
+
+    <antcall target="deploy-jar">
+        <param name="artifact.id" value="hornetq-logging"/>
+    </antcall>
+
+    <antcall target="deploy-jar">
+        <param name="artifact.id" value="hornetq-ra"/>
+    </antcall>
+
+    <antcall target="deploy-jar">
+        <param name="artifact.id" value="hornetq-transports"/>
+    </antcall>
    </target>
 
-   <target  name="copyJar">
-      <mkdir dir="${dest.dir}/${jarName}/${hornetq.version}"/>
-      <echo file="${dest.dir}/${jarName}/${hornetq.version}/${jarName}-${hornetq.version}.pom"
+   <target  name="deploy-jar">
+   	  <tempfile property="temporary.pom" prefix="pom" suffix=".xml"/>
+      <echo file="${temporary.pom}"
             message="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&lt;project&gt;${line.separator}
  &lt;modelVersion&gt;4.0.0&lt;/modelVersion&gt;${line.separator}
  &lt;groupId&gt;org.hornetq&lt;/groupId&gt;${line.separator}
- &lt;artifactId&gt;${jarName}&lt;/artifactId&gt;${line.separator}
+ &lt;artifactId&gt;${artifact.id}&lt;/artifactId&gt;${line.separator}
  &lt;version&gt;${hornetq.version}&lt;/version&gt;${line.separator}&lt;/project&gt;"/>
-      <copy file="${libDir}/${jarName}.jar" tofile="${dest.dir}/${jarName}/${hornetq.version}/${jarName}-${hornetq.version}.jar"/>
-      <checksum file="${dest.dir}/${jarName}/${hornetq.version}/${jarName}-${hornetq.version}.jar" algorithm="md5"/>
-      <checksum file="${dest.dir}/${jarName}/${hornetq.version}/${jarName}-${hornetq.version}.jar" algorithm="sha1"/>
-      <checksum file="${dest.dir}/${jarName}/${hornetq.version}/${jarName}-${hornetq.version}.pom" algorithm="md5"/>
-      <checksum file="${dest.dir}/${jarName}/${hornetq.version}/${jarName}-${hornetq.version}.pom" algorithm="sha1"/>
-      <replace file="${dest.dir}/${jarName}/maven-metadata.xml" token="&lt;/versions&gt;"  value="  &lt;version&gt;${hornetq.version}&lt;/version&gt;${line.separator}    &lt;/versions&gt;"/>
-      <replaceregexp flags="g" file="${dest.dir}/${jarName}/maven-metadata.xml" match="&lt;lastUpdated&gt;(.+)&lt;/lastUpdated&gt;" replace="&lt;lastUpdated&gt;${TIMESTAMP}&lt;/lastUpdated&gt;"/>
-      <checksum file="${dest.dir}/${jarName}/maven-metadata.xml" algorithm="md5"/>
-      <checksum file="${dest.dir}/${jarName}/maven-metadata.xml" algorithm="sha1"/>
+   	
+    <exec executable="mvn">
+     <arg value="-e"/>
+     <arg value="deploy:deploy-file"/>
+     <arg value="-DpomFile=${temporary.pom}"/>
+     <arg value="-DgroupId=org.hornetq"/>
+     <arg value="-DartifactId=${artifact.id}"/>
+     <arg value="-Dversion=${hornetq.version}"/>
+     <arg value="-Dpackaging=jar"/>
+     <arg value="-Dfile=./build/jars/${artifact.id}.jar"/>
+     <arg value="-DrepositoryId=jboss-releases"/>
+     <arg value="-Durl=file:///${dest.dir}"/>
+    </exec>
+   	
+   	 <delete file="${temporary.pom}"/>
    </target>
 
 </project>
