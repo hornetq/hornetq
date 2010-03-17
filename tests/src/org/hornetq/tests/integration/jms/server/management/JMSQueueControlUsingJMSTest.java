@@ -265,6 +265,11 @@ public class JMSQueueControlUsingJMSTest extends JMSQueueControlTest
          {
             proxy.invokeOperation("resume");
          }
+
+         public String getSelector()
+         {
+            return (String)proxy.retrieveAttributeValue("selector");
+         }
       };
    }
 
