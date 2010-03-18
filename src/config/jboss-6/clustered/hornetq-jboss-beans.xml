@@ -9,7 +9,9 @@
    </bean>
 
    <!-- The core configuration -->
-   <bean name="Configuration" class="org.hornetq.core.config.impl.FileConfiguration"/>   
+   <bean name="Configuration" class="org.hornetq.core.config.impl.FileConfiguration">
+      <property name="configurationUrl">${jboss.server.home.url}${/}deploy${/}hornetq${/}hornetq-configuration.xml</property>
+   </bean>
 
 	<!-- The security manager -->
    <bean name="HornetQSecurityManager" class="org.hornetq.integration.jboss.security.JBossASSecurityManager">

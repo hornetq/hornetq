@@ -16,6 +16,7 @@ package org.hornetq.core.config.impl;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URL;
+import java.util.Properties;
 
 import org.hornetq.core.deployers.impl.FileConfigurationParser;
 import org.hornetq.core.logging.Logger;
@@ -59,8 +60,16 @@ public class FileConfiguration extends ConfigurationImpl
       {
          return;
       }
-
+      
+      
       URL url = getClass().getClassLoader().getResource(configurationUrl);
+      
+      if (url == null)
+      {
+         // The URL is outside of the classloader. Trying a pure url now
+         url = new URL(configurationUrl);
+      }
+      
       FileConfiguration.log.debug("Loading server configuration from " + url);
 
       Reader reader = new InputStreamReader(url.openStream());
