@@ -45,15 +45,9 @@ Copyright 2009 Red Hat, Inc.
          <config-property-type>java.lang.String</config-property-type>
          <config-property-value>server-id=0</config-property-value>
       </config-property>
-      <config-property>
-        <description>Use XA?</description>
-        <config-property-name>UseXA</config-property-name>
-        <config-property-type>java.lang.Boolean</config-property-type>
-        <config-property-value>true</config-property-value>
-      </config-property>
       <!--
       <config-property>
-        <description>The method to use for locatingthe transactionmanager</description>
+        <description>The method to use for locating the transactionmanager</description>
         <config-property-name>TransactionManagerLocatorMethod</config-property-name>
         <config-property-type>java.lang.String</config-property-type>
         <config-property-value>getTm</config-property-value>

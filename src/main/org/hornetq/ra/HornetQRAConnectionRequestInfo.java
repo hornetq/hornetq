@@ -43,9 +43,6 @@ public class HornetQRAConnectionRequestInfo implements ConnectionRequestInfo
    /** The client id */
    private String clientID;
 
-   /** Use XA */
-   private boolean useXA;
-
    /** The type */
    private final int type;
 
@@ -70,7 +67,6 @@ public class HornetQRAConnectionRequestInfo implements ConnectionRequestInfo
       userName = prop.getUserName();
       password = prop.getPassword();
       clientID = prop.getClientID();
-      useXA = prop.isUseXA();
       this.type = type;
       transacted = true;
       acknowledgeMode = Session.AUTO_ACKNOWLEDGE;
@@ -138,7 +134,6 @@ public class HornetQRAConnectionRequestInfo implements ConnectionRequestInfo
       {
          clientID = prop.getClientID();
       }
-      useXA = prop.isUseXA();
    }
 
    /**
@@ -240,20 +235,6 @@ public class HornetQRAConnectionRequestInfo implements ConnectionRequestInfo
    }
 
    /**
-    * Use XA communication
-    * @return True if XA; otherwise false
-    */
-   public boolean isUseXA()
-   {
-      if (HornetQRAConnectionRequestInfo.trace)
-      {
-         HornetQRAConnectionRequestInfo.log.trace("isUseXA() " + useXA);
-      }
-
-      return useXA;
-   }
-
-   /**
     * Use transactions
     * @return True if transacted; otherwise false
     */
@@ -305,7 +286,6 @@ public class HornetQRAConnectionRequestInfo implements ConnectionRequestInfo
          return Util.compare(userName, you.getUserName()) && Util.compare(password, you.getPassword()) &&
                 Util.compare(clientID, you.getClientID()) &&
                 type == you.getType() &&
-                useXA == you.isUseXA() &&
                 transacted == you.isTransacted() &&
                 acknowledgeMode == you.getAcknowledgeMode();
       }
@@ -332,7 +312,6 @@ public class HornetQRAConnectionRequestInfo implements ConnectionRequestInfo
       hash += 31 * hash + (userName != null ? userName.hashCode() : 0);
       hash += 31 * hash + (password != null ? password.hashCode() : 0);
       hash += 31 * hash + Integer.valueOf(type).hashCode();
-      hash += 31 * hash + (useXA ? 1 : 0);
       hash += 31 * hash + (transacted ? 1 : 0);
       hash += 31 * hash + Integer.valueOf(acknowledgeMode).hashCode();
 
@@ -343,7 +322,7 @@ public class HornetQRAConnectionRequestInfo implements ConnectionRequestInfo
    public String toString()
    {
       return "HornetQRAConnectionRequestInfo[type=" + type +
-         ", useXA=" + useXA + ", transacted=" + transacted + ", acknowledgeMode=" + acknowledgeMode +
+         ", transacted=" + transacted + ", acknowledgeMode=" + acknowledgeMode +
          ", clientID=" + clientID + ", userName=" + userName + ", password=" + password + "]";
    }
 }

@@ -57,6 +57,12 @@ public class HornetQRALocalTransaction implements LocalTransaction
     */
    public void begin() throws ResourceException
    {
+      if (HornetQRALocalTransaction.trace)
+      {
+         HornetQRALocalTransaction.log.trace("begin()");
+      }
+      
+      mc.setInManagedTx(true);
    }
 
    /**
@@ -65,6 +71,11 @@ public class HornetQRALocalTransaction implements LocalTransaction
     */
    public void commit() throws ResourceException
    {
+      if (HornetQRALocalTransaction.trace)
+      {
+         HornetQRALocalTransaction.log.trace("commit()");
+      }
+      
       mc.lock();
       try
       {
@@ -79,6 +90,7 @@ public class HornetQRALocalTransaction implements LocalTransaction
       }
       finally
       {
+         mc.setInManagedTx(false);
          mc.unlock();
       }
    }
@@ -89,6 +101,11 @@ public class HornetQRALocalTransaction implements LocalTransaction
     */
    public void rollback() throws ResourceException
    {
+      if (HornetQRALocalTransaction.trace)
+      {
+         HornetQRALocalTransaction.log.trace("rollback()");
+      }
+      
       mc.lock();
       try
       {
@@ -103,6 +120,7 @@ public class HornetQRALocalTransaction implements LocalTransaction
       }
       finally
       {
+         mc.setInManagedTx(false);
          mc.unlock();
       }
    }

@@ -76,6 +76,7 @@ public class HornetQRAXAResource implements XAResource
       }
       finally
       {
+         managedConnection.setInManagedTx(true);
          managedConnection.unlock();
       }
    }
@@ -100,6 +101,7 @@ public class HornetQRAXAResource implements XAResource
       }
       finally
       {
+         managedConnection.setInManagedTx(false);
          managedConnection.unlock();
       }
    }

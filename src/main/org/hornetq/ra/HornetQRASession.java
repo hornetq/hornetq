@@ -47,6 +47,7 @@ import javax.jms.TransactionInProgressException;
 import javax.jms.XAQueueSession;
 import javax.jms.XASession;
 import javax.jms.XATopicSession;
+import javax.resource.ResourceException;
 import javax.resource.spi.ConnectionEvent;
 import javax.transaction.xa.XAResource;
 
@@ -1214,9 +1215,7 @@ public class HornetQRASession implements Session, QueueSession, TopicSession, XA
       {
          lock();
 
-         XASession session = getXASessionInternal();
-
-         return session.getXAResource();
+         return getXAResourceInternal();
       }
       catch (Throwable t)
       {
@@ -1551,26 +1550,35 @@ public class HornetQRASession implements Session, QueueSession, TopicSession, XA
    }
 
    /**
-    * Get the XA session and ensure that it is open
-    * @return The session
+    * Get the XA resource and ensure that it is open
+    * @return The XA Resource
     * @exception JMSException Thrown if an error occurs
     * @exception IllegalStateException The session is closed
     */
-   XASession getXASessionInternal() throws JMSException
+   XAResource getXAResourceInternal() throws JMSException
    {
       if (mc == null)
       {
          throw new IllegalStateException("The session is closed");
       }
 
-      XASession session = mc.getXASession();
-
-      if (HornetQRASession.trace)
+      try
       {
-         HornetQRASession.log.trace("getXASessionInternal " + session + " for " + this);
-      }
+         XAResource xares = mc.getXAResource();
 
-      return session;
+         if (HornetQRASession.trace)
+         {
+            HornetQRASession.log.trace("getXAResourceInternal " + xares + " for " + this);
+         }
+
+         return xares;
+      }
+      catch (ResourceException e)
+      {
+         JMSException jmse = new JMSException("Unable to get XA Resource");
+         jmse.initCause(e);
+         throw jmse;
+      }
    }
 
    /**
