@@ -259,6 +259,11 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       server.getSecurityRepository().addMatch(addressMatch, roles);
    }
 
+   public Set<Role> getSecurity(final String addressMatch)
+   {
+      return server.getSecurityRepository().getMatch(addressMatch);
+   }
+
    public synchronized void setContext(final Context context)
    {
       this.context = context;

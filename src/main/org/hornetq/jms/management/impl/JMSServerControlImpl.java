@@ -437,6 +437,11 @@ public class JMSServerControlImpl extends StandardMBean implements JMSServerCont
          server.addSecurity(addressMatch, roles);
    }
 
+   public Set<Role> getSecuritySettings(final String addressMatch)
+   {
+      return server.getSecurity(addressMatch);
+   }
+
    public void removeSecuritySettings(String addressMatch) throws Exception
    {
       //To change body of implemented methods use File | Settings | File Templates.

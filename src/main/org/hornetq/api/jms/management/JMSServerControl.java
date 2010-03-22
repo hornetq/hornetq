@@ -14,6 +14,7 @@
 package org.hornetq.api.jms.management;
 
 import java.util.Map;
+import java.util.Set;
 
 import javax.management.MBeanOperationInfo;
 
@@ -21,6 +22,7 @@ import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.management.Operation;
 import org.hornetq.api.core.management.Parameter;
+import org.hornetq.core.security.Role;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.spi.core.remoting.ConnectorFactory;
 
@@ -242,4 +244,6 @@ public interface JMSServerControl
     */
    @Operation(desc = "removes the address settings for an address match", impact = MBeanOperationInfo.INFO)
    void removeSecuritySettings(@Parameter(desc="an address match", name="addressMatch") String addressMatch) throws Exception;
+
+   Set<Role> getSecuritySettings(final String addressMatch);
 }

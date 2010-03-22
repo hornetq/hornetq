@@ -239,4 +239,6 @@ public interface JMSServerManager extends HornetQComponent
    AddressSettings getAddressSettings(String address);
 
    void addSecurity(String addressMatch, Set<Role> roles);
+
+   Set<Role> getSecurity(final String addressMatch);
 }
