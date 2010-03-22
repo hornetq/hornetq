@@ -14,6 +14,11 @@
 package org.hornetq.tests.integration.jms.server.management;
 
 
+import static org.hornetq.tests.util.RandomUtil.randomSimpleString;
+import static org.hornetq.tests.util.RandomUtil.randomString;
+
+import java.util.Set;
+
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.Queue;
@@ -22,10 +27,13 @@ import javax.jms.Topic;
 
 import junit.framework.Assert;
 
+import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.management.AddressControl;
+import org.hornetq.api.core.management.HornetQServerControl;
 import org.hornetq.api.core.management.ObjectNameBuilder;
 import org.hornetq.api.core.management.ResourceNames;
+import org.hornetq.api.core.management.RoleInfo;
 import org.hornetq.api.jms.management.JMSServerControl;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.DiscoveryGroupConfiguration;
@@ -34,10 +42,12 @@ import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.remoting.impl.invm.TransportConstants;
+import org.hornetq.core.security.Role;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.client.HornetQDestination;
+import org.hornetq.jms.client.HornetQQueueBrowser;
 import org.hornetq.jms.server.JMSServerManager;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.hornetq.tests.integration.management.ManagementControlHelper;
@@ -290,8 +300,46 @@ public class JMSServerControlTest extends ManagementTestBase
       });
    }
 
-
-
+   public void testSecuritySettings() throws Exception
+   {
+      JMSServerControl serverControl = createManagementControl();
+      String destination = HornetQDestination.createQueueAddressFromName(randomString()).toString();
+      
+      serverControl.addSecuritySettings(destination, "foo", "foo, bar", "foo", "bar", "foo, bar", "", "");
+      
+      String rolesAsJSON = serverControl.getSecuritySettingsAsJSON(destination);
+      RoleInfo[] roleInfos = RoleInfo.from(rolesAsJSON);
+      assertEquals(2, roleInfos.length);
+      RoleInfo fooRole = null;
+      RoleInfo barRole = null;
+      if (roleInfos[0].getName().equals("foo"))
+      {
+         fooRole = roleInfos[0];
+         barRole = roleInfos[1];
+      }
+      else
+      {
+         fooRole = roleInfos[1];
+         barRole = roleInfos[0];
+      }
+      assertTrue(fooRole.isSend());
+      assertTrue(fooRole.isConsume());
+      assertTrue(fooRole.isCreateDurableQueue());
+      assertFalse(fooRole.isDeleteDurableQueue());
+      assertTrue(fooRole.isCreateNonDurableQueue());
+      assertFalse(fooRole.isDeleteNonDurableQueue());
+      assertFalse(fooRole.isManage());
+   
+      assertFalse(barRole.isSend());
+      assertTrue(barRole.isConsume());
+      assertFalse(barRole.isCreateDurableQueue());
+      assertTrue(barRole.isDeleteDurableQueue());
+      assertTrue(barRole.isCreateNonDurableQueue());
+      assertFalse(barRole.isDeleteNonDurableQueue());
+      assertFalse(barRole.isManage());
+      
+      serverControl.removeSecuritySettings(destination);
+   }
 
    // Package protected ---------------------------------------------
 

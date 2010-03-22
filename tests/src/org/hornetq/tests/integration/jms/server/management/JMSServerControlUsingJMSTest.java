@@ -263,8 +263,14 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
                                          String deleteTempQueueRoles,
                                          String manageRoles) throws Exception
          {
-            // TODO Auto-generated method stub
-            
+            proxy.invokeOperation("addSecuritySettings", addressMatch,
+                                  sendRoles,
+                                  consumeRoles,
+                                  createDurableQueueRoles,
+                                  deleteDurableQueueRoles,
+                                  createTempQueueRoles,
+                                  deleteTempQueueRoles,
+                                  manageRoles);
          }
 
          public AddressSettings getAddressSettings(String address)
@@ -281,14 +287,18 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
 
          public void removeSecuritySettings(String addressMatch) throws Exception
          {
-            // TODO Auto-generated method stub
-            
+            proxy.invokeOperation("removeSecuritySettings", addressMatch);
          }
-
-         public Set<Role> getSecuritySettings(String addressMatch)
+         
+         @SuppressWarnings("unchecked")
+         public Set<Role> getSecuritySettings(String addressMatch) throws Exception
          {
-            // TODO Auto-generated method stub
-            return null;
+            return (Set<Role>)proxy.invokeOperation("getSecuritySettings", addressMatch);
+         }
+         
+         public String getSecuritySettingsAsJSON(String addressMatch) throws Exception
+         {
+            return (String)proxy.invokeOperation("getSecuritySettingsAsJSON", addressMatch);
          }
 
       };

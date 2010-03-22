@@ -245,5 +245,7 @@ public interface JMSServerControl
    @Operation(desc = "removes the address settings for an address match", impact = MBeanOperationInfo.INFO)
    void removeSecuritySettings(@Parameter(desc="an address match", name="addressMatch") String addressMatch) throws Exception;
 
-   Set<Role> getSecuritySettings(final String addressMatch);
+   Set<Role> getSecuritySettings(final String addressMatch) throws Exception;
+
+   String getSecuritySettingsAsJSON(String destination) throws Exception;
 }

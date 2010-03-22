@@ -13,7 +13,10 @@
 
 package org.hornetq.jms.management.impl;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
 import javax.management.ListenerNotFoundException;
@@ -30,7 +33,6 @@ import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.management.ManagementHelper;
-import org.hornetq.api.core.management.Parameter;
 import org.hornetq.api.jms.management.ConnectionFactoryControl;
 import org.hornetq.api.jms.management.JMSQueueControl;
 import org.hornetq.api.jms.management.JMSServerControl;
@@ -40,8 +42,9 @@ import org.hornetq.core.security.Role;
 import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.jms.server.JMSServerManager;
-import org.hornetq.jms.server.config.JMSQueueConfiguration;
 import org.hornetq.utils.SecurityFormatter;
+import org.hornetq.utils.json.JSONArray;
+import org.hornetq.utils.json.JSONObject;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -442,6 +445,18 @@ public class JMSServerControlImpl extends StandardMBean implements JMSServerCont
       return server.getSecurity(addressMatch);
    }
 
+   public String getSecuritySettingsAsJSON(final String addressMatch) throws Exception
+   {
+      JSONArray json = new JSONArray();
+      Set<Role> roles = server.getSecurity(addressMatch);
+
+      for (Role role : roles)
+      {
+         json.put(new JSONObject(role));
+      }
+      return json.toString();
+   }
+   
    public void removeSecuritySettings(String addressMatch) throws Exception
    {
       //To change body of implemented methods use File | Settings | File Templates.
