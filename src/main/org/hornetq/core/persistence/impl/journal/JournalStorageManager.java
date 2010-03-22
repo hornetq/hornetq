@@ -691,57 +691,6 @@ public class JournalStorageManager implements StorageManager
 
    }
 
-   private static final class AddMessageRecord
-   {
-      public AddMessageRecord(final ServerMessage message)
-      {
-         this.message = message;
-      }
-
-      final ServerMessage message;
-
-      long scheduledDeliveryTime;
-
-      int deliveryCount;
-   }
-
-   private class LargeMessageTXFailureCallback implements TransactionFailureCallback
-   {
-      private final Map<Long, ServerMessage> messages;
-
-      public LargeMessageTXFailureCallback(final Map<Long, ServerMessage> messages)
-      {
-         super();
-         this.messages = messages;
-      }
-
-      public void failedTransaction(final long transactionID,
-                                    final List<RecordInfo> records,
-                                    final List<RecordInfo> recordsToDelete)
-      {
-         for (RecordInfo record : records)
-         {
-            if (record.userRecordType == JournalStorageManager.ADD_LARGE_MESSAGE)
-            {
-               byte[] data = record.data;
-
-               HornetQBuffer buff = HornetQBuffers.wrappedBuffer(data);
-
-               try
-               {
-                  LargeServerMessage serverMessage = parseLargeMessage(messages, buff);
-                  serverMessage.decrementDelayDeletionCount();
-               }
-               catch (Exception e)
-               {
-                  JournalStorageManager.log.warn(e.getMessage(), e);
-               }
-            }
-         }
-      }
-
-   }
-
    public JournalLoadInformation loadMessageJournal(final PostOffice postOffice,
                                                     final PagingManager pagingManager,
                                                     final ResourceManager resourceManager,
@@ -2051,5 +2000,56 @@ public class JournalStorageManager implements StorageManager
       }
 
    }
+   private static final class AddMessageRecord
+   {
+      public AddMessageRecord(final ServerMessage message)
+      {
+         this.message = message;
+      }
+
+      final ServerMessage message;
+
+      long scheduledDeliveryTime;
+
+      int deliveryCount;
+   }
+
+   private class LargeMessageTXFailureCallback implements TransactionFailureCallback
+   {
+      private final Map<Long, ServerMessage> messages;
+
+      public LargeMessageTXFailureCallback(final Map<Long, ServerMessage> messages)
+      {
+         super();
+         this.messages = messages;
+      }
+
+      public void failedTransaction(final long transactionID,
+                                    final List<RecordInfo> records,
+                                    final List<RecordInfo> recordsToDelete)
+      {
+         for (RecordInfo record : records)
+         {
+            if (record.userRecordType == JournalStorageManager.ADD_LARGE_MESSAGE)
+            {
+               byte[] data = record.data;
+
+               HornetQBuffer buff = HornetQBuffers.wrappedBuffer(data);
+
+               try
+               {
+                  LargeServerMessage serverMessage = parseLargeMessage(messages, buff);
+                  serverMessage.decrementDelayDeletionCount();
+               }
+               catch (Exception e)
+               {
+                  JournalStorageManager.log.warn(e.getMessage(), e);
+               }
+            }
+         }
+      }
+
+   }
+
 
 }
