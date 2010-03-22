@@ -223,7 +223,7 @@ class StompProtocolManager implements ProtocolManager
 
          if (response != null)
          {
-            send(conn, response);
+            sendReply(conn, response);
          }
 
          if (Stomp.Commands.DISCONNECT.equals(command))
@@ -237,13 +237,38 @@ class StompProtocolManager implements ProtocolManager
          StompFrame error = createError(e, request);
          if (error != null)
          {
-            send(conn, error);
+            sendReply(conn, error);
          }
       }
    }
 
    // Public --------------------------------------------------------
 
+   public void send(final StompConnection connection, final StompFrame frame)
+   {
+      if (log.isTraceEnabled())
+      {
+         log.trace("sent " + frame);
+      }
+      synchronized (connection)
+      {
+         if (connection.isDestroyed() || !connection.isValid())
+         {
+            log.warn("Connection closed " + connection);
+            return;
+         }
+
+         try
+         {
+            HornetQBuffer buffer = frame.toHornetQBuffer();
+            connection.getTransportConnection().write(buffer, false);
+         }
+         catch (Exception e)
+         {
+            log.error("Unable to send frame " + frame, e);
+         }
+      }
+   }
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
@@ -528,25 +553,6 @@ class StompProtocolManager implements ProtocolManager
       return new StompFrame(Stomp.Responses.CONNECTED, h);
    }
 
-   public void send(final StompConnection connection, final StompFrame frame)
-   {
-      server.getStorageManager().afterCompleteOperations(new IOAsyncTask()
-      {
-         public void onError(final int errorCode, final String errorMessage)
-         {
-            log.warn("Error processing IOCallback code = " + errorCode + " message = " + errorMessage);
-
-            StompFrame error = createError(new HornetQException(errorCode, errorMessage), frame);
-            doSend(connection, error);
-         }
-
-         public void done()
-         {
-            doSend(connection, frame);
-         }
-      });
-   }
-
    public void cleanup(StompConnection connection)
    {
       connection.setValid(false);
@@ -595,32 +601,23 @@ class StompProtocolManager implements ProtocolManager
       }
    }
 
-   private void doSend(final StompConnection connection, final StompFrame frame)
+   private void sendReply(final StompConnection connection, final StompFrame frame)
    {
-      if (log.isTraceEnabled())
+      server.getStorageManager().afterCompleteOperations(new IOAsyncTask()
       {
-         log.trace("sent " + frame);
-      }
-      synchronized (connection)
-      {
-         if (connection.isDestroyed() || !connection.isValid())
+         public void onError(final int errorCode, final String errorMessage)
          {
-            log.warn("Connection closed " + connection);
-            return;
+            log.warn("Error processing IOCallback code = " + errorCode + " message = " + errorMessage);
+
+            StompFrame error = createError(new HornetQException(errorCode, errorMessage), frame);
+            send(connection, error);
          }
 
-         try
+         public void done()
          {
-            HornetQBuffer buffer = frame.toHornetQBuffer();
-            connection.getTransportConnection().write(buffer, false);
+            send(connection, frame);
          }
-         catch (Exception e)
-         {
-            log.error("Unable to send frame " + frame, e);
-         }
-      }
+      });
    }
-
-
    // Inner classes -------------------------------------------------
 }
