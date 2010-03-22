@@ -14,6 +14,7 @@
 package org.hornetq.tests.integration.jms.server.management;
 
 import java.util.Map;
+import java.util.Set;
 
 import javax.jms.QueueConnection;
 import javax.jms.QueueSession;
@@ -24,6 +25,7 @@ import org.hornetq.api.core.management.ResourceNames;
 import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.api.jms.management.JMSServerControl;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
+import org.hornetq.core.security.Role;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.client.HornetQDestination;
@@ -281,6 +283,12 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
          {
             // TODO Auto-generated method stub
             
+         }
+
+         public Set<Role> getSecuritySettings(String addressMatch)
+         {
+            // TODO Auto-generated method stub
+            return null;
          }
 
       };
