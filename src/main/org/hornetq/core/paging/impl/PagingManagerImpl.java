@@ -17,7 +17,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.atomic.AtomicLong;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.logging.Logger;
@@ -44,8 +43,6 @@ public class PagingManagerImpl implements PagingManager
    // Attributes ----------------------------------------------------
 
    private volatile boolean started = false;
-
-   private final AtomicLong totalMemoryBytes = new AtomicLong(0);
 
    private final ConcurrentMap<SimpleString, PagingStore> stores = new ConcurrentHashMap<SimpleString, PagingStore>();
 
@@ -198,8 +195,6 @@ public class PagingManagerImpl implements PagingManager
       }
 
       pagingStoreFactory.stop();
-
-      totalMemoryBytes.set(0);
    }
 
    public void resumeDepages()
@@ -222,22 +217,6 @@ public class PagingManagerImpl implements PagingManager
             }
          }
       }
-   }
-
-   /* (non-Javadoc)
-    * @see org.hornetq.core.paging.PagingManager#getGlobalSize()
-    */
-   public long getTotalMemory()
-   {
-      return totalMemoryBytes.get();
-   }
-
-   /* (non-Javadoc)
-    * @see org.hornetq.core.paging.PagingManager#addGlobalSize(long)
-    */
-   public long addSize(final long size)
-   {
-      return totalMemoryBytes.addAndGet(size);
    }
 
    // Package protected ---------------------------------------------

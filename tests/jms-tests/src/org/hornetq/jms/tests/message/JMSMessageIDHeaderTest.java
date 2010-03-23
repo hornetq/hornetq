@@ -39,6 +39,7 @@ public class JMSMessageIDHeaderTest extends MessageHeaderTestBase
       Message m = queueProducerSession.createMessage();
       queueProducer.send(m);
       String messageID = queueConsumer.receive().getJMSMessageID();
+      
       // JMS1.1 specs 3.4.3
       ProxyAssertSupport.assertTrue(messageID.startsWith("ID:"));
    }

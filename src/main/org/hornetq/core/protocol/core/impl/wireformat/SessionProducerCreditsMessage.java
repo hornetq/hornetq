@@ -28,24 +28,20 @@ public class SessionProducerCreditsMessage extends PacketImpl
    // Attributes ----------------------------------------------------
 
    private int credits;
-
+   
    private SimpleString address;
-
-   private int offset;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public SessionProducerCreditsMessage(final int credits, final SimpleString address, final int offset)
+   public SessionProducerCreditsMessage(final int credits, final SimpleString address)
    {
       super(PacketImpl.SESS_PRODUCER_CREDITS);
 
       this.credits = credits;
-
+      
       this.address = address;
-
-      this.offset = offset;
    }
 
    public SessionProducerCreditsMessage()
@@ -65,17 +61,11 @@ public class SessionProducerCreditsMessage extends PacketImpl
       return address;
    }
 
-   public int getOffset()
-   {
-      return offset;
-   }
-
    @Override
    public void encodeRest(final HornetQBuffer buffer)
    {
       buffer.writeInt(credits);
       buffer.writeSimpleString(address);
-      buffer.writeInt(offset);
    }
 
    @Override
@@ -83,7 +73,6 @@ public class SessionProducerCreditsMessage extends PacketImpl
    {
       credits = buffer.readInt();
       address = buffer.readSimpleString();
-      offset = buffer.readInt();
    }
 
    // Package protected ---------------------------------------------

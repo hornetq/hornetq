@@ -58,13 +58,13 @@ class HornetQChannelHandler extends SimpleChannelHandler
       group.add(e.getChannel());
       ctx.sendUpstream(e);
    }
-
+   
    @Override
    public void messageReceived(final ChannelHandlerContext ctx, final MessageEvent e) throws Exception
    {
       ChannelBuffer buffer = (ChannelBuffer)e.getMessage();
-
-      handler.bufferReceived(e.getChannel().getId(), new ChannelBufferWrapper(buffer));
+      
+      handler.bufferReceived(e.getChannel().getId(), new ChannelBufferWrapper(buffer));      
    }
 
    @Override
@@ -113,5 +113,6 @@ class HornetQChannelHandler extends SimpleChannelHandler
             HornetQChannelHandler.log.error("failed to notify the listener:", ex);
          }
       }
-   }
+   }   
+   
 }

@@ -281,9 +281,9 @@ public class BindingsImpl implements Bindings
       Integer ipos = routingNamePositions.get(routingName);
 
       int pos = ipos != null ? ipos : 0;
-
+      
       int length = bindings.size();
-
+      
       int startPos = pos;
 
       Binding theBinding = null;
@@ -371,7 +371,10 @@ public class BindingsImpl implements Bindings
             break;
          }
       }
-      routingNamePositions.put(routingName, pos);
+      if (pos != startPos)
+      {
+         routingNamePositions.put(routingName, pos);
+      }
       return theBinding;
    }
 

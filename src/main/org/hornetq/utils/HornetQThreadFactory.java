@@ -15,6 +15,8 @@ package org.hornetq.utils;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.hornetq.core.logging.Logger;
+
 /**
  * 
  * A HornetQThreadFactory
@@ -24,6 +26,8 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class HornetQThreadFactory implements ThreadFactory
 {
+   private static final Logger log = Logger.getLogger(HornetQThreadFactory.class);
+
    private final ThreadGroup group;
 
    private final AtomicInteger threadCount = new AtomicInteger(0);
@@ -59,7 +63,7 @@ public class HornetQThreadFactory implements ThreadFactory
       {
          t = new Thread(command, "Thread-" + threadCount.getAndIncrement());
       }
-
+      
       t.setDaemon(daemon);
       t.setPriority(threadPriority);
       return t;

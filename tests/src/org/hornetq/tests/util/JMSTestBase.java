@@ -157,7 +157,7 @@ public class JMSTestBase extends ServiceTestBase
 
    // Inner classes -------------------------------------------------
 
-   private void registerConnectionFactory() throws Exception
+   protected void registerConnectionFactory() throws Exception
    {
       List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs = new ArrayList<Pair<TransportConfiguration, TransportConfiguration>>();
       connectorConfigs.add(new Pair<TransportConfiguration, TransportConfiguration>(new TransportConfiguration(NettyConnectorFactory.class.getName()),

@@ -44,16 +44,21 @@ public class NettyConnection implements Connection
    private boolean closed;
 
    private final ConnectionLifeCycleListener listener;
+   
+   private final int batchingBufferSize;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public NettyConnection(final Channel channel, final ConnectionLifeCycleListener listener)
+   public NettyConnection(final Channel channel, final ConnectionLifeCycleListener listener,
+                          final int batchingBufferSize)
    {
       this.channel = channel;
 
       this.listener = listener;
+      
+      this.batchingBufferSize = batchingBufferSize;
 
       listener.connectionCreated(this, ProtocolType.CORE);
    }
@@ -143,6 +148,11 @@ public class NettyConnection implements Connection
    public String getRemoteAddress()
    {
       return channel.getRemoteAddress().toString();
+   }
+   
+   public int getBatchingBufferSize()
+   {
+      return batchingBufferSize;
    }
 
    // Public --------------------------------------------------------

@@ -25,7 +25,7 @@ import org.hornetq.core.server.ServerMessage;
  */
 public interface SessionCallback
 {
-   void sendProducerCreditsMessage(int credits, SimpleString address, int offset);
+   void sendProducerCreditsMessage(int credits, SimpleString address);
 
    int sendMessage(ServerMessage message, long consumerID, int deliveryCount);
 

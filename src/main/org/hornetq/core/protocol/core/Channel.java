@@ -43,6 +43,13 @@ public interface Channel
     * @param packet the packet to send
     */
    void send(Packet packet);
+   
+   /**
+    * sends a packet on this channel using batching algorithm if appropriate
+    *
+    * @param packet the packet to send
+    */
+   void sendBatched(Packet packet);
 
    /**
     * sends a packet on this channel and then blocks until it has been written to the connection.

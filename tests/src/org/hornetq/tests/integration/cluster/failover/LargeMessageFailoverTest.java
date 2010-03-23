@@ -14,11 +14,11 @@
 package org.hornetq.tests.integration.cluster.failover;
 
 import junit.framework.Assert;
-import junit.framework.TestSuite;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.core.logging.Logger;
 import org.hornetq.tests.util.UnitTestCase;
 
 /**
@@ -33,39 +33,12 @@ public class LargeMessageFailoverTest extends FailoverTest
 
    // Constants -----------------------------------------------------
 
+   private static final Logger log = Logger.getLogger(LargeMessageFailoverTest.class);
+
+   
    // Attributes ----------------------------------------------------
 
    // Static --------------------------------------------------------
-
-   public static TestSuite suite()
-   {
-      TestSuite suite = new TestSuite();
-
-      suite.addTest(new LargeMessageFailoverTest("testNonTransacted"));
-      suite.addTest(new LargeMessageFailoverTest("testTransactedMessagesSentSoRollback"));
-      suite.addTest(new LargeMessageFailoverTest("testTransactedMessagesNotSentSoNoRollback"));
-      suite.addTest(new LargeMessageFailoverTest("testTransactedMessagesConsumedSoRollback"));
-      suite.addTest(new LargeMessageFailoverTest("testTransactedMessagesNotConsumedSoNoRollback"));
-      suite.addTest(new LargeMessageFailoverTest("testXAMessagesSentSoRollbackOnEnd"));
-      suite.addTest(new LargeMessageFailoverTest("testXAMessagesSentSoRollbackOnPrepare"));
-      suite.addTest(new LargeMessageFailoverTest("testXAMessagesSentSoRollbackOnCommit"));
-      suite.addTest(new LargeMessageFailoverTest("testXAMessagesNotSentSoNoRollbackOnCommit"));
-      suite.addTest(new LargeMessageFailoverTest("testXAMessagesConsumedSoRollbackOnEnd"));
-      suite.addTest(new LargeMessageFailoverTest("testXAMessagesConsumedSoRollbackOnPrepare"));
-      suite.addTest(new LargeMessageFailoverTest("testXAMessagesConsumedSoRollbackOnCommit"));
-      suite.addTest(new LargeMessageFailoverTest("testCreateNewFactoryAfterFailover"));
-
-      // Those tests are temporarily disabled for LargeMessage
-      suite.addTest(new LargeMessageFailoverTest("testFailoverMultipleSessionsWithConsumers"));
-      suite.addTest(new LargeMessageFailoverTest("testFailWithBrowser"));
-      suite.addTest(new LargeMessageFailoverTest("testFailThenReceiveMoreMessagesAfterFailover"));
-      suite.addTest(new LargeMessageFailoverTest("testFailThenReceiveMoreMessagesAfterFailover2"));
-
-      suite.addTest(new LargeMessageFailoverTest("testForceBlockingReturn"));
-      suite.addTest(new LargeMessageFailoverTest("testCommitOccurredUnblockedAndResendNoDuplicates"));
-      suite.addTest(new LargeMessageFailoverTest("testCommitDidNotOccurUnblockedAndResend"));
-      return suite;
-   }
 
    // Constructors --------------------------------------------------
 
@@ -102,7 +75,7 @@ public class LargeMessageFailoverTest extends FailoverTest
 
       for (int j = 0; j < HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE * 3; j++)
       {
-         Assert.assertEquals(buffer.readByte(), UnitTestCase.getSamplebyte(j));
+         Assert.assertEquals("equal at " + j, buffer.readByte(), UnitTestCase.getSamplebyte(j));
       }
    }
 

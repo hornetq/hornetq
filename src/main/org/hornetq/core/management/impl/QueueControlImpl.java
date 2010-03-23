@@ -198,7 +198,7 @@ public class QueueControlImpl extends AbstractControl implements QueueControl
       }
    }
 
-   public int getMessagesAdded()
+   public long getMessagesAdded()
    {
       clearIO();
       try

@@ -30,7 +30,6 @@ import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.journal.impl.AIOSequentialFileFactory;
 import org.hornetq.core.journal.impl.JournalImpl;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.tests.integration.cluster.failover.LargeMessageFailoverTest;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.DataConstants;
 
@@ -144,6 +143,8 @@ public class JournalPerfTuneTest extends UnitTestCase
       public void done()
       {
          latch.countDown();
+         
+         log.info(latch.getCount());
       }
 
       public void onError(int errorCode, String errorMessage)
@@ -202,7 +203,7 @@ public class JournalPerfTuneTest extends UnitTestCase
       {
          try
          {
-            Record record = new Record(new byte[256]);
+            Record record = new Record(new byte[1024]);
 
             for (int i = 0; i < iters; i++)
             {

@@ -67,10 +67,14 @@ public class TransportConstants
    public static final String TCP_SENDBUFFER_SIZE_PROPNAME = "tcp-send-buffer-size";
 
    public static final String TCP_RECEIVEBUFFER_SIZE_PROPNAME = "tcp-receive-buffer-size";
+   
+   public static final String NIO_REMOTING_THREADS_PROPNAME = "nio-remoting-threads";
+   
+   public static final String BATCHING_BUFFER_SIZE_PROPNAME = "batching-buffer-size";
 
    public static final boolean DEFAULT_SSL_ENABLED = false;
 
-   public static final boolean DEFAULT_USE_NIO_SERVER = true;
+   public static final boolean DEFAULT_USE_NIO_SERVER = false;
 
    // For client, using old IO can be quicker
    public static final boolean DEFAULT_USE_NIO_CLIENT = false;
@@ -100,6 +104,8 @@ public class TransportConstants
    public static final int DEFAULT_TCP_SENDBUFFER_SIZE = 32768;
 
    public static final int DEFAULT_TCP_RECEIVEBUFFER_SIZE = 32768;
+   
+   public static final int DEFAULT_BATCHING_BUFFER_SIZE = 8192;
 
    public static final boolean DEFAULT_HTTP_ENABLED = false;
 
@@ -138,6 +144,8 @@ public class TransportConstants
       allowableAcceptorKeys.add(TransportConstants.TCP_NODELAY_PROPNAME);
       allowableAcceptorKeys.add(TransportConstants.TCP_SENDBUFFER_SIZE_PROPNAME);
       allowableAcceptorKeys.add(TransportConstants.TCP_RECEIVEBUFFER_SIZE_PROPNAME);
+      allowableAcceptorKeys.add(TransportConstants.NIO_REMOTING_THREADS_PROPNAME);
+      allowableAcceptorKeys.add(TransportConstants.BATCHING_BUFFER_SIZE_PROPNAME);
 
       ALLOWABLE_ACCEPTOR_KEYS = Collections.unmodifiableSet(allowableAcceptorKeys);
 
@@ -157,6 +165,8 @@ public class TransportConstants
       allowableConnectorKeys.add(TransportConstants.TCP_NODELAY_PROPNAME);
       allowableConnectorKeys.add(TransportConstants.TCP_SENDBUFFER_SIZE_PROPNAME);
       allowableConnectorKeys.add(TransportConstants.TCP_RECEIVEBUFFER_SIZE_PROPNAME);
+      allowableConnectorKeys.add(TransportConstants.NIO_REMOTING_THREADS_PROPNAME);
+      allowableConnectorKeys.add(TransportConstants.BATCHING_BUFFER_SIZE_PROPNAME);
 
       ALLOWABLE_CONNECTOR_KEYS = Collections.unmodifiableSet(allowableConnectorKeys);
    }

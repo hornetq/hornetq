@@ -273,7 +273,7 @@ public class FakeQueue implements Queue
    /* (non-Javadoc)
     * @see org.hornetq.core.server.Queue#getMessagesAdded()
     */
-   public int getMessagesAdded()
+   public long getMessagesAdded()
    {
       // TODO Auto-generated method stub
       return 0;
@@ -425,10 +425,8 @@ public class FakeQueue implements Queue
    /* (non-Javadoc)
     * @see org.hornetq.core.server.Queue#removeConsumer(org.hornetq.core.server.Consumer)
     */
-   public boolean removeConsumer(final Consumer consumer) throws Exception
+   public void removeConsumer(final Consumer consumer) throws Exception
    {
-      // TODO Auto-generated method stub
-      return false;
    }
 
    /* (non-Javadoc)

@@ -389,6 +389,7 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
    private void handleLargeMessageBegin(final ReplicationLargeMessageBeingMessage packet)
    {
       LargeServerMessage largeMessage = storage.createLargeMessage();
+      largeMessage.setDurable(true);
       largeMessage.setMessageID(packet.getMessageId());
       ReplicationEndpointImpl.trace("Receiving Large Message " + largeMessage.getMessageID() + " on backup");
       largeMessages.put(largeMessage.getMessageID(), largeMessage);

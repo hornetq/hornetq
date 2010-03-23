@@ -189,8 +189,6 @@ public class PageCrashTest extends ServiceTestBase
 
          session.close();
 
-         Assert.assertTrue(server.getPostOffice().getPagingManager().getTotalMemory() > 0);
-
          session = sf.createSession(null, null, false, true, true, false, 0);
 
          ClientConsumer consumer = session.createConsumer(PageCrashTest.ADDRESS);
@@ -209,9 +207,6 @@ public class PageCrashTest extends ServiceTestBase
          consumer.close();
 
          session.close();
-
-         Assert.assertEquals(0, server.getPostOffice().getPagingManager().getTotalMemory());
-
       }
       finally
       {

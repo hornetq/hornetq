@@ -52,7 +52,7 @@ public interface JMSQueueControl extends DestinationControl
    /**
     * Returns the number of messages added to this queue since it was created.
     */
-   int getMessagesAdded();
+   long getMessagesAdded();
 
    /**
     * Returns the number of scheduled messages in this queue.

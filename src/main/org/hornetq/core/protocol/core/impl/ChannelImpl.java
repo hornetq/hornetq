@@ -29,7 +29,6 @@ import org.hornetq.core.protocol.core.CoreRemotingConnection;
 import org.hornetq.core.protocol.core.Packet;
 import org.hornetq.core.protocol.core.impl.wireformat.HornetQExceptionMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.PacketsConfirmedMessage;
-import org.hornetq.spi.core.protocol.RemotingConnection;
 
 /**
  * A ChannelImpl
@@ -73,9 +72,9 @@ public class ChannelImpl implements Channel
    private int receivedBytes;
 
    private CommandConfirmationHandler commandConfirmationHandler;
-      
+
    private volatile boolean transferring;
- 
+
    public ChannelImpl(final CoreRemotingConnection connection, final long id, final int confWindowSize)
    {
       this.connection = connection;
@@ -135,30 +134,36 @@ public class ChannelImpl implements Channel
 
    public void sendAndFlush(final Packet packet)
    {
-      send(packet, true);
+      send(packet, true, false);
    }
 
    public void send(final Packet packet)
    {
-      send(packet, false);
+      send(packet, false, false);
    }
-   
+
+   public void sendBatched(final Packet packet)
+   {
+      send(packet, false, true);
+   }
+
    public void setTransferring(boolean transferring)
    {
       this.transferring = transferring;
    }
 
    // This must never called by more than one thread concurrently
-   public void send(final Packet packet, final boolean flush)
+   
+   public void send(final Packet packet, final boolean flush, final boolean batch)
    {
       synchronized (sendLock)
       {
          packet.setChannelID(id);
-         
-         final HornetQBuffer buffer = packet.encode(connection);
+
+         HornetQBuffer buffer = packet.encode(connection);
 
          lock.lock();
-                  
+
          try
          {
             while (failingOver)
@@ -172,13 +177,12 @@ public class ChannelImpl implements Channel
                {
                }
             }
-            
-            //Sanity check
+
+            // Sanity check
             if (transferring)
             {
                throw new IllegalStateException("Cannot send a packet while channel is doing failover");
             }
-            
 
             if (resendCache != null && packet.isRequiresConfirmations())
             {
@@ -194,6 +198,10 @@ public class ChannelImpl implements Channel
       }
    }
 
+   public void checkFlushBatchBuffer()
+   {      
+   }
+   
    public Packet sendBlocking(final Packet packet) throws HornetQException
    {
       if (closed)
@@ -205,13 +213,13 @@ public class ChannelImpl implements Channel
       {
          throw new IllegalStateException("Cannot do a blocking call timeout on a server side connection");
       }
-
+      
       // Synchronized since can't be called concurrently by more than one thread and this can occur
       // E.g. blocking acknowledge() from inside a message handler at some time as other operation on main thread
       synchronized (sendBlockingLock)
       {
          packet.setChannelID(id);
-         
+
          final HornetQBuffer buffer = packet.encode(connection);
 
          lock.lock();
@@ -315,7 +323,7 @@ public class ChannelImpl implements Channel
 
       closed = true;
    }
-   
+
    public void transferConnection(final CoreRemotingConnection newConnection)
    {
       // Needs to synchronize on the connection to make sure no packets from
@@ -373,10 +381,12 @@ public class ChannelImpl implements Channel
    {
       return connection;
    }
-   
-   //Needs to be synchronized since can be called by remoting service timer thread too for timeout flush
+
+   // Needs to be synchronized since can be called by remoting service timer thread too for timeout flush
    public synchronized void flushConfirmations()
    {
+      checkFlushBatchBuffer();
+
       if (resendCache != null && receivedBytes != 0)
       {
          receivedBytes = 0;
@@ -421,7 +431,7 @@ public class ChannelImpl implements Channel
          resendCache.clear();
       }
    }
-   
+
    public void handlePacket(final Packet packet)
    {
       if (packet.getType() == PacketImpl.PACKETS_CONFIRMED)

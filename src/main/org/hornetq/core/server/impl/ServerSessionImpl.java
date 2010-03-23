@@ -83,8 +83,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
 
    // Attributes ----------------------------------------------------------------------------
 
-   // private final long id;
-
    private final String username;
 
    private final String password;
@@ -129,10 +127,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
 
    // The current currentLargeMessage being processed
    private volatile LargeServerMessage currentLargeMessage;
-
-   private boolean closed;
-
-   private final Map<SimpleString, CreditManagerHolder> creditManagerHolders = new HashMap<SimpleString, CreditManagerHolder>();
 
    private final RoutingContext routingContext = new RoutingContextImpl(null);
 
@@ -274,15 +268,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
 
       remotingConnection.removeFailureListener(this);
 
-      // Return any outstanding credits
-
-      closed = true;
-
-      for (CreditManagerHolder holder : creditManagerHolders.values())
-      {
-         holder.store.returnProducerCredits(holder.outstandingCredits);
-      }
-
       callback.closed();
    }
 
@@ -348,7 +333,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
                            final SimpleString filterString,
                            final boolean temporary,
                            final boolean durable) throws Exception
-   {      
+   {
       if (durable)
       {
          // make sure the user has privileges to create this queue
@@ -378,11 +363,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
                   if (postOffice.getBinding(name) != null)
                   {
                      postOffice.removeBinding(name);
-
-                     if (postOffice.getBindingsForAddress(name).getBindings().size() == 0)
-                     {
-                        creditManagerHolders.remove(name);
-                     }
                   }
                }
                catch (Exception e)
@@ -406,11 +386,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       server.destroyQueue(name, this);
 
       failureRunners.remove(name);
-
-      if (postOffice.getBindingsForAddress(name).getBindings().size() == 0)
-      {
-         creditManagerHolders.remove(name);
-      }
    }
 
    public QueueQueryResult executeQueueQuery(final SimpleString name) throws Exception
@@ -929,37 +904,35 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
 
       currentLargeMessage = msg;
    }
-
+   
+   private volatile SimpleString defaultAddress;
+   
    public void send(final ServerMessage message) throws Exception
    {
-      try
+      long id = storageManager.generateUniqueID();
+
+      message.setMessageID(id);
+      message.encodeMessageIDToBuffer();
+      
+      if (message.getAddress() == null)
       {
-         long id = storageManager.generateUniqueID();
-
-         message.setMessageID(id);
-         message.encodeMessageIDToBuffer();
-
-         if (message.getAddress().equals(managementAddress))
-         {
-            // It's a management message
-
-            handleManagementMessage(message);
-         }
-         else
-         {
-            doSend(message);
-         }
+         message.setAddress(defaultAddress);
       }
-      finally
+
+      if (message.getAddress().equals(managementAddress))
       {
-         try
-         {
-            releaseOutStanding(message, message.getEncodeSize());
-         }
-         catch (Exception e)
-         {
-            ServerSessionImpl.log.error("Failed to release outstanding credits", e);
-         }
+         // It's a management message
+
+         handleManagementMessage(message);
+      }
+      else
+      {
+         doSend(message);
+      }      
+      
+      if (defaultAddress == null)
+      {
+         defaultAddress = message.getAddress();
       }
    }
 
@@ -973,8 +946,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       // Immediately release the credits for the continuations- these don't contribute to the in-memory size
       // of the message
 
-      releaseOutStanding(currentLargeMessage, packetSize);
-
       currentLargeMessage.addBytes(body);
 
       if (!continues)
@@ -983,49 +954,21 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
 
          doSend(currentLargeMessage);
 
-         releaseOutStanding(currentLargeMessage, currentLargeMessage.getEncodeSize());
-
          currentLargeMessage = null;
       }
    }
 
    public void requestProducerCredits(final SimpleString address, final int credits) throws Exception
-   {
-      final CreditManagerHolder holder = getCreditManagerHolder(address);
-
-      // Requesting -ve credits means returning them
-
-      if (credits < 0)
+   { 
+      PagingStore store = postOffice.getPagingManager().getPageStore(address);
+      
+      store.executeRunnableWhenMemoryAvailable(new Runnable()
       {
-         releaseOutStanding(address, -credits);
-      }
-      else
-      {
-         int gotCredits = holder.manager.acquireCredits(credits, new CreditsAvailableRunnable()
+         public void run()
          {
-            public boolean run(final int credits)
-            {
-               synchronized (ServerSessionImpl.this)
-               {
-                  if (!closed)
-                  {
-                     sendProducerCredits(holder, credits, address);
-
-                     return true;
-                  }
-                  else
-                  {
-                     return false;
-                  }
-               }
-            }
-         });
-
-         if (gotCredits > 0)
-         {
-            sendProducerCredits(holder, gotCredits, address);
+            callback.sendProducerCreditsMessage(credits, address);
          }
-      }
+      });
    }
 
    public void setTransferring(final boolean transferring)
@@ -1184,58 +1127,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       }
    }
 
-   /*
-    * The way flow producer flow control works is as follows:
-    * The client can only send messages as long as it has credits. It requests credits from the server
-    * which the server immediately sends if it has them. If the address is full it adds the request to
-    * a list of waiting and the credits will get sent as soon as some free up.
-    * The amount of real memory taken up by a message and references on the server is likely to be larger
-    * than the encode size of the message. Therefore when a message arrives on the server, more credits
-    * are taken corresponding to the real in memory size of the message and refs, and the original credits are
-    * returned. When a session closes any outstanding credits will be returned.
-    * 
-    */
-   private void releaseOutStanding(final ServerMessage message, final int credits) throws Exception
-   {
-      releaseOutStanding(message.getAddress(), credits);
-   }
-
-   private void releaseOutStanding(final SimpleString address, final int credits) throws Exception
-   {
-      CreditManagerHolder holder = getCreditManagerHolder(address);
-
-      holder.outstandingCredits -= credits;
-
-      holder.store.returnProducerCredits(credits);
-   }
-
-   private CreditManagerHolder getCreditManagerHolder(final SimpleString address) throws Exception
-   {
-      CreditManagerHolder holder = creditManagerHolders.get(address);
-
-      if (holder == null)
-      {
-         PagingStore store = postOffice.getPagingManager().getPageStore(address);
-
-         holder = new CreditManagerHolder(store);
-
-         creditManagerHolders.put(address, holder);
-      }
-
-      return holder;
-   }
-
-   private void sendProducerCredits(final CreditManagerHolder holder, final int credits, final SimpleString address)
-   {
-      holder.outstandingCredits += credits;
-
-      callback.sendProducerCreditsMessage(credits, address, -1);
-   }
-
    private void doSend(final ServerMessage msg) throws Exception
    {
-      // Look up the paging store
-
       // check the user has write access to this address.
       try
       {
@@ -1268,19 +1161,4 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       routingContext.clear();
    }
 
-   private static final class CreditManagerHolder
-   {
-      CreditManagerHolder(final PagingStore store)
-      {
-         this.store = store;
-
-         manager = store.getProducerCreditManager();
-      }
-
-      final PagingStore store;
-
-      final ServerProducerCreditManager manager;
-
-      volatile int outstandingCredits;
-   }
 }

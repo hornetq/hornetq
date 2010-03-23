@@ -17,7 +17,6 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.ServerMessage;
-import org.hornetq.core.server.impl.ServerProducerCreditManager;
 import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 
 /**
@@ -44,6 +43,8 @@ public interface PagingStore extends HornetQComponent
    long getPageSizeBytes();
 
    long getAddressSize();
+   
+   long getMaxSize();
 
    boolean isPaging();
 
@@ -61,13 +62,7 @@ public interface PagingStore extends HornetQComponent
     */
    boolean startDepaging();
 
-   void addSize(ServerMessage message, boolean add);
-
-   void addSize(MessageReference reference, boolean add);
-
-   int getAvailableProducerCredits(int desired);
-
-   void returnProducerCredits(int credits);
-
-   ServerProducerCreditManager getProducerCreditManager();
+   void addSize(int size);
+   
+   void executeRunnableWhenMemoryAvailable(Runnable runnable);
 }

@@ -1280,6 +1280,7 @@ public class LargeMessageBufferImpl implements LargeMessageBufferInternal
       {
          throw new IllegalAccessError("Can't read the messageBody after setting outputStream");
       }
+      
       if (index >= totalSize)
       {
          throw new IndexOutOfBoundsException();

@@ -135,7 +135,7 @@ public class JMSQueueControlUsingJMSTest extends JMSQueueControlTest
             return (Integer)proxy.retrieveAttributeValue("messageCount");
          }
 
-         public int getMessagesAdded()
+         public long getMessagesAdded()
          {
             return (Integer)proxy.retrieveAttributeValue("messagesAdded");
          }

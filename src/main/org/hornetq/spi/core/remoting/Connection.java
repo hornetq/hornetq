@@ -65,4 +65,12 @@ public interface Connection
     * @return the remote address
     */
    String getRemoteAddress();
+   
+   /**
+    * The batch size in bytes of the buffer for batching sends
+    * or -1 if the connection does not support batching
+    * 
+    * @return
+    */
+   int getBatchingBufferSize();
 }

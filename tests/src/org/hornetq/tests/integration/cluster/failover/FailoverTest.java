@@ -2270,6 +2270,7 @@ public class FailoverTest extends FailoverTestBase
     */
    protected void setBody(final int i, final ClientMessage message) throws Exception
    {
+      log.info("in failovertest:: setbody");
       message.getBodyBuffer().writeString("message" + i);
    }
 

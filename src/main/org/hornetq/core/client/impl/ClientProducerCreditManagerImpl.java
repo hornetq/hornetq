@@ -85,13 +85,13 @@ public class ClientProducerCreditManagerImpl implements ClientProducerCreditMana
       }
    }
 
-   public synchronized void receiveCredits(final SimpleString address, final int credits, final int offset)
+   public synchronized void receiveCredits(final SimpleString address, final int credits)
    {
       ClientProducerCredits cr = producerCredits.get(address);
 
       if (cr != null)
       {
-         cr.receiveCredits(credits, offset);
+         cr.receiveCredits(credits);
       }
    }
 

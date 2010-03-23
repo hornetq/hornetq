@@ -310,7 +310,7 @@ public class MessageHeaderTest extends MessageHeaderTestBase
       while (en.hasMoreElements())
       {
          String propName = (String)en.nextElement();
-
+         
          propNames.add(propName);
       }
 

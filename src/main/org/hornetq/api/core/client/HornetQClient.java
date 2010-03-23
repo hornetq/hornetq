@@ -48,7 +48,7 @@ public class HornetQClient
 
    public static final int DEFAULT_CONFIRMATION_WINDOW_SIZE = -1;
 
-   public static final int DEFAULT_PRODUCER_WINDOW_SIZE = 1024 * 1024;
+   public static final int DEFAULT_PRODUCER_WINDOW_SIZE = 64 * 1024;
 
    public static final int DEFAULT_PRODUCER_MAX_RATE = -1;
 

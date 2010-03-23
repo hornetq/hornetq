@@ -177,10 +177,13 @@ public class ReceiveTest extends ServiceTestBase
          cp.send(sendSession.createMessage(false));
          cp.send(sendSession.createMessage(false));
          cp.send(sendSession.createMessage(false));
-         // at this point we know that the first consumer has a messge in ites buffer
+
          Assert.assertNotNull(cc2.receive(5000));
-         Assert.assertNotNull(cc2.receive(5000));
-         Assert.assertNotNull(cc.receiveImmediate());
+         Assert.assertNotNull(cc.receive(5000));
+         if (cc.receiveImmediate() == null)
+         {
+            assertNotNull(cc2.receiveImmediate());
+         }
          session.close();
          sendSession.close();
       }

@@ -24,6 +24,7 @@ import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.MessageHandler;
+import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
 
@@ -32,6 +33,8 @@ import org.hornetq.tests.util.ServiceTestBase;
  */
 public class AutogroupIdTest extends ServiceTestBase
 {
+   private static final Logger log = Logger.getLogger(AutogroupIdTest.class);
+
    public final SimpleString addressA = new SimpleString("addressA");
 
    public final SimpleString queueA = new SimpleString("queueA");
@@ -73,6 +76,8 @@ public class AutogroupIdTest extends ServiceTestBase
          ClientConsumer consumer2 = session.createConsumer(groupTestQ);
          consumer2.setMessageHandler(myMessageHandler2);
 
+         log.info("starting session");
+         
          session.start();
 
          final int numMessages = 100;
@@ -84,9 +89,11 @@ public class AutogroupIdTest extends ServiceTestBase
          latch.await();
 
          session.close();
+         
+         log.info(myMessageHandler2.messagesReceived);
 
-         Assert.assertEquals(myMessageHandler.messagesReceived, 100);
-         Assert.assertEquals(myMessageHandler2.messagesReceived, 0);
+         Assert.assertEquals(100, myMessageHandler.messagesReceived);
+         Assert.assertEquals(0, myMessageHandler2.messagesReceived);
       }
       finally
       {
@@ -200,8 +207,8 @@ public class AutogroupIdTest extends ServiceTestBase
 
          session.close();
 
-         Assert.assertEquals(myMessageHandler.messagesReceived, 50);
-         Assert.assertEquals(myMessageHandler2.messagesReceived, 50);
+         Assert.assertEquals(50, myMessageHandler.messagesReceived);
+         Assert.assertEquals(50, myMessageHandler2.messagesReceived);
       }
       finally
       {

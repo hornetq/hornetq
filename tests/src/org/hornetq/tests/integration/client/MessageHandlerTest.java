@@ -17,6 +17,7 @@ import java.util.concurrent.TimeUnit;
 
 import junit.framework.Assert;
 
+import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
@@ -135,13 +136,13 @@ public class MessageHandlerTest extends ServiceTestBase
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = createTextMessage("m" + i, session);
+         
          message.putIntProperty(new SimpleString("i"), i);
+
          producer.send(message);
       }
 
       final ClientConsumer consumer = session.createConsumer(QUEUE);
-
-      session.start();
 
       CountDownLatch latch = new CountDownLatch(50);
 
@@ -171,14 +172,19 @@ public class MessageHandlerTest extends ServiceTestBase
                {
                   failed = true;
                }
+               
                messageReceived++;
+               
+               log.info("got message " + messageReceived);
+               
                latch.countDown();
 
                if (latch.getCount() == 0)
                {
-
                   message.acknowledge();
+                  
                   started = false;
+                  
                   consumer.setMessageHandler(null);
                }
 
@@ -192,6 +198,9 @@ public class MessageHandlerTest extends ServiceTestBase
       MyHandler handler = new MyHandler(latch);
 
       consumer.setMessageHandler(handler);
+      
+      session.start();
+
 
       latch.await();
 

@@ -68,7 +68,7 @@ public class JMSQueueControlImpl extends StandardMBean implements JMSQueueContro
 
    private static String createFilterForJMSMessageID(final String jmsMessageID) throws Exception
    {
-      return HornetQMessage.HORNETQ_MESSAGE_ID + " = '" + jmsMessageID + "'";
+      return HornetQMessage.JMSMESSAGEID_HEADER_NAME + " = '" + jmsMessageID + "'";
    }
 
    static String toJSON(final Map<String, Object>[] messages)
@@ -119,7 +119,7 @@ public class JMSQueueControlImpl extends StandardMBean implements JMSQueueContro
       return coreQueueControl.getMessageCount();
    }
 
-   public int getMessagesAdded()
+   public long getMessagesAdded()
    {
       return coreQueueControl.getMessagesAdded();
    }

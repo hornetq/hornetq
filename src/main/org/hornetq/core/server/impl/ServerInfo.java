@@ -83,7 +83,7 @@ public class ServerInfo
    private String appendPagingInfos()
    {
       String info = "";
-      info += String.format("total paging memory:   %s\n", SizeFormatterUtil.sizeof(pagingManager.getTotalMemory()));
+      
       for (SimpleString storeName : pagingManager.getStoreNames())
       {
          PagingStore pageStore;

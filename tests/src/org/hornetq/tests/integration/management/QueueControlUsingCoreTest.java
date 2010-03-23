@@ -22,7 +22,6 @@ import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.management.QueueControl;
 import org.hornetq.api.core.management.ResourceNames;
-import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 
@@ -116,7 +115,7 @@ public class QueueControlUsingCoreTest extends QueueControlTest
             return (Integer)proxy.retrieveAttributeValue("messageCount");
          }
 
-         public int getMessagesAdded()
+         public long getMessagesAdded()
          {
             return (Integer)proxy.retrieveAttributeValue("messagesAdded");
          }

@@ -1186,6 +1186,8 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
          Channel channel0 = connection.getChannel(0, -1);
 
          channel0.send(ping);
+         
+         connection.flush();
       }
 
       public synchronized void cancel()

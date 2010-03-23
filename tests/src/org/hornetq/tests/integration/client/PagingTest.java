@@ -139,10 +139,6 @@ public class PagingTest extends ServiceTestBase
 
          session.close();
 
-         Assert.assertTrue("TotalMemory expected to be > 0 when it was " + server.getPostOffice()
-                                                                                 .getPagingManager()
-                                                                                 .getTotalMemory(),
-                           server.getPostOffice().getPagingManager().getTotalMemory() > 0);
 
          server.stop();
 
@@ -154,11 +150,6 @@ public class PagingTest extends ServiceTestBase
          server.start();
 
          sf = createInVMFactory();
-
-         Assert.assertTrue("TotalMemory expected to be > 0 when it was " + server.getPostOffice()
-                                                                                 .getPagingManager()
-                                                                                 .getTotalMemory(),
-                           server.getPostOffice().getPagingManager().getTotalMemory() > 0);
 
          session = sf.createSession(null, null, false, true, true, false, 0);
 
@@ -198,9 +189,6 @@ public class PagingTest extends ServiceTestBase
          consumer.close();
 
          session.close();
-
-         Assert.assertEquals(0, server.getPostOffice().getPagingManager().getTotalMemory());
-
       }
       finally
       {
@@ -346,9 +334,6 @@ public class PagingTest extends ServiceTestBase
          consumer.close();
 
          session.close();
-
-         Assert.assertEquals(0, server.getPostOffice().getPagingManager().getTotalMemory());
-
       }
       finally
       {
@@ -492,9 +477,6 @@ public class PagingTest extends ServiceTestBase
          consumer.close();
 
          session.close();
-
-         Assert.assertEquals(0, server.getPostOffice().getPagingManager().getTotalMemory());
-
       }
       finally
       {
@@ -541,8 +523,6 @@ public class PagingTest extends ServiceTestBase
 
          ClientProducer producer = session.createProducer(PagingTest.ADDRESS);
 
-         long initialSize = server.getPostOffice().getPagingManager().getTotalMemory();
-
          ClientMessage message = null;
 
          for (int i = 0; i < numberOfMessages; i++)
@@ -570,8 +550,6 @@ public class PagingTest extends ServiceTestBase
          Assert.assertNull(consumer.receiveImmediate());
 
          session.close();
-
-         Assert.assertEquals(initialSize, server.getPostOffice().getPagingManager().getTotalMemory());
       }
       finally
       {
@@ -618,8 +596,6 @@ public class PagingTest extends ServiceTestBase
 
          ClientProducer producer = session.createProducer(PagingTest.ADDRESS);
 
-         long initialSize = server.getPostOffice().getPagingManager().getTotalMemory();
-
          ClientMessage message = null;
 
          for (int i = 0; i < numberOfMessages; i++)
@@ -653,8 +629,6 @@ public class PagingTest extends ServiceTestBase
          session.commit();
 
          session.close();
-
-         Assert.assertEquals(initialSize, server.getPostOffice().getPagingManager().getTotalMemory());
       }
       finally
       {
@@ -739,7 +713,6 @@ public class PagingTest extends ServiceTestBase
 
          Assert.assertNull(consumer.receiveImmediate());
 
-         Assert.assertEquals(0, server.getPostOffice().getPagingManager().getTotalMemory());
          Assert.assertEquals(0, server.getPostOffice()
                                       .getPagingManager()
                                       .getPageStore(PagingTest.ADDRESS)
@@ -803,7 +776,6 @@ public class PagingTest extends ServiceTestBase
 
          session.close();
 
-         Assert.assertEquals(0, server.getPostOffice().getPagingManager().getTotalMemory());
          Assert.assertEquals(0, server.getPostOffice()
                                       .getPagingManager()
                                       .getPageStore(PagingTest.ADDRESS)
@@ -985,8 +957,6 @@ public class PagingTest extends ServiceTestBase
 
          sf = createInVMFactory();
 
-         Assert.assertTrue(server.getPostOffice().getPagingManager().getTotalMemory() > 0);
-
          session = sf.createSession(null, null, false, true, true, false, 0);
 
          session.start();
@@ -1020,10 +990,6 @@ public class PagingTest extends ServiceTestBase
             Assert.assertEquals("Queue someQueue" + i + " was supposed to be empty", 0, queue.getMessageCount());
             Assert.assertEquals("Queue someQueue" + i + " was supposed to be empty", 0, queue.getDeliveringCount());
          }
-
-         Assert.assertEquals("There are pending messages on the server", 0, server.getPostOffice()
-                                                                                  .getPagingManager()
-                                                                                  .getTotalMemory());
 
       }
       finally

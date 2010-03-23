@@ -36,6 +36,7 @@ import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.core.logging.Logger;
+import org.hornetq.utils.UUID;
 import org.hornetq.utils.UUIDGenerator;
 
 /**
@@ -76,10 +77,6 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
 
    private final HornetQDestination defaultDestination;
 
-   private final SimpleString messageIDPrefix;
-
-   private volatile long sequenceNumber;
-
    private final ClientSession clientSession;
 
    // Constructors --------------------------------------------------
@@ -98,12 +95,6 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
       this.defaultDestination = defaultDestination;
 
       this.clientSession = clientSession;
-
-      // TODO the UUID should be generated at the JMS Connection level,
-      // then session, producers & messages ID could be created using simple sequences
-      String uuid = UUIDGenerator.getInstance().generateSimpleStringUUID().toString();
-
-      messageIDPrefix = new SimpleString("ID:" + uuid + ":");
    }
 
    // MessageProducer implementation --------------------------------
@@ -416,11 +407,13 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
       {
          // Generate an id
 
-         SimpleString msgID = generateMessageID();
-
-         msg.getCoreMessage().putStringProperty(HornetQMessage.HORNETQ_MESSAGE_ID, msgID);
-
-         msg.resetMessageID(msgID.toString());
+         UUID uid = UUIDGenerator.getInstance().generateUUID();
+         
+         //msg.getCoreMessage().putBytesProperty(HornetQMessage.HORNETQ_MESSAGE_ID, uid.asBytes());
+         
+         msg.getCoreMessage().putStringProperty(HornetQMessage.JMSMESSAGEID_HEADER_NAME, new SimpleString("ID:" + uid.toString()));
+         
+         msg.resetMessageID(null);
       }
 
       if (foreign)
@@ -464,46 +457,6 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
          throw JMSExceptionHelper.convertFromHornetQException(e);
       }
    }
-
-   // This is faster than doing standard String concatenation and conversions from long to string
-   private SimpleString generateMessageID()
-   {
-      byte[] prefixData = messageIDPrefix.getData();
-
-      int len = prefixData.length + 16 * 2;
-
-      byte[] bytes = new byte[len];
-
-      System.arraycopy(messageIDPrefix.getData(), 0, bytes, 0, prefixData.length);
-
-      int j = prefixData.length;
-
-      long l = sequenceNumber++;
-
-      for (int i = 0; i < 16; i++)
-      {
-         int ch = (int)(l & 0xF);
-
-         l = l >> 4;
-
-         char chr = (char)(ch + 48);
-
-         bytes[j] = (byte)chr;
-
-         j += 2;
-      }
-
-      return new SimpleString(bytes);
-   }
-
-   // private SimpleString generateOldMessageID()
-   // {
-   // SimpleString ss = new SimpleString(messageIDPrefix.getData());
-   //      
-   // ss.concat(String.valueOf(sequenceNumber++));
-   //      
-   // return ss;
-   // }
 
    private void checkClosed() throws JMSException
    {

@@ -40,8 +40,8 @@ import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.core.client.impl.FailoverManager;
 import org.hornetq.core.client.impl.FailoverManagerImpl;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.config.DivertConfiguration;
 import org.hornetq.core.config.CoreQueueConfiguration;
+import org.hornetq.core.config.DivertConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.deployers.Deployer;
 import org.hornetq.core.deployers.DeploymentManager;
@@ -554,6 +554,7 @@ public class HornetQServerImpl implements HornetQServer
                                       final boolean xa,
                                       final SessionCallback callback) throws Exception
    {
+      
       if (securityStore != null)
       {
          securityStore.authenticate(username, password);
@@ -790,12 +791,6 @@ public class HornetQServerImpl implements HornetQServer
                                    addressSettingsRepository);
    }
 
-   /** for use on sub-classes */
-   protected ExecutorService getExecutor()
-   {
-      return threadPool;
-   }
-
    /** 
     * This method is protected as it may be used as a hook for creating a custom storage manager (on tests for instance) 
     */
@@ -902,7 +897,7 @@ public class HornetQServerImpl implements HornetQServer
 
       managementService = new ManagementServiceImpl(mbeanServer, configuration);
 
-      remotingService = new RemotingServiceImpl(configuration, this, managementService, threadPool, scheduledPool);
+      remotingService = new RemotingServiceImpl(configuration, this, managementService, scheduledPool);
 
       if (configuration.getMemoryMeasureInterval() != -1)
       {

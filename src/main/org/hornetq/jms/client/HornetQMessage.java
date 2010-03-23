@@ -42,6 +42,7 @@ import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.jms.HornetQJMSConstants;
 import org.hornetq.core.client.impl.ClientMessageImpl;
 import org.hornetq.core.logging.Logger;
+import org.hornetq.utils.UUID;
 
 /**
  * HornetQ implementation of a JMS Message.
@@ -69,7 +70,9 @@ public class HornetQMessage implements javax.jms.Message
 
    private static final SimpleString CORRELATIONID_HEADER_NAME = new SimpleString("JMSCorrelationID");
 
-   public static final SimpleString HORNETQ_MESSAGE_ID = new SimpleString("JMSMessageID");
+   //public static final SimpleString HORNETQ_MESSAGE_ID = new SimpleString("_HQI");
+   
+   public static final SimpleString JMSMESSAGEID_HEADER_NAME = new SimpleString("JMSMessageID");
 
    private static final SimpleString TYPE_HEADER_NAME = new SimpleString("JMSType");
 
@@ -101,8 +104,7 @@ public class HornetQMessage implements javax.jms.Message
 
       for (Map.Entry<String, Object> entry : coreMessage.entrySet())
       {
-         if (entry.getKey().equals("messageID") || entry.getKey().equals("destination") ||
-             entry.getKey().equals("type") ||
+         if (entry.getKey().equals("type") ||
              entry.getKey().equals("durable") ||
              entry.getKey().equals("expiration") ||
              entry.getKey().equals("timestamp") ||
@@ -305,17 +307,45 @@ public class HornetQMessage implements javax.jms.Message
 
    // javax.jmx.Message implementation ------------------------------
 
+//   public String getJMSMessageID()
+//   {
+//      if (msgID == null)
+//      {
+//         byte[] bytes = message.getBytesProperty(HornetQMessage.HORNETQ_MESSAGE_ID);
+//
+//         msgID = bytes == null ? null : "ID:" + new UUID(UUID.TYPE_TIME_BASED, bytes).toString();
+//      }
+//      return msgID;
+//   }
+   
    public String getJMSMessageID()
    {
       if (msgID == null)
       {
-         SimpleString id = message.getSimpleStringProperty(HornetQMessage.HORNETQ_MESSAGE_ID);
-
-         msgID = id == null ? null : id.toString();
+         msgID = message.getStringProperty(HornetQMessage.JMSMESSAGEID_HEADER_NAME);
       }
       return msgID;
    }
 
+//   public void setJMSMessageID(final String jmsMessageID) throws JMSException
+//   {
+//      if (jmsMessageID != null && !jmsMessageID.startsWith("ID:"))
+//      {
+//         throw new JMSException("JMSMessageID must start with ID:");
+//      }
+//
+//      if (jmsMessageID == null)
+//      {
+//         message.removeProperty(HornetQMessage.HORNETQ_MESSAGE_ID);
+//      }
+//      else
+//      {
+//         message.putStringProperty(HornetQMessage.HORNETQ_MESSAGE_ID, new SimpleString(jmsMessageID));
+//      }
+//
+//      msgID = jmsMessageID;
+//   }
+   
    public void setJMSMessageID(final String jmsMessageID) throws JMSException
    {
       if (jmsMessageID != null && !jmsMessageID.startsWith("ID:"))
@@ -325,11 +355,11 @@ public class HornetQMessage implements javax.jms.Message
 
       if (jmsMessageID == null)
       {
-         message.removeProperty(HornetQMessage.HORNETQ_MESSAGE_ID);
+         message.removeProperty(HornetQMessage.JMSMESSAGEID_HEADER_NAME);
       }
       else
       {
-         message.putStringProperty(HornetQMessage.HORNETQ_MESSAGE_ID, new SimpleString(jmsMessageID));
+         message.putStringProperty(HornetQMessage.JMSMESSAGEID_HEADER_NAME, new SimpleString(jmsMessageID));
       }
 
       msgID = jmsMessageID;

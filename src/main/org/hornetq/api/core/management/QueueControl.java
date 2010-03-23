@@ -80,7 +80,7 @@ public interface QueueControl
    /**
     * Returns the number of messages added to this queue since it was created.
     */
-   int getMessagesAdded();
+   long getMessagesAdded();
 
    /**
     * Returns the expiry address associated to this queue.

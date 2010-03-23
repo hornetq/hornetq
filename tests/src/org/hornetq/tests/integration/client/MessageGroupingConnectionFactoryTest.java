@@ -44,42 +44,26 @@ public class MessageGroupingConnectionFactoryTest extends UnitTestCase
 
    public void testBasicGroupingUsingConnection() throws Exception
    {
-      doTestBasicGroupingUsingConnectionFactory(false);
-   }
-
-   public void testBasicGroupingUsingConnectionDirect() throws Exception
-   {
-      doTestBasicGroupingUsingConnectionFactory(true);
+      doTestBasicGroupingUsingConnectionFactory();
    }
 
    public void testBasicGroupingMultipleProducers() throws Exception
    {
-      doTestBasicGroupingMultipleProducers(false);
+      doTestBasicGroupingMultipleProducers();
    }
 
-   public void testBasicGroupingMultipleProducersDirect() throws Exception
-   {
-      doTestBasicGroupingMultipleProducers(true);
-   }
-
-   private void doTestBasicGroupingUsingConnectionFactory(final boolean directDelivery) throws Exception
+   private void doTestBasicGroupingUsingConnectionFactory() throws Exception
    {
       ClientProducer clientProducer = clientSession.createProducer(qName);
       ClientConsumer consumer = clientSession.createConsumer(qName);
       ClientConsumer consumer2 = clientSession.createConsumer(qName);
-      if (directDelivery)
-      {
-         clientSession.start();
-      }
+      clientSession.start();
+      
       int numMessages = 100;
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = createTextMessage("m" + i, clientSession);
          clientProducer.send(message);
-      }
-      if (!directDelivery)
-      {
-         clientSession.start();
       }
       CountDownLatch latch = new CountDownLatch(numMessages);
       DummyMessageHandler dummyMessageHandler = new DummyMessageHandler(latch, true);
@@ -93,17 +77,15 @@ public class MessageGroupingConnectionFactoryTest extends UnitTestCase
       consumer2.close();
    }
 
-   private void doTestBasicGroupingMultipleProducers(final boolean directDelivery) throws Exception
+   private void doTestBasicGroupingMultipleProducers() throws Exception
    {
       ClientProducer clientProducer = clientSession.createProducer(qName);
       ClientProducer clientProducer2 = clientSession.createProducer(qName);
       ClientProducer clientProducer3 = clientSession.createProducer(qName);
       ClientConsumer consumer = clientSession.createConsumer(qName);
       ClientConsumer consumer2 = clientSession.createConsumer(qName);
-      if (directDelivery)
-      {
-         clientSession.start();
-      }
+      clientSession.start();
+      
       int numMessages = 100;
       for (int i = 0; i < numMessages; i++)
       {
@@ -111,10 +93,6 @@ public class MessageGroupingConnectionFactoryTest extends UnitTestCase
          clientProducer.send(message);
          clientProducer2.send(message);
          clientProducer3.send(message);
-      }
-      if (!directDelivery)
-      {
-         clientSession.start();
       }
       CountDownLatch latch = new CountDownLatch(numMessages * 3);
       DummyMessageHandler dummyMessageHandler = new DummyMessageHandler(latch, true);

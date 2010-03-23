@@ -17,9 +17,15 @@ import junit.framework.Assert;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.core.client.*;
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
+import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.server.HornetQServer;
@@ -37,6 +43,9 @@ public class MessagePriorityTest extends UnitTestCase
 
    // Constants -----------------------------------------------------
 
+   private static final Logger log = Logger.getLogger(MessagePriorityTest.class);
+
+   
    // Attributes ----------------------------------------------------
 
    private HornetQServer server;
@@ -95,9 +104,11 @@ public class MessagePriorityTest extends UnitTestCase
       SimpleString address = RandomUtil.randomSimpleString();
 
       session.createQueue(address, queue, false);
+      
+      session.start();
 
       ClientProducer producer = session.createProducer(address);
-      session.start();
+      
       ClientConsumer consumer = session.createConsumer(queue);
 
       for (int i = 0; i < 10; i++)
@@ -106,8 +117,12 @@ public class MessagePriorityTest extends UnitTestCase
          m.setPriority((byte)i);
          producer.send(m);
       }
-
-      // expect to consumer message with higher priority first
+      
+      //Wait for msgs to reach client side
+      
+      Thread.sleep(1000);
+      
+      // expect to consume message with higher priority first
       for (int i = 9; i >= 0; i--)
       {
          ClientMessage m = consumer.receive(500);

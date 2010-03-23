@@ -22,7 +22,6 @@ import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.BodyEncoder;
 import org.hornetq.core.server.LargeServerMessage;
-import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.impl.ServerMessageImpl;
 import org.hornetq.utils.DataConstants;
@@ -194,9 +193,9 @@ public class LargeServerMessageImpl extends ServerMessageImpl implements LargeSe
    }
 
    @Override
-   public synchronized int decrementRefCount(final MessageReference reference) throws Exception
+   public synchronized int decrementRefCount() throws Exception
    {
-      int currentRefCount = super.decrementRefCount(reference);
+      int currentRefCount = super.decrementRefCount();
 
       // We use <= as this could be used by load.
       // because of a failure, no references were loaded, so we have 0... and we still need to delete the associated
@@ -316,9 +315,8 @@ public class LargeServerMessageImpl extends ServerMessageImpl implements LargeSe
             file = storageManager.createFileForLargeMessage(getMessageID(), durable);
 
             file.open();
-
+            
             bodySize = file.size();
-
          }
       }
       catch (Exception e)

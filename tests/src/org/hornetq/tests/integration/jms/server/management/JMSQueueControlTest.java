@@ -823,6 +823,7 @@ public class JMSQueueControlTest extends ManagementTestBase
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
       conf.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
+      conf.setFileDeploymentEnabled(false);
       server = HornetQServers.newHornetQServer(conf, mbeanServer, false);
       server.start();
 

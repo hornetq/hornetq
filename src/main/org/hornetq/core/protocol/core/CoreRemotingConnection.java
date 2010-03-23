@@ -86,4 +86,10 @@ public interface CoreRemotingConnection extends RemotingConnection
     * @return the lock
     */
    Object getTransferLock();
+   
+   /**
+    * 
+    * @return the maximum batch size used when batching writes
+    */
+   int getMaxBatchSize();
 }

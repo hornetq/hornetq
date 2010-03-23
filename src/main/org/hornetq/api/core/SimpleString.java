@@ -211,6 +211,11 @@ public class SimpleString implements CharSequence, Serializable, Comparable<Simp
    @Override
    public boolean equals(final Object other)
    {
+      if (this == other)
+      {
+         return true;
+      }
+      
       if (other instanceof SimpleString)
       {
          SimpleString s = (SimpleString)other;

@@ -20,6 +20,7 @@ import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
 
@@ -34,6 +35,9 @@ public class OrderTest extends ServiceTestBase
 {
 
    // Constants -----------------------------------------------------
+   
+   private static final Logger log = Logger.getLogger(OrderTest.class);
+
 
    // Attributes ----------------------------------------------------
 
@@ -119,6 +123,7 @@ public class OrderTest extends ServiceTestBase
                if (!started || started && i % 2 == 0)
                {
                   ClientMessage msg = cons.receive(10000);
+                  
                   Assert.assertEquals(i, msg.getIntProperty("id").intValue());
                }
             }
@@ -132,6 +137,7 @@ public class OrderTest extends ServiceTestBase
                if (!started || started && i % 2 == 0)
                {
                   ClientMessage msg = cons.receive(10000);
+               
                   Assert.assertEquals(i, msg.getIntProperty("id").intValue());
                }
             }

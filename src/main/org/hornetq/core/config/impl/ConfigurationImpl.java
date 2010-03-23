@@ -62,7 +62,7 @@ public class ConfigurationImpl implements Configuration
 
    public static final int DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE = 5;
 
-   public static final int DEFAULT_THREAD_POOL_MAX_SIZE = -1;
+   public static final int DEFAULT_THREAD_POOL_MAX_SIZE = 30;
 
    public static final long DEFAULT_SECURITY_INVALIDATION_INTERVAL = 10000;
 

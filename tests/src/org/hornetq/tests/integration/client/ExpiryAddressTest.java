@@ -58,7 +58,6 @@ public class ExpiryAddressTest extends UnitTestCase
       ClientConsumer clientConsumer = clientSession.createConsumer(qName);
       ClientMessage m = clientConsumer.receiveImmediate();
       Assert.assertNull(m);
-      System.out.println("size3 = " + server.getPostOffice().getPagingManager().getTotalMemory());
       m = clientConsumer.receiveImmediate();
       Assert.assertNull(m);
       clientConsumer.close();
@@ -67,9 +66,6 @@ public class ExpiryAddressTest extends UnitTestCase
       Assert.assertNotNull(m);
       Assert.assertEquals(m.getBodyBuffer().readString(), "heyho!");
       m.acknowledge();
-
-      // PageSize should be the same as when it started
-      Assert.assertEquals(0, server.getPostOffice().getPagingManager().getTotalMemory());
    }
 
    public void testBasicSendToMultipleQueues() throws Exception
@@ -88,19 +84,11 @@ public class ExpiryAddressTest extends UnitTestCase
       ClientMessage clientMessage = createTextMessage("heyho!", clientSession);
       clientMessage.setExpiration(System.currentTimeMillis());
 
-      System.out.println("initialPageSize = " + server.getPostOffice().getPagingManager().getTotalMemory());
-
       producer.send(clientMessage);
-
-      System.out.println("pageSize after message sent = " + server.getPostOffice().getPagingManager().getTotalMemory());
 
       clientSession.start();
       ClientConsumer clientConsumer = clientSession.createConsumer(qName);
       ClientMessage m = clientConsumer.receiveImmediate();
-
-      System.out.println("pageSize after message received = " + server.getPostOffice()
-                                                                      .getPagingManager()
-                                                                      .getTotalMemory());
 
       Assert.assertNull(m);
 
@@ -133,9 +121,6 @@ public class ExpiryAddressTest extends UnitTestCase
       clientConsumer.close();
 
       clientSession.commit();
-
-      // PageGlobalSize should be untouched as the message expired
-      Assert.assertEquals(0, server.getPostOffice().getPagingManager().getTotalMemory());
    }
 
    public void testBasicSendToNoQueue() throws Exception

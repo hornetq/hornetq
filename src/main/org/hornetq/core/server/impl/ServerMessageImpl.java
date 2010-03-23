@@ -14,7 +14,6 @@
 package org.hornetq.core.server.impl;
 
 import java.io.InputStream;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
@@ -40,10 +39,9 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
 {
    private static final Logger log = Logger.getLogger(ServerMessageImpl.class);
 
-   private final AtomicInteger durableRefCount = new AtomicInteger(0);
+   private int durableRefCount;
 
-   /** Global reference counts for paging control */
-   private final AtomicInteger refCount = new AtomicInteger(0);
+   private int refCount;
 
    private PagingStore pagingStore;
 
@@ -108,53 +106,57 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
       return ref;
    }
 
-   public int incrementRefCount(final MessageReference reference) throws Exception
+   public synchronized int incrementRefCount() throws Exception
    {
-      int count = refCount.incrementAndGet();
-
+      refCount ++;
+      
       if (pagingStore != null)
-      {
-         if (count == 1)
+      {         
+         if (refCount == 1)
          {
-            pagingStore.addSize(this, true);
+            pagingStore.addSize(getMemoryEstimate() + MessageReferenceImpl.getMemoryEstimate());
          }
-
-         pagingStore.addSize(reference, true);
+         else
+         {
+            pagingStore.addSize(MessageReferenceImpl.getMemoryEstimate());
+         }
       }
 
-      return count;
+      return refCount;
    }
 
-   public int decrementRefCount(final MessageReference reference) throws Exception
+   public synchronized int decrementRefCount() throws Exception
    {
-      int count = refCount.decrementAndGet();
+      int count = --refCount;
 
       if (pagingStore != null)
       {
          if (count == 0)
          {
-            pagingStore.addSize(this, false);
+            pagingStore.addSize(-getMemoryEstimate() - MessageReferenceImpl.getMemoryEstimate());
          }
-
-         pagingStore.addSize(reference, false);
+         else
+         {
+            pagingStore.addSize(-MessageReferenceImpl.getMemoryEstimate());
+         }
       }
 
       return count;
    }
 
-   public int incrementDurableRefCount()
+   public synchronized int incrementDurableRefCount()
    {
-      return durableRefCount.incrementAndGet();
+      return ++durableRefCount;
    }
 
-   public int decrementDurableRefCount()
+   public synchronized int decrementDurableRefCount()
    {
-      return durableRefCount.decrementAndGet();
+      return --durableRefCount;
    }
 
-   public int getRefCount()
+   public synchronized int getRefCount()
    {
-      return refCount.get();
+      return refCount;
    }
 
    public boolean isLargeMessage()

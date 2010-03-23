@@ -15,7 +15,9 @@ package org.hornetq.integration.transports.netty;
 
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -25,6 +27,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLEngine;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
@@ -48,12 +51,13 @@ import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelFactory;
 import org.jboss.netty.channel.ChannelFuture;
 import org.jboss.netty.channel.ChannelFutureListener;
+import org.jboss.netty.channel.ChannelHandler;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelPipelineCoverage;
 import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.channel.ChannelStateEvent;
-import org.jboss.netty.channel.Channels;
+import org.jboss.netty.channel.StaticChannelPipeline;
 import org.jboss.netty.channel.group.ChannelGroup;
 import org.jboss.netty.channel.group.ChannelGroupFuture;
 import org.jboss.netty.channel.group.DefaultChannelGroup;
@@ -89,7 +93,7 @@ public class NettyAcceptor implements Acceptor
    private ServerBootstrap bootstrap;
 
    private final BufferHandler handler;
-   
+
    private final BufferDecoder decoder;
 
    private final ConnectionLifeCycleListener listener;
@@ -126,6 +130,10 @@ public class NettyAcceptor implements Acceptor
 
    private final int tcpReceiveBufferSize;
 
+   private final int nioRemotingThreads;
+
+   private final int batchingBufferSize;
+
    private final HttpKeepAliveRunnable httpKeepAliveRunnable;
 
    private final ConcurrentMap<Object, Connection> connections = new ConcurrentHashMap<Object, Connection>();
@@ -135,7 +143,7 @@ public class NettyAcceptor implements Acceptor
    private NotificationService notificationService;
 
    private VirtualExecutorService bossExecutor;
-   
+
    private boolean paused;
 
    public NettyAcceptor(final Map<String, Object> configuration,
@@ -146,11 +154,11 @@ public class NettyAcceptor implements Acceptor
                         final ScheduledExecutorService scheduledThreadPool)
    {
       this.handler = handler;
-      
+
       this.decoder = decoder;
 
       this.listener = listener;
-      
+
       sslEnabled = ConfigurationHelper.getBooleanProperty(TransportConstants.SSL_ENABLED_PROP_NAME,
                                                           TransportConstants.DEFAULT_SSL_ENABLED,
                                                           configuration);
@@ -184,14 +192,22 @@ public class NettyAcceptor implements Acceptor
                                                       TransportConstants.DEFAULT_USE_NIO_SERVER,
                                                       configuration);
 
+      nioRemotingThreads = ConfigurationHelper.getIntProperty(TransportConstants.NIO_REMOTING_THREADS_PROPNAME,
+                                                              -1,
+                                                              configuration);
+
+      batchingBufferSize = ConfigurationHelper.getIntProperty(TransportConstants.BATCHING_BUFFER_SIZE_PROPNAME,
+                                                              TransportConstants.DEFAULT_BATCHING_BUFFER_SIZE,
+                                                              configuration);
+
       useInvm = ConfigurationHelper.getBooleanProperty(TransportConstants.USE_INVM_PROP_NAME,
                                                        TransportConstants.DEFAULT_USE_INVM,
                                                        configuration);
       String protocolStr = ConfigurationHelper.getStringProperty(TransportConstants.PROTOCOL_PROP_NAME,
-                                                       TransportConstants.DEFAULT_PROTOCOL,
-                                                       configuration);
+                                                                 TransportConstants.DEFAULT_PROTOCOL,
+                                                                 configuration);
       protocol = ProtocolType.valueOf(protocolStr.toUpperCase());
-      
+
       host = ConfigurationHelper.getStringProperty(TransportConstants.HOST_PROP_NAME,
                                                    TransportConstants.DEFAULT_HOST,
                                                    configuration);
@@ -251,12 +267,26 @@ public class NettyAcceptor implements Acceptor
       }
       else if (useNio)
       {
-         channelFactory = new NioServerSocketChannelFactory(bossExecutor, workerExecutor);
+         int threadsToUse;
+
+         if (nioRemotingThreads == -1)
+         {
+            // Default to number of cores * 3
+
+            threadsToUse = Runtime.getRuntime().availableProcessors() * 3;
+         }
+         else
+         {
+            threadsToUse = this.nioRemotingThreads;
+         }
+
+         channelFactory = new NioServerSocketChannelFactory(bossExecutor, workerExecutor, threadsToUse);
       }
       else
       {
          channelFactory = new OioServerSocketChannelFactory(bossExecutor, workerExecutor);
       }
+
       bootstrap = new ServerBootstrap(channelFactory);
 
       final SSLContext context;
@@ -284,20 +314,42 @@ public class NettyAcceptor implements Acceptor
       {
          public ChannelPipeline getPipeline() throws Exception
          {
-            ChannelPipeline pipeline = Channels.pipeline();
+            List<ChannelHandler> handlers = new ArrayList<ChannelHandler>();
+
             if (sslEnabled)
             {
-               ChannelPipelineSupport.addSSLFilter(pipeline, context, false);
-            }
-            if (httpEnabled)
-            {
-               pipeline.addLast("httpRequestDecoder", new HttpRequestDecoder());
-               pipeline.addLast("httpResponseEncoder", new HttpResponseEncoder());
-               pipeline.addLast("httphandler", new HttpAcceptorHandler(httpKeepAliveRunnable, httpResponseTime));
+               SSLEngine engine = context.createSSLEngine();
+
+               engine.setUseClientMode(false);
+
+               SslHandler handler = new SslHandler(engine);
+
+               handlers.add(handler);
             }
 
-            ChannelPipelineSupport.addCodecFilter(protocol, pipeline, decoder);
-            pipeline.addLast("handler", new HornetQServerChannelHandler(channelGroup, handler, new Listener()));
+            if (httpEnabled)
+            {
+               handlers.add(new HttpRequestDecoder());
+
+               handlers.add(new HttpResponseEncoder());
+
+               handlers.add(new HttpAcceptorHandler(httpKeepAliveRunnable, httpResponseTime));
+            }
+
+            if (protocol == ProtocolType.CORE)
+            {
+               // Core protocol uses it's own optimised decoder
+               handlers.add(new HornetQFrameDecoder2());
+            }
+            else
+            {
+               handlers.add(new HornetQFrameDecoder(decoder));
+            }
+
+            handlers.add(new HornetQServerChannelHandler(channelGroup, handler, new Listener()));
+
+            ChannelPipeline pipeline = new StaticChannelPipeline(handlers.toArray(new ChannelHandler[handlers.size()]));
+
             return pipeline;
          }
       };
@@ -497,7 +549,7 @@ public class NettyAcceptor implements Acceptor
       @Override
       public void channelConnected(final ChannelHandlerContext ctx, final ChannelStateEvent e) throws Exception
       {
-         new NettyConnection(e.getChannel(), new Listener());
+         new NettyConnection(e.getChannel(), new Listener(), httpEnabled ? -1 : batchingBufferSize);
 
          SslHandler sslHandler = ctx.getPipeline().get(SslHandler.class);
          if (sslHandler != null)

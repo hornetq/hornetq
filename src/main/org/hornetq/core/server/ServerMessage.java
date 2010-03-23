@@ -31,9 +31,9 @@ public interface ServerMessage extends MessageInternal, EncodingSupport
 
    MessageReference createReference(Queue queue);
 
-   int incrementRefCount(MessageReference reference) throws Exception;
+   int incrementRefCount() throws Exception;
 
-   int decrementRefCount(MessageReference reference) throws Exception;
+   int decrementRefCount() throws Exception;
 
    int incrementDurableRefCount();
 

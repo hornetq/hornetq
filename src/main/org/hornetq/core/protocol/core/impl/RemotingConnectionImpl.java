@@ -23,6 +23,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executor;
 
 import org.hornetq.api.core.HornetQBuffer;
+import org.hornetq.api.core.HornetQBuffers;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Interceptor;
 import org.hornetq.core.logging.Logger;
@@ -33,6 +34,7 @@ import org.hornetq.core.remoting.CloseListener;
 import org.hornetq.core.remoting.FailureListener;
 import org.hornetq.spi.core.remoting.BufferHandler;
 import org.hornetq.spi.core.remoting.Connection;
+import org.hornetq.utils.DataConstants;
 import org.hornetq.utils.SimpleIDGenerator;
 
 /**
@@ -87,6 +89,8 @@ public class RemotingConnectionImpl implements BufferHandler, CoreRemotingConnec
 
    private final Executor executor;
    
+   private final int maxBatchSize;
+   
    private volatile boolean executing;
 
    // Constructors
@@ -99,7 +103,7 @@ public class RemotingConnectionImpl implements BufferHandler, CoreRemotingConnec
                                  final long blockingCallTimeout,
                                  final List<Interceptor> interceptors)
    {
-      this(transportConnection, blockingCallTimeout, interceptors, true, null);
+      this(transportConnection, blockingCallTimeout, interceptors, true, null, -1);
    }
 
    /*
@@ -107,17 +111,19 @@ public class RemotingConnectionImpl implements BufferHandler, CoreRemotingConnec
     */
    public RemotingConnectionImpl(final Connection transportConnection,
                                  final List<Interceptor> interceptors,
-                                 final Executor executor)
+                                 final Executor executor,
+                                 final int maxBatchSize)
 
    {
-      this(transportConnection, -1, interceptors, false, executor);
+      this(transportConnection, -1, interceptors, false, executor, maxBatchSize);
    }
 
    private RemotingConnectionImpl(final Connection transportConnection,
                                   final long blockingCallTimeout,
                                   final List<Interceptor> interceptors,
                                   final boolean client,
-                                  final Executor executor)
+                                  final Executor executor,
+                                  final int maxBatchSize)
 
    {
       this.transportConnection = transportConnection;
@@ -129,6 +135,8 @@ public class RemotingConnectionImpl implements BufferHandler, CoreRemotingConnec
       this.client = client;
 
       this.executor = executor;
+      
+      this.maxBatchSize = maxBatchSize;
    }
 
    // RemotingConnection implementation
@@ -363,49 +371,61 @@ public class RemotingConnectionImpl implements BufferHandler, CoreRemotingConnec
          }
       }
    }
+   
+   public int getMaxBatchSize()
+   {
+      return maxBatchSize;
+   }
 
    // Buffer Handler implementation
    // ----------------------------------------------------
 
    public void bufferReceived(final Object connectionID, final HornetQBuffer buffer)
    {
-      final Packet packet = decoder.decode(buffer);
-
-      if (packet.isAsyncExec() && executor != null)
+      try
       {
-         executing = true;
-
-         executor.execute(new Runnable()
+         final Packet packet = decoder.decode(buffer);
+            
+         if (packet.isAsyncExec() && executor != null)
          {
-            public void run()
+            executing = true;
+   
+            executor.execute(new Runnable()
             {
-               try
+               public void run()
                {
-                  doBufferReceived(packet);
+                  try
+                  {
+                     doBufferReceived(packet);
+                  }
+                  catch (Throwable t)
+                  {
+                     RemotingConnectionImpl.log.error("Unexpected error", t);
+                  }
+   
+                  executing = false;
                }
-               catch (Throwable t)
-               {
-                  RemotingConnectionImpl.log.error("Unexpected error", t);
-               }
-
-               executing = false;
-            }
-         });
-      }
-      else
-      {
-         //To prevent out of order execution if interleaving sync and async operations on same connection
-         while (executing)
-         {
-            Thread.yield();
+            });
          }
-         
-         // Pings must always be handled out of band so we can send pings back to the client quickly
-         // otherwise they would get in the queue with everything else which might give an intolerable delay
-         doBufferReceived(packet);
+         else
+         {
+            //To prevent out of order execution if interleaving sync and async operations on same connection
+            while (executing)
+            {
+               Thread.yield();
+            }
+            
+            // Pings must always be handled out of band so we can send pings back to the client quickly
+            // otherwise they would get in the queue with everything else which might give an intolerable delay
+            doBufferReceived(packet);
+         }
+        
+         dataReceived = true;  
       }
-     
-      dataReceived = true;
+      catch (Exception e)
+      {
+         log.error("Failed to decode", e);
+      }
    }
 
    private void doBufferReceived(final Packet packet)

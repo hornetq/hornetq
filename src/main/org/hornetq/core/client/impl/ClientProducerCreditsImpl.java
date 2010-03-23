@@ -62,20 +62,18 @@ public class ClientProducerCreditsImpl implements ClientProducerCredits
 
    public void acquireCredits(final int credits) throws InterruptedException
    {
-      // credits += offset;
-
       checkCredits(credits);
 
       semaphore.acquire(credits);
    }
 
-   public void receiveCredits(final int credits, final int offset)
+   public void receiveCredits(final int credits)
    {
       synchronized (this)
       {
          arriving -= credits;
       }
-
+      
       semaphore.release(credits);
    }
 
@@ -109,9 +107,7 @@ public class ClientProducerCreditsImpl implements ClientProducerCredits
    
    public synchronized void releaseOutstanding()
    {
-      int permits = semaphore.drainPermits();
-      
-      session.sendProducerCreditsMessage(permits, address);
+      semaphore.drainPermits();
    }
    
    private void checkCredits(final int credits)

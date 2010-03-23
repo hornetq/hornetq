@@ -13,6 +13,7 @@
 package org.hornetq.core.protocol.core.impl;
 
 import org.hornetq.api.core.SimpleString;
+import org.hornetq.core.logging.Logger;
 import org.hornetq.core.protocol.core.Channel;
 import org.hornetq.core.protocol.core.Packet;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionProducerCreditsMessage;
@@ -32,12 +33,14 @@ import org.hornetq.spi.core.protocol.SessionCallback;
  */
 public final class CoreSessionCallback implements SessionCallback
 {
+   private static final Logger log = Logger.getLogger(CoreSessionCallback.class);
+
    private final Channel channel;
 
    private ProtocolManager protocolManager;
 
    private String name;
-
+   
    public CoreSessionCallback(String name, ProtocolManager protocolManager, Channel channel)
    {
       this.name = name;
@@ -51,7 +54,9 @@ public final class CoreSessionCallback implements SessionCallback
 
       channel.send(packet);
 
-      return packet.getPacketSize();
+      int size =  packet.getPacketSize();
+      
+      return size;
    }
 
    public int sendLargeMessageContinuation(long consumerID, byte[] body, boolean continues, boolean requiresResponse)
@@ -62,19 +67,21 @@ public final class CoreSessionCallback implements SessionCallback
 
       return packet.getPacketSize();
    }
-
+     
    public int sendMessage(ServerMessage message, long consumerID, int deliveryCount)
    {
       Packet packet = new SessionReceiveMessage(consumerID, message, deliveryCount);
 
-      channel.send(packet);
+      channel.sendBatched(packet);
+      
+      int size =  packet.getPacketSize();
 
-      return packet.getPacketSize();
+      return size;
    }
 
-   public void sendProducerCreditsMessage(int credits, SimpleString address, int offset)
+   public void sendProducerCreditsMessage(int credits, SimpleString address)
    {
-      Packet packet = new SessionProducerCreditsMessage(credits, address, offset);
+      Packet packet = new SessionProducerCreditsMessage(credits, address);
 
       channel.send(packet);
    }

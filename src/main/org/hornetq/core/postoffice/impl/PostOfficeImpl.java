@@ -64,7 +64,7 @@ import org.hornetq.core.transaction.TransactionOperation;
 import org.hornetq.core.transaction.TransactionPropertyIndexes;
 import org.hornetq.core.transaction.Transaction.State;
 import org.hornetq.core.transaction.impl.TransactionImpl;
-import org.hornetq.utils.ExecutorFactory;
+import org.hornetq.utils.ConcurrentHashSet;
 import org.hornetq.utils.TypedProperties;
 import org.hornetq.utils.UUIDGenerator;
 
@@ -538,7 +538,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
    {
       this.route(message, new RoutingContextImpl(tx));
    }
-
+   
    public void route(final ServerMessage message, final RoutingContext context) throws Exception
    {
       // Sanity check
@@ -685,7 +685,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
       message.incrementDurableRefCount();
 
-      message.incrementRefCount(reference);
+      message.incrementRefCount();
 
       if (tx == null)
       {
@@ -869,7 +869,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
             reference.setScheduledDeliveryTime(scheduledDeliveryTime);
          }
 
-         message.incrementRefCount(reference);
+         message.incrementRefCount();
       }
 
       Iterator<Queue> iter = context.getDurableQueues().iterator();
@@ -929,7 +929,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
             }
          }
 
-         message.incrementRefCount(reference);
+         message.incrementRefCount();
       }
 
       if (tx != null)
@@ -1268,7 +1268,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
                message.decrementDurableRefCount();
             }
 
-            message.decrementRefCount(ref);
+            message.decrementRefCount();
          }
       }
    }

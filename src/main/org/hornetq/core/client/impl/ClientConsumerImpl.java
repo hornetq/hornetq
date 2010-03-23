@@ -22,8 +22,6 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.MessageHandler;
-import org.hornetq.core.list.PriorityLinkedList;
-import org.hornetq.core.list.impl.PriorityLinkedListImpl;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.protocol.core.Channel;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionConsumerCloseMessage;
@@ -32,7 +30,10 @@ import org.hornetq.core.protocol.core.impl.wireformat.SessionQueueQueryResponseM
 import org.hornetq.core.protocol.core.impl.wireformat.SessionReceiveContinuationMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionReceiveLargeMessage;
 import org.hornetq.utils.Future;
+import org.hornetq.utils.PriorityLinkedList;
+import org.hornetq.utils.PriorityLinkedListImpl;
 import org.hornetq.utils.TokenBucketLimiter;
+import org.hornetq.utils.concurrent.HQIterator;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -78,7 +79,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
    private final int ackBatchSize;
 
-   private final PriorityLinkedList<ClientMessageInternal> buffer = new PriorityLinkedListImpl<ClientMessageInternal>(ClientConsumerImpl.NUM_PRIORITIES);
+   private final PriorityLinkedList<ClientMessageInternal> buffer = new PriorityLinkedListImpl<ClientMessageInternal>(false, ClientConsumerImpl.NUM_PRIORITIES);
 
    private final Runner runner = new Runner();
 
@@ -108,7 +109,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
    private volatile int ackBytes;
 
-   private volatile ClientMessage lastAckedMessage;
+   private volatile ClientMessageInternal lastAckedMessage;
 
    private boolean stopped = false;
 
@@ -454,7 +455,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    {
       return browseOnly;
    }
-
+   
    public synchronized void handleMessage(final ClientMessageInternal message) throws Exception
    {
       if (closing)
@@ -462,11 +463,11 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          // This is ok - we just ignore the message
          return;
       }
-
+        
       ClientMessageInternal messageToHandle = message;
 
       messageToHandle.onReceipt(this);
-
+      
       // Add it to the buffer
       buffer.addLast(messageToHandle, messageToHandle.getPriority());
 
@@ -539,7 +540,11 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       {
          // Need to send credits for the messages in the buffer
 
-         for (ClientMessageInternal message : buffer)
+         HQIterator<ClientMessageInternal> iter = buffer.iterator();
+         
+         ClientMessageInternal message;
+         
+         while ((message = iter.next()) != null)
          {
             flowControlBeforeConsumption(message);
          }
@@ -564,15 +569,17 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
    public void acknowledge(final ClientMessage message) throws HornetQException
    {
+      ClientMessageInternal cmi = (ClientMessageInternal)message;
+      
       ackBytes += message.getEncodeSize();
 
       if (ackBytes >= ackBatchSize)
       {
-         doAck(message);
+         doAck(cmi);
       }
       else
       {
-         lastAckedMessage = message;
+         lastAckedMessage = cmi;
       }
    }
 
@@ -863,7 +870,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       buffer.clear();
    }
 
-   private void doAck(final ClientMessage message) throws HornetQException
+   private void doAck(final ClientMessageInternal message) throws HornetQException
    {
       ackBytes = 0;
 

@@ -19,8 +19,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQException;
@@ -45,6 +48,7 @@ import org.hornetq.spi.core.remoting.BufferHandler;
 import org.hornetq.spi.core.remoting.Connection;
 import org.hornetq.spi.core.remoting.ConnectionLifeCycleListener;
 import org.hornetq.utils.ConfigurationHelper;
+import org.hornetq.utils.HornetQThreadFactory;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -80,7 +84,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
    private volatile RemotingConnection serverSideReplicatingConnection;
 
-   private final Executor threadPool;
+   private ExecutorService threadPool;
 
    private final ScheduledExecutorService scheduledThreadPool;
 
@@ -95,8 +99,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
    public RemotingServiceImpl(final Configuration config,
                               final HornetQServer server,
-                              final ManagementService managementService,
-                              final Executor threadPool,
+                              final ManagementService managementService,                            
                               final ScheduledExecutorService scheduledThreadPool)
    {
       transportConfigs = config.getAcceptorConfigurations();
@@ -119,7 +122,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
       this.config = config;
       this.managementService = managementService;
-      this.threadPool = threadPool;
+      
       this.scheduledThreadPool = scheduledThreadPool;
       
       this.protocolMap.put(ProtocolType.CORE, new CoreProtocolManagerFactory().createProtocolManager(server, interceptors));
@@ -135,7 +138,17 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       {
          return;
       }
+      
+      //The remoting service maintains it's own thread pool for handling remoting traffic
+      //If OIO each connection will have it's own thread
+      //If NIO these are capped at nio-remoting-threads which defaults to num cores * 3
+      //This needs to be a different thread pool to the main thread pool especially for OIO where we may need
+      //to support many hundreds of connections, but the main thread pool must be kept small for better performance
+      
+      ThreadFactory tFactory = new HornetQThreadFactory("HornetQ-remoting-threads" + System.identityHashCode(this), false);
 
+      threadPool = Executors.newCachedThreadPool(tFactory);
+      
       ClassLoader loader = Thread.currentThread().getContextClassLoader();
 
       for (TransportConfiguration info : transportConfigs)
@@ -261,6 +274,15 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       if (managementService != null)
       {
          managementService.unregisterAcceptors();
+      }
+      
+      threadPool.shutdown();
+      
+      boolean ok = threadPool.awaitTermination(10000, TimeUnit.MILLISECONDS);
+      
+      if (!ok)
+      {
+         log.warn("Timed out waiting for remoting thread pool to terminate");
       }
 
       started = false;

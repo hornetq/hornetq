@@ -21,6 +21,7 @@ import java.util.Set;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.client.impl.ClientMessageImpl;
+import org.hornetq.core.message.impl.MessageInternal;
 import org.hornetq.core.server.impl.ServerMessageImpl;
 
 /**
@@ -82,7 +83,7 @@ class StompUtils
       }
    }
 
-   public static void copyStandardHeadersFromMessageToFrame(Message message, StompFrame command, int deliveryCount) throws Exception
+   public static void copyStandardHeadersFromMessageToFrame(MessageInternal message, StompFrame command, int deliveryCount) throws Exception
    {
       final Map<String, Object> headers = command.getHeaders();
       headers.put(Stomp.Headers.Message.DESTINATION, message.getAddress().toString());

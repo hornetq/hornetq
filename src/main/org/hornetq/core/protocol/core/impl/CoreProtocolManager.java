@@ -43,11 +43,10 @@ import org.hornetq.spi.core.remoting.Connection;
 public class CoreProtocolManager implements ProtocolManager
 {
    private final HornetQServer server;
-   
+
    private final List<Interceptor> interceptors;
 
-   public CoreProtocolManager(final HornetQServer server,
-                              final List<Interceptor> interceptors)
+   public CoreProtocolManager(final HornetQServer server, final List<Interceptor> interceptors)
    {
       this.server = server;
 
@@ -57,11 +56,13 @@ public class CoreProtocolManager implements ProtocolManager
    public ConnectionEntry createConnectionEntry(final Connection connection)
    {
       final Configuration config = server.getConfiguration();
-      
+
       CoreRemotingConnection rc = new RemotingConnectionImpl(connection,
                                                              interceptors,
-                                                             config.isAsyncConnectionExecutionEnabled() ? server.getExecutorFactory().getExecutor()
-                                                                                                       : null);
+                                                             config.isAsyncConnectionExecutionEnabled() ? server.getExecutorFactory()
+                                                                                                                .getExecutor()
+                                                                                                       : null,
+                                                             connection.getBatchingBufferSize());
 
       Channel channel1 = rc.getChannel(1, -1);
 
@@ -102,20 +103,19 @@ public class CoreProtocolManager implements ProtocolManager
 
       return entry;
    }
-   
-   private Map<String, ServerSessionPacketHandler> sessionHandlers = 
-      new ConcurrentHashMap<String, ServerSessionPacketHandler>();
-   
+
+   private Map<String, ServerSessionPacketHandler> sessionHandlers = new ConcurrentHashMap<String, ServerSessionPacketHandler>();
+
    public ServerSessionPacketHandler getSessionHandler(final String sessionName)
    {
       return sessionHandlers.get(sessionName);
    }
-   
+
    public void addSessionHandler(final String name, final ServerSessionPacketHandler handler)
    {
       sessionHandlers.put(name, handler);
    }
-   
+
    public void removeHandler(final String name)
    {
       sessionHandlers.remove(name);
@@ -125,8 +125,8 @@ public class CoreProtocolManager implements ProtocolManager
    {
    }
 
-   //This is never called using the core protocol, since we override the HornetQFrameDecoder with our core
-   //optimised version HornetQFrameDecoder2, which nevers calls this
+   // This is never called using the core protocol, since we override the HornetQFrameDecoder with our core
+   // optimised version HornetQFrameDecoder2, which nevers calls this
    public int isReadyToHandle(HornetQBuffer buffer)
    {
       return -1;

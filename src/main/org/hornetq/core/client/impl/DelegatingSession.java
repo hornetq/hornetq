@@ -20,6 +20,7 @@ import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
@@ -530,13 +531,18 @@ public class DelegatingSession implements ClientSessionInternal
       session.returnCredits(address);
    }
 
-   public void handleReceiveProducerCredits(final SimpleString address, final int credits, final int offset)
+   public void handleReceiveProducerCredits(final SimpleString address, final int credits)
    {
-      session.handleReceiveProducerCredits(address, credits, offset);
+      session.handleReceiveProducerCredits(address, credits);
    }
 
    public ClientProducerCreditManager getProducerCreditManager()
    {
       return session.getProducerCreditManager();
+   }
+
+   public void setAddress(Message message, SimpleString address)
+   {
+      session.setAddress(message, address);
    }
 }

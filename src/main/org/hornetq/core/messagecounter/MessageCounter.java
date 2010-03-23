@@ -77,7 +77,7 @@ public class MessageCounter
 
    private final List<DayCounter> dayCounters;
 
-   private int lastMessagesAdded;
+   private long lastMessagesAdded;
 
    // Static --------------------------------------------------------
 
@@ -123,9 +123,9 @@ public class MessageCounter
     */
    public synchronized void onTimer()
    {
-      int latestMessagesAdded = destQueue.getMessagesAdded();
+      long latestMessagesAdded = destQueue.getMessagesAdded();
 
-      int newMessagesAdded = latestMessagesAdded - lastMessagesAdded;
+      long newMessagesAdded = latestMessagesAdded - lastMessagesAdded;
 
       countTotal += newMessagesAdded;
 
@@ -350,7 +350,7 @@ public class MessageCounter
     * 
     * @param newMessages number of new messages to add to the latest day counter
     */
-   private void updateHistory(final int newMessages)
+   private void updateHistory(final long newMessages)
    {
       // check history activation
       if (dayCounters.isEmpty())
@@ -492,7 +492,7 @@ public class MessageCounter
        *
        * @param newMessages number of new messages since the counter was last updated.
        */
-      void updateDayCounter(final int newMessages)
+      void updateDayCounter(final long newMessages)
       {
          // get the current hour of the day
          GregorianCalendar cal = new GregorianCalendar();

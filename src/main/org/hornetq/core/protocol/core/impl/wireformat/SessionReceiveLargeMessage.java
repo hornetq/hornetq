@@ -14,6 +14,7 @@
 package org.hornetq.core.protocol.core.impl.wireformat;
 
 import org.hornetq.api.core.HornetQBuffer;
+import org.hornetq.core.logging.Logger;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
 
 /**
@@ -25,6 +26,8 @@ import org.hornetq.core.protocol.core.impl.PacketImpl;
  */
 public class SessionReceiveLargeMessage extends PacketImpl
 {
+   private static final Logger log = Logger.getLogger(SessionReceiveLargeMessage.class);
+
    private byte[] largeMessageHeader;
 
    /** Since we receive the message before the entire message was received, */
@@ -45,7 +48,7 @@ public class SessionReceiveLargeMessage extends PacketImpl
                                      final int deliveryCount)
    {
       super(PacketImpl.SESS_RECEIVE_LARGE_MSG);
-
+      
       this.consumerID = consumerID;
 
       this.largeMessageHeader = largeMessageHeader;

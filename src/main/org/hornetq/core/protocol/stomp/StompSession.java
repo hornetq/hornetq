@@ -72,7 +72,7 @@ class StompSession implements SessionCallback
       return session;
    }
 
-   public void sendProducerCreditsMessage(int credits, SimpleString address, int offset)
+   public void sendProducerCreditsMessage(int credits, SimpleString address)
    {
    }
 

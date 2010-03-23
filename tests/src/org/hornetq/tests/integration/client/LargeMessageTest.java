@@ -2133,7 +2133,6 @@ public class LargeMessageTest extends LargeMessageTestBase
             }
          }
 
-         assertGlobalSize(server);
          Assert.assertEquals(0,
                              ((Queue)server.getPostOffice().getBinding(LargeMessageTest.ADDRESS).getBindable()).getDeliveringCount());
          Assert.assertEquals(0,
@@ -2238,7 +2237,6 @@ public class LargeMessageTest extends LargeMessageTestBase
             consumer.close();
          }
 
-         assertGlobalSize(server);
          Assert.assertEquals(0,
                              ((Queue)server.getPostOffice().getBinding(LargeMessageTest.ADDRESS).getBindable()).getDeliveringCount());
          Assert.assertEquals(0,
@@ -2311,7 +2309,6 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          session.commit();
 
-         assertGlobalSize(server);
          Assert.assertEquals(0,
                              ((Queue)server.getPostOffice().getBinding(LargeMessageTest.ADDRESS).getBindable()).getDeliveringCount());
          Assert.assertEquals(0,
@@ -2397,7 +2394,6 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          session.commit();
 
-         assertGlobalSize(server);
          Assert.assertEquals(0,
                              ((Queue)server.getPostOffice().getBinding(LargeMessageTest.ADDRESS).getBindable()).getDeliveringCount());
          Assert.assertEquals(0,
@@ -2626,18 +2622,6 @@ public class LargeMessageTest extends LargeMessageTestBase
    }
 
    // Private -------------------------------------------------------
-
-   private void assertGlobalSize(final HornetQServer server) throws InterruptedException
-   {
-      // addGlobalSize on LargeMessage is only done after the delivery, and the addSize could be asynchronous
-      long timeout = System.currentTimeMillis() + 5000;
-      while (timeout > System.currentTimeMillis() && server.getPostOffice().getPagingManager().getTotalMemory() != 0)
-      {
-         Thread.sleep(100);
-      }
-
-      Assert.assertEquals(0l, server.getPostOffice().getPagingManager().getTotalMemory());
-   }
 
    // Inner classes -------------------------------------------------
 

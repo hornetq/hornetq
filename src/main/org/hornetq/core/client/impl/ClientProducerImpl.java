@@ -217,14 +217,18 @@ public class ClientProducerImpl implements ClientProducerInternal
 
       if (address != null)
       {
-         msgI.setAddress(address);
+         //session.setAddress(msg, address);
+         
+         msg.setAddress(address);
 
          // Anonymous
          theCredits = session.getCredits(address, true);
       }
       else
       {
-         msgI.setAddress(this.address);
+         //session.setAddress(msg, this.address);
+         
+         msg.setAddress(this.address);
 
          theCredits = credits;
       }

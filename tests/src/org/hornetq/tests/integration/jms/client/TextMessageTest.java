@@ -173,17 +173,23 @@ public class TextMessageTest extends JMSTestBase
          TextMessage received2 = (TextMessage)cons.receive(1000);
          Assert.assertNotNull(received2);
          Assert.assertEquals(str, received2.getText());
+         
+         assertEquals(str, msg2.getText());
 
          // Now resend it
          prod.send(received2);
+         assertEquals(str, received2.getText());
          TextMessage received3 = (TextMessage)cons.receive(1000);
          Assert.assertNotNull(received3);
+         assertEquals(str, received3.getText());
 
          // And resend again
 
          prod.send(received3);
+         assertEquals(str, received3.getText());
          TextMessage received4 = (TextMessage)cons.receive(1000);
          Assert.assertNotNull(received4);
+         assertEquals(str, received4.getText());
 
       }
       finally

@@ -17,6 +17,8 @@ import java.nio.ByteBuffer;
 import java.text.DecimalFormat;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
@@ -41,11 +43,7 @@ import org.hornetq.core.paging.PagingStoreFactory;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.server.LargeServerMessage;
-import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.ServerMessage;
-import org.hornetq.core.server.impl.MessageReferenceImpl;
-import org.hornetq.core.server.impl.ServerProducerCreditManager;
-import org.hornetq.core.server.impl.ServerProducerCreditManagerImpl;
 import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.core.transaction.Transaction;
@@ -118,13 +116,7 @@ public class PagingStoreImpl implements TestSupportPageStore
     * */
    private final ReadWriteLock currentPageLock = new ReentrantReadWriteLock();
 
-   private final ServerProducerCreditManager creditManager;
-
-   private boolean exceededAvailableCredits;
-
    private volatile boolean running = false;
-
-   private final AtomicLong availableProducerCredits = new AtomicLong(0);
 
    protected final boolean syncNonTransactional;
 
@@ -190,10 +182,6 @@ public class PagingStoreImpl implements TestSupportPageStore
 
       this.storeFactory = storeFactory;
 
-      availableProducerCredits.set(maxSize);
-
-      creditManager = new ServerProducerCreditManagerImpl(this);
-
       this.syncNonTransactional = syncNonTransactional;
    }
 
@@ -209,6 +197,11 @@ public class PagingStoreImpl implements TestSupportPageStore
    public long getAddressSize()
    {
       return sizeInBytes.get();
+   }
+
+   public long getMaxSize()
+   {
+      return maxSize;
    }
 
    public AddressFullMessagePolicy getAddressFullMessagePolicy()
@@ -250,75 +243,6 @@ public class PagingStoreImpl implements TestSupportPageStore
    public SimpleString getStoreName()
    {
       return storeName;
-   }
-
-   public boolean isExceededAvailableCredits()
-   {
-      return exceededAvailableCredits;
-   }
-
-   public synchronized int getAvailableProducerCredits(final int credits)
-   {
-      if (maxSize != -1 && addressFullMessagePolicy == AddressFullMessagePolicy.BLOCK)
-      {
-         long avail = availableProducerCredits.get();
-
-         if (avail > 0)
-         {
-            long take = Math.min(avail, credits);
-
-            availableProducerCredits.addAndGet(-take);
-
-            return (int)take;
-         }
-
-         return 0;
-      }
-      else
-      {
-         return credits;
-      }
-   }
-
-   public void returnProducerCredits(final int credits)
-   {
-      checkReleaseProducerFlowControlCredits(-credits);
-   }
-
-   public void addSize(final ServerMessage message, final boolean add)
-   {
-      long size = message.getMemoryEstimate();
-
-      if (add)
-      {
-         checkReleaseProducerFlowControlCredits(size);
-
-         addSize(size);
-      }
-      else
-      {
-         checkReleaseProducerFlowControlCredits(-size);
-
-         addSize(-size);
-      }
-   }
-
-   public void addSize(final MessageReference reference, final boolean add)
-   {
-      long size = MessageReferenceImpl.getMemoryEstimate();
-
-      if (add)
-      {
-         checkReleaseProducerFlowControlCredits(size);
-
-         addSize(size);
-      }
-      else
-      {
-         checkReleaseProducerFlowControlCredits(-size);
-
-         addSize(-size);
-      }
    }
 
    public boolean page(final ServerMessage message, final long transactionID, final boolean duplicateDetection) throws Exception
@@ -579,11 +503,6 @@ public class PagingStoreImpl implements TestSupportPageStore
       return new PageImpl(storeName, storageManager, fileFactory, file, page);
    }
 
-   public ServerProducerCreditManager getProducerCreditManager()
-   {
-      return creditManager;
-   }
-
    // TestSupportPageStore ------------------------------------------
 
    public void forceAnotherPage() throws Exception
@@ -708,43 +627,67 @@ public class PagingStoreImpl implements TestSupportPageStore
 
    }
 
-   private synchronized void checkReleaseProducerFlowControlCredits(final long size)
+   private Queue<Runnable> onMemoryFreedRunnables = new ConcurrentLinkedQueue<Runnable>();
+
+   private class MemoryFreedRunnablesExecutor implements Runnable
    {
-      if (addressFullMessagePolicy == AddressFullMessagePolicy.BLOCK && maxSize != -1)
+      public void run()
       {
-         long avail = availableProducerCredits.addAndGet(-size);
+         Runnable runnable;
 
-         if (avail > 0)
+         while ((runnable = onMemoryFreedRunnables.poll()) != null)
          {
-            int used = creditManager.creditsReleased((int)avail);
-
-            long num = availableProducerCredits.addAndGet(-used);
-
-            if (num < 0)
-            {
-               PagingStoreImpl.log.warn("Available credits has gone negative");
-
-               exceededAvailableCredits = true;
-            }
+            runnable.run();
          }
       }
    }
 
-   private void addSize(final long size)
-   {
-      if (addressFullMessagePolicy != AddressFullMessagePolicy.PAGE)
-      {
-         addAddressSize(size);
+   private final Runnable memoryFreedRunnablesExecutor = new MemoryFreedRunnablesExecutor();
 
-         pagingManager.addSize(size);
+   private final Object runnableLock = new Object();
+
+   public void executeRunnableWhenMemoryAvailable(final Runnable runnable)
+   {
+      if (addressFullMessagePolicy == AddressFullMessagePolicy.BLOCK && maxSize != -1)
+      {
+         synchronized (runnableLock)
+         {
+            if (sizeInBytes.get() > maxSize)
+            {
+               onMemoryFreedRunnables.add(runnable);
+
+               return;
+            }
+         }
+      }
+      runnable.run();
+   }
+
+   public void addSize(final int size)
+   {
+      if (addressFullMessagePolicy == AddressFullMessagePolicy.BLOCK)
+      {
+         if (maxSize != -1)
+         {
+            synchronized (runnableLock)
+            {
+               long newSize = sizeInBytes.addAndGet(size);
+
+               if (newSize <= maxSize)
+               {
+                  if (!onMemoryFreedRunnables.isEmpty())
+                  {
+                     executor.execute(memoryFreedRunnablesExecutor);
+                  }
+               }
+            }
+         }
 
          return;
       }
-      else
+      else if (addressFullMessagePolicy == AddressFullMessagePolicy.PAGE)
       {
-         pagingManager.addSize(size);
-
-         final long addressSize = addAddressSize(size);
+         final long addressSize = sizeInBytes.addAndGet(size);
 
          if (size > 0)
          {
@@ -779,6 +722,11 @@ public class PagingStoreImpl implements TestSupportPageStore
 
          return;
       }
+      else if (addressFullMessagePolicy == AddressFullMessagePolicy.DROP)
+      {
+         sizeInBytes.addAndGet(size);
+      }
+
    }
 
    private boolean page(final ServerMessage message,
@@ -1063,11 +1011,6 @@ public class PagingStoreImpl implements TestSupportPageStore
       return maxSize > 0 && getAddressSize() + nextPageSize > maxSize;
    }
 
-   private long addAddressSize(final long delta)
-   {
-      return sizeInBytes.addAndGet(delta);
-   }
-
    /**
     * startDepaging and clearDepage needs to be atomic.
     * We can't use writeLock to this operation as writeLock would still be used by another thread, and still being a valid usage
@@ -1080,8 +1023,6 @@ public class PagingStoreImpl implements TestSupportPageStore
       if (PagingStoreImpl.isTrace)
       {
          PagingStoreImpl.trace("Clear Depage on Address = " + getStoreName() +
-                               " PagingManager size " +
-                               pagingManager.getTotalMemory() +
                                " addressSize = " +
                                getAddressSize() +
                                " addressMax " +

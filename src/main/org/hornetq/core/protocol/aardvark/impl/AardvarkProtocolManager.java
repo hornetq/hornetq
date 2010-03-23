@@ -142,7 +142,7 @@ public class AardvarkProtocolManager implements ProtocolManager
          return -1;
       }
 
-      public void sendProducerCreditsMessage(int credits, SimpleString address, int offset)
+      public void sendProducerCreditsMessage(int credits, SimpleString address)
       {
       }
       

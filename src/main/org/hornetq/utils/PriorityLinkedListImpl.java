@@ -11,16 +11,14 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.core.list.impl;
+package org.hornetq.utils;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.lang.reflect.Array;
 import java.util.NoSuchElementException;
+import java.util.concurrent.atomic.AtomicInteger;
 
-import org.hornetq.core.list.PriorityLinkedList;
-import org.hornetq.utils.concurrent.Deque;
-import org.hornetq.utils.concurrent.LinkedBlockingDeque;
+import org.hornetq.core.logging.Logger;
+import org.hornetq.utils.concurrent.HQIterator;
 
 /**
  * A priority linked list implementation
@@ -35,36 +33,49 @@ import org.hornetq.utils.concurrent.LinkedBlockingDeque;
  */
 public class PriorityLinkedListImpl<T> implements PriorityLinkedList<T>
 {
-   private final List<Deque<T>> levels;
+   private static final Logger log = Logger.getLogger(PriorityLinkedListImpl.class);
+
+   private HQDeque<T>[] levels;
 
    private final int priorities;
 
-   private int size;
+   private final AtomicInteger size = new AtomicInteger(0);
 
-   public PriorityLinkedListImpl(final int priorities)
+   public PriorityLinkedListImpl(final boolean concurrent, final int priorities)
    {
       this.priorities = priorities;
 
-      levels = new ArrayList<Deque<T>>();
+      levels = (HQDeque<T>[])Array.newInstance(HQDeque.class, priorities);
 
       for (int i = 0; i < priorities; i++)
       {
-         levels.add(new LinkedBlockingDeque<T>());
+         if (concurrent)
+         {
+            levels[i] = new ConcurrentHQDeque<T>();
+         }
+         else
+         {
+            levels[i] = new NonConcurrentHQDeque<T>();
+         }
       }
    }
 
-   public void addFirst(final T t, final int priority)
+   public int addFirst(final T t, final int priority)
    {
-      levels.get(priority).addFirst(t);
-
-      size++;
+      int refs = size.incrementAndGet();
+      
+      levels[priority].addFirst(t);
+      
+      return refs;
    }
 
-   public void addLast(final T t, final int priority)
+   public int addLast(final T t, final int priority)
    {
-      levels.get(priority).addLast(t);
-
-      size++;
+      int refs = size.incrementAndGet();
+      
+      levels[priority].addLast(t);
+      
+      return refs;
    }
 
    public T removeFirst()
@@ -79,7 +90,7 @@ public class PriorityLinkedListImpl<T> implements PriorityLinkedList<T>
 
       for (int i = priorities - 1; i >= 0; i--)
       {
-         Deque<T> ll = levels.get(i);
+         HQDeque<T> ll = levels[i];
 
          if (!ll.isEmpty())
          {
@@ -90,7 +101,7 @@ public class PriorityLinkedListImpl<T> implements PriorityLinkedList<T>
 
       if (t != null)
       {
-         size--;
+         size.decrementAndGet();
       }
 
       return t;
@@ -102,7 +113,7 @@ public class PriorityLinkedListImpl<T> implements PriorityLinkedList<T>
 
       for (int i = priorities - 1; i >= 0; i--)
       {
-         Deque<T> ll = levels.get(i);
+         HQDeque<T> ll = levels[i];
          if (!ll.isEmpty())
          {
             t = ll.getFirst();
@@ -116,92 +127,85 @@ public class PriorityLinkedListImpl<T> implements PriorityLinkedList<T>
       return t;
    }
 
-   public List<T> getAll()
-   {
-      List<T> all = new ArrayList<T>();
-
-      for (int i = priorities - 1; i >= 0; i--)
-      {
-         Deque<T> list = levels.get(i);
-         all.addAll(list);
-      }
-
-      return all;
-   }
-
    public void clear()
    {
-      for (Deque<T> list : levels)
+      for (HQDeque<T> list : levels)
       {
          list.clear();
       }
 
-      size = 0;
+      size.set(0);
    }
 
    public int size()
    {
-      return size;
+      return size.get();
    }
 
    public boolean isEmpty()
    {
-      return size == 0;
+      return size.get() == 0;
    }
 
-   public Iterator<T> iterator()
+   public HQIterator<T> iterator()
    {
       return new PriorityLinkedListIterator();
    }
 
-   private class PriorityLinkedListIterator implements Iterator<T>
+   private class PriorityLinkedListIterator implements HQIterator<T>
    {
       private int index;
 
-      private Iterator<T> currentIter;
+      private HQIterator<T>[] cachedIters = new HQIterator[levels.length]; 
 
       PriorityLinkedListIterator()
       {
-         index = levels.size() - 1;
-
-         currentIter = levels.get(index).iterator();
-      }
-
-      public boolean hasNext()
-      {
-         if (currentIter.hasNext())
-         {
-            return true;
-         }
-
-         while (index >= 0)
-         {
-            if (index == 0 || currentIter.hasNext())
-            {
-               break;
-            }
-
-            index--;
-
-            currentIter = levels.get(index).iterator();
-         }
-         return currentIter.hasNext();
+         index = levels.length - 1;
       }
 
       public T next()
       {
-         if (!hasNext())
+         while (index >= 0)
          {
-            throw new NoSuchElementException();
+            HQIterator<T> iter = cachedIters[index];
+            
+            if (iter == null)
+            {
+               iter = cachedIters[index] = levels[index].iterator();
+            }
+            
+            T t = iter.next();
+            
+            if (t != null)
+            {
+               return t;
+            }
+            
+            index--;
+            
+            if (index < 0)
+            {
+               index = levels.length - 1;
+               
+               break;
+            }
          }
-         return currentIter.next();
+         
+         return null;
       }
 
       public void remove()
       {
-         currentIter.remove();
+         HQIterator<T> iter = cachedIters[index];
+         
+         if (iter == null)
+         {
+            throw new NoSuchElementException();
+         }
+         
+         iter.remove();
 
-         size--;
+         size.decrementAndGet();
       }
    }
 }

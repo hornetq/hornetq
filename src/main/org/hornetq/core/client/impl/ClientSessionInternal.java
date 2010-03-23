@@ -14,6 +14,7 @@
 package org.hornetq.core.client.impl;
 
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.core.protocol.core.CoreRemotingConnection;
@@ -75,7 +76,9 @@ public interface ClientSessionInternal extends ClientSession
    
    void returnCredits(SimpleString address);
 
-   void handleReceiveProducerCredits(SimpleString address, int credits, int offset);
+   void handleReceiveProducerCredits(SimpleString address, int credits);
    
    ClientProducerCreditManager getProducerCreditManager();
+   
+   void setAddress(Message message, SimpleString address);
 }

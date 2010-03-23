@@ -85,12 +85,15 @@ public class SimpleClient
       }
       catch (Throwable t)
       {
+         
          String allStack = t.getMessage() + "|";
          StackTraceElement[] stackTrace = t.getStackTrace();
          for (StackTraceElement stackTraceElement : stackTrace)
          {
             allStack += stackTraceElement.toString() + "|";
          }
+         //System.out.println(t.getClass().getName());
+         //System.out.println(t.getMessage());
          System.out.println(allStack);
          System.exit(1);
       }

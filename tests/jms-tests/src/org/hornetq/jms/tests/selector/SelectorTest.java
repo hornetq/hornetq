@@ -80,6 +80,8 @@ public class SelectorTest extends HornetQServerTestCase
 
          prod.send(redMessage);
          prod.send(blueMessage);
+         
+         log.info("sent message");
 
          Message rec = redConsumer.receive();
          ProxyAssertSupport.assertEquals(redMessage.getJMSMessageID(), rec.getJMSMessageID());
@@ -88,10 +90,12 @@ public class SelectorTest extends HornetQServerTestCase
          ProxyAssertSupport.assertNull(redConsumer.receive(3000));
 
          redConsumer.close();
+         
+         log.info("closed first consumer");
 
          MessageConsumer universalConsumer = session.createConsumer(HornetQServerTestCase.queue1);
 
-         rec = universalConsumer.receive();
+         rec = universalConsumer.receive(2000);
 
          ProxyAssertSupport.assertEquals(rec.getJMSMessageID(), blueMessage.getJMSMessageID());
          ProxyAssertSupport.assertEquals("blue", rec.getStringProperty("color"));
@@ -168,6 +172,7 @@ public class SelectorTest extends HornetQServerTestCase
       try
       {
          conn = getConnectionFactory().createConnection();
+         
          conn.start();
 
          Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -181,12 +186,16 @@ public class SelectorTest extends HornetQServerTestCase
             Message m = sess.createMessage();
 
             m.setStringProperty("beatle", "john");
+            
+            m.setIntProperty("wibble", j);
 
             prod.send(m);
 
             m = sess.createMessage();
 
             m.setStringProperty("beatle", "kermit the frog");
+            
+            m.setIntProperty("wibble", j);
 
             prod.send(m);
          }
@@ -194,10 +203,14 @@ public class SelectorTest extends HornetQServerTestCase
          for (int j = 0; j < 100; j++)
          {
             Message m = cons1.receive(1000);
-
+            
             ProxyAssertSupport.assertNotNull(m);
+            
+            assertEquals(j, m.getIntProperty("wibble"));
 
             ProxyAssertSupport.assertEquals("john", m.getStringProperty("beatle"));
+            
+            log.info("Got message " + j);
          }
 
          Message m = cons1.receiveNoWait();
@@ -213,13 +226,20 @@ public class SelectorTest extends HornetQServerTestCase
             m = cons2.receive(1000);
 
             ProxyAssertSupport.assertNotNull(m);
+            
+            assertEquals(j, m.getIntProperty("wibble"));
 
             ProxyAssertSupport.assertEquals("kermit the frog", m.getStringProperty("beatle"));
          }
 
-         m = cons2.receiveNoWait();
+//         m = cons2.receiveNoWait();
+//         
+//         if (m != null)
+//         {
+//            log.info("got " + m.getStringProperty("beatle") + " j: " + m.getIntProperty("wibble"));
+//         }
 
-         ProxyAssertSupport.assertNull(m);
+         //ProxyAssertSupport.assertNull(m);
       }
       finally
       {
@@ -528,7 +548,7 @@ public class SelectorTest extends HornetQServerTestCase
          }
       }
    }
-
+   
    public void testManyConsumersWithDifferentSelectors() throws Exception
    {
       Connection conn = null;

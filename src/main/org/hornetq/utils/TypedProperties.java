@@ -422,25 +422,26 @@ public class TypedProperties
 
    public boolean containsProperty(final SimpleString key)
    {
-      if (properties != null)
-      {
-         return properties.containsKey(key);
-      }
-      else
+      if (size == 0)
       {
          return false;
+         
+      }
+      else
+      {         
+         return properties.containsKey(key);
       }
    }
 
    public Set<SimpleString> getPropertyNames()
    {
-      if (properties != null)
+      if (size == 0)
       {
-         return properties.keySet();
+         return Collections.EMPTY_SET;         
       }
       else
       {
-         return Collections.EMPTY_SET;
+         return properties.keySet();
       }
    }
 
@@ -455,7 +456,7 @@ public class TypedProperties
       else
       {
          int numHeaders = buffer.readInt();
-
+         
          properties = new HashMap<SimpleString, PropertyValue>(numHeaders);
          size = 0;
 
@@ -643,7 +644,7 @@ public class TypedProperties
 
    private synchronized Object doGetProperty(final Object key)
    {
-      if (properties == null)
+      if (size == 0)
       {
          return null;
       }

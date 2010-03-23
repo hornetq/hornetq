@@ -26,6 +26,7 @@ import javax.transaction.xa.Xid;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
@@ -707,7 +708,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       }
       else
       {
-         channel.send(message);
+         channel.sendBatched(message);
       }
    }
 
@@ -1016,6 +1017,29 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
          // not having any credits to send
       }
    }
+   
+   private volatile SimpleString defaultAddress;
+   
+   public void setAddress(final Message message, final SimpleString address)
+   {
+      if (defaultAddress == null)
+      {
+         defaultAddress = address;
+         
+         message.setAddress(address);
+      }
+      else
+      {
+         if (!address.equals(defaultAddress))
+         {
+            message.setAddress(address);
+         }
+         else
+         {
+            message.setAddress(null);
+         }
+      }
+   }
 
    private void sendPacketWithoutLock(final Packet packet)
    {
@@ -1058,9 +1082,9 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       producerCreditManager.returnCredits(address);
    }
 
-   public void handleReceiveProducerCredits(final SimpleString address, final int credits, final int offset)
+   public void handleReceiveProducerCredits(final SimpleString address, final int credits)
    {
-      producerCreditManager.receiveCredits(address, credits, offset);
+      producerCreditManager.receiveCredits(address, credits);
    }
    
    public ClientProducerCreditManager getProducerCreditManager()

@@ -18,8 +18,6 @@ import java.util.LinkedList;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
@@ -85,7 +83,7 @@ public class ServerConsumerImpl implements ServerConsumer
 
    private final Executor executor;
 
-   private final Lock lock = new ReentrantLock();
+   private final Object lock = new Object();
 
    private AtomicInteger availableCredits = new AtomicInteger(0);
 
@@ -186,10 +184,8 @@ public class ServerConsumerImpl implements ServerConsumer
       {
          return HandleStatus.BUSY;
       }
-
-      lock.lock();
-
-      try
+      
+      synchronized (lock)
       {
          // If the consumer is stopped then we don't accept the message, it
          // should go back into the
@@ -225,7 +221,7 @@ public class ServerConsumerImpl implements ServerConsumer
             ref.incrementDeliveryCount();
 
             // If updateDeliveries = false (set by strict-update),
-            // the updateDeliveryCount would still be updated after cancel
+            // the updateDeliveryCount would still be updated after c
             if (strictUpdateDeliveryCount)
             {
                if (ref.getMessage().isDurable() && ref.getQueue().isDurable())
@@ -258,10 +254,6 @@ public class ServerConsumerImpl implements ServerConsumer
          }
 
          return HandleStatus.HANDLED;
-      }
-      finally
-      {
-         lock.unlock();
       }
    }
 
@@ -396,14 +388,9 @@ public class ServerConsumerImpl implements ServerConsumer
 
    public void setStarted(final boolean started)
    {
-      lock.lock();
-      try
+      synchronized (lock)
       {
          this.started = browseOnly || started;
-      }
-      finally
-      {
-         lock.unlock();
       }
 
       // Outside the lock
@@ -415,8 +402,7 @@ public class ServerConsumerImpl implements ServerConsumer
 
    public void setTransferring(final boolean transferring)
    {
-      lock.lock();
-      try
+      synchronized (lock)
       {
          this.transferring = transferring;
 
@@ -434,10 +420,6 @@ public class ServerConsumerImpl implements ServerConsumer
                }
             }
          }
-      }
-      finally
-      {
-         lock.unlock();
       }
 
       // Outside the lock
@@ -503,7 +485,7 @@ public class ServerConsumerImpl implements ServerConsumer
       {
          return;
       }
-
+      
       // Acknowledge acknowledges all refs delivered by the consumer up to and including the one explicitly
       // acknowledged
 
@@ -578,8 +560,7 @@ public class ServerConsumerImpl implements ServerConsumer
 
    private void promptDelivery()
    {
-      lock.lock();
-      try
+      synchronized (lock)
       {
          // largeMessageDeliverer is aways set inside a lock
          // if we don't acquire a lock, we will have NPE eventually
@@ -598,10 +579,6 @@ public class ServerConsumerImpl implements ServerConsumer
                messageQueue.deliverAsync();
             }
          }
-      }
-      finally
-      {
-         lock.unlock();
       }
    }
 
@@ -642,30 +619,28 @@ public class ServerConsumerImpl implements ServerConsumer
    {
       public void run()
       {
-         lock.lock();
-         try
+         synchronized (lock)
          {
-            if (largeMessageDeliverer == null || largeMessageDeliverer.deliver())
+            try
             {
-               if (browseOnly)
+               if (largeMessageDeliverer == null || largeMessageDeliverer.deliver())
                {
-                  executor.execute(browserDeliverer);
-               }
-               else
-               {
-                  // prompt Delivery only if chunk was finished
+                  if (browseOnly)
+                  {
+                     executor.execute(browserDeliverer);
+                  }
+                  else
+                  {
+                     // prompt Delivery only if chunk was finished
 
-                  messageQueue.deliverAsync();
+                     messageQueue.deliverAsync();
+                  }
                }
             }
-         }
-         catch (Exception e)
-         {
-            ServerConsumerImpl.log.error("Failed to run large message deliverer", e);
-         }
-         finally
-         {
-            lock.unlock();
+            catch (Exception e)
+            {
+               ServerConsumerImpl.log.error("Failed to run large message deliverer", e);
+            }
          }
       }
    };
@@ -698,9 +673,7 @@ public class ServerConsumerImpl implements ServerConsumer
 
       public boolean deliver() throws Exception
       {
-         lock.lock();
-
-         try
+         synchronized (lock)
          {
             if (largeMessage == null)
             {
@@ -721,7 +694,7 @@ public class ServerConsumerImpl implements ServerConsumer
                context = largeMessage.getBodyEncoder();
 
                sizePendingLargeMessage = context.getLargeBodySize();
-
+               
                context.open();
 
                sentInitialPacket = true;
@@ -803,16 +776,11 @@ public class ServerConsumerImpl implements ServerConsumer
 
             return true;
          }
-         finally
-         {
-            lock.unlock();
-         }
       }
 
       public void finish() throws Exception
       {
-         lock.lock();
-         try
+         synchronized (lock)
          {
             if (largeMessage == null)
             {
@@ -838,10 +806,6 @@ public class ServerConsumerImpl implements ServerConsumer
             largeMessageInDelivery = false;
 
             largeMessage = null;
-         }
-         finally
-         {
-            lock.unlock();
          }
       }
    }

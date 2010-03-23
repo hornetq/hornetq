@@ -45,7 +45,7 @@ public interface Queue extends Bindable
 
    void addConsumer(Consumer consumer) throws Exception;
 
-   boolean removeConsumer(Consumer consumer) throws Exception;
+   void removeConsumer(Consumer consumer) throws Exception;
 
    int getConsumerCount();
 
@@ -75,11 +75,7 @@ public interface Queue extends Bindable
 
    List<MessageReference> getScheduledMessages();
 
-   // Distributor getDistributionPolicy();
-   //
-   // void setDistributionPolicy(Distributor policy);
-
-   int getMessagesAdded();
+   long getMessagesAdded();
 
    MessageReference removeReferenceWithID(long id) throws Exception;
 

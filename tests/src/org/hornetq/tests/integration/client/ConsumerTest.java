@@ -65,6 +65,41 @@ public class ConsumerTest extends ServiceTestBase
 
       super.tearDown();
    }
+   
+//   public void testQueueSpin() throws Exception
+//   {
+//      ClientSessionFactory sf = createInVMFactory();
+//
+//      ClientSession session1 = sf.createSession();
+//      
+//      ClientSession session2 = sf.createSession();
+//
+//      session1.createQueue(QUEUE, QUEUE, null, false);
+//
+//      ClientProducer producer = session1.createProducer(QUEUE);
+//
+//      final int numMessages = 100;
+//
+//      for (int i = 0; i < numMessages; i++)
+//      {
+//         ClientMessage message = createTextMessage("m" + i, session1);
+//         producer.send(message);
+//      }
+//
+//      ClientConsumer consumer1 = session1.createConsumer(QUEUE);
+//      
+//      ClientConsumer consumer2 = session2.createConsumer(QUEUE, new SimpleString("foo=wibble"));
+//      
+//      session2.start();
+//      
+//      consumer2.receive();
+//      
+//      Thread.sleep(30000);
+//      
+//      session1.close();
+//      
+//      session2.close();
+//   }
 
    public void testConsumerAckImmediateAutoCommitTrue() throws Exception
    {

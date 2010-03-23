@@ -34,9 +34,6 @@ import org.hornetq.core.transaction.Transaction;
  * 
  * A Queue instance can only be bound against a single address in the post office.
  * 
- * The PostOffice also maintains a set of "allowable addresses". These are the addresses that it is legal to
- * route to.
- * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
@@ -51,7 +48,7 @@ public interface PostOffice extends HornetQComponent
    Binding getBinding(SimpleString uniqueName);
 
    Bindings getMatchingBindings(SimpleString address);
-
+   
    void route(ServerMessage message) throws Exception;
 
    void route(ServerMessage message, Transaction tx) throws Exception;

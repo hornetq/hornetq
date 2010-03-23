@@ -11,10 +11,9 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.core.list;
+package org.hornetq.utils;
 
-import java.util.Iterator;
-import java.util.List;
+import org.hornetq.utils.concurrent.HQIterator;
 
 /**
  * A type of linked list which maintains items according to a priority
@@ -25,24 +24,21 @@ import java.util.List;
  *
  * $Id: PrioritizedDeque.java 1174 2006-08-02 14:14:32Z timfox $
  */
-public interface PriorityLinkedList<T> extends Iterable<T>
+public interface PriorityLinkedList<T>
 {
-   void addFirst(T t, int priority);
+   int addFirst(T t, int priority);
 
-   void addLast(T t, int priority);
+   int addLast(T t, int priority);
 
    T removeFirst();
 
    T peekFirst();
 
-   List<T> getAll();
-
    void clear();
 
    int size();
 
-   Iterator<T> iterator();
+   HQIterator<T> iterator();
 
    boolean isEmpty();
-
 }
