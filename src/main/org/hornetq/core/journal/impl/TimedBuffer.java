@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.Semaphore;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.hornetq.api.core.HornetQBuffer;
@@ -203,6 +202,11 @@ public class TimedBuffer
     */
    public synchronized boolean checkSize(final int sizeChecked)
    {
+      if (!started)
+      {
+         throw new IllegalStateException("TimedBuffer is not started");
+      }
+      
       if (sizeChecked > bufferSize)
       {
          throw new IllegalStateException("Can't write records bigger than the bufferSize(" + bufferSize +
@@ -250,6 +254,11 @@ public class TimedBuffer
 
    public synchronized void addBytes(final EncodingSupport bytes, final boolean sync, final IOAsyncTask callback)
    {
+      if (!started)
+      {
+         throw new IllegalStateException("TimedBuffer is not started");
+      }
+      
       delayFlush = false;
 
       bytes.encode(buffer);
@@ -292,6 +301,11 @@ public class TimedBuffer
    {
       synchronized (this)
       {
+         if (!started)
+         {
+            throw new IllegalStateException("TimedBuffer is not started");
+         }
+         
          if ((force || !delayFlush) && buffer.writerIndex() > 0)
          {
             int pos = buffer.writerIndex();
