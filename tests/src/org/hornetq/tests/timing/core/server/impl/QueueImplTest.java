@@ -64,16 +64,6 @@ public class QueueImplTest extends UnitTestCase
 
    // The tests ----------------------------------------------------------------
 
-   public void testScheduledDirect() throws Exception
-   {
-      testScheduled(true);
-   }
-
-   public void testScheduledQueueing() throws Exception
-   {
-      testScheduled(false);
-   }
-
    public void testScheduledNoConsumer() throws Exception
    {
       QueueImpl queue = new QueueImpl(1,
@@ -149,7 +139,7 @@ public class QueueImplTest extends UnitTestCase
       assertRefListsIdenticalRefs(refs, consumer.getReferences());
    }
 
-   private void testScheduled(final boolean direct) throws Exception
+   public void testScheduled() throws Exception
    {
       QueueImpl queue = new QueueImpl(1,
                                   new SimpleString("address1"),
@@ -165,13 +155,7 @@ public class QueueImplTest extends UnitTestCase
 
       FakeConsumer consumer = null;
 
-      if (direct)
-      {
-         consumer = new FakeConsumer();
-
-         queue.addConsumer(consumer);
-      }
-
+    
       // Send one scheduled
 
       long now = System.currentTimeMillis();
@@ -207,14 +191,12 @@ public class QueueImplTest extends UnitTestCase
       ref8.setScheduledDeliveryTime(now + 6000);
       queue.addLast(ref8);
 
-      if (!direct)
-      {
-         consumer = new FakeConsumer();
+      consumer = new FakeConsumer();
 
-         queue.addConsumer(consumer);
+      queue.addConsumer(consumer);
 
-         queue.deliverNow();
-      }
+      queue.deliverNow();
+      
 
       List<MessageReference> refs = new ArrayList<MessageReference>();
 
