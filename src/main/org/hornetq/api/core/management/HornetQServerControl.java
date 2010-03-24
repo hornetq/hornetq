@@ -17,11 +17,13 @@ import javax.management.MBeanOperationInfo;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Interceptor;
+import org.hornetq.core.security.Role;
 import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.hornetq.core.settings.impl.AddressSettings;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * A HornetQServerControl is used to manage HornetQ servers.
@@ -496,13 +498,38 @@ public interface HornetQServerControl
    @Operation(desc = "Remove security settings for an address", impact = MBeanOperationInfo.ACTION)
    void removeSecuritySettings(@Parameter(desc = "an address match", name = "addressMatch") String addressMatch) throws Exception;
 
+   Set<Role> getSecuritySettings(String addressMatch);
+
    @Operation(desc = "get roles for a specific address match", impact = MBeanOperationInfo.INFO)
    Object[] getRoles(@Parameter(desc = "an address match", name = "addressMatch") String addressMatch) throws Exception;
 
    @Operation(desc = "get roles (as a JSON string) for a specific address match", impact = MBeanOperationInfo.INFO)
    String getRolesAsJSON(@Parameter(desc = "an address match", name = "addressMatch") String addressMatch) throws Exception;
 
-   @Operation(desc = "get address settings (as a JSON string) for a specific address match", impact = MBeanOperationInfo.INFO)
-   String getAddressSettingsAsJSON(@Parameter(desc = "an address match", name = "addressMatch") String addressMatch) throws Exception;
+      /**
+    * adds a new address setting for a specific address
+    */
+   @Operation(desc= "Add address settings for addresses matching the addressMatch", impact = MBeanOperationInfo.ACTION)
+   void addAddressSettings(@Parameter(desc="an address match", name="addressMatch") String addressMatch,
+                           @Parameter(desc="the dead letter address setting", name="DLA") String DLA,
+                           @Parameter(desc="the expiry address setting", name="expiryAddress") String expiryAddress,
+                           @Parameter(desc="are any queues created for this address a last value queue", name="lastValueQueue") boolean lastValueQueue,
+                           @Parameter(desc="the delivery attempts", name="deliveryAttempts") int deliveryAttempts,
+                           @Parameter(desc="the max size in bytes", name="maxSizeBytes") long maxSizeBytes,
+                           @Parameter(desc="the page size in bytes", name="pageSizeBytes") int pageSizeBytes,
+                           @Parameter(desc="the redelivery delay", name="redeliveryDelay") long redeliveryDelay,
+                           @Parameter(desc="the redistribution delay", name="redistributionDelay") long redistributionDelay,
+                           @Parameter(desc="do we send to the DLA when there is no where to route the message", name="sendToDLAOnNoRoute") boolean sendToDLAOnNoRoute,
+                           @Parameter(desc="the ploicy to use when the address is full", name="addressFullMessagePolicy") String addressFullMessagePolicy) throws Exception;
+
+   AddressSettings getAddressSettings(String address);
+
+   void removeAddressSettings(String addressMatch);
+
+   /**
+    * returns the address settings as a JSON string
+    */
+   @Operation(desc = "returns the address settings as a JSON string for an address match", impact = MBeanOperationInfo.INFO)
+   String getAddressSettingsAsJSON(@Parameter(desc="an address match", name="addressMatch") String addressMatch) throws Exception;
 
 }

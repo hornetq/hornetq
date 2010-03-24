@@ -238,53 +238,6 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
             return (String[])proxy.invokeOperation("listSessions", connectionID);
          }
 
-         public void addAddressSettings(String addressMatch,
-                                        String DLA,
-                                        String expiryAddress,
-                                        boolean lastValueQueue,
-                                        int deliveryAttempts,
-                                        long maxSizeBytes,
-                                        int pageSizeBytes,
-                                        long redeliveryDelay,
-                                        long redistributionDelay,
-                                        boolean sendToDLAOnNoRoute,
-                                        String addressFullMessagePolicy) throws Exception
-         {
-            // TODO Auto-generated method stub
-            
-         }
-
-         public void addSecuritySettings(String addressMatch,
-                                         String sendRoles,
-                                         String consumeRoles,
-                                         String createDurableQueueRoles,
-                                         String deleteDurableQueueRoles,
-                                         String createTempQueueRoles,
-                                         String deleteTempQueueRoles,
-                                         String manageRoles) throws Exception
-         {
-            proxy.invokeOperation("addSecuritySettings", addressMatch,
-                                  sendRoles,
-                                  consumeRoles,
-                                  createDurableQueueRoles,
-                                  deleteDurableQueueRoles,
-                                  createTempQueueRoles,
-                                  deleteTempQueueRoles,
-                                  manageRoles);
-         }
-
-         public AddressSettings getAddressSettings(String address)
-         {
-            // TODO Auto-generated method stub
-            return null;
-         }
-
-         public String getAddressSettingsAsJSON(String addressMatch) throws Exception
-         {
-            // TODO Auto-generated method stub
-            return null;
-         }
-
          public void removeSecuritySettings(String addressMatch) throws Exception
          {
             proxy.invokeOperation("removeSecuritySettings", addressMatch);

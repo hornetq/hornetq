@@ -1088,7 +1088,19 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
          blockOnIO();
       }
    }
-   
+
+   public Set<Role> getSecuritySettings(String addressMatch)
+   {
+      clearIO();
+      try
+      {
+         return server.getSecurityRepository().getMatch(addressMatch);
+      }
+      finally
+      {
+         blockOnIO();   
+      }
+   }
    public Object[] getRoles(String addressMatch) throws Exception
    {
       clearIO();
@@ -1162,6 +1174,57 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
 
       JSONObject jsonObject = new JSONObject(settings);
       return jsonObject.toString();
+   }
+
+     public void addAddressSettings(final String address,
+                                  final String DLA,
+                                  final String expiryAddress,
+                                  final boolean lastValueQueue,
+                                  final int deliveryAttempts,
+                                  final long maxSizeBytes,
+                                  final int pageSizeBytes,
+                                  final long redeliveryDelay,
+                                  final long redistributionDelay,
+                                  final boolean sendToDLAOnNoRoute,
+                                  final String addressFullMessagePolicy) throws Exception
+   {
+      AddressSettings addressSettings = new AddressSettings();
+      addressSettings.setDeadLetterAddress(DLA == null?null:new SimpleString(DLA));
+      addressSettings.setExpiryAddress(expiryAddress == null?null:new SimpleString(expiryAddress));
+      addressSettings.setLastValueQueue(lastValueQueue);
+      addressSettings.setMaxDeliveryAttempts(deliveryAttempts);
+      addressSettings.setMaxSizeBytes(maxSizeBytes);
+      addressSettings.setPageSizeBytes(pageSizeBytes);
+      addressSettings.setRedeliveryDelay(redeliveryDelay);
+      addressSettings.setRedistributionDelay(redistributionDelay);
+      addressSettings.setSendToDLAOnNoRoute(sendToDLAOnNoRoute);
+      if(addressFullMessagePolicy == null)
+      {
+         addressSettings.setAddressFullMessagePolicy(AddressFullMessagePolicy.PAGE);
+      }
+      else if(addressFullMessagePolicy.equalsIgnoreCase("PAGE"))
+      {
+         addressSettings.setAddressFullMessagePolicy(AddressFullMessagePolicy.PAGE);
+      }
+      else if(addressFullMessagePolicy.equalsIgnoreCase("DROP"))
+      {
+         addressSettings.setAddressFullMessagePolicy(AddressFullMessagePolicy.DROP);
+      }
+      else if(addressFullMessagePolicy.equalsIgnoreCase("BLOCK"))
+      {
+         addressSettings.setAddressFullMessagePolicy(AddressFullMessagePolicy.BLOCK);
+      }
+      server.getAddressSettingsRepository().addMatch(address, addressSettings);
+   }
+
+   public AddressSettings getAddressSettings(final String address)
+   {
+      return server.getAddressSettingsRepository().getMatch(address);
+   }
+
+   public void removeAddressSettings(String addressMatch)
+   {
+      server.getAddressSettingsRepository().removeMatch(addressMatch);
    }
 
    public void sendQueueInfoToQueue(final String queueName, final String address) throws Exception
