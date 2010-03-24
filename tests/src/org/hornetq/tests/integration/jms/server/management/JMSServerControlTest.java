@@ -300,47 +300,6 @@ public class JMSServerControlTest extends ManagementTestBase
       });
    }
 
-   public void testSecuritySettings() throws Exception
-   {
-      JMSServerControl serverControl = createManagementControl();
-      String destination = HornetQDestination.createQueueAddressFromName(randomString()).toString();
-      
-      serverControl.addSecuritySettings(destination, "foo", "foo, bar", "foo", "bar", "foo, bar", "", "");
-      
-      String rolesAsJSON = serverControl.getSecuritySettingsAsJSON(destination);
-      RoleInfo[] roleInfos = RoleInfo.from(rolesAsJSON);
-      assertEquals(2, roleInfos.length);
-      RoleInfo fooRole = null;
-      RoleInfo barRole = null;
-      if (roleInfos[0].getName().equals("foo"))
-      {
-         fooRole = roleInfos[0];
-         barRole = roleInfos[1];
-      }
-      else
-      {
-         fooRole = roleInfos[1];
-         barRole = roleInfos[0];
-      }
-      assertTrue(fooRole.isSend());
-      assertTrue(fooRole.isConsume());
-      assertTrue(fooRole.isCreateDurableQueue());
-      assertFalse(fooRole.isDeleteDurableQueue());
-      assertTrue(fooRole.isCreateNonDurableQueue());
-      assertFalse(fooRole.isDeleteNonDurableQueue());
-      assertFalse(fooRole.isManage());
-   
-      assertFalse(barRole.isSend());
-      assertTrue(barRole.isConsume());
-      assertFalse(barRole.isCreateDurableQueue());
-      assertTrue(barRole.isDeleteDurableQueue());
-      assertTrue(barRole.isCreateNonDurableQueue());
-      assertFalse(barRole.isDeleteNonDurableQueue());
-      assertFalse(barRole.isManage());
-      
-      serverControl.removeSecuritySettings(destination);
-   }
-
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

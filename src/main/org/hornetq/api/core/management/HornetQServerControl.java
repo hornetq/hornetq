@@ -498,7 +498,7 @@ public interface HornetQServerControl
    @Operation(desc = "Remove security settings for an address", impact = MBeanOperationInfo.ACTION)
    void removeSecuritySettings(@Parameter(desc = "an address match", name = "addressMatch") String addressMatch) throws Exception;
 
-   Set<Role> getSecuritySettings(String addressMatch);
+   Set<Role> getSecuritySettings(String addressMatch) throws Exception;
 
    @Operation(desc = "get roles for a specific address match", impact = MBeanOperationInfo.INFO)
    Object[] getRoles(@Parameter(desc = "an address match", name = "addressMatch") String addressMatch) throws Exception;

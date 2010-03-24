@@ -1089,7 +1089,7 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
       }
    }
 
-   public Set<Role> getSecuritySettings(String addressMatch)
+   public Set<Role> getSecuritySettings(String addressMatch) throws Exception
    {
       clearIO();
       try

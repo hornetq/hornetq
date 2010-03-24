@@ -22,6 +22,10 @@ import org.hornetq.api.core.management.Parameter;
 import org.hornetq.api.core.management.ResourceNames;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
+import org.hornetq.core.security.Role;
+import org.hornetq.core.settings.impl.AddressSettings;
+
+import java.util.Set;
 
 /**
  * A HornetQServerControlUsingCoreTest
@@ -466,7 +470,12 @@ public class HornetQServerControlUsingCoreTest extends HornetQServerControlTest
          
          public void removeSecuritySettings(String addressMatch) throws Exception {
             proxy.invokeOperation("removeSecuritySettings", addressMatch); 
-         };
+         }
+
+         public Set<Role> getSecuritySettings(String addressMatch) throws Exception
+         {
+            return (Set<Role>)proxy.invokeOperation("removeSecuritySettings", addressMatch);
+         }
          
          public Object[] getRoles(String addressMatch) throws Exception
          {
@@ -476,6 +485,21 @@ public class HornetQServerControlUsingCoreTest extends HornetQServerControlTest
          public String getRolesAsJSON(String addressMatch) throws Exception
          {
             return (String)proxy.invokeOperation("getRolesAsJSON", addressMatch);
+         }
+
+         public void addAddressSettings(@Parameter(desc = "an address match", name = "addressMatch") String addressMatch, @Parameter(desc = "the dead letter address setting", name = "DLA") String DLA, @Parameter(desc = "the expiry address setting", name = "expiryAddress") String expiryAddress, @Parameter(desc = "are any queues created for this address a last value queue", name = "lastValueQueue") boolean lastValueQueue, @Parameter(desc = "the delivery attempts", name = "deliveryAttempts") int deliveryAttempts, @Parameter(desc = "the max size in bytes", name = "maxSizeBytes") long maxSizeBytes, @Parameter(desc = "the page size in bytes", name = "pageSizeBytes") int pageSizeBytes, @Parameter(desc = "the redelivery delay", name = "redeliveryDelay") long redeliveryDelay, @Parameter(desc = "the redistribution delay", name = "redistributionDelay") long redistributionDelay, @Parameter(desc = "do we send to the DLA when there is no where to route the message", name = "sendToDLAOnNoRoute") boolean sendToDLAOnNoRoute, @Parameter(desc = "the ploicy to use when the address is full", name = "addressFullMessagePolicy") String addressFullMessagePolicy) throws Exception
+         {
+            //To change body of implemented methods use File | Settings | File Templates.
+         }
+
+         public AddressSettings getAddressSettings(String address)
+         {
+            return null;  //To change body of implemented methods use File | Settings | File Templates.
+         }
+
+         public void removeAddressSettings(String addressMatch)
+         {
+            //To change body of implemented methods use File | Settings | File Templates.
          }
 
          public String getAddressSettingsAsJSON(@Parameter(desc = "an address match", name = "addressMatch") String addressMatch) throws Exception
