@@ -2,6 +2,16 @@
                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                xsi:schemaLocation="urn:hornetq /schema/hornetq-configuration.xsd">
 
+   <paging-directory>${data.dir:../data}/paging</paging-directory>
+   
+   <bindings-directory>${data.dir:../data}/bindings</bindings-directory>
+   
+   <journal-directory>${data.dir:../data}/journal</journal-directory>
+   
+   <journal-min-files>10</journal-min-files>
+   
+   <large-messages-directory>${data.dir:../data}/large-messages</large-messages-directory>
+   
    <connectors>
       <connector name="netty">
          <factory-class>org.hornetq.integration.transports.netty.NettyConnectorFactory</factory-class>
@@ -33,15 +43,10 @@
          <dead-letter-address>jms.queue.DLQ</dead-letter-address>
          <expiry-address>jms.queue.ExpiryQueue</expiry-address>
          <redelivery-delay>0</redelivery-delay>
-         <max-size-bytes>-1</max-size-bytes>
-         <page-size-bytes>10485760</page-size-bytes>         
+         <max-size-bytes>10485760</max-size-bytes>       
          <message-counter-history-day-limit>10</message-counter-history-day-limit>
+         <address-full-policy>BLOCK</address-full-policy>
       </address-setting>
    </address-settings>
 
-   <paging-directory>../data/paging</paging-directory>
-   <bindings-directory>../data/bindings</bindings-directory>
-   <journal-directory>../data/journal</journal-directory>
-   <large-messages-directory>../data/large-messages</large-messages-directory>
-   
 </configuration>

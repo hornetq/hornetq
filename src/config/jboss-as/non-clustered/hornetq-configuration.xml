@@ -7,7 +7,9 @@
    <bindings-directory>${jboss.server.data.dir}/hornetq/bindings</bindings-directory>
 
    <journal-directory>${jboss.server.data.dir}/hornetq/journal</journal-directory>
-
+   
+   <journal-min-files>10</journal-min-files>
+   
    <large-messages-directory>${jboss.server.data.dir}/hornetq/largemessages</large-messages-directory>
 
    <paging-directory>${jboss.server.data.dir}/hornetq/paging</paging-directory>
@@ -54,9 +56,9 @@
          <dead-letter-address>jms.queue.DLQ</dead-letter-address>
          <expiry-address>jms.queue.ExpiryQueue</expiry-address>
          <redelivery-delay>0</redelivery-delay>
-         <max-size-bytes>-1</max-size-bytes>
-         <page-size-bytes>10485760</page-size-bytes>         
+         <max-size-bytes>10485760</max-size-bytes>       
          <message-counter-history-day-limit>10</message-counter-history-day-limit>
+         <address-full-policy>BLOCK</address-full-policy>
       </address-setting>
    </address-settings>
 
