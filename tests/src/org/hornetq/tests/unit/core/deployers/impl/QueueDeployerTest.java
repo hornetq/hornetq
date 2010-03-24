@@ -15,6 +15,7 @@ package org.hornetq.tests.unit.core.deployers.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import junit.framework.Assert;
 
@@ -24,6 +25,8 @@ import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.CoreQueueConfiguration;
 import org.hornetq.core.deployers.DeploymentManager;
 import org.hornetq.core.deployers.impl.QueueDeployer;
+import org.hornetq.core.security.Role;
+import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.tests.util.UnitTestCase;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -576,7 +579,12 @@ public class QueueDeployerTest extends UnitTestCase
       public void removeSecuritySettings(String addressMatch) throws Exception
       {
       }
-      
+
+      public Set<Role> getSecuritySettings(String addressMatch) throws Exception
+      {
+         return null;
+      }
+
       public Object[] getRoles(String addressMatch) throws Exception
       {
          return null;
@@ -587,9 +595,24 @@ public class QueueDeployerTest extends UnitTestCase
          return null;
       }
 
+      public void addAddressSettings(@Parameter(desc = "an address match", name = "addressMatch") String addressMatch, @Parameter(desc = "the dead letter address setting", name = "DLA") String DLA, @Parameter(desc = "the expiry address setting", name = "expiryAddress") String expiryAddress, @Parameter(desc = "are any queues created for this address a last value queue", name = "lastValueQueue") boolean lastValueQueue, @Parameter(desc = "the delivery attempts", name = "deliveryAttempts") int deliveryAttempts, @Parameter(desc = "the max size in bytes", name = "maxSizeBytes") long maxSizeBytes, @Parameter(desc = "the page size in bytes", name = "pageSizeBytes") int pageSizeBytes, @Parameter(desc = "the redelivery delay", name = "redeliveryDelay") long redeliveryDelay, @Parameter(desc = "the redistribution delay", name = "redistributionDelay") long redistributionDelay, @Parameter(desc = "do we send to the DLA when there is no where to route the message", name = "sendToDLAOnNoRoute") boolean sendToDLAOnNoRoute, @Parameter(desc = "the ploicy to use when the address is full", name = "addressFullMessagePolicy") String addressFullMessagePolicy) throws Exception
+      {
+
+      }
+
+      public AddressSettings getAddressSettings(String address)
+      {
+         return null;
+      }
+
+      public void removeAddressSettings(String addressMatch)
+      {
+
+      }
+
       public String getAddressSettingsAsJSON(@Parameter(desc = "an address match", name = "addressMatch") String addressMatch) throws Exception
       {
-         return null;  //To change body of implemented methods use File | Settings | File Templates.
+         return null;  
       }
    }
 
