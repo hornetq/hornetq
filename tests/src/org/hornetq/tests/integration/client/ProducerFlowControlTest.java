@@ -21,11 +21,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import junit.framework.Assert;
 
 import org.hornetq.api.core.SimpleString;
+import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.MessageHandler;
 import org.hornetq.core.client.impl.ClientProducerCreditManagerImpl;
 import org.hornetq.core.client.impl.ClientProducerCredits;
@@ -36,6 +38,7 @@ import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.settings.HierarchicalRepository;
 import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.hornetq.core.settings.impl.AddressSettings;
+import org.hornetq.integration.transports.netty.NettyConnectorFactory;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.UnitTestCase;
@@ -656,6 +659,76 @@ public class ProducerFlowControlTest extends ServiceTestBase
       session.close();
 
       server.stop();
+   }
+
+   public void testBlockingIssue() throws Exception
+   {
+      // HornetQServer server = createServer(true, true);
+      //
+      // AddressSettings addressSettings = new AddressSettings();
+      // addressSettings.setMaxSizeBytes(300000);
+      // addressSettings.setAddressFullMessagePolicy(AddressFullMessagePolicy.BLOCK);
+      //
+      // HierarchicalRepository<AddressSettings> repos = server.getAddressSettingsRepository();
+      // repos.addMatch("bar".toString(), addressSettings);
+      //      
+      // server.start();
+
+      // ClientSessionFactory sf = createFactory(true);
+
+      TransportConfiguration tc = new TransportConfiguration(NettyConnectorFactory.class.getName());
+
+      ClientSessionFactory sf = HornetQClient.createClientSessionFactory(tc);
+
+//      ClientSession sess = sf.createSession();
+//
+//      sess.createQueue("bar", "bar");
+
+      int count = 0;
+      while (true)
+      {
+         log.info("*** ITERATION " + count++ + "\n\n\n\n");
+         ClientSession session = sf.createTransactedSession();
+
+         ClientProducer producer = session.createProducer("bar");
+
+         for (int i = 0; i < 1000; i++)
+         {
+
+            ClientMessage message = session.createMessage(true);
+
+            message.getBodyBuffer().writeString("Hello");
+
+            producer.send(message);
+
+            // log.info("sent " + i);
+
+         }
+
+         session.commit();
+
+         session.close();
+
+         session = sf.createSession();
+
+         session.start();
+
+         ClientConsumer consumer = session.createConsumer("bar");
+
+         for (int i = 0; i < 1000; i++)
+         {
+
+            ClientMessage msgReceived = consumer.receive();
+
+            msgReceived.acknowledge();
+
+            // log.info("read " + i);
+
+         }
+
+         session.close();
+
+      }
    }
 
    public void testProducerCreditsCaching5() throws Exception
