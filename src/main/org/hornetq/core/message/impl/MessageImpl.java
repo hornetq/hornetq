@@ -48,11 +48,11 @@ import org.hornetq.utils.TypedProperties;
 public abstract class MessageImpl implements MessageInternal
 {
    // Constants -----------------------------------------------------
-     
+
    private static final Logger log = Logger.getLogger(MessageImpl.class);
 
    public static final SimpleString HDR_ROUTE_TO_IDS = new SimpleString("_HQ_ROUTE_TO");
-   
+
    public static final int BUFFER_HEADER_SPACE = PacketImpl.PACKET_HEADERS_SIZE;
 
    protected long messageID;
@@ -144,18 +144,26 @@ public abstract class MessageImpl implements MessageInternal
       priority = other.getPriority();
       properties = new TypedProperties(other.getProperties());
 
-      bufferValid = other.bufferValid;
-      endOfBodyPosition = other.endOfBodyPosition;
-      endOfMessagePosition = other.endOfMessagePosition;
-      copied = other.copied;
-
-      if (other.buffer != null)
+      // This MUST be synchronized using the monitor on the other message to prevent it running concurrently
+      // with getEncodedBuffer(), otherwise can introduce race condition when delivering concurrently to
+      // many subscriptions and bridging to other nodes in a cluster
+      synchronized (other)
       {
-         createBody(other.buffer.capacity());
-         // We need to copy the underlying buffer too, since the different messsages thereafter might have different
-         // properties set on them, making their encoding different
-         buffer = other.buffer.copy(0, other.buffer.capacity());
-         buffer.setIndex(other.buffer.readerIndex(), other.buffer.writerIndex());
+         bufferValid = other.bufferValid;
+         endOfBodyPosition = other.endOfBodyPosition;
+         endOfMessagePosition = other.endOfMessagePosition;
+         copied = other.copied;
+
+         if (other.buffer != null)
+         {
+            createBody(other.buffer.capacity());
+
+            // We need to copy the underlying buffer too, since the different messsages thereafter might have different
+            // properties set on them, making their encoding different
+            buffer = other.buffer.copy(0, other.buffer.capacity());
+
+            buffer.setIndex(other.buffer.readerIndex(), other.buffer.writerIndex());
+         }
       }
    }
 
@@ -214,9 +222,7 @@ public abstract class MessageImpl implements MessageInternal
       {
          if (buffer instanceof LargeMessageBufferInternal == false)
          {
-            bodyBuffer = new ResetLimitWrappedHornetQBuffer(BUFFER_HEADER_SPACE + DataConstants.SIZE_INT,
-                                                            buffer,
-                                                            this);
+            bodyBuffer = new ResetLimitWrappedHornetQBuffer(BUFFER_HEADER_SPACE + DataConstants.SIZE_INT, buffer, this);
          }
          else
          {
@@ -256,7 +262,6 @@ public abstract class MessageImpl implements MessageInternal
    {
       this.type = type;
    }
-
 
    public boolean isDurable()
    {
@@ -434,7 +439,7 @@ public abstract class MessageImpl implements MessageInternal
          buffer.setIndex(0, endOfMessagePosition);
 
          bufferUsed = true;
-         
+
          return buffer;
       }
    }
@@ -800,12 +805,11 @@ public abstract class MessageImpl implements MessageInternal
 
    // Private -------------------------------------------------------
 
-
    private TypedProperties getProperties()
    {
       return properties;
    }
-   
+
    // This must be synchronized as it can be called concurrently id the message is being delivered concurently to
    // many queues - the first caller in this case will actually encode it
    private synchronized HornetQBuffer encodeToBuffer()
@@ -830,7 +834,7 @@ public abstract class MessageImpl implements MessageInternal
 
          // Position at end of body and skip past the message end position int.
          // check for enough room in the buffer even tho it is dynamic
-         if((endOfBodyPosition + 4) > buffer.capacity())
+         if ((endOfBodyPosition + 4) > buffer.capacity())
          {
             buffer.setIndex(0, endOfBodyPosition);
             buffer.writeInt(0);
