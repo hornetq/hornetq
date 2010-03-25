@@ -63,6 +63,12 @@ public interface HornetQServer extends HornetQComponent
 
    Version getVersion();
 
+   /**
+    * Returns the resource to manage this HornetQ server.
+    * 
+    * Using this control will throw IllegalStateException if the
+    * server is not properly started.
+    */
    HornetQServerControlImpl getHornetQServerControl();
 
    void registerActivateCallback(ActivateCallback callback);

@@ -131,6 +131,8 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
 
    public String getVersion()
    {
+      checkStarted();
+
       clearIO();
       try
       {
@@ -144,6 +146,8 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
 
    public boolean isBackup()
    {
+      checkStarted();
+
       clearIO();
       try
       {
@@ -157,6 +161,8 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
 
    public boolean isSharedStore()
    {
+      checkStarted();
+
       clearIO();
       try
       {
@@ -170,6 +176,8 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
 
    public String getBackupConnectorName()
    {
+      checkStarted();
+
       clearIO();
       try
       {
@@ -183,7 +191,9 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
 
    public String getBindingsDirectory()
    {
-      clearIO();
+      checkStarted();
+
+     clearIO();
       try
       {
          return configuration.getBindingsDirectory();
@@ -196,6 +206,8 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
 
    public String[] getInterceptorClassNames()
    {
+      checkStarted();
+
       clearIO();
       try
       {
@@ -210,6 +222,8 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
 
    public int getJournalBufferSize()
    {
+      checkStarted();
+
       clearIO();
       try
       {
@@ -224,6 +238,8 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
 
    public int getJournalBufferTimeout()
    {
+      checkStarted();
+
       clearIO();
       try
       {
@@ -238,6 +254,8 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
 
    public int getJournalMaxIO()
    {
+      checkStarted();
+
       clearIO();
       try
       {
@@ -252,6 +270,8 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
 
    public String getJournalDirectory()
    {
+      checkStarted();
+
       clearIO();
       try
       {
@@ -265,6 +285,8 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
 
    public int getJournalFileSize()
    {
+      checkStarted();
+
       clearIO();
       try
       {
@@ -278,6 +300,8 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
 
    public int getJournalMinFiles()
    {
+      checkStarted();
+
       clearIO();
       try
       {
@@ -291,6 +315,8 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
 
    public int getJournalCompactMinFiles()
    {
+      checkStarted();
+
       clearIO();
       try
       {
@@ -304,6 +330,8 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
 
    public int getJournalCompactPercentage()
    {
+      checkStarted();
+
       clearIO();
       try
       {
@@ -317,6 +345,8 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
 
    public boolean isPersistenceEnabled()
    {
+      checkStarted();
+
       clearIO();
       try
       {
@@ -330,6 +360,8 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
 
    public String getJournalType()
    {
+      checkStarted();
+
       clearIO();
       try
       {
@@ -343,6 +375,8 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
 
    public String getPagingDirectory()
    {
+      checkStarted();
+
       clearIO();
       try
       {
@@ -356,6 +390,8 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
 
    public int getScheduledThreadPoolMaxSize()
    {
+      checkStarted();
+
       clearIO();
       try
       {
@@ -369,7 +405,9 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
 
    public int getThreadPoolMaxSize()
    {
-      clearIO();
+      checkStarted();
+
+     clearIO();
       try
       {
          return configuration.getThreadPoolMaxSize();
@@ -382,6 +420,8 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
 
    public long getSecurityInvalidationInterval()
    {
+      checkStarted();
+
       clearIO();
       try
       {
@@ -395,6 +435,8 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
 
    public boolean isClustered()
    {
+      checkStarted();
+
       clearIO();
       try
       {
@@ -408,6 +450,8 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
 
    public boolean isCreateBindingsDir()
    {
+      checkStarted();
+
       clearIO();
       try
       {
@@ -421,6 +465,8 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
 
    public boolean isCreateJournalDir()
    {
+      checkStarted();
+
       clearIO();
       try
       {
@@ -434,6 +480,8 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
 
    public boolean isJournalSyncNonTransactional()
    {
+      checkStarted();
+
       clearIO();
       try
       {
@@ -447,6 +495,8 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
 
    public boolean isJournalSyncTransactional()
    {
+      checkStarted();
+
       clearIO();
       try
       {
@@ -460,6 +510,8 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
 
    public boolean isSecurityEnabled()
    {
+      checkStarted();
+
       clearIO();
       try
       {
@@ -473,6 +525,8 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
 
    public boolean isAsyncConnectionExecutionEnabled()
    {
+      checkStarted();
+
       clearIO();
       try
       {
@@ -485,6 +539,8 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
    }
    public void deployQueue(final String address, final String name, final String filterString) throws Exception
    {
+      checkStarted();
+
       clearIO();
       try
       {
@@ -502,6 +558,8 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
 
    public void deployQueue(final String address, final String name, final String filterStr, final boolean durable) throws Exception
    {
+      checkStarted();
+
       SimpleString filter = filterStr == null ? null : new SimpleString(filterStr);
       clearIO();
       try
@@ -517,6 +575,8 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
 
    public void createQueue(final String address, final String name) throws Exception
    {
+      checkStarted();
+
       clearIO();
       try
       {
@@ -530,6 +590,8 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
 
    public void createQueue(final String address, final String name, final boolean durable) throws Exception
    {
+      checkStarted();
+
       clearIO();
       try
       {
@@ -543,6 +605,8 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
 
    public void createQueue(final String address, final String name, final String filterStr, final boolean durable) throws Exception
    {
+      checkStarted();
+
       clearIO();
       try
       {
@@ -562,6 +626,8 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
 
    public String[] getQueueNames()
    {
+      checkStarted();
+
       clearIO();
       try
       {
@@ -583,6 +649,8 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
 
    public String[] getAddressNames()
    {
+      checkStarted();
+
       clearIO();
       try
       {
@@ -604,6 +672,8 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
 
    public void destroyQueue(final String name) throws Exception
    {
+      checkStarted();
+
       clearIO();
       try
       {
@@ -619,6 +689,8 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
 
    public int getConnectionCount()
    {
+      checkStarted();
+
       clearIO();
       try
       {
@@ -632,6 +704,8 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
 
    public void enableMessageCounters()
    {
+      checkStarted();
+
       clearIO();
       try
       {
@@ -645,6 +719,8 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
 
    public void disableMessageCounters()
    {
+      checkStarted();
+
       clearIO();
       try
       {
@@ -658,6 +734,8 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
 
    public void resetAllMessageCounters()
    {
+      checkStarted();
+
       clearIO();
       try
       {
@@ -671,6 +749,8 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
 
    public void resetAllMessageCounterHistories()
    {
+      checkStarted();
+
       clearIO();
       try
       {
@@ -684,6 +764,8 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
 
    public boolean isMessageCounterEnabled()
    {
+      checkStarted();
+
       clearIO();
       try
       {
@@ -697,6 +779,8 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
 
    public synchronized long getMessageCounterSamplePeriod()
    {
+      checkStarted();
+
       clearIO();
       try
       {
@@ -710,6 +794,10 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
 
    public synchronized void setMessageCounterSamplePeriod(final long newPeriod)
    {
+      checkStarted();
+
+      checkStarted();
+
       clearIO();
       try
       {
@@ -732,6 +820,8 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
 
    public int getMessageCounterMaxDayCount()
    {
+      checkStarted();
+
       clearIO();
       try
       {
@@ -745,6 +835,8 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
 
    public void setMessageCounterMaxDayCount(final int count)
    {
+      checkStarted();
+
       clearIO();
       try
       {
@@ -762,6 +854,8 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
 
    public String[] listPreparedTransactions()
    {
+      checkStarted();
+
       clearIO();
       try
       {
@@ -795,6 +889,8 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
 
    public String[] listHeuristicCommittedTransactions()
    {
+      checkStarted();
+
       clearIO();
       try
       {
@@ -815,6 +911,8 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
 
    public String[] listHeuristicRolledBackTransactions()
    {
+      checkStarted();
+
       clearIO();
       try
       {
@@ -835,6 +933,8 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
 
    public synchronized boolean commitPreparedTransaction(final String transactionAsBase64) throws Exception
    {
+      checkStarted();
+
       clearIO();
       try
       {
@@ -862,6 +962,7 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
 
    public synchronized boolean rollbackPreparedTransaction(final String transactionAsBase64) throws Exception
    {
+      checkStarted();
 
       clearIO();
       try
@@ -891,6 +992,8 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
 
    public String[] listRemoteAddresses()
    {
+      checkStarted();
+
       clearIO();
       try
       {
@@ -913,6 +1016,8 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
 
    public String[] listRemoteAddresses(final String ipAddress)
    {
+      checkStarted();
+
       clearIO();
       try
       {
@@ -937,6 +1042,8 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
 
    public synchronized boolean closeConnectionsForAddress(final String ipAddress)
    {
+      checkStarted();
+
       clearIO();
       try
       {
@@ -965,6 +1072,8 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
 
    public String[] listConnectionIDs()
    {
+      checkStarted();
+
       clearIO();
       try
       {
@@ -985,6 +1094,8 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
 
    public String[] listSessions(final String connectionID)
    {
+      checkStarted();
+
       clearIO();
       try
       {
@@ -1005,6 +1116,8 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
 
    public Object[] getConnectors() throws Exception
    {
+      checkStarted();
+
       clearIO();
       try
       {
@@ -1035,6 +1148,8 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
 
    public String getConnectorsAsJSON() throws Exception
    {
+      checkStarted();
+
       clearIO();
       try
       {
@@ -1062,6 +1177,8 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
                                    String deleteTempQueueRoles,
                                    String manageRoles)
    {
+      checkStarted();
+
       clearIO();
       try
       {
@@ -1078,6 +1195,8 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
 
    public void removeSecuritySettings(String addressMatch)
    {
+      checkStarted();
+
       clearIO();
       try
       {
@@ -1091,6 +1210,8 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
 
    public Set<Role> getSecuritySettings(String addressMatch) throws Exception
    {
+      checkStarted();
+
       clearIO();
       try
       {
@@ -1103,6 +1224,10 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
    }
    public Object[] getRoles(String addressMatch) throws Exception
    {
+      checkStarted();
+
+      checkStarted();
+
       clearIO();
       try
       {
@@ -1132,6 +1257,8 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
 
    public String getRolesAsJSON(String addressMatch) throws Exception
    {
+      checkStarted();
+
       clearIO();
       try
       {
@@ -1152,6 +1279,8 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
 
    public String getAddressSettingsAsJSON(final String address) throws Exception
    {
+      checkStarted();
+
       AddressSettings addressSettings = server.getAddressSettingsRepository().getMatch(address);
       Map<String, Object> settings = new HashMap<String, Object>();
       if(addressSettings.getDeadLetterAddress() != null)
@@ -1176,7 +1305,7 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
       return jsonObject.toString();
    }
 
-     public void addAddressSettings(final String address,
+   public void addAddressSettings(final String address,
                                   final String DLA,
                                   final String expiryAddress,
                                   final boolean lastValueQueue,
@@ -1187,7 +1316,9 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
                                   final long redistributionDelay,
                                   final boolean sendToDLAOnNoRoute,
                                   final String addressFullMessagePolicy) throws Exception
-   {
+                                  {
+      checkStarted();
+
       AddressSettings addressSettings = new AddressSettings();
       addressSettings.setDeadLetterAddress(DLA == null?null:new SimpleString(DLA));
       addressSettings.setExpiryAddress(expiryAddress == null?null:new SimpleString(expiryAddress));
@@ -1219,16 +1350,22 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
 
    public AddressSettings getAddressSettings(final String address)
    {
+      checkStarted();
+
       return server.getAddressSettingsRepository().getMatch(address);
    }
 
    public void removeAddressSettings(String addressMatch)
    {
+      checkStarted();
+
       server.getAddressSettingsRepository().removeMatch(addressMatch);
    }
 
    public void sendQueueInfoToQueue(final String queueName, final String address) throws Exception
    {
+      checkStarted();
+
       clearIO();
       try
       {
@@ -1398,6 +1535,14 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
    MBeanOperationInfo[] fillMBeanOperationInfo()
    {
       return MBeanInfoHelper.getMBeanOperationsInfo(HornetQServerControl.class);
+   }
+   
+   private void checkStarted()
+   {
+      if (!server.isStarted())
+      {
+         throw new IllegalStateException("HornetQ Server is not started. It can not be managed yet");
+      }
    }
 
 }

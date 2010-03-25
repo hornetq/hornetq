@@ -234,7 +234,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
 
    public boolean isStarted()
    {
-      return server.getHornetQServerControl().isStarted();
+      return server.isStarted();
    }
 
    // JMSServerManager implementation -------------------------------
@@ -275,7 +275,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
    {
       checkInitialised();
 
-      return server.getHornetQServerControl().getVersion();
+      return server.getVersion().getFullVersion();
    }
 
    public synchronized boolean createQueue(final String queueName,
@@ -287,17 +287,18 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       HornetQDestination jBossQueue = HornetQDestination.createQueue(queueName);
 
       // Convert from JMS selector to core filter
-      String coreFilterString = null;
+      SimpleString coreFilterString = null;
 
       if (selectorString != null)
       {
-         coreFilterString = SelectorTranslator.convertToHornetQFilterString(selectorString);
+         coreFilterString = SimpleString.toSimpleString(SelectorTranslator.convertToHornetQFilterString(selectorString));
       }
 
-      server.getHornetQServerControl().deployQueue(jBossQueue.getAddress(),
-                                                   jBossQueue.getAddress(),
-                                                   coreFilterString,
-                                                   durable);
+      server.deployQueue(jBossQueue.getSimpleAddress(),
+                         jBossQueue.getSimpleAddress(),
+                         coreFilterString,
+                         durable,
+                         false);
 
       boolean added = bindToJndi(jndiBinding, jBossQueue);
 
@@ -318,10 +319,12 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       // checks when routing messages to a topic that
       // does not exist - otherwise we would not be able to distinguish from a non existent topic and one with no
       // subscriptions - core has no notion of a topic
-      server.getHornetQServerControl().deployQueue(jBossTopic.getAddress(),
-                                                   jBossTopic.getAddress(),
-                                                   JMSServerManagerImpl.REJECT_FILTER,
-                                                   true);
+      server.deployQueue(jBossTopic.getSimpleAddress(),
+                         jBossTopic.getSimpleAddress(),
+                         SimpleString.toSimpleString(JMSServerManagerImpl.REJECT_FILTER),
+                         true, 
+                         false);
+      
       boolean added = bindToJndi(jndiBinding, jBossTopic);
       if (added)
       {
@@ -359,7 +362,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
 
       destinations.remove(name);
       jmsManagementService.unregisterQueue(name);
-      server.getHornetQServerControl().destroyQueue(HornetQDestination.createQueueAddressFromName(name).toString());
+      server.destroyQueue(HornetQDestination.createQueueAddressFromName(name), null);
 
       return true;
    }
@@ -386,7 +389,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
             // We can't remove the remote binding. As this would be the bridge associated with the topic on this case
             if (binding.getType() != BindingType.REMOTE_QUEUE)
             {
-               server.getHornetQServerControl().destroyQueue(queueName);
+               server.destroyQueue(SimpleString.toSimpleString(queueName), null);
             }
          }
       }

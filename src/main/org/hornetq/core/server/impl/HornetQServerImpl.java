@@ -1104,10 +1104,11 @@ public class HornetQServerImpl implements HornetQServer
    {
       for (CoreQueueConfiguration config : configuration.getQueueConfigurations())
       {
-         messagingServerControl.deployQueue(config.getAddress(),
-                                            config.getName(),
-                                            config.getFilterString(),
-                                            config.isDurable());
+         deployQueue(SimpleString.toSimpleString(config.getAddress()),
+                     SimpleString.toSimpleString(config.getName()),
+                     SimpleString.toSimpleString(config.getFilterString()),
+                     config.isDurable(),
+                     false);
       }
    }
 
