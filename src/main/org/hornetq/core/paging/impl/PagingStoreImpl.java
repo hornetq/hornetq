@@ -627,7 +627,7 @@ public class PagingStoreImpl implements TestSupportPageStore
 
    }
 
-   private Queue<Runnable> onMemoryFreedRunnables = new ConcurrentLinkedQueue<Runnable>();
+   private Queue<OurRunnable> onMemoryFreedRunnables = new ConcurrentLinkedQueue<OurRunnable>();
 
    private class MemoryFreedRunnablesExecutor implements Runnable
    {
@@ -644,20 +644,49 @@ public class PagingStoreImpl implements TestSupportPageStore
 
    private final Runnable memoryFreedRunnablesExecutor = new MemoryFreedRunnablesExecutor();
 
-   private final Object runnableLock = new Object();
-
+   class OurRunnable implements Runnable
+   {
+      boolean ran;
+      
+      final Runnable runnable;
+      
+      OurRunnable(final Runnable runnable)
+      {
+         this.runnable = runnable;
+      }
+      
+      public synchronized void run()
+      {
+         if (!ran)
+         {
+            runnable.run();
+            
+            ran = true;
+         }
+      }
+   }
+   
    public void executeRunnableWhenMemoryAvailable(final Runnable runnable)
    {
       if (addressFullMessagePolicy == AddressFullMessagePolicy.BLOCK && maxSize != -1)
       {
-         synchronized (runnableLock)
+         if (sizeInBytes.get() > maxSize)
          {
-            if (sizeInBytes.get() > maxSize)
+            OurRunnable ourRunnable = new OurRunnable(runnable);
+            
+            onMemoryFreedRunnables.add(ourRunnable);
+            
+            //We check again to avoid a race condition where the size can come down just after the element
+            //has been added, but the check to execute was done before the element was added
+            //NOTE! We do not fix this race by locking the whole thing, doing this check provides
+            //MUCH better performance in a highly concurrent environment
+            if (sizeInBytes.get() <= maxSize)
             {
-               onMemoryFreedRunnables.add(runnable);
-
-               return;
+               //run it now
+               ourRunnable.run();
             }
+
+            return;
          }
       }
       runnable.run();
@@ -669,16 +698,13 @@ public class PagingStoreImpl implements TestSupportPageStore
       {
          if (maxSize != -1)
          {
-            synchronized (runnableLock)
-            {
-               long newSize = sizeInBytes.addAndGet(size);
+            long newSize = sizeInBytes.addAndGet(size);
 
-               if (newSize <= maxSize)
+            if (newSize <= maxSize)
+            {
+               if (!onMemoryFreedRunnables.isEmpty())
                {
-                  if (!onMemoryFreedRunnables.isEmpty())
-                  {
-                     executor.execute(memoryFreedRunnablesExecutor);
-                  }
+                  executor.execute(memoryFreedRunnablesExecutor);
                }
             }
          }
