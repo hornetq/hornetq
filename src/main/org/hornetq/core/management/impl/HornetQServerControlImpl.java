@@ -560,7 +560,7 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
 
    public void deployQueue(final String address, final String name, final String filterStr, final boolean durable) throws Exception
    {
-      checkStarted();
+//      checkStarted(); // TODO: RE-enable this. Deploy is calling this method before start
 
       SimpleString filter = filterStr == null ? null : new SimpleString(filterStr);
       clearIO();
