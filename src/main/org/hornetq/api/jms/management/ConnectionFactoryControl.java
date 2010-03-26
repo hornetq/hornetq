@@ -40,7 +40,7 @@ public interface ConnectionFactoryControl
    /**
     * Returns the JNDI bindings associated  to this connection factory.
     */
-   List<String> getBindings();
+   List<String> getJNDIBindings();
 
    /**
     * Returns the Client ID of this connection factory (or {@code null} if it is not set.

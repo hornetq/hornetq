@@ -33,11 +33,6 @@ public interface DestinationControl
    String getName();
 
    /**
-    * Returns the JNDI binding of this destination.
-    */
-   String getJNDIBinding();
-
-   /**
     * Returns the HornetQ address corresponding to this destination.
     */
    String getAddress();

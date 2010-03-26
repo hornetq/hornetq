@@ -150,7 +150,7 @@ public abstract class BridgeTestBase extends UnitTestCase
       {
          server = jmsServer1;
       }
-      server.createQueue(queueName, "/queue/" + queueName, null, true);
+      server.createQueue(queueName, null, true, "/queue/" + queueName);
    }
 
    @Override

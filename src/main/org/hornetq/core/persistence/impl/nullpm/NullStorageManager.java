@@ -13,6 +13,8 @@
 
 package org.hornetq.core.persistence.impl.nullpm;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executor;
@@ -33,6 +35,8 @@ import org.hornetq.core.persistence.GroupingInfo;
 import org.hornetq.core.persistence.OperationContext;
 import org.hornetq.core.persistence.QueueBindingInfo;
 import org.hornetq.core.persistence.StorageManager;
+import org.hornetq.core.persistence.config.PersistedAddressSetting;
+import org.hornetq.core.persistence.config.PersistedRoles;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.replication.ReplicationManager;
@@ -385,6 +389,50 @@ public class NullStorageManager implements StorageManager
     * @see org.hornetq.core.persistence.StorageManager#clearContext()
     */
    public void clearContext()
+   {
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.persistence.StorageManager#recoverAddressSettings()
+    */
+   public List<PersistedAddressSetting> recoverAddressSettings() throws Exception
+   {
+      return Collections.emptyList();
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.persistence.StorageManager#storeAddressSetting(org.hornetq.core.persistconfig.PersistedAddressSetting)
+    */
+   public void storeAddressSetting(PersistedAddressSetting addressSetting) throws Exception
+   {
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.persistence.StorageManager#recoverPersistedRoles()
+    */
+   public List<PersistedRoles> recoverPersistedRoles() throws Exception
+   {
+      return Collections.emptyList();
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.persistence.StorageManager#storeSecurityRoles(org.hornetq.core.persistconfig.PersistedRoles)
+    */
+   public void storeSecurityRoles(PersistedRoles persistedRoles) throws Exception
+   {
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.persistence.StorageManager#deleteAddressSetting(org.hornetq.api.core.SimpleString)
+    */
+   public void deleteAddressSetting(SimpleString addressMatch) throws Exception
+   {
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.persistence.StorageManager#deleteSecurityRoles(org.hornetq.api.core.SimpleString)
+    */
+   public void deleteSecurityRoles(SimpleString addressMatch) throws Exception
    {
    }
 

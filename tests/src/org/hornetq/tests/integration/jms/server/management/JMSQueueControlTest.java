@@ -417,7 +417,7 @@ public class JMSQueueControlTest extends ManagementTestBase
       JMSQueueControl queueControl = createManagementControl();
       String expiryQueueName = RandomUtil.randomString();
       HornetQDestination expiryQueue = (HornetQDestination)HornetQJMSClient.createQueue(expiryQueueName);
-      serverManager.createQueue(expiryQueueName, expiryQueueName, null, true);
+      serverManager.createQueue(expiryQueueName, null, true, expiryQueueName);
       queueControl.setExpiryAddress(expiryQueue.getAddress());
 
       JMSQueueControl expiryQueueControl = ManagementControlHelper.createJMSQueueControl(expiryQueue, mbeanServer);
@@ -544,7 +544,7 @@ public class JMSQueueControlTest extends ManagementTestBase
    public void testSendMessageToDeadLetterAddress() throws Exception
    {
       String deadLetterQueue = RandomUtil.randomString();
-      serverManager.createQueue(deadLetterQueue, deadLetterQueue, null, true);
+      serverManager.createQueue(deadLetterQueue, null, true, deadLetterQueue);
       HornetQDestination dlq = (HornetQDestination)HornetQJMSClient.createQueue(deadLetterQueue);
 
       Connection conn = createConnection();
@@ -605,7 +605,7 @@ public class JMSQueueControlTest extends ManagementTestBase
       String filter = "key = " + matchingValue;
 
       String deadLetterQueue = RandomUtil.randomString();
-      serverManager.createQueue(deadLetterQueue, deadLetterQueue, null, true);
+      serverManager.createQueue(deadLetterQueue, null, true, deadLetterQueue);
       HornetQDestination dlq = (HornetQDestination)HornetQJMSClient.createQueue(deadLetterQueue);
 
       Connection conn = createConnection();
@@ -647,7 +647,7 @@ public class JMSQueueControlTest extends ManagementTestBase
    {
       String otherQueueName = RandomUtil.randomString();
 
-      serverManager.createQueue(otherQueueName, otherQueueName, null, true);
+      serverManager.createQueue(otherQueueName, null, true, otherQueueName);
       HornetQDestination otherQueue = (HornetQDestination)HornetQJMSClient.createQueue(otherQueueName);
 
       // send on queue
@@ -694,7 +694,7 @@ public class JMSQueueControlTest extends ManagementTestBase
       String filter = "key = " + matchingValue;
       String otherQueueName = RandomUtil.randomString();
 
-      serverManager.createQueue(otherQueueName, otherQueueName, null, true);
+      serverManager.createQueue(otherQueueName, null, true, otherQueueName);
       HornetQDestination otherQueue = (HornetQDestination)HornetQJMSClient.createQueue(otherQueueName);
 
       Connection connection = JMSUtil.createConnection(InVMConnectorFactory.class.getName());
@@ -729,7 +729,7 @@ public class JMSQueueControlTest extends ManagementTestBase
    {
       String otherQueueName = RandomUtil.randomString();
 
-      serverManager.createQueue(otherQueueName, otherQueueName, null, true);
+      serverManager.createQueue(otherQueueName, null, true, otherQueueName);
       HornetQDestination otherQueue = (HornetQDestination)HornetQJMSClient.createQueue(otherQueueName);
 
       String[] messageIDs = JMSUtil.sendMessages(queue, 1);
@@ -752,7 +752,7 @@ public class JMSQueueControlTest extends ManagementTestBase
       String unknownMessageID = RandomUtil.randomString();
       String otherQueueName = RandomUtil.randomString();
 
-      serverManager.createQueue(otherQueueName, otherQueueName, null, true);
+      serverManager.createQueue(otherQueueName, null, true, otherQueueName);
 
       JMSQueueControl queueControl = createManagementControl();
       Assert.assertEquals(0, queueControl.getMessageCount());
@@ -834,7 +834,7 @@ public class JMSQueueControlTest extends ManagementTestBase
       serverManager.activated();
 
       String queueName = RandomUtil.randomString();
-      serverManager.createQueue(queueName, queueName, null, true);
+      serverManager.createQueue(queueName, null, true, queueName);
       queue = (HornetQDestination)HornetQJMSClient.createQueue(queueName);
    }
 

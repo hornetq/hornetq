@@ -76,10 +76,8 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
    private final HornetQServer server;
 
    private Channel channel;
-
-   private Journal bindingsJournal;
-
-   private Journal messagingJournal;
+   
+   private Journal[] journals;
 
    private JournalStorageManager storage;
 
@@ -101,6 +99,26 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
    }
 
    // Public --------------------------------------------------------
+   
+   public void registerJournal(final byte id, final Journal journal)
+   {
+      if (journals == null || id >= journals.length)
+      {
+         Journal[] oldJournals = journals;
+         journals = new Journal[id + 1];
+         
+         if (oldJournals != null)
+         {
+            for (int i = 0 ; i < oldJournals.length; i++)
+            {
+               journals[i] = oldJournals[i];
+            }
+         }
+      }
+      
+      journals[id] = journal;
+   }
+   
    /* 
     * (non-Javadoc)
     * @see org.hornetq.core.remoting.ChannelHandler#handlePacket(org.hornetq.core.remoting.Packet)
@@ -194,8 +212,8 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
 
       server.getManagementService().setStorageManager(storage);
 
-      bindingsJournal = storage.getBindingsJournal();
-      messagingJournal = storage.getMessageJournal();
+      registerJournal((byte)1, storage.getMessageJournal());
+      registerJournal((byte)0, storage.getBindingsJournal());
 
       // We only need to load internal structures on the backup...
       journalLoadInformation = storage.loadInternalOnly();
@@ -591,16 +609,7 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
     */
    private Journal getJournal(final byte journalID)
    {
-      Journal journalToUse;
-      if (journalID == (byte)0)
-      {
-         journalToUse = bindingsJournal;
-      }
-      else
-      {
-         journalToUse = messagingJournal;
-      }
-      return journalToUse;
+      return this.journals[journalID];
    }
 
    // Inner classes -------------------------------------------------

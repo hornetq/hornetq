@@ -34,6 +34,7 @@ import org.hornetq.core.server.management.ManagementService;
 import org.hornetq.jms.client.HornetQDestination;
 import org.hornetq.jms.client.HornetQMessage;
 import org.hornetq.jms.client.SelectorTranslator;
+import org.hornetq.jms.server.JMSServerManager;
 import org.hornetq.utils.json.JSONArray;
 import org.hornetq.utils.json.JSONObject;
 
@@ -53,11 +54,11 @@ public class JMSTopicControlImpl extends StandardMBean implements TopicControl
 
    private final HornetQDestination managedTopic;
 
-   private final String binding;
-
    private final AddressControl addressControl;
 
    private final ManagementService managementService;
+   
+   private final JMSServerManager jmsServerManager;
 
    // Static --------------------------------------------------------
 
@@ -70,18 +71,32 @@ public class JMSTopicControlImpl extends StandardMBean implements TopicControl
    // Constructors --------------------------------------------------
 
    public JMSTopicControlImpl(final HornetQDestination topic,
+                              final JMSServerManager jmsServerManager,
                               final AddressControl addressControl,
-                              final String jndiBinding,
                               final ManagementService managementService) throws Exception
    {
       super(TopicControl.class);
+      this.jmsServerManager = jmsServerManager;
       managedTopic = topic;
       this.addressControl = addressControl;
-      binding = jndiBinding;
       this.managementService = managementService;
    }
 
    // TopicControlMBean implementation ------------------------------
+   
+   /* (non-Javadoc)
+    * @see org.hornetq.api.jms.management.JMSQueueControl#addJNDI(java.lang.String)
+    */
+   public void addJNDI(String jndi) throws Exception
+   {
+      jmsServerManager.addQueueToJndi(managedTopic.getName(), jndi);
+   }
+   
+   public List<String> getJNDIBindings()
+   {
+      return jmsServerManager.getJNDIOnQueue(managedTopic.getName());
+   }
+
 
    public String getName()
    {
@@ -96,11 +111,6 @@ public class JMSTopicControlImpl extends StandardMBean implements TopicControl
    public String getAddress()
    {
       return managedTopic.getAddress();
-   }
-
-   public String getJNDIBinding()
-   {
-      return binding;
    }
 
    public int getMessageCount()

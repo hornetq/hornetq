@@ -17,6 +17,7 @@ import java.util.List;
 
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
+import org.hornetq.core.journal.EncodingSupport;
 import org.hornetq.jms.server.JMSServerManager;
 
 /**
@@ -26,7 +27,7 @@ import org.hornetq.jms.server.JMSServerManager;
  *
  *
  */
-public interface ConnectionFactoryConfiguration
+public interface ConnectionFactoryConfiguration extends EncodingSupport
 {
    String getName();
 

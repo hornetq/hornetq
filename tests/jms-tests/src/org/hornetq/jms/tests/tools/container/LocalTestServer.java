@@ -210,7 +210,7 @@ public class LocalTestServer implements Server, Runnable
 
    public void createQueue(final String name, final String jndiName) throws Exception
    {
-      getJMSServerManager().createQueue(name, "/queue/" + (jndiName != null ? jndiName : name), null, true);
+      getJMSServerManager().createQueue(name, null, true, "/queue/" + (jndiName != null ? jndiName : name));
    }
 
    public void createTopic(final String name, final String jndiName) throws Exception

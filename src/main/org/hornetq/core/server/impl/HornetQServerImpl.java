@@ -62,6 +62,8 @@ import org.hornetq.core.paging.impl.PagingStoreFactoryNIO;
 import org.hornetq.core.persistence.GroupingInfo;
 import org.hornetq.core.persistence.QueueBindingInfo;
 import org.hornetq.core.persistence.StorageManager;
+import org.hornetq.core.persistence.config.PersistedAddressSetting;
+import org.hornetq.core.persistence.config.PersistedRoles;
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager;
 import org.hornetq.core.persistence.impl.nullpm.NullStorageManager;
 import org.hornetq.core.postoffice.Binding;
@@ -111,6 +113,7 @@ import org.hornetq.spi.core.security.HornetQSecurityManager;
 import org.hornetq.utils.ExecutorFactory;
 import org.hornetq.utils.HornetQThreadFactory;
 import org.hornetq.utils.OrderedExecutorFactory;
+import org.hornetq.utils.SecurityFormatter;
 import org.hornetq.utils.UUID;
 import org.hornetq.utils.UUIDGenerator;
 import org.hornetq.utils.VersionLoader;
@@ -258,7 +261,7 @@ public class HornetQServerImpl implements HornetQServer
       addressSettingsRepository = new HierarchicalObjectRepository<AddressSettings>();
 
       addressSettingsRepository.setDefault(new AddressSettings());
-      
+
       securityRepository = new HierarchicalObjectRepository<Set<Role>>();
 
       securityRepository.setDefault(new HashSet<Role>());
@@ -434,9 +437,9 @@ public class HornetQServerImpl implements HornetQServer
          {
             memoryManager.stop();
          }
-         
+
          addressSettingsRepository.clear();
-         
+
          securityRepository.clear();
 
          pagingManager = null;
@@ -554,7 +557,7 @@ public class HornetQServerImpl implements HornetQServer
                                       final boolean xa,
                                       final SessionCallback callback) throws Exception
    {
-      
+
       if (securityStore != null)
       {
          securityStore.authenticate(username, password);
@@ -692,7 +695,11 @@ public class HornetQServerImpl implements HornetQServer
 
       if (queue.getConsumerCount() != 0)
       {
-         throw new HornetQException(HornetQException.ILLEGAL_STATE, "Cannot delete queue "  + queue.getName() + " on binding " + queueName + " - it has consumers = " + binding.getClass().getName());
+         throw new HornetQException(HornetQException.ILLEGAL_STATE, "Cannot delete queue " + queue.getName() +
+                                                                    " on binding " +
+                                                                    queueName +
+                                                                    " - it has consumers = " +
+                                                                    binding.getClass().getName());
       }
 
       if (session != null)
@@ -975,7 +982,7 @@ public class HornetQServerImpl implements HornetQServer
                                                                 configuration.isBackup());
 
       // Address settings need to deployed initially, since they're require on paging manager.start()
-      
+
       deployAddressSettingsFromConfiguration();
 
       if (configuration.isFileDeploymentEnabled())
@@ -1120,7 +1127,6 @@ public class HornetQServerImpl implements HornetQServer
       }
    }
 
-
    private JournalLoadInformation[] loadJournals() throws Exception
    {
       JournalLoadInformation[] journalInfo = new JournalLoadInformation[2];
@@ -1130,6 +1136,8 @@ public class HornetQServerImpl implements HornetQServer
       List<GroupingInfo> groupingInfos = new ArrayList<GroupingInfo>();
 
       journalInfo[0] = storageManager.loadBindingJournal(queueBindingInfos, groupingInfos);
+
+      recoverStoredConfigs();
 
       // Set the node id - must be before we load the queues into the postoffice, but after we load the journal
       setNodeID();
@@ -1188,6 +1196,33 @@ public class HornetQServerImpl implements HornetQServer
       }
 
       return journalInfo;
+   }
+
+   /**
+    * @throws Exception
+    */
+   private void recoverStoredConfigs() throws Exception
+   {
+      List<PersistedAddressSetting> adsettings = storageManager.recoverAddressSettings();
+      for (PersistedAddressSetting set : adsettings)
+      {
+         addressSettingsRepository.addMatch(set.getAddressMatch().toString(), set.getSetting());
+      }
+
+      List<PersistedRoles> roles = storageManager.recoverPersistedRoles();
+
+      for (PersistedRoles roleItem : roles)
+      {
+         Set<Role> setRoles = SecurityFormatter.createSecurity(roleItem.getSendRoles(),
+                                                               roleItem.getConsumeRoles(),
+                                                               roleItem.getCreateDurableQueueRoles(),
+                                                               roleItem.getDeleteDurableQueueRoles(),
+                                                               roleItem.getCreateTempQueueRoles(),
+                                                               roleItem.getDeleteTempQueueRoles(),
+                                                               roleItem.getManageRoles());
+
+         securityRepository.addMatch(roleItem.getAddressMatch().toString(), setRoles);
+      }
    }
 
    private void setNodeID() throws Exception

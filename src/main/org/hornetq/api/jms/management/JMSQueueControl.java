@@ -13,6 +13,7 @@
 
 package org.hornetq.api.jms.management;
 
+import java.util.List;
 import java.util.Map;
 
 import javax.management.MBeanOperationInfo;
@@ -75,6 +76,18 @@ public interface JMSQueueControl extends DestinationControl
    String getSelector();
 
    // Operations ----------------------------------------------------
+
+   /**
+    * Returns the JNDI bindings associated  to this connection factory.
+    */
+   @Operation(desc = "Returns the list of JNDI bindings associated")
+   List<String> getJNDIBindings();
+   
+   /**
+    * Add the JNDI binding to this destination
+    */
+   @Operation(desc = "Adds the queue to another JNDI binding")
+   void addJNDI(@Parameter(name = "jndiBinding", desc = "the name of the binding for JNDI") String jndi) throws Exception;
 
    /**
     * Lists all the JMS messages in this queue matching the specified filter.

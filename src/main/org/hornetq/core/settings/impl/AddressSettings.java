@@ -15,9 +15,13 @@ package org.hornetq.core.settings.impl;
 
 import java.io.Serializable;
 
+import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.SimpleString;
+import org.hornetq.core.journal.EncodingSupport;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.settings.Mergeable;
+import org.hornetq.utils.BufferHelper;
+import org.hornetq.utils.DataConstants;
 
 /**
  * Configuration settings that are applied on the address level
@@ -25,7 +29,7 @@ import org.hornetq.core.settings.Mergeable;
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  */
-public class AddressSettings implements Mergeable<AddressSettings>, Serializable
+public class AddressSettings implements Mergeable<AddressSettings>, Serializable, EncodingSupport
 {
    private static final long serialVersionUID = 1607502280582336366L;
 
@@ -238,6 +242,252 @@ public class AddressSettings implements Mergeable<AddressSettings>, Serializable
       {
          addressFullMessagePolicy = merged.addressFullMessagePolicy;
       }
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.journal.EncodingSupport#decode(org.hornetq.api.core.HornetQBuffer)
+    */
+   public void decode(HornetQBuffer buffer)
+   {
+      SimpleString policyStr = buffer.readNullableSimpleString();
+
+      if (policyStr != null)
+      {
+         addressFullMessagePolicy = AddressFullMessagePolicy.valueOf(policyStr.toString());
+      }
+      else
+      {
+         addressFullMessagePolicy = null;
+      }
+
+      maxSizeBytes = BufferHelper.readNullableLong(buffer);
+
+      pageSizeBytes = BufferHelper.readNullableInteger(buffer);
+
+      dropMessagesWhenFull = BufferHelper.readNullableBoolean(buffer);
+
+      maxDeliveryAttempts = BufferHelper.readNullableInteger(buffer);
+
+      messageCounterHistoryDayLimit = BufferHelper.readNullableInteger(buffer);
+
+      redeliveryDelay = BufferHelper.readNullableLong(buffer);
+
+      deadLetterAddress = buffer.readNullableSimpleString();
+
+      expiryAddress = buffer.readNullableSimpleString();
+
+      lastValueQueue = BufferHelper.readNullableBoolean(buffer);
+
+      redeliveryDelay = BufferHelper.readNullableLong(buffer);
+
+      sendToDLAOnNoRoute = BufferHelper.readNullableBoolean(buffer);
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.journal.EncodingSupport#getEncodeSize()
+    */
+   public int getEncodeSize()
+   {
+
+      return BufferHelper.sizeOfNullableSimpleString(addressFullMessagePolicy != null ? addressFullMessagePolicy.toString()
+                                                                                     : null) + BufferHelper.sizeOfNullableLong(maxSizeBytes) +
+             BufferHelper.sizeOfNullableInteger(pageSizeBytes) +
+             BufferHelper.sizeOfNullableBoolean(dropMessagesWhenFull) +
+             BufferHelper.sizeOfNullableInteger(maxDeliveryAttempts) +
+             BufferHelper.sizeOfNullableInteger(messageCounterHistoryDayLimit) +
+             BufferHelper.sizeOfNullableLong(redeliveryDelay) +
+             SimpleString.sizeofNullableString(deadLetterAddress) +
+             SimpleString.sizeofNullableString(expiryAddress) +
+             BufferHelper.sizeOfNullableBoolean(lastValueQueue) +
+             BufferHelper.sizeOfNullableLong(redistributionDelay) +
+             BufferHelper.sizeOfNullableBoolean(sendToDLAOnNoRoute);
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.journal.EncodingSupport#encode(org.hornetq.api.core.HornetQBuffer)
+    */
+   public void encode(HornetQBuffer buffer)
+   {
+      buffer.writeNullableSimpleString(addressFullMessagePolicy != null ? new SimpleString(addressFullMessagePolicy.toString())
+                                                                       : null);
+
+      BufferHelper.writeNullableLong(buffer, maxSizeBytes);
+
+      BufferHelper.writeNullableInteger(buffer, pageSizeBytes);
+
+      BufferHelper.writeNullableBoolean(buffer, dropMessagesWhenFull);
+
+      BufferHelper.writeNullableInteger(buffer, maxDeliveryAttempts);
+
+      BufferHelper.writeNullableInteger(buffer, messageCounterHistoryDayLimit);
+
+      BufferHelper.writeNullableLong(buffer, redeliveryDelay);
+
+      buffer.writeNullableSimpleString(deadLetterAddress);
+
+      buffer.writeNullableSimpleString(expiryAddress);
+
+      BufferHelper.writeNullableBoolean(buffer, lastValueQueue);
+
+      BufferHelper.writeNullableLong(buffer, redistributionDelay);
+
+      BufferHelper.writeNullableBoolean(buffer, sendToDLAOnNoRoute);
+   }
+
+   /* (non-Javadoc)
+    * @see java.lang.Object#hashCode()
+    */
+   @Override
+   public int hashCode()
+   {
+      final int prime = 31;
+      int result = 1;
+      result = prime * result + ((addressFullMessagePolicy == null) ? 0 : addressFullMessagePolicy.hashCode());
+      result = prime * result + ((deadLetterAddress == null) ? 0 : deadLetterAddress.hashCode());
+      result = prime * result + ((dropMessagesWhenFull == null) ? 0 : dropMessagesWhenFull.hashCode());
+      result = prime * result + ((expiryAddress == null) ? 0 : expiryAddress.hashCode());
+      result = prime * result + ((lastValueQueue == null) ? 0 : lastValueQueue.hashCode());
+      result = prime * result + ((maxDeliveryAttempts == null) ? 0 : maxDeliveryAttempts.hashCode());
+      result = prime * result + ((maxSizeBytes == null) ? 0 : maxSizeBytes.hashCode());
+      result = prime * result +
+               ((messageCounterHistoryDayLimit == null) ? 0 : messageCounterHistoryDayLimit.hashCode());
+      result = prime * result + ((pageSizeBytes == null) ? 0 : pageSizeBytes.hashCode());
+      result = prime * result + ((redeliveryDelay == null) ? 0 : redeliveryDelay.hashCode());
+      result = prime * result + ((redistributionDelay == null) ? 0 : redistributionDelay.hashCode());
+      result = prime * result + ((sendToDLAOnNoRoute == null) ? 0 : sendToDLAOnNoRoute.hashCode());
+      return result;
+   }
+
+   /* (non-Javadoc)
+    * @see java.lang.Object#equals(java.lang.Object)
+    */
+   @Override
+   public boolean equals(Object obj)
+   {
+      if (this == obj)
+         return true;
+      if (obj == null)
+         return false;
+      if (getClass() != obj.getClass())
+         return false;
+      AddressSettings other = (AddressSettings)obj;
+      if (addressFullMessagePolicy == null)
+      {
+         if (other.addressFullMessagePolicy != null)
+            return false;
+      }
+      else if (!addressFullMessagePolicy.equals(other.addressFullMessagePolicy))
+         return false;
+      if (deadLetterAddress == null)
+      {
+         if (other.deadLetterAddress != null)
+            return false;
+      }
+      else if (!deadLetterAddress.equals(other.deadLetterAddress))
+         return false;
+      if (dropMessagesWhenFull == null)
+      {
+         if (other.dropMessagesWhenFull != null)
+            return false;
+      }
+      else if (!dropMessagesWhenFull.equals(other.dropMessagesWhenFull))
+         return false;
+      if (expiryAddress == null)
+      {
+         if (other.expiryAddress != null)
+            return false;
+      }
+      else if (!expiryAddress.equals(other.expiryAddress))
+         return false;
+      if (lastValueQueue == null)
+      {
+         if (other.lastValueQueue != null)
+            return false;
+      }
+      else if (!lastValueQueue.equals(other.lastValueQueue))
+         return false;
+      if (maxDeliveryAttempts == null)
+      {
+         if (other.maxDeliveryAttempts != null)
+            return false;
+      }
+      else if (!maxDeliveryAttempts.equals(other.maxDeliveryAttempts))
+         return false;
+      if (maxSizeBytes == null)
+      {
+         if (other.maxSizeBytes != null)
+            return false;
+      }
+      else if (!maxSizeBytes.equals(other.maxSizeBytes))
+         return false;
+      if (messageCounterHistoryDayLimit == null)
+      {
+         if (other.messageCounterHistoryDayLimit != null)
+            return false;
+      }
+      else if (!messageCounterHistoryDayLimit.equals(other.messageCounterHistoryDayLimit))
+         return false;
+      if (pageSizeBytes == null)
+      {
+         if (other.pageSizeBytes != null)
+            return false;
+      }
+      else if (!pageSizeBytes.equals(other.pageSizeBytes))
+         return false;
+      if (redeliveryDelay == null)
+      {
+         if (other.redeliveryDelay != null)
+            return false;
+      }
+      else if (!redeliveryDelay.equals(other.redeliveryDelay))
+         return false;
+      if (redistributionDelay == null)
+      {
+         if (other.redistributionDelay != null)
+            return false;
+      }
+      else if (!redistributionDelay.equals(other.redistributionDelay))
+         return false;
+      if (sendToDLAOnNoRoute == null)
+      {
+         if (other.sendToDLAOnNoRoute != null)
+            return false;
+      }
+      else if (!sendToDLAOnNoRoute.equals(other.sendToDLAOnNoRoute))
+         return false;
+      return true;
+   }
+
+   /* (non-Javadoc)
+    * @see java.lang.Object#toString()
+    */
+   @Override
+   public String toString()
+   {
+      return "AddressSettings [addressFullMessagePolicy=" + addressFullMessagePolicy +
+             ", deadLetterAddress=" +
+             deadLetterAddress +
+             ", dropMessagesWhenFull=" +
+             dropMessagesWhenFull +
+             ", expiryAddress=" +
+             expiryAddress +
+             ", lastValueQueue=" +
+             lastValueQueue +
+             ", maxDeliveryAttempts=" +
+             maxDeliveryAttempts +
+             ", maxSizeBytes=" +
+             maxSizeBytes +
+             ", messageCounterHistoryDayLimit=" +
+             messageCounterHistoryDayLimit +
+             ", pageSizeBytes=" +
+             pageSizeBytes +
+             ", redeliveryDelay=" +
+             redeliveryDelay +
+             ", redistributionDelay=" +
+             redistributionDelay +
+             ", sendToDLAOnNoRoute=" +
+             sendToDLAOnNoRoute +
+             "]";
    }
 
 }

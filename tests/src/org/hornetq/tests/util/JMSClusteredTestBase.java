@@ -90,8 +90,8 @@ public class JMSClusteredTestBase extends ServiceTestBase
     */
    protected Queue createQueue(final String name) throws Exception, NamingException
    {
-      jmsServer2.createQueue(name, "/queue/" + name, null, true);
-      jmsServer1.createQueue(name, "/queue/" + name, null, true);
+      jmsServer2.createQueue(name, null, true, "/queue/" + name);
+      jmsServer1.createQueue(name, null, true, "/queue/" + name);
 
       return (Queue)context1.lookup("/queue/" + name);
    }

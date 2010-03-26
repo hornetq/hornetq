@@ -13,8 +13,6 @@
 
 package org.hornetq.jms.server.management.impl;
 
-import java.util.List;
-
 import javax.management.ObjectName;
 
 import org.hornetq.api.core.management.AddressControl;
@@ -49,12 +47,15 @@ public class JMSManagementServiceImpl implements JMSManagementService
    // Attributes ----------------------------------------------------
 
    private final ManagementService managementService;
+   
+   private final JMSServerManager jmsServerManager;
 
    // Static --------------------------------------------------------
 
-   public JMSManagementServiceImpl(final ManagementService managementService)
+   public JMSManagementServiceImpl(final ManagementService managementService, final JMSServerManager jmsServerManager)
    {
       this.managementService = managementService;
+      this.jmsServerManager = jmsServerManager;
    }
 
    // Public --------------------------------------------------------
@@ -77,7 +78,7 @@ public class JMSManagementServiceImpl implements JMSManagementService
       managementService.unregisterFromRegistry(ResourceNames.JMS_SERVER);
    }
 
-   public synchronized void registerQueue(final HornetQDestination queue, final String jndiBinding) throws Exception
+   public synchronized void registerQueue(final HornetQDestination queue) throws Exception
    {
       QueueControl coreQueueControl = (QueueControl)managementService.getResource(ResourceNames.CORE_QUEUE + queue.getAddress());
       MessageCounterManager messageCounterManager = managementService.getMessageCounterManager();
@@ -89,7 +90,7 @@ public class JMSManagementServiceImpl implements JMSManagementService
                                                   messageCounterManager.getMaxDayCount());
       messageCounterManager.registerMessageCounter(queue.getName(), counter);
       ObjectName objectName = managementService.getObjectNameBuilder().getJMSQueueObjectName(queue.getQueueName());
-      JMSQueueControlImpl control = new JMSQueueControlImpl(queue, coreQueueControl, jndiBinding, counter);
+      JMSQueueControlImpl control = new JMSQueueControlImpl(queue, coreQueueControl, jmsServerManager, counter);
       managementService.registerInJMX(objectName, control);
       managementService.registerInRegistry(ResourceNames.JMS_QUEUE + queue.getQueueName(), control);
    }
@@ -101,11 +102,11 @@ public class JMSManagementServiceImpl implements JMSManagementService
       managementService.unregisterFromRegistry(ResourceNames.JMS_QUEUE + name);
    }
 
-   public synchronized void registerTopic(final HornetQDestination topic, final String jndiBinding) throws Exception
+   public synchronized void registerTopic(final HornetQDestination topic) throws Exception
    {
       ObjectName objectName = managementService.getObjectNameBuilder().getJMSTopicObjectName(topic.getTopicName());
       AddressControl addressControl = (AddressControl)managementService.getResource(ResourceNames.CORE_ADDRESS + topic.getAddress());
-      JMSTopicControlImpl control = new JMSTopicControlImpl(topic, addressControl, jndiBinding, managementService);
+      JMSTopicControlImpl control = new JMSTopicControlImpl(topic, jmsServerManager, addressControl, managementService);
       managementService.registerInJMX(objectName, control);
       managementService.registerInRegistry(ResourceNames.JMS_TOPIC + topic.getTopicName(), control);
    }
@@ -118,11 +119,10 @@ public class JMSManagementServiceImpl implements JMSManagementService
    }
 
    public synchronized void registerConnectionFactory(final String name,
-                                                      final HornetQConnectionFactory connectionFactory,
-                                                      final List<String> bindings) throws Exception
+                                                      final HornetQConnectionFactory connectionFactory) throws Exception
    {
       ObjectName objectName = managementService.getObjectNameBuilder().getConnectionFactoryObjectName(name);
-      JMSConnectionFactoryControlImpl control = new JMSConnectionFactoryControlImpl(connectionFactory, name, bindings);
+      JMSConnectionFactoryControlImpl control = new JMSConnectionFactoryControlImpl(connectionFactory, jmsServerManager, name);
       managementService.registerInJMX(objectName, control);
       managementService.registerInRegistry(ResourceNames.JMS_CONNECTION_FACTORY + name, control);
    }

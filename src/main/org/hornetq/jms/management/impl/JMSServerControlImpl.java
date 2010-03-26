@@ -283,7 +283,7 @@ public class JMSServerControlImpl extends StandardMBean implements JMSServerCont
 
       try
       {
-         boolean created = server.createQueue(name, jndiBinding, null, true);
+         boolean created = server.createQueue(name, null, true, jndiBinding);
          if (created)
          {
             sendNotification(NotificationType.QUEUE_CREATED, name);

@@ -49,8 +49,6 @@ public interface JMSServerManager extends HornetQComponent
     * 
     * @param queueName
     *           The name of the queue to create
-    * @param jndiBinding
-    *           the name of the binding for JNDI
     * @param selectorString
     * @param durable
     * @return true if the queue is created or if it existed and was added to
@@ -58,7 +56,9 @@ public interface JMSServerManager extends HornetQComponent
     * @throws Exception
     *            if problems were encountered creating the queue.
     */
-   boolean createQueue(String queueName, String jndiBinding, String selectorString, boolean durable) throws Exception;
+   boolean createQueue(String queueName, String selectorString, boolean durable, String ...jndi) throws Exception;
+   
+   boolean addQueueToJndi(final String queueName, final String jndiBinding) throws Exception;
 
    /**
     * Creates a JMS Topic
@@ -72,10 +72,10 @@ public interface JMSServerManager extends HornetQComponent
     * @throws Exception
     *            if a problem occurred creating the topic
     */
-   boolean createTopic(String topicName, String jndiBinding) throws Exception;
+   boolean createTopic(String topicName, String ... jndi) throws Exception;
 
    /**
-    * Remove the destination from JNDI.
+    * Remove the topic from JNDI.
     * Calling this method does <em>not</em> destroy the destination.
     * 
     * @param name
@@ -84,7 +84,43 @@ public interface JMSServerManager extends HornetQComponent
     * @throws Exception
     *            if a problem occurred removing the destination
     */
-   boolean undeployDestination(String name) throws Exception;
+   boolean removeTopicFromJNDI(String name, String jndi) throws Exception;
+
+   /**
+    * Remove the topic from JNDI.
+    * Calling this method does <em>not</em> destroy the destination.
+    * 
+    * @param name
+    *           the name of the destination to remove from JNDI
+    * @return true if removed
+    * @throws Exception
+    *            if a problem occurred removing the destination
+    */
+   boolean removeTopicFromJNDI(String name) throws Exception;
+
+   /**
+    * Remove the queue from JNDI.
+    * Calling this method does <em>not</em> destroy the destination.
+    * 
+    * @param name
+    *           the name of the destination to remove from JNDI
+    * @return true if removed
+    * @throws Exception
+    *            if a problem occurred removing the destination
+    */
+   boolean removeQueueFromJNDI(String name, String jndi) throws Exception;
+
+   /**
+    * Remove the queue from JNDI.
+    * Calling this method does <em>not</em> destroy the destination.
+    * 
+    * @param name
+    *           the name of the destination to remove from JNDI
+    * @return true if removed
+    * @throws Exception
+    *            if a problem occurred removing the destination
+    */
+   boolean removeQueueFromJNDI(String name) throws Exception;
 
    /**
     * destroys a queue and removes it from JNDI
@@ -96,6 +132,12 @@ public interface JMSServerManager extends HornetQComponent
     *            if a problem occurred destroying the queue
     */
    boolean destroyQueue(String name) throws Exception;
+   
+   List<String> getJNDIOnQueue(String queue);
+   
+   List<String> getJNDIOnTopic(String topic);
+   
+   List<String> getJNDIOnConnectionFactory(String factoryName);
 
    /**
     * destroys a topic and removes it from JNDI

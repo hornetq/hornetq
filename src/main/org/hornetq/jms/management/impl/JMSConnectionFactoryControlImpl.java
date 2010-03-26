@@ -21,10 +21,10 @@ import javax.management.StandardMBean;
 
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.core.client.ClientSessionFactory;
-import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.api.jms.management.ConnectionFactoryControl;
 import org.hornetq.core.management.impl.MBeanInfoHelper;
+import org.hornetq.jms.client.HornetQConnectionFactory;
+import org.hornetq.jms.server.JMSServerManager;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -40,31 +40,31 @@ public class JMSConnectionFactoryControlImpl extends StandardMBean implements Co
 
    private final HornetQConnectionFactory cf;
 
-   private final List<String> bindings;
-
    private final String name;
+   
+   private final JMSServerManager jmsManager;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
    public JMSConnectionFactoryControlImpl(final HornetQConnectionFactory cf,
-                                          final String name,
-                                          final List<String> bindings) throws NotCompliantMBeanException
+                                          final JMSServerManager jmsManager,
+                                          final String name) throws NotCompliantMBeanException
    {
       super(ConnectionFactoryControl.class);
       this.cf = cf;
       this.name = name;
-      this.bindings = bindings;
+      this.jmsManager = jmsManager;
    }
 
    // Public --------------------------------------------------------
 
    // ManagedConnectionFactoryMBean implementation ------------------
 
-   public List<String> getBindings()
+   public List<String> getJNDIBindings()
    {
-      return bindings;
+      return jmsManager.getJNDIOnConnectionFactory(name);
    }
 
    public String getClientID()

@@ -13,6 +13,7 @@
 
 package org.hornetq.api.jms.management;
 
+import java.util.List;
 import java.util.Map;
 
 import javax.management.MBeanOperationInfo;
@@ -53,6 +54,20 @@ public interface TopicControl extends DestinationControl
     * Returns the number of messages for all <em>non-durable</em> subscribers for this topic.
     */
    int getNonDurableMessageCount();
+
+   /**
+    * Returns the JNDI bindings associated  to this connection factory.
+    */
+   @Operation(desc = "Returns the list of JNDI bindings associated")
+   List<String> getJNDIBindings();
+   
+   /**
+    * Add the JNDI binding to this destination
+    */
+   @Operation(desc = "Adds the queue to another JNDI binding")
+   void addJNDI(@Parameter(name = "jndiBinding", desc = "the name of the binding for JNDI") String jndi) throws Exception;
+
+
 
    // Operations ----------------------------------------------------
 

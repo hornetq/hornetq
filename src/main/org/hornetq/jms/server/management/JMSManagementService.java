@@ -13,8 +13,6 @@
 
 package org.hornetq.jms.server.management;
 
-import java.util.List;
-
 import org.hornetq.api.jms.management.JMSServerControl;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.client.HornetQDestination;
@@ -32,15 +30,15 @@ public interface JMSManagementService
 
    void unregisterJMSServer() throws Exception;
 
-   void registerQueue(HornetQDestination queue, String jndiBinding) throws Exception;
+   void registerQueue(HornetQDestination queue) throws Exception;
 
    void unregisterQueue(String name) throws Exception;
 
-   void registerTopic(HornetQDestination topic, String jndiBinding) throws Exception;
+   void registerTopic(HornetQDestination topic) throws Exception;
 
    void unregisterTopic(String name) throws Exception;
 
-   void registerConnectionFactory(String name, HornetQConnectionFactory connectionFactory, List<String> bindings) throws Exception;
+   void registerConnectionFactory(String name, HornetQConnectionFactory connectionFactory) throws Exception;
 
    void unregisterConnectionFactory(String name) throws Exception;
 

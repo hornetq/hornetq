@@ -76,7 +76,6 @@ public class TopicControlTest extends ManagementTestBase
       Assert.assertEquals(topic.getTopicName(), topicControl.getName());
       Assert.assertEquals(topic.getAddress(), topicControl.getAddress());
       Assert.assertEquals(topic.isTemporary(), topicControl.isTemporary());
-      Assert.assertEquals(topic.getName(), topicControl.getJNDIBinding());
    }
 
    public void testGetXXXSubscriptionsCount() throws Exception

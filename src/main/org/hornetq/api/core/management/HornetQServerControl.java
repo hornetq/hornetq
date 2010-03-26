@@ -524,7 +524,7 @@ public interface HornetQServerControl
 
    AddressSettings getAddressSettings(String address);
 
-   void removeAddressSettings(String addressMatch);
+   void removeAddressSettings(String addressMatch) throws Exception;
 
    /**
     * returns the address settings as a JSON string

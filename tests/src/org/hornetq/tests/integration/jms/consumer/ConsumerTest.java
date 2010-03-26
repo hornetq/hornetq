@@ -49,7 +49,7 @@ public class ConsumerTest extends JMSTestBase
    {
       super.setUp();
 
-      jmsServer.createQueue(ConsumerTest.Q_NAME, ConsumerTest.Q_NAME, null, true);
+      jmsServer.createQueue(ConsumerTest.Q_NAME, null, true, ConsumerTest.Q_NAME);
       cf = HornetQJMSClient.createConnectionFactory(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
    }
 

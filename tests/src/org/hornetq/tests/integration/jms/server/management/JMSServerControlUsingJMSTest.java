@@ -167,14 +167,14 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
             return (Boolean)proxy.invokeOperation("closeConnectionsForAddress", ipAddress);
          }
 
-         public boolean createQueue(final String name, final String jndiBinding) throws Exception
+         public boolean createQueue(final String name) throws Exception
          {
-            return (Boolean)proxy.invokeOperation("createQueue", name, jndiBinding);
+            return (Boolean)proxy.invokeOperation("createQueue", name);
          }
 
-         public boolean createTopic(final String name, final String jndiBinding) throws Exception
+         public boolean createTopic(final String name) throws Exception
          {
-            return (Boolean)proxy.invokeOperation("createTopic", name, jndiBinding);
+            return (Boolean)proxy.invokeOperation("createTopic", name);
          }
 
          public void destroyConnectionFactory(final String name) throws Exception
@@ -251,6 +251,18 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
          public String getSecuritySettingsAsJSON(String addressMatch) throws Exception
          {
             return (String)proxy.invokeOperation("getSecuritySettingsAsJSON", addressMatch);
+         }
+
+         public boolean createQueue(String name, String jndiBinding) throws Exception
+         {
+            // TODO add a test for this
+            return false;
+         }
+
+         public boolean createTopic(String name, String jndiBinding) throws Exception
+         {
+            // TODO add a test for this
+            return false;
          }
 
       };

@@ -14,12 +14,16 @@
 package org.hornetq.jms.server.config.impl;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
+import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.jms.server.config.ConnectionFactoryConfiguration;
+import org.hornetq.utils.BufferHelper;
+import org.hornetq.utils.DataConstants;
 
 /**
  * A ConnectionFactoryConfigurationImpl
@@ -34,10 +38,10 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
 
    // Attributes ----------------------------------------------------
 
-   private final String[] bindings;
+   private String name;
 
-   private final String name;
-   
+   private String[] bindings;
+
    private String discoveryGroupName;
 
    private String discoveryAddress;
@@ -45,7 +49,7 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
    private int discoveryPort;
 
    private List<Pair<String, String>> connectorNames;
-   
+
    private List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs;
 
    private String clientID = null;
@@ -112,6 +116,11 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
 
    // Constructors --------------------------------------------------
 
+   /** To be used on persistence only */
+   public ConnectionFactoryConfigurationImpl()
+   {
+   }
+   
    public ConnectionFactoryConfigurationImpl(final String name,
                                              final String discoveryAddress,
                                              final int discoveryPort,
@@ -527,9 +536,306 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
    public void setDiscoveryGroupName(String groupName)
    {
       this.discoveryGroupName = groupName;
-      
+
    }
 
+   // Encoding Support Implementation --------------------------------------------------------------
+   
+   /* (non-Javadoc)
+    * @see org.hornetq.core.journal.EncodingSupport#decode(org.hornetq.api.core.HornetQBuffer)
+    */
+   public void decode(HornetQBuffer buffer)
+   {
+      name = buffer.readSimpleString().toString();
+
+      int nbindings = buffer.readInt();
+
+      bindings = new String[nbindings];
+
+      for (int i = 0; i < nbindings; i++)
+      {
+         bindings[i] = buffer.readSimpleString().toString();
+      }
+
+      discoveryGroupName = BufferHelper.readNullableSimpleStringAsString(buffer); 
+
+      discoveryAddress = BufferHelper.readNullableSimpleStringAsString(buffer);
+
+      discoveryPort = buffer.readInt();
+
+      int nConnectors = buffer.readInt();
+
+      connectorNames = new ArrayList<Pair<String, String>>(nConnectors);
+
+      for (int i = 0; i < nConnectors; i++)
+      {
+         String a = BufferHelper.readNullableSimpleStringAsString(buffer);
+         
+         String b = BufferHelper.readNullableSimpleStringAsString(buffer);
+         
+         connectorNames.add(new Pair<String, String>(a, b));
+      }
+
+      clientID = BufferHelper.readNullableSimpleStringAsString(buffer);
+
+      discoveryRefreshTimeout = buffer.readLong();
+
+      clientFailureCheckPeriod = buffer.readLong();
+
+      connectionTTL = buffer.readLong();
+
+      callTimeout = buffer.readLong();
+
+      cacheLargeMessagesClient = buffer.readBoolean();
+
+      minLargeMessageSize = buffer.readInt();
+
+      consumerWindowSize = buffer.readInt();
+
+      consumerMaxRate = buffer.readInt();
+
+      confirmationWindowSize = buffer.readInt();
+
+      producerWindowSize = buffer.readInt();
+
+      producerMaxRate = buffer.readInt();
+
+      blockOnAcknowledge = buffer.readBoolean();
+
+      blockOnDurableSend = buffer.readBoolean();
+
+      blockOnNonDurableSend = buffer.readBoolean();
+
+      autoGroup = buffer.readBoolean();
+
+      preAcknowledge = buffer.readBoolean();
+
+      loadBalancingPolicyClassName = buffer.readSimpleString().toString();
+
+      transactionBatchSize = buffer.readInt();
+
+      dupsOKBatchSize = buffer.readInt();
+
+      initialWaitTimeout = buffer.readLong();
+
+      useGlobalPools = buffer.readBoolean();
+
+      scheduledThreadPoolMaxSize = buffer.readInt();
+
+      threadPoolMaxSize = buffer.readInt();
+
+      retryInterval = buffer.readLong();
+
+      retryIntervalMultiplier = buffer.readDouble();
+
+      maxRetryInterval = buffer.readLong();
+
+      reconnectAttempts = buffer.readInt();
+
+      failoverOnServerShutdown = buffer.readBoolean();
+
+      groupID = BufferHelper.readNullableSimpleStringAsString(buffer);
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.journal.EncodingSupport#encode(org.hornetq.api.core.HornetQBuffer)
+    */
+   public void encode(HornetQBuffer buffer)
+   {
+      BufferHelper.writeAsSimpleString(buffer, name);
+
+      buffer.writeInt(bindings.length);
+
+      for (String str : bindings)
+      {
+         BufferHelper.writeAsSimpleString(buffer, str);
+      }
+
+      BufferHelper.writeAsNullableSimpleString(buffer, discoveryGroupName);
+
+      BufferHelper.writeAsNullableSimpleString(buffer, discoveryAddress);
+
+      buffer.writeInt(discoveryPort);
+
+      buffer.writeInt(connectorNames == null ? 0 : connectorNames.size());
+
+      if (connectorNames != null)
+      {
+         for (Pair<String, String> namePair : connectorNames)
+         {
+            BufferHelper.writeAsNullableSimpleString(buffer, namePair.a);
+            BufferHelper.writeAsNullableSimpleString(buffer, namePair.b);
+         }
+      }
+
+      BufferHelper.writeAsNullableSimpleString(buffer, clientID);
+
+      buffer.writeLong(discoveryRefreshTimeout);
+
+      buffer.writeLong(clientFailureCheckPeriod);
+
+      buffer.writeLong(connectionTTL);
+
+      buffer.writeLong(callTimeout);
+
+      buffer.writeBoolean(cacheLargeMessagesClient);
+
+      buffer.writeInt(minLargeMessageSize);
+
+      buffer.writeInt(consumerWindowSize);
+
+      buffer.writeInt(consumerMaxRate);
+
+      buffer.writeInt(confirmationWindowSize);
+
+      buffer.writeInt(producerWindowSize);
+
+      buffer.writeInt(producerMaxRate);
+
+      buffer.writeBoolean(blockOnAcknowledge);
+
+      buffer.writeBoolean(blockOnDurableSend);
+
+      buffer.writeBoolean(blockOnNonDurableSend);
+
+      buffer.writeBoolean(autoGroup);
+
+      buffer.writeBoolean(preAcknowledge);
+
+      BufferHelper.writeAsSimpleString(buffer, loadBalancingPolicyClassName);
+
+      buffer.writeInt(transactionBatchSize);
+
+      buffer.writeInt(dupsOKBatchSize);
+
+      buffer.writeLong(initialWaitTimeout);
+
+      buffer.writeBoolean(useGlobalPools);
+
+      buffer.writeInt(scheduledThreadPoolMaxSize);
+
+      buffer.writeInt(threadPoolMaxSize);
+
+      buffer.writeLong(retryInterval);
+
+      buffer.writeDouble(retryIntervalMultiplier);
+
+      buffer.writeLong(maxRetryInterval);
+
+      buffer.writeInt(reconnectAttempts);
+
+      buffer.writeBoolean(failoverOnServerShutdown);
+
+      BufferHelper.writeAsNullableSimpleString(buffer, groupID);
+   }
+
+   private int sizeOfBindings()
+   {
+      int size = DataConstants.SIZE_INT; // for the number of bindings persisted
+
+      for (String str : bindings)
+      {
+         size += BufferHelper.sizeOfSimpleString(str);
+      }
+
+      return size;
+
+   }
+
+   private int sizeOfConnectors()
+   {
+      int size = DataConstants.SIZE_INT; // for the number of connectors persisted
+
+      if (connectorNames != null)
+      {
+         for (Pair<String, String> pair : connectorNames)
+         {
+            size += BufferHelper.sizeOfNullableSimpleString(pair.a);
+            size += BufferHelper.sizeOfNullableSimpleString(pair.b);
+         }
+      }
+
+      return size;
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.journal.EncodingSupport#getEncodeSize()
+    */
+   public int getEncodeSize()
+   {
+      return BufferHelper.sizeOfSimpleString(name) +
+      
+             sizeOfBindings() +
+             
+             BufferHelper.sizeOfNullableSimpleString(discoveryGroupName) +
+             
+             BufferHelper.sizeOfNullableSimpleString(discoveryAddress)+
+             
+             DataConstants.SIZE_INT + // discoveryPort
+             
+             sizeOfConnectors() +
+             
+             BufferHelper.sizeOfNullableSimpleString(clientID) +
+             
+             DataConstants.SIZE_LONG + // discoveryRefreshTimeout 
+             
+             DataConstants.SIZE_LONG + // clientFailureCheckPeriod
+
+             DataConstants.SIZE_LONG + // connectionTTL
+
+             DataConstants.SIZE_LONG + // callTimeout
+
+             DataConstants.SIZE_BOOLEAN + // cacheLargeMessagesClient
+             
+             DataConstants.SIZE_INT + // minLargeMessageSize
+
+             DataConstants.SIZE_INT + // consumerWindowSize
+
+             DataConstants.SIZE_INT + // consumerMaxRate
+
+             DataConstants.SIZE_INT + // confirmationWindowSize
+
+             DataConstants.SIZE_INT + // producerWindowSize
+
+             DataConstants.SIZE_INT + // producerMaxRate
+
+             DataConstants.SIZE_BOOLEAN + // blockOnAcknowledge
+
+             DataConstants.SIZE_BOOLEAN + // blockOnDurableSend
+
+             DataConstants.SIZE_BOOLEAN + // blockOnNonDurableSend
+
+             DataConstants.SIZE_BOOLEAN + // autoGroup
+
+             DataConstants.SIZE_BOOLEAN + // preAcknowledge
+
+             BufferHelper.sizeOfSimpleString(loadBalancingPolicyClassName) + 
+
+             DataConstants.SIZE_INT + // transactionBatchSize
+
+             DataConstants.SIZE_INT + // dupsOKBatchSize
+
+             DataConstants.SIZE_LONG + // initialWaitTimeout
+
+             DataConstants.SIZE_BOOLEAN + // useGlobalPools
+
+             DataConstants.SIZE_INT + // scheduledThreadPoolMaxSize
+
+             DataConstants.SIZE_INT + // threadPoolMaxSize
+
+             DataConstants.SIZE_LONG + // retryInterval
+
+             DataConstants.SIZE_DOUBLE + // retryIntervalMultiplier
+
+             DataConstants.SIZE_LONG + // maxRetryInterval
+
+             DataConstants.SIZE_INT + // reconnectAttempts
+
+             DataConstants.SIZE_BOOLEAN + // failoverOnServerShutdown
+             
+             BufferHelper.sizeOfNullableSimpleString(groupID);
+   }
+   
    // Public --------------------------------------------------------
 
    // Package protected ---------------------------------------------

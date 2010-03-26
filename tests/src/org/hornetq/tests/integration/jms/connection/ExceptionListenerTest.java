@@ -69,7 +69,7 @@ public class ExceptionListenerTest extends UnitTestCase
       jmsServer = new JMSServerManagerImpl(server);
       jmsServer.setContext(new NullInitialContext());
       jmsServer.start();
-      jmsServer.createQueue(ExceptionListenerTest.Q_NAME, ExceptionListenerTest.Q_NAME, null, true);
+      jmsServer.createQueue(ExceptionListenerTest.Q_NAME, null, true, ExceptionListenerTest.Q_NAME);
       cf = (HornetQConnectionFactory) HornetQJMSClient.createConnectionFactory(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
       cf.setBlockOnDurableSend(true);
       cf.setPreAcknowledge(true);

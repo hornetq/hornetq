@@ -13,6 +13,7 @@
 
 package org.hornetq.tests.integration.jms.server.management;
 
+import java.util.List;
 import java.util.Map;
 
 import javax.jms.QueueConnection;
@@ -269,6 +270,18 @@ public class JMSQueueControlUsingJMSTest extends JMSQueueControlTest
          public String getSelector()
          {
             return (String)proxy.retrieveAttributeValue("selector");
+         }
+
+         public void addJNDI(String jndi) throws Exception
+         {
+            // TODO: Add a test for this
+            proxy.invokeOperation("addJNDI", jndi);
+         }
+
+         public List<String> getJNDIBindings()
+         {
+            // TODO: Add a test for this
+            return null;
          }
       };
    }

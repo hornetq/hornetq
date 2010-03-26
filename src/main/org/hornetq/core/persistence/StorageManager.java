@@ -13,6 +13,7 @@
 
 package org.hornetq.core.persistence;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executor;
@@ -26,6 +27,8 @@ import org.hornetq.core.journal.JournalLoadInformation;
 import org.hornetq.core.paging.PageTransactionInfo;
 import org.hornetq.core.paging.PagedMessage;
 import org.hornetq.core.paging.PagingManager;
+import org.hornetq.core.persistence.config.PersistedAddressSetting;
+import org.hornetq.core.persistence.config.PersistedRoles;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.server.HornetQComponent;
@@ -160,4 +163,16 @@ public interface StorageManager extends HornetQComponent
    void addGrouping(GroupBinding groupBinding) throws Exception;
 
    void deleteGrouping(GroupBinding groupBinding) throws Exception;
+   
+   void storeAddressSetting(PersistedAddressSetting addressSetting) throws Exception;
+   
+   void deleteAddressSetting(SimpleString addressMatch) throws Exception;
+   
+   List<PersistedAddressSetting> recoverAddressSettings() throws Exception;
+   
+   void storeSecurityRoles(PersistedRoles persistedRoles) throws Exception;
+   
+   void deleteSecurityRoles(SimpleString addressMatch) throws Exception;
+
+   List<PersistedRoles> recoverPersistedRoles() throws Exception;
 }

@@ -13,8 +13,6 @@
 
 package org.hornetq.jms.server.impl;
 
-import java.util.ArrayList;
-
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.deployers.DeploymentManager;
 import org.hornetq.core.deployers.impl.XmlDeployer;
@@ -39,7 +37,7 @@ public class JMSServerDeployer extends XmlDeployer
    
    private final JMSServerConfigParser parser;
 
-   private final JMSServerManager jmsServerControl;
+   private final JMSServerManager jmsServerManager;
 
    protected static final String CONNECTOR_REF_ELEMENT = "connector-ref";
 
@@ -67,7 +65,7 @@ public class JMSServerDeployer extends XmlDeployer
    {
       super(deploymentManager);
 
-      jmsServerControl = jmsServerManager;
+      this.jmsServerManager = jmsServerManager;
 
       configuration = config;
       
@@ -139,17 +137,17 @@ public class JMSServerDeployer extends XmlDeployer
       if (node.getNodeName().equals(JMSServerDeployer.CONNECTION_FACTORY_NODE_NAME))
       {
          String cfName = node.getAttributes().getNamedItem(getKeyAttribute()).getNodeValue();
-         jmsServerControl.destroyConnectionFactory(cfName);
+         jmsServerManager.destroyConnectionFactory(cfName);
       }
       else if (node.getNodeName().equals(JMSServerDeployer.QUEUE_NODE_NAME))
       {
          String queueName = node.getAttributes().getNamedItem(getKeyAttribute()).getNodeValue();
-         jmsServerControl.undeployDestination(queueName);
+         jmsServerManager.removeQueueFromJNDI(queueName);
       }
       else if (node.getNodeName().equals(JMSServerDeployer.TOPIC_NODE_NAME))
       {
          String topicName = node.getAttributes().getNamedItem(getKeyAttribute()).getNodeValue();
-         jmsServerControl.undeployDestination(topicName);
+         jmsServerManager.removeTopicFromJNDI(topicName);
       }
    }
 
@@ -171,7 +169,7 @@ public class JMSServerDeployer extends XmlDeployer
       TopicConfiguration topicConfig = parser.parseTopicConfiguration(node);
       for (String jndi : topicConfig.getBindings())
       {
-         jmsServerControl.createTopic(topicConfig.getName(), jndi);
+         jmsServerManager.createTopic(topicConfig.getName(), jndi);
       }
    }
 
@@ -182,10 +180,7 @@ public class JMSServerDeployer extends XmlDeployer
    private void deployQueue(final Node node) throws Exception
    {
       JMSQueueConfiguration queueconfig = parser.parseQueueConfiguration(node);
-      for (String jndiName : queueconfig.getBindings())
-      {
-         jmsServerControl.createQueue(queueconfig.getName(), jndiName, queueconfig.getSelector(), queueconfig.isDurable());
-      }
+      jmsServerManager.createQueue(queueconfig.getName(), queueconfig.getSelector(), queueconfig.isDurable(), queueconfig.getBindings());
    }
 
    /**
@@ -195,7 +190,7 @@ public class JMSServerDeployer extends XmlDeployer
    private void deployConnectionFactory(final Node node) throws Exception
    {
       ConnectionFactoryConfiguration cfConfig = parser.parseConnectionFactoryConfiguration(node);
-      jmsServerControl.createConnectionFactory(cfConfig);
+      jmsServerManager.createConnectionFactory(cfConfig);
    }
 
    

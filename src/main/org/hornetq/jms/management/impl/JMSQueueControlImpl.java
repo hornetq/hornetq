@@ -13,6 +13,7 @@
 
 package org.hornetq.jms.management.impl;
 
+import java.util.List;
 import java.util.Map;
 
 import javax.management.MBeanInfo;
@@ -30,6 +31,7 @@ import org.hornetq.core.messagecounter.impl.MessageCounterHelper;
 import org.hornetq.jms.client.HornetQDestination;
 import org.hornetq.jms.client.HornetQMessage;
 import org.hornetq.jms.client.SelectorTranslator;
+import org.hornetq.jms.server.JMSServerManager;
 import org.hornetq.utils.json.JSONArray;
 import org.hornetq.utils.json.JSONObject;
 
@@ -48,10 +50,10 @@ public class JMSQueueControlImpl extends StandardMBean implements JMSQueueContro
    // Attributes ----------------------------------------------------
 
    private final HornetQDestination managedQueue;
+   
+   private final JMSServerManager jmsServerManager;
 
    private final QueueControl coreQueueControl;
-
-   private final String binding;
 
    private final MessageCounter counter;
 
@@ -85,13 +87,13 @@ public class JMSQueueControlImpl extends StandardMBean implements JMSQueueContro
 
    public JMSQueueControlImpl(final HornetQDestination managedQueue,
                               final QueueControl coreQueueControl,
-                              final String jndiBinding,
+                              final JMSServerManager jmsServerManager,
                               final MessageCounter counter) throws Exception
    {
       super(JMSQueueControl.class);
       this.managedQueue = managedQueue;
+      this.jmsServerManager = jmsServerManager;
       this.coreQueueControl = coreQueueControl;
-      binding = jndiBinding;
       this.counter = counter;
    }
 
@@ -144,11 +146,6 @@ public class JMSQueueControlImpl extends StandardMBean implements JMSQueueContro
       return coreQueueControl.isDurable();
    }
 
-   public String getJNDIBinding()
-   {
-      return binding;
-   }
-
    public String getDeadLetterAddress()
    {
       return coreQueueControl.getDeadLetterAddress();
@@ -168,6 +165,20 @@ public class JMSQueueControlImpl extends StandardMBean implements JMSQueueContro
    {
       coreQueueControl.setExpiryAddress(expiryAddres);
    }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.api.jms.management.JMSQueueControl#addJNDI(java.lang.String)
+    */
+   public void addJNDI(String jndi) throws Exception
+   {
+      jmsServerManager.addQueueToJndi(managedQueue.getName(), jndi);
+   }
+   
+   public List<String> getJNDIBindings()
+   {
+      return jmsServerManager.getJNDIOnQueue(managedQueue.getName());
+   }
+
 
    public boolean removeMessage(final String messageID) throws Exception
    {
@@ -355,7 +366,7 @@ public class JMSQueueControlImpl extends StandardMBean implements JMSQueueContro
                            MBeanInfoHelper.getMBeanOperationsInfo(JMSQueueControl.class),
                            info.getNotifications());
    }
-   
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

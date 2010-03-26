@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 
 import javax.transaction.xa.Xid;
@@ -53,6 +54,8 @@ import org.hornetq.core.persistence.GroupingInfo;
 import org.hornetq.core.persistence.OperationContext;
 import org.hornetq.core.persistence.QueueBindingInfo;
 import org.hornetq.core.persistence.StorageManager;
+import org.hornetq.core.persistence.config.PersistedAddressSetting;
+import org.hornetq.core.persistence.config.PersistedRoles;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.replication.ReplicationManager;
@@ -100,6 +103,10 @@ public class JournalStorageManager implements StorageManager
    public static final byte PERSISTENT_ID_RECORD = 23;
 
    public static final byte ID_COUNTER_RECORD = 24;
+
+   public static final byte ADDRESS_SETTING_RECORD = 25;
+
+   public static final byte SECURITY_RECORD = 26;
 
    // type + expiration + timestamp + priority
    public static final int SIZE_FIELDS = DataConstants.SIZE_INT + DataConstants.SIZE_LONG +
@@ -160,6 +167,12 @@ public class JournalStorageManager implements StorageManager
    private final String journalDir;
 
    private final String largeMessagesDirectory;
+   
+   
+   // Persisted core configuration
+   private final Map<SimpleString, PersistedRoles> mapPersistedRoles = new ConcurrentHashMap<SimpleString, PersistedRoles>();
+   
+   private final Map<SimpleString, PersistedAddressSetting> mapPersistedAddressSettings = new ConcurrentHashMap<SimpleString, PersistedAddressSetting>();
 
    public JournalStorageManager(final Configuration config, final ExecutorFactory executorFactory)
    {
@@ -690,6 +703,68 @@ public class JournalStorageManager implements StorageManager
                                         getContext(syncNonTransactional));
 
    }
+   
+   
+   public void storeAddressSetting(PersistedAddressSetting addressSetting) throws Exception
+   {
+      deleteAddressSetting(addressSetting.getAddressMatch());
+      long id = idGenerator.generateID();
+      addressSetting.setStoreId(id);
+      bindingsJournal.appendAddRecord(id, ADDRESS_SETTING_RECORD, addressSetting, true);
+      mapPersistedAddressSettings.put(addressSetting.getAddressMatch(), addressSetting);
+   }
+   
+   public List<PersistedAddressSetting> recoverAddressSettings() throws Exception
+   {
+      ArrayList<PersistedAddressSetting> list = new ArrayList<PersistedAddressSetting>(mapPersistedAddressSettings.size());
+      list.addAll(mapPersistedAddressSettings.values());
+      return list;
+   }
+   
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.persistence.StorageManager#recoverPersistedRoles()
+    */
+   public List<PersistedRoles> recoverPersistedRoles() throws Exception
+   {
+      ArrayList<PersistedRoles> list = new ArrayList<PersistedRoles>(mapPersistedRoles.size());
+      list.addAll(mapPersistedRoles.values());
+      return list;
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.persistence.StorageManager#storeSecurityRoles(org.hornetq.core.persistconfig.PersistedRoles)
+    */
+   public void storeSecurityRoles(PersistedRoles persistedRoles) throws Exception
+   {
+
+      deleteSecurityRoles(persistedRoles.getAddressMatch());
+      long id = idGenerator.generateID();
+      persistedRoles.setStoreId(id);
+      bindingsJournal.appendAddRecord(id, SECURITY_RECORD, persistedRoles, true);
+      mapPersistedRoles.put(persistedRoles.getAddressMatch(), persistedRoles);
+   }
+
+   public void deleteAddressSetting(SimpleString addressMatch) throws Exception
+   {
+      PersistedAddressSetting oldSetting = mapPersistedAddressSettings.remove(addressMatch);
+      if (oldSetting != null)
+      {
+         bindingsJournal.appendDeleteRecord(oldSetting.getStoreId(), false);
+      }
+      
+   }
+   
+   public void deleteSecurityRoles(SimpleString addressMatch) throws Exception
+   {
+      PersistedRoles oldRoles = mapPersistedRoles.remove(addressMatch);
+      if (oldRoles != null)
+      {
+         bindingsJournal.appendDeleteRecord(oldRoles.getStoreId(), false);
+      }
+   }
+
+
 
    public JournalLoadInformation loadMessageJournal(final PostOffice postOffice,
                                                     final PagingManager pagingManager,
@@ -1027,6 +1102,20 @@ public class JournalStorageManager implements StorageManager
             encoding.decode(buffer);
             encoding.setId(id);
             groupingInfos.add(encoding);
+         }
+         else if (rec == JournalStorageManager.ADDRESS_SETTING_RECORD)
+         {
+            PersistedAddressSetting setting = new PersistedAddressSetting();
+            setting.decode(buffer);
+            setting.setStoreId(id);
+            mapPersistedAddressSettings.put(setting.getAddressMatch(), setting);
+         }
+         else if (rec == JournalStorageManager.SECURITY_RECORD)
+         {
+            PersistedRoles roles = new PersistedRoles();
+            roles.decode(buffer);
+            roles.setStoreId(id);
+            mapPersistedRoles.put(roles.getAddressMatch(), roles);
          }
          else
          {
@@ -2050,6 +2139,5 @@ public class JournalStorageManager implements StorageManager
       }
 
    }
-
 
 }
