@@ -21,6 +21,7 @@ import javax.management.StandardMBean;
 
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
+import org.hornetq.api.core.management.Parameter;
 import org.hornetq.api.jms.management.ConnectionFactoryControl;
 import org.hornetq.core.management.impl.MBeanInfoHelper;
 import org.hornetq.jms.client.HornetQConnectionFactory;
@@ -315,6 +316,11 @@ public class JMSConnectionFactoryControlImpl extends StandardMBean implements Co
    public void setDiscoveryPort(int discoveryPort)
    {
       cf.setDiscoveryPort(discoveryPort);
+   }
+
+   public void addJNDI(@Parameter(name = "jndiBinding", desc = "the name of the binding for JNDI") String jndi) throws Exception
+   {
+       jmsManager.addQueueToJndi(name, jndi);
    }
 
    public long getCallTimeout()

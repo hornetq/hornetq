@@ -18,6 +18,8 @@ import java.util.List;
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.management.Operation;
+import org.hornetq.api.core.management.Parameter;
 
 /**
  * A ConnectionFactoryControl is used to manage a JMS ConnectionFactory.
@@ -387,4 +389,10 @@ public interface ConnectionFactoryControl
     * @see ClientSessionFactory#setDiscoveryPort(int)
     */
    void setDiscoveryPort(int discoveryPort);
+
+   /**
+    * Add the JNDI binding to this destination
+    */
+   @Operation(desc = "Adds the factory to another JNDI binding")
+   void addJNDI(@Parameter(name = "jndiBinding", desc = "the name of the binding for JNDI") String jndi) throws Exception;
 }
