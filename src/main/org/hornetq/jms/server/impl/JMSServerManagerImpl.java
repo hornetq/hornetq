@@ -1310,7 +1310,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       List<ConnectionFactoryConfiguration> connectionFactoryConfigurations = config.getConnectionFactoryConfigurations();
       for (ConnectionFactoryConfiguration config : connectionFactoryConfigurations)
       {
-         createConnectionFactory(config);
+         createConnectionFactory(config, config.getBindings());
       }
 
       List<JMSQueueConfiguration> queueConfigs = config.getQueueConfigurations();
