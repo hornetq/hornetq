@@ -424,39 +424,34 @@ public class HornetQServerTestCase extends ProxyAssertSupport
 
    public static void deployConnectionFactory(final String clientId,
                                               final String objectName,
-                                              final List<String> jndiBindings) throws Exception
+                                              final String ... jndiBindings) throws Exception
    {
       HornetQServerTestCase.servers.get(0).deployConnectionFactory(clientId, objectName, jndiBindings);
    }
 
    public static void deployConnectionFactory(final String objectName,
-                                              final List<String> jndiBindings,
-                                              final int prefetchSize) throws Exception
+                                              final int prefetchSize,
+                                              final String ... jndiBindings) throws Exception
    {
-      HornetQServerTestCase.servers.get(0).deployConnectionFactory(objectName, jndiBindings, prefetchSize);
+      HornetQServerTestCase.servers.get(0).deployConnectionFactory(objectName,  prefetchSize, jndiBindings);
    }
 
-   public static void deployConnectionFactory(final String objectName, final List<String> jndiBindings) throws Exception
-   {
-      HornetQServerTestCase.servers.get(0).deployConnectionFactory(objectName, jndiBindings);
-   }
 
    public static void deployConnectionFactory(final int server,
                                               final String objectName,
-                                              final List<String> jndiBindings,
-                                              final int prefetchSize) throws Exception
+                                              final int prefetchSize,
+                                              final String ... jndiBindings) throws Exception
    {
-      HornetQServerTestCase.servers.get(server).deployConnectionFactory(objectName, jndiBindings, prefetchSize);
+      HornetQServerTestCase.servers.get(server).deployConnectionFactory(objectName, prefetchSize, jndiBindings);
    }
 
-   public static void deployConnectionFactory(final int server, final String objectName, final List<String> jndiBindings) throws Exception
+   public static void deployConnectionFactory(final int server, final String objectName, final String ... jndiBindings) throws Exception
    {
       HornetQServerTestCase.servers.get(server).deployConnectionFactory(objectName, jndiBindings);
    }
 
    public void deployConnectionFactory(final String clientId,
                                        final String objectName,
-                                       final List<String> jndiBindings,
                                        final int prefetchSize,
                                        final int defaultTempQueueFullSize,
                                        final int defaultTempQueuePageSize,
@@ -464,11 +459,11 @@ public class HornetQServerTestCase extends ProxyAssertSupport
                                        final boolean supportsFailover,
                                        final boolean supportsLoadBalancing,
                                        final int dupsOkBatchSize,
-                                       final boolean blockOnAcknowledge) throws Exception
+                                       final boolean blockOnAcknowledge,
+                                       final String ... jndiBindings) throws Exception
    {
       HornetQServerTestCase.servers.get(0).deployConnectionFactory(clientId,
                                                                    objectName,
-                                                                   jndiBindings,
                                                                    prefetchSize,
                                                                    defaultTempQueueFullSize,
                                                                    defaultTempQueuePageSize,
@@ -476,22 +471,23 @@ public class HornetQServerTestCase extends ProxyAssertSupport
                                                                    supportsFailover,
                                                                    supportsLoadBalancing,
                                                                    dupsOkBatchSize,
-                                                                   blockOnAcknowledge);
+                                                                   blockOnAcknowledge,
+                                                                   jndiBindings);
    }
 
    public static void deployConnectionFactory(final String objectName,
-                                              final List<String> jndiBindings,
                                               final int prefetchSize,
                                               final int defaultTempQueueFullSize,
                                               final int defaultTempQueuePageSize,
-                                              final int defaultTempQueueDownCacheSize) throws Exception
+                                              final int defaultTempQueueDownCacheSize,
+                                              final String ... jndiBindings) throws Exception
    {
       HornetQServerTestCase.servers.get(0).deployConnectionFactory(objectName,
-                                                                   jndiBindings,
                                                                    prefetchSize,
                                                                    defaultTempQueueFullSize,
                                                                    defaultTempQueuePageSize,
-                                                                   defaultTempQueueDownCacheSize);
+                                                                   defaultTempQueueDownCacheSize,
+                                                                   jndiBindings);
    }
 
    public static void undeployConnectionFactory(final String objectName) throws Exception

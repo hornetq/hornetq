@@ -65,8 +65,6 @@ public class SessionClosedOnRemotingConnectionFailureTest extends JMSTestBase
       connectorConfigs.add(new Pair<TransportConfiguration, TransportConfiguration>(new TransportConfiguration(NettyConnectorFactory.class.getName()),
                                                                                     null));
 
-      List<String> jndiBindings = new ArrayList<String>();
-      jndiBindings.add("/cffoo");
 
       jmsServer.createConnectionFactory("cffoo",
                                         connectorConfigs,
@@ -98,7 +96,7 @@ public class SessionClosedOnRemotingConnectionFailureTest extends JMSTestBase
                                         0,
                                         false,
                                         null,
-                                        jndiBindings);
+                                        "/cffoo");
 
       cf = (ConnectionFactory)context.lookup("/cffoo");
 

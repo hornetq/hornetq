@@ -744,9 +744,7 @@ public class AcknowledgementTest extends JMSTestCase
    {
       final int BATCH_SIZE = 10;
 
-      ArrayList<String> bindings = new ArrayList<String>();
-      bindings.add("mycf");
-      deployConnectionFactory(null, "MyConnectionFactory2", bindings, -1, -1, -1, -1, false, false, BATCH_SIZE, true);
+      deployConnectionFactory(null, "MyConnectionFactory2", -1, -1, -1, -1, false, false, BATCH_SIZE, true, "mycf");
       Connection conn = null;
 
       try

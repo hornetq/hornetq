@@ -60,6 +60,8 @@ public interface JMSServerManager extends HornetQComponent
    
    boolean addQueueToJndi(final String queueName, final String jndiBinding) throws Exception;
 
+   boolean addConnectionFactoryToJNDI(final String name, final String jndiBinding) throws Exception;
+
    /**
     * Creates a JMS Topic
     * 
@@ -122,6 +124,10 @@ public interface JMSServerManager extends HornetQComponent
     */
    boolean removeQueueFromJNDI(String name) throws Exception;
 
+   boolean removeConnectionFactoryFromJNDI(String name, String jndi) throws Exception;
+
+   boolean removeConnectionFactoryFromJNDI(String name) throws Exception;
+
    /**
     * destroys a queue and removes it from JNDI
     * 
@@ -150,37 +156,37 @@ public interface JMSServerManager extends HornetQComponent
     */
    boolean destroyTopic(String name) throws Exception;
 
-   void createConnectionFactory(String name, String discoveryAddress, int discoveryPort, List<String> jndiBindings) throws Exception;
+   void createConnectionFactory(String name, String discoveryAddress, int discoveryPort, String ... jndiBindings) throws Exception;
 
    void createConnectionFactory(String name,
                                 List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs,
-                                List<String> jndiBindings) throws Exception;
+                                String ... jndiBindings) throws Exception;
 
    void createConnectionFactory(String name,
                                 TransportConfiguration liveTC,
                                 TransportConfiguration backupTC,
-                                List<String> jndiBindings) throws Exception;
+                                String ... jndiBindings) throws Exception;
 
-   void createConnectionFactory(String name, TransportConfiguration liveTC, List<String> jndiBindings) throws Exception;
+   void createConnectionFactory(String name, TransportConfiguration liveTC, String ... jndiBindings) throws Exception;
 
    void createConnectionFactory(String name,
                                 String discoveryAddress,
                                 int discoveryPort,
                                 String clientID,
-                                List<String> jndiBindings) throws Exception;
+                                String ... jndiBindings) throws Exception;
 
    void createConnectionFactory(String name,
                                 List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs,
                                 String clientID,
-                                List<String> jndiBindings) throws Exception;
+                                String ... jndiBindings) throws Exception;
 
    void createConnectionFactory(String name,
                                 TransportConfiguration liveTC,
                                 TransportConfiguration backupTC,
                                 String clientID,
-                                List<String> jndiBindings) throws Exception;
+                                String ... jndiBindings) throws Exception;
 
-   void createConnectionFactory(String name, TransportConfiguration liveTC, String clientID, List<String> jndiBindings) throws Exception;
+   void createConnectionFactory(String name, TransportConfiguration liveTC, String clientID, String ... jndiBindings) throws Exception;
 
    void createConnectionFactory(String name,
                                 List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs,
@@ -212,7 +218,7 @@ public interface JMSServerManager extends HornetQComponent
                                 int reconnectAttempts,
                                 boolean failoverOnServerShutdown,
                                 String groupId,
-                                List<String> jndiBindings) throws Exception;
+                                String ... jndiBindings) throws Exception;
 
    void createConnectionFactory(String name,
                                 String discoveryAddress,
@@ -247,9 +253,9 @@ public interface JMSServerManager extends HornetQComponent
                                 int reconnectAttempts,
                                 boolean failoverOnServerShutdown,
                                 String groupId,
-                                List<String> jndiBindings) throws Exception;
+                                String ... jndiBindings) throws Exception;
    
-   void createConnectionFactory(ConnectionFactoryConfiguration cfConfig) throws Exception;
+   void createConnectionFactory(ConnectionFactoryConfiguration cfConfig, String... jndiBindings) throws Exception;
 
    /**
     * destroys a connection factory.

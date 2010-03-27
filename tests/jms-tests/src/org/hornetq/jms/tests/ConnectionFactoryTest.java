@@ -81,9 +81,7 @@ public class ConnectionFactoryTest extends JMSTestCase
    public void testAdministrativelyConfiguredClientID() throws Exception
    {
       // deploy a connection factory that has an administatively configured clientID
-      ArrayList<String> bindings = new ArrayList<String>();
-      bindings.add("TestConnectionFactory");
-      HornetQServerTestCase.deployConnectionFactory("sofiavergara", "TestConnectionFactory", bindings);
+      HornetQServerTestCase.deployConnectionFactory("sofiavergara", "TestConnectionFactory", "TestConnectionFactory");
 
       ConnectionFactory cf = (ConnectionFactory)JMSTestCase.ic.lookup("/TestConnectionFactory");
       Connection c = cf.createConnection();
@@ -136,9 +134,7 @@ public class ConnectionFactoryTest extends JMSTestCase
    // Added for http://jira.jboss.org/jira/browse/JBMESSAGING-939
    public void testDurableSubscriptionOnPreConfiguredConnectionFactory() throws Exception
    {
-      ArrayList<String> bindings = new ArrayList<String>();
-      bindings.add("/TestDurableCF");
-      HornetQServerTestCase.deployConnectionFactory("TestConnectionFactory1", "cfTest", bindings);
+      HornetQServerTestCase.deployConnectionFactory("TestConnectionFactory1", "cfTest", "/TestDurableCF");
 
       createTopic("TestSubscriber");
 
@@ -190,7 +186,7 @@ public class ConnectionFactoryTest extends JMSTestCase
    {
       ArrayList<String> bindings = new ArrayList<String>();
       bindings.add("TestSlowConsumersCF");
-      HornetQServerTestCase.deployConnectionFactory(0, "TestSlowConsumersCF", bindings, 1);
+      HornetQServerTestCase.deployConnectionFactory(0, "TestSlowConsumersCF", 1, "TestSlowConsumersCF");
 
       Connection conn = null;
 

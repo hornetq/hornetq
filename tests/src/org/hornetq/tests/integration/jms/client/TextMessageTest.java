@@ -225,7 +225,7 @@ public class TextMessageTest extends JMSTestBase
 
    @Override
    protected void createCF(final List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs,
-                           final List<String> jndiBindings) throws Exception
+                           final String ... jndiBindings) throws Exception
    {
       int retryInterval = 1000;
       double retryIntervalMultiplier = 1.0;

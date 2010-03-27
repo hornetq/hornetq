@@ -135,7 +135,6 @@ public interface Server extends Remote
    // boolean undeployDestinationProgrammatically(boolean isQueue, String name) throws Exception;
    public void deployConnectionFactory(String clientId,
                                        String objectName,
-                                       List<String> jndiBindings,
                                        int prefetchSize,
                                        int defaultTempQueueFullSize,
                                        int defaultTempQueuePageSize,
@@ -143,25 +142,29 @@ public interface Server extends Remote
                                        boolean supportsFailover,
                                        boolean supportsLoadBalancing,
                                        int dupsOkBatchSize,
-                                       boolean blockOnAcknowledge) throws Exception;
+                                       boolean blockOnAcknowledge,
+                                       final String ... jndiBindings) throws Exception;
 
    void deployConnectionFactory(String objectName,
-                                List<String> jndiBindings,
                                 int prefetchSize,
                                 int defaultTempQueueFullSize,
                                 int defaultTempQueuePageSize,
-                                int defaultTempQueueDownCacheSize) throws Exception;
+                                int defaultTempQueueDownCacheSize,
+                                final String ... jndiBindings) throws Exception;
 
    void deployConnectionFactory(String objectName,
-                                List<String> jndiBindings,
                                 boolean supportsFailover,
-                                boolean supportsLoadBalancing) throws Exception;
+                                boolean supportsLoadBalancing,
+                                final String ... jndiBindings) throws Exception;
 
-   void deployConnectionFactory(String clientID, String objectName, List<String> jndiBindings) throws Exception;
+   void deployConnectionFactory(String clientID, String objectName,
+                                       final String ... jndiBindings) throws Exception;
 
-   void deployConnectionFactory(String objectName, List<String> jndiBindings, int prefetchSize) throws Exception;
+   void deployConnectionFactory(String objectName,  int prefetchSize,
+                                       final String ... jndiBindings) throws Exception;
 
-   void deployConnectionFactory(String objectName, List<String> jndiBindings) throws Exception;
+   void deployConnectionFactory(String objectName,
+                                       final String ... jndiBindings) throws Exception;
 
    void undeployConnectionFactory(String objectName) throws Exception;
 

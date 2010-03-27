@@ -63,8 +63,6 @@ public class CTSMiscellaneousTest extends HornetQServerTestCase
          connectorConfigs.add(new Pair<TransportConfiguration, TransportConfiguration>(new TransportConfiguration("org.hornetq.integration.transports.netty.NettyConnectorFactory"),
                                                                                        null));
 
-         List<String> jndiBindings = new ArrayList<String>();
-         jndiBindings.add("/StrictTCKConnectionFactory");
 
          getJmsServerManager().createConnectionFactory("StrictTCKConnectionFactory",
                                                        connectorConfigs,
@@ -96,7 +94,7 @@ public class CTSMiscellaneousTest extends HornetQServerTestCase
                                                        HornetQClient.DEFAULT_RECONNECT_ATTEMPTS,
                                                        HornetQClient.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN,
                                                        null,
-                                                       jndiBindings);
+                                                       "/StrictTCKConnectionFactory");
 
          CTSMiscellaneousTest.cf = (HornetQConnectionFactory)getInitialContext().lookup("/StrictTCKConnectionFactory");
       }

@@ -394,6 +394,23 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       return added;
    }
 
+   public boolean addConnectionFactoryToJNDI(final String name, final String jndiBinding) throws Exception
+   {
+      checkInitialised();
+
+      HornetQConnectionFactory factory = connectionFactories.get(name);
+      if(factory == null)
+      {
+         throw new IllegalArgumentException("Factory does not exist");
+      }
+      boolean added = bindToJndi(jndiBinding, factory);
+      if (added)
+      {
+         addToBindings(connectionFactoryJNDI, name, jndiBinding);
+         storage.addJNDI(PersistedType.ConnectionFactory, name, jndiBinding);
+      }
+      return added;
+   }
 
    /* (non-Javadoc)
     * @see org.hornetq.jms.server.JMSServerManager#removeQueueFromJNDI(java.lang.String, java.lang.String)
@@ -448,6 +465,34 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       
       storage.deleteJNDI(PersistedType.Topic, name);
       
+      return true;
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.jms.server.JMSServerManager#removeConnectionFactoryFromJNDI(java.lang.String, java.lang.String)
+    */
+   public boolean removeConnectionFactoryFromJNDI(String name, String jndi) throws Exception
+   {
+      checkInitialised();
+
+      removeFromJNDI(connectionFactoryJNDI, name, jndi);
+
+      storage.deleteJNDI(PersistedType.ConnectionFactory, name, jndi);
+
+      return true;
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.jms.server.JMSServerManager#removeConnectionFactoryFromJNDI(java.lang.String, java.lang.String)
+    */
+   public boolean removeConnectionFactoryFromJNDI(String name) throws Exception
+   {
+      checkInitialised();
+
+      removeFromJNDI(connectionFactoryJNDI, name);
+
+      storage.deleteJNDI(PersistedType.Topic, name);
+
       return true;
    }
    
@@ -511,27 +556,21 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
 
    public synchronized void createConnectionFactory(final String name,
                                                     final List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs,
-                                                    final List<String> jndiBindings) throws Exception
+                                                    String ... jndiBindings) throws Exception
    {
       checkInitialised();
       HornetQConnectionFactory cf = connectionFactories.get(name);
       if (cf == null)
       {
          ConnectionFactoryConfiguration configuration = new ConnectionFactoryConfigurationImpl(name, connectorConfigs);
-         if (jndiBindings != null)
-         {
-            String[] bindings = new String[jndiBindings.size()];
-            jndiBindings.toArray(bindings);
-            configuration.setBindings(bindings);
-         }
-         createConnectionFactory(configuration);
+         createConnectionFactory(configuration, jndiBindings);
       }
    }
 
    public synchronized void createConnectionFactory(final String name,
                                                     final List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs,
                                                     final String clientID,
-                                                    final List<String> jndiBindings) throws Exception
+                                                    String ... jndiBindings) throws Exception
    {
       checkInitialised();
       HornetQConnectionFactory cf = connectionFactories.get(name);
@@ -539,13 +578,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       {
          ConnectionFactoryConfiguration configuration = new ConnectionFactoryConfigurationImpl(name, connectorConfigs);
          configuration.setClientID(clientID);
-         if (jndiBindings != null)
-         {
-            String[] bindings = new String[jndiBindings.size()];
-            jndiBindings.toArray(bindings);
-            configuration.setBindings(bindings);
-         }
-         createConnectionFactory(configuration);
+         createConnectionFactory(configuration, jndiBindings);
       }
    }
 
@@ -579,7 +612,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
                                                     final int reconnectAttempts,
                                                     final boolean failoverOnServerShutdown,
                                                     final String groupId,
-                                                    final List<String> jndiBindings) throws Exception
+                                                    String ... jndiBindings) throws Exception
    {
       checkInitialised();
       HornetQConnectionFactory cf = connectionFactories.get(name);
@@ -614,13 +647,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
          configuration.setReconnectAttempts(reconnectAttempts);
          configuration.setFailoverOnServerShutdown(failoverOnServerShutdown);
          configuration.setGroupID(groupId);
-         if (jndiBindings != null)
-         {
-            String[] bindings = new String[jndiBindings.size()];
-            jndiBindings.toArray(bindings);
-            configuration.setBindings(bindings);
-         }
-         createConnectionFactory(configuration);
+         createConnectionFactory(configuration, jndiBindings);
       }
    }
 
@@ -657,7 +684,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
                                                     final int reconnectAttempts,
                                                     final boolean failoverOnServerShutdown,
                                                     final String groupId,
-                                                    final List<String> jndiBindings) throws Exception
+                                                    final String ... jndiBindings) throws Exception
    {
       checkInitialised();
       HornetQConnectionFactory cf = connectionFactories.get(name);
@@ -693,41 +720,30 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
          configuration.setMaxRetryInterval(maxRetryInterval);
          configuration.setReconnectAttempts(reconnectAttempts);
          configuration.setFailoverOnServerShutdown(failoverOnServerShutdown);
-         if (jndiBindings != null)
-         {
-            String[] bindings = new String[jndiBindings.size()];
-            jndiBindings.toArray(bindings);
-            configuration.setBindings(bindings);
-         }
-         createConnectionFactory(configuration);
+         createConnectionFactory(configuration, jndiBindings);
       }
    }
 
    public synchronized void createConnectionFactory(final String name,
                                                     final String discoveryAddress,
                                                     final int discoveryPort,
-                                                    final List<String> jndiBindings) throws Exception
+                                                    final String ... jndiBindings) throws Exception
    {
       checkInitialised();
       HornetQConnectionFactory cf = connectionFactories.get(name);
       if (cf == null)
       {
          ConnectionFactoryConfiguration configuration = new ConnectionFactoryConfigurationImpl(name, discoveryAddress, discoveryPort);
-         if (jndiBindings != null)
-         {
-            String[] bindings = new String[jndiBindings.size()];
-            jndiBindings.toArray(bindings);
-            configuration.setBindings(bindings);
-         }
-         createConnectionFactory(configuration);
+         createConnectionFactory(configuration, jndiBindings);
       }
    }
+
 
    public synchronized void createConnectionFactory(final String name,
                                                     final String discoveryAddress,
                                                     final int discoveryPort,
                                                     final String clientID,
-                                                    final List<String> jndiBindings) throws Exception
+                                                    final String ... jndiBindings) throws Exception
    {
       checkInitialised();
 
@@ -736,20 +752,19 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       {
          ConnectionFactoryConfiguration configuration = new ConnectionFactoryConfigurationImpl(name, discoveryAddress, discoveryPort);
          configuration.setClientID(clientID);
-         if (jndiBindings != null)
-         {
-            String[] bindings = new String[jndiBindings.size()];
-            jndiBindings.toArray(bindings);
-            configuration.setBindings(bindings);
-         }
-         createConnectionFactory(configuration);
+         createConnectionFactory(configuration, jndiBindings);
       }
    }
 
-   public synchronized void createConnectionFactory(final ConnectionFactoryConfiguration cfConfig) throws Exception
+   public synchronized void createConnectionFactory(final ConnectionFactoryConfiguration cfConfig, String... jndiBindings) throws Exception
    {
       internalCreateCF(cfConfig);
       storage.storeConnectionFactory(new PersistedConnectionFactory(cfConfig));
+      for (String jndiBinding : jndiBindings)
+      {
+         addConnectionFactoryToJNDI(cfConfig.getName(), jndiBinding);
+      }
+
    }
 
    private HornetQConnectionFactory internalCreateConnectionFactory(final String name,
@@ -784,8 +799,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
                                                     final long maxRetryInterval,
                                                     final int reconnectAttempts,
                                                     final boolean failoverOnServerShutdown,
-                                                    final String groupId,
-                                                    final List<String> jndiBindings) throws Exception
+                                                    final String groupId) throws Exception
    {
       checkInitialised();
       HornetQConnectionFactory cf = connectionFactories.get(name);
@@ -823,8 +837,6 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
          cf.setFailoverOnServerShutdown(failoverOnServerShutdown);
       }
 
-      bindConnectionFactory(cf, name, jndiBindings);
-
       return cf;
    }
 
@@ -857,8 +869,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
                                                       final long maxRetryInterval,
                                                       final int reconnectAttempts,
                                                       final boolean failoverOnServerShutdown,
-                                                      final String groupId,
-                                                      final List<String> jndiBindings) throws Exception
+                                                      final String groupId) throws Exception
      {
         checkInitialised();
         HornetQConnectionFactory cf = connectionFactories.get(name);
@@ -894,8 +905,6 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
            cf.setFailoverOnServerShutdown(failoverOnServerShutdown);
            cf.setGroupID(groupId);
         }
-
-        bindConnectionFactory(cf, name, jndiBindings);
         return cf;
      }
 
@@ -971,11 +980,6 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
     */
    private HornetQConnectionFactory internalCreateCF(final ConnectionFactoryConfiguration cfConfig) throws HornetQException, Exception
    {
-      ArrayList<String> listBindings = new ArrayList<String>();
-      for (String str : cfConfig.getBindings())
-      {
-         listBindings.add(str);
-      }
 
       List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs = lookupConnectors(cfConfig);
 
@@ -1015,8 +1019,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
                                  cfConfig.getMaxRetryInterval(),
                                  cfConfig.getReconnectAttempts(),
                                  cfConfig.isFailoverOnServerShutdown(),
-                                 cfConfig.getGroupID(),
-                                 listBindings);
+                                 cfConfig.getGroupID());
       }
       else
       {
@@ -1049,71 +1052,66 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
                                  cfConfig.getMaxRetryInterval(),
                                  cfConfig.getReconnectAttempts(),
                                  cfConfig.isFailoverOnServerShutdown(),
-                                 cfConfig.getGroupID(),
-                                 listBindings);
+                                 cfConfig.getGroupID());
       }
    }
 
    public synchronized void createConnectionFactory(final String name,
                                                     final TransportConfiguration liveTC,
-                                                    final List<String> jndiBindings) throws Exception
+                                                    final String ... jndiBindings) throws Exception
    {
       checkInitialised();
       HornetQConnectionFactory cf = connectionFactories.get(name);
       if (cf == null)
       {
-         cf = (HornetQConnectionFactory)HornetQJMSClient.createConnectionFactory(liveTC);
+         ConnectionFactoryConfiguration configuration = new ConnectionFactoryConfigurationImpl(name, liveTC);
+         createConnectionFactory(configuration, jndiBindings);
       }
-
-      bindConnectionFactory(cf, name, jndiBindings);
    }
 
    public synchronized void createConnectionFactory(final String name,
                                                     final TransportConfiguration liveTC,
                                                     final String clientID,
-                                                    final List<String> jndiBindings) throws Exception
+                                                    final String ... jndiBindings) throws Exception
    {
       checkInitialised();
       HornetQConnectionFactory cf = connectionFactories.get(name);
       if (cf == null)
       {
-         cf = (HornetQConnectionFactory)HornetQJMSClient.createConnectionFactory(liveTC);
-         cf.setClientID(clientID);
+         ConnectionFactoryConfiguration configuration = new ConnectionFactoryConfigurationImpl(name, liveTC);
+         configuration.setClientID(clientID);
+         createConnectionFactory(configuration, jndiBindings);
       }
-
-      bindConnectionFactory(cf, name, jndiBindings);
    }
 
    public synchronized void createConnectionFactory(final String name,
                                                     final TransportConfiguration liveTC,
                                                     final TransportConfiguration backupTC,
-                                                    final List<String> jndiBindings) throws Exception
+                                                    final String ... jndiBindings) throws Exception
    {
       checkInitialised();
       HornetQConnectionFactory cf = connectionFactories.get(name);
       if (cf == null)
       {
-         cf = (HornetQConnectionFactory)HornetQJMSClient.createConnectionFactory(liveTC, backupTC);
+         ConnectionFactoryConfiguration configuration = new ConnectionFactoryConfigurationImpl(name, liveTC, backupTC);
+         createConnectionFactory(configuration, jndiBindings);
       }
-
-      bindConnectionFactory(cf, name, jndiBindings);
    }
 
    public synchronized void createConnectionFactory(final String name,
                                                     final TransportConfiguration liveTC,
                                                     final TransportConfiguration backupTC,
                                                     final String clientID,
-                                                    final List<String> jndiBindings) throws Exception
+                                                    final String ... jndiBindings) throws Exception
    {
       checkInitialised();
       HornetQConnectionFactory cf = connectionFactories.get(name);
       if (cf == null)
       {
-         cf = (HornetQConnectionFactory)HornetQJMSClient.createConnectionFactory(liveTC, backupTC);
-         cf.setClientID(clientID);
+         ConnectionFactoryConfiguration configuration = new ConnectionFactoryConfigurationImpl(name, liveTC, backupTC);
+         configuration.setClientID(clientID);
+         createConnectionFactory(configuration, jndiBindings);
       }
-
-      bindConnectionFactory(cf, name, jndiBindings);
    }
 
    public synchronized boolean destroyConnectionFactory(final String name) throws Exception

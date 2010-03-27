@@ -364,18 +364,15 @@ public class JMSServerConfigParserImpl implements JMSServerConfigParser
 
       ConnectionFactoryConfiguration cfConfig;
 
-      String[] strbindings = jndiBindings.toArray(new String[jndiBindings.size()]);
-
       if (discoveryGroupName != null)
       {
-         cfConfig = new ConnectionFactoryConfigurationImpl(name,
-                                                           strbindings);
+         cfConfig = new ConnectionFactoryConfigurationImpl(name);
          cfConfig.setInitialWaitTimeout(discoveryInitialWaitTimeout);
          cfConfig.setDiscoveryGroupName(discoveryGroupName);
       }
       else
       {
-         cfConfig = new ConnectionFactoryConfigurationImpl(name, strbindings);
+         cfConfig = new ConnectionFactoryConfigurationImpl(name);
          cfConfig.setConnectorNames(connectorNames);
       }
       

@@ -190,7 +190,7 @@ public class JMSServerDeployer extends XmlDeployer
    private void deployConnectionFactory(final Node node) throws Exception
    {
       ConnectionFactoryConfiguration cfConfig = parser.parseConnectionFactoryConfiguration(node);
-      jmsServerManager.createConnectionFactory(cfConfig);
+      jmsServerManager.createConnectionFactory(cfConfig, cfConfig.getBindings());
    }
 
    

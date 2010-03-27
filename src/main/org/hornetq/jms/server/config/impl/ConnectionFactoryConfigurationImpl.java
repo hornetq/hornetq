@@ -555,13 +555,6 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
 
       int nbindings = buffer.readInt();
 
-      bindings = new String[nbindings];
-
-      for (int i = 0; i < nbindings; i++)
-      {
-         bindings[i] = buffer.readSimpleString().toString();
-      }
-
       discoveryGroupName = BufferHelper.readNullableSimpleStringAsString(buffer); 
 
       discoveryAddress = BufferHelper.readNullableSimpleStringAsString(buffer);
@@ -649,13 +642,6 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
    {
       BufferHelper.writeAsSimpleString(buffer, name);
 
-      buffer.writeInt(bindings.length);
-
-      for (String str : bindings)
-      {
-         BufferHelper.writeAsSimpleString(buffer, str);
-      }
-
       BufferHelper.writeAsNullableSimpleString(buffer, discoveryGroupName);
 
       BufferHelper.writeAsNullableSimpleString(buffer, discoveryAddress);
@@ -734,18 +720,6 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
       BufferHelper.writeAsNullableSimpleString(buffer, groupID);
    }
 
-   private int sizeOfBindings()
-   {
-      int size = DataConstants.SIZE_INT; // for the number of bindings persisted
-
-      for (String str : bindings)
-      {
-         size += BufferHelper.sizeOfSimpleString(str);
-      }
-
-      return size;
-
-   }
 
    private int sizeOfConnectors()
    {
@@ -769,8 +743,6 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
    public int getEncodeSize()
    {
       return BufferHelper.sizeOfSimpleString(name) +
-      
-             sizeOfBindings() +
              
              BufferHelper.sizeOfNullableSimpleString(discoveryGroupName) +
              

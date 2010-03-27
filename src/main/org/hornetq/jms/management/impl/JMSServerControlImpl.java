@@ -60,12 +60,12 @@ public class JMSServerControlImpl extends StandardMBean implements JMSServerCont
 
    // Static --------------------------------------------------------
 
-   private static List<String> convert(final Object[] jndiBindings)
+   private static String[] convert(final Object[] jndiBindings)
    {
-      List<String> bindings = new ArrayList<String>();
-      for (Object object : jndiBindings)
+      String[] bindings = new String[jndiBindings.length];
+      for (int i = 0, jndiBindingsLength = jndiBindings.length; i < jndiBindingsLength; i++)
       {
-         bindings.add(object.toString().trim());
+         bindings[i] = jndiBindings[i].toString().trim();
       }
       return bindings;
    }
@@ -159,10 +159,9 @@ public class JMSServerControlImpl extends StandardMBean implements JMSServerCont
 
       try
       {
-         List<String> jndiBindingsList = JMSServerControlImpl.convert(jndiBindings);
          TransportConfiguration liveTC = new TransportConfiguration(liveTransportClassName, liveTransportParams);
 
-         server.createConnectionFactory(name, liveTC, jndiBindingsList);
+         server.createConnectionFactory(name, liveTC, JMSServerControlImpl.convert(jndiBindings));
 
          sendNotification(NotificationType.CONNECTION_FACTORY_CREATED, name);
       }
@@ -189,9 +188,7 @@ public class JMSServerControlImpl extends StandardMBean implements JMSServerCont
                                                                                                                          liveConnectorTransportParams,
                                                                                                                          backupConnectorsTransportClassNames,
                                                                                                                          backupConnectorTransportParams);
-         List<String> jndiBindingsList = JMSServerControlImpl.convert(jndiBindings);
-
-         server.createConnectionFactory(name, pairs, jndiBindingsList);
+         server.createConnectionFactory(name, pairs, JMSServerControlImpl.convert(jndiBindings));
 
          sendNotification(NotificationType.CONNECTION_FACTORY_CREATED, name);
       }
@@ -240,9 +237,7 @@ public class JMSServerControlImpl extends StandardMBean implements JMSServerCont
 
       try
       {
-         List<String> jndiBindingsList = JMSServerControlImpl.convert(jndiBindings);
-
-         server.createConnectionFactory(name, discoveryAddress, discoveryPort, jndiBindingsList);
+         server.createConnectionFactory(name, discoveryAddress, discoveryPort, JMSServerControlImpl.convert(jndiBindings));
 
          sendNotification(NotificationType.CONNECTION_FACTORY_CREATED, name);
       }

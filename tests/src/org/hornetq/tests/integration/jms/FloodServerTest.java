@@ -128,9 +128,6 @@ public class FloodServerTest extends UnitTestCase
       connectorConfigs.add(new Pair<TransportConfiguration, TransportConfiguration>(new TransportConfiguration(NettyConnectorFactory.class.getName()),
                                                                                     null));
 
-      List<String> jndiBindings = new ArrayList<String>();
-      jndiBindings.add("/cf");
-
       serverManager.createConnectionFactory("ManualReconnectionToSingleServerTest",
                                             connectorConfigs,
                                             null,
@@ -161,7 +158,7 @@ public class FloodServerTest extends UnitTestCase
                                             reconnectAttempts,
                                             failoverOnServerShutdown,
                                             null,
-                                            jndiBindings);
+                                            "/cf");
    }
 
    public void testFoo()

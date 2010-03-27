@@ -184,9 +184,7 @@ public class SecurityTest extends JMSTestCase
       Connection conn = null;
       try
       {
-         ArrayList<String> bindings = new ArrayList<String>();
-         bindings.add("preConfcf");
-         HornetQServerTestCase.deployConnectionFactory("dilbert-id", "preConfcf", bindings);
+         HornetQServerTestCase.deployConnectionFactory("dilbert-id", "preConfcf", "preConfcf");
          ConnectionFactory cf = (ConnectionFactory)getInitialContext().lookup("preConfcf");
          conn = cf.createConnection("guest", "guest");
          String clientID = conn.getClientID();
@@ -232,9 +230,7 @@ public class SecurityTest extends JMSTestCase
       Connection conn = null;
       try
       {
-         ArrayList<String> bindings = new ArrayList<String>();
-         bindings.add("preConfcf");
-         HornetQServerTestCase.deployConnectionFactory("dilbert-id", "preConfcf", bindings);
+         HornetQServerTestCase.deployConnectionFactory("dilbert-id", "preConfcf", "preConfcf");
          ConnectionFactory cf = (ConnectionFactory)getInitialContext().lookup("preConfcf");
          conn = cf.createConnection("guest", "guest");
          conn.setClientID("myID");

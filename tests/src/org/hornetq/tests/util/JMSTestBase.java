@@ -163,10 +163,7 @@ public class JMSTestBase extends ServiceTestBase
       connectorConfigs.add(new Pair<TransportConfiguration, TransportConfiguration>(new TransportConfiguration(NettyConnectorFactory.class.getName()),
                                                                                     null));
 
-      List<String> jndiBindings = new ArrayList<String>();
-      jndiBindings.add("/cf");
-
-      createCF(connectorConfigs, jndiBindings);
+      createCF(connectorConfigs, "/cf");
 
       cf = (ConnectionFactory)context.lookup("/cf");
 
@@ -178,7 +175,7 @@ public class JMSTestBase extends ServiceTestBase
     * @throws Exception
     */
    protected void createCF(final List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs,
-                           final List<String> jndiBindings) throws Exception
+                           final String ... jndiBindings) throws Exception
    {
       int retryInterval = 1000;
       double retryIntervalMultiplier = 1.0;

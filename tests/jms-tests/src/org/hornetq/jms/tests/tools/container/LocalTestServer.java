@@ -218,33 +218,32 @@ public class LocalTestServer implements Server, Runnable
       getJMSServerManager().createTopic(name, "/topic/" + (jndiName != null ? jndiName : name));
    }
 
-   public void deployConnectionFactory(final String clientId, final String objectName, final List<String> jndiBindings) throws Exception
+   public void deployConnectionFactory(final String clientId, final String objectName, final String ... jndiBindings) throws Exception
    {
-      deployConnectionFactory(clientId, objectName, jndiBindings, -1, -1, -1, -1, false, false, -1, false);
+      deployConnectionFactory(clientId, objectName, -1, -1, -1, -1, false, false, -1, false, jndiBindings);
    }
 
    public void deployConnectionFactory(final String objectName,
-                                       final List<String> jndiBindings,
-                                       final int consumerWindowSize) throws Exception
+                                       final int consumerWindowSize,
+                                       final String ... jndiBindings) throws Exception
    {
-      deployConnectionFactory(null, objectName, jndiBindings, consumerWindowSize, -1, -1, -1, false, false, -1, false);
+      deployConnectionFactory(null, objectName, consumerWindowSize, -1, -1, -1, false, false, -1, false, jndiBindings);
    }
 
-   public void deployConnectionFactory(final String objectName, final List<String> jndiBindings) throws Exception
+   public void deployConnectionFactory(final String objectName, final String ... jndiBindings) throws Exception
    {
-      deployConnectionFactory(null, objectName, jndiBindings, -1, -1, -1, -1, false, false, -1, false);
+      deployConnectionFactory(null, objectName, -1, -1, -1, -1, false, false, -1, false, jndiBindings);
    }
 
    public void deployConnectionFactory(final String objectName,
-                                       final List<String> jndiBindings,
                                        final int prefetchSize,
                                        final int defaultTempQueueFullSize,
                                        final int defaultTempQueuePageSize,
-                                       final int defaultTempQueueDownCacheSize) throws Exception
+                                       final int defaultTempQueueDownCacheSize,
+                                       final String ... jndiBindings) throws Exception
    {
       this.deployConnectionFactory(null,
                                    objectName,
-                                   jndiBindings,
                                    prefetchSize,
                                    defaultTempQueueFullSize,
                                    defaultTempQueuePageSize,
@@ -252,17 +251,17 @@ public class LocalTestServer implements Server, Runnable
                                    false,
                                    false,
                                    -1,
-                                   false);
+                                   false,
+                                   jndiBindings);
    }
 
    public void deployConnectionFactory(final String objectName,
-                                       final List<String> jndiBindings,
                                        final boolean supportsFailover,
-                                       final boolean supportsLoadBalancing) throws Exception
+                                       final boolean supportsLoadBalancing,
+                                       final String ... jndiBindings) throws Exception
    {
       this.deployConnectionFactory(null,
                                    objectName,
-                                   jndiBindings,
                                    -1,
                                    -1,
                                    -1,
@@ -270,12 +269,12 @@ public class LocalTestServer implements Server, Runnable
                                    supportsFailover,
                                    supportsLoadBalancing,
                                    -1,
-                                   false);
+                                   false,
+                                   jndiBindings);
    }
 
    public void deployConnectionFactory(final String clientId,
                                        final String objectName,
-                                       final List<String> jndiBindings,
                                        final int prefetchSize,
                                        final int defaultTempQueueFullSize,
                                        final int defaultTempQueuePageSize,
@@ -283,7 +282,8 @@ public class LocalTestServer implements Server, Runnable
                                        final boolean supportsFailover,
                                        final boolean supportsLoadBalancing,
                                        final int dupsOkBatchSize,
-                                       final boolean blockOnAcknowledge) throws Exception
+                                       final boolean blockOnAcknowledge,
+                                       final String ... jndiBindings) throws Exception
    {
       List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs = new ArrayList<Pair<TransportConfiguration, TransportConfiguration>>();
 

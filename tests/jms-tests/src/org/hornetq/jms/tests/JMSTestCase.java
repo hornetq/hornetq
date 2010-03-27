@@ -59,8 +59,6 @@ public class JMSTestCase extends HornetQServerTestCase
       connectorConfigs.add(new Pair<TransportConfiguration, TransportConfiguration>(new TransportConfiguration("org.hornetq.integration.transports.netty.NettyConnectorFactory"),
                                                                                     null));
 
-      List<String> jndiBindings = new ArrayList<String>();
-      jndiBindings.add("/testsuitecf");
 
       getJmsServerManager().createConnectionFactory("testsuitecf",
                                                     connectorConfigs,
@@ -92,7 +90,7 @@ public class JMSTestCase extends HornetQServerTestCase
                                                     HornetQClient.DEFAULT_RECONNECT_ATTEMPTS,
                                                     HornetQClient.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN,
                                                     null,
-                                                    jndiBindings);
+                                                    "/testsuitecf");
 
       JMSTestCase.cf = (HornetQConnectionFactory)getInitialContext().lookup("/testsuitecf");
 
