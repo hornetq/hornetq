@@ -21,6 +21,7 @@ import javax.jms.QueueSession;
 import javax.jms.Session;
 
 import org.hornetq.api.core.TransportConfiguration;
+import org.hornetq.api.core.management.Parameter;
 import org.hornetq.api.core.management.ResourceNames;
 import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.api.jms.management.JMSServerControl;
@@ -170,6 +171,11 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
          public boolean createQueue(final String name) throws Exception
          {
             return (Boolean)proxy.invokeOperation("createQueue", name);
+         }
+
+         public boolean createQueue(String name, String jndiBindings, String selector) throws Exception
+         {
+            return (Boolean)proxy.invokeOperation("createQueue", name, jndiBindings, selector);
          }
 
          public boolean createTopic(final String name) throws Exception

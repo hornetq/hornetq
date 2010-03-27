@@ -59,6 +59,13 @@ public interface JMSServerControl
    String[] getConnectionFactoryNames();
 
    // Operations ----------------------------------------------------
+   /**
+       * Creates a JMS Queue.
+       *
+       * @return {@code true} if the queue was created, {@code false} else
+       */
+      @Operation(desc = "Create a JMS Queue", impact = MBeanOperationInfo.ACTION)
+      boolean createQueue(@Parameter(name = "name", desc = "Name of the queue to create") String name) throws Exception;
 
    /**
     * Creates a JMS Queue with the specified name and JNDI binding.
@@ -67,7 +74,18 @@ public interface JMSServerControl
     */
    @Operation(desc = "Create a JMS Queue", impact = MBeanOperationInfo.ACTION)
    boolean createQueue(@Parameter(name = "name", desc = "Name of the queue to create") String name,
-                       @Parameter(name = "jndiBinding", desc = "the name of the binding for JNDI") String jndiBinding) throws Exception;
+                       @Parameter(name = "jndiBindings", desc = "comma-separated list of JNDI bindings (use '&comma;' if u need to use commas in your jndi name)") String jndiBindings) throws Exception;
+
+   /**
+      * Creates a JMS Queue with the specified name and JNDI binding.
+      *
+      * @return {@code true} if the queue was created, {@code false} else
+      */
+     @Operation(desc = "Create a JMS Queue", impact = MBeanOperationInfo.ACTION)
+     boolean createQueue(@Parameter(name = "name", desc = "Name of the queue to create") String name,
+                         @Parameter(name = "jndiBindings", desc = "comma-separated list of JNDI bindings (use '&comma;' if u need to use commas in your jndi name)") String jndiBindings,
+                         @Parameter(name = "selector", desc = "the jms selector") String selector) throws Exception;
+
 
    /**
     * Destroys a JMS Queue with the specified name.
@@ -78,13 +96,21 @@ public interface JMSServerControl
    boolean destroyQueue(@Parameter(name = "name", desc = "Name of the queue to destroy") String name) throws Exception;
 
    /**
+    * Creates a JMS Topic.
+    *
+    * @return {@code true} if the topic was created, {@code false} else
+    */
+   @Operation(desc = "Create a JMS Topic", impact = MBeanOperationInfo.ACTION)
+   boolean createTopic(@Parameter(name = "name", desc = "Name of the topic to create") String name) throws Exception;
+
+   /**
     * Creates a JMS Topic with the specified name and JNDI binding.
     * 
     * @return {@code true} if the topic was created, {@code false} else
     */
    @Operation(desc = "Create a JMS Topic", impact = MBeanOperationInfo.ACTION)
    boolean createTopic(@Parameter(name = "name", desc = "Name of the topic to create") String name,
-                       @Parameter(name = "jndiBinding", desc = "the name of the binding for JNDI") String jndiBinding) throws Exception;
+                       @Parameter(name = "jndiBindings", desc = "comma-separated list of JNDI bindings (use '&comma;' if u need to use commas in your jndi name)") String jndiBindings) throws Exception;
 
    /**
     * Destroys a JMS Topic with the specified name.
@@ -134,7 +160,7 @@ public interface JMSServerControl
                                 @Parameter(name = "liveTransportParams", desc = "comma-separated list of key=value parameters for the live transports (enclosed between { } for each transport)") String liveTransportParams,
                                 @Parameter(name = "backupTransportClassNames", desc = "comma-separated list of class names for transport to backup servers") String backupTransportClassNames,
                                 @Parameter(name = "backupTransportParams", desc = "comma-separated list of key=value parameters for the backup transports (enclosed between { } for each transport)") String backupTransportParams,
-                                @Parameter(name = "jndiBindings", desc = "comma-separated list of JNDI bindings") String jndiBindings) throws Exception;
+                                @Parameter(name = "jndiBindings", desc = "comma-separated list of JNDI bindings (use '&comma;' if u need to use commas in your jndi name)") String jndiBindings) throws Exception;
 
    /**
     * Create a JMS ConnectionFactory with the specified name using a discovery group to discover HornetQ servers.

@@ -31,6 +31,7 @@ import javax.management.StandardMBean;
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.management.ManagementHelper;
+import org.hornetq.api.core.management.Parameter;
 import org.hornetq.api.jms.management.ConnectionFactoryControl;
 import org.hornetq.api.jms.management.JMSQueueControl;
 import org.hornetq.api.jms.management.JMSServerControl;
@@ -81,6 +82,7 @@ public class JMSServerControlImpl extends StandardMBean implements JMSServerCont
       for (int i = 0; i < values.length; i++)
       {
          trimmed[i] = values[i].trim();
+         trimmed[i] = trimmed[i].replace("&comma;", ",");
       }
       return trimmed;
    }
@@ -270,7 +272,19 @@ public class JMSServerControlImpl extends StandardMBean implements JMSServerCont
                                        }
 
 
-   public boolean createQueue(final String name, final String jndiBinding) throws Exception
+   public boolean createQueue(@Parameter(name = "name", desc = "Name of the queue to create") String name) throws Exception
+   {
+      return createQueue(name, null, null);
+   }
+
+
+
+   public boolean createQueue(final String name, final String jndiBindings) throws Exception
+   {
+      return createQueue(name, jndiBindings, null);
+   }
+
+   public boolean createQueue(@Parameter(name = "name", desc = "Name of the queue to create") String name, @Parameter(name = "jndiBindings", desc = "comma-separated list of JNDI bindings (use '&comma;' if u need to use commas in your jndi name)") String jndiBindings, @Parameter(name = "selector", desc = "the jms selector") String selector) throws Exception
    {
       checkStarted();
 
@@ -278,7 +292,7 @@ public class JMSServerControlImpl extends StandardMBean implements JMSServerCont
 
       try
       {
-         boolean created = server.createQueue(name, null, true, jndiBinding);
+         boolean created = server.createQueue(name, selector, true, JMSServerControlImpl.toArray(jndiBindings));
          if (created)
          {
             sendNotification(NotificationType.QUEUE_CREATED, name);
@@ -312,7 +326,12 @@ public class JMSServerControlImpl extends StandardMBean implements JMSServerCont
       }
    }
 
-   public boolean createTopic(final String topicName, final String jndiBinding) throws Exception
+   public boolean createTopic(@Parameter(name = "name", desc = "Name of the topic to create") String name) throws Exception
+   {
+      return createTopic(name, null);
+   }
+
+   public boolean createTopic(final String topicName, final String jndiBindings) throws Exception
    {
       checkStarted();
 
@@ -320,7 +339,7 @@ public class JMSServerControlImpl extends StandardMBean implements JMSServerCont
 
       try
       {
-         boolean created = server.createTopic(topicName, jndiBinding);
+         boolean created = server.createTopic(topicName, JMSServerControlImpl.toArray(jndiBindings));
          if (created)
          {
             sendNotification(NotificationType.TOPIC_CREATED, topicName);
