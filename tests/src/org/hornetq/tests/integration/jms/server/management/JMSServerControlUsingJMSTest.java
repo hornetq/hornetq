@@ -261,14 +261,12 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
 
          public boolean createQueue(String name, String jndiBinding) throws Exception
          {
-            // TODO add a test for this
-            return false;
+            return (Boolean)proxy.invokeOperation("createQueue", name, jndiBinding);
          }
 
          public boolean createTopic(String name, String jndiBinding) throws Exception
          {
-            // TODO add a test for this
-            return false;
+            return (Boolean)proxy.invokeOperation("createTopic", name, jndiBinding);
          }
 
       };

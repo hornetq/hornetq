@@ -22,6 +22,7 @@ import javax.jms.Topic;
 
 import junit.framework.Assert;
 
+import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.management.AddressControl;
 import org.hornetq.api.core.management.ObjectNameBuilder;
@@ -38,6 +39,11 @@ import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.client.HornetQDestination;
+import org.hornetq.jms.persistence.JMSStorageManager;
+import org.hornetq.jms.persistence.config.PersistedConnectionFactory;
+import org.hornetq.jms.persistence.config.PersistedDestination;
+import org.hornetq.jms.persistence.config.PersistedJNDI;
+import org.hornetq.jms.persistence.config.PersistedType;
 import org.hornetq.jms.server.JMSServerManager;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.hornetq.tests.integration.management.ManagementControlHelper;
@@ -45,6 +51,9 @@ import org.hornetq.tests.integration.management.ManagementTestBase;
 import org.hornetq.tests.unit.util.InVMContext;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
+
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * A JMSServerControlTest
@@ -68,6 +77,8 @@ public class JMSServerControlTest extends ManagementTestBase
    private HornetQServer server;
 
    private JMSServerManagerImpl serverManager;
+
+   private FakeJMSStorageManager fakeJMSStorageManager;
 
    // Static --------------------------------------------------------
 
@@ -96,23 +107,120 @@ public class JMSServerControlTest extends ManagementTestBase
       Assert.assertEquals(serverManager.getVersion(), version);
    }
 
-   public void testCreateQueue() throws Exception
+   public void testCreateQueueWithBindings() throws Exception
    {
-      String queueJNDIBinding = RandomUtil.randomString();
+      String[] bindings = new String[3];
+      bindings[0] = RandomUtil.randomString();
+      bindings[1] = RandomUtil.randomString();
+      bindings[2] = RandomUtil.randomString();
       String queueName = RandomUtil.randomString();
 
-      UnitTestCase.checkNoBinding(context, queueJNDIBinding);
+      String bindingsCSV = JMSServerControlTest.toCSV(bindings);
+      UnitTestCase.checkNoBinding(context, bindingsCSV);
+
       checkNoResource(ObjectNameBuilder.DEFAULT.getJMSQueueObjectName(queueName));
 
       JMSServerControl control = createManagementControl();
-      control.createQueue(queueName, queueJNDIBinding);
+      control.createQueue(queueName, bindingsCSV);
 
-      Object o = UnitTestCase.checkBinding(context, queueJNDIBinding);
+      Object o = UnitTestCase.checkBinding(context, bindings[0]);
       Assert.assertTrue(o instanceof Queue);
       Queue queue = (Queue)o;
       Assert.assertEquals(queueName, queue.getQueueName());
+      o = UnitTestCase.checkBinding(context, bindings[1]);
+      Assert.assertTrue(o instanceof Queue);
+      queue = (Queue)o;
+      Assert.assertEquals(queueName, queue.getQueueName());
+      o = UnitTestCase.checkBinding(context, bindings[2]);
+      Assert.assertTrue(o instanceof Queue);
+      queue = (Queue)o;
+      Assert.assertEquals(queueName, queue.getQueueName());
       checkResource(ObjectNameBuilder.DEFAULT.getJMSQueueObjectName(queueName));
 
+      Assert.assertNotNull(fakeJMSStorageManager.destinationMap.get(queueName));
+      Assert.assertNotNull(fakeJMSStorageManager.persistedJNDIMap.get(queueName));
+      Assert.assertTrue(fakeJMSStorageManager.persistedJNDIMap.get(queueName).contains(bindings[0]));
+      Assert.assertTrue(fakeJMSStorageManager.persistedJNDIMap.get(queueName).contains(bindings[1]));
+      Assert.assertTrue(fakeJMSStorageManager.persistedJNDIMap.get(queueName).contains(bindings[2]));
+   }
+
+   public void testCreateQueueWithCommaBindings() throws Exception
+   {
+      String[] bindings = new String[3];
+      bindings[0] = "first&comma;first";
+      bindings[1] = "second&comma;second";
+      bindings[2] = "third&comma;third";
+      String queueName = RandomUtil.randomString();
+
+      String bindingsCSV = JMSServerControlTest.toCSV(bindings);
+      UnitTestCase.checkNoBinding(context, bindingsCSV);
+
+      checkNoResource(ObjectNameBuilder.DEFAULT.getJMSQueueObjectName(queueName));
+
+      JMSServerControl control = createManagementControl();
+      control.createQueue(queueName, bindingsCSV);
+
+      Object o = UnitTestCase.checkBinding(context, "first,first");
+      Assert.assertTrue(o instanceof Queue);
+      Queue queue = (Queue)o;
+      Assert.assertEquals(queueName, queue.getQueueName());
+      o = UnitTestCase.checkBinding(context, "second,second");
+      Assert.assertTrue(o instanceof Queue);
+      queue = (Queue)o;
+      Assert.assertEquals(queueName, queue.getQueueName());
+      o = UnitTestCase.checkBinding(context, "third,third");
+      Assert.assertTrue(o instanceof Queue);
+      queue = (Queue)o;
+      Assert.assertEquals(queueName, queue.getQueueName());
+      checkResource(ObjectNameBuilder.DEFAULT.getJMSQueueObjectName(queueName));
+
+      Assert.assertNotNull(fakeJMSStorageManager.destinationMap.get(queueName));
+      Assert.assertNotNull(fakeJMSStorageManager.persistedJNDIMap.get(queueName));
+      Assert.assertTrue(fakeJMSStorageManager.persistedJNDIMap.get(queueName).contains("first,first"));
+      Assert.assertTrue(fakeJMSStorageManager.persistedJNDIMap.get(queueName).contains("second,second"));
+      Assert.assertTrue(fakeJMSStorageManager.persistedJNDIMap.get(queueName).contains("third,third"));
+   }
+
+   public void testCreateQueueWithSelector() throws Exception
+   {
+      String[] bindings = new String[3];
+      bindings[0] = RandomUtil.randomString();
+      bindings[1] = RandomUtil.randomString();
+      bindings[2] = RandomUtil.randomString();
+      String queueName = RandomUtil.randomString();
+
+      String bindingsCSV = JMSServerControlTest.toCSV(bindings);
+      UnitTestCase.checkNoBinding(context, bindingsCSV);
+
+      checkNoResource(ObjectNameBuilder.DEFAULT.getJMSQueueObjectName(queueName));
+
+      JMSServerControl control = createManagementControl();
+      String selector = "foo='bar'";
+      control.createQueue(queueName, bindingsCSV, selector);
+
+      Object o = UnitTestCase.checkBinding(context, bindings[0]);
+      Assert.assertTrue(o instanceof Queue);
+      Queue queue = (Queue)o;
+      //assertEquals(((HornetQDestination)queue).get);
+      Assert.assertEquals(queueName, queue.getQueueName());
+      Assert.assertEquals(selector,server.getPostOffice().getBinding(new SimpleString("jms.queue." + queueName)).getFilter().getFilterString().toString());
+      o = UnitTestCase.checkBinding(context, bindings[1]);
+      Assert.assertTrue(o instanceof Queue);
+      queue = (Queue)o;
+      Assert.assertEquals(queueName, queue.getQueueName());
+      Assert.assertEquals(selector,server.getPostOffice().getBinding(new SimpleString("jms.queue." + queueName)).getFilter().getFilterString().toString());
+      o = UnitTestCase.checkBinding(context, bindings[2]);
+      Assert.assertTrue(o instanceof Queue);
+      queue = (Queue)o;
+      Assert.assertEquals(queueName, queue.getQueueName());
+      Assert.assertEquals(selector,server.getPostOffice().getBinding(new SimpleString("jms.queue." + queueName)).getFilter().getFilterString().toString());
+      checkResource(ObjectNameBuilder.DEFAULT.getJMSQueueObjectName(queueName));
+
+      Assert.assertNotNull(fakeJMSStorageManager.destinationMap.get(queueName));
+      Assert.assertNotNull(fakeJMSStorageManager.persistedJNDIMap.get(queueName));
+      Assert.assertTrue(fakeJMSStorageManager.persistedJNDIMap.get(queueName).contains(bindings[0]));
+      Assert.assertTrue(fakeJMSStorageManager.persistedJNDIMap.get(queueName).contains(bindings[1]));
+      Assert.assertTrue(fakeJMSStorageManager.persistedJNDIMap.get(queueName).contains(bindings[2]));
    }
 
    public void testDestroyQueue() throws Exception
@@ -133,6 +241,8 @@ public class JMSServerControlTest extends ManagementTestBase
 
       UnitTestCase.checkNoBinding(context, queueJNDIBinding);
       checkNoResource(ObjectNameBuilder.DEFAULT.getJMSQueueObjectName(queueName));
+
+      Assert.assertNull(fakeJMSStorageManager.destinationMap.get(queueName));
    }
 
    public void testGetQueueNames() throws Exception
@@ -156,7 +266,12 @@ public class JMSServerControlTest extends ManagementTestBase
 
    public void testCreateTopic() throws Exception
    {
-      String topicJNDIBinding = RandomUtil.randomString();
+      String[] bindings = new String[3];
+      bindings[0] = RandomUtil.randomString();
+      bindings[1] = RandomUtil.randomString();
+      bindings[2] = RandomUtil.randomString();
+      String topicJNDIBinding = JMSServerControlTest.toCSV(bindings);
+      UnitTestCase.checkNoBinding(context, topicJNDIBinding);
       String topicName = RandomUtil.randomString();
 
       UnitTestCase.checkNoBinding(context, topicJNDIBinding);
@@ -165,11 +280,25 @@ public class JMSServerControlTest extends ManagementTestBase
       JMSServerControl control = createManagementControl();
       control.createTopic(topicName, topicJNDIBinding);
 
-      Object o = UnitTestCase.checkBinding(context, topicJNDIBinding);
+      Object o = UnitTestCase.checkBinding(context, bindings[0]);
       Assert.assertTrue(o instanceof Topic);
       Topic topic = (Topic)o;
       Assert.assertEquals(topicName, topic.getTopicName());
+      o = UnitTestCase.checkBinding(context, bindings[1]);
+      Assert.assertTrue(o instanceof Topic);
+      topic = (Topic)o;
+      Assert.assertEquals(topicName, topic.getTopicName());
+      o = UnitTestCase.checkBinding(context, bindings[2]);
+      Assert.assertTrue(o instanceof Topic);
+      topic = (Topic)o;
+      Assert.assertEquals(topicName, topic.getTopicName());
       checkResource(ObjectNameBuilder.DEFAULT.getJMSTopicObjectName(topicName));
+
+      Assert.assertNotNull(fakeJMSStorageManager.destinationMap.get(topicName));
+      Assert.assertNotNull(fakeJMSStorageManager.persistedJNDIMap.get(topicName));
+      Assert.assertTrue(fakeJMSStorageManager.persistedJNDIMap.get(topicName).contains(bindings[0]));
+      Assert.assertTrue(fakeJMSStorageManager.persistedJNDIMap.get(topicName).contains(bindings[1]));
+      Assert.assertTrue(fakeJMSStorageManager.persistedJNDIMap.get(topicName).contains(bindings[2]));
    }
 
    public void testDestroyTopic() throws Exception
@@ -204,6 +333,8 @@ public class JMSServerControlTest extends ManagementTestBase
       assertNull(server.getManagementService().getResource(ResourceNames.CORE_ADDRESS + topicAddress));
       UnitTestCase.checkNoBinding(context, topicJNDIBinding);
       checkNoResource(ObjectNameBuilder.DEFAULT.getJMSTopicObjectName(topicName));
+
+      Assert.assertNull(fakeJMSStorageManager.destinationMap.get(topicName));
    }
 
    public void testGetTopicNames() throws Exception
@@ -306,7 +437,8 @@ public class JMSServerControlTest extends ManagementTestBase
       server = HornetQServers.newHornetQServer(conf, mbeanServer, false);
 
       context = new InVMContext();
-      serverManager = new JMSServerManagerImpl(server);
+      fakeJMSStorageManager = new FakeJMSStorageManager();
+      serverManager = new JMSServerManagerImpl(server, null, fakeJMSStorageManager);
       serverManager.setContext(context);
       serverManager.start();
       serverManager.activated();
@@ -333,7 +465,9 @@ public class JMSServerControlTest extends ManagementTestBase
 
    // Private -------------------------------------------------------
 
-   private void doCreateConnectionFactory(final ConnectionFactoryCreator creator) throws Exception
+   private void
+
+   doCreateConnectionFactory(final ConnectionFactoryCreator creator) throws Exception
    {
       Object[] cfJNDIBindings = new Object[] { RandomUtil.randomString(),
                                               RandomUtil.randomString(),
@@ -359,6 +493,11 @@ public class JMSServerControlTest extends ManagementTestBase
          connection.close();
       }
       checkResource(ObjectNameBuilder.DEFAULT.getConnectionFactoryObjectName(cfName));
+
+      Assert.assertNotNull(fakeJMSStorageManager.connectionFactoryMap.get(cfName));
+      Assert.assertTrue(fakeJMSStorageManager.persistedJNDIMap.get(cfName).contains(cfJNDIBindings[0]));
+      Assert.assertTrue(fakeJMSStorageManager.persistedJNDIMap.get(cfName).contains(cfJNDIBindings[1]));
+      Assert.assertTrue(fakeJMSStorageManager.persistedJNDIMap.get(cfName).contains(cfJNDIBindings[2]));
    }
 
    private JMSServerManager startHornetQServer(final int discoveryPort) throws Exception
@@ -388,6 +527,78 @@ public class JMSServerControlTest extends ManagementTestBase
    interface ConnectionFactoryCreator
    {
       void createConnectionFactory(JMSServerControl control, String cfName, Object[] bindings) throws Exception;
+   }
+
+   class FakeJMSStorageManager implements JMSStorageManager
+   {
+      Map<String, PersistedDestination> destinationMap = new HashMap<String, PersistedDestination>();
+      Map<String, PersistedConnectionFactory> connectionFactoryMap = new HashMap<String, PersistedConnectionFactory>();
+      ConcurrentHashMap<String, List<String>> persistedJNDIMap = new ConcurrentHashMap<String, List<String>>();
+      public void storeDestination(PersistedDestination destination) throws Exception
+      {
+         destinationMap.put(destination.getName(), destination);
+      }
+
+      public void deleteDestination(PersistedType type, String name) throws Exception
+      {
+         destinationMap.remove(name);
+      }
+
+      public List<PersistedDestination> recoverDestinations()
+      {
+         return Collections.EMPTY_LIST;
+      }
+
+      public void deleteConnectionFactory(String connectionFactory) throws Exception
+      {
+         connectionFactoryMap.remove(connectionFactory);
+      }
+
+      public void storeConnectionFactory(PersistedConnectionFactory connectionFactory) throws Exception
+      {
+         connectionFactoryMap.put(connectionFactory.getName(), connectionFactory);
+      }
+
+      public List<PersistedConnectionFactory> recoverConnectionFactories()
+      {
+         return Collections.EMPTY_LIST;
+      }
+
+      public void addJNDI(PersistedType type, String name, String address) throws Exception
+      {
+         persistedJNDIMap.putIfAbsent(name, new ArrayList<String>());
+         persistedJNDIMap.get(name).add(address);
+      }
+
+      public List<PersistedJNDI> recoverPersistedJNDI() throws Exception
+      {
+         return Collections.EMPTY_LIST;
+      }
+
+      public void deleteJNDI(PersistedType type, String name, String address) throws Exception
+      {
+         persistedJNDIMap.get(name).remove(address);
+      }
+
+      public void deleteJNDI(PersistedType type, String name) throws Exception
+      {
+         persistedJNDIMap.get(name).clear();
+      }
+
+      public void start() throws Exception
+      {
+         //To change body of implemented methods use File | Settings | File Templates.
+      }
+
+      public void stop() throws Exception
+      {
+         //To change body of implemented methods use File | Settings | File Templates.
+      }
+
+      public boolean isStarted()
+      {
+         return false;  //To change body of implemented methods use File | Settings | File Templates.
+      }
    }
 
 }
