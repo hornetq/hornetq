@@ -14,7 +14,6 @@
 package org.hornetq.jms.server.config.impl;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.hornetq.api.core.HornetQBuffer;
@@ -574,6 +573,8 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
          connectorNames.add(new Pair<String, String>(a, b));
       }
 
+      connectorConfigs = TransportConfigurationEncodingSupport.decodeConfigs(buffer);
+
       clientID = BufferHelper.readNullableSimpleStringAsString(buffer);
 
       discoveryRefreshTimeout = buffer.readLong();
@@ -658,6 +659,8 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
             BufferHelper.writeAsNullableSimpleString(buffer, namePair.b);
          }
       }
+
+      TransportConfigurationEncodingSupport.encodeConfigs(buffer, connectorConfigs);
 
       BufferHelper.writeAsNullableSimpleString(buffer, clientID);
 
@@ -752,6 +755,8 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
              
              sizeOfConnectors() +
              
+             TransportConfigurationEncodingSupport.getEncodeSize(connectorConfigs) +
+
              BufferHelper.sizeOfNullableSimpleString(clientID) +
              
              DataConstants.SIZE_LONG + // discoveryRefreshTimeout 

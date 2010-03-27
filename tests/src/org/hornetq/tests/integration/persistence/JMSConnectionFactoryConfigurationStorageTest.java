@@ -13,15 +13,21 @@
 
 package org.hornetq.tests.integration.persistence;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
+import org.hornetq.api.core.Pair;
+import org.hornetq.api.core.TransportConfiguration;
+import org.hornetq.integration.transports.netty.NettyConnectorFactory;
+import org.hornetq.integration.transports.netty.TransportConstants;
 import org.hornetq.jms.persistence.config.PersistedConnectionFactory;
 import org.hornetq.jms.server.config.ConnectionFactoryConfiguration;
 import org.hornetq.jms.server.config.impl.ConnectionFactoryConfigurationImpl;
+import org.hornetq.tests.util.RandomUtil;
 
 /**
  * A JMSConnectionFactoryConfigurationStorageTest
@@ -119,6 +125,60 @@ public class JMSConnectionFactoryConfigurationStorageTest extends StorageManager
       
       assertEquals(size, buffer.writerIndex());
       
+   }
+   
+   public void testSettingsWithConnectorConfigs() throws Exception
+   {
+
+      createJMSStorage();
+
+      String str[] = new String[5];
+      for (int i = 0; i < 5; i++)
+      {
+         str[i] = "str" + i;
+      }
+
+      ConnectionFactoryConfiguration config = new ConnectionFactoryConfigurationImpl("some-name", str);
+      List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs = new ArrayList<Pair<TransportConfiguration,TransportConfiguration>>();
+      Map<String, Object> liveParams = new HashMap<String, Object>();
+      liveParams.put(TransportConstants.PORT_PROP_NAME, 5665);
+      TransportConfiguration live1 = new TransportConfiguration(NettyConnectorFactory.class.getName(), liveParams );
+      Map<String, Object> backupParams = new HashMap<String, Object>();
+      backupParams.put(TransportConstants.PORT_PROP_NAME, 5775);
+      TransportConfiguration backup1 = new TransportConfiguration(NettyConnectorFactory.class.getName(), backupParams);
+      Map<String, Object> liveParams2 = new HashMap<String, Object>();
+      liveParams2.put(TransportConstants.PORT_PROP_NAME, 6665);
+      TransportConfiguration live2 = new TransportConfiguration(NettyConnectorFactory.class.getName(), liveParams2);
+      
+      connectorConfigs.add(new Pair<TransportConfiguration, TransportConfiguration>(live1, backup1));
+      connectorConfigs.add(new Pair<TransportConfiguration, TransportConfiguration>(live2, null));
+
+      config.setConnectorConfigs(connectorConfigs );
+      List<Pair<String, String>> connectors = new ArrayList<Pair<String,String>>();
+      connectors.add(new Pair<String, String>(RandomUtil.randomString(), null));
+      config.setConnectorNames(connectors);
+      config.setCallTimeout(RandomUtil.randomPositiveLong());
+      
+      addSetting(new PersistedConnectionFactory(config));
+
+      jmsJournal.stop();
+
+      createJMSStorage();
+
+      List<PersistedConnectionFactory> cfs = jmsJournal.recoverConnectionFactories();
+
+      assertEquals(1, cfs.size());
+
+      assertEquals("some-name", cfs.get(0).getName());
+
+      assertEquals(config.getCallTimeout(), cfs.get(0).getConfig().getCallTimeout());
+
+      assertEquals(5, cfs.get(0).getConfig().getBindings().length);
+
+      for (int i = 0; i < 5; i++)
+      {
+         assertEquals("str" + i, cfs.get(0).getConfig().getBindings()[i]);
+      }
    }
 
    /**
