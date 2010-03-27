@@ -171,6 +171,11 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
       return bindings;
    }
 
+   public void setBindings(String[] bindings)
+   {
+      this.bindings = bindings;
+   }
+
    public String getName()
    {
       return name;
