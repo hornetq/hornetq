@@ -67,14 +67,18 @@ public class JMSConnectionFactoryConfigurationStorageTest extends StorageManager
    {
 
       createJMSStorage();
-
-      String str[] = new String[5];
-      for (int i = 0; i < 5; i++)
+      
+      List<Pair<TransportConfiguration, TransportConfiguration>> transportConfigs = new ArrayList<Pair<TransportConfiguration, TransportConfiguration>>();
+      
+      for (int i = 0 ; i < 5; i++)
       {
-         str[i] = "str" + i;
+         TransportConfiguration config1 = new TransportConfiguration("c1-" + i);
+         TransportConfiguration config2 = new TransportConfiguration("c2-" + i);
+         transportConfigs.add(new Pair<TransportConfiguration, TransportConfiguration>(config1, config2));
       }
+      
 
-      ConnectionFactoryConfiguration config = new ConnectionFactoryConfigurationImpl("some-name", str);
+      ConnectionFactoryConfiguration config = new ConnectionFactoryConfigurationImpl("some-name", transportConfigs);
 
       addSetting(new PersistedConnectionFactory(config));
 
@@ -87,12 +91,18 @@ public class JMSConnectionFactoryConfigurationStorageTest extends StorageManager
       assertEquals(1, cfs.size());
 
       assertEquals("some-name", cfs.get(0).getName());
-
-      assertEquals(5, cfs.get(0).getConfig().getBindings().length);
-
-      for (int i = 0; i < 5; i++)
+      
+      PersistedConnectionFactory cf1 = cfs.get(0);
+      
+      assertEquals(5, cf1.getConfig().getConnectorConfigs().size());
+      
+      int i = 0 ;
+      for (Pair<TransportConfiguration, TransportConfiguration> itemCf : cf1.getConfig().getConnectorConfigs())
       {
-         assertEquals("str" + i, cfs.get(0).getConfig().getBindings()[i]);
+         
+         assertEquals(itemCf.a.toString(), "c1-" + i);
+         assertEquals(itemCf.b.toString(), "c2-" + i);
+         i++;
       }
    }
 
