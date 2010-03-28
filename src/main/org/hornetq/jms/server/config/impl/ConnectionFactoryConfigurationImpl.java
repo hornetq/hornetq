@@ -552,8 +552,6 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
    {
       name = buffer.readSimpleString().toString();
 
-      int nbindings = buffer.readInt();
-
       discoveryGroupName = BufferHelper.readNullableSimpleStringAsString(buffer); 
 
       discoveryAddress = BufferHelper.readNullableSimpleStringAsString(buffer);
