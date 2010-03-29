@@ -61,20 +61,18 @@ public class CreateCFTest extends JMSTestBase
 
       factCFG.setConnectorNames(listStr);
 
-      jmsServer.createConnectionFactory(factCFG, "/someCF");
+      jmsServer.createConnectionFactory(factCFG, "/someCF", "/someCF2" );
 
-      openCon();
+      openCon("/someCF");
+      openCon("/someCF2");
 
       jmsServer.stop();
 
       jmsServer.start();
 
-      openCon();
+      openCon("/someCF");
+      openCon("/someCF2");
 
-      jmsServer.createConnectionFactory(factCFG, "/someCF");
-
-
-      openCon();
 
 
       jmsServer.stop();
@@ -85,9 +83,9 @@ public class CreateCFTest extends JMSTestBase
     * @throws NamingException
     * @throws JMSException
     */
-   private void openCon() throws NamingException, JMSException
+   private void openCon(String name) throws NamingException, JMSException
    {
-      ConnectionFactory cf = (ConnectionFactory)context.lookup("/someCF");
+      ConnectionFactory cf = (ConnectionFactory)context.lookup(name);
 
       Connection conn = cf.createConnection();
 

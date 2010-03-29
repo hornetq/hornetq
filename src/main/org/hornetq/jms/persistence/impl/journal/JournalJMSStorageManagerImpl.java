@@ -200,6 +200,8 @@ public class JournalJMSStorageManagerImpl implements JMSStorageManager
          currentJNDI = new PersistedJNDI(type, name);
       }
       
+      mapJNDI.put(key, currentJNDI);
+      
       currentJNDI.addJNDI(address);
 
       long newId = idGenerator.generateID();
