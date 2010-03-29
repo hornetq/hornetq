@@ -141,11 +141,11 @@ public interface JMSServerManager extends HornetQComponent
     */
    boolean destroyQueue(String name) throws Exception;
    
-   List<String> getJNDIOnQueue(String queue);
+   String[] getJNDIOnQueue(String queue);
    
-   List<String> getJNDIOnTopic(String topic);
+   String[] getJNDIOnTopic(String topic);
    
-   List<String> getJNDIOnConnectionFactory(String factoryName);
+   String[] getJNDIOnConnectionFactory(String factoryName);
 
    /**
     * destroys a topic and removes it from JNDI
@@ -172,23 +172,23 @@ public interface JMSServerManager extends HornetQComponent
    void createConnectionFactory(String name, TransportConfiguration liveTC, String ... jndiBindings) throws Exception;
 
    void createConnectionFactory(String name,
+                                String clientID,
                                 String discoveryAddress,
                                 int discoveryPort,
-                                String clientID,
                                 String ... jndiBindings) throws Exception;
 
    void createConnectionFactory(String name,
+                                String clientID,
                                 List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs,
-                                String clientID,
                                 String ... jndiBindings) throws Exception;
 
    void createConnectionFactory(String name,
+                                String clientID,
                                 TransportConfiguration liveTC,
                                 TransportConfiguration backupTC,
-                                String clientID,
                                 String ... jndiBindings) throws Exception;
 
-   void createConnectionFactory(String name, TransportConfiguration liveTC, String clientID, String ... jndiBindings) throws Exception;
+   void createConnectionFactory(String name, String clientID, TransportConfiguration liveTC,  String ... jndiBindings) throws Exception;
 
    void createConnectionFactory(String name,
                                 List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs,

@@ -278,7 +278,7 @@ public class JMSQueueControlUsingJMSTest extends JMSQueueControlTest
             proxy.invokeOperation("addJNDI", jndi);
          }
 
-         public List<String> getJNDIBindings()
+         public String[] getJNDIBindings()
          {
             // TODO: Add a test for this
             return null;

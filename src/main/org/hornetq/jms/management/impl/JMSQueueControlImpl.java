@@ -174,7 +174,7 @@ public class JMSQueueControlImpl extends StandardMBean implements JMSQueueContro
       jmsServerManager.addQueueToJndi(managedQueue.getName(), jndi);
    }
    
-   public List<String> getJNDIBindings()
+   public String[] getJNDIBindings()
    {
       return jmsServerManager.getJNDIOnQueue(managedQueue.getName());
    }

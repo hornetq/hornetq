@@ -81,7 +81,7 @@ public interface JMSQueueControl extends DestinationControl
     * Returns the JNDI bindings associated  to this connection factory.
     */
    @Operation(desc = "Returns the list of JNDI bindings associated")
-   List<String> getJNDIBindings();
+   String[] getJNDIBindings();
    
    /**
     * Add the JNDI binding to this destination

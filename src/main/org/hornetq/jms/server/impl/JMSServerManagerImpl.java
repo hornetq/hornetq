@@ -14,7 +14,6 @@
 package org.hornetq.jms.server.impl;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -395,17 +394,17 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       return added;
    }
 
-   public List<String> getJNDIOnQueue(String queue)
+   public String[] getJNDIOnQueue(String queue)
    {
       return getJNDIList(queueJNDI, queue);
    }
 
-   public List<String> getJNDIOnTopic(String topic)
+   public String[] getJNDIOnTopic(String topic)
    {
       return getJNDIList(topicJNDI, topic);
    }
 
-   public List<String> getJNDIOnConnectionFactory(String factoryName)
+   public String[] getJNDIOnConnectionFactory(String factoryName)
    {
       return getJNDIList(connectionFactoryJNDI, factoryName);
    }
@@ -613,8 +612,8 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
    }
 
    public synchronized void createConnectionFactory(final String name,
-                                                    final List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs,
                                                     final String clientID,
+                                                    final List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs,
                                                     String... jndiBindings) throws Exception
    {
       checkInitialised();
@@ -785,9 +784,9 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
 
 
    public synchronized void createConnectionFactory(final String name,
+                                                    final String clientID,
                                                     final String discoveryAddress,
                                                     final int discoveryPort,
-                                                    final String clientID,
                                                     final String... jndiBindings) throws Exception
    {
       checkInitialised();
@@ -954,16 +953,18 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
    }
 
 
-   private List<String> getJNDIList(final Map<String, List<String>> map, final String name)
+   private String[] getJNDIList(final Map<String, List<String>> map, final String name)
    {
       List<String> result = map.get(name);
       if (result == null)
       {
-         return Collections.emptyList();
+         return new String[0];
       }
       else
       {
-         return Collections.unmodifiableList(result);
+         String[] strings = new String[result.size()];
+         result.toArray(strings);
+         return strings;
       }
    }
 
@@ -1120,8 +1121,8 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
    }
 
    public synchronized void createConnectionFactory(final String name,
-                                                    final TransportConfiguration liveTC,
                                                     final String clientID,
+                                                    final TransportConfiguration liveTC,
                                                     final String... jndiBindings) throws Exception
    {
       checkInitialised();
@@ -1149,9 +1150,9 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
    }
 
    public synchronized void createConnectionFactory(final String name,
+                                                    final String clientID,
                                                     final TransportConfiguration liveTC,
                                                     final TransportConfiguration backupTC,
-                                                    final String clientID,
                                                     final String... jndiBindings) throws Exception
    {
       checkInitialised();

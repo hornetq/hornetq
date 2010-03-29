@@ -63,7 +63,7 @@ public class JMSConnectionFactoryControlImpl extends StandardMBean implements Co
 
    // ManagedConnectionFactoryMBean implementation ------------------
 
-   public List<String> getJNDIBindings()
+   public String[] getJNDIBindings()
    {
       return jmsManager.getJNDIOnConnectionFactory(name);
    }

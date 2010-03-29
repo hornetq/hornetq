@@ -94,8 +94,7 @@ public class JMSTopicControlImpl extends StandardMBean implements TopicControl
    
    public String[] getJNDIBindings()
    {
-       List<String> names = jmsServerManager.getJNDIOnTopic(managedTopic.getName());
-       return (String[])names.toArray(new String[names.size()]);
+       return jmsServerManager.getJNDIOnTopic(managedTopic.getName());
    }
 
 
