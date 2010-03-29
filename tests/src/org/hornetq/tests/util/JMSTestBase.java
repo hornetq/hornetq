@@ -115,7 +115,6 @@ public class JMSTestBase extends ServiceTestBase
       context = new InVMContext();
       jmsServer.setContext(context);
       jmsServer.start();
-      jmsServer.activated();
 
       registerConnectionFactory();
    }
