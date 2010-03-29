@@ -13,6 +13,8 @@
 
 package org.hornetq.tests.integration.jms.server.management;
 
+import static org.hornetq.tests.util.RandomUtil.randomString;
+
 import javax.jms.Connection;
 import javax.jms.QueueConnection;
 import javax.jms.QueueSession;
@@ -33,6 +35,7 @@ import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.client.HornetQDestination;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.hornetq.tests.integration.management.ManagementTestBase;
+import org.hornetq.tests.unit.util.InVMContext;
 import org.hornetq.tests.util.RandomUtil;
 
 public class TopicControlUsingJMSTest extends ManagementTestBase
@@ -58,6 +61,8 @@ public class TopicControlUsingJMSTest extends ManagementTestBase
 
    private QueueSession session;
 
+   private String topicBinding = "/topic/" + randomString();
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -69,7 +74,9 @@ public class TopicControlUsingJMSTest extends ManagementTestBase
       Assert.assertEquals(topic.getTopicName(), proxy.retrieveAttributeValue("name"));
       Assert.assertEquals(topic.getAddress(), proxy.retrieveAttributeValue("address"));
       Assert.assertEquals(topic.isTemporary(), proxy.retrieveAttributeValue("temporary"));
-      Assert.assertEquals(topic.getName(), proxy.retrieveAttributeValue("JNDIBinding"));
+      Object[] bindings = (Object[])proxy.retrieveAttributeValue("JNDIBindings");
+      assertEquals(1, bindings.length);
+      Assert.assertEquals(topicBinding, bindings[0]);
    }
 
    public void testGetXXXSubscriptionsCount() throws Exception
@@ -343,14 +350,14 @@ public class TopicControlUsingJMSTest extends ManagementTestBase
 
       serverManager = new JMSServerManagerImpl(server);
       serverManager.start();
-      serverManager.setContext(new NullInitialContext());
+      serverManager.setContext(new InVMContext());
       serverManager.activated();
 
       clientID = RandomUtil.randomString();
       subscriptionName = RandomUtil.randomString();
 
       String topicName = RandomUtil.randomString();
-      serverManager.createTopic(topicName, topicName);
+      serverManager.createTopic(topicName, topicBinding );
       topic = (HornetQDestination)HornetQJMSClient.createTopic(topicName);
 
       HornetQConnectionFactory cf = (HornetQConnectionFactory)HornetQJMSClient.createConnectionFactory(new TransportConfiguration(InVMConnectorFactory.class.getName()));

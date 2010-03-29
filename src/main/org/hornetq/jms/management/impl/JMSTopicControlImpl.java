@@ -89,12 +89,13 @@ public class JMSTopicControlImpl extends StandardMBean implements TopicControl
     */
    public void addJNDI(String jndi) throws Exception
    {
-      jmsServerManager.addQueueToJndi(managedTopic.getName(), jndi);
+      jmsServerManager.addTopicToJndi(managedTopic.getName(), jndi);
    }
    
-   public List<String> getJNDIBindings()
+   public String[] getJNDIBindings()
    {
-      return jmsServerManager.getJNDIOnQueue(managedTopic.getName());
+       List<String> names = jmsServerManager.getJNDIOnTopic(managedTopic.getName());
+       return (String[])names.toArray(new String[names.size()]);
    }
 
 

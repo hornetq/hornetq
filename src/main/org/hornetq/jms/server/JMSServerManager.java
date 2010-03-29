@@ -58,6 +58,8 @@ public interface JMSServerManager extends HornetQComponent
     */
    boolean createQueue(String queueName, String selectorString, boolean durable, String ...jndi) throws Exception;
    
+   boolean addTopicToJndi(final String topicName, final String jndiBinding) throws Exception;
+
    boolean addQueueToJndi(final String queueName, final String jndiBinding) throws Exception;
 
    boolean addConnectionFactoryToJNDI(final String name, final String jndiBinding) throws Exception;

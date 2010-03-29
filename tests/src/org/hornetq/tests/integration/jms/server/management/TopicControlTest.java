@@ -34,6 +34,7 @@ import org.hornetq.jms.client.HornetQDestination;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.hornetq.tests.integration.management.ManagementControlHelper;
 import org.hornetq.tests.integration.management.ManagementTestBase;
+import org.hornetq.tests.unit.util.InVMContext;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.utils.json.JSONArray;
 
@@ -63,6 +64,8 @@ public class TopicControlTest extends ManagementTestBase
 
    protected HornetQDestination topic;
 
+   private String topicBinding = "/topic/" + RandomUtil.randomString();
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -76,6 +79,9 @@ public class TopicControlTest extends ManagementTestBase
       Assert.assertEquals(topic.getTopicName(), topicControl.getName());
       Assert.assertEquals(topic.getAddress(), topicControl.getAddress());
       Assert.assertEquals(topic.isTemporary(), topicControl.isTemporary());
+      Object[] bindings = topicControl.getJNDIBindings();
+      assertEquals(1, bindings.length);
+      Assert.assertEquals(topicBinding , bindings[0]);
    }
 
    public void testGetXXXSubscriptionsCount() throws Exception
@@ -419,14 +425,14 @@ public class TopicControlTest extends ManagementTestBase
 
       serverManager = new JMSServerManagerImpl(server);
       serverManager.start();
-      serverManager.setContext(new NullInitialContext());
+      serverManager.setContext(new InVMContext());
       serverManager.activated();
 
       clientID = RandomUtil.randomString();
       subscriptionName = RandomUtil.randomString();
 
       String topicName = RandomUtil.randomString();
-      serverManager.createTopic(topicName, topicName);
+      serverManager.createTopic(topicName, topicBinding);
       topic = (HornetQDestination)HornetQJMSClient.createTopic(topicName);
    }
 
