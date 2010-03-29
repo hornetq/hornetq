@@ -1543,7 +1543,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
     */
    private List<Pair<TransportConfiguration, TransportConfiguration>> lookupConnectors(final ConnectionFactoryConfiguration cfConfig) throws HornetQException
    {
-      if (cfConfig.getConnectorConfigs() != null)
+      if (cfConfig.getConnectorConfigs() != null && cfConfig.getConnectorConfigs().size() > 0)
       {
          return cfConfig.getConnectorConfigs();
       }
