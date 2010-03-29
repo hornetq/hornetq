@@ -16,8 +16,8 @@
       <entry name="/queue/exampleQueue"/>
    </queue>
 
-   <!--the notifications queue used by the example-->
-   <queue name="notificationsQueue">
-      <entry name="/queue/notificationsQueue"/>
-   </queue>
+   <!--the notifications topic used by the example-->
+   <topic name="notificationsTopic">
+      <entry name="/topic/notificationsTopic"/>
+   </topic>
 </configuration>

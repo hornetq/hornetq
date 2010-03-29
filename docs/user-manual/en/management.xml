@@ -772,14 +772,18 @@
          <para>HornetQ's notifications can also be received using JMS messages.</para>
          <para>It is similar to receiving notifications using Core API but an important difference
             is that JMS requires a JMS Destination to receive the messages (preferably a
-            Topic):</para>
+            Topic).</para>
+         <para>To use a JMS Destination to receive management notifications, you must change the server's
+            management notification address to start with <literal>jms.queue</literal> if it is a JMS Queue
+            or <literal>jms.topic</literal> if it is a JMS Topic:</para>
          <programlisting>
-   Topic notificationsTopic = HornetQJMSClient.createHornetQTopic("hornetq.notifications", "hornetq.notifications");
+            &lt;!-- notifications will be consumed from "notificationsTopic" JMS Topic --> 
+            &lt;management-notification-address&gt;jms.topic.notificationsTopic&lt;/management-notification-address&gt;
          </programlisting>
          <para>Once the notification topic is created, you can receive messages from it or set a
                <literal>MessageListener</literal>:</para>
          <programlisting>
-   Topic notificationsTopic = HornetQJMSClient.createHornetQTopic("hornetq.notifications", "hornetq.notifications");
+   Topic notificationsTopic = HornetQJMSClient.createTopic("notificationsTopic");
 
    Session session = ...
    MessageConsumer notificationConsumer = session.createConsumer(notificationsTopic);

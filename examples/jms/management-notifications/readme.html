@@ -19,31 +19,22 @@
 
      <p>HornetQ can configured to send JMS messages when management notifications are emitted on the server.</p>
      <p>By default, the management name is called <code>hornetq.notifications</code> but this can be configured in <a href="server0/hornetq-configuration.xml">hornetq-configuration.xml</a>.
-        For this example, we will set it to <code>example.notifications</code>.</p>
+        For this example, we will set it to <code>jms.topic.notificationsTopic</code> to be able to receive notifications from a JMS Topic.</p>
       <pre class="prettyprint">
-         <code>&lt;management-notification-address&gt;example.notifications&lt;/management-notification-address&gt;</code>
+         <code>&lt;management-notification-address&gt;jms.topic.notificationsTopic&lt;/management-notification-address&gt;</code>
      </pre>
      
-     <p>We will also create a queue corresponding to the example's address to hold notifications</p>
+     <p>Since we want to lookup the notifications topic using JNDI, we also declare it in  <a href="server0/hornetq-jms.xml">hornetq-jms.xml</a>
      <pre class="prettyprint">
-         <code>&lt;queues&gt;
-            &lt;queue name="jms.queue.notificationsQueue"&gt;
-               &lt;address&gt;example.notifications&lt;/address&gt;
-            &lt;/queue&gt;
-         &lt;/queues&gt;</code>
-     </pre>
-     
-     <p>Since we want to lookup the notifications queue using JNDI, we also declare it in  <a href="server0/hornetq-jms.xml">hornetq-jms.xml</a>
-     <pre class="prettyprint">
-         <code>&lt;queue name="notificationsQueue"&gt;
-            &lt;entry name="/queue/notificationsQueue"/&gt;
-         &lt;/queue&gt;</code>
+         <code>&lt;topic name="notificationsTopic"&gt;
+            &lt;entry name="/topic/notificationsTopic"/&gt;
+         &lt;/topic&gt;</code>
      </pre>
      <p>The notification queue requires permission to create/delete temporary queues and consume messages.
          This is also configured in <a href="server0/hornetq-configuration.xml">hornetq-configuration.xml</a></p>
      <pre class="prettyprint">
-         <code><!--security for notification queue-->
-         &lt;security-setting match="example.notifications"&gt;
+         <code><!--security for notification topic-->
+         &lt;security-setting match="jms.topic.notificationsTopic"&gt;
             &lt;permission type="consume" roles="guest"/&gt;
             &lt;permission type="createTempQueue" roles="guest"/&gt;
             &lt;permission type="deleteTempQueue" roles="guest"/&gt;
@@ -75,9 +66,9 @@
             MessageProducer producer = session.createProducer(queue);</code>
         </pre>
         
-        <li>We look up the JMS queue used to receive the notifications from JNDI</li>
+        <li>We look up the JMS Topic used to receive the notifications from JNDI</li>
         <pre class="prettyprint">
-            <code>Queue notificationsQueue = (Queue) initialContext.lookup("/queue/notificationsQueue");</code>
+            <code>Topic notificationsTopic = (Topic) initialContext.lookup("/topic/notificationsTopic");</code>
         </pre>
 
         <li>We create a MessageConsumer for the notification queue and set its MessageListener. When a notification is received, we will simply display all the message properties</li>

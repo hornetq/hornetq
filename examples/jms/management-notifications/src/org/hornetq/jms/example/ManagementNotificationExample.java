@@ -23,6 +23,7 @@ import javax.jms.MessageListener;
 import javax.jms.MessageProducer;
 import javax.jms.Queue;
 import javax.jms.Session;
+import javax.jms.Topic;
 import javax.naming.InitialContext;
 
 import org.hornetq.common.example.HornetQExample;
@@ -60,12 +61,12 @@ public class ManagementNotificationExample extends HornetQExample
          Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageProducer producer = session.createProducer(queue);
 
-         // Step 5. Perform a lookup on the notifications queue
-         Queue notificationsQueue = (Queue)initialContext.lookup("/queue/notificationsQueue");
+         // Step 5. Perform a lookup on the notifications topic
+         Topic notificationsTopic = (Topic)initialContext.lookup("/topic/notificationsTopic");
 
          // Step 6. Create a JMS message consumer for the notification queue and set its message listener
          // It will display all the properties of the JMS Message
-         MessageConsumer notificationConsumer = session.createConsumer(notificationsQueue);
+         MessageConsumer notificationConsumer = session.createConsumer(notificationsTopic);
          notificationConsumer.setMessageListener(new MessageListener()
          {
             public void onMessage(final Message notif)
