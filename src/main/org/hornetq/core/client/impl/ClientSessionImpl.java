@@ -154,7 +154,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
    private final int minLargeMessageSize;
 
-   private final int initialMessagePacketSize;
+   private volatile int initialMessagePacketSize;
 
    private final boolean cacheLargeMessageClient;
 
@@ -989,7 +989,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
                   HornetQBuffer buffer = packet.encode(channel.getConnection());
 
-                  conn.write(buffer, false);
+                  conn.write(buffer, false, false);
                }
 
                resetCreditManager = true;
@@ -1040,6 +1040,16 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
          }
       }
    }
+   
+   
+   
+   public void setPacketSize(final int packetSize)
+   {
+      if (packetSize > this.initialMessagePacketSize)
+      {
+         this.initialMessagePacketSize = (int)(packetSize * 1.2);
+      }
+   }
 
    private void sendPacketWithoutLock(final Packet packet)
    {
@@ -1049,7 +1059,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
       HornetQBuffer buffer = packet.encode(channel.getConnection());
 
-      conn.write(buffer, false);
+      conn.write(buffer, false, false);
    }
 
    public void workDone()

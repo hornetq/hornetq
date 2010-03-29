@@ -153,7 +153,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
    private static ScheduledExecutorService globalScheduledThreadPool;
 
    private String groupID;
-
+   
    private static synchronized ExecutorService getGlobalThreadPool()
    {
       if (ClientSessionFactoryImpl.globalThreadPool == null)
@@ -244,7 +244,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
                                                             retryInterval,
                                                             retryIntervalMultiplier,
                                                             maxRetryInterval,
-                                                            reconnectAttempts,
+                                                            reconnectAttempts,                                                        
                                                             threadPool,
                                                             scheduledThreadPool,
                                                             interceptors);
@@ -778,7 +778,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       checkWrite();
       initialMessagePacketSize = size;
    }
-
+   
    public ClientSession createSession(final String username,
                                       final String password,
                                       final boolean xa,
@@ -984,7 +984,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
                                                                       retryInterval,
                                                                       retryIntervalMultiplier,
                                                                       maxRetryInterval,
-                                                                      reconnectAttempts,
+                                                                      reconnectAttempts,                                                                    
                                                                       threadPool,
                                                                       scheduledThreadPool,
                                                                       interceptors);

@@ -47,7 +47,7 @@ import org.w3c.dom.NodeList;
  *
  *
  */
-public class JMSServerConfigParserImpl implements JMSServerConfigParser 
+public class JMSServerConfigParserImpl implements JMSServerConfigParser
 {
    private static final Logger log = Logger.getLogger(JMSServerConfigParserImpl.class);
 
@@ -307,7 +307,7 @@ public class JMSServerConfigParserImpl implements JMSServerConfigParser
                                                                       Validators.GT_ZERO);
       String groupid = XMLConfigurationUtil.getString(e, "group-id", null, Validators.NO_CHECK);
       List<String> jndiBindings = new ArrayList<String>();
-      List<Pair<String, String>> connectorNames = new ArrayList<Pair<String,String>>();
+      List<Pair<String, String>> connectorNames = new ArrayList<Pair<String, String>>();
       String discoveryGroupName = null;
 
       NodeList children = node.getChildNodes();
@@ -347,11 +347,9 @@ public class JMSServerConfigParserImpl implements JMSServerConfigParser
                   {
                      backupConnectorName = backupNode.getNodeValue();
                   }
-                  
-                  
+
                   connectorNames.add(new Pair<String, String>(connectorName, backupConnectorName));
-                  
-                  
+
                }
             }
          }
@@ -368,8 +366,7 @@ public class JMSServerConfigParserImpl implements JMSServerConfigParser
 
       if (discoveryGroupName != null)
       {
-         cfConfig = new ConnectionFactoryConfigurationImpl(name,
-                                                           strbindings);
+         cfConfig = new ConnectionFactoryConfigurationImpl(name, strbindings);
          cfConfig.setInitialWaitTimeout(discoveryInitialWaitTimeout);
          cfConfig.setDiscoveryGroupName(discoveryGroupName);
       }
@@ -378,7 +375,7 @@ public class JMSServerConfigParserImpl implements JMSServerConfigParser
          cfConfig = new ConnectionFactoryConfigurationImpl(name, strbindings);
          cfConfig.setConnectorNames(connectorNames);
       }
-      
+
       cfConfig.setInitialWaitTimeout(discoveryInitialWaitTimeout);
       cfConfig.setClientID(clientID);
       cfConfig.setClientFailureCheckPeriod(clientFailureCheckPeriod);
@@ -411,7 +408,6 @@ public class JMSServerConfigParserImpl implements JMSServerConfigParser
       return cfConfig;
    }
 
-
    /**
     * hook for integration layers 
     * @param topicName
@@ -432,9 +428,9 @@ public class JMSServerConfigParserImpl implements JMSServerConfigParser
     * @return
     */
    protected JMSQueueConfiguration newQueue(final String queueName,
-                                         final String selectorString,
-                                         final boolean durable,
-                                         final String[] jndiArray)
+                                            final String selectorString,
+                                            final boolean durable,
+                                            final String[] jndiArray)
    {
       return new JMSQueueConfigurationImpl(queueName, selectorString, durable, jndiArray);
    }

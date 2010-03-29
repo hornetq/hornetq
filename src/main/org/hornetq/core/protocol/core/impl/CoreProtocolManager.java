@@ -57,12 +57,11 @@ public class CoreProtocolManager implements ProtocolManager
    {
       final Configuration config = server.getConfiguration();
 
-      CoreRemotingConnection rc = new RemotingConnectionImpl(connection,
-                                                             interceptors,
-                                                             config.isAsyncConnectionExecutionEnabled() ? server.getExecutorFactory()
-                                                                                                                .getExecutor()
-                                                                                                       : null,
-                                                             connection.getBatchingBufferSize());
+      final CoreRemotingConnection rc = new RemotingConnectionImpl(connection,
+                                                                   interceptors,
+                                                                   config.isAsyncConnectionExecutionEnabled() ? server.getExecutorFactory()
+                                                                                                                      .getExecutor()
+                                                                                                             : null);
 
       Channel channel1 = rc.getChannel(1, -1);
 

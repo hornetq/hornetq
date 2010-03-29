@@ -75,7 +75,7 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
    private static final long serialVersionUID = 2512460695662741413L;
 
    private static final Logger log = Logger.getLogger(FailoverManagerImpl.class);
-
+   
    // debug
 
    private static Map<TransportConfiguration, Set<CoreRemotingConnection>> debugConns;
@@ -199,7 +199,7 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
    private volatile boolean exitLoop;
 
    private final List<Interceptor> interceptors;
-
+   
    // Static
    // ---------------------------------------------------------------------------------------
 
@@ -383,7 +383,7 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
                   {
                      theConnection.destroy();
                   }
-                  
+
                   if (e.getCode() == HornetQException.UNBLOCKED)
                   {
                      // This means the thread was blocked on create session and failover unblocked it
@@ -440,6 +440,7 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
             }
             catch (Throwable t)
             {
+               t.printStackTrace();
                if (lock != null)
                {
                   lock.unlock();
@@ -552,7 +553,7 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
    private void failoverOrReconnect(final Object connectionID, final HornetQException me)
    {
       Set<ClientSessionInternal> sessionsToClose = null;
-      
+
       synchronized (failoverLock)
       {
          if (connection == null || connection.getID() != connectionID)
@@ -561,7 +562,7 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
             // over then a async connection exception or disconnect
             // came in for one of the already exitLoop connections, so we return true - we don't want to call the
             // listeners again
-            
+
             return;
          }
 
@@ -609,7 +610,7 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
          {
             attemptReconnect = reconnectAttempts != 0;
          }
-         
+
          if (attemptFailover || attemptReconnect)
          {
             lockChannel1();
@@ -664,7 +665,7 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
             {
             }
 
-            cancelPinger();
+            cancelScheduledTasks();
 
             connector = null;
 
@@ -853,7 +854,7 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
       }
    }
 
-   private void cancelPinger()
+   private void cancelScheduledTasks()
    {
       if (pingerFuture != null)
       {
@@ -871,7 +872,7 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
    {
       if (connection != null && sessions.size() == 0)
       {
-         cancelPinger();
+         cancelScheduledTasks();
 
          try
          {
@@ -905,7 +906,7 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
          Connection tc = null;
 
          try
-         {            
+         {
             DelegatingBufferHandler handler = new DelegatingBufferHandler();
 
             connector = connectorFactory.createConnector(transportParams,
@@ -918,7 +919,7 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
             if (connector != null)
             {
                connector.start();
-            
+
                tc = connector.createConnection();
 
                if (tc == null)
@@ -986,7 +987,7 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
             {
                pingRunnable = new PingRunnable();
 
-               pingerFuture = scheduledThreadPool.scheduleWithFixedDelay(new ActualScheduled(pingRunnable),
+               pingerFuture = scheduledThreadPool.scheduleWithFixedDelay(new ActualScheduledPinger(pingRunnable),
                                                                          0,
                                                                          clientFailureCheckPeriod,
                                                                          TimeUnit.MILLISECONDS);
@@ -1113,11 +1114,11 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
       }
    }
 
-   private static final class ActualScheduled implements Runnable
+   private static final class ActualScheduledPinger implements Runnable
    {
       private final WeakReference<PingRunnable> pingRunnable;
 
-      ActualScheduled(final PingRunnable runnable)
+      ActualScheduledPinger(final PingRunnable runnable)
       {
          pingRunnable = new WeakReference<PingRunnable>(runnable);
       }
@@ -1132,6 +1133,47 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
          }
       }
 
+   }
+
+   private static final class ActualScheduledBatchFlusher implements Runnable
+   {
+      private final WeakReference<BatchFlushRunnable> batchFlushRunnable;
+
+      ActualScheduledBatchFlusher(final BatchFlushRunnable runnable)
+      {
+         batchFlushRunnable = new WeakReference<BatchFlushRunnable>(runnable);
+      }
+
+      public void run()
+      {
+         BatchFlushRunnable runnable = batchFlushRunnable.get();
+
+         if (runnable != null)
+         {
+            runnable.run();
+         }
+      }
+
+   }
+
+   private final class BatchFlushRunnable implements Runnable
+   {
+      private boolean cancelled;
+
+      public synchronized void run()
+      {
+         if (cancelled)
+         {
+            return;
+         }         
+         //log.info("calling check flush on client");
+         connection.getTransportConnection().checkFlushBatchBuffer();
+      }
+
+      public synchronized void cancel()
+      {
+         cancelled = true;
+      }
    }
 
    private final class PingRunnable implements Runnable
@@ -1186,7 +1228,7 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
          Channel channel0 = connection.getChannel(0, -1);
 
          channel0.send(ping);
-         
+
          connection.flush();
       }
 

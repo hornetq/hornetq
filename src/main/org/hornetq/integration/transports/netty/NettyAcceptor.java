@@ -24,6 +24,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import javax.net.ssl.SSLContext;
@@ -132,19 +133,25 @@ public class NettyAcceptor implements Acceptor
 
    private final int nioRemotingThreads;
 
-   private final int batchingBufferSize;
-
    private final HttpKeepAliveRunnable httpKeepAliveRunnable;
 
    private final ConcurrentMap<Object, Connection> connections = new ConcurrentHashMap<Object, Connection>();
 
    private final Executor threadPool;
+   
+   private final ScheduledExecutorService scheduledThreadPool;
 
    private NotificationService notificationService;
 
    private VirtualExecutorService bossExecutor;
 
    private boolean paused;
+   
+   private BatchFlusher flusher;
+   
+   private ScheduledFuture<?> batchFlusherFuture;
+   
+   private final long batchDelay;
 
    public NettyAcceptor(final Map<String, Object> configuration,
                         final BufferHandler handler,
@@ -196,10 +203,6 @@ public class NettyAcceptor implements Acceptor
                                                               -1,
                                                               configuration);
 
-      batchingBufferSize = ConfigurationHelper.getIntProperty(TransportConstants.BATCHING_BUFFER_SIZE_PROPNAME,
-                                                              TransportConstants.DEFAULT_BATCHING_BUFFER_SIZE,
-                                                              configuration);
-
       useInvm = ConfigurationHelper.getBooleanProperty(TransportConstants.USE_INVM_PROP_NAME,
                                                        TransportConstants.DEFAULT_USE_INVM,
                                                        configuration);
@@ -248,6 +251,12 @@ public class NettyAcceptor implements Acceptor
                                                                 configuration);
 
       this.threadPool = threadPool;
+      
+      this.scheduledThreadPool = scheduledThreadPool;
+      
+      batchDelay = ConfigurationHelper.getLongProperty(TransportConstants.BATCH_DELAY,
+                                                       TransportConstants.DEFAULT_BATCH_DELAY,
+                                                       configuration);
    }
 
    public synchronized void start() throws Exception
@@ -395,6 +404,13 @@ public class NettyAcceptor implements Acceptor
          Notification notification = new Notification(null, NotificationType.ACCEPTOR_STARTED, props);
          notificationService.sendNotification(notification);
       }
+      
+      if (batchDelay > 0)
+      {
+         flusher = new BatchFlusher();
+         
+         batchFlusherFuture = scheduledThreadPool.scheduleWithFixedDelay(flusher, batchDelay, batchDelay, TimeUnit.MILLISECONDS);
+      }
 
       NettyAcceptor.log.info("Started Netty Acceptor version " + Version.ID);
    }
@@ -423,6 +439,17 @@ public class NettyAcceptor implements Acceptor
       if (channelFactory == null)
       {
          return;
+      }
+      
+      if (batchFlusherFuture != null)
+      {
+         batchFlusherFuture.cancel(false);
+         
+         flusher.cancel();
+         
+         flusher = null;
+         
+         batchFlusherFuture = null;
       }
 
       serverChannelGroup.close().awaitUninterruptibly();
@@ -549,7 +576,7 @@ public class NettyAcceptor implements Acceptor
       @Override
       public void channelConnected(final ChannelHandlerContext ctx, final ChannelStateEvent e) throws Exception
       {
-         new NettyConnection(e.getChannel(), new Listener(), httpEnabled ? -1 : batchingBufferSize);
+         new NettyConnection(e.getChannel(), new Listener(), !httpEnabled && batchDelay > 0);
 
          SslHandler sslHandler = ctx.getPipeline().get(SslHandler.class);
          if (sslHandler != null)
@@ -608,6 +635,27 @@ public class NettyAcceptor implements Acceptor
             }
          }.start();
 
+      }
+   }
+   
+   private class BatchFlusher implements Runnable
+   {
+      private boolean cancelled;
+
+      public synchronized void run()
+      {
+         if (!cancelled)
+         {
+            for (Connection connection : connections.values())
+            {
+               connection.checkFlushBatchBuffer();
+            }
+         }
+      }
+
+      public synchronized void cancel()
+      {
+         cancelled = true;
       }
    }
 }

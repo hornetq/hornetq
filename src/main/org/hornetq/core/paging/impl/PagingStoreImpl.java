@@ -689,6 +689,7 @@ public class PagingStoreImpl implements TestSupportPageStore
             return;
          }
       }
+      
       runnable.run();
    }
 

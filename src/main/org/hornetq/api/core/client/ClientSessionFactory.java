@@ -724,7 +724,7 @@ public interface ClientSessionFactory
     * @param size initial size of messages created through this factory.
     */
    void setInitialMessagePacketSize(int size);
-
+   
    /**
     * Adds an interceptor which will be executed <em>after packets are received from the server</em>.
     * 

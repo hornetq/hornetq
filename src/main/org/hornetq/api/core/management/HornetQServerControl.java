@@ -13,17 +13,14 @@
 
 package org.hornetq.api.core.management;
 
+import java.util.Set;
+
 import javax.management.MBeanOperationInfo;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Interceptor;
 import org.hornetq.core.security.Role;
-import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.hornetq.core.settings.impl.AddressSettings;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * A HornetQServerControl is used to manage HornetQ servers.

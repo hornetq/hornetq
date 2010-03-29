@@ -291,7 +291,7 @@
 		<xsd:sequence>
 			<xsd:element maxOccurs="1" minOccurs="1" name="queue-name" type="xsd:IDREF">
 			</xsd:element>
-			<xsd:element maxOccurs="1" minOccurs="1" name="forwarding-address" type="xsd:string">
+			<xsd:element maxOccurs="1" minOccurs="0" name="forwarding-address" type="xsd:string">
 			</xsd:element>
             <xsd:element maxOccurs="1" minOccurs="0" name="filter">
                 <xsd:complexType>

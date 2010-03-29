@@ -31,7 +31,6 @@ import org.hornetq.api.core.Interceptor;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.protocol.aardvark.impl.AardvarkProtocolManagerFactory;
 import org.hornetq.core.protocol.core.impl.CoreProtocolManagerFactory;
 import org.hornetq.core.protocol.stomp.StompProtocolManagerFactory;
 import org.hornetq.core.remoting.server.RemotingService;
@@ -89,17 +88,16 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
    private final ScheduledExecutorService scheduledThreadPool;
 
    private FailureCheckAndFlushThread failureCheckAndFlushThread;
-   
-   private Map<ProtocolType, ProtocolManager> protocolMap = 
-      new ConcurrentHashMap<ProtocolType, ProtocolManager>();
-   
+
+   private Map<ProtocolType, ProtocolManager> protocolMap = new ConcurrentHashMap<ProtocolType, ProtocolManager>();
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
    public RemotingServiceImpl(final Configuration config,
                               final HornetQServer server,
-                              final ManagementService managementService,                            
+                              final ManagementService managementService,
                               final ScheduledExecutorService scheduledThreadPool)
    {
       transportConfigs = config.getAcceptorConfigurations();
@@ -121,13 +119,15 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       }
 
       this.config = config;
+
       this.managementService = managementService;
-      
+
       this.scheduledThreadPool = scheduledThreadPool;
-      
-      this.protocolMap.put(ProtocolType.CORE, new CoreProtocolManagerFactory().createProtocolManager(server, interceptors));
-      this.protocolMap.put(ProtocolType.STOMP, new StompProtocolManagerFactory().createProtocolManager(server, interceptors));
-      this.protocolMap.put(ProtocolType.AARDVARK, new AardvarkProtocolManagerFactory().createProtocolManager(server, interceptors));
+
+      this.protocolMap.put(ProtocolType.CORE, new CoreProtocolManagerFactory().createProtocolManager(server,
+                                                                                                     interceptors));
+      this.protocolMap.put(ProtocolType.STOMP, new StompProtocolManagerFactory().createProtocolManager(server,
+                                                                                                       interceptors));
    }
 
    // RemotingService implementation -------------------------------
@@ -138,17 +138,18 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       {
          return;
       }
-      
-      //The remoting service maintains it's own thread pool for handling remoting traffic
-      //If OIO each connection will have it's own thread
-      //If NIO these are capped at nio-remoting-threads which defaults to num cores * 3
-      //This needs to be a different thread pool to the main thread pool especially for OIO where we may need
-      //to support many hundreds of connections, but the main thread pool must be kept small for better performance
-      
-      ThreadFactory tFactory = new HornetQThreadFactory("HornetQ-remoting-threads" + System.identityHashCode(this), false);
+
+      // The remoting service maintains it's own thread pool for handling remoting traffic
+      // If OIO each connection will have it's own thread
+      // If NIO these are capped at nio-remoting-threads which defaults to num cores * 3
+      // This needs to be a different thread pool to the main thread pool especially for OIO where we may need
+      // to support many hundreds of connections, but the main thread pool must be kept small for better performance
+
+      ThreadFactory tFactory = new HornetQThreadFactory("HornetQ-remoting-threads" + System.identityHashCode(this),
+                                                        false);
 
       threadPool = Executors.newCachedThreadPool(tFactory);
-      
+
       ClassLoader loader = Thread.currentThread().getContextClassLoader();
 
       for (TransportConfiguration info : transportConfigs)
@@ -174,13 +175,15 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
                   continue;
                }
             }
-            
-            String protocolString = ConfigurationHelper.getStringProperty(TransportConstants.PROTOCOL_PROP_NAME, TransportConstants.DEFAULT_PROTOCOL, info.getParams());
+
+            String protocolString = ConfigurationHelper.getStringProperty(TransportConstants.PROTOCOL_PROP_NAME,
+                                                                          TransportConstants.DEFAULT_PROTOCOL,
+                                                                          info.getParams());
 
             ProtocolType protocol = ProtocolType.valueOf(protocolString.toUpperCase());
-            
+
             ProtocolManager manager = protocolMap.get(protocol);
-            
+
             Acceptor acceptor = factory.createAcceptor(info.getParams(),
                                                        new DelegatingBufferHandler(manager),
                                                        manager,
@@ -193,7 +196,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
             if (managementService != null)
             {
                acceptor.setNotificationService(managementService);
-               
+
                managementService.registerAcceptor(acceptor, info);
             }
          }
@@ -208,7 +211,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
          a.start();
       }
 
-      //This thread checks connections that need to be closed, and also flushes confirmations
+      // This thread checks connections that need to be closed, and also flushes confirmations
       failureCheckAndFlushThread = new FailureCheckAndFlushThread(RemotingServiceImpl.CONNECTION_TTL_CHECK_INTERVAL);
 
       failureCheckAndFlushThread.start();
@@ -275,11 +278,11 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       {
          managementService.unregisterAcceptors();
       }
-      
+
       threadPool.shutdown();
-      
+
       boolean ok = threadPool.awaitTermination(10000, TimeUnit.MILLISECONDS);
-      
+
       if (!ok)
       {
          log.warn("Timed out waiting for remoting thread pool to terminate");
@@ -331,23 +334,23 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
    {
       return protocolMap.get(protocol);
    }
-   
+
    public void connectionCreated(final Connection connection, final ProtocolType protocol)
    {
       if (server == null)
       {
          throw new IllegalStateException("Unable to create connection, server hasn't finished starting up");
       }
-      
+
       ProtocolManager pmgr = this.getProtocolManager(protocol);
-      
+
       if (pmgr == null)
       {
          throw new IllegalArgumentException("Unknown protocol " + protocol);
       }
 
       ConnectionEntry entry = pmgr.createConnectionEntry(connection);
-      
+
       connections.put(connection.getID(), entry);
 
       if (config.isBackup())
@@ -410,12 +413,12 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
    private final class DelegatingBufferHandler implements BufferHandler
    {
       private ProtocolManager manager;
-      
+
       DelegatingBufferHandler(final ProtocolManager manager)
       {
          this.manager = manager;
       }
-      
+
       public void bufferReceived(final Object connectionID, final HornetQBuffer buffer)
       {
          ConnectionEntry conn = connections.get(connectionID);
@@ -470,9 +473,9 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
             for (ConnectionEntry entry : connections.values())
             {
                RemotingConnection conn = entry.connection;
-               
+
                boolean flush = true;
-               
+
                if (entry.ttl != -1)
                {
                   if (now >= entry.lastCheck + entry.ttl)
@@ -480,7 +483,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
                      if (!conn.checkDataReceived())
                      {
                         idsToRemove.add(conn.getID());
-                        
+
                         flush = false;
                      }
                      else
@@ -489,9 +492,9 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
                      }
                   }
                }
-               
+
                if (flush)
-               {                                   
+               {
                   conn.flush();
                }
             }

@@ -48,7 +48,7 @@
       <large-messages-directory>largemessagesdir</large-messages-directory>
       <memory-warning-threshold>95</memory-warning-threshold>
       <memory-measure-interval>54321</memory-measure-interval>
-      
+
       <remoting-interceptors>
          <class-name>org.hornetq.tests.unit.core.config.impl.TestInterceptor1</class-name>
          <class-name>org.hornetq.tests.unit.core.config.impl.TestInterceptor2</class-name>

@@ -74,7 +74,7 @@ public class ChannelImpl implements Channel
    private CommandConfirmationHandler commandConfirmationHandler;
 
    private volatile boolean transferring;
-
+   
    public ChannelImpl(final CoreRemotingConnection connection, final long id, final int confWindowSize)
    {
       this.connection = connection;
@@ -161,7 +161,7 @@ public class ChannelImpl implements Channel
          packet.setChannelID(id);
 
          HornetQBuffer buffer = packet.encode(connection);
-
+         
          lock.lock();
 
          try
@@ -189,7 +189,7 @@ public class ChannelImpl implements Channel
                resendCache.add(packet);
             }
 
-            connection.getTransportConnection().write(buffer, flush);
+            connection.getTransportConnection().write(buffer, flush, batch);
          }
          finally
          {
@@ -198,9 +198,6 @@ public class ChannelImpl implements Channel
       }
    }
 
-   public void checkFlushBatchBuffer()
-   {      
-   }
    
    public Packet sendBlocking(final Packet packet) throws HornetQException
    {
@@ -245,7 +242,7 @@ public class ChannelImpl implements Channel
                resendCache.add(packet);
             }
 
-            connection.getTransportConnection().write(buffer);
+            connection.getTransportConnection().write(buffer, false, false);
 
             long toWait = connection.getBlockingCallTimeout();
 
@@ -385,8 +382,6 @@ public class ChannelImpl implements Channel
    // Needs to be synchronized since can be called by remoting service timer thread too for timeout flush
    public synchronized void flushConfirmations()
    {
-      checkFlushBatchBuffer();
-
       if (resendCache != null && receivedBytes != 0)
       {
          receivedBytes = 0;
@@ -480,7 +475,7 @@ public class ChannelImpl implements Channel
    {
       final HornetQBuffer buffer = packet.encode(connection);
 
-      connection.getTransportConnection().write(buffer);
+      connection.getTransportConnection().write(buffer, false, false);
    }
 
    private void clearUpTo(final int lastReceivedCommandID)

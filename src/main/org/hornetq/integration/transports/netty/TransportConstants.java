@@ -70,8 +70,8 @@ public class TransportConstants
    
    public static final String NIO_REMOTING_THREADS_PROPNAME = "nio-remoting-threads";
    
-   public static final String BATCHING_BUFFER_SIZE_PROPNAME = "batching-buffer-size";
-
+   public static final String BATCH_DELAY = "batch-delay";
+   
    public static final boolean DEFAULT_SSL_ENABLED = false;
 
    public static final boolean DEFAULT_USE_NIO_SERVER = false;
@@ -105,8 +105,6 @@ public class TransportConstants
 
    public static final int DEFAULT_TCP_RECEIVEBUFFER_SIZE = 32768;
    
-   public static final int DEFAULT_BATCHING_BUFFER_SIZE = 8192;
-
    public static final boolean DEFAULT_HTTP_ENABLED = false;
 
    public static final long DEFAULT_HTTP_CLIENT_IDLE_TIME = 500;
@@ -120,6 +118,8 @@ public class TransportConstants
    public static final boolean DEFAULT_HTTP_REQUIRES_SESSION_ID = false;
 
    public static final String DEFAULT_SERVLET_PATH = "/messaging/HornetQServlet";
+   
+   public static final long DEFAULT_BATCH_DELAY = 0;
 
    public static final Set<String> ALLOWABLE_CONNECTOR_KEYS;
 
@@ -145,7 +145,7 @@ public class TransportConstants
       allowableAcceptorKeys.add(TransportConstants.TCP_SENDBUFFER_SIZE_PROPNAME);
       allowableAcceptorKeys.add(TransportConstants.TCP_RECEIVEBUFFER_SIZE_PROPNAME);
       allowableAcceptorKeys.add(TransportConstants.NIO_REMOTING_THREADS_PROPNAME);
-      allowableAcceptorKeys.add(TransportConstants.BATCHING_BUFFER_SIZE_PROPNAME);
+      allowableAcceptorKeys.add(TransportConstants.BATCH_DELAY);
 
       ALLOWABLE_ACCEPTOR_KEYS = Collections.unmodifiableSet(allowableAcceptorKeys);
 
@@ -166,7 +166,7 @@ public class TransportConstants
       allowableConnectorKeys.add(TransportConstants.TCP_SENDBUFFER_SIZE_PROPNAME);
       allowableConnectorKeys.add(TransportConstants.TCP_RECEIVEBUFFER_SIZE_PROPNAME);
       allowableConnectorKeys.add(TransportConstants.NIO_REMOTING_THREADS_PROPNAME);
-      allowableConnectorKeys.add(TransportConstants.BATCHING_BUFFER_SIZE_PROPNAME);
+      allowableConnectorKeys.add(TransportConstants.BATCH_DELAY);
 
       ALLOWABLE_CONNECTOR_KEYS = Collections.unmodifiableSet(allowableConnectorKeys);
    }

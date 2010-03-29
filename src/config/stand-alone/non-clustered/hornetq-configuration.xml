@@ -18,6 +18,13 @@
          <param key="host"  value="${hornetq.remoting.netty.host:localhost}"/>
          <param key="port"  value="${hornetq.remoting.netty.port:5445}"/>
       </connector>
+      
+      <connector name="netty-throughput">
+         <factory-class>org.hornetq.integration.transports.netty.NettyConnectorFactory</factory-class>
+         <param key="host"  value="${jboss.bind.address:localhost}"/>
+         <param key="port"  value="${hornetq.remoting.netty.port:5455}"/>
+         <param key="batch-delay" value="50"/>
+      </connector>
    </connectors>
 
    <acceptors>
@@ -25,6 +32,13 @@
          <factory-class>org.hornetq.integration.transports.netty.NettyAcceptorFactory</factory-class>
          <param key="host"  value="${hornetq.remoting.netty.host:localhost}"/>
          <param key="port"  value="${hornetq.remoting.netty.port:5445}"/>
+      </acceptor>
+      
+      <acceptor name="netty-throughput">
+         <factory-class>org.hornetq.integration.transports.netty.NettyAcceptorFactory</factory-class>
+         <param key="host"  value="${jboss.bind.address:localhost}"/>
+         <param key="port"  value="${hornetq.remoting.netty.port:5455}"/>
+         <param key="batch-delay" value="50"/>
       </acceptor>
    </acceptors>
 

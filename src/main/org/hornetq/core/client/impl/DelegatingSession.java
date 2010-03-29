@@ -545,4 +545,9 @@ public class DelegatingSession implements ClientSessionInternal
    {
       session.setAddress(message, address);
    }
+
+   public void setPacketSize(int packetSize)
+   {
+      session.setPacketSize(packetSize);
+   }
 }

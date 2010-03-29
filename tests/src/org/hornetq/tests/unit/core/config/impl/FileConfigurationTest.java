@@ -71,7 +71,6 @@ public class FileConfigurationTest extends ConfigurationImplTest
       Assert.assertEquals(false, conf.isCreateBindingsDir());
       Assert.assertEquals("somedir2", conf.getJournalDirectory());
       Assert.assertEquals(false, conf.isCreateJournalDir());
-
       Assert.assertEquals(JournalType.NIO, conf.getJournalType());
       Assert.assertEquals(10000, conf.getJournalBufferSize_NIO());
       Assert.assertEquals(1000, conf.getJournalBufferTimeout_NIO());

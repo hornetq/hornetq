@@ -183,7 +183,7 @@ public abstract class MessageImpl implements MessageInternal
    public int getHeadersAndPropertiesEncodeSize()
    {
       return DataConstants.SIZE_LONG + // Message ID
-             /* address */SimpleString.sizeofString(address) +
+             /* address */SimpleString.sizeofNullableString(address) +
              DataConstants./* Type */SIZE_BYTE +
              DataConstants./* Durable */SIZE_BOOLEAN +
              DataConstants./* Expiration */SIZE_LONG +
@@ -191,11 +191,12 @@ public abstract class MessageImpl implements MessageInternal
              DataConstants./* Priority */SIZE_BYTE +
              /* PropertySize and Properties */properties.getEncodeSize();
    }
+   
 
    public void encodeHeadersAndProperties(final HornetQBuffer buffer)
    {
       buffer.writeLong(messageID);
-      buffer.writeSimpleString(address);
+      buffer.writeNullableSimpleString(address);
       buffer.writeByte(type);
       buffer.writeBoolean(durable);
       buffer.writeLong(expiration);
@@ -207,7 +208,7 @@ public abstract class MessageImpl implements MessageInternal
    public void decodeHeadersAndProperties(final HornetQBuffer buffer)
    {
       messageID = buffer.readLong();
-      address = buffer.readSimpleString();
+      address = buffer.readNullableSimpleString();
       type = buffer.readByte();
       durable = buffer.readBoolean();
       expiration = buffer.readLong();
@@ -215,7 +216,7 @@ public abstract class MessageImpl implements MessageInternal
       priority = buffer.readByte();
       properties.decode(buffer);
    }
-
+   
    public HornetQBuffer getBodyBuffer()
    {
       if (bodyBuffer == null)

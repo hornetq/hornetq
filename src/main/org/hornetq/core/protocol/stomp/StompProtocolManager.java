@@ -108,7 +108,7 @@ class StompProtocolManager implements ProtocolManager
       this.frameDecoder = new StompFrameDecoder();
       this.executor = server.getExecutorFactory().getExecutor();
    }
-
+   
    // ProtocolManager implementation --------------------------------
 
    public ConnectionEntry createConnectionEntry(final Connection connection)
@@ -261,7 +261,7 @@ class StompProtocolManager implements ProtocolManager
          try
          {
             HornetQBuffer buffer = frame.toHornetQBuffer();
-            connection.getTransportConnection().write(buffer, false);
+            connection.getTransportConnection().write(buffer, false, false);
          }
          catch (Exception e)
          {

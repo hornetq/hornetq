@@ -110,7 +110,7 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
    private boolean failoverOnServerShutdown = HornetQClient.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN;
 
    private String groupID = null;
-
+   
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -540,9 +540,8 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
    public void setDiscoveryGroupName(String groupName)
    {
       this.discoveryGroupName = groupName;
-
    }
-
+   
    // Encoding Support Implementation --------------------------------------------------------------
    
    /* (non-Javadoc)

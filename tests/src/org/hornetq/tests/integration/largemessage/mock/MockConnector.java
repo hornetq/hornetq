@@ -93,7 +93,7 @@ public class MockConnector extends InVMConnector
       }
 
       @Override
-      public void write(final HornetQBuffer buffer, final boolean flush)
+      public void write(final HornetQBuffer buffer, final boolean flush, final boolean batch)
       {
          InVMConnector.log.info("calling mock connection write");
          if (callback != null)
@@ -101,7 +101,7 @@ public class MockConnector extends InVMConnector
             callback.onWrite(buffer);
          }
 
-         super.write(buffer, flush);
+         super.write(buffer, flush, batch);
       }
    }
 }

@@ -409,11 +409,9 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
 
          UUID uid = UUIDGenerator.getInstance().generateUUID();
          
-         //msg.getCoreMessage().putBytesProperty(HornetQMessage.HORNETQ_MESSAGE_ID, uid.asBytes());
-         
          msg.getCoreMessage().putStringProperty(HornetQMessage.JMSMESSAGEID_HEADER_NAME, new SimpleString("ID:" + uid.toString()));
          
-         msg.resetMessageID(null);
+         msg.resetMessageID(null); 
       }
 
       if (foreign)

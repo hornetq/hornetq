@@ -23,7 +23,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executor;
 
 import org.hornetq.api.core.HornetQBuffer;
-import org.hornetq.api.core.HornetQBuffers;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Interceptor;
 import org.hornetq.core.logging.Logger;
@@ -34,7 +33,6 @@ import org.hornetq.core.remoting.CloseListener;
 import org.hornetq.core.remoting.FailureListener;
 import org.hornetq.spi.core.remoting.BufferHandler;
 import org.hornetq.spi.core.remoting.Connection;
-import org.hornetq.utils.DataConstants;
 import org.hornetq.utils.SimpleIDGenerator;
 
 /**
@@ -89,8 +87,6 @@ public class RemotingConnectionImpl implements BufferHandler, CoreRemotingConnec
 
    private final Executor executor;
    
-   private final int maxBatchSize;
-   
    private volatile boolean executing;
 
    // Constructors
@@ -103,7 +99,7 @@ public class RemotingConnectionImpl implements BufferHandler, CoreRemotingConnec
                                  final long blockingCallTimeout,
                                  final List<Interceptor> interceptors)
    {
-      this(transportConnection, blockingCallTimeout, interceptors, true, null, -1);
+      this(transportConnection, blockingCallTimeout, interceptors, true, null);
    }
 
    /*
@@ -111,19 +107,17 @@ public class RemotingConnectionImpl implements BufferHandler, CoreRemotingConnec
     */
    public RemotingConnectionImpl(final Connection transportConnection,
                                  final List<Interceptor> interceptors,
-                                 final Executor executor,
-                                 final int maxBatchSize)
+                                 final Executor executor)
 
    {
-      this(transportConnection, -1, interceptors, false, executor, maxBatchSize);
+      this(transportConnection, -1, interceptors, false, executor);
    }
 
    private RemotingConnectionImpl(final Connection transportConnection,
                                   final long blockingCallTimeout,
                                   final List<Interceptor> interceptors,
                                   final boolean client,
-                                  final Executor executor,
-                                  final int maxBatchSize)
+                                  final Executor executor)
 
    {
       this.transportConnection = transportConnection;
@@ -135,8 +129,6 @@ public class RemotingConnectionImpl implements BufferHandler, CoreRemotingConnec
       this.client = client;
 
       this.executor = executor;
-      
-      this.maxBatchSize = maxBatchSize;
    }
 
    // RemotingConnection implementation
@@ -372,9 +364,9 @@ public class RemotingConnectionImpl implements BufferHandler, CoreRemotingConnec
       }
    }
    
-   public int getMaxBatchSize()
+   public void checkFlushBatchBuffer()
    {
-      return maxBatchSize;
+      transportConnection.checkFlushBatchBuffer();
    }
 
    // Buffer Handler implementation

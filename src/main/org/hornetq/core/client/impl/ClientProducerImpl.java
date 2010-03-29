@@ -274,7 +274,7 @@ public class ClientProducerImpl implements ClientProducerInternal
          }
          else
          {
-            channel.send(packet);
+            channel.sendBatched(packet);
          }
       }
 

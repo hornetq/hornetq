@@ -25,6 +25,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import javax.net.ssl.SSLContext;
@@ -129,6 +130,8 @@ public class NettyConnector implements Connector
 
    private final int tcpReceiveBufferSize;
 
+   private final long batchDelay;
+
    private final ConcurrentMap<Object, Connection> connections = new ConcurrentHashMap<Object, Connection>();
 
    private final String servletPath;
@@ -140,8 +143,10 @@ public class NettyConnector implements Connector
    private final ScheduledExecutorService scheduledThreadPool;
 
    private final Executor closeExecutor;
-
-   private final int batchingBufferSize;
+   
+   private BatchFlusher flusher;
+   
+   private ScheduledFuture<?> batchFlusherFuture;
 
    // Static --------------------------------------------------------
 
@@ -240,15 +245,15 @@ public class NettyConnector implements Connector
                                                                 TransportConstants.DEFAULT_TCP_RECEIVEBUFFER_SIZE,
                                                                 configuration);
 
+      batchDelay = ConfigurationHelper.getLongProperty(TransportConstants.BATCH_DELAY,
+                                                       TransportConstants.DEFAULT_BATCH_DELAY,
+                                                       configuration);
+
       this.closeExecutor = closeExecutor;
 
       virtualExecutor = new VirtualExecutorService(threadPool);
 
       this.scheduledThreadPool = scheduledThreadPool;
-
-      batchingBufferSize = ConfigurationHelper.getIntProperty(TransportConstants.BATCHING_BUFFER_SIZE_PROPNAME,
-                                                              TransportConstants.DEFAULT_BATCHING_BUFFER_SIZE,
-                                                              configuration);
    }
 
    public synchronized void start()
@@ -363,6 +368,14 @@ public class NettyConnector implements Connector
             return pipeline;
          }
       });
+
+      if (batchDelay > 0)
+      {
+         flusher = new BatchFlusher();
+         
+         batchFlusherFuture = scheduledThreadPool.scheduleWithFixedDelay(flusher, batchDelay, batchDelay, TimeUnit.MILLISECONDS);
+      }
+
       if (!Version.ID.equals(VersionLoader.getVersion().getNettyVersion()))
       {
          NettyConnector.log.warn("Unexpected Netty Version was expecting " + VersionLoader.getVersion()
@@ -372,12 +385,23 @@ public class NettyConnector implements Connector
       }
       NettyConnector.log.debug("Started Netty Connector version " + Version.ID);
    }
-
+   
    public synchronized void close()
    {
       if (channelFactory == null)
       {
          return;
+      }
+      
+      if (batchFlusherFuture != null)
+      {
+         batchFlusherFuture.cancel(false);
+         
+         flusher.cancel();
+         
+         flusher = null;
+         
+         batchFlusherFuture = null;
       }
 
       bootstrap = null;
@@ -447,7 +471,7 @@ public class NettyConnector implements Connector
             ch.getPipeline().get(HornetQChannelHandler.class).active = true;
          }
 
-         NettyConnection conn = new NettyConnection(ch, new Listener(), batchingBufferSize);
+         NettyConnection conn = new NettyConnection(ch, new Listener(), !httpEnabled && batchDelay > 0);
 
          return conn;
       }
@@ -671,6 +695,27 @@ public class NettyConnector implements Connector
                listener.connectionException(connectionID, me);
             }
          });
+      }
+   }
+   
+   private class BatchFlusher implements Runnable
+   {
+      private boolean cancelled;
+
+      public synchronized void run()
+      {
+         if (!cancelled)
+         {
+            for (Connection connection : connections.values())
+            {
+               connection.checkFlushBatchBuffer();
+            }
+         }
+      }
+
+      public synchronized void cancel()
+      {
+         cancelled = true;
       }
    }
 

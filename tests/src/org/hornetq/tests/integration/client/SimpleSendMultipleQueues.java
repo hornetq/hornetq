@@ -62,7 +62,9 @@ public class SimpleSendMultipleQueues extends ServiceTestBase
 
          message.getBodyBuffer().writeString(body);
 
+       //  log.info("sending message");
          producer.send(message);
+        // log.info("sent message");
 
          ClientMessage received1 = consumer1.receive(1000);
          Assert.assertNotNull(received1);

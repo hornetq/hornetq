@@ -45,6 +45,8 @@ public class InVMConnection implements Connection
    private final int serverID;
 
    private final Executor executor;
+   
+   private volatile boolean closing;
 
    public InVMConnection(final int serverID,
                          final BufferHandler handler,
@@ -72,8 +74,6 @@ public class InVMConnection implements Connection
 
       listener.connectionCreated(this, ProtocolType.CORE);
    }
-
-   private volatile boolean closing;
 
    public void close()
    {
@@ -104,13 +104,17 @@ public class InVMConnection implements Connection
    {
       return id;
    }
+   
+   public void checkFlushBatchBuffer()
+   {
+   }
 
    public void write(final HornetQBuffer buffer)
    {
-      write(buffer, false);
+      write(buffer, false, false);
    }
-
-   public void write(final HornetQBuffer buffer, final boolean flush)
+   
+   public void write(final HornetQBuffer buffer, final boolean flush, final boolean batch)
    {
       final HornetQBuffer copied = buffer.copy(0, buffer.capacity());
 

@@ -90,7 +90,7 @@ public class ProducerFlowControlTest extends ServiceTestBase
    {
       testFlowControl(1000, 500, 10 * 1024, 1024, 1024, 0, 1, 1, 0, false);
    }
-
+   
    public void testFlowControlSingleConsumerSlowConsumer() throws Exception
    {
       testFlowControl(100, 500, 1024, 512, 512, 512, 1, 1, 10, false);
@@ -331,6 +331,8 @@ public class ProducerFlowControlTest extends ServiceTestBase
       ProducerFlowControlTest.log.info("rate is " + rate + " msgs / sec");
 
       session.close();
+      
+      sf.close();
 
       server.stop();
    }

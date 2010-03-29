@@ -16,7 +16,6 @@ package org.hornetq.core.config.impl;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URL;
-import java.util.Properties;
 
 import org.hornetq.core.deployers.impl.FileConfigurationParser;
 import org.hornetq.core.logging.Logger;

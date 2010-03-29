@@ -14,7 +14,6 @@
 package org.hornetq.spi.core.remoting;
 
 import org.hornetq.api.core.HornetQBuffer;
-import org.hornetq.api.core.HornetQException;
 
 /**
  * The connection used by a channel to write data to.
@@ -40,19 +39,20 @@ public interface Connection
    Object getID();
 
    /**
-    * writes the buffer to the wire.
-    *
-    * @param buffer the buffer to write
-    */
-   void write(HornetQBuffer buffer);
-
-   /**
     * writes the buffer to the connection and if flush is true returns only when the buffer has been physically written to the connection.
     *
     * @param buffer the buffer to write
     * @param flush  whether to flush the buffers onto the wire
+    * @param batched whether the packet is allowed to batched for better performance
     */
-   void write(HornetQBuffer buffer, boolean flush);
+   void write(HornetQBuffer buffer, boolean flush, boolean batched);
+   
+   /**
+    * writes the buffer to the connection with no flushing or batching
+    *
+    * @param buffer the buffer to write
+    */
+   void write(HornetQBuffer buffer);
 
    /**
     * closes this connection.
@@ -67,10 +67,7 @@ public interface Connection
    String getRemoteAddress();
    
    /**
-    * The batch size in bytes of the buffer for batching sends
-    * or -1 if the connection does not support batching
-    * 
-    * @return
+    * Called periodically to flush any data in the batch buffer
     */
-   int getBatchingBufferSize();
+   void checkFlushBatchBuffer();
 }

@@ -129,16 +129,16 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
    public JMSServerManagerImpl(final HornetQServer server) throws Exception
    {
       this.server = server;
-      
+
       this.coreConfig = server.getConfiguration();
-      
+
       configFileName = null;
    }
 
    public JMSServerManagerImpl(final HornetQServer server, final String configFileName) throws Exception
    {
       this.server = server;
-      
+
       this.coreConfig = server.getConfiguration();
 
       this.configFileName = configFileName;
@@ -147,7 +147,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
    public JMSServerManagerImpl(final HornetQServer server, final JMSConfiguration configuration) throws Exception
    {
       this.server = server;
-      
+
       this.coreConfig = server.getConfiguration();
 
       configFileName = null;
@@ -187,7 +187,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
 
                if (configFileName != null)
                {
-                  jmsDeployer.setConfigFileNames(new String[]{configFileName});
+                  jmsDeployer.setConfigFileNames(new String[] { configFileName });
                }
 
                jmsDeployer.start();
@@ -224,16 +224,15 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       deploymentManager = new FileDeploymentManager(server.getConfiguration().getFileDeployerScanPeriod());
 
       server.registerActivateCallback(this);
-      
-      server.start();
 
+      server.start();
 
       if (server.getReplicationEndpoint() != null)
       {
          createJournal();
          storage.installReplication(server.getReplicationEndpoint());
       }
-      
+
       started = true;
    }
 
@@ -253,17 +252,17 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       {
          deploymentManager.stop();
       }
-      
+
       // Storage could be null on a shared store backup server before initialization
       if (storage != null)
       {
          storage.stop();
       }
-      
+
       unbindJNDI(queueJNDI);
 
       unbindJNDI(topicJNDI);
-      
+
       unbindJNDI(connectionFactoryJNDI);
 
       for (String connectionFactory : new HashSet<String>(connectionFactories.keySet()))
@@ -284,10 +283,10 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       if (jmsManagementService != null)
       {
          jmsManagementService.unregisterJMSServer();
-   
+
          jmsManagementService.stop();
       }
-      
+
       server.stop();
 
       started = false;
@@ -339,7 +338,10 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       return server.getVersion().getFullVersion();
    }
 
-   public synchronized boolean createQueue(final String queueName, final String selectorString, final boolean durable, final String... jndi) throws Exception
+   public synchronized boolean createQueue(final String queueName,
+                                           final String selectorString,
+                                           final boolean durable,
+                                           final String... jndi) throws Exception
    {
       checkInitialised();
 
@@ -408,7 +410,6 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
    {
       return getJNDIList(connectionFactoryJNDI, factoryName);
    }
-
 
    public boolean addQueueToJndi(final String queueName, final String jndiBinding) throws Exception
    {
@@ -540,13 +541,11 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       return true;
    }
 
-
    public synchronized boolean destroyQueue(final String name) throws Exception
    {
       checkInitialised();
 
       removeFromJNDI(queueJNDI, name);
-
 
       queues.remove(name);
       queueJNDI.remove(name);
@@ -571,8 +570,8 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
 
       jmsManagementService.unregisterTopic(name);
 
-      AddressControl addressControl = (AddressControl) server.getManagementService()
-            .getResource(ResourceNames.CORE_ADDRESS + HornetQDestination.createTopicAddressFromName(name));
+      AddressControl addressControl = (AddressControl)server.getManagementService()
+                                                            .getResource(ResourceNames.CORE_ADDRESS + HornetQDestination.createTopicAddressFromName(name));
       if (addressControl != null)
       {
          for (String queueName : addressControl.getQueueNames())
@@ -581,9 +580,9 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
             if (binding == null)
             {
                log.warn("Queue " + queueName +
-                     " doesn't exist on the topic " +
-                     name +
-                     ". It was deleted manually probably.");
+                        " doesn't exist on the topic " +
+                        name +
+                        ". It was deleted manually probably.");
                continue;
             }
 
@@ -734,7 +733,9 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       HornetQConnectionFactory cf = connectionFactories.get(name);
       if (cf == null)
       {
-         ConnectionFactoryConfiguration configuration = new ConnectionFactoryConfigurationImpl(name, discoveryAddress, discoveryPort);
+         ConnectionFactoryConfiguration configuration = new ConnectionFactoryConfigurationImpl(name,
+                                                                                               discoveryAddress,
+                                                                                               discoveryPort);
          configuration.setClientID(clientID);
          configuration.setDiscoveryRefreshTimeout(discoveryRefreshTimeout);
          configuration.setClientFailureCheckPeriod(clientFailureCheckPeriod);
@@ -777,11 +778,12 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       HornetQConnectionFactory cf = connectionFactories.get(name);
       if (cf == null)
       {
-         ConnectionFactoryConfiguration configuration = new ConnectionFactoryConfigurationImpl(name, discoveryAddress, discoveryPort);
+         ConnectionFactoryConfiguration configuration = new ConnectionFactoryConfigurationImpl(name,
+                                                                                               discoveryAddress,
+                                                                                               discoveryPort);
          createConnectionFactory(configuration, jndiBindings);
       }
    }
-
 
    public synchronized void createConnectionFactory(final String name,
                                                     final String clientID,
@@ -794,13 +796,16 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       HornetQConnectionFactory cf = connectionFactories.get(name);
       if (cf == null)
       {
-         ConnectionFactoryConfiguration configuration = new ConnectionFactoryConfigurationImpl(name, discoveryAddress, discoveryPort);
+         ConnectionFactoryConfiguration configuration = new ConnectionFactoryConfigurationImpl(name,
+                                                                                               discoveryAddress,
+                                                                                               discoveryPort);
          configuration.setClientID(clientID);
          createConnectionFactory(configuration, jndiBindings);
       }
    }
 
-   public synchronized void createConnectionFactory(final ConnectionFactoryConfiguration cfConfig, String... jndiBindings) throws Exception
+   public synchronized void createConnectionFactory(final ConnectionFactoryConfiguration cfConfig,
+                                                    String... jndiBindings) throws Exception
    {
       internalCreateCF(cfConfig);
       storage.storeConnectionFactory(new PersistedConnectionFactory(cfConfig));
@@ -849,7 +854,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       HornetQConnectionFactory cf = connectionFactories.get(name);
       if (cf == null)
       {
-         cf = (HornetQConnectionFactory) HornetQJMSClient.createConnectionFactory(discoveryAddress, discoveryPort);
+         cf = (HornetQConnectionFactory)HornetQJMSClient.createConnectionFactory(discoveryAddress, discoveryPort);
          cf.setClientID(clientID);
          cf.setDiscoveryRefreshTimeout(discoveryRefreshTimeout);
          cf.setClientFailureCheckPeriod(clientFailureCheckPeriod);
@@ -919,7 +924,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       HornetQConnectionFactory cf = connectionFactories.get(name);
       if (cf == null)
       {
-         cf = (HornetQConnectionFactory) HornetQJMSClient.createConnectionFactory(connectorConfigs);
+         cf = (HornetQConnectionFactory)HornetQJMSClient.createConnectionFactory(connectorConfigs);
          cf.setClientID(clientID);
          cf.setClientFailureCheckPeriod(clientFailureCheckPeriod);
          cf.setConnectionTTL(connectionTTL);
@@ -952,7 +957,6 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       return cf;
    }
 
-
    private String[] getJNDIList(final Map<String, List<String>> map, final String name)
    {
       List<String> result = map.get(name);
@@ -981,9 +985,9 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       }
 
       server.getHornetQServerControl().deployQueue(hqQueue.getAddress(),
-            hqQueue.getAddress(),
-            coreFilterString,
-            durable);
+                                                   hqQueue.getAddress(),
+                                                   coreFilterString,
+                                                   durable);
 
       queues.put(queueName, hqQueue);
 
@@ -1008,9 +1012,9 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       // does not exist - otherwise we would not be able to distinguish from a non existent topic and one with no
       // subscriptions - core has no notion of a topic
       server.getHornetQServerControl().deployQueue(hqTopic.getAddress(),
-            hqTopic.getAddress(),
-            JMSServerManagerImpl.REJECT_FILTER,
-            true);
+                                                   hqTopic.getAddress(),
+                                                   JMSServerManagerImpl.REJECT_FILTER,
+                                                   true);
 
       topics.put(topicName, hqTopic);
 
@@ -1024,7 +1028,8 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
     * @throws HornetQException
     * @throws Exception
     */
-   private HornetQConnectionFactory internalCreateCF(final ConnectionFactoryConfiguration cfConfig) throws HornetQException, Exception
+   private HornetQConnectionFactory internalCreateCF(final ConnectionFactoryConfiguration cfConfig) throws HornetQException,
+                                                                                                   Exception
    {
 
       List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs = lookupConnectors(cfConfig);
@@ -1034,71 +1039,71 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       if (cfConfig.getDiscoveryAddress() != null)
       {
          cf = internalCreateConnectionFactory(cfConfig.getName(),
-               cfConfig.getDiscoveryAddress(),
-               cfConfig.getDiscoveryPort(),
-               cfConfig.getClientID(),
-               cfConfig.getDiscoveryRefreshTimeout(),
-               cfConfig.getClientFailureCheckPeriod(),
-               cfConfig.getConnectionTTL(),
-               cfConfig.getCallTimeout(),
-               cfConfig.isCacheLargeMessagesClient(),
-               cfConfig.getMinLargeMessageSize(),
-               cfConfig.getConsumerWindowSize(),
-               cfConfig.getConsumerMaxRate(),
-               cfConfig.getConfirmationWindowSize(),
-               cfConfig.getProducerWindowSize(),
-               cfConfig.getProducerMaxRate(),
-               cfConfig.isBlockOnAcknowledge(),
-               cfConfig.isBlockOnDurableSend(),
-               cfConfig.isBlockOnNonDurableSend(),
-               cfConfig.isAutoGroup(),
-               cfConfig.isPreAcknowledge(),
-               cfConfig.getLoadBalancingPolicyClassName(),
-               cfConfig.getTransactionBatchSize(),
-               cfConfig.getDupsOKBatchSize(),
-               cfConfig.getInitialWaitTimeout(),
-               cfConfig.isUseGlobalPools(),
-               cfConfig.getScheduledThreadPoolMaxSize(),
-               cfConfig.getThreadPoolMaxSize(),
-               cfConfig.getRetryInterval(),
-               cfConfig.getRetryIntervalMultiplier(),
-               cfConfig.getMaxRetryInterval(),
-               cfConfig.getReconnectAttempts(),
-               cfConfig.isFailoverOnServerShutdown(),
-               cfConfig.getGroupID());
+                                              cfConfig.getDiscoveryAddress(),
+                                              cfConfig.getDiscoveryPort(),
+                                              cfConfig.getClientID(),
+                                              cfConfig.getDiscoveryRefreshTimeout(),
+                                              cfConfig.getClientFailureCheckPeriod(),
+                                              cfConfig.getConnectionTTL(),
+                                              cfConfig.getCallTimeout(),
+                                              cfConfig.isCacheLargeMessagesClient(),
+                                              cfConfig.getMinLargeMessageSize(),
+                                              cfConfig.getConsumerWindowSize(),
+                                              cfConfig.getConsumerMaxRate(),
+                                              cfConfig.getConfirmationWindowSize(),
+                                              cfConfig.getProducerWindowSize(),
+                                              cfConfig.getProducerMaxRate(),
+                                              cfConfig.isBlockOnAcknowledge(),
+                                              cfConfig.isBlockOnDurableSend(),
+                                              cfConfig.isBlockOnNonDurableSend(),
+                                              cfConfig.isAutoGroup(),
+                                              cfConfig.isPreAcknowledge(),
+                                              cfConfig.getLoadBalancingPolicyClassName(),
+                                              cfConfig.getTransactionBatchSize(),
+                                              cfConfig.getDupsOKBatchSize(),
+                                              cfConfig.getInitialWaitTimeout(),
+                                              cfConfig.isUseGlobalPools(),
+                                              cfConfig.getScheduledThreadPoolMaxSize(),
+                                              cfConfig.getThreadPoolMaxSize(),
+                                              cfConfig.getRetryInterval(),
+                                              cfConfig.getRetryIntervalMultiplier(),
+                                              cfConfig.getMaxRetryInterval(),
+                                              cfConfig.getReconnectAttempts(),
+                                              cfConfig.isFailoverOnServerShutdown(),
+                                              cfConfig.getGroupID());
       }
       else
       {
          cf = internalCreateConnectionFactory(cfConfig.getName(),
-               connectorConfigs,
-               cfConfig.getClientID(),
-               cfConfig.getClientFailureCheckPeriod(),
-               cfConfig.getConnectionTTL(),
-               cfConfig.getCallTimeout(),
-               cfConfig.isCacheLargeMessagesClient(),
-               cfConfig.getMinLargeMessageSize(),
-               cfConfig.getConsumerWindowSize(),
-               cfConfig.getConsumerMaxRate(),
-               cfConfig.getConfirmationWindowSize(),
-               cfConfig.getProducerWindowSize(),
-               cfConfig.getProducerMaxRate(),
-               cfConfig.isBlockOnAcknowledge(),
-               cfConfig.isBlockOnDurableSend(),
-               cfConfig.isBlockOnNonDurableSend(),
-               cfConfig.isAutoGroup(),
-               cfConfig.isPreAcknowledge(),
-               cfConfig.getLoadBalancingPolicyClassName(),
-               cfConfig.getTransactionBatchSize(),
-               cfConfig.getDupsOKBatchSize(),
-               cfConfig.isUseGlobalPools(),
-               cfConfig.getScheduledThreadPoolMaxSize(),
-               cfConfig.getThreadPoolMaxSize(),
-               cfConfig.getRetryInterval(),
-               cfConfig.getRetryIntervalMultiplier(),
-               cfConfig.getMaxRetryInterval(),
-               cfConfig.getReconnectAttempts(),
-               cfConfig.isFailoverOnServerShutdown(),
-               cfConfig.getGroupID());
+                                              connectorConfigs,
+                                              cfConfig.getClientID(),
+                                              cfConfig.getClientFailureCheckPeriod(),
+                                              cfConfig.getConnectionTTL(),
+                                              cfConfig.getCallTimeout(),
+                                              cfConfig.isCacheLargeMessagesClient(),
+                                              cfConfig.getMinLargeMessageSize(),
+                                              cfConfig.getConsumerWindowSize(),
+                                              cfConfig.getConsumerMaxRate(),
+                                              cfConfig.getConfirmationWindowSize(),
+                                              cfConfig.getProducerWindowSize(),
+                                              cfConfig.getProducerMaxRate(),
+                                              cfConfig.isBlockOnAcknowledge(),
+                                              cfConfig.isBlockOnDurableSend(),
+                                              cfConfig.isBlockOnNonDurableSend(),
+                                              cfConfig.isAutoGroup(),
+                                              cfConfig.isPreAcknowledge(),
+                                              cfConfig.getLoadBalancingPolicyClassName(),
+                                              cfConfig.getTransactionBatchSize(),
+                                              cfConfig.getDupsOKBatchSize(),
+                                              cfConfig.isUseGlobalPools(),
+                                              cfConfig.getScheduledThreadPoolMaxSize(),
+                                              cfConfig.getThreadPoolMaxSize(),
+                                              cfConfig.getRetryInterval(),
+                                              cfConfig.getRetryIntervalMultiplier(),
+                                              cfConfig.getMaxRetryInterval(),
+                                              cfConfig.getReconnectAttempts(),
+                                              cfConfig.isFailoverOnServerShutdown(),
+                                              cfConfig.getGroupID());
       }
       connectionFactories.put(cfConfig.getName(), cf);
 
@@ -1308,16 +1313,16 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
 
          DiscoveryGroupConfiguration discoveryGroupConfiguration = null;
          discoveryGroupConfiguration = configuration.getDiscoveryGroupConfigurations()
-               .get(cfConfig.getDiscoveryGroupName());
+                                                    .get(cfConfig.getDiscoveryGroupName());
 
          if (discoveryGroupConfiguration == null)
          {
             JMSServerManagerImpl.log.warn("There is no discovery group with name '" + cfConfig.getDiscoveryGroupName() +
-                  "' deployed.");
+                                          "' deployed.");
 
             throw new HornetQException(HornetQException.ILLEGAL_STATE,
-                  "There is no discovery group with name '" + cfConfig.getDiscoveryGroupName() +
-                        "' deployed.");
+                                       "There is no discovery group with name '" + cfConfig.getDiscoveryGroupName() +
+                                                "' deployed.");
          }
 
          cfConfig.setDiscoveryAddress(discoveryGroupConfiguration.getGroupAddress());
@@ -1395,10 +1400,9 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
    private void initJournal() throws Exception
    {
       this.coreConfig = server.getConfiguration();
-      
 
       createJournal();
-      
+
       storage.load();
 
       List<PersistedConnectionFactory> cfs = storage.recoverConnectionFactories();
@@ -1414,9 +1418,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       {
          if (destination.getType() == PersistedType.Queue)
          {
-            internalCreateQueue(destination.getName(),
-                  destination.getSelector(),
-                  destination.isDurable());
+            internalCreateQueue(destination.getName(), destination.getSelector(), destination.isDurable());
          }
          else if (destination.getType() == PersistedType.Topic)
          {
@@ -1461,7 +1463,6 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
             mapJNDI.put(record.getName(), jndiList);
          }
 
-
          for (String jndi : record.getJndi())
          {
             jndiList.add(jndi);
@@ -1479,7 +1480,9 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       {
          if (coreConfig.isPersistenceEnabled())
          {
-            storage = new JournalJMSStorageManagerImpl(new TimeAndCounterIDGenerator(), server.getConfiguration(), server.getReplicationManager());
+            storage = new JournalJMSStorageManagerImpl(new TimeAndCounterIDGenerator(),
+                                                       server.getConfiguration(),
+                                                       server.getReplicationManager());
          }
          else
          {
@@ -1518,8 +1521,9 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       return true;
    }
 
-
-   private synchronized boolean removeFromJNDI(final Map<String, List<String>> jndiMap, final String name, final String jndi) throws Exception
+   private synchronized boolean removeFromJNDI(final Map<String, List<String>> jndiMap,
+                                               final String name,
+                                               final String jndi) throws Exception
    {
       checkInitialised();
       List<String> jndiBindings = jndiMap.get(name);
@@ -1564,7 +1568,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
             {
                JMSServerManagerImpl.log.warn("There is no connector with name '" + connectorName + "' deployed.");
                throw new HornetQException(HornetQException.ILLEGAL_STATE,
-                     "There is no connector with name '" + connectorName + "' deployed.");
+                                          "There is no connector with name '" + connectorName + "' deployed.");
             }
 
             TransportConfiguration backupConnector = null;
@@ -1576,10 +1580,10 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
                if (backupConnector == null)
                {
                   JMSServerManagerImpl.log.warn("There is no backup connector with name '" + backupConnectorName +
-                        "' deployed.");
+                                                "' deployed.");
                   throw new HornetQException(HornetQException.ILLEGAL_STATE,
-                        "There is no backup connector with name '" + backupConnectorName +
-                              "' deployed.");
+                                             "There is no backup connector with name '" + backupConnectorName +
+                                                      "' deployed.");
                }
             }
 

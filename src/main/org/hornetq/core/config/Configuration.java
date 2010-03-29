@@ -183,7 +183,7 @@ public interface Configuration extends Serializable
     * Sets whether this server is manageable using JMX or not.
     */
    void setJMXManagementEnabled(boolean enabled);
-
+   
    /**
     * Returns the domain used by JMX MBeans (provided JMX management is enabled).
     * <br>

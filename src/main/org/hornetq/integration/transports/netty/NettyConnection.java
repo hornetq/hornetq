@@ -14,6 +14,7 @@
 package org.hornetq.integration.transports.netty;
 
 import org.hornetq.api.core.HornetQBuffer;
+import org.hornetq.api.core.HornetQBuffers;
 import org.hornetq.core.buffers.impl.ChannelBufferWrapper;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.spi.core.protocol.ProtocolType;
@@ -28,7 +29,7 @@ import org.jboss.netty.handler.ssl.SslHandler;
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * buhnaflagilibrn
+ * 
  * @version <tt>$Revision$</tt>
  */
 public class NettyConnection implements Connection
@@ -37,6 +38,8 @@ public class NettyConnection implements Connection
 
    private static final Logger log = Logger.getLogger(NettyConnection.class);
 
+   private static final int BATCHING_BUFFER_SIZE = 8192;
+
    // Attributes ----------------------------------------------------
 
    private final Channel channel;
@@ -44,22 +47,25 @@ public class NettyConnection implements Connection
    private boolean closed;
 
    private final ConnectionLifeCycleListener listener;
+
+   private final boolean batchingEnabled;
    
-   private final int batchingBufferSize;
+   private HornetQBuffer batchBuffer;
+   
+   private final Object writeLock = new Object();
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public NettyConnection(final Channel channel, final ConnectionLifeCycleListener listener,
-                          final int batchingBufferSize)
+   public NettyConnection(final Channel channel, final ConnectionLifeCycleListener listener, boolean batchingEnabled)
    {
       this.channel = channel;
 
       this.listener = listener;
-      
-      this.batchingBufferSize = batchingBufferSize;
 
+      this.batchingEnabled = batchingEnabled;
+      
       listener.connectionCreated(this, ProtocolType.CORE);
    }
 
@@ -114,32 +120,88 @@ public class NettyConnection implements Connection
       return channel.getId();
    }
 
-   public void write(final HornetQBuffer buffer)
+   // This is called periodically to flush the batch buffer
+   public void checkFlushBatchBuffer()
    {
-      write(buffer, false);
+      synchronized (writeLock)
+      {
+         if (!batchingEnabled)
+         {
+            return;
+         }
+
+         if (batchBuffer != null && batchBuffer.readable())
+         {
+            channel.write(batchBuffer.channelBuffer());
+
+            batchBuffer = HornetQBuffers.dynamicBuffer(BATCHING_BUFFER_SIZE);
+         }
+      }
    }
 
-   public void write(final HornetQBuffer buffer, final boolean flush)
+   public void write(final HornetQBuffer buffer)
    {
-      ChannelFuture future = channel.write(buffer.channelBuffer());
+      write(buffer, false, false);
+   }
 
-      if (flush)
+   public void write(HornetQBuffer buffer, final boolean flush, final boolean batched)
+   {
+      synchronized (writeLock)
       {
-         while (true)
+         if (batchBuffer == null && batchingEnabled && batched && !flush)
          {
-            try
+            // Lazily create batch buffer
+
+            batchBuffer = HornetQBuffers.dynamicBuffer(BATCHING_BUFFER_SIZE);
+         }
+
+         if (batchBuffer != null)
+         {
+            batchBuffer.writeBytes(buffer, 0, buffer.writerIndex());
+
+            if (batchBuffer.writerIndex() >= BATCHING_BUFFER_SIZE || !batched || flush)
             {
-               boolean ok = future.await(10000);
+               // If the batch buffer is full or it's flush param or not batched then flush the buffer
 
-               if (!ok)
-               {
-                  NettyConnection.log.warn("Timed out waiting for packet to be flushed");
-               }
-
-               break;
+               buffer = batchBuffer;
             }
-            catch (InterruptedException ignore)
+            else
             {
+               return;
+            }
+
+            if (!batched || flush)
+            {
+               batchBuffer = null;
+            }
+            else
+            {
+               // Create a new buffer
+
+               batchBuffer = HornetQBuffers.dynamicBuffer(BATCHING_BUFFER_SIZE);
+            }
+         }
+
+         ChannelFuture future = channel.write(buffer.channelBuffer());
+
+         if (flush)
+         {
+            while (true)
+            {
+               try
+               {
+                  boolean ok = future.await(10000);
+
+                  if (!ok)
+                  {
+                     NettyConnection.log.warn("Timed out waiting for packet to be flushed");
+                  }
+
+                  break;
+               }
+               catch (InterruptedException ignore)
+               {
+               }
             }
          }
       }
@@ -148,11 +210,6 @@ public class NettyConnection implements Connection
    public String getRemoteAddress()
    {
       return channel.getRemoteAddress().toString();
-   }
-   
-   public int getBatchingBufferSize()
-   {
-      return batchingBufferSize;
    }
 
    // Public --------------------------------------------------------

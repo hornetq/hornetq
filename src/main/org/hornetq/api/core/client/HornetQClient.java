@@ -89,7 +89,7 @@ public class HornetQClient
    public static final boolean DEFAULT_CACHE_LARGE_MESSAGE_CLIENT = false;
 
    public static final int DEFAULT_INITIAL_MESSAGE_PACKET_SIZE = 1500;
-
+   
    /**
     * Creates a ClientSessionFactory using all the defaults.
     *

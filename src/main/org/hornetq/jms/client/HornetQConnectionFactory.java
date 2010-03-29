@@ -568,7 +568,7 @@ public class HornetQConnectionFactory implements ConnectionFactory, QueueConnect
    {
       return sessionFactory.getGroupID();
    }
-
+   
    public void close()
    {
       sessionFactory.close();

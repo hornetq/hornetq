@@ -154,7 +154,7 @@ public class ConfigurationImpl implements Configuration
    public static final int DEFAULT_ID_CACHE_SIZE = 2000;
 
    public static final boolean DEFAULT_PERSIST_ID_CACHE = true;
-
+   
    public static final boolean DEFAULT_CLUSTER_DUPLICATE_DETECTION = true;
 
    public static final boolean DEFAULT_CLUSTER_FORWARD_WHEN_NO_CONSUMERS = false;
@@ -220,7 +220,7 @@ public class ConfigurationImpl implements Configuration
    protected String logDelegateFactoryClassName = ConfigurationImpl.DEFAULT_LOG_DELEGATE_FACTORY_CLASS_NAME;
 
    protected List<String> interceptorClassNames = new ArrayList<String>();
-
+   
    protected Map<String, TransportConfiguration> connectorConfigs = new HashMap<String, TransportConfiguration>();
 
    protected Set<TransportConfiguration> acceptorConfigs = new HashSet<TransportConfiguration>();
@@ -486,7 +486,7 @@ public class ConfigurationImpl implements Configuration
    {
       this.backupConnectorName = backupConnectorName;
    }
-
+   
    public GroupingHandlerConfiguration getGroupingHandlerConfiguration()
    {
       return groupingHandlerConfiguration;
@@ -1280,6 +1280,7 @@ public class ConfigurationImpl implements Configuration
       {
          return false;
       }
+
       return true;
    }
 
