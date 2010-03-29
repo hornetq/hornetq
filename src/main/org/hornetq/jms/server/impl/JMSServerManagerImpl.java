@@ -1241,20 +1241,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       }
    }
 
-   private void bindConnectionFactory(final HornetQConnectionFactory cf,
-                                      final String name,
-                                      final List<String> jndiBindings) throws Exception
-   {
-      for (String jndiBinding : jndiBindings)
-      {
-         bindToJndi(jndiBinding, cf);
-
-         addToBindings(connectionFactoryJNDI, name, jndiBinding);
-      }
-
-      jmsManagementService.registerConnectionFactory(name, cf);
-   }
-
+   
    private void addToBindings(Map<String, List<String>> map, String name, String jndi)
    {
       List<String> list = map.get(name);
