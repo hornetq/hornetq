@@ -494,7 +494,16 @@ public class ServerSessionPacketHandler implements ChannelHandler, CloseListener
          }
          catch (Throwable t)
          {
-            log.error("Caught unexpected exception", t);
+            if (requiresResponse)
+            {
+               HornetQException hqe = new HornetQException(HornetQException.INTERNAL_ERROR);
+               hqe.initCause(t);
+               response = new HornetQExceptionMessage(hqe);
+            }
+            else
+            {
+               log.error("Caught unexpected exception", t);
+            }
          }
 
          sendResponse(packet, response, flush, closeChannel);
