@@ -41,7 +41,7 @@ import org.hornetq.utils.TimeAndCounterIDGenerator;
  *
  *
  */
-public class StorageManagerTestBase extends ServiceTestBase
+public abstract class StorageManagerTestBase extends ServiceTestBase
 {
 
    // Constants -----------------------------------------------------
@@ -147,6 +147,8 @@ public class StorageManagerTestBase extends ServiceTestBase
       jmsJournal = new JournalJMSStorageManagerImpl(new TimeAndCounterIDGenerator(), configuration, null);
 
       jmsJournal.start();
+      
+      jmsJournal.load();
    }
 
 

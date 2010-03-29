@@ -182,13 +182,6 @@ public class JMSConnectionFactoryConfigurationStorageTest extends StorageManager
       assertEquals("some-name", cfs.get(0).getName());
 
       assertEquals(config.getCallTimeout(), cfs.get(0).getConfig().getCallTimeout());
-
-      assertEquals(5, cfs.get(0).getConfig().getBindings().length);
-
-      for (int i = 0; i < 5; i++)
-      {
-         assertEquals("str" + i, cfs.get(0).getConfig().getBindings()[i]);
-      }
    }
 
    /**
