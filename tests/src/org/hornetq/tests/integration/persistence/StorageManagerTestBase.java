@@ -27,7 +27,7 @@ import org.hornetq.core.persistence.impl.journal.JournalStorageManager;
 import org.hornetq.core.server.JournalType;
 import org.hornetq.core.server.Queue;
 import org.hornetq.jms.persistence.JMSStorageManager;
-import org.hornetq.jms.persistence.impl.journal.JournalJMSStorageManagerImpl;
+import org.hornetq.jms.persistence.impl.journal.JMSJournalStorageManagerImpl;
 import org.hornetq.tests.unit.core.server.impl.fakes.FakePostOffice;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.utils.ExecutorFactory;
@@ -144,7 +144,7 @@ public abstract class StorageManagerTestBase extends ServiceTestBase
 
       configuration.setJournalType(JournalType.ASYNCIO);
 
-      jmsJournal = new JournalJMSStorageManagerImpl(new TimeAndCounterIDGenerator(), configuration, null);
+      jmsJournal = new JMSJournalStorageManagerImpl(new TimeAndCounterIDGenerator(), configuration, null);
 
       jmsJournal.start();
       

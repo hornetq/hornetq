@@ -47,7 +47,7 @@ import org.hornetq.utils.IDGenerator;
  *
  *
  */
-public class JournalJMSStorageManagerImpl implements JMSStorageManager
+public class JMSJournalStorageManagerImpl implements JMSStorageManager
 {
 
    // Constants -----------------------------------------------------
@@ -62,9 +62,9 @@ public class JournalJMSStorageManagerImpl implements JMSStorageManager
 
    private final IDGenerator idGenerator;
    
-   private final String bindingsDir;
+   private final String journalDir;
    
-   private final boolean createBindingsDir;
+   private final boolean createDir;
    
    private final Journal jmsJournal;
 
@@ -79,7 +79,7 @@ public class JournalJMSStorageManagerImpl implements JMSStorageManager
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
-   public JournalJMSStorageManagerImpl(final IDGenerator idGenerator,
+   public JMSJournalStorageManagerImpl(final IDGenerator idGenerator,
                                        final Configuration config,
                                 final ReplicationManager replicator)
    {
@@ -88,23 +88,24 @@ public class JournalJMSStorageManagerImpl implements JMSStorageManager
          throw new IllegalArgumentException("Only NIO and AsyncIO are supported journals");
       }
 
-      bindingsDir = config.getBindingsDirectory();
+      // Will use the same place as the bindings directory from the core journal
+      journalDir = config.getBindingsDirectory();
 
-      if (bindingsDir == null)
+      if (journalDir == null)
       {
          throw new NullPointerException("bindings-dir is null");
       }
 
-      createBindingsDir = config.isCreateBindingsDir();
+      createDir = config.isCreateBindingsDir();
 
-      SequentialFileFactory bindingsJMS = new NIOSequentialFileFactory(bindingsDir);
+      SequentialFileFactory bindingsJMS = new NIOSequentialFileFactory(journalDir);
 
       Journal localJMS = new JournalImpl(1024 * 1024,
                                               2,
                                               config.getJournalCompactMinFiles(),
                                               config.getJournalCompactPercentage(),
                                               bindingsJMS,
-                                              "hornetq-jms-config",
+                                              "hornetq-jms",
                                               "jms",
                                               1);
 
@@ -287,7 +288,7 @@ public class JournalJMSStorageManagerImpl implements JMSStorageManager
    public void start() throws Exception
    {
 
-      checkAndCreateDir(bindingsDir, createBindingsDir);
+      checkAndCreateDir(journalDir, createDir);
 
       jmsJournal.start();
       

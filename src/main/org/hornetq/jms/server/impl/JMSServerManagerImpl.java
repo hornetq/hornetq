@@ -53,7 +53,7 @@ import org.hornetq.jms.persistence.config.PersistedConnectionFactory;
 import org.hornetq.jms.persistence.config.PersistedDestination;
 import org.hornetq.jms.persistence.config.PersistedJNDI;
 import org.hornetq.jms.persistence.config.PersistedType;
-import org.hornetq.jms.persistence.impl.journal.JournalJMSStorageManagerImpl;
+import org.hornetq.jms.persistence.impl.journal.JMSJournalStorageManagerImpl;
 import org.hornetq.jms.persistence.impl.nullpm.NullJMSStorageManagerImpl;
 import org.hornetq.jms.server.JMSServerManager;
 import org.hornetq.jms.server.config.ConnectionFactoryConfiguration;
@@ -1467,7 +1467,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       {
          if (coreConfig.isPersistenceEnabled())
          {
-            storage = new JournalJMSStorageManagerImpl(new TimeAndCounterIDGenerator(),
+            storage = new JMSJournalStorageManagerImpl(new TimeAndCounterIDGenerator(),
                                                        server.getConfiguration(),
                                                        server.getReplicationManager());
          }
