@@ -13,7 +13,14 @@
 
 package org.hornetq.jms.server.impl;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -33,7 +40,6 @@ import org.hornetq.core.deployers.DeploymentManager;
 import org.hornetq.core.deployers.impl.FileDeploymentManager;
 import org.hornetq.core.deployers.impl.XmlDeployer;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.persistence.impl.journal.JournalStorageManager;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.BindingType;
 import org.hornetq.core.security.Role;
@@ -125,12 +131,16 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
    {
       this.server = server;
       
+      this.coreConfig = server.getConfiguration();
+      
       configFileName = null;
    }
 
    public JMSServerManagerImpl(final HornetQServer server, final String configFileName) throws Exception
    {
       this.server = server;
+      
+      this.coreConfig = server.getConfiguration();
 
       this.configFileName = configFileName;
    }
@@ -138,6 +148,8 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
    public JMSServerManagerImpl(final HornetQServer server, final JMSConfiguration configuration) throws Exception
    {
       this.server = server;
+      
+      this.coreConfig = server.getConfiguration();
 
       configFileName = null;
 
@@ -213,9 +225,16 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       deploymentManager = new FileDeploymentManager(server.getConfiguration().getFileDeployerScanPeriod());
 
       server.registerActivateCallback(this);
-
+      
       server.start();
 
+
+      if (server.getReplicationEndpoint() != null)
+      {
+         createJournal();
+         storage.installReplication(server.getReplicationEndpoint());
+      }
+      
       started = true;
    }
 
@@ -235,11 +254,18 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       {
          deploymentManager.stop();
       }
+      
+      // Storage could be null on a shared store backup server before initialization
+      if (storage != null)
+      {
+         storage.stop();
+      }
+      
+      unbindJNDI(queueJNDI);
 
-      // for (String destination : destinationBindings.keySet())
-      // {
-      // undeployDestination(destination);
-      // }
+      unbindJNDI(topicJNDI);
+      
+      unbindJNDI(connectionFactoryJNDI);
 
       for (String connectionFactory : new HashSet<String>(connectionFactories.keySet()))
       {
@@ -255,10 +281,14 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
          context.close();
       }
 
-      jmsManagementService.unregisterJMSServer();
-
-      jmsManagementService.stop();
-
+      // it could be null if a backup
+      if (jmsManagementService != null)
+      {
+         jmsManagementService.unregisterJMSServer();
+   
+         jmsManagementService.stop();
+      }
+      
       server.stop();
 
       started = false;
@@ -1338,26 +1368,37 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
    }
 
    /**
+    * @param param
+    */
+   private void unbindJNDI(Map<String, List<String>> param)
+   {
+      for (List<String> elementList : param.values())
+      {
+         for (String key : elementList)
+         {
+            try
+            {
+               context.unbind(key);
+            }
+            catch (Exception e)
+            {
+               log.warn("Impossible to unbind key " + key + " from JNDI");
+            }
+         }
+      }
+   }
+
+   /**
     * @param server
     */
    private void initJournal() throws Exception
    {
       this.coreConfig = server.getConfiguration();
+      
 
-      if (storage == null)
-      {
-         if (coreConfig.isPersistenceEnabled())
-         {
-            // TODO: replication
-            storage = new JournalJMSStorageManagerImpl(new TimeAndCounterIDGenerator(), coreConfig, null);
-         }
-         else
-         {
-            storage = new NullJMSStorageManagerImpl();
-         }
-      }
-
-      storage.start();
+      createJournal();
+      
+      storage.load();
 
       List<PersistedConnectionFactory> cfs = storage.recoverConnectionFactories();
 
@@ -1426,6 +1467,33 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
             bindToJndi(jndi, objectToBind);
          }
       }
+   }
+
+   /**
+    * @throws Exception
+    */
+   private void createJournal() throws Exception
+   {
+      if (storage == null)
+      {
+         if (coreConfig.isPersistenceEnabled())
+         {
+            storage = new JournalJMSStorageManagerImpl(new TimeAndCounterIDGenerator(), server.getConfiguration(), server.getReplicationManager());
+         }
+         else
+         {
+            storage = new NullJMSStorageManagerImpl();
+         }
+      }
+      else
+      {
+         if (storage.isStarted())
+         {
+            storage.stop();
+         }
+      }
+
+      storage.start();
    }
 
    private synchronized boolean removeFromJNDI(final Map<String, List<String>> jndiMap, final String name) throws Exception

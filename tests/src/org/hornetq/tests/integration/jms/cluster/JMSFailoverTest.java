@@ -26,6 +26,7 @@ import javax.jms.MessageProducer;
 import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
+import javax.naming.NamingException;
 
 import junit.framework.Assert;
 
@@ -45,7 +46,10 @@ import org.hornetq.core.server.HornetQServers;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.client.HornetQDestination;
 import org.hornetq.jms.client.HornetQSession;
+import org.hornetq.jms.server.JMSServerManager;
+import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.hornetq.spi.core.protocol.RemotingConnection;
+import org.hornetq.tests.unit.util.InVMContext;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
 
@@ -69,18 +73,87 @@ public class JMSFailoverTest extends UnitTestCase
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
+   
+   protected InVMContext ctx1 = new InVMContext();
+   
+   protected InVMContext ctx2 = new InVMContext();
+   
+   protected Configuration backupConf;
+   
+   protected Configuration liveConf;
+   
+   protected JMSServerManager liveJMSService;
 
-   private HornetQServer liveService;
+   protected HornetQServer liveService;
+   
+   protected JMSServerManager backupJMSService;
 
-   private HornetQServer backupService;
+   protected HornetQServer backupService;
 
-   private Map<String, Object> backupParams = new HashMap<String, Object>();
+   protected Map<String, Object> backupParams = new HashMap<String, Object>();
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
+
+   public void testCreateQueue() throws Exception
+   {
+      liveJMSService.createQueue("queue1", null, true, "/queue/queue1");
+      assertNotNull(ctx1.lookup("/queue/queue1"));
+      liveJMSService.stop();
+
+      Object obj = null;
+
+      try
+      {
+         obj = ctx1.lookup("/queue/queue1");
+      }
+      catch (NamingException expected)
+      {
+
+      }
+
+      assertNull(obj);
+
+      backupJMSService.stop();
+
+      backupConf.setBackup(false);
+
+      backupJMSService.start();
+
+      assertNotNull(ctx2.lookup("/queue/queue1"));
+   }
+
+
+   public void testCreateTopic() throws Exception
+   {
+      liveJMSService.createTopic("topic", "/topic/t1");
+      assertNotNull(ctx1.lookup("//topic/t1"));
+      liveJMSService.stop();
+
+      Object obj = null;
+
+      try
+      {
+         obj = ctx1.lookup("//topic/t1");
+      }
+      catch (NamingException expected)
+      {
+
+      }
+
+      assertNull(obj);
+
+      backupJMSService.stop();
+
+      backupConf.setBackup(false);
+
+      backupJMSService.start();
+
+      assertNotNull(ctx2.lookup("/topic/t1"));
+   }
 
    public void testAutomaticFailover() throws Exception
    {
@@ -258,7 +331,15 @@ public class JMSFailoverTest extends UnitTestCase
    {
       super.setUp();
 
-      Configuration backupConf = new ConfigurationImpl();
+      startServers();
+   }
+
+   /**
+    * @throws Exception
+    */
+   protected void startServers() throws Exception
+   {
+      backupConf = new ConfigurationImpl();
       backupConf.setSecurityEnabled(false);
       backupParams.put(TransportConstants.SERVER_ID_PROP_NAME, 1);
       backupConf.getAcceptorConfigurations()
@@ -271,9 +352,16 @@ public class JMSFailoverTest extends UnitTestCase
       backupConf.setPagingDirectory(getPageDir());
       backupConf.setLargeMessagesDirectory(getLargeMessagesDir());
       backupService = HornetQServers.newHornetQServer(backupConf, true);
-      backupService.start();
 
-      Configuration liveConf = new ConfigurationImpl();
+      backupJMSService = new JMSServerManagerImpl(backupService);
+      
+      backupJMSService.setContext(ctx2);
+      
+      backupJMSService.start();
+      
+
+
+      liveConf = new ConfigurationImpl();
       liveConf.setSecurityEnabled(false);
       liveConf.getAcceptorConfigurations()
               .add(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory"));
@@ -285,19 +373,33 @@ public class JMSFailoverTest extends UnitTestCase
       liveConf.setLargeMessagesDirectory(getLargeMessagesDir());
 
       liveService = HornetQServers.newHornetQServer(liveConf, true);
-      liveService.start();
+      
+      liveJMSService = new JMSServerManagerImpl(liveService);
+      
+      liveJMSService.setContext(ctx1);
+
+      liveJMSService.start();
+
    }
 
    @Override
    protected void tearDown() throws Exception
    {
-      backupService.stop();
+      backupJMSService.stop();
 
-      liveService.stop();
+      liveJMSService.stop();
 
       Assert.assertEquals(0, InVMRegistry.instance.size());
 
       liveService = null;
+      
+      liveJMSService = null;
+      
+      backupJMSService = null;
+      
+      ctx1 = null;
+      
+      ctx2 = null;
 
       backupService = null;
 

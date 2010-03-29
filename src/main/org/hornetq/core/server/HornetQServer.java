@@ -26,6 +26,7 @@ import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.protocol.core.Channel;
 import org.hornetq.core.remoting.server.RemotingService;
 import org.hornetq.core.replication.ReplicationEndpoint;
+import org.hornetq.core.replication.ReplicationManager;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.server.cluster.ClusterManager;
 import org.hornetq.core.server.group.GroupingHandler;
@@ -135,6 +136,10 @@ public interface HornetQServer extends HornetQComponent
    void setGroupingHandler(GroupingHandler groupingHandler);
 
    GroupingHandler getGroupingHandler();
+   
+   ReplicationEndpoint getReplicationEndpoint();
+   
+   ReplicationManager getReplicationManager();
 
    boolean checkActivate() throws Exception;
 }

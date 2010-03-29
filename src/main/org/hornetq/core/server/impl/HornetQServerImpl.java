@@ -750,14 +750,18 @@ public class HornetQServerImpl implements HornetQServer
       return groupingHandler;
    }
 
-   // Public
-   // ---------------------------------------------------------------------------------------
-
-   /** For tests only */
    public ReplicationEndpoint getReplicationEndpoint()
    {
       return replicationEndpoint;
    }
+   
+   public ReplicationManager getReplicationManager()
+   {
+      return replicationManager;
+   }
+
+   // Public
+   // ---------------------------------------------------------------------------------------
 
    // Package protected
    // ----------------------------------------------------------------------------

@@ -15,6 +15,7 @@ package org.hornetq.jms.persistence;
 
 import java.util.List;
 
+import org.hornetq.core.replication.ReplicationEndpoint;
 import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.jms.persistence.config.PersistedConnectionFactory;
 import org.hornetq.jms.persistence.config.PersistedDestination;
@@ -40,7 +41,9 @@ public interface JMSStorageManager extends HornetQComponent
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
-
+   
+   void load() throws Exception;
+  
    void storeDestination(PersistedDestination destination) throws Exception;
 
    void deleteDestination(PersistedType type, String name) throws Exception;
@@ -68,4 +71,11 @@ public interface JMSStorageManager extends HornetQComponent
    void deleteJNDI(PersistedType type, String name, String address) throws Exception;
    
    void deleteJNDI(PersistedType type, String name) throws Exception;
+
+   /**
+    * Add the journal here to the replication endpoint
+    * @param replicationEndpoint
+    * @throws Exception 
+    */
+   void installReplication(ReplicationEndpoint replicationEndpoint) throws Exception;
 }

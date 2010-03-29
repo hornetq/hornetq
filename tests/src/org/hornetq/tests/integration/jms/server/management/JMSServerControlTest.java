@@ -35,6 +35,7 @@ import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.remoting.impl.invm.TransportConstants;
+import org.hornetq.core.replication.ReplicationEndpoint;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
 import org.hornetq.jms.client.HornetQConnectionFactory;
@@ -598,6 +599,20 @@ public class JMSServerControlTest extends ManagementTestBase
       public boolean isStarted()
       {
          return false;  //To change body of implemented methods use File | Settings | File Templates.
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.jms.persistence.JMSStorageManager#installReplication(org.hornetq.core.replication.ReplicationEndpoint)
+       */
+      public void installReplication(ReplicationEndpoint replicationEndpoint) throws Exception
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.jms.persistence.JMSStorageManager#load()
+       */
+      public void load() throws Exception
+      {
       }
    }
 

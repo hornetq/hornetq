@@ -16,6 +16,7 @@ package org.hornetq.jms.persistence.impl.nullpm;
 import java.util.Collections;
 import java.util.List;
 
+import org.hornetq.core.replication.ReplicationEndpoint;
 import org.hornetq.jms.persistence.JMSStorageManager;
 import org.hornetq.jms.persistence.config.PersistedConnectionFactory;
 import org.hornetq.jms.persistence.config.PersistedDestination;
@@ -134,6 +135,20 @@ public class NullJMSStorageManagerImpl implements JMSStorageManager
    public List<PersistedJNDI> recoverPersistedJNDI() throws Exception
    {
       return Collections.emptyList();
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.jms.persistence.JMSStorageManager#installReplication(org.hornetq.core.replication.ReplicationEndpoint)
+    */
+   public void installReplication(ReplicationEndpoint replicationEndpoint) throws Exception
+   {
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.jms.persistence.JMSStorageManager#load()
+    */
+   public void load() throws Exception
+   {
    }
 
    // Constants -----------------------------------------------------

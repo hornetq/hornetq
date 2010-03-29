@@ -14,6 +14,7 @@
 package org.hornetq.core.replication;
 
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.core.journal.Journal;
 import org.hornetq.core.journal.JournalLoadInformation;
 import org.hornetq.core.protocol.core.Channel;
 import org.hornetq.core.protocol.core.ChannelHandler;
@@ -34,5 +35,7 @@ public interface ReplicationEndpoint extends ChannelHandler, HornetQComponent
    Channel getChannel();
 
    void compareJournalInformation(JournalLoadInformation[] journalInformation) throws HornetQException;
+
+   void registerJournal(final byte id, final Journal journal);
 
 }

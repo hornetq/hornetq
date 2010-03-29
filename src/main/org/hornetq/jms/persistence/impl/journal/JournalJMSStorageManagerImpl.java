@@ -22,7 +22,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
 import org.hornetq.api.core.Pair;
-import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.journal.Journal;
 import org.hornetq.core.journal.PreparedTransactionInfo;
@@ -30,6 +29,7 @@ import org.hornetq.core.journal.RecordInfo;
 import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.journal.impl.JournalImpl;
 import org.hornetq.core.journal.impl.NIOSequentialFileFactory;
+import org.hornetq.core.replication.ReplicationEndpoint;
 import org.hornetq.core.replication.ReplicationManager;
 import org.hornetq.core.replication.impl.ReplicatedJournal;
 import org.hornetq.core.server.JournalType;
@@ -38,7 +38,6 @@ import org.hornetq.jms.persistence.config.PersistedConnectionFactory;
 import org.hornetq.jms.persistence.config.PersistedDestination;
 import org.hornetq.jms.persistence.config.PersistedJNDI;
 import org.hornetq.jms.persistence.config.PersistedType;
-import org.hornetq.jms.server.config.ConnectionFactoryConfiguration;
 import org.hornetq.utils.IDGenerator;
 
 /**
@@ -290,27 +289,31 @@ public class JournalJMSStorageManagerImpl implements JMSStorageManager
 
       jmsJournal.start();
       
-      load();
-      
       started = true;
    }
 
 
+
+   /* (non-Javadoc)
+    * @see org.hornetq.jms.persistence.JMSStorageManager#installReplication(org.hornetq.core.replication.ReplicationEndpoint)
+    */
+   public void installReplication(ReplicationEndpoint replicationEndpoint) throws Exception
+   {
+      jmsJournal.loadInternalOnly();
+      replicationEndpoint.registerJournal((byte)2, this.jmsJournal);
+   }
+
+   
    /* (non-Javadoc)
     * @see org.hornetq.core.server.HornetQComponent#stop()
     */
    public void stop() throws Exception
    {
+      this.started = false;
       jmsJournal.stop();
    }
 
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   private void load() throws Exception
+   public void load() throws Exception
    {
       mapFactories.clear();
       
@@ -359,6 +362,13 @@ public class JournalJMSStorageManagerImpl implements JMSStorageManager
       
    }
 
+   // Package protected ---------------------------------------------
+
+   // Protected -----------------------------------------------------
+
+   // Private -------------------------------------------------------
+
+
    private void checkAndCreateDir(final String dir, final boolean create)
    {
       File f = new File(dir);
@@ -378,6 +388,7 @@ public class JournalJMSStorageManagerImpl implements JMSStorageManager
          }
       }
    }
+
 
 
    // Inner classes -------------------------------------------------
