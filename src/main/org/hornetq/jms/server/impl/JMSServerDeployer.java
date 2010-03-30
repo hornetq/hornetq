@@ -167,10 +167,7 @@ public class JMSServerDeployer extends XmlDeployer
    private void deployTopic(final Node node) throws Exception
    {
       TopicConfiguration topicConfig = parser.parseTopicConfiguration(node);
-      for (String jndi : topicConfig.getBindings())
-      {
-         jmsServerManager.createTopic(false, topicConfig.getName(), jndi);
-      }
+      jmsServerManager.createTopic(false, topicConfig.getName(), topicConfig.getBindings());
    }
 
    /**
