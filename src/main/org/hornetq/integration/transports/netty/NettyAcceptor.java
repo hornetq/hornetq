@@ -412,7 +412,7 @@ public class NettyAcceptor implements Acceptor
          batchFlusherFuture = scheduledThreadPool.scheduleWithFixedDelay(flusher, batchDelay, batchDelay, TimeUnit.MILLISECONDS);
       }
 
-      NettyAcceptor.log.info("Started Netty Acceptor version " + Version.ID);
+      NettyAcceptor.log.info("Started Netty Acceptor version " + Version.ID + " " + host + ":" + port);
    }
 
    private void startServerChannels()
