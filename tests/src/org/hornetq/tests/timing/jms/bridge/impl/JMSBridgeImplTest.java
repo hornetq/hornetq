@@ -533,8 +533,8 @@ public class JMSBridgeImplTest extends UnitTestCase
       jmsServer.setContext(context);
       jmsServer.start();
 
-      jmsServer.createQueue(JMSBridgeImplTest.SOURCE, null, true, "/queue/" + JMSBridgeImplTest.SOURCE);
-      jmsServer.createQueue(JMSBridgeImplTest.TARGET, null, true, "/queue/" + JMSBridgeImplTest.TARGET);
+      jmsServer.createQueue(false, JMSBridgeImplTest.SOURCE, null, true, "/queue/" + JMSBridgeImplTest.SOURCE);
+      jmsServer.createQueue(false, JMSBridgeImplTest.TARGET, null, true, "/queue/" + JMSBridgeImplTest.TARGET);
 
    }
 

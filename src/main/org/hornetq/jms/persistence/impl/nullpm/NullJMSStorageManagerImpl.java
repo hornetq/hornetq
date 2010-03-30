@@ -104,7 +104,7 @@ public class NullJMSStorageManagerImpl implements JMSStorageManager
    /* (non-Javadoc)
     * @see org.hornetq.jms.persistence.JMSStorageManager#addJNDI(org.hornetq.jms.persistence.PersistedType, java.lang.String, java.lang.String)
     */
-   public void addJNDI(PersistedType type, String name, String address) throws Exception
+   public void addJNDI(PersistedType type, String name, String ... address) throws Exception
    {
    }
 

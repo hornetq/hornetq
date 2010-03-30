@@ -278,7 +278,7 @@ public class AddressSettings implements Mergeable<AddressSettings>, Serializable
 
       lastValueQueue = BufferHelper.readNullableBoolean(buffer);
 
-      redeliveryDelay = BufferHelper.readNullableLong(buffer);
+      redistributionDelay = BufferHelper.readNullableLong(buffer);
 
       sendToDLAOnNoRoute = BufferHelper.readNullableBoolean(buffer);
    }

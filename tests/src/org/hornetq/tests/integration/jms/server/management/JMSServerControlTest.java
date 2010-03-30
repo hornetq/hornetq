@@ -565,10 +565,13 @@ public class JMSServerControlTest extends ManagementTestBase
          return Collections.EMPTY_LIST;
       }
 
-      public void addJNDI(PersistedType type, String name, String address) throws Exception
+      public void addJNDI(PersistedType type, String name, String ... address) throws Exception
       {
          persistedJNDIMap.putIfAbsent(name, new ArrayList<String>());
-         persistedJNDIMap.get(name).add(address);
+         for (String ad: address)
+         {
+            persistedJNDIMap.get(name).add(ad);
+         }
       }
 
       public List<PersistedJNDI> recoverPersistedJNDI() throws Exception

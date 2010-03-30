@@ -64,7 +64,7 @@ public interface JMSStorageManager extends HornetQComponent
 
    // Inner classes -------------------------------------------------
 
-   void addJNDI(PersistedType type, String name, String address) throws Exception;
+   void addJNDI(PersistedType type, String name, String ... address) throws Exception;
    
    List<PersistedJNDI> recoverPersistedJNDI() throws Exception;
    

@@ -85,14 +85,14 @@ public class JMSTestBase extends ServiceTestBase
     */
    protected Queue createQueue(final String name) throws Exception, NamingException
    {
-      jmsServer.createQueue(name, null, true, "/jms/" + name);
+      jmsServer.createQueue(false, name, null, true, "/jms/" + name);
 
       return (Queue)context.lookup("/jms/" + name);
    }
    
    protected Topic createTopic(final String name) throws Exception, NamingException
    {
-      jmsServer.createTopic(name, "/jms/" + name);
+      jmsServer.createTopic(false, name, "/jms/" + name);
 
       return (Topic)context.lookup("/jms/" + name);
    }

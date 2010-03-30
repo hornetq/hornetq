@@ -292,7 +292,7 @@ public class JMSServerControlImpl extends StandardMBean implements JMSServerCont
 
       try
       {
-         boolean created = server.createQueue(name, selector, true, JMSServerControlImpl.toArray(jndiBindings));
+         boolean created = server.createQueue(true, name, selector, true, JMSServerControlImpl.toArray(jndiBindings));
          if (created)
          {
             sendNotification(NotificationType.QUEUE_CREATED, name);
@@ -339,7 +339,7 @@ public class JMSServerControlImpl extends StandardMBean implements JMSServerCont
 
       try
       {
-         boolean created = server.createTopic(topicName, JMSServerControlImpl.toArray(jndiBindings));
+         boolean created = server.createTopic(true, topicName, JMSServerControlImpl.toArray(jndiBindings));
          if (created)
          {
             sendNotification(NotificationType.TOPIC_CREATED, topicName);

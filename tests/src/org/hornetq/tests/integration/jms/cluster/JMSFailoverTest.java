@@ -100,7 +100,7 @@ public class JMSFailoverTest extends UnitTestCase
 
    public void testCreateQueue() throws Exception
    {
-      liveJMSService.createQueue("queue1", null, true, "/queue/queue1");
+      liveJMSService.createQueue(true, "queue1", null, true, "/queue/queue1");
       assertNotNull(ctx1.lookup("/queue/queue1"));
       liveJMSService.stop();
 
@@ -129,7 +129,7 @@ public class JMSFailoverTest extends UnitTestCase
 
    public void testCreateTopic() throws Exception
    {
-      liveJMSService.createTopic("topic", "/topic/t1");
+      liveJMSService.createTopic(true, "topic", "/topic/t1");
       assertNotNull(ctx1.lookup("//topic/t1"));
       liveJMSService.stop();
 

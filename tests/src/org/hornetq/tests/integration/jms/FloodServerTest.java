@@ -93,7 +93,7 @@ public class FloodServerTest extends UnitTestCase
       serverManager.start();
       serverManager.activated();
 
-      serverManager.createTopic(topicName, topicName);
+      serverManager.createTopic(false, topicName, topicName);
       registerConnectionFactory();
    }
 

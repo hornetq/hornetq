@@ -129,7 +129,7 @@ public abstract class BridgeTestBase extends UnitTestCase
 
       createQueue("sourceQueue", 0);
 
-      jmsServer0.createTopic("sourceTopic", "/topic/sourceTopic");
+      jmsServer0.createTopic(false, "sourceTopic", "/topic/sourceTopic");
 
       createQueue("localTargetQueue", 0);
 
@@ -150,7 +150,7 @@ public abstract class BridgeTestBase extends UnitTestCase
       {
          server = jmsServer1;
       }
-      server.createQueue(queueName, null, true, "/queue/" + queueName);
+      server.createQueue(false, queueName, null, true, "/queue/" + queueName);
    }
 
    @Override

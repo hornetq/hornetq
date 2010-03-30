@@ -169,7 +169,7 @@ public class JMSServerDeployer extends XmlDeployer
       TopicConfiguration topicConfig = parser.parseTopicConfiguration(node);
       for (String jndi : topicConfig.getBindings())
       {
-         jmsServerManager.createTopic(topicConfig.getName(), jndi);
+         jmsServerManager.createTopic(false, topicConfig.getName(), jndi);
       }
    }
 
@@ -180,7 +180,7 @@ public class JMSServerDeployer extends XmlDeployer
    private void deployQueue(final Node node) throws Exception
    {
       JMSQueueConfiguration queueconfig = parser.parseQueueConfiguration(node);
-      jmsServerManager.createQueue(queueconfig.getName(), queueconfig.getSelector(), queueconfig.isDurable(), queueconfig.getBindings());
+      jmsServerManager.createQueue(false, queueconfig.getName(), queueconfig.getSelector(), queueconfig.isDurable(), queueconfig.getBindings());
    }
 
    /**
@@ -190,7 +190,7 @@ public class JMSServerDeployer extends XmlDeployer
    private void deployConnectionFactory(final Node node) throws Exception
    {
       ConnectionFactoryConfiguration cfConfig = parser.parseConnectionFactoryConfiguration(node);
-      jmsServerManager.createConnectionFactory(cfConfig, cfConfig.getBindings());
+      jmsServerManager.createConnectionFactory(false, cfConfig, cfConfig.getBindings());
    }
 
    

@@ -357,7 +357,7 @@ public class TopicControlUsingJMSTest extends ManagementTestBase
       subscriptionName = RandomUtil.randomString();
 
       String topicName = RandomUtil.randomString();
-      serverManager.createTopic(topicName, topicBinding );
+      serverManager.createTopic(false, topicName, topicBinding );
       topic = (HornetQDestination)HornetQJMSClient.createTopic(topicName);
 
       HornetQConnectionFactory cf = (HornetQConnectionFactory)HornetQJMSClient.createConnectionFactory(new TransportConfiguration(InVMConnectorFactory.class.getName()));

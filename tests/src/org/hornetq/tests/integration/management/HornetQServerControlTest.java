@@ -22,15 +22,16 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.management.HornetQServerControl;
 import org.hornetq.api.core.management.ObjectNameBuilder;
+import org.hornetq.api.core.management.Parameter;
 import org.hornetq.api.core.management.QueueControl;
 import org.hornetq.api.core.management.RoleInfo;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.messagecounter.impl.MessageCounterManagerImpl;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
+import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.utils.json.JSONArray;
 import org.hornetq.utils.json.JSONObject;
@@ -391,16 +392,23 @@ public class HornetQServerControlTest extends ManagementTestBase
 
       Assert.assertEquals(newSample, serverControl.getMessageCounterSamplePeriod());
    }
-   
+
    public void testSecuritySettings() throws Exception
    {
       HornetQServerControl serverControl = createManagementControl();
       String addressMatch = "test.#";
       String exactAddress = "test.whatever";
-      
+
       assertEquals(0, serverControl.getRoles(addressMatch).length);
       serverControl.addSecuritySettings(addressMatch, "foo", "foo, bar", "foo", "bar", "foo, bar", "", "");
-      
+
+      // Restart the server. Those settings should be persisted
+
+      server.stop();
+      server.start();
+
+      serverControl = createManagementControl();
+
       String rolesAsJSON = serverControl.getRolesAsJSON(exactAddress);
       RoleInfo[] roleInfos = RoleInfo.from(rolesAsJSON);
       assertEquals(2, roleInfos.length);
@@ -423,7 +431,7 @@ public class HornetQServerControlTest extends ManagementTestBase
       assertTrue(fooRole.isCreateNonDurableQueue());
       assertFalse(fooRole.isDeleteNonDurableQueue());
       assertFalse(fooRole.isManage());
-   
+
       assertFalse(barRole.isSend());
       assertTrue(barRole.isConsume());
       assertFalse(barRole.isCreateDurableQueue());
@@ -431,9 +439,56 @@ public class HornetQServerControlTest extends ManagementTestBase
       assertTrue(barRole.isCreateNonDurableQueue());
       assertFalse(barRole.isDeleteNonDurableQueue());
       assertFalse(barRole.isManage());
-      
+
       serverControl.removeSecuritySettings(addressMatch);
       assertEquals(0, serverControl.getRoles(exactAddress).length);
+   }
+
+   public void testAddressSettings() throws Exception
+   {
+      HornetQServerControl serverControl = createManagementControl();
+      String addressMatch = "test.#";
+      String exactAddress = "test.whatever";
+
+      String DLA = "someDLA";
+      String expiryAddress = "someExpiry";
+      boolean lastValueQueue = true;
+      int deliveryAttempts = 1;
+      long maxSizeBytes = 2;
+      int pageSizeBytes = 3;
+      long redeliveryDelay = 4;
+      long redistributionDelay = 5;
+      boolean sendToDLAOnNoRoute = true;
+      String addressFullMessagePolicy = "PAGE";
+
+      serverControl.addAddressSettings(addressMatch,
+                                       DLA,
+                                       expiryAddress,
+                                       lastValueQueue,
+                                       deliveryAttempts,
+                                       maxSizeBytes,
+                                       pageSizeBytes,
+                                       redeliveryDelay,
+                                       redistributionDelay,
+                                       sendToDLAOnNoRoute,
+                                       addressFullMessagePolicy);
+
+      server.stop();
+      server.start();
+      serverControl = createManagementControl();
+
+      AddressSettings settings = serverControl.getAddressSettings(exactAddress);
+
+      assertEquals(DLA, settings.getDeadLetterAddress().toString());
+      assertEquals(expiryAddress, settings.getExpiryAddress().toString());
+      assertEquals(lastValueQueue, settings.isLastValueQueue());
+      assertEquals(deliveryAttempts, settings.getMaxDeliveryAttempts());
+      assertEquals(maxSizeBytes, settings.getMaxSizeBytes());
+      assertEquals(pageSizeBytes, settings.getPageSizeBytes());
+      assertEquals(redeliveryDelay, settings.getRedeliveryDelay());
+      assertEquals(redistributionDelay, settings.getRedistributionDelay());
+      assertEquals(sendToDLAOnNoRoute, settings.isSendToDLAOnNoRoute());
+      assertEquals(addressFullMessagePolicy, settings.getAddressFullMessagePolicy().toString());
    }
 
    // Package protected ---------------------------------------------
@@ -451,12 +506,13 @@ public class HornetQServerControlTest extends ManagementTestBase
                                                    params,
                                                    RandomUtil.randomString());
 
-      conf = new ConfigurationImpl();
+      conf = createDefaultConfig(false);
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
+      conf.getAcceptorConfigurations().clear();
       conf.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
 
-      server = HornetQServers.newHornetQServer(conf, mbeanServer, false);
+      server = HornetQServers.newHornetQServer(conf, mbeanServer, true);
       conf.getConnectorConfigurations().put(connectorConfig.getName(), connectorConfig);
       server.start();
    }

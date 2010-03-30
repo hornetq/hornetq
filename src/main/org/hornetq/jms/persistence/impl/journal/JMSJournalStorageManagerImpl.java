@@ -185,7 +185,7 @@ public class JMSJournalStorageManagerImpl implements JMSStorageManager
       return list;
    }
    
-   public void addJNDI(PersistedType type, String name, String address) throws Exception
+   public void addJNDI(PersistedType type, String name, String ... address) throws Exception
    {
       Pair<PersistedType, String> key = new Pair<PersistedType, String>(type, name);
 
@@ -203,7 +203,11 @@ public class JMSJournalStorageManagerImpl implements JMSStorageManager
       
       mapJNDI.put(key, currentJNDI);
       
-      currentJNDI.addJNDI(address);
+      for (String adItem : address)
+      {
+         currentJNDI.addJNDI(adItem);
+      }
+      
 
       long newId = idGenerator.generateID();
       

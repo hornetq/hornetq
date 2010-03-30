@@ -56,7 +56,7 @@ public interface JMSServerManager extends HornetQComponent
     * @throws Exception
     *            if problems were encountered creating the queue.
     */
-   boolean createQueue(String queueName, String selectorString, boolean durable, String ...jndi) throws Exception;
+   boolean createQueue(boolean storeConfig, String queueName, String selectorString, boolean durable, String ...jndi) throws Exception;
    
    boolean addTopicToJndi(final String topicName, final String jndiBinding) throws Exception;
 
@@ -76,7 +76,7 @@ public interface JMSServerManager extends HornetQComponent
     * @throws Exception
     *            if a problem occurred creating the topic
     */
-   boolean createTopic(String topicName, String ... jndi) throws Exception;
+   boolean createTopic(boolean storeConfig, String topicName, String ... jndi) throws Exception;
 
    /**
     * Remove the topic from JNDI.
@@ -257,7 +257,7 @@ public interface JMSServerManager extends HornetQComponent
                                 String groupId,
                                 String ... jndiBindings) throws Exception;
    
-   void createConnectionFactory(ConnectionFactoryConfiguration cfConfig, String... jndiBindings) throws Exception;
+   void createConnectionFactory(boolean storeConfig, ConnectionFactoryConfiguration cfConfig, String... jndiBindings) throws Exception;
 
    /**
     * destroys a connection factory.
