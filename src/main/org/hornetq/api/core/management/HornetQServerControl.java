@@ -519,7 +519,7 @@ public interface HornetQServerControl
                            @Parameter(desc="do we send to the DLA when there is no where to route the message", name="sendToDLAOnNoRoute") boolean sendToDLAOnNoRoute,
                            @Parameter(desc="the ploicy to use when the address is full", name="addressFullMessagePolicy") String addressFullMessagePolicy) throws Exception;
 
-   AddressSettings getAddressSettings(String address);
+   AddressSettings getAddressSettings(String address) throws Exception;
 
    void removeAddressSettings(String addressMatch) throws Exception;
 
