@@ -220,7 +220,6 @@ public class HornetQActivation
    }
 
    
-   
    /**
     * Start the activation
     *
@@ -255,7 +254,7 @@ public class HornetQActivation
    /**
     * Stop the activation
     */
-   public void stop()
+   public void stop() throws ResourceException
    {
       if (HornetQActivation.trace)
       {
@@ -263,7 +262,7 @@ public class HornetQActivation
       }
 
       deliveryActive.set(false);
-      teardown();
+      ra.getWorkManager().scheduleWork(new TearDownActivation());
    }
 
    /**
@@ -271,9 +270,9 @@ public class HornetQActivation
     *
     * @throws Exception Thrown if an error occurs
     */
-   protected void setup() throws Exception
+   protected synchronized void setup() throws Exception
    {
-      HornetQActivation.log.debug("Setting up " + spec);
+      HornetQActivation.log.info("Setting up " + spec);
 
       setupCF();
 
@@ -288,15 +287,15 @@ public class HornetQActivation
          handlers.add(handler);
       }
 
-      HornetQActivation.log.debug("Setup complete " + this);
+      HornetQActivation.log.info("Setup complete " + this);
    }
 
    /**
     * Teardown the activation
     */
-   protected void teardown()
+   protected synchronized void teardown()
    {
-      HornetQActivation.log.debug("Tearing down " + spec);
+      HornetQActivation.log.info("Tearing down " + spec);
 
       for (HornetQMessageHandler handler : handlers)
       {
@@ -307,7 +306,7 @@ public class HornetQActivation
          factory.close();
          factory = null;
       }
-      HornetQActivation.log.debug("Tearing down complete " + this);
+      HornetQActivation.log.info("Tearing down complete " + this);
    }
 
    protected void setupCF() throws Exception
@@ -497,7 +496,29 @@ public class HornetQActivation
          }
          catch (Throwable t)
          {
-            HornetQActivation.log.error("Unabler to start activation ", t);
+            HornetQActivation.log.error("Unable to start activation ", t);
+         }
+      }
+
+      public void release()
+      {
+      }
+   }
+
+   /**
+    * Handles the setup
+    */
+   private class TearDownActivation implements Work
+   {
+      public void run()
+      {
+         try
+         {
+            teardown();
+         }
+         catch (Throwable t)
+         {
+            HornetQActivation.log.error("Unable to tear down activation ", t);
          }
       }
 
