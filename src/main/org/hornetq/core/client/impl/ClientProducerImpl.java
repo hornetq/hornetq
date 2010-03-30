@@ -214,22 +214,43 @@ public class ClientProducerImpl implements ClientProducerInternal
       MessageInternal msgI = (MessageInternal)msg;
       
       ClientProducerCredits theCredits;
+      
+      boolean isLarge;
+
+      if (msgI.getBodyInputStream() != null || msgI.isLargeMessage())
+      {
+         isLarge = true;
+      }
+      else
+      {
+         isLarge = false;
+      }
 
       if (address != null)
       {
-         //session.setAddress(msg, address);
+         if (!isLarge)
+         {
+            session.setAddress(msg, address);
+         }
+         else
+         {
+            msg.setAddress(address);
+         }
          
-         msg.setAddress(address);
-
          // Anonymous
          theCredits = session.getCredits(address, true);
       }
       else
       {
-         //session.setAddress(msg, this.address);
+         if (!isLarge)
+         {
+            session.setAddress(msg, this.address);
+         }
+         else
+         {
+            msg.setAddress(this.address);
+         }
          
-         msg.setAddress(this.address);
-
          theCredits = credits;
       }
 
@@ -249,16 +270,7 @@ public class ClientProducerImpl implements ClientProducerInternal
 
       session.workDone();
 
-      boolean isLarge;
-
-      if (msgI.getBodyInputStream() != null || msgI.isLargeMessage())
-      {
-         isLarge = true;
-      }
-      else
-      {
-         isLarge = false;
-      }
+      
 
       if (isLarge)
       {

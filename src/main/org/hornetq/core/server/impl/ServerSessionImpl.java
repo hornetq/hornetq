@@ -131,6 +131,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
    private final RoutingContext routingContext = new RoutingContextImpl(null);
 
    private final SessionCallback callback;
+   
+   private volatile SimpleString defaultAddress;
 
    // Constructors ---------------------------------------------------------------------------------
 
@@ -905,8 +907,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       currentLargeMessage = msg;
    }
    
-   private volatile SimpleString defaultAddress;
-   
    public void send(final ServerMessage message) throws Exception
    {
       long id = storageManager.generateUniqueID();
@@ -916,7 +916,17 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       
       if (message.getAddress() == null)
       {
-         message.setAddress(defaultAddress);
+         if (message.isDurable())
+         {
+            //We need to force a re-encode when the message gets persisted or when it gets reloaded
+            //it will have no address
+            message.setAddress(defaultAddress);
+         }
+         else
+         {
+            //We don't want to force a re-encode when the message gets sent to the consumer
+            message.setAddressTransient(defaultAddress);
+         }
       }
 
       if (message.getAddress().equals(managementAddress))

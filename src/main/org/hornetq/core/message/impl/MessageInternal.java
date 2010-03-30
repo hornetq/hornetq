@@ -18,6 +18,7 @@ import java.io.InputStream;
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Message;
+import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.message.BodyEncoder;
 
 /**
@@ -56,4 +57,6 @@ public interface MessageInternal extends Message
    BodyEncoder getBodyEncoder() throws HornetQException;  
    
    InputStream getBodyInputStream();
+
+   void setAddressTransient(SimpleString address);
 }

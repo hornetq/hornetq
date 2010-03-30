@@ -444,6 +444,12 @@ public abstract class MessageImpl implements MessageInternal
          return buffer;
       }
    }
+   
+   public void setAddressTransient(final SimpleString address)
+   {
+      this.address = address;
+   }
+
 
    // Properties
    // ---------------------------------------------------------------------------------------

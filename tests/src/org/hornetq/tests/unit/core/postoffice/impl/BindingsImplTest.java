@@ -880,6 +880,12 @@ public class BindingsImplTest extends UnitTestCase
 
       }
 
+      public void setAddressTransient(SimpleString address)
+      {
+         // TODO Auto-generated method stub
+         
+      }
+
    }
 
    class FakeFilter implements Filter

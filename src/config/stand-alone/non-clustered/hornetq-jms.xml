@@ -12,6 +12,16 @@
 		</entries>
 	</connection-factory>
 	
+	<connection-factory name="NettyThroughputConnectionFactory">
+	   <connectors>
+         <connector-ref connector-name="netty-throughput"/>
+	   </connectors>
+		<entries>
+			<entry name="/ThroughputConnectionFactory"/>
+			<entry name="/XAThroughputConnectionFactory"/>
+		</entries>
+	</connection-factory>
+	
 	<queue name="DLQ">
 		<entry name="/queue/DLQ"/>
 	</queue>

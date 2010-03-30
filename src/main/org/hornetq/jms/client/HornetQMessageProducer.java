@@ -413,6 +413,36 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
          
          msg.resetMessageID(null); 
       }
+      
+//      if (!disableMessageID)
+//      {
+//         // Generate an id
+//
+//         UUID uid = UUIDGenerator.getInstance().generateUUID();
+//
+//         byte[] bytes = uid.asBytes();
+//
+//         long id1 = bytes[0] << 56 | bytes[1] << 48 |
+//                    bytes[2] << 40 |
+//                    bytes[3] << 32 |
+//                    bytes[4] << 24 |
+//                    bytes[5] << 16 |
+//                    bytes[6] << 8 |
+//                    bytes[7];
+//
+//         long id2 = bytes[8] << 56 | bytes[9] << 48 |
+//                    bytes[10] << 40 |
+//                    bytes[11] << 32 |
+//                    bytes[12] << 24 |
+//                    bytes[13] << 16 |
+//                    bytes[14] << 8 |
+//                    bytes[15];
+//
+//         //We store it as two longs in the message, as it's a more compact format
+//         msg.getCoreMessage().setClientMessageID(id1, id2);
+//         
+//         msg.resetMessageID(null);
+//      }
 
       if (foreign)
       {

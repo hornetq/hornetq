@@ -465,6 +465,11 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       }
         
       ClientMessageInternal messageToHandle = message;
+      
+      if (messageToHandle.getAddress() == null)
+      {
+         messageToHandle.setAddressTransient(queueInfo.getAddress());
+      }
 
       messageToHandle.onReceipt(this);
       
