@@ -805,7 +805,7 @@
            <exclude  name="**/build.xml"/>
          </fileset>
          <fileset dir="${src.config.dir}">
-           <include  name="jboss-6/**"/>
+           <include  name="jboss-as-6/**"/>
          </fileset>
          <fileset dir="${native.bin.dir}">
            <include  name="**/*.so"/>
