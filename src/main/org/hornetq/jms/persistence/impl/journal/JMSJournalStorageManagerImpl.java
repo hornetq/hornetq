@@ -269,7 +269,7 @@ public class JMSJournalStorageManagerImpl implements JMSStorageManager
 
    public void deleteDestination(final PersistedType type, final String name) throws Exception
    {
-      PersistedDestination destination = destinations.get(new Pair<PersistedType, String>(type, name));
+      PersistedDestination destination = destinations.remove(new Pair<PersistedType, String>(type, name));
       if(destination != null)
       {
          jmsJournal.appendDeleteRecord(destination.getId(), false);
