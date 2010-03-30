@@ -79,6 +79,18 @@ public class HornetQServerControlUsingCoreTest extends HornetQServerControlTest
 
       super.tearDown();
    }
+   
+   protected void restartServer() throws Exception
+   {
+      session.close();
+      
+      super.restartServer();
+      
+      ClientSessionFactory sf = HornetQClient.createClientSessionFactory(new TransportConfiguration(InVMConnectorFactory.class.getName()));
+      session = sf.createSession(false, true, true);
+      session.start();
+
+   }
 
    @Override
    protected HornetQServerControl createManagementControl() throws Exception

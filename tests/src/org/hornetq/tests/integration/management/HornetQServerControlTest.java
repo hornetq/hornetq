@@ -393,6 +393,12 @@ public class HornetQServerControlTest extends ManagementTestBase
       Assert.assertEquals(newSample, serverControl.getMessageCounterSamplePeriod());
    }
 
+   protected void restartServer() throws Exception
+   {
+      server.stop();
+      server.start();
+   }
+   
    public void testSecuritySettings() throws Exception
    {
       HornetQServerControl serverControl = createManagementControl();
@@ -404,8 +410,7 @@ public class HornetQServerControlTest extends ManagementTestBase
 
       // Restart the server. Those settings should be persisted
 
-      server.stop();
-      server.start();
+      restartServer();
 
       serverControl = createManagementControl();
 
@@ -473,8 +478,7 @@ public class HornetQServerControlTest extends ManagementTestBase
                                        sendToDLAOnNoRoute,
                                        addressFullMessagePolicy);
 
-      server.stop();
-      server.start();
+      //restartServer();
       serverControl = createManagementControl();
 
       AddressSettings settings = serverControl.getAddressSettings(exactAddress);
