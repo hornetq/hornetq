@@ -27,6 +27,7 @@ import javax.naming.InitialContext;
 import javax.resource.ResourceException;
 import javax.resource.spi.endpoint.MessageEndpointFactory;
 import javax.resource.spi.work.Work;
+import javax.resource.spi.work.WorkException;
 import javax.resource.spi.work.WorkManager;
 
 import org.hornetq.api.core.SimpleString;
@@ -254,7 +255,7 @@ public class HornetQActivation
    /**
     * Stop the activation
     */
-   public void stop() throws ResourceException
+   public void stop()
    {
       if (HornetQActivation.trace)
       {
@@ -262,7 +263,14 @@ public class HornetQActivation
       }
 
       deliveryActive.set(false);
-      ra.getWorkManager().scheduleWork(new TearDownActivation());
+      try
+      {
+         ra.getWorkManager().scheduleWork(new TearDownActivation());
+      }
+      catch (WorkException e)
+      {
+         log.warn("exception while scheduling activation teardown " + this, e);
+      }
    }
 
    /**
