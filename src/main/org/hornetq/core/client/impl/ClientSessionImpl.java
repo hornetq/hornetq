@@ -767,8 +767,6 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
       if (consumer != null)
       {
-         workDone();
-
          consumer.handleLargeMessage(message);
       }
    }
@@ -779,8 +777,6 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
       if (consumer != null)
       {
-         workDone();
-
          consumer.handleLargeMessageContinuation(continuation);
       }
    }
