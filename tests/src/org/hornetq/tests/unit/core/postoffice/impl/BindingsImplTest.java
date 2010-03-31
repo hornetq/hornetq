@@ -886,6 +886,18 @@ public class BindingsImplTest extends UnitTestCase
          
       }
 
+      public SimpleString getUserID()
+      {
+         // TODO Auto-generated method stub
+         return null;
+      }
+
+      public void setUserID(SimpleString userID)
+      {
+         // TODO Auto-generated method stub
+         
+      }
+
    }
 
    class FakeFilter implements Filter

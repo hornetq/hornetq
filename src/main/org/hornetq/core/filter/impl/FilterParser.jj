@@ -22,6 +22,7 @@
 
 options {
    LOOKAHEAD=1;
+   UNICODE_INPUT=true;
 /*
    DEBUG_PARSER=true;
    DEBUG_LOOKAHEAD=true;

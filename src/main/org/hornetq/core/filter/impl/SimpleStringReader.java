@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.io.Reader;
 
 import org.hornetq.api.core.SimpleString;
+import org.hornetq.core.logging.Logger;
 
 
 /**
@@ -32,6 +33,8 @@ public class SimpleStringReader extends Reader
 {
 
    // Constants -----------------------------------------------------
+   
+   private static final Logger log = Logger.getLogger(SimpleStringReader.class);
 
    // Attributes ----------------------------------------------------
 

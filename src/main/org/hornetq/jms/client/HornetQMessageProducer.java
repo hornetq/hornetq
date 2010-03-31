@@ -82,9 +82,9 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
    // Constructors --------------------------------------------------
 
    protected HornetQMessageProducer(final HornetQConnection jbossConn,
-                                 final ClientProducer producer,
-                                 final HornetQDestination defaultDestination,
-                                 final ClientSession clientSession) throws JMSException
+                                    final ClientProducer producer,
+                                    final HornetQDestination defaultDestination,
+                                    final ClientSession clientSession) throws JMSException
    {
       this.jbossConn = jbossConn;
 
@@ -350,8 +350,8 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
             if (!destination.equals(defaultDestination))
             {
                throw new UnsupportedOperationException("Where a default destination is specified " + "for the sender and a destination is "
-                                      + "specified in the arguments to the send, "
-                                      + "these destinations must be equal");
+                                                       + "specified in the arguments to the send, "
+                                                       + "these destinations must be equal");
             }
          }
 
@@ -409,40 +409,22 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
 
          UUID uid = UUIDGenerator.getInstance().generateUUID();
          
-         msg.getCoreMessage().putStringProperty(HornetQMessage.JMSMESSAGEID_HEADER_NAME, new SimpleString("ID:" + uid.toString()));
+         byte[] bytes = uid.asBytes();
          
-         msg.resetMessageID(null); 
+         byte[] id = new byte[6 + 16];
+         
+         id[0] = (byte)'I';
+         id[2] = (byte)'D';
+         id[4] = (byte)':';
+         
+         System.arraycopy(bytes, 0, id, 6, 16);
+         
+         SimpleString ssid = new SimpleString(id);
+         
+         msg.getCoreMessage().setUserID(ssid);
+
+         msg.resetMessageID(null);
       }
-      
-//      if (!disableMessageID)
-//      {
-//         // Generate an id
-//
-//         UUID uid = UUIDGenerator.getInstance().generateUUID();
-//
-//         byte[] bytes = uid.asBytes();
-//
-//         long id1 = bytes[0] << 56 | bytes[1] << 48 |
-//                    bytes[2] << 40 |
-//                    bytes[3] << 32 |
-//                    bytes[4] << 24 |
-//                    bytes[5] << 16 |
-//                    bytes[6] << 8 |
-//                    bytes[7];
-//
-//         long id2 = bytes[8] << 56 | bytes[9] << 48 |
-//                    bytes[10] << 40 |
-//                    bytes[11] << 32 |
-//                    bytes[12] << 24 |
-//                    bytes[13] << 16 |
-//                    bytes[14] << 8 |
-//                    bytes[15];
-//
-//         //We store it as two longs in the message, as it's a more compact format
-//         msg.getCoreMessage().setClientMessageID(id1, id2);
-//         
-//         msg.resetMessageID(null);
-//      }
 
       if (foreign)
       {

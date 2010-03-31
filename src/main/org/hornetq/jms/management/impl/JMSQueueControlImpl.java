@@ -13,16 +13,15 @@
 
 package org.hornetq.jms.management.impl;
 
-import java.util.List;
 import java.util.Map;
 
 import javax.management.MBeanInfo;
 import javax.management.StandardMBean;
 
+import org.hornetq.api.core.FilterConstants;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.management.MessageCounterInfo;
 import org.hornetq.api.core.management.QueueControl;
-import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.api.jms.management.JMSQueueControl;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.management.impl.MBeanInfoHelper;
@@ -70,7 +69,7 @@ public class JMSQueueControlImpl extends StandardMBean implements JMSQueueContro
 
    private static String createFilterForJMSMessageID(final String jmsMessageID) throws Exception
    {
-      return HornetQMessage.JMSMESSAGEID_HEADER_NAME + " = '" + jmsMessageID + "'";
+      return FilterConstants.HORNETQ_USERID + " = '" + jmsMessageID + "'";
    }
 
    static String toJSON(final Map<String, Object>[] messages)

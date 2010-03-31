@@ -38,6 +38,7 @@ import org.hornetq.core.server.ServerMessage;
 * HQDurable - "DURABLE" or "NON_DURABLE"
 * HQExpiration - the expiration of the message
 * HQSize - the encoded size of the full message in bytes
+* HQUserID - the user specified ID string (if any)
 * Any other identifers that appear in a filter expression represent header values for the message
 * 
 * String values must be set as <code>SimpleString</code>, not <code>java.lang.String</code> (see JBMESSAGING-1307).
@@ -105,16 +106,15 @@ public class FilterImpl implements Filter
 
       try
       {
-         
          result = parser.parse(sfilterString, identifiers);
+         
          resultType = result.getClass();
-
       }
       catch (Throwable e)
       {
          FilterImpl.log.error("Invalid filter: " + str, e);
 
-         throw new HornetQException(HornetQException.INVALID_FILTER_EXPRESSION, "Invalid filter: " + sfilterString);
+         throw new HornetQException(HornetQException.INVALID_FILTER_EXPRESSION, "Invalid filter: " + sfilterString + " " + e.getMessage());
       }
    }
 
@@ -151,12 +151,15 @@ public class FilterImpl implements Filter
          }
 
          if (resultType.equals(Identifier.class))
+         {
             return (Boolean)((Identifier)result).getValue();
+         }
          else if (resultType.equals(Operator.class))
          {
-            Operator op = (Operator) result;
+            Operator op = (Operator)result;
             return (Boolean)op.apply();
-         } else
+         }
+         else
          {
             throw new Exception("Bad object type: " + result);
          }
@@ -182,7 +185,11 @@ public class FilterImpl implements Filter
 
    private Object getHeaderFieldValue(final ServerMessage msg, final SimpleString fieldName)
    {
-      if (FilterConstants.HORNETQ_PRIORITY.equals(fieldName))
+      if (FilterConstants.HORNETQ_USERID.equals(fieldName))
+      {
+         return msg.getUserID();
+      }
+      else if (FilterConstants.HORNETQ_PRIORITY.equals(fieldName))
       {
          return new Integer(msg.getPriority());
       }

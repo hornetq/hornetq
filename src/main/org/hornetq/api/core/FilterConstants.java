@@ -24,6 +24,11 @@ package org.hornetq.api.core;
 public class FilterConstants
 {
    /**
+    * Name of the HornetQ UserID header.
+    */
+   public static final SimpleString HORNETQ_USERID = new SimpleString("HQUserID");
+   
+   /**
     * Name of the HornetQ Message expiration header.
     */
    public static final SimpleString HORNETQ_EXPIRATION = new SimpleString("HQExpiration");

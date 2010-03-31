@@ -85,6 +85,8 @@ public abstract class MessageImpl implements MessageInternal
    private boolean copied = true;
 
    private boolean bufferUsed;
+   
+   private SimpleString userID;
 
    // Constructors --------------------------------------------------
 
@@ -136,6 +138,7 @@ public abstract class MessageImpl implements MessageInternal
    protected MessageImpl(final MessageImpl other)
    {
       messageID = other.getMessageID();
+      userID = other.getUserID();
       address = other.getAddress();
       type = other.getType();
       durable = other.isDurable();
@@ -183,6 +186,7 @@ public abstract class MessageImpl implements MessageInternal
    public int getHeadersAndPropertiesEncodeSize()
    {
       return DataConstants.SIZE_LONG + // Message ID
+             SimpleString.sizeofNullableString(userID) + 
              /* address */SimpleString.sizeofNullableString(address) +
              DataConstants./* Type */SIZE_BYTE +
              DataConstants./* Durable */SIZE_BOOLEAN +
@@ -197,6 +201,7 @@ public abstract class MessageImpl implements MessageInternal
    {
       buffer.writeLong(messageID);
       buffer.writeNullableSimpleString(address);
+      buffer.writeNullableSimpleString(userID);
       buffer.writeByte(type);
       buffer.writeBoolean(durable);
       buffer.writeLong(expiration);
@@ -209,6 +214,7 @@ public abstract class MessageImpl implements MessageInternal
    {
       messageID = buffer.readLong();
       address = buffer.readNullableSimpleString();
+      userID = buffer.readNullableSimpleString();
       type = buffer.readByte();
       durable = buffer.readBoolean();
       expiration = buffer.readLong();
@@ -237,6 +243,16 @@ public abstract class MessageImpl implements MessageInternal
    public long getMessageID()
    {
       return messageID;
+   }
+   
+   public SimpleString getUserID()
+   {
+      return userID;
+   }
+   
+   public void setUserID(final SimpleString userID)
+   {
+      this.userID = userID;
    }
 
    public SimpleString getAddress()
@@ -339,6 +355,7 @@ public abstract class MessageImpl implements MessageInternal
       Map<String, Object> map = new HashMap<String, Object>();
 
       map.put("messageID", messageID);
+      map.put("userID", userID);
       map.put("address", address.toString());
       map.put("type", type);
       map.put("durable", durable);
@@ -516,7 +533,7 @@ public abstract class MessageImpl implements MessageInternal
 
       bufferValid = false;
    }
-
+   
    public void putObjectProperty(final SimpleString key, final Object value) throws PropertyConversionException
    {
       if (value == null)
@@ -759,7 +776,7 @@ public abstract class MessageImpl implements MessageInternal
    {
       return properties.getSimpleStringProperty(new SimpleString(key));
    }
-
+   
    public Object getObjectProperty(final String key)
    {
       return properties.getProperty(new SimpleString(key));

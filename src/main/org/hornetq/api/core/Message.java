@@ -88,6 +88,19 @@ public interface Message
     * The messageID is set when the message is handled by the server.
     */
    long getMessageID();
+   
+   /**
+    * Returns the userID - this is an optional user specified String that can be set to identify the message
+    * and will be passed around with the message
+    * @return
+    */
+   SimpleString getUserID();
+   
+   /**
+    * Sets the user ID
+    * @param userID
+    */
+   void setUserID(SimpleString userID);
 
    /**
     * Returns the address this message is sent to.
@@ -303,7 +316,7 @@ public interface Message
     * @param value property value
     */
    void putStringProperty(String key, String value);
-
+   
    /**
     * Puts an Object property in this message.
     * <br>
