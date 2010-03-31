@@ -35,7 +35,7 @@
       </security-setting>
 
       <!-- security settings for JMS temporary queue -->
-      <security-setting match="jms.tempqueue.#">
+      <security-setting match="jms.queue.#">
          <permission type="createTempQueue" roles="guest"/>
          <permission type="deleteTempQueue" roles="guest"/>
          <permission type="consume" roles="guest"/>
