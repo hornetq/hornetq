@@ -164,7 +164,7 @@ public class ManualReconnectionToSingleServerTest extends UnitTestCase
       JMSConfiguration configuration = new JMSConfigurationImpl();
       context = new InVMContext();
       configuration.setContext(context);
-      configuration.getQueueConfigurations().add(new JMSQueueConfigurationImpl(queueName, null, false, queueName));
+      configuration.getQueueConfigurations().add(new JMSQueueConfigurationImpl(queueName, null, true, queueName));
 
       ConnectionFactoryConfiguration cfConfig = new ConnectionFactoryConfigurationImpl("cf",
                                                                                        new TransportConfiguration(NettyConnectorFactory.class.getName()),

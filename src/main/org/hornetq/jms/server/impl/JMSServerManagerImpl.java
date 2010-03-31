@@ -1076,11 +1076,11 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
             coreFilterString = SelectorTranslator.convertToHornetQFilterString(selectorString);
          }
 
-         server.getHornetQServerControl().deployQueue(hqQueue.getAddress(),
-                                                      hqQueue.getAddress(),
-                                                      coreFilterString,
-                                                      durable);
-
+         server.deployQueue(SimpleString.toSimpleString(hqQueue.getAddress()),
+                            SimpleString.toSimpleString(hqQueue.getAddress()),
+                            SimpleString.toSimpleString(coreFilterString),
+                            durable,
+                            false);
          queues.put(queueName, hqQueue);
 
          jmsManagementService.registerQueue(hqQueue);
