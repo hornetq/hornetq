@@ -81,6 +81,13 @@
             <para>The bindings journal is always a NIO journal as it is typically low throughput
                 compared to the message journal.</para>
         </listitem>
+       <listitem>
+            <para>JMS journal.</para>
+            <para>This journal instance stores all JMS related data, This is basically any JMS Queues, Topics and Connection
+               Factories and any JNDI bindings for these resources.</para>
+            <para>Any JMS Resources created via the management API will be persisted to this journal. Any resources
+               configured via configuration files will not. The JMS Journal will only becreated if JMS is being used.</para>
+        </listitem>
         <listitem>
             <para>Message journal.</para>
             <para>This journal instance stores all message related data, including the message
@@ -115,6 +122,10 @@
                     value is <literal>true</literal></para>
             </listitem>
         </itemizedlist>
+    </section>
+   <section id="configuring.bindings.jms">
+        <title>Configuring the jms journal</title>
+        <para>The jms config shares its configuration with the bindings journal.</para>
     </section>
     <section id="configuring.message.journal">
         <title>Configuring the message journal</title>
