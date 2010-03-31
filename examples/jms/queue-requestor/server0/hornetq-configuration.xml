@@ -20,18 +20,8 @@
    <!-- Other config -->
 
    <security-settings>
-      <!--security for example queue-->
-      <security-setting match="jms.queue.exampleQueue">
-         <permission type="createDurableQueue" roles="guest"/>
-         <permission type="deleteDurableQueue" roles="guest"/>
-         <permission type="createTempQueue" roles="guest"/>
-         <permission type="deleteTempQueue" roles="guest"/>
-         <permission type="consume" roles="guest"/>
-         <permission type="send" roles="guest"/>
-      </security-setting>
-      <!-- needed so
-       the queue requester can create a temporary queue-->
-      <security-setting match="jms.tempqueue.#">
+      <!--security for example queues -->
+      <security-setting match="jms.queue.#">
          <permission type="createDurableQueue" roles="guest"/>
          <permission type="deleteDurableQueue" roles="guest"/>
          <permission type="createTempQueue" roles="guest"/>
