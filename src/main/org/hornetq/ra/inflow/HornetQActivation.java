@@ -279,7 +279,7 @@ public class HornetQActivation
     */
    protected synchronized void setup() throws Exception
    {
-      HornetQActivation.log.info("Setting up " + spec);
+      HornetQActivation.log.debug("Setting up " + spec);
 
       setupCF();
 
@@ -307,7 +307,7 @@ public class HornetQActivation
          }
       }
 
-      HornetQActivation.log.info("Setup complete " + this);
+      HornetQActivation.log.debug("Setup complete " + this);
    }
 
    /**
@@ -315,7 +315,7 @@ public class HornetQActivation
     */
    protected synchronized void teardown()
    {
-      HornetQActivation.log.info("Tearing down " + spec);
+      HornetQActivation.log.debug("Tearing down " + spec);
 
       for (HornetQMessageHandler handler : handlers)
       {
@@ -326,7 +326,7 @@ public class HornetQActivation
          factory.close();
          factory = null;
       }
-      HornetQActivation.log.info("Tearing down complete " + this);
+      HornetQActivation.log.debug("Tearing down complete " + this);
    }
 
    protected void setupCF() throws Exception
