@@ -517,24 +517,6 @@ public class HornetQServerControlUsingCoreTest extends HornetQServerControlTest
             proxy.invokeOperation("addAddressSettings", addressMatch, DLA, expiryAddress, lastValueQueue, deliveryAttempts, maxSizeBytes, pageSizeBytes, redeliveryDelay, redistributionDelay, sendToDLAOnNoRoute, addressFullMessagePolicy);
          }
 
-         public AddressSettings getAddressSettings(String address) throws Exception
-         {
-            String res = (String)proxy.invokeOperation("getAddressSettingsAsJSON", address);
-            JSONObject object = new JSONObject(res);
-            AddressSettings settings = new AddressSettings();
-            settings.setDeadLetterAddress(SimpleString.toSimpleString(object.getString("DLA")));
-            settings.setExpiryAddress(SimpleString.toSimpleString(object.getString("expiryAddress")));
-            settings.setLastValueQueue(object.getBoolean("lastValueQueue"));
-            settings.setMaxDeliveryAttempts(object.getInt("maxDeliveryAttempts"));
-            settings.setMaxSizeBytes(object.getLong("maxSizeBytes"));
-            settings.setPageSizeBytes(object.getInt("pageSizeBytes"));
-            settings.setRedeliveryDelay(object.getLong("redeliveryDelay"));
-            settings.setRedistributionDelay(object.getLong("redistributionDelay"));
-            settings.setSendToDLAOnNoRoute(object.getBoolean("sendToDLAOnNoRoute"));
-            settings.setAddressFullMessagePolicy(AddressFullMessagePolicy.valueOf(object.getString("addressFullMessagePolicy")));
-            return settings;
-         }
-
          public void removeAddressSettings(String addressMatch) throws Exception
          {
             proxy.invokeOperation("removeAddressSettings", addressMatch);

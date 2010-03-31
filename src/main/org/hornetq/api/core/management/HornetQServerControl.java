@@ -20,7 +20,6 @@ import javax.management.MBeanOperationInfo;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Interceptor;
 import org.hornetq.core.security.Role;
-import org.hornetq.core.settings.impl.AddressSettings;
 
 /**
  * A HornetQServerControl is used to manage HornetQ servers.
@@ -495,8 +494,6 @@ public interface HornetQServerControl
    @Operation(desc = "Remove security settings for an address", impact = MBeanOperationInfo.ACTION)
    void removeSecuritySettings(@Parameter(desc = "an address match", name = "addressMatch") String addressMatch) throws Exception;
 
-   Set<Role> getSecuritySettings(String addressMatch) throws Exception;
-
    @Operation(desc = "get roles for a specific address match", impact = MBeanOperationInfo.INFO)
    Object[] getRoles(@Parameter(desc = "an address match", name = "addressMatch") String addressMatch) throws Exception;
 
@@ -518,8 +515,6 @@ public interface HornetQServerControl
                            @Parameter(desc="the redistribution delay", name="redistributionDelay") long redistributionDelay,
                            @Parameter(desc="do we send to the DLA when there is no where to route the message", name="sendToDLAOnNoRoute") boolean sendToDLAOnNoRoute,
                            @Parameter(desc="the ploicy to use when the address is full", name="addressFullMessagePolicy") String addressFullMessagePolicy) throws Exception;
-
-   AddressSettings getAddressSettings(String address) throws Exception;
 
    void removeAddressSettings(String addressMatch) throws Exception;
 

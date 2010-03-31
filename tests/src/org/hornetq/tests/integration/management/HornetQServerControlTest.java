@@ -20,9 +20,9 @@ import junit.framework.Assert;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
+import org.hornetq.api.core.management.AddressSettingsInfo;
 import org.hornetq.api.core.management.HornetQServerControl;
 import org.hornetq.api.core.management.ObjectNameBuilder;
-import org.hornetq.api.core.management.Parameter;
 import org.hornetq.api.core.management.QueueControl;
 import org.hornetq.api.core.management.RoleInfo;
 import org.hornetq.core.config.Configuration;
@@ -31,7 +31,6 @@ import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
-import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.utils.json.JSONArray;
 import org.hornetq.utils.json.JSONObject;
@@ -481,18 +480,19 @@ public class HornetQServerControlTest extends ManagementTestBase
       //restartServer();
       serverControl = createManagementControl();
 
-      AddressSettings settings = serverControl.getAddressSettings(exactAddress);
-
-      assertEquals(DLA, settings.getDeadLetterAddress().toString());
-      assertEquals(expiryAddress, settings.getExpiryAddress().toString());
-      assertEquals(lastValueQueue, settings.isLastValueQueue());
-      assertEquals(deliveryAttempts, settings.getMaxDeliveryAttempts());
-      assertEquals(maxSizeBytes, settings.getMaxSizeBytes());
-      assertEquals(pageSizeBytes, settings.getPageSizeBytes());
-      assertEquals(redeliveryDelay, settings.getRedeliveryDelay());
-      assertEquals(redistributionDelay, settings.getRedistributionDelay());
-      assertEquals(sendToDLAOnNoRoute, settings.isSendToDLAOnNoRoute());
-      assertEquals(addressFullMessagePolicy, settings.getAddressFullMessagePolicy().toString());
+      String jsonString = serverControl.getAddressSettingsAsJSON(exactAddress);
+      AddressSettingsInfo info = AddressSettingsInfo.from(jsonString);
+      
+      assertEquals(DLA, info.getDeadLetterAddress());
+      assertEquals(expiryAddress, info.getExpiryAddress());
+      assertEquals(lastValueQueue, info.isLastValueQueue());
+      assertEquals(deliveryAttempts, info.getMaxDeliveryAttempts());
+      assertEquals(maxSizeBytes, info.getMaxSizeBytes());
+      assertEquals(pageSizeBytes, info.getPageSizeBytes());
+      assertEquals(redeliveryDelay, info.getRedeliveryDelay());
+      assertEquals(redistributionDelay, info.getRedistributionDelay());
+      assertEquals(sendToDLAOnNoRoute, info.isSendToDLAOnNoRoute());
+      assertEquals(addressFullMessagePolicy, info.getAddressFullMessagePolicy());
    }
 
    // Package protected ---------------------------------------------

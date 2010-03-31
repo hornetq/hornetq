@@ -1227,21 +1227,6 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
       }
    }
 
-   public Set<Role> getSecuritySettings(String addressMatch) throws Exception
-   {
-      checkStarted();
-
-      clearIO();
-      try
-      {
-         return server.getSecurityRepository().getMatch(addressMatch);
-      }
-      finally
-      {
-         blockOnIO();
-      }
-   }
-
    public Object[] getRoles(String addressMatch) throws Exception
    {
       checkStarted();
@@ -1370,13 +1355,6 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
       server.getAddressSettingsRepository().addMatch(address, addressSettings);
 
       storageManager.storeAddressSetting(new PersistedAddressSetting(new SimpleString(address), addressSettings));
-   }
-
-   public AddressSettings getAddressSettings(final String address)
-   {
-      checkStarted();
-
-      return server.getAddressSettingsRepository().getMatch(address);
    }
 
    public void removeAddressSettings(String addressMatch) throws Exception
