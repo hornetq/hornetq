@@ -92,6 +92,8 @@
    <property name="src.config.trunk.clustered.dir" value="${src.dir}/config/trunk/clustered"/>
    <property name="src.config.jbossas.non-clustered.dir" value="${src.dir}/config/jboss-as/non-clustered"/>    
    <property name="src.config.jbossas.clustered.dir" value="${src.dir}/config/jboss-as/clustered"/>
+   <property name="src.config.jbossas6.non-clustered.dir" value="${src.dir}/config/jboss-as-6/non-clustered"/>    
+   <property name="src.config.jbossas6.clustered.dir" value="${src.dir}/config/jboss-as-6/clustered"/>
    <property name="src.config.service.dir" value="${src.dir}/config/service"/>
    <property name="src.schema.dir" value="${src.config.dir}/common/schema"/>
    <property name="src.bin.dir" value="${src.dir}/bin"/>
@@ -611,12 +613,20 @@
                  file="${src.schema.dir}/hornetq-users.xsd"/>
       </schemavalidate>
       
+   	<!-- AS 5 configuration validation -->
       <antcall target="-validate-configuration">
          <param name="conf.dir" value="${src.config.jbossas.non-clustered.dir}"/>
       </antcall>
-      
       <antcall target="-validate-configuration">
          <param name="conf.dir" value="${src.config.jbossas.clustered.dir}"/>
+      </antcall>
+
+      <!-- AS 6 configuration validation -->
+      <antcall target="-validate-configuration">
+         <param name="conf.dir" value="${src.config.jbossas6.non-clustered.dir}"/>
+      </antcall>
+      <antcall target="-validate-configuration">
+         <param name="conf.dir" value="${src.config.jbossas6.clustered.dir}"/>
       </antcall>
    </target>
     
