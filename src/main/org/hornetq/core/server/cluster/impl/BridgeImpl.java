@@ -411,7 +411,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
             // nodes could have same queue ids
             // Note we must copy since same message may get routed to other nodes which require different headers
             message = message.copy();
-
+            
             // TODO - we can optimise this
 
             Set<SimpleString> propNames = new HashSet<SimpleString>(message.getPropertyNames());

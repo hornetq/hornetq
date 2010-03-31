@@ -95,7 +95,7 @@ public class HornetQActivation
    private boolean isDeliveryTransacted;
 
    private HornetQDestination destination;
-   
+
    /** The name of the temporary subscription name that all the sessions will share */
    private SimpleString topicTemporaryQueue;
 
@@ -220,7 +220,6 @@ public class HornetQActivation
       return isTopic;
    }
 
-   
    /**
     * Start the activation
     *
@@ -235,7 +234,7 @@ public class HornetQActivation
       deliveryActive.set(true);
       ra.getWorkManager().scheduleWork(new SetupActivation());
    }
-   
+
    /**
     * @return the topicTemporaryQueue
     */
@@ -287,12 +286,25 @@ public class HornetQActivation
       setupDestination();
       for (int i = 0; i < spec.getMaxSessionInt(); i++)
       {
-         ClientSession session = setupSession();
+         ClientSession session = null;
 
-         HornetQMessageHandler handler = new HornetQMessageHandler(this, session, i);
-         handler.setup();
-         session.start();
-         handlers.add(handler);
+         try
+         {
+            session = setupSession();
+            HornetQMessageHandler handler = new HornetQMessageHandler(this, session, i);
+            handler.setup();
+            session.start();
+            handlers.add(handler);
+         }
+         catch (Exception e)
+         {
+            if (session != null)
+            {
+               session.close();
+            }
+            
+            throw e;
+         }
       }
 
       HornetQActivation.log.info("Setup complete " + this);
@@ -426,11 +438,11 @@ public class HornetQActivation
                // If there is no binding on naming, we will just create a new instance
                if (isTopic)
                {
-                  destination = (HornetQDestination) HornetQJMSClient.createTopic(destinationName.substring(destinationName.lastIndexOf('/') + 1));
+                  destination = (HornetQDestination)HornetQJMSClient.createTopic(destinationName.substring(destinationName.lastIndexOf('/') + 1));
                }
                else
                {
-                  destination = (HornetQDestination) HornetQJMSClient.createQueue(destinationName.substring(destinationName.lastIndexOf('/') + 1));
+                  destination = (HornetQDestination)HornetQJMSClient.createQueue(destinationName.substring(destinationName.lastIndexOf('/') + 1));
                }
             }
          }
@@ -452,11 +464,11 @@ public class HornetQActivation
       {
          if (Topic.class.getName().equals(spec.getDestinationType()))
          {
-            destination = (HornetQDestination) HornetQJMSClient.createTopic(spec.getDestination());
+            destination = (HornetQDestination)HornetQJMSClient.createTopic(spec.getDestination());
          }
          else
          {
-            destination = (HornetQDestination) HornetQJMSClient.createQueue(spec.getDestination());
+            destination = (HornetQDestination)HornetQJMSClient.createQueue(spec.getDestination());
          }
       }
 

@@ -76,7 +76,7 @@ public abstract class MessageImpl implements MessageInternal
 
    protected ResetLimitWrappedHornetQBuffer bodyBuffer;
 
-   protected boolean bufferValid;
+   protected volatile boolean bufferValid;
 
    private int endOfBodyPosition = -1;
 
@@ -244,7 +244,7 @@ public abstract class MessageImpl implements MessageInternal
       return address;
    }
 
-   public void setAddress(final SimpleString address)
+   public synchronized void setAddress(final SimpleString address)
    {
       if (this.address != address)
       {

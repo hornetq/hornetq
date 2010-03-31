@@ -548,7 +548,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
       }
 
       SimpleString address = message.getAddress();
-
+      
       setPagingStore(message);
 
       Object duplicateID = message.getObjectProperty(Message.HDR_DUPLICATE_DETECTION_ID);

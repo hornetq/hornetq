@@ -999,6 +999,9 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
          }
 
          channel.setTransferring(false);         
+         
+         //Reset default address
+         defaultAddress = null;
       }
       catch (Throwable t)
       {

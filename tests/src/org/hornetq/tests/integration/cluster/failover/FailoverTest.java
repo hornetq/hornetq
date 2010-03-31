@@ -134,8 +134,6 @@ public class FailoverTest extends FailoverTestBase
 
       fail(session, latch);
 
-      FailoverTest.log.info("got here 1");
-
       ClientConsumer consumer = session.createConsumer(FailoverTestBase.ADDRESS);
 
       session.start();
@@ -158,7 +156,6 @@ public class FailoverTest extends FailoverTestBase
          }
       }
 
-      FailoverTest.log.info("closing session");
       session.close();
 
       Assert.assertEquals(0, sf.numSessions());
@@ -228,7 +225,6 @@ public class FailoverTest extends FailoverTestBase
          message.acknowledge();
       }
 
-      FailoverTest.log.info("closing session");
       session.close();
 
       Assert.assertEquals(0, sf.numSessions());
@@ -1166,7 +1162,6 @@ public class FailoverTest extends FailoverTestBase
       {
          public void connectionFailed(final HornetQException me)
          {
-            FailoverTest.log.info("calling listener");
             latch.countDown();
          }
       }
@@ -1223,8 +1218,6 @@ public class FailoverTest extends FailoverTestBase
       // Wait to be informed of failure
 
       boolean ok = latch.await(1000, TimeUnit.MILLISECONDS);
-
-      FailoverTest.log.info("waited for latch");
 
       Assert.assertTrue(ok);
 
@@ -1976,24 +1969,19 @@ public class FailoverTest extends FailoverTestBase
             {
                sf.addInterceptor(interceptor);
 
-               FailoverTest.log.info("attempting commit");
                session.commit();
             }
             catch (HornetQException e)
             {
                if (e.getCode() == HornetQException.TRANSACTION_ROLLED_BACK)
                {
-                  FailoverTest.log.info("got transaction rolled back");
-
                   // Ok - now we retry the commit after removing the interceptor
 
                   sf.removeInterceptor(interceptor);
 
                   try
                   {
-                     FailoverTest.log.info("trying to commit again");
                      session.commit();
-                     FailoverTest.log.info("committed again ok");
 
                      failed = false;
                   }
@@ -2016,8 +2004,6 @@ public class FailoverTest extends FailoverTestBase
       Thread.sleep(500);
 
       fail(session, latch);
-
-      FailoverTest.log.info("connection has failed");
 
       committer.join();
 
@@ -2270,7 +2256,6 @@ public class FailoverTest extends FailoverTestBase
     */
    protected void setBody(final int i, final ClientMessage message) throws Exception
    {
-      log.info("in failovertest:: setbody");
       message.getBodyBuffer().writeString("message" + i);
    }
 

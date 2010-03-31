@@ -911,10 +911,12 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
    {
       long id = storageManager.generateUniqueID();
 
+      SimpleString address = message.getAddress();
+      
       message.setMessageID(id);
       message.encodeMessageIDToBuffer();
-      
-      if (message.getAddress() == null)
+          
+      if (address == null)
       {
          if (message.isDurable())
          {
@@ -942,7 +944,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       
       if (defaultAddress == null)
       {
-         defaultAddress = message.getAddress();
+         defaultAddress = address;
       }
    }
 
