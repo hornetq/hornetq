@@ -521,12 +521,14 @@
 &lt;!-- false to disable JMX management for HornetQ --&gt;
 &lt;jmx-management-enabled&gt;false&lt;/jmx-management-enabled&gt;            
          </programlisting>
-         <para>If JMX is enabled, HornetQ can be managed locally using <literal>jconsole</literal>.
-            Remote connections to JMX are not enabled by default for security reasons. Please refer
+         <para>If JMX is enabled, HornetQ can be managed locally using <literal>jconsole</literal>.</para>
+         <note>
+            <para>Remote connections to JMX are not enabled by default for security reasons. Please refer
             to <ulink url="http://java.sun.com/j2se/1.5.0/docs/guide/management/agent.html#remote"
                >Java Management guide</ulink> to configure the server for remote management (system
             properties must be set in <literal>run.sh</literal> or <literal>run.bat</literal>
             scripts).</para>
+         </note>
          <para>By default, HornetQ server uses the JMX domain "org.hornetq". To manage several
             HornetQ servers from the <emphasis>same</emphasis> MBeanServer, the JMX domain can be
             configured for each individual HornetQ server by setting <literal>jmx-domain</literal>
