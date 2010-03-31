@@ -624,7 +624,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
 
       jmsManagementService.unregisterQueue(name);
 
-      server.getHornetQServerControl().destroyQueue(HornetQDestination.createQueueAddressFromName(name).toString());
+      server.destroyQueue(HornetQDestination.createQueueAddressFromName(name), null);
 
       storage.deleteDestination(PersistedType.Queue, name);
 
@@ -1111,10 +1111,11 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
          // checks when routing messages to a topic that
          // does not exist - otherwise we would not be able to distinguish from a non existent topic and one with no
          // subscriptions - core has no notion of a topic
-         server.getHornetQServerControl().deployQueue(hqTopic.getAddress(),
-                                                      hqTopic.getAddress(),
-                                                      JMSServerManagerImpl.REJECT_FILTER,
-                                                      true);
+         server.deployQueue(SimpleString.toSimpleString(hqTopic.getAddress()),
+                            SimpleString.toSimpleString(hqTopic.getAddress()),
+                            SimpleString.toSimpleString(JMSServerManagerImpl.REJECT_FILTER),
+                            true,
+                            false);
 
          topics.put(topicName, hqTopic);
 
