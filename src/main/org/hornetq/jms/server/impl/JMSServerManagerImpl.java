@@ -535,9 +535,9 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
    {
       checkInitialised();
 
-      if (removeFromJNDI(queueJNDI, name))
+      if (removeFromJNDI(queues, queueJNDI, name))
       {
-         storage.deleteJNDI(PersistedType.Queue, name);
+         storage.deleteDestination(PersistedType.Queue, name);
          return true;
       }
       else
@@ -573,11 +573,11 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
    {
       checkInitialised();
 
-      boolean removed = removeFromJNDI(topicJNDI, name);
+      boolean removed = removeFromJNDI(topics, topicJNDI, name);
 
       if (removed)
       {
-         storage.deleteJNDI(PersistedType.Topic, name);
+         storage.deleteDestination(PersistedType.Topic, name);
       }
 
       return removed;
@@ -606,9 +606,9 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
    {
       checkInitialised();
 
-      removeFromJNDI(connectionFactoryJNDI, name);
+      removeFromJNDI(connectionFactories, connectionFactoryJNDI, name);
 
-      storage.deleteJNDI(PersistedType.Topic, name);
+      storage.deleteConnectionFactory(name);
 
       return true;
    }
@@ -617,7 +617,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
    {
       checkInitialised();
 
-      removeFromJNDI(queueJNDI, name);
+      removeFromJNDI(queues, queueJNDI, name);
 
       queues.remove(name);
       queueJNDI.remove(name);
@@ -635,7 +635,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
    {
       checkInitialised();
 
-      removeFromJNDI(topicJNDI, name);
+      removeFromJNDI(topics, topicJNDI, name);
 
       topics.remove(name);
       topicJNDI.remove(name);
@@ -1582,13 +1582,17 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       storage.start();
    }
 
-   private synchronized boolean removeFromJNDI(final Map<String, List<String>> jndiMap, final String name) throws Exception
+   private synchronized boolean removeFromJNDI(final Map<String, ?> keys, final Map<String, List<String>> jndiMap, final String name) throws Exception
    {
       checkInitialised();
-      List<String> jndiBindings = jndiMap.get(name);
+      List<String> jndiBindings = jndiMap.remove(name);
       if (jndiBindings == null || jndiBindings.size() == 0)
       {
          return false;
+      }
+      else
+      {
+         keys.remove(name);
       }
       if (context != null)
       {

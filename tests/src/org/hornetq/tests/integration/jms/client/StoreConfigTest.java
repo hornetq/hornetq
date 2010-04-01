@@ -183,8 +183,17 @@ public class StoreConfigTest extends JMSTestBase
       checkDestination("/t1");
       checkDestination("/t.1");
 
+      
+      jmsServer.removeTopicFromJNDI("topicOne");
+      
+      assertTrue(jmsServer.createTopic(true, "topicOne", "/topicx.1", "/topicx.2"));
 
       jmsServer.stop();
+      
+      jmsServer.start();
+      
+      checkDestination("/topicx.1");
+      checkDestination("/topicx.2");
    }
    
    
@@ -282,6 +291,18 @@ public class StoreConfigTest extends JMSTestBase
       assertNullJNDI("/q1");
       checkDestination("/q.1");
       checkDestination("/qI");
+      
+      jmsServer.removeQueueFromJNDI("queue1");
+      
+      
+      assertTrue(jmsServer.createQueue(true, "queue1", null, true, "/newq1", "/newq.1"));
+      assertNullJNDI("/q1");
+      assertNullJNDI("/q.1");
+      assertNullJNDI("/qI");
+      
+      checkDestination("/newq1");
+      checkDestination("newq.1");
+      
 
       jmsServer.stop();
    }
