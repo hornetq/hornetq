@@ -1168,7 +1168,6 @@ public class QueueImpl implements Queue
             }
             else if (status == HandleStatus.BUSY)
             {
-               log.info("busy");
                if (holder.iter == null)
                {
                   // Put the ref back
