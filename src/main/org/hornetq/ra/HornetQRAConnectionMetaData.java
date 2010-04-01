@@ -113,7 +113,7 @@ public class HornetQRAConnectionMetaData implements ConnectionMetaData
          HornetQRAConnectionMetaData.log.trace("getJMSProviderName()");
       }
 
-      return "2.0";
+      return "2.1";
    }
 
    /**
@@ -141,7 +141,7 @@ public class HornetQRAConnectionMetaData implements ConnectionMetaData
          HornetQRAConnectionMetaData.log.trace("getProviderMinorVersion()");
       }
 
-      return 0;
+      return 1;
    }
 
    /**
