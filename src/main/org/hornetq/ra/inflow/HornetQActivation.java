@@ -262,14 +262,7 @@ public class HornetQActivation
       }
 
       deliveryActive.set(false);
-      try
-      {
-         ra.getWorkManager().scheduleWork(new TearDownActivation());
-      }
-      catch (WorkException e)
-      {
-         log.warn("exception while scheduling activation teardown " + this, e);
-      }
+      teardown();
    }
 
    /**
@@ -511,28 +504,6 @@ public class HornetQActivation
          catch (Throwable t)
          {
             HornetQActivation.log.error("Unable to start activation ", t);
-         }
-      }
-
-      public void release()
-      {
-      }
-   }
-
-   /**
-    * Handles the setup
-    */
-   private class TearDownActivation implements Work
-   {
-      public void run()
-      {
-         try
-         {
-            teardown();
-         }
-         catch (Throwable t)
-         {
-            HornetQActivation.log.error("Unable to tear down activation ", t);
          }
       }
 
