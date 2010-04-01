@@ -91,7 +91,7 @@ public class IncompatibleVersionTest extends ServiceTestBase
    protected void tearDown() throws Exception
    {
       connection.destroy();
-      
+
       server.stop();
    }
 
@@ -124,7 +124,8 @@ public class IncompatibleVersionTest extends ServiceTestBase
                                                 true,
                                                 true,
                                                 false,
-                                                HornetQClient.DEFAULT_CONFIRMATION_WINDOW_SIZE);
+                                                HornetQClient.DEFAULT_CONFIRMATION_WINDOW_SIZE,
+                                                null);
 
       if (compatible)
       {

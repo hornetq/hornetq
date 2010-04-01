@@ -89,7 +89,8 @@ public interface HornetQServer extends HornetQComponent
                                boolean autoCommitAcks,
                                boolean preAcknowledge,
                                boolean xa,
-                               final SessionCallback callback) throws Exception;
+                               String defaultAddress,
+                               SessionCallback callback) throws Exception;
 
    void removeSession(String name) throws Exception;
 

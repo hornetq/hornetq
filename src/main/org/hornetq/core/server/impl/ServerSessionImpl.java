@@ -153,6 +153,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
                             final ManagementService managementService,
                             final HornetQServer server,
                             final SimpleString managementAddress,
+                            final SimpleString defaultAddress,
                             final SessionCallback callback) throws Exception
    {
       this.username = username;
@@ -195,6 +196,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       this.managementAddress = managementAddress;
 
       this.callback = callback;
+      
+      this.defaultAddress = defaultAddress;
 
       remotingConnection.addFailureListener(this);
 

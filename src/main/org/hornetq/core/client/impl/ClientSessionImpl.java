@@ -891,7 +891,8 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
                                                                autoCommitSends,
                                                                autoCommitAcks,
                                                                preAcknowledge,
-                                                               confirmationWindowSize);
+                                                               confirmationWindowSize,
+                                                               defaultAddress == null ? null : defaultAddress.toString());
                boolean retry = false;
                do
                {
@@ -995,9 +996,6 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
          }
 
          channel.setTransferring(false);         
-         
-         //Reset default address
-         defaultAddress = null;
       }
       catch (Throwable t)
       {

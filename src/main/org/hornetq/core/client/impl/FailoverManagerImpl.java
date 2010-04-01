@@ -370,7 +370,8 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
                                                          autoCommitSends,
                                                          autoCommitAcks,
                                                          preAcknowledge,
-                                                         confWindowSize);
+                                                         confWindowSize,
+                                                         null);
 
                Packet pResponse;
                try

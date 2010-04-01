@@ -555,6 +555,7 @@ public class HornetQServerImpl implements HornetQServer
                                       final boolean autoCommitAcks,
                                       final boolean preAcknowledge,
                                       final boolean xa,
+                                      final String defaultAddress,
                                       final SessionCallback callback) throws Exception
    {
 
@@ -580,6 +581,8 @@ public class HornetQServerImpl implements HornetQServer
                                                               managementService,
                                                               this,
                                                               configuration.getManagementAddress(),
+                                                              defaultAddress == null ? null : 
+                                                                 new SimpleString(defaultAddress),
                                                               callback);
 
       sessions.put(name, session);

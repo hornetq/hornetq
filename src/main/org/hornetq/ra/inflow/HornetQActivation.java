@@ -492,12 +492,6 @@ public class HornetQActivation
       {
          buffer.append(" destination=").append(spec.getDestination());
       }
-      /*if (session != null)
-      {
-         buffer.append(" connection=").append(session);
-      }*/
-      // if (pool != null)
-      // buffer.append(" pool=").append(pool.getClass().getName());
       buffer.append(" transacted=").append(isDeliveryTransacted);
       buffer.append(')');
       return buffer.toString();

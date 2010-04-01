@@ -458,6 +458,7 @@ class StompProtocolManager implements ProtocolManager
                                                       false,
                                                       false,
                                                       false,
+                                                      null,
                                                       stompSession);
          stompSession.setServerSession(session);
          sessions.put(connection.getID(), stompSession);
@@ -482,6 +483,7 @@ class StompProtocolManager implements ProtocolManager
                                                       false,
                                                       false,
                                                       false,
+                                                      null,
                                                       stompSession);
          stompSession.setServerSession(session);
          transactedSessions.put(txID, stompSession);

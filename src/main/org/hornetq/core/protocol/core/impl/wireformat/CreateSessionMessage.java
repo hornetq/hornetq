@@ -49,6 +49,8 @@ public class CreateSessionMessage extends PacketImpl
    private boolean preAcknowledge;
 
    private int windowSize;
+   
+   private String defaultAddress;
 
    // Static --------------------------------------------------------
 
@@ -64,7 +66,8 @@ public class CreateSessionMessage extends PacketImpl
                                final boolean autoCommitSends,
                                final boolean autoCommitAcks,
                                final boolean preAcknowledge,
-                               final int windowSize)
+                               final int windowSize,
+                               final String defaultAddress)
    {
       super(PacketImpl.CREATESESSION);
 
@@ -89,6 +92,8 @@ public class CreateSessionMessage extends PacketImpl
       this.windowSize = windowSize;
 
       this.preAcknowledge = preAcknowledge;
+      
+      this.defaultAddress = defaultAddress;
    }
 
    public CreateSessionMessage()
@@ -147,6 +152,11 @@ public class CreateSessionMessage extends PacketImpl
    {
       return windowSize;
    }
+   
+   public String getDefaultAddress()
+   {
+      return defaultAddress;
+   }
 
    @Override
    public void encodeRest(final HornetQBuffer buffer)
@@ -162,6 +172,7 @@ public class CreateSessionMessage extends PacketImpl
       buffer.writeBoolean(autoCommitAcks);
       buffer.writeInt(windowSize);
       buffer.writeBoolean(preAcknowledge);
+      buffer.writeNullableString(defaultAddress);
    }
 
    @Override
@@ -178,6 +189,7 @@ public class CreateSessionMessage extends PacketImpl
       autoCommitAcks = buffer.readBoolean();
       windowSize = buffer.readInt();
       preAcknowledge = buffer.readBoolean();
+      defaultAddress = buffer.readNullableString();
    }
 
    @Override
@@ -197,7 +209,9 @@ public class CreateSessionMessage extends PacketImpl
                         autoCommitSends == r.autoCommitSends &&
                         autoCommitAcks == r.autoCommitAcks &&
                         (username == null ? r.username == null : username.equals(r.username)) &&
-                        (password == null ? r.password == null : password.equals(r.password));
+                        (password == null ? r.password == null : password.equals(r.password)) &&
+                        (defaultAddress == null ? r.defaultAddress == null : defaultAddress.equals(r.defaultAddress));
+                        
 
       return matches;
    }

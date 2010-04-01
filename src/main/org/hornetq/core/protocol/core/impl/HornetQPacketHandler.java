@@ -164,6 +164,7 @@ public class HornetQPacketHandler implements ChannelHandler
                                                       request.isAutoCommitAcks(),
                                                       request.isPreAcknowledge(),
                                                       request.isXA(),
+                                                      request.getDefaultAddress(),
                                                       new CoreSessionCallback(request.getName(), protocolManager, channel));
 
          ServerSessionPacketHandler handler = new ServerSessionPacketHandler(session,
