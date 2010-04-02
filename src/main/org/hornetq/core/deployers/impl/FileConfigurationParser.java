@@ -1023,7 +1023,7 @@ public class FileConfigurationParser
       String forwardingAddress = XMLConfigurationUtil.getString(brNode,
                                                                 "forwarding-address",
                                                                 null,
-                                                                Validators.NOT_NULL_OR_EMPTY);
+                                                                Validators.NO_CHECK);
 
       String transformerClassName = XMLConfigurationUtil.getString(brNode,
                                                                    "transformer-class-name",

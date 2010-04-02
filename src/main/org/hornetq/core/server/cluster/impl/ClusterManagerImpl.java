@@ -363,9 +363,7 @@ public class ClusterManagerImpl implements ClusterManager
 
       if (config.getForwardingAddress() == null)
       {
-         ClusterManagerImpl.log.warn("Must specify an forwarding address each bridge. This one will not be deployed.");
-
-         return;
+         ClusterManagerImpl.log.debug("Forward address is not specified. Will use original message address instead");
       }
 
       if (bridges.containsKey(config.getName()))
