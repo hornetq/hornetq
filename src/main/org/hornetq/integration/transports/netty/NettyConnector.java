@@ -49,7 +49,6 @@ import org.jboss.netty.channel.ChannelFuture;
 import org.jboss.netty.channel.ChannelHandler;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelPipeline;
-import org.jboss.netty.channel.ChannelPipelineCoverage;
 import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.channel.ChannelStateEvent;
 import org.jboss.netty.channel.Channels;
@@ -454,7 +453,7 @@ public class NettyConnector implements Connector
          SslHandler sslHandler = ch.getPipeline().get(SslHandler.class);
          if (sslHandler != null)
          {
-            ChannelFuture handshakeFuture = sslHandler.handshake(ch);
+            ChannelFuture handshakeFuture = sslHandler.handshake();
             handshakeFuture.awaitUninterruptibly();
             if (handshakeFuture.isSuccess())
             {
@@ -498,7 +497,6 @@ public class NettyConnector implements Connector
 
    // Inner classes -------------------------------------------------
 
-   @ChannelPipelineCoverage("one")
    private final class HornetQClientChannelHandler extends HornetQChannelHandler
    {
       HornetQClientChannelHandler(final ChannelGroup group,
@@ -509,7 +507,6 @@ public class NettyConnector implements Connector
       }
    }
 
-   @ChannelPipelineCoverage("one")
    class HttpHandler extends SimpleChannelHandler
    {
       private Channel channel;

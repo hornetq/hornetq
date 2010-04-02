@@ -18,7 +18,6 @@ import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.buffer.DynamicChannelBuffer;
 import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.channel.ChannelPipelineCoverage;
 import org.jboss.netty.channel.Channels;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
@@ -30,7 +29,6 @@ import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
  *
  * @version $Revision: 7839 $, $Date: 2009-08-21 02:26:39 +0900 (2009-08-21, 금) $
  */
-@ChannelPipelineCoverage("one")
 public class HornetQFrameDecoder2 extends SimpleChannelUpstreamHandler
 {
    private ChannelBuffer previousData = ChannelBuffers.EMPTY_BUFFER;

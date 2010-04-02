@@ -55,7 +55,6 @@ import org.jboss.netty.channel.ChannelFutureListener;
 import org.jboss.netty.channel.ChannelHandler;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelPipeline;
-import org.jboss.netty.channel.ChannelPipelineCoverage;
 import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.channel.ChannelStateEvent;
 import org.jboss.netty.channel.StaticChannelPipeline;
@@ -563,7 +562,6 @@ public class NettyAcceptor implements Acceptor
 
    // Inner classes -----------------------------------------------------------------------------
 
-   @ChannelPipelineCoverage("one")
    private final class HornetQServerChannelHandler extends HornetQChannelHandler
    {
       HornetQServerChannelHandler(final ChannelGroup group,
@@ -581,7 +579,7 @@ public class NettyAcceptor implements Acceptor
          SslHandler sslHandler = ctx.getPipeline().get(SslHandler.class);
          if (sslHandler != null)
          {
-            sslHandler.handshake(e.getChannel()).addListener(new ChannelFutureListener()
+            sslHandler.handshake().addListener(new ChannelFutureListener()
             {
                public void operationComplete(final ChannelFuture future) throws Exception
                {

@@ -85,7 +85,7 @@ public class NettyConnection implements Connection
       {
          try
          {
-            ChannelFuture sslCloseFuture = sslHandler.close(channel);
+            ChannelFuture sslCloseFuture = sslHandler.close();
 
             if (!sslCloseFuture.awaitUninterruptibly(10000))
             {
