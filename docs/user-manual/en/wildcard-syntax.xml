@@ -22,7 +22,7 @@
     <title>Understanding the HornetQ Wildcard Syntax</title>
     <para>HornetQ uses a specific syntax for representing wildcards in security settings,
         address settings and when creating consumers.</para>
-    <para>The syntax is similar to that used by <ulink url="www.amqp.org">AMQP</ulink>.</para>
+    <para>The syntax is similar to that used by <ulink url="http://www.amqp.org">AMQP</ulink>.</para>
     <para>A HornetQ wildcard expression contains words delimited by the character '<literal
             >.</literal>' (full stop).</para>
     <para>The special characters '<literal>#</literal>' and '<literal>*</literal>' also have special
