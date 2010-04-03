@@ -13,6 +13,9 @@
 
 package org.hornetq.tests.integration.cluster.failover;
 
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Interceptor;
 import org.hornetq.core.logging.Logger;
@@ -32,6 +35,8 @@ public class DelayInterceptor2 implements Interceptor
    private static final Logger log = Logger.getLogger(DelayInterceptor2.class);
 
    private volatile boolean loseResponse = true;
+   
+   private CountDownLatch latch = new CountDownLatch(1);
 
    public boolean intercept(final Packet packet, final RemotingConnection connection) throws HornetQException
    {
@@ -40,6 +45,8 @@ public class DelayInterceptor2 implements Interceptor
          // Lose the response from the commit - only lose the first one
 
          loseResponse = false;
+         
+         latch.countDown();
 
          return false;
       }
@@ -47,5 +54,10 @@ public class DelayInterceptor2 implements Interceptor
       {
          return true;
       }
+   }
+   
+   public boolean await() throws InterruptedException
+   {
+      return latch.await(10, TimeUnit.SECONDS);
    }
 }

@@ -1232,8 +1232,6 @@ public class FailoverTest extends FailoverTestBase
          Assert.assertEquals(XAException.XA_RBOTHER, e.errorCode);
       }
 
-      // Thread.sleep(30000);
-
       session1.close();
 
       session2.close();
@@ -1382,7 +1380,7 @@ public class FailoverTest extends FailoverTestBase
       sf.setBlockOnNonDurableSend(true);
       sf.setBlockOnDurableSend(true);
 
-      final int numSessions = 10;
+      final int numSessions = 5;
 
       final int numConsumersPerSession = 5;
 
@@ -1811,8 +1809,6 @@ public class FailoverTest extends FailoverTestBase
 
          setBody(i, message);
 
-         System.out.println("Durable = " + message.isDurable());
-
          message.putIntProperty("counter", i);
 
          producer.send(message);
@@ -1957,14 +1953,14 @@ public class FailoverTest extends FailoverTestBase
 
          producer.send(message);
       }
-
+      
       class Committer extends Thread
       {
+         DelayInterceptor2 interceptor = new DelayInterceptor2();
+         
          @Override
          public void run()
          {
-            Interceptor interceptor = new DelayInterceptor2();
-
             try
             {
                sf.addInterceptor(interceptor);
@@ -1998,19 +1994,25 @@ public class FailoverTest extends FailoverTestBase
       }
 
       Committer committer = new Committer();
+      
+      //Commit will occur, but response will never get back, connetion is failed, and commit should be unblocked
+      //with transaction rolled back
 
       committer.start();
 
+      //Wait for the commit to occur and the response to be discarded
+      assertTrue(committer.interceptor.await());
+      
       Thread.sleep(500);
-
+      
       fail(session, latch);
 
       committer.join();
-
+      
       Assert.assertFalse(committer.failed);
 
       session.close();
-
+      
       ClientSession session2 = sf.createSession(false, false);
 
       producer = session2.createProducer(FailoverTestBase.ADDRESS);
@@ -2036,7 +2038,7 @@ public class FailoverTest extends FailoverTestBase
       }
 
       session2.commit();
-
+      
       ClientConsumer consumer = session2.createConsumer(FailoverTestBase.ADDRESS);
 
       session2.start();
