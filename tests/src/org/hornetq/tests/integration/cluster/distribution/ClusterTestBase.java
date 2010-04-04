@@ -80,7 +80,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
                                        TransportConstants.DEFAULT_PORT + 8,
                                        TransportConstants.DEFAULT_PORT + 9, };
 
-   private static final long WAIT_TIMEOUT = 10000;
+   private static final long WAIT_TIMEOUT = 30000;
 
    @Override
    protected void setUp() throws Exception
@@ -695,7 +695,8 @@ public abstract class ClusterTestBase extends ServiceTestBase
 
          for (int j = msgStart; j < msgEnd; j++)
          {
-            ClientMessage message = holder.consumer.receive(2000);
+            
+            ClientMessage message = holder.consumer.receive(WAIT_TIMEOUT);
 
             if (message == null)
             {
