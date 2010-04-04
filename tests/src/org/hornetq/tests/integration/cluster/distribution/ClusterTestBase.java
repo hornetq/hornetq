@@ -805,7 +805,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
             throw new IllegalArgumentException("No consumer at " + consumerIDs[i]);
          }
 
-         ClientMessage message = holder.consumer.receive(500);
+         ClientMessage message = holder.consumer.receive(WAIT_TIMEOUT);
 
          Assert.assertNotNull("consumer " + consumerIDs[count] + " did not receive message " + i, message);
 
