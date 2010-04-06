@@ -207,7 +207,7 @@ public class FileConfigurationParser
       config.setMessageExpiryScanPeriod(XMLConfigurationUtil.getLong(e,
                                                                      "message-expiry-scan-period",
                                                                      config.getMessageExpiryScanPeriod(),
-                                                                     Validators.GT_ZERO));
+                                                                     Validators.MINUS_ONE_OR_GT_ZERO));
 
       config.setMessageExpiryThreadPriority(XMLConfigurationUtil.getInteger(e,
                                                                             "message-expiry-thread-priority",
