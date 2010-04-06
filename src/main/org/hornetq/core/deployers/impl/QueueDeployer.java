@@ -13,9 +13,10 @@
 
 package org.hornetq.core.deployers.impl;
 
-import org.hornetq.api.core.management.HornetQServerControl;
+import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.config.CoreQueueConfiguration;
 import org.hornetq.core.deployers.DeploymentManager;
+import org.hornetq.core.server.HornetQServer;
 import org.w3c.dom.Node;
 
 /**
@@ -27,15 +28,15 @@ import org.w3c.dom.Node;
  */
 public class QueueDeployer extends XmlDeployer
 {
-   private final HornetQServerControl serverControl;
+   private final HornetQServer server;
 
    private final FileConfigurationParser parser = new FileConfigurationParser();
 
-   public QueueDeployer(final DeploymentManager deploymentManager, final HornetQServerControl serverControl)
+   public QueueDeployer(final DeploymentManager deploymentManager, final HornetQServer server)
    {
       super(deploymentManager);
 
-      this.serverControl = serverControl;
+      this.server = server;
    }
 
    /**
@@ -64,10 +65,11 @@ public class QueueDeployer extends XmlDeployer
    {
       CoreQueueConfiguration queueConfig = parser.parseQueueConfiguration(node);
 
-      serverControl.deployQueue(queueConfig.getAddress(),
-                                queueConfig.getName(),
-                                queueConfig.getFilterString(),
-                                queueConfig.isDurable());
+      server.deployQueue(SimpleString.toSimpleString(queueConfig.getAddress()),
+                         SimpleString.toSimpleString(queueConfig.getName()),
+                         SimpleString.toSimpleString(queueConfig.getFilterString()),
+                         queueConfig.isDurable(),
+                         false);
    }
 
    @Override

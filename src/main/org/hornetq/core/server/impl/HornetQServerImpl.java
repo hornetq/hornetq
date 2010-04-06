@@ -1045,7 +1045,7 @@ public class HornetQServerImpl implements HornetQServer
 
       if (configuration.isFileDeploymentEnabled())
       {
-         queueDeployer = new QueueDeployer(deploymentManager, messagingServerControl);
+         queueDeployer = new QueueDeployer(deploymentManager, this);
 
          queueDeployer.start();
       }
