@@ -77,7 +77,7 @@ producer.setTimeToLive(5000);
          <listitem>
             <para><literal>message-expiry-scan-period</literal></para>
             <para>How often the queues will be scanned to detect expired messages (in milliseconds,
-               default is 30000ms)</para>
+               default is 30000ms, set to <literal>-1</literal> to disable the reaper thread)</para>
          </listitem>
          <listitem>
             <para><literal>message-expiry-thread-priority</literal></para>
