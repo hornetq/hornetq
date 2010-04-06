@@ -713,6 +713,146 @@ public class BridgeTest extends ServiceTestBase
       }
 
    }
+   
+   public void testNullForwardingAddress() throws Exception
+   {
+      HornetQServer server0 = null;
+      HornetQServer server1 = null;
+
+      try
+      {
+         Map<String, Object> server0Params = new HashMap<String, Object>();
+         server0 = createClusteredServerWithParams(isNetty(), 0, false, server0Params);
+
+         Map<String, Object> server1Params = new HashMap<String, Object>();
+         addTargetParameters(server1Params);
+         server1 = createClusteredServerWithParams(isNetty(), 1, false, server1Params);
+
+         final String testAddress = "testAddress";
+         final String queueName0 = "queue0";
+         final String queueName1 = "queue1";
+
+         Map<String, TransportConfiguration> connectors = new HashMap<String, TransportConfiguration>();
+         TransportConfiguration server0tc = new TransportConfiguration(getConnector(), server0Params);
+
+         TransportConfiguration server1tc = new TransportConfiguration(getConnector(), server1Params);
+         connectors.put(server1tc.getName(), server1tc);
+
+         server0.getConfiguration().setConnectorConfigurations(connectors);
+
+         Pair<String, String> connectorPair = new Pair<String, String>(server1tc.getName(), null);
+
+         final int messageSize = 1024;
+
+         final int numMessages = 10;
+
+         BridgeConfiguration bridgeConfiguration = new BridgeConfiguration("bridge1",
+                                                                           queueName0,
+                                                                           null, // pass a null forwarding address to use messages' original address
+                                                                           null,
+                                                                           null,
+                                                                           1000,
+                                                                           1d,
+                                                                           -1,
+                                                                           true,
+                                                                           false,
+                                                                           // Choose confirmation size to make sure acks
+                                                                           // are sent
+                                                                           numMessages * messageSize / 2,
+                                                                           HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
+                                                                           connectorPair,
+                                                                           ConfigurationImpl.DEFAULT_CLUSTER_USER,
+                                                                           ConfigurationImpl.DEFAULT_CLUSTER_PASSWORD);
+
+         List<BridgeConfiguration> bridgeConfigs = new ArrayList<BridgeConfiguration>();
+         bridgeConfigs.add(bridgeConfiguration);
+         server0.getConfiguration().setBridgeConfigurations(bridgeConfigs);
+
+         CoreQueueConfiguration queueConfig0 = new CoreQueueConfiguration(testAddress, queueName0, null, true);
+         List<CoreQueueConfiguration> queueConfigs0 = new ArrayList<CoreQueueConfiguration>();
+         queueConfigs0.add(queueConfig0);
+         server0.getConfiguration().setQueueConfigurations(queueConfigs0);
+
+         // on server #1, we bind queueName1 to same address testAddress 
+         CoreQueueConfiguration queueConfig1 = new CoreQueueConfiguration(testAddress, queueName1, null, true);
+         List<CoreQueueConfiguration> queueConfigs1 = new ArrayList<CoreQueueConfiguration>();
+         queueConfigs1.add(queueConfig1);
+         server1.getConfiguration().setQueueConfigurations(queueConfigs1);
+
+         server1.start();
+         server0.start();
+
+         ClientSessionFactory sf0 = HornetQClient.createClientSessionFactory(server0tc);
+
+         ClientSessionFactory sf1 = HornetQClient.createClientSessionFactory(server1tc);
+
+         ClientSession session0 = sf0.createSession(false, true, true);
+
+         ClientSession session1 = sf1.createSession(false, true, true);
+
+         ClientProducer producer0 = session0.createProducer(new SimpleString(testAddress));
+
+         ClientConsumer consumer1 = session1.createConsumer(queueName1);
+
+         session1.start();
+
+         final byte[] bytes = new byte[messageSize];
+
+         final SimpleString propKey = new SimpleString("testkey");
+
+         for (int i = 0; i < numMessages; i++)
+         {
+            ClientMessage message = session0.createMessage(false);
+
+            message.putIntProperty(propKey, i);
+
+            message.getBodyBuffer().writeBytes(bytes);
+
+            producer0.send(message);
+         }
+
+         for (int i = 0; i < numMessages; i++)
+         {
+            ClientMessage message = consumer1.receive(200);
+
+            Assert.assertNotNull(message);
+
+            Assert.assertEquals(i, message.getObjectProperty(propKey));
+
+            message.acknowledge();
+         }
+
+         Assert.assertNull(consumer1.receiveImmediate());
+
+         session0.close();
+
+         session1.close();
+
+         sf0.close();
+
+         sf1.close();
+
+      }
+      finally
+      {
+         try
+         {
+            server0.stop();
+         }
+         catch (Throwable ignored)
+         {
+         }
+
+         try
+         {
+            server1.stop();
+         }
+         catch (Throwable ignored)
+         {
+         }
+      }
+
+   }
 
    @Override
    protected void setUp() throws Exception

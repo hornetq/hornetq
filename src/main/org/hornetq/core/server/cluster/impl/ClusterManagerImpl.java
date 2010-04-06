@@ -466,7 +466,7 @@ public class ClusterManagerImpl implements ClusterManager
                                  pair,
                                  executorFactory.getExecutor(),
                                  SimpleString.toSimpleString(config.getFilterString()),
-                                 new SimpleString(config.getForwardingAddress()),
+                                 SimpleString.toSimpleString(config.getForwardingAddress()),
                                  scheduledExecutor,
                                  transformer,
                                  config.getRetryInterval(),
