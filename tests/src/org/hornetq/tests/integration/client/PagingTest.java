@@ -81,7 +81,18 @@ public class PagingTest extends ServiceTestBase
 
    // Public --------------------------------------------------------
 
-   public void testSendReceivePaging() throws Exception
+   public void testSendReceivePagingPersistent() throws Exception
+   {
+      internaltestSendReceivePaging(true);
+   }
+
+
+   public void testSendReceivePagingNonPersistent() throws Exception
+   {
+      internaltestSendReceivePaging(false);
+   }
+
+   private void internaltestSendReceivePaging(final boolean persistentMessages) throws Exception
    {
       clearData();
 
@@ -126,7 +137,7 @@ public class PagingTest extends ServiceTestBase
 
          for (int i = 0; i < numberOfMessages; i++)
          {
-            message = session.createMessage(true);
+            message = session.createMessage(persistentMessages);
 
             HornetQBuffer bodyLocal = message.getBodyBuffer();
 
@@ -140,14 +151,17 @@ public class PagingTest extends ServiceTestBase
          session.close();
 
 
-         server.stop();
-
-         server = createServer(true,
-                               config,
-                               PagingTest.PAGE_SIZE,
-                               PagingTest.PAGE_MAX,
-                               new HashMap<String, AddressSettings>());
-         server.start();
+         if (persistentMessages)
+         {
+            server.stop();
+   
+            server = createServer(true,
+                                  config,
+                                  PagingTest.PAGE_SIZE,
+                                  PagingTest.PAGE_MAX,
+                                  new HashMap<String, AddressSettings>());
+            server.start();
+         }
 
          sf = createInVMFactory();
 

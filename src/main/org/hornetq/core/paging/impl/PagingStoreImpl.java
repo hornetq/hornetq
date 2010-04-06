@@ -832,6 +832,13 @@ public class PagingStoreImpl implements TestSupportPageStore
          }
 
          PagedMessage pagedMessage;
+         
+         if (!message.isDurable())
+         {
+            // The address should never be transient when paging (even for non-persistent messages when paging)
+            // This will force everything to be persisted
+            message.bodyChanged();
+         }
 
          if (transactionID != -1)
          {
