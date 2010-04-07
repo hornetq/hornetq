@@ -17,7 +17,7 @@ import junit.framework.Assert;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.tests.util.UnitTestCase;
 
@@ -35,6 +35,10 @@ public class LargeMessageFailoverTest extends FailoverTest
 
    private static final Logger log = Logger.getLogger(LargeMessageFailoverTest.class);
 
+   
+   private static final int MIN_LARGE_MESSAGE = 1024;
+   
+   private static final int LARGE_MESSAGE_SIZE = MIN_LARGE_MESSAGE * 3;
    
    // Attributes ----------------------------------------------------
 
@@ -73,11 +77,21 @@ public class LargeMessageFailoverTest extends FailoverTest
    {
       HornetQBuffer buffer = message.getBodyBuffer();
 
-      for (int j = 0; j < HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE * 3; j++)
+      for (int j = 0; j < LARGE_MESSAGE_SIZE; j++)
       {
          Assert.assertEquals("equal at " + j, buffer.readByte(), UnitTestCase.getSamplebyte(j));
       }
    }
+   
+
+   protected ClientSessionFactoryInternal getSessionFactory()
+   {
+      ClientSessionFactoryInternal sf = super.getSessionFactory();
+      sf.setMinLargeMessageSize(LARGE_MESSAGE_SIZE);
+      return sf;
+   }
+
+
 
    /**
     * @param i
@@ -86,7 +100,7 @@ public class LargeMessageFailoverTest extends FailoverTest
    @Override
    protected void setBody(final int i, final ClientMessage message) throws Exception
    {
-      message.setBodyInputStream(UnitTestCase.createFakeLargeStream(HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE * 3));
+      message.setBodyInputStream(UnitTestCase.createFakeLargeStream(LARGE_MESSAGE_SIZE));
    }
 
    // Private -------------------------------------------------------
