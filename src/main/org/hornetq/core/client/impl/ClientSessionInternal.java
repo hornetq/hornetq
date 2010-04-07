@@ -33,6 +33,8 @@ public interface ClientSessionInternal extends ClientSession
    String getName();
 
    void acknowledge(long consumerID, long messageID) throws HornetQException;
+   
+   void individualAcknowledge(long consumerID, long messageID) throws HornetQException;
 
    boolean isCacheLargeMessageClient();
 

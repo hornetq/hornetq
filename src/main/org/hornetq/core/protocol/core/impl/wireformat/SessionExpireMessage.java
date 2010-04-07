@@ -20,7 +20,7 @@ import org.hornetq.core.protocol.core.impl.PacketImpl;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  */
-public class SessionAcknowledgeMessage extends PacketImpl
+public class SessionExpireMessage extends PacketImpl
 {
    // Constants -----------------------------------------------------
 
@@ -29,27 +29,23 @@ public class SessionAcknowledgeMessage extends PacketImpl
    private long consumerID;
 
    private long messageID;
-   
-   private boolean requiresResponse;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public SessionAcknowledgeMessage(final long consumerID, final long messageID, final boolean requiresResponse)
+   public SessionExpireMessage(final long consumerID, final long messageID)
    {
-      super(PacketImpl.SESS_ACKNOWLEDGE);
+      super(PacketImpl.SESS_EXPIRED);
 
       this.consumerID = consumerID;
 
       this.messageID = messageID;
-
-      this.requiresResponse = requiresResponse;
    }
 
-   public SessionAcknowledgeMessage()
+   public SessionExpireMessage()
    {
-      super(PacketImpl.SESS_ACKNOWLEDGE);
+      super(PacketImpl.SESS_EXPIRED);
    }
 
    // Public --------------------------------------------------------
@@ -64,19 +60,12 @@ public class SessionAcknowledgeMessage extends PacketImpl
       return messageID;
    }
 
-   public boolean isRequiresResponse()
-   {
-      return requiresResponse;
-   }
-
    @Override
    public void encodeRest(final HornetQBuffer buffer)
    {
       buffer.writeLong(consumerID);
 
       buffer.writeLong(messageID);
-
-      buffer.writeBoolean(requiresResponse);
    }
 
    @Override
@@ -85,23 +74,19 @@ public class SessionAcknowledgeMessage extends PacketImpl
       consumerID = buffer.readLong();
 
       messageID = buffer.readLong();
-
-      requiresResponse = buffer.readBoolean();
    }
 
    @Override
    public boolean equals(final Object other)
    {
-      if (other instanceof SessionAcknowledgeMessage == false)
+      if (other instanceof SessionExpireMessage == false)
       {
          return false;
       }
 
-      SessionAcknowledgeMessage r = (SessionAcknowledgeMessage)other;
+      SessionExpireMessage r = (SessionExpireMessage)other;
 
-      return super.equals(other) && consumerID == r.consumerID &&
-             messageID == r.messageID &&
-             requiresResponse == r.requiresResponse;
+      return super.equals(other) && consumerID == r.consumerID && messageID == r.messageID;
    }
    // Package protected ---------------------------------------------
 

@@ -188,13 +188,15 @@ public class ChannelImpl implements Channel
             {
                resendCache.add(packet);
             }
-
-            connection.getTransportConnection().write(buffer, flush, batch);
          }
          finally
          {
             lock.unlock();
          }
+         
+         //The actual send must be outside the lock, or with OIO transport, the write can block if the tcp
+         //buffer is full, preventing any incoming buffers being handled and blocking failover
+         connection.getTransportConnection().write(buffer, flush, batch);
       }
    }
 

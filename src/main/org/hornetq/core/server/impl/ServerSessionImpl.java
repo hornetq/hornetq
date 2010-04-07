@@ -473,10 +473,22 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
 
       consumer.acknowledge(autoCommitAcks, tx, messageID);
    }
+   
+   public void individualAcknowledge(final long consumerID, final long messageID) throws Exception
+   {
+      ServerConsumer consumer = consumers.get(consumerID);
+      
+      if (this.xa && tx == null)
+      {
+         throw new HornetQXAException(XAException.XAER_PROTO, "Invalid transaction state");
+      }
+
+      consumer.individualAcknowledge(autoCommitAcks, tx, messageID);
+   }
 
    public void expire(final long consumerID, final long messageID) throws Exception
    {
-      MessageReference ref = consumers.get(consumerID).getExpired(messageID);
+      MessageReference ref = consumers.get(consumerID).removeReferenceByID(messageID);
 
       if (ref != null)
       {

@@ -51,8 +51,9 @@ import org.hornetq.core.protocol.core.impl.wireformat.SessionCloseMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionConsumerFlowCreditMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionCreateConsumerMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionDeleteQueueMessage;
-import org.hornetq.core.protocol.core.impl.wireformat.SessionExpiredMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.SessionExpireMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionForceConsumerDelivery;
+import org.hornetq.core.protocol.core.impl.wireformat.SessionIndividualAcknowledgeMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionQueueQueryMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionQueueQueryResponseMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionReceiveContinuationMessage;
@@ -576,10 +577,10 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    }
 
    public ClientMessage createMessage(final byte type,
-                                            final boolean durable,
-                                            final long expiration,
-                                            final long timestamp,
-                                            final byte priority)
+                                      final boolean durable,
+                                      final long expiration,
+                                      final long timestamp,
+                                      final byte priority)
    {
       return new ClientMessageImpl(type, durable, expiration, timestamp, priority, initialMessagePacketSize);
    }
@@ -712,6 +713,30 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       }
    }
 
+   public void individualAcknowledge(final long consumerID, final long messageID) throws HornetQException
+   {
+      // if we're pre-acknowledging then we don't need to do anything
+      if (preAcknowledge)
+      {
+         return;
+      }
+
+      checkClosed();
+
+      SessionIndividualAcknowledgeMessage message = new SessionIndividualAcknowledgeMessage(consumerID,
+                                                                                            messageID,
+                                                                                            blockOnAcknowledge);
+
+      if (blockOnAcknowledge)
+      {
+         channel.sendBlocking(message);
+      }
+      else
+      {
+         channel.sendBatched(message);
+      }
+   }
+
    public void expire(final long consumerID, final long messageID) throws HornetQException
    {
       checkClosed();
@@ -719,7 +744,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       // We don't send expiries for pre-ack since message will already have been acked on server
       if (!preAcknowledge)
       {
-         SessionExpiredMessage message = new SessionExpiredMessage(consumerID, messageID);
+         SessionExpireMessage message = new SessionExpireMessage(consumerID, messageID);
 
          channel.send(message);
       }
@@ -851,9 +876,9 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
          backupConnection.syncIDGeneratorSequence(remotingConnection.getIDGeneratorSequence());
 
          remotingConnection = backupConnection;
-         
+
          int lcid = channel.getLastConfirmedCommandID();
-         
+
          Packet request = new ReattachSessionMessage(name, lcid);
 
          Channel channel1 = backupConnection.getChannel(1, -1);
@@ -864,11 +889,11 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
          {
             // The session was found on the server - we reattached transparently ok
 
-            channel.replayCommands(response.getLastConfirmedCommandID());                        
+            channel.replayCommands(response.getLastConfirmedCommandID());
          }
          else
          {
-            
+
             // The session wasn't found on the server - probably we're failing over onto a backup server where the
             // session won't exist or the target server has been restarted - in this case the session will need to be
             // recreated,
@@ -892,7 +917,8 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
                                                                autoCommitAcks,
                                                                preAcknowledge,
                                                                confirmationWindowSize,
-                                                               defaultAddress == null ? null : defaultAddress.toString());
+                                                               defaultAddress == null ? null
+                                                                                     : defaultAddress.toString());
                boolean retry = false;
                do
                {
@@ -924,7 +950,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
                for (Map.Entry<Long, ClientConsumerInternal> entry : consumers.entrySet())
                {
                   SessionQueueQueryResponseMessage queueInfo = entry.getValue().getQueueInfo();
-                  
+
                   // We try and recreate any non durable queues, since they probably won't be there unless
                   // they are defined in hornetq-configuration.xml
                   // This allows e.g. JMS non durable subs and temporary queues to continue to be used after failover
@@ -950,7 +976,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
                                                                                                         false);
 
                   sendPacketWithoutLock(createConsumerRequest);
-                  
+
                   int clientWindowSize = entry.getValue().getClientWindowSize();
 
                   if (clientWindowSize != 0)
@@ -995,7 +1021,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
             channel.returnBlocking();
          }
 
-         channel.setTransferring(false);         
+         channel.setTransferring(false);
       }
       catch (Throwable t)
       {
@@ -1014,15 +1040,15 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
          // not having any credits to send
       }
    }
-   
+
    private volatile SimpleString defaultAddress;
-   
+
    public void setAddress(final Message message, final SimpleString address)
    {
       if (defaultAddress == null)
       {
          defaultAddress = address;
-         
+
          message.setAddress(address);
       }
       else
@@ -1037,9 +1063,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
          }
       }
    }
-   
-   
-   
+
    public void setPacketSize(final int packetSize)
    {
       if (packetSize > this.initialMessagePacketSize)
@@ -1083,7 +1107,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    {
       return producerCreditManager.getCredits(address, anon);
    }
-   
+
    public void returnCredits(final SimpleString address)
    {
       producerCreditManager.returnCredits(address);
@@ -1093,7 +1117,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    {
       producerCreditManager.receiveCredits(address, credits);
    }
-   
+
    public ClientProducerCreditManager getProducerCreditManager()
    {
       return producerCreditManager;

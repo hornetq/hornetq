@@ -24,6 +24,7 @@ import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_CREATECONSUMER
 import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_EXPIRED;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_FLOWTOKEN;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_FORCE_CONSUMER_DELIVERY;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_INDIVIDUAL_ACKNOWLEDGE;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_QUEUEQUERY;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_ROLLBACK;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_SEND;
@@ -67,8 +68,9 @@ import org.hornetq.core.protocol.core.impl.wireformat.SessionConsumerCloseMessag
 import org.hornetq.core.protocol.core.impl.wireformat.SessionConsumerFlowCreditMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionCreateConsumerMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionDeleteQueueMessage;
-import org.hornetq.core.protocol.core.impl.wireformat.SessionExpiredMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.SessionExpireMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionForceConsumerDelivery;
+import org.hornetq.core.protocol.core.impl.wireformat.SessionIndividualAcknowledgeMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionQueueQueryMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionQueueQueryResponseMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionRequestProducerCreditsMessage;
@@ -281,7 +283,7 @@ public class ServerSessionPacketHandler implements ChannelHandler, CloseListener
                }
                case SESS_EXPIRED:
                {
-                  SessionExpiredMessage message = (SessionExpiredMessage)packet;
+                  SessionExpireMessage message = (SessionExpireMessage)packet;
                   session.expire(message.getConsumerID(), message.getMessageID());
                   break;
                }
@@ -412,6 +414,17 @@ public class ServerSessionPacketHandler implements ChannelHandler, CloseListener
                   response = new NullResponseMessage();
                   flush = true;
                   closeChannel = true;
+                  break;
+               }
+               case SESS_INDIVIDUAL_ACKNOWLEDGE:
+               {
+                  SessionIndividualAcknowledgeMessage message = (SessionIndividualAcknowledgeMessage)packet;
+                  requiresResponse = message.isRequiresResponse();
+                  session.individualAcknowledge(message.getConsumerID(), message.getMessageID());
+                  if (requiresResponse)
+                  {
+                     response = new NullResponseMessage();
+                  }
                   break;
                }
                case SESS_CONSUMER_CLOSE:

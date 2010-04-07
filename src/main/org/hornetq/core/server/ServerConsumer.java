@@ -38,9 +38,11 @@ public interface ServerConsumer extends Consumer
 
    Queue getQueue();
 
-   MessageReference getExpired(long messageID) throws Exception;
+   MessageReference removeReferenceByID(long messageID) throws Exception;
 
    void acknowledge(boolean autoCommitAcks, Transaction tx, long messageID) throws Exception;
+   
+   void individualAcknowledge(boolean autoCommitAcks, Transaction tx, long messageID) throws Exception;
 
    void forceDelivery(long sequence);   
    

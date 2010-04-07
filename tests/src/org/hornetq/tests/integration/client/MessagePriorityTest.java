@@ -201,6 +201,67 @@ public class MessagePriorityTest extends UnitTestCase
       session.deleteQueue(queue);
 
    }
+   
+   // https://jira.jboss.org/jira/browse/HORNETQ-275
+   public void testOutOfOrderAcknowledgement() throws Exception
+   {
+      SimpleString queue = RandomUtil.randomSimpleString();
+      SimpleString address = RandomUtil.randomSimpleString();
+
+      session.createQueue(address, queue, false);
+
+      ClientProducer producer = session.createProducer(address);
+
+      ClientConsumer consumer = session.createConsumer(queue);
+
+      session.start();
+
+      for (int i = 0; i < 10; i++)
+      {
+         ClientMessage m = createTextMessage(Integer.toString(i), session);
+         m.setPriority((byte)i);
+         producer.send(m);
+
+         Thread.sleep(20);
+      }
+
+      // Now we wait a little bit to make sure the messages are in the client side buffer
+
+      // They should have been added to the delivering list in the ServerConsumerImpl in the order
+      // they were sent, not priority order
+
+      //We receive one of the messages
+      ClientMessage m = consumer.receive(500);
+      Assert.assertNotNull(m);
+      Assert.assertEquals(9, m.getPriority());
+
+      //Ack it
+      m.acknowledge();
+
+      consumer.close();
+      
+      //Close and try and receive the other ones
+
+      consumer = session.createConsumer(queue);
+
+      // Other messages should be received now
+      // Previously there was a bug whereby if deliveries were stored on server side in send order
+      // then if received in priority order, and acked
+      // the ack would ack all messages up to the one received - resulting in acking
+      // messages that hadn't been delivered yet
+      for (int i = 8; i >= 0; i--)
+      {
+         m = consumer.receive(500);
+         Assert.assertNotNull(m);
+         Assert.assertEquals(i, m.getPriority());
+
+         m.acknowledge();
+      }
+      
+      consumer.close();
+
+      session.deleteQueue(queue);
+   }
 
    // Package protected ---------------------------------------------
 

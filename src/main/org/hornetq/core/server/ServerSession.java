@@ -18,7 +18,6 @@ import java.util.List;
 import javax.transaction.xa.Xid;
 
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.spi.core.protocol.SessionCallback;
 
 /**
  *
@@ -43,6 +42,8 @@ public interface ServerSession
    void removeConsumer(long consumerID) throws Exception;
 
    void acknowledge(long consumerID, long messageID) throws Exception;
+   
+   void individualAcknowledge(long consumerID, long messageID) throws Exception;
 
    void expire(long consumerID, long messageID) throws Exception;
 

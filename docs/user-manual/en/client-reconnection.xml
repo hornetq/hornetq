@@ -50,11 +50,10 @@
             instance using the appropriate setter method.</para>
         <para>If you're using core you can set these values directly on the <literal
                 >ClientSessionFactory</literal> instance using the appropriate setter method.</para>
-        <para>The window is specified in bytes, and has a default value of <literal
-            >1MiB</literal>.</para>
+        <para>The window is specified in bytes.</para>
         <para>Setting this parameter to <literal>-1</literal> disables any buffering and prevents
             any re-attachment from occurring, forcing reconnect instead. The default value for this
-            parameter is <literal>-1</literal>.</para>
+            parameter is <literal>-1</literal>. (Which means by default no auto re-attachment will occur)</para>
     </section>
     <section>
         <title>Session reconnection</title>

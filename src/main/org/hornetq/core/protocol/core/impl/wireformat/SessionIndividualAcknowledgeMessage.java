@@ -20,7 +20,7 @@ import org.hornetq.core.protocol.core.impl.PacketImpl;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  */
-public class SessionExpiredMessage extends PacketImpl
+public class SessionIndividualAcknowledgeMessage extends PacketImpl
 {
    // Constants -----------------------------------------------------
 
@@ -29,23 +29,27 @@ public class SessionExpiredMessage extends PacketImpl
    private long consumerID;
 
    private long messageID;
+   
+   private boolean requiresResponse;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public SessionExpiredMessage(final long consumerID, final long messageID)
+   public SessionIndividualAcknowledgeMessage(final long consumerID, final long messageID, final boolean requiresResponse)
    {
-      super(PacketImpl.SESS_EXPIRED);
+      super(PacketImpl.SESS_INDIVIDUAL_ACKNOWLEDGE);
 
       this.consumerID = consumerID;
 
       this.messageID = messageID;
+
+      this.requiresResponse = requiresResponse;
    }
 
-   public SessionExpiredMessage()
+   public SessionIndividualAcknowledgeMessage()
    {
-      super(PacketImpl.SESS_EXPIRED);
+      super(PacketImpl.SESS_INDIVIDUAL_ACKNOWLEDGE);
    }
 
    // Public --------------------------------------------------------
@@ -60,12 +64,19 @@ public class SessionExpiredMessage extends PacketImpl
       return messageID;
    }
 
+   public boolean isRequiresResponse()
+   {
+      return requiresResponse;
+   }
+
    @Override
    public void encodeRest(final HornetQBuffer buffer)
    {
       buffer.writeLong(consumerID);
 
       buffer.writeLong(messageID);
+
+      buffer.writeBoolean(requiresResponse);
    }
 
    @Override
@@ -74,19 +85,23 @@ public class SessionExpiredMessage extends PacketImpl
       consumerID = buffer.readLong();
 
       messageID = buffer.readLong();
+
+      requiresResponse = buffer.readBoolean();
    }
 
    @Override
    public boolean equals(final Object other)
    {
-      if (other instanceof SessionExpiredMessage == false)
+      if (other instanceof SessionIndividualAcknowledgeMessage == false)
       {
          return false;
       }
 
-      SessionExpiredMessage r = (SessionExpiredMessage)other;
+      SessionIndividualAcknowledgeMessage r = (SessionIndividualAcknowledgeMessage)other;
 
-      return super.equals(other) && consumerID == r.consumerID && messageID == r.messageID;
+      return super.equals(other) && consumerID == r.consumerID &&
+             messageID == r.messageID &&
+             requiresResponse == r.requiresResponse;
    }
    // Package protected ---------------------------------------------
 

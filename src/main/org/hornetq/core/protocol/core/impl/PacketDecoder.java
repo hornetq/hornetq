@@ -48,6 +48,7 @@ import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_CREATECONSUMER
 import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_EXPIRED;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_FLOWTOKEN;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_FORCE_CONSUMER_DELIVERY;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_INDIVIDUAL_ACKNOWLEDGE;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_PRODUCER_CREDITS;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_PRODUCER_REQUEST_CREDITS;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_QUEUEQUERY;
@@ -114,8 +115,9 @@ import org.hornetq.core.protocol.core.impl.wireformat.SessionConsumerCloseMessag
 import org.hornetq.core.protocol.core.impl.wireformat.SessionConsumerFlowCreditMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionCreateConsumerMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionDeleteQueueMessage;
-import org.hornetq.core.protocol.core.impl.wireformat.SessionExpiredMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.SessionExpireMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionForceConsumerDelivery;
+import org.hornetq.core.protocol.core.impl.wireformat.SessionIndividualAcknowledgeMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionProducerCreditsMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionQueueQueryMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionQueueQueryResponseMessage;
@@ -216,7 +218,7 @@ public class PacketDecoder
          }
          case SESS_EXPIRED:
          {
-            packet = new SessionExpiredMessage();
+            packet = new SessionExpireMessage();
             break;
          }
          case SESS_COMMIT:
@@ -377,6 +379,11 @@ public class PacketDecoder
          case SESS_CONSUMER_CLOSE:
          {
             packet = new SessionConsumerCloseMessage();
+            break;
+         }
+         case SESS_INDIVIDUAL_ACKNOWLEDGE:
+         {
+            packet = new SessionIndividualAcknowledgeMessage();
             break;
          }
          case NULL_RESPONSE:

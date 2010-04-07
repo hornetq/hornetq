@@ -79,7 +79,8 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
    private final int ackBatchSize;
 
-   private final PriorityLinkedList<ClientMessageInternal> buffer = new PriorityLinkedListImpl<ClientMessageInternal>(false, ClientConsumerImpl.NUM_PRIORITIES);
+   private final PriorityLinkedList<ClientMessageInternal> buffer = new PriorityLinkedListImpl<ClientMessageInternal>(false,
+                                                                                                                      ClientConsumerImpl.NUM_PRIORITIES);
 
    private final Runner runner = new Runner();
 
@@ -114,8 +115,10 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    private boolean stopped = false;
 
    private final AtomicLong forceDeliveryCount = new AtomicLong(0);
-   
+
    private final SessionQueueQueryResponseMessage queueInfo;
+
+   private volatile boolean ackIndividually;
 
    // Constructors
    // ---------------------------------------------------------------------------------
@@ -151,7 +154,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       this.clientWindowSize = clientWindowSize;
 
       this.ackBatchSize = ackBatchSize;
-      
+
       this.queueInfo = queueInfo;
    }
 
@@ -192,7 +195,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          // Effectively infinite
          timeout = Long.MAX_VALUE;
       }
-      
+
       boolean deliveryForced = false;
 
       long start = -1;
@@ -414,6 +417,8 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       lastAckedMessage = null;
 
       creditsToSend = 0;
+      
+      ackIndividually = false;
    }
 
    public synchronized void start()
@@ -435,7 +440,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    {
       return queueInfo;
    }
-   
+
    public long getID()
    {
       return id;
@@ -463,16 +468,24 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          // This is ok - we just ignore the message
          return;
       }
-        
+
       ClientMessageInternal messageToHandle = message;
-      
+
       if (messageToHandle.getAddress() == null)
       {
          messageToHandle.setAddressTransient(queueInfo.getAddress());
       }
 
       messageToHandle.onReceipt(this);
-      
+
+      if (message.getPriority() != 4)
+      {
+         // We have messages of different priorities so we need to ack them individually since the order
+         // of them in the ServerConsumerImpl delivery list might not be the same as the order they are
+         // consumed in, which means that acking all up to won't work
+         ackIndividually = true;
+      }
+
       // Add it to the buffer
       buffer.addLast(messageToHandle, messageToHandle.getPriority());
 
@@ -546,9 +559,9 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          // Need to send credits for the messages in the buffer
 
          HQIterator<ClientMessageInternal> iter = buffer.iterator();
-         
+
          ClientMessageInternal message;
-         
+
          while ((message = iter.next()) != null)
          {
             flowControlBeforeConsumption(message);
@@ -575,16 +588,28 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    public void acknowledge(final ClientMessage message) throws HornetQException
    {
       ClientMessageInternal cmi = (ClientMessageInternal)message;
-      
-      ackBytes += message.getEncodeSize();
 
-      if (ackBytes >= ackBatchSize)
+      if (ackIndividually)
       {
-         doAck(cmi);
+         if (lastAckedMessage != null)
+         {
+            flushAcks();
+         }
+         
+         session.individualAcknowledge(id, message.getMessageID());
       }
       else
       {
-         lastAckedMessage = cmi;
+         ackBytes += message.getEncodeSize();
+
+         if (ackBytes >= ackBatchSize)
+         {
+            doAck(cmi);
+         }
+         else
+         {
+            lastAckedMessage = cmi;
+         }
       }
    }
 

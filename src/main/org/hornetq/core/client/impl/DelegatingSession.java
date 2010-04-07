@@ -103,6 +103,11 @@ public class DelegatingSession implements ClientSessionInternal
    {
       session.acknowledge(consumerID, messageID);
    }
+   
+   public void individualAcknowledge(final long consumerID, final long messageID) throws HornetQException
+   {
+      session.individualAcknowledge(consumerID, messageID);
+   }
 
    public void addConsumer(final ClientConsumerInternal consumer)
    {

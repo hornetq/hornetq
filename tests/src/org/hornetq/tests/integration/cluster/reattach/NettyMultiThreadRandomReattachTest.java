@@ -51,6 +51,7 @@ public class NettyMultiThreadRandomReattachTest extends MultiThreadRandomReattac
       final ClientSessionFactoryInternal sf = (ClientSessionFactoryInternal) HornetQClient.createClientSessionFactory(new TransportConfiguration("org.hornetq.integration.transports.netty.NettyConnectorFactory"));
       sf.setReconnectAttempts(-1);
       sf.setConfirmationWindowSize(1024 * 1024);
+      sf.setAckBatchSize(0);
       return sf;
    }
 

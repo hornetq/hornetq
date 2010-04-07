@@ -517,8 +517,32 @@ public class ServerConsumerImpl implements ServerConsumer
       }
       while (ref.getMessage().getMessageID() != messageID);
    }
+   
+   public void individualAcknowledge(final boolean autoCommitAcks, final Transaction tx, final long messageID) throws Exception
+   {
+      if (browseOnly)
+      {
+         return;
+      }
+      
+      MessageReference ref = removeReferenceByID(messageID);
+      
+      if (ref == null)
+      {
+         throw new IllegalStateException("Cannot find ref to ack " + messageID);
+      }
+      
+      if (autoCommitAcks)
+      {
+         ref.getQueue().acknowledge(ref);
+      }
+      else
+      {
+         ref.getQueue().acknowledge(tx, ref);
+      }
+   }
 
-   public MessageReference getExpired(final long messageID) throws Exception
+   public MessageReference removeReferenceByID(final long messageID) throws Exception
    {
       if (browseOnly)
       {

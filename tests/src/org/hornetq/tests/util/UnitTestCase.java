@@ -881,10 +881,10 @@ public class UnitTestCase extends TestCase
    protected ClientMessage createTextMessage(final String s, final boolean durable, final ClientSession clientSession)
    {
       ClientMessage message = clientSession.createMessage(HornetQTextMessage.TYPE,
-                                                                durable,
-                                                                0,
-                                                                System.currentTimeMillis(),
-                                                                (byte)1);
+                                                          durable,
+                                                          0,
+                                                          System.currentTimeMillis(),
+                                                          (byte)4);
       message.getBodyBuffer().writeString(s);
       return message;
    }
