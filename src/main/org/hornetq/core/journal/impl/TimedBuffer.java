@@ -127,6 +127,16 @@ public class TimedBuffer
          return;
       }
 
+
+      // Need to start with the spin limiter acquired
+      try
+      {
+         spinLimiter.acquire();
+      }
+      catch (InterruptedException ignore)
+      {
+      }
+
       timerRunnable = new CheckTimer();
 
       timerThread = new Thread(timerRunnable, "hornetq-buffer-timeout");
@@ -138,15 +148,6 @@ public class TimedBuffer
          logRatesTimerTask = new LogRatesTimerTask();
 
          logRatesTimer.scheduleAtFixedRate(logRatesTimerTask, 2000, 2000);
-      }
-
-      // Need to start with the spin limiter acquired
-      try
-      {
-         spinLimiter.acquire();
-      }
-      catch (InterruptedException ignore)
-      {
       }
 
       started = true;
@@ -163,9 +164,9 @@ public class TimedBuffer
 
       bufferObserver = null;
 
-      spinLimiter.release();
-
       timerRunnable.close();
+
+      spinLimiter.release();
 
       if (logRates)
       {
