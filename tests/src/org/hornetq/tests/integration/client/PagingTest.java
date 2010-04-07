@@ -173,7 +173,6 @@ public class PagingTest extends ServiceTestBase
 
          for (int i = 0; i < numberOfMessages; i++)
          {
-            System.out.println("Message " + i + " of " + numberOfMessages);
             ClientMessage message2 = consumer.receive(PagingTest.RECEIVE_TIMEOUT);
 
             Assert.assertNotNull(message2);
