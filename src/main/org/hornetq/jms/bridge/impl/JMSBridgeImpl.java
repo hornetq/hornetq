@@ -1261,6 +1261,11 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
 
          // If this fails we should attempt to cleanup or we might end up in some weird state
 
+         if (log.isTraceEnabled())
+         {
+            log.trace("Failed to connect bridge", e);
+         }
+         
          cleanup();
 
          return false;
