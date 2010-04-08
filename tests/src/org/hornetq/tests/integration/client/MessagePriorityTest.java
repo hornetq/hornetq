@@ -262,7 +262,8 @@ public class MessagePriorityTest extends UnitTestCase
 
       session.deleteQueue(queue);
    }
-
+   
+   
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
