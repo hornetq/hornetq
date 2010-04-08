@@ -82,7 +82,7 @@ public abstract class ManagementTestBase extends ServiceTestBase
    {
       super.setUp();
 
-      mbeanServer = java.lang.management.ManagementFactory.getPlatformMBeanServer();
+      mbeanServer = MBeanServerFactory.createMBeanServer();
    }
 
    @Override

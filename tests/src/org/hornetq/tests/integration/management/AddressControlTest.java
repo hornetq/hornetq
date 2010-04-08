@@ -67,9 +67,6 @@ public class AddressControlTest extends ManagementTestBase
       AddressControl addressControl = createManagementControl(address);
 
       Assert.assertEquals(address.toString(), addressControl.getAddress());
-      
-      
-      Thread.sleep(120 * 1000);
 
       session.deleteQueue(queue);
    }
