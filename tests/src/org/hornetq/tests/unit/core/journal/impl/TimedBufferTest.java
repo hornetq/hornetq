@@ -60,6 +60,7 @@ public class TimedBufferTest extends UnitTestCase
       {
       }
    };
+   
 
    public void testFillBuffer()
    {
