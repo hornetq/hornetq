@@ -21,7 +21,6 @@ import org.hornetq.core.journal.EncodingSupport;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.settings.Mergeable;
 import org.hornetq.utils.BufferHelper;
-import org.hornetq.utils.DataConstants;
 
 /**
  * Configuration settings that are applied on the address level
@@ -38,11 +37,11 @@ public class AddressSettings implements Mergeable<AddressSettings>, Serializable
    /**
     * defaults used if null, this allows merging
     */
-   public static final int DEFAULT_MAX_SIZE_BYTES = -1;
+   public static final long DEFAULT_MAX_SIZE_BYTES = -1;
 
    public static final AddressFullMessagePolicy DEFAULT_ADDRESS_FULL_MESSAGE_POLICY = AddressFullMessagePolicy.PAGE;
 
-   public static final int DEFAULT_PAGE_SIZE = 10 * 1024 * 1024;
+   public static final long DEFAULT_PAGE_SIZE = 10 * 1024 * 1024;
 
    public static final int DEFAULT_MAX_DELIVERY_ATTEMPTS = 10;
 
@@ -60,7 +59,7 @@ public class AddressSettings implements Mergeable<AddressSettings>, Serializable
 
    private Long maxSizeBytes = null;
 
-   private Integer pageSizeBytes = null;
+   private Long pageSizeBytes = null;
 
    private Boolean dropMessagesWhenFull = null;
 
@@ -101,12 +100,12 @@ public class AddressSettings implements Mergeable<AddressSettings>, Serializable
       this.addressFullMessagePolicy = addressFullMessagePolicy;
    }
 
-   public int getPageSizeBytes()
+   public long getPageSizeBytes()
    {
       return pageSizeBytes != null ? pageSizeBytes : AddressSettings.DEFAULT_PAGE_SIZE;
    }
 
-   public void setPageSizeBytes(final int pageSize)
+   public void setPageSizeBytes(final long pageSize)
    {
       pageSizeBytes = pageSize;
    }
@@ -262,7 +261,7 @@ public class AddressSettings implements Mergeable<AddressSettings>, Serializable
 
       maxSizeBytes = BufferHelper.readNullableLong(buffer);
 
-      pageSizeBytes = BufferHelper.readNullableInteger(buffer);
+      pageSizeBytes = BufferHelper.readNullableLong(buffer);
 
       dropMessagesWhenFull = BufferHelper.readNullableBoolean(buffer);
 
@@ -291,7 +290,7 @@ public class AddressSettings implements Mergeable<AddressSettings>, Serializable
 
       return BufferHelper.sizeOfNullableSimpleString(addressFullMessagePolicy != null ? addressFullMessagePolicy.toString()
                                                                                      : null) + BufferHelper.sizeOfNullableLong(maxSizeBytes) +
-             BufferHelper.sizeOfNullableInteger(pageSizeBytes) +
+             BufferHelper.sizeOfNullableLong(pageSizeBytes) +
              BufferHelper.sizeOfNullableBoolean(dropMessagesWhenFull) +
              BufferHelper.sizeOfNullableInteger(maxDeliveryAttempts) +
              BufferHelper.sizeOfNullableInteger(messageCounterHistoryDayLimit) +
@@ -313,7 +312,7 @@ public class AddressSettings implements Mergeable<AddressSettings>, Serializable
 
       BufferHelper.writeNullableLong(buffer, maxSizeBytes);
 
-      BufferHelper.writeNullableInteger(buffer, pageSizeBytes);
+      BufferHelper.writeNullableLong(buffer, pageSizeBytes);
 
       BufferHelper.writeNullableBoolean(buffer, dropMessagesWhenFull);
 

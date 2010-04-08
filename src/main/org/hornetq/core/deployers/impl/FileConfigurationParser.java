@@ -707,11 +707,11 @@ public class FileConfigurationParser
          }
          else if (FileConfigurationParser.MAX_SIZE_BYTES_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
          {
-            addressSettings.setMaxSizeBytes(Integer.valueOf(child.getTextContent()));
+            addressSettings.setMaxSizeBytes(Long.valueOf(child.getTextContent()));
          }
          else if (FileConfigurationParser.PAGE_SIZE_BYTES_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
          {
-            addressSettings.setPageSizeBytes(Integer.valueOf(child.getTextContent()));
+            addressSettings.setPageSizeBytes(Long.valueOf(child.getTextContent()));
          }
          else if (FileConfigurationParser.MESSAGE_COUNTER_HISTORY_DAY_LIMIT_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
          {

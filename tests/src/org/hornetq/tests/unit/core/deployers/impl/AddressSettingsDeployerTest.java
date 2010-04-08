@@ -36,8 +36,8 @@ public class AddressSettingsDeployerTest extends UnitTestCase
                                + "      <expiry-address>ExpiryQueueTest</expiry-address>\n"
                                + "      <redelivery-delay>100</redelivery-delay>\n"
                                + "      <max-delivery-attempts>32</max-delivery-attempts>\n"
-                               + "      <max-size-bytes>182381723</max-size-bytes>\n"
-                               + "      <page-size-bytes>2387273</page-size-bytes>\n"
+                               + "      <max-size-bytes>18238172365765</max-size-bytes>\n"
+                               + "      <page-size-bytes>2387273767666</page-size-bytes>\n"
                                + "      <address-full-policy>DROP</address-full-policy>\n"
                                + "      <message-counter-history-day-limit>1000</message-counter-history-day-limit>\n"
                                + "      <last-value-queue>true</last-value-queue>\n"
@@ -68,8 +68,8 @@ public class AddressSettingsDeployerTest extends UnitTestCase
       Assert.assertEquals(new SimpleString("ExpiryQueueTest"), as.getExpiryAddress());
       Assert.assertEquals(100, as.getRedeliveryDelay());
       Assert.assertEquals(32, as.getMaxDeliveryAttempts());
-      Assert.assertEquals(182381723, as.getMaxSizeBytes());
-      Assert.assertEquals(2387273, as.getPageSizeBytes());
+      Assert.assertEquals(18238172365765L, as.getMaxSizeBytes());
+      Assert.assertEquals(2387273767666L, as.getPageSizeBytes());
       Assert.assertEquals(AddressFullMessagePolicy.DROP, as.getAddressFullMessagePolicy());
       Assert.assertEquals(1000, as.getMessageCounterHistoryDayLimit());
       Assert.assertTrue(as.isLastValueQueue());
@@ -97,8 +97,8 @@ public class AddressSettingsDeployerTest extends UnitTestCase
       Assert.assertEquals(new SimpleString("ExpiryQueueTest"), as.getExpiryAddress());
       Assert.assertEquals(100, as.getRedeliveryDelay());
       Assert.assertEquals(32, as.getMaxDeliveryAttempts());
-      Assert.assertEquals(182381723, as.getMaxSizeBytes());
-      Assert.assertEquals(2387273, as.getPageSizeBytes());
+      Assert.assertEquals(18238172365765l, as.getMaxSizeBytes());
+      Assert.assertEquals(2387273767666l, as.getPageSizeBytes());
       Assert.assertEquals(AddressFullMessagePolicy.DROP, as.getAddressFullMessagePolicy());
       Assert.assertEquals(1000, as.getMessageCounterHistoryDayLimit());
       Assert.assertTrue(as.isLastValueQueue());
