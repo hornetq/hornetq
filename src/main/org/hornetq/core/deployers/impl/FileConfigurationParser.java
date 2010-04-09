@@ -79,6 +79,11 @@ public class FileConfigurationParser
 
    private static final String DELETEDURABLEQUEUE_NAME = "deleteDurableQueue";
 
+   private static final String CREATE_NON_DURABLE_QUEUE_NAME = "createNonDurableQueue";
+
+   private static final String DELETE_NON_DURABLE_QUEUE_NAME = "deleteNonDurableQueue";
+
+   // HORNETQ-309 we keep supporting these attribute names for compatibility
    private static final String CREATETEMPQUEUE_NAME = "createTempQueue";
 
    private static final String DELETETEMPQUEUE_NAME = "deleteTempQueue";
@@ -603,8 +608,8 @@ public class FileConfigurationParser
       ArrayList<String> consume = new ArrayList<String>();
       ArrayList<String> createDurableQueue = new ArrayList<String>();
       ArrayList<String> deleteDurableQueue = new ArrayList<String>();
-      ArrayList<String> createTempQueue = new ArrayList<String>();
-      ArrayList<String> deleteTempQueue = new ArrayList<String>();
+      ArrayList<String> createNonDurableQueue = new ArrayList<String>();
+      ArrayList<String> deleteNonDurableQueue = new ArrayList<String>();
       ArrayList<String> manageRoles = new ArrayList<String>();
       ArrayList<String> allRoles = new ArrayList<String>();
       NodeList children = node.getChildNodes();
@@ -637,13 +642,21 @@ public class FileConfigurationParser
                {
                   deleteDurableQueue.add(role);
                }
+               else if (FileConfigurationParser.CREATE_NON_DURABLE_QUEUE_NAME.equals(type))
+               {
+                  createNonDurableQueue.add(role);
+               }
+               else if (FileConfigurationParser.DELETE_NON_DURABLE_QUEUE_NAME.equals(type))
+               {
+                  deleteNonDurableQueue.add(role);
+               }
                else if (FileConfigurationParser.CREATETEMPQUEUE_NAME.equals(type))
                {
-                  createTempQueue.add(role);
+                  createNonDurableQueue.add(role);
                }
                else if (FileConfigurationParser.DELETETEMPQUEUE_NAME.equals(type))
                {
-                  deleteTempQueue.add(role);
+                  deleteNonDurableQueue.add(role);
                }
                else if (FileConfigurationParser.MANAGE_NAME.equals(type))
                {
@@ -665,8 +678,8 @@ public class FileConfigurationParser
                                     consume.contains(role),
                                     createDurableQueue.contains(role),
                                     deleteDurableQueue.contains(role),
-                                    createTempQueue.contains(role),
-                                    deleteTempQueue.contains(role),
+                                    createNonDurableQueue.contains(role),
+                                    deleteNonDurableQueue.contains(role),
                                     manageRoles.contains(role)));
       }
 

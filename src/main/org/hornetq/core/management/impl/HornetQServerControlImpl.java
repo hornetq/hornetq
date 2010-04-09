@@ -1175,8 +1175,8 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
                                    String consumeRoles,
                                    String createDurableQueueRoles,
                                    String deleteDurableQueueRoles,
-                                   String createTempQueueRoles,
-                                   String deleteTempQueueRoles,
+                                   String createNonDurableQueueRoles,
+                                   String deleteNonDurableQueueRoles,
                                    String manageRoles) throws Exception
    {
       checkStarted();
@@ -1188,8 +1188,8 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
                                                             consumeRoles,
                                                             createDurableQueueRoles,
                                                             deleteDurableQueueRoles,
-                                                            createTempQueueRoles,
-                                                            deleteTempQueueRoles,
+                                                            createNonDurableQueueRoles,
+                                                            deleteNonDurableQueueRoles,
                                                             manageRoles);
 
          server.getSecurityRepository().addMatch(addressMatch, roles);
@@ -1199,8 +1199,8 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
                                                             consumeRoles,
                                                             createDurableQueueRoles,
                                                             deleteDurableQueueRoles,
-                                                            createTempQueueRoles,
-                                                            deleteTempQueueRoles,
+                                                            createNonDurableQueueRoles,
+                                                            deleteNonDurableQueueRoles,
                                                             manageRoles);
          
          storageManager.storeSecurityRoles(persistedRoles);

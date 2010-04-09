@@ -23,8 +23,8 @@
       <security-setting match="jms.topic.#">
          <permission type="createDurableQueue" roles="user"/>
          <permission type="deleteDurableQueue" roles="user"/>
-         <permission type="createTempQueue" roles="user"/>
-         <permission type="deleteTempQueue" roles="user"/>
+         <permission type="createNonDurableQueue" roles="user"/>
+         <permission type="deleteNonDurableQueue" roles="user"/>
          <permission type="send" roles="user"/>
          <permission type="consume" roles="user"/>
       </security-setting>
@@ -32,8 +32,8 @@
       <security-setting match="jms.topic.news.europe.#">
          <permission type="createDurableQueue" roles="user"/>
          <permission type="deleteDurableQueue" roles="user"/>
-         <permission type="createTempQueue" roles="user"/>
-         <permission type="deleteTempQueue" roles="user"/>
+         <permission type="createNonDurableQueue" roles="user"/>
+         <permission type="deleteNonDurableQueue" roles="user"/>
          <permission type="send" roles="europe-user"/>
          <permission type="consume" roles="news-user"/>
       </security-setting>
@@ -41,8 +41,8 @@
       <security-setting match="jms.topic.news.us.#">
          <permission type="createDurableQueue" roles="user"/>
          <permission type="deleteDurableQueue" roles="user"/>
-         <permission type="createTempQueue" roles="user"/>
-         <permission type="deleteTempQueue" roles="user"/>
+         <permission type="createNonDurableQueue" roles="user"/>
+         <permission type="deleteNonDurableQueue" roles="user"/>
          <permission type="send" roles="us-user"/>
          <permission type="consume" roles="news-user"/>
       </security-setting>

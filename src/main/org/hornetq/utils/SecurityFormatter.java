@@ -22,12 +22,12 @@ import java.util.Set;
 
 public class SecurityFormatter
 {
-   public static Set<Role> createSecurity(String sendRoles, String consumeRoles, String createDurableQueueRoles, String deleteDurableQueueRoles, String createTempQueueRoles, String deleteTempQueueRoles, String manageRoles)
+   public static Set<Role> createSecurity(String sendRoles, String consumeRoles, String createDurableQueueRoles, String deleteDurableQueueRoles, String createNonDurableQueueRoles, String deleteNonDurableQueueRoles, String manageRoles)
    {
       List<String> createDurableQueue = toList(createDurableQueueRoles);
       List<String> deleteDurableQueue = toList(deleteDurableQueueRoles);
-      List<String> createTempQueue = toList(createTempQueueRoles);
-      List<String> deleteTempQueue = toList(deleteTempQueueRoles);
+      List<String> createNonDurableQueue = toList(createNonDurableQueueRoles);
+      List<String> deleteNonDurableQueue = toList(deleteNonDurableQueueRoles);
       List<String> send = toList(sendRoles);
       List<String> consume = toList(consumeRoles);
       List<String> manage = toList(manageRoles);
@@ -35,8 +35,8 @@ public class SecurityFormatter
       Set<String> allRoles = new HashSet<String>();
       allRoles.addAll(createDurableQueue);
       allRoles.addAll(deleteDurableQueue);
-      allRoles.addAll(createTempQueue);
-      allRoles.addAll(deleteTempQueue);
+      allRoles.addAll(createNonDurableQueue);
+      allRoles.addAll(deleteNonDurableQueue);
       allRoles.addAll(send);
       allRoles.addAll(consume);
       allRoles.addAll(manage);
@@ -49,8 +49,8 @@ public class SecurityFormatter
              consume.contains(role),
              createDurableQueue.contains(role),
              deleteDurableQueue.contains(role),
-             createTempQueue.contains(role),
-             deleteTempQueue.contains(role),
+             createNonDurableQueue.contains(role),
+             deleteNonDurableQueue.contains(role),
              manageRoles.contains(role)));
       }
       return roles;

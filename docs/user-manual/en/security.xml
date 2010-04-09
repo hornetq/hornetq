@@ -47,12 +47,12 @@
                     delete a durable queue under matching addresses.</para>
             </listitem>
             <listitem>
-                <para><literal>createTempQueue</literal>. This permission allows the user to create
-                    a temporary queue under matching addresses.</para>
+                <para><literal>createNonDurableQueue</literal>. This permission allows the user to create
+                    a non-durable queue under matching addresses.</para>
             </listitem>
             <listitem>
-                <para><literal>deleteTempQueue</literal>. This permission allows the user to delete
-                    a temporarry queue under matching addresses.</para>
+                <para><literal>deleteNonDurableQueue</literal>. This permission allows the user to delete
+                    a non-durable queue under matching addresses.</para>
             </listitem>
             <listitem>
                 <para><literal>send</literal>. This permission allows the user to send a message to
@@ -78,8 +78,8 @@
 &lt;security-setting match="globalqueues.europe.#"&gt;
     &lt;permission type="createDurableQueue" roles="admin"/&gt;
     &lt;permission type="deleteDurableQueue" roles="admin"/&gt;
-    &lt;permission type="createTempQueue" roles="admin, guest, europe-users"/&gt;
-    &lt;permission type="deleteTempQueue" roles="admin, guest, europe-users"/&gt;
+    &lt;permission type="createNonDurableQueue" roles="admin, guest, europe-users"/&gt;
+    &lt;permission type="deleteNonDurableQueue" roles="admin, guest, europe-users"/&gt;
     &lt;permission type="send" roles="admin, europe-users"/&gt;
     &lt;permission type="consume" roles="admin, europe-users"/&gt;
 &lt;/security-setting&gt;            
@@ -124,8 +124,8 @@
             'globalqueues.europe.orders.plastics' the only permissions that exist are <literal
                 >send</literal> and <literal>consume</literal> for the role europe-users. The
             permissions <literal>createDurableQueue</literal>, <literal
-            >deleteDurableQueue</literal>, <literal>createTempQueue</literal>, <literal
-                >deleteTempQueue</literal> are not inherited from the other security-setting
+            >deleteDurableQueue</literal>, <literal>createNonDurableQueue</literal>, <literal
+                >deleteNonDurableQueue</literal> are not inherited from the other security-setting
             block.</para>
         <para>By not inheriting permissions, it allows you to effectively deny permissions in more
             specific security-setting blocks by simply not specifying them. Otherwise it would not

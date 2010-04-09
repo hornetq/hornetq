@@ -36,8 +36,8 @@
          <code><!--security for notification topic-->
          &lt;security-setting match="jms.topic.notificationsTopic"&gt;
             &lt;permission type="consume" roles="guest"/&gt;
-            &lt;permission type="createTempQueue" roles="guest"/&gt;
-            &lt;permission type="deleteTempQueue" roles="guest"/&gt;
+            &lt;permission type="createNonDurableQueue" roles="guest"/&gt;
+            &lt;permission type="deleteNonDurableQueue" roles="guest"/&gt;
          &lt;/security-setting&gt;</code>
      </pre>
      

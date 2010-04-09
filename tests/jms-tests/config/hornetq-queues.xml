@@ -6,8 +6,8 @@
       <security-setting match="#">
          <permission type="createDurableQueue" roles="guest,def"/>
          <permission type="deleteDurableQueue" roles="guest,def"/>
-         <permission type="createTempQueue" roles="guest,def"/>
-         <permission type="deleteTempQueue" roles="guest,def"/>
+         <permission type="createNonDurableQueue" roles="guest,def"/>
+         <permission type="deleteNonDurableQueue" roles="guest,def"/>
          <permission type="consume" roles="guest,def"/>
          <permission type="send" roles="guest,def"/>
       </security-setting>

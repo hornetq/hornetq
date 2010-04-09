@@ -1228,8 +1228,8 @@ public class HornetQServerImpl implements HornetQServer
                                                                roleItem.getConsumeRoles(),
                                                                roleItem.getCreateDurableQueueRoles(),
                                                                roleItem.getDeleteDurableQueueRoles(),
-                                                               roleItem.getCreateTempQueueRoles(),
-                                                               roleItem.getDeleteTempQueueRoles(),
+                                                               roleItem.getCreateNonDurableQueueRoles(),
+                                                               roleItem.getDeleteNonDurableQueueRoles(),
                                                                roleItem.getManageRoles());
 
          securityRepository.addMatch(roleItem.getAddressMatch().toString(), setRoles);

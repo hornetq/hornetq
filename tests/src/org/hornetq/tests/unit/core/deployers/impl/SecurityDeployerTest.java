@@ -41,8 +41,8 @@ public class SecurityDeployerTest extends UnitTestCase
                                + "      <permission type=\"manage\" roles=\"guest,publisher,durpublisher\"/>\n"
                                + "   </security-setting>";
 
-   private final String conf2 = "<security-setting match=\"jms.topic.testQueue\">\n" + "      <permission type=\"createTempQueue\" roles=\"durpublisher\"/>\n"
-                                + "      <permission type=\"deleteTempQueue\" roles=\"durpublisher\"/>\n"
+   private final String conf2 = "<security-setting match=\"jms.topic.testQueue\">\n" + "      <permission type=\"createNonDurableQueue\" roles=\"durpublisher\"/>\n"
+                                + "      <permission type=\"deleteNonDurableQueue\" roles=\"durpublisher\"/>\n"
                                 + "      <permission type=\"consume\" roles=\"guest,publisher,durpublisher\"/>\n"
                                 + "      <permission type=\"send\" roles=\"guest,publisher,durpublisher\"/>\n"
                                 + "   </security-setting>";

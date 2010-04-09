@@ -487,8 +487,8 @@ public interface HornetQServerControl
                             @Parameter(desc="a comma-separated list of roles allowed to consume messages", name="consume") String consumeRoles,
                             @Parameter(desc="a comma-separated list of roles allowed to create durable queues", name="createDurableQueueRoles") String createDurableQueueRoles,
                             @Parameter(desc="a comma-separated list of roles allowed to delete durable queues", name="deleteDurableQueueRoles") String deleteDurableQueueRoles,
-                            @Parameter(desc="a comma-separated list of roles allowed to create temporary queues", name="createTempQueueRoles") String createTempQueueRoles,
-                            @Parameter(desc="a comma-separated list of roles allowed to delete temporary queues", name="deleteTempQueueRoles") String deleteTempQueueRoles,
+                            @Parameter(desc="a comma-separated list of roles allowed to create non durable queues", name="createNonDurableQueueRoles") String createNonDurableQueueRoles,
+                            @Parameter(desc="a comma-separated list of roles allowed to delete non durable queues", name="deleteNonDurableQueueRoles") String deleteNonDurableQueueRoles,
                             @Parameter(desc="a comma-separated list of roles allowed to send management messages messages", name="manage") String manageRoles) throws Exception;
 
    @Operation(desc = "Remove security settings for an address", impact = MBeanOperationInfo.ACTION)

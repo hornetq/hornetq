@@ -36,8 +36,8 @@
 	
 	<security-settings>
 		<security-setting match="#">
-			<permission type="createTempQueue" roles="guest"/>
-			<permission type="deleteTempQueue" roles="guest"/>
+			<permission type="createNonDurableQueue" roles="guest"/>
+			<permission type="deleteNonDurableQueue" roles="guest"/>
 			<permission type="consume" roles="guest"/>
 			<permission type="send" roles="guest"/>
 		</security-setting>

@@ -472,14 +472,14 @@ public class HornetQServerControlUsingCoreTest extends HornetQServerControlTest
                                          String consumeRoles,
                                          String createDurableQueueRoles,
                                          String deleteDurableQueueRoles,
-                                         String createTempQueueRoles,
-                                         String deleteTempQueueRoles,
+                                         String createNonDurableQueueRoles,
+                                         String deleteNonDurableQueueRoles,
                                          String manageRoles) throws Exception
          {
             proxy.invokeOperation("addSecuritySettings", addressMatch, 
                                   sendRoles, consumeRoles,
                                   createDurableQueueRoles, deleteDurableQueueRoles,
-                                  createTempQueueRoles, deleteTempQueueRoles,
+                                  createNonDurableQueueRoles, deleteNonDurableQueueRoles,
                                   manageRoles);
          }
          
