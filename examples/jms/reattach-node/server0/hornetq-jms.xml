@@ -27,6 +27,10 @@
       to try to reconnect -->
       <failover-on-server-shutdown>true</failover-on-server-shutdown>
       
+      <!-- We need to specify a confirmation-window-size to enable re-attachment, default is -1 which
+      means no re-attachment -->
+      <confirmation-window-size>1048576</confirmation-window-size>
+      
    </connection-factory>
    
    <!-- This is used by the example to send the management operations, it's not central to the example -->

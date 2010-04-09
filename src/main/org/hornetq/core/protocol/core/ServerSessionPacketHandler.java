@@ -147,8 +147,6 @@ public class ServerSessionPacketHandler implements ChannelHandler, CloseListener
    {
       log.warn("Client connection failed, clearing up resources for session " + session.getName());
 
-      session.runConnectionFailureRunners();
-
       try
       {
          session.close();
@@ -177,7 +175,6 @@ public class ServerSessionPacketHandler implements ChannelHandler, CloseListener
 
    public void connectionClosed()
    {
-      session.runConnectionFailureRunners();
    }
 
    private void addConnectionListeners()

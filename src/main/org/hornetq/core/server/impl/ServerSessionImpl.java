@@ -73,7 +73,7 @@ import org.hornetq.utils.TypedProperties;
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * @author <a href="mailto:andy.taylor@jboss.org>Andy Taylor</a>
  */
-public class ServerSessionImpl implements ServerSession, FailureListener, CloseListener
+public class ServerSessionImpl implements ServerSession, FailureListener
 {
    // Constants -----------------------------------------------------------------------------
 
@@ -102,7 +102,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
    private final Map<Long, ServerConsumer> consumers = new ConcurrentHashMap<Long, ServerConsumer>();
 
    private Transaction tx;
-   
+
    private final boolean xa;
 
    private final StorageManager storageManager;
@@ -117,7 +117,9 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
 
    private volatile boolean started = false;
 
-   private final Map<SimpleString, Runnable> failureRunners = new HashMap<SimpleString, Runnable>();
+   // private final Map<SimpleString, Runnable> failureRunners = new HashMap<SimpleString, Runnable>();
+
+   private final Map<SimpleString, TempQueueCleanerUpper> tempQueueCleannerUppers = new HashMap<SimpleString, TempQueueCleanerUpper>();
 
    private final String name;
 
@@ -131,7 +133,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
    private final RoutingContext routingContext = new RoutingContextImpl(null);
 
    private final SessionCallback callback;
-   
+
    private volatile SimpleString defaultAddress;
 
    // Constructors ---------------------------------------------------------------------------------
@@ -182,7 +184,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       {
          tx = new TransactionImpl(storageManager);
       }
-      
+
       this.xa = xa;
 
       this.strictUpdateDeliveryCount = strictUpdateDeliveryCount;
@@ -196,12 +198,10 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       this.managementAddress = managementAddress;
 
       this.callback = callback;
-      
+
       this.defaultAddress = defaultAddress;
 
       remotingConnection.addFailureListener(this);
-
-      remotingConnection.addCloseListener(this);
    }
 
    // ServerSession implementation ----------------------------------------------------------------------------
@@ -272,7 +272,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       }
 
       remotingConnection.removeFailureListener(this);
-
+      
       callback.closed();
    }
 
@@ -359,9 +359,9 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
          // session is closed.
          // It is up to the user to delete the queue when finished with it
 
-         failureRunners.put(name, new Runnable()
+         CloseListener closeListener = new CloseListener()
          {
-            public void run()
+            public void connectionClosed()
             {
                try
                {
@@ -375,8 +375,55 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
                   ServerSessionImpl.log.error("Failed to remove temporary queue " + name);
                }
             }
-         });
+         };
+
+         TempQueueCleanerUpper cleaner = new TempQueueCleanerUpper(postOffice, name);
+
+         remotingConnection.addCloseListener(cleaner);
+         remotingConnection.addFailureListener(cleaner);
+
+         tempQueueCleannerUppers.put(name, cleaner);
       }
+   }
+
+   private static class TempQueueCleanerUpper implements CloseListener, FailureListener
+   {
+      private final PostOffice postOffice;
+
+      private final SimpleString bindingName;
+
+      TempQueueCleanerUpper(final PostOffice postOffice, final SimpleString bindingName)
+      {
+         this.postOffice = postOffice;
+
+         this.bindingName = bindingName;
+      }
+
+      private void run()
+      {
+         try
+         {
+            if (postOffice.getBinding(bindingName) != null)
+            {
+               postOffice.removeBinding(bindingName);
+            }
+         }
+         catch (Exception e)
+         {
+            ServerSessionImpl.log.error("Failed to remove temporary queue " + bindingName);
+         }
+      }
+
+      public void connectionFailed(HornetQException exception)
+      {
+         run();
+      }
+
+      public void connectionClosed()
+      {
+         run();
+      }
+
    }
 
    public void deleteQueue(final SimpleString name) throws Exception
@@ -390,7 +437,14 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
 
       server.destroyQueue(name, this);
 
-      failureRunners.remove(name);
+      TempQueueCleanerUpper cleaner = this.tempQueueCleannerUppers.remove(name);
+      
+      if (cleaner != null)
+      {
+         remotingConnection.removeCloseListener(cleaner);
+         
+         remotingConnection.removeFailureListener(cleaner);
+      }
    }
 
    public QueueQueryResult executeQueueQuery(final SimpleString name) throws Exception
@@ -465,7 +519,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
    public void acknowledge(final long consumerID, final long messageID) throws Exception
    {
       ServerConsumer consumer = consumers.get(consumerID);
-      
+
       if (this.xa && tx == null)
       {
          throw new HornetQXAException(XAException.XAER_PROTO, "Invalid transaction state");
@@ -473,11 +527,11 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
 
       consumer.acknowledge(autoCommitAcks, tx, messageID);
    }
-   
+
    public void individualAcknowledge(final long consumerID, final long messageID) throws Exception
    {
       ServerConsumer consumer = consumers.get(consumerID);
-      
+
       if (this.xa && tx == null)
       {
          throw new HornetQXAException(XAException.XAER_PROTO, "Invalid transaction state");
@@ -921,27 +975,27 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
 
       currentLargeMessage = msg;
    }
-   
+
    public void send(final ServerMessage message) throws Exception
    {
       long id = storageManager.generateUniqueID();
 
       SimpleString address = message.getAddress();
-      
+
       message.setMessageID(id);
       message.encodeMessageIDToBuffer();
-          
+
       if (address == null)
       {
          if (message.isDurable())
          {
-            //We need to force a re-encode when the message gets persisted or when it gets reloaded
-            //it will have no address
+            // We need to force a re-encode when the message gets persisted or when it gets reloaded
+            // it will have no address
             message.setAddress(defaultAddress);
          }
          else
          {
-            //We don't want to force a re-encode when the message gets sent to the consumer
+            // We don't want to force a re-encode when the message gets sent to the consumer
             message.setAddressTransient(defaultAddress);
          }
       }
@@ -955,8 +1009,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       else
       {
          doSend(message);
-      }      
-      
+      }
+
       if (defaultAddress == null)
       {
          defaultAddress = address;
@@ -986,9 +1040,9 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
    }
 
    public void requestProducerCredits(final SimpleString address, final int credits) throws Exception
-   { 
+   {
       PagingStore store = postOffice.getPagingManager().getPageStore(address);
-      
+
       store.executeRunnableWhenMemoryAvailable(new Runnable()
       {
          public void run()
@@ -1008,21 +1062,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       }
    }
 
-   public void runConnectionFailureRunners()
-   {
-      for (Runnable runner : failureRunners.values())
-      {
-         try
-         {
-            runner.run();
-         }
-         catch (Throwable t)
-         {
-            ServerSessionImpl.log.error("Failed to execute failure runner", t);
-         }
-      }
-   }
-
    // FailureListener implementation
    // --------------------------------------------------------------------
 
@@ -1031,18 +1070,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       try
       {
          ServerSessionImpl.log.warn("Client connection failed, clearing up resources for session " + name);
-
-         for (Runnable runner : failureRunners.values())
-         {
-            try
-            {
-               runner.run();
-            }
-            catch (Throwable t)
-            {
-               ServerSessionImpl.log.error("Failed to execute failure runner", t);
-            }
-         }
 
          close();
 
@@ -1054,28 +1081,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       }
    }
 
-   public void connectionClosed()
-   {
-      try
-      {
-         for (Runnable runner : failureRunners.values())
-         {
-            try
-            {
-               runner.run();
-            }
-            catch (Throwable t)
-            {
-               ServerSessionImpl.log.error("Failed to execute failure runner", t);
-            }
-         }
-      }
-      catch (Throwable t)
-      {
-         ServerSessionImpl.log.error("Failed to fire listeners " + this);
-      }
-
-   }
 
    // Public
    // ----------------------------------------------------------------------------
@@ -1174,7 +1179,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       {
          throw new HornetQXAException(XAException.XAER_PROTO, "Invalid transaction state");
       }
-      
+
       if (tx == null || autoCommitSends)
       {
       }

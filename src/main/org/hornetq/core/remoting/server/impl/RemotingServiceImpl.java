@@ -31,8 +31,10 @@ import org.hornetq.api.core.Interceptor;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.logging.Logger;
+import org.hornetq.core.protocol.core.ServerSessionPacketHandler;
 import org.hornetq.core.protocol.core.impl.CoreProtocolManagerFactory;
 import org.hornetq.core.protocol.stomp.StompProtocolManagerFactory;
+import org.hornetq.core.remoting.FailureListener;
 import org.hornetq.core.remoting.server.RemotingService;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.management.ManagementService;
@@ -365,16 +367,32 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
       if (conn != null)
       {
-         // if the connection has no failure listeners it means the sesssions etc were already closed so this is a clean
-         // shutdown, therefore we can destroy the connection
-         // otherwise client might have crashed/exited without closing connections so we leave them for connection TTL
+         // Bit of a hack - find a better way to do this
 
-         if (conn.connection.getFailureListeners().isEmpty())
+         List<FailureListener> failureListeners = conn.connection.getFailureListeners();
+
+         boolean empty = true;
+
+         for (FailureListener listener : failureListeners)
+         {
+            if (listener instanceof ServerSessionPacketHandler)
+            {
+               empty = false;
+
+               break;
+            }
+         }
+
+         // We only destroy the connection if the connection has no sessions attached to it
+         // Otherwise it means the connection has died without the sessions being closed first
+         // so we need to keep them for ttl, in case re-attachment occurs
+         if (empty)
          {
             connections.remove(connectionID);
 
             conn.connection.destroy();
          }
+
       }
    }
 

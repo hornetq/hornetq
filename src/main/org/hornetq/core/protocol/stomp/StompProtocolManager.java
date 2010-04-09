@@ -567,8 +567,7 @@ class StompProtocolManager implements ProtocolManager
             {
                session.getSession().rollback(true);
                session.getSession().close();
-               session.getSession().runConnectionFailureRunners();
-            }
+             }
             catch (Exception e)
             {
                log.warn(e.getMessage(), e);
@@ -587,7 +586,6 @@ class StompProtocolManager implements ProtocolManager
                {
                   serverSession.rollback(true);
                   serverSession.close();
-                  serverSession.runConnectionFailureRunners();
                }
                catch (Exception e)
                {

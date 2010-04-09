@@ -110,6 +110,4 @@ public interface ServerSession
    void close() throws Exception;
 
    void setTransferring(boolean transferring);
-   
-   void runConnectionFailureRunners();
 }
