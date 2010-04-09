@@ -9,6 +9,7 @@
       <entries>
          <entry name="ConnectionFactory"/>
       </entries>
+      <confirmation-window-size>1048576</confirmation-window-size>
    </connection-factory>
 
    <!--the queue used by the example-->
