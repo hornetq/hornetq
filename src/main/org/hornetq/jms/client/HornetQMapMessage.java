@@ -52,6 +52,8 @@ public class HornetQMapMessage extends HornetQMessage implements MapMessage
 
    private TypedProperties map = new TypedProperties();
 
+   private boolean invalid = true;
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -107,60 +109,70 @@ public class HornetQMapMessage extends HornetQMessage implements MapMessage
    {
       checkName(name);
       map.putBooleanProperty(new SimpleString(name), value);
+      invalid = true;
    }
 
    public void setByte(final String name, final byte value) throws JMSException
    {
       checkName(name);
       map.putByteProperty(new SimpleString(name), value);
+      invalid = true;
    }
 
    public void setShort(final String name, final short value) throws JMSException
    {
       checkName(name);
       map.putShortProperty(new SimpleString(name), value);
+      invalid = true;
    }
 
    public void setChar(final String name, final char value) throws JMSException
    {
       checkName(name);
       map.putCharProperty(new SimpleString(name), value);
+      invalid = true;
    }
 
    public void setInt(final String name, final int value) throws JMSException
    {
       checkName(name);
       map.putIntProperty(new SimpleString(name), value);
+      invalid = true;
    }
 
    public void setLong(final String name, final long value) throws JMSException
    {
       checkName(name);
       map.putLongProperty(new SimpleString(name), value);
+      invalid = true;
    }
 
    public void setFloat(final String name, final float value) throws JMSException
    {
       checkName(name);
       map.putFloatProperty(new SimpleString(name), value);
+      invalid = true;
    }
 
    public void setDouble(final String name, final double value) throws JMSException
    {
       checkName(name);
       map.putDoubleProperty(new SimpleString(name), value);
+      invalid = true;
    }
 
    public void setString(final String name, final String value) throws JMSException
    {
       checkName(name);
       map.putSimpleStringProperty(new SimpleString(name), value == null ? null : new SimpleString(value));
+      invalid = true;
    }
 
    public void setBytes(final String name, final byte[] value) throws JMSException
    {
       checkName(name);
       map.putBytesProperty(new SimpleString(name), value);
+      invalid = true;
    }
 
    public void setBytes(final String name, final byte[] value, final int offset, final int length) throws JMSException
@@ -173,6 +185,7 @@ public class HornetQMapMessage extends HornetQMessage implements MapMessage
       byte[] newBytes = new byte[length];
       System.arraycopy(value, offset, newBytes, 0, length);
       map.putBytesProperty(new SimpleString(name), newBytes);
+      invalid = true;
    }
 
    public void setObject(final String name, final Object value) throws JMSException
@@ -223,6 +236,7 @@ public class HornetQMapMessage extends HornetQMessage implements MapMessage
       {
          throw new MessageFormatException("Invalid object type.");
       }
+      invalid = true;
    }
 
    public boolean getBoolean(final String name) throws JMSException
@@ -390,12 +404,19 @@ public class HornetQMapMessage extends HornetQMessage implements MapMessage
       super.clearBody();
 
       map.clear();
+
+      invalid = true;
    }
 
    @Override
    public void doBeforeSend() throws Exception
    {
-      map.encode(message.getBodyBuffer());
+      if (invalid)
+      {
+         message.getBodyBuffer().resetWriterIndex(); 
+         
+         map.encode(message.getBodyBuffer());
+      }
 
       super.doBeforeSend();
    }

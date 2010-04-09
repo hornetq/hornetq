@@ -140,6 +140,39 @@ public abstract class MessageTestBase extends HornetQServerTestCase
       ProxyAssertSupport.assertNull(queueCons.receive(100));
 
    }
+   
+   public void testSendMoreThanOnce() throws Exception
+   {
+      prepareMessage(message);
+
+      session.close();
+      session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+      queueProd = session.createProducer(HornetQServerTestCase.queue1);
+      queueProd.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      queueCons = session.createConsumer(HornetQServerTestCase.queue1);
+
+      queueProd.send(message);
+      queueProd.send(message);
+      queueProd.send(message);
+
+      Message r = queueCons.receive(500);
+
+      assertEquivalent(r, DeliveryMode.NON_PERSISTENT);
+      
+      r = queueCons.receive(500);
+
+      assertEquivalent(r, DeliveryMode.NON_PERSISTENT);
+      
+      r = queueCons.receive(500);
+
+      assertEquivalent(r, DeliveryMode.NON_PERSISTENT);
+
+      queueCons.close();
+      session.close();
+
+
+   }
 
    // Package protected ---------------------------------------------
 
