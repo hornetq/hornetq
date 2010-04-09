@@ -52,7 +52,7 @@ public class HornetQMapMessage extends HornetQMessage implements MapMessage
 
    private TypedProperties map = new TypedProperties();
 
-   private boolean invalid = true;
+   private boolean invalid;
 
    // Static --------------------------------------------------------
 
@@ -66,15 +66,23 @@ public class HornetQMapMessage extends HornetQMessage implements MapMessage
       super(HornetQMapMessage.TYPE, session);
 
       map = new TypedProperties();
+      
+      invalid = true;
    }
 
+   /*
+    * This constructor is used during reading
+    */
    protected HornetQMapMessage(final ClientMessage message, final ClientSession session)
    {
       super(message, session);
+      
+      invalid = false;
    }
 
    public HornetQMapMessage()
    {
+      invalid = false;
    }
 
    /**
@@ -416,6 +424,8 @@ public class HornetQMapMessage extends HornetQMessage implements MapMessage
          message.getBodyBuffer().resetWriterIndex(); 
          
          map.encode(message.getBodyBuffer());
+         
+         invalid = false;
       }
 
       super.doBeforeSend();

@@ -44,7 +44,7 @@ import org.hornetq.tests.util.UnitTestCase;
  *
  *
  */
-public class ReSendLargeMessageTest extends JMSTestBase
+public class ReSendMessageTest extends JMSTestBase
 {
 
    // Constants -----------------------------------------------------
@@ -59,7 +59,7 @@ public class ReSendLargeMessageTest extends JMSTestBase
 
    // Public --------------------------------------------------------
 
-   public void testResendMessage() throws Exception
+   public void testResendWithLargeMessage() throws Exception
    {
       Connection conn = cf.createConnection();
       try
@@ -92,6 +92,47 @@ public class ReSendLargeMessageTest extends JMSTestBase
             msgs.add(mm);
             msgs.add(sess.createTextMessage("hello" + i));
             msgs.add(sess.createObjectMessage(new SomeSerializable("hello" + i)));
+         }
+
+         internalTestResend(msgs, sess);
+
+      }
+      finally
+      {
+         conn.close();
+      }
+
+   }
+
+   public void testResendWithMapMessagesOnly() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      try
+      {
+         conn.start();
+
+         Session sess = conn.createSession(true, Session.SESSION_TRANSACTED);
+         ArrayList<Message> msgs = new ArrayList<Message>();
+
+         for (int i = 0; i < 1; i++)
+         {
+            MapMessage mm = sess.createMapMessage();
+            mm.setBoolean("boolean", true);
+            mm.setByte("byte", (byte)3);
+            mm.setBytes("bytes", new byte[] { (byte)3, (byte)4, (byte)5 });
+            mm.setChar("char", (char)6);
+            mm.setDouble("double", 7.0);
+            mm.setFloat("float", 8.0f);
+            mm.setInt("int", 9);
+            mm.setLong("long", 10l);
+            mm.setObject("object", new String("this is an object"));
+            mm.setShort("short", (short)11);
+            mm.setString("string", "this is a string");
+
+            msgs.add(mm);
+
+            MapMessage emptyMap = sess.createMapMessage();
+            msgs.add(emptyMap);
          }
 
          internalTestResend(msgs, sess);
@@ -151,10 +192,22 @@ public class ReSendLargeMessageTest extends JMSTestBase
          {
             MapMessage copiedMap = (MapMessage)copiedMessage;
             MapMessage originalMap = (MapMessage)originalMessage;
-            Assert.assertEquals(originalMap.getString("str"), copiedMap.getString("str"));
-            Assert.assertEquals(originalMap.getLong("long"), copiedMap.getLong("long"));
-            Assert.assertEquals(originalMap.getInt("int"), copiedMap.getInt("int"));
-            Assert.assertEquals(originalMap.getObject("object"), copiedMap.getObject("object"));
+            if (originalMap.getString("str") != null)
+            {
+               Assert.assertEquals(originalMap.getString("str"), copiedMap.getString("str"));
+            }
+            if (originalMap.getObject("long") != null)
+            {
+               Assert.assertEquals(originalMap.getLong("long"), copiedMap.getLong("long"));
+            }
+            if (originalMap.getObject("int") != null)
+            {
+               Assert.assertEquals(originalMap.getInt("int"), copiedMap.getInt("int"));
+            }
+            if (originalMap.getObject("object") != null)
+            {
+               Assert.assertEquals(originalMap.getObject("object"), copiedMap.getObject("object"));
+            }
          }
          else if (copiedMessage instanceof ObjectMessage)
          {
