@@ -31,4 +31,7 @@ public class HornetQJMSConstants
    public static final String JBOSS_MESSAGING_BRIDGE_MESSAGE_ID_LIST = "HQ_BRIDGE_MSG_ID_LIST";
 
    public static final int PRE_ACKNOWLEDGE = 100;
+   
+   public static final String JMS_HORNETQ_ENABLE_BYTE_ARRAY_JMS_CORRELATION_ID_PROPERTY_NAME = 
+      "hq.jms.support-bytes-id";
 }

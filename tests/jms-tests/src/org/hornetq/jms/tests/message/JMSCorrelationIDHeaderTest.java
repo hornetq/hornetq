@@ -67,6 +67,7 @@ public class JMSCorrelationIDHeaderTest extends MessageHeaderTestBase
 
    }
 
+   
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

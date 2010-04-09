@@ -125,10 +125,7 @@ public class SimpleJMSMessage implements Message
 
    public String getJMSCorrelationID() throws JMSException
    {
-      if (isCorrelationIDBytes)
-      {
-         throw new JMSException("CorrelationID is a byte[] for this message");
-      }
+      
       return correlationIDString;
    }
 

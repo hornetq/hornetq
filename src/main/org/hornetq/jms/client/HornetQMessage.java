@@ -99,8 +99,7 @@ public class HornetQMessage implements javax.jms.Message
 
       for (Map.Entry<String, Object> entry : coreMessage.entrySet())
       {
-         if (entry.getKey().equals("type") ||
-             entry.getKey().equals("durable") ||
+         if (entry.getKey().equals("type") || entry.getKey().equals("durable") ||
              entry.getKey().equals("expiration") ||
              entry.getKey().equals("timestamp") ||
              entry.getKey().equals("priority"))
@@ -270,15 +269,36 @@ public class HornetQMessage implements javax.jms.Message
       this(type, session);
 
       setJMSTimestamp(foreign.getJMSTimestamp());
+      
+      String value = System.getProperty(HornetQJMSConstants.JMS_HORNETQ_ENABLE_BYTE_ARRAY_JMS_CORRELATION_ID_PROPERTY_NAME);
 
-      try
+      boolean supportBytesId = !"false".equals(value);
+
+      if (supportBytesId)
       {
-         byte[] corrIDBytes = foreign.getJMSCorrelationIDAsBytes();
-         setJMSCorrelationIDAsBytes(corrIDBytes);
+         try
+         {
+            byte[] corrIDBytes = foreign.getJMSCorrelationIDAsBytes();
+            setJMSCorrelationIDAsBytes(corrIDBytes);
+         }
+         catch (JMSException e)
+         {
+            // specified as String
+            String corrIDString = foreign.getJMSCorrelationID();
+            if (corrIDString != null)
+            {
+               setJMSCorrelationID(corrIDString);
+            }
+         }
       }
-      catch (JMSException e)
+      else
       {
-         // specified as String
+         // Some providers, like WSMQ do automatic conversions between native byte[] correlation id
+         // and String correlation id. This makes it impossible for HQ to guarantee to return the correct
+         // type as set by the user
+         // So we allow the behaviour to be overridden by a system property
+         // https://jira.jboss.org/jira/browse/HORNETQ-356
+         // https://jira.jboss.org/jira/browse/HORNETQ-332
          String corrIDString = foreign.getJMSCorrelationID();
          if (corrIDString != null)
          {
@@ -311,7 +331,7 @@ public class HornetQMessage implements javax.jms.Message
       if (msgID == null)
       {
          SimpleString uid = message.getUserID();
-         
+
          msgID = uid == null ? null : uid.toString();
       }
       return msgID;
@@ -328,7 +348,7 @@ public class HornetQMessage implements javax.jms.Message
 
       msgID = jmsMessageID;
    }
-   
+
    public long getJMSTimestamp() throws JMSException
    {
       return message.getTimestamp();
@@ -382,7 +402,14 @@ public class HornetQMessage implements javax.jms.Message
    {
       if (jmsCorrelationID == null)
       {
-         jmsCorrelationID = message.getStringProperty(HornetQMessage.CORRELATIONID_HEADER_NAME);
+         try
+         {
+            jmsCorrelationID = message.getStringProperty(HornetQMessage.CORRELATIONID_HEADER_NAME);
+         }
+         catch (PropertyConversionException e)
+         {
+            jmsCorrelationID = null;
+         }
       }
 
       return jmsCorrelationID;

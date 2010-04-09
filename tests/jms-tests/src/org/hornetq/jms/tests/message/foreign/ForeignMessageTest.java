@@ -16,6 +16,7 @@ package org.hornetq.jms.tests.message.foreign;
 import javax.jms.Message;
 import javax.jms.TextMessage;
 
+import org.hornetq.api.jms.HornetQJMSConstants;
 import org.hornetq.jms.tests.message.MessageTestBase;
 import org.hornetq.jms.tests.message.SimpleJMSMessage;
 import org.hornetq.jms.tests.message.SimpleJMSTextMessage;
@@ -68,6 +69,70 @@ public class ForeignMessageTest extends MessageTestBase
       TextMessage tm = (TextMessage)queueCons.receive();
       ProxyAssertSupport.assertNotNull(tm);
       ProxyAssertSupport.assertEquals("hello from Brazil!", txt.getText());
+   }
+   
+   
+   
+   public void testForeignMessageCorrelationIDBytesDisabled() throws Exception
+   {
+      System.setProperty(HornetQJMSConstants.JMS_HORNETQ_ENABLE_BYTE_ARRAY_JMS_CORRELATION_ID_PROPERTY_NAME, "false");
+      
+      SimpleJMSMessage msg = new SimpleJMSMessage();
+      
+      msg.setJMSCorrelationID("mycorrelationid");
+      byte[] bytes = new byte[] { 1, 4, 3, 6, 8};
+      msg.setJMSCorrelationIDAsBytes(bytes);
+
+      queueProd.send(msg);
+
+      Message rec = queueCons.receive();
+      ProxyAssertSupport.assertNotNull(rec);
+      
+      assertNull(rec.getJMSCorrelationIDAsBytes());
+      
+      assertEquals("mycorrelationid", msg.getJMSCorrelationID());
+   }
+   
+   public void testForeignMessageCorrelationID() throws Exception
+   {
+      System.setProperty(HornetQJMSConstants.JMS_HORNETQ_ENABLE_BYTE_ARRAY_JMS_CORRELATION_ID_PROPERTY_NAME, "true");
+      
+      SimpleJMSMessage msg = new SimpleJMSMessage();
+      
+      msg.setJMSCorrelationID("mycorrelationid");
+      byte[] bytes = new byte[] { 1, 4, 3, 6, 8};
+      msg.setJMSCorrelationIDAsBytes(bytes);
+
+      queueProd.send(msg);
+
+      Message rec = queueCons.receive();
+      ProxyAssertSupport.assertNotNull(rec);
+      
+      //Bytes correlation id takes precedence
+      byte[] bytesrec = rec.getJMSCorrelationIDAsBytes();
+      
+      assertByteArraysEqual(bytes, bytesrec);
+      
+      assertNull(rec.getJMSCorrelationID());
+   }
+   
+   private void assertByteArraysEqual(final byte[] bytes1, final byte[] bytes2)
+   {
+      if (bytes1 == null | bytes2 == null)
+      {
+         ProxyAssertSupport.fail();
+      }
+
+      if (bytes1.length != bytes2.length)
+      {
+         ProxyAssertSupport.fail();
+      }
+
+      for (int i = 0; i < bytes1.length; i++)
+      {
+         ProxyAssertSupport.assertEquals(bytes1[i], bytes2[i]);
+      }
+
    }
 
 }
