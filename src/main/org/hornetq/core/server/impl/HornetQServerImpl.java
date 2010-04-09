@@ -990,13 +990,15 @@ public class HornetQServerImpl implements HornetQServer
 
       // Address settings need to deployed initially, since they're require on paging manager.start()
 
-      deployAddressSettingsFromConfiguration();
-
       if (configuration.isFileDeploymentEnabled())
       {
          addressSettingsDeployer = new AddressSettingsDeployer(deploymentManager, addressSettingsRepository);
 
          addressSettingsDeployer.start();
+      }
+      else
+      {
+         deployAddressSettingsFromConfiguration();
       }
 
       storageManager.start();
@@ -1014,8 +1016,6 @@ public class HornetQServerImpl implements HornetQServer
 
       resourceManager.start();
 
-      deploySecurityFromConfiguration();
-
       // Deploy all security related config
       if (configuration.isFileDeploymentEnabled())
       {
@@ -1030,6 +1030,11 @@ public class HornetQServerImpl implements HornetQServer
             securityDeployer.start();
          }
       }
+      else
+      {
+         deploySecurityFromConfiguration();
+      }
+      
       deployGroupingHandlerConfiguration(configuration.getGroupingHandlerConfiguration());
 
       // Load the journal and populate queues, transactions and caches in memory
@@ -1037,17 +1042,16 @@ public class HornetQServerImpl implements HornetQServer
 
       compareJournals(journalInfo);
 
-      // Deploy any queues in the Configuration class - if there's no file deployment we still need
-      // to load those
-      deployQueuesFromConfiguration();
-
       // Deploy any predefined queues
-
       if (configuration.isFileDeploymentEnabled())
       {
          queueDeployer = new QueueDeployer(deploymentManager, this);
 
          queueDeployer.start();
+      }
+      else
+      {
+         deployQueuesFromConfiguration();
       }
 
       // We need to call this here, this gives any dependent server a chance to deploy its own addresses
