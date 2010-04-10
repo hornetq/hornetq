@@ -20,6 +20,7 @@ import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
 
@@ -28,10 +29,26 @@ import org.hornetq.tests.util.ServiceTestBase;
  */
 public class ConsumerRoundRobinTest extends ServiceTestBase
 {
+   private static final Logger log = Logger.getLogger(QueueBrowserTest.class);
+
    public final SimpleString addressA = new SimpleString("addressA");
 
    public final SimpleString queueA = new SimpleString("queueA");
 
+   public void test() throws Exception
+   {
+      for (int i = 0; i < 100000; i++)
+      {
+         log.info("**** ITER " + i + "\n\n\n\n\n\n");
+         
+         this.testConsumersRoundRobinCorrectly();
+         
+         tearDown();
+         
+         setUp();
+      }
+   }
+   
    public void testConsumersRoundRobinCorrectly() throws Exception
    {
       HornetQServer server = createServer(false);
@@ -53,7 +70,6 @@ public class ConsumerRoundRobinTest extends ServiceTestBase
          consumers[3] = session.createConsumer(queueA);
          consumers[4] = session.createConsumer(queueA);
 
-         // ClientSession sendSession = cf.createSession(false, true, true);
          ClientProducer cp = session.createProducer(addressA);
          int numMessage = 100;
          for (int i = 0; i < numMessage; i++)
@@ -70,9 +86,10 @@ public class ConsumerRoundRobinTest extends ServiceTestBase
                ClientMessage cm = consumers[j].receive(5000);
                Assert.assertNotNull(cm);
                Assert.assertEquals(currMessage++, cm.getBodyBuffer().readInt());
+               cm.acknowledge();
             }
          }
-         // sendSession.close();
+         log.info("closing session");
          session.close();
       }
       finally

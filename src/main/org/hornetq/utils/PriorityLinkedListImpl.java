@@ -62,20 +62,16 @@ public class PriorityLinkedListImpl<T> implements PriorityLinkedList<T>
 
    public int addFirst(final T t, final int priority)
    {
-      int refs = size.incrementAndGet();
-      
       levels[priority].addFirst(t);
       
-      return refs;
+      return size.incrementAndGet();
    }
 
    public int addLast(final T t, final int priority)
    {
-      int refs = size.incrementAndGet();
-      
       levels[priority].addLast(t);
       
-      return refs;
+      return size.incrementAndGet();
    }
 
    public T removeFirst()
