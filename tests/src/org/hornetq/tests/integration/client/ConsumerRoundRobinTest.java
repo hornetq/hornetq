@@ -35,20 +35,6 @@ public class ConsumerRoundRobinTest extends ServiceTestBase
 
    public final SimpleString queueA = new SimpleString("queueA");
 
-   public void test() throws Exception
-   {
-      for (int i = 0; i < 100000; i++)
-      {
-         log.info("**** ITER " + i + "\n\n\n\n\n\n");
-         
-         this.testConsumersRoundRobinCorrectly();
-         
-         tearDown();
-         
-         setUp();
-      }
-   }
-   
    public void testConsumersRoundRobinCorrectly() throws Exception
    {
       HornetQServer server = createServer(false);
