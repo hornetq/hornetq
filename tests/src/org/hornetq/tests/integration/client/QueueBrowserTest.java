@@ -355,5 +355,51 @@ public class QueueBrowserTest extends ServiceTestBase
 
       sf.close();
    }
+   
+   public void testBrowseWithZeroConsumerWindowSize() throws Exception
+   {
+      ClientSessionFactory sf = createInVMFactory();
+      
+      sf.setConsumerWindowSize(0);
+
+      ClientSession session = sf.createSession(false, true, true);
+
+      session.createQueue(QUEUE, QUEUE, null, false);
+
+      ClientProducer producer = session.createProducer(QUEUE);
+
+      final int numMessages = 100;
+
+      byte[] bytes = new byte[240];
+      
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage message = session.createMessage(false);
+         
+         message.getBodyBuffer().writeBytes(bytes);
+         
+         message.putIntProperty("foo", i);
+         
+         producer.send(message);
+      }
+
+      //Create a normal non browsing consumer
+      ClientConsumer consumer = session.createConsumer(QUEUE);
+      
+      session.start();
+      
+      ClientConsumer browser = session.createConsumer(QUEUE, true);
+
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage message2 = browser.receive(1000);
+
+         assertEquals(i, message2.getIntProperty("foo").intValue());
+      }
+
+      session.close();
+
+      sf.close();
+   }
 
 }

@@ -157,20 +157,12 @@ public class BatchDelayTest extends ServiceTestBase
 
       ClientMessage msg = session.createMessage(false);
 
-      long start = System.currentTimeMillis();
-      
       prod.send(msg);
 
       msg = cons.receive(10000);
 
       assertNotNull(msg);
       
-      long end = System.currentTimeMillis();
-      
-      //This will be delayed
-      
-      assertTrue(end - start > DELAY);
-
       msg.acknowledge();
 
       sf.close();
