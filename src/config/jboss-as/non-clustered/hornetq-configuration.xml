@@ -30,6 +30,7 @@
 
       <connector name="in-vm">
          <factory-class>org.hornetq.core.remoting.impl.invm.InVMConnectorFactory</factory-class>
+         <param key="server-id" value="${hornetq.server-id:0}"/> 
       </connector>
 
    </connectors>
