@@ -254,13 +254,13 @@
                &lt;address-settings>
                   &lt;address-setting match="jms.queue.exampleQueue">            
                      &lt;max-size-bytes>100000&lt;/max-size-bytes>
-                     &lt;address-full-policy>DROP&lt;/address-full-policy>   
+                     &lt;address-full-policy>BLOCK&lt;/address-full-policy>   
                   &lt;/address-setting>
                &lt;/address-settings></programlisting>
             <para>The above example would set the max size of the JMS queue "exampleQueue" to be
                100000 bytes and would block any producers sending to that address to prevent that
                max size being exceeded.</para>
-            <para>Note the policy must be set to <literal>DROP</literal> to enable blocking producer
+            <para>Note the policy must be set to <literal>BLOCK</literal> to enable blocking producer
                flow control.</para>
             <para>Please note the default value for <literal>address-full-policy</literal> is to
                   <literal>PAGE</literal>. Please see the chapter on paging for more information on
