@@ -110,7 +110,7 @@
              value="${build.dir}/${build.artifact}"/>
    <property name="build.distro.lib.dir" value="${build.distro.dir}/lib"/>
    <property name="build.distro.native.dir" value="${build.distro.dir}/native-src"/>
-   <property name="build.distro.client.dir" value="${build.distro.dir}/client"/>
+   <!-- <property name="build.distro.client.dir" value="${build.distro.dir}/client"/> -->
    <property name="build.distro.config.dir" value="${build.distro.dir}/config"/>
    <property name="build.distro.schema.dir" value="${build.distro.dir}/schemas"/>
    <property name="build.distro.bin.dir" value="${build.distro.dir}/bin"/>
@@ -818,7 +818,7 @@
       
       <mkdir dir="${build.distro.dir}"/>
       <mkdir dir="${build.distro.lib.dir}"/>
-      <mkdir dir="${build.distro.client.dir}"/>
+      <!-- <mkdir dir="${build.distro.client.dir}"/> -->
       <mkdir dir="${build.distro.config.dir}"/>
       <mkdir dir="${build.distro.bin.dir}"/>
       <mkdir dir="${build.distro.api.dir}"/>
@@ -835,6 +835,9 @@
             <include name="${logging.jar.name}"/>
             <include name="${mc.jar.name}"/>
             <include name="${ra.rar.name}"/>
+         	<include name="${core.client.jar.name}"/>
+         	<include name="${jms.client.jar.name}"/>
+         	<include name="${jnp.client.jar.name}"/>
          </fileset>
          <fileset dir="${org.jboss.naming.lib}">
             <include name="jnpserver.jar"/>
@@ -844,6 +847,7 @@
          </fileset>
       </copy>
       <copy file="${org.jboss.netty.lib}/${netty.jar.name}" tofile="${build.distro.lib.dir}/netty.jar"/>
+   	<!--
       <copy todir="${build.distro.client.dir}">
          <fileset dir="${build.jars.dir}">
             <include name="${core.client.jar.name}"/>
@@ -851,6 +855,7 @@
             <include name="${jnp.client.jar.name}"/>
          </fileset>
       </copy>
+      -->
       <copy todir="${build.distro.config.dir}">
          <fileset dir="${src.config.dir}">
             <include name="*.xml"/>

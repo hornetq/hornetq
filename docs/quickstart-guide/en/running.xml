@@ -64,4 +64,8 @@
          forgetting to create the <link linkend="installation.jboss.as4">AS 4 profiles for
             HornetQ</link> first. </para>
    </section>
+   <section id="running.jboss.as6">
+      <title>HornetQ In JBoss AS 6.0</title>
+      <para>From JBoss AS 6.0 M3 onwards, HornetQ is the default (built-in) JMS provider in JBoss AS, so there's no need to install it - it's already there.</para>
+   </section>
 </chapter>

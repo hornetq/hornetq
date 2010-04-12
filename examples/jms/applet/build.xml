@@ -35,12 +35,10 @@
    <target name="init">
       <mkdir dir="build/classes" />
 	  <copy todir="build/classes" flatten="true">
-  	     <fileset dir="${client.jars.dir}">
-  	        <include name="hornetq-core-client.jar"/>
-  	        <include name="hornetq-jms-client.jar"/>
-  	     </fileset>
   	     <fileset dir="${hornetq.jars.dir}">
 	        <include name="hornetq-transports.jar"/>
+  	     	<include name="hornetq-core-client.jar"/>
+  	     	<include name="hornetq-jms-client.jar"/>
 	     </fileset>
 	     <fileset dir="${jars.dir}">
 	        <include name="**/netty.jar" />
