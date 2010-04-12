@@ -162,6 +162,10 @@
                     <programlisting>
                    &lt;shared-store>true&lt;shared-store>
                 </programlisting>
+                     <para>Additionally, the backup server must be flagged explicitly as a backup:</para>
+                     <programlisting>
+                   &lt;backup>true&lt;/backup>
+                     </programlisting>
                     <para>In order for live - backup pairs to operate properly with a shared store,
                         both servers must have configured the location of journal directory to point
                         to the <emphasis>same shared location</emphasis> (as explained in <xref
