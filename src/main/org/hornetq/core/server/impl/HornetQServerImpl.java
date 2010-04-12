@@ -1427,7 +1427,7 @@ public class HornetQServerImpl implements HornetQServer
       }
       catch (Exception e)
       {
-         throw new IllegalArgumentException("Error instantiating transformer class \"" + className + "\"", e);
+         throw new IllegalArgumentException("Error instantiating class \"" + className + "\"", e);
       }
    }
 

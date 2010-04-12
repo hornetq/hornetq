@@ -33,7 +33,7 @@ public class Logger
 {
    public static final String LOGGER_DELEGATE_FACTORY_CLASS_NAME = "org.hornetq.logger-delegate-factory-class-name";
 
-   private static LogDelegateFactory delegateFactory;
+   private static volatile LogDelegateFactory delegateFactory;
 
    private static final ConcurrentMap<Class<?>, Logger> loggers = new ConcurrentHashMap<Class<?>, Logger>();
 
@@ -42,7 +42,7 @@ public class Logger
       Logger.initialise();
    }
 
-   public static void setDelegateFactory(final LogDelegateFactory delegateFactory)
+   public static synchronized void setDelegateFactory(final LogDelegateFactory delegateFactory)
    {
       Logger.clear();
 
@@ -54,14 +54,14 @@ public class Logger
       Logger.loggers.clear();
    }
 
-   public static void reset()
+   public static synchronized void reset()
    {
       Logger.clear();
 
       Logger.initialise();
    }
 
-   public static void initialise()
+   public static synchronized void initialise()
    {
       LogDelegateFactory delegateFactory;
 
