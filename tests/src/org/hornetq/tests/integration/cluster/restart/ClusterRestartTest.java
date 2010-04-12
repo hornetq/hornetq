@@ -76,12 +76,15 @@ public class ClusterRestartTest extends ClusterTestBase
          System.out.println("stopped******************************************************");
          startServers(0);
 
-         waitForBindings(0, "queues.testaddress", 1, 0, true);
-
+         
          addConsumer(1, 0, "queue10", null);
+         
+         waitForBindings(0, "queues.testaddress", 1, 1, true);
+         waitForBindings(1, "queues.testaddress", 1, 0, true);
 
          waitForBindings(0, "queues.testaddress", 1, 0, false);
          waitForBindings(1, "queues.testaddress", 1, 1, false);
+         
          printBindings(2);
 
          sendInRange(1, "queues.testaddress", 10, 20, false, null);
@@ -151,9 +154,10 @@ public class ClusterRestartTest extends ClusterTestBase
          startServers(0);
 
          waitForBindings(0, "queues.testaddress", 1, 0, true);
-
+         waitForBindings(1, "queues.testaddress", 1, 0, true);
          waitForBindings(0, "queues.testaddress", 1, 0, false);
          waitForBindings(1, "queues.testaddress", 1, 0, false);
+         
          printBindings(2);
          addConsumer(0, 1, "queue10", null);
          addConsumer(1, 0, "queue10", null);
