@@ -263,8 +263,8 @@
             <para>Note the policy must be set to <literal>BLOCK</literal> to enable blocking producer
                flow control.</para>
             <para>Please note the default value for <literal>address-full-policy</literal> is to
-                  <literal>PAGE</literal>. Please see the chapter on paging for more information on
-               paging.</para>
+                  <literal>PAGE</literal> (see <xref linkend="paging" /> for more information on
+               paging).</para>
          </section>
       </section>
       <section>
