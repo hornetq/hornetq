@@ -29,9 +29,9 @@ import org.hornetq.core.config.CoreQueueConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.impl.invm.TransportConstants;
+import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.cluster.Bridge;
-import org.hornetq.integration.transports.netty.NettyConnectorFactory;
 import org.hornetq.tests.util.ServiceTestBase;
 
 /**
@@ -72,7 +72,7 @@ public class BridgeStartTest extends ServiceTestBase
       Map<String, Object> server1Params = new HashMap<String, Object>();
       if (isNetty())
       {
-         server1Params.put("port", org.hornetq.integration.transports.netty.TransportConstants.DEFAULT_PORT + 1);
+         server1Params.put("port", org.hornetq.core.remoting.impl.netty.TransportConstants.DEFAULT_PORT + 1);
       }
       else
       {
@@ -224,7 +224,7 @@ public class BridgeStartTest extends ServiceTestBase
       Map<String, Object> server1Params = new HashMap<String, Object>();
       if (isNetty())
       {
-         server1Params.put("port", org.hornetq.integration.transports.netty.TransportConstants.DEFAULT_PORT + 1);
+         server1Params.put("port", org.hornetq.core.remoting.impl.netty.TransportConstants.DEFAULT_PORT + 1);
       }
       else
       {
@@ -423,7 +423,7 @@ public class BridgeStartTest extends ServiceTestBase
       Map<String, Object> server1Params = new HashMap<String, Object>();
       if (isNetty())
       {
-         server1Params.put("port", org.hornetq.integration.transports.netty.TransportConstants.DEFAULT_PORT + 1);
+         server1Params.put("port", org.hornetq.core.remoting.impl.netty.TransportConstants.DEFAULT_PORT + 1);
       }
       else
       {
@@ -560,7 +560,7 @@ public class BridgeStartTest extends ServiceTestBase
       Map<String, Object> server1Params = new HashMap<String, Object>();
       if (isNetty())
       {
-         server1Params.put("port", org.hornetq.integration.transports.netty.TransportConstants.DEFAULT_PORT + 1);
+         server1Params.put("port", org.hornetq.core.remoting.impl.netty.TransportConstants.DEFAULT_PORT + 1);
       }
       else
       {

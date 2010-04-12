@@ -20,7 +20,7 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.*;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.integration.transports.netty.NettyConnectorFactory;
+import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.SpawnedVMSupport;
 

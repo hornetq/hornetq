@@ -22,7 +22,6 @@
    <path id="remote.classpath">
     <fileset dir="${hornetq.jars.dir}">
       <include name="hornetq-core.jar"/>
-      <include name="hornetq-transports.jar"/>
     </fileset>
  	  <fileset dir="${jars.dir}">
       <include name="**/netty*jar"/>

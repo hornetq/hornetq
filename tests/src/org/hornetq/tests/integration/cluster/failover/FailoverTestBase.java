@@ -190,16 +190,16 @@ public abstract class FailoverTestBase extends ServiceTestBase
    {
       if (live)
       {
-         return new TransportConfiguration("org.hornetq.integration.transports.netty.NettyAcceptorFactory");
+         return new TransportConfiguration("org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory");
       }
       else
       {
          Map<String, Object> server1Params = new HashMap<String, Object>();
 
-         server1Params.put(org.hornetq.integration.transports.netty.TransportConstants.PORT_PROP_NAME,
-                           org.hornetq.integration.transports.netty.TransportConstants.DEFAULT_PORT + 1);
+         server1Params.put(org.hornetq.core.remoting.impl.netty.TransportConstants.PORT_PROP_NAME,
+                           org.hornetq.core.remoting.impl.netty.TransportConstants.DEFAULT_PORT + 1);
 
-         return new TransportConfiguration("org.hornetq.integration.transports.netty.NettyAcceptorFactory",
+         return new TransportConfiguration("org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory",
                                            server1Params);
       }
    }
@@ -208,16 +208,16 @@ public abstract class FailoverTestBase extends ServiceTestBase
    {
       if (live)
       {
-         return new TransportConfiguration("org.hornetq.integration.transports.netty.NettyConnectorFactory");
+         return new TransportConfiguration("org.hornetq.core.remoting.impl.netty.NettyConnectorFactory");
       }
       else
       {
          Map<String, Object> server1Params = new HashMap<String, Object>();
 
-         server1Params.put(org.hornetq.integration.transports.netty.TransportConstants.PORT_PROP_NAME,
-                           org.hornetq.integration.transports.netty.TransportConstants.DEFAULT_PORT + 1);
+         server1Params.put(org.hornetq.core.remoting.impl.netty.TransportConstants.PORT_PROP_NAME,
+                           org.hornetq.core.remoting.impl.netty.TransportConstants.DEFAULT_PORT + 1);
 
-         return new TransportConfiguration("org.hornetq.integration.transports.netty.NettyConnectorFactory",
+         return new TransportConfiguration("org.hornetq.core.remoting.impl.netty.NettyConnectorFactory",
                                            server1Params);
       }
    }

@@ -100,7 +100,7 @@ public class PingStressTest extends ServiceTestBase
     */
    private void internalTest() throws Exception
    {
-      final TransportConfiguration transportConfig = new TransportConfiguration("org.hornetq.integration.transports.netty.NettyConnectorFactory");
+      final TransportConfiguration transportConfig = new TransportConfiguration("org.hornetq.core.remoting.impl.netty.NettyConnectorFactory");
 
       Interceptor noPongInterceptor = new Interceptor()
       {

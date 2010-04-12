@@ -44,7 +44,7 @@ public class CrashClient
       {
          CrashClient.log.debug("args = " + Arrays.asList(args));
 
-         ClientSessionFactory sf = HornetQClient.createClientSessionFactory(new TransportConfiguration("org.hornetq.integration.transports.netty.NettyConnectorFactory"));
+         ClientSessionFactory sf = HornetQClient.createClientSessionFactory(new TransportConfiguration("org.hornetq.core.remoting.impl.netty.NettyConnectorFactory"));
 
          sf.setClientFailureCheckPeriod(ClientCrashTest.PING_PERIOD);
          sf.setConnectionTTL(ClientCrashTest.CONNECTION_TTL);

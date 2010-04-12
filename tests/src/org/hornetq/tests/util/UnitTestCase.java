@@ -86,9 +86,9 @@ public class UnitTestCase extends TestCase
 
    public static final String INVM_CONNECTOR_FACTORY = "org.hornetq.core.remoting.impl.invm.InVMConnectorFactory";
 
-   public static final String NETTY_ACCEPTOR_FACTORY = "org.hornetq.integration.transports.netty.NettyAcceptorFactory";
+   public static final String NETTY_ACCEPTOR_FACTORY = "org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory";
 
-   public static final String NETTY_CONNECTOR_FACTORY = "org.hornetq.integration.transports.netty.NettyConnectorFactory";
+   public static final String NETTY_CONNECTOR_FACTORY = "org.hornetq.core.remoting.impl.netty.NettyConnectorFactory";
 
    // Attributes ----------------------------------------------------
 

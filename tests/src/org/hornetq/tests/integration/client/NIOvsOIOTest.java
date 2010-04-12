@@ -32,12 +32,12 @@ import org.hornetq.api.core.client.MessageHandler;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.logging.Logger;
+import org.hornetq.core.remoting.impl.netty.TransportConstants;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
 import org.hornetq.core.settings.HierarchicalRepository;
 import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.hornetq.core.settings.impl.AddressSettings;
-import org.hornetq.integration.transports.netty.TransportConstants;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.UUIDGenerator;
 
@@ -76,7 +76,7 @@ public class NIOvsOIOTest extends UnitTestCase
    {
       System.getProperties().put("hq.batchHQ", "true");
       
-      String connectorFactoryClassName = "org.hornetq.integration.transports.netty.NettyConnectorFactory";
+      String connectorFactoryClassName = "org.hornetq.core.remoting.impl.netty.NettyConnectorFactory";
       
       
       final int numSenders = 1;
@@ -156,7 +156,7 @@ public class NIOvsOIOTest extends UnitTestCase
 
    private void testPerf(boolean nio) throws Exception
    {
-      String acceptorFactoryClassName = "org.hornetq.integration.transports.netty.NettyAcceptorFactory";
+      String acceptorFactoryClassName = "org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory";
       
       Configuration conf = new ConfigurationImpl();
 

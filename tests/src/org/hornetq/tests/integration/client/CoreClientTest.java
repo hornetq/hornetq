@@ -43,8 +43,8 @@ public class CoreClientTest extends UnitTestCase
 
    public void testCoreClientNetty() throws Exception
    {
-      testCoreClient("org.hornetq.integration.transports.netty.NettyAcceptorFactory",
-                     "org.hornetq.integration.transports.netty.NettyConnectorFactory");
+      testCoreClient("org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory",
+                     "org.hornetq.core.remoting.impl.netty.NettyConnectorFactory");
    }
 
    public void testCoreClientInVM() throws Exception

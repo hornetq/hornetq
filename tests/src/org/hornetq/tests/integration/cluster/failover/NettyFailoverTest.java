@@ -17,7 +17,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.integration.transports.netty.TransportConstants;
+import org.hornetq.core.remoting.impl.netty.TransportConstants;
 
 /**
  * A NettyFailoverTest
@@ -48,7 +48,7 @@ public class NettyFailoverTest extends FailoverTest
    {
       if (live)
       {
-         return new TransportConfiguration("org.hornetq.integration.transports.netty.NettyAcceptorFactory");
+         return new TransportConfiguration("org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory");
       }
       else
       {
@@ -56,7 +56,7 @@ public class NettyFailoverTest extends FailoverTest
 
          server1Params.put(TransportConstants.PORT_PROP_NAME, TransportConstants.DEFAULT_PORT + 1);
 
-         return new TransportConfiguration("org.hornetq.integration.transports.netty.NettyAcceptorFactory",
+         return new TransportConfiguration("org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory",
                                            server1Params);
       }
    }
@@ -66,7 +66,7 @@ public class NettyFailoverTest extends FailoverTest
    {
       if (live)
       {
-         return new TransportConfiguration("org.hornetq.integration.transports.netty.NettyConnectorFactory");
+         return new TransportConfiguration("org.hornetq.core.remoting.impl.netty.NettyConnectorFactory");
       }
       else
       {
@@ -74,7 +74,7 @@ public class NettyFailoverTest extends FailoverTest
 
          server1Params.put(TransportConstants.PORT_PROP_NAME, TransportConstants.DEFAULT_PORT + 1);
 
-         return new TransportConfiguration("org.hornetq.integration.transports.netty.NettyConnectorFactory",
+         return new TransportConfiguration("org.hornetq.core.remoting.impl.netty.NettyConnectorFactory",
                                            server1Params);
       }
    }

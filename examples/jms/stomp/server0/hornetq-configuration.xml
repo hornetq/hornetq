@@ -6,7 +6,7 @@
 
    <connectors>
       <connector name="netty-connector">
-         <factory-class>org.hornetq.integration.transports.netty.NettyConnectorFactory</factory-class>
+         <factory-class>org.hornetq.core.remoting.impl.netty.NettyConnectorFactory</factory-class>
       </connector>
    </connectors>
    
@@ -14,12 +14,12 @@
    <acceptors>
       <!-- a regular Netty acceptor used by the JMS client -->
       <acceptor name="netty-acceptor">
-         <factory-class>org.hornetq.integration.transports.netty.NettyAcceptorFactory</factory-class>        
+         <factory-class>org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory</factory-class>        
       </acceptor>
       <!-- the stomp-acceptor is configured for the Stomp protocol and -->
       <!-- will listen on port 61613 (default Stomp port)              -->
       <acceptor name="stomp-acceptor">
-         <factory-class>org.hornetq.integration.transports.netty.NettyAcceptorFactory</factory-class>        
+         <factory-class>org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory</factory-class>        
          <param key="protocol" value="stomp" />
          <param key="port" value="61613" />
       </acceptor>

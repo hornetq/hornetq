@@ -118,7 +118,7 @@ public class ClientCrashTest extends ClientTestBase
    {
       super.setUp();
 
-      sf = HornetQClient.createClientSessionFactory(new TransportConfiguration("org.hornetq.integration.transports.netty.NettyConnectorFactory"));
+      sf = HornetQClient.createClientSessionFactory(new TransportConfiguration("org.hornetq.core.remoting.impl.netty.NettyConnectorFactory"));
 
       sf.setClientFailureCheckPeriod(ClientCrashTest.PING_PERIOD);
       sf.setConnectionTTL(ClientCrashTest.CONNECTION_TTL);

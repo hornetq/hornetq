@@ -86,8 +86,7 @@
       <pathelement location="${example.config.dir}"/>
       <pathelement location="${classes.dir}"/>
       <fileset dir="${hornetq.jars.dir}">
-         <include  name="**/hornetq-transports.jar"/>
-       	<include name="**/*client*.jar"/>
+       	 <include name="**/*client*.jar"/>
       </fileset>
       <fileset dir="${jars.dir}">
          <include name="**/netty*.jar"/>

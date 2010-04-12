@@ -40,7 +40,7 @@ public class NettyMultiThreadRandomReattachTest extends MultiThreadRandomReattac
       liveConf.setSecurityEnabled(false);
       liveConf.getAcceptorConfigurations().clear();
       liveConf.getAcceptorConfigurations()
-              .add(new TransportConfiguration("org.hornetq.integration.transports.netty.NettyAcceptorFactory"));
+              .add(new TransportConfiguration("org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory"));
       liveServer = HornetQServers.newHornetQServer(liveConf, false);
       liveServer.start();
    }
@@ -48,7 +48,7 @@ public class NettyMultiThreadRandomReattachTest extends MultiThreadRandomReattac
    @Override
    protected ClientSessionFactoryInternal createSessionFactory()
    {
-      final ClientSessionFactoryInternal sf = (ClientSessionFactoryInternal) HornetQClient.createClientSessionFactory(new TransportConfiguration("org.hornetq.integration.transports.netty.NettyConnectorFactory"));
+      final ClientSessionFactoryInternal sf = (ClientSessionFactoryInternal) HornetQClient.createClientSessionFactory(new TransportConfiguration("org.hornetq.core.remoting.impl.netty.NettyConnectorFactory"));
       sf.setReconnectAttempts(-1);
       sf.setConfirmationWindowSize(1024 * 1024);
       sf.setAckBatchSize(0);

@@ -22,7 +22,7 @@ import junit.framework.Assert;
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
 import org.hornetq.api.core.HornetQException;
-import org.hornetq.integration.transports.netty.NettyConnection;
+import org.hornetq.core.remoting.impl.netty.NettyConnection;
 import org.hornetq.spi.core.protocol.ProtocolType;
 import org.hornetq.spi.core.remoting.Connection;
 import org.hornetq.spi.core.remoting.ConnectionLifeCycleListener;

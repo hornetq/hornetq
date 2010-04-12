@@ -34,7 +34,7 @@ import org.hornetq.api.core.management.ManagementHelper;
 import org.hornetq.api.core.management.ResourceNames;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.config.impl.ConfigurationImpl;
-import org.hornetq.integration.transports.netty.NettyConnectorFactory;
+import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.hornetq.tests.util.SpawnedVMSupport;
 import org.objectweb.jtests.jms.admin.Admin;
 

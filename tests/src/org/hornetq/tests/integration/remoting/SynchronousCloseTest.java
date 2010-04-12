@@ -22,8 +22,8 @@ import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
+import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.hornetq.core.server.HornetQServer;
-import org.hornetq.integration.transports.netty.NettyConnectorFactory;
 import org.hornetq.tests.util.ServiceTestBase;
 
 /**

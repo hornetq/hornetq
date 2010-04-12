@@ -84,7 +84,7 @@
      &lt;!-- This connector specifies how to connect to the backup server    -->
      &lt;!-- backup server is located on host "192.168.0.11" and port "5445" -->
      &lt;connector name="backup-connector">
-       &lt;factory-class>org.hornetq.integration.transports.netty.NettyConnectorFactory&lt;/factory-class>
+       &lt;factory-class>org.hornetq.core.remoting.impl.netty.NettyConnectorFactory&lt;/factory-class>
        &lt;param key="host" value="192.168.0.11"/>
        &lt;param key="port" value="5445"/>
      &lt;/connector>
@@ -99,7 +99,7 @@
   
   &lt;acceptors>
      &lt;acceptor name="acceptor">
-        &lt;factory-class>org.hornetq.integration.transports.netty.NettyAcceptorFactory&lt;/factory-class>
+        &lt;factory-class>org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory&lt;/factory-class>
         &lt;param key="host" value="192.168.0.11"/>
         &lt;param key="port" value="5445"/>
      &lt;/acceptor>

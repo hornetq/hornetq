@@ -29,7 +29,7 @@
                         @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
                         @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/testQueue"),
                         @ActivationConfigProperty(propertyName = "acknowledgeMode", propertyValue = "Auto-acknowledge"),
-                        @ActivationConfigProperty(propertyName = "ConnectorClassName", propertyValue = "org.hornetq.integration.transports.netty.NettyConnectorFactory"),
+                        @ActivationConfigProperty(propertyName = "ConnectorClassName", propertyValue = "org.hornetq.core.remoting.impl.netty.NettyConnectorFactory"),
                         @ActivationConfigProperty(propertyName = "ConnectionParameters", propertyValue = "hornetq.remoting.netty.port=5545")
                      })
             public class MDBRemoteExample implements MessageListener
@@ -73,7 +73,7 @@ public class MDBRemoteExample implements MessageListener
       &lt;rar-name&gt;jms-ra.rar&lt;/rar-name&gt;
       &lt;connection-definition&gt;org.hornetq.ra.HornetQRAConnectionFactory&lt;/connection-definition&gt;
       &lt;config-property name="SessionDefaultType" type="java.lang.String"&gt;javax.jms.Topic&lt;/config-property&gt;
-      &lt;config-property name="ConnectorClassName" type="java.lang.String"&gt;org.hornetq.integration.transports.netty.NettyConnectorFactory&lt;/config-property&gt;
+      &lt;config-property name="ConnectorClassName" type="java.lang.String"&gt;org.hornetq.core.remoting.impl.netty.NettyConnectorFactory&lt;/config-property&gt;
       &lt;config-property name="ConnectionParameters" type="java.lang.String"&gt;hornetq.remoting.netty.port=5545&lt;/config-property&gt;
       &lt;max-pool-size>20&lt;/max-pool-size&gt;
    &lt;/tx-connection-factory&gt;

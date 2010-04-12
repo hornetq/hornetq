@@ -38,13 +38,6 @@
       </antcall>
    </target>
 
-   <target name="uploadHornetQTransports">
-      <antcall target="upload">
-         <param name="artifact.id" value="hornetq-transports"/>
-         <param name="artifact.type" value="jar"/>
-      </antcall>
-   </target>
-
    <target name="uploadHornetQCoreClient">
       <antcall target="upload">
          <param name="artifact.id" value="hornetq-core-client"/>
@@ -148,10 +141,6 @@
           <param name="artifact.id" value="hornetq-ra"/>
       </antcall>
 
-      <antcall target="upload-local-target">
-          <param name="artifact.id" value="hornetq-transports"/>
-      </antcall>
-
    </target>
 
    <target name="upload-local-target">
@@ -221,9 +210,6 @@
         <param name="artifact.id" value="hornetq-ra"/>
     </antcall>
 
-    <antcall target="deploy-jar">
-        <param name="artifact.id" value="hornetq-transports"/>
-    </antcall>
    </target>
 
    <target  name="deploy-jar">

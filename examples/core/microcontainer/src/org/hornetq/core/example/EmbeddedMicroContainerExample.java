@@ -16,8 +16,8 @@ import java.util.Date;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.*;
+import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.hornetq.integration.bootstrap.HornetQBootstrapServer;
-import org.hornetq.integration.transports.netty.NettyConnectorFactory;
 
 /**
  * 

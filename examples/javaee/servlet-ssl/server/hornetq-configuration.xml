@@ -13,7 +13,7 @@
    <connectors>
 
       <connector name="netty-servlet">
-         <factory-class>org.hornetq.integration.transports.netty.NettyConnectorFactory</factory-class>
+         <factory-class>org.hornetq.core.remoting.impl.netty.NettyConnectorFactory</factory-class>
          <param key="host" value="localhost"/>
          <param key="port" value="8443"/>
          <param key="use-servlet" value="true"/>
@@ -28,13 +28,13 @@
    <acceptors>
 
       <acceptor name="netty-servlet">
-         <factory-class>org.hornetq.integration.transports.netty.NettyAcceptorFactory</factory-class>
+         <factory-class>org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory</factory-class>
          <param key="use-invm" value="true"/>
          <param key="host" value="org.hornetq"/>
       </acceptor>
 
       <acceptor name="netty-invm">
-         <factory-class>org.hornetq.integration.transports.netty.NettyAcceptorFactory</factory-class>
+         <factory-class>org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory</factory-class>
          <param key="use-invm" value="true"/>
          <param key="host" value="org.hornetq"/>
       </acceptor>

@@ -89,7 +89,6 @@ Copyright 2009 Red Hat, Inc.
       <copy todir="${jms-ra.rar.dir}/META-INF/" file="${hornetq.config.dir}/jboss-as-4/ra.xml"/>
       <copy todir="${jms-ra.rar.dir}">
          <fileset dir="${lib.dir}">
-            <include name="hornetq-transports.jar"/>
             <include name="netty*.jar"/>
          </fileset>
       </copy>

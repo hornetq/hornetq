@@ -11,38 +11,38 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.integration.transports.netty;
+package org.hornetq.core.remoting.impl.netty;
 
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 
+import org.hornetq.spi.core.remoting.Acceptor;
+import org.hornetq.spi.core.remoting.AcceptorFactory;
+import org.hornetq.spi.core.remoting.BufferDecoder;
 import org.hornetq.spi.core.remoting.BufferHandler;
 import org.hornetq.spi.core.remoting.ConnectionLifeCycleListener;
-import org.hornetq.spi.core.remoting.Connector;
-import org.hornetq.spi.core.remoting.ConnectorFactory;
 
 /**
- * A NettyConnectorFactory
+ * A NettyAcceptorFactory
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  */
-public class NettyConnectorFactory implements ConnectorFactory
+public class NettyAcceptorFactory implements AcceptorFactory
 {
-   public Connector createConnector(final Map<String, Object> configuration,
-                                    final BufferHandler handler,
-                                    final ConnectionLifeCycleListener listener,
-                                    final Executor closeExecutor,
-                                    final Executor threadPool,
-                                    final ScheduledExecutorService scheduledThreadPool)
+   public Acceptor createAcceptor(final Map<String, Object> configuration,
+                                  final BufferHandler handler,
+                                  final BufferDecoder decoder,
+                                  final ConnectionLifeCycleListener listener,
+                                  final Executor threadPool,
+                                  final ScheduledExecutorService scheduledThreadPool)
    {
-      return new NettyConnector(configuration, handler, listener, closeExecutor, threadPool, scheduledThreadPool);
+      return new NettyAcceptor(configuration, handler, decoder, listener, threadPool, scheduledThreadPool);
    }
 
    public Set<String> getAllowableProperties()
    {
-      return TransportConstants.ALLOWABLE_CONNECTOR_KEYS;
+      return TransportConstants.ALLOWABLE_ACCEPTOR_KEYS;
    }
-
 }

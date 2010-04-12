@@ -58,7 +58,6 @@
    <property name="jms.jar.name" value="hornetq-jms.jar"/>
    <property name="jms.client.jar.name" value="hornetq-jms-client.jar"/>
    <property name="jnp.client.jar.name" value="jnp-client.jar"/>
-   <property name="transports.jar.name" value="hornetq-transports.jar"/>
    <property name="jboss.integration.jar.name" value="hornetq-jboss-as-integration.jar"/>
    <property name="bootstrap.jar.name" value="hornetq-bootstrap.jar"/>
    <property name="logging.jar.name" value="hornetq-logging.jar"/>
@@ -75,7 +74,6 @@
    <property name="build.classes.dir" value="${build.dir}/classes"/>
    <property name="build.core.classes.dir" value="${build.dir}/classes/core"/>
    <property name="build.jms.classes.dir" value="${build.dir}/classes/jms"/>
-   <property name="build.transports.classes.dir" value="${build.dir}/classes/transports"/>
    <property name="build.jboss.integration.classes.dir" value="${build.dir}/classes/jboss-integration"/>
    <property name="build.service.classes.dir" value="${build.dir}/classes/service"/>
    <property name="build.bootstrap.classes.dir" value="${build.dir}/classes/bootstrap"/>
@@ -178,16 +176,11 @@
 	
    <path id="jms.compilation.classpath">
       <path location="${build.core.classes.dir}"/>
+   	  <path refid="org.jboss.netty.classpath"/>
       <path refid="org.jboss.javaee.classpath"/>
       <path refid="org.jboss.integration.classpath"/>
       <path refid="jboss.jbossts.classpath"/>
       <path refid="org.jboss.naming.classpath"/>
-   </path>
-
-   <path id="transports.compilation.classpath">
-      <path location="${build.core.classes.dir}"/>
-      <path refid="org.jboss.javaee.classpath"/>
-      <path refid="org.jboss.netty.classpath"/>
    </path>
 
    <path id="jboss.integration.compilation.classpath">
@@ -222,20 +215,17 @@
 
    <path id="test.compilation.classpath">
       <path refid="jms.compilation.classpath"/>
-      <path refid="transports.compilation.classpath"/>
       <path refid="jboss.integration.compilation.classpath"/>
       <path refid="bootstrap.compilation.classpath"/>
       <path refid="junit.junit.classpath"/>
       <path location="${build.jars.dir}/${ra.jar.name}"/>
       <path location="${build.jars.dir}/${jms.jar.name}"/>
-      <path location="${build.jars.dir}/${transports.jar.name}"/>
       <path location="${build.jars.dir}/${jboss.integration.jar.name}"/>
       <path location="${build.jars.dir}/${bootstrap.jar.name}"/>
       <path location="${build.jars.dir}/${logging.jar.name}"/>
    </path>
 
    <path id="jms.test.compilation.classpath">
-      <path refid="transports.compilation.classpath"/>
       <path refid="jboss.integration.compilation.classpath"/>
       <path refid="bootstrap.compilation.classpath"/>
       <path refid="jms.compilation.classpath"/>
@@ -243,7 +233,6 @@
       <path refid="org.jboss.security.classpath"/>
       <path location="${build.jars.dir}/${core.jar.name}"/>
       <path location="${build.jars.dir}/${jms.jar.name}"/>
-      <path location="${build.jars.dir}/${transports.jar.name}"/>
       <path location="${build.jars.dir}/${jboss.integration.jar.name}"/>
       <path location="${build.jars.dir}/${bootstrap.jar.name}"/>
       <path location="${build.jars.dir}/${logging.jar.name}"/>
@@ -282,6 +271,7 @@
       <path refid="jboss.jbossts.classpath"/>
       <path refid="apache.xerces.classpath"/>
       <path refid="log4j.log4j.classpath"/>
+      <path refid="org.jboss.netty.classpath"/>
  	  <!-- we must include Apache commons logging   -->
  	  <!-- as a transitive dependency from JBoss TM -->
  	  <path refid="apache.logging.classpath"/>
@@ -301,7 +291,6 @@
       <pathelement location="${src.schema.dir}"/>
       <pathelement location="${test.jms.dir}/config"/>
       <pathelement location="${test.jms.classes.dir}"/>
-      <path location="${build.jars.dir}/${transports.jar.name}"/>
       <path refid="jms.test.compilation.classpath"/>
       <path refid="sun.jaxb.classpath"/>
       <path refid="org.jboss.logging.classpath"/>
@@ -309,6 +298,7 @@
       <path refid="jboss.jbossts.classpath"/>
       <path refid="apache.xerces.classpath"/>
       <path refid="log4j.log4j.classpath"/>
+      <path refid="org.jboss.netty.classpath"/>
 	  <!-- we must include Apache commons logging   -->
 	  <!-- as a transitive dependency from JBoss TM -->
    	  <path refid="apache.logging.classpath"/>
@@ -325,9 +315,7 @@
 
    <path id="jms.standalone.server.classpath">
       <pathelement location="${src.schema.dir}"/>
-      <path location="${build.jars.dir}/${transports.jar.name}"/>
       <pathelement location="${src.schema.dir}"/>
-      <path location="${build.jars.dir}/${transports.jar.name}"/>
       <path refid="jms.test.compilation.classpath"/>
       <path refid="sun.jaxb.classpath"/>
       <path refid="org.jboss.logging.classpath"/>
@@ -360,7 +348,6 @@
       <mkdir dir="${build.classes.dir}"/>
       <mkdir dir="${build.core.classes.dir}"/>
       <mkdir dir="${build.jms.classes.dir}"/>
-      <mkdir dir="${build.transports.classes.dir}"/>
       <mkdir dir="${build.jboss.integration.classes.dir}"/>
       <mkdir dir="${build.service.classes.dir}"/>
       <mkdir dir="${build.bootstrap.classes.dir}"/>
@@ -453,26 +440,6 @@
          </src>
          <include name="**/jms/**/*.java"/>
          <classpath refid="jms.compilation.classpath"/>
-      </javac>
-   </target>
-
-   <target name="compile-transports" depends="compile-core">
-      <javac destdir="${build.transports.classes.dir}"
-             target="${javac.target}"
-             source="${javac.source}"
-             optimize="${javac.optimize}"
-             debug="${javac.debug}"
-             depend="${javac.depend}"
-             verbose="${javac.verbose}"
-             deprecation="${javac.deprecation}"
-             includeAntRuntime="${javac.include.ant.runtime}"
-             includeJavaRuntime="${javac.include.java.runtime}"
-             failonerror="${javac.fail.onerror}">
-         <src>
-            <pathelement path="${src.main.dir}"/>
-         </src>
-         <include name="org/hornetq/integration/transports/**/*.java"/>
-         <classpath refid="transports.compilation.classpath"/>
       </javac>
    </target>
 
@@ -631,7 +598,7 @@
    <!-- ======================================================================================== -->
 
    <target name="jar"
-           depends="jar-core, jar-core-client, jar-jms, jar-jms-client, jar-transports, jar-jboss-integration, jar-jboss-service, jar-bootstrap, jar-logging, jar-ra, jar-mc, jar-jnp-client, jar-resources">
+           depends="jar-core, jar-core-client, jar-jms, jar-jms-client, jar-jboss-integration, jar-jboss-service, jar-bootstrap, jar-logging, jar-ra, jar-mc, jar-jnp-client, jar-resources">
    </target>
 	
    <target name="jar-jnp-client" depends="init">
@@ -697,14 +664,6 @@
 	   
    </target>
    
-   <target name="jar-transports" depends="compile-transports">
-
-      <jar jarfile="${build.jars.dir}/${transports.jar.name}">
-         <fileset dir="${build.transports.classes.dir}" includes="**"/>
-      </jar>
-
-   </target>
-
    <target name="jar-jboss-integration" depends="compile-jboss-integration">
 
       <jar jarfile="${build.jars.dir}/${jboss.integration.jar.name}">
@@ -821,7 +780,6 @@
          <fileset dir="${build.jars.dir}">
             <include name="${core.jar.name}"/>
             <include name="${jms.jar.name}"/>
-            <include name="${transports.jar.name}"/>
             <include name="${jboss.integration.jar.name}"/>
             <include name="${service.sar.name}"/>
             <include name="${bootstrap.jar.name}"/>
@@ -1039,10 +997,6 @@
 
       <antcall target="artifact">
          <param name="artifact.name" value="hornetq-core-client"/>
-      </antcall>
-
-      <antcall target="artifact">
-         <param name="artifact.name" value="hornetq-transports"/>
       </antcall>
 
       <antcall target="artifact">

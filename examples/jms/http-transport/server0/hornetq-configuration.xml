@@ -5,7 +5,7 @@
 
    <connectors>
       <connector name="netty-connector">
-         <factory-class>org.hornetq.integration.transports.netty.NettyConnectorFactory</factory-class>
+         <factory-class>org.hornetq.core.remoting.impl.netty.NettyConnectorFactory</factory-class>
          <param key="http-enabled" value="true"/>
          <param key="port" value="8080"/>
       </connector>
@@ -15,7 +15,7 @@
 
    <acceptors>
       <acceptor name="netty-acceptor">
-         <factory-class>org.hornetq.integration.transports.netty.NettyAcceptorFactory</factory-class>
+         <factory-class>org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory</factory-class>
          <param key="http-enabled" value="true"/>
          <param key="port" value="8080"/>
       </acceptor>

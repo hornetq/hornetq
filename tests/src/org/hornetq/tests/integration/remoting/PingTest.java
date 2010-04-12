@@ -106,7 +106,7 @@ public class PingTest extends ServiceTestBase
     */
    public void testNoFailureWithPinging() throws Exception
    {
-      TransportConfiguration transportConfig = new TransportConfiguration("org.hornetq.integration.transports.netty.NettyConnectorFactory");
+      TransportConfiguration transportConfig = new TransportConfiguration("org.hornetq.core.remoting.impl.netty.NettyConnectorFactory");
 
       ClientSessionFactory csf = HornetQClient.createClientSessionFactory(transportConfig);
 
@@ -165,7 +165,7 @@ public class PingTest extends ServiceTestBase
     */
    public void testNoFailureNoPinging() throws Exception
    {
-      TransportConfiguration transportConfig = new TransportConfiguration("org.hornetq.integration.transports.netty.NettyConnectorFactory");
+      TransportConfiguration transportConfig = new TransportConfiguration("org.hornetq.core.remoting.impl.netty.NettyConnectorFactory");
 
       ClientSessionFactory csf = HornetQClient.createClientSessionFactory(transportConfig);
       csf.setClientFailureCheckPeriod(-1);
@@ -221,7 +221,7 @@ public class PingTest extends ServiceTestBase
     */
    public void testServerFailureNoPing() throws Exception
    {
-      TransportConfiguration transportConfig = new TransportConfiguration("org.hornetq.integration.transports.netty.NettyConnectorFactory");
+      TransportConfiguration transportConfig = new TransportConfiguration("org.hornetq.core.remoting.impl.netty.NettyConnectorFactory");
 
       ClientSessionFactoryImpl csf = (ClientSessionFactoryImpl) HornetQClient.createClientSessionFactory(transportConfig);
 
@@ -314,7 +314,7 @@ public class PingTest extends ServiceTestBase
          }
       });
 
-      TransportConfiguration transportConfig = new TransportConfiguration("org.hornetq.integration.transports.netty.NettyConnectorFactory");
+      TransportConfiguration transportConfig = new TransportConfiguration("org.hornetq.core.remoting.impl.netty.NettyConnectorFactory");
 
       ClientSessionFactory csf = HornetQClient.createClientSessionFactory(transportConfig);
 

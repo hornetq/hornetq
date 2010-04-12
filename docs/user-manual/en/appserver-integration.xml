@@ -609,7 +609,7 @@ public class MDBMessageSendTxExample implements MessageListener
       &lt;config-property name="SessionDefaultType" type="String">javax.jms.Topic
       &lt;/config-property>
       &lt;config-property name="ConnectorClassName" type="String">
-        org.hornetq.integration.transports.netty.NettyConnectorFactory
+        org.hornetq.core.remoting.impl.netty.NettyConnectorFactory
       &lt;/config-property>
       &lt;config-property name="ConnectionParameters" type="String">
           port=5445&lt;/config-property>
@@ -691,7 +691,7 @@ initialContext = new InitialContext(jndiParameters);</programlisting>
                         Values can be <literal
                             >org.hornetq.core.remoting.impl.invm.InVMConnectorFactory</literal> or
                             <literal
-                            >org.hornetq.integration.transports.netty.NettyConnectorFactory</literal></para>
+                            >org.hornetq.core.remoting.impl.netty.NettyConnectorFactory</literal></para>
                 </listitem>
                 <listitem>
                     <para><literal>[user name]</literal> is the user name to create a client
@@ -729,7 +729,7 @@ initialContext = new InitialContext(jndiParameters);</programlisting>
                 <para>If it is now configured with a netty acceptor on a non-default port:</para>
                 <programlisting>
 &lt;acceptor name="netty">
-    &lt;factory-class>org.hornetq.integration.transports.netty.NettyAcceptorFactory&lt;/factory-class>
+    &lt;factory-class>org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory&lt;/factory-class>
     &lt;param key="port" value="8888"/>
 &lt;/acceptor>
                 </programlisting>
@@ -737,7 +737,7 @@ initialContext = new InitialContext(jndiParameters);</programlisting>
                         >conf/jbossts-properties.xml</literal> is:</para>
                 <programlisting>
 &lt;property name="com.arjuna.ats.jta.recovery.XAResourceRecovery.HORNETQ1"
-       value="org.hornetq.jms.server.recovery.HornetQXAResourceRecovery;org.hornetq.integration.transports.netty.NettyConnectorFactory, , , port=8888"/>        			                    
+       value="org.hornetq.jms.server.recovery.HornetQXAResourceRecovery;org.hornetq.core.remoting.impl.netty.NettyConnectorFactory, , , port=8888"/>        			                    
                 </programlisting>
                 <note>
                     <para>Note the additional commas to skip the user and password before connector
@@ -747,7 +747,7 @@ initialContext = new InitialContext(jndiParameters);</programlisting>
                     configuration would have been:</para>
                 <programlisting>
                     &lt;property name="com.arjuna.ats.jta.recovery.XAResourceRecovery.HORNETQ1"
-                           value="org.hornetq.jms.server.recovery.HornetQXAResourceRecovery;org.hornetq.integration.transports.netty.NettyConnectorFactory, admin, adminpass, port=8888"/>        			                    
+                           value="org.hornetq.jms.server.recovery.HornetQXAResourceRecovery;org.hornetq.core.remoting.impl.netty.NettyConnectorFactory, admin, adminpass, port=8888"/>        			                    
                 </programlisting>
                 <para>Configuring HornetQ with an invm acceptor and configuring the Recovery Manager
                     with an invm connector is the recommended way to enable XA Recovery.</para>

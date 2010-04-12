@@ -30,7 +30,7 @@
     <section>
         <title>HornetQ Core Client</title>
         <para>If you are using just a pure HornetQ Core client (i.e. no JMS) then you need <literal
-                >hornetq-core-client.jar</literal>, <literal>hornetq-transports.jar</literal> and
+                >hornetq-core-client.jar</literal> and
                 <literal>netty.jar</literal> on your client classpath.</para>
     </section>
     <section>

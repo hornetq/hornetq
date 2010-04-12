@@ -23,7 +23,6 @@
    <path id="local.classpath">
       <fileset dir="${hornetq.jars.dir}">
          <include name="hornetq-core.jar"/>
-         <include name="hornetq-transports.jar"/>
          <include name="hornetq-bootstrap.jar"/>
          <include name="hornetq-jbossas-security.jar"/>
       </fileset>

@@ -22,8 +22,8 @@ import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.integration.transports.netty.NettyConnectorFactory;
-import org.hornetq.integration.transports.netty.TransportConstants;
+import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
+import org.hornetq.core.remoting.impl.netty.TransportConstants;
 import org.hornetq.jms.server.config.impl.TransportConfigurationEncodingSupport;
 import org.hornetq.tests.util.RandomUtil;
 

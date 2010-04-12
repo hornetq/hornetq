@@ -36,7 +36,6 @@
       <mkdir dir="build/classes" />
 	  <copy todir="build/classes" flatten="true">
   	     <fileset dir="${hornetq.jars.dir}">
-	        <include name="hornetq-transports.jar"/>
   	     	<include name="hornetq-core-client.jar"/>
   	     	<include name="hornetq-jms-client.jar"/>
 	     </fileset>

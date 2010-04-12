@@ -31,7 +31,7 @@
             parameter set to <literal>stomp</literal>:</para>
 <programlisting>
 	&lt;acceptor name="stomp-acceptor">
-		&lt;factory-class>org.hornetq.integration.transports.netty.NettyAcceptorFactory&lt;/factory-class>
+		&lt;factory-class>org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory&lt;/factory-class>
 		&lt;param key="protocol"  value="stomp"/>
 		&lt;param key="port"  value="61613"/>
 	&lt;/acceptor>

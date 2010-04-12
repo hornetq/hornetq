@@ -45,6 +45,7 @@ import org.hornetq.core.postoffice.Bindings;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.postoffice.QueueBinding;
 import org.hornetq.core.postoffice.impl.LocalQueueBinding;
+import org.hornetq.core.remoting.impl.netty.TransportConstants;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
 import org.hornetq.core.server.JournalType;
@@ -52,7 +53,6 @@ import org.hornetq.core.server.cluster.ClusterConnection;
 import org.hornetq.core.server.cluster.RemoteQueueBinding;
 import org.hornetq.core.server.group.GroupingHandler;
 import org.hornetq.core.server.group.impl.GroupingHandlerConfiguration;
-import org.hornetq.integration.transports.netty.TransportConstants;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.UnitTestCase;
 
@@ -1434,8 +1434,8 @@ public abstract class ClusterTestBase extends ServiceTestBase
 
       if (netty)
       {
-         params.put(org.hornetq.integration.transports.netty.TransportConstants.PORT_PROP_NAME,
-                    org.hornetq.integration.transports.netty.TransportConstants.DEFAULT_PORT + node);
+         params.put(org.hornetq.core.remoting.impl.netty.TransportConstants.PORT_PROP_NAME,
+                    org.hornetq.core.remoting.impl.netty.TransportConstants.DEFAULT_PORT + node);
       }
       else
       {

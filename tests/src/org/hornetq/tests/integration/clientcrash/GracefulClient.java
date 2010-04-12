@@ -16,7 +16,7 @@ package org.hornetq.tests.integration.clientcrash;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.*;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.integration.transports.netty.NettyConnectorFactory;
+import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.hornetq.jms.client.HornetQTextMessage;
 
 /**

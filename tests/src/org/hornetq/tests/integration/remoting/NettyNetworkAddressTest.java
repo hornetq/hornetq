@@ -13,9 +13,9 @@
 
 package org.hornetq.tests.integration.remoting;
 
-import org.hornetq.integration.transports.netty.NettyAcceptorFactory;
-import org.hornetq.integration.transports.netty.NettyConnectorFactory;
-import org.hornetq.integration.transports.netty.TransportConstants;
+import org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory;
+import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
+import org.hornetq.core.remoting.impl.netty.TransportConstants;
 
 /**
  * A NettyNetworkAddressTest

@@ -32,7 +32,7 @@ import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.integration.transports.netty.NettyConnectorFactory;
+import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.hornetq.jms.client.HornetQSession;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.tests.util.JMSTestBase;

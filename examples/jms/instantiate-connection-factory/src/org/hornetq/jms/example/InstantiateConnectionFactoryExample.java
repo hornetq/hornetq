@@ -26,8 +26,8 @@ import javax.jms.TextMessage;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.common.example.HornetQExample;
-import org.hornetq.integration.transports.netty.NettyConnectorFactory;
-import org.hornetq.integration.transports.netty.TransportConstants;
+import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
+import org.hornetq.core.remoting.impl.netty.TransportConstants;
 
 /**
  * 

@@ -19,7 +19,7 @@ import java.util.Random;
 
 import junit.framework.Assert;
 
-import org.hornetq.integration.transports.netty.HornetQFrameDecoder2;
+import org.hornetq.core.remoting.impl.netty.HornetQFrameDecoder2;
 import org.hornetq.tests.util.UnitTestCase;
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBuffers;

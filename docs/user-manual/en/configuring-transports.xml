@@ -33,7 +33,7 @@
 &lt;acceptors&gt;                
     &lt;acceptor name="netty"&gt;
         &lt;factory-class&gt;
-org.hornetq.integration.transports.netty.NettyAcceptorFactory
+org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory
         &lt;/factory-class&gt;
         &lt;param key="port" value="5446"/&gt;
     &lt;/acceptor&gt;
@@ -71,7 +71,7 @@ org.hornetq.integration.transports.netty.NettyAcceptorFactory
 &lt;connectors&gt;
     &lt;connector name="netty"&gt;
         &lt;factory-class&gt;
-            org.hornetq.integration.transports.netty.NettyConnectorFactory
+            org.hornetq.core.remoting.impl.netty.NettyConnectorFactory
         &lt;/factory-class&gt;
         &lt;param key="port" value="5446"/&gt;
     &lt;/connector&gt;
@@ -130,12 +130,12 @@ org.hornetq.integration.transports.netty.NettyAcceptorFactory
         <programlisting>
 Map&lt;String, Object&gt; connectionParams = new HashMap&lt;String, Object&gt;();
     
-connectionParams.put(org.hornetq.integration.transports.netty.TransportConstants.PORT_PROP_NAME, 
+connectionParams.put(org.hornetq.core.remoting.impl.netty.TransportConstants.PORT_PROP_NAME, 
                     5446);
 
 TransportConfiguration transportConfiguration = 
     new TransportConfiguration(
-    "org.hornetq.integration.transports.netty.NettyConnectorFactory", 
+    "org.hornetq.core.remoting.impl.netty.NettyConnectorFactory", 
     connectionParams);
 
 ClientSessionFactory sessionFactory = HornetQClient.createClientSessionFactory(transportConfiguration);
@@ -150,11 +150,11 @@ etc
         <programlisting>
 Map&lt;String, Object&gt; connectionParams = new HashMap&lt;String, Object&gt;();
 
-connectionParams.put(org.hornetq.integration.transports.netty.TransportConstants.PORT_PROP_NAME, 5446);
+connectionParams.put(org.hornetq.core.remoting.impl.netty.TransportConstants.PORT_PROP_NAME, 5446);
 
 TransportConfiguration transportConfiguration = 
     new TransportConfiguration(
-    "org.hornetq.integration.transports.netty.NettyConnectorFactory", 
+    "org.hornetq.core.remoting.impl.netty.NettyConnectorFactory", 
     connectionParams);
 
 ConnectionFactory connectionFactory = HornetQJMSClient.createConnectionFactory(transportConfiguration);
@@ -188,7 +188,7 @@ etc
                 with firewall policies that typically only allow connections to be initiated in one
                 direction.</para>
             <para>All the valid Netty transport keys are defined in the class <literal
-                    >org.hornetq.integration.transports.netty.TransportConstants</literal>. The
+                    >org.hornetq.core.remoting.impl.netty.TransportConstants</literal>. The
                 parameters can be used either with acceptors or connectors. The following parameters
                 can be used to configure Netty for simple TCP:</para>
             <itemizedlist>
@@ -373,7 +373,7 @@ etc
 
       &lt;acceptor name="netty-invm">
          &lt;factory-class>
-            org.hornetq.integration.transports.netty.NettyAcceptorFactory
+            org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory
          &lt;/factory-class>
          &lt;param key="use-invm" value="true"/>
          &lt;param key="host" value="org.hornetq"/>
@@ -389,7 +389,7 @@ etc
 
       &lt;connector name="netty-servlet">
          &lt;factory-class>
-            org.hornetq.integration.transports.netty.NettyConnectorFactory
+            org.hornetq.core.remoting.impl.netty.NettyConnectorFactory
          &lt;/factory-class>
          &lt;param key="host" value="localhost"/>
          &lt;param key="port" value="8080"/>
@@ -415,7 +415,7 @@ etc
             <para>Its also possible to use the servlet transport over SSL. simply add the following
                 configuration to the
                 connector:<programlisting>    &lt;connector name="netty-servlet">
-         &lt;factory-class>org.hornetq.integration.transports.netty.NettyConnectorFactory&lt;/factory-class>
+         &lt;factory-class>org.hornetq.core.remoting.impl.netty.NettyConnectorFactory&lt;/factory-class>
          &lt;param key="host" value="localhost"/>
          &lt;param key="port" value="8443"/>
          &lt;param key="use-servlet" value="true"/>

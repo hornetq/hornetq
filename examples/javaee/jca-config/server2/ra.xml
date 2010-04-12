@@ -39,7 +39,7 @@ Copyright 2009 Red Hat, Inc.
          <description>The transport type</description>
          <config-property-name>ConnectorClassName</config-property-name>
          <config-property-type>java.lang.String</config-property-type>
-         <config-property-value>org.hornetq.integration.transports.netty.NettyConnectorFactory</config-property-value>
+         <config-property-value>org.hornetq.core.remoting.impl.netty.NettyConnectorFactory</config-property-value>
       </config-property>
       <config-property>
          <description>The transport configuration. These values must be in the form of key=val;key=val;</description>

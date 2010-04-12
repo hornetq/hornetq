@@ -21,7 +21,7 @@
    <!-- Connectors -->
    <connectors>
       <connector name="netty">
-         <factory-class>org.hornetq.integration.transports.netty.NettyConnectorFactory</factory-class>
+         <factory-class>org.hornetq.core.remoting.impl.netty.NettyConnectorFactory</factory-class>
       </connector>
 
       <connector name="in-vm">
@@ -40,7 +40,7 @@
 
       <!-- Netty TCP Acceptor -->
       <acceptor name="netty">
-         <factory-class>org.hornetq.integration.transports.netty.NettyAcceptorFactory</factory-class>
+         <factory-class>org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory</factory-class>
          <param key="port" value="${hornetq.remoting.netty.port:5446}"/>
       </acceptor>
    </acceptors>
