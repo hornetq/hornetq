@@ -340,10 +340,6 @@
    	  <path refid="apache.logging.classpath"/>
       <pathelement location="${src.config.dir}/common"/>
       <path refid="org.jboss.naming.classpath"/>
-      <!--<path refid="jboss.jboss.reflect.classpath"/>
-      <path refid="jboss.jboss.mdr.classpath"/>
-      <path refid="jboss.jboss.common.logging.spi.classpath"/>
-      <path refid="jboss.jboss.common.logging.log4j.classpath"/>-->
    </path>
 
    <target name="clean">
@@ -521,8 +517,6 @@
       </javac>
    	<copy file="${src.config.service.dir}/jboss-service.xml"
    	      tofile="${build.service.classes.dir}/META-INF/jboss-service.xml" overwrite="true" />
-      <!--<copy file="${src.config.service.dir}/hornetq-configuration.xml"
-            tofile="${build.service.classes.dir}/META-INF/hornetq-configuration.xml" overwrite="true" />-->
    </target>
 
    <target name="compile-bootstrap" depends="compile-core">
@@ -611,7 +605,7 @@
                  file="${src.schema.dir}/hornetq-users.xsd"/>
       </schemavalidate>
       
-   	<!-- AS 5 configuration validation -->
+    <!-- AS 5 configuration validation -->
       <antcall target="-validate-configuration">
          <param name="conf.dir" value="${src.config.jbossas.non-clustered.dir}"/>
       </antcall>
@@ -818,7 +812,6 @@
       
       <mkdir dir="${build.distro.dir}"/>
       <mkdir dir="${build.distro.lib.dir}"/>
-      <!-- <mkdir dir="${build.distro.client.dir}"/> -->
       <mkdir dir="${build.distro.config.dir}"/>
       <mkdir dir="${build.distro.bin.dir}"/>
       <mkdir dir="${build.distro.api.dir}"/>
@@ -847,15 +840,6 @@
          </fileset>
       </copy>
       <copy file="${org.jboss.netty.lib}/${netty.jar.name}" tofile="${build.distro.lib.dir}/netty.jar"/>
-   	<!--
-      <copy todir="${build.distro.client.dir}">
-         <fileset dir="${build.jars.dir}">
-            <include name="${core.client.jar.name}"/>
-            <include name="${jms.client.jar.name}"/>
-            <include name="${jnp.client.jar.name}"/>
-         </fileset>
-      </copy>
-      -->
       <copy todir="${build.distro.config.dir}">
          <fileset dir="${src.config.dir}">
             <include name="*.xml"/>
@@ -1257,7 +1241,7 @@
                     failureproperty="tests.failed">
             <formatter type="plain" usefile="${junit.formatter.usefile}"/>
             <fileset dir="${test.classes.dir}">            
-               <!-- exlcuded because of https://jira.jboss.org/jira/browse/HORNETQ-65 -->
+               <!-- excluded because of https://jira.jboss.org/jira/browse/HORNETQ-65 -->
                <exclude name="**/cluster/failover/*StaticClusterWithBackupFailoverTest.class" />
                <include name="${tests.param}"/>
             </fileset>
