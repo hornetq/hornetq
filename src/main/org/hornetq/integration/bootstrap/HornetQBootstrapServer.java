@@ -96,7 +96,6 @@ public class HornetQBootstrapServer extends BasicBootstrap
             {
                try
                {
-                  HornetQBootstrapServer.log.info("Stopping HornetQ Server");
                   shutDown();
                   timer.cancel();
                }
@@ -242,6 +241,8 @@ public class HornetQBootstrapServer extends BasicBootstrap
 
    public void shutDown()
    {
+      log.info("Stopping HornetQ Server...");
+
       ListIterator<KernelDeployment> iterator = deployments.listIterator(deployments.size());
       while (iterator.hasPrevious())
       {
