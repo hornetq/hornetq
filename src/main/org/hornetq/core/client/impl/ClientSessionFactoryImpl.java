@@ -86,6 +86,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
 
    private List<Pair<TransportConfiguration, TransportConfiguration>> staticConnectors;
 
+   private String localBindAddress;
+   
    private String discoveryAddress;
 
    private int discoveryPort;
@@ -219,9 +221,21 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
          if (discoveryAddress != null)
          {
             InetAddress groupAddress = InetAddress.getByName(discoveryAddress);
+            
+            InetAddress lbAddress;
+            
+            if (localBindAddress != null)
+            {
+               lbAddress = InetAddress.getByName(localBindAddress);
+            }
+            else
+            {
+               lbAddress = null;
+            }
 
             discoveryGroup = new DiscoveryGroupImpl(UUIDGenerator.getInstance().generateStringUUID(),
                                                     discoveryAddress,
+                                                    lbAddress,
                                                     groupAddress,
                                                     discoveryPort,
                                                     discoveryRefreshTimeout);
@@ -270,6 +284,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
 
    public ClientSessionFactoryImpl(final ClientSessionFactory other)
    {
+      localBindAddress =  other.getLocalBindAddress();
+      
       discoveryAddress = other.getDiscoveryAddress();
 
       discoveryPort = other.getDiscoveryPort();
@@ -397,6 +413,17 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
    public ClientSessionFactoryImpl(final String discoveryAddress, final int discoveryPort)
    {
       this();
+
+      this.discoveryAddress = discoveryAddress;
+
+      this.discoveryPort = discoveryPort;
+   }
+   
+   public ClientSessionFactoryImpl(final String localBindAddress, final String discoveryAddress, final int discoveryPort)
+   {
+      this();
+      
+      this.localBindAddress = localBindAddress;
 
       this.discoveryAddress = discoveryAddress;
 
@@ -723,6 +750,17 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
    {
       checkWrite();
       connectionLoadBalancingPolicyClassName = loadBalancingPolicyClassName;
+   }
+   
+   public synchronized String getLocalBindAddress()
+   {
+      return localBindAddress;
+   }
+
+   public synchronized void setLocalBindAddress(final String localBindAddress)
+   {
+      checkWrite();
+      this.localBindAddress = localBindAddress;
    }
 
    public synchronized String getDiscoveryAddress()

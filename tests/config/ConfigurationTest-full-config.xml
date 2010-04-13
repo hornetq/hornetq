@@ -104,11 +104,13 @@
       </broadcast-groups>
       <discovery-groups>
          <discovery-group name="dg1">
+            <local-bind-address>172.16.8.10</local-bind-address>
             <group-address>192.168.0.120</group-address>
             <group-port>11999</group-port>
             <refresh-timeout>12345</refresh-timeout>
          </discovery-group>
          <discovery-group name="dg2">
+            <local-bind-address>172.16.8.11</local-bind-address>
             <group-address>192.168.0.121</group-address>
             <group-port>12999</group-port>
             <refresh-timeout>23456</refresh-timeout>

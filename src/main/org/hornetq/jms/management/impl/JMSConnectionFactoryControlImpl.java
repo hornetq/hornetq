@@ -297,6 +297,16 @@ public class JMSConnectionFactoryControlImpl extends StandardMBean implements Co
    {
       cf.setStaticConnectors(staticConnectors);
    }
+   
+   public String getLocalBindAddress()
+   {
+      return cf.getLocalBindAddress();
+   }
+
+   public void setLocalBindAddress(String localBindAddress)
+   {
+      cf.setLocalBindAddress(localBindAddress);
+   }
 
    public String getDiscoveryAddress()
    {

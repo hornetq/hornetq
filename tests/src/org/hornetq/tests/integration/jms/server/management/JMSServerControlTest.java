@@ -14,6 +14,13 @@
 package org.hornetq.tests.integration.jms.server.management;
 
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.Queue;
@@ -52,9 +59,6 @@ import org.hornetq.tests.integration.management.ManagementTestBase;
 import org.hornetq.tests.unit.util.InVMContext;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
-
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * A JMSServerControlTest
@@ -509,6 +513,7 @@ public class JMSServerControlTest extends ManagementTestBase
       conf.getDiscoveryGroupConfigurations()
           .put("discovery",
                new DiscoveryGroupConfiguration("discovery",
+                                               null,
                                                "231.7.7.7",
                                                discoveryPort,
                                                ConfigurationImpl.DEFAULT_BROADCAST_REFRESH_TIMEOUT));

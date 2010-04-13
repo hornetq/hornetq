@@ -148,6 +148,7 @@ public class ClusterConnectionControl2Test extends ManagementTestBase
                                                                                          250,
                                                                                          connectorInfos);
       DiscoveryGroupConfiguration discoveryGroupConfig = new DiscoveryGroupConfiguration(discoveryName,
+                                                                                         null,
                                                                                          groupAddress,
                                                                                          groupPort,
                                                                                          HornetQClient.DEFAULT_DISCOVERY_REFRESH_TIMEOUT);

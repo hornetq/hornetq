@@ -331,9 +331,23 @@ public class ClusterManagerImpl implements ClusterManager
       }
 
       InetAddress groupAddress = InetAddress.getByName(config.getGroupAddress());
+      
+      InetAddress localBindAddress;
+      
+      if (config.getLocalBindAddress() != null)
+      {
+         localBindAddress = InetAddress.getByName(config.getLocalBindAddress());
+      }
+      else
+      {
+         localBindAddress = null;
+      }
 
+      log.info("local bind address " + localBindAddress);
+      
       DiscoveryGroup group = new DiscoveryGroupImpl(nodeUUID.toString(),
                                                     config.getName(),
+                                                    localBindAddress,
                                                     groupAddress,
                                                     config.getGroupPort(),
                                                     config.getRefreshTimeout());

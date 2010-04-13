@@ -34,6 +34,10 @@ public interface ConnectionFactoryConfiguration extends EncodingSupport
    String[] getBindings();
 
    void setBindings(String[] bindings);
+   
+   String getLocalBindAddress();
+   
+   void setLocalBindAddress(String localBindAddress);
 
    String getDiscoveryAddress();
 

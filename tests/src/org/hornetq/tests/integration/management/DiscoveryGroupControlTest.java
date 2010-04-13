@@ -52,6 +52,7 @@ public class DiscoveryGroupControlTest extends ManagementTestBase
    public void testAttributes() throws Exception
    {
       DiscoveryGroupConfiguration discoveryGroupConfig = new DiscoveryGroupConfiguration(RandomUtil.randomString(),
+                                                                                         null,
                                                                                          "231.7.7.7",
                                                                                          2000,
                                                                                          RandomUtil.randomPositiveLong());
@@ -76,6 +77,7 @@ public class DiscoveryGroupControlTest extends ManagementTestBase
    public void testStartStop() throws Exception
    {
       DiscoveryGroupConfiguration discoveryGroupConfig = new DiscoveryGroupConfiguration(RandomUtil.randomString(),
+                                                                                         null,
                                                                                          "231.7.7.7",
                                                                                          2000,
                                                                                          RandomUtil.randomPositiveLong());

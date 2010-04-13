@@ -23,6 +23,7 @@ import junit.framework.Assert;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.config.Configuration;
+import org.hornetq.core.config.DiscoveryGroupConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.deployers.DeploymentManager;
 import org.hornetq.core.deployers.impl.FileDeploymentManager;
@@ -239,6 +240,96 @@ public class JMSServerDeployerTest extends ServiceTestBase
          Assert.assertEquals("fullConfigurationTopic", topic.getTopicName());
       }
    }
+   
+   public void testDeployFullConfiguration2() throws Exception
+   {
+      JMSServerDeployer deployer = new JMSServerDeployer(jmsServer, deploymentManager, config);
+
+      String conf = "hornetq-jms-for-JMSServerDeployerTest2.xml";
+      URL confURL = Thread.currentThread().getContextClassLoader().getResource(conf);
+
+      String[] connectionFactoryBindings = new String[] { "/fullConfigurationConnectionFactory",
+                                                         "/acme/fullConfigurationConnectionFactory",
+                                                         "java:/xyz/tfullConfigurationConnectionFactory",
+                                                         "java:/connectionfactories/acme/fullConfigurationConnectionFactory" };
+      String[] queueBindings = new String[] { "/fullConfigurationQueue", "/queue/fullConfigurationQueue" };
+      String[] topicBindings = new String[] { "/fullConfigurationTopic", "/topic/fullConfigurationTopic" };
+
+      for (String binding : connectionFactoryBindings)
+      {
+         UnitTestCase.checkNoBinding(context, binding);
+      }
+      for (String binding : queueBindings)
+      {
+         UnitTestCase.checkNoBinding(context, binding);
+      }
+      for (String binding : topicBindings)
+      {
+         UnitTestCase.checkNoBinding(context, binding);
+      }
+
+      deployer.deploy(confURL);
+
+      for (String binding : connectionFactoryBindings)
+      {
+         UnitTestCase.checkBinding(context, binding);
+      }
+      for (String binding : queueBindings)
+      {
+         UnitTestCase.checkBinding(context, binding);
+      }
+      for (String binding : topicBindings)
+      {
+         UnitTestCase.checkBinding(context, binding);
+      }
+
+      for (String binding : connectionFactoryBindings)
+      {
+         HornetQConnectionFactory cf = (HornetQConnectionFactory)context.lookup(binding);
+         Assert.assertNotNull(cf);
+         Assert.assertEquals(1234, cf.getClientFailureCheckPeriod());
+         Assert.assertEquals(5678, cf.getCallTimeout());
+         Assert.assertEquals(12345, cf.getConsumerWindowSize());
+         Assert.assertEquals(6789, cf.getConsumerMaxRate());
+         Assert.assertEquals(123456, cf.getConfirmationWindowSize());
+         Assert.assertEquals(7712652, cf.getProducerWindowSize());
+         Assert.assertEquals(789, cf.getProducerMaxRate());
+         Assert.assertEquals(12, cf.getMinLargeMessageSize());
+         Assert.assertEquals("TestClientID", cf.getClientID());
+         Assert.assertEquals(3456, cf.getDupsOKBatchSize());
+         Assert.assertEquals(4567, cf.getTransactionBatchSize());
+         Assert.assertEquals(true, cf.isBlockOnAcknowledge());
+         Assert.assertEquals(false, cf.isBlockOnNonDurableSend());
+         Assert.assertEquals(true, cf.isBlockOnDurableSend());
+         Assert.assertEquals(false, cf.isAutoGroup());
+         Assert.assertEquals(true, cf.isPreAcknowledge());
+         Assert.assertEquals(2345, cf.getConnectionTTL());
+         Assert.assertEquals(false, cf.isFailoverOnServerShutdown());
+         Assert.assertEquals(34, cf.getReconnectAttempts());
+         Assert.assertEquals(5, cf.getRetryInterval());
+         Assert.assertEquals(6.0, cf.getRetryIntervalMultiplier());
+         Assert.assertEquals(true, cf.isCacheLargeMessagesClient());
+         
+         assertEquals("243.7.7.7", cf.getDiscoveryAddress());
+         assertEquals("172.16.8.10", cf.getLocalBindAddress());
+         assertEquals(12345, cf.getDiscoveryPort());
+         assertEquals(5000, cf.getDiscoveryRefreshTimeout());
+      }
+
+      for (String binding : queueBindings)
+      {
+         Queue queue = (Queue)context.lookup(binding);
+         Assert.assertNotNull(queue);
+         Assert.assertEquals("fullConfigurationQueue", queue.getQueueName());
+      }
+
+      for (String binding : topicBindings)
+      {
+         Topic topic = (Topic)context.lookup(binding);
+         Assert.assertNotNull(topic);
+         Assert.assertEquals("fullConfigurationTopic", topic.getTopicName());
+      }
+   }
 
    // Package protected ---------------------------------------------
 
@@ -252,6 +343,11 @@ public class JMSServerDeployerTest extends ServiceTestBase
       config = new ConfigurationImpl();
       config.getConnectorConfigurations().put("netty",
                                               new TransportConfiguration(NettyConnectorFactory.class.getName()));
+      
+      DiscoveryGroupConfiguration dcg = new DiscoveryGroupConfiguration("mygroup", "172.16.8.10",
+                                                                        "243.7.7.7", 12345,
+                                                                        5000);
+      config.getDiscoveryGroupConfigurations().put("mygroup", dcg);
       HornetQServer server = createServer(false, config);
 
       deploymentManager = new FileDeploymentManager(config.getFileDeployerScanPeriod());

@@ -370,6 +370,16 @@ public interface ConnectionFactoryControl
     */
    void setStaticConnectors(List<Pair<TransportConfiguration, TransportConfiguration>> staticConnectors);
 
+   /**
+    * @see ClientSessionFactory#getLocalBindAddress()
+    */
+   String getLocalBindAddress();
+
+    /**
+    * @see ClientSessionFactory#setLocalBindAddress(String)
+    */
+   void setLocalBindAddress(String localBindAddress);
+   
     /**
     * @see ClientSessionFactory#getDiscoveryAddress()
     */
@@ -379,6 +389,8 @@ public interface ConnectionFactoryControl
     * @see ClientSessionFactory#setDiscoveryAddress(String)
     */
    void setDiscoveryAddress(String discoveryAddress);
+   
+   
 
     /**
     * @see ClientSessionFactory#getDiscoveryPort()

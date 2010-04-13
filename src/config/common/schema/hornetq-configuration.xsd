@@ -228,6 +228,8 @@
 	<xsd:element name="discovery-group">
 		<xsd:complexType>
 			<xsd:sequence>
+			    <xsd:element maxOccurs="1" minOccurs="0" ref="local-bind-address">
+                </xsd:element>
 				<xsd:element maxOccurs="1" minOccurs="1" ref="group-address">
 				</xsd:element>
 				<xsd:element maxOccurs="1" minOccurs="1" ref="group-port">

@@ -223,6 +223,7 @@ public interface JMSServerManager extends HornetQComponent
                                 String ... jndiBindings) throws Exception;
 
    void createConnectionFactory(String name,
+                                String localBindAdress,
                                 String discoveryAddress,
                                 int discoveryPort,
                                 String clientID,

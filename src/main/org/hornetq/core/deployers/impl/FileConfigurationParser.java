@@ -894,6 +894,8 @@ public class FileConfigurationParser
    {
       String name = e.getAttribute("name");
 
+      String localBindAddress = XMLConfigurationUtil.getString(e, "local-bind-address", null, Validators.NO_CHECK);
+      
       String groupAddress = XMLConfigurationUtil.getString(e, "group-address", null, Validators.NOT_NULL_OR_EMPTY);
 
       int groupPort = XMLConfigurationUtil.getInteger(e, "group-port", -1, Validators.MINUS_ONE_OR_GT_ZERO);
@@ -904,6 +906,7 @@ public class FileConfigurationParser
                                                          Validators.GT_ZERO);
 
       DiscoveryGroupConfiguration config = new DiscoveryGroupConfiguration(name,
+                                                                           localBindAddress,
                                                                            groupAddress,
                                                                            groupPort,
                                                                            refreshTimeout);

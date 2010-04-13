@@ -164,12 +164,14 @@ public class FileConfigurationTest extends ConfigurationImplTest
       DiscoveryGroupConfiguration dc = conf.getDiscoveryGroupConfigurations().get("dg1");
       Assert.assertEquals("dg1", dc.getName());
       Assert.assertEquals("192.168.0.120", dc.getGroupAddress());
+      assertEquals("172.16.8.10", dc.getLocalBindAddress());
       Assert.assertEquals(11999, dc.getGroupPort());
       Assert.assertEquals(12345, dc.getRefreshTimeout());
 
       dc = conf.getDiscoveryGroupConfigurations().get("dg2");
       Assert.assertEquals("dg2", dc.getName());
       Assert.assertEquals("192.168.0.121", dc.getGroupAddress());
+      assertEquals("172.16.8.11", dc.getLocalBindAddress());
       Assert.assertEquals(12999, dc.getGroupPort());
       Assert.assertEquals(23456, dc.getRefreshTimeout());
 

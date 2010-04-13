@@ -474,6 +474,22 @@ public interface ClientSessionFactory
    void setAckBatchSize(int ackBatchSize);
 
    /**
+    * Returns the local bind address to which the multicast socket is bound for discovery.
+    * 
+    * This is null if the multicast socket is not bound, or no discovery is being used
+    * 
+    * @return the local bind address to which the multicast socket is bound for discovery
+    */
+   String getLocalBindAddress();
+
+   /**
+    * Sets the local bind address to which the multicast socket is bound for discovery.
+    * 
+    * @param the local bind address
+    */
+   void setLocalBindAddress(String localBindAddress);
+   
+   /**
     * Returns the address to listen to discover which connectors this factory can use.
     * The discovery address must be set to enable this factory to discover HornetQ servers.
     * 

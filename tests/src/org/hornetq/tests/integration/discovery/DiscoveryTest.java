@@ -86,6 +86,7 @@ public class DiscoveryTest extends UnitTestCase
 
       DiscoveryGroup dg = new DiscoveryGroupImpl(RandomUtil.randomString(),
                                                  RandomUtil.randomString(),
+                                                 null,
                                                  groupAddress,
                                                  groupPort,
                                                  timeout);
@@ -145,6 +146,7 @@ public class DiscoveryTest extends UnitTestCase
 
       DiscoveryGroup dg = new DiscoveryGroupImpl(RandomUtil.randomString(),
                                                  RandomUtil.randomString(),
+                                                 null,
                                                  groupAddress,
                                                  groupPort,
                                                  timeout);
@@ -224,7 +226,7 @@ public class DiscoveryTest extends UnitTestCase
 
       bg.addConnectorPair(connectorPair);
 
-      DiscoveryGroup dg = new DiscoveryGroupImpl(nodeID, RandomUtil.randomString(), groupAddress, groupPort, timeout);
+      DiscoveryGroup dg = new DiscoveryGroupImpl(nodeID, RandomUtil.randomString(), null, groupAddress, groupPort, timeout);
 
       dg.start();
 
@@ -317,6 +319,7 @@ public class DiscoveryTest extends UnitTestCase
 
       DiscoveryGroup dg = new DiscoveryGroupImpl(RandomUtil.randomString(),
                                                  RandomUtil.randomString(),
+                                                 null,
                                                  groupAddress,
                                                  port2,
                                                  timeout);
@@ -364,6 +367,7 @@ public class DiscoveryTest extends UnitTestCase
 
       DiscoveryGroup dg = new DiscoveryGroupImpl(RandomUtil.randomString(),
                                                  RandomUtil.randomString(),
+                                                 null,
                                                  groupAddress2,
                                                  port2,
                                                  timeout);
@@ -451,6 +455,7 @@ public class DiscoveryTest extends UnitTestCase
 
       DiscoveryGroup dg1 = new DiscoveryGroupImpl(RandomUtil.randomString(),
                                                   RandomUtil.randomString(),
+                                                  null,
                                                   groupAddress1,
                                                   groupPort1,
                                                   timeout);
@@ -458,6 +463,7 @@ public class DiscoveryTest extends UnitTestCase
 
       DiscoveryGroup dg2 = new DiscoveryGroupImpl(RandomUtil.randomString(),
                                                   RandomUtil.randomString(),
+                                                  null,
                                                   groupAddress2,
                                                   groupPort2,
                                                   timeout);
@@ -465,6 +471,7 @@ public class DiscoveryTest extends UnitTestCase
 
       DiscoveryGroup dg3 = new DiscoveryGroupImpl(RandomUtil.randomString(),
                                                   RandomUtil.randomString(),
+                                                  null,
                                                   groupAddress3,
                                                   groupPort3,
                                                   timeout);
@@ -539,6 +546,7 @@ public class DiscoveryTest extends UnitTestCase
 
       DiscoveryGroup dg = new DiscoveryGroupImpl(RandomUtil.randomString(),
                                                  RandomUtil.randomString(),
+                                                 null,
                                                  groupAddress,
                                                  groupPort,
                                                  timeout);
@@ -591,6 +599,7 @@ public class DiscoveryTest extends UnitTestCase
 
       DiscoveryGroup dg = new DiscoveryGroupImpl(RandomUtil.randomString(),
                                                  RandomUtil.randomString(),
+                                                 null,
                                                  groupAddress,
                                                  groupPort,
                                                  timeout);
@@ -688,6 +697,7 @@ public class DiscoveryTest extends UnitTestCase
 
       DiscoveryGroup dg = new DiscoveryGroupImpl(RandomUtil.randomString(),
                                                  RandomUtil.randomString(),
+                                                 null,
                                                  groupAddress,
                                                  groupPort,
                                                  timeout);
@@ -927,18 +937,21 @@ public class DiscoveryTest extends UnitTestCase
 
       DiscoveryGroup dg1 = new DiscoveryGroupImpl(RandomUtil.randomString(),
                                                   RandomUtil.randomString(),
+                                                  null,
                                                   groupAddress,
                                                   groupPort,
                                                   timeout);
 
       DiscoveryGroup dg2 = new DiscoveryGroupImpl(RandomUtil.randomString(),
                                                   RandomUtil.randomString(),
+                                                  null,
                                                   groupAddress,
                                                   groupPort,
                                                   timeout);
 
       DiscoveryGroup dg3 = new DiscoveryGroupImpl(RandomUtil.randomString(),
                                                   RandomUtil.randomString(),
+                                                  null,
                                                   groupAddress,
                                                   groupPort,
                                                   timeout);
@@ -995,6 +1008,7 @@ public class DiscoveryTest extends UnitTestCase
 
       DiscoveryGroup dg = new DiscoveryGroupImpl(RandomUtil.randomString(),
                                                  RandomUtil.randomString(),
+                                                 null,
                                                  groupAddress,
                                                  groupPort,
                                                  timeout);

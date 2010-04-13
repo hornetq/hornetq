@@ -209,6 +209,17 @@ public class HornetQConnectionFactory implements ConnectionFactory, QueueConnect
       checkWrite();
       sessionFactory.setStaticConnectors(staticConnectors);
    }
+   
+   public synchronized String getLocalBindAddress()
+   {
+      return sessionFactory.getLocalBindAddress();
+   }
+
+   public synchronized void setLocalBindAddress(final String localBindAddress)
+   {
+      checkWrite();
+      sessionFactory.setLocalBindAddress(localBindAddress);
+   }
 
    public synchronized String getDiscoveryAddress()
    {

@@ -96,7 +96,7 @@ public class BridgeWithDiscoveryGroupStartTest extends ServiceTestBase
 
       server0.getConfiguration().getBroadcastGroupConfigurations().add(bcConfig);
 
-      DiscoveryGroupConfiguration dcConfig = new DiscoveryGroupConfiguration("dg1", groupAddress, port, 5000);
+      DiscoveryGroupConfiguration dcConfig = new DiscoveryGroupConfiguration("dg1", null, groupAddress, port, 5000);
 
       server0.getConfiguration().getDiscoveryGroupConfigurations().put(dcConfig.getName(), dcConfig);
 

@@ -767,6 +767,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
    }
 
    public synchronized void createConnectionFactory(final String name,
+                                                    final String localBindAddress,
                                                     final String discoveryAddress,
                                                     final int discoveryPort,
                                                     final String clientID,
@@ -801,11 +802,15 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
                                                     final String groupId,
                                                     final String... jndiBindings) throws Exception
    {
+      log.info("calling create cf " + discoveryRefreshTimeout + " lba " + localBindAddress);
+      
+      
       checkInitialised();
       HornetQConnectionFactory cf = connectionFactories.get(name);
       if (cf == null)
       {
          ConnectionFactoryConfiguration configuration = new ConnectionFactoryConfigurationImpl(name,
+                                                                                               localBindAddress,
                                                                                                discoveryAddress,
                                                                                                discoveryPort);
          configuration.setClientID(clientID);
@@ -903,6 +908,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
    }
 
    private HornetQConnectionFactory internalCreateConnectionFactory(final String name,
+                                                                    final String localBindAddress,
                                                                     final String discoveryAddress,
                                                                     final int discoveryPort,
                                                                     final String clientID,
@@ -942,6 +948,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       {
          cf = (HornetQConnectionFactory)HornetQJMSClient.createConnectionFactory(discoveryAddress, discoveryPort);
          cf.setClientID(clientID);
+         cf.setLocalBindAddress(localBindAddress);
          cf.setDiscoveryRefreshTimeout(discoveryRefreshTimeout);
          cf.setClientFailureCheckPeriod(clientFailureCheckPeriod);
          cf.setConnectionTTL(connectionTTL);
@@ -1141,6 +1148,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       if (cfConfig.getDiscoveryAddress() != null)
       {
          cf = internalCreateConnectionFactory(cfConfig.getName(),
+                                              cfConfig.getLocalBindAddress(),
                                               cfConfig.getDiscoveryAddress(),
                                               cfConfig.getDiscoveryPort(),
                                               cfConfig.getClientID(),
@@ -1416,8 +1424,10 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
                                                 "' deployed.");
          }
 
+         cfConfig.setLocalBindAddress(discoveryGroupConfiguration.getLocalBindAddress());
          cfConfig.setDiscoveryAddress(discoveryGroupConfiguration.getGroupAddress());
          cfConfig.setDiscoveryPort(discoveryGroupConfiguration.getGroupPort());
+         cfConfig.setDiscoveryRefreshTimeout(discoveryGroupConfiguration.getRefreshTimeout());
 
       }
    }

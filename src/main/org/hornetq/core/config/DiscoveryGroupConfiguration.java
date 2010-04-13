@@ -15,6 +15,8 @@ package org.hornetq.core.config;
 
 import java.io.Serializable;
 
+import org.hornetq.core.logging.Logger;
+
 /**
  * A DiscoveryGroupConfiguration
  *
@@ -27,8 +29,13 @@ import java.io.Serializable;
 public class DiscoveryGroupConfiguration implements Serializable
 {
    private static final long serialVersionUID = 8657206421727863400L;
+   
+   private static final Logger log = Logger.getLogger(DiscoveryGroupConfiguration.class);
+
 
    private String name;
+   
+   private String localBindAddress;
 
    private String groupAddress;
 
@@ -37,12 +44,14 @@ public class DiscoveryGroupConfiguration implements Serializable
    private long refreshTimeout;
 
    public DiscoveryGroupConfiguration(final String name,
+                                      final String localBindAddress,
                                       final String groupAddress,
                                       final int groupPort,
                                       final long refreshTimeout)
    {
       this.name = name;
       this.groupAddress = groupAddress;
+      this.localBindAddress = localBindAddress;
       this.groupPort = groupPort;
       this.refreshTimeout = refreshTimeout;
    }
@@ -50,6 +59,11 @@ public class DiscoveryGroupConfiguration implements Serializable
    public String getName()
    {
       return name;
+   }
+   
+   public String getLocalBindAddress()
+   {
+      return localBindAddress;
    }
 
    public String getGroupAddress()
@@ -73,6 +87,14 @@ public class DiscoveryGroupConfiguration implements Serializable
    public void setName(final String name)
    {
       this.name = name;
+   }
+   
+   /**
+    * @param localBindAddress the localBindAddress to set
+    */
+   public void setLocalBindAdress(final String localBindAddress)
+   {
+      this.localBindAddress = localBindAddress;
    }
 
    /**

@@ -16,6 +16,7 @@ package org.hornetq.core.cluster.impl;
 import java.io.InterruptedIOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.MulticastSocket;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -70,6 +71,8 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
    private volatile boolean started;
 
    private final String nodeID;
+   
+   private final InetAddress localBindAddress;
 
    private final InetAddress groupAddress;
 
@@ -81,6 +84,7 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
 
    public DiscoveryGroupImpl(final String nodeID,
                              final String name,
+                             final InetAddress localBindAddress,
                              final InetAddress groupAddress,
                              final int groupPort,
                              final long timeout) throws Exception
@@ -90,6 +94,8 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
       this.name = name;
 
       this.timeout = timeout;
+      
+      this.localBindAddress = localBindAddress;
 
       this.groupAddress = groupAddress;
 
@@ -108,7 +114,16 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
          return;
       }
 
-      socket = new MulticastSocket(groupPort);
+      if (localBindAddress == null)
+      {
+         socket = new MulticastSocket(groupPort);
+      }
+      else
+      {
+         InetSocketAddress saddress = new InetSocketAddress(localBindAddress, groupPort);
+         
+         socket = new MulticastSocket(saddress);
+      }
 
       socket.joinGroup(groupAddress);
 
@@ -125,8 +140,11 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
       if (notificationService != null)
       {
          TypedProperties props = new TypedProperties();
+         
          props.putSimpleStringProperty(new SimpleString("name"), new SimpleString(name));
+         
          Notification notification = new Notification(nodeID, NotificationType.DISCOVERY_GROUP_STARTED, props);
+         
          notificationService.sendNotification(notification);
       }
    }

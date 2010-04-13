@@ -42,6 +42,8 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
    private String[] bindings;
 
    private String discoveryGroupName;
+   
+   private String localBindAddress;
 
    private String discoveryAddress;
 
@@ -129,6 +131,18 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
       this.discoveryAddress = discoveryAddress;
       this.discoveryPort = discoveryPort;
    }
+   
+   public ConnectionFactoryConfigurationImpl(final String name,
+                                             final String localBindAddress,
+                                             final String discoveryAddress,
+                                             final int discoveryPort,
+                                             final String... bindings)
+   {
+      this(name, bindings);
+      this.localBindAddress = localBindAddress;
+      this.discoveryAddress = discoveryAddress;
+      this.discoveryPort = discoveryPort;
+   }
 
    public ConnectionFactoryConfigurationImpl(final String name,
                                              final TransportConfiguration liveConfig,
@@ -178,6 +192,16 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
    public String getName()
    {
       return name;
+   }
+   
+   public String getLocalBindAddress()
+   {
+      return localBindAddress;
+   }
+
+   public void setLocalBindAddress(final String localBindAddress)
+   {
+      this.localBindAddress = localBindAddress;
    }
 
    public String getDiscoveryAddress()
@@ -553,6 +577,8 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
 
       discoveryGroupName = BufferHelper.readNullableSimpleStringAsString(buffer); 
 
+      localBindAddress = BufferHelper.readNullableSimpleStringAsString(buffer);
+      
       discoveryAddress = BufferHelper.readNullableSimpleStringAsString(buffer);
 
       discoveryPort = buffer.readInt();
@@ -642,6 +668,8 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
 
       BufferHelper.writeAsNullableSimpleString(buffer, discoveryGroupName);
 
+      BufferHelper.writeAsNullableSimpleString(buffer, localBindAddress);
+      
       BufferHelper.writeAsNullableSimpleString(buffer, discoveryAddress);
 
       buffer.writeInt(discoveryPort);
@@ -745,6 +773,8 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
       return BufferHelper.sizeOfSimpleString(name) +
              
              BufferHelper.sizeOfNullableSimpleString(discoveryGroupName) +
+             
+             BufferHelper.sizeOfNullableSimpleString(localBindAddress)+
              
              BufferHelper.sizeOfNullableSimpleString(discoveryAddress)+
              
