@@ -144,6 +144,7 @@
    </target>
 
    <target name="upload-local-target">
+       <!-- install the jar -->
        <exec executable="mvn">
         <arg value="install:install-file"/>
         <arg value="-DgroupId=org.hornetq"/>
@@ -152,9 +153,20 @@
         <arg value="-Dpackaging=jar"/>
         <arg value="-Dfile=./build/jars/${artifact.id}.jar"/>
        </exec>
+       <!-- install the sources jar -->
+       <exec executable="mvn">
+        <arg value="install:install-file"/>
+        <arg value="-DgroupId=org.hornetq"/>
+        <arg value="-DartifactId=${artifact.id}"/>
+        <arg value="-Dversion=${hornetq.version}"/>
+        <arg value="-Dpackaging=jar"/>
+        <arg value="-Dclassifier=sources"/>
+        <arg value="-Dfile=./build/jars/${artifact.id}-sources.jar"/>
+       </exec>
    </target>
 
    <target name="upload">
+   	<!-- upload the jar -->
       <exec executable="mvn">
          <arg value="deploy:deploy-file"/>
       	 <arg value="-e"/>
@@ -167,10 +179,24 @@
          <arg value="-DrepositoryId=snapshots.jboss.org"/>
          <arg value="-Durl=dav:https://snapshots.jboss.org/maven2"/>
       </exec>
+      <!-- upload the corresponding sources jar -->
+      <exec executable="mvn">
+         <arg value="deploy:deploy-file"/>
+      	 <arg value="-e"/>
+         <arg value="-DgroupId=org.hornetq"/>
+         <arg value="-DartifactId=${artifact.id}"/>
+         <arg value="-Dversion=${hornetq.version}"/>
+         <arg value="-Dpackaging=${artifact.type}"/>
+         <arg value="-DgeneratePom=true"/>
+         <arg value="-Dclassifier=sources"/>
+         <arg value="-Dfile=${jars.dir}/${artifact.id}-sources.${artifact.type}"/>
+         <arg value="-DrepositoryId=snapshots.jboss.org"/>
+         <arg value="-Durl=dav:https://snapshots.jboss.org/maven2"/>
+      </exec>
    </target>
 
    <target name="updateMavenRepos">
-      <fail unless="hornetq.repos" message="*** Please set the hornetq.repos property i.e. -Dhornetq.repos=foo ***"/>
+      <fail unless="hornetq.repos" message="*** Please set the absolute path to hornetq.repos property i.e. -Dhornetq.repos=foo ***"/>
       <property name="dest.dir" value="${hornetq.repos}"/>
    	
    	
@@ -221,6 +247,7 @@
  &lt;artifactId&gt;${artifact.id}&lt;/artifactId&gt;${line.separator}
  &lt;version&gt;${hornetq.version}&lt;/version&gt;${line.separator}&lt;/project&gt;"/>
    	
+    <!-- deploy the jar -->
     <exec executable="mvn">
      <arg value="-e"/>
      <arg value="deploy:deploy-file"/>
@@ -233,7 +260,20 @@
      <arg value="-DrepositoryId=jboss-releases"/>
      <arg value="-Durl=file:///${dest.dir}"/>
     </exec>
-   	
+    <!-- deploy the sources jar -->
+    <exec executable="mvn">
+     <arg value="-e"/>
+     <arg value="deploy:deploy-file"/>
+     <arg value="-DpomFile=${temporary.pom}"/>
+     <arg value="-DgroupId=org.hornetq"/>
+     <arg value="-DartifactId=${artifact.id}"/>
+     <arg value="-Dversion=${hornetq.version}"/>
+     <arg value="-Dpackaging=jar"/>
+     <arg value="-Dclassifier=sources"/>
+     <arg value="-Dfile=./build/jars/${artifact.id}-sources.jar"/>
+     <arg value="-DrepositoryId=jboss-releases"/>
+     <arg value="-Durl=file:///${dest.dir}"/>
+    </exec>   	
    	 <delete file="${temporary.pom}"/>
    </target>
 

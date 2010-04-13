@@ -55,19 +55,29 @@
    <!-- ======================================================================================== -->
 
    <property name="core.jar.name" value="hornetq-core.jar"/>
+   <property name="core.sources.jar.name" value="hornetq-core-sources.jar"/>
    <property name="jms.jar.name" value="hornetq-jms.jar"/>
+   <property name="jms.sources.jar.name" value="hornetq-jms-sources.jar"/>
    <property name="jms.client.jar.name" value="hornetq-jms-client.jar"/>
+   <property name="jms.client.sources.jar.name" value="hornetq-jms-client-sources.jar"/>
    <property name="jnp.client.jar.name" value="jnp-client.jar"/>
    <property name="jboss.integration.jar.name" value="hornetq-jboss-as-integration.jar"/>
+   <property name="jboss.integration.sources.jar.name" value="hornetq-jboss-as-integration-sources.jar"/>
    <property name="bootstrap.jar.name" value="hornetq-bootstrap.jar"/>
+   <property name="bootstrap.sources.jar.name" value="hornetq-bootstrap-sources.jar"/>
    <property name="logging.jar.name" value="hornetq-logging.jar"/>
+   <property name="logging.sources.jar.name" value="hornetq-logging-sources.jar"/>
    <property name="core.client.jar.name" value="hornetq-core-client.jar"/>
+   <property name="core.client.sources.jar.name" value="hornetq-core-client-sources.jar"/>
    <property name="ra.jar.name" value="hornetq-ra.jar"/>
+   <property name="ra.sources.jar.name" value="hornetq-ra-sources.jar"/>
    <property name="ra.rar.name" value="hornetq-ra.rar"/>
    <property name="netty.jar.name" value="netty.jar"/>
    <property name="mc.jar.name" value="jboss-mc.jar"/>
    <property name="service.sar.name" value="hornetq-service.sar"/>
+   <property name="service.sources.sar.name" value="hornetq-service-sources.sar"/>
    <property name="resources.jar.name" value="hornetq-resources.jar"/>
+   <property name="resources.sources.jar.name" value="hornetq-resources-sources.jar"/>
 
    <!--source and build dirs-->
    <property name="build.dir" value="build"/>
@@ -103,6 +113,7 @@
    <property name="native.bin.dir" value="native/bin"/>
    <property name="examples.dir" value="examples"/>
    <property name="tools.dir" value="tools"/>
+   <property name="build.examples.dir" value="${build.dir}/examples"/>
 
    <property name="build.distro.dir"
              value="${build.dir}/${build.artifact}"/>
@@ -597,8 +608,12 @@
    <!-- Jar Targets                                                                              -->
    <!-- ======================================================================================== -->
 
+   <target name="sources-jar" description="create jar files containing source code"
+           depends="jar-core-sources, jar-core-client-sources, jar-jms-sources, jar-jms-client-sources, jar-jboss-integration-sources, jar-jboss-service-sources, jar-bootstrap-sources, jar-logging-sources, jar-ra-sources, jar-resources-sources">
+   </target>
+
    <target name="jar"
-           depends="jar-core, jar-core-client, jar-jms, jar-jms-client, jar-jboss-integration, jar-jboss-service, jar-bootstrap, jar-logging, jar-ra, jar-mc, jar-jnp-client, jar-resources">
+           depends="jar-core, jar-core-client, jar-jms, jar-jms-client, jar-jboss-integration, jar-jboss-service, jar-bootstrap, jar-logging, jar-ra, jar-mc, jar-jnp-client, jar-resources, sources-jar">
    </target>
 	
    <target name="jar-jnp-client" depends="init">
@@ -642,6 +657,27 @@
       </jar>
 
    </target>
+	
+   <target name="jar-core-sources">
+      <jar jarfile="${build.jars.dir}/${core.sources.jar.name}">
+         <fileset dir="${src.main.dir}">
+            <include name="**/hornetq/*.java"/>
+            <include name="**/hornetq/api/*.java"/>
+            <include name="**/hornetq/api/core/**/*.java"/>
+            <include name="**/hornetq/core/**/*.java"/>
+            <include name="**/hornetq/spi/**/*.java"/>
+            <include name="**/hornetq/utils/**/*.java"/>
+         </fileset>
+        	<fileset dir="${src.config.dir}/common">
+            <include name="**/*.xsd"/>
+            <exclude name="**/hornetq-jms.xsd"/>
+         </fileset>
+         <manifest>
+            <attribute name="HornetQ-Version" value="${hornetq.version.string}"/>
+            <attribute name="HornetQ-SVN-URL" value="${hornetq.version.svnurl}"/>
+         </manifest>
+      </jar>
+   </target>
 
    <target name="jar-jms" depends="compile-jms">
 
@@ -653,7 +689,18 @@
       </jar>
 
    </target>
-   
+
+   <target name="jar-jms-sources">
+      <jar jarfile="${build.jars.dir}/${jms.sources.jar.name}">
+         <fileset dir="${src.main.dir}">
+            <include name="**/jms/**/*.java"/>
+         </fileset>
+         <fileset dir="${src.config.dir}/common">
+            <include name="**/hornetq-jms.xsd"/>
+         </fileset>
+      </jar>
+	</target>
+		
    <target name="jar-jms-client" depends="compile-jms">
 	   
       <jar jarfile="${build.jars.dir}/${jms.client.jar.name}">         
@@ -663,7 +710,17 @@
       </jar>
 	   
    </target>
-   
+
+   <target name="jar-jms-client-sources">
+      <jar jarfile="${build.jars.dir}/${jms.client.sources.jar.name}">         
+         <fileset dir="${src.main.dir}">
+            <include name="org/hornetq/api/jms/**/*.*"/>
+            <include name="org/hornetq/jms/client/**/*.*"/>
+            <include name="org/hornetq/jms/referenceable/**/*.*"/>
+         </fileset>
+      </jar>
+   </target>
+	
    <target name="jar-jboss-integration" depends="compile-jboss-integration">
 
       <jar jarfile="${build.jars.dir}/${jboss.integration.jar.name}">
@@ -672,6 +729,14 @@
 
    </target>
    
+   <target name="jar-jboss-integration-sources">
+      <jar jarfile="${build.jars.dir}/${jboss.integration.sources.jar.name}">
+         <fileset dir="${src.main.dir}">
+            <include name="org/hornetq/integration/jboss/**/*.java"/>
+         </fileset>
+      </jar>
+   </target>
+	
 	<!-- author: Lucas Amador -->
    <target name="jar-jboss-service" depends="compile-jboss-service">
 
@@ -681,6 +746,14 @@
 
    </target>
 
+   <target name="jar-jboss-service-sources">
+      <jar jarfile="${build.jars.dir}/${service.sources.sar.name}">
+         <fileset dir="${src.main.dir}">
+            <include name="org/hornetq/service/**/*.java"/>
+         </fileset>
+      </jar>
+   </target>
+	
    <target name="jar-bootstrap" depends="compile-bootstrap">
 
       <jar jarfile="${build.jars.dir}/${bootstrap.jar.name}">
@@ -689,6 +762,14 @@
 
    </target>
 
+   <target name="jar-bootstrap-sources">
+      <jar jarfile="${build.jars.dir}/${bootstrap.sources.jar.name}">
+         <fileset dir="${src.main.dir}">
+            <include name="org/hornetq/integration/bootstrap/**/*.java"/>
+         </fileset>
+      </jar>
+   </target>
+	
    <target name="jar-logging" depends="compile-logging">
 
       <jar jarfile="${build.jars.dir}/${logging.jar.name}">
@@ -697,6 +778,14 @@
 
    </target>
 
+   <target name="jar-logging-sources">
+      <jar jarfile="${build.jars.dir}/${logging.sources.jar.name}">
+         <fileset dir="${src.main.dir}">
+            <include name="org/hornetq/integration/logging/**/*.java"/>
+         </fileset>
+      </jar>
+   </target>
+         	
    <target name="jar-core-client" depends="compile-core">
       <jar jarfile="${build.jars.dir}/${core.client.jar.name}">
          <fileset dir="${build.core.classes.dir}">
@@ -730,6 +819,38 @@
 
    </target>
 
+   <target name="jar-core-client-sources">
+      <jar jarfile="${build.jars.dir}/${core.client.sources.jar.name}">
+         <fileset dir="${src.main.dir}">
+            <include name="hornetq-version.properties"/>
+            <include name="org/hornetq/api/**/*.*"/>
+            <include name="org/hornetq/*.*"/>
+            <include name="org/hornetq/core/buffers/**/*.*"/>
+            <include name="org/hornetq/core/client/**/*.*"/>
+            <include name="org/hornetq/core/filter/**/*.*"/>
+            <include name="org/hornetq/core/exception/**/*.*"/>
+            <include name="org/hornetq/core/remoting/impl/**/*.*"/>
+            <include name="org/hornetq/utils/**/*.*"/>
+            <include name="org/hornetq/core/cluster/**/*.*"/>
+            <include name="org/hornetq/core/list/**/*.*"/>
+            <include name="org/hornetq/core/logging/**/*.*"/>
+            <include name="org/hornetq/core/message/**/*.*"/>
+            <include name="org/hornetq/core/protocol/core/**/*.*"/>
+            <include name="org/hornetq/core/remoting/**/*.*"/>
+            <include name="org/hornetq/core/version/**/*.*"/>
+            <include name="org/hornetq/core/management/*.*"/>
+            <include name="org/hornetq/core/transaction/impl/XidImpl.java"/>
+            <include name="org/hornetq/spi/core/logging/*.*"/>
+            <include name="org/hornetq/spi/core/protocol/*.*"/>
+            <include name="org/hornetq/spi/core/remoting/*.*"/>
+            
+            <!-- required by SessionSendMessage -->
+            <include name="org/hornetq/core/server/ServerMessage.java"/>
+            <include name="org/hornetq/core/journal/EncodingSupport.java"/>
+         </fileset>
+      </jar>
+   </target>
+	
    <target name="jar-ra" depends="jar-core-client, jar-jms-client, compile-ra">
       <jar jarfile="${build.jars.dir}/${ra.jar.name}">
          <fileset dir="${build.ra.classes.dir}">
@@ -744,8 +865,15 @@
       </jar>
    </target>
 
-   <property name="build.examples.dir" value="${build.dir}/examples"/>
-   <target name="jar-resources" depends="init">
+   <target name="jar-ra-sources">
+      <jar jarfile="${build.jars.dir}/${ra.sources.jar.name}">
+         <fileset dir="${src.main.dir}">
+           <include name="org/hornetq/ra/**/*"/>
+         </fileset>
+      </jar>
+   </target>
+
+	<target name="jar-resources" depends="init">
       <jar jarfile="${build.jars.dir}/${resources.jar.name}">
          <fileset dir=".">
            <include name="examples/**"/>
@@ -763,6 +891,21 @@
       </jar>
    </target>
 
+   <target name="jar-resources-sources">
+      <jar jarfile="${build.jars.dir}/${resources.sources.jar.name}">
+         <fileset dir=".">
+           <include name="examples/**"/>
+           <exclude name="**/build"/>
+           <exclude name="**/data"/>
+         </fileset>
+         <fileset dir="${src.config.dir}">
+           <include  name="jboss-as/**"/>
+           <include name="ra.xml"/>
+           <exclude  name="**/build.xml"/>
+         </fileset>
+      </jar>
+   </target>
+	
    <!-- ======================================================================================== -->
    <!-- Distribution targets                                                                     -->
    <!-- ======================================================================================== -->
