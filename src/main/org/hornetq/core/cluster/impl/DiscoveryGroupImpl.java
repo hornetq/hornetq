@@ -75,7 +75,7 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
 
    private final int groupPort;
 
-   private final Map<String, UniqueIDEntry> uniqueIDMap = new HashMap<String, UniqueIDEntry>();
+   private final Map<String, String> uniqueIDMap = new HashMap<String, String>();
 
    private NotificationService notificationService;
 
@@ -221,76 +221,28 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
       }
    }
 
-   private static class UniqueIDEntry
-   {
-      String uniqueID;
-
-      boolean changed;
-
-      UniqueIDEntry(final String uniqueID)
-      {
-         this.uniqueID = uniqueID;
-      }
-
-      boolean isChanged()
-      {
-         return changed;
-      }
-
-      void setChanged()
-      {
-         changed = true;
-      }
-
-      String getUniqueID()
-      {
-         return uniqueID;
-      }
-
-      void setUniqueID(final String uniqueID)
-      {
-         this.uniqueID = uniqueID;
-      }
-   }
-
    /*
     * This is a sanity check to catch any cases where two different nodes are broadcasting the same node id either
     * due to misconfiguration or problems in failover
     */
-   private boolean uniqueIDOK(final String originatingNodeID, final String uniqueID)
+   private void checkUniqueID(final String originatingNodeID, final String uniqueID)
    {
-      UniqueIDEntry entry = uniqueIDMap.get(originatingNodeID);
+      String currentUniqueID = uniqueIDMap.get(originatingNodeID);
 
-      if (entry == null)
+      if (currentUniqueID == null)
       {
-         entry = new UniqueIDEntry(uniqueID);
-
-         uniqueIDMap.put(originatingNodeID, entry);
-
-         return true;
+         uniqueIDMap.put(originatingNodeID, uniqueID);
       }
       else
       {
-         if (entry.getUniqueID().equals(uniqueID))
-         {
-            return true;
-         }
-         else
-         {
-            // We allow one change - this might occur if one node fails over onto its backup which
-            // has same node id but different unique id
-            if (!entry.isChanged())
-            {
-               entry.setChanged();
-
-               entry.setUniqueID(uniqueID);
-
-               return true;
-            }
-            else
-            {
-               return false;
-            }
+         if (!currentUniqueID.equals(uniqueID))
+         {            
+            log.warn("There are more than one servers on the network broadcasting the same node id. " +
+                     "You will see this message exactly once (per node) if a node is restarted, in which case it can be safely " + 
+                     "ignored. But if it is logged continuously it means you really do have more than one node on the same network " +
+                     "active concurrently with the same node id. This could occur if you have a backup node active at the same time as " +
+                     "its live node.");
+            uniqueIDMap.put(originatingNodeID, uniqueID);
          }
       }
    }
@@ -333,13 +285,8 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
 
             String uniqueID = buffer.readString();
 
-            if (!uniqueIDOK(originatingNodeID, uniqueID))
-            {
-               DiscoveryGroupImpl.log.warn("There seem to be more than one broadcasters on the network broadcasting the same node id");
-
-               continue;
-            }
-
+            checkUniqueID(originatingNodeID, uniqueID);
+            
             if (nodeID.equals(originatingNodeID))
             {
                // Ignore traffic from own node
@@ -349,7 +296,7 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
             int size = buffer.readInt();
 
             boolean changed = false;
-
+            
             synchronized (this)
             {
                for (int i = 0; i < size; i++)
