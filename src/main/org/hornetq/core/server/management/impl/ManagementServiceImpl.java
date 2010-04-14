@@ -683,8 +683,10 @@ public class ManagementServiceImpl implements ManagementService
                   }
                }
 
-               // start sending notification *messages* only when the *remoting service* if started
-               if (messagingServer == null || !messagingServer.getRemotingService().isStarted())
+               // start sending notification *messages* only when server has initialised
+               // Note at backup initialisation we don't want to send notifications either
+               // https://jira.jboss.org/jira/browse/HORNETQ-317
+               if (messagingServer == null || !messagingServer.isInitialised())
                {
                   return;
                }
