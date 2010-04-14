@@ -114,15 +114,11 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
          return;
       }
 
-      if (localBindAddress == null)
+      socket = new MulticastSocket(groupPort);
+
+      if (localBindAddress != null)
       {
-         socket = new MulticastSocket(groupPort);
-      }
-      else
-      {
-         InetSocketAddress saddress = new InetSocketAddress(localBindAddress, groupPort);
-         
-         socket = new MulticastSocket(saddress);
+         socket.setInterface(localBindAddress);
       }
 
       socket.joinGroup(groupAddress);

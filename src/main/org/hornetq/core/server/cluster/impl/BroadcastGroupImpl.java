@@ -119,6 +119,11 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
       }
       else
       {
+         if (localAddress != null)
+         {
+            log.warn("local-bind-address specified for broadcast group but no local-bind-port specified so socket will NOT be bound " + 
+                     "to a local address/port");
+         }
          socket = new DatagramSocket();
       }
 
