@@ -161,7 +161,7 @@
    <property name="thirdparty.dir" value="thirdparty"/>
    <property name="test.build.dir" value="${test.dir}/build"/>
    <property name="test.src.dir" value="${test.dir}/src"/>
-   <property name="test-mask" value="DiscoveryTest"/>
+   <property name="test-mask" value="*Test"/>
    <property name="test.classes.dir" value="${test.build.dir}/classes"/>
    <property name="test.output.dir" value="${test.dir}/build"/>
    <property name="test.reports.dir" value="${test.output.dir}/reports"/>
