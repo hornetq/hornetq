@@ -595,6 +595,43 @@ public class MessageRedistributionTest extends ClusterTestBase
 
       verifyReceiveAll(QueueImpl.REDISTRIBUTOR_BATCH_SIZE * 2, 1);
    }
+   
+   /*
+    * Start one node with no consumers and send some messages
+    * Start another node add a consumer and verify all messages are redistribute
+    * https://jira.jboss.org/jira/browse/HORNETQ-359
+    */
+   public void testRedistributionWhenNewNodeIsAddedWithConsumer() throws Exception
+   {
+      setupCluster(false);
+
+      startServers(0);
+
+      setupSessionFactory(0, isNetty());
+      
+      setupSessionFactory(1, isNetty());
+      setupSessionFactory(2, isNetty());
+
+      createQueue(0, "queues.testaddress", "queue0", null, false);
+      
+      waitForBindings(0, "queues.testaddress", 1, 0, true);
+      
+      send(0, "queues.testaddress", 20, false, null);
+      
+      //Now bring up node 1
+      
+      startServers(1);
+      
+      createQueue(1, "queues.testaddress", "queue0", null, false);
+      
+      waitForBindings(1, "queues.testaddress", 1, 0, true);
+      waitForBindings(0, "queues.testaddress", 1, 0, false);
+      
+      addConsumer(0, 1, "queue0", null);
+      
+      verifyReceiveAll(20, 0);
+      verifyNotReceive(0);
+   }
 
    protected void setupCluster(final boolean forwardWhenNoConsumers) throws Exception
    {
