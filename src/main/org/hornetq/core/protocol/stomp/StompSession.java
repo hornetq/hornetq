@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.SimpleString;
@@ -48,12 +49,12 @@ class StompSession implements SessionCallback
 
    private final OperationContext sessionContext;
 
-   private final Map<Long, StompSubscription> subscriptions = new HashMap<Long, StompSubscription>();
+   private final Map<Long, StompSubscription> subscriptions = new ConcurrentHashMap<Long, StompSubscription>();
 
    // key = message ID, value = consumer ID
-   private final Map<Long, Long> messagesToAck = new HashMap<Long, Long>();
+   private final Map<Long, Long> messagesToAck = new ConcurrentHashMap<Long, Long>();
 
-   private boolean noLocal = false;
+   private volatile boolean noLocal = false;
 
    StompSession(final StompConnection connection, final StompProtocolManager manager, OperationContext sessionContext)
    {
@@ -90,19 +91,17 @@ class StompSession implements SessionCallback
          }
          HornetQBuffer buffer = serverMessage.getBodyBuffer();
          buffer.readerIndex(MessageImpl.BUFFER_HEADER_SPACE + DataConstants.SIZE_INT);
-         int bodyPos = serverMessage.getEndOfBodyPosition() == -1 ? buffer.writerIndex() : serverMessage.getEndOfBodyPosition();
+         int bodyPos = serverMessage.getEndOfBodyPosition() == -1 ? buffer.writerIndex()
+                                                                 : serverMessage.getEndOfBodyPosition();
          int size = bodyPos - buffer.readerIndex();
          byte[] data = new byte[size];
          buffer.readBytes(data);
          headers.put(Headers.CONTENT_LENGTH, data.length);
          serverMessage.getBodyBuffer().resetReaderIndex();
-         
+
          StompFrame frame = new StompFrame(Stomp.Responses.MESSAGE, headers, data);
          StompUtils.copyStandardHeadersFromMessageToFrame(serverMessage, frame, deliveryCount);
 
-         manager.send(connection, frame);
-         int length =  frame.getEncodedSize();
-         
          if (subscription.getAck().equals(Stomp.Headers.Subscribe.AckModeValues.AUTO))
          {
             session.acknowledge(consumerID, serverMessage.getMessageID());
@@ -112,6 +111,11 @@ class StompSession implements SessionCallback
          {
             messagesToAck.put(serverMessage.getMessageID(), consumerID);
          }
+
+         // Must send AFTER adding to messagesToAck - or could get acked from client BEFORE it's been added!
+         manager.send(connection, frame);
+         int length = frame.getEncodedSize();
+
          return length;
 
       }
@@ -149,7 +153,7 @@ class StompSession implements SessionCallback
                                String subscriptionID,
                                String clientID,
                                String durableSubscriptionName,
-                               String destination, 
+                               String destination,
                                String selector,
                                String ack) throws Exception
    {
@@ -159,7 +163,7 @@ class StompSession implements SessionCallback
          // subscribes to a topic
          if (durableSubscriptionName != null)
          {
-            if (clientID == null) 
+            if (clientID == null)
             {
                throw new IllegalStateException("Cannot create a subscriber on the durable subscription if the client-id of the connection is not set");
             }
@@ -177,7 +181,8 @@ class StompSession implements SessionCallback
                   throw new IllegalStateException("Cannot create a subscriber on the durable subscription since it already has a subscriber: " + queue);
                }
             }
-         } else
+         }
+         else
          {
             queue = UUIDGenerator.getInstance().generateSimpleStringUUID();
             session.createQueue(SimpleString.toSimpleString(destination), queue, null, true, false);
@@ -239,7 +244,7 @@ class StompSession implements SessionCallback
    {
       return noLocal;
    }
-   
+
    public void setNoLocal(boolean noLocal)
    {
       this.noLocal = noLocal;
