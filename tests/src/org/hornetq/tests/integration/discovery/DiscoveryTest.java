@@ -130,9 +130,11 @@ public class DiscoveryTest extends UnitTestCase
       //We need to choose a real NIC on the local machine - note this will silently pass if the machine
       //has no usable NIC!
       
-      NetworkInterface ni = null;
       Enumeration<NetworkInterface> networkInterfaces = NetworkInterface.getNetworkInterfaces();
-      while (networkInterfaces.hasMoreElements())
+      
+      InetAddress localAddress = null;
+      
+      outer: while (networkInterfaces.hasMoreElements())
       {
          NetworkInterface networkInterface = networkInterfaces.nextElement();
          if (networkInterface.isLoopback() || networkInterface.isVirtual() || !networkInterface.isUp() ||
@@ -141,20 +143,27 @@ public class DiscoveryTest extends UnitTestCase
             continue;
          }
          
-         ni = networkInterface;
+         Enumeration<InetAddress> en = networkInterface.getInetAddresses();
          
-         break;
-
+         while (en.hasMoreElements())
+         {
+            InetAddress ia = en.nextElement();
+            
+            if (ia.getAddress().length == 4)
+            {
+               localAddress = ia;
+               
+               break outer;
+            }
+         }
       }
       
-      if (ni == null)
+      if (localAddress == null)
       {
-         log.warn("Can't find NIC");
+         log.warn("Can't find address to use");
          
          return;
       }
-      
-      InetAddress localAddress = ni.getInetAddresses().nextElement();
       
       log.info("Local address is " + localAddress);
 
