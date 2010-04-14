@@ -14,6 +14,8 @@
 package org.hornetq.tests.integration.discovery;
 
 import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -87,6 +89,97 @@ public class DiscoveryTest extends UnitTestCase
       DiscoveryGroup dg = new DiscoveryGroupImpl(RandomUtil.randomString(),
                                                  RandomUtil.randomString(),
                                                  null,
+                                                 groupAddress,
+                                                 groupPort,
+                                                 timeout);
+
+      dg.start();
+
+      bg.broadcastConnectors();
+
+      boolean ok = dg.waitForBroadcast(1000);
+
+      Assert.assertTrue(ok);
+
+      Map<String, DiscoveryEntry> entryMap = dg.getDiscoveryEntryMap();
+
+      Assert.assertNotNull(entryMap);
+
+      Assert.assertEquals(1, entryMap.size());
+
+      DiscoveryEntry entry = entryMap.get(nodeID);
+
+      Assert.assertNotNull(entry);
+
+      Assert.assertEquals(connectorPair, entry.getConnectorPair());
+
+      bg.stop();
+
+      dg.stop();
+
+   }
+   
+   public void testSimpleBroadcastSpecificNIC() throws Exception
+   {
+      final InetAddress groupAddress = InetAddress.getByName(DiscoveryTest.address1);
+      final int groupPort = 6745;
+      final int timeout = 500;
+
+      final String nodeID = RandomUtil.randomString();
+      
+      //We need to choose a real NIC on the local machine - note this will silently pass if the machine
+      //has no usable NIC!
+      
+      NetworkInterface ni = null;
+      Enumeration<NetworkInterface> networkInterfaces = NetworkInterface.getNetworkInterfaces();
+      while (networkInterfaces.hasMoreElements())
+      {
+         NetworkInterface networkInterface = networkInterfaces.nextElement();
+         if (networkInterface.isLoopback() || networkInterface.isVirtual() || !networkInterface.isUp() ||
+                  !networkInterface.supportsMulticast())
+         {
+            continue;
+         }
+         
+         ni = networkInterface;
+         
+         break;
+
+      }
+      
+      if (ni == null)
+      {
+         log.warn("Can't find NIC");
+         
+         return;
+      }
+      
+      InetAddress localAddress = ni.getInetAddresses().nextElement();
+      
+      log.info("Local address is " + localAddress);
+
+      BroadcastGroup bg = new BroadcastGroupImpl(nodeID,
+                                                 RandomUtil.randomString(),
+                                                 localAddress,
+                                                 6552,
+                                                 groupAddress,
+                                                 groupPort,
+                                                 true);
+
+      bg.start();
+
+      TransportConfiguration live1 = generateTC();
+
+      TransportConfiguration backup1 = generateTC();
+
+      Pair<TransportConfiguration, TransportConfiguration> connectorPair = new Pair<TransportConfiguration, TransportConfiguration>(live1,
+                                                                                                                                    backup1);
+
+      bg.addConnectorPair(connectorPair);
+
+      DiscoveryGroup dg = new DiscoveryGroupImpl(RandomUtil.randomString(),
+                                                 RandomUtil.randomString(),
+                                                 localAddress,
                                                  groupAddress,
                                                  groupPort,
                                                  timeout);
