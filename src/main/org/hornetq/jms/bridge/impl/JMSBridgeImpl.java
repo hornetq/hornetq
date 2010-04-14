@@ -108,6 +108,8 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
 
    private boolean started;
 
+   private boolean stopping = false;
+
    private final LinkedList<Message> messages;
 
    private ConnectionFactoryFactory sourceCff;
@@ -305,6 +307,8 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
 
    public synchronized void start() throws Exception
    {
+      stopping = false; 
+
       if (started)
       {
          JMSBridgeImpl.log.warn("Attempt to start, but is already started");
@@ -386,6 +390,8 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
 
    public synchronized void stop() throws Exception
    {
+      stopping = true;
+
       if (!started)
       {
          JMSBridgeImpl.log.warn("Attempt to stop, but is already stopped");
@@ -1366,7 +1372,7 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
 
       int count = 0;
 
-      while (true)
+      while (true && !stopping)
       {
          boolean ok = setupJMSObjects();
 

@@ -12,6 +12,8 @@
  */
 package org.hornetq.tests.integration.jms.bridge;
 
+import java.lang.management.ManagementFactory;
+
 import junit.framework.Assert;
 
 import org.hornetq.core.logging.Logger;
@@ -139,6 +141,54 @@ public class JMSBridgeReconnectionTest extends BridgeTestBase
       }
    }
 
+   /**
+    * https://jira.jboss.org/jira/browse/HORNETQ-287
+    */
+   public void testStopBridgeWithFailureWhenStarted() throws Exception
+   {
+      jmsServer1.stop();
+
+      long failureRetryInterval = 500;
+      
+      JMSBridgeImpl bridge = new JMSBridgeImpl(cff0,
+                                               cff1,
+                                               sourceQueueFactory,
+                                               targetQueueFactory,
+                                               null,
+                                               null,
+                                               null,
+                                               null,
+                                               null,
+                                               500,
+                                               -1,
+                                               QualityOfServiceMode.DUPLICATES_OK,
+                                               10,
+                                               -1,
+                                               null,
+                                               null,
+                                               false);
+      bridge.setTransactionManager(newTransactionManager());
+
+      bridge.start();
+      Assert.assertFalse(bridge.isStarted());
+      Assert.assertTrue(bridge.isFailed());
+
+      int numThreads = ManagementFactory.getThreadMXBean().getThreadCount();
+      
+      bridge.stop();
+      Thread.sleep(failureRetryInterval * 2);
+
+      // the JMS Brigde failure handler thread must have been stopped at most 1 failureRetryInterval ms after the bridge is stopped
+      assertEquals(numThreads - 1, ManagementFactory.getThreadMXBean().getThreadCount());
+      Assert.assertFalse(bridge.isStarted());
+
+      // we restart and setup the server for the test's tearDown checks
+      jmsServer1.start();
+      createQueue("targetQueue", 1);
+      setUpAdministeredObjects();
+
+   }
+   
    /*
     * Send some messages
     * Crash the destination server
