@@ -814,6 +814,8 @@ public class SelectorTest extends HornetQServerTestCase
          
          TextMessage msg1 = session.createTextMessage("msg1");
          prod.send(msg1);
+         
+         Thread.sleep(2);
 
          TextMessage msg2 = session.createTextMessage("msg2");
          prod.send(msg2);
