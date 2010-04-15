@@ -41,6 +41,7 @@ import org.hornetq.core.transaction.Transaction;
 import org.hornetq.core.transaction.TransactionOperation;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.TypedProperties;
+import org.hornetq.utils.UUID;
 
 /**
  * A BindingImplTest
@@ -886,13 +887,13 @@ public class BindingsImplTest extends UnitTestCase
          
       }
 
-      public SimpleString getUserID()
+      public UUID getUserID()
       {
          // TODO Auto-generated method stub
          return null;
       }
 
-      public void setUserID(SimpleString userID)
+      public void setUserID(UUID userID)
       {
          // TODO Auto-generated method stub
          

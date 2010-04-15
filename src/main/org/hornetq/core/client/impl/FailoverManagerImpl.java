@@ -1167,7 +1167,6 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
          {
             return;
          }         
-         //log.info("calling check flush on client");
          connection.getTransportConnection().checkFlushBatchBuffer();
       }
 

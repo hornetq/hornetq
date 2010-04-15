@@ -97,23 +97,23 @@ public class SelectorTranslatorTest extends UnitTestCase
    {
       String selector = "JMSMessageID='ID:HQ-12435678";
 
-      Assert.assertEquals(selector, SelectorTranslator.convertToHornetQFilterString(selector));
+      Assert.assertEquals("HQUserID='ID:HQ-12435678", SelectorTranslator.convertToHornetQFilterString(selector));
 
       selector = " JMSMessageID='ID:HQ-12435678";
 
-      Assert.assertEquals(selector, SelectorTranslator.convertToHornetQFilterString(selector));
+      Assert.assertEquals(" HQUserID='ID:HQ-12435678", SelectorTranslator.convertToHornetQFilterString(selector));
 
       selector = " JMSMessageID = 'ID:HQ-12435678";
 
-      Assert.assertEquals(selector, SelectorTranslator.convertToHornetQFilterString(selector));
+      Assert.assertEquals(" HQUserID = 'ID:HQ-12435678", SelectorTranslator.convertToHornetQFilterString(selector));
 
       selector = " myHeader = JMSMessageID";
 
-      Assert.assertEquals(selector, SelectorTranslator.convertToHornetQFilterString(selector));
+      Assert.assertEquals(" myHeader = HQUserID", SelectorTranslator.convertToHornetQFilterString(selector));
 
       selector = " myHeader = JMSMessageID OR (JMSMessageID = 'ID-HQ' + '12345')";
 
-      Assert.assertEquals(selector, SelectorTranslator.convertToHornetQFilterString(selector));
+      Assert.assertEquals(" myHeader = HQUserID OR (HQUserID = 'ID-HQ' + '12345')", SelectorTranslator.convertToHornetQFilterString(selector));
 
       checkNoSubstitute("JMSMessageID");
    }

@@ -712,6 +712,225 @@ public class SelectorTest extends HornetQServerTestCase
          }
       }
    }
+   
+   public void testJMSMessageIDOnSelector() throws Exception
+   {
+      Connection conn = null;
+
+      try
+      {
+         conn = getConnectionFactory().createConnection();
+         conn.start();
+
+         Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         
+         MessageProducer prod = session.createProducer(HornetQServerTestCase.queue1);
+         
+         TextMessage msg1 = session.createTextMessage("msg1");
+         prod.send(msg1);
+
+         TextMessage msg2 = session.createTextMessage("msg2");
+         prod.send(msg2);
+         
+         String selector = "JMSMessageID = '" + msg2.getJMSMessageID() + "'";
+         
+         MessageConsumer cons = session.createConsumer(HornetQServerTestCase.queue1, selector);
+         
+         conn.start();
+
+         TextMessage rec = (TextMessage)cons.receive(10000);
+         
+         assertNotNull(rec);
+         
+         assertEquals("msg2", rec.getText());
+         
+         assertNull(cons.receiveNoWait());
+         
+      }
+      finally
+      {
+         if (conn != null)
+         {
+            conn.close();
+         }
+      }
+   }
+   
+   public void testJMSPriorityOnSelector() throws Exception
+   {
+      Connection conn = null;
+
+      try
+      {
+         conn = getConnectionFactory().createConnection();
+         conn.start();
+
+         Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         
+         MessageProducer prod = session.createProducer(HornetQServerTestCase.queue1);
+         
+         TextMessage msg1 = session.createTextMessage("msg1");
+         prod.send(msg1, DeliveryMode.NON_PERSISTENT, 8, 0);
+
+         TextMessage msg2 = session.createTextMessage("msg2");
+         prod.send(msg2, DeliveryMode.NON_PERSISTENT, 2, 0);
+         
+         String selector = "JMSPriority = 2";
+         
+         MessageConsumer cons = session.createConsumer(HornetQServerTestCase.queue1, selector);
+         
+         conn.start();
+
+         TextMessage rec = (TextMessage)cons.receive(10000);
+         
+         assertNotNull(rec);
+         
+         assertEquals("msg2", rec.getText());
+         
+         assertNull(cons.receiveNoWait());
+         
+      }
+      finally
+      {
+         if (conn != null)
+         {
+            conn.close();
+         }
+      }
+   }
+   
+   public void testJMSTimestampOnSelector() throws Exception
+   {
+      Connection conn = null;
+
+      try
+      {
+         conn = getConnectionFactory().createConnection();
+         conn.start();
+
+         Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         
+         MessageProducer prod = session.createProducer(HornetQServerTestCase.queue1);
+         
+         TextMessage msg1 = session.createTextMessage("msg1");
+         prod.send(msg1);
+
+         TextMessage msg2 = session.createTextMessage("msg2");
+         prod.send(msg2);
+         
+         String selector = "JMSTimestamp = " + msg2.getJMSTimestamp();
+         
+         MessageConsumer cons = session.createConsumer(HornetQServerTestCase.queue1, selector);
+         
+         conn.start();
+
+         TextMessage rec = (TextMessage)cons.receive(10000);
+         
+         assertNotNull(rec);
+         
+         assertEquals("msg2", rec.getText());
+         
+         assertNull(cons.receiveNoWait());
+         
+      }
+      finally
+      {
+         if (conn != null)
+         {
+            conn.close();
+         }
+      }
+   }
+   
+   public void testJMSTypeOnSelector() throws Exception
+   {
+      Connection conn = null;
+
+      try
+      {
+         conn = getConnectionFactory().createConnection();
+         conn.start();
+
+         Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         
+         MessageProducer prod = session.createProducer(HornetQServerTestCase.queue1);
+         
+         TextMessage msg1 = session.createTextMessage("msg1");
+         msg1.setJMSType("type1");
+         prod.send(msg1);
+
+         TextMessage msg2 = session.createTextMessage("msg2");
+         msg2.setJMSType("type2");
+         prod.send(msg2);
+         
+         String selector = "JMSType = 'type2'";
+         
+         MessageConsumer cons = session.createConsumer(HornetQServerTestCase.queue1, selector);
+         
+         conn.start();
+
+         TextMessage rec = (TextMessage)cons.receive(10000);
+         
+         assertNotNull(rec);
+         
+         assertEquals("msg2", rec.getText());
+         
+         assertNull(cons.receiveNoWait());
+         
+      }
+      finally
+      {
+         if (conn != null)
+         {
+            conn.close();
+         }
+      }
+   }
+   
+   public void testJMSCorrelationIDOnSelector() throws Exception
+   {
+      Connection conn = null;
+
+      try
+      {
+         conn = getConnectionFactory().createConnection();
+         conn.start();
+
+         Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         
+         MessageProducer prod = session.createProducer(HornetQServerTestCase.queue1);
+         
+         TextMessage msg1 = session.createTextMessage("msg1");
+         msg1.setJMSCorrelationID("cid1");
+         prod.send(msg1);
+
+         TextMessage msg2 = session.createTextMessage("msg2");
+         msg2.setJMSCorrelationID("cid2");
+         prod.send(msg2);
+         
+         String selector = "JMSCorrelationID = 'cid2'";
+         
+         MessageConsumer cons = session.createConsumer(HornetQServerTestCase.queue1, selector);
+         
+         conn.start();
+
+         TextMessage rec = (TextMessage)cons.receive(10000);
+         
+         assertNotNull(rec);
+         
+         assertEquals("msg2", rec.getText());
+         
+         assertNull(cons.receiveNoWait());
+         
+      }
+      finally
+      {
+         if (conn != null)
+         {
+            conn.close();
+         }
+      }
+   }
 
    // Package protected ---------------------------------------------
 

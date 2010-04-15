@@ -343,8 +343,6 @@ public class ClusterManagerImpl implements ClusterManager
          localBindAddress = null;
       }
 
-      log.info("local bind address " + localBindAddress);
-      
       DiscoveryGroup group = new DiscoveryGroupImpl(nodeUUID.toString(),
                                                     config.getName(),
                                                     localBindAddress,

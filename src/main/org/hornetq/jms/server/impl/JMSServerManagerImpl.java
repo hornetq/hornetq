@@ -801,8 +801,6 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
                                                     final String groupId,
                                                     final String... jndiBindings) throws Exception
    {
-      log.info("calling create cf " + discoveryRefreshTimeout + " lba " + localBindAddress);
-
       checkInitialised();
       HornetQConnectionFactory cf = connectionFactories.get(name);
       if (cf == null)

@@ -42,6 +42,7 @@ import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.jms.HornetQJMSConstants;
 import org.hornetq.core.client.impl.ClientMessageImpl;
 import org.hornetq.core.logging.Logger;
+import org.hornetq.utils.UUID;
 
 /**
  * HornetQ implementation of a JMS Message.
@@ -330,9 +331,9 @@ public class HornetQMessage implements javax.jms.Message
    {
       if (msgID == null)
       {
-         SimpleString uid = message.getUserID();
+         UUID uid = message.getUserID();
 
-         msgID = uid == null ? null : uid.toString();
+         msgID = uid == null ? null : "ID:" + uid.toString();
       }
       return msgID;
    }

@@ -49,6 +49,7 @@ public class SelectorTranslator
       filterString = SelectorTranslator.parse(filterString, "'NON_PERSISTENT'", "'NON_DURABLE'");
       filterString = SelectorTranslator.parse(filterString, "JMSPriority", "HQPriority");
       filterString = SelectorTranslator.parse(filterString, "JMSTimestamp", "HQTimestamp");
+      filterString = SelectorTranslator.parse(filterString, "JMSMessageID", "HQUserID");
 
       return filterString;
 

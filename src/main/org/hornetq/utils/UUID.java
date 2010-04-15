@@ -85,7 +85,7 @@ public final class UUID
     */
    private static boolean sDescCaching = true;
 
-   private final byte[] mId = new byte[16];
+   private final byte[] mId;
 
    // Both string presentation and hash value may be cached...
    private transient String mDesc = null;
@@ -93,7 +93,7 @@ public final class UUID
    private transient int mHashCode = 0;
 
    /**
-    * Protected constructor used by UUIDGenerator
+    * 
     * 
     * @param type
     *           UUID type
@@ -102,10 +102,7 @@ public final class UUID
     */
    public UUID(final int type, final byte[] data)
    {
-      for (int i = 0; i < 16; ++i)
-      {
-         mId[i] = data[i];
-      }
+      mId = data;
       // Type is multiplexed with time_hi:
       mId[UUID.INDEX_TYPE] &= (byte)0x0F;
       mId[UUID.INDEX_TYPE] |= (byte)(type << 4);

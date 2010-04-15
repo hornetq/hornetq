@@ -187,7 +187,8 @@ public class FilterImpl implements Filter
    {
       if (FilterConstants.HORNETQ_USERID.equals(fieldName))
       {
-         return msg.getUserID();
+         //It's the stringified (hex) representation of a user id that can be used in a selector expression
+         return new SimpleString("ID:" + msg.getUserID());
       }
       else if (FilterConstants.HORNETQ_PRIORITY.equals(fieldName))
       {

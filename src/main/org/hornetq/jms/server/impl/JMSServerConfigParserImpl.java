@@ -366,7 +366,6 @@ public class JMSServerConfigParserImpl implements JMSServerConfigParser
 
       if (discoveryGroupName != null)
       {
-         log.info("discovery group name is " + discoveryGroupName);
          cfConfig = new ConnectionFactoryConfigurationImpl(name, strbindings);
          cfConfig.setInitialWaitTimeout(discoveryInitialWaitTimeout);
          cfConfig.setDiscoveryGroupName(discoveryGroupName);

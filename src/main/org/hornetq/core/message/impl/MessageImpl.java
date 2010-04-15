@@ -30,6 +30,7 @@ import org.hornetq.core.message.BodyEncoder;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
 import org.hornetq.utils.DataConstants;
 import org.hornetq.utils.TypedProperties;
+import org.hornetq.utils.UUID;
 
 /**
  * A concrete implementation of a message
@@ -86,7 +87,7 @@ public abstract class MessageImpl implements MessageInternal
 
    private boolean bufferUsed;
    
-   private SimpleString userID;
+   private UUID userID;
 
    // Constructors --------------------------------------------------
 
@@ -186,7 +187,8 @@ public abstract class MessageImpl implements MessageInternal
    public int getHeadersAndPropertiesEncodeSize()
    {
       return DataConstants.SIZE_LONG + // Message ID
-             SimpleString.sizeofNullableString(userID) + 
+             DataConstants.SIZE_BYTE + // user id null?
+             (userID == null ? 0 : 16) + 
              /* address */SimpleString.sizeofNullableString(address) +
              DataConstants./* Type */SIZE_BYTE +
              DataConstants./* Durable */SIZE_BOOLEAN +
@@ -201,7 +203,15 @@ public abstract class MessageImpl implements MessageInternal
    {
       buffer.writeLong(messageID);
       buffer.writeNullableSimpleString(address);
-      buffer.writeNullableSimpleString(userID);
+      if (userID == null)
+      {
+         buffer.writeByte(DataConstants.NULL);
+      }
+      else
+      {
+         buffer.writeByte(DataConstants.NOT_NULL);
+         buffer.writeBytes(userID.asBytes());
+      }
       buffer.writeByte(type);
       buffer.writeBoolean(durable);
       buffer.writeLong(expiration);
@@ -214,7 +224,16 @@ public abstract class MessageImpl implements MessageInternal
    {
       messageID = buffer.readLong();
       address = buffer.readNullableSimpleString();
-      userID = buffer.readNullableSimpleString();
+      if (buffer.readByte() == DataConstants.NOT_NULL)
+      {
+         byte[] bytes = new byte[16];
+         buffer.readBytes(bytes);
+         userID = new UUID(UUID.TYPE_TIME_BASED, bytes);
+      }
+      else
+      {
+         userID = null;
+      }
       type = buffer.readByte();
       durable = buffer.readBoolean();
       expiration = buffer.readLong();
@@ -245,12 +264,12 @@ public abstract class MessageImpl implements MessageInternal
       return messageID;
    }
    
-   public SimpleString getUserID()
+   public UUID getUserID()
    {
       return userID;
    }
    
-   public void setUserID(final SimpleString userID)
+   public void setUserID(final UUID userID)
    {
       this.userID = userID;
    }
@@ -355,7 +374,10 @@ public abstract class MessageImpl implements MessageInternal
       Map<String, Object> map = new HashMap<String, Object>();
 
       map.put("messageID", messageID);
-      map.put("userID", userID);
+      if (userID != null)
+      {
+         map.put("userID", "ID:" + userID.toString());
+      }
       map.put("address", address.toString());
       map.put("type", type);
       map.put("durable", durable);

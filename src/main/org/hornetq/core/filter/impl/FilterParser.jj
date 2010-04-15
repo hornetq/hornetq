@@ -62,7 +62,7 @@ public class FilterParser
 
    public FilterParser()
    {
-      // keep the parser from feaking out, init using one of
+      // keep the parser from freaking out, init using one of
       // the JavaCC generated constructor
       this(new StringReader(""));
    }

@@ -16,6 +16,8 @@ package org.hornetq.api.core;
 import java.util.Map;
 import java.util.Set;
 
+import org.hornetq.utils.UUID;
+
 
 /**
  * A Message is a routable instance that has a payload.
@@ -90,17 +92,17 @@ public interface Message
    long getMessageID();
    
    /**
-    * Returns the userID - this is an optional user specified String that can be set to identify the message
+    * Returns the userID - this is an optional user specified UUID that can be set to identify the message
     * and will be passed around with the message
-    * @return
+    * @return the user id
     */
-   SimpleString getUserID();
+   UUID getUserID();
    
    /**
     * Sets the user ID
     * @param userID
     */
-   void setUserID(SimpleString userID);
+   void setUserID(UUID userID);
 
    /**
     * Returns the address this message is sent to.

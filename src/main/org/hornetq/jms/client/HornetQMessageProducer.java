@@ -405,23 +405,11 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
 
       if (!disableMessageID)
       {
-         // Generate an id
+         // Generate a JMS id
 
          UUID uid = UUIDGenerator.getInstance().generateUUID();
          
-         byte[] bytes = uid.asBytes();
-         
-         byte[] id = new byte[6 + 16];
-         
-         id[0] = (byte)'I';
-         id[2] = (byte)'D';
-         id[4] = (byte)':';
-         
-         System.arraycopy(bytes, 0, id, 6, 16);
-         
-         SimpleString ssid = new SimpleString(id);
-         
-         msg.getCoreMessage().setUserID(ssid);
+         msg.getCoreMessage().setUserID(uid);
 
          msg.resetMessageID(null);
       }
