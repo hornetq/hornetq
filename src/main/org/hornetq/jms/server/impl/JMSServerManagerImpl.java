@@ -264,7 +264,6 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       unbindJNDI(topicJNDI);
 
       unbindJNDI(connectionFactoryJNDI);
-      
 
       for (String connectionFactory : new HashSet<String>(connectionFactories.keySet()))
       {
@@ -273,10 +272,10 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
 
       connectionFactories.clear();
       connectionFactoryJNDI.clear();
-      
+
       queueJNDI.clear();
       queues.clear();
-      
+
       topicJNDI.clear();
       topics.clear();
 
@@ -803,8 +802,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
                                                     final String... jndiBindings) throws Exception
    {
       log.info("calling create cf " + discoveryRefreshTimeout + " lba " + localBindAddress);
-      
-      
+
       checkInitialised();
       HornetQConnectionFactory cf = connectionFactories.get(name);
       if (cf == null)
@@ -1470,17 +1468,20 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
     */
    private void unbindJNDI(Map<String, List<String>> param)
    {
-      for (List<String> elementList : param.values())
+      if (context != null)
       {
-         for (String key : elementList)
+         for (List<String> elementList : param.values())
          {
-            try
+            for (String key : elementList)
             {
-               context.unbind(key);
-            }
-            catch (Exception e)
-            {
-               log.warn("Impossible to unbind key " + key + " from JNDI");
+               try
+               {
+                  context.unbind(key);
+               }
+               catch (Exception e)
+               {
+                  log.warn("Impossible to unbind key " + key + " from JNDI", e);
+               }
             }
          }
       }
@@ -1592,7 +1593,9 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       storage.start();
    }
 
-   private synchronized boolean removeFromJNDI(final Map<String, ?> keys, final Map<String, List<String>> jndiMap, final String name) throws Exception
+   private synchronized boolean removeFromJNDI(final Map<String, ?> keys,
+                                               final Map<String, List<String>> jndiMap,
+                                               final String name) throws Exception
    {
       checkInitialised();
       List<String> jndiBindings = jndiMap.remove(name);

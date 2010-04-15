@@ -144,6 +144,19 @@ public class JMSBridgeReconnectionTest extends BridgeTestBase
          }
       }
    }
+   
+   public void test() throws Exception
+   {
+      for (int i = 0; i < 1000000; i++)
+      {
+         log.info("** ITER "+  i);
+         
+         this.testStopBridgeWithFailureWhenStarted();
+         tearDown();
+         
+         setUp();
+      }
+   }
 
    /**
     * https://jira.jboss.org/jira/browse/HORNETQ-287

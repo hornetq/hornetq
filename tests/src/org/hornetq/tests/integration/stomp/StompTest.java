@@ -259,6 +259,7 @@ public class StompTest extends UnitTestCase
       baos.write(frame.getBytes("UTF-8"));
       baos.write(data);
       baos.write('\0');
+      baos.flush();
       sendFrame(baos.toByteArray());
 
       BytesMessage message = (BytesMessage)consumer.receive(10000);
