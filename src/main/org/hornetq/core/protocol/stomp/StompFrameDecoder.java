@@ -124,6 +124,10 @@ class StompFrameDecoder
             data = new byte[length];
             buffer.readBytes(data);
 
+            if (!buffer.readable())
+            {
+               return null;
+            }
             if (buffer.readByte() != 0)
             {
                throw new StompException(Stomp.Headers.CONTENT_LENGTH + " bytes were read and " +

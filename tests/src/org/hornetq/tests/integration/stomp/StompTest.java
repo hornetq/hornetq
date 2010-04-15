@@ -64,6 +64,7 @@ import org.hornetq.jms.server.config.impl.JMSQueueConfigurationImpl;
 import org.hornetq.jms.server.config.impl.TopicConfigurationImpl;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.hornetq.spi.core.protocol.ProtocolType;
+import org.hornetq.tests.unit.util.InVMContext;
 import org.hornetq.tests.util.UnitTestCase;
 
 public class StompTest extends UnitTestCase
@@ -260,7 +261,7 @@ public class StompTest extends UnitTestCase
       baos.write('\0');
       sendFrame(baos.toByteArray());
 
-      BytesMessage message = (BytesMessage)consumer.receive(1000);
+      BytesMessage message = (BytesMessage)consumer.receive(10000);
       Assert.assertNotNull(message);
       assertEquals(data.length, message.getBodyLength());
       assertEquals(data[0], message.readByte());
@@ -1290,7 +1291,7 @@ public class StompTest extends UnitTestCase
                .add(new JMSQueueConfigurationImpl(getQueueName(), null, false, getQueueName()));
       jmsConfig.getTopicConfigurations().add(new TopicConfigurationImpl(getTopicName(), getTopicName()));
       server = new JMSServerManagerImpl(hornetQServer, jmsConfig);
-      server.setContext(null);
+      server.setContext(new InVMContext());
       return server;
    }
 
