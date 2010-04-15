@@ -12,11 +12,8 @@
  */
 package org.hornetq.tests.integration.jms.bridge;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
-import java.util.Map;
 
 import junit.framework.Assert;
 
@@ -145,19 +142,6 @@ public class JMSBridgeReconnectionTest extends BridgeTestBase
       }
    }
    
-   public void test() throws Exception
-   {
-      for (int i = 0; i < 1000000; i++)
-      {
-         log.info("** ITER "+  i);
-         
-         this.testStopBridgeWithFailureWhenStarted();
-         tearDown();
-         
-         setUp();
-      }
-   }
-
    /**
     * https://jira.jboss.org/jira/browse/HORNETQ-287
     */
@@ -188,14 +172,13 @@ public class JMSBridgeReconnectionTest extends BridgeTestBase
       Assert.assertFalse(bridge.isStarted());
       Assert.assertTrue(bridge.isFailed());
 
-      assertTrue(threadExists(JMSBridgeImpl.FAILURE_HANDLER_THREAD_NAME));
+      assertEquals(1, numOfThreadsStartingWith("pool-"));
       
       bridge.stop();
-
-      assertFalse(threadExists(JMSBridgeImpl.FAILURE_HANDLER_THREAD_NAME));
-
       Assert.assertFalse(bridge.isStarted());
 
+      assertEquals(0, numOfThreadsStartingWith("pool-"));
+      
       // we restart and setup the server for the test's tearDown checks
       jmsServer1.start();
       createQueue("targetQueue", 1);
@@ -203,18 +186,23 @@ public class JMSBridgeReconnectionTest extends BridgeTestBase
 
    }
    
-   private boolean threadExists(String threadName)
+   //TODO is there a better way to check if a thread is still running?
+   private int numOfThreadsStartingWith(String prefix)
    {
+      int count = 0;
       long[] threadIds = ManagementFactory.getThreadMXBean().getAllThreadIds();
       for (long id : threadIds)
       {
          ThreadInfo threadInfo = ManagementFactory.getThreadMXBean().getThreadInfo(id);
-         if (threadInfo.getThreadName().equals(threadName))
+         if (threadInfo != null)
          {
-            return true;
+            if (threadInfo.getThreadName().startsWith(prefix))
+            {
+               count++;
+            }
          }
       }
-      return false;
+      return count;
    }
    
    /*

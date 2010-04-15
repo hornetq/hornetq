@@ -19,6 +19,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
@@ -50,6 +53,7 @@ import org.hornetq.jms.bridge.JMSBridge;
 import org.hornetq.jms.bridge.JMSBridgeControl;
 import org.hornetq.jms.bridge.QualityOfServiceMode;
 import org.hornetq.jms.client.HornetQSession;
+import org.hornetq.utils.Future;
 
 /**
  * 
@@ -63,8 +67,6 @@ import org.hornetq.jms.client.HornetQSession;
  */
 public class JMSBridgeImpl implements HornetQComponent, JMSBridge
 {
-   public static final String FAILURE_HANDLER_THREAD_NAME = "jmsbridge-failurehandler-thread";
-
    private static final Logger log;
 
    private static boolean trace;
@@ -162,14 +164,14 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
 
    private ObjectName objectName;
 
-   private Thread startupFailureThread;
-
    private static final int FORWARD_MODE_XA = 0;
 
    private static final int FORWARD_MODE_LOCALTX = 1;
 
    private static final int FORWARD_MODE_NONTX = 2;
 
+   private ExecutorService executor;
+   
    /*
     * Constructor for MBean
     */
@@ -276,6 +278,8 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
 
       checkParams();
 
+      this.executor = Executors.newSingleThreadExecutor();
+      
       if (mbeanServer != null)
       {
          if (objectName != null)
@@ -364,11 +368,10 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
 
             timeChecker = new BatchTimeChecker();
 
-            checkerThread = new Thread(timeChecker, "jmsbridge-checker-thread");
-
-            batchExpiryTime = System.currentTimeMillis() + maxBatchTime;
-
+            Thread checkerThread = new Thread(timeChecker, "jmsbridge-checker-thread");
             checkerThread.start();
+            
+            batchExpiryTime = System.currentTimeMillis() + maxBatchTime;
 
             if (JMSBridgeImpl.trace)
             {
@@ -376,8 +379,8 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
             }
          }
 
-         sourceReceiver = new SourceReceiver();
-         sourceReceiver.start();
+         Thread sourceThread = new SourceReceiver();
+         sourceThread.start();
 
          if (JMSBridgeImpl.trace)
          {
@@ -415,12 +418,14 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
          {
             sourceReceiver.interrupt();
          }
+
+         executor.shutdown();
+         boolean ok = executor.awaitTermination(2 * failureRetryInterval, TimeUnit.MILLISECONDS);
          
-         if (startupFailureThread != null)
+         if (!ok)
          {
-            startupFailureThread.interrupt();
+            log.warn("Timed out waiting to stop");
          }
-         
       }
 
       // This must be outside sync block
@@ -452,22 +457,6 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
          if (JMSBridgeImpl.trace)
          {
             JMSBridgeImpl.log.trace("Source receiver thread has finished");
-         }
-      }
-
-      // This must be outside sync block
-      if (startupFailureThread != null)
-      {
-         if (JMSBridgeImpl.trace)
-         {
-            JMSBridgeImpl.log.trace("Waiting for failure thread to finish");
-         }
-
-         startupFailureThread.join();
-
-         if (JMSBridgeImpl.trace)
-         {
-            JMSBridgeImpl.log.trace("Failure thread has finished");
          }
       }
       
@@ -1637,10 +1626,10 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
 
    private void handleFailureOnStartup()
    {
-      startupFailureThread = handleFailure(new StartupFailureHandler());
+      handleFailure(new StartupFailureHandler());
    }
 
-   private Thread handleFailure(final Runnable failureHandler)
+   private void handleFailure(final Runnable failureHandler)
    {
       failed = true;
 
@@ -1648,11 +1637,7 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
       // In the case of onMessage we can't close the connection from inside the onMessage method
       // since it will block waiting for onMessage to complete. In the case of start we want to return
       // from the call before the connections are reestablished so that the caller is not blocked unnecessarily.
-      Thread t = new Thread(failureHandler, FAILURE_HANDLER_THREAD_NAME);
-
-      t.start();
-      
-      return t;
+      executor.execute(new Thread(failureHandler, "jmsbridge-thread-pool"));
    }
 
    private void addMessageIDInHeader(final Message msg) throws Exception
