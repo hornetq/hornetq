@@ -246,8 +246,8 @@ public class HornetQMessageHandler implements MessageHandler
          endpoint.beforeDelivery(HornetQActivation.ONMESSAGE);
          beforeDelivery = true;
          msg.doBeforeReceive();
-         message.acknowledge();
          ((MessageListener)endpoint).onMessage(msg);
+         message.acknowledge();
          endpoint.afterDelivery();
          if (useLocalTx)
          {
@@ -269,7 +269,7 @@ public class HornetQMessageHandler implements MessageHandler
                HornetQMessageHandler.log.warn("Unable to call after delivery");
             }
          }
-         if (useLocalTx)
+         if (useLocalTx || !activation.isDeliveryTransacted())
          {
             try
             {
