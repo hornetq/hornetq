@@ -12,7 +12,11 @@
  */
 package org.hornetq.tests.integration.jms.bridge;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadInfo;
+import java.util.Map;
 
 import junit.framework.Assert;
 
@@ -148,8 +152,6 @@ public class JMSBridgeReconnectionTest extends BridgeTestBase
    {
       jmsServer1.stop();
 
-      long failureRetryInterval = 500;
-      
       JMSBridgeImpl bridge = new JMSBridgeImpl(cff0,
                                                cff1,
                                                sourceQueueFactory,
@@ -173,13 +175,12 @@ public class JMSBridgeReconnectionTest extends BridgeTestBase
       Assert.assertFalse(bridge.isStarted());
       Assert.assertTrue(bridge.isFailed());
 
-      int numThreads = ManagementFactory.getThreadMXBean().getThreadCount();
+      assertTrue(threadExists(JMSBridgeImpl.FAILURE_HANDLER_THREAD_NAME));
       
       bridge.stop();
-      Thread.sleep(failureRetryInterval * 2);
 
-      // the JMS Brigde failure handler thread must have been stopped at most 1 failureRetryInterval ms after the bridge is stopped
-      assertEquals(numThreads - 1, ManagementFactory.getThreadMXBean().getThreadCount());
+      assertFalse(threadExists(JMSBridgeImpl.FAILURE_HANDLER_THREAD_NAME));
+
       Assert.assertFalse(bridge.isStarted());
 
       // we restart and setup the server for the test's tearDown checks
@@ -187,6 +188,20 @@ public class JMSBridgeReconnectionTest extends BridgeTestBase
       createQueue("targetQueue", 1);
       setUpAdministeredObjects();
 
+   }
+   
+   private boolean threadExists(String threadName)
+   {
+      long[] threadIds = ManagementFactory.getThreadMXBean().getAllThreadIds();
+      for (long id : threadIds)
+      {
+         ThreadInfo threadInfo = ManagementFactory.getThreadMXBean().getThreadInfo(id);
+         if (threadInfo.getThreadName().equals(threadName))
+         {
+            return true;
+         }
+      }
+      return false;
    }
    
    /*

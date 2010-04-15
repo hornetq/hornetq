@@ -63,6 +63,8 @@ import org.hornetq.jms.client.HornetQSession;
  */
 public class JMSBridgeImpl implements HornetQComponent, JMSBridge
 {
+   public static final String FAILURE_HANDLER_THREAD_NAME = "jmsbridge-failurehandler-thread";
+
    private static final Logger log;
 
    private static boolean trace;
@@ -108,7 +110,7 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
 
    private boolean started;
 
-   private boolean stopping = false;
+   private volatile boolean stopping = false;
 
    private final LinkedList<Message> messages;
 
@@ -159,6 +161,8 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
    private MBeanServer mbeanServer;
 
    private ObjectName objectName;
+
+   private Thread startupFailureThread;
 
    private static final int FORWARD_MODE_XA = 0;
 
@@ -392,12 +396,6 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
    {
       stopping = true;
 
-      if (!started)
-      {
-         JMSBridgeImpl.log.warn("Attempt to stop, but is already stopped");
-         return;
-      }
-
       if (JMSBridgeImpl.trace)
       {
          JMSBridgeImpl.log.trace("Stopping " + this);
@@ -417,6 +415,12 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
          {
             sourceReceiver.interrupt();
          }
+         
+         if (startupFailureThread != null)
+         {
+            startupFailureThread.interrupt();
+         }
+         
       }
 
       // This must be outside sync block
@@ -451,6 +455,22 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
          }
       }
 
+      // This must be outside sync block
+      if (startupFailureThread != null)
+      {
+         if (JMSBridgeImpl.trace)
+         {
+            JMSBridgeImpl.log.trace("Waiting for failure thread to finish");
+         }
+
+         startupFailureThread.join();
+
+         if (JMSBridgeImpl.trace)
+         {
+            JMSBridgeImpl.log.trace("Failure thread has finished");
+         }
+      }
+      
       if (tx != null)
       {
          // Terminate any transaction
@@ -1617,10 +1637,10 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
 
    private void handleFailureOnStartup()
    {
-      handleFailure(new StartupFailureHandler());
+      startupFailureThread = handleFailure(new StartupFailureHandler());
    }
 
-   private void handleFailure(final Runnable failureHandler)
+   private Thread handleFailure(final Runnable failureHandler)
    {
       failed = true;
 
@@ -1628,9 +1648,11 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
       // In the case of onMessage we can't close the connection from inside the onMessage method
       // since it will block waiting for onMessage to complete. In the case of start we want to return
       // from the call before the connections are reestablished so that the caller is not blocked unnecessarily.
-      Thread t = new Thread(failureHandler, "jmsbridge-failurehandler-thread");
+      Thread t = new Thread(failureHandler, FAILURE_HANDLER_THREAD_NAME);
 
       t.start();
+      
+      return t;
    }
 
    private void addMessageIDInHeader(final Message msg) throws Exception
