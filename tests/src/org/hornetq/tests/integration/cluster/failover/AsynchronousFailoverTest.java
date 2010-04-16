@@ -415,8 +415,26 @@ public class AsynchronousFailoverTest extends FailoverTestBase
                }
             }
 
-            ClientConsumer consumer = session.createConsumer(FailoverTestBase.ADDRESS);
-
+            ClientConsumer consumer = null;
+            
+            while (true)
+            {
+               try
+               {
+                  consumer = session.createConsumer(FailoverTestBase.ADDRESS);
+                  
+                  break;
+               }
+               catch (HornetQException e)
+               {
+                  if (e.getCode() == HornetQException.UNBLOCKED)
+                  {
+                     continue;
+                  }
+                  throw e;
+               }
+            }
+            
             session.start();
 
             int lastCount = -1;
