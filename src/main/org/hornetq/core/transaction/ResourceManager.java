@@ -37,8 +37,6 @@ public interface ResourceManager extends HornetQComponent
 
    int getTimeoutSeconds();
 
-   boolean setTimeoutSeconds(int timeoutSeconds);
-
    List<Xid> getPreparedTransactions();
 
    Map<Xid, Long> getPreparedTransactionsWithCreationTime();

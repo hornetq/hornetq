@@ -353,7 +353,8 @@ public class HornetQActivation
                                    ra.getDupsOKBatchSize(),
                                    ra.getTransactionBatchSize(),
                                    isDeliveryTransacted,
-                                   spec.isUseLocalTx());
+                                   spec.isUseLocalTx(),
+                                   spec.getTransactionTimeout());
 
          HornetQActivation.log.debug("Using queue connection " + result);
 

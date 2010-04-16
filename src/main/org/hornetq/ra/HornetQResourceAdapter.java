@@ -1186,35 +1186,6 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       raProperties.setUseLocalTx(localTx);
    }
 
-   /**
-    * Get the use XA flag
-    *
-    * @return The value
-    */
-   public Boolean getUseXA()
-   {
-      if (HornetQResourceAdapter.trace)
-      {
-         HornetQResourceAdapter.log.trace("getUseXA()");
-      }
-
-      return raProperties.getUseXA();
-   }
-
-   /**
-    * Set the use XA flag
-    *
-    * @param xa The value
-    */
-   public void setUseXA(final Boolean xa)
-   {
-      if (HornetQResourceAdapter.trace)
-      {
-         HornetQResourceAdapter.log.trace("setUseXA(" + xa + ")");
-      }
-
-      raProperties.setUseXA(xa);
-   }
 
    /**
     * Indicates whether some other object is "equal to" this one.
@@ -1287,7 +1258,8 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
                                       final Integer dupsOkBatchSize,
                                       final Integer transactionBatchSize,
                                       final boolean deliveryTransacted,
-                                      final boolean useLocalTx) throws Exception
+                                      final boolean useLocalTx,
+                                      final Integer txTimeout) throws Exception
    {
 
       ClientSession result;

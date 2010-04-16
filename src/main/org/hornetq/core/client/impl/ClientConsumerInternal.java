@@ -46,7 +46,7 @@ public interface ClientConsumerInternal extends ClientConsumer
 
    void flowControl(final int messageBytes, final boolean discountSlowConsumer) throws HornetQException;
 
-   void clear() throws HornetQException;
+   void clear(boolean waitForOnMessage) throws HornetQException;
 
    void clearAtFailover();
 
@@ -61,6 +61,8 @@ public interface ClientConsumerInternal extends ClientConsumer
    void flushAcks() throws HornetQException;
 
    void stop() throws HornetQException;
+
+   void stop(boolean waitForOnMessage) throws HornetQException;
 
    void start();
    

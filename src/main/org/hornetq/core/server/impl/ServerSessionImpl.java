@@ -136,6 +136,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
    private volatile SimpleString defaultAddress;
 
+   private volatile int timeoutSeconds;
+
    // Constructors ---------------------------------------------------------------------------------
 
    public ServerSessionImpl(final String name,
@@ -180,9 +182,11 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
       this.securityStore = securityStore;
 
+      timeoutSeconds = resourceManager.getTimeoutSeconds();
+
       if (!xa)
       {
-         tx = new TransactionImpl(storageManager);
+         tx = new TransactionImpl(storageManager, timeoutSeconds);
       }
 
       this.xa = xa;
@@ -558,7 +562,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       }
       finally
       {
-         tx = new TransactionImpl(storageManager);
+         tx = new TransactionImpl(storageManager, timeoutSeconds);
       }
    }
 
@@ -568,12 +572,12 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       {
          // Might be null if XA
 
-         tx = new TransactionImpl(storageManager);
+         tx = new TransactionImpl(storageManager, timeoutSeconds);
       }
 
       doRollback(considerLastMessageAsDelivered, tx);
 
-      tx = new TransactionImpl(storageManager);
+      tx = new TransactionImpl(storageManager, timeoutSeconds);
    }
 
    public void xaCommit(final Xid xid, final boolean onePhase) throws Exception
@@ -809,7 +813,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       }
       else
       {
-         tx = new TransactionImpl(xid, storageManager, postOffice);
+         tx = new TransactionImpl(xid, storageManager, timeoutSeconds);
 
          boolean added = resourceManager.putTransaction(xid, tx);
 
@@ -898,7 +902,11 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
    public void xaSetTimeout(final int timeout)
    {
-      resourceManager.setTimeoutSeconds(timeout);
+      timeoutSeconds = timeout;
+      if(tx != null)
+      {
+         tx.setTimeout(timeout);
+      }
    }
 
    public void start()

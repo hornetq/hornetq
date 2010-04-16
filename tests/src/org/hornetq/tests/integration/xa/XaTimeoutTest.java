@@ -393,11 +393,19 @@ public class XaTimeoutTest extends UnitTestCase
       clientProducer.send(m3);
       clientProducer.send(m4);
       clientSession.end(xid, XAResource.TMSUCCESS);
+
+      clientSession.commit(xid, true);
+
       clientSession.setTransactionTimeout(1);
+      clientSession.start(xid, XAResource.TMNOFLAGS);
       CountDownLatch latch = new CountDownLatch(1);
       messagingService.getResourceManager().getTransaction(xid).addOperation(new RollbackCompleteOperation(latch));
-      Assert.assertTrue(latch.await(5, TimeUnit.SECONDS));
-
+      clientProducer.send(m1);
+      clientProducer.send(m2);
+      clientProducer.send(m3);
+      clientProducer.send(m4);
+      clientSession.end(xid, XAResource.TMSUCCESS);
+      Assert.assertTrue(latch.await(2600, TimeUnit.MILLISECONDS));
       try
       {
          clientSession.commit(xid, true);
@@ -408,49 +416,15 @@ public class XaTimeoutTest extends UnitTestCase
       }
       clientSession.start();
       ClientMessage m = clientConsumer.receiveImmediate();
+      Assert.assertNotNull(m);
+      m = clientConsumer.receiveImmediate();
+      Assert.assertNotNull(m);
+      m = clientConsumer.receiveImmediate();
+      Assert.assertNotNull(m);
+      m = clientConsumer.receiveImmediate();
+      Assert.assertNotNull(m);
+      m = clientConsumer.receiveImmediate();
       Assert.assertNull(m);
-   }
-
-   public void testChangingTimeoutGetsPickedUpCommit() throws Exception
-   {
-      Xid xid = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
-
-      ClientMessage m1 = createTextMessage("m1", clientSession);
-      ClientMessage m2 = createTextMessage("m2", clientSession);
-      ClientMessage m3 = createTextMessage("m3", clientSession);
-      ClientMessage m4 = createTextMessage("m4", clientSession);
-      clientSession.setTransactionTimeout(2);
-      clientSession.start(xid, XAResource.TMNOFLAGS);
-      clientProducer.send(m1);
-      clientProducer.send(m2);
-      clientProducer.send(m3);
-      clientProducer.send(m4);
-      clientSession.end(xid, XAResource.TMSUCCESS);
-      clientSession.setTransactionTimeout(10000);
-      CountDownLatch latch = new CountDownLatch(1);
-      messagingService.getResourceManager().getTransaction(xid).addOperation(new RollbackCompleteOperation(latch));
-      Assert.assertFalse(latch.await(2600, TimeUnit.MILLISECONDS));
-      clientSession.prepare(xid);
-      clientSession.commit(xid, false);
-      ClientSession clientSession2 = sessionFactory.createSession(false, true, true);
-      ClientConsumer consumer = clientSession2.createConsumer(atestq);
-      clientSession2.start();
-      ClientMessage m = consumer.receive(500);
-      Assert.assertNotNull(m);
-      Assert.assertEquals(m.getBodyBuffer().readString(), "m1");
-      m = consumer.receive(500);
-      Assert.assertNotNull(m);
-      m.acknowledge();
-      Assert.assertEquals(m.getBodyBuffer().readString(), "m2");
-      m = consumer.receive(500);
-      m.acknowledge();
-      Assert.assertNotNull(m);
-      Assert.assertEquals(m.getBodyBuffer().readString(), "m3");
-      m = consumer.receive(500);
-      m.acknowledge();
-      Assert.assertNotNull(m);
-      Assert.assertEquals(m.getBodyBuffer().readString(), "m4");
-      clientSession2.close();
    }
 
    public void testMultipleTransactionsTimedOut() throws Exception
@@ -464,6 +438,7 @@ public class XaTimeoutTest extends UnitTestCase
       for (int i = 0; i < clientSessions.length; i++)
       {
          clientSessions[i] = sessionFactory.createSession(true, false, false);
+         clientSessions[i].setTransactionTimeout(i < 50?2:5000);
       }
 
       ClientProducer[] clientProducers = new ClientProducer[xids.length];
@@ -478,7 +453,6 @@ public class XaTimeoutTest extends UnitTestCase
       {
          messages[i] = createTextMessage("m" + i, clientSession);
       }
-      clientSession.setTransactionTimeout(2);
       for (int i = 0; i < clientSessions.length; i++)
       {
          clientSessions[i].start(xids[i], XAResource.TMNOFLAGS);
@@ -491,12 +465,20 @@ public class XaTimeoutTest extends UnitTestCase
       {
          clientSessions[i].end(xids[i], XAResource.TMSUCCESS);
       }
-      CountDownLatch latch = new CountDownLatch(1);
-      messagingService.getResourceManager()
-                      .getTransaction(xids[clientSessions.length - 1])
-                      .addOperation(new RollbackCompleteOperation(latch));
-      Assert.assertTrue(latch.await(5, TimeUnit.SECONDS));
-      for (int i = 0; i < clientSessions.length; i++)
+      CountDownLatch[] latches = new CountDownLatch[xids.length];
+      for (int i1 = 0; i1 < latches.length; i1++)
+      {
+         latches[i1] = new CountDownLatch(1);
+         messagingService.getResourceManager()
+                      .getTransaction(xids[i1])
+                      .addOperation(new RollbackCompleteOperation(latches[i1]));
+      }
+      for (int i1 = 0;i1 < latches.length/2; i1++)
+      {
+         Assert.assertTrue(latches[i1].await(5, TimeUnit.SECONDS));
+      }
+
+      for (int i = 0; i < clientSessions.length/2; i++)
       {
          try
          {
@@ -507,11 +489,20 @@ public class XaTimeoutTest extends UnitTestCase
             Assert.assertTrue(e.errorCode == XAException.XAER_NOTA);
          }
       }
+      for (int i = 50; i < clientSessions.length; i++)
+      {
+         clientSessions[i].commit(xids[i], true);
+      }
       for (ClientSession session : clientSessions)
       {
          session.close();
       }
       clientSession.start();
+      for(int i = 0; i < clientSessions.length/2; i++)
+      {
+         ClientMessage m = clientConsumer.receiveImmediate();
+         Assert.assertNotNull(m);   
+      }
       ClientMessage m = clientConsumer.receiveImmediate();
       Assert.assertNull(m);
    }

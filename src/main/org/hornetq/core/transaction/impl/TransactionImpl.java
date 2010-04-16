@@ -59,6 +59,21 @@ public class TransactionImpl implements Transaction
 
    private volatile boolean containsPersistent;
 
+   private int timeoutSeconds = -1;
+
+   public TransactionImpl(final StorageManager storageManager, final int timeoutSeconds)
+   {
+      this.storageManager = storageManager;
+
+      xid = null;
+
+      id = storageManager.generateUniqueID();
+
+      createTime = System.currentTimeMillis();
+
+      this.timeoutSeconds = timeoutSeconds;
+   }
+
    public TransactionImpl(final StorageManager storageManager)
    {
       this.storageManager = storageManager;
@@ -70,7 +85,7 @@ public class TransactionImpl implements Transaction
       createTime = System.currentTimeMillis();
    }
 
-   public TransactionImpl(final Xid xid, final StorageManager storageManager, final PostOffice postOffice)
+   public TransactionImpl(final Xid xid, final StorageManager storageManager, final int timeoutSeconds)
    {
       this.storageManager = storageManager;
 
@@ -79,6 +94,8 @@ public class TransactionImpl implements Transaction
       id = storageManager.generateUniqueID();
 
       createTime = System.currentTimeMillis();
+
+      this.timeoutSeconds = timeoutSeconds;
    }
 
    public TransactionImpl(final long id, final Xid xid, final StorageManager storageManager)
@@ -100,6 +117,11 @@ public class TransactionImpl implements Transaction
       containsPersistent = true;
    }
 
+   public void setTimeout(final int timeout)
+   {
+      this.timeoutSeconds = timeout;
+   }
+
    public long getID()
    {
       return id;
@@ -108,6 +130,18 @@ public class TransactionImpl implements Transaction
    public long getCreateTime()
    {
       return createTime;
+   }
+
+   public boolean hasTimedOut(final long currentTime,final int defaultTimeout)
+   {
+      if(timeoutSeconds == - 1)
+      {
+         return getState() != Transaction.State.PREPARED && currentTime > createTime + defaultTimeout * 1000;
+      }
+      else
+      {
+         return getState() != Transaction.State.PREPARED && currentTime > createTime + timeoutSeconds * 1000;
+      }
    }
 
    public void prepare() throws Exception

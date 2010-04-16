@@ -369,7 +369,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       // if unsetting a previous handler may be in onMessage so wait for completion
       else if (handler == null && !noPreviousHandler)
       {
-         waitForOnMessageToComplete();
+         waitForOnMessageToComplete(true);
       }
    }
 
@@ -397,7 +397,12 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
    public void stop() throws HornetQException
    {
-      waitForOnMessageToComplete();
+      stop(true);
+   }
+
+   public void stop(final boolean waitForOnMessage) throws HornetQException
+   {
+      waitForOnMessageToComplete(waitForOnMessage);
 
       synchronized (this)
       {
@@ -552,7 +557,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       currentLargeMessageBuffer.addPacket(chunk);
    }
 
-   public void clear() throws HornetQException
+   public void clear(boolean waitForOnMessage) throws HornetQException
    {
       synchronized (this)
       {
@@ -572,7 +577,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
       // Need to send credits for the messages in the buffer
 
-      waitForOnMessageToComplete();
+      waitForOnMessageToComplete(waitForOnMessage);
    }
 
    public int getClientWindowSize()
@@ -723,14 +728,14 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       channel.send(new SessionConsumerFlowCreditMessage(id, credits));
    }
 
-   private void waitForOnMessageToComplete()
+   private void waitForOnMessageToComplete(boolean waitForOnMessage)
    {
       if (handler == null)
       {
          return;
       }
 
-      if (Thread.currentThread() == onMessageThread)
+      if (!waitForOnMessage || Thread.currentThread() == onMessageThread)
       {
          // If called from inside onMessage then return immediately - otherwise would block
          return;
@@ -855,7 +860,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          closing = true;
 
          // Now we wait for any current handler runners to run.
-         waitForOnMessageToComplete();
+         waitForOnMessageToComplete(true);
 
          if (currentLargeMessageBuffer != null)
          {

@@ -560,7 +560,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       // We need to make sure we don't get any inflight messages
       for (ClientConsumerInternal consumer : consumers.values())
       {
-         consumer.clear();
+         consumer.clear(true);
       }
 
       // Acks must be flushed here *after connection is stopped and all onmessages finished executing
@@ -639,19 +639,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
    public void stop() throws HornetQException
    {
-      checkClosed();
-
-      if (started)
-      {
-         for (ClientConsumerInternal clientConsumerInternal : consumers.values())
-         {
-            clientConsumerInternal.stop();
-         }
-
-         channel.sendBlocking(new PacketImpl(PacketImpl.SESS_STOP));
-
-         started = false;
-      }
+      stop(true);
    }
 
    public void addFailureListener(final SessionFailureListener listener)
@@ -1380,13 +1368,13 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
          if (wasStarted)
          {
-            stop();
+            stop(false);
          }
 
          // We need to make sure we don't get any inflight messages
          for (ClientConsumerInternal consumer : consumers.values())
          {
-            consumer.clear();
+            consumer.clear(false);
          }
 
          flushAcks();
@@ -1709,6 +1697,23 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       for (ClientConsumerInternal consumer : consumers.values())
       {
          consumer.flushAcks();
+      }
+   }
+
+   public void stop(final boolean waitForOnMessage) throws HornetQException
+   {
+      checkClosed();
+
+      if (started)
+      {
+         for (ClientConsumerInternal clientConsumerInternal : consumers.values())
+         {
+            clientConsumerInternal.stop(waitForOnMessage);
+         }
+
+         channel.sendBlocking(new PacketImpl(PacketImpl.SESS_STOP));
+
+         started = false;
       }
    }
 

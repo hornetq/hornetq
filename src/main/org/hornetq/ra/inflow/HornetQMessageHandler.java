@@ -12,6 +12,7 @@
  */
 package org.hornetq.ra.inflow;
 
+import java.lang.reflect.Method;
 import java.util.UUID;
 
 import javax.jms.InvalidClientIDException;
@@ -19,6 +20,8 @@ import javax.jms.MessageListener;
 import javax.resource.ResourceException;
 import javax.resource.spi.endpoint.MessageEndpoint;
 import javax.resource.spi.endpoint.MessageEndpointFactory;
+import javax.transaction.SystemException;
+import javax.transaction.TransactionManager;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
@@ -68,6 +71,8 @@ public class HornetQMessageHandler implements MessageHandler
    private boolean useLocalTx;
    
    private final int sessionNr;
+
+   private TransactionManager tm;
 
    public HornetQMessageHandler(final HornetQActivation activation, final ClientSession session, final int sessionNr)
    {
@@ -241,14 +246,27 @@ public class HornetQMessageHandler implements MessageHandler
 
       HornetQMessage msg = HornetQMessage.createMessage(message, session);
       boolean beforeDelivery = false;
+
       try
       {
+         if(activation.getActivationSpec().getTransactionTimeout() > 0)
+         {
+            getTm().setTransactionTimeout(activation.getActivationSpec().getTransactionTimeout());
+         }
          endpoint.beforeDelivery(HornetQActivation.ONMESSAGE);
          beforeDelivery = true;
          msg.doBeforeReceive();
          ((MessageListener)endpoint).onMessage(msg);
          message.acknowledge();
-         endpoint.afterDelivery();
+         try
+         {
+            endpoint.afterDelivery();
+         }
+         catch (ResourceException e)
+         {
+            HornetQMessageHandler.log.warn("Unable to call after delivery", e);
+            return;
+         }
          if (useLocalTx)
          {
             session.commit();
@@ -266,7 +284,7 @@ public class HornetQMessageHandler implements MessageHandler
             }
             catch (ResourceException e1)
             {
-               HornetQMessageHandler.log.warn("Unable to call after delivery");
+               HornetQMessageHandler.log.warn("Unable to call after delivery", e);
             }
          }
          if (useLocalTx || !activation.isDeliveryTransacted())
@@ -282,6 +300,35 @@ public class HornetQMessageHandler implements MessageHandler
          }
       }
 
+   }
+
+   private TransactionManager getTm()
+   {
+      if (tm == null)
+      {
+         try
+         {
+            ClassLoader loader = Thread.currentThread().getContextClassLoader();
+            Class aClass = loader.loadClass(activation.getActivationSpec().getTransactionManagerLocatorClass());
+            Object o = aClass.newInstance();
+            Method m = aClass.getMethod(activation.getActivationSpec().getTransactionManagerLocatorMethod());
+            tm = (TransactionManager)m.invoke(o);
+         }
+         catch (Exception e)
+         {
+            throw new IllegalStateException("unable to create TransactionManager from " + activation.getActivationSpec().getTransactionManagerLocatorClass() +
+                                                     "." +
+                                                     activation.getActivationSpec().getTransactionManagerLocatorMethod(),
+                                            e);
+         }
+
+         if (tm == null)
+         {
+            throw new IllegalStateException("Cannot locate a transaction manager");
+         }
+      }
+
+      return tm;
    }
 
 }

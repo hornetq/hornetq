@@ -134,6 +134,11 @@ public class BindingsImplTest extends UnitTestCase
 
       }
 
+      public boolean hasTimedOut(long currentTime, int defaultTimeout)
+      {
+         return false;  
+      }
+
       /* (non-Javadoc)
        * @see org.hornetq.core.transaction.Transaction#commit()
        */
@@ -280,6 +285,11 @@ public class BindingsImplTest extends UnitTestCase
       {
          // TODO Auto-generated method stub
 
+      }
+
+      public void setTimeout(int timeout)
+      {
+         
       }
 
    }

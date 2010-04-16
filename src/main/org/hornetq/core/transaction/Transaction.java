@@ -55,11 +55,15 @@ public interface Transaction
 
    void removeOperation(TransactionOperation sync);
 
+   boolean hasTimedOut(long currentTime, int defaultTimeout);
+
    void putProperty(int index, Object property);
 
    Object getProperty(int index);
 
    void setContainsPersistent();
+
+   void setTimeout(int timeout);
 
    static enum State
    {

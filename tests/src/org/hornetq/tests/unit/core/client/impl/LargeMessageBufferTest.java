@@ -635,7 +635,7 @@ public class LargeMessageBufferTest extends UnitTestCase
 
       }
 
-      public void clear() throws HornetQException
+      public void clear(boolean waitForOnMessage) throws HornetQException
       {
          // TODO Auto-generated method stub
 
@@ -723,6 +723,11 @@ public class LargeMessageBufferTest extends UnitTestCase
       {
          // TODO Auto-generated method stub
 
+      }
+
+      public void stop(boolean waitForOnMessage) throws HornetQException
+      {
+         //To change body of implemented methods use File | Settings | File Templates.
       }
 
       public SessionQueueQueryResponseMessage getQueueInfo()

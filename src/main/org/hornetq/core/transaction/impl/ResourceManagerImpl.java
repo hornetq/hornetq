@@ -49,8 +49,6 @@ public class ResourceManagerImpl implements ResourceManager, HornetQComponent
 
    private final int defaultTimeoutSeconds;
 
-   private volatile int timeoutSeconds;
-
    private boolean started = false;
 
    private TxTimeoutHandler task;
@@ -64,7 +62,6 @@ public class ResourceManagerImpl implements ResourceManager, HornetQComponent
                               final ScheduledExecutorService scheduledThreadPool)
    {
       this.defaultTimeoutSeconds = defaultTimeoutSeconds;
-      timeoutSeconds = defaultTimeoutSeconds;
       this.txTimeoutScanPeriod = txTimeoutScanPeriod;
       this.scheduledThreadPool = scheduledThreadPool;
    }
@@ -125,22 +122,7 @@ public class ResourceManagerImpl implements ResourceManager, HornetQComponent
 
    public int getTimeoutSeconds()
    {
-      return timeoutSeconds;
-   }
-
-   public boolean setTimeoutSeconds(final int timeoutSeconds)
-   {
-      if (timeoutSeconds == 0)
-      {
-         // reset to default
-         this.timeoutSeconds = defaultTimeoutSeconds;
-      }
-      else
-      {
-         this.timeoutSeconds = timeoutSeconds;
-      }
-
-      return true;
+      return defaultTimeoutSeconds;
    }
 
    public List<Xid> getPreparedTransactions()
@@ -231,7 +213,7 @@ public class ResourceManagerImpl implements ResourceManager, HornetQComponent
 
          for (Transaction tx : transactions.values())
          {
-            if (tx.getState() != Transaction.State.PREPARED && now > tx.getCreateTime() + timeoutSeconds * 1000)
+            if (tx.hasTimedOut(now, defaultTimeoutSeconds))
             {
                transactions.remove(tx.getXid());
                ResourceManagerImpl.log.warn("transaction with xid " + tx.getXid() + " timed out");

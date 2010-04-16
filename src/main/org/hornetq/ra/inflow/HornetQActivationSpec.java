@@ -92,6 +92,10 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
 
    /* use local tx instead of XA*/
    private Boolean localTx;
+
+   private String transactionManagerLocatorClass = "org.hornetq.integration.jboss.tm.JBoss5TransactionManagerLocator";
+
+   private String transactionManagerLocatorMethod = "getTm";
    
    /**
     * Constructor
@@ -644,6 +648,27 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
       this.localTx = localTx;
    }
 
+
+   public void setTransactionManagerLocatorClass(final String transactionManagerLocatorClass)
+   {
+      this.transactionManagerLocatorClass = transactionManagerLocatorClass;
+   }
+
+   public String getTransactionManagerLocatorClass()
+   {
+      return transactionManagerLocatorClass;
+   }
+
+   public String getTransactionManagerLocatorMethod()
+   {
+      return transactionManagerLocatorMethod;
+   }
+
+   public void setTransactionManagerLocatorMethod(final String transactionManagerLocatorMethod)
+   {
+      this.transactionManagerLocatorMethod = transactionManagerLocatorMethod;
+   }
+
    /**
     * Validate
     * @exception InvalidPropertyException Thrown if a validation exception occurs
@@ -755,6 +780,7 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
    public void setReconnectInterval(long interval)
    {
    }
-   
-   
+
+
+
 }
