@@ -64,7 +64,7 @@ public class AsynchronousFailoverTest extends FailoverTestBase
       }
    }
 
-   public void testNonTransactional() throws Exception
+   public void testNonTransactional() throws Throwable
    {
       runTest(new TestRunner()
       {
@@ -74,15 +74,16 @@ public class AsynchronousFailoverTest extends FailoverTestBase
             {
                doTestNonTransactional(this);
             }
-            catch (Exception e)
+            catch (Throwable e)
             {
                AsynchronousFailoverTest.log.error("Test failed", e);
+               addException(e);
             }
          }
       });
    }
 
-   public void testTransactional() throws Exception
+   public void testTransactional() throws Throwable
    {
       runTest(new TestRunner()
       {
@@ -92,9 +93,10 @@ public class AsynchronousFailoverTest extends FailoverTestBase
             {
                doTestTransactional(this);
             }
-            catch (Exception e)
+            catch (Throwable e)
             {
                AsynchronousFailoverTest.log.error("Test failed", e);
+               addException(e);
             }
          }
       });
@@ -104,6 +106,8 @@ public class AsynchronousFailoverTest extends FailoverTestBase
    {
       volatile boolean failed;
 
+      ArrayList<Throwable> errors = new ArrayList<Throwable>();
+      
       boolean isFailed()
       {
          return failed;
@@ -118,9 +122,33 @@ public class AsynchronousFailoverTest extends FailoverTestBase
       {
          failed = false;
       }
+      
+      synchronized void addException(Throwable e)
+      {
+         errors.add(e);
+      }
+      
+      void checkForExceptions() throws Throwable
+      {
+         if (errors.size() > 0)
+         {
+            log.warn("Exceptions on test:");
+            for (Throwable e: errors)
+            {
+               log.warn(e.getMessage(), e);
+            }
+            // throwing the first error that happened on the Runnable
+            throw errors.get(0);
+         }
+         
+
+         
+      }
+      
+      
    }
 
-   private void runTest(final TestRunner runnable) throws Exception
+   private void runTest(final TestRunner runnable) throws Throwable
    {
       final int numIts = 1;
 
@@ -172,6 +200,8 @@ public class AsynchronousFailoverTest extends FailoverTestBase
             AsynchronousFailoverTest.log.info("Fail complete");
 
             t.join();
+            
+            runnable.checkForExceptions();
 
             createSession.close();
 
@@ -187,6 +217,7 @@ public class AsynchronousFailoverTest extends FailoverTestBase
             if (i != numIts - 1)
             {
                tearDown();
+               runnable.checkForExceptions();
                runnable.reset();
                setUp();
             }
@@ -211,7 +242,7 @@ public class AsynchronousFailoverTest extends FailoverTestBase
          session.addFailureListener(listener);
 
          this.listener = listener;
-
+         
          ClientProducer producer = session.createProducer(FailoverTestBase.ADDRESS);
 
          final int numMessages = 1000;
