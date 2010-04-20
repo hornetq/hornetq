@@ -61,7 +61,7 @@ org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory
         <para>Examples of key-value pairs for a particular transport would be, say, to configure the
             IP address to bind to, or the port to listen at.</para>
     </section>
-    <section id="understanding.connectors">
+    <section id="configuring-transports.connectors">
         <title>Understanding Connectors</title>
         <para>Whereas acceptors are used on the server to define how we accept connections,
             connectors are used by a client to define how it connects to a server.</para>

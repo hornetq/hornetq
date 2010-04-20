@@ -391,10 +391,87 @@
                             <entry>25</entry>
                         </row>
                         <row>
-                            <entry><link linkend="configuring-transports.acceptors"
-                                >acceptors</link></entry>
+                            <entry><link linkend="configuring-transports.connectors"
+                                >connectors</link></entry>
+                            <entry>Connector</entry>
+                            <entry>a list of remoting connectors configurations to create</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>
+                               <link linkend="configuring-transports.acceptors">connector.name (attribute)</link></entry>
+                            <entry>String</entry>
+                            <entry>Name of the connector - mandatory</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>
+                               <link linkend="configuring-transports.connectors">connector.factory-class</link></entry>
+                            <entry>String</entry>
+                            <entry>Name of the ConnectorFactory implementation - mandatory</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>
+                               <link linkend="configuring-transports.connectors">connector.param</link></entry>
+                            <entry>A connector configuration parameter</entry>
+                            <entry>A key-value pair used to configure the connector. A connector can have many param</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>
+                               <link linkend="configuring-transports.connectors">connector.param.key (attribute)</link></entry>
+                            <entry>String</entry>
+                            <entry>Key of a configuration parameter - mandatory</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>
+                               <link linkend="configuring-transports.connectors">connector.param.value (attribute)</link></entry>
+                            <entry>String</entry>
+                            <entry>Value of a configuration parameter - mandatory</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>
+                               <link linkend="configuring-transports.acceptors">acceptors</link></entry>
                             <entry>Acceptor</entry>
                             <entry>a list of remoting acceptors to create</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>
+                               <link linkend="configuring-transports.acceptors">acceptor.name (attribute)</link></entry>
+                            <entry>String</entry>
+                            <entry>Name of the acceptor - optional</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>
+                               <link linkend="configuring-transports.acceptors">acceptor.factory-class</link></entry>
+                            <entry>String</entry>
+                            <entry>Name of the AcceptorFactory implementation - mandatory</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>
+                               <link linkend="configuring-transports.acceptors">acceptor.param</link></entry>
+                            <entry>An acceptor configuration parameter</entry>
+                            <entry>A key-value pair used to configure the acceptor. An acceptor can have many param</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>
+                               <link linkend="configuring-transports.acceptors">acceptor.param.key (attribute)</link></entry>
+                            <entry>String</entry>
+                            <entry>Key of a configuration parameter - mandatory</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>
+                               <link linkend="configuring-transports.acceptors">acceptor.param.value (attribute)</link></entry>
+                            <entry>String</entry>
+                            <entry>Value of a configuration parameter - mandatory</entry>
                             <entry/>
                         </row>
                         <row>
@@ -405,10 +482,76 @@
                             <entry/>
                         </row>
                         <row>
-                            <entry><link linkend="understanding.connectors"
-                                >connectors</link></entry>
-                            <entry>Connector</entry>
-                            <entry>a list of remoting connectors configurations to create</entry>
+                            <entry>
+                               <link linkend="clusters.broadcast-groups">broadcast-group.name (attribute)</link>
+                            </entry>
+                            <entry>String</entry>
+                            <entry>a unique name for the broadcast group - mandatory</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>
+                               <link linkend="clusters.broadcast-groups">broadcast-group.local-bind-address</link>
+                            </entry>
+                            <entry>String</entry>
+                            <entry>local bind address that the datagram socket is bound to</entry>
+                            <entry>wildcard IP address chosen by the kernel</entry>
+                        </row>
+                        <row>
+                            <entry>
+                               <link linkend="clusters.broadcast-groups">broadcast-group.local-bind-port</link>
+                            </entry>
+                            <entry>Integer</entry>
+                            <entry>local port to which the datagram socket is bound to</entry>
+                            <entry>-1 (anonymous port)</entry>
+                        </row>
+                        <row>
+                            <entry>
+                               <link linkend="clusters.broadcast-groups">broadcast-group.group-address</link>
+                            </entry>
+                            <entry>String</entry>
+                            <entry>multicast address to which the data will be broadcast - mandatory</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>
+                               <link linkend="clusters.broadcast-groups">broadcast-group.group-port</link>
+                            </entry>
+                            <entry>Integer</entry>
+                            <entry>UDP port number used for broadcasting - mandatory</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>
+                               <link linkend="clusters.broadcast-groups">broadcast-group.broadcast-period</link>
+                            </entry>
+                            <entry>Long</entry>
+                            <entry>period in milliseconds between consecutive broadcasts</entry>
+                            <entry>1000 (in milliseconds)</entry>
+                        </row>
+                        <row>
+                            <entry>
+                               <link linkend="clusters.broadcast-groups">broadcast-group.connector-ref</link>
+                            </entry>
+                            <entry>A pair of connector</entry>
+                            <entry>A pair  connector and
+                                 optional backup connector that will be broadcasted. A broadcast-group can have multiple connector-ref</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>
+                               <link linkend="clusters.broadcast-groups">broadcast-group.connector-ref.connector-name (attribute)</link>
+                            </entry>
+                            <entry>String</entry>
+                            <entry>Name of the live connector - mandatory</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>
+                               <link linkend="clusters.broadcast-groups">broadcast-group.connector-ref.backup-connector-name (attribute)</link>
+                            </entry>
+                            <entry>String</entry>
+                            <entry>Name of the backup connector - optional</entry>
                             <entry/>
                         </row>
                         <row>
@@ -417,6 +560,47 @@
                             <entry>DiscoveryGroup</entry>
                             <entry>a list of discovery groups to create</entry>
                             <entry/>
+                        </row>
+                        <row>
+                            <entry><link linkend="clusters.discovery-groups"
+                                >discovery-group.name (attribute)</link></entry>
+                            <entry>String</entry>
+                            <entry>a unique name for the discovery group - mandatory</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>
+                               <link linkend="clusters.discovery-groups">discovery-group.local-bind-address</link>
+                            </entry>
+                            <entry>String</entry>
+                            <entry>the discovery group will be bound only to this local address</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>
+                               <link linkend="clusters.discovery-groups">discovery-group.group-address</link>
+                            </entry>
+                            <entry>String</entry>
+                            <entry>Multicast IP address of the group to listen on - mandatory</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>
+                               <link linkend="clusters.discovery-groups">discovery-group.group-port</link>
+                            </entry>
+                            <entry>Integer</entry>
+                            <entry>UDP port of the multicast group - mandatory</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>
+                               <link linkend="clusters.discovery-groups">discovery-group.refresh-timeout</link>
+                            </entry>
+                            <entry>Integer</entry>
+                            <entry>Period the discovery group
+                                  waits after receiving the last broadcast from a particular server before
+                                  removing that servers connector pair entry from its list.</entry>
+                            <entry>10000 (in milliseconds)</entry>
                         </row>
                         <row>
                             <entry><link linkend="diverts">diverts</link></entry>
@@ -807,8 +991,8 @@
                             <entry/>
                         </row>
                         <row>
-                            <entry><link linkend="message-grouping.jmsconfigure"
-                                    >connection-factory.auto-group</link></entry>
+                            <entry id="configuration.connection-factory.auto-group">
+                               <link linkend="message-grouping.jmsconfigure">connection-factory.auto-group</link></entry>
                             <entry>Boolean</entry>
                             <entry>whether or not message grouping is automatically used</entry>
                             <entry>false</entry>

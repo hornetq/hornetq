@@ -82,8 +82,7 @@
             <para>Let's take a look at an example broadcast group from <literal
                     >hornetq-configuration.xml</literal>:</para>
             <programlisting>&lt;broadcast-groups>
-   &lt;broadcast-group name="my-broadcast-group"></programlisting>
-            <programlisting>     
+   &lt;broadcast-group name="my-broadcast-group">
       &lt;local-bind-address>172.16.9.3&lt;/local-bind-address>
       &lt;local-bind-port>5432&lt;/local-bind-port>
       &lt;group-address>231.7.7.7&lt;/group-address>
