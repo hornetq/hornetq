@@ -175,6 +175,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
          ThreadFactory factory = new HornetQThreadFactory("HornetQ-client-global-scheduled-threads", true);
 
          ClientSessionFactoryImpl.globalScheduledThreadPool = Executors.newScheduledThreadPool(HornetQClient.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE,
+           
                                                                                                factory);
       }
 
