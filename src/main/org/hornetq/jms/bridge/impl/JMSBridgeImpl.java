@@ -19,6 +19,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
@@ -107,6 +110,8 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
    private volatile boolean addMessageIDInHeader;
 
    private boolean started;
+   
+   private boolean stopping = false;
 
    private final LinkedList<Message> messages;
 
@@ -136,10 +141,8 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
 
    private BatchTimeChecker timeChecker;
 
-   private Thread checkerThread;
-
-   private Thread sourceReceiver;
-
+   private ExecutorService executor;
+   
    private long batchExpiryTime;
 
    private boolean paused;
@@ -170,6 +173,7 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
    public JMSBridgeImpl()
    {
       messages = new LinkedList<Message>();
+      executor = createExecutor();
    }
 
    public JMSBridgeImpl(final ConnectionFactoryFactory sourceCff,
@@ -305,6 +309,8 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
 
    public synchronized void start() throws Exception
    {
+      stopping = false;
+      
       if (started)
       {
          JMSBridgeImpl.log.warn("Attempt to start, but is already started");
@@ -316,6 +322,12 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
          JMSBridgeImpl.log.trace("Starting " + this);
       }
 
+      // bridge has been stopped and is restarted
+      if (executor.isShutdown())
+      {
+         executor = createExecutor();
+      }
+      
       checkParams();
 
       TransactionManager tm = getTm();
@@ -356,11 +368,8 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
 
             timeChecker = new BatchTimeChecker();
 
-            checkerThread = new Thread(timeChecker, "jmsbridge-checker-thread");
-
+            executor.execute(timeChecker);
             batchExpiryTime = System.currentTimeMillis() + maxBatchTime;
-
-            checkerThread.start();
 
             if (JMSBridgeImpl.trace)
             {
@@ -368,8 +377,7 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
             }
          }
 
-         sourceReceiver = new SourceReceiver();
-         sourceReceiver.start();
+         executor.execute(new SourceReceiver());
 
          if (JMSBridgeImpl.trace)
          {
@@ -386,12 +394,8 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
 
    public synchronized void stop() throws Exception
    {
-      if (!started)
-      {
-         JMSBridgeImpl.log.warn("Attempt to stop, but is already stopped");
-         return;
-      }
-
+      stopping = true;
+      
       if (JMSBridgeImpl.trace)
       {
          JMSBridgeImpl.log.trace("Stopping " + this);
@@ -401,48 +405,14 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
       {
          started = false;
 
-         // This must be inside sync block
-         if (checkerThread != null)
-         {
-            checkerThread.interrupt();
-         }
-
-         if (sourceReceiver != null)
-         {
-            sourceReceiver.interrupt();
-         }
+         executor.shutdownNow();
       }
 
-      // This must be outside sync block
-      if (checkerThread != null)
+      boolean ok = executor.awaitTermination(60, TimeUnit.SECONDS);
+      
+      if(!ok)
       {
-         if (JMSBridgeImpl.trace)
-         {
-            JMSBridgeImpl.log.trace("Waiting for checker thread to finish");
-         }
-
-         checkerThread.join();
-
-         if (JMSBridgeImpl.trace)
-         {
-            JMSBridgeImpl.log.trace("Checker thread has finished");
-         }
-      }
-
-      // This must be outside sync block
-      if (sourceReceiver != null)
-      {
-         if (JMSBridgeImpl.trace)
-         {
-            JMSBridgeImpl.log.trace("Waiting for source receiver thread to finish");
-         }
-
-         sourceReceiver.join();
-
-         if (JMSBridgeImpl.trace)
-         {
-            JMSBridgeImpl.log.trace("Source receiver thread has finished");
-         }
+         throw new Exception("fail to stop JMS Bridge");
       }
 
       if (tx != null)
@@ -1366,7 +1336,7 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
 
       int count = 0;
 
-      while (true)
+      while (true && !stopping)
       {
          boolean ok = setupJMSObjects();
 
@@ -1622,9 +1592,7 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
       // In the case of onMessage we can't close the connection from inside the onMessage method
       // since it will block waiting for onMessage to complete. In the case of start we want to return
       // from the call before the connections are reestablished so that the caller is not blocked unnecessarily.
-      Thread t = new Thread(failureHandler, "jmsbridge-failurehandler-thread");
-
-      t.start();
+      executor.execute(failureHandler);
    }
 
    private void addMessageIDInHeader(final Message msg) throws Exception
@@ -1700,6 +1668,15 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
             msg.setObjectProperty(propName, entry.getValue());
          }
       }
+   }
+
+   /**
+    * Creates a 3-sized thred pool executor (1 thread for the sourceReceiver, 1 for the timeChecker
+    * and 1 for the eventual failureHandler)
+    */
+   private ExecutorService createExecutor()
+   {
+      return Executors.newFixedThreadPool(3);
    }
 
    // Inner classes ---------------------------------------------------------------
