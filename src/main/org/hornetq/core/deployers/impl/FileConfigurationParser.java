@@ -37,7 +37,9 @@ import org.hornetq.core.config.CoreQueueConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.config.impl.FileConfiguration;
 import org.hornetq.core.config.impl.Validators;
+import org.hornetq.core.journal.impl.AIOSequentialFileFactory;
 import org.hornetq.core.logging.Logger;
+import org.hornetq.core.persistence.impl.journal.JournalStorageManager;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.server.JournalType;
 import org.hornetq.core.server.group.impl.GroupingHandlerConfiguration;
@@ -53,6 +55,8 @@ import org.w3c.dom.NodeList;
 /**
  * This class will parse the XML associated with the File Configuration XSD
  *
+ * @author <a href="ataylor@redhat.com">Andy Taylor</a>
+ * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  *
  *
@@ -125,22 +129,22 @@ public class FileConfigurationParser
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
-   
+
    public Configuration parseMainConfig(final InputStream input) throws Exception
    {
-   
+
       Reader reader = new InputStreamReader(input);
       String xml = org.hornetq.utils.XMLUtil.readerToString(reader);
       xml = XMLUtil.replaceSystemProps(xml);
       Element e = org.hornetq.utils.XMLUtil.stringToElement(xml);
-      
+
       Configuration config = new ConfigurationImpl();
-      
+
       parseMainConfig(e, config);
-      
+
       return config;
    }
-   
+
    public void parseMainConfig(final Element e, final Configuration config) throws Exception
    {
       XMLUtil.validate(e, FileConfigurationParser.CONFIGURATION_SCHEMA_URL);
@@ -415,7 +419,22 @@ public class FileConfigurationParser
       }
       else if (s.equals(JournalType.ASYNCIO.toString()))
       {
-         config.setJournalType(JournalType.ASYNCIO);
+         // https://jira.jboss.org/jira/browse/HORNETQ-295
+         // We do the check here to see if AIO is supported so we can use the correct defaults and/or use
+         // correct settings in xml
+         // If we fall back later on these settings can be ignored
+         boolean supportsAIO = AIOSequentialFileFactory.isSupported();
+         
+         if (supportsAIO)
+         {
+            config.setJournalType(JournalType.ASYNCIO);
+         }
+         else
+         {
+            log.warn("AIO wasn't located on this platform, it will fall back to using pure Java NIO. If your platform is Linux, install LibAIO to enable the AIO journal");
+            
+            config.setJournalType(JournalType.NIO);
+         }
       }
 
       config.setJournalSyncTransactional(XMLConfigurationUtil.getBoolean(e,
@@ -430,7 +449,7 @@ public class FileConfigurationParser
                                                                 "journal-file-size",
                                                                 config.getJournalFileSize(),
                                                                 Validators.GT_ZERO));
-
+      
       int journalBufferTimeout = XMLConfigurationUtil.getInteger(e,
                                                                  "journal-buffer-timeout",
                                                                  config.getJournalType() == JournalType.ASYNCIO ? ConfigurationImpl.DEFAULT_JOURNAL_BUFFER_TIMEOUT_AIO
@@ -461,7 +480,7 @@ public class FileConfigurationParser
          config.setJournalBufferSize_NIO(journalBufferSize);
          config.setJournalMaxIO_NIO(journalMaxIO);
       }
-
+      
       config.setJournalMinFiles(XMLConfigurationUtil.getInteger(e,
                                                                 "journal-min-files",
                                                                 config.getJournalMinFiles(),
@@ -521,14 +540,12 @@ public class FileConfigurationParser
                                                                    "memory-measure-interval",
                                                                    config.getMemoryMeasureInterval(),
                                                                    Validators.MINUS_ONE_OR_GT_ZERO)); // in
-      
+
       parseAddressSettings(e, config);
-      
+
       parseQueues(e, config);
-      
+
       parseSecurity(e, config);
-
-
 
    }
 
@@ -539,12 +556,12 @@ public class FileConfigurationParser
    private void parseSecurity(final Element e, final Configuration config)
    {
       NodeList elements = e.getElementsByTagName("security-settings");
-      
+
       if (elements.getLength() != 0)
       {
          Element node = (Element)elements.item(0);
          NodeList list = node.getElementsByTagName("security-setting");
-         for (int i = 0 ; i < list.getLength(); i++)
+         for (int i = 0; i < list.getLength(); i++)
          {
             Pair<String, Set<Role>> securityItem = parseSecurityRoles(list.item(i));
             config.getSecurityRoles().put(securityItem.a, securityItem.b);
@@ -559,12 +576,12 @@ public class FileConfigurationParser
    private void parseQueues(final Element e, final Configuration config)
    {
       NodeList elements = e.getElementsByTagName("queues");
-      
+
       if (elements.getLength() != 0)
       {
          Element node = (Element)elements.item(0);
          NodeList list = node.getElementsByTagName("queue");
-         for (int i = 0 ; i < list.getLength(); i++)
+         for (int i = 0; i < list.getLength(); i++)
          {
             CoreQueueConfiguration queueConfig = parseQueueConfiguration(list.item(i));
             config.getQueueConfigurations().add(queueConfig);
@@ -579,12 +596,12 @@ public class FileConfigurationParser
    private void parseAddressSettings(final Element e, final Configuration config)
    {
       NodeList elements = e.getElementsByTagName("address-settings");
-      
+
       if (elements.getLength() != 0)
       {
          Element node = (Element)elements.item(0);
          NodeList list = node.getElementsByTagName("address-setting");
-         for (int i = 0 ; i < list.getLength(); i++)
+         for (int i = 0; i < list.getLength(); i++)
          {
             Pair<String, AddressSettings> addressSettings = parseAddressSettings(list.item(i));
             config.getAddressesSettings().put(addressSettings.a, addressSettings.b);
@@ -895,7 +912,7 @@ public class FileConfigurationParser
       String name = e.getAttribute("name");
 
       String localBindAddress = XMLConfigurationUtil.getString(e, "local-bind-address", null, Validators.NO_CHECK);
-      
+
       String groupAddress = XMLConfigurationUtil.getString(e, "group-address", null, Validators.NOT_NULL_OR_EMPTY);
 
       int groupPort = XMLConfigurationUtil.getInteger(e, "group-port", -1, Validators.MINUS_ONE_OR_GT_ZERO);
@@ -1036,10 +1053,7 @@ public class FileConfigurationParser
 
       String queueName = XMLConfigurationUtil.getString(brNode, "queue-name", null, Validators.NOT_NULL_OR_EMPTY);
 
-      String forwardingAddress = XMLConfigurationUtil.getString(brNode,
-                                                                "forwarding-address",
-                                                                null,
-                                                                Validators.NO_CHECK);
+      String forwardingAddress = XMLConfigurationUtil.getString(brNode, "forwarding-address", null, Validators.NO_CHECK);
 
       String transformerClassName = XMLConfigurationUtil.getString(brNode,
                                                                    "transformer-class-name",

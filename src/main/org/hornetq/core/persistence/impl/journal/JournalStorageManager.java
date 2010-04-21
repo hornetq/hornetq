@@ -238,16 +238,7 @@ public class JournalStorageManager implements StorageManager
 
       SequentialFileFactory journalFF = null;
 
-      JournalType journalTypeToUse = config.getJournalType();
-
-      if (config.getJournalType() == JournalType.ASYNCIO && !AIOSequentialFileFactory.isSupported())
-      {
-         JournalStorageManager.log.warn("AIO wasn't located on this platform, it will fall back to using pure Java NIO. If your platform is Linux, install LibAIO to enable the AIO journal");
-
-         journalTypeToUse = JournalType.NIO;
-      }
-
-      if (journalTypeToUse == JournalType.ASYNCIO)
+      if (config.getJournalType() == JournalType.ASYNCIO)
       {
          JournalStorageManager.log.info("Using AIO Journal");
 
@@ -256,7 +247,7 @@ public class JournalStorageManager implements StorageManager
                                                   config.getJournalBufferTimeout_AIO(),
                                                   config.isLogJournalWriteRate());
       }
-      else if (journalTypeToUse == JournalType.NIO)
+      else if (config.getJournalType() == JournalType.NIO)
       {
          JournalStorageManager.log.info("Using NIO Journal");
          journalFF = new NIOSequentialFileFactory(journalDir,

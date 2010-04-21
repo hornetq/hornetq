@@ -317,7 +317,7 @@
                         >HornetQException.TRANSACTION_ROLLED_BACK</literal> if using the core
                     API.</para>
                 <para>It is up to the user to catch the exception, and perform any client side local
-                    rollback code as necessary. The user can then just retry the transactional
+                    rollback code as necessary. There is no need to manually rollback the session - it is already rolled back. The user can then just retry the transactional
                     operations again on the same session.</para>
                 <para>HornetQ ships with a fully functioning example demonstrating how to do this,
                     please see <xref linkend="examples.transaction-failover"/></para>
