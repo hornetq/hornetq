@@ -166,6 +166,11 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
 
    // ActivateCallback implementation -------------------------------------
 
+   public void preActivate()
+   {
+      
+   }
+   
    public synchronized void activated()
    {
       active = true;

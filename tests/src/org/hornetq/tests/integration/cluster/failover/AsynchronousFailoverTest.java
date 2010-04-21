@@ -21,6 +21,8 @@ import java.util.concurrent.TimeUnit;
 import junit.framework.Assert;
 
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.Message;
+import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
@@ -49,6 +51,8 @@ public class AsynchronousFailoverTest extends FailoverTestBase
    private volatile MyListener listener;
 
    private volatile ClientSessionFactoryInternal sf;
+
+   private Object lockFail = new Object();
 
    class MyListener implements SessionFailureListener
    {
@@ -87,11 +91,22 @@ public class AsynchronousFailoverTest extends FailoverTestBase
    {
       runTest(new TestRunner()
       {
+         volatile boolean running = false;
+
          public void run()
          {
             try
             {
-               doTestTransactional(this);
+               assertFalse(running);
+               running = true;
+               try
+               {
+                  doTestTransactional(this);
+               }
+               finally
+               {
+                  running = false;
+               }
             }
             catch (Throwable e)
             {
@@ -107,7 +122,7 @@ public class AsynchronousFailoverTest extends FailoverTestBase
       volatile boolean failed;
 
       ArrayList<Throwable> errors = new ArrayList<Throwable>();
-      
+
       boolean isFailed()
       {
          return failed;
@@ -122,30 +137,27 @@ public class AsynchronousFailoverTest extends FailoverTestBase
       {
          failed = false;
       }
-      
+
       synchronized void addException(Throwable e)
       {
          errors.add(e);
       }
-      
+
       void checkForExceptions() throws Throwable
       {
          if (errors.size() > 0)
          {
             log.warn("Exceptions on test:");
-            for (Throwable e: errors)
+            for (Throwable e : errors)
             {
                log.warn(e.getMessage(), e);
             }
             // throwing the first error that happened on the Runnable
             throw errors.get(0);
          }
-         
 
-         
       }
-      
-      
+
    }
 
    private void runTest(final TestRunner runnable) throws Throwable
@@ -173,6 +185,8 @@ public class AsynchronousFailoverTest extends FailoverTestBase
 
             Thread t = new Thread(runnable);
 
+            t.setName("MainTEST");
+
             t.start();
 
             long randomDelay = (long)(2000 * Math.random());
@@ -186,7 +200,10 @@ public class AsynchronousFailoverTest extends FailoverTestBase
             MyListener listener = this.listener;
 
             // Simulate failure on connection
-            conn.fail(new HornetQException(HornetQException.NOT_CONNECTED));
+            synchronized (lockFail)
+            {
+               conn.fail(new HornetQException(HornetQException.NOT_CONNECTED));
+            }
 
             if (listener != null)
             {
@@ -200,7 +217,7 @@ public class AsynchronousFailoverTest extends FailoverTestBase
             AsynchronousFailoverTest.log.info("Fail complete");
 
             t.join();
-            
+
             runnable.checkForExceptions();
 
             createSession.close();
@@ -242,24 +259,24 @@ public class AsynchronousFailoverTest extends FailoverTestBase
          session.addFailureListener(listener);
 
          this.listener = listener;
-         
+
          ClientProducer producer = session.createProducer(FailoverTestBase.ADDRESS);
 
          final int numMessages = 1000;
 
          for (int i = 0; i < numMessages; i++)
          {
-            ClientMessage message = session.createMessage(true);
-
-            message.getBodyBuffer().writeString("message" + i);
-
-            message.putIntProperty("counter", i);
-
             boolean retry = false;
             do
             {
                try
                {
+                  ClientMessage message = session.createMessage(true);
+
+                  message.getBodyBuffer().writeString("message" + i);
+
+                  message.putIntProperty("counter", i);
+
                   producer.send(message);
 
                   retry = false;
@@ -343,69 +360,59 @@ public class AsynchronousFailoverTest extends FailoverTestBase
 
    private void doTestTransactional(final TestRunner runner) throws Exception
    {
+      // For duplication detection
+      int executionId = 0;
+
       while (!runner.isFailed())
       {
          ClientSession session = null;
 
+         executionId++;
+
          try
          {
-            session = sf.createSession(false, false);
 
             MyListener listener = new MyListener();
 
-            session.addFailureListener(listener);
-
             this.listener = listener;
-
-            ClientProducer producer = session.createProducer(FailoverTestBase.ADDRESS);
+            boolean retry = false;
 
             final int numMessages = 1000;
 
-            for (int i = 0; i < numMessages; i++)
+            session = sf.createSession(false, false);
+
+            session.addFailureListener(listener);
+
+            do
             {
-               ClientMessage message = session.createMessage(true);
-
-               message.getBodyBuffer().writeString("message" + i);
-
-               message.putIntProperty("counter", i);
-
-               boolean retry = false;
-               do
+               try
                {
-                  try
+                  ClientProducer producer = session.createProducer(FailoverTestBase.ADDRESS);
+
+                  for (int i = 0; i < numMessages; i++)
                   {
+                     ClientMessage message = session.createMessage(true);
+
+                     message.getBodyBuffer().writeString("message" + i);
+
+                     message.putIntProperty("counter", i);
+
+                     message.putStringProperty(Message.HDR_DUPLICATE_DETECTION_ID, new SimpleString("id:" + i +
+                                                                                                    ",exec:" +
+                                                                                                    executionId));
+
                      producer.send(message);
                   }
-                  catch (HornetQException e)
-                  {
-                     Assert.assertEquals(e.getCode(), HornetQException.UNBLOCKED);
 
-                     retry = true;
-                  }
-               }
-               while (retry);
-            }
-
-            boolean retry = false;
-            while (retry)
-            {
-               try
-               {
                   session.commit();
 
                   retry = false;
                }
                catch (HornetQException e)
                {
-                  if (e.getCode() == HornetQException.TRANSACTION_ROLLED_BACK)
+                  if (e.getCode() == HornetQException.TRANSACTION_ROLLED_BACK || e.getCode() == HornetQException.UNBLOCKED)
                   {
                      // OK
-                     session.close();
-
-                     continue;
-                  }
-                  else if (e.getCode() == HornetQException.UNBLOCKED)
-                  {
                      retry = true;
                   }
                   else
@@ -414,69 +421,78 @@ public class AsynchronousFailoverTest extends FailoverTestBase
                   }
                }
             }
+            while (retry);
 
-            ClientConsumer consumer = null;
             
-            while (true)
-            {
-               try
-               {
-                  consumer = session.createConsumer(FailoverTestBase.ADDRESS);
-                  
-                  break;
-               }
-               catch (HornetQException e)
-               {
-                  if (e.getCode() == HornetQException.UNBLOCKED)
-                  {
-                     continue;
-                  }
-                  throw e;
-               }
-            }
             
-            session.start();
-
-            int lastCount = -1;
-            while (true)
-            {
-               ClientMessage message = consumer.receive(500);
-
-               if (message == null)
-               {
-                  break;
-               }
-
-               // There may be some missing or duplicate messages - but the order should be correct
-
-               int count = message.getIntProperty("counter");
-
-               Assert.assertTrue("count:" + count + " last count:" + lastCount, count >= lastCount);
-
-               lastCount = count;
-
-               message.acknowledge();
-            }
+            boolean blocked = false;
 
             retry = false;
-            while (retry)
+            
+            ClientConsumer consumer = null; 
+            do
             {
+               ArrayList<Integer> msgs = new ArrayList<Integer>();
                try
                {
+                  if (consumer == null)
+                  {
+                     consumer = session.createConsumer(FailoverTestBase.ADDRESS);
+                     session.start();
+                  }
+
+                  for (int i = 0; i < numMessages; i++)
+                  {
+                     ClientMessage message = consumer.receive(500);
+                     if (message == null)
+                     {
+                        break;
+                     }
+
+                     int count = message.getIntProperty("counter");
+
+                     msgs.add(count);
+
+                     message.acknowledge();
+                  }
+
                   session.commit();
+                  
+                  if (blocked)
+                  {
+                     assertTrue("msgs.size is expected to be 0 or "  + numMessages + " but it was " + msgs.size(), msgs.size() == 0 || msgs.size() == numMessages);
+                  }
+                  else
+                  {
+                     assertTrue("msgs.size is expected to be "  + numMessages  + " but it was " + msgs.size(), msgs.size() == numMessages);
+                  }
+
+                  int i = 0;
+                  for (Integer msg : msgs)
+                  {
+                     assertEquals(i++, (int)msg);
+                  }
 
                   retry = false;
+                  blocked = false;
                }
                catch (HornetQException e)
                {
                   if (e.getCode() == HornetQException.TRANSACTION_ROLLED_BACK)
                   {
-                     // OK
-                     session.close();
-
-                     continue;
+                     // TODO: https://jira.jboss.org/jira/browse/HORNETQ-369
+                     // ATM RolledBack exception is being called with the transaction is committed.
+                     // the test will fail if you remove this next line
+                     blocked = true;
                   }
                   else if (e.getCode() == HornetQException.UNBLOCKED)
+                  {
+                     // TODO: https://jira.jboss.org/jira/browse/HORNETQ-369
+                     // This part of the test is never being called.
+                     blocked = true;
+                  }
+
+                  if (e.getCode() == HornetQException.UNBLOCKED || e.getCode() == HornetQException.TRANSACTION_ROLLED_BACK)
                   {
                      retry = true;
                   }
@@ -486,6 +502,7 @@ public class AsynchronousFailoverTest extends FailoverTestBase
                   }
                }
             }
+            while (retry);
          }
          finally
          {

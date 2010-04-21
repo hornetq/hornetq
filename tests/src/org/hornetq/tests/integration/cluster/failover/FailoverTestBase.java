@@ -27,6 +27,7 @@ import org.hornetq.core.config.Configuration;
 import org.hornetq.core.remoting.impl.invm.InVMConnector;
 import org.hornetq.core.remoting.impl.invm.InVMRegistry;
 import org.hornetq.core.remoting.impl.invm.TransportConstants;
+import org.hornetq.core.server.ActivateCallback;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
 
@@ -98,6 +99,26 @@ public abstract class FailoverTestBase extends ServiceTestBase
       config1.setSharedStore(true);
       config1.setBackup(true);
       server1Service = createServer(true, config1);
+      
+      server1Service.registerActivateCallback(new ActivateCallback()
+      {
+         
+         public void preActivate()
+         {
+            // To avoid two servers messing up with the same journal at any single point
+            try
+            {
+               server0Service.getStorageManager().stop();
+            }
+            catch (Exception ignored)
+            {
+            }
+         }
+         
+         public void activated()
+         {
+         }
+      });
 
       Configuration config0 = super.createDefaultConfig();
       config0.getAcceptorConfigurations().clear();

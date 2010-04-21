@@ -860,6 +860,15 @@ public class HornetQServerImpl implements HornetQServer
       }
    }
 
+
+   private void callPreActiveCallbacks()
+   {
+      for (ActivateCallback callback : activateCallbacks)
+      {
+         callback.preActivate();
+      }
+   }
+
    public synchronized boolean checkActivate() throws Exception
    {
       if (configuration.isBackup())
@@ -938,6 +947,8 @@ public class HornetQServerImpl implements HornetQServer
       {
          deploymentManager = new FileDeploymentManager(configuration.getFileDeployerScanPeriod());
       }
+      
+      callPreActiveCallbacks();
 
       startReplication();
 
