@@ -194,6 +194,10 @@ public interface ConnectionFactoryConfiguration extends EncodingSupport
    boolean isFailoverOnServerShutdown();
 
    void setFailoverOnServerShutdown(boolean failoverOnServerShutdown);
+   
+   boolean isFailoverOnInitialConnection();
+
+   void setFailoverOnInitialConnection(boolean failover);
 
    String getGroupID();
 

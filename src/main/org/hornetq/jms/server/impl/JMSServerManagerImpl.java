@@ -724,6 +724,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
                                                     final double retryIntervalMultiplier,
                                                     final long maxRetryInterval,
                                                     final int reconnectAttempts,
+                                                    final boolean failoverOnInitialConnection,
                                                     final boolean failoverOnServerShutdown,
                                                     final String groupId,
                                                     String... jndiBindings) throws Exception
@@ -759,6 +760,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
          configuration.setRetryIntervalMultiplier(retryIntervalMultiplier);
          configuration.setMaxRetryInterval(maxRetryInterval);
          configuration.setReconnectAttempts(reconnectAttempts);
+         configuration.setFailoverOnInitialConnection(failoverOnInitialConnection);
          configuration.setFailoverOnServerShutdown(failoverOnServerShutdown);
          configuration.setGroupID(groupId);
          createConnectionFactory(true, configuration, jndiBindings);
@@ -797,6 +799,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
                                                     final double retryIntervalMultiplier,
                                                     final long maxRetryInterval,
                                                     final int reconnectAttempts,
+                                                    final boolean failoverOnInitialConnection,
                                                     final boolean failoverOnServerShutdown,
                                                     final String groupId,
                                                     final String... jndiBindings) throws Exception
@@ -837,6 +840,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
          configuration.setRetryIntervalMultiplier(retryIntervalMultiplier);
          configuration.setMaxRetryInterval(maxRetryInterval);
          configuration.setReconnectAttempts(reconnectAttempts);
+         configuration.setFailoverOnInitialConnection(failoverOnInitialConnection);
          configuration.setFailoverOnServerShutdown(failoverOnServerShutdown);
          createConnectionFactory(true, configuration, jndiBindings);
       }
@@ -935,6 +939,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
                                                                     final double retryIntervalMultiplier,
                                                                     final long maxRetryInterval,
                                                                     final int reconnectAttempts,
+                                                                    final boolean failoverOnInitialConnection,
                                                                     final boolean failoverOnServerShutdown,
                                                                     final String groupId) throws Exception
    {
@@ -972,6 +977,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
          cf.setRetryIntervalMultiplier(retryIntervalMultiplier);
          cf.setMaxRetryInterval(maxRetryInterval);
          cf.setReconnectAttempts(reconnectAttempts);
+         cf.setFailoverOnInitialConnection(failoverOnInitialConnection);
          cf.setFailoverOnServerShutdown(failoverOnServerShutdown);
       }
 
@@ -1006,6 +1012,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
                                                                     final double retryIntervalMultiplier,
                                                                     final long maxRetryInterval,
                                                                     final int reconnectAttempts,
+                                                                    final boolean failoverOnInitialConnection,
                                                                     final boolean failoverOnServerShutdown,
                                                                     final String groupId) throws Exception
    {
@@ -1040,6 +1047,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
          cf.setRetryIntervalMultiplier(retryIntervalMultiplier);
          cf.setMaxRetryInterval(maxRetryInterval);
          cf.setReconnectAttempts(reconnectAttempts);
+         cf.setFailoverOnInitialConnection(failoverOnInitialConnection);
          cf.setFailoverOnServerShutdown(failoverOnServerShutdown);
          cf.setGroupID(groupId);
       }
@@ -1175,6 +1183,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
                                               cfConfig.getRetryIntervalMultiplier(),
                                               cfConfig.getMaxRetryInterval(),
                                               cfConfig.getReconnectAttempts(),
+                                              cfConfig.isFailoverOnInitialConnection(),
                                               cfConfig.isFailoverOnServerShutdown(),
                                               cfConfig.getGroupID());
       }
@@ -1208,6 +1217,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
                                               cfConfig.getRetryIntervalMultiplier(),
                                               cfConfig.getMaxRetryInterval(),
                                               cfConfig.getReconnectAttempts(),
+                                              cfConfig.isFailoverOnInitialConnection(),
                                               cfConfig.isFailoverOnServerShutdown(),
                                               cfConfig.getGroupID());
       }

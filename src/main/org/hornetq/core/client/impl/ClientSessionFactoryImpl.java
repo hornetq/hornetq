@@ -141,6 +141,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
    private long maxRetryInterval;
 
    private int reconnectAttempts;
+   
+   private boolean failoverOnInitialConnection;
 
    private int initialMessagePacketSize;
 
@@ -259,7 +261,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
                                                             retryInterval,
                                                             retryIntervalMultiplier,
                                                             maxRetryInterval,
-                                                            reconnectAttempts,                                                        
+                                                            reconnectAttempts,     
+                                                            failoverOnInitialConnection,
                                                             threadPool,
                                                             scheduledThreadPool,
                                                             interceptors);
@@ -342,6 +345,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       maxRetryInterval = other.getMaxRetryInterval();
 
       reconnectAttempts = other.getReconnectAttempts();
+      
+      failoverOnInitialConnection = other.isFailoverOnInitialConnection();
 
       failoverOnServerShutdown = other.isFailoverOnServerShutdown();
 
@@ -403,6 +408,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       maxRetryInterval = HornetQClient.DEFAULT_MAX_RETRY_INTERVAL;
 
       reconnectAttempts = HornetQClient.DEFAULT_RECONNECT_ATTEMPTS;
+      
+      failoverOnInitialConnection = HornetQClient.DEFAULT_FAILOVER_ON_INITIAL_CONNECTION;
 
       failoverOnServerShutdown = HornetQClient.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN;
 
@@ -730,6 +737,17 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       checkWrite();
       this.reconnectAttempts = reconnectAttempts;
    }
+   
+   public synchronized boolean isFailoverOnInitialConnection()
+   {
+      return this.failoverOnInitialConnection;
+   }
+
+   public synchronized void setFailoverOnInitialConnection(final boolean failover)
+   {
+      checkWrite();
+      this.failoverOnInitialConnection = failover;
+   }
 
    public synchronized boolean isFailoverOnServerShutdown()
    {
@@ -1023,7 +1041,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
                                                                       retryInterval,
                                                                       retryIntervalMultiplier,
                                                                       maxRetryInterval,
-                                                                      reconnectAttempts,                                                                    
+                                                                      reconnectAttempts,  
+                                                                      failoverOnInitialConnection,
                                                                       threadPool,
                                                                       scheduledThreadPool,
                                                                       interceptors);

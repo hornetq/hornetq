@@ -109,8 +109,10 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
 
    private int reconnectAttempts = HornetQClient.DEFAULT_RECONNECT_ATTEMPTS;
 
-   private boolean failoverOnServerShutdown = HornetQClient.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN;
+   private boolean failoverOnInitialConnection = HornetQClient.DEFAULT_FAILOVER_ON_INITIAL_CONNECTION;
 
+   private boolean failoverOnServerShutdown = HornetQClient.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN;
+   
    private String groupID = null;
    
    // Static --------------------------------------------------------
@@ -513,6 +515,16 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
    {
       this.reconnectAttempts = reconnectAttempts;
    }
+   
+   public boolean isFailoverOnInitialConnection()
+   {
+      return failoverOnInitialConnection;
+   }
+
+   public void setFailoverOnInitialConnection(final boolean failover)
+   {
+      this.failoverOnInitialConnection = failover;
+   }
 
    public boolean isFailoverOnServerShutdown()
    {
@@ -653,6 +665,8 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
       maxRetryInterval = buffer.readLong();
 
       reconnectAttempts = buffer.readInt();
+      
+      failoverOnInitialConnection = buffer.readBoolean();
 
       failoverOnServerShutdown = buffer.readBoolean();
 
@@ -742,6 +756,8 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
       buffer.writeLong(maxRetryInterval);
 
       buffer.writeInt(reconnectAttempts);
+      
+      buffer.writeBoolean(failoverOnInitialConnection);
 
       buffer.writeBoolean(failoverOnServerShutdown);
 
@@ -839,6 +855,8 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
              DataConstants.SIZE_LONG + // maxRetryInterval
 
              DataConstants.SIZE_INT + // reconnectAttempts
+             
+             DataConstants.SIZE_BOOLEAN + // failoverOnInitialConnection
 
              DataConstants.SIZE_BOOLEAN + // failoverOnServerShutdown
              

@@ -790,7 +790,8 @@ public class HornetQServerImpl implements HornetQServer
                                      0,
                                      1.0d,
                                      0,
-                                     1,                                     
+                                     1, 
+                                     false,
                                      threadPool,
                                      scheduledPool,
                                      null);

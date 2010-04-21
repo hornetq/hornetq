@@ -218,6 +218,7 @@ public interface JMSServerManager extends HornetQComponent
                                 double retryIntervalMultiplier,
                                 long maxRetryInterval,
                                 int reconnectAttempts,
+                                boolean failoverOnInitialConnection,
                                 boolean failoverOnServerShutdown,
                                 String groupId,
                                 String ... jndiBindings) throws Exception;
@@ -254,6 +255,7 @@ public interface JMSServerManager extends HornetQComponent
                                 double retryIntervalMultiplier,
                                 long maxRetryInterval,
                                 int reconnectAttempts,
+                                boolean failoverOnInitialConnection,
                                 boolean failoverOnServerShutdown,
                                 String groupId,
                                 String ... jndiBindings) throws Exception;

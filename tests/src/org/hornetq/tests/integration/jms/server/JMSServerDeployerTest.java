@@ -220,6 +220,7 @@ public class JMSServerDeployerTest extends ServiceTestBase
          Assert.assertEquals(true, cf.isPreAcknowledge());
          Assert.assertEquals(2345, cf.getConnectionTTL());
          Assert.assertEquals(false, cf.isFailoverOnServerShutdown());
+         assertEquals(true, cf.isFailoverOnInitialConnection());
          Assert.assertEquals(34, cf.getReconnectAttempts());
          Assert.assertEquals(5, cf.getRetryInterval());
          Assert.assertEquals(6.0, cf.getRetryIntervalMultiplier());
@@ -304,6 +305,7 @@ public class JMSServerDeployerTest extends ServiceTestBase
          Assert.assertEquals(false, cf.isAutoGroup());
          Assert.assertEquals(true, cf.isPreAcknowledge());
          Assert.assertEquals(2345, cf.getConnectionTTL());
+         assertEquals(true, cf.isFailoverOnInitialConnection());
          Assert.assertEquals(false, cf.isFailoverOnServerShutdown());
          Assert.assertEquals(34, cf.getReconnectAttempts());
          Assert.assertEquals(5, cf.getRetryInterval());

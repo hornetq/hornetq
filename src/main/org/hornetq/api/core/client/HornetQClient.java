@@ -77,6 +77,8 @@ public class HornetQClient
    public static final long DEFAULT_MAX_RETRY_INTERVAL = 2000;
 
    public static final int DEFAULT_RECONNECT_ATTEMPTS = 0;
+   
+   public static final boolean DEFAULT_FAILOVER_ON_INITIAL_CONNECTION = false;
 
    public static final boolean DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN = false;
 

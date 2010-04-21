@@ -94,6 +94,7 @@ public class SessionClosedOnRemotingConnectionFailureTest extends JMSTestBase
                                         HornetQClient.DEFAULT_RETRY_INTERVAL_MULTIPLIER,
                                         HornetQClient.DEFAULT_MAX_RETRY_INTERVAL,
                                         0,
+                                        HornetQClient.DEFAULT_FAILOVER_ON_INITIAL_CONNECTION,
                                         false,
                                         null,
                                         "/cffoo");

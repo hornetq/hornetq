@@ -239,6 +239,16 @@ public interface ConnectionFactoryControl
     * @see ClientSessionFactory#setReconnectAttempts(int)
     */
    void setReconnectAttempts(int reconnectAttempts);
+   
+   /**
+    * @see ClientSessionFactory#isFailoverOnInitialConnection()
+    */
+   boolean isFailoverOnInitialConnection();
+
+    /**
+    * @see ClientSessionFactory#setFailoverOnInitialConnection(boolean)
+    */
+   void setFailoverOnInitialConnection(boolean failoverOnInitialConnection);
 
    /**
     * @see ClientSessionFactory#isFailoverOnServerShutdown()

@@ -283,6 +283,10 @@ public class JMSServerConfigParserImpl implements JMSServerConfigParser
                                                               "reconnect-attempts",
                                                               HornetQClient.DEFAULT_RECONNECT_ATTEMPTS,
                                                               Validators.MINUS_ONE_OR_GE_ZERO);
+      boolean failoverOnInitialConnection = XMLConfigurationUtil.getBoolean(e,
+                                                                         "failover-on-initial-connection",
+                                                                         HornetQClient.DEFAULT_FAILOVER_ON_INITIAL_CONNECTION);
+  
       boolean failoverOnServerShutdown = XMLConfigurationUtil.getBoolean(e,
                                                                          "failover-on-server-shutdown",
                                                                          HornetQClient.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN);
@@ -404,6 +408,7 @@ public class JMSServerConfigParserImpl implements JMSServerConfigParser
       cfConfig.setMaxRetryInterval(maxRetryInterval);
       cfConfig.setReconnectAttempts(reconnectAttempts);
       cfConfig.setFailoverOnServerShutdown(failoverOnServerShutdown);
+      cfConfig.setFailoverOnInitialConnection(failoverOnInitialConnection);
       cfConfig.setGroupID(groupid);
       return cfConfig;
    }

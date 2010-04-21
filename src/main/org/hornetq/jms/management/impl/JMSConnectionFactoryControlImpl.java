@@ -217,6 +217,11 @@ public class JMSConnectionFactoryControlImpl extends StandardMBean implements Co
    {
       cf.setReconnectAttempts(reconnectAttempts);
    }
+   
+   public void setFailoverOnInitialConnection(boolean failover)
+   {
+      cf.setFailoverOnInitialConnection(failover);
+   }
 
    public void setFailoverOnServerShutdown(boolean failoverOnServerShutdown)
    {
@@ -396,6 +401,11 @@ public class JMSConnectionFactoryControlImpl extends StandardMBean implements Co
    public int getReconnectAttempts()
    {
       return cf.getReconnectAttempts();
+   }
+   
+   public boolean isFailoverOnInitialConnection()
+   {
+      return cf.isFailoverOnInitialConnection();
    }
 
    public boolean isFailoverOnServerShutdown()

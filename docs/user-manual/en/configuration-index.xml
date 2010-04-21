@@ -1116,6 +1116,13 @@
                         </row>
                         <row>
                             <entry><link linkend="ha.automatic.failover"
+                                    >connection-factory.failover-on-initial-connection</link></entry>
+                            <entry>Boolean</entry>
+                            <entry>whether or not to failover to backup on event that initial connection to live server fails</entry>
+                            <entry>false</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="ha.automatic.failover"
                                     >connection-factory.failover-on-server-shutdown</link></entry>
                             <entry>Boolean</entry>
                             <entry>whether or not to failover on server shutdown</entry>

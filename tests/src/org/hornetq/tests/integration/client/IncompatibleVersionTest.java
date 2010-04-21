@@ -81,6 +81,7 @@ public class IncompatibleVersionTest extends ServiceTestBase
                                                                     HornetQClient.DEFAULT_RETRY_INTERVAL_MULTIPLIER,
                                                                     HornetQClient.DEFAULT_MAX_RETRY_INTERVAL,
                                                                     HornetQClient.DEFAULT_RECONNECT_ATTEMPTS,
+                                                                    HornetQClient.DEFAULT_FAILOVER_ON_INITIAL_CONNECTION,
                                                                     executorService,
                                                                     scheduledexecutorService,
                                                                     null);

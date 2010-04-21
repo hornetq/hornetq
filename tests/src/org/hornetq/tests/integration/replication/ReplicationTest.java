@@ -724,6 +724,7 @@ public class ReplicationTest extends ServiceTestBase
                                      1.0d,
                                      0,
                                      1,
+                                     HornetQClient.DEFAULT_FAILOVER_ON_INITIAL_CONNECTION,
                                      executor,
                                      scheduledExecutor,
                                      interceptors);

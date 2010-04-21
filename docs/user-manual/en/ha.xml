@@ -162,8 +162,9 @@
                     <programlisting>
                    &lt;shared-store>true&lt;shared-store>
                 </programlisting>
-                     <para>Additionally, the backup server must be flagged explicitly as a backup:</para>
-                     <programlisting>
+                    <para>Additionally, the backup server must be flagged explicitly as a
+                        backup:</para>
+                    <programlisting>
                    &lt;backup>true&lt;/backup>
                      </programlisting>
                     <para>In order for live - backup pairs to operate properly with a shared store,
@@ -235,10 +236,10 @@
                 To configure this you can set the property <literal
                     >FailoverOnServerShutdown</literal> to true either on the <literal
                     >HornetQConnectionFactory</literal> if you're using JMS or in the <literal
-                    >hornetq-jms.xml</literal> file when you define the connection factory, or if
-                using core by setting the property directly on the <literal
-                    >ClientSessionFactoryImpl</literal> instance after creation. The default value
-                for this property is <literal>false</literal>, this means that by default
+                    >hornetq-jms.xml (failover-on-server-shutdown property)</literal> file when you
+                define the connection factory, or if using core by setting the property directly on
+                the <literal>ClientSessionFactoryImpl</literal> instance after creation. The default
+                value for this property is <literal>false</literal>, this means that by default
                     <emphasis>HornetQ clients will not failover to a backup server if the live
                     server is simply shutdown cleanly.</emphasis></para>
             <para>
@@ -253,6 +254,18 @@
                         to true</para>
                 </note>
             </para>
+            <para>By default failover will only occur after at least one connection has been made to
+                the live server. In other words, by default, failover will not occur if the client
+                fails to make an initial connection to the live server - in this case it will simply
+                retry connecting to the live server according to the reconnect-attempts property and
+                fail after this number of attempts.</para>
+            <para>In some cases, you may want the client to automatically try the backup server it
+                fails to make an initial connection to the live server. In this case you can set the
+                property <literal>FailoverOnInitialConnection</literal>, or <literal
+                    >failover-on-initial-connection</literal> in xml, on the <literal
+                    >ClientSessionFactoryImpl</literal> or <literal
+                    >HornetQConnectionFactory</literal>. The default value for this parameter is
+                    <literal>false</literal>. </para>
             <para>For examples of automatic failover with transacted and non-transacted JMS
                 sessions, please see <xref linkend="examples.transaction-failover"/> and <xref
                     linkend="examples.non-transaction-failover"/>.</para>
@@ -272,10 +285,10 @@
                     global order to ensure a consistent replica state. This is extremely hard to do
                     in a performant and scalable way, especially when one considers that multiple
                     threads are changing the live server state concurrently.</para>
-                <para>It is possible to provide full state machine replication using
-                    techniques such as <emphasis role="italic">virtual synchrony</emphasis>, but
-                    this does not scale well and effectively serializes all operations to a single
-                    thread, dramatically reducing concurrency.</para>
+                <para>It is possible to provide full state machine replication using techniques such
+                    as <emphasis role="italic">virtual synchrony</emphasis>, but this does not scale
+                    well and effectively serializes all operations to a single thread, dramatically
+                    reducing concurrency.</para>
                 <para>Other techniques for multi-threaded active replication exist such as
                     replicating lock states or replicating thread scheduling but this is very hard
                     to achieve at a Java level.</para>
@@ -317,7 +330,8 @@
                         >HornetQException.TRANSACTION_ROLLED_BACK</literal> if using the core
                     API.</para>
                 <para>It is up to the user to catch the exception, and perform any client side local
-                    rollback code as necessary. There is no need to manually rollback the session - it is already rolled back. The user can then just retry the transactional
+                    rollback code as necessary. There is no need to manually rollback the session -
+                    it is already rolled back. The user can then just retry the transactional
                     operations again on the same session.</para>
                 <para>HornetQ ships with a fully functioning example demonstrating how to do this,
                     please see <xref linkend="examples.transaction-failover"/></para>

@@ -30,6 +30,7 @@
       <pre-acknowledge>true</pre-acknowledge>
       <connection-ttl>2345</connection-ttl>
       <discovery-initial-wait-timeout>678</discovery-initial-wait-timeout>
+      <failover-on-initial-connection>true</failover-on-initial-connection>
       <failover-on-server-shutdown>false</failover-on-server-shutdown>
       <connection-load-balancing-policy-class-name>FooClass</connection-load-balancing-policy-class-name>
       <reconnect-attempts>34</reconnect-attempts>

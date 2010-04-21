@@ -509,6 +509,17 @@ public class HornetQConnectionFactory implements ConnectionFactory, QueueConnect
       checkWrite();
       sessionFactory.setReconnectAttempts(reconnectAttempts);
    }
+   
+   public synchronized boolean isFailoverOnInitialConnection()
+   {
+      return sessionFactory.isFailoverOnInitialConnection();
+   }
+
+   public synchronized void setFailoverOnInitialConnection(final boolean failover)
+   {
+      checkWrite();
+      sessionFactory.setFailoverOnInitialConnection(failover);
+   }
 
    public synchronized boolean isFailoverOnServerShutdown()
    {

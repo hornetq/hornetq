@@ -45,19 +45,6 @@ import org.hornetq.tests.util.RandomUtil;
  * 
  * A FailoverTest
  * 
- * Tests:
- * 
- * Failover via shared storage manager:
- * 
- * 
- * 5) Failover due to failure on create session
- * 
- * 6) Replicate above tests on JMS API
- * 
- * 7) Repeat above tests using replicated journal
- * 
- * 8) Test with different values of auto commit acks and autocomit sends
- * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
@@ -207,6 +194,62 @@ public class FailoverTest extends FailoverTestBase
       sf.setBlockOnDurableSend(true);
 
       session = sf.createSession(true, true);
+
+      ClientConsumer consumer = session.createConsumer(FailoverTestBase.ADDRESS);
+
+      session.start();
+
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage message = consumer.receive(1000);
+
+         Assert.assertNotNull(message);
+
+         assertMessageBody(i, message);
+
+         Assert.assertEquals(i, message.getIntProperty("counter").intValue());
+
+         message.acknowledge();
+      }
+
+      session.close();
+
+      Assert.assertEquals(0, sf.numSessions());
+
+      Assert.assertEquals(0, sf.numConnections());
+   }
+   
+   // https://jira.jboss.org/jira/browse/HORNETQ-285
+   public void testFailoverOnInitialConnection() throws Exception
+   {
+      ClientSessionFactoryInternal sf = getSessionFactory();
+
+      sf.setBlockOnNonDurableSend(true);
+      sf.setBlockOnDurableSend(true);
+      sf.setFailoverOnInitialConnection(true);
+      
+      // Stop live server
+      
+      this.server0Service.stop();
+
+      ClientSession session = sf.createSession();
+
+      session.createQueue(FailoverTestBase.ADDRESS, FailoverTestBase.ADDRESS, null, true);
+
+      ClientProducer producer = session.createProducer(FailoverTestBase.ADDRESS);
+
+      final int numMessages = 100;
+
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage message = session.createMessage(true);
+
+         setBody(i, message);
+
+         message.putIntProperty("counter", i);
+
+         producer.send(message);
+      }
 
       ClientConsumer consumer = session.createConsumer(FailoverTestBase.ADDRESS);
 

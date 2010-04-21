@@ -75,7 +75,7 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
    private static final long serialVersionUID = 2512460695662741413L;
 
    private static final Logger log = Logger.getLogger(FailoverManagerImpl.class);
-   
+
    // debug
 
    private static Map<TransportConfiguration, Set<CoreRemotingConnection>> debugConns;
@@ -199,7 +199,11 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
    private volatile boolean exitLoop;
 
    private final List<Interceptor> interceptors;
-   
+
+   private volatile boolean stopPingingAfterOne;
+
+   private final boolean failoverOnInitialConnection;
+
    // Static
    // ---------------------------------------------------------------------------------------
 
@@ -217,6 +221,7 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
                               final double retryIntervalMultiplier,
                               final long maxRetryInterval,
                               final int reconnectAttempts,
+                              final boolean failoverOnInitialConnection,
                               final ExecutorService threadPool,
                               final ScheduledExecutorService scheduledThreadPool,
                               final List<Interceptor> interceptors)
@@ -259,6 +264,8 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
       this.maxRetryInterval = maxRetryInterval;
 
       this.reconnectAttempts = reconnectAttempts;
+
+      this.failoverOnInitialConnection = failoverOnInitialConnection;
 
       this.scheduledThreadPool = scheduledThreadPool;
 
@@ -339,9 +346,33 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
                         return null;
                      }
 
-                     throw new HornetQException(HornetQException.NOT_CONNECTED,
-                                                "Unable to connect to server using configuration " + connectorConfig);
+                     if (failoverOnInitialConnection && backupConnectorFactory != null)
+                     {
+                        // Try and connect to the backup
 
+                        log.warn("Server is not available to make initial connection to. Will " + "try backup server instead.");
+
+                        connectorFactory = backupConnectorFactory;
+
+                        transportParams = backupTransportParams;
+
+                        backupConnectorFactory = null;
+
+                        backupTransportParams = null;
+
+                        theConnection = getConnectionWithRetry(reconnectAttempts);
+                     }
+
+                     if (exitLoop)
+                     {
+                        return null;
+                     }
+
+                     if (theConnection == null)
+                     {
+                        throw new HornetQException(HornetQException.NOT_CONNECTED,
+                                                   "Unable to connect to server using configuration " + connectorConfig);
+                     }
                   }
 
                   channel1 = theConnection.getChannel(1, -1);
@@ -441,7 +472,6 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
             }
             catch (Throwable t)
             {
-               t.printStackTrace();
                if (lock != null)
                {
                   lock.unlock();
@@ -529,8 +559,6 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
 
    // Public
    // ---------------------------------------------------------------------------------------
-
-   private volatile boolean stopPingingAfterOne;
 
    public void stopPingingAfterOne()
    {
@@ -1134,46 +1162,6 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
          }
       }
 
-   }
-
-   private static final class ActualScheduledBatchFlusher implements Runnable
-   {
-      private final WeakReference<BatchFlushRunnable> batchFlushRunnable;
-
-      ActualScheduledBatchFlusher(final BatchFlushRunnable runnable)
-      {
-         batchFlushRunnable = new WeakReference<BatchFlushRunnable>(runnable);
-      }
-
-      public void run()
-      {
-         BatchFlushRunnable runnable = batchFlushRunnable.get();
-
-         if (runnable != null)
-         {
-            runnable.run();
-         }
-      }
-
-   }
-
-   private final class BatchFlushRunnable implements Runnable
-   {
-      private boolean cancelled;
-
-      public synchronized void run()
-      {
-         if (cancelled)
-         {
-            return;
-         }         
-         connection.getTransportConnection().checkFlushBatchBuffer();
-      }
-
-      public synchronized void cancel()
-      {
-         cancelled = true;
-      }
    }
 
    private final class PingRunnable implements Runnable

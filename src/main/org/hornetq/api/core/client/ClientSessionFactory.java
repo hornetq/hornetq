@@ -686,6 +686,23 @@ public interface ClientSessionFactory
     * @param reconnectAttempts maximum number of attempts to retry connection in case of failure
     */
    void setReconnectAttempts(int reconnectAttempts);
+   
+   /**
+    * Returns true if the client will automatically attempt to connect to the backup server if the initial
+    * connection to the live server fails
+    * 
+    * Default value is {@link HornetQClient.DEFAULT_FAILOVER_ON_INITIAL_CONNECTION}.
+    * 
+    * @return
+    */
+   boolean isFailoverOnInitialConnection();
+   
+   /**
+    * Sets the value for FailoverOnInitialReconnection
+    * 
+    * @param failover
+    */
+   void setFailoverOnInitialConnection(boolean failover);
 
    /**
     * Returns whether connections created by this factory must failover in case the server they are
