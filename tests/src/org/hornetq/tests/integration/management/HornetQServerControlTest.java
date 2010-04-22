@@ -25,6 +25,7 @@ import org.hornetq.api.core.management.HornetQServerControl;
 import org.hornetq.api.core.management.ObjectNameBuilder;
 import org.hornetq.api.core.management.QueueControl;
 import org.hornetq.api.core.management.RoleInfo;
+import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.messagecounter.impl.MessageCounterManagerImpl;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
@@ -108,9 +109,12 @@ public class HornetQServerControlTest extends ManagementTestBase
       Assert.assertEquals(conf.isJournalSyncNonTransactional(), serverControl.isJournalSyncNonTransactional());
       Assert.assertEquals(conf.getJournalFileSize(), serverControl.getJournalFileSize());
       Assert.assertEquals(conf.getJournalMinFiles(), serverControl.getJournalMinFiles());
-      Assert.assertEquals(conf.getJournalMaxIO_AIO(), serverControl.getJournalMaxIO());
-      Assert.assertEquals(conf.getJournalBufferSize_AIO(), serverControl.getJournalBufferSize());
-      Assert.assertEquals(conf.getJournalBufferTimeout_AIO(), serverControl.getJournalBufferTimeout());
+      if (AsynchronousFileImpl.isLoaded())
+      {
+         Assert.assertEquals(conf.getJournalMaxIO_AIO(), serverControl.getJournalMaxIO());
+         Assert.assertEquals(conf.getJournalBufferSize_AIO(), serverControl.getJournalBufferSize());
+         Assert.assertEquals(conf.getJournalBufferTimeout_AIO(), serverControl.getJournalBufferTimeout());
+      }
       Assert.assertEquals(conf.isCreateBindingsDir(), serverControl.isCreateBindingsDir());
       Assert.assertEquals(conf.isCreateJournalDir(), serverControl.isCreateJournalDir());
       Assert.assertEquals(conf.getPagingDirectory(), serverControl.getPagingDirectory());

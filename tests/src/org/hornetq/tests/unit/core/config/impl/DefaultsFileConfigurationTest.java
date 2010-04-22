@@ -94,7 +94,7 @@ public class DefaultsFileConfigurationTest extends ConfigurationImplTest
 
       Assert.assertEquals(ConfigurationImpl.DEFAULT_JOURNAL_DIR, conf.getJournalDirectory());
 
-      Assert.assertEquals(ConfigurationImpl.DEFAULT_JOURNAL_TYPE, conf.getJournalType());
+      Assert.assertEquals(getDefaultJournalType(), conf.getJournalType());
 
       Assert.assertEquals(ConfigurationImpl.DEFAULT_JOURNAL_SYNC_TRANSACTIONAL, conf.isJournalSyncTransactional());
 

@@ -88,6 +88,7 @@ public abstract class BridgeTestBase extends UnitTestCase
       serviceConf.setSecurityEnabled(false);
       serviceConf.setBackup(backup);
       serviceConf.setSharedStore(true);
+      serviceConf.setJournalType(getDefaultJournalType());
       serviceConf.setBindingsDirectory(getBindingsDir(id, false));
       serviceConf.setJournalMinFiles(2);
       serviceConf.setJournalDirectory(getJournalDir(id, false));

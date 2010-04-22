@@ -324,6 +324,7 @@ public class JMSReconnectTest extends UnitTestCase
      
       Configuration liveConf = new ConfigurationImpl();
       liveConf.setSecurityEnabled(false);
+      liveConf.setJournalType(getDefaultJournalType());
       liveConf.getAcceptorConfigurations()
               .add(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory"));
       liveConf.setBindingsDirectory(getBindingsDir());

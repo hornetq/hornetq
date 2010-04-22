@@ -49,6 +49,7 @@ public class ReplicatedJMSFailoverTest extends JMSFailoverTest
    protected void startServers() throws Exception
    {
       backupConf = new ConfigurationImpl();
+      backupConf.setJournalType(getDefaultJournalType());
       backupConf.setSecurityEnabled(false);
       backupParams.put(TransportConstants.SERVER_ID_PROP_NAME, 1);
       backupConf.getAcceptorConfigurations()
@@ -72,6 +73,7 @@ public class ReplicatedJMSFailoverTest extends JMSFailoverTest
 
       liveConf = new ConfigurationImpl();
       liveConf.setSecurityEnabled(false);
+      liveConf.setJournalType(getDefaultJournalType());
       
       liveConf.getConnectorConfigurations().put("toBackup", new TransportConfiguration(INVM_CONNECTOR_FACTORY, backupParams)); 
       liveConf.setBackupConnectorName("toBackup");

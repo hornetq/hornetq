@@ -341,6 +341,7 @@ public class JMSFailoverTest extends UnitTestCase
    {
       backupConf = new ConfigurationImpl();
       backupConf.setSecurityEnabled(false);
+      backupConf.setJournalType(getDefaultJournalType());
       backupParams.put(TransportConstants.SERVER_ID_PROP_NAME, 1);
       backupConf.getAcceptorConfigurations()
                 .add(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory", backupParams));
@@ -366,6 +367,7 @@ public class JMSFailoverTest extends UnitTestCase
       liveConf.getAcceptorConfigurations()
               .add(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory"));
       liveConf.setSharedStore(true);
+      liveConf.setJournalType(getDefaultJournalType());
       liveConf.setBindingsDirectory(getBindingsDir());
       liveConf.setJournalMinFiles(2);
       liveConf.setJournalDirectory(getJournalDir());
