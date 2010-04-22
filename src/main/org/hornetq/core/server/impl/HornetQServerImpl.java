@@ -14,6 +14,8 @@
 package org.hornetq.core.server.impl;
 
 import java.lang.management.ManagementFactory;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -37,6 +39,7 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.client.impl.FailoverManager;
 import org.hornetq.core.client.impl.FailoverManagerImpl;
 import org.hornetq.core.config.Configuration;
@@ -903,7 +906,7 @@ public class HornetQServerImpl implements HornetQServer
    {
       // Create the pools - we have two pools - one for non scheduled - and another for scheduled
 
-      ThreadFactory tFactory = new HornetQThreadFactory("HornetQ-server-threads" + System.identityHashCode(this), false);
+      ThreadFactory tFactory = new HornetQThreadFactory("HornetQ-server-threads" + System.identityHashCode(this), false, getThisClassLoader());
 
       if (configuration.getThreadPoolMaxSize() == -1)
       {
@@ -917,7 +920,7 @@ public class HornetQServerImpl implements HornetQServer
       executorFactory = new OrderedExecutorFactory(threadPool);
 
       scheduledPool = new ScheduledThreadPoolExecutor(configuration.getScheduledThreadPoolMaxSize(),
-                                                      new HornetQThreadFactory("HornetQ-scheduled-threads", false));
+                                                      new HornetQThreadFactory("HornetQ-scheduled-threads", false, getThisClassLoader()));
 
       managementService = new ManagementServiceImpl(mbeanServer, configuration);
 
@@ -1442,6 +1445,19 @@ public class HornetQServerImpl implements HornetQServer
          throw new IllegalArgumentException("Error instantiating class \"" + className + "\"", e);
       }
    }
+   
+   private static ClassLoader getThisClassLoader()
+   {
+      return AccessController.doPrivileged(new PrivilegedAction<ClassLoader>()
+                                    {
+                                       public ClassLoader run()
+                                       {
+                                          return ClientSessionFactoryImpl.class.getClassLoader();
+                                       }
+                                    });
+      
+   }
+   
 
    // Inner classes
    // --------------------------------------------------------------------------------

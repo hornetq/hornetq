@@ -677,7 +677,7 @@ public class ReplicationTest extends ServiceTestBase
    {
       super.setUp();
 
-      tFactory = new HornetQThreadFactory("HornetQ-ReplicationTest", false);
+      tFactory = new HornetQThreadFactory("HornetQ-ReplicationTest", false, this.getClass().getClassLoader());
 
       executor = Executors.newCachedThreadPool(tFactory);
 

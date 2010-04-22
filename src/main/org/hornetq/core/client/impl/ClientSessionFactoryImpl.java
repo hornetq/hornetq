@@ -14,6 +14,8 @@ package org.hornetq.core.client.impl;
 
 import java.io.Serializable;
 import java.net.InetAddress;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -87,7 +89,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
    private List<Pair<TransportConfiguration, TransportConfiguration>> staticConnectors;
 
    private String localBindAddress;
-   
+
    private String discoveryAddress;
 
    private int discoveryPort;
@@ -141,7 +143,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
    private long maxRetryInterval;
 
    private int reconnectAttempts;
-   
+
    private boolean failoverOnInitialConnection;
 
    private int initialMessagePacketSize;
@@ -157,12 +159,12 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
    private static ScheduledExecutorService globalScheduledThreadPool;
 
    private String groupID;
-   
+
    private static synchronized ExecutorService getGlobalThreadPool()
    {
       if (ClientSessionFactoryImpl.globalThreadPool == null)
       {
-         ThreadFactory factory = new HornetQThreadFactory("HornetQ-client-global-threads", true);
+         ThreadFactory factory = new HornetQThreadFactory("HornetQ-client-global-threads", true, getThisClassLoader());
 
          ClientSessionFactoryImpl.globalThreadPool = Executors.newCachedThreadPool(factory);
       }
@@ -174,10 +176,10 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
    {
       if (ClientSessionFactoryImpl.globalScheduledThreadPool == null)
       {
-         ThreadFactory factory = new HornetQThreadFactory("HornetQ-client-global-scheduled-threads", true);
+         ThreadFactory factory = new HornetQThreadFactory("HornetQ-client-global-scheduled-threads", true, getThisClassLoader());
 
          ClientSessionFactoryImpl.globalScheduledThreadPool = Executors.newScheduledThreadPool(HornetQClient.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE,
-           
+
                                                                                                factory);
       }
 
@@ -195,7 +197,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       else
       {
          ThreadFactory factory = new HornetQThreadFactory("HornetQ-client-factory-threads-" + System.identityHashCode(this),
-                                                          true);
+                                                          true, getThisClassLoader());
 
          if (threadPoolMaxSize == -1)
          {
@@ -207,7 +209,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
          }
 
          factory = new HornetQThreadFactory("HornetQ-client-factory-pinger-threads-" + System.identityHashCode(this),
-                                            true);
+                                            true, getThisClassLoader());
 
          scheduledThreadPool = Executors.newScheduledThreadPool(scheduledThreadPoolMaxSize, factory);
       }
@@ -224,9 +226,9 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
          if (discoveryAddress != null)
          {
             InetAddress groupAddress = InetAddress.getByName(discoveryAddress);
-            
+
             InetAddress lbAddress;
-            
+
             if (localBindAddress != null)
             {
                lbAddress = InetAddress.getByName(localBindAddress);
@@ -261,7 +263,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
                                                             retryInterval,
                                                             retryIntervalMultiplier,
                                                             maxRetryInterval,
-                                                            reconnectAttempts,     
+                                                            reconnectAttempts,
                                                             failoverOnInitialConnection,
                                                             threadPool,
                                                             scheduledThreadPool,
@@ -288,8 +290,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
 
    public ClientSessionFactoryImpl(final ClientSessionFactory other)
    {
-      localBindAddress =  other.getLocalBindAddress();
-      
+      localBindAddress = other.getLocalBindAddress();
+
       discoveryAddress = other.getDiscoveryAddress();
 
       discoveryPort = other.getDiscoveryPort();
@@ -345,7 +347,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       maxRetryInterval = other.getMaxRetryInterval();
 
       reconnectAttempts = other.getReconnectAttempts();
-      
+
       failoverOnInitialConnection = other.isFailoverOnInitialConnection();
 
       failoverOnServerShutdown = other.isFailoverOnServerShutdown();
@@ -408,7 +410,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       maxRetryInterval = HornetQClient.DEFAULT_MAX_RETRY_INTERVAL;
 
       reconnectAttempts = HornetQClient.DEFAULT_RECONNECT_ATTEMPTS;
-      
+
       failoverOnInitialConnection = HornetQClient.DEFAULT_FAILOVER_ON_INITIAL_CONNECTION;
 
       failoverOnServerShutdown = HornetQClient.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN;
@@ -426,11 +428,11 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
 
       this.discoveryPort = discoveryPort;
    }
-   
+
    public ClientSessionFactoryImpl(final String localBindAddress, final String discoveryAddress, final int discoveryPort)
    {
       this();
-      
+
       this.localBindAddress = localBindAddress;
 
       this.discoveryAddress = discoveryAddress;
@@ -737,7 +739,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       checkWrite();
       this.reconnectAttempts = reconnectAttempts;
    }
-   
+
    public synchronized boolean isFailoverOnInitialConnection()
    {
       return this.failoverOnInitialConnection;
@@ -770,7 +772,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       checkWrite();
       connectionLoadBalancingPolicyClassName = loadBalancingPolicyClassName;
    }
-   
+
    public synchronized String getLocalBindAddress()
    {
       return localBindAddress;
@@ -835,7 +837,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       checkWrite();
       initialMessagePacketSize = size;
    }
-   
+
    public ClientSession createSession(final String username,
                                       final String password,
                                       final boolean xa,
@@ -1041,7 +1043,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
                                                                       retryInterval,
                                                                       retryIntervalMultiplier,
                                                                       maxRetryInterval,
-                                                                      reconnectAttempts,  
+                                                                      reconnectAttempts,
                                                                       failoverOnInitialConnection,
                                                                       threadPool,
                                                                       scheduledThreadPool,
@@ -1150,18 +1152,37 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
          throw new IllegalStateException("Please specify a load balancing policy class name on the session factory");
       }
 
-      ClassLoader loader = Thread.currentThread().getContextClassLoader();
-      try
+      AccessController.doPrivileged(new PrivilegedAction<Object>()
       {
-         Class<?> clazz = loader.loadClass(connectionLoadBalancingPolicyClassName);
-         loadBalancingPolicy = (ConnectionLoadBalancingPolicy)clazz.newInstance();
-      }
-      catch (Exception e)
-      {
-         throw new IllegalArgumentException("Unable to instantiate load balancing policy \"" + connectionLoadBalancingPolicyClassName +
-                                                     "\"",
-                                            e);
-      }
+         public Object run()
+         {
+            ClassLoader loader = Thread.currentThread().getContextClassLoader();
+            try
+            {
+               Class<?> clazz = loader.loadClass(connectionLoadBalancingPolicyClassName);
+               loadBalancingPolicy = (ConnectionLoadBalancingPolicy)clazz.newInstance();
+               return null;
+            }
+            catch (Exception e)
+            {
+               throw new IllegalArgumentException("Unable to instantiate load balancing policy \"" + connectionLoadBalancingPolicyClassName +
+                                                           "\"",
+                                                  e);
+            }
+         }
+      });
+   }
+
+   private static ClassLoader getThisClassLoader()
+   {
+      return AccessController.doPrivileged(new PrivilegedAction<ClassLoader>()
+                                    {
+                                       public ClassLoader run()
+                                       {
+                                          return ClientSessionFactoryImpl.class.getClassLoader();
+                                       }
+                                    });
+      
    }
 
    private synchronized void updatefailoverManagerArray()

@@ -72,7 +72,7 @@ public class MultiThreadAsynchronousFileTest extends AIOTestBase
    {
       super.setUp();
       pollerExecutor = Executors.newCachedThreadPool(new HornetQThreadFactory("HornetQ-AIO-poller-pool" + System.identityHashCode(this),
-                                                                              false));
+                                                                              false, this.getClass().getClassLoader()));
       executor = Executors.newSingleThreadExecutor();
    }
 

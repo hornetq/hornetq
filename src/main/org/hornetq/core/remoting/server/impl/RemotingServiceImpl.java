@@ -13,6 +13,8 @@
 
 package org.hornetq.core.remoting.server.impl;
 
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -140,6 +142,15 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       {
          return;
       }
+      
+      ClassLoader tccl =
+         AccessController.doPrivileged(new PrivilegedAction<ClassLoader>()
+         {
+            public ClassLoader run()
+            {
+               return Thread.currentThread().getContextClassLoader();
+            }
+         });
 
       // The remoting service maintains it's own thread pool for handling remoting traffic
       // If OIO each connection will have it's own thread
@@ -148,7 +159,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       // to support many hundreds of connections, but the main thread pool must be kept small for better performance
 
       ThreadFactory tFactory = new HornetQThreadFactory("HornetQ-remoting-threads" + System.identityHashCode(this),
-                                                        false);
+                                                        false, tccl);
 
       threadPool = Executors.newCachedThreadPool(tFactory);
 

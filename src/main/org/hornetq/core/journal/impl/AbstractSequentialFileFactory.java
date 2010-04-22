@@ -17,12 +17,15 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.logging.Logger;
@@ -114,7 +117,7 @@ public abstract class AbstractSequentialFileFactory implements SequentialFileFac
       if (isSupportsCallbacks())
       {
          writeExecutor = Executors.newSingleThreadExecutor(new HornetQThreadFactory("HornetQ-Asynchronous-Persistent-Writes" + System.identityHashCode(this),
-                                                                                    true));
+                                                                                    true, getThisClassLoader()));
       }
 
    }
@@ -186,4 +189,18 @@ public abstract class AbstractSequentialFileFactory implements SequentialFileFac
 
       return Arrays.asList(fileNames);
    }
+
+   private static ClassLoader getThisClassLoader()
+   {
+      return AccessController.doPrivileged(new PrivilegedAction<ClassLoader>()
+                                    {
+                                       public ClassLoader run()
+                                       {
+                                          return ClientSessionFactoryImpl.class.getClassLoader();
+                                       }
+                                    });
+      
+   }
+
+
 }

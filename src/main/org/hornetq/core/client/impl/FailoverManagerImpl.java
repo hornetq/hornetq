@@ -486,9 +486,7 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
                else
                {
                   HornetQException me = new HornetQException(HornetQException.INTERNAL_ERROR,
-                                                             "Failed to create session");
-
-                  me.initCause(t);
+                                                             "Failed to create session", t);
 
                   throw me;
                }

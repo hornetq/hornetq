@@ -14,6 +14,8 @@
 package org.hornetq.core.journal.impl;
 
 import java.nio.ByteBuffer;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -21,6 +23,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.hornetq.core.asyncio.BufferCallback;
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
+import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.logging.Logger;
@@ -143,7 +146,7 @@ public class AIOSequentialFileFactory extends AbstractSequentialFileFactory
       super.start();
 
       pollerExecutor = Executors.newCachedThreadPool(new HornetQThreadFactory("HornetQ-AIO-poller-pool" + System.identityHashCode(this),
-                                                                              true));
+                                                                              true, getThisClassLoader()));
 
    }
 
@@ -292,5 +295,18 @@ public class AIOSequentialFileFactory extends AbstractSequentialFileFactory
          }
       }
    }
+   
+   private static ClassLoader getThisClassLoader()
+   {
+      return AccessController.doPrivileged(new PrivilegedAction<ClassLoader>()
+                                    {
+                                       public ClassLoader run()
+                                       {
+                                          return ClientSessionFactoryImpl.class.getClassLoader();
+                                       }
+                                    });
+      
+   }
+
 
 }
