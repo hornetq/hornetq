@@ -19,7 +19,6 @@ import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
-import org.hornetq.core.server.JournalType;
 import org.hornetq.tests.util.ServiceTestBase;
 
 /**
@@ -47,7 +46,7 @@ public class GroupingFailoverSharedServerTest extends GroupingFailoverTestBase
       configuration.setJournalMaxIO_AIO(1000);
       configuration.setJournalDirectory(getJournalDir(backupNode, false));
       configuration.setJournalFileSize(100 * 1024);
-      configuration.setJournalType(JournalType.ASYNCIO);
+      configuration.setJournalType(getDefaultJournalType());
       configuration.setPagingDirectory(getPageDir(backupNode, false));
       configuration.setLargeMessagesDirectory(getLargeMessagesDir(backupNode, false));
       configuration.setClustered(true);
