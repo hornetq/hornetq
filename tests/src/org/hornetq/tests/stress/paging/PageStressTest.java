@@ -295,8 +295,6 @@ public class PageStressTest extends ServiceTestBase
       config.setJournalFileSize(10 * 1024 * 1024);
       config.setJournalMinFiles(5);
 
-      config.setJournalType(JournalType.ASYNCIO);
-
       return config;
    }
 

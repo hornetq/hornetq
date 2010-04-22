@@ -278,7 +278,7 @@ public abstract class ServiceTestBase extends UnitTestCase
       configuration.setJournalMinFiles(2);
       configuration.setJournalDirectory(getJournalDir(index, false));
       configuration.setJournalFileSize(100 * 1024);
-      configuration.setJournalType(JournalType.ASYNCIO);
+      configuration.setJournalType(getDefaultJournalType());
       configuration.setPagingDirectory(getPageDir(index, false));
       configuration.setLargeMessagesDirectory(getLargeMessagesDir(index, false));
       configuration.setJournalCompactMinFiles(0);
@@ -311,7 +311,7 @@ public abstract class ServiceTestBase extends UnitTestCase
 
       configuration.setFileDeploymentEnabled(false);
 
-      configuration.setJournalType(JournalType.ASYNCIO);
+      configuration.setJournalType(getDefaultJournalType());
 
       configuration.getAcceptorConfigurations().clear();
 

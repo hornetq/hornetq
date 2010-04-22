@@ -50,7 +50,7 @@ public class GroupingFailoverReplicationTest extends GroupingFailoverTestBase
       configuration.setJournalMaxIO_AIO(1000);
       configuration.setJournalDirectory(getJournalDir(node, false));
       configuration.setJournalFileSize(100 * 1024);
-      configuration.setJournalType(JournalType.ASYNCIO);
+      configuration.setJournalType(getDefaultJournalType());
       configuration.setPagingDirectory(getPageDir(node, false));
       configuration.setLargeMessagesDirectory(getLargeMessagesDir(node, false));
       configuration.setClustered(true);

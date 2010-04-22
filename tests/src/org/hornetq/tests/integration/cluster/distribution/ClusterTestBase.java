@@ -48,7 +48,6 @@ import org.hornetq.core.postoffice.impl.LocalQueueBinding;
 import org.hornetq.core.remoting.impl.netty.TransportConstants;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
-import org.hornetq.core.server.JournalType;
 import org.hornetq.core.server.cluster.ClusterConnection;
 import org.hornetq.core.server.cluster.RemoteQueueBinding;
 import org.hornetq.core.server.group.GroupingHandler;
@@ -1221,7 +1220,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
       configuration.setJournalMinFiles(2);
       configuration.setJournalMaxIO_AIO(1000);
       configuration.setJournalFileSize(100 * 1024);
-      configuration.setJournalType(JournalType.ASYNCIO);
+      configuration.setJournalType(getDefaultJournalType());
       configuration.setSharedStore(sharedStorage);
       if (sharedStorage)
       {
@@ -1335,7 +1334,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
       configuration.setJournalMinFiles(2);
       configuration.setJournalDirectory(getJournalDir(node, false));
       configuration.setJournalFileSize(100 * 1024);
-      configuration.setJournalType(JournalType.ASYNCIO);
+      configuration.setJournalType(getDefaultJournalType());
       configuration.setJournalMaxIO_AIO(1000);
       configuration.setPagingDirectory(getPageDir(node, false));
       configuration.setLargeMessagesDirectory(getLargeMessagesDir(node, false));

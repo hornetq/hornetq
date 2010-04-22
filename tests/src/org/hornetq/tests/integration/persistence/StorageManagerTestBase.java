@@ -121,8 +121,6 @@ public abstract class StorageManagerTestBase extends ServiceTestBase
    {
       Configuration configuration = createDefaultConfig();
 
-      configuration.setJournalType(JournalType.ASYNCIO);
-
       journal = new JournalStorageManager(configuration, execFactory);
 
       journal.start();
@@ -141,8 +139,6 @@ public abstract class StorageManagerTestBase extends ServiceTestBase
    protected void createJMSStorage() throws Exception
    {
       Configuration configuration = createDefaultConfig();
-
-      configuration.setJournalType(JournalType.ASYNCIO);
 
       jmsJournal = new JMSJournalStorageManagerImpl(new TimeAndCounterIDGenerator(), configuration, null);
 

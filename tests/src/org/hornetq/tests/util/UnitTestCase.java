@@ -60,6 +60,7 @@ import org.hornetq.core.postoffice.QueueBinding;
 import org.hornetq.core.postoffice.impl.LocalQueueBinding;
 import org.hornetq.core.remoting.impl.invm.InVMRegistry;
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.core.server.JournalType;
 import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.ServerMessage;
@@ -96,6 +97,19 @@ public class UnitTestCase extends TestCase
 
    // Static --------------------------------------------------------
 
+   
+   protected static JournalType getDefaultJournalType()
+   {
+      if (AsynchronousFileImpl.isLoaded())
+      {
+         return JournalType.ASYNCIO;
+      }
+      else
+      {
+         return JournalType.NIO;
+      }
+   }
+   
    /**
     * @param name
     */
