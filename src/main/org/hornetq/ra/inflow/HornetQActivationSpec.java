@@ -38,6 +38,8 @@ import org.hornetq.ra.Util;
  */
 public class HornetQActivationSpec extends ConnectionFactoryProperties implements ActivationSpec
 {
+   private static final int DEFAULT_MAX_SESSION = 15;
+
    /** The logger */
    private static final Logger log = Logger.getLogger(HornetQActivationSpec.class);
 
@@ -76,12 +78,6 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
    /** The password */
    private String password;
 
-   /** The maximum number of messages */
-   private Integer maxMessages;
-
-   /** The minimum number of sessions */
-   private Integer minSession;
-
    /** The maximum number of sessions */
    private Integer maxSession;
 
@@ -116,9 +112,7 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
       subscriptionName = null;
       user = null;
       password = null;
-      maxMessages = 1;
-      minSession = 1;
-      maxSession = 15;
+      maxSession = DEFAULT_MAX_SESSION;
       transactionTimeout = 0;
    }
 
@@ -463,100 +457,6 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
    }
 
    /**
-    * Get the numer of max messages
-    * @return The value
-    */
-   public Integer getMaxMessages()
-   {
-      if (HornetQActivationSpec.trace)
-      {
-         HornetQActivationSpec.log.trace("getMaxMessages()");
-      }
-
-      return maxMessages;
-   }
-
-   /**
-    * Set the numer of max messages
-    * @param value The value
-    */
-   public void setMaxMessages(final Integer value)
-   {
-      if (HornetQActivationSpec.trace)
-      {
-         HornetQActivationSpec.log.trace("setMaxMessages(" + value + ")");
-      }
-
-      maxMessages = value;
-   }
-
-   /**
-    * Get the number of max messages
-    * @return The value
-    */
-   public int getMaxMessagesInt()
-   {
-      if (HornetQActivationSpec.trace)
-      {
-         HornetQActivationSpec.log.trace("getMaxMessagesInt()");
-      }
-
-      if (maxMessages == null)
-      {
-         return 0;
-      }
-
-      return maxMessages;
-   }
-
-   /**
-    * Get the number of min session
-    * @return The value
-    */
-   public Integer getMinSession()
-   {
-      if (HornetQActivationSpec.trace)
-      {
-         HornetQActivationSpec.log.trace("getMinSession()");
-      }
-
-      return minSession;
-   }
-
-   /**
-    * Set the number of min session
-    * @param value The value
-    */
-   public void setMinSession(final Integer value)
-   {
-      if (HornetQActivationSpec.trace)
-      {
-         HornetQActivationSpec.log.trace("setMinSession(" + value + ")");
-      }
-
-      minSession = value;
-   }
-
-   /**
-    * Get the number of min session
-    * @return The value
-    */
-   public int getMinSessionInt()
-   {
-      if (HornetQActivationSpec.trace)
-      {
-         HornetQActivationSpec.log.trace("getMinSessionInt()");
-      }
-
-      if (minSession == null)
-      {
-         return 0;
-      }
-
-      return minSession;
-   }
-
-   /**
     * Get the number of max session
     * @return The value
     */
@@ -565,6 +465,11 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
       if (HornetQActivationSpec.trace)
       {
          HornetQActivationSpec.log.trace("getMaxSession()");
+      }
+
+      if (maxSession == null)
+      {
+         return DEFAULT_MAX_SESSION;
       }
 
       return maxSession;
@@ -582,25 +487,6 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
       }
 
       maxSession = value;
-   }
-
-   /**
-    * Get the number of max session
-    * @return The value
-    */
-   public int getMaxSessionInt()
-   {
-      if (HornetQActivationSpec.trace)
-      {
-         HornetQActivationSpec.log.trace("getMaxSessionInt()");
-      }
-
-      if (maxSession == null)
-      {
-         return 0;
-      }
-
-      return maxSession;
    }
 
    /**
@@ -734,8 +620,6 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
       {
          buffer.append(" password=").append("****");
       }
-      buffer.append(" maxMessages=").append(maxMessages);
-      buffer.append(" minSession=").append(minSession);
       buffer.append(" maxSession=").append(maxSession);
       buffer.append(')');
       return buffer.toString();
@@ -781,6 +665,13 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
    {
    }
 
+   public void setMinSession(final Integer value)
+   {
+   }
+
+   public void setMaxMessages(final Integer value)
+   {
+   }
 
 
 }

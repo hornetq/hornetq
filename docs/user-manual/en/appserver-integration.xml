@@ -371,18 +371,21 @@ public class MDBMessageSendTxExample implements MessageListener
             </listitem>
         </orderedlist>
         <section>
-            <title>Adapter Global properties</title>
+            <title>Global Properties</title>
             <para>The first element you see is <literal>resourceadapter-class</literal> which should
                 be left unchanged. This is the HornetQ resource adapter class.</para>
             <para>After that there is a list of configuration properties. This will be where most of
                 the configuration is done. The first 2 configure the transport used by the adapter
-                and the rest configure the connection factory itself.<note><para>All connection
-                        factory properties will use the defaults when not provided. This is accept
-                        for the <literal>reconnectAttempts</literal>  which will default to -1 which
-                        signifies that the connection should attempt to reconnect on connection
-                        failure indefinately. This is only used when the adapter is configured to
-                        connect to a remote server as an InVM connector can never
-                    fail.</para></note></para>
+                and the rest configure the connection factory itself.
+            </para>
+            <note>
+               <para>All connection factory properties will use the defaults if they are not provided, except
+                  for the <literal>reconnectAttempts</literal> which will default to -1. This
+                  signifies that the connection should attempt to reconnect on connection
+                  failure indefinitely. This is only used when the adapter is configured to
+                  connect to a remote server as an InVM connector can never fail.
+                </para>
+            </note>
             <para>The following table explains what each property is for.</para>
             <table frame="topbot" border="2">
                 <title>Global Configuration Properties</title>
@@ -401,25 +404,19 @@ public class MDBMessageSendTxExample implements MessageListener
                         <row>
                             <entry>ConnectorClassName</entry>
                             <entry>String</entry>
-                            <entry>The Connector class name see <xref
-                                    linkend="configuring-transports"/> for info on available
-                                connectors</entry>
+                            <entry>The Connector class name (see <xref
+                                    linkend="configuring-transports"/> for more information)</entry>
                         </row>
                         <row>
                             <entry>ConnectionParameters</entry>
                             <entry>String</entry>
-                            <entry>The transport configuration. These values must be in the form of
-                                key=val;key=val; and will be specific to the connector used</entry>
+                            <entry>The transport configuration. These parameters must be in the form of
+                                <literal>key1=val1;key2=val2;</literal> and will be specific to the connector used</entry>
                         </row>
                         <row>
                             <entry>useLocalTx</entry>
                             <entry>boolean</entry>
                             <entry>True will enable local transaction optimisation.</entry>
-                        </row>
-                        <row>
-                            <entry>UseXA</entry>
-                            <entry>boolean</entry>
-                            <entry>Whether XA should be used</entry>
                         </row>
                         <row>
                             <entry>UserName</entry>
@@ -432,174 +429,237 @@ public class MDBMessageSendTxExample implements MessageListener
                             <entry>The password to use when making a connection</entry>
                         </row>
                         <row>
-                            <entry>BackUpTransportType</entry>
+                            <entry>BackupConnectorClassName</entry>
                             <entry>String</entry>
-                            <entry>The back up transport to use on failure.</entry>
+                            <entry>The backup transport to use in case of failure of the live node</entry>
                         </row>
                         <row>
-                            <entry>TransportConfiguration</entry>
+                            <entry>BackupConnectionParameters</entry>
                             <entry>String</entry>
-                            <entry>The back up transport configuration</entry>
+                            <entry>The backup transport configuration parameters</entry>
                         </row>
                         <row>
-                            <entry>DiscoveryGroupAddress</entry>
+                            <entry>
+                               <link linkend="configuration.discovery-group.group-address">DiscoveryAddress</link></entry>
                             <entry>String</entry>
                             <entry>The discovery group address to use to autodetect a server</entry>
                         </row>
                         <row>
-                            <entry>DiscoveryGroupPort</entry>
-                            <entry>integer</entry>
+                            <entry>
+                               <link linkend="configuration.discovery-group.group-port">DiscoveryPort</link></entry>
+                            <entry>Integer</entry>
                             <entry>The port to use for discovery</entry>
                         </row>
                         <row>
-                            <entry>DiscoveryRefreshTimeout</entry>
-                            <entry>long</entry>
+                            <entry>
+                               <link linkend="configuration.discovery-group.refresh-timeout">DiscoveryRefreshTimeout</link></entry>
+                            <entry>Long</entry>
                             <entry>The timeout, in milli seconds, to refresh.</entry>
                         </row>
                         <row>
-                            <entry>DiscoveryInitialWaitTimeout</entry>
-                            <entry>long</entry>
+                            <entry>
+                               <link linkend="configuration.connection-factory.discovery-initial-wait-timeout">
+                                  DiscoveryInitialWaitTimeout
+                               </link>
+                            </entry>
+                            <entry>Long</entry>
                             <entry>The initial time to wait for discovery.</entry>
                         </row>
                         <row>
-                            <entry>LoadBalancingPolicyClassName</entry>
+                            <entry>
+                               <link linkend="configuration.connection-factory.connection-load-balancing-policy-class-name">
+                                  ConnectionLoadBalancingPolicyClassName</link>
+                            </entry>
                             <entry>String</entry>
                             <entry>The load balancing policy class to use.</entry>
                         </row>
                         <row>
-                            <entry>PingPeriod</entry>
-                            <entry>long</entry>
-                            <entry>The period, in milliseconds, to ping the server for
-                                failure.</entry>
+                            <entry>
+                               <link linkend="configuration.connection-factory.connection-ttl">ConnectionTTL</link>
+                            </entry>
+                            <entry>Long</entry>
+                            <entry>The time to live (in milliseconds) for the connection.</entry>
                         </row>
                         <row>
-                            <entry>ConnectionTTL</entry>
-                            <entry>long</entry>
-                            <entry>The time to live for the connection.</entry>
+                            <entry>
+                               <link linkend="configuration.connection-factory.call-timeout">CallTimeout</link>
+                            </entry>
+                            <entry>Long</entry>
+                            <entry>the call timeout (in milliseconds) for each packet sent.</entry>
                         </row>
                         <row>
-                            <entry>CallTimeout</entry>
-                            <entry>long</entry>
-                            <entry>the call timeout, in milli seconds, for each packet sent.</entry>
-                        </row>
-                        <row>
-                            <entry>DupsOKBatchSize</entry>
-                            <entry>integer</entry>
-                            <entry>The batch size of message acks to use if Dups ok is used.</entry>
-                        </row>
-                    </tbody>
-                </tgroup>
-            </table>
-            <para>continued..</para>
-            <informaltable frame="topbot">
-                <tgroup cols="3">
-                    <colspec colname="c1" colnum="1"/>
-                    <colspec colname="c2" colnum="2"/>
-                    <colspec colname="c3" colnum="3"/>
-                    <tbody>
-                        <row>
-                            <entry>TransactionBatchSize</entry>
-                            <entry>integer</entry>
-                            <entry>The batch size to use for sending messages within a
-                                transaction</entry>
-                        </row>
-                        <row>
-                            <entry>ConsumerWindowSize</entry>
-                            <entry>integer</entry>
-                            <entry>The window size for the consumers internal buffer.</entry>
-                        </row>
-                        <row>
-                            <entry>ConsumerMaxRate</entry>
-                            <entry>integer</entry>
-                            <entry>The max rate a consumer can receive.</entry>
-                        </row>
-                        <row>
-                            <entry>ConfirmationWindowSize</entry>
-                            <entry>integer</entry>
-                            <entry>The window size for confirmations.</entry>
-                        </row>
-                        <row>
-                            <entry>ProducerMaxRate</entry>
-                            <entry>integer</entry>
-                            <entry>The max rate a producer can send messages.</entry>
-                        </row>
-                        <row>
-                            <entry>MinLargeMessageSize</entry>
-                            <entry>integer</entry>
-                            <entry>The size a message can be, in bytes, before it is sent as a multi
-                                part large message.</entry>
-                        </row>
-                        <row>
-                            <entry>BlockOnAcknowledge</entry>
-                            <entry>boolean</entry>
-                            <entry>If true then block on acknowledge of messages.</entry>
-                        </row>
-                        <row>
-                            <entry>BlockOnNonDurableSend</entry>
-                            <entry>boolean</entry>
-                            <entry>If true then block when sending non-durable messages</entry>
-                        </row>
-                        <row>
-                            <entry>BlockOnDurableSend</entry>
-                            <entry>boolean</entry>
-                            <entry>If true then block when sending durable messages</entry>
-                        </row>
-                        <row>
-                            <entry>AutoGroup</entry>
-                            <entry>boolean</entry>
-                            <entry>If true then auto group messages</entry>
-                        </row>
-                        <row>
-                            <entry>PreAcknowledge</entry>
-                            <entry>boolean</entry>
-                            <entry>Whether to pre acknowledge messages before sending to
-                                consumer</entry>
-                        </row>
-                        <row>
-                            <entry>reconnectAttempts</entry>
+                            <entry>
+                               <link linkend="configuration.connection-factory.dups-ok-batch-size">DupsOKBatchSize</link>
+                            </entry>
                             <entry>Integer</entry>
-                            <entry>How attemts to try at reconnecting, default is -1</entry>
+                            <entry>the batch size (in bytes) between acknowledgements when using
+                                 DUPS_OK_ACKNOWLEDGE mode</entry>
                         </row>
                         <row>
-                            <entry>RetryInterval</entry>
-                            <entry>long</entry>
-                            <entry>How long to wait , in milli seconds, before retrying a failed
-                                connection</entry>
+                            <entry>
+                               <link linkend="configuration.connection-factory.transaction-batch-size">TransactionBatchSize</link>
+                            </entry>
+                            <entry>Integer</entry>
+                            <entry>the batch size (in bytes) between acknowledgements when using a
+                                 transactional session</entry>
                         </row>
                         <row>
-                            <entry>RetryIntervalMultiplier</entry>
-                            <entry>double</entry>
-                            <entry>Used for calculating the retry interval</entry>
+                            <entry>
+                               <link linkend="configuration.connection-factory.consumer-window-size">ConsumerWindowSize</link>
+                            </entry>
+                            <entry>Integer</entry>
+                            <entry>the window size (in bytes) for consumer flow control</entry>
                         </row>
                         <row>
-                            <entry>FailoverOnServerShutdown</entry>
-                            <entry>boolean</entry>
+                            <entry>
+                               <link linkend="configuration.connection-factory.consumer-max-rate">ConsumerMaxRate</link>
+                            </entry>
+                            <entry>Integer</entry>
+                            <entry>the fastest rate a consumer may consume messages per second</entry>
+                        </row>
+                        <row>
+                            <entry>
+                               <link linkend="configuration.connection-factory.confirmation-window-size">ConfirmationWindowSize</link>
+                            </entry>
+                            <entry>Integer</entry>
+                            <entry>the window size (in bytes) for reattachment confirmations</entry>
+                        </row>
+                        <row>
+                            <entry>
+                               <link linkend="configuration.connection-factory.producer-max-rate">ProducerMaxRate</link>
+                            </entry>
+                            <entry>Integer</entry>
+                            <entry>the maximum rate of messages per second that can be sent</entry>
+                        </row>
+                        <row>
+                            <entry>
+                               <link linkend="configuration.connection-factory.min-large-message-size">MinLargeMessageSize</link>
+                            </entry>
+                            <entry>Integer</entry>
+                            <entry>the size (in bytes) before a message is treated as large </entry>
+                        </row>
+                        <row>
+                            <entry>
+                               <link linkend="configuration.connection-factory.block-on-acknowledge">BlockOnAcknowledge</link>
+                            </entry>
+                            <entry>Boolean</entry>
+                            <entry>whether or not messages are acknowledged synchronously</entry>
+                        </row>
+                        <row>
+                            <entry>
+                               <link linkend="configuration.connection-factory.block-on-non-durable-send">BlockOnNonDurableSend</link>
+                            </entry>
+                            <entry>Boolean</entry>
+                            <entry>whether or not non-durable messages are sent synchronously</entry>
+                        </row>
+                        <row>
+                            <entry>
+                               <link linkend="configuration.connection-factory.block-on-durable-send">BlockOnDurableSend</link>
+                            </entry>
+                            <entry>Boolean</entry>
+                            <entry>whether or not durable messages are sent synchronously</entry>
+                        </row>
+                        <row>
+                            <entry>
+                               <link linkend="configuration.connection-factory.auto-group">AutoGroup</link>
+                            </entry>
+                            <entry>Boolean</entry>
+                            <entry>whether or not message grouping is automatically used</entry>
+                        </row>
+                        <row>
+                            <entry>
+                               <link linkend="configuration.connection-factory.pre-acknowledge">PreAcknowledge</link>
+                            </entry>
+                            <entry>Boolean</entry>
+                            <entry>whether messages are pre acknowledged by the server before
+                                 sending</entry>
+                        </row>
+                        <row>
+                            <entry>
+                               <link linkend="configuration.connection-factory.reconnect-attempts">ReconnectAttempts</link>
+                            </entry>
+                            <entry>Integer</entry>
+                            <entry>maximum number of retry attempts, default for the resource adpater is -1 (infinite attempts)</entry>
+                        </row>
+                        <row>
+                            <entry>
+                               <link linkend="configuration.connection-factory.retry-interval">RetryInterval</link>
+                            </entry>
+                            <entry>Long</entry>
+                            <entry>the time (in milliseconds) to retry a connection after failing</entry>
+                        </row>
+                        <row>
+                            <entry>
+                               <link linkend="configuration.connection-factory.retry-interval-multiplier">RetryIntervalMultiplier</link>
+                            </entry>
+                            <entry>Double</entry>
+                            <entry>multiplier to apply to successive retry intervals</entry>
+                        </row>
+                        <row>
+                            <entry>
+                               <link linkend="configuration.connection-factory.failover-on-server-shutdown">FailoverOnServerShutdown</link>
+                            </entry>
+                            <entry>Boolean</entry>
                             <entry>If true client will reconnect to another server if
                                 available</entry>
                         </row>
                         <row>
-                            <entry>ClientID</entry>
+                            <entry>
+                               <link linkend="configuration.connection-factory.client-id">ClientID</link>
+                            </entry>
                             <entry>String</entry>
-                            <entry>The client ID of the connection</entry>
+                            <entry>the pre-configured client ID for the connection factory</entry>
+                        </row>
+                        <row>
+                            <entry>
+                               <link linkend="configuration.connection-factory.client-failure-check-period">ClientFailureCheckPeriod</link>
+                            </entry>
+                            <entry>Long</entry>
+                            <entry>the period (in ms) after which the client will consider the
+                                 connection failed after not receiving packets from the
+                                 server</entry>
+                        </row>
+                        <row>
+                            <entry>
+                               <link linkend="configuration.connection-factory.use-global-pools">UseGlobalPools</link>
+                            </entry>
+                            <entry>Boolean</entry>
+                            <entry>whether or not to use a global thread pool for threads</entry>
+                        </row>
+                        <row>
+                            <entry>
+                               <link linkend="configuration.connection-factory.scheduled-thread-pool-max-size">ScheduledThreadPoolMaxSize</link>
+                            </entry>
+                            <entry>Integer</entry>
+                            <entry>the size of the <emphasis>scheduled thread</emphasis> pool</entry>
+                        </row>
+                        <row>
+                            <entry>
+                               <link linkend="configuration.connection-factory.thread-pool-max-size">ThreadPoolMaxSize</link>
+                            </entry>
+                            <entry>Integer</entry>
+                            <entry>the size of the thread pool</entry>
                         </row>
                     </tbody>
                 </tgroup>
-            </informaltable>
+            </table>
         </section>
         <section>
-            <title>Adapter Outbound configuration</title>
+            <title>Adapter Outbound Configuration</title>
             <para>The outbound configuration should remain unchanged as they define connection
                 factories that are used by Java EE components. These Connection Factories can be
                 defined inside a configuration file that matches the name <literal
                     >*-ds.xml</literal>. You'll find a default <literal>jms-ds.xml</literal>
-                configuration under the <literal>hornetq.sar</literal> directory in the Jboss AS
-                deployment. The connection factories defined in the config file inherit their
+                configuration under the <literal>hornetq</literal> directory in the JBoss AS
+                deployment. The connection factories defined in this file inherit their
                 properties from the main <literal>ra.xml</literal> configuration but can also be
-                overridden, the following example show how to define one.</para>
-            <para>Please note that this configuration only applies to install the HornetQ resource
-                adapter in the JBoss Application Server. If you are using another JEE application
+                overridden. The following example shows how to override them.</para>
+            <note>
+               <para>Please note that this configuration only applies when HornetQ resource adapter is installed in 
+                JBoss Application Server. If you are using another JEE application
                 server please refer to your application servers documentation for how to do
                 this.</para>
+            </note>
             <programlisting>&lt;tx-connection-factory>
       &lt;jndi-name>RemoteJmsXA&lt;/jndi-name>
       &lt;xa-transaction/>
@@ -618,19 +678,115 @@ public class MDBMessageSendTxExample implements MessageListener
             <para>In this example the connection factory will be bound to JNDI with the name
                     <literal>RemoteJmsXA</literal> and can be looked up in the usual way using JNDI
                 or defined within the EJB or MDB as such:</para>
-            <programlisting>@Resource(mappedName="java:RemoteJmsXA")
+            <programlisting>@Resource(mappedName="java:/RemoteJmsXA")
 private ConnectionFactory connectionFactory;</programlisting>
-            <para>The <literal>config-property</literal> elements are what over rides those in the
-                    <literal>ra.xml</literal> config. Any of the elements pertaining to the
-                connection factory can be over ridden here.</para>
+            <para>The <literal>config-property</literal> elements are what overrides those in the
+                    <literal>ra.xml</literal> configuration file. Any of the elements pertaining to the
+                connection factory can be overridden here.</para>
+            <para>The outbound configuration also defines additional properties in addition to the global configuration properties.</para>
+
+            <table frame="topbot" border="2">
+                <title>Outbound Configuration Properties</title>
+                <tgroup cols="3">
+                    <colspec colname="c1" colnum="1"/>
+                    <colspec colname="c2" colnum="2"/>
+                    <colspec colname="c3" colnum="3"/>
+                    <thead>
+                        <row>
+                            <entry>Property Name</entry>
+                            <entry>Property Type</entry>
+                            <entry>Property Description</entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry>SessionDefaultType</entry>
+                            <entry>String</entry>
+                            <entry>the default session type</entry>
+                        </row>
+                        <row>
+                            <entry>UseTryLock</entry>
+                            <entry>Integer</entry>
+                            <entry>try to obtain a lock within specified number of seconds. less
+                            than or equal to 0 disable this functionality</entry>
+                        </row>
+                     </tbody>
+                  </tgroup>
+               </table>
         </section>
         <section>
-            <title>Adapter Inbound configuration</title>
+            <title>Adapter Inbound Configuration</title>
             <para>The inbound configuration should again remain unchanged. This controls what
-                forwards messages onto MDB's. It is possible to override properties on the MDB by
+                forwards messages onto MDBs. It is possible to override properties on the MDB by
                 adding an activation configuration to the MDB itself. This could be used to
-                configure the MDB to consume from a different server. The next section demonstrates
-                over riding the configuration.</para>
+                configure the MDB to consume from a different server.</para>
+                <para>The inbound configuration also defines additional properties in addition to the global configuration properties.</para>
+
+                <table frame="topbot" border="2">
+                    <title>Inbound Configuration Properties</title>
+                    <tgroup cols="3">
+                        <colspec colname="c1" colnum="1"/>
+                        <colspec colname="c2" colnum="2"/>
+                        <colspec colname="c3" colnum="3"/>
+                        <thead>
+                            <row>
+                                <entry>Property Name</entry>
+                                <entry>Property Type</entry>
+                                <entry>Property Description</entry>
+                            </row>
+                        </thead>
+                        <tbody>
+                            <row>
+                                <entry>Destination</entry>
+                                <entry>String</entry>
+                                <entry>JNDI name of the destination</entry>
+                            </row>
+                            <row>
+                                <entry>DestinationType</entry>
+                                <entry>String</entry>
+                                <entry>type of the destination, either <literal>javax.jms.Queue</literal> or <literal>javax.jms.Topic</literal>
+                                 (default is javax.jms.Queue)</entry>
+                            </row>
+                            <row>
+                                <entry>AcknowledgeMode</entry>
+                                <entry>String</entry>
+                                <entry>The Acknowledgment mode, either <literal>Auto-acknowledge</literal> or <literal>Dups-ok-acknowledge</literal>
+                                (default is Auto-acknowledge). <literal>AUTO_ACKNOWLEDGE</literal> and <literal>DUPS_OK_ACKNOWLEDGE</literal> are acceptable values.</entry>
+                            </row>
+                            <row>
+                                <entry>MaxSession</entry>
+                                <entry>Integer</entry>
+                                <entry>Maximum number of session created by this inbound configuration (default is 15)</entry>
+                            </row>
+                            <row>
+                                <entry>MessageSelector</entry>
+                                <entry>String</entry>
+                                <entry>the message selector of the consumer</entry>
+                            </row>
+                            <row>
+                                <entry>SubscriptionDurability</entry>
+                                <entry>String</entry>
+                                <entry>Type of the subscription, either <literal>Durable</literal> or <literal>NonDurable</literal></entry>
+                            </row>
+                            <row>
+                                <entry>SubscriptionName</entry>
+                                <entry>String</entry>
+                                <entry>Name of the subscription</entry>
+                            </row>
+                            <row>
+                                <entry>TransactionTimeout</entry>
+                                <entry>Long</entry>
+                                <entry>The transaction timeout in milliseconds (default is 0, the transaction does not timeout)</entry>
+                            </row>
+                            <row>
+                                <entry>UseJNDI</entry>
+                                <entry>Boolean</entry>
+                                <entry>Whether or not use JNDI to look up the destination (default is true)</entry>
+                            </row>
+                         </tbody>
+                      </tgroup>
+                   </table>
+
         </section>
     </section>
     <section>

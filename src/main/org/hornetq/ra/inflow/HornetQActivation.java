@@ -27,7 +27,6 @@ import javax.naming.InitialContext;
 import javax.resource.ResourceException;
 import javax.resource.spi.endpoint.MessageEndpointFactory;
 import javax.resource.spi.work.Work;
-import javax.resource.spi.work.WorkException;
 import javax.resource.spi.work.WorkManager;
 
 import org.hornetq.api.core.SimpleString;
@@ -277,7 +276,7 @@ public class HornetQActivation
       setupCF();
 
       setupDestination();
-      for (int i = 0; i < spec.getMaxSessionInt(); i++)
+      for (int i = 0; i < spec.getMaxSession(); i++)
       {
          ClientSession session = null;
 

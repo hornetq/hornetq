@@ -577,7 +577,7 @@
                             <entry/>
                         </row>
                         <row>
-                            <entry>
+                            <entry id="configuration.discovery-group.group-address">
                                <link linkend="clusters.discovery-groups">discovery-group.group-address</link>
                             </entry>
                             <entry>String</entry>
@@ -585,7 +585,7 @@
                             <entry/>
                         </row>
                         <row>
-                            <entry>
+                            <entry id="configuration.discovery-group.group-port">
                                <link linkend="clusters.discovery-groups">discovery-group.group-port</link>
                             </entry>
                             <entry>Integer</entry>
@@ -593,7 +593,7 @@
                             <entry/>
                         </row>
                         <row>
-                            <entry>
+                            <entry id="configuration.discovery-group.refresh-timeout">
                                <link linkend="clusters.discovery-groups">discovery-group.refresh-timeout</link>
                             </entry>
                             <entry>Integer</entry>
@@ -984,86 +984,96 @@
                     </thead>
                     <tbody>
                         <row>
-                            <entry><link linkend="using-jms.server.configuration"
-                                    >connection-factory</link></entry>
+                            <entry>
+                               <link linkend="using-jms.server.configuration">connection-factory</link>
+                            </entry>
                             <entry>ConnectionFactory</entry>
                             <entry>a list of connection factories to create and add to JNDI</entry>
                             <entry/>
                         </row>
                         <row>
                             <entry id="configuration.connection-factory.auto-group">
-                               <link linkend="message-grouping.jmsconfigure">connection-factory.auto-group</link></entry>
+                               <link linkend="message-grouping.jmsconfigure">connection-factory.auto-group</link>
+                            </entry>
                             <entry>Boolean</entry>
                             <entry>whether or not message grouping is automatically used</entry>
                             <entry>false</entry>
                         </row>
                         <row>
-                            <entry><link linkend="clusters.static.servers"
-                                    >connection-factory.connectors</link></entry>
+                            <entry><link linkend="clusters.static.servers">connection-factory.connectors</link>
+                            </entry>
                             <entry>String</entry>
                             <entry>A list of connectors used bu the connection factory</entry>
                             <entry />
                         </row>
                         <row>
                             <entry><link linkend="clusters.static.servers"
-                                    >connection-factory.connectors.connector-ref.connector-name (attribute)</link></entry>
+                                    >connection-factory.connectors.connector-ref.connector-name (attribute)</link>
+                            </entry>
                             <entry>String</entry>
                             <entry>Name of the connector to connect to the live server</entry>
                             <entry />
                         </row>
                         <row>
                             <entry><link linkend="clusters.static.servers"
-                                    >connection-factory.connectors.connector-ref.backup-connector-name (attribute)</link></entry>
+                                    >connection-factory.connectors.connector-ref.backup-connector-name (attribute)</link>
+                            </entry>
                             <entry>String</entry>
                             <entry>Name of the connector to connect to the backup server</entry>
                             <entry />
                         </row>
                         <row>
                             <entry><link linkend="clusters-discovery.groups.clientside"
-                                    >connection-factory.discovery-group-ref.discovery-group-name (attribute)</link></entry>
+                                    >connection-factory.discovery-group-ref.discovery-group-name (attribute)</link>
+                            </entry>
                             <entry>String</entry>
                             <entry>Name of discovery group used by this connection factory</entry>
                             <entry />
                         </row>
                         <row>
-                            <entry><link linkend="clusters-discovery.groups.clientside"
-                                    >connection-factory.discovery-initial-wait-timeout</link></entry>
+                            <entry id="configuration.connection-factory.discovery-initial-wait-timeout">
+                               <link linkend="clusters-discovery.groups.clientside"
+                                    >connection-factory.discovery-initial-wait-timeout</link>
+                            </entry>
                             <entry>Long</entry>
                             <entry>the initial time to wait (in ms) for discovery groups to wait for
                                 broadcasts</entry>
                             <entry>2000</entry>
                         </row>
                         <row>
-                            <entry><link linkend="send-guarantees.nontrans.acks"
-                                    >connection-factory.block-on-acknowledge</link></entry>
+                            <entry id="configuration.connection-factory.block-on-acknowledge">
+                               <link linkend="send-guarantees.nontrans.acks">connection-factory.block-on-acknowledge</link>
+                            </entry>
                             <entry>Boolean</entry>
                             <entry>whether or not messages are acknowledged synchronously</entry>
                             <entry>false</entry>
                         </row>
                         <row>
-                            <entry><link linkend="non-transactional-sends"
-                                    >connection-factory.block-on-non-durable-send</link></entry>
+                            <entry id="configuration.connection-factory.block-on-non-durable-send">
+                               <link linkend="non-transactional-sends">connection-factory.block-on-non-durable-send</link>
+                            </entry>
                             <entry>Boolean</entry>
-                            <entry>whether or not non-durable messages are sent
-                                synchronously</entry>
+                            <entry>whether or not non-durable messages are sent synchronously</entry>
                             <entry>false</entry>
                         </row>
                         <row>
-                            <entry><link linkend="non-transactional-sends"
-                                    >connection-factory.block-on-durable-send</link></entry>
+                            <entry id="configuration.connection-factory.block-on-durable-send">
+                               <link linkend="non-transactional-sends">connection-factory.block-on-durable-send</link>
+                            </entry>
                             <entry>Boolean</entry>
                             <entry>whether or not durable messages are sent synchronously</entry>
                             <entry>true</entry>
                         </row>
                         <row>
-                            <entry>connection-factory.call-timeout</entry>
+                            <entry id="configuration.connection-factory.call-timeout">connection-factory.call-timeout</entry>
                             <entry>Long</entry>
                             <entry>the timeout (in ms) for remote calls</entry>
                             <entry>30000</entry>
                         </row>
                         <row>
-                            <entry><link linkend="dead.connections"
-                                    >connection-factory.client-failure-check-period</link></entry>
+                            <entry id="configuration.connection-factory.client-failure-check-period">
+                               <link linkend="dead.connections">connection-factory.client-failure-check-period</link>
+                            </entry>
                             <entry>Long</entry>
                             <entry>the period (in ms) after which the client will consider the
                                 connection failed after not receiving packets from the
@@ -1071,44 +1081,48 @@
                             <entry>5000</entry>
                         </row>
                         <row>
-                            <entry><link linkend="using-jms.clientid"
-                                    >connection-factory.client-id</link></entry>
+                            <entry id="configuration.connection-factory.client-id">
+                               <link linkend="using-jms.clientid">connection-factory.client-id</link>
+                            </entry>
                             <entry>String</entry>
                             <entry>the pre-configured client ID for the connection factory</entry>
                             <entry>null</entry>
                         </row>
                         <row>
-                            <entry><link linkend="clusters.client.loadbalancing"
-                                    >connection-factory.connection-load-balancing-policy-class-name</link></entry>
+                            <entry id="configuration.connection-factory.connection-load-balancing-policy-class-name">
+                               <link linkend="clusters.client.loadbalancing">
+                                  connection-factory.connection-load-balancing-policy-class-name</link>
+                            </entry>
                             <entry>String</entry>
                             <entry>the name of the load balancing class</entry>
                             <entry>org.hornetq.api.core.client.loadbalance.RoundRobinConnectionLoadBalancingPolicy</entry>
                         </row>
                         <row>
-                            <entry><link linkend="dead.connections"
-                                    >connection-factory.connection-ttl</link></entry>
+                            <entry id="configuration.connection-factory.connection-ttl">
+                               <link linkend="dead.connections">connection-factory.connection-ttl</link>
+                            </entry>
                             <entry>Long</entry>
                             <entry>the time to live (in ms) for connections</entry>
                             <entry>1 * 60000</entry>
                         </row>
                         <row>
-                            <entry><link linkend="flow-control.rate.core.api"
-                                    >connection-factory.consumer-max-rate</link></entry>
+                            <entry id="configuration.connection-factory.consumer-max-rate">
+                               <link linkend="flow-control.rate.core.api">connection-factory.consumer-max-rate</link></entry>
                             <entry>Integer</entry>
                             <entry>the fastest rate a consumer may consume messages per
                                 second</entry>
                             <entry>-1</entry>
                         </row>
                         <row>
-                            <entry><link linkend="flow-control.core.api"
-                                    >connection-factory.consumer-window-size</link></entry>
+                            <entry id="configuration.connection-factory.consumer-window-size">
+                               <link linkend="flow-control.core.api">connection-factory.consumer-window-size</link></entry>
                             <entry>Integer</entry>
                             <entry>the window size (in bytes) for consumer flow control</entry>
                             <entry>1024 * 1024</entry>
                         </row>
                         <row>
-                            <entry><link linkend="using-jms.dupsokbatchsize"
-                                    >connection-factory.dups-ok-batch-size</link></entry>
+                            <entry id="configuration.connection-factory.dups-ok-batch-size">
+                               <link linkend="using-jms.dupsokbatchsize">connection-factory.dups-ok-batch-size</link></entry>
                             <entry>Integer</entry>
                             <entry>the batch size (in bytes) between acknowledgements when using
                                 DUPS_OK_ACKNOWLEDGE mode</entry>
@@ -1122,17 +1136,17 @@
                             <entry>false</entry>
                         </row>
                         <row>
-                            <entry><link linkend="ha.automatic.failover"
-                                    >connection-factory.failover-on-server-shutdown</link></entry>
+                            <entry id="configuration.connection-factory.failover-on-server-shutdown">
+                               <link linkend="ha.automatic.failover">connection-factory.failover-on-server-shutdown</link></entry>
                             <entry>Boolean</entry>
                             <entry>whether or not to failover on server shutdown</entry>
                             <entry>false</entry>
                         </row>
                         <row>
-                            <entry><link linkend="large-messages.core.config"
-                                    >connection-factory.min-large-message-size</link></entry>
+                            <entry id="configuration.connection-factory.min-large-message-size">
+                               <link linkend="large-messages.core.config">connection-factory.min-large-message-size</link></entry>
                             <entry>Integer</entry>
-                            <entry>the size (in bytes) before a message is treated as large </entry>
+                            <entry>the size (in bytes) before a message is treated as large</entry>
                             <entry>100 * 1024</entry>
                         </row>
                         <row>
@@ -1144,16 +1158,16 @@
                             <entry>false</entry>
                         </row>
                         <row>
-                            <entry><link linkend="pre-acknowledge.configure"
-                                    >connection-factory.pre-acknowledge</link></entry>
+                            <entry id="configuration.connection-factory.pre-acknowledge">
+                               <link linkend="pre-acknowledge.configure">connection-factory.pre-acknowledge</link></entry>
                             <entry>Boolean</entry>
                             <entry>whether messages are pre acknowledged by the server before
                                 sending</entry>
                             <entry>false</entry>
                         </row>
                         <row>
-                            <entry><link linkend="flow-control.producer.rate.core.api"
-                                    >connection-factory.producer-max-rate</link></entry>
+                            <entry id="configuration.connection-factory.producer-max-rate">
+                               <link linkend="flow-control.producer.rate.core.api">connection-factory.producer-max-rate</link></entry>
                             <entry>Integer</entry>
                             <entry>the maximum rate of messages per second that can be sent</entry>
                             <entry>-1</entry>
@@ -1166,32 +1180,36 @@
                             <entry>1024 * 1024</entry>
                         </row>
                         <row>
-                            <entry><link linkend="client-reconnection"
-                                    >connection-factory.confirmation-window-size</link></entry>
+                            <entry id="configuration.connection-factory.confirmation-window-size">
+                               <link linkend="client-reconnection">connection-factory.confirmation-window-size</link>
+                            </entry>
                             <entry>Integer</entry>
                             <entry>the window size (in bytes) for reattachment confirmations</entry>
                             <entry>1024 * 1024</entry>
                         </row>
                         <row>
-                            <entry><link linkend="client-reconnection"
-                                    >connection-factory.reconnect-attempts</link></entry>
+                            <entry id="configuration.connection-factory.reconnect-attempts">
+                               <link linkend="client-reconnection">connection-factory.reconnect-attempts</link>
+                            </entry>
                             <entry>Integer</entry>
                             <entry>maximum number of retry attempts, -1 signifies infinite</entry>
                             <entry>0</entry>
                         </row>
                         <row>
-                            <entry><link linkend="client-reconnection"
-                                    >connection-factory.retry-interval</link></entry>
+                            <entry id="configuration.connection-factory.retry-interval">
+                               <link linkend="client-reconnection">connection-factory.retry-interval</link>
+                            </entry>
                             <entry>Long</entry>
                             <entry>the time (in ms) to retry a connection after failing</entry>
                             <entry>2000</entry>
                         </row>
                         <row>
-                            <entry><link linkend="client-reconnection"
-                                    >connection-factory.retry-interval-multiplier</link></entry>
+                            <entry id="configuration.connection-factory.retry-interval-multiplier">
+                               <link linkend="client-reconnection">connection-factory.retry-interval-multiplier</link>
+                            </entry>
                             <entry>Double</entry>
                             <entry>multiplier to apply to successive retry intervals</entry>
-                            <entry>1d</entry>
+                            <entry>1.0</entry>
                         </row>
                         <row>
                             <entry><link linkend="client-reconnection"
@@ -1201,30 +1219,35 @@
                             <entry>2000</entry>
                         </row>
                         <row>
-                            <entry><link linkend="thread-pooling.client.side"
-                                    >connection-factory.scheduled-thread-pool-max-size</link></entry>
+                            <entry id="configuration.connection-factory.scheduled-thread-pool-max-size">
+                               <link linkend="thread-pooling.client.side">connection-factory.scheduled-thread-pool-max-size</link>
+                            </entry>
                             <entry>Integer</entry>
-                            <entry>the size of the scheduled thread pool</entry>
+                            <entry>the size of the <emphasis>scheduled thread</emphasis> pool</entry>
                             <entry>5</entry>
                         </row>
                         <row>
-                            <entry><link linkend="thread-pooling.client.side"
-                                    >connection-factory.thread-pool-max-size</link></entry>
+                            <entry id="configuration.connection-factory.thread-pool-max-size">
+                               <link linkend="thread-pooling.client.side">connection-factory.thread-pool-max-size</link>
+                            </entry>
                             <entry>Integer</entry>
                             <entry>the size of the thread pool</entry>
                             <entry>-1</entry>
                         </row>
                         <row>
-                            <entry><link linkend="using-jms.txbatchsize"
-                                    >connection-factory.transaction-batch-size</link></entry>
+                            <entry id="configuration.connection-factory.transaction-batch-size">
+                               <link linkend="using-jms.txbatchsize">
+                                  connection-factory.transaction-batch-size</link>
+                            </entry>
                             <entry>Integer</entry>
                             <entry>the batch size (in bytes) between acknowledgements when using a
                                 transactional session</entry>
                             <entry>1024 * 1024</entry>
                         </row>
                         <row>
-                            <entry><link linkend="thread-pooling.client.side"
-                                    >connection-factory.use-global-pools</link></entry>
+                            <entry id="configuration.connection-factory.use-global-pools">
+                               <link linkend="thread-pooling.client.side">connection-factory.use-global-pools</link>
+                            </entry>
                             <entry>Boolean</entry>
                             <entry>whether or not to use a global thread pool for threads</entry>
                             <entry>true</entry>
