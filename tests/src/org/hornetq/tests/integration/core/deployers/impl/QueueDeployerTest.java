@@ -14,6 +14,7 @@
 package org.hornetq.tests.integration.core.deployers.impl;
 
 import org.hornetq.api.core.SimpleString;
+import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.deployers.DeploymentManager;
 import org.hornetq.core.deployers.impl.FileDeploymentManager;
 import org.hornetq.core.deployers.impl.QueueDeployer;
@@ -87,7 +88,9 @@ public class QueueDeployerTest extends UnitTestCase
    {
       super.setUp();
       DeploymentManager deploymentManager = new FileDeploymentManager(500);
-      server = new HornetQServerImpl();
+      ConfigurationImpl config = new ConfigurationImpl();
+      config.setJournalType(getDefaultJournalType());
+      server = new HornetQServerImpl(config);
       server.start();
       deployer = new QueueDeployer(deploymentManager, server);
    }
