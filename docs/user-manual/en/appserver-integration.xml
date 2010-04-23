@@ -20,23 +20,23 @@
     <title>Application Server Integration and Java EE</title>
     <para>HornetQ can be easily installed in JBoss Application Server 4 or later. For details on
         installing HornetQ in the JBoss Application Server please refer to quick-start guide.</para>
-    <para>Since HornetQ also provides a JCA adaptor, it should also be possible to integrate HornetQ
+    <para>Since HornetQ also provides a JCA adapter, it is also possible to integrate HornetQ
         as a JMS provider in other JEE compliant app servers. For instructions on how to integrate a
         remote JCA adaptor into another application sever, please consult the other application server's
         instructions.</para>
-    <para>A JCA Adapter basically controls the inflow of messages to Message Driven Beans and the
+    <para>A JCA Adapter basically controls the inflow of messages to Message-Driven Beans (MDBs) and the
         outflow of messages sent from other JEE components, e.g. EJBs and Servlets.</para>
     <para>This section explains the basics behind configuring the different JEE components in the
         AS.</para>
     <section>
-        <title>Configuring Message Driven Beans</title>
+        <title>Configuring Message-Driven Beans</title>
         <para>The delivery of messages to an MDB using HornetQ is configured on the JCA Adapter via
-            a configuration file <literal>ra.xml</literal> which can be found under in the <literal
-                >jms-ra.rar</literal> archive of directory. By default this is configured to consume
+            a configuration file <literal>ra.xml</literal> which can be found under the <literal
+                >jms-ra.rar</literal> directory. By default this is configured to consume
             messages using an InVM connector from the instance of HornetQ running within the
-            application server. A full list of what is configurable is found later in this chapter. </para>
-        <para>All MDB's however need to have the destination type and the destination configured.
-            The following example shows how this can be done via annotations.</para>
+            application server. The configuration properties are listed later in this chapter. </para>
+        <para>All MDBs however need to have the destination type and the destination configured.
+            The following example shows how this can be done using annotations:</para>
         <programlisting>@MessageDriven(name = "MDBExample",
                activationConfig =
                      {
@@ -54,25 +54,29 @@ public class MDBExample implements MessageListener
         <para>The <literal>ResourceAdapter</literal> annotation is used to specify which adaptor
             should be used. To use this you will need to import <literal
                 >org.jboss.ejb3.annotation.ResourceAdapter</literal> which can be found in the
-                <literal>jboss-ejb3-ext-api.jar</literal> which can be found in the jboss
+                <literal>jboss-ejb3-ext-api.jar</literal> which can be found in the JBoss
             repository. Alternatively you can add use a deployment descriptor and add something like
             the following to <literal
             >jboss.xml</literal><programlisting>&lt;message-driven>
    &lt;ejb-name>ExampleMDB&lt;/ejb-name>
-   &lt;resource-adapter-name>quartz-ra.rar&lt;/resource-adapter-name>
+   &lt;resource-adapter-name>hornetq-ra.rar&lt;/resource-adapter-name>
 &lt;/message-driven>
 </programlisting>You
             can also rename the hornetq-ra.rar directory to jms-ra.rar and neither the annotation or
             the extra descriptor information will be needed. If you do this you will need to edit
             the <literal>jms-ds.xml</literal> datasource file and change <literal>rar-name</literal>
             element.</para>
+        <note>
+           <para>HornetQ is the default JMS provider for JBoss AS 6. Starting with this AS version, HornetQ resource
+              adapter is named <literal>jms-ra.rar</literal>.</para>
+        </note>
         <para>All the examples shipped with the HornetQ distribution use the annotation.</para>
         <section>
-            <title>Using Container Managed Transactions</title>
-            <para>When an MDB is using Container Managed Transactions (CMT), the delivery of the
+            <title>Using Container-Managed Transactions</title>
+            <para>When an MDB is using Container-Managed Transactions (CMT), the delivery of the
                 message is done within the scope of a JTA transaction. The commit or rollback of
                 this transaction is controlled by the container itself. If the transaction is rolled
-                back then the message delivery semantics will kick in (by default this is to try and
+                back then the message delivery semantics will kick in (by default, it will try to
                 redeliver the message up to 10 times before sending to a DLQ). Using annotations
                 this would be configured as follows:</para>
             <programlisting>@MessageDriven(name = "MDB_CMP_TxRequiredExample",
@@ -88,9 +92,8 @@ public class MDB_CMP_TxRequiredExample implements MessageListener
 {
    public void onMessage(Message message)...
 }</programlisting>
-            <para>The <literal>TransactionManagement</literal> annotation tells the container to
-                treat this MDB to use Container Managed Persistence. The <literal
-                    >TransactionAttribute</literal> annotation tells the container that a JTA
+            <para>The <literal>TransactionManagement</literal> annotation tells the container to manage the
+            transaction. The <literal>TransactionAttribute</literal> annotation tells the container that a JTA
                 transaction is required for this MDB. Note that the only other valid value for this
                 is <literal>TransactionAttributeType.NOT_SUPPORTED</literal> which tells the
                 container that this MDB does not support JTA transactions and one should not be
@@ -100,7 +103,7 @@ public class MDB_CMP_TxRequiredExample implements MessageListener
                     >MessageDrivenContext</literal>. The code for this would look something
                 like:</para>
             <programlisting>   @Resource
-   MessageDrivenContext ctx;
+   MessageDrivenContextContext ctx;
 
    public void onMessage(Message message)
    {
@@ -113,7 +116,7 @@ public class MDB_CMP_TxRequiredExample implements MessageListener
          ctx.setRollbackOnly();
       }
    }</programlisting>
-            <para>If you don't want the over head of an xa transaction being created every time but
+            <para>If you do not want the overhead of an XA transaction being created every time but
                 you would still like the message delivered within a transaction (i.e. you are only
                 using a JMS resource) then you can configure the MDB to use a local transaction.
                 This would be configured as such:</para>
@@ -133,8 +136,8 @@ public class MDB_CMP_TxLocalExample implements MessageListener
 }</programlisting>
         </section>
         <section>
-            <title>Using Bean Managed Transactions</title>
-            <para>Message driven beans can also be configured to use Bean Managed Transactions
+            <title>Using Bean-Managed Transactions</title>
+            <para>Message-driven beans can also be configured to use Bean-Managed Transactions
                 (BMT). In this case a User Transaction is created. This would be configured as
                 follows:</para>
             <programlisting>@MessageDriven(name = "MDB_BMPExample",
@@ -150,7 +153,7 @@ public class MDB_BMPExample implements MessageListener
 {
    public void onMessage(Message message)
 }</programlisting>
-            <para>When using Bean Managed Transactions the message delivery to the MDB will occur
+            <para>When using Bean-Managed Transactions the message delivery to the MDB will occur
                 outside the scope of the user transaction and use the acknowledge mode specified by
                 the user with the <literal>acknowledgeMode</literal> property. There are only 2
                 acceptable values for this <literal>Auto-acknowledge</literal> and <literal
@@ -176,6 +179,7 @@ public class MDB_BMPExample implements MessageListener
          tx.begin();
          
          //do some stuff within the transaction
+         
          tx.commit();
 
       }
@@ -186,8 +190,8 @@ public class MDB_BMPExample implements MessageListener
    }</programlisting>
         </section>
         <section>
-            <title>Using Message Selectors with MDB's</title>
-            <para>It is also possible to use MDB's with message selectors. To do this simple define
+            <title>Using Message Selectors with Message-Driven Beans</title>
+            <para>It is also possible to use MDBs with message selectors. To do this simple define
                 your message selector as follows:</para>
             <programlisting>@MessageDriven(name = "MDBMessageSelectorExample",
                activationConfig =
@@ -213,7 +217,7 @@ public class MDBMessageSelectorExample implements MessageListener
             that the sending of the message will be done as part of the JTA transaction being used
             by the component.</para>
         <para>This means that if the sending of the message fails the overall transaction would
-            rollback and the message redelivered. Heres an example of this from within an
+            rollback and the message be redelivered. Heres an example of this from within an
             MDB:</para>
         <programlisting>@MessageDriven(name = "MDBMessageSendTxExample",
                activationConfig =
@@ -274,15 +278,15 @@ public class MDBMessageSendTxExample implements MessageListener
    }
    }</programlisting>
         <para>In JBoss Application Server you can use the JMS JCA adapter for sending messages from
-            EJBs (including Session, Entity and Message Driven Beans), Servlets (including jsps) and
+            EJBs (including Session, Entity and Message-Driven Beans), Servlets (including jsps) and
             custom MBeans.</para>
     </section>
     <section>
         <title>Configuring the JCA Adaptor</title>
         <para>The Java Connector Architecture (JCA) Adapter is what allows HornetQ to be integrated
-            with JEE components such as MDB's and EJB's. It configures how components such as MDB's
-            consume messages from the HornetQ server and also how components such as EJB's or
-            Servlet's can send messages.</para>
+            with JEE components such as MDBs and EJBs. It configures how components such as MDBs
+            consume messages from the HornetQ server and also how components such as EJBs or
+            Servlets can send messages.</para>
         <para>The HornetQ JCA adapter is deployed via the <literal>jms-ra.rar</literal> archive. The
             configuration of the adapter is found in this archive under <literal
                 >META-INF/ra.xml</literal>.</para>
@@ -293,8 +297,7 @@ public class MDBMessageSendTxExample implements MessageListener
          &lt;description>The transport type&lt;/description>
          &lt;config-property-name>ConnectorClassName&lt;/config-property-name>
          &lt;config-property-type>java.lang.String&lt;/config-property-type>
-         &lt;config-property-value>org.hornetq.core.remoting.impl.invm.InVMConnectorF
-         actory&lt;/config-property-value>
+         &lt;config-property-value>org.hornetq.core.remoting.impl.invm.InVMConnectorFactory&lt;/config-property-value>
       &lt;/config-property>
       &lt;config-property>
          &lt;description>The transport configuration. These values must be in the form of key=val;key=val;&lt;/description>
@@ -356,7 +359,7 @@ public class MDBMessageSendTxExample implements MessageListener
       &lt;/inbound-resourceadapter>
 
    &lt;/resourceadapter></programlisting>
-        <para>There are 3 main parts to this configuration.</para>
+        <para>There are three main parts to this configuration.</para>
         <orderedlist>
             <listitem>
                 <para>A set of global properties for the adapter</para>
@@ -367,7 +370,7 @@ public class MDBMessageSendTxExample implements MessageListener
             </listitem>
             <listitem>
                 <para>The configuration of the inbound part of the adapter. This is used for
-                    controlling the consumption of messages via MDB's. </para>
+                    controlling the consumption of messages via MDBs. </para>
             </listitem>
         </orderedlist>
         <section>
@@ -375,7 +378,7 @@ public class MDBMessageSendTxExample implements MessageListener
             <para>The first element you see is <literal>resourceadapter-class</literal> which should
                 be left unchanged. This is the HornetQ resource adapter class.</para>
             <para>After that there is a list of configuration properties. This will be where most of
-                the configuration is done. The first 2 configure the transport used by the adapter
+                the configuration is done. The first two properties configure the transport used by the adapter
                 and the rest configure the connection factory itself.
             </para>
             <note>
