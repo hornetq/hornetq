@@ -117,8 +117,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
    private volatile boolean started = false;
 
-   // private final Map<SimpleString, Runnable> failureRunners = new HashMap<SimpleString, Runnable>();
-
    private final Map<SimpleString, TempQueueCleanerUpper> tempQueueCleannerUppers = new HashMap<SimpleString, TempQueueCleanerUpper>();
 
    private final String name;

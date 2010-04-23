@@ -22,7 +22,6 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.persistence.StorageManager;
-import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.transaction.Transaction;
 import org.hornetq.core.transaction.TransactionOperation;
 
