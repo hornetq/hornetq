@@ -250,6 +250,8 @@ public class HornetQConnection implements Connection, QueueConnection, TopicConn
       {
          return;
       }
+      
+      sessionFactory.close();
 
       try
       {
@@ -258,17 +260,10 @@ public class HornetQConnection implements Connection, QueueConnection, TopicConn
             session.close();
          }
 
-         // TODO may be a better way of doing this that doesn't involve creating a new session
-
          try
          {
             if (!tempQueues.isEmpty())
             {
-//               if (initialSession == null)
-//               {
-//                  initialSession = sessionFactory.createSession(username, password, false, true, true, false, 0);
-//               }
-
                // Remove any temporary queues
 
                for (SimpleString queueName : tempQueues)
@@ -294,8 +289,6 @@ public class HornetQConnection implements Connection, QueueConnection, TopicConn
                initialSession.close();
             }
          }
-
-         sessionFactory.close();
 
          closed = true;
       }

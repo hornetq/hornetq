@@ -203,7 +203,7 @@ public class ChannelImpl implements Channel
    
    public Packet sendBlocking(final Packet packet) throws HornetQException
    {
-      if (closed)
+      if (connection.isDestroyed())
       {
          throw new HornetQException(HornetQException.NOT_CONNECTED, "Connection is destroyed");
       }

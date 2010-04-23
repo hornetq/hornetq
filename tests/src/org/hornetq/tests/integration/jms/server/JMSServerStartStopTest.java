@@ -127,6 +127,24 @@ public class JMSServerStartStopTest extends UnitTestCase
 
       stop();
    }
+   
+   // https://jira.jboss.org/jira/browse/HORNETQ-315
+   public void testCloseConnectionAfterServerIsShutdown() throws Exception
+   {
+      start();
+      
+      HornetQConnectionFactory jbcf = (HornetQConnectionFactory) HornetQJMSClient.createConnectionFactory(new TransportConfiguration(NettyConnectorFactory.class.getCanonicalName()));
+
+      jbcf.setBlockOnDurableSend(true);
+      jbcf.setBlockOnNonDurableSend(true);
+      jbcf.setReconnectAttempts(-1);
+      
+      Connection conn = jbcf.createConnection();
+      
+      stop();
+      
+      conn.close();
+   }
 
    // Package protected ---------------------------------------------
 
