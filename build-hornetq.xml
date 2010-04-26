@@ -888,7 +888,9 @@
            <exclude name="**/data"/>
          </fileset>
          <fileset dir="${src.config.dir}">
-           <include  name="jboss-as/**"/>
+           <include  name="jboss-as-4/**"/>
+           <include  name="jboss-as-5/**"/>
+           <include  name="jboss-as-6/**"/>
            <include name="ra.xml"/>
            <exclude  name="**/build.xml"/>
          </fileset>
