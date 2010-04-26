@@ -13,14 +13,14 @@
    </connection-factory>
    
    <connection-factory name="NettyThroughputConnectionFactory">
-	   <connectors>
+      <connectors>
          <connector-ref connector-name="netty-throughput"/>
-	   </connectors>
-		<entries>
-			<entry name="/ThroughputConnectionFactory"/>
-			<entry name="/XAThroughputConnectionFactory"/>
-		</entries>
-	</connection-factory>
+      </connectors>
+      <entries>
+         <entry name="/ThroughputConnectionFactory"/>
+         <entry name="/XAThroughputConnectionFactory"/>
+      </entries>
+   </connection-factory>
    
    <connection-factory name="InVMConnectionFactory">
       <connectors>
@@ -31,7 +31,7 @@
          <entry name="java:/XAConnectionFactory"/>
       </entries>
    </connection-factory>
-   
+
    <queue name="DLQ">
       <entry name="/queue/DLQ"/>
    </queue>
