@@ -322,23 +322,11 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
 
          if (jbd != null)
          {
-            if (jbd.isQueue())
-            {
-               QueueQuery response = session.queueQuery(jbd.getSimpleAddress());
+            BindingQuery response = session.bindingQuery(jbd.getSimpleAddress());
 
-               if (!response.isExists())
-               {
-                  throw new InvalidDestinationException("Queue " + jbd.getName() + " does not exist");
-               }
-            }
-            else
+            if (!response.isExists())
             {
-               BindingQuery response = session.bindingQuery(jbd.getSimpleAddress());
-
-               if (!response.isExists())
-               {
-                  throw new InvalidDestinationException("Topic " + jbd.getName() + " does not exist");
-               }
+               throw new InvalidDestinationException("Destination " + jbd.getName() + " does not exist");
             }
          }
 
@@ -525,7 +513,7 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
 
          if (dest.isQueue())
          {            
-            QueueQuery response = session.queueQuery(dest.getSimpleAddress());
+            BindingQuery response = session.bindingQuery(dest.getSimpleAddress());
 
             if (!response.isExists())
             {

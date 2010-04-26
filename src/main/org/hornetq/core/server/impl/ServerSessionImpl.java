@@ -498,11 +498,17 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
       List<SimpleString> names = new ArrayList<SimpleString>();
 
+      // make an exception for the management address (see HORNETQ-29)
+      if (address.equals(managementAddress))
+      {
+         return new BindingQueryResult(true, names);
+      }
+
       Bindings bindings = postOffice.getMatchingBindings(address);
 
       for (Binding binding : bindings.getBindings())
       {
-         if (binding.getType() == BindingType.LOCAL_QUEUE)
+         if (binding.getType() == BindingType.LOCAL_QUEUE || binding.getType() == BindingType.REMOTE_QUEUE)
          {
             names.add(binding.getUniqueName());
          }
