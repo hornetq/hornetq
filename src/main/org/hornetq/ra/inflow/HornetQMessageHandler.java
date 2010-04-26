@@ -291,7 +291,7 @@ public class HornetQMessageHandler implements MessageHandler
          {
             try
             {
-               session.rollback();
+               session.rollback(true);
             }
             catch (HornetQException e1)
             {

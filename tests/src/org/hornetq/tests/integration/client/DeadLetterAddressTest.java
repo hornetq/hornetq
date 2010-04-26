@@ -14,6 +14,8 @@ package org.hornetq.tests.integration.client;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import junit.framework.Assert;
 
@@ -70,6 +72,98 @@ public class DeadLetterAddressTest extends UnitTestCase
       m = clientConsumer.receive(500);
       Assert.assertNotNull(m);
       Assert.assertEquals(m.getBodyBuffer().readString(), "heyho!");
+   }
+
+   public void testBasicSend2times() throws Exception
+   {
+      SimpleString dla = new SimpleString("DLA");
+      SimpleString qName = new SimpleString("q1");
+      AddressSettings addressSettings = new AddressSettings();
+      addressSettings.setMaxDeliveryAttempts(2);
+      addressSettings.setDeadLetterAddress(dla);
+      server.getAddressSettingsRepository().addMatch(qName.toString(), addressSettings);
+      SimpleString dlq = new SimpleString("DLQ1");
+      clientSession.createQueue(dla, dlq, null, false);
+      clientSession.createQueue(qName, qName, null, false);
+      ClientProducer producer = clientSession.createProducer(qName);
+      producer.send(createTextMessage("heyho!", clientSession));
+      clientSession.start();
+      ClientConsumer clientConsumer = clientSession.createConsumer(qName);
+      ClientMessage m = clientConsumer.receive(5000);
+      m.acknowledge();
+      Assert.assertNotNull(m);
+      Assert.assertEquals(m.getBodyBuffer().readString(), "heyho!");
+      // force a cancel
+      clientSession.rollback();
+      clientSession.start();
+      m = clientConsumer.receive(5000);
+      m.acknowledge();
+      Assert.assertNotNull(m);
+      Assert.assertEquals(m.getBodyBuffer().readString(), "heyho!");
+      // force a cancel
+      clientSession.rollback();
+      m = clientConsumer.receiveImmediate();
+      Assert.assertNull(m);
+      clientConsumer.close();
+      clientConsumer = clientSession.createConsumer(dlq);
+      m = clientConsumer.receive(5000);
+      Assert.assertNotNull(m);
+      Assert.assertEquals(m.getBodyBuffer().readString(), "heyho!");
+   }
+
+   public void testReceiveWithListeners() throws Exception
+   {
+      SimpleString dla = new SimpleString("DLA");
+      SimpleString qName = new SimpleString("q1");
+      AddressSettings addressSettings = new AddressSettings();
+      addressSettings.setMaxDeliveryAttempts(2);
+      addressSettings.setDeadLetterAddress(dla);
+      server.getAddressSettingsRepository().addMatch(qName.toString(), addressSettings);
+      SimpleString dlq = new SimpleString("DLQ1");
+      clientSession.createQueue(dla, dlq, null, false);
+      clientSession.createQueue(qName, qName, null, false);
+      ClientProducer producer = clientSession.createProducer(qName);
+      producer.send(createTextMessage("heyho!", clientSession));
+      ClientConsumer clientConsumer = clientSession.createConsumer(qName);
+      final CountDownLatch latch = new CountDownLatch(2);
+      TestHandler handler = new TestHandler(latch, clientSession);
+      clientConsumer.setMessageHandler(handler);
+      clientSession.start();
+      assertTrue(latch.await(5, TimeUnit.SECONDS));
+      assertEquals(handler.count, 2);
+      clientConsumer = clientSession.createConsumer(dlq);
+      Message m = clientConsumer.receiveImmediate();
+      Assert.assertNotNull(m);
+      Assert.assertEquals(m.getBodyBuffer().readString(), "heyho!");
+   }
+
+   class  TestHandler implements MessageHandler
+   {
+      private CountDownLatch latch;
+      int count = 0;
+
+      private ClientSession clientSession;
+
+      public TestHandler(CountDownLatch latch, ClientSession clientSession)
+      {
+         this.latch = latch;
+         this.clientSession = clientSession;
+      }
+
+      public void onMessage(ClientMessage message)
+      {
+         count++;
+         latch.countDown();
+         try
+         {
+            clientSession.rollback(true);
+         }
+         catch (HornetQException e)
+         {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+         }
+         throw new RuntimeException();
+      }
    }
 
    public void testBasicSendToMultipleQueues() throws Exception
