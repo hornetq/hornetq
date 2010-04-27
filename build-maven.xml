@@ -195,9 +195,7 @@
       </exec>
    </target>
 
-   <target name="updateMavenRepos">
-      <fail unless="hornetq.repos" message="*** Please set the absolute path to hornetq.repos property i.e. -Dhornetq.repos=foo ***"/>
-      <property name="dest.dir" value="${hornetq.repos}"/>
+   <target name="deploy">
    	
    	
     <antcall target="deploy-jar">
@@ -257,8 +255,8 @@
      <arg value="-Dversion=${hornetq.version}"/>
      <arg value="-Dpackaging=jar"/>
      <arg value="-Dfile=./build/jars/${artifact.id}.jar"/>
-     <arg value="-DrepositoryId=jboss-releases"/>
-     <arg value="-Durl=file:///${dest.dir}"/>
+     <arg value="-DrepositoryId=jboss-releases-repository"/>
+     <arg value="-Durl=https://repository.jboss.org/nexus/service/local/staging/deploy/maven2/"/>
     </exec>
     <!-- deploy the sources jar -->
     <exec executable="mvn">
@@ -271,10 +269,12 @@
      <arg value="-Dpackaging=jar"/>
      <arg value="-Dclassifier=sources"/>
      <arg value="-Dfile=./build/jars/${artifact.id}-sources.jar"/>
-     <arg value="-DrepositoryId=jboss-releases"/>
-     <arg value="-Durl=file:///${dest.dir}"/>
+     <arg value="-DrepositoryId=jboss-releases-repository"/>
+     <arg value="-Durl=https://repository.jboss.org/nexus/service/local/staging/deploy/maven2/"/>
     </exec>   	
-   	 <delete file="${temporary.pom}"/>
+    
+    <delete file="${temporary.pom}"/>
+
    </target>
 
 </project>
