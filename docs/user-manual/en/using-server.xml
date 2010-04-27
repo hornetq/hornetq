@@ -141,7 +141,7 @@
                 <para><literal>hornetq-users.xml</literal> HornetQ ships with a basic security
                     manager implementation which obtains user credentials from the <literal
                         >hornetq-users.xml</literal> file. This file contains user, password and
-                    role information. For more information on security ,please see <xref
+                    role information. For more information on security, please see <xref
                         linkend="security"/>.</para>
             </listitem>
             <listitem>
