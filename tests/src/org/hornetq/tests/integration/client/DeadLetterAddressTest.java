@@ -132,7 +132,7 @@ public class DeadLetterAddressTest extends UnitTestCase
       assertTrue(latch.await(5, TimeUnit.SECONDS));
       assertEquals(handler.count, 2);
       clientConsumer = clientSession.createConsumer(dlq);
-      Message m = clientConsumer.receiveImmediate();
+      Message m = clientConsumer.receive(5000);
       Assert.assertNotNull(m);
       Assert.assertEquals(m.getBodyBuffer().readString(), "heyho!");
    }
