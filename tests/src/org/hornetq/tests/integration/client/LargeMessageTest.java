@@ -137,6 +137,109 @@ public class LargeMessageTest extends LargeMessageTestBase
       }
    }
 
+
+   public void testLargeBufferTransacted() throws Exception
+   {
+      doTestLargeBuffer(true);
+   }
+   
+   public void testLargeBufferNotTransacted() throws Exception
+   {
+      doTestLargeBuffer(false);
+   }
+   
+   public void doTestLargeBuffer(boolean transacted) throws Exception
+   {
+      final int journalsize = 100 * 1024;
+      final int messageSize = 3 * journalsize;
+      // final int messageSize = 5 * 1024;
+
+      ClientSession session = null;
+
+      try
+      {
+         Configuration config = createDefaultConfig(isNetty());
+         config.setJournalFileSize(journalsize);
+         
+         config.setJournalBufferSize_AIO(10 * 1024);
+         config.setJournalBufferSize_NIO(10 * 1024);
+         
+         server = createServer(true, config);
+
+         server.start();
+
+         ClientSessionFactory sf = createFactory(isNetty());
+
+         session = sf.createSession(!transacted, !transacted, 0);
+
+         session.createQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS, true);
+
+         ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
+
+         Message clientFile = session.createMessage(true);
+         for (int i = 0 ; i < messageSize; i++)
+         {
+            clientFile.getBodyBuffer().writeByte(getSamplebyte(i));
+         }
+         
+
+         producer.send(clientFile);
+
+         if (transacted)
+         {
+            session.commit();
+         }
+
+         session.start();
+
+         ClientConsumer consumer = session.createConsumer(LargeMessageTest.ADDRESS);
+         ClientMessage msg1 = consumer.receive(5000);
+         assertNotNull(msg1);
+         
+         Assert.assertNotNull(msg1);
+         
+         for (int i = 0 ; i < messageSize; i++)
+         {
+            //System.out.print(msg1.getBodyBuffer().readByte() + "  ");
+            //if (i % 100 == 0) System.out.println();
+            assertEquals("position = "  + i, getSamplebyte(i), msg1.getBodyBuffer().readByte());
+         }
+       
+         msg1.acknowledge();
+        
+         consumer.close();
+         
+         
+         if (transacted)
+         {
+            session.commit();
+         }
+         
+
+         session.close();
+
+         validateNoFilesOnLargeDir();
+      }
+      finally
+      {
+         try
+         {
+            server.stop();
+         }
+         catch (Throwable ignored)
+         {
+         }
+
+         try
+         {
+            session.close();
+         }
+         catch (Throwable ignored)
+         {
+         }
+      }
+   }
+
    public void testDLALargeMessage() throws Exception
    {
       final int messageSize = (int)(3.5 * HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE);
@@ -799,10 +902,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          Assert.assertEquals(messageSize, msg2.getBodySize());
 
-         for (int i = 0; i < messageSize; i++)
-         {
-            Assert.assertEquals(UnitTestCase.getSamplebyte(i), msg2.getBodyBuffer().readByte());
-         }
+         compareString(messageSize, msg2);
 
          session.close();
 
@@ -825,6 +925,106 @@ public class LargeMessageTest extends LargeMessageTestBase
          catch (Throwable ignored)
          {
          }
+      }
+   }
+
+   public void testResendCachedSmallStreamMessage() throws Exception
+   {
+      internalTestResendMessage(50000);
+   }
+
+   public void testResendCachedLargeStreamMessage() throws Exception
+   {
+      internalTestCachedResendMessage(150 * 1024);
+   }
+
+   public void internalTestCachedResendMessage(final long messageSize) throws Exception
+   {
+      ClientSession session = null;
+
+      try
+      {
+         server = createServer(true, isNetty());
+
+         server.start();
+
+         ClientSessionFactory sf = createFactory(isNetty());
+         
+         sf.setMinLargeMessageSize(111);
+         
+         sf.setCacheLargeMessagesClient(true);
+
+         session = sf.createSession(false, false, false);
+
+         session.createQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS, true);
+
+         ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
+
+         Message originalMsg = createLargeClientMessage(session, messageSize, false);
+
+         producer.send(originalMsg);
+
+         session.commit();
+
+         ClientConsumer consumer = session.createConsumer(LargeMessageTest.ADDRESS);
+
+         session.start();
+
+         ClientMessage msgReceived = consumer.receive(10000);
+         msgReceived.acknowledge();
+
+         session.commit();
+
+         compareString(messageSize, msgReceived);
+         
+         msgReceived.getBodyBuffer().readerIndex(0);
+         
+         producer.send(msgReceived);
+
+         session.commit();
+         
+         ClientMessage msgReceived2 = consumer.receive(10000);
+
+         msgReceived2.acknowledge();
+
+         compareString(messageSize, msgReceived2);
+         
+         session.commit();
+
+         session.close();
+
+         validateNoFilesOnLargeDir();
+      }
+      finally
+      {
+         try
+         {
+            server.stop();
+         }
+         catch (Throwable ignored)
+         {
+         }
+
+         try
+         {
+            session.close();
+         }
+         catch (Throwable ignored)
+         {
+         }
+      }
+   }
+
+   /**
+    * @param messageSize
+    * @param msg2
+    */
+   private void compareString(final long messageSize, ClientMessage msg)
+   {
+      assertNotNull(msg);
+      for (long i = 0; i < messageSize; i++)
+      {
+         Assert.assertEquals("position "  + i, UnitTestCase.getSamplebyte(i), msg.getBodyBuffer().readByte());
       }
    }
 

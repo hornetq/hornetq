@@ -33,6 +33,8 @@ import junit.framework.Assert;
 
 import org.hornetq.tests.util.JMSTestBase;
 import org.hornetq.tests.util.UnitTestCase;
+import org.hornetq.utils.UUID;
+import org.hornetq.utils.UUIDGenerator;
 
 /**
  *
@@ -335,6 +337,68 @@ public class JMSLargeMessageTest extends JMSTestBase
             conn.close();
          }
       }
+
+   }
+
+
+   public void testHugeString() throws Exception
+   {
+      int msgSize = 1024 * 1024;
+
+      Connection conn = null;
+
+      try
+      {
+         conn = cf.createConnection();
+
+         Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+         MessageProducer prod = session.createProducer(queue1);
+
+         TextMessage m = session.createTextMessage();
+         
+         StringBuffer buffer = new StringBuffer();
+         while(buffer.length() < msgSize)
+         {
+            buffer.append(UUIDGenerator.getInstance().generateStringUUID());
+         }
+         
+         final String originalString = buffer.toString();
+         
+         m.setText(originalString);
+         
+         buffer = null;
+
+         prod.send(m);
+
+         conn.close();
+         
+         validateNoFilesOnLargeDir(1);
+
+         conn = cf.createConnection();
+
+         session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+         MessageConsumer cons = session.createConsumer(queue1);
+
+         conn.start();
+
+         TextMessage rm = (TextMessage)cons.receive(10000);
+         Assert.assertNotNull(rm);
+
+         String str = rm.getText();
+         assertEquals(originalString, str);
+
+      }
+      finally
+      {
+         if (conn != null)
+         {
+            conn.close();
+         }
+      }
+      
+      validateNoFilesOnLargeDir(0);
 
    }
 

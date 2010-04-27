@@ -56,11 +56,28 @@ public class LargeMessageBufferTest extends UnitTestCase
 
    // Attributes ----------------------------------------------------
 
+   static int tmpFileCounter = 0; 
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
+
+   protected void setUp() throws Exception
+   {
+      super.setUp();
+      
+      tmpFileCounter++;
+
+      File tmp = new File(getTestDir());
+      tmp.mkdirs();
+   }
+   
+   protected void tearDown() throws Exception
+   {
+      super.tearDown();
+   }
 
    // Test Simple getBytes
    public void testGetBytes() throws Exception
@@ -193,7 +210,7 @@ public class LargeMessageBufferTest extends UnitTestCase
 
    private File getTestFile()
    {
-      return new File(getTestDir(), "temp.file");
+      return new File(getTestDir(), "temp." + tmpFileCounter + ".file");
    }
 
    public void testReadDataOverCached() throws Exception
@@ -297,6 +314,48 @@ public class LargeMessageBufferTest extends UnitTestCase
       {
          Assert.assertEquals(i, bytes[i]);
       }
+   }
+   
+   public void testSplitBufferOnFile() throws Exception
+   {
+      LargeMessageBufferImpl outBuffer = new LargeMessageBufferImpl(new FakeConsumerInternal(),
+                                                                          1024 * 1024,
+                                                                          1,
+                                                                          getTestFile(),
+                                                                          1024);
+      try
+      {
+
+         long count = 0;
+         for (int i = 0; i < 10; i++)
+         {
+            byte buffer[] = new byte[10240];
+            for (int j = 0; j < 10240; j++)
+            {
+               buffer[j] = getSamplebyte(count++);
+            }
+            outBuffer.addPacket(new FakePacket(1, buffer, true, false));
+         }
+
+         outBuffer.readerIndex(0);
+
+         for (int i = 0; i < 10240 * 10; i++)
+         {
+            assertEquals("position " + i, getSamplebyte(i), outBuffer.readByte());
+         }
+
+         outBuffer.readerIndex(0);
+
+         for (int i = 0; i < 10240 * 10; i++)
+         {
+            assertEquals("position " + i, getSamplebyte(i), outBuffer.readByte());
+         }
+      }
+      finally
+      {
+         outBuffer.close();
+      }
+
    }
 
    public void testStreamData() throws Exception
@@ -727,7 +786,7 @@ public class LargeMessageBufferTest extends UnitTestCase
 
       public void stop(boolean waitForOnMessage) throws HornetQException
       {
-         //To change body of implemented methods use File | Settings | File Templates.
+         // To change body of implemented methods use File | Settings | File Templates.
       }
 
       public SessionQueueQueryResponseMessage getQueueInfo()

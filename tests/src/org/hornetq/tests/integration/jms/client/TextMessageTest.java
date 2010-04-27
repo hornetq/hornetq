@@ -239,7 +239,7 @@ public class TextMessageTest extends JMSTestBase
                                         HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
                                         HornetQClient.DEFAULT_CONNECTION_TTL,
                                         callTimeout,
-                                        HornetQClient.DEFAULT_CACHE_LARGE_MESSAGE_CLIENT,
+                                        true,
                                         HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
                                         HornetQClient.DEFAULT_CONSUMER_WINDOW_SIZE,
                                         HornetQClient.DEFAULT_CONSUMER_MAX_RATE,

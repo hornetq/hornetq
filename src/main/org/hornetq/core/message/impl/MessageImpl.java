@@ -55,6 +55,9 @@ public abstract class MessageImpl implements MessageInternal
    public static final SimpleString HDR_ROUTE_TO_IDS = new SimpleString("_HQ_ROUTE_TO");
 
    public static final int BUFFER_HEADER_SPACE = PacketImpl.PACKET_HEADERS_SIZE;
+   
+   public static final int BODY_OFFSET = BUFFER_HEADER_SPACE + DataConstants.SIZE_INT;
+
 
    protected long messageID;
 
@@ -248,7 +251,7 @@ public abstract class MessageImpl implements MessageInternal
       {
          if (buffer instanceof LargeMessageBufferInternal == false)
          {
-            bodyBuffer = new ResetLimitWrappedHornetQBuffer(BUFFER_HEADER_SPACE + DataConstants.SIZE_INT, buffer, this);
+            bodyBuffer = new ResetLimitWrappedHornetQBuffer(BODY_OFFSET, buffer, this);
          }
          else
          {

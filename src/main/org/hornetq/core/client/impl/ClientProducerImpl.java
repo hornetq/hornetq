@@ -217,7 +217,7 @@ public class ClientProducerImpl implements ClientProducerInternal
       
       boolean isLarge;
 
-      if (msgI.getBodyInputStream() != null || msgI.isLargeMessage())
+      if (msgI.getBodyInputStream() != null || msgI.isLargeMessage() || msgI.getBodyBuffer().writerIndex() > minLargeMessageSize)
       {
          isLarge = true;
       }

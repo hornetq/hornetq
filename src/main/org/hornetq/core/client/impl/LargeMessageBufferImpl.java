@@ -27,6 +27,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 import org.hornetq.api.core.HornetQBuffer;
+import org.hornetq.api.core.HornetQBuffers;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.logging.Logger;
@@ -60,6 +61,8 @@ public class LargeMessageBufferImpl implements LargeMessageBufferInternal
    private volatile SessionReceiveContinuationMessage currentPacket = null;
 
    private final long totalSize;
+   
+   private final int bufferSize;
 
    private boolean streamEnded = false;
 
@@ -97,6 +100,15 @@ public class LargeMessageBufferImpl implements LargeMessageBufferInternal
                                  final int readTimeout,
                                  final File cachedFile)
    {
+      this(consumerInternal, totalSize, readTimeout, cachedFile, 10 * 1024);
+   }
+
+   public LargeMessageBufferImpl(final ClientConsumerInternal consumerInternal,
+                                 final long totalSize,
+                                 final int readTimeout,
+                                 final File cachedFile,
+                                 final int bufferSize)
+   {
       this.consumerInternal = consumerInternal;
       this.readTimeout = readTimeout;
       this.totalSize = totalSize;
@@ -108,6 +120,7 @@ public class LargeMessageBufferImpl implements LargeMessageBufferInternal
       {
          fileCache = new FileCache(cachedFile);
       }
+      this.bufferSize = bufferSize;
    }
 
    // Public --------------------------------------------------------
@@ -193,6 +206,7 @@ public class LargeMessageBufferImpl implements LargeMessageBufferInternal
                }
             }
 
+            
             packets.offer(packet);
          }
       }
@@ -1020,6 +1034,29 @@ public class LargeMessageBufferImpl implements LargeMessageBufferInternal
    {
       return (char)readShort();
    }
+   
+   public char getChar(final int index)
+   {
+      return (char)getShort(index);
+   }
+
+   public double getDouble(final int index)
+   {
+      return Double.longBitsToDouble(getLong(index));
+   }
+
+   public float getFloat(final int index)
+   {
+      return Float.intBitsToFloat(getInt(index));
+   }
+
+   public HornetQBuffer readBytes(final int length)
+   {
+      byte bytesToGet[] = new byte[length];
+      getBytes(readerIndex, bytesToGet);
+      readerIndex += length;
+      return HornetQBuffers.wrappedBuffer(bytesToGet);
+   }
 
    /* (non-Javadoc)
     * @see org.hornetq.spi.core.remoting.HornetQBuffer#readDouble()
@@ -1313,8 +1350,6 @@ public class LargeMessageBufferImpl implements LargeMessageBufferInternal
    private class FileCache
    {
 
-      private final int BUFFER_SIZE = 10 * 1024;
-
       public FileCache(final File cachedFile)
       {
          this.cachedFile = cachedFile;
@@ -1347,11 +1382,13 @@ public class LargeMessageBufferImpl implements LargeMessageBufferInternal
                   throw new ArrayIndexOutOfBoundsException("position > " + cachedChannel.size());
                }
 
-               readCachePositionStart = position / BUFFER_SIZE * BUFFER_SIZE;
+               readCachePositionStart = position / bufferSize * bufferSize;
+               
+               cachedChannel.position(readCachePositionStart);
 
                if (readCache == null)
                {
-                  readCache = ByteBuffer.allocate(BUFFER_SIZE);
+                  readCache = ByteBuffer.allocate(bufferSize);
                }
 
                readCache.clear();
@@ -1452,80 +1489,47 @@ public class LargeMessageBufferImpl implements LargeMessageBufferInternal
 
    public ChannelBuffer channelBuffer()
    {
-      // TODO Auto-generated method stub
       return null;
    }
 
    public HornetQBuffer copy(final int index, final int length)
    {
-      // TODO Auto-generated method stub
-      return null;
+      throw new IllegalAccessError(LargeMessageBufferImpl.READ_ONLY_ERROR_MESSAGE);
    }
 
    public HornetQBuffer duplicate()
    {
-      // TODO Auto-generated method stub
-      return null;
-   }
-
-   public char getChar(final int index)
-   {
-      // TODO Auto-generated method stub
-      return 0;
-   }
-
-   public double getDouble(final int index)
-   {
-      // TODO Auto-generated method stub
-      return 0;
-   }
-
-   public float getFloat(final int index)
-   {
-      // TODO Auto-generated method stub
-      return 0;
-   }
-
-   public HornetQBuffer readBytes(final int length)
-   {
-      // TODO Auto-generated method stub
-      return null;
+      throw new IllegalAccessError(LargeMessageBufferImpl.READ_ONLY_ERROR_MESSAGE);
    }
 
    public HornetQBuffer readSlice(final int length)
    {
-      // TODO Auto-generated method stub
-      return null;
+      throw new IllegalAccessError(LargeMessageBufferImpl.READ_ONLY_ERROR_MESSAGE);
    }
 
    public void setChar(final int index, final char value)
    {
-      // TODO Auto-generated method stub
-
+      throw new IllegalAccessError(LargeMessageBufferImpl.READ_ONLY_ERROR_MESSAGE);
    }
 
    public void setDouble(final int index, final double value)
    {
-      // TODO Auto-generated method stub
-
+      throw new IllegalAccessError(LargeMessageBufferImpl.READ_ONLY_ERROR_MESSAGE);
    }
 
    public void setFloat(final int index, final float value)
    {
-      // TODO Auto-generated method stub
-
+      throw new IllegalAccessError(LargeMessageBufferImpl.READ_ONLY_ERROR_MESSAGE);
    }
 
    public HornetQBuffer slice()
    {
-      // TODO Auto-generated method stub
-      return null;
+      throw new IllegalAccessError(LargeMessageBufferImpl.READ_ONLY_ERROR_MESSAGE);
    }
 
    public void writeBytes(final HornetQBuffer src, final int srcIndex, final int length)
    {
-      // TODO Auto-generated method stub
-
+      throw new IllegalAccessError(LargeMessageBufferImpl.READ_ONLY_ERROR_MESSAGE);
    }
 
 }

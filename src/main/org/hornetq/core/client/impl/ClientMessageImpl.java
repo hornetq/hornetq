@@ -25,6 +25,7 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.BodyEncoder;
 import org.hornetq.core.message.impl.MessageImpl;
+import org.hornetq.utils.DataConstants;
 
 /**
  * 
@@ -249,6 +250,7 @@ public class ClientMessageImpl extends MessageImpl implements ClientMessageInter
 
       public void open()
       {
+         getBodyBuffer().readerIndex(0);
       }
 
       public void close()
@@ -257,7 +259,14 @@ public class ClientMessageImpl extends MessageImpl implements ClientMessageInter
 
       public long getLargeBodySize()
       {
-         return buffer.writerIndex();
+         if (isLargeMessage())
+         {
+            return getBodyBuffer().writerIndex();
+         }
+         else
+         {
+            return getBodyBuffer().writerIndex() - BODY_OFFSET;
+         }
       }
 
       public int encode(final ByteBuffer bufferRead) throws HornetQException
