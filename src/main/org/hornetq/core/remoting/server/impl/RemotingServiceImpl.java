@@ -130,8 +130,10 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
       this.protocolMap.put(ProtocolType.CORE, new CoreProtocolManagerFactory().createProtocolManager(server,
                                                                                                      interceptors));
+      // difference between Stomp and Stomp over Web Sockets is handled in NettyAcceptor.getPipeline()
       this.protocolMap.put(ProtocolType.STOMP, new StompProtocolManagerFactory().createProtocolManager(server,
                                                                                                        interceptors));
+      this.protocolMap.put(ProtocolType.STOMP_WS, new StompProtocolManagerFactory().createProtocolManager(server, interceptors));
    }
 
    // RemotingService implementation -------------------------------

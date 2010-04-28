@@ -22,5 +22,5 @@ package org.hornetq.spi.core.protocol;
  */
 public enum ProtocolType
 {
-   CORE, STOMP, AMQP, AARDVARK;
+   CORE, STOMP, STOMP_WS, AMQP, AARDVARK;
 }

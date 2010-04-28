@@ -18,6 +18,7 @@
 package org.hornetq.core.protocol.stomp;
 
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
@@ -81,6 +82,18 @@ class StompFrame
    public String toString()
    {
       return "StompFrame[command=" + command + ", headers=" + headers + ", content-length=" + content.length + "]";
+   }
+
+   public String asString()
+   {
+      String out = command + '\n';
+      for (Entry<String, Object> header : headers.entrySet())
+      {
+         out += header.getKey() + ": " + header.getValue() + '\n';
+      }
+      out += '\n';
+      out += new String(content);
+      return out;
    }
    
    public HornetQBuffer toHornetQBuffer() throws Exception

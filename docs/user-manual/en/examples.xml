@@ -421,6 +421,12 @@
                 HornetQ server to send and receive Stomp messages.</para>
         </section>
         <section>
+            <title>Stomp Over Web Sockets</title>
+            <para>The <literal>stomp-websockets</literal> example shows you how to configure a
+                HornetQ server to send and receive Stomp messages directly from Web browsers (provided
+                they support Web Sockets).</para>
+        </section>
+        <section>
             <title>Symmetric Cluster</title>
             <para>The <literal>symmetric-cluster</literal> example demonstrates a symmetric cluster
                 set-up with HornetQ.</para>

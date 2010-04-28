@@ -35,6 +35,7 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.management.NotificationType;
 import org.hornetq.core.logging.Logger;
+import org.hornetq.core.protocol.stomp.WebSocketServerHandler;
 import org.hornetq.core.remoting.impl.ssl.SSLSupport;
 import org.hornetq.core.server.management.Notification;
 import org.hornetq.core.server.management.NotificationService;
@@ -57,6 +58,7 @@ import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.channel.ChannelStateEvent;
+import org.jboss.netty.channel.DefaultChannelPipeline;
 import org.jboss.netty.channel.StaticChannelPipeline;
 import org.jboss.netty.channel.group.ChannelGroup;
 import org.jboss.netty.channel.group.ChannelGroupFuture;
@@ -65,6 +67,7 @@ import org.jboss.netty.channel.local.DefaultLocalServerChannelFactory;
 import org.jboss.netty.channel.local.LocalAddress;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
 import org.jboss.netty.channel.socket.oio.OioServerSocketChannelFactory;
+import org.jboss.netty.handler.codec.http.HttpChunkAggregator;
 import org.jboss.netty.handler.codec.http.HttpRequestDecoder;
 import org.jboss.netty.handler.codec.http.HttpResponseEncoder;
 import org.jboss.netty.handler.ssl.SslHandler;
@@ -320,9 +323,15 @@ public class NettyAcceptor implements Acceptor
 
       ChannelPipelineFactory factory = new ChannelPipelineFactory()
       {
+         /**
+          *  we use named handlers so that the web socket server handler can
+          * replace the http encode/decoder after the http handshake.
+          * 
+          * @see WebSocketServerHandler#handleHttpRequest(ChannelHandlerContext, org.jboss.netty.handler.codec.http.HttpRequest)
+          */
          public ChannelPipeline getPipeline() throws Exception
          {
-            List<ChannelHandler> handlers = new ArrayList<ChannelHandler>();
+            ChannelPipeline pipeline = new DefaultChannelPipeline();
 
             if (sslEnabled)
             {
@@ -332,31 +341,37 @@ public class NettyAcceptor implements Acceptor
 
                SslHandler handler = new SslHandler(engine);
 
-               handlers.add(handler);
+               pipeline.addLast("ssl", handler);
             }
 
             if (httpEnabled)
             {
-               handlers.add(new HttpRequestDecoder());
+               pipeline.addLast("http-decoder", new HttpRequestDecoder());
 
-               handlers.add(new HttpResponseEncoder());
+               pipeline.addLast("http-encoder", new HttpResponseEncoder());
 
-               handlers.add(new HttpAcceptorHandler(httpKeepAliveRunnable, httpResponseTime));
+               pipeline.addLast("http-handler", new HttpAcceptorHandler(httpKeepAliveRunnable, httpResponseTime));
             }
 
             if (protocol == ProtocolType.CORE)
             {
                // Core protocol uses it's own optimised decoder
-               handlers.add(new HornetQFrameDecoder2());
+               pipeline.addLast("hornetq-decoder", new HornetQFrameDecoder2());
+            }
+            else if (protocol == ProtocolType.STOMP_WS)
+            {
+               pipeline.addLast("http-decoder", new HttpRequestDecoder());
+               pipeline.addLast("http-aggregator", new HttpChunkAggregator(65536));
+               pipeline.addLast("http-encoder", new HttpResponseEncoder());
+               pipeline.addLast("hornetq-decoder", new HornetQFrameDecoder(decoder));
+               pipeline.addLast("websocket-handler", new WebSocketServerHandler());
             }
             else
             {
-               handlers.add(new HornetQFrameDecoder(decoder));
+               pipeline.addLast("hornetq-decoder", new HornetQFrameDecoder(decoder));
             }
 
-            handlers.add(new HornetQServerChannelHandler(channelGroup, handler, new Listener()));
-
-            ChannelPipeline pipeline = new StaticChannelPipeline(handlers.toArray(new ChannelHandler[handlers.size()]));
+            pipeline.addLast("handler", new HornetQServerChannelHandler(channelGroup, handler, new Listener()));
 
             return pipeline;
          }
@@ -411,7 +426,7 @@ public class NettyAcceptor implements Acceptor
          batchFlusherFuture = scheduledThreadPool.scheduleWithFixedDelay(flusher, batchDelay, batchDelay, TimeUnit.MILLISECONDS);
       }
 
-      NettyAcceptor.log.info("Started Netty Acceptor version " + Version.ID + " " + host + ":" + port);
+      NettyAcceptor.log.info("Started Netty Acceptor version " + Version.ID + " " + host + ":" + port + " for " + protocol + " protocol");
    }
 
    private void startServerChannels()

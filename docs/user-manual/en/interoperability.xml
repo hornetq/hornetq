@@ -79,10 +79,10 @@ hello queue orders
                 <para>send or subscribe to a JMS <emphasis>Topic</emphasis> by prepending the topic name by <literal>jms.topic.</literal>.</para>
                 <para>For example to subscribe to the <literal>stocks</literal> JMS Topic, the Stomp client must send the frame:</para>
                 <programlisting>
-  SUBSCRIBE
-  destination:jms.topic.stocks
-  
-  ^@
+SUBSCRIBE
+destination:jms.topic.stocks
+
+^@
                 </programlisting>
               </listitem>
              </itemizedlist>
@@ -107,6 +107,30 @@ message.writeBytes(text.getBytes("UTF-8"));
 producer.send(message);
              </programlisting>
           </section>
+        </section>
+        
+        <section id="stomp.websockets">
+         <title>Stomp Over Web Sockets</title>
+         <para>HornetQ also support Stomp over <ulink url="http://dev.w3.org/html5/websockets/">Web Sockets</ulink>. Modern web browser which support Web Sockets can send and receive
+            Stomp messages from HornetQ.</para>
+         <para>To enable Stomp over Web Sockets, you must configure a <literal>NettyAcceptor</literal> with a <literal>protocol</literal>
+            parameter set to <literal>stomp_ws</literal>:</para>
+         <programlisting>
+&lt;acceptor name="stomp-ws-acceptor">
+	&lt;factory-class>org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory&lt;/factory-class>
+	&lt;param key="protocol"  value="stomp_ws"/>
+	&lt;param key="port"  value="61614"/>
+&lt;/acceptor>
+         </programlisting>
+         <para>With this configuration, HornetQ will accept Stomp connections over Web Sockets on 
+            the port <literal>61614</literal> with the URL path <literal>/stomp</literal>.
+            Web browser can then connect to <literal>ws://&lt;server&gt;:61614/stomp</literal> usin a Web Socket to send and receive Stomp
+            messages.</para>
+         <para>A companion JavaScript library to ease client-side development is available from 
+            <ulink url="http://github.com/jmesnil/stomp-websocket">GitHub</ulink> (please see
+            its <ulink url="http://jmesnil.net/stomp-websocket/doc/">documentation</ulink> for a complete description).</para>
+         <para>The <literal>stomp-websockets</literal> example shows how to configure HornetQ server to have web browsers and Java
+            applications exchanges messages on a JMS topic.</para>
         </section>
 
         <section id="stompconnect">
