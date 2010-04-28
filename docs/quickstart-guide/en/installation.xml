@@ -46,8 +46,9 @@
          |___ bin
          |
          |___ config
-         |      |___ jboss-as
-         | `    |___ stand-alone
+         |      |___ jboss-as-4
+         |      |___ jboss-as-5
+         |      |___ stand-alone
          |
          |___ docs
          |      |___ api
@@ -71,7 +72,7 @@
          </listitem>
          <listitem>
             <para><literal>config</literal> -- configuration files needed to configure HornetQ. This
-               contains configurations to run HornetQ either in stand-alone or inside JBoss AS 5.
+               contains configurations to run HornetQ either in stand-alone or inside JBoss AS 4 and 5.
                Please refer to the reference guide for details on configuration. </para>
          </listitem>
          <listitem>
@@ -109,8 +110,8 @@
                directory where you installed JBoss AS 5</para>
          </listitem>
          <listitem>
-            <para>run <literal>./build.sh as5</literal> (or <literal>build.bat as5</literal> if you are on
-               Windows) in HornetQ's <literal>config/jboss-as</literal> directory</para>
+            <para>run <literal>./build.sh</literal> (or <literal>build.bat</literal> if you are on
+               Windows) in HornetQ <literal>config/jboss-as-5</literal> directory</para>
          </listitem>
       </orderedlist>
       <para>This will create 2 new profiles in <literal>$JBOSS_HOME/server</literal>:</para>
@@ -143,8 +144,8 @@
                directory where you installed JBoss AS 4</para>
          </listitem>
          <listitem>
-            <para>run <literal><literal>./build.sh as4</literal> (or <literal>build.bat as4</literal> if you
-                  are on Windows)</literal> in HornetQ's <literal>config/jboss-as</literal>
+            <para>run <literal>./build.sh</literal> (or <literal>build.bat as4</literal> if you
+                  are on Windows) in HornetQ <literal>config/jboss-as-4</literal>
                directory</para>
          </listitem>
       </orderedlist>
