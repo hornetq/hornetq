@@ -32,6 +32,12 @@ public interface SequentialFileFactory
 
    boolean isSupportsCallbacks();
 
+   /**
+    * Note: You need to release the buffer if is used for reading operations.
+    *       You don't need to do it if using writing operations (AIO Buffer Lister will take of writing operations)
+    * @param size
+    * @return
+    */
    ByteBuffer newBuffer(int size);
 
    void releaseBuffer(ByteBuffer buffer);
