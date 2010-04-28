@@ -219,7 +219,10 @@ public class JMSTopicControlImpl extends StandardMBean implements TopicControl
       for (String queue : queues)
       {
          QueueControl coreQueueControl = (QueueControl)managementService.getResource(ResourceNames.CORE_QUEUE + queue);
-         count += coreQueueControl.removeMessages(filter);
+         if (coreQueueControl != null)
+         {
+            count += coreQueueControl.removeMessages(filter);
+         }
       }
 
       return count;
