@@ -35,6 +35,7 @@ import org.hornetq.api.jms.HornetQJMSConstants;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.jms.bridge.QualityOfServiceMode;
 import org.hornetq.jms.bridge.impl.JMSBridgeImpl;
+import org.hornetq.jms.client.HornetQMessage;
 
 /**
  * A JMSBridgeTest
@@ -1005,10 +1006,20 @@ public class JMSBridgeTest extends BridgeTestBase
          {
             TextMessage tm = sessSource.createTextMessage("message" + i);
 
-            // We add some headers to make sure they get passed through ok
+            // We add some properties to make sure they get passed through ok
             tm.setStringProperty("wib", "uhuh");
             tm.setBooleanProperty("cheese", true);
             tm.setIntProperty("Sausages", 23);
+            tm.setByteProperty("bacon", (byte)12);
+            tm.setDoubleProperty("toast", 17261762.12121d);
+            tm.setFloatProperty("orange", 1212.1212f);
+            tm.setLongProperty("blurg", 817217827l);
+            tm.setShortProperty("stst", (short)26363);
+            
+            //Set some JMS headers too
+            
+            //And also set a core props
+            ((HornetQMessage)tm).getCoreMessage().putBytesProperty("bytes", new byte[] { 1, 2, 3});
 
             // We add some JMSX ones too
 
@@ -1040,6 +1051,13 @@ public class JMSBridgeTest extends BridgeTestBase
             Assert.assertEquals("uhuh", tm.getStringProperty("wib"));
             Assert.assertTrue(tm.getBooleanProperty("cheese"));
             Assert.assertEquals(23, tm.getIntProperty("Sausages"));
+            assertEquals((byte)12, tm.getByteProperty("bacon"));
+            assertEquals(17261762.12121d, tm.getDoubleProperty("toast"));
+            assertEquals(1212.1212f, tm.getFloatProperty("orange"));
+            assertEquals(817217827l, tm.getLongProperty("blurg"));
+            assertEquals((short)26363, tm.getShortProperty("stst"));
+            
+            assertEqualsByteArrays(new byte[] { 1,2, 3}, ((HornetQMessage)tm).getCoreMessage().getBytesProperty("bytes"));
 
             Assert.assertEquals("mygroup543", tm.getStringProperty("JMSXGroupID"));
 
@@ -1085,6 +1103,13 @@ public class JMSBridgeTest extends BridgeTestBase
                Assert.assertEquals("uhuh", tm.getStringProperty("wib"));
                Assert.assertTrue(tm.getBooleanProperty("cheese"));
                Assert.assertEquals(23, tm.getIntProperty("Sausages"));
+               assertEquals((byte)12, tm.getByteProperty("bacon"));
+               assertEquals(17261762.12121d, tm.getDoubleProperty("toast"));
+               assertEquals(1212.1212f, tm.getFloatProperty("orange"));
+               assertEquals(817217827l, tm.getLongProperty("blurg"));
+               assertEquals((short)26363, tm.getShortProperty("stst"));
+               
+               assertEqualsByteArrays(new byte[] { 1,2, 3}, ((HornetQMessage)tm).getCoreMessage().getBytesProperty("bytes"));
 
                Assert.assertEquals("mygroup543", tm.getStringProperty("JMSXGroupID"));
 
@@ -1994,6 +2019,8 @@ public class JMSBridgeTest extends BridgeTestBase
    {
       return newTransactionManager();
    }
+   
+   
 
    // Inner classes -------------------------------------------------------------------
 

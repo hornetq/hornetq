@@ -52,6 +52,7 @@ import org.hornetq.jms.bridge.DestinationFactory;
 import org.hornetq.jms.bridge.JMSBridge;
 import org.hornetq.jms.bridge.JMSBridgeControl;
 import org.hornetq.jms.bridge.QualityOfServiceMode;
+import org.hornetq.jms.client.HornetQMessage;
 import org.hornetq.jms.client.HornetQSession;
 
 /**
@@ -110,7 +111,7 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
    private volatile boolean addMessageIDInHeader;
 
    private boolean started;
-   
+
    private boolean stopping = false;
 
    private final LinkedList<Message> messages;
@@ -142,7 +143,7 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
    private BatchTimeChecker timeChecker;
 
    private ExecutorService executor;
-   
+
    private long batchExpiryTime;
 
    private boolean paused;
@@ -310,7 +311,7 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
    public synchronized void start() throws Exception
    {
       stopping = false;
-      
+
       if (started)
       {
          JMSBridgeImpl.log.warn("Attempt to start, but is already started");
@@ -327,7 +328,7 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
       {
          executor = createExecutor();
       }
-      
+
       checkParams();
 
       TransactionManager tm = getTm();
@@ -395,7 +396,7 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
    public synchronized void stop() throws Exception
    {
       stopping = true;
-      
+
       if (JMSBridgeImpl.trace)
       {
          JMSBridgeImpl.log.trace("Stopping " + this);
@@ -409,8 +410,8 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
       }
 
       boolean ok = executor.awaitTermination(60, TimeUnit.SECONDS);
-      
-      if(!ok)
+
+      if (!ok)
       {
          throw new Exception("fail to stop JMS Bridge");
       }
@@ -1235,7 +1236,7 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
          {
             log.trace("Failed to connect bridge", e);
          }
-         
+
          cleanup();
 
          return false;
@@ -1665,7 +1666,17 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
 
             String propName = (String)entry.getKey();
 
-            msg.setObjectProperty(propName, entry.getValue());
+            Object val = entry.getValue();
+
+            if (val instanceof byte[] == false)
+            {
+               //Can't set byte[] array props through the JMS API - if we're bridging a HornetQ message it might have such props
+               msg.setObjectProperty(propName, entry.getValue());
+            }
+            else if (msg instanceof HornetQMessage)
+            {
+               ((HornetQMessage)msg).getCoreMessage().putBytesProperty(propName, (byte[])val);
+            }
          }
       }
    }
