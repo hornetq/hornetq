@@ -114,6 +114,8 @@ public interface Journal extends HornetQComponent
    int getAlignment() throws Exception;
 
    int getNumberOfRecords();
+   
+   int getUserVersion();
 
    void perfBlast(int pages) throws Exception;
 

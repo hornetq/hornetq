@@ -533,8 +533,15 @@ public class ReplicatedJournal implements Journal
 
    public void runDirectJournalBlast() throws Exception
    {
-      // TODO Auto-generated method stub
+      localJournal.runDirectJournalBlast();
+   }
 
+   /* (non-Javadoc)
+    * @see org.hornetq.core.journal.Journal#getUserVersion()
+    */
+   public int getUserVersion()
+   {
+      return localJournal.getUserVersion();
    }
 
    // Package protected ---------------------------------------------

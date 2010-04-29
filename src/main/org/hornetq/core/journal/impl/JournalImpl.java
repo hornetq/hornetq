@@ -69,7 +69,7 @@ import org.hornetq.utils.concurrent.LinkedBlockingDeque;
 
 /**
  * 
- * <p>A JournalImpl</p
+ * <p>A circular log implementation.</p
  * 
  * <p>Look at {@link JournalImpl#load(LoaderCallback)} for the file layout
  * 
@@ -87,6 +87,8 @@ public class JournalImpl implements TestableJournal
    private static final int STATE_STARTED = 1;
 
    private static final int STATE_LOADED = 2;
+
+   private static final int FORMAT_VERSION = 1;
 
    // Static --------------------------------------------------------
 
@@ -109,7 +111,8 @@ public class JournalImpl implements TestableJournal
 
    public static final int MIN_FILE_SIZE = 1024;
 
-   public static final int SIZE_HEADER = DataConstants.SIZE_INT;
+   // FileID(Long) + JournalVersion + UserVersion
+   public static final int SIZE_HEADER = DataConstants.SIZE_LONG + DataConstants.SIZE_INT + DataConstants.SIZE_INT;
 
    public static final int BASIC_SIZE = DataConstants.SIZE_BYTE + DataConstants.SIZE_INT + DataConstants.SIZE_INT;
 
@@ -163,7 +166,9 @@ public class JournalImpl implements TestableJournal
 
    private volatile boolean autoReclaim = true;
 
-   private final AtomicInteger nextFileID = new AtomicInteger(0);
+   private final AtomicLong nextFileID = new AtomicLong(0);
+
+   private final int userVersion;
 
    private final int maxAIO;
 
@@ -219,6 +224,90 @@ public class JournalImpl implements TestableJournal
    private final Reclaimer reclaimer = new Reclaimer();
 
    // Constructors --------------------------------------------------
+
+   public JournalImpl(final int fileSize,
+                      final int minFiles,
+                      final int compactMinFiles,
+                      final int compactPercentage,
+                      final SequentialFileFactory fileFactory,
+                      final String filePrefix,
+                      final String fileExtension,
+                      final int maxAIO)
+   {
+      this(fileSize, minFiles, compactMinFiles, compactPercentage, fileFactory, filePrefix, fileExtension, maxAIO, 0);
+   }
+
+   public JournalImpl(final int fileSize,
+                      final int minFiles,
+                      final int compactMinFiles,
+                      final int compactPercentage,
+                      final SequentialFileFactory fileFactory,
+                      final String filePrefix,
+                      final String fileExtension,
+                      final int maxAIO,
+                      final int userVersion)
+   {
+      if (fileFactory == null)
+      {
+         throw new NullPointerException("fileFactory is null");
+      }
+      if (fileSize < JournalImpl.MIN_FILE_SIZE)
+      {
+         throw new IllegalArgumentException("File size cannot be less than " + JournalImpl.MIN_FILE_SIZE + " bytes");
+      }
+      if (fileSize % fileFactory.getAlignment() != 0)
+      {
+         throw new IllegalArgumentException("Invalid journal-file-size " + fileSize +
+                                            ", It should be multiple of " +
+                                            fileFactory.getAlignment());
+      }
+      if (minFiles < 2)
+      {
+         throw new IllegalArgumentException("minFiles cannot be less than 2");
+      }
+      if (filePrefix == null)
+      {
+         throw new NullPointerException("filePrefix is null");
+      }
+      if (fileExtension == null)
+      {
+         throw new NullPointerException("fileExtension is null");
+      }
+      if (maxAIO <= 0)
+      {
+         throw new IllegalStateException("maxAIO should aways be a positive number");
+      }
+
+      if (compactPercentage < 0 || compactPercentage > 100)
+      {
+         throw new IllegalArgumentException("Compact Percentage out of range");
+      }
+
+      if (compactPercentage == 0)
+      {
+         this.compactPercentage = 0;
+      }
+      else
+      {
+         this.compactPercentage = (float)compactPercentage / 100f;
+      }
+
+      this.compactMinFiles = compactMinFiles;
+
+      this.fileSize = fileSize;
+
+      this.minFiles = minFiles;
+
+      this.fileFactory = fileFactory;
+
+      this.filePrefix = filePrefix;
+
+      this.fileExtension = fileExtension;
+
+      this.maxAIO = maxAIO;
+
+      this.userVersion = userVersion;
+   }
 
    public void runDirectJournalBlast() throws Exception
    {
@@ -279,75 +368,6 @@ public class JournalImpl implements TestableJournal
       }
 
       latch.await();
-   }
-
-   public JournalImpl(final int fileSize,
-                      final int minFiles,
-                      final int compactMinFiles,
-                      final int compactPercentage,
-                      final SequentialFileFactory fileFactory,
-                      final String filePrefix,
-                      final String fileExtension,
-                      final int maxIO)
-   {
-      if (fileFactory == null)
-      {
-         throw new NullPointerException("fileFactory is null");
-      }
-      if (fileSize < JournalImpl.MIN_FILE_SIZE)
-      {
-         throw new IllegalArgumentException("File size cannot be less than " + JournalImpl.MIN_FILE_SIZE + " bytes");
-      }
-      if (fileSize % fileFactory.getAlignment() != 0)
-      {
-         throw new IllegalArgumentException("Invalid journal-file-size " + fileSize +
-                                            ", It should be multiple of " +
-                                            fileFactory.getAlignment());
-      }
-      if (minFiles < 2)
-      {
-         throw new IllegalArgumentException("minFiles cannot be less than 2");
-      }
-      if (filePrefix == null)
-      {
-         throw new NullPointerException("filePrefix is null");
-      }
-      if (fileExtension == null)
-      {
-         throw new NullPointerException("fileExtension is null");
-      }
-      if (maxIO <= 0)
-      {
-         throw new IllegalStateException("maxAIO should aways be a positive number");
-      }
-
-      if (compactPercentage < 0 || compactPercentage > 100)
-      {
-         throw new IllegalArgumentException("Compact Percentage out of range");
-      }
-
-      if (compactPercentage == 0)
-      {
-         this.compactPercentage = 0;
-      }
-      else
-      {
-         this.compactPercentage = (float)compactPercentage / 100f;
-      }
-
-      this.compactMinFiles = compactMinFiles;
-
-      this.fileSize = fileSize;
-
-      this.minFiles = minFiles;
-
-      this.fileFactory = fileFactory;
-
-      this.filePrefix = filePrefix;
-
-      this.fileExtension = fileExtension;
-
-      maxAIO = maxIO;
    }
 
    public Map<Long, JournalRecord> getRecords()
@@ -576,7 +596,7 @@ public class JournalImpl implements TestableJournal
 
             // This record is from a previous file-usage. The file was
             // reused and we need to ignore this record
-            if (readFileId != file.getFileID())
+            if (readFileId != file.getRecordID())
             {
                // If a file has damaged pendingTransactions, we make it a dataFile, and the
                // next reclaiming will fix it
@@ -2442,6 +2462,11 @@ public class JournalImpl implements TestableJournal
    {
       return maxAIO;
    }
+   
+   public int getUserVersion()
+   {
+      return userVersion;
+   }
 
    // In some tests we need to force the journal to move to a next file
    public void forceMoveNextFile() throws Exception
@@ -2631,25 +2656,17 @@ public class JournalImpl implements TestableJournal
    // Discard the old JournalFile and set it with a new ID
    private JournalFile reinitializeFile(final JournalFile file) throws Exception
    {
-      int newFileID = generateFileID();
+      long newFileID = generateFileID();
 
       SequentialFile sf = file.getFile();
 
       sf.open(1, false);
 
-      sf.position(0);
-
-      ByteBuffer bb = fileFactory.newBuffer(JournalImpl.SIZE_HEADER);
-
-      bb.putInt(newFileID);
-
-      bb.rewind();
-
-      sf.writeDirect(bb, true);
+      int position = initFileHeader(this.fileFactory, sf, userVersion, newFileID);
 
       JournalFile jf = new JournalFileImpl(sf, newFileID);
 
-      sf.position(bb.limit());
+      sf.position(position);
 
       sf.close();
 
@@ -2747,15 +2764,7 @@ public class JournalImpl implements TestableJournal
 
          file.open(1, false);
 
-         ByteBuffer bb = fileFactory.newBuffer(JournalImpl.SIZE_HEADER);
-
-         file.read(bb);
-
-         int fileID = bb.getInt();
-
-         fileFactory.releaseBuffer(bb);
-
-         bb = null;
+         long fileID = readFileHeader(file);
 
          if (nextFileID.get() < fileID)
          {
@@ -2784,6 +2793,68 @@ public class JournalImpl implements TestableJournal
       return orderedFiles;
    }
 
+   /**
+    * @param file
+    * @return
+    * @throws Exception
+    */
+   private long readFileHeader(SequentialFile file) throws Exception
+   {
+      ByteBuffer bb = fileFactory.newBuffer(JournalImpl.SIZE_HEADER);
+
+      file.read(bb);
+
+      int journalVersion = bb.getInt();
+      
+      int userVersion = bb.getInt();
+      
+      long fileID = bb.getLong();
+
+      fileFactory.releaseBuffer(bb);
+
+      bb = null;
+      return fileID;
+   }
+
+   /**
+    * @param fileID
+    * @param sequentialFile
+    * @throws Exception
+    */
+   static int initFileHeader(final SequentialFileFactory fileFactory, final SequentialFile sequentialFile, final int userVersion, final long fileID) throws Exception
+   {
+      // We don't need to release buffers while writing.
+      ByteBuffer bb = fileFactory.newBuffer(JournalImpl.SIZE_HEADER);
+      
+      HornetQBuffer buffer = HornetQBuffers.wrappedBuffer(bb);
+
+      writeHeader(buffer, userVersion, fileID);
+      
+      bb.rewind();
+
+      int bufferSize = bb.limit();
+
+      sequentialFile.position(0);
+
+      sequentialFile.writeDirect(bb, true);
+
+      return bufferSize;
+   }
+
+   /**
+    * @param buffer
+    * @param userVersion
+    * @param fileID
+    */
+   static void writeHeader(HornetQBuffer buffer, final int userVersion, final long fileID)
+   {
+      buffer.writeInt(FORMAT_VERSION);
+      
+      buffer.writeInt(userVersion);
+
+      buffer.writeLong(fileID);
+   }
+   
    /** 
     * 
     * @param completeTransaction If the appendRecord is for a prepare or commit, where we should update the number of pendingTransactions on the current file
@@ -2867,7 +2938,7 @@ public class JournalImpl implements TestableJournal
       }
 
       // Adding fileID
-      encoder.setFileID(currentFile.getFileID());
+      encoder.setFileID(currentFile.getRecordID());
 
       if (callback != null)
       {
@@ -2903,10 +2974,10 @@ public class JournalImpl implements TestableJournal
     */
    private JournalFile createFile(final boolean keepOpened,
                                   final boolean multiAIO,
-                                  final boolean fill,
+                                  final boolean init,
                                   final boolean tmpCompact) throws Exception
    {
-      int fileID = generateFileID();
+      long fileID = generateFileID();
 
       String fileName;
 
@@ -2930,17 +3001,11 @@ public class JournalImpl implements TestableJournal
 
       sequentialFile.open(1, false);
 
-      if (fill)
+      if (init)
       {
          sequentialFile.fill(0, fileSize, JournalImpl.FILL_CHARACTER);
 
-         ByteBuffer bb = fileFactory.newBuffer(JournalImpl.SIZE_HEADER);
-
-         bb.putInt(fileID);
-
-         bb.rewind();
-
-         sequentialFile.writeDirect(bb, true);
+         initFileHeader(this.fileFactory, sequentialFile, userVersion, fileID);
       }
 
       long position = sequentialFile.position();
@@ -2979,7 +3044,7 @@ public class JournalImpl implements TestableJournal
       file.getFile().position(file.getFile().calculateBlockStart(JournalImpl.SIZE_HEADER));
    }
 
-   private int generateFileID()
+   private long generateFileID()
    {
       return nextFileID.incrementAndGet();
    }
@@ -3098,7 +3163,7 @@ public class JournalImpl implements TestableJournal
     */
    JournalFile getFile(final boolean keepOpened,
                        final boolean multiAIO,
-                       final boolean fill,
+                       final boolean initFile,
                        final boolean tmpCompactExtension) throws Exception
    {
       JournalFile nextOpenedFile = null;
@@ -3117,7 +3182,7 @@ public class JournalImpl implements TestableJournal
 
       if (nextOpenedFile == null)
       {
-         nextOpenedFile = createFile(keepOpened, multiAIO, fill, tmpCompactExtension);
+         nextOpenedFile = createFile(keepOpened, multiAIO, initFile, tmpCompactExtension);
       }
       else
       {
@@ -3435,8 +3500,8 @@ public class JournalImpl implements TestableJournal
    {
       public int compare(final JournalFile f1, final JournalFile f2)
       {
-         int id1 = f1.getFileID();
-         int id2 = f2.getFileID();
+         long id1 = f1.getFileID();
+         long id2 = f2.getFileID();
 
          return id1 < id2 ? -1 : id1 == id2 ? 0 : 1;
       }

@@ -792,7 +792,7 @@ public class ReclaimerTest extends UnitTestCase
          return 0;
       }
 
-      public int getFileID()
+      public long getFileID()
       {
          return 0;
       }
@@ -976,6 +976,14 @@ public class ReclaimerTest extends UnitTestCase
       {
          this.needCleanup = needCleanup;
 
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.journal.impl.JournalFile#getRecordID()
+       */
+      public int getRecordID()
+      {
+         return 0;
       }
    }
 }

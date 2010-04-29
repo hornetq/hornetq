@@ -69,7 +69,7 @@ public class JournalCompactor extends AbstractJournalUpdateTask
 
       if (controlFile.exists())
       {
-         JournalFile file = new JournalFileImpl(controlFile, -1);
+         JournalFile file = new JournalFileImpl(controlFile, 0);
 
          final ArrayList<RecordInfo> records = new ArrayList<RecordInfo>();
 
@@ -140,7 +140,7 @@ public class JournalCompactor extends AbstractJournalUpdateTask
    public JournalCompactor(final SequentialFileFactory fileFactory,
                            final JournalImpl journal,
                            final Set<Long> recordsSnapshot,
-                           final int firstFileID)
+                           final long firstFileID)
    {
       super(fileFactory, journal, recordsSnapshot, firstFileID);
    }

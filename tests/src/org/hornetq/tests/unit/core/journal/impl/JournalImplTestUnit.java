@@ -662,7 +662,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
    public void testReclaimAddUpdateDeleteDifferentFiles1() throws Exception
    {
       // Make sure there is one record per file
-      setup(2, calculateRecordSize(8, getAlignment()) + calculateRecordSize(JournalImpl.SIZE_ADD_RECORD + recordLength,
+      setup(2, calculateRecordSize(JournalImpl.SIZE_HEADER, getAlignment()) + calculateRecordSize(JournalImpl.SIZE_ADD_RECORD + recordLength,
                                                                             getAlignment()), true);
       createJournal();
       startJournal();
@@ -701,7 +701,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
    public void testReclaimAddUpdateDeleteDifferentFiles2() throws Exception
    {
       // Make sure there is one record per file
-      setup(2, calculateRecordSize(8, getAlignment()) + calculateRecordSize(JournalImpl.SIZE_ADD_RECORD + recordLength,
+      setup(2, calculateRecordSize(JournalImpl.SIZE_HEADER, getAlignment()) + calculateRecordSize(JournalImpl.SIZE_ADD_RECORD + recordLength,
                                                                             getAlignment()), true);
 
       createJournal();

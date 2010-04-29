@@ -1078,8 +1078,14 @@ public class ReplicationTest extends ServiceTestBase
 
       public void runDirectJournalBlast() throws Exception
       {
-         // TODO Auto-generated method stub
+      }
 
+      /* (non-Javadoc)
+       * @see org.hornetq.core.journal.Journal#getUserVersion()
+       */
+      public int getUserVersion()
+      {
+         return 0;
       }
 
    }

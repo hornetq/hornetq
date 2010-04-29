@@ -55,7 +55,7 @@ public class JournalCleaner extends AbstractJournalUpdateTask
    protected JournalCleaner(final SequentialFileFactory fileFactory,
                             final JournalImpl journal,
                             final Set<Long> recordsSnapshot,
-                            final int nextOrderingID) throws Exception
+                            final long nextOrderingID) throws Exception
    {
       super(fileFactory, journal, recordsSnapshot, nextOrderingID);
       openFile();

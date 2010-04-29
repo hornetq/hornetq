@@ -35,7 +35,9 @@ public class JournalFileImpl implements JournalFile
 
    private final SequentialFile file;
 
-   private final int fileID;
+   private final long fileID;
+   
+   private final int recordID;
 
    private long offset;
 
@@ -49,11 +51,13 @@ public class JournalFileImpl implements JournalFile
 
    private final Map<JournalFile, AtomicInteger> negCounts = new ConcurrentHashMap<JournalFile, AtomicInteger>();
 
-   public JournalFileImpl(final SequentialFile file, final int fileID)
+   public JournalFileImpl(final SequentialFile file, final long fileID)
    {
       this.file = file;
 
       this.fileID = fileID;
+      
+      this.recordID = (int)(fileID & (long)Integer.MAX_VALUE);
    }
 
    public void clearCounts()
@@ -132,9 +136,14 @@ public class JournalFileImpl implements JournalFile
       return offset;
    }
 
-   public int getFileID()
+   public long getFileID()
    {
       return fileID;
+   }
+   
+   public int getRecordID()
+   {
+      return recordID;
    }
 
    public void setOffset(final long offset)
