@@ -125,7 +125,7 @@
                                 <entry>10MiB (10 * 1024 * 1024 bytes)</entry>
                             </row>
                             <row>
-                                <entry><literal>address-full-message-policy</literal></entry>
+                                <entry><literal>address-full-policy</literal></entry>
                                 <entry>This must be set to PAGE for paging to enable. If the value
                                     is PAGE then further messages will be paged to disk. If the
                                     value is DROP then further messages will be silently dropped. If
