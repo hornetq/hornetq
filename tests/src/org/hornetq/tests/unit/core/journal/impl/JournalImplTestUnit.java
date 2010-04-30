@@ -13,12 +13,15 @@
 
 package org.hornetq.tests.unit.core.journal.impl;
 
+import java.nio.ByteBuffer;
 import java.util.List;
 
 import junit.framework.Assert;
 
+import org.hornetq.api.core.HornetQException;
 import org.hornetq.core.journal.EncodingSupport;
 import org.hornetq.core.journal.RecordInfo;
+import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.impl.JournalImpl;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.tests.unit.core.journal.impl.fakes.SimpleEncoding;
@@ -186,6 +189,113 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
       }
 
    }
+   
+   
+   public void testVersionCheck() throws Exception
+   {
+      setup(10, 10 * 1024, true);
+      createJournal();
+      startJournal();
+      load();
+      
+      stopJournal();
+      
+      fileFactory.start();
+
+      List<String> files = fileFactory.listFiles(fileExtension);
+      
+      for (String fileStr : files)
+      {
+         
+         SequentialFile file = fileFactory.createSequentialFile(fileStr, 1);
+         
+         ByteBuffer buffer = fileFactory.newBuffer(JournalImpl.SIZE_HEADER);
+         
+         for (int i = 0 ; i < JournalImpl.SIZE_HEADER; i++)
+         {
+            buffer.put(Byte.MAX_VALUE);
+         }
+         
+         buffer.rewind();
+         
+         file.open();
+         
+         file.position(0);
+         
+         file.writeDirect(buffer, sync);
+         
+         file.close();
+      }
+      
+      fileFactory.stop();
+
+      startJournal();
+      
+      boolean exceptionHappened = false;
+      try
+      {
+         load();
+      }
+      catch (HornetQException e)
+      {
+         exceptionHappened = true;
+         assertEquals(HornetQException.IO_ERROR, e.getCode());
+      }
+      
+      assertTrue("Exception was expected", exceptionHappened);
+      stopJournal();
+      
+      
+   }
+
+   // Validates the if the journal will work when the IDs are over MaxInt
+   public void testMaxInt() throws Exception
+   {
+      setup(10, 10 * 1024, true);
+      createJournal();
+      startJournal();
+      load();
+      
+      stopJournal();
+      
+      fileFactory.start();
+
+      List<String> files = fileFactory.listFiles(fileExtension);
+      
+      long fileID = Integer.MAX_VALUE;
+      for (String fileStr : files)
+      {
+         SequentialFile file = fileFactory.createSequentialFile(fileStr, 1);
+         
+         file.open();
+         
+         JournalImpl.initFileHeader(fileFactory, file, journal.getUserVersion(), fileID++);
+
+         file.close();
+      }
+      
+      fileFactory.stop();
+
+      startJournal();
+      
+      load();
+      
+      for (long i = 0 ; i < 100; i++)
+      {
+         add(i);
+
+         stopJournal();
+         
+         startJournal();
+
+         loadAndCheck();
+      }
+      
+      stopJournal();
+      
+   }
+
+
 
    public void testFilesImmediatelyAfterload() throws Exception
    {

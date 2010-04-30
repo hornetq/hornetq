@@ -43,6 +43,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
+import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Pair;
 import org.hornetq.core.journal.EncodingSupport;
 import org.hornetq.core.journal.IOAsyncTask;
@@ -2763,26 +2764,31 @@ public class JournalImpl implements TestableJournal
          SequentialFile file = fileFactory.createSequentialFile(fileName, maxAIO);
 
          file.open(1, false);
-
-         long fileID = readFileHeader(file);
-
-         if (nextFileID.get() < fileID)
+         
+         try
          {
-            nextFileID.set(fileID);
+            long fileID = readFileHeader(file);
+   
+            if (nextFileID.get() < fileID)
+            {
+               nextFileID.set(fileID);
+            }
+   
+            long fileNameID = getFileNameID(fileName);
+   
+            // The compactor could create a fileName but use a previously assigned ID.
+            // Because of that we need to take both parts into account
+            if (nextFileID.get() < fileNameID)
+            {
+               nextFileID.set(fileNameID);
+            }
+   
+            orderedFiles.add(new JournalFileImpl(file, fileID));
          }
-
-         int fileNameID = getFileNameID(fileName);
-
-         // The compactor could create a fileName but use a previously assigned ID.
-         // Because of that we need to take both parts into account
-         if (nextFileID.get() < fileNameID)
+         finally
          {
-            nextFileID.set(fileNameID);
+            file.close();
          }
-
-         orderedFiles.add(new JournalFileImpl(file, fileID));
-
-         file.close();
       }
 
       // Now order them by ordering id - we can't use the file name for ordering
@@ -2806,7 +2812,18 @@ public class JournalImpl implements TestableJournal
 
       int journalVersion = bb.getInt();
       
-      int userVersion = bb.getInt();
+      if (journalVersion != FORMAT_VERSION)
+      {
+         throw new HornetQException(HornetQException.IO_ERROR, "Journal files version mismatch");
+      }
+      
+      
+      int readUserVersion = bb.getInt();
+      
+      if (readUserVersion != userVersion)
+      {
+         throw new HornetQException(HornetQException.IO_ERROR, "Journal data belong to a different version");
+      }
       
       long fileID = bb.getLong();
 
@@ -2821,7 +2838,7 @@ public class JournalImpl implements TestableJournal
     * @param sequentialFile
     * @throws Exception
     */
-   static int initFileHeader(final SequentialFileFactory fileFactory, final SequentialFile sequentialFile, final int userVersion, final long fileID) throws Exception
+   public static int initFileHeader(final SequentialFileFactory fileFactory, final SequentialFile sequentialFile, final int userVersion, final long fileID) throws Exception
    {
       // We don't need to release buffers while writing.
       ByteBuffer bb = fileFactory.newBuffer(JournalImpl.SIZE_HEADER);
@@ -2846,7 +2863,7 @@ public class JournalImpl implements TestableJournal
     * @param userVersion
     * @param fileID
     */
-   static void writeHeader(HornetQBuffer buffer, final int userVersion, final long fileID)
+   public static void writeHeader(HornetQBuffer buffer, final int userVersion, final long fileID)
    {
       buffer.writeInt(FORMAT_VERSION);
       
@@ -2953,11 +2970,11 @@ public class JournalImpl implements TestableJournal
    }
 
    /** Get the ID part of the name */
-   private int getFileNameID(final String fileName)
+   private long getFileNameID(final String fileName)
    {
       try
       {
-         return Integer.parseInt(fileName.substring(filePrefix.length() + 1, fileName.indexOf('.')));
+         return Long.parseLong(fileName.substring(filePrefix.length() + 1, fileName.indexOf('.')));
       }
       catch (Throwable e)
       {
