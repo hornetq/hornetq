@@ -90,7 +90,10 @@ public class HornetQRAManagedConnection implements ManagedConnection, ExceptionL
    // Physical JMS connection stuff
    private Connection connection;
 
+   // auto-commit session, used outside XA or Local transaction
    private Session session;
+
+   private Session transactedSession;
 
    private XASession xaSession;
 
@@ -124,6 +127,7 @@ public class HornetQRAManagedConnection implements ManagedConnection, ExceptionL
 
       connection = null;
       session = null;
+      transactedSession = null;
       xaSession = null;
       xaResource = null;
 
@@ -251,6 +255,11 @@ public class HornetQRAManagedConnection implements ManagedConnection, ExceptionL
                session.close();
             }
 
+            if (transactedSession != null)
+            {
+               transactedSession.close();
+            }
+
             if (xaSession != null)
             {
                xaSession.close();
@@ -268,7 +277,7 @@ public class HornetQRAManagedConnection implements ManagedConnection, ExceptionL
       }
       catch (Throwable e)
       {
-         throw new ResourceException("Could not properly close the session and connection", e);
+         throw new ResourceException("Could not properly close the transactedSession and connection", e);
       }
    }
 
@@ -562,12 +571,24 @@ public class HornetQRAManagedConnection implements ManagedConnection, ExceptionL
       } 
       else
       {
-         if (HornetQRAManagedConnection.trace)
+         if (inManagedTx)
          {
-            HornetQRAManagedConnection.log.trace("getSession() -> session " + xaSession.getSession());
-         }
+            if (HornetQRAManagedConnection.trace)
+            {
+               HornetQRAManagedConnection.log.trace("getSession() -> transactedSession " + transactedSession);
+            }
 
-         return session;
+            return transactedSession;
+         }
+         else
+         {
+            if (HornetQRAManagedConnection.trace)
+            {
+               HornetQRAManagedConnection.log.trace("getSession() -> session " + session);
+            }
+
+            return session;
+         }
       }
    }
 
@@ -737,7 +758,8 @@ public class HornetQRAManagedConnection implements ManagedConnection, ExceptionL
             connection.setExceptionListener(this);
 
             xaSession = ((XATopicConnection)connection).createXATopicSession();
-            session = ((TopicConnection)connection).createTopicSession(transacted, acknowledgeMode);
+            transactedSession = ((TopicConnection)connection).createTopicSession(transacted, acknowledgeMode);
+            session = ((TopicConnection)connection).createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
          }
          else if (cri.getType() == HornetQRAConnectionFactory.QUEUE_CONNECTION)
          {
@@ -753,7 +775,8 @@ public class HornetQRAManagedConnection implements ManagedConnection, ExceptionL
             connection.setExceptionListener(this);
 
             xaSession = ((XAQueueConnection)connection).createXAQueueSession();
-            session = ((QueueConnection)connection).createQueueSession(transacted, acknowledgeMode);
+            transactedSession = ((QueueConnection)connection).createQueueSession(transacted, acknowledgeMode);
+            session = ((QueueConnection)connection).createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
          }
          else
          {
@@ -769,7 +792,8 @@ public class HornetQRAManagedConnection implements ManagedConnection, ExceptionL
             connection.setExceptionListener(this);
 
             xaSession = ((XAConnection)connection).createXASession();
-            session = connection.createSession(transacted, acknowledgeMode);
+            transactedSession = connection.createSession(transacted, acknowledgeMode);
+            session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
          }
       }
       catch (JMSException je)
