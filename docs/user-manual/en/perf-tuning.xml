@@ -213,8 +213,7 @@ serveruser     hard    nofile  20000
     </section>
     <section>
         <title>Tuning the VM</title>
-        <para>We highly recommend you use the latest Java 6 JVM, especially in the area of
-            networking, many improvements have been made since Java 5. We test internally using the
+        <para>We highly recommend you use the latest Java JVM for the best performance. We test internally using the
             Sun JVM, so some of these tunings won't apply to JDKs from other providers (e.g. IBM or
             JRockit)</para>
         <itemizedlist>

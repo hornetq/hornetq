@@ -53,7 +53,7 @@
             <para>Java <ulink url="http://en.wikipedia.org/wiki/New_I/O">NIO</ulink>.</para>
             <para>The first implementation uses standard Java NIO to interface with the file system.
                 This provides extremely good performance and runs on any platform where there's a
-                Java 5+ runtime.</para>
+                Java 6+ runtime.</para>
         </listitem>
         <listitem id="aio-journal">
             <para>Linux Asynchronous IO</para>

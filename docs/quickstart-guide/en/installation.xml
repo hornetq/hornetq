@@ -22,7 +22,7 @@
    <section id="installation.prerequisites">
       <title>Prerequisites</title>
       <note>
-         <para>HornetQ only runs on Java 5 or later. We highly recommend you use Java 6.</para>
+         <para>HornetQ only runs on Java 6 or later.</para>
       </note>
       <para>By default, HornetQ server runs with 1GiB of memory. If your computer has less memory,
          or you want to run it with more available RAM, modify the value in <literal

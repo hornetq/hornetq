@@ -42,7 +42,7 @@
             <para>HornetQ is designed with usability in mind.</para>
         </listitem>
         <listitem>
-            <para>Written in Java. Runs on any platform with a Java 5+ runtime, that's everything
+            <para>Written in Java. Runs on any platform with a Java 6+ runtime, that's everything
                 from Windows desktops to IBM mainframes.</para>
         </listitem>
         <listitem>
