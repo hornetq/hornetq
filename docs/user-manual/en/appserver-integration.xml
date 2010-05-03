@@ -53,9 +53,11 @@ public class MDBExample implements MessageListener
             preconfigured in the usual way using the HornetQ configuration files.</para>
         <para>The <literal>ResourceAdapter</literal> annotation is used to specify which adaptor
             should be used. To use this you will need to import <literal
-                >org.jboss.ejb3.annotation.ResourceAdapter</literal> which can be found in the
+                >org.jboss.ejb3.annotation.ResourceAdapter</literal> for JBoss AS 5.X and later version which can be found in the
                 <literal>jboss-ejb3-ext-api.jar</literal> which can be found in the JBoss
-            repository. Alternatively you can add use a deployment descriptor and add something like
+            repository. For JBoss AS 4.X, the annotation to use is <literal>org.jboss.annotation.ejb.ResourceAdaptor</literal>.</para>
+            <para>
+             Alternatively you can add use a deployment descriptor and add something like
             the following to <literal
             >jboss.xml</literal><programlisting>&lt;message-driven>
    &lt;ejb-name>ExampleMDB&lt;/ejb-name>
@@ -68,7 +70,7 @@ public class MDBExample implements MessageListener
             element.</para>
         <note>
            <para>HornetQ is the default JMS provider for JBoss AS 6. Starting with this AS version, HornetQ resource
-              adapter is named <literal>jms-ra.rar</literal>.</para>
+              adapter is named <literal>jms-ra.rar</literal> and you no longer need to annotate the MDB for the resource adapter name.</para>
         </note>
         <para>All the examples shipped with the HornetQ distribution use the annotation.</para>
         <section>
