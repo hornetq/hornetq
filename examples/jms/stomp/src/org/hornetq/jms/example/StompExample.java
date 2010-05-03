@@ -15,12 +15,12 @@ package org.hornetq.jms.example;
 import java.io.OutputStream;
 import java.net.Socket;
 
-import javax.jms.BytesMessage;
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.MessageConsumer;
 import javax.jms.Queue;
 import javax.jms.Session;
+import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
 import org.hornetq.common.example.HornetQExample;
@@ -61,7 +61,7 @@ public class StompExample extends HornetQExample
          sendFrame(socket, connectFrame);
 
          // Step 3. Send a SEND frame (a Stomp message) to the
-         // queue /queue/exampleQueue with a text body
+         // jms.queue.exampleQueue address with a text body
          String text = "Hello, world from Stomp!";
          String message = "SEND\n" + 
             "destination: jms.queue.exampleQueue\n" +
@@ -98,11 +98,8 @@ public class StompExample extends HornetQExample
          connection.start();
 
          // Step 10. Receive the message
-         BytesMessage messageReceived = (BytesMessage)consumer.receive(5000);
-         byte[] data = new byte[1024];
-         int size = messageReceived.readBytes(data);
-         String receivedText = new String(data, 0, size, "UTF-8");
-         System.out.println("Received JMS message: " + receivedText);
+         TextMessage messageReceived = (TextMessage)consumer.receive(5000);
+         System.out.println("Received JMS message: " + messageReceived.getText());
 
          return true;
       }

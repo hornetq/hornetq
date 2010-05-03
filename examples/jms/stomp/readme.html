@@ -82,13 +82,10 @@
            <code>connection.start();</code>
         </pre>
 
-        <li>We receive the message. Stomp messages are mapped to JMS BytesMessages.</li>
+        <li>We receive the message. Stomp messages are mapped to JMS TextMessage.</li>
         <pre class="prettyprint">
-          BytesMessage messageReceived = (BytesMessage)consumer.receive(5000);
-          byte[] data = new byte[1024];
-          int size = messageReceived.readBytes(data);
-          String receivedText = new String(data, 0, size, "UTF-8");
-          System.out.println("Received JMS message: " + receivedText);
+          TextMessage messageReceived = (TextMessage)consumer.receive(5000);
+          System.out.println("Received JMS message: " + messageReceived.getText());
         </pre>
 
         <li>And finally, <b>always</b> remember to close your JMS connections and resources after use, in a <code>finally</code> block. Closing a JMS connection will automatically close all of its sessions, consumers, producer and browser objects</li>

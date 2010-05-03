@@ -504,15 +504,23 @@ class StompProtocolManager implements ProtocolManager
       Map<String, Object> headers = frame.getHeaders();
       String destination = (String)headers.remove(Stomp.Headers.Send.DESTINATION);
       String txID = (String)headers.remove(Stomp.Headers.TRANSACTION);
-      byte type = Message.BYTES_TYPE;
       long timestamp = System.currentTimeMillis();
 
       ServerMessageImpl message = new ServerMessageImpl(server.getStorageManager().generateUniqueID(), 512);
-      message.setType(type);
       message.setTimestamp(timestamp);
       message.setAddress(SimpleString.toSimpleString(destination));
       StompUtils.copyStandardHeadersFromFrameToMessage(frame, message);
-      message.getBodyBuffer().writeBytes(frame.getContent());
+      if (headers.containsKey(Stomp.Headers.CONTENT_LENGTH))
+      {
+         message.setType(Message.BYTES_TYPE);
+         message.getBodyBuffer().writeBytes(frame.getContent());
+      }
+      else
+      {
+         message.setType(Message.TEXT_TYPE);
+         String text = new String(frame.getContent(), "UTF-8");
+         message.getBodyBuffer().writeNullableSimpleString(SimpleString.toSimpleString(text));
+      }
 
       StompSession stompSession = null;
       if (txID == null)

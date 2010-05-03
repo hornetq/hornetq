@@ -89,23 +89,18 @@ destination:jms.topic.stocks
            </section>
 
            <section>
-             <title>Send and consuming Stomp message from JMS</title>
-             <para>Stomp messages can be sent and consumed from a JMS Destination by using <literal>BytesMessage</literal> where
-                the Stomp message body is stored in the JMS BytesMessage body.</para>
-             <para>If the Stomp message contained a UTF-8 String, the corresponding code to read the string from a JMS BytesMessage is:</para>
-             <programlisting>
-BytesMessage message = (BytesMessage)consumer.receive();
-byte[] data = new byte[1024];
-int size = message.readBytes(data);
-String text = new String(data, 0, size, "UTF-8");
-             </programlisting>
-             <para>Conversely, to send a JMS BytesMessage destined to be consumed by Stomp as a UTF-8 String, the code is:</para>
-             <programlisting>
-String text = ...
-BytesMessage message = session.createBytesMessage();
-message.writeBytes(text.getBytes("UTF-8"));
-producer.send(message);
-             </programlisting>
+             <title>Send and consuming Stomp message from JMS or HornetQ Core API</title>
+             <para>Stomp is mainly a text-orientated protocol. To make it simpler to interoperate with JMS and HornetQ Core API, 
+               our Stomp implementation checks for presence of the <literal>content-length</literal> header to decide how to map a Stomp message
+               to a JMS Message or a Core message.
+             </para>
+             <para>If the Stomp message has a <literal>content-length</literal> header, it will be mapped to a JMS <emphasis>TextMessage</emphasis>
+               or a Core message with a <emphasis>single nullable SimpleString in the body buffer</emphasis>.</para>
+             <para>Alternatively, if the Stomp message does <emphasis>not</emphasis> have a <literal>content-length</literal> header, 
+               it will be mapped to a JMS <emphasis>BytesMessage</emphasis>
+               or a Core message with a <emphasis>byte[] in the body buffer</emphasis>.</para>
+             <para>The same logic applies when mapping a JMS message or a Core message to Stomp. A Stomp client can check the presence
+                of the <literal>content-length</literal> header to determine the type of the message body (UTF-8 String or bytes).</para>
           </section>
         </section>
         
@@ -118,8 +113,8 @@ producer.send(message);
          <programlisting>
 &lt;acceptor name="stomp-ws-acceptor">
 	&lt;factory-class>org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory&lt;/factory-class>
-	&lt;param key="protocol"  value="stomp_ws"/>
-	&lt;param key="port"  value="61614"/>
+	&lt;param key="protocol" value="stomp_ws"/>
+	&lt;param key="port" value="61614"/>
 &lt;/acceptor>
          </programlisting>
          <para>With this configuration, HornetQ will accept Stomp connections over Web Sockets on 

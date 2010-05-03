@@ -14,7 +14,6 @@ package org.hornetq.jms.example;
 
 import java.util.Date;
 
-import javax.jms.BytesMessage;
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.MessageConsumer;
@@ -57,19 +56,17 @@ public class StompWebSocketExample extends HornetQExample
 
          // use JMS bytes message with UTF-8 String to send a text to Stomp clients
          String text = "message sent from a Java application at " + new Date();
-         BytesMessage message = session.createBytesMessage();
-         message.writeBytes(text.getBytes("UTF-8"));
+         //BytesMessage message = session.createBytesMessage();
+         //message.writeBytes(text.getBytes("UTF-8"));
+         TextMessage message = session.createTextMessage(text);
          System.out.println("Sent message: " + text);
 
          producer.send(message);
 
          connection.start();
 
-         message = (BytesMessage)consumer.receive();
-         byte[] data = new byte[1024];
-         int size = message.readBytes(data);
-         text = new String(data, 0, size, "UTF-8");
-         System.out.println("Received message: " + text);
+         message = (TextMessage)consumer.receive();
+         System.out.println("Received message: " + message.getText());
 
          return true;
       }

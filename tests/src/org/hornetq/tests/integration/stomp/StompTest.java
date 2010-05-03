@@ -41,6 +41,7 @@ import javax.jms.MessageListener;
 import javax.jms.MessageProducer;
 import javax.jms.Queue;
 import javax.jms.Session;
+import javax.jms.TextMessage;
 import javax.jms.Topic;
 
 import junit.framework.Assert;
@@ -188,10 +189,10 @@ public class StompTest extends UnitTestCase
 
       sendFrame(frame);
 
-      BytesMessage message = (BytesMessage)consumer.receive(1000);
+      TextMessage message = (TextMessage)consumer.receive(1000);
       Assert.assertNotNull(message);
-      Assert.assertEquals("Hello World", readContent(message));
-
+      Assert.assertEquals("Hello World", message.getText());
+      
       // Make sure that the timestamp is valid - should
       // be very close to the current time.
       long tnow = System.currentTimeMillis();
@@ -224,10 +225,10 @@ public class StompTest extends UnitTestCase
       Assert.assertTrue(f.startsWith("RECEIPT"));
       Assert.assertTrue(f.indexOf("receipt-id:1234") >= 0);
 
-      BytesMessage message = (BytesMessage)consumer.receive(1000);
+      TextMessage message = (TextMessage)consumer.receive(1000);
       Assert.assertNotNull(message);
-      Assert.assertEquals("Hello World", readContent(message));
-
+      Assert.assertEquals("Hello World", message.getText());
+      
       // Make sure that the timestamp is valid - should
       // be very close to the current time.
       long tnow = System.currentTimeMillis();
@@ -292,9 +293,9 @@ public class StompTest extends UnitTestCase
 
       sendFrame(frame);
 
-      BytesMessage message = (BytesMessage)consumer.receive(1000);
+      TextMessage message = (TextMessage)consumer.receive(1000);
       Assert.assertNotNull(message);
-      Assert.assertEquals("Hello World", readContent(message));
+      Assert.assertEquals("Hello World", message.getText());
       // differ from StompConnect
       Assert.assertEquals("TEST", message.getStringProperty("JMSXGroupID"));
    }
@@ -321,9 +322,9 @@ public class StompTest extends UnitTestCase
 
       sendFrame(frame);
 
-      BytesMessage message = (BytesMessage)consumer.receive(1000);
+      TextMessage message = (TextMessage)consumer.receive(1000);
       Assert.assertNotNull(message);
-      Assert.assertEquals("Hello World", readContent(message));
+      Assert.assertEquals("Hello World", message.getText());
       Assert.assertEquals("foo", "abc", message.getStringProperty("foo"));
       Assert.assertEquals("bar", "123", message.getStringProperty("bar"));
    }
@@ -355,9 +356,9 @@ public class StompTest extends UnitTestCase
 
       sendFrame(frame);
 
-      BytesMessage message = (BytesMessage)consumer.receive(1000);
+      TextMessage message = (TextMessage)consumer.receive(1000);
       Assert.assertNotNull(message);
-      Assert.assertEquals("Hello World", readContent(message));
+      Assert.assertEquals("Hello World", message.getText());
       Assert.assertEquals("JMSCorrelationID", "c123", message.getJMSCorrelationID());
       Assert.assertEquals("getJMSType", "t345", message.getJMSType());
       Assert.assertEquals("getJMSPriority", 3, message.getJMSPriority());
@@ -992,9 +993,9 @@ public class StompTest extends UnitTestCase
       waitForReceipt();
 
       // only second msg should be received since first msg was rolled back
-      BytesMessage message = (BytesMessage)consumer.receive(1000);
+      TextMessage message = (TextMessage)consumer.receive(1000);
       Assert.assertNotNull(message);
-      Assert.assertEquals("second message", readContent(message));
+      Assert.assertEquals("second message", message.getText());
    }
 
    public void testSubscribeToTopic() throws Exception
@@ -1411,12 +1412,14 @@ public class StompTest extends UnitTestCase
 
    public void sendMessage(String msg) throws Exception
    {
-      sendMessage(msg.getBytes("UTF-8"), "foo", "xyz", queue);
+      sendMessage(msg, queue);
    }
 
    public void sendMessage(String msg, Destination destination) throws Exception
    {
-      sendMessage(msg.getBytes("UTF-8"), "foo", "xyz", destination);
+      MessageProducer producer = session.createProducer(destination);
+      TextMessage message = session.createTextMessage(msg);
+      producer.send(message);
    }
 
    public void sendMessage(byte[] data, Destination destination) throws Exception
@@ -1436,13 +1439,6 @@ public class StompTest extends UnitTestCase
       message.setStringProperty(propertyName, propertyValue);
       message.writeBytes(data);
       producer.send(message);
-   }
-
-   public String readContent(BytesMessage message) throws Exception
-   {
-      byte[] data = new byte[1024];
-      int size = message.readBytes(data);
-      return new String(data, 0, size, "UTF-8");
    }
 
    protected void waitForReceipt() throws Exception

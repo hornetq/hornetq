@@ -32,6 +32,15 @@
      <h2>Example Setup</h2>
      <p>The example will start a HornetQ server configured with Stomp over Web Sockets and JMS. Web browsers clients and
        Java application will exchange message using a JMS Topic.</p>
+     <para>To enable Stomp over Web Sockets, the server must have a <literal>NettyAcceptor</literal> configured with a <literal>protocol</literal>
+       parameter set to <literal>stomp_ws</literal>:</para>
+     <pre class="prettyprint">
+&lt;acceptor name="stomp-websocket">
+   &lt;factory-class>org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory&lt;/factory-class>
+   &lt;param key="protocol" value="stomp_ws"/>
+   &lt;param key="port" value="61614"/>
+&lt;/acceptor>
+     </pre>
      
      <h2>Example step-by-step</h2>
      <p>To run the example, you need to start HornetQ server from the <code>bin</code> directory and specify this example's

@@ -19,6 +19,7 @@ import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.hornetq.api.core.HornetQBuffer;
+import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.impl.MessageImpl;
@@ -95,10 +96,23 @@ class StompSession implements SessionCallback
                                                                  : serverMessage.getEndOfBodyPosition();
          int size = bodyPos - buffer.readerIndex();
          byte[] data = new byte[size];
-         buffer.readBytes(data);
-         headers.put(Headers.CONTENT_LENGTH, data.length);
+         if (serverMessage.containsProperty(Stomp.Headers.CONTENT_LENGTH) || serverMessage.getType() == Message.BYTES_TYPE)
+         {
+            headers.put(Headers.CONTENT_LENGTH, data.length);
+            buffer.readBytes(data);
+         }
+         else
+         {
+            SimpleString text = buffer.readNullableSimpleString();
+            if (text != null)
+            {
+               data = text.toString().getBytes("UTF-8");
+            } else
+            {
+               data = new byte[0];
+            }
+         }
          serverMessage.getBodyBuffer().resetReaderIndex();
-
          StompFrame frame = new StompFrame(Stomp.Responses.MESSAGE, headers, data);
          StompUtils.copyStandardHeadersFromMessageToFrame(serverMessage, frame, deliveryCount);
 
