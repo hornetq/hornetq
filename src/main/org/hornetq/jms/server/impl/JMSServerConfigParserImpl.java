@@ -284,9 +284,9 @@ public class JMSServerConfigParserImpl implements JMSServerConfigParser
                                                               HornetQClient.DEFAULT_RECONNECT_ATTEMPTS,
                                                               Validators.MINUS_ONE_OR_GE_ZERO);
       boolean failoverOnInitialConnection = XMLConfigurationUtil.getBoolean(e,
-                                                                         "failover-on-initial-connection",
-                                                                         HornetQClient.DEFAULT_FAILOVER_ON_INITIAL_CONNECTION);
-  
+                                                                            "failover-on-initial-connection",
+                                                                            HornetQClient.DEFAULT_FAILOVER_ON_INITIAL_CONNECTION);
+
       boolean failoverOnServerShutdown = XMLConfigurationUtil.getBoolean(e,
                                                                          "failover-on-server-shutdown",
                                                                          HornetQClient.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN);
@@ -309,6 +309,7 @@ public class JMSServerConfigParserImpl implements JMSServerConfigParser
                                                                       "discovery-initial-wait-timeout",
                                                                       HornetQClient.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT,
                                                                       Validators.GT_ZERO);
+
       String groupid = XMLConfigurationUtil.getString(e, "group-id", null, Validators.NO_CHECK);
       List<String> jndiBindings = new ArrayList<String>();
       List<Pair<String, String>> connectorNames = new ArrayList<Pair<String, String>>();
@@ -380,7 +381,6 @@ public class JMSServerConfigParserImpl implements JMSServerConfigParser
          cfConfig.setConnectorNames(connectorNames);
       }
 
-      cfConfig.setInitialWaitTimeout(discoveryInitialWaitTimeout);
       cfConfig.setClientID(clientID);
       cfConfig.setClientFailureCheckPeriod(clientFailureCheckPeriod);
       cfConfig.setConnectionTTL(connectionTTL);

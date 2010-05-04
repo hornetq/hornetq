@@ -66,7 +66,7 @@ public class HornetQClient
 
    public static final boolean DEFAULT_PRE_ACKNOWLEDGE = false;
 
-   public static final long DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT = 2000;
+   public static final long DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT = 10000;
 
    public static final long DEFAULT_DISCOVERY_REFRESH_TIMEOUT = 10000;
 

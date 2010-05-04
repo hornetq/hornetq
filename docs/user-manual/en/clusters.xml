@@ -87,7 +87,7 @@
       &lt;local-bind-port>5432&lt;/local-bind-port>
       &lt;group-address>231.7.7.7&lt;/group-address>
       &lt;group-port>9876&lt;/group-port>
-      &lt;broadcast-period>1000&lt;/broadcast-period>
+      &lt;broadcast-period>2000&lt;/broadcast-period>
       &lt;connector-ref connector-name="netty-connector" 
         backup-connector-name="backup-connector"/>
    &lt;/broadcast-group>
@@ -129,7 +129,7 @@
                 <listitem>
                     <para><literal>broadcast-period</literal>. This is the period in milliseconds
                         between consecutive broadcasts. This parameter is optional, the default
-                        value is <literal>1000</literal> milliseconds.</para>
+                        value is <literal>2000</literal> milliseconds.</para>
                 </listitem>
                 <listitem>
                     <para><literal>connector-ref</literal>. This specifies the connector and
@@ -257,12 +257,12 @@ Connection jmsConnection2 = jmsConnectionFactory.createConnection();</programlis
                     factory by using the setter method <literal>setDiscoveryRefreshTimeout() if you
                         want to change the default value.</literal></para>
                 <para>There is also a further parameter settable on the connection factory using the
-                    setter method <literal>setInitialWaitTimeout()</literal>. If the connection
+                    setter method <literal>setDiscoveryInitialWaitTimeout()</literal>. If the connection
                     factory is used immediately after creation then it may not have had enough time
                     to received broadcasts from all the nodes in the cluster. On first usage, the
                     connection factory will make sure it waits this long since creation before
                     creating the first connection. The default value for this parameter is <literal
-                        >2000</literal> milliseconds.</para>
+                        >10000</literal> milliseconds.</para>
             </section>
             <section>
                 <title>Configuring client discovery using Core</title>
@@ -282,12 +282,12 @@ Connection jmsConnection2 = jmsConnectionFactory.createConnection();</programlis
                     factory by using the setter method <literal>setDiscoveryRefreshTimeout() if you
                         want to change the default value.</literal></para>
                 <para>There is also a further parameter settable on the session factory using the
-                    setter method <literal>setInitialWaitTimeout()</literal>. If the session factory
+                    setter method <literal>setDiscoveryInitialWaitTimeout()</literal>. If the session factory
                     is used immediately after creation then it may not have had enough time to
                     received broadcasts from all the nodes in the cluster. On first usage, the
                     session factory will make sure it waits this long since creation before creating
                     the first session. The default value for this parameter is <literal
-                        >2000</literal> milliseconds.</para>
+                        >10000</literal> milliseconds.</para>
             </section>
         </section>
     </section>

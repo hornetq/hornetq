@@ -143,7 +143,7 @@ public class ConfigurationImpl implements Configuration
 
    public static final String DEFAULT_CLUSTER_PASSWORD = "CHANGE ME!!";
 
-   public static final long DEFAULT_BROADCAST_PERIOD = 1000;
+   public static final long DEFAULT_BROADCAST_PERIOD = 2000;
 
    public static final long DEFAULT_BROADCAST_REFRESH_TIMEOUT = 10000;
 

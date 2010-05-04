@@ -28,7 +28,7 @@
    		<xsd:all>
            	<xsd:element name="discovery-group-ref" type="discovery-group-refType" maxOccurs="1" minOccurs="0"></xsd:element>
            	<xsd:element name="discovery-initial-wait-timeout" type="xsd:long" maxOccurs="1" minOccurs="0"></xsd:element>
-           	
+	
             <xsd:element name="connectors" maxOccurs="1" minOccurs="0">
                 <xsd:complexType>
                     <xsd:sequence>              

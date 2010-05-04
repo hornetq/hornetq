@@ -527,7 +527,7 @@
                             </entry>
                             <entry>Long</entry>
                             <entry>period in milliseconds between consecutive broadcasts</entry>
-                            <entry>1000 (in milliseconds)</entry>
+                            <entry>2000 (in milliseconds)</entry>
                         </row>
                         <row>
                             <entry>
@@ -600,7 +600,7 @@
                             <entry>Period the discovery group
                                   waits after receiving the last broadcast from a particular server before
                                   removing that servers connector pair entry from its list.</entry>
-                            <entry>10000 (in milliseconds)</entry>
+                            <entry>5000 (in milliseconds)</entry>
                         </row>
                         <row>
                             <entry><link linkend="diverts">diverts</link></entry>
@@ -1038,8 +1038,8 @@
                             <entry>Long</entry>
                             <entry>the initial time to wait (in ms) for discovery groups to wait for
                                 broadcasts</entry>
-                            <entry>2000</entry>
-                        </row>
+                            <entry>10000</entry>
+                        </row>                        
                         <row>
                             <entry id="configuration.connection-factory.block-on-acknowledge">
                                <link linkend="send-guarantees.nontrans.acks">connection-factory.block-on-acknowledge</link>

@@ -70,7 +70,7 @@ public class JMSServerDeployerTest extends ServiceTestBase
 
    public void testValidateEmptyConfiguration() throws Exception
    {
-      JMSServerDeployer deployer = new JMSServerDeployer(jmsServer, deploymentManager, config);
+      JMSServerDeployer deployer = new JMSServerDeployer(jmsServer, deploymentManager);
 
       String xml = "<configuration xmlns='urn:hornetq'> " + "</configuration>";
 
@@ -112,7 +112,7 @@ public class JMSServerDeployerTest extends ServiceTestBase
                                                    final String htmlEncodedName,
                                                    final String jndiName) throws Exception
    {
-      JMSServerDeployer deployer = new JMSServerDeployer(jmsServer, deploymentManager, config);
+      JMSServerDeployer deployer = new JMSServerDeployer(jmsServer, deploymentManager);
 
       String xml =
 
@@ -131,7 +131,7 @@ public class JMSServerDeployerTest extends ServiceTestBase
                                                    final String htmlEncodedName,
                                                    final String jndiName) throws Exception
    {
-      JMSServerDeployer deployer = new JMSServerDeployer(jmsServer, deploymentManager, config);
+      JMSServerDeployer deployer = new JMSServerDeployer(jmsServer, deploymentManager);
 
       String xml =
 
@@ -158,7 +158,7 @@ public class JMSServerDeployerTest extends ServiceTestBase
 
    public void testDeployFullConfiguration() throws Exception
    {
-      JMSServerDeployer deployer = new JMSServerDeployer(jmsServer, deploymentManager, config);
+      JMSServerDeployer deployer = new JMSServerDeployer(jmsServer, deploymentManager);
 
       String conf = "hornetq-jms-for-JMSServerDeployerTest.xml";
       URL confURL = Thread.currentThread().getContextClassLoader().getResource(conf);
@@ -244,7 +244,7 @@ public class JMSServerDeployerTest extends ServiceTestBase
    
    public void testDeployFullConfiguration2() throws Exception
    {
-      JMSServerDeployer deployer = new JMSServerDeployer(jmsServer, deploymentManager, config);
+      JMSServerDeployer deployer = new JMSServerDeployer(jmsServer, deploymentManager);
 
       String conf = "hornetq-jms-for-JMSServerDeployerTest2.xml";
       URL confURL = Thread.currentThread().getContextClassLoader().getResource(conf);
@@ -315,7 +315,8 @@ public class JMSServerDeployerTest extends ServiceTestBase
          assertEquals("243.7.7.7", cf.getDiscoveryAddress());
          assertEquals("172.16.8.10", cf.getLocalBindAddress());
          assertEquals(12345, cf.getDiscoveryPort());
-         assertEquals(5000, cf.getDiscoveryRefreshTimeout());
+         assertEquals(5432, cf.getDiscoveryRefreshTimeout());
+         assertEquals(5464, cf.getDiscoveryInitialWaitTimeout());
       }
 
       for (String binding : queueBindings)
@@ -348,7 +349,7 @@ public class JMSServerDeployerTest extends ServiceTestBase
       
       DiscoveryGroupConfiguration dcg = new DiscoveryGroupConfiguration("mygroup", "172.16.8.10",
                                                                         "243.7.7.7", 12345,
-                                                                        5000);
+                                                                        5432);
       config.getDiscoveryGroupConfigurations().put("mygroup", dcg);
       HornetQServer server = createServer(false, config);
 

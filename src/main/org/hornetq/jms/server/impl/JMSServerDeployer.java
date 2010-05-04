@@ -13,7 +13,6 @@
 
 package org.hornetq.jms.server.impl;
 
-import org.hornetq.core.config.Configuration;
 import org.hornetq.core.deployers.DeploymentManager;
 import org.hornetq.core.deployers.impl.XmlDeployer;
 import org.hornetq.core.logging.Logger;
@@ -33,8 +32,6 @@ public class JMSServerDeployer extends XmlDeployer
 {
    private static final Logger log = Logger.getLogger(JMSServerDeployer.class);
 
-   private final Configuration configuration;
-   
    private final JMSServerConfigParser parser;
 
    private final JMSServerManager jmsServerManager;
@@ -60,15 +57,12 @@ public class JMSServerDeployer extends XmlDeployer
    protected static final boolean DEFAULT_QUEUE_DURABILITY = true;
 
    public JMSServerDeployer(final JMSServerManager jmsServerManager,
-                            final DeploymentManager deploymentManager,
-                            final Configuration config)
+                            final DeploymentManager deploymentManager)
    {
       super(deploymentManager);
 
       this.jmsServerManager = jmsServerManager;
 
-      configuration = config;
-      
       parser = new JMSServerConfigParserImpl();
    }
 
@@ -186,7 +180,7 @@ public class JMSServerDeployer extends XmlDeployer
     */
    private void deployConnectionFactory(final Node node) throws Exception
    {
-      ConnectionFactoryConfiguration cfConfig = parser.parseConnectionFactoryConfiguration(node);
+      ConnectionFactoryConfiguration cfConfig = parser.parseConnectionFactoryConfiguration(node);     
       jmsServerManager.createConnectionFactory(false, cfConfig, cfConfig.getBindings());
    }
 

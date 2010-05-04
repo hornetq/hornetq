@@ -188,7 +188,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
          {
             if (server.getConfiguration().isFileDeploymentEnabled())
             {
-               jmsDeployer = new JMSServerDeployer(this, deploymentManager, server.getConfiguration());
+               jmsDeployer = new JMSServerDeployer(this, deploymentManager);
 
                if (configFileName != null)
                {
@@ -778,6 +778,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
                                                     final int discoveryPort,
                                                     final String clientID,
                                                     final long discoveryRefreshTimeout,
+                                                    final long discoveryInitialWaitTimeout,
                                                     final long clientFailureCheckPeriod,
                                                     final long connectionTTL,
                                                     final long callTimeout,
@@ -795,8 +796,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
                                                     final boolean preAcknowledge,
                                                     final String loadBalancingPolicyClassName,
                                                     final int transactionBatchSize,
-                                                    final int dupsOKBatchSize,
-                                                    final long initialWaitTimeout,
+                                                    final int dupsOKBatchSize,                                                    
                                                     final boolean useGlobalPools,
                                                     final int scheduledThreadPoolMaxSize,
                                                     final int threadPoolMaxSize,
@@ -808,7 +808,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
                                                     final boolean failoverOnServerShutdown,
                                                     final String groupId,
                                                     final String... jndiBindings) throws Exception
-   {
+   {     
       checkInitialised();
       HornetQConnectionFactory cf = connectionFactories.get(name);
       if (cf == null)
@@ -819,6 +819,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
                                                                                                discoveryPort);
          configuration.setClientID(clientID);
          configuration.setDiscoveryRefreshTimeout(discoveryRefreshTimeout);
+         configuration.setInitialWaitTimeout(discoveryInitialWaitTimeout);
          configuration.setClientFailureCheckPeriod(clientFailureCheckPeriod);
          configuration.setConnectionTTL(connectionTTL);
          configuration.setCallTimeout(callTimeout);
@@ -837,7 +838,6 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
          configuration.setLoadBalancingPolicyClassName(loadBalancingPolicyClassName);
          configuration.setTransactionBatchSize(transactionBatchSize);
          configuration.setDupsOKBatchSize(dupsOKBatchSize);
-         configuration.setDiscoveryRefreshTimeout(initialWaitTimeout);
          configuration.setUseGlobalPools(useGlobalPools);
          configuration.setScheduledThreadPoolMaxSize(scheduledThreadPoolMaxSize);
          configuration.setThreadPoolMaxSize(threadPoolMaxSize);
@@ -918,6 +918,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
                                                                     final int discoveryPort,
                                                                     final String clientID,
                                                                     final long discoveryRefreshTimeout,
+                                                                    final long discoveryInitialWaitTimeout,
                                                                     final long clientFailureCheckPeriod,
                                                                     final long connectionTTL,
                                                                     final long callTimeout,
@@ -935,8 +936,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
                                                                     final boolean preAcknowledge,
                                                                     final String loadBalancingPolicyClassName,
                                                                     final int transactionBatchSize,
-                                                                    final int dupsOKBatchSize,
-                                                                    final long initialWaitTimeout,
+                                                                    final int dupsOKBatchSize,                                                        
                                                                     final boolean useGlobalPools,
                                                                     final int scheduledThreadPoolMaxSize,
                                                                     final int threadPoolMaxSize,
@@ -956,6 +956,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
          cf.setClientID(clientID);
          cf.setLocalBindAddress(localBindAddress);
          cf.setDiscoveryRefreshTimeout(discoveryRefreshTimeout);
+         cf.setDiscoveryInitialWaitTimeout(discoveryInitialWaitTimeout);
          cf.setClientFailureCheckPeriod(clientFailureCheckPeriod);
          cf.setConnectionTTL(connectionTTL);
          cf.setCallTimeout(callTimeout);
@@ -974,7 +975,6 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
          cf.setConnectionLoadBalancingPolicyClassName(loadBalancingPolicyClassName);
          cf.setTransactionBatchSize(transactionBatchSize);
          cf.setDupsOKBatchSize(dupsOKBatchSize);
-         cf.setDiscoveryInitialWaitTimeout(initialWaitTimeout);
          cf.setUseGlobalPools(useGlobalPools);
          cf.setScheduledThreadPoolMaxSize(scheduledThreadPoolMaxSize);
          cf.setThreadPoolMaxSize(threadPoolMaxSize);
@@ -1149,19 +1149,19 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
    private HornetQConnectionFactory internalCreateCF(final ConnectionFactoryConfiguration cfConfig) throws HornetQException,
                                                                                                    Exception
    {
-
       List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs = lookupConnectors(cfConfig);
 
       lookupDiscovery(cfConfig);
       HornetQConnectionFactory cf;
       if (cfConfig.getDiscoveryAddress() != null)
-      {
+      {         
          cf = internalCreateConnectionFactory(cfConfig.getName(),
                                               cfConfig.getLocalBindAddress(),
                                               cfConfig.getDiscoveryAddress(),
                                               cfConfig.getDiscoveryPort(),
                                               cfConfig.getClientID(),
                                               cfConfig.getDiscoveryRefreshTimeout(),
+                                              cfConfig.getInitialWaitTimeout(),
                                               cfConfig.getClientFailureCheckPeriod(),
                                               cfConfig.getConnectionTTL(),
                                               cfConfig.getCallTimeout(),
@@ -1179,8 +1179,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
                                               cfConfig.isPreAcknowledge(),
                                               cfConfig.getLoadBalancingPolicyClassName(),
                                               cfConfig.getTransactionBatchSize(),
-                                              cfConfig.getDupsOKBatchSize(),
-                                              cfConfig.getInitialWaitTimeout(),
+                                              cfConfig.getDupsOKBatchSize(),                                           
                                               cfConfig.isUseGlobalPools(),
                                               cfConfig.getScheduledThreadPoolMaxSize(),
                                               cfConfig.getThreadPoolMaxSize(),
@@ -1439,7 +1438,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
          cfConfig.setDiscoveryAddress(discoveryGroupConfiguration.getGroupAddress());
          cfConfig.setDiscoveryPort(discoveryGroupConfiguration.getGroupPort());
          cfConfig.setDiscoveryRefreshTimeout(discoveryGroupConfiguration.getRefreshTimeout());
-
+        
       }
    }
 

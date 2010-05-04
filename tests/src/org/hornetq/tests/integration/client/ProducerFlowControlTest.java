@@ -21,20 +21,17 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import junit.framework.Assert;
 
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
-import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.MessageHandler;
 import org.hornetq.core.client.impl.ClientProducerCreditManagerImpl;
 import org.hornetq.core.client.impl.ClientProducerCredits;
 import org.hornetq.core.client.impl.ClientProducerInternal;
 import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.settings.HierarchicalRepository;
 import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
@@ -175,8 +172,6 @@ public class ProducerFlowControlTest extends ServiceTestBase
                       -1,
                       false);
    }
-
-   // (1000, 10 * 1024, 10 * 1024, 1024, 1024, 1024, 1, 1, 0, false);
 
    private void testFlowControl(final int numMessages,
                                 final int messageSize,
