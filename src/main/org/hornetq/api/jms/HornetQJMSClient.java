@@ -14,7 +14,6 @@ package org.hornetq.api.jms;
 
 import java.util.List;
 
-import javax.jms.ConnectionFactory;
 import javax.jms.Queue;
 import javax.jms.Topic;
 
@@ -35,69 +34,69 @@ public class HornetQJMSClient
    private static final Logger log = Logger.getLogger(HornetQJMSClient.class);
 
    /**
-    * Creates a ConnectionFactory using all the defaults.
+    * Creates a HornetQConnectionFactory using all the defaults.
     *
-    * @return The ConnectionFactory.
+    * @return The HornetQConnectionFactory.
     */
-   public static ConnectionFactory createConnectionFactory()
+   public static HornetQConnectionFactory createConnectionFactory()
    {
       return new HornetQConnectionFactory();
    }
 
    /**
-    * Creates a ConnectionFactory using the ClientSessionFactory for its underlying connection.
+    * Creates a HornetQConnectionFactory using the ClientSessionFactory for its underlying connection.
     *
     * @param sessionFactory The underlying ClientSessionFactory to use.
-    * @return The ConnectionFactory.
+    * @return The HornetQConnectionFactory.
     */
-   public static ConnectionFactory createConnectionFactory(final ClientSessionFactory sessionFactory)
+   public static HornetQConnectionFactory createConnectionFactory(final ClientSessionFactory sessionFactory)
    {
       return new HornetQConnectionFactory(sessionFactory);
    }
 
    /**
-    * Creates a ConnectionFactory that will use discovery to connect to the  server.
+    * Creates a HornetQConnectionFactory that will use discovery to connect to the  server.
     *
     * @param discoveryAddress The address to use for discovery.
     * @param discoveryPort The port to use for discovery.
-    * @return The ConnectionFactory.
+    * @return The HornetQConnectionFactory.
     */
-   public static ConnectionFactory createConnectionFactory(final String discoveryAddress, final int discoveryPort)
+   public static HornetQConnectionFactory createConnectionFactory(final String discoveryAddress, final int discoveryPort)
    {
       return new HornetQConnectionFactory(discoveryAddress, discoveryPort);
    }
 
    /**
-    * Creates a ClientSessionFactory using a List of TransportConfigurations and backups.
+    * Creates a HornetQConnectionFactory using a List of TransportConfigurations and backups.
     *
     * @param staticConnectors The list of TransportConfiguration to use.
-    * @return The ConnectionFactory.
+    * @return The HornetQConnectionFactory.
     */
-   public static ConnectionFactory createConnectionFactory(final List<Pair<TransportConfiguration, TransportConfiguration>> staticConnectors)
+   public static HornetQConnectionFactory createConnectionFactory(final List<Pair<TransportConfiguration, TransportConfiguration>> staticConnectors)
    {
       return new HornetQConnectionFactory(staticConnectors);
    }
 
    /**
-    * Creates a ConnectionFactory using a single pair of live-backup TransportConfiguration.
+    * Creates a HornetQConnectionFactory using a single pair of live-backup TransportConfiguration.
     *
     * @param connectorConfig The TransportConfiguration of the server to connect to.
     * @param backupConnectorConfig The TransportConfiguration of the backup server to connect to. can be null.
-    * @return The ConnectionFactory.
+    * @return The HornetQConnectionFactory.
     */
-   public static ConnectionFactory createConnectionFactory(final TransportConfiguration connectorConfig,
+   public static HornetQConnectionFactory createConnectionFactory(final TransportConfiguration connectorConfig,
                                    final TransportConfiguration backupConnectorConfig)
    {
       return new HornetQConnectionFactory(connectorConfig, backupConnectorConfig);
    }
 
    /**
-    * Creates a ConnectionFactory to connect to a single live server.
+    * Creates a HornetQConnectionFactory to connect to a single live server.
     *
     * @param connectorConfig The TransportConfiguration of the server.
-    * @return The ConnectionFactory.
+    * @return The HornetQConnectionFactory.
     */
-   public static ConnectionFactory createConnectionFactory(final TransportConfiguration connectorConfig)
+   public static HornetQConnectionFactory createConnectionFactory(final TransportConfiguration connectorConfig)
    {
       return new HornetQConnectionFactory(connectorConfig);
    }
