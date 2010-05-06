@@ -21,12 +21,11 @@
 <chapter id="wildcard-routing">
     <title>Routing Messages With Wild Cards</title>
     <para>HornetQ allows the routing of messages via wildcard addresses.</para>
-    <para>If a consumer is created with an address of say <literal>queue.news.#</literal> then it
+    <para>If a queue is created with an address of say <literal>queue.news.#</literal> then it
         will receive any messages sent to addresses that match this, for instance <literal
             >queue.news.europe</literal> or <literal>queue.news.usa</literal> or <literal
-            >queue.news.usa.sport</literal>. This allows a consumer to consume messages which are
-        sent to a <emphasis>hierarchy</emphasis> of addresses, rather than the consumer having to
-        specify a specific address.</para>
+            >queue.news.usa.sport</literal>. If you create a consumer on this queue, this allows a consumer to consume messages which are
+        sent to a <emphasis>hierarchy</emphasis> of addresses.</para>
     <note>
         <para>In JMS terminology this allows "topic hierarchies" to be created.</para>
     </note>
