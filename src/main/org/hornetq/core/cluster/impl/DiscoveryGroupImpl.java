@@ -13,10 +13,10 @@
 
 package org.hornetq.core.cluster.impl;
 
+import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
-import java.net.InetSocketAddress;
 import java.net.MulticastSocket;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -114,17 +114,25 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
          return;
       }
 
-      socket = new MulticastSocket(groupPort);
+      try {
+         socket = new MulticastSocket(groupPort);
 
-      if (localBindAddress != null)
-      {
-         socket.setInterface(localBindAddress);
+         if (localBindAddress != null)
+         {
+            socket.setInterface(localBindAddress);
+         }
+
+         socket.joinGroup(groupAddress);
+
+         socket.setSoTimeout(DiscoveryGroupImpl.SOCKET_TIMEOUT);
       }
-
-      socket.joinGroup(groupAddress);
-
-      socket.setSoTimeout(DiscoveryGroupImpl.SOCKET_TIMEOUT);
-
+      catch (IOException e)
+      {
+         log.error("Failed to create discovery group socket", e);
+         
+         return;
+      }
+      
       started = true;
 
       thread = new Thread(this, "hornetq-discovery-group-thread-" + name);
