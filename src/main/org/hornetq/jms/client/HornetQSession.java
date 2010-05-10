@@ -385,13 +385,16 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
          throw new IllegalStateException("Cannot create a queue using a TopicSession");
       }
 
-      HornetQQueue queue = HornetQDestination.createQueue(queueName);
-      
       try
       {
-         QueueQuery response = session.queueQuery(queue.getSimpleAddress());
+         HornetQQueue queue = lookupQueue(queueName, false);
+         
+         if (queue == null)
+         {
+            queue = lookupQueue(queueName, true);
+         }
 
-         if (!response.isExists())
+         if (queue == null)
          {
             throw new JMSException("There is no queue with name " + queueName);
          }
@@ -405,6 +408,7 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
          throw JMSExceptionHelper.convertFromHornetQException(e);
       }
    }
+   
 
    public Topic createTopic(final String topicName) throws JMSException
    {
@@ -414,13 +418,17 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
          throw new IllegalStateException("Cannot create a topic on a QueueSession");
       }
 
-      HornetQTopic topic = HornetQDestination.createTopic(topicName);
       
       try
       {
-         BindingQuery query = session.bindingQuery(topic.getSimpleAddress());
+         HornetQTopic topic = lookupTopic(topicName, false);
 
-         if (!query.isExists())
+         if (topic == null)
+         {
+            topic = lookupTopic(topicName, true);
+         }
+
+         if (topic == null)
          {
             throw new JMSException("There is no topic with name " + topicName);
          }
@@ -994,6 +1002,58 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
          throw new IllegalStateException("Session is closed");
       }
    }
+   
+   private HornetQQueue lookupQueue(final String queueName, boolean isTemporary) throws HornetQException
+   {
+      HornetQQueue queue;
+      
+      if (isTemporary)
+      {
+         queue = HornetQDestination.createTemporaryQueue(queueName);
+      }
+      else
+      {
+         queue = HornetQDestination.createQueue(queueName);
+      }
+      
+      QueueQuery response = session.queueQuery(queue.getSimpleAddress());
+
+      if (response.isExists())
+      {
+         return queue;
+      }
+      else
+      {
+         return null;
+      }
+   }
+   
+   private HornetQTopic lookupTopic(final String topicName, final boolean isTemporary) throws HornetQException
+   {
+
+      HornetQTopic topic;
+      
+      if (isTemporary)
+      {
+         topic = HornetQDestination.createTemporaryTopic(topicName);
+      }
+      else
+      {
+         topic = HornetQDestination.createTopic(topicName);
+      }
+      
+      BindingQuery query = session.bindingQuery(topic.getSimpleAddress());
+
+      if (!query.isExists())
+      {
+         return null;
+      }
+      else
+      {
+         return topic;
+      }
+   }
+
 
    // Inner classes -------------------------------------------------
 

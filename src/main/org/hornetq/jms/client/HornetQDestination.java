@@ -170,20 +170,39 @@ public class HornetQDestination implements Destination, Serializable, Referencea
       return new HornetQTopic(name);
    }
    
+   public static HornetQTemporaryQueue createTemporaryQueue(final String name, final HornetQSession session)
+   {
+      return new HornetQTemporaryQueue(JMS_TEMP_QUEUE_ADDRESS_PREFIX.concat(name), name, session);
+   }
+   
+   public static HornetQTemporaryQueue createTemporaryQueue(final String name)
+   {
+      return createTemporaryQueue(name, null);
+   }
+   
    public static HornetQTemporaryQueue createTemporaryQueue(final HornetQSession session)
    {
       String name = UUID.randomUUID().toString();
       
-      return new HornetQTemporaryQueue(JMS_TEMP_QUEUE_ADDRESS_PREFIX.concat(name), name, session);
+      return createTemporaryQueue(name, session);
    }
    
    public static HornetQTemporaryTopic createTemporaryTopic(final HornetQSession session)
    {
       String name = UUID.randomUUID().toString();
       
-      return new HornetQTemporaryTopic(JMS_TEMP_TOPIC_ADDRESS_PREFIX.concat(name), name, session);
+      return createTemporaryTopic(name, session);
    }
 
+   public static HornetQTemporaryTopic createTemporaryTopic(String name, final HornetQSession session)
+   {
+      return new HornetQTemporaryTopic(JMS_TEMP_TOPIC_ADDRESS_PREFIX.concat(name), name, session);
+   }
+   
+   public static HornetQTemporaryTopic createTemporaryTopic(String name)
+   {
+      return createTemporaryTopic(name, null);
+   }
    
    // Attributes ----------------------------------------------------
 
