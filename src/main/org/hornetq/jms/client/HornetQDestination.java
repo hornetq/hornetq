@@ -48,8 +48,12 @@ public class HornetQDestination implements Destination, Serializable, Referencea
    
    public static final String JMS_QUEUE_ADDRESS_PREFIX = "jms.queue.";
    
-   public static final String JMS_TOPIC_ADDRESS_PREFIX = "jms.topic.";
+   public static final String JMS_TEMP_QUEUE_ADDRESS_PREFIX = "jms.tempqueue.";
    
+   public static final String JMS_TOPIC_ADDRESS_PREFIX = "jms.topic.";
+
+   public static final String JMS_TEMP_TOPIC_ADDRESS_PREFIX = "jms.temptopic.";
+
    private static final char SEPARATOR = '.';
       
    protected static String escape(final String input)
@@ -74,6 +78,18 @@ public class HornetQDestination implements Destination, Serializable, Referencea
          String name = address.substring(HornetQDestination.JMS_TOPIC_ADDRESS_PREFIX.length());
 
          return createTopic(name);
+      }
+      else if (address.startsWith(HornetQTemporaryQueue.JMS_TEMP_QUEUE_ADDRESS_PREFIX))
+      {
+         String name = address.substring(HornetQTemporaryQueue.JMS_TEMP_QUEUE_ADDRESS_PREFIX.length());
+
+         return new HornetQTemporaryQueue(address, name, null);
+      }
+      else if (address.startsWith(HornetQTemporaryTopic.JMS_TEMP_TOPIC_ADDRESS_PREFIX))
+      {
+         String name = address.substring(HornetQTemporaryTopic.JMS_TEMP_TOPIC_ADDRESS_PREFIX.length());
+
+         return new HornetQTemporaryTopic(address, name, null);
       }
       else
       {
@@ -158,14 +174,14 @@ public class HornetQDestination implements Destination, Serializable, Referencea
    {
       String name = UUID.randomUUID().toString();
       
-      return new HornetQTemporaryQueue(JMS_QUEUE_ADDRESS_PREFIX.concat(name), name, session);
+      return new HornetQTemporaryQueue(JMS_TEMP_QUEUE_ADDRESS_PREFIX.concat(name), name, session);
    }
    
    public static HornetQTemporaryTopic createTemporaryTopic(final HornetQSession session)
    {
       String name = UUID.randomUUID().toString();
       
-      return new HornetQTemporaryTopic(JMS_TOPIC_ADDRESS_PREFIX.concat(name), name, session);
+      return new HornetQTemporaryTopic(JMS_TEMP_TOPIC_ADDRESS_PREFIX.concat(name), name, session);
    }
 
    
