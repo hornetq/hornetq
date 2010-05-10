@@ -23,6 +23,7 @@ import org.hornetq.core.postoffice.Bindings;
 import org.hornetq.core.postoffice.impl.LocalQueueBinding;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.impl.HornetQServerImpl;
+import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.UnitTestCase;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -33,7 +34,7 @@ import org.w3c.dom.NodeList;
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
  * 
  */
-public class QueueDeployerTest extends UnitTestCase
+public class QueueDeployerTest extends ServiceTestBase
 {
 
    // Constants -----------------------------------------------------
@@ -87,12 +88,11 @@ public class QueueDeployerTest extends UnitTestCase
    protected void setUp() throws Exception
    {
       super.setUp();
+      
+      server = createServer(true);
       DeploymentManager deploymentManager = new FileDeploymentManager(500);
-      ConfigurationImpl config = new ConfigurationImpl();
-      config.setJournalType(getDefaultJournalType());
-      server = new HornetQServerImpl(config);
-      server.start();
       deployer = new QueueDeployer(deploymentManager, server);
+      server.start();
    }
 
    @Override

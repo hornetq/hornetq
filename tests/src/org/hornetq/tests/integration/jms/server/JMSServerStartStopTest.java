@@ -34,6 +34,7 @@ import org.hornetq.jms.server.JMSServerManager;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.hornetq.spi.core.security.HornetQSecurityManager;
 import org.hornetq.spi.core.security.HornetQSecurityManagerImpl;
+import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.UnitTestCase;
 
 /**
@@ -178,6 +179,10 @@ public class JMSServerStartStopTest extends UnitTestCase
       fc.setConfigurationUrl("server-start-stop-config1.xml");
 
       fc.start();
+      
+      fc.setJournalDirectory(getJournalDir());
+      fc.setBindingsDirectory(getBindingsDir());
+      fc.setLargeMessagesDirectory(getLargeMessagesDir());
 
       HornetQSecurityManager sm = new HornetQSecurityManagerImpl();
 
