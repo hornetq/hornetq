@@ -40,6 +40,7 @@ import org.hornetq.core.server.HornetQServers;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.client.HornetQDestination;
+import org.hornetq.jms.client.HornetQQueue;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.hornetq.tests.integration.management.ManagementControlHelper;
 import org.hornetq.tests.integration.management.ManagementTestBase;
@@ -66,7 +67,7 @@ public class JMSQueueControlTest extends ManagementTestBase
 
    private JMSServerManagerImpl serverManager;
 
-   protected HornetQDestination queue;
+   protected HornetQQueue queue;
 
    protected Context context;
 
@@ -416,7 +417,7 @@ public class JMSQueueControlTest extends ManagementTestBase
    {
       JMSQueueControl queueControl = createManagementControl();
       String expiryQueueName = RandomUtil.randomString();
-      HornetQDestination expiryQueue = (HornetQDestination)HornetQJMSClient.createQueue(expiryQueueName);
+      HornetQQueue expiryQueue = (HornetQQueue)HornetQJMSClient.createQueue(expiryQueueName);
       serverManager.createQueue(false, expiryQueueName, null, true, expiryQueueName);
       queueControl.setExpiryAddress(expiryQueue.getAddress());
 
@@ -545,7 +546,7 @@ public class JMSQueueControlTest extends ManagementTestBase
    {
       String deadLetterQueue = RandomUtil.randomString();
       serverManager.createQueue(false, deadLetterQueue, null, true, deadLetterQueue);
-      HornetQDestination dlq = (HornetQDestination)HornetQJMSClient.createQueue(deadLetterQueue);
+      HornetQQueue dlq = (HornetQQueue)HornetQJMSClient.createQueue(deadLetterQueue);
 
       Connection conn = createConnection();
       Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -606,7 +607,7 @@ public class JMSQueueControlTest extends ManagementTestBase
 
       String deadLetterQueue = RandomUtil.randomString();
       serverManager.createQueue(false, deadLetterQueue, null, true, deadLetterQueue);
-      HornetQDestination dlq = (HornetQDestination)HornetQJMSClient.createQueue(deadLetterQueue);
+      HornetQQueue dlq = (HornetQQueue)HornetQJMSClient.createQueue(deadLetterQueue);
 
       Connection conn = createConnection();
       Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -835,7 +836,7 @@ public class JMSQueueControlTest extends ManagementTestBase
 
       String queueName = RandomUtil.randomString();
       serverManager.createQueue(false, queueName, null, true, queueName);
-      queue = (HornetQDestination)HornetQJMSClient.createQueue(queueName);
+      queue = (HornetQQueue)HornetQJMSClient.createQueue(queueName);
    }
 
    @Override

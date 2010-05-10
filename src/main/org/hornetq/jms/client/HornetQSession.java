@@ -385,7 +385,7 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
          throw new IllegalStateException("Cannot create a queue using a TopicSession");
       }
 
-      HornetQDestination queue = HornetQDestination.createQueue(queueName);
+      HornetQQueue queue = HornetQDestination.createQueue(queueName);
       
       try
       {
@@ -414,7 +414,7 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
          throw new IllegalStateException("Cannot create a topic on a QueueSession");
       }
 
-      HornetQDestination topic = HornetQDestination.createTopic(topicName);
+      HornetQTopic topic = HornetQDestination.createTopic(topicName);
       
       try
       {
@@ -684,7 +684,7 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
          throw JMSExceptionHelper.convertFromHornetQException(e);
       }
 
-      return new HornetQQueueBrowser(jbq, filterString, session);
+      return new HornetQQueueBrowser((HornetQQueue)jbq, filterString, session);
 
    }
 
@@ -698,7 +698,7 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
 
       try
       {
-         HornetQDestination queue = HornetQDestination.createTemporaryQueue(this);
+         HornetQTemporaryQueue queue = HornetQDestination.createTemporaryQueue(this);
 
          SimpleString simpleAddress = queue.getSimpleAddress();
 
@@ -724,7 +724,7 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
 
       try
       {
-         HornetQDestination topic = HornetQDestination.createTemporaryTopic(this);
+         HornetQTemporaryTopic topic = HornetQDestination.createTemporaryTopic(this);
 
          SimpleString simpleAddress = topic.getSimpleAddress();
 

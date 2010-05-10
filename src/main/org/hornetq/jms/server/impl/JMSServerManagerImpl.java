@@ -47,6 +47,8 @@ import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.client.HornetQDestination;
+import org.hornetq.jms.client.HornetQQueue;
+import org.hornetq.jms.client.HornetQTopic;
 import org.hornetq.jms.client.SelectorTranslator;
 import org.hornetq.jms.persistence.JMSStorageManager;
 import org.hornetq.jms.persistence.config.PersistedConnectionFactory;
@@ -92,9 +94,9 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
     */
    private Context context;
 
-   private Map<String, HornetQDestination> queues = new HashMap<String, HornetQDestination>();
+   private Map<String, HornetQQueue> queues = new HashMap<String, HornetQQueue>();
 
-   private Map<String, HornetQDestination> topics = new HashMap<String, HornetQDestination>();
+   private Map<String, HornetQTopic> topics = new HashMap<String, HornetQTopic>();
 
    private final Map<String, HornetQConnectionFactory> connectionFactories = new HashMap<String, HornetQConnectionFactory>();
 
@@ -439,7 +441,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
    {
       checkInitialised();
 
-      HornetQDestination destination = topics.get(topicName);
+      HornetQTopic destination = topics.get(topicName);
       if (destination == null)
       {
          throw new IllegalArgumentException("Topic does not exist");
@@ -477,7 +479,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
    {
       checkInitialised();
 
-      HornetQDestination destination = queues.get(queueName);
+      HornetQQueue destination = queues.get(queueName);
       if (destination == null)
       {
          throw new IllegalArgumentException("Queue does not exist");
@@ -1082,7 +1084,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       }
       else
       {
-         HornetQDestination hqQueue = HornetQDestination.createQueue(queueName);
+         HornetQQueue hqQueue = HornetQDestination.createQueue(queueName);
 
          // Convert from JMS selector to core filter
          String coreFilterString = null;
@@ -1122,7 +1124,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       }
       else
       {
-         HornetQDestination hqTopic = HornetQDestination.createTopic(topicName);
+         HornetQTopic hqTopic = HornetQDestination.createTopic(topicName);
          // We create a dummy subscription on the topic, that never receives messages - this is so we can perform JMS
          // checks when routing messages to a topic that
          // does not exist - otherwise we would not be able to distinguish from a non existent topic and one with no

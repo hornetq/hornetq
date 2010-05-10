@@ -33,6 +33,8 @@ import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.client.HornetQDestination;
+import org.hornetq.jms.client.HornetQQueue;
+import org.hornetq.jms.client.HornetQTopic;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.hornetq.tests.integration.management.ManagementTestBase;
 import org.hornetq.tests.unit.util.InVMContext;
@@ -53,7 +55,7 @@ public class TopicControlUsingJMSTest extends ManagementTestBase
 
    private String subscriptionName;
 
-   protected HornetQDestination topic;
+   protected HornetQTopic topic;
 
    protected JMSMessagingProxy proxy;
 
@@ -358,14 +360,14 @@ public class TopicControlUsingJMSTest extends ManagementTestBase
 
       String topicName = RandomUtil.randomString();
       serverManager.createTopic(false, topicName, topicBinding );
-      topic = (HornetQDestination)HornetQJMSClient.createTopic(topicName);
+      topic = (HornetQTopic)HornetQJMSClient.createTopic(topicName);
 
       HornetQConnectionFactory cf = (HornetQConnectionFactory)HornetQJMSClient.createConnectionFactory(new TransportConfiguration(InVMConnectorFactory.class.getName()));
       connection = cf.createQueueConnection();
       session = connection.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
       connection.start();
 
-      HornetQDestination managementQueue = (HornetQDestination)HornetQJMSClient.createQueue("hornetq.management");
+      HornetQQueue managementQueue = (HornetQQueue)HornetQJMSClient.createQueue("hornetq.management");
       proxy = new JMSMessagingProxy(session, managementQueue, ResourceNames.JMS_TOPIC + topic.getTopicName());
    }
 

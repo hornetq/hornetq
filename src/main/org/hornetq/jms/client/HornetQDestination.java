@@ -18,8 +18,6 @@ import java.util.UUID;
 
 import javax.jms.Destination;
 import javax.jms.JMSException;
-import javax.jms.TemporaryQueue;
-import javax.jms.TemporaryTopic;
 import javax.naming.NamingException;
 import javax.naming.Reference;
 import javax.naming.Referenceable;
@@ -37,7 +35,7 @@ import org.hornetq.jms.referenceable.SerializableObjectRefAddr;
  *
  * $Id$
  */
-public class HornetQDestination implements TemporaryQueue, TemporaryTopic, Serializable, Referenceable
+public class HornetQDestination implements Destination, Serializable, Referenceable
 {
    // Constants -----------------------------------------------------
 
@@ -146,28 +144,28 @@ public class HornetQDestination implements TemporaryQueue, TemporaryTopic, Seria
       return new SimpleString(JMS_TOPIC_ADDRESS_PREFIX + name);
    }
    
-   public static HornetQDestination createQueue(final String name)
+   public static HornetQQueue createQueue(final String name)
    {
-      return new HornetQDestination(JMS_QUEUE_ADDRESS_PREFIX.concat(name), name, false, true, null);
+      return new HornetQQueue(name);
    }
    
-   public static HornetQDestination createTopic(final String name)
+   public static HornetQTopic createTopic(final String name)
    {
-      return new HornetQDestination(JMS_TOPIC_ADDRESS_PREFIX.concat(name), name, false, false, null);
+      return new HornetQTopic(name);
    }
    
-   public static HornetQDestination createTemporaryQueue(final HornetQSession session)
+   public static HornetQTemporaryQueue createTemporaryQueue(final HornetQSession session)
    {
       String name = UUID.randomUUID().toString();
       
-      return new HornetQDestination(JMS_QUEUE_ADDRESS_PREFIX.concat(name), name, true, true, session);
+      return new HornetQTemporaryQueue(JMS_QUEUE_ADDRESS_PREFIX.concat(name), name, session);
    }
    
-   public static HornetQDestination createTemporaryTopic(final HornetQSession session)
+   public static HornetQTemporaryTopic createTemporaryTopic(final HornetQSession session)
    {
       String name = UUID.randomUUID().toString();
       
-      return new HornetQDestination(JMS_TOPIC_ADDRESS_PREFIX.concat(name), name, true, false, session);
+      return new HornetQTemporaryTopic(JMS_TOPIC_ADDRESS_PREFIX.concat(name), name, session);
    }
 
    
@@ -196,7 +194,7 @@ public class HornetQDestination implements TemporaryQueue, TemporaryTopic, Seria
    
    // Constructors --------------------------------------------------
 
-   private HornetQDestination(final String address, final String name,
+   protected HornetQDestination(final String address, final String name,
                                 final boolean temporary,
                                 final boolean queue,
                                 final HornetQSession session)
@@ -224,16 +222,6 @@ public class HornetQDestination implements TemporaryQueue, TemporaryTopic, Seria
                            null);
    }
 
-   public String getQueueName()
-   {
-      return name;
-   }
-   
-   public String getTopicName()
-   {
-      return name;
-   }
-   
    public void delete() throws JMSException
    {
       if (session != null)

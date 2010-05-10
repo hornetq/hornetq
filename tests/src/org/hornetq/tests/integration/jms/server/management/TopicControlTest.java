@@ -31,6 +31,7 @@ import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
 import org.hornetq.jms.client.HornetQDestination;
+import org.hornetq.jms.client.HornetQTopic;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.hornetq.tests.integration.management.ManagementControlHelper;
 import org.hornetq.tests.integration.management.ManagementTestBase;
@@ -62,7 +63,7 @@ public class TopicControlTest extends ManagementTestBase
 
    private String subscriptionName;
 
-   protected HornetQDestination topic;
+   protected HornetQTopic topic;
 
    private String topicBinding = "/topic/" + RandomUtil.randomString();
 
@@ -433,7 +434,7 @@ public class TopicControlTest extends ManagementTestBase
 
       String topicName = RandomUtil.randomString();
       serverManager.createTopic(false, topicName, topicBinding);
-      topic = (HornetQDestination)HornetQJMSClient.createTopic(topicName);
+      topic = (HornetQTopic)HornetQJMSClient.createTopic(topicName);
    }
 
    @Override

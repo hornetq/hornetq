@@ -29,6 +29,7 @@ import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.security.Role;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.client.HornetQDestination;
+import org.hornetq.jms.client.HornetQQueue;
 
 /**
  * A JMSServerControlUsingCoreTest
@@ -88,7 +89,7 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
    @Override
    protected JMSServerControl createManagementControl() throws Exception
    {
-      HornetQDestination managementQueue = (HornetQDestination) HornetQJMSClient.createQueue("hornetq.management");
+      HornetQQueue managementQueue = (HornetQQueue) HornetQJMSClient.createQueue("hornetq.management");
       final JMSMessagingProxy proxy = new JMSMessagingProxy(session, managementQueue, ResourceNames.JMS_SERVER);
 
       return new JMSServerControl()
