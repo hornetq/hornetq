@@ -18,6 +18,7 @@ import javax.jms.Message;
 import javax.jms.QueueReceiver;
 import javax.jms.TemporaryQueue;
 import javax.jms.TextMessage;
+import javax.jms.Topic;
 
 import junit.framework.Assert;
 import junit.framework.Test;
@@ -51,6 +52,10 @@ public class TemporaryQueueTest extends PTPTestCase
          receiverConnection.stop();
          // we create a temporary queue to receive messages
          tempQueue = receiverSession.createTemporaryQueue();
+         
+         // someone may consider it silly, but lots of users do this kind of thing
+         assertFalse(tempQueue instanceof Topic);
+         
          // we recreate the sender because it has been
          // already created with a Destination as parameter
          sender = senderSession.createSender(null);
