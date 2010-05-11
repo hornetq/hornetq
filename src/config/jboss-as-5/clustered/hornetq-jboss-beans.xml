@@ -16,6 +16,8 @@
       <depends>JBossSecurityJNDIContextEstablishment</depends>
       <start ignored="true"/>
       <stop ignored="true"/>
+      <property name="allowClientLogin">false</property>
+      <property name="authoriseOnClientLogin">false</property>
    </bean>
 
 	<!-- The core server -->

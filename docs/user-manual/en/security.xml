@@ -261,6 +261,20 @@
         <para>Take a look at one of the default <literal>hornetq-jboss-beans.xml</literal> files for
             JBoss Application Server that are bundled in the distribution for an example of how this
             is configured.</para>
+       <section>
+          <title>Configuring Client Login</title>
+          <para>JBoss can be configured to allow client login, basically this is when a JEE component such as a Servlet
+             or EJB sets security credentials on the current security context  and these are used throughout the call.
+             If you would like these credentials to be used by HornetQ when sending or consuming messages then
+          set <literal>allowClientLogin</literal> to true. This will bypass HornetQ authentication and propgate the
+          provided Security Context. If you woul like HornetQ to authenticate using the propogated security then set the
+          <literal>authoriseOnClientLogin</literal> to true also.</para>
+          <para>There is more info on using the JBoss client login module <ulink
+                url="http://community.jboss.org/wiki/ClientLoginModule">here</ulink> </para>
+          <note><para>If messages are sent non blocking then there is a chance that these could arrive on the server after
+          the calling thread has completed meaning that the security context has been cleared. If this is the case then messages
+          will need to be sent blocking</para></note>
+       </section>
     </section>
     <section>
         <title>Changing the username/password for clustering</title>

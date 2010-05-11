@@ -25,9 +25,7 @@ import org.hornetq.core.security.CheckType;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.spi.core.security.HornetQSecurityManager;
-import org.jboss.security.AuthenticationManager;
-import org.jboss.security.RealmMapping;
-import org.jboss.security.SimplePrincipal;
+import org.jboss.security.*;
 
 /**
  * This implementation delegates to the JBoss AS security interfaces (which in turn use JAAS)
@@ -65,6 +63,10 @@ public class JBossASSecurityManager implements HornetQSecurityManager, HornetQCo
 
    private boolean isAs5 = true;
 
+   private boolean allowClientLogin = false;
+
+   private boolean authoriseOnClientLogin = false;
+
    public boolean validateUser(final String user, final String password)
    {
       SimplePrincipal principal = new SimplePrincipal(user);
@@ -85,6 +87,18 @@ public class JBossASSecurityManager implements HornetQSecurityManager, HornetQCo
                                       final String password,
                                       final Set<Role> roles,
                                       final CheckType checkType)
+   {
+      if(allowClientLogin && SecurityContextAssociation.isClient())
+      {
+         return authoriseOnClientLogin? useClientAuthentication(roles, checkType):true;
+      }
+      else
+      {
+         return useConnectionAuthentication(user, password, roles, checkType);
+      }
+   }
+
+   private boolean useConnectionAuthentication(final String user, final String password, final Set<Role> roles, final CheckType checkType)
    {
       SimplePrincipal principal = user == null ? null : new SimplePrincipal(user);
 
@@ -114,6 +128,31 @@ public class JBossASSecurityManager implements HornetQSecurityManager, HornetQCo
             JBossASSecurityManager.log.trace("user " + user + (authenticated ? " is " : " is NOT ") + "authorized");
          }
          popSecurityContext();
+      }
+      return authenticated;
+   }
+
+   private boolean useClientAuthentication(final Set<Role> roles, final CheckType checkType)
+   {
+      SecurityContext sc = SecurityContextAssociation.getSecurityContext();
+      Principal principal = sc.getUtil().getUserPrincipal();
+
+      char[] passwordChars = (char[]) sc.getUtil().getCredential();
+
+      Subject subject = sc.getSubjectInfo().getAuthenticatedSubject();
+
+      boolean authenticated = authenticationManager.isValid(principal, passwordChars, subject);
+
+      if (authenticated)
+      {
+         Set<Principal> rolePrincipals = getRolePrincipals(checkType, roles);
+
+         authenticated = realmMapping.doesUserHaveRole(principal, rolePrincipals);
+
+         if (trace)
+         {
+            JBossASSecurityManager.log.trace("user " + principal.getName() + (authenticated ? " is " : " is NOT ") + "authorized");
+         }
       }
       return authenticated;
    }
@@ -231,5 +270,15 @@ public class JBossASSecurityManager implements HornetQSecurityManager, HornetQCo
    public void setAs5(final boolean as5)
    {
       isAs5 = as5;
+   }
+
+   public void setAllowClientLogin(final boolean allowClientLogin)
+   {
+      this.allowClientLogin = allowClientLogin;
+   }
+
+   public void setAuthoriseOnClientLogin(final boolean authoriseOnClientLogin)
+   {
+      this.authoriseOnClientLogin = authoriseOnClientLogin;
    }
 }
