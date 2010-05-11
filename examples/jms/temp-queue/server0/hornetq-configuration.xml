@@ -29,6 +29,13 @@
          <permission type="consume" roles="guest"/>
          <permission type="send" roles="guest"/>
       </security-setting>
+      <!-- security settings for JMS temporary queue -->
+      <security-setting match="jms.tempqueue.#">
+         <permission type="createNonDurableQueue" roles="guest"/>
+         <permission type="deleteNonDurableQueue" roles="guest"/>
+         <permission type="consume" roles="guest"/>
+         <permission type="send" roles="guest"/>
+      </security-setting>
    </security-settings>
    
 </configuration>
