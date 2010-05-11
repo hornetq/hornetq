@@ -201,6 +201,7 @@
             <exclude name="jms/jms-bridge/build.xml"/>
             <exclude name="jms/large-message/build.xml"/>
             <exclude name="jms/perf/build.xml"/>
+            <exclude name="jms/stomp-websockets/build.xml"/>
          </fileset>
       </subant>
    	
