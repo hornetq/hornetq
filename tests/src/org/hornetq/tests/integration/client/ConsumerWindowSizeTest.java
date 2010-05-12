@@ -73,7 +73,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
 
    
    // https://jira.jboss.org/jira/browse/HORNETQ-385
-   public void disabled_testNoCacheWithReceiveImmediate() throws Exception
+   public void disabled_testReceiveImmediateWithZeroWindow() throws Exception
    {
       HornetQServer server = createServer(false, isNetty());
       try
@@ -137,7 +137,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
    }
    
    // https://jira.jboss.org/jira/browse/HORNETQ-385
-   public void disabled_testNoCacheWithReceiveImmediate2() throws Exception
+   public void disabled_testReceiveImmediateWithZeroWindow2() throws Exception
    {
       HornetQServer server = createServer(true);
 
@@ -188,6 +188,133 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
       {
          server.stop();
       }
+   }
+   
+   // https://jira.jboss.org/jira/browse/HORNETQ-385
+   public void disabled_testReceiveImmediateWithZeroWindow3() throws Exception
+   {
+      HornetQServer server = createServer(false, isNetty());
+      try
+      {
+         server.start();
+
+         ClientSessionFactory sf = createFactory(isNetty());
+
+         sf.setConsumerWindowSize(0);
+
+         ClientSession session = sf.createSession(false, false, false);
+         session.createQueue("testWindow", "testWindow", true);
+         session.close();
+
+         int numConsumers = 5;
+
+         ArrayList<ClientConsumer> consumers = new ArrayList<ClientConsumer>();
+         ArrayList<ClientSession> sessions = new ArrayList<ClientSession>();
+         for (int i = 0; i < numConsumers; i++)
+         {
+            System.out.println("created: " + i);
+            ClientSession session1 = sf.createSession();
+            ClientConsumer consumer = session1.createConsumer("testWindow");
+            consumers.add(consumer);
+            session1.start();
+            sessions.add(session1);
+            consumer.receive(10);
+
+         }
+
+         ClientSession senderSession = sf.createSession(false, false);
+
+         ClientProducer producer = senderSession.createProducer("testWindow");
+
+         ClientMessage sent = senderSession.createMessage(true);
+         sent.putStringProperty("hello", "world");
+
+         producer.send(sent);
+
+         senderSession.commit();
+
+         senderSession.start();
+
+         ClientConsumer consumer = consumers.get(2);
+         ClientMessage received = consumer.receive(1000);
+         assertNotNull(received);
+
+         for (ClientSession tmpSess : sessions)
+         {
+            tmpSess.close();
+         }
+
+         senderSession.close();
+
+      }
+      finally
+      {
+         server.stop();
+      }
+
+   }
+   
+   public void disabled_testReceiveImmediateWithZeroWindow4() throws Exception
+   {
+      HornetQServer server = createServer(false, isNetty());
+      try
+      {
+         server.start();
+
+         ClientSessionFactory sf = createFactory(isNetty());
+
+         sf.setConsumerWindowSize(0);
+
+         ClientSession session = sf.createSession(false, false, false);
+         session.createQueue("testWindow", "testWindow", true);
+         session.close();
+
+         int numConsumers = 5;
+
+         ArrayList<ClientConsumer> consumers = new ArrayList<ClientConsumer>();
+         ArrayList<ClientSession> sessions = new ArrayList<ClientSession>();
+         for (int i = 0; i < numConsumers; i++)
+         {
+            System.out.println("created: " + i);
+            ClientSession session1 = sf.createSession();
+            ClientConsumer consumer = session1.createConsumer("testWindow");
+            consumers.add(consumer);
+            session1.start();
+            sessions.add(session1);
+            consumer.receive(10);
+
+         }
+
+         ClientSession senderSession = sf.createSession(false, false);
+
+         ClientProducer producer = senderSession.createProducer("testWindow");
+
+         ClientMessage sent = senderSession.createMessage(true);
+         sent.putStringProperty("hello", "world");
+
+         producer.send(sent);
+
+         senderSession.commit();
+
+         senderSession.start();
+
+         ClientConsumer consumer = consumers.get(2);
+         ClientMessage received = consumer.receiveImmediate();
+         assertNotNull(received);
+
+         for (ClientSession tmpSess : sessions)
+         {
+            tmpSess.close();
+         }
+
+         senderSession.close();
+
+      }
+      finally
+      {
+         server.stop();
+      }
+
    }
    
    
