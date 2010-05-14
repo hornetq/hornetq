@@ -16,4 +16,5 @@ rm -r ./src/.deps
 rm -r ./src/.libs
 rm -r ./src/org_hornetq_core_asyncio_impl_AsynchronousFileImpl.h
 rm -r ./src/disktest
+rm -r build-aux
 
