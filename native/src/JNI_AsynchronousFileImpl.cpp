@@ -33,13 +33,19 @@
 // This value is set here globally, to avoid passing stuff on stack between java and the native layer on every sleep call
 struct timespec nanoTime;
 
+inline AIOController * getController(JNIEnv *env, jobject & controllerAddress)
+{
+     return (AIOController *) env->GetDirectBufferAddress(controllerAddress);
+} 
+
+
 
 /*
  * Class:     org_jboss_jaio_libaioimpl_LibAIOController
  * Method:    init
  * Signature: (Ljava/lang/String;Ljava/lang/Class;)J
  */
-JNIEXPORT jlong JNICALL Java_org_hornetq_core_asyncio_impl_AsynchronousFileImpl_init
+JNIEXPORT jobject JNICALL Java_org_hornetq_core_asyncio_impl_AsynchronousFileImpl_init
   (JNIEnv * env, jclass clazz, jstring jstrFileName, jint maxIO, jobject logger)
 {
 	AIOController * controller = 0;
@@ -65,7 +71,7 @@ JNIEXPORT jlong JNICALL Java_org_hornetq_core_asyncio_impl_AsynchronousFileImpl_
 
 //        controller->log(env,4, "Controller initialized");
 
-	    return (jlong)controller;
+		return env->NewDirectByteBuffer(controller, 0);
 	}
 	catch (AIOException& e){
 		if (controller != 0)
@@ -78,11 +84,11 @@ JNIEXPORT jlong JNICALL Java_org_hornetq_core_asyncio_impl_AsynchronousFileImpl_
 }
 
 JNIEXPORT void JNICALL Java_org_hornetq_core_asyncio_impl_AsynchronousFileImpl_read
-  (JNIEnv *env, jobject objThis, jlong controllerAddress, jlong position, jlong size, jobject jbuffer, jobject callback)
+  (JNIEnv *env, jobject objThis, jobject controllerAddress, jlong position, jlong size, jobject jbuffer, jobject callback)
 {
 	try
 	{
-		AIOController * controller = (AIOController *) controllerAddress;
+		AIOController * controller = getController(env, controllerAddress);
 		void * buffer = env->GetDirectBufferAddress(jbuffer);
 
 		if (buffer == 0)
@@ -166,11 +172,11 @@ JNIEXPORT jobject JNICALL Java_org_hornetq_core_asyncio_impl_AsynchronousFileImp
 }
 
 JNIEXPORT void JNICALL Java_org_hornetq_core_asyncio_impl_AsynchronousFileImpl_write
-  (JNIEnv *env, jobject objThis, jlong controllerAddress, jlong sequence, jlong position, jlong size, jobject jbuffer, jobject callback)
+  (JNIEnv *env, jobject objThis, jobject controllerAddress, jlong sequence, jlong position, jlong size, jobject jbuffer, jobject callback)
 {
 	try
 	{
-		AIOController * controller = (AIOController *) controllerAddress;
+		AIOController * controller = getController(env, controllerAddress);
 		void * buffer = env->GetDirectBufferAddress(jbuffer);
 
 		if (buffer == 0)
@@ -193,11 +199,11 @@ JNIEXPORT void JNICALL Java_org_hornetq_core_asyncio_impl_AsynchronousFileImpl_w
 
 
 JNIEXPORT void Java_org_hornetq_core_asyncio_impl_AsynchronousFileImpl_internalPollEvents
-  (JNIEnv *env, jclass, jlong controllerAddress)
+  (JNIEnv *env, jclass, jobject controllerAddress)
 {
 	try
 	{
-		AIOController * controller = (AIOController *) controllerAddress;
+		AIOController * controller = getController(env, controllerAddress);
 		controller->fileOutput.pollEvents(env);
 	}
 	catch (AIOException& e)
@@ -207,11 +213,11 @@ JNIEXPORT void Java_org_hornetq_core_asyncio_impl_AsynchronousFileImpl_internalP
 }
 
 JNIEXPORT void JNICALL Java_org_hornetq_core_asyncio_impl_AsynchronousFileImpl_stopPoller
-  (JNIEnv *env, jclass, jlong controllerAddress)
+  (JNIEnv *env, jclass, jobject controllerAddress)
 {
 	try
 	{
-		AIOController * controller = (AIOController *) controllerAddress;
+		AIOController * controller = getController(env, controllerAddress);
 		controller->fileOutput.stopPoller(env);
 	}
 	catch (AIOException& e)
@@ -221,16 +227,13 @@ JNIEXPORT void JNICALL Java_org_hornetq_core_asyncio_impl_AsynchronousFileImpl_s
 }
 
 JNIEXPORT void JNICALL Java_org_hornetq_core_asyncio_impl_AsynchronousFileImpl_closeInternal
-  (JNIEnv *env, jclass, jlong controllerAddress)
+  (JNIEnv *env, jclass, jobject controllerAddress)
 {
 	try
 	{
-		if (controllerAddress != 0)
-		{
-			AIOController * controller = (AIOController *) controllerAddress;
-			controller->destroy(env);
-			delete controller;
-		}
+		AIOController * controller = getController(env, controllerAddress);
+		controller->destroy(env);
+		delete controller;
 	}
 	catch (AIOException& e)
 	{
@@ -240,11 +243,11 @@ JNIEXPORT void JNICALL Java_org_hornetq_core_asyncio_impl_AsynchronousFileImpl_c
 
 
 JNIEXPORT void JNICALL Java_org_hornetq_core_asyncio_impl_AsynchronousFileImpl_fill
-  (JNIEnv * env, jclass, jlong controllerAddress, jlong position, jint blocks, jlong size, jbyte fillChar)
+  (JNIEnv * env, jclass, jobject controllerAddress, jlong position, jint blocks, jlong size, jbyte fillChar)
 {
 	try
 	{
-		AIOController * controller = (AIOController *) controllerAddress;
+		AIOController * controller = getController(env, controllerAddress);
 
 		controller->fileOutput.preAllocate(env, position, blocks, size, fillChar);
 
@@ -267,11 +270,11 @@ JNIEXPORT jint JNICALL Java_org_hornetq_core_asyncio_impl_AsynchronousFileImpl_g
 
 
 JNIEXPORT jlong JNICALL Java_org_hornetq_core_asyncio_impl_AsynchronousFileImpl_size0
-  (JNIEnv * env, jobject, jlong controllerAddress)
+  (JNIEnv * env, jobject, jobject controllerAddress)
 {
 	try
 	{
-		AIOController * controller = (AIOController *) controllerAddress;
+		AIOController * controller = getController(env, controllerAddress);
 
 		long size = controller->fileOutput.getSize();
 		if (size < 0)
