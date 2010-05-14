@@ -51,7 +51,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
 
    /** This definition needs to match Version.h on the native sources.
        Or else the native module won't be loaded because of version mismatches */
-   private static int EXPECTED_NATIVE_VERSION = 28;
+   private static int EXPECTED_NATIVE_VERSION = 29;
 
    /** Used to determine the next writing sequence */
    private final AtomicLong nextWritingSequence = new AtomicLong(0);
@@ -102,7 +102,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
       }
       catch (Throwable e)
       {
-         AsynchronousFileImpl.log.trace(name + " -> error loading the native library", e);
+         AsynchronousFileImpl.log.debug(name + " -> error loading the native library", e);
          return false;
       }
 
@@ -163,7 +163,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
    /**
     *  Warning: Beware of the C++ pointer! It will bite you! :-)
     */
-   private long handler;
+   private ByteBuffer handler;
 
    // A context switch on AIO would make it to synchronize the disk before
    // switching to the new thread, what would cause
@@ -258,13 +258,13 @@ public class AsynchronousFileImpl implements AsynchronousFile
             stopPoller();
          }
 
-         AsynchronousFileImpl.closeInternal(handler);
-         if (handler != 0)
+         if (handler != null)
          {
+            AsynchronousFileImpl.closeInternal(handler);
             AsynchronousFileImpl.addMax(-maxIO);
          }
          opened = false;
-         handler = 0;
+         handler = null;
       }
       finally
       {
@@ -416,7 +416,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
    }
 
    /** Return the JNI handler used on C++ */
-   public long getHandler()
+   public ByteBuffer getHandler()
    {
       return handler;
    }
@@ -618,30 +618,30 @@ public class AsynchronousFileImpl implements AsynchronousFile
 
    private static native ByteBuffer newNativeBuffer(long size);
 
-   private static native long init(String fileName, int maxIO, Logger logger) throws HornetQException;
+   private static native ByteBuffer init(String fileName, int maxIO, Logger logger) throws HornetQException;
 
-   private native long size0(long handle) throws HornetQException;
+   private native long size0(ByteBuffer handle) throws HornetQException;
 
-   private native void write(long handle,
+   private native void write(ByteBuffer handle,
                              long sequence,
                              long position,
                              long size,
                              ByteBuffer buffer,
                              AIOCallback aioPackage) throws HornetQException;
 
-   private native void read(long handle, long position, long size, ByteBuffer buffer, AIOCallback aioPackage) throws HornetQException;
+   private native void read(ByteBuffer handle, long position, long size, ByteBuffer buffer, AIOCallback aioPackage) throws HornetQException;
 
-   private static native void fill(long handle, long position, int blocks, long size, byte fillChar) throws HornetQException;
+   private static native void fill(ByteBuffer handle, long position, int blocks, long size, byte fillChar) throws HornetQException;
 
-   private static native void closeInternal(long handler) throws HornetQException;
+   private static native void closeInternal(ByteBuffer handler) throws HornetQException;
 
-   private static native void stopPoller(long handler) throws HornetQException;
+   private static native void stopPoller(ByteBuffer handler) throws HornetQException;
 
    /** A native method that does nothing, and just validate if the ELF dependencies are loaded and on the correct platform as this binary format */
    private static native int getNativeVersion();
 
    /** Poll asynchronous events from internal queues */
-   private static native void internalPollEvents(long handler);
+   private static native void internalPollEvents(ByteBuffer handler);
 
    // Inner classes ---------------------------------------------------------------------
 
