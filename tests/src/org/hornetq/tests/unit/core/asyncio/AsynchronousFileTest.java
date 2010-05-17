@@ -74,7 +74,8 @@ public class AsynchronousFileTest extends AIOTestBase
    {
       super.setUp();
       pollerExecutor = Executors.newCachedThreadPool(new HornetQThreadFactory("HornetQ-AIO-poller-pool" + System.identityHashCode(this),
-                                                                              false, this.getClass().getClassLoader()));
+                                                                              false,
+                                                                              this.getClass().getClassLoader()));
       executor = Executors.newSingleThreadExecutor();
    }
 
@@ -100,54 +101,54 @@ public class AsynchronousFileTest extends AIOTestBase
 
       }
    }
-   
+
    public void testReleaseBuffers() throws Exception
    {
       AsynchronousFileImpl controller = new AsynchronousFileImpl(executor, pollerExecutor);
       controller.open(FILE_NAME, 10000);
       WeakReference<ByteBuffer> bufferCheck = new WeakReference<ByteBuffer>(controller.getHandler());
-       controller.fill(0, 10, 1024, (byte)0);
-      
+      controller.fill(0, 10, 1024, (byte)0);
+
       ByteBuffer write = AsynchronousFileImpl.newBuffer(1024);
-      
-      for (int i = 0 ; i < 1024; i++)
+
+      for (int i = 0; i < 1024; i++)
       {
-         write.put(getSamplebyte(i));
+         write.put(UnitTestCase.getSamplebyte(i));
       }
 
       final CountDownLatch latch = new CountDownLatch(1);
-      
+
       controller.write(0, 1024, write, new AIOCallback()
       {
-         
-         public void onError(int errorCode, String errorMessage)
+
+         public void onError(final int errorCode, final String errorMessage)
          {
          }
-         
+
          public void done()
          {
             latch.countDown();
          }
       });
-      
-      assertTrue(latch.await(10, TimeUnit.SECONDS));
-      
+
+      Assert.assertTrue(latch.await(10, TimeUnit.SECONDS));
+
       WeakReference<ByteBuffer> bufferCheck2 = new WeakReference<ByteBuffer>(write);
-      
+
       AsynchronousFileImpl.destroyBuffer(write);
 
       write = null;
-      
-      forceGC();
-      
-      assertNull(bufferCheck2.get());
-      
+
+      UnitTestCase.forceGC();
+
+      Assert.assertNull(bufferCheck2.get());
+
       controller.close();
       controller = null;
-      
-      forceGC();
-      
-      assertNull(bufferCheck.get());
+
+      UnitTestCase.forceGC();
+
+      Assert.assertNull(bufferCheck.get());
    }
 
    public void testFileNonExistent() throws Exception
@@ -341,7 +342,7 @@ public class AsynchronousFileTest extends AIOTestBase
 
          callbackLocal.latch.await();
 
-         assertTrue(callbackLocal.error);
+         Assert.assertTrue(callbackLocal.error);
 
          callbackLocal = new LocalCallback();
 
