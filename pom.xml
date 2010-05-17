@@ -293,7 +293,7 @@ Copyright 2009 Red Hat, Inc.
          </releases>
          <id>jboss.release</id>
          <name>JBoss releases</name>
-         <url>http://repository.jboss.org/maven2</url>
+         <url>https://repository.jboss.org/nexus/content/groups/public/</url>
       </repository>
    </repositories>
 
@@ -309,7 +309,7 @@ Copyright 2009 Red Hat, Inc.
          </releases>
          <id>jboss.release</id>
          <name>JBoss releases</name>
-         <url>http://repository.jboss.org/maven2</url>
+         <url>https://repository.jboss.org/nexus/content/groups/public</url>
       </pluginRepository>
    </pluginRepositories>                     
    <!--<profiles>
@@ -327,19 +327,6 @@ Copyright 2009 Red Hat, Inc.
       </profile>
 
    </profiles>-->
-
-   <distributionManagement>
-      <repository>
-         <id>repository.jboss.org</id>
-         <name>JBoss.org Release Distribution Repository</name>
-         <url>dav:https://svn.jboss.org/repos/repository.jboss.org/maven2</url>
-      </repository>
-      <snapshotRepository>
-         <id>snapshots.jboss.org</id>
-         <name>JBoss.org Development Snapshot Repository</name>
-         <url>dav:https://snapshots.jboss.org/maven2</url>
-      </snapshotRepository>
-   </distributionManagement>
 
 
 </project>

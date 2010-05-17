@@ -13,6 +13,7 @@
 
 package org.hornetq.tests.unit.core.asyncio;
 
+import java.lang.ref.WeakReference;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
@@ -22,6 +23,7 @@ import java.util.Iterator;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import junit.framework.Assert;
@@ -97,6 +99,55 @@ public class AsynchronousFileTest extends AIOTestBase
          controller.close();
 
       }
+   }
+   
+   public void testReleaseBuffers() throws Exception
+   {
+      AsynchronousFileImpl controller = new AsynchronousFileImpl(executor, pollerExecutor);
+      controller.open(FILE_NAME, 10000);
+      WeakReference<ByteBuffer> bufferCheck = new WeakReference<ByteBuffer>(controller.getHandler());
+       controller.fill(0, 10, 1024, (byte)0);
+      
+      ByteBuffer write = AsynchronousFileImpl.newBuffer(1024);
+      
+      for (int i = 0 ; i < 1024; i++)
+      {
+         write.put(getSamplebyte(i));
+      }
+
+      final CountDownLatch latch = new CountDownLatch(1);
+      
+      controller.write(0, 1024, write, new AIOCallback()
+      {
+         
+         public void onError(int errorCode, String errorMessage)
+         {
+         }
+         
+         public void done()
+         {
+            latch.countDown();
+         }
+      });
+      
+      assertTrue(latch.await(10, TimeUnit.SECONDS));
+      
+      WeakReference<ByteBuffer> bufferCheck2 = new WeakReference<ByteBuffer>(write);
+      
+      AsynchronousFileImpl.destroyBuffer(write);
+
+      write = null;
+      
+      forceGC();
+      
+      assertNull(bufferCheck2.get());
+      
+      controller.close();
+      controller = null;
+      
+      forceGC();
+      
+      assertNull(bufferCheck.get());
    }
 
    public void testFileNonExistent() throws Exception
