@@ -140,6 +140,30 @@ public class UnitTestCase extends TestCase
       }
    }
 
+   public static void forceGC(WeakReference<?> ref, long timeout)
+   {
+      long waitUntil = System.currentTimeMillis() + timeout; 
+      // A loop that will wait GC, using the minimal time as possible
+      while (ref.get() != null && System.currentTimeMillis() < waitUntil)
+      {
+         ArrayList<String> list = new ArrayList<String>();
+         for (int i = 0 ; i < 1000; i++)
+         {
+            list.add("Some string with garbage with concatenation "  + i);
+         }
+         list.clear();
+         list = null;
+         System.gc();
+         try
+         {
+            Thread.sleep(500);
+         }
+         catch (InterruptedException e)
+         {
+         }
+      }
+   }
+
    // verify if these weak references are released after a few GCs
    public static void checkWeakReferences(final WeakReference<?>... references)
    {

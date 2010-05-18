@@ -105,48 +105,55 @@ public class AsynchronousFileTest extends AIOTestBase
    public void testReleaseBuffers() throws Exception
    {
       AsynchronousFileImpl controller = new AsynchronousFileImpl(executor, pollerExecutor);
-      controller.open(FILE_NAME, 10000);
-      WeakReference<ByteBuffer> bufferCheck = new WeakReference<ByteBuffer>(controller.getHandler());
-      controller.fill(0, 10, 1024, (byte)0);
-
-      ByteBuffer write = AsynchronousFileImpl.newBuffer(1024);
-
-      for (int i = 0; i < 1024; i++)
+      WeakReference<ByteBuffer> bufferCheck = null;
+      try
       {
-         write.put(UnitTestCase.getSamplebyte(i));
+         controller.open(FILE_NAME, 10000);
+         bufferCheck = new WeakReference<ByteBuffer>(controller.getHandler());
+         controller.fill(0, 10, 1024, (byte)0);
+   
+         ByteBuffer write = AsynchronousFileImpl.newBuffer(1024);
+   
+         for (int i = 0; i < 1024; i++)
+         {
+            write.put(UnitTestCase.getSamplebyte(i));
+         }
+   
+         final CountDownLatch latch = new CountDownLatch(1);
+   
+         controller.write(0, 1024, write, new AIOCallback()
+         {
+   
+            public void onError(final int errorCode, final String errorMessage)
+            {
+            }
+   
+            public void done()
+            {
+               latch.countDown();
+            }
+         });
+   
+         Assert.assertTrue(latch.await(10, TimeUnit.SECONDS));
+   
+         WeakReference<ByteBuffer> bufferCheck2 = new WeakReference<ByteBuffer>(write);
+   
+         AsynchronousFileImpl.destroyBuffer(write);
+   
+         write = null;
+   
+         UnitTestCase.forceGC(bufferCheck2, 5000);
+   
+         Assert.assertNull(bufferCheck2.get());
+      }
+      finally
+      {
+         controller.close();
       }
 
-      final CountDownLatch latch = new CountDownLatch(1);
-
-      controller.write(0, 1024, write, new AIOCallback()
-      {
-
-         public void onError(final int errorCode, final String errorMessage)
-         {
-         }
-
-         public void done()
-         {
-            latch.countDown();
-         }
-      });
-
-      Assert.assertTrue(latch.await(10, TimeUnit.SECONDS));
-
-      WeakReference<ByteBuffer> bufferCheck2 = new WeakReference<ByteBuffer>(write);
-
-      AsynchronousFileImpl.destroyBuffer(write);
-
-      write = null;
-
-      UnitTestCase.forceGC();
-
-      Assert.assertNull(bufferCheck2.get());
-
-      controller.close();
       controller = null;
 
-      UnitTestCase.forceGC();
+      UnitTestCase.forceGC(bufferCheck, 5000);
 
       Assert.assertNull(bufferCheck.get());
    }
