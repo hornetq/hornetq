@@ -150,7 +150,7 @@ public class QueueTest extends UnitTestCase
 
             MessageReference ref = message.createReference(queue);
 
-            queue.addLast(ref);
+            queue.addLast(ref, false);
 
             refs.add(ref);
 

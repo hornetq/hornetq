@@ -985,7 +985,7 @@ public class PagingStoreImpl implements TestSupportPageStore
 
          }
 
-         postOffice.route(message, depageTransaction);
+         postOffice.route(message, depageTransaction, false);
 
          // This means the page is duplicated. So we need to ignore this
          if (depageTransaction.getState() == State.ROLLBACK_ONLY)

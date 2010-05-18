@@ -360,25 +360,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          // dies. It does not mean it will get deleted automatically when the
          // session is closed.
          // It is up to the user to delete the queue when finished with it
-
-         CloseListener closeListener = new CloseListener()
-         {
-            public void connectionClosed()
-            {
-               try
-               {
-                  if (postOffice.getBinding(name) != null)
-                  {
-                     postOffice.removeBinding(name);
-                  }
-               }
-               catch (Exception e)
-               {
-                  ServerSessionImpl.log.error("Failed to remove temporary queue " + name);
-               }
-            }
-         };
-
+        
          TempQueueCleanerUpper cleaner = new TempQueueCleanerUpper(postOffice, name);
 
          remotingConnection.addCloseListener(cleaner);
@@ -988,7 +970,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       currentLargeMessage = msg;
    }
 
-   public void send(final ServerMessage message) throws Exception
+   public void send(final ServerMessage message, final boolean direct) throws Exception
    {
       long id = storageManager.generateUniqueID();
 
@@ -1016,11 +998,11 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       {
          // It's a management message
 
-         handleManagementMessage(message);
+         handleManagementMessage(message, direct);
       }
       else
       {
-         doSend(message);
+         doSend(message, direct);
       }
 
       if (defaultAddress == null)
@@ -1045,7 +1027,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       {
          currentLargeMessage.releaseResources();
 
-         doSend(currentLargeMessage);
+         doSend(currentLargeMessage, false);
 
          currentLargeMessage = null;
       }
@@ -1112,7 +1094,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       started = s;
    }
 
-   private void handleManagementMessage(final ServerMessage message) throws Exception
+   private void handleManagementMessage(final ServerMessage message, final boolean direct) throws Exception
    {
       try
       {
@@ -1135,7 +1117,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       {
          reply.setAddress(replyTo);
 
-         doSend(reply);
+         doSend(reply, direct);
       }
    }
 
@@ -1171,7 +1153,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       }
    }
 
-   private void doSend(final ServerMessage msg) throws Exception
+   private void doSend(final ServerMessage msg, final boolean direct) throws Exception
    {
       // check the user has write access to this address.
       try
@@ -1200,7 +1182,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          routingContext.setTransaction(tx);
       }
 
-      postOffice.route(msg, routingContext);
+      postOffice.route(msg, routingContext, direct);
 
       routingContext.clear();
    }

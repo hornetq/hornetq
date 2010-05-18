@@ -71,7 +71,7 @@ public class LastValueQueue extends QueueImpl
    }
 
    @Override
-   public synchronized void add(final MessageReference ref, final boolean first)
+   public synchronized void add(final MessageReference ref, final boolean first, final boolean direct)
    {
       SimpleString prop = ref.getMessage().getSimpleStringProperty(Message.HDR_LAST_VALUE_NAME);
 
@@ -107,7 +107,7 @@ public class LastValueQueue extends QueueImpl
 
                map.put(prop, hr);
 
-               super.add(hr, first);
+               super.add(hr, first, direct);
             }
          }
          else
@@ -133,13 +133,13 @@ public class LastValueQueue extends QueueImpl
             {
                map.put(prop, (HolderReference)ref);
 
-               super.add(ref, first);
+               super.add(ref, first, direct);
             }
          }
       }
       else
       {
-         super.add(ref, first);
+         super.add(ref, first, direct);
       }
    }
 

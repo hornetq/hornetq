@@ -50,6 +50,8 @@ public class NettyConnection implements Connection
 
    private final boolean batchingEnabled;
    
+   private final boolean directDeliver;
+   
    private HornetQBuffer batchBuffer;
    
    private final Object writeLock = new Object();
@@ -58,13 +60,15 @@ public class NettyConnection implements Connection
 
    // Constructors --------------------------------------------------
 
-   public NettyConnection(final Channel channel, final ConnectionLifeCycleListener listener, boolean batchingEnabled)
+   public NettyConnection(final Channel channel, final ConnectionLifeCycleListener listener, boolean batchingEnabled, boolean directDeliver)
    {
       this.channel = channel;
 
       this.listener = listener;
 
       this.batchingEnabled = batchingEnabled;
+      
+      this.directDeliver = directDeliver;
       
       listener.connectionCreated(this, ProtocolType.CORE);
    }
@@ -210,6 +214,11 @@ public class NettyConnection implements Connection
    public String getRemoteAddress()
    {
       return channel.getRemoteAddress().toString();
+   }
+   
+   public boolean isDirectDeliver()
+   {
+      return directDeliver;
    }
 
    // Public --------------------------------------------------------

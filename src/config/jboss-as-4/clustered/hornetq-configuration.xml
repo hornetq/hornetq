@@ -40,7 +40,7 @@
          <factory-class>org.hornetq.core.remoting.impl.netty.NettyConnectorFactory</factory-class>
          <param key="host"  value="${jboss.bind.address:localhost}"/>
          <param key="port"  value="${hornetq.remoting.netty.batch.port:5455}"/>
-         <param key="batch-delay" value="50"/>
+         <param key="batch-delay" value="50"/>         
       </connector>
 
       <connector name="in-vm">
@@ -62,6 +62,7 @@
          <param key="host"  value="${jboss.bind.address:localhost}"/>
          <param key="port"  value="${hornetq.remoting.netty.batch.port:5455}"/>
          <param key="batch-delay" value="50"/>
+         <param key="direct-deliver" value="false"/>
       </acceptor>
 
       <acceptor name="in-vm">

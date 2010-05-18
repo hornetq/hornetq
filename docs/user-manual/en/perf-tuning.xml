@@ -99,6 +99,11 @@
                     really need durable messages then set them to be non-durable. Durable messages
                     incur a lot more overhead in persisting them to storage.</para>
             </listitem>
+            <listitem>
+                <para>Batch many sends or acknowledgements in a single transaction. HornetQ will
+                    only require a network round trip on the commit, not on every send or
+                    acknowledgement.</para>
+            </listitem>
         </itemizedlist>
     </section>
     <section>
@@ -154,17 +159,18 @@
                     for more information.</para>
             </listitem>
             <listitem>
-                <para>If you have very fast consumers, you can increase consumer-window-size. This effectively disables consumer flow control.</para>
+                <para>If you have very fast consumers, you can increase consumer-window-size. This
+                    effectively disables consumer flow control.</para>
             </listitem>
             <listitem>
-                <para>Socket NIO vs Socket Old IO. By default HornetQ uses Socket NIO on the server
-                    and old (blocking) IO on the client side (see the chapter on configuring
-                    transports for more information <xref linkend="configuring-transports"/>). NIO
-                    is much more scalable but can give you some latency hit compared to old blocking
-                    IO. If you expect to be able to service many thousands of connections on the
-                    server, then continue to use NIO on the server. However, if don't expect many
-                    thousands of connections on the server you can configure the server acceptors to
-                    use old IO, and might get a small performance advantage.</para>
+                <para>Socket NIO vs Socket Old IO. By default HornetQ uses old (blocking) on the
+                    server and the client side (see the chapter on configuring transports for more
+                    information <xref linkend="configuring-transports"/>). NIO is much more scalable
+                    but can give you some latency hit compared to old blocking IO. If you need to be
+                    able to service many thousands of connections on the server, then you should
+                    make sure you're using NIO on the server. However, if don't expect many
+                    thousands of connections on the server you can keep the server acceptors using
+                    old IO, and might get a small performance advantage.</para>
             </listitem>
             <listitem>
                 <para>Use the core API not JMS. Using the JMS API you will have slightly lower
@@ -180,7 +186,7 @@
     </section>
     <section>
         <title>Tuning Transport Settings</title>
-        <itemizedlist>            
+        <itemizedlist>
             <listitem>
                 <para>TCP buffer sizes. If you have a fast network and fast machines you may get a
                     performance boost by increasing the TCP send and receive buffer sizes. See the
@@ -202,13 +208,23 @@ serveruser     hard    nofile  20000
                     This would allow up to 20000 file handles to be open by the user <literal
                         >serveruser</literal>. </para>
             </listitem>
+            <listitem>
+                <para>Use <literal>batch-delay</literal> and set <literal>direct-deliver</literal>
+                    to false for the best throughput for very small messages. HornetQ comes with a
+                    preconfigured connector/acceptor pair (<literal>netty-throughput</literal>) in
+                        <literal>hornetq-configuration.xml</literal> and JMS connection factory
+                        (<literal>ThroughputConnectionFactory</literal>) in <literal
+                        >hornetq-jms.xml</literal>which can be used to give the very best
+                    throughput, especially for small messages. See the <xref
+                        linkend="configuring-transports"/> for more information on this.</para>
+            </listitem>
         </itemizedlist>
     </section>
     <section>
         <title>Tuning the VM</title>
-        <para>We highly recommend you use the latest Java JVM for the best performance. We test internally using the
-            Sun JVM, so some of these tunings won't apply to JDKs from other providers (e.g. IBM or
-            JRockit)</para>
+        <para>We highly recommend you use the latest Java JVM for the best performance. We test
+            internally using the Sun JVM, so some of these tunings won't apply to JDKs from other
+            providers (e.g. IBM or JRockit)</para>
         <itemizedlist>
             <listitem>
                 <para>Garbage collection. For smooth server operation we recommend using a parallel
@@ -223,15 +239,6 @@ serveruser     hard    nofile  20000
                     size and number of your messages. Use the JVM arguments <literal>-Xms</literal>
                     and <literal>-Xmx</literal> to set server available RAM. We recommend setting
                     them to the same high value.</para>
-                <para>HornetQ will regularly sample JVM memory and reports if the available memory
-                    is below a configurable threshold. Use this information to properly set JVM
-                    memory and paging. The sample is disabled by default. To enabled it, configure
-                    the sample frequency by setting <literal>memory-measure-interval</literal> in
-                        <literal>hornetq-configuration.xml</literal> (in milliseconds). When the
-                    available memory goes below the configured threshold, a warning is logged. The
-                    threshold can be also configured by setting <literal
-                        >memory-warning-threshold</literal> in <literal
-                        >hornetq-configuration.xml</literal> (default is 25%).</para>
             </listitem>
             <listitem>
                 <para>Aggressive options. Different JVMs provide different sets of JVM tuning
@@ -257,7 +264,10 @@ serveruser     hard    nofile  20000
                 <note>
                     <para>Some popular libraries such as the Spring JMS Template are known to use
                         these anti-patterns. If you're using Spring JMS Template and you're getting
-                        poor performance you know why. Don't blame HornetQ!</para>
+                        poor performance you know why. Don't blame HornetQ! The Spring JMS Template
+                        can only safely be used in an app server which caches JMS sessions (e.g.
+                        using JCA), and only then for sending messages. It cannot be safely be used
+                        for synchronously consuming messages, even in an app server. </para>
                 </note>
             </listitem>
             <listitem>

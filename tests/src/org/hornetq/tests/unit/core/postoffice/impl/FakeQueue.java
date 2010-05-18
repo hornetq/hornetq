@@ -524,4 +524,10 @@ public class FakeQueue implements Queue
       return null;
    }
 
+   public void addLast(MessageReference ref, boolean direct)
+   {
+      // TODO Auto-generated method stub
+      
+   }
+
 }

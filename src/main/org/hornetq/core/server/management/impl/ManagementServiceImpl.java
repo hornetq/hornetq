@@ -720,7 +720,7 @@ public class ManagementServiceImpl implements ManagementService
                                                      new SimpleString(notification.getUID()));
                }
 
-               postOffice.route(notificationMessage);
+               postOffice.route(notificationMessage, false);
             }
          }
       }

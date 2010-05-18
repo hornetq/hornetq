@@ -48,8 +48,10 @@ public interface Queue extends Bindable
    void removeConsumer(Consumer consumer) throws Exception;
 
    int getConsumerCount();
-
+   
    void addLast(MessageReference ref);
+
+   void addLast(MessageReference ref, boolean direct);
 
    void addFirst(MessageReference ref);
 

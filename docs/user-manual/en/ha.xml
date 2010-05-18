@@ -135,7 +135,9 @@
             <section id="ha.mode.shared">
                 <title>Shared Store</title>
                 <para>When using a shared store, both live and backup servers share the
-                        <emphasis>same</emphasis> journal using a shared file system. </para>
+                        <emphasis>same</emphasis> entire data directory using a shared file system.
+                    This means the paging directory, journal directory, large messages and binding
+                    journal.</para>
                 <para>When failover occurs and the backup server takes over, it will load the
                     persistent storage from the shared file system and clients can connect to
                     it.</para>

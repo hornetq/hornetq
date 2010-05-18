@@ -99,7 +99,7 @@ public interface ServerSession
 
    void sendContinuations(int packetSize, byte[] body, boolean continues) throws Exception;
 
-   void send(ServerMessage message) throws Exception;
+   void send(ServerMessage message, boolean direct) throws Exception;
 
    void sendLarge(byte[] largeMessageHeader) throws Exception;
 

@@ -64,7 +64,6 @@ import org.hornetq.core.transaction.TransactionOperation;
 import org.hornetq.core.transaction.TransactionPropertyIndexes;
 import org.hornetq.core.transaction.Transaction.State;
 import org.hornetq.core.transaction.impl.TransactionImpl;
-import org.hornetq.utils.ConcurrentHashSet;
 import org.hornetq.utils.TypedProperties;
 import org.hornetq.utils.UUIDGenerator;
 
@@ -529,17 +528,17 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
       return addressManager.getMatchingBindings(address);
    }
 
-   public void route(final ServerMessage message) throws Exception
+   public void route(final ServerMessage message, final boolean direct) throws Exception
    {
-      route(message, (Transaction)null);
+      route(message, (Transaction)null, direct);
    }
 
-   public void route(final ServerMessage message, final Transaction tx) throws Exception
+   public void route(final ServerMessage message, final Transaction tx, final boolean direct) throws Exception
    {
-      this.route(message, new RoutingContextImpl(tx));
+      route(message, new RoutingContextImpl(tx), direct);
    }
    
-   public void route(final ServerMessage message, final RoutingContext context) throws Exception
+   public void route(final ServerMessage message, final RoutingContext context, final boolean direct) throws Exception
    {
       // Sanity check
       if (message.getRefCount() > 0)
@@ -656,13 +655,13 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
                message.setAddress(dlaAddress);
 
-               route(message, context.getTransaction());
+               route(message, context.getTransaction(), false);
             }
          }
       }
       else
       {
-         processRoute(message, context);
+         processRoute(message, context, direct);
       }
 
       if (startedTx)
@@ -689,7 +688,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
       if (tx == null)
       {
-         queue.addLast(reference);
+         queue.addLast(reference, false);
       }
       else
       {
@@ -717,7 +716,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
          if (routed)
          {
-            processRoute(message, context);
+            processRoute(message, context, false);
 
             res = true;
          }
@@ -778,7 +777,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
          message.setAddress(queueName);
          message.putBooleanProperty(PostOfficeImpl.HDR_RESET_QUEUE_DATA, true);
-         routeDirect(message, queue, false);
+         routeQueueInfo(message, queue, false);
 
          for (QueueInfo info : queueInfos.values())
          {
@@ -793,7 +792,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
                message.putStringProperty(ManagementHelper.HDR_FILTERSTRING, info.getFilterString());
                message.putIntProperty(ManagementHelper.HDR_DISTANCE, info.getDistance());
 
-               routeDirect(message, queue, true);
+               routeQueueInfo(message, queue, true);
 
                int consumersWithFilters = info.getFilterStrings() != null ? info.getFilterStrings().size() : 0;
 
@@ -806,7 +805,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
                   message.putStringProperty(ManagementHelper.HDR_ROUTING_NAME, info.getRoutingName());
                   message.putIntProperty(ManagementHelper.HDR_DISTANCE, info.getDistance());
 
-                  routeDirect(message, queue, true);
+                  routeQueueInfo(message, queue, true);
                }
 
                if (info.getFilterStrings() != null)
@@ -821,7 +820,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
                      message.putStringProperty(ManagementHelper.HDR_FILTERSTRING, filterString);
                      message.putIntProperty(ManagementHelper.HDR_DISTANCE, info.getDistance());
 
-                     routeDirect(message, queue, true);
+                     routeQueueInfo(message, queue, true);
                   }
                }
             }
@@ -838,7 +837,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
       message.setPagingStore(store);
    }
 
-   private void routeDirect(final ServerMessage message, final Queue queue, final boolean applyFilters) throws Exception
+   private void routeQueueInfo(final ServerMessage message, final Queue queue, final boolean applyFilters) throws Exception
    {
       if (!applyFilters || queue.getFilter() == null || queue.getFilter().match(message))
       {
@@ -846,11 +845,11 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
          queue.route(message, context);
 
-         processRoute(message, context);
+         processRoute(message, context, false);
       }
    }
 
-   private void processRoute(final ServerMessage message, final RoutingContext context) throws Exception
+   private void processRoute(final ServerMessage message, final RoutingContext context, final boolean direct) throws Exception
    {
       final List<MessageReference> refs = new ArrayList<MessageReference>();
 
@@ -951,7 +950,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
             public void done()
             {
-               addReferences(refs);
+               addReferences(refs, direct);
             }
          });
       }
@@ -960,11 +959,11 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
    /**
     * @param refs
     */
-   private void addReferences(final List<MessageReference> refs)
+   private void addReferences(final List<MessageReference> refs, final boolean direct)
    {
       for (MessageReference ref : refs)
       {
-         ref.getQueue().addLast(ref);
+         ref.getQueue().addLast(ref, direct);
       }
    }
 
@@ -985,7 +984,6 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
       ServerMessage message = new ServerMessageImpl(storageManager.generateUniqueID(), 50);
 
       message.setAddress(queueName);
-      // message.setDurable(true);
 
       String uid = UUIDGenerator.getInstance().generateStringUUID();
 
@@ -1199,7 +1197,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
                   // This could happen when the PageStore left the pageState
 
                   // TODO is this correct - don't we lose transactionality here???
-                  route(message);
+                  route(message, false);
                }
                first = false;
             }
@@ -1235,7 +1233,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
       {
          for (MessageReference ref : refs)
          {
-            ref.getQueue().addLast(ref);
+            ref.getQueue().addLast(ref, false);
          }
       }
 

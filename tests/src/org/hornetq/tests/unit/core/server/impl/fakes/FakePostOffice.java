@@ -178,4 +178,22 @@ public class FakePostOffice implements PostOffice
 
    }
 
+   public void route(ServerMessage message, boolean direct) throws Exception
+   {
+      // TODO Auto-generated method stub
+      
+   }
+
+   public void route(ServerMessage message, RoutingContext context, boolean direct) throws Exception
+   {
+      // TODO Auto-generated method stub
+      
+   }
+
+   public void route(ServerMessage message, Transaction tx, boolean direct) throws Exception
+   {
+      // TODO Auto-generated method stub
+      
+   }
+
 }

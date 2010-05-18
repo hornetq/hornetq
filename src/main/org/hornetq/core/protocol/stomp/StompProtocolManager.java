@@ -535,7 +535,7 @@ class StompProtocolManager implements ProtocolManager
       {
          message.putStringProperty(CONNECTION_ID_PROP, connection.getID().toString());
       }
-      stompSession.getSession().send(message);
+      stompSession.getSession().send(message, true);
       return null;
    }
 

@@ -92,10 +92,12 @@ import org.hornetq.core.protocol.core.impl.wireformat.SessionXASetTimeoutRespons
 import org.hornetq.core.protocol.core.impl.wireformat.SessionXAStartMessage;
 import org.hornetq.core.remoting.CloseListener;
 import org.hornetq.core.remoting.FailureListener;
+import org.hornetq.core.remoting.impl.netty.NettyConnection;
 import org.hornetq.core.server.BindingQueryResult;
 import org.hornetq.core.server.QueueQueryResult;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.ServerSession;
+import org.hornetq.spi.core.remoting.Connection;
 
 /**
  * A ServerSessionPacketHandler
@@ -119,6 +121,8 @@ public class ServerSessionPacketHandler implements ChannelHandler, CloseListener
    private final Channel channel;
 
    private volatile CoreRemotingConnection remotingConnection;
+   
+   private final boolean direct;
 
    public ServerSessionPacketHandler(final ServerSession session,
                                      final OperationContext sessionContext,
@@ -134,7 +138,19 @@ public class ServerSessionPacketHandler implements ChannelHandler, CloseListener
       this.channel = channel;
 
       this.remotingConnection = channel.getConnection();
-
+      
+      //TODO think of a better way of doing this
+      Connection conn = remotingConnection.getTransportConnection();
+      
+      if (conn instanceof NettyConnection)
+      {
+         direct = ((NettyConnection)conn).isDirectDeliver();
+      }
+      else
+      {
+         direct = false;
+      }
+      
       addConnectionListeners();
    }
 
@@ -442,7 +458,7 @@ public class ServerSessionPacketHandler implements ChannelHandler, CloseListener
                {
                   SessionSendMessage message = (SessionSendMessage)packet;
                   requiresResponse = message.isRequiresResponse();
-                  session.send((ServerMessage)message.getMessage());
+                  session.send((ServerMessage)message.getMessage(), direct);
                   if (requiresResponse)
                   {
                      response = new NullResponseMessage();

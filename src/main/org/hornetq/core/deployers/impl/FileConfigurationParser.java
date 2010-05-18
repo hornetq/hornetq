@@ -838,6 +838,7 @@ public class FileConfigurationParser
       for (int i = 0; i < paramsNodes.getLength(); i++)
       {
          Node paramNode = paramsNodes.item(i);
+         
          NamedNodeMap attributes = paramNode.getAttributes();
 
          Node nkey = attributes.getNamedItem("key");

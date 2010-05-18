@@ -261,10 +261,12 @@
                100000 bytes and would block any producers sending to that address to prevent that
                max size being exceeded.</para>
             <para>Note the policy must be set to <literal>BLOCK</literal> to enable blocking producer
-               flow control.</para>
-            <para>Please note the default value for <literal>address-full-policy</literal> is to
-                  <literal>PAGE</literal> (see <xref linkend="paging" /> for more information on
-               paging).</para>
+            flow control.</para>
+            <note><para>Note that in the default configuration all addresses are set to block producers after 10 MiB of message data
+            is in the address. This means you cannot send more than 10MiB of message data to an address without it being consumed before the producers
+            will be blocked. If you do not want this behaviour increase the <literal>max-size-bytes</literal> parameter or change the 
+            address full message policy.</para>
+            </note>            
          </section>
       </section>
       <section>

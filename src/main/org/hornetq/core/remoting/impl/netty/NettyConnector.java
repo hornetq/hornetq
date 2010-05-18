@@ -470,7 +470,7 @@ public class NettyConnector implements Connector
             ch.getPipeline().get(HornetQChannelHandler.class).active = true;
          }
 
-         NettyConnection conn = new NettyConnection(ch, new Listener(), !httpEnabled && batchDelay > 0);
+         NettyConnection conn = new NettyConnection(ch, new Listener(), !httpEnabled && batchDelay > 0, false);
 
          return conn;
       }

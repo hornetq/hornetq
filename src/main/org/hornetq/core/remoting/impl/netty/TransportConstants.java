@@ -72,6 +72,8 @@ public class TransportConstants
    
    public static final String BATCH_DELAY = "batch-delay";
    
+   public static final String DIRECT_DELIVER = "direct-deliver";
+   
    public static final boolean DEFAULT_SSL_ENABLED = false;
 
    public static final boolean DEFAULT_USE_NIO_SERVER = false;
@@ -120,6 +122,8 @@ public class TransportConstants
    public static final String DEFAULT_SERVLET_PATH = "/messaging/HornetQServlet";
    
    public static final long DEFAULT_BATCH_DELAY = 0;
+   
+   public static final boolean DEFAULT_DIRECT_DELIVER = true;
 
    public static final Set<String> ALLOWABLE_CONNECTOR_KEYS;
 
@@ -146,6 +150,7 @@ public class TransportConstants
       allowableAcceptorKeys.add(TransportConstants.TCP_RECEIVEBUFFER_SIZE_PROPNAME);
       allowableAcceptorKeys.add(TransportConstants.NIO_REMOTING_THREADS_PROPNAME);
       allowableAcceptorKeys.add(TransportConstants.BATCH_DELAY);
+      allowableAcceptorKeys.add(TransportConstants.DIRECT_DELIVER);
 
       ALLOWABLE_ACCEPTOR_KEYS = Collections.unmodifiableSet(allowableAcceptorKeys);
 

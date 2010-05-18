@@ -86,6 +86,7 @@ public class DivertImpl implements Divert
       // TODO we can optimise this so it doesn't copy if it's not routed anywhere else
 
       long id = storageManager.generateUniqueID();
+      
       ServerMessage copy = message.copy(id);
 
       // This will set the original MessageId, and the original address
@@ -98,7 +99,7 @@ public class DivertImpl implements Divert
          copy = transformer.transform(copy);
       }
 
-      postOffice.route(copy, context.getTransaction());
+      postOffice.route(copy, context.getTransaction(), false);
    }
 
    public SimpleString getRoutingName()

@@ -188,20 +188,23 @@ etc
                 with firewall policies that typically only allow connections to be initiated in one
                 direction.</para>
             <para>All the valid Netty transport keys are defined in the class <literal
-                    >org.hornetq.core.remoting.impl.netty.TransportConstants</literal>. The
-                parameters can be used either with acceptors or connectors. The following parameters
-                can be used to configure Netty for simple TCP:</para>
+                    >org.hornetq.core.remoting.impl.netty.TransportConstants</literal>. Most
+                parameters can be used either with acceptors or connectors, some only work with
+                acceptors. The following parameters can be used to configure Netty for simple
+                TCP:</para>
             <itemizedlist>
                 <listitem>
                     <para><literal>use-nio</literal>. If this is <literal>true</literal> then Java
                         non blocking NIO will be used. If set to <literal>false</literal> than old
                         blocking Java IO will be used.</para>
-                    <para>We highly recommend that you use non blocking Java NIO. Java NIO does not
-                        maintain a thread per connection so can scale to many more concurrent
-                        connections than with old blocking IO. We recommend the usage of Java 6 for
-                        NIO and the best scalability. The default value for this property is
-                            <literal>true</literal> on the server side and <literal>false</literal>
-                        on the client side.</para>
+                    <para>If you require the server to handle many concurrent connections, we highly
+                        recommend that you use non blocking Java NIO. Java NIO does not maintain a
+                        thread per connection so can scale to many more concurrent connections than
+                        with old blocking IO. If you don't require the server to handle many
+                        concurrent connections, you might get slightly better performance by using
+                        old (blocking) IO. The default value for this property is <literal
+                            >false</literal> on the server side and <literal>false</literal> on the
+                        client side.</para>
                 </listitem>
                 <listitem>
                     <para><literal>host</literal>. This specifies the host name or IP address to
@@ -233,8 +236,8 @@ etc
                         is <literal>true</literal>.</para>
                 </listitem>
                 <listitem>
-                    <para><literal>tcp-send-buffer-size</literal>. This parameter determines the size
-                        of the TCP send buffer in bytes. The default value for this property is
+                    <para><literal>tcp-send-buffer-size</literal>. This parameter determines the
+                        size of the TCP send buffer in bytes. The default value for this property is
                             <literal>32768</literal> bytes (32KiB).</para>
                     <para>TCP buffer sizes should be tuned according to the bandwidth and latency of
                         your network. Here's a good link that explains the theory behind <ulink
@@ -254,6 +257,37 @@ etc
                         size of the TCP receive buffer in bytes. The default value for this property
                         is <literal>32768</literal> bytes (32KiB).</para>
                 </listitem>
+                <listitem>
+                    <para><literal>batch-delay</literal>. Before writing packets to the transport,
+                        HornetQ can be configured to batch up writes for a maximum of <literal
+                            >batch-delay</literal> milliseconds. This can increase overall
+                        throughput for very small messages. It does so at the expense of an increase
+                        in average latency for message transfer. The default value for this property
+                        is <literal>0</literal> ms.</para>
+                </listitem>
+                <listitem>
+                    <para><literal>direct-deliver</literal>. When a message arrives on the server
+                        and is delivered to waiting consumers, by default, the delivery is done on a
+                        different thread to that which the message arrived on. This gives the best
+                        overall throughput and scalability, especially on multi-core machines.
+                        However it also introduces some extra latency due to the extra context
+                        switch required. If you want the lowest latency and the possible expense of
+                        some reduction in throughput then you can make sure <literal
+                            >direct-deliver</literal> to true. The default value for this parameter
+                        is <literal>true</literal>. If you are willingh to take some small extra hit
+                        on latency but want the highest throughput set this parameter to <literal
+                            >false</literal>.</para>
+                </listitem>
+                <listitem>
+                    <para><literal>nio-remoting-threads</literal>. When configured to use NIO,
+                        HornetQ will, by default, use a number of threads equal to three times the
+                        number of cores (or hyper-threads) as reported by <literal
+                            >Runtime.getRuntime().availableProcessors()</literal> for processing
+                        incoming packets. If you want to override this value, you can set the number
+                        of threads by specifying this parameter. The default value for this
+                        parameter is <literal>-1</literal> which means use the value from <literal
+                            >Runtime.getRuntime().availableProcessors()</literal> * 3.</para>
+                </listitem>
             </itemizedlist>
         </section>
         <section>
@@ -269,20 +303,20 @@ etc
                         SSL.</para>
                 </listitem>
                 <listitem>
-                    <para><literal>key-store-path</literal>. This is the path to the SSL key store on
-                        the client which holds the client certificates.</para>
+                    <para><literal>key-store-path</literal>. This is the path to the SSL key store
+                        on the client which holds the client certificates.</para>
                 </listitem>
                 <listitem>
                     <para><literal>key-store-password</literal>. This is the password for the client
                         certificate key store on the client.</para>
                 </listitem>
                 <listitem>
-                    <para><literal>trust-store-path</literal>. This is the path to the trusted client
-                        certificate store on the server.</para>
+                    <para><literal>trust-store-path</literal>. This is the path to the trusted
+                        client certificate store on the server.</para>
                 </listitem>
                 <listitem>
-                    <para><literal>trust-store-password</literal>. This is the password to the trusted
-                        client certificate store on the server.</para>
+                    <para><literal>trust-store-password</literal>. This is the password to the
+                        trusted client certificate store on the server.</para>
                 </listitem>
             </itemizedlist>
         </section>
@@ -303,8 +337,8 @@ etc
                         before sending an empty http request to keep the connection alive</para>
                 </listitem>
                 <listitem>
-                    <para><literal>http-client-idle-scan-period</literal>. How often, in milliseconds,
-                        to scan for idle clients</para>
+                    <para><literal>http-client-idle-scan-period</literal>. How often, in
+                        milliseconds, to scan for idle clients</para>
                 </listitem>
                 <listitem>
                     <para><literal>http-response-time</literal>. How long the server can wait before

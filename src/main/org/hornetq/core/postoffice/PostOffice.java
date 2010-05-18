@@ -49,11 +49,11 @@ public interface PostOffice extends HornetQComponent
 
    Bindings getMatchingBindings(SimpleString address);
    
-   void route(ServerMessage message) throws Exception;
+   void route(ServerMessage message, boolean direct) throws Exception;
 
-   void route(ServerMessage message, Transaction tx) throws Exception;
+   void route(ServerMessage message, Transaction tx, boolean direct) throws Exception;
 
-   void route(ServerMessage message, RoutingContext context) throws Exception;
+   void route(ServerMessage message, RoutingContext context, boolean direct) throws Exception;
 
    MessageReference reroute(ServerMessage message, Queue queue, Transaction tx) throws Exception;
 

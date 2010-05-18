@@ -140,7 +140,7 @@ public class NettyAcceptor implements Acceptor
    private final ConcurrentMap<Object, Connection> connections = new ConcurrentHashMap<Object, Connection>();
 
    private final Executor threadPool;
-   
+
    private final ScheduledExecutorService scheduledThreadPool;
 
    private NotificationService notificationService;
@@ -148,12 +148,14 @@ public class NettyAcceptor implements Acceptor
    private VirtualExecutorService bossExecutor;
 
    private boolean paused;
-   
+
    private BatchFlusher flusher;
-   
+
    private ScheduledFuture<?> batchFlusherFuture;
-   
+
    private final long batchDelay;
+
+   private final boolean directDeliver;
 
    public NettyAcceptor(final Map<String, Object> configuration,
                         final BufferHandler handler,
@@ -253,12 +255,16 @@ public class NettyAcceptor implements Acceptor
                                                                 configuration);
 
       this.threadPool = threadPool;
-      
+
       this.scheduledThreadPool = scheduledThreadPool;
-      
+
       batchDelay = ConfigurationHelper.getLongProperty(TransportConstants.BATCH_DELAY,
                                                        TransportConstants.DEFAULT_BATCH_DELAY,
                                                        configuration);
+
+      directDeliver = ConfigurationHelper.getBooleanProperty(TransportConstants.DIRECT_DELIVER,
+                                                             TransportConstants.DEFAULT_DIRECT_DELIVER,
+                                                             configuration);
    }
 
    public synchronized void start() throws Exception
@@ -418,15 +424,25 @@ public class NettyAcceptor implements Acceptor
          Notification notification = new Notification(null, NotificationType.ACCEPTOR_STARTED, props);
          notificationService.sendNotification(notification);
       }
-      
+
       if (batchDelay > 0)
       {
          flusher = new BatchFlusher();
-         
-         batchFlusherFuture = scheduledThreadPool.scheduleWithFixedDelay(flusher, batchDelay, batchDelay, TimeUnit.MILLISECONDS);
+
+         batchFlusherFuture = scheduledThreadPool.scheduleWithFixedDelay(flusher,
+                                                                         batchDelay,
+                                                                         batchDelay,
+                                                                         TimeUnit.MILLISECONDS);
       }
 
-      NettyAcceptor.log.info("Started Netty Acceptor version " + Version.ID + " " + host + ":" + port + " for " + protocol + " protocol");
+      NettyAcceptor.log.info("Started Netty Acceptor version " + Version.ID +
+                             " " +
+                             host +
+                             ":" +
+                             port +
+                             " for " +
+                             protocol +
+                             " protocol");
    }
 
    private void startServerChannels()
@@ -454,15 +470,15 @@ public class NettyAcceptor implements Acceptor
       {
          return;
       }
-      
+
       if (batchFlusherFuture != null)
       {
          batchFlusherFuture.cancel(false);
-         
+
          flusher.cancel();
-         
+
          flusher = null;
-         
+
          batchFlusherFuture = null;
       }
 
@@ -589,7 +605,7 @@ public class NettyAcceptor implements Acceptor
       @Override
       public void channelConnected(final ChannelHandlerContext ctx, final ChannelStateEvent e) throws Exception
       {
-         new NettyConnection(e.getChannel(), new Listener(), !httpEnabled && batchDelay > 0);
+         new NettyConnection(e.getChannel(), new Listener(), !httpEnabled && batchDelay > 0, directDeliver);
 
          SslHandler sslHandler = ctx.getPipeline().get(SslHandler.class);
          if (sslHandler != null)
@@ -650,7 +666,7 @@ public class NettyAcceptor implements Acceptor
 
       }
    }
-   
+
    private class BatchFlusher implements Runnable
    {
       private boolean cancelled;
