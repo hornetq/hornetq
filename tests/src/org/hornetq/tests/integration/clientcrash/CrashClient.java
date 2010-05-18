@@ -23,8 +23,6 @@ import org.hornetq.jms.client.HornetQTextMessage;
 /**
  * Code to be run in an external VM, via main().
  * 
- * This client will open a connection, receive a message and crash.
- *
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * 

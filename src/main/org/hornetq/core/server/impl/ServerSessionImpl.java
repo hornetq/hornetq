@@ -241,20 +241,20 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       }
    }
 
-   private synchronized void doClose() throws Exception
+   private synchronized void doClose(final boolean failed) throws Exception
    {
       if (tx != null && tx.getXid() == null)
       {
          // We only rollback local txs on close, not XA tx branches
 
-         rollback(false);
+         rollback(failed);
       }
 
       Set<ServerConsumer> consumersClone = new HashSet<ServerConsumer>(consumers.values());
 
       for (ServerConsumer consumer : consumersClone)
       {
-         consumer.close();
+         consumer.close(failed);
       }
 
       consumers.clear();
@@ -905,7 +905,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       setStarted(false);
    }
 
-   public void close()
+   public void close(final boolean failed)
    {
       storageManager.afterCompleteOperations(new IOAsyncTask()
       {
@@ -917,7 +917,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          {
             try
             {
-               doClose();
+               doClose(failed);
             }
             catch (Exception e)
             {
@@ -933,7 +933,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
       if (consumer != null)
       {
-         consumer.close();
+         consumer.close(false);
       }
       else
       {
@@ -1065,7 +1065,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       {
          ServerSessionImpl.log.warn("Client connection failed, clearing up resources for session " + name);
 
-         close();
+         close(true);
 
          ServerSessionImpl.log.warn("Cleared up resources for session " + name);
       }
@@ -1134,7 +1134,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
             consumer.setStarted(false);
          }
 
-         toCancel.addAll(consumer.cancelRefs(lastMessageAsDelived, theTx));
+         toCancel.addAll(consumer.cancelRefs(false, lastMessageAsDelived, theTx));
       }
 
       for (MessageReference ref : toCancel)

@@ -107,7 +107,7 @@ public interface ServerSession
 
    void requestProducerCredits(SimpleString address, int credits) throws Exception;
 
-   void close() throws Exception;
+   void close(boolean failed) throws Exception;
 
    void setTransferring(boolean transferring);
 }

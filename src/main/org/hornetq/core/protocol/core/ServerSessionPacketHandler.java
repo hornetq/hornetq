@@ -165,7 +165,7 @@ public class ServerSessionPacketHandler implements ChannelHandler, CloseListener
 
       try
       {
-         session.close();
+         session.close(true);
       }
       catch (Exception e)
       {
@@ -181,7 +181,7 @@ public class ServerSessionPacketHandler implements ChannelHandler, CloseListener
 
       try
       {
-         session.close();
+         session.close(false);
       }
       catch (Exception e)
       {
@@ -422,7 +422,7 @@ public class ServerSessionPacketHandler implements ChannelHandler, CloseListener
                case SESS_CLOSE:
                {
                   requiresResponse = true;
-                  session.close();
+                  session.close(false);
                   removeConnectionListeners();
                   response = new NullResponseMessage();
                   flush = true;

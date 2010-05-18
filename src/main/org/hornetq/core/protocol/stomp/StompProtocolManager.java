@@ -54,7 +54,7 @@ class StompProtocolManager implements ProtocolManager
 
    // TODO use same value than HornetQConnection
    private static final String CONNECTION_ID_PROP = "__HQ_CID";
-   
+
    // Attributes ----------------------------------------------------
 
    private final HornetQServer server;
@@ -108,7 +108,7 @@ class StompProtocolManager implements ProtocolManager
       this.frameDecoder = new StompFrameDecoder();
       this.executor = server.getExecutorFactory().getExecutor();
    }
-   
+
    // ProtocolManager implementation --------------------------------
 
    public ConnectionEntry createConnectionEntry(final Connection connection)
@@ -131,26 +131,25 @@ class StompProtocolManager implements ProtocolManager
       if (frame == null)
       {
          return -1;
-      } 
+      }
       else
       {
          return buffer.readerIndex() - start;
       }
    }
 
-
    public void handleBuffer(final RemotingConnection connection, final HornetQBuffer buffer)
    {
       try
       {
          doHandleBuffer(connection, buffer);
-      } 
+      }
       finally
       {
          server.getStorageManager().clearContext();
       }
    }
-   
+
    private void doHandleBuffer(final RemotingConnection connection, final HornetQBuffer buffer)
    {
       StompConnection conn = (StompConnection)connection;
@@ -162,7 +161,7 @@ class StompProtocolManager implements ProtocolManager
          {
             log.trace("received " + request);
          }
-         
+
          String command = request.getCommand();
          StompFrame response = null;
 
@@ -269,6 +268,7 @@ class StompProtocolManager implements ProtocolManager
          }
       }
    }
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
@@ -290,11 +290,12 @@ class StompProtocolManager implements ProtocolManager
       }
       if (noLocal)
       {
-         String noLocalFilter = CONNECTION_ID_PROP + " <> '"  + connection.getID().toString() + "'";
+         String noLocalFilter = CONNECTION_ID_PROP + " <> '" + connection.getID().toString() + "'";
          if (selector == null)
          {
-            selector = noLocalFilter; 
-         } else
+            selector = noLocalFilter;
+         }
+         else
          {
             selector += " AND " + noLocalFilter;
          }
@@ -325,7 +326,13 @@ class StompProtocolManager implements ProtocolManager
       }
       long consumerID = server.getStorageManager().generateUniqueID();
       String clientID = (connection.getClientID() != null) ? connection.getClientID() : null;
-      stompSession.addSubscription(consumerID, subscriptionID, clientID, durableSubscriptionName, destination, selector, ack);
+      stompSession.addSubscription(consumerID,
+                                   subscriptionID,
+                                   clientID,
+                                   durableSubscriptionName,
+                                   destination,
+                                   selector,
+                                   ack);
 
       return null;
    }
@@ -423,7 +430,7 @@ class StompProtocolManager implements ProtocolManager
       }
 
       StompSession session = getTransactedSession(connection, txID);
-      
+
       if (session == null)
       {
          throw new StompException("No transaction started: " + txID);
@@ -567,15 +574,16 @@ class StompProtocolManager implements ProtocolManager
    {
       connection.setValid(false);
 
-      try {
+      try
+      {
          StompSession session = sessions.remove(connection.getID());
          if (session != null)
          {
             try
             {
                session.getSession().rollback(true);
-               session.getSession().close();
-             }
+               session.getSession().close(false);
+            }
             catch (Exception e)
             {
                log.warn(e.getMessage(), e);
@@ -593,7 +601,7 @@ class StompProtocolManager implements ProtocolManager
                try
                {
                   serverSession.rollback(true);
-                  serverSession.close();
+                  serverSession.close(false);
                }
                catch (Exception e)
                {

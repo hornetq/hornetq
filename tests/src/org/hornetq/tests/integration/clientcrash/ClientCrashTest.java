@@ -61,8 +61,7 @@ public class ClientCrashTest extends ClientTestBase
    {
       assertActiveConnections(0);
 
-      // spawn a JVM that creates a Core client, which waits to receive a test
-      // message
+      // spawn a JVM that creates a Core client, which sends a message
       Process p = SpawnedVMSupport.spawnVM(CrashClient.class.getName());
 
       ClientSession session = sf.createSession(false, true, true);
@@ -72,7 +71,7 @@ public class ClientCrashTest extends ClientTestBase
 
       session.start();
 
-      // send the message to the queue
+      // receive a message from the queue
       Message messageFromClient = consumer.receive(5000);
       Assert.assertNotNull("no message received", messageFromClient);
       Assert.assertEquals(ClientCrashTest.MESSAGE_TEXT_FROM_CLIENT, messageFromClient.getBodyBuffer().readString());
@@ -109,6 +108,41 @@ public class ClientCrashTest extends ClientTestBase
       assertActiveConnections(0);
       // FIXME https://jira.jboss.org/jira/browse/JBMESSAGING-1421
       assertActiveSession(0);
+   }
+   
+   public void testCrashClient2() throws Exception
+   {     
+      assertActiveConnections(0);
+
+      ClientSession session = sf.createSession(false, true, true);
+           
+      session.createQueue(ClientCrashTest.QUEUE, ClientCrashTest.QUEUE, null, false);
+      
+      // spawn a JVM that creates a Core client, which sends a message
+      Process p = SpawnedVMSupport.spawnVM(CrashClient2.class.getName());
+      
+      ClientCrashTest.log.debug("waiting for the client VM to crash ...");
+      p.waitFor();
+
+      Assert.assertEquals(9, p.exitValue());
+
+      System.out.println("VM Exited");
+
+      Thread.sleep(3 * ClientCrashTest.CONNECTION_TTL);
+      
+      ClientConsumer consumer = session.createConsumer(ClientCrashTest.QUEUE);
+      
+      session.start();
+
+      // receive a message from the queue
+      ClientMessage messageFromClient = consumer.receive(10000);
+      Assert.assertNotNull("no message received", messageFromClient);
+      Assert.assertEquals(ClientCrashTest.MESSAGE_TEXT_FROM_CLIENT, messageFromClient.getBodyBuffer().readString());
+
+      assertEquals(2, messageFromClient.getDeliveryCount());
+      
+      session.close();
+
    }
 
    // Package protected ---------------------------------------------

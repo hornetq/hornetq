@@ -262,7 +262,7 @@ public class ServerConsumerImpl implements ServerConsumer
       return filter;
    }
 
-   public void close() throws Exception
+   public void close(final boolean failed) throws Exception
    {
       setStarted(false);
 
@@ -278,7 +278,7 @@ public class ServerConsumerImpl implements ServerConsumer
 
       session.removeConsumer(id);
 
-      LinkedList<MessageReference> refs = cancelRefs(false, null);
+      LinkedList<MessageReference> refs = cancelRefs(failed, false, null);
 
       Iterator<MessageReference> iter = refs.iterator();
 
@@ -356,7 +356,7 @@ public class ServerConsumerImpl implements ServerConsumer
       }
    }
 
-   public LinkedList<MessageReference> cancelRefs(final boolean lastConsumedAsDelivered, final Transaction tx) throws Exception
+   public LinkedList<MessageReference> cancelRefs(final boolean failed, final boolean lastConsumedAsDelivered, final Transaction tx) throws Exception
    {
       boolean performACK = lastConsumedAsDelivered;
 
@@ -374,7 +374,13 @@ public class ServerConsumerImpl implements ServerConsumer
             }
             else
             {
-               ref.decrementDeliveryCount();
+               if (!failed)
+               {
+                  //We don't decrement delivery count if the client failed, since there's a possibility that refs were actually delivered but we just didn't get any acks for them
+                  //before failure
+                  log.info("decrementing delivery count");
+                  ref.decrementDeliveryCount();
+               }
 
                refs.add(ref);
             }

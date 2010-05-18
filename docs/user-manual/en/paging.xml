@@ -155,6 +155,7 @@
             able to continue sending.</para>
         <para>To do this just set the <literal>address-full-policy</literal> to <literal
                 >BLOCK</literal> in the address settings</para>
+        <para>In the default configuration, all addresses are configured to block producers after 10 MiB of data are in the address.</para>
     </section>
     <section>
         <title>Caution with Addresses with Multiple Queues</title>

@@ -28,14 +28,18 @@
             thread pool for scheduled use. A Java scheduled thread pool cannot be configured to use
             a standard thread pool, otherwise we could use a single thread pool for both scheduled
             and non scheduled activity.</para>
-        <para>When using old (blocking) IO, a separate thread pool is also used to service connections. Since old IO requires a thread per connection
-        it does not make sense to get them from the standard pool as the pool will easily get exhausted if too many connections are made, resulting in the
-        server "hanging" since it has no remaining threads to do anything else.</para>
-        <para>When using new IO (NIO), HornetQ will, by default, use a number of threads equal to three times the number of cores (or hyper-threads)
-            as reported by Runtime.getRuntime().availableProcessors() for processing incoming packets.
-            If you want to override this value, you can set the number of threads by specifying the parameter <literal>nio-remoting-threads</literal>
-            in the transport configuration. See the
-            <xref linkend="configuring-transports"/> for more information on this.</para>
+        <para>When using old (blocking) IO, a separate thread pool is also used to service
+            connections. Since old IO requires a thread per connection it does not make sense to get
+            them from the standard pool as the pool will easily get exhausted if too many
+            connections are made, resulting in the server "hanging" since it has no remaining
+            threads to do anything else. If you require the server to handle many concurrent
+            connections you should make sure you use NIO, not old IO.</para>
+        <para>When using new IO (NIO), HornetQ will, by default, use a number of threads equal to
+            three times the number of cores (or hyper-threads) as reported by
+            Runtime.getRuntime().availableProcessors() for processing incoming packets. If you want
+            to override this value, you can set the number of threads by specifying the parameter
+                <literal>nio-remoting-threads</literal> in the transport configuration. See the
+                <xref linkend="configuring-transports"/> for more information on this.</para>
         <para>There are also a small number of other places where threads are used directly, we'll
             discuss each in turn.</para>
         <section id="server.scheduled.thread.pool">
@@ -111,8 +115,9 @@
 myFactory.setUseGlobalPools(false);
 myFactory.setScheduledThreadPoolMaxSize(10);
 myFactory.setThreadPoolMaxSize(-1);   </programlisting>
-        <para>If you're using the JMS API, you can set the same parameters on the ClientSessionFactory and use it to create the <literal
-                >ConnectionFactory</literal> instance, for example:</para>
+        <para>If you're using the JMS API, you can set the same parameters on the
+            ClientSessionFactory and use it to create the <literal>ConnectionFactory</literal>
+            instance, for example:</para>
         <programlisting>ConnectionFactory myConnectionFactory = HornetQJMSClient.createConnectionFactory(myFactory);     </programlisting>
         <para>If you're using JNDI to instantiate <literal>HornetQConnectionFactory</literal>
             instances, you can also set these parameters in the <literal>hornetq-jms.xml</literal>

@@ -28,9 +28,9 @@ public interface ServerConsumer extends Consumer
 {
    long getID();
 
-   void close() throws Exception;
+   void close(boolean failed) throws Exception;
 
-   List<MessageReference> cancelRefs(boolean lastConsumedAsDelivered, Transaction tx) throws Exception;
+   List<MessageReference> cancelRefs(boolean failed, boolean lastConsumedAsDelivered, Transaction tx) throws Exception;
 
    void setStarted(boolean started);
 
