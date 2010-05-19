@@ -48,4 +48,14 @@
       </constructor>
    </bean>
 
+   <!-- POJO which ensures HornetQ Resource Adapter is stopped before HornetQServer -->
+   <bean name="HornetQRAService" class="org.hornetq.ra.HornetQRAService">
+      <constructor>
+         <parameter>
+            <inject bean="MBeanServer"/>
+         </parameter>
+         <parameter>jboss.jca:name='jms-ra.rar',service=RARDeployment</parameter>
+      </constructor>
+      <depends>HornetQServer</depends>
+   </bean>
 </deployment>
