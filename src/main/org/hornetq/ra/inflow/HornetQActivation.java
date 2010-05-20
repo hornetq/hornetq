@@ -458,6 +458,7 @@ public class HornetQActivation
          if (Topic.class.getName().equals(spec.getDestinationType()))
          {
             destination = (HornetQDestination)HornetQJMSClient.createTopic(spec.getDestination());
+            isTopic = true;
          }
          else
          {

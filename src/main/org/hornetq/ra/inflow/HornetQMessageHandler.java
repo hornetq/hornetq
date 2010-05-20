@@ -124,11 +124,9 @@ public class HornetQMessageHandler implements MessageHandler
             SimpleString oldFilterString = subResponse.getFilterString();
 
             boolean selectorChanged = selector == null && oldFilterString != null ||
-                                      oldFilterString == null &&
-                                      selector != null ||
-                                      oldFilterString != null &&
-                                      selector != null &&
-                                      !oldFilterString.equals(selector);
+                                      oldFilterString == null && selector != null ||
+                                      (oldFilterString != null && selector != null &&
+                                      !oldFilterString.toString().equals(selector));
 
             SimpleString oldTopicName = subResponse.getAddress();
 
