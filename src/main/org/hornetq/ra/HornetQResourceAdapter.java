@@ -13,6 +13,7 @@
 package org.hornetq.ra;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -1358,25 +1359,26 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
                                                                                 : getDiscoveryAddress();
       if (connectorClassName != null)
       {
-         Map<String, Object> connectionParams = overrideProperties.getParsedConnectionParameters() != null ? overrideProperties.getParsedConnectionParameters()
-                                                                                                          : raProperties.getParsedConnectionParameters();
+         Map<String, Object> connectionParams =
+               overrideConnectionParameters(overrideProperties.getParsedConnectionParameters(),raProperties.getParsedConnectionParameters());
          TransportConfiguration transportConf = new TransportConfiguration(connectorClassName, connectionParams);
 
          String backUpCOnnectorClassname = overrideProperties.getBackupConnectorClassName() != null ? overrideProperties.getBackupConnectorClassName()
                                                                                                    : getBackupConnectorClassName();
-         Map<String, Object> backupConnectionParams = overrideProperties.getParsedBackupConnectionParameters() != null ? overrideProperties.getParsedBackupConnectionParameters()
-                                                                                                                      : getBackupConnectionParameters();
+         Map<String, Object> backupConnectionParams =
+               overrideConnectionParameters(overrideProperties.getParsedBackupConnectionParameters(),
+                     getBackupConnectionParameters());
          TransportConfiguration backup = backUpCOnnectorClassname == null ? null
                                                                          : new TransportConfiguration(backUpCOnnectorClassname,
                                                                                                       backupConnectionParams);
 
-         cf = (HornetQConnectionFactory) HornetQJMSClient.createConnectionFactory(transportConf, backup);
+         cf = HornetQJMSClient.createConnectionFactory(transportConf, backup);
       }
       else if (discoveryAddress != null)
       {
          Integer discoveryPort = overrideProperties.getDiscoveryPort() != null ? overrideProperties.getDiscoveryPort()
                                                                               : getDiscoveryPort();
-         cf = (HornetQConnectionFactory) HornetQJMSClient.createConnectionFactory(discoveryAddress, discoveryPort);
+         cf = HornetQJMSClient.createConnectionFactory(discoveryAddress, discoveryPort);
       }
       else
       {
@@ -1384,6 +1386,24 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       }
       setParams(cf, overrideProperties);
       return cf;
+   }
+
+   public Map<String, Object> overrideConnectionParameters(final Map<String, Object> connectionParams,
+                                                           final Map<String, Object> overrideConnectionParams)
+   {
+      Map<String, Object> map = new HashMap<String, Object>();
+      if(connectionParams != null)
+      {
+         map.putAll(connectionParams);
+      }
+      if(overrideConnectionParams != null)
+      {
+         for (Map.Entry<String, Object> stringObjectEntry : overrideConnectionParams.entrySet())
+         {
+            map.put(stringObjectEntry.getKey(), stringObjectEntry.getValue());
+         }
+      }
+      return map;
    }
 
    private void setParams(final HornetQConnectionFactory cf,
