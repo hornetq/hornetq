@@ -467,7 +467,7 @@ public interface ClientSessionFactory
    /**
     * Sets the acknowledgements batch size.
     * 
-    * Value must be greater than 0.
+    * Value must be equal or greater than 0.
     * 
     * @param ackBatchSize acknowledgements batch size
     */
