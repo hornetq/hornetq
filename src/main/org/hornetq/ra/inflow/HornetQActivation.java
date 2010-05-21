@@ -102,6 +102,13 @@ public class HornetQActivation
 
    private HornetQConnectionFactory factory;
 
+   // Whether we are in the failure recovery loop
+   private AtomicBoolean inFailure = new AtomicBoolean(false);
+
+   private final int setupAttempts = 5;
+   
+   private final long setupInterval = 10 * 1000;
+   
    static
    {
       try
@@ -492,6 +499,56 @@ public class HornetQActivation
    }
 
    /**
+    * Handles any failure by trying to reconnect
+    * 
+    * @param failure the reason for the failure
+    */
+   public void handleFailure(Throwable failure)
+   {
+      log.warn("Failure in HornetQ activation " + spec, failure);
+      int reconnectCount = 0;
+      
+      // Only enter the failure loop once
+      if (inFailure.getAndSet(true))
+         return;
+      try
+      {
+         while (deliveryActive.get() && reconnectCount < setupAttempts)
+         {
+            teardown();
+
+            try
+            {
+               Thread.sleep(setupInterval);
+            }
+            catch (InterruptedException e)
+            {
+               log.debug("Interrupted trying to reconnect " + spec, e);
+               break;
+            }
+
+            log.info("Attempting to reconnect " + spec);
+            try
+            {
+               setup();
+               log.info("Reconnected with HornetQ");            
+               break;
+            }
+            catch (Throwable t)
+            {
+               log.error("Unable to reconnect " + spec, t);
+            }
+            ++reconnectCount;
+         }
+      }
+      finally
+      {
+         // Leaving failure recovery loop
+         inFailure.set(false);
+      }
+   }
+   
+   /**
     * Handles the setup
     */
    private class SetupActivation implements Work
@@ -504,7 +561,7 @@ public class HornetQActivation
          }
          catch (Throwable t)
          {
-            HornetQActivation.log.error("Unable to start activation ", t);
+            handleFailure(t);
          }
       }
 
