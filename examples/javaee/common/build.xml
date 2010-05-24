@@ -86,6 +86,7 @@
              failonerror="${javac.fail.onerror}">
          <src>
             <pathelement path="${src.dir}"/>
+            <pathelement path="../../common/src"/>
          </src>
          <classpath refid="jms.compilation.classpath"/>
       </javac>
@@ -115,10 +116,10 @@
 
    <target name="deploy" depends="validate-jboss, copy-profile, copy-resources, ear">
       <property name="example-profile" value="${jboss.home}/server/${example.name}-example-profile"/>
-      <copy todir="${example-profile}/deploy/hornetq.sar">
+      <copy todir="${example-profile}/deploy/hornetq.sar" overwrite="true">
          <fileset dir="${example.server.dir}"/>
       </copy>
-      <copy todir="${example-profile}/deploy/">
+      <copy todir="${example-profile}/deploy/" overwrite="true">
          <fileset dir="${build.dir}">
             <include name="${example.name}-example.ear"/>
             <exclude name="**/data/**"/>

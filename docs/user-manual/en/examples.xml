@@ -530,6 +530,10 @@
             <para>This example demonstrates how to configure several properties on the HornetQ JCA
                 resource adaptor.</para>
         </section>
+        <section>
+            <title>Resource Adapter Remote Server Configuration</title>
+            <para>This example demonstrates how to configure the HornetQ resource adapter to talk to a remote HornetQ server</para>
+        </section>
         <section id="examples.javaee.jms-bridge">
             <title>JMS Bridge</title>
             <para>An example demonstrating the use of the HornetQ JMS bridge.</para>
