@@ -1,13 +1,49 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="ChangeListManager" verified="true">
-    <list readonly="true" id="a2aae645-dbcd-4d6e-9c99-efa05d93589a" name="Default" comment="" />
-    <list default="true" id="5341122e-b51c-4e90-b798-7086790ef7e8" name="intellij" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/hornetq.iws" afterPath="$PROJECT_DIR$/hornetq.iws" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/docs/user-manual/en/using-server.xml" afterPath="$PROJECT_DIR$/docs/user-manual/en/using-server.xml" />
+  <component name="ChangeListManager">
+    <list default="true" readonly="true" id="a2aae645-dbcd-4d6e-9c99-efa05d93589a" name="Default" comment="">
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/examples/javaee/jca-remote/server/ra.xml" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/examples/javaee/jca-remote/src/org/hornetq/javaee/example/server" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/examples/javaee/jca-remote/server0/hornetq-configuration.xml" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/examples/javaee/jca-remote/readme.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/examples/javaee/jca-remote/src/org/hornetq/javaee/example/server/MDBQueue.java" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/examples/javaee/jca-remote/server0/hornetq-jms.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/docs/user-manual/en/appserver-integration.xml" afterPath="$PROJECT_DIR$/docs/user-manual/en/appserver-integration.xml" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/examples/javaee/jca-remote/config/META-INF/application.xml" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/examples/javaee/jca-remote" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/examples/javaee/jca-remote/build.sh" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/examples/javaee/jca-remote/src/org/hornetq/javaee/example/MDBRemoteServerClientExample.java" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/examples/javaee/jca-remote/src/org/hornetq/javaee" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/examples/javaee/jca-remote/build.xml" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/examples/javaee/jca-remote/server" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/examples/javaee/jca-remote/src" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/examples/javaee/common/build.xml" afterPath="$PROJECT_DIR$/examples/javaee/common/build.xml" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/examples/javaee/jca-remote/config/ant.properties" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/examples/javaee/jca-remote/src/org" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/examples/javaee/jca-remote/build.bat" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/examples/javaee/jca-remote/server0/hornetq-users.xml" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/examples/javaee/jca-remote/server/hornetq-configuration.xml" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/examples/javaee/jca-remote/server/hornetq-jms.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/docs/user-manual/en/examples.xml" afterPath="$PROJECT_DIR$/docs/user-manual/en/examples.xml" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/examples/javaee/jca-remote/server/jms-ds.xml" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/examples/javaee/jca-remote/config/META-INF" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/examples/javaee/jca-remote/server0/client-jndi.properties" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/examples/javaee/jca-remote/src/org/hornetq/javaee/example" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/examples/javaee/jca-remote/src/org/hornetq" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/examples/javaee/jca-remote/server0" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/examples/javaee/jca-remote/server0/hornetq-beans.xml" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/examples/javaee/jca-remote/config/client.jndi.properties" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/examples/javaee/jca-remote/config" />
     </list>
-    <ignored path="messaging.iws" />
+    <list id="5341122e-b51c-4e90-b798-7086790ef7e8" name="intellij" comment="">
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/hornetq.iml" afterPath="$PROJECT_DIR$/hornetq.iml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/examples/javaee/hornetq-javaee-examples.iml" afterPath="$PROJECT_DIR$/examples/javaee/hornetq-javaee-examples.iml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/hornetq.iws" afterPath="$PROJECT_DIR$/hornetq.iws" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/examples/jms/hornetq-jms-examples.iml" afterPath="$PROJECT_DIR$/examples/jms/hornetq-jms-examples.iml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/hornetq.ipr" afterPath="$PROJECT_DIR$/hornetq.ipr" />
+    </list>
     <ignored path=".idea/workspace.xml" />
+    <ignored path="messaging.iws" />
     <option name="TRACKING_ENABLED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -37,7 +73,7 @@
         <option name="CONDITION" value="" />
         <option name="LOG_MESSAGE" value="" />
       </breakpoint>
-      <breakpoint url="file://$PROJECT_DIR$/src/main/org/hornetq/core/server/cluster/impl/ClusterConnectionImpl.java" line="847" class="org.hornetq.core.server.cluster.impl.ClusterConnectionImpl" package="org.hornetq.core.server.cluster.impl">
+      <breakpoint url="file://$PROJECT_DIR$/src/main/org/hornetq/core/server/cluster/impl/ClusterConnectionImpl.java" line="847" class="org.hornetq.core.server.cluster.impl.ClusterConnectionImpl.MessageFlowRecordImpl" package="org.hornetq.core.server.cluster.impl">
         <option name="ENABLED" value="true" />
         <option name="LOG_ENABLED" value="false" />
         <option name="LOG_EXPRESSION_ENABLED" value="false" />
@@ -50,7 +86,7 @@
         <option name="CONDITION" value="" />
         <option name="LOG_MESSAGE" value="" />
       </breakpoint>
-      <breakpoint url="file://$PROJECT_DIR$/src/main/org/hornetq/core/list/impl/PriorityLinkedListImpl.java" line="205" class="org.hornetq.core.list.impl.PriorityLinkedListImpl.PriorityLinkedListIterator" package="org.hornetq.core.list.impl">
+      <breakpoint url="file://$PROJECT_DIR$/src/main/org/hornetq/integration/jboss/security/SecurityActions.java" line="62" class="org.hornetq.integration.jboss.security.SecurityActions.PrincipalInfoAction$1$1" package="org.hornetq.integration.jboss.security">
         <option name="ENABLED" value="true" />
         <option name="LOG_ENABLED" value="false" />
         <option name="LOG_EXPRESSION_ENABLED" value="false" />
@@ -63,7 +99,7 @@
         <option name="CONDITION" value="" />
         <option name="LOG_MESSAGE" value="" />
       </breakpoint>
-      <breakpoint url="file://$PROJECT_DIR$/tests/src/org/hornetq/tests/unit/core/server/impl/QueueImplTest.java" line="1150" class="org.hornetq.tests.unit.core.server.impl.QueueImplTest" package="org.hornetq.tests.unit.core.server.impl">
+      <breakpoint url="file://$PROJECT_DIR$/src/main/org/hornetq/integration/jboss/security/SecurityActions.java" line="75" class="org.hornetq.integration.jboss.security.SecurityActions.PrincipalInfoAction$1$1" package="org.hornetq.integration.jboss.security">
         <option name="ENABLED" value="true" />
         <option name="LOG_ENABLED" value="false" />
         <option name="LOG_EXPRESSION_ENABLED" value="false" />
@@ -76,7 +112,7 @@
         <option name="CONDITION" value="" />
         <option name="LOG_MESSAGE" value="" />
       </breakpoint>
-      <breakpoint url="file://$PROJECT_DIR$/tests/src/org/hornetq/tests/unit/core/server/impl/QueueImplTest.java" line="1176" class="org.hornetq.tests.unit.core.server.impl.QueueImplTest" package="org.hornetq.tests.unit.core.server.impl">
+      <breakpoint url="file://$PROJECT_DIR$/src/main/org/hornetq/core/server/impl/ServerSessionImpl.java" line="274" class="org.hornetq.core.server.impl.ServerSessionImpl" package="org.hornetq.core.server.impl">
         <option name="ENABLED" value="true" />
         <option name="LOG_ENABLED" value="false" />
         <option name="LOG_EXPRESSION_ENABLED" value="false" />
@@ -89,7 +125,7 @@
         <option name="CONDITION" value="" />
         <option name="LOG_MESSAGE" value="" />
       </breakpoint>
-      <breakpoint url="file://$PROJECT_DIR$/tests/src/org/hornetq/tests/unit/core/server/impl/QueueImplTest.java" line="1203" class="org.hornetq.tests.unit.core.server.impl.QueueImplTest" package="org.hornetq.tests.unit.core.server.impl">
+      <breakpoint url="file://$PROJECT_DIR$/src/main/org/hornetq/integration/jboss/security/SecurityActions.java" line="111" class="org.hornetq.integration.jboss.security.SecurityActions.PrincipalInfoAction$2" package="org.hornetq.integration.jboss.security">
         <option name="ENABLED" value="true" />
         <option name="LOG_ENABLED" value="false" />
         <option name="LOG_EXPRESSION_ENABLED" value="false" />
@@ -102,7 +138,7 @@
         <option name="CONDITION" value="" />
         <option name="LOG_MESSAGE" value="" />
       </breakpoint>
-      <breakpoint url="file://$PROJECT_DIR$/tests/src/org/hornetq/tests/unit/core/server/impl/QueueImplTest.java" line="1214" class="org.hornetq.tests.unit.core.server.impl.QueueImplTest" package="org.hornetq.tests.unit.core.server.impl">
+      <breakpoint url="file://$PROJECT_DIR$/src/main/org/hornetq/integration/jboss/security/JBossASSecurityManager.java" line="145" class="org.hornetq.integration.jboss.security.JBossASSecurityManager" package="org.hornetq.integration.jboss.security">
         <option name="ENABLED" value="true" />
         <option name="LOG_ENABLED" value="false" />
         <option name="LOG_EXPRESSION_ENABLED" value="false" />
@@ -115,7 +151,7 @@
         <option name="CONDITION" value="" />
         <option name="LOG_MESSAGE" value="" />
       </breakpoint>
-      <breakpoint url="file://$PROJECT_DIR$/tests/src/org/hornetq/tests/unit/core/server/impl/QueueImplTest.java" line="1225" class="org.hornetq.tests.unit.core.server.impl.QueueImplTest" package="org.hornetq.tests.unit.core.server.impl">
+      <breakpoint url="file://$PROJECT_DIR$/src/main/org/hornetq/jms/management/impl/JMSServerControlImpl.java" line="288" class="org.hornetq.jms.management.impl.JMSServerControlImpl" package="org.hornetq.jms.management.impl">
         <option name="ENABLED" value="true" />
         <option name="LOG_ENABLED" value="false" />
         <option name="LOG_EXPRESSION_ENABLED" value="false" />
@@ -128,7 +164,7 @@
         <option name="CONDITION" value="" />
         <option name="LOG_MESSAGE" value="" />
       </breakpoint>
-      <breakpoint url="file://$PROJECT_DIR$/tests/src/org/hornetq/tests/unit/core/server/impl/QueueImplTest.java" line="1137" class="org.hornetq.tests.unit.core.server.impl.QueueImplTest" package="org.hornetq.tests.unit.core.server.impl">
+      <breakpoint url="file://$PROJECT_DIR$/src/main/org/hornetq/core/postoffice/impl/SimpleAddressManager.java" line="52" class="org.hornetq.core.postoffice.impl.SimpleAddressManager" package="org.hornetq.core.postoffice.impl">
         <option name="ENABLED" value="true" />
         <option name="LOG_ENABLED" value="false" />
         <option name="LOG_EXPRESSION_ENABLED" value="false" />
@@ -141,7 +177,7 @@
         <option name="CONDITION" value="" />
         <option name="LOG_MESSAGE" value="" />
       </breakpoint>
-      <breakpoint url="file://$PROJECT_DIR$/tests/src/org/hornetq/tests/integration/jms/server/management/JMSServerControl2Test.java" line="396" class="org.hornetq.tests.integration.jms.server.management.JMSServerControl2Test" package="org.hornetq.tests.integration.jms.server.management">
+      <breakpoint url="file://$PROJECT_DIR$/src/main/org/hornetq/ra/inflow/HornetQMessageHandler.java" line="213" class="org.hornetq.ra.inflow.HornetQMessageHandler" package="org.hornetq.ra.inflow">
         <option name="ENABLED" value="true" />
         <option name="LOG_ENABLED" value="false" />
         <option name="LOG_EXPRESSION_ENABLED" value="false" />
@@ -154,7 +190,7 @@
         <option name="CONDITION" value="" />
         <option name="LOG_MESSAGE" value="" />
       </breakpoint>
-      <breakpoint url="file://$PROJECT_DIR$/tests/src/org/hornetq/tests/integration/jms/server/management/JMSServerControl2Test.java" line="394" class="org.hornetq.tests.integration.jms.server.management.JMSServerControl2Test" package="org.hornetq.tests.integration.jms.server.management">
+      <breakpoint url="file://$PROJECT_DIR$/tests/src/org/hornetq/tests/integration/ra/HornetQMessageHandlerTest.java" line="149" class="org.hornetq.tests.integration.ra.HornetQMessageHandlerTest" package="org.hornetq.tests.integration.ra">
         <option name="ENABLED" value="true" />
         <option name="LOG_ENABLED" value="false" />
         <option name="LOG_EXPRESSION_ENABLED" value="false" />
@@ -167,7 +203,7 @@
         <option name="CONDITION" value="" />
         <option name="LOG_MESSAGE" value="" />
       </breakpoint>
-      <breakpoint url="file://$PROJECT_DIR$/src/main/org/hornetq/core/server/cluster/impl/BridgeImpl.java" line="547" class="org.hornetq.core.server.cluster.impl.BridgeImpl" package="org.hornetq.core.server.cluster.impl">
+      <breakpoint url="file://$PROJECT_DIR$/src/main/org/hornetq/ra/inflow/HornetQActivation.java" line="505" class="org.hornetq.ra.inflow.HornetQActivation" package="org.hornetq.ra.inflow">
         <option name="ENABLED" value="true" />
         <option name="LOG_ENABLED" value="false" />
         <option name="LOG_EXPRESSION_ENABLED" value="false" />
@@ -180,7 +216,7 @@
         <option name="CONDITION" value="" />
         <option name="LOG_MESSAGE" value="" />
       </breakpoint>
-      <breakpoint url="file://$PROJECT_DIR$/src/main/org/hornetq/core/postoffice/impl/BindingsImpl.java" line="445" class="org.hornetq.core.postoffice.impl.BindingsImpl" package="org.hornetq.core.postoffice.impl">
+      <breakpoint url="file://$PROJECT_DIR$/src/main/org/hornetq/ra/inflow/HornetQActivation.java" line="514" class="org.hornetq.ra.inflow.HornetQActivation" package="org.hornetq.ra.inflow">
         <option name="ENABLED" value="true" />
         <option name="LOG_ENABLED" value="false" />
         <option name="LOG_EXPRESSION_ENABLED" value="false" />
@@ -193,7 +229,7 @@
         <option name="CONDITION" value="" />
         <option name="LOG_MESSAGE" value="" />
       </breakpoint>
-      <breakpoint url="file://$PROJECT_DIR$/tests/src/org/hornetq/tests/integration/cluster/distribution/ClusterTestBase.java" line="290" class="org.hornetq.tests.integration.cluster.distribution.ClusterTestBase" package="org.hornetq.tests.integration.cluster.distribution">
+      <breakpoint url="file://$PROJECT_DIR$/tests/src/org/hornetq/tests/integration/ra/HornetQMessageHandlerTest.java" line="143" class="org.hornetq.tests.integration.ra.HornetQMessageHandlerTest" package="org.hornetq.tests.integration.ra">
         <option name="ENABLED" value="true" />
         <option name="LOG_ENABLED" value="false" />
         <option name="LOG_EXPRESSION_ENABLED" value="false" />
@@ -206,7 +242,7 @@
         <option name="CONDITION" value="" />
         <option name="LOG_MESSAGE" value="" />
       </breakpoint>
-      <breakpoint url="file://$PROJECT_DIR$/src/main/org/hornetq/core/cluster/impl/DiscoveryGroupImpl.java" line="380" class="org.hornetq.core.cluster.impl.DiscoveryGroupImpl" package="org.hornetq.core.cluster.impl">
+      <breakpoint url="file://$PROJECT_DIR$/tests/src/org/hornetq/tests/integration/ra/HornetQMessageHandlerTest.java" line="234" class="org.hornetq.tests.integration.ra.HornetQMessageHandlerTest.DummyMessageEndpoint" package="org.hornetq.tests.integration.ra">
         <option name="ENABLED" value="true" />
         <option name="LOG_ENABLED" value="false" />
         <option name="LOG_EXPRESSION_ENABLED" value="false" />
@@ -219,7 +255,7 @@
         <option name="CONDITION" value="" />
         <option name="LOG_MESSAGE" value="" />
       </breakpoint>
-      <breakpoint url="file://$PROJECT_DIR$/src/main/org/hornetq/core/server/cluster/impl/ClusterConnectionImpl.java" line="777" class="org.hornetq.core.server.cluster.impl.ClusterConnectionImpl.MessageFlowRecordImpl" package="org.hornetq.core.server.cluster.impl">
+      <breakpoint url="file://$PROJECT_DIR$/src/main/org/hornetq/ra/HornetQResourceAdapter.java" line="1359" class="org.hornetq.ra.HornetQResourceAdapter" package="org.hornetq.ra">
         <option name="ENABLED" value="true" />
         <option name="LOG_ENABLED" value="false" />
         <option name="LOG_EXPRESSION_ENABLED" value="false" />
@@ -232,20 +268,7 @@
         <option name="CONDITION" value="" />
         <option name="LOG_MESSAGE" value="" />
       </breakpoint>
-      <breakpoint url="file://$PROJECT_DIR$/src/main/org/hornetq/core/server/cluster/impl/ClusterConnectionImpl.java" line="831" class="org.hornetq.core.server.cluster.impl.ClusterConnectionImpl.MessageFlowRecordImpl" package="org.hornetq.core.server.cluster.impl">
-        <option name="ENABLED" value="true" />
-        <option name="LOG_ENABLED" value="false" />
-        <option name="LOG_EXPRESSION_ENABLED" value="false" />
-        <option name="SUSPEND_POLICY" value="SuspendAll" />
-        <option name="COUNT_FILTER_ENABLED" value="false" />
-        <option name="COUNT_FILTER" value="0" />
-        <option name="CONDITION_ENABLED" value="false" />
-        <option name="CLASS_FILTERS_ENABLED" value="false" />
-        <option name="INSTANCE_FILTERS_ENABLED" value="false" />
-        <option name="CONDITION" value="" />
-        <option name="LOG_MESSAGE" value="" />
-      </breakpoint>
-      <breakpoint url="file://$PROJECT_DIR$/src/main/org/hornetq/core/remoting/impl/wireformat/SessionSendMessage.java" line="73" class="org.hornetq.core.remoting.impl.wireformat.SessionSendMessage" package="org.hornetq.core.remoting.impl.wireformat">
+      <breakpoint url="file://$PROJECT_DIR$/src/main/org/hornetq/ra/inflow/HornetQActivation.java" line="291" class="org.hornetq.ra.inflow.HornetQActivation" package="org.hornetq.ra.inflow">
         <option name="ENABLED" value="true" />
         <option name="LOG_ENABLED" value="false" />
         <option name="LOG_EXPRESSION_ENABLED" value="false" />
@@ -300,91 +323,95 @@
   <component name="FileColors" enabled="true" enabledForTabs="true" />
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="MDB_CMT_TxRequiredExample.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/examples/javaee/mdb-cmt-tx-required/src/org/hornetq/javaee/example/server/MDB_CMT_TxRequiredExample.java">
+      <file leaf-file-name="MDBRemoteServerClientExample.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/examples/javaee/jca-remote/src/org/hornetq/javaee/example/MDBRemoteServerClientExample.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="59" column="69" selection-start="2484" selection-end="2484" vertical-scroll-proportion="0.0">
+            <state line="95" column="17" selection-start="3054" selection-end="3226" vertical-scroll-proportion="0.0">
+              <folding>
+                <element signature="imports" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="readme.html" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/examples/javaee/jca-remote/readme.html">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="46" column="44" selection-start="2573" selection-end="3415" vertical-scroll-proportion="-16.304348">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="build-maven.xml" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/build-maven.xml">
+      <file leaf-file-name="appserver-integration.xml" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/docs/user-manual/en/appserver-integration.xml">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
+            <state line="836" column="101" selection-start="48141" selection-end="48141" vertical-scroll-proportion="-15.04">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="messaging-concepts.xml" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/docs/user-manual/en/messaging-concepts.xml">
+      <file leaf-file-name="examples.xml" pinned="false" current="true" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/docs/user-manual/en/examples.xml">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="32" column="57" selection-start="2432" selection-end="2432" vertical-scroll-proportion="0.0">
+            <state line="534" column="124" selection-start="33920" selection-end="33920" vertical-scroll-proportion="0.4304762">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="architecture.xml" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/docs/user-manual/en/architecture.xml">
+      <file leaf-file-name="ra.xml" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/examples/javaee/jca-remote/server/ra.xml">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="25" column="65" selection-start="1989" selection-end="1989" vertical-scroll-proportion="0.0">
+            <state line="61" column="27" selection-start="2184" selection-end="3025" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="using-server.xml" pinned="false" current="true" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/docs/user-manual/en/using-server.xml">
+      <file leaf-file-name="hornetq-configuration.xml" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/examples/javaee/jca-remote/server0/hornetq-configuration.xml">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="174" column="11" selection-start="11694" selection-end="11694" vertical-scroll-proportion="0.74358976">
+            <state line="46" column="49" selection-start="1976" selection-end="1976" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="hornetq-jms.xml" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/examples/javaee/mdb-cmt-tx-required/server/hornetq-jms.xml">
+      <file leaf-file-name="MDBQueue.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/examples/javaee/jca-remote/src/org/hornetq/javaee/example/server/MDBQueue.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
+            <state line="46" column="25" selection-start="1849" selection-end="1865" vertical-scroll-proportion="0.0">
+              <folding>
+                <element signature="imports" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="StatelessSenderService.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/examples/javaee/jca-config/src/org/hornetq/javaee/example/server2/StatelessSenderService.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="23" column="17" selection-start="806" selection-end="806" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="HornetQActivation.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/main/org/hornetq/ra/inflow/HornetQActivation.java">
+      <file leaf-file-name="StatelessSender.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/examples/javaee/jca-config/src/org/hornetq/javaee/example/server2/StatelessSender.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="263" column="45" selection-start="6376" selection-end="6376" vertical-scroll-proportion="0.0">
+            <state line="50" column="59" selection-start="1556" selection-end="1609" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="HornetQMessageHandler.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/main/org/hornetq/ra/inflow/HornetQMessageHandler.java">
+      <file leaf-file-name="MDB_BMTClientExample.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/examples/javaee/mdb-bmt/src/org/hornetq/javaee/example/MDB_BMTClientExample.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="67" column="25" selection-start="2177" selection-end="2177" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="build.xml" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/examples/javaee/mdb-cmt-tx-required/build.xml">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="19" column="16" selection-start="846" selection-end="846" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="build.xml" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/examples/javaee/common/build.xml">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="175" column="16" selection-start="7194" selection-end="7311" vertical-scroll-proportion="0.0">
+            <state line="71" column="32" selection-start="2239" selection-end="2468" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
@@ -400,22 +427,22 @@
   <component name="IdeDocumentHistory">
     <option name="changedFiles">
       <list>
-        <option value="$PROJECT_DIR$/native/src/JavaUtilities.cpp" />
-        <option value="$PROJECT_DIR$/docs/user-manual/en/using-jms.xml" />
-        <option value="$PROJECT_DIR$/examples/jms/clustered-queue/src/org/hornetq/jms/example/ClusteredQueueExample.java" />
-        <option value="$PROJECT_DIR$/src/main/org/hornetq/core/postoffice/impl/BindingsImpl.java" />
-        <option value="$PROJECT_DIR$/examples/jms/clustered-queue/build.xml" />
-        <option value="$PROJECT_DIR$/src/main/org/hornetq/jms/HornetQDestination.java" />
-        <option value="$PROJECT_DIR$/src/main/org/hornetq/api/jms/HornetQJMSClient.java" />
-        <option value="$PROJECT_DIR$/examples/jms/pre-acknowledge/server0/hornetq-configuration.xml" />
-        <option value="$PROJECT_DIR$/examples/jms/reattach-node/server0/hornetq-configuration.xml" />
+        <option value="$PROJECT_DIR$/examples/javaee/jca-config/build.xml" />
+        <option value="$PROJECT_DIR$/examples/javaee/jca-remote/config/jndi.properties" />
+        <option value="$PROJECT_DIR$/examples/javaee/jca-remote/server0/hornetq-beans.xml" />
+        <option value="$PROJECT_DIR$/examples/javaee/jca-remote/server/hornetq-configuration.xml" />
+        <option value="$PROJECT_DIR$/examples/javaee/jca-remote/server0/hornetq-jms.xml" />
+        <option value="$PROJECT_DIR$/examples/javaee/jca-remote/server/jms-remote-ds.xml" />
+        <option value="$PROJECT_DIR$/examples/javaee/jca-remote/server/ra.xml" />
+        <option value="$PROJECT_DIR$/examples/javaee/jca-remote/build.xml" />
         <option value="$PROJECT_DIR$/examples/javaee/common/build.xml" />
-        <option value="$PROJECT_DIR$/examples/javaee/mdb-cmt-tx-required/build.xml" />
-        <option value="$PROJECT_DIR$/examples/javaee/mdb-cmt-tx-required/src/org/hornetq/javaee/example/MDB_CMT_TxRequiredClientExample.java" />
-        <option value="$PROJECT_DIR$/examples/javaee/mdb-cmt-tx-required/src/org/hornetq/javaee/example/server/MDB_CMT_TxRequiredExample.java" />
-        <option value="$PROJECT_DIR$/docs/user-manual/en/messaging-concepts.xml" />
-        <option value="$PROJECT_DIR$/docs/user-manual/en/architecture.xml" />
-        <option value="$PROJECT_DIR$/docs/user-manual/en/using-server.xml" />
+        <option value="$PROJECT_DIR$/examples/javaee/jca-remote/server0/client-jndi.properties" />
+        <option value="$PROJECT_DIR$/examples/javaee/jca-remote/server0/hornetq-configuration.xml" />
+        <option value="$PROJECT_DIR$/examples/javaee/jca-remote/src/org/hornetq/javaee/example/server/MDBQueue.java" />
+        <option value="$PROJECT_DIR$/examples/javaee/jca-remote/src/org/hornetq/javaee/example/MDBRemoteServerClientExample.java" />
+        <option value="$PROJECT_DIR$/examples/javaee/jca-remote/readme.html" />
+        <option value="$PROJECT_DIR$/docs/user-manual/en/appserver-integration.xml" />
+        <option value="$PROJECT_DIR$/docs/user-manual/en/examples.xml" />
       </list>
     </option>
   </component>
@@ -1340,9 +1367,7 @@
       <sortByType />
     </navigator>
     <panes>
-      <pane id="Favorites" />
       <pane id="PackagesPane" />
-      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <PATH>
@@ -1357,7 +1382,7 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="hornetq3" />
+              <option name="myItemId" value="javaee" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -1367,29 +1392,11 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="hornetq3" />
+              <option name="myItemId" value="javaee" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="docs" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="hornetq" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="hornetq3" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="docs" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="user-manual" />
+              <option name="myItemId" value="mdb-bmt" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -1399,39 +1406,297 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="hornetq3" />
+              <option name="myItemId" value="javaee" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="docs" />
+              <option name="myItemId" value="mdb-bmt" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="user-manual" />
+              <option name="myItemId" value="src" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="en" />
+              <option name="myItemId" value="example" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="hornetq" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="javaee" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="jca-remote" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="hornetq" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="javaee" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="jca-remote" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="example" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="hornetq" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="javaee" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="jca-remote" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="example" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="server" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="hornetq" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="javaee" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="jca-remote" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="server0" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="hornetq" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="javaee" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="jca-remote" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="server" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="hornetq" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="javaee" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="jca-remote" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="config" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="hornetq" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="javaee" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="jca-config" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="hornetq" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="javaee" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="common" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="hornetq" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="hornetq-jms-examples" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewModuleNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="jms" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="hornetq" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="hornetq-jms-examples" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewModuleNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="jms" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="queue" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="hornetq" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="hornetq-jms-examples" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewModuleNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="jms" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="queue" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="example" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="hornetq" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="hornetq-jms-examples" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewModuleNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="common" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="hornetq" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="hornetq-jms-examples" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewModuleNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="common" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="example" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="hornetq" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="hornetq-jms-examples" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewModuleNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="common" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="config" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
         </subPane>
       </pane>
+      <pane id="Scope" />
+      <pane id="Favorites" />
     </panes>
   </component>
   <component name="PropertiesComponent">
     <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_flatWidth1" value="287" />
-    <property name="project.structure.last.edited" value="Modules" />
     <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_flatWidth0" value="225" />
+    <property name="project.structure.last.edited" value="Modules" />
     <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_flatWidth3" value="35" />
-    <property name="OverrideImplement.combined" value="true" />
-    <property name="project.structure.proportion" value="0.15" />
     <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_flatWidth2" value="246" />
-    <property name="options.splitter.main.proportions" value="0.3" />
+    <property name="project.structure.proportion" value="0.15" />
+    <property name="OverrideImplement.combined" value="true" />
     <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_flatOrder1" value="1" />
+    <property name="options.splitter.main.proportions" value="0.3" />
     <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_flatOrder0" value="0" />
-    <property name="RunManagerConfig.showSettingsBeforeRunnig" value="false" />
     <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_flatOrder3" value="3" />
+    <property name="RunManagerConfig.showSettingsBeforeRunnig" value="false" />
     <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_flatOrder2" value="2" />
     <property name="recentsLimit" value="5" />
     <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_treeWidth2" value="200" />
@@ -1453,180 +1718,44 @@
     <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_treeOrder3" value="3" />
     <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_treeOrder4" value="4" />
     <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_treeOrder1" value="1" />
-    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_treeOrder2" value="2" />
     <property name="project.structure.side.proportion" value="0.2" />
-    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_treeOrder0" value="0" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_treeOrder2" value="2" />
     <property name="MemberChooser.copyJavadoc" value="false" />
-    <property name="options.searchVisible" value="true" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_treeOrder0" value="0" />
     <property name="dynamic.classpath" value="false" />
+    <property name="options.searchVisible" value="true" />
   </component>
   <component name="RecentsManager">
     <key name="CopyClassDialog.RECENTS_KEY">
+      <recent name="org.hornetq.javaee.example" />
       <recent name="org.hornetq.jms.example" />
+    </key>
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/examples/javaee/jca-remote/server" />
+      <recent name="$PROJECT_DIR$/examples/javaee/jca-remote/server0" />
+      <recent name="$PROJECT_DIR$/examples/javaee/jca-remote/config/META-INF" />
+      <recent name="$PROJECT_DIR$/examples/javaee/jca-remote/config" />
+      <recent name="$PROJECT_DIR$/examples/javaee/jca-remote" />
     </key>
     <key name="MoveMembersDialog.RECENTS_KEY">
       <recent name="org.hornetq.api.core.client.HornetQClient" />
     </key>
   </component>
-  <component name="RestoreUpdateTree">
-    <UpdateInfo date="1/7/10 10:57 AM" ActionInfo="_Update">
-      <UpdatedFiles>
-        <FILE-GROUP>
-          <option name="myUpdateName" value="Updated from server" />
-          <option name="myStatusName" value="Changed on server" />
-          <option name="mySupportsDeletion" value="false" />
-          <option name="myCanBeAbsent" value="false" />
-          <option name="myId" value="CHANGED_ON_SERVER" />
-          <FILE-GROUP>
-            <option name="myUpdateName" value="Updated" />
-            <option name="myStatusName" value="Changed" />
-            <option name="mySupportsDeletion" value="false" />
-            <option name="myCanBeAbsent" value="false" />
-            <option name="myId" value="UPDATED" />
-            <PATH vcs="svn" revision="8760">$PROJECT_DIR$/src/config/jboss-as/build-as4.xml</PATH>
-            <PATH vcs="svn" revision="8760">$PROJECT_DIR$/src/config/jboss-as/build-as5.xml</PATH>
-            <PATH vcs="svn" revision="8760">$PROJECT_DIR$/src/main/org/hornetq/core/config/impl/FileConfiguration.java</PATH>
-            <PATH vcs="svn" revision="8760">$PROJECT_DIR$/src/main/org/hornetq/api/core/management/ResourceNames.java</PATH>
-            <PATH vcs="svn" revision="8760">$PROJECT_DIR$/src/main/org/hornetq/api/core/management/ManagementHelper.java</PATH>
-            <PATH vcs="svn" revision="8760">$PROJECT_DIR$/src/main/org/hornetq/api/core/client/HornetQClient.java</PATH>
-            <PATH vcs="svn" revision="8760">$PROJECT_DIR$/src/main/org/hornetq/api/jms/management/JMSManagementHelper.java</PATH>
-            <PATH vcs="svn" revision="8760">$PROJECT_DIR$/src/main/org/hornetq/jms/server/config/impl/ConnectionFactoryConfigurationImpl.java</PATH>
-            <PATH vcs="svn" revision="8760">$PROJECT_DIR$/examples/javaee/xarecovery/server/jbossts-properties.xml</PATH>
-            <PATH vcs="svn" revision="8760">$PROJECT_DIR$/tests/src/org/hornetq/tests/integration/cluster/failover/FailoverTestBase.java</PATH>
-            <PATH vcs="svn" revision="8760">$PROJECT_DIR$/tests/src/org/hornetq/tests/integration/cluster/reattach/NettyMultiThreadRandomReattachTest.java</PATH>
-            <PATH vcs="svn" revision="8760">$PROJECT_DIR$/tests/src/org/hornetq/tests/integration/cluster/reattach/RandomReattachTest.java</PATH>
-            <PATH vcs="svn" revision="8760">$PROJECT_DIR$/tests/src/org/hornetq/tests/integration/remoting/SynchronousCloseTest.java</PATH>
-            <PATH vcs="svn" revision="8760">$PROJECT_DIR$/tests/src/org/hornetq/tests/integration/remoting/NetworkAddressTestBase.java</PATH>
-            <PATH vcs="svn" revision="8760">$PROJECT_DIR$/tests/src/org/hornetq/tests/integration/remoting/PingTest.java</PATH>
-            <PATH vcs="svn" revision="8760">$PROJECT_DIR$/tests/src/org/hornetq/tests/integration/jms/server/management/TopicControlUsingJMSTest.java</PATH>
-            <PATH vcs="svn" revision="8760">$PROJECT_DIR$/tests/src/org/hornetq/tests/integration/jms/server/management/JMSServerControlUsingJMSTest.java</PATH>
-            <PATH vcs="svn" revision="8760">$PROJECT_DIR$/tests/src/org/hornetq/tests/integration/management/BroadcastGroupControlUsingCoreTest.java</PATH>
-            <PATH vcs="svn" revision="8760">$PROJECT_DIR$/tests/src/org/hornetq/tests/integration/management/AcceptorControlTest.java</PATH>
-            <PATH vcs="svn" revision="8760">$PROJECT_DIR$/tests/src/org/hornetq/tests/integration/management/DiscoveryGroupControlUsingCoreTest.java</PATH>
-            <PATH vcs="svn" revision="8760">$PROJECT_DIR$/tests/src/org/hornetq/tests/integration/management/QueueControlUsingCoreTest.java</PATH>
-            <PATH vcs="svn" revision="8760">$PROJECT_DIR$/tests/src/org/hornetq/tests/integration/management/AddressControlUsingCoreTest.java</PATH>
-            <PATH vcs="svn" revision="8760">$PROJECT_DIR$/tests/src/org/hornetq/tests/integration/management/DivertControlUsingCoreTest.java</PATH>
-            <PATH vcs="svn" revision="8760">$PROJECT_DIR$/tests/src/org/hornetq/tests/integration/management/AcceptorControlUsingCoreTest.java</PATH>
-            <PATH vcs="svn" revision="8760">$PROJECT_DIR$/tests/src/org/hornetq/tests/integration/management/ClusterConnectionControlUsingCoreTest.java</PATH>
-            <PATH vcs="svn" revision="8760">$PROJECT_DIR$/tests/src/org/hornetq/tests/integration/management/HornetQServerControlUsingCoreTest.java</PATH>
-            <PATH vcs="svn" revision="8760">$PROJECT_DIR$/tests/src/org/hornetq/tests/integration/client/SessionFactoryTest.java</PATH>
-            <PATH vcs="svn" revision="8760">$PROJECT_DIR$/tests/src/org/hornetq/tests/integration/client/SessionCloseOnGCTest.java</PATH>
-            <PATH vcs="svn" revision="8760">$PROJECT_DIR$/tests/src/org/hornetq/tests/stress/remote/PingStressTest.java</PATH>
-            <PATH vcs="svn" revision="8760">$PROJECT_DIR$/tests/src/org/hornetq/tests/util/ServiceTestBase.java</PATH>
-            <PATH vcs="svn" revision="8760">$PROJECT_DIR$/tests/joram-tests/src/org/hornetq/jms/HornetQAdmin.java</PATH>
-          </FILE-GROUP>
-          <FILE-GROUP>
-            <option name="myUpdateName" value="Created" />
-            <option name="myStatusName" value="Created" />
-            <option name="mySupportsDeletion" value="false" />
-            <option name="myCanBeAbsent" value="false" />
-            <option name="myId" value="CREATED" />
-            <PATH vcs="svn" revision="8760">$PROJECT_DIR$/src/main/org/hornetq/core/client/impl/ClientSessionFactoryImpl.java</PATH>
-          </FILE-GROUP>
-          <FILE-GROUP>
-            <option name="myUpdateName" value="Deleted" />
-            <option name="myStatusName" value="Deleted" />
-            <option name="mySupportsDeletion" value="false" />
-            <option name="myCanBeAbsent" value="true" />
-            <option name="myId" value="REMOVED_FROM_REPOSITORY" />
-            <PATH vcs="svn" revision="8760">$PROJECT_DIR$/src/main/org/hornetq/api/core/client/ClientSessionFactoryImpl.java</PATH>
-          </FILE-GROUP>
-          <FILE-GROUP>
-            <option name="myUpdateName" value="Restored" />
-            <option name="myStatusName" value="Will be restored" />
-            <option name="mySupportsDeletion" value="false" />
-            <option name="myCanBeAbsent" value="false" />
-            <option name="myId" value="RESTORED" />
-          </FILE-GROUP>
-        </FILE-GROUP>
-        <FILE-GROUP>
-          <option name="myUpdateName" value="Modified" />
-          <option name="myStatusName" value="Modified" />
-          <option name="mySupportsDeletion" value="false" />
-          <option name="myCanBeAbsent" value="false" />
-          <option name="myId" value="MODIFIED" />
-        </FILE-GROUP>
-        <FILE-GROUP>
-          <option name="myUpdateName" value="Skipped" />
-          <option name="myStatusName" value="Skipped" />
-          <option name="mySupportsDeletion" value="false" />
-          <option name="myCanBeAbsent" value="false" />
-          <option name="myId" value="SKIPPED" />
-        </FILE-GROUP>
-        <FILE-GROUP>
-          <option name="myUpdateName" value="Merged with conflicts" />
-          <option name="myStatusName" value="Will be merged with conflicts" />
-          <option name="mySupportsDeletion" value="false" />
-          <option name="myCanBeAbsent" value="false" />
-          <option name="myId" value="MERGED_WITH_CONFLICTS" />
-        </FILE-GROUP>
-        <FILE-GROUP>
-          <option name="myUpdateName" value="Merged" />
-          <option name="myStatusName" value="Will be merged" />
-          <option name="mySupportsDeletion" value="false" />
-          <option name="myCanBeAbsent" value="false" />
-          <option name="myId" value="MERGED" />
-        </FILE-GROUP>
-        <FILE-GROUP>
-          <option name="myUpdateName" value="Not in repository" />
-          <option name="myStatusName" value="Not in repository" />
-          <option name="mySupportsDeletion" value="true" />
-          <option name="myCanBeAbsent" value="false" />
-          <option name="myId" value="UNKNOWN" />
-        </FILE-GROUP>
-        <FILE-GROUP>
-          <option name="myUpdateName" value="Locally added" />
-          <option name="myStatusName" value="Locally added" />
-          <option name="mySupportsDeletion" value="false" />
-          <option name="myCanBeAbsent" value="false" />
-          <option name="myId" value="LOCALLY_ADDED" />
-        </FILE-GROUP>
-        <FILE-GROUP>
-          <option name="myUpdateName" value="Locally removed" />
-          <option name="myStatusName" value="Locally removed" />
-          <option name="mySupportsDeletion" value="false" />
-          <option name="myCanBeAbsent" value="false" />
-          <option name="myId" value="LOCALLY_REMOVED" />
-        </FILE-GROUP>
-        <FILE-GROUP>
-          <option name="myUpdateName" value="Switched" />
-          <option name="myStatusName" value="Switched" />
-          <option name="mySupportsDeletion" value="false" />
-          <option name="myCanBeAbsent" value="false" />
-          <option name="myId" value="SWITCHED" />
-        </FILE-GROUP>
-        <FILE-GROUP>
-          <option name="myUpdateName" value="Merged with property conflicts" />
-          <option name="myStatusName" value="Will be merged with property conflicts" />
-          <option name="mySupportsDeletion" value="false" />
-          <option name="myCanBeAbsent" value="false" />
-          <option name="myId" value="MERGED_WITH_PROPERTY_CONFLICT" />
-        </FILE-GROUP>
-        <FILE-GROUP>
-          <option name="myUpdateName" value="Merged with tree conflicts" />
-          <option name="myStatusName" value="Will be merged with tree conflicts" />
-          <option name="mySupportsDeletion" value="false" />
-          <option name="myCanBeAbsent" value="false" />
-          <option name="myId" value="MERGED_WITH_TREE_CONFLICT" />
-        </FILE-GROUP>
-      </UpdatedFiles>
-    </UpdateInfo>
-  </component>
-  <component name="RunManager" selected="JUnit.AsynchronousFileTest.testInvalidReads">
-    <configuration default="false" name="MessageRedistributionTest" type="JUnit" factoryName="JUnit" temporary="true">
+  <component name="RunManager" selected="Remote.server">
+    <configuration default="false" name="DiscoveryTest.testSimpleBroadcastSpecificNIC" type="JUnit" factoryName="JUnit" temporary="true">
       <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="emma">
         <pattern>
-          <option name="PATTERN" value="org.hornetq.tests.integration.cluster.distribution.*" />
+          <option name="PATTERN" value="org.hornetq.tests.integration.discovery.*" />
           <option name="ENABLED" value="true" />
         </pattern>
       </extension>
       <module name="hornetq-tests" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
       <option name="ALTERNATIVE_JRE_PATH" value="" />
-      <option name="PACKAGE_NAME" value="org.hornetq.tests.integration.cluster.distribution" />
-      <option name="MAIN_CLASS_NAME" value="org.hornetq.tests.integration.cluster.distribution.MessageRedistributionTest" />
-      <option name="METHOD_NAME" value="" />
-      <option name="TEST_OBJECT" value="class" />
+      <option name="PACKAGE_NAME" value="org.hornetq.tests.integration.discovery" />
+      <option name="MAIN_CLASS_NAME" value="org.hornetq.tests.integration.discovery.DiscoveryTest" />
+      <option name="METHOD_NAME" value="testSimpleBroadcastSpecificNIC" />
+      <option name="TEST_OBJECT" value="method" />
       <option name="VM_PARAMETERS" value="-Djava.util.logging.config.file=./src/config/trunk/clustered/logging.properties -Djava.library.path=native/bin" />
       <option name="PARAMETERS" value="" />
       <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$" />
@@ -1640,19 +1769,41 @@
       <ConfigurationWrapper RunnerId="Run" />
       <method />
     </configuration>
-    <configuration default="false" name="SessionTest.test" type="JUnit" factoryName="JUnit" temporary="true">
+    <configuration default="false" name="QueueExample" type="Application" factoryName="Application" temporary="true">
+      <extension name="coverage" enabled="false" merge="false" runner="emma">
+        <pattern>
+          <option name="PATTERN" value="org.hornetq.jms.example.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="MAIN_CLASS_NAME" value="org.hornetq.jms.example.QueueExample" />
+      <option name="VM_PARAMETERS" />
+      <option name="PROGRAM_PARAMETERS" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+      <option name="ALTERNATIVE_JRE_PATH" />
+      <option name="ENABLE_SWING_INSPECTOR" value="false" />
+      <option name="ENV_VARIABLES" />
+      <option name="PASS_PARENT_ENVS" value="true" />
+      <module name="hornetq-jms-examples" />
+      <envs />
+      <RunnerSettings RunnerId="Run" />
+      <ConfigurationWrapper RunnerId="Run" />
+      <method />
+    </configuration>
+    <configuration default="false" name="HornetQMessageHandlerTest.testSelectorNotChanged" type="JUnit" factoryName="JUnit" temporary="true">
       <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="emma">
         <pattern>
-          <option name="PATTERN" value="org.hornetq.tests.integration.client.*" />
+          <option name="PATTERN" value="org.hornetq.tests.integration.ra.*" />
           <option name="ENABLED" value="true" />
         </pattern>
       </extension>
       <module name="hornetq-tests" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
       <option name="ALTERNATIVE_JRE_PATH" value="" />
-      <option name="PACKAGE_NAME" value="org.hornetq.tests.integration.client" />
-      <option name="MAIN_CLASS_NAME" value="org.hornetq.tests.integration.client.SessionTest" />
-      <option name="METHOD_NAME" value="test" />
+      <option name="PACKAGE_NAME" value="org.hornetq.tests.integration.ra" />
+      <option name="MAIN_CLASS_NAME" value="org.hornetq.tests.integration.ra.HornetQMessageHandlerTest" />
+      <option name="METHOD_NAME" value="testSelectorNotChanged" />
       <option name="TEST_OBJECT" value="method" />
       <option name="VM_PARAMETERS" value="-Djava.util.logging.config.file=./src/config/trunk/clustered/logging.properties -Djava.library.path=native/bin" />
       <option name="PARAMETERS" value="" />
@@ -1664,7 +1815,7 @@
       </option>
       <envs />
       <RunnerSettings RunnerId="Debug">
-        <option name="DEBUG_PORT" value="42306" />
+        <option name="DEBUG_PORT" value="50830" />
         <option name="TRANSPORT" value="0" />
         <option name="LOCAL" value="true" />
       </RunnerSettings>
@@ -1673,19 +1824,19 @@
       <ConfigurationWrapper RunnerId="Run" />
       <method />
     </configuration>
-    <configuration default="false" name="AsynchronousFileTest.testInvalidReads" type="JUnit" factoryName="JUnit" temporary="true">
+    <configuration default="false" name="HornetQMessageHandlerTest.testSelectorChanged" type="JUnit" factoryName="JUnit" temporary="true">
       <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="emma">
         <pattern>
-          <option name="PATTERN" value="org.hornetq.tests.unit.core.asyncio.*" />
+          <option name="PATTERN" value="org.hornetq.tests.integration.ra.*" />
           <option name="ENABLED" value="true" />
         </pattern>
       </extension>
       <module name="hornetq-tests" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
       <option name="ALTERNATIVE_JRE_PATH" value="" />
-      <option name="PACKAGE_NAME" value="org.hornetq.tests.unit.core.asyncio" />
-      <option name="MAIN_CLASS_NAME" value="org.hornetq.tests.unit.core.asyncio.AsynchronousFileTest" />
-      <option name="METHOD_NAME" value="testInvalidReads" />
+      <option name="PACKAGE_NAME" value="org.hornetq.tests.integration.ra" />
+      <option name="MAIN_CLASS_NAME" value="org.hornetq.tests.integration.ra.HornetQMessageHandlerTest" />
+      <option name="METHOD_NAME" value="testSelectorChanged" />
       <option name="TEST_OBJECT" value="method" />
       <option name="VM_PARAMETERS" value="-Djava.util.logging.config.file=./src/config/trunk/clustered/logging.properties -Djava.library.path=native/bin" />
       <option name="PARAMETERS" value="" />
@@ -1700,18 +1851,18 @@
       <ConfigurationWrapper RunnerId="Run" />
       <method />
     </configuration>
-    <configuration default="false" name="LargeMessageFailoverTest" type="JUnit" factoryName="JUnit" temporary="true">
+    <configuration default="false" name="HornetQMessageHandlerTest" type="JUnit" factoryName="JUnit" temporary="true">
       <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="emma">
         <pattern>
-          <option name="PATTERN" value="org.hornetq.tests.integration.cluster.failover.*" />
+          <option name="PATTERN" value="org.hornetq.tests.integration.ra.*" />
           <option name="ENABLED" value="true" />
         </pattern>
       </extension>
       <module name="hornetq-tests" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
       <option name="ALTERNATIVE_JRE_PATH" value="" />
-      <option name="PACKAGE_NAME" value="org.hornetq.tests.integration.cluster.failover" />
-      <option name="MAIN_CLASS_NAME" value="org.hornetq.tests.integration.cluster.failover.LargeMessageFailoverTest" />
+      <option name="PACKAGE_NAME" value="org.hornetq.tests.integration.ra" />
+      <option name="MAIN_CLASS_NAME" value="org.hornetq.tests.integration.ra.HornetQMessageHandlerTest" />
       <option name="METHOD_NAME" value="" />
       <option name="TEST_OBJECT" value="class" />
       <option name="VM_PARAMETERS" value="-Djava.util.logging.config.file=./src/config/trunk/clustered/logging.properties -Djava.library.path=native/bin" />
@@ -1727,21 +1878,10 @@
       <ConfigurationWrapper RunnerId="Run" />
       <method />
     </configuration>
-    <configuration default="true" type="PHPUnitRunConfigurationType" factoryName="PHPUnit" break_at_first_line="false" browser="DEFAULT" class_file="" class="" config_file="" directory="" file="" is_config_by_xml="false" is_groups_set="false" method_class="" method_file="" method="" open_page_automatically="false" scope="Class" stop_session_after_first_page="true" web_path="">
-      <option name="excludedGroups">
-        <set />
-      </option>
-      <option name="includedGroups">
-        <set />
-      </option>
-      <option name="mappings">
-        <list />
-      </option>
-      <option name="sessionId" value="" />
+    <configuration default="true" type="PHPUnitRunConfigurationType" factoryName="PHPUnit">
       <method>
         <option name="AntTarget" enabled="false" />
         <option name="BuildArtifacts" enabled="false" />
-        <option name="FtpUpload" enabled="false" />
         <option name="Maven.BeforeRunTask" enabled="false" />
       </method>
     </configuration>
@@ -1754,7 +1894,6 @@
       <method>
         <option name="AntTarget" enabled="false" />
         <option name="BuildArtifacts" enabled="false" />
-        <option name="FtpUpload" enabled="false" />
         <option name="Maven.BeforeRunTask" enabled="false" />
       </method>
     </configuration>
@@ -1772,7 +1911,6 @@
       <method>
         <option name="AntTarget" enabled="false" />
         <option name="BuildArtifacts" enabled="false" />
-        <option name="FtpUpload" enabled="false" />
         <option name="Make" enabled="true" />
         <option name="Maven.BeforeRunTask" enabled="false" />
       </method>
@@ -1793,7 +1931,6 @@
       <method>
         <option name="AntTarget" enabled="false" />
         <option name="BuildArtifacts" enabled="false" />
-        <option name="FtpUpload" enabled="false" />
         <option name="Make" enabled="true" />
         <option name="Maven.BeforeRunTask" enabled="false" />
       </method>
@@ -1819,7 +1956,6 @@
       <method>
         <option name="AntTarget" enabled="false" />
         <option name="BuildArtifacts" enabled="false" />
-        <option name="FtpUpload" enabled="false" />
         <option name="Make" enabled="true" />
         <option name="Maven.BeforeRunTask" enabled="false" />
       </method>
@@ -1928,18 +2064,48 @@
         <option name="TRANSPORT" value="0" />
         <option name="LOCAL" value="false" />
       </RunnerSettings>
+      <RunnerSettings RunnerId="Debug">
+        <option name="DEBUG_PORT" value="5005" />
+        <option name="TRANSPORT" value="0" />
+        <option name="LOCAL" value="false" />
+      </RunnerSettings>
+      <ConfigurationWrapper RunnerId="Debug" />
       <ConfigurationWrapper RunnerId="Debug" />
       <method />
     </configuration>
-    <list size="8">
-      <item index="0" class="java.lang.String" itemvalue="JUnit.MessageRedistributionTest" />
-      <item index="1" class="java.lang.String" itemvalue="JUnit.SessionTest.test" />
-      <item index="2" class="java.lang.String" itemvalue="JUnit.AsynchronousFileTest.testInvalidReads" />
-      <item index="3" class="java.lang.String" itemvalue="JUnit.LargeMessageFailoverTest" />
-      <item index="4" class="java.lang.String" itemvalue="JUnit.LargeMessageTest" />
-      <item index="5" class="java.lang.String" itemvalue="JUnit.NettyFailoverTest.test" />
-      <item index="6" class="java.lang.String" itemvalue="JUnit.GroupingFailoverReplicationTest.test" />
-      <item index="7" class="java.lang.String" itemvalue="Remote.server" />
+    <configuration default="false" name="EnqueueDurable" type="Application" factoryName="Application">
+      <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="emma">
+        <pattern>
+          <option name="PATTERN" value="org.hornetq.test.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="MAIN_CLASS_NAME" value="org.hornetq.test.EnqueueDurable" />
+      <option name="VM_PARAMETERS" value="" />
+      <option name="PROGRAM_PARAMETERS" value="127.0.0.1" />
+      <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+      <option name="ALTERNATIVE_JRE_PATH" value="" />
+      <option name="ENABLE_SWING_INSPECTOR" value="false" />
+      <option name="ENV_VARIABLES" />
+      <option name="PASS_PARENT_ENVS" value="true" />
+      <module name="hornetq" />
+      <envs />
+      <RunnerSettings RunnerId="Run" />
+      <ConfigurationWrapper RunnerId="Run" />
+      <method />
+    </configuration>
+    <list size="10">
+      <item index="0" class="java.lang.String" itemvalue="JUnit.DiscoveryTest.testSimpleBroadcastSpecificNIC" />
+      <item index="1" class="java.lang.String" itemvalue="Application.QueueExample" />
+      <item index="2" class="java.lang.String" itemvalue="JUnit.HornetQMessageHandlerTest.testSelectorNotChanged" />
+      <item index="3" class="java.lang.String" itemvalue="JUnit.HornetQMessageHandlerTest.testSelectorChanged" />
+      <item index="4" class="java.lang.String" itemvalue="JUnit.HornetQMessageHandlerTest" />
+      <item index="5" class="java.lang.String" itemvalue="JUnit.LargeMessageTest" />
+      <item index="6" class="java.lang.String" itemvalue="JUnit.NettyFailoverTest.test" />
+      <item index="7" class="java.lang.String" itemvalue="JUnit.GroupingFailoverReplicationTest.test" />
+      <item index="8" class="java.lang.String" itemvalue="Remote.server" />
+      <item index="9" class="java.lang.String" itemvalue="Application.EnqueueDurable" />
     </list>
     <configuration name="&lt;template&gt;" type="WebApp" default="true" selected="false">
       <Host>localhost</Host>
@@ -1947,7 +2113,7 @@
     </configuration>
   </component>
   <component name="ShelveChangesManager" show_recycled="false" />
-  <component name="SvnConfiguration">
+  <component name="SvnConfiguration" maxAnnotateRevisions="500">
     <option name="USER" value="" />
     <option name="PASSWORD" value="" />
     <option name="LAST_MERGED_REVISION" />
@@ -1987,10 +2153,9 @@
       <changelist id="a2aae645-dbcd-4d6e-9c99-efa05d93589a" name="Default" comment="" />
       <changelist id="5341122e-b51c-4e90-b798-7086790ef7e8" name="intellij" comment="" />
       <created>1260445407874</created>
-      <updated>1262864524826</updated>
+      <updated>1271321502315</updated>
     </task>
     <task id="LOCAL-00001" summary="intellij">
-      <changelist id="e1b486d8-d1b7-4aff-87e2-e20629d1b1d5" name="intellij" comment="" />
       <created>1260445360382</created>
       <updated>1260445360382</updated>
     </task>
@@ -2018,24 +2183,24 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="0" y="25" width="1024" height="718" extended-state="0" />
-    <editor active="true" />
+    <frame x="-3" y="25" width="1926" height="1033" extended-state="6" />
+    <editor active="false" />
     <layout>
-      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.16451932" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.20905924" sideWeight="0.0" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Changes" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.34723788" sideWeight="0.0" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.48703495" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.17925592" sideWeight="0.0" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.17587373" sideWeight="0.0" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.16344294" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.24959914" sideWeight="0.7006937" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.17263496" sideWeight="0.64487034" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Dependency Viewer" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.14757481" sideWeight="0.77874565" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.27833003" sideWeight="0.0" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.29335976" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.2770035" sideWeight="0.0" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.20599613" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.26858276" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Dataflow to this" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
@@ -2052,8 +2217,10 @@
     <option name="PERFORM_ADD_REMOVE_IN_BACKGROUND" value="true" />
     <option name="PERFORM_ROLLBACK_IN_BACKGROUND" value="false" />
     <option name="CHECK_LOCALLY_CHANGED_CONFLICTS_IN_BACKGROUND" value="true" />
+    <option name="ENABLE_BACKGROUND_PROCESSES" value="false" />
+    <option name="CHANGED_ON_SERVER_INTERVAL" value="60" />
     <option name="FORCE_NON_EMPTY_COMMENT" value="false" />
-    <option name="LAST_COMMIT_MESSAGE" value="doc fix" />
+    <option name="LAST_COMMIT_MESSAGE" value="added jca example showing connecting to remote HQ server and doc updates" />
     <option name="MAKE_NEW_CHANGELIST_ACTIVE" value="true" />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_FILES_UP_TO_DATE_BEFORE_COMMIT" value="false" />
@@ -2066,20 +2233,6 @@
     <option name="UPDATE_GROUP_BY_CHANGELIST" value="false" />
     <option name="SHOW_FILE_HISTORY_AS_TREE" value="false" />
     <option name="FILE_HISTORY_SPLITTER_PROPORTION" value="0.6" />
-    <MESSAGE value="tidied exception handling" />
-    <MESSAGE value="test fix" />
-    <MESSAGE value="uncommented reset to clear bindings" />
-    <MESSAGE value="make all tests use file storage" />
-    <MESSAGE value="remeoved all boolean isFileStorage() methods" />
-    <MESSAGE value="removed cluetered tags from config files" />
-    <MESSAGE value="added build  scripts and updated docs" />
-    <MESSAGE value="upped sleep to allow server to start" />
-    <MESSAGE value="config fix" />
-    <MESSAGE value="reconnect attemots now -1 by default for the ra. updated docs also" />
-    <MESSAGE value="ClientProducer javadocs" />
-    <MESSAGE value="SimpleString and Pair javadocs" />
-    <MESSAGE value="javadocs and some refactoring of message" />
-    <MESSAGE value="remoting javadocs" />
     <MESSAGE value="buffer fix" />
     <MESSAGE value="added maven target for creating repos files" />
     <MESSAGE value="fixed import" />
@@ -2091,6 +2244,20 @@
     <MESSAGE value="removed spurious log message" />
     <MESSAGE value="example fix" />
     <MESSAGE value="doc fix" />
+    <MESSAGE value="https://jira.jboss.org/jira/browse/HORNETQ-362 - fixed the ra to cope with non transactional mdb's" />
+    <MESSAGE value="renamed config directories" />
+    <MESSAGE value="added back build file" />
+    <MESSAGE value="updated build file" />
+    <MESSAGE value="added JBoss AS 6 resources" />
+    <MESSAGE value="clientlogin" />
+    <MESSAGE value="https://jira.jboss.org/jira/browse/HORNETQ-340 - fixed jboss security manager to allow client login propogation" />
+    <MESSAGE value="fixed examples security for temp queues" />
+    <MESSAGE value="excluding websocket example from all target" />
+    <MESSAGE value="updated version numbers for upcoming release" />
+    <MESSAGE value="https://jira.jboss.org/browse/HORNETQ-389 - fixed selector issue and added test" />
+    <MESSAGE value="p" />
+    <MESSAGE value="https://jira.jboss.org/browse/HORNETQ-391 - fixed using the correcxt transport params" />
+    <MESSAGE value="added jca example showing connecting to remote HQ server and doc updates" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager />
@@ -2693,98 +2860,118 @@
     </buildFile>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/examples/jms/clustered-queue/build.xml">
+    <entry file="file://$PROJECT_DIR$/examples/javaee/jca-remote/server0/client-jndi.properties">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="28" column="74" selection-start="1204" selection-end="1204" vertical-scroll-proportion="-18.40909" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/build/hornetq-2.0.0.CR3/examples/jms/management/src/org/hornetq/jms/example/ManagementExample.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="76" column="50" selection-start="2844" selection-end="2844" vertical-scroll-proportion="0.0" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/org/hornetq/api/jms/HornetQJMSClient.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="117" column="80" selection-start="4181" selection-end="4181" vertical-scroll-proportion="0.0" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/examples/jms/pre-acknowledge/server0/hornetq-configuration.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="20" column="54" selection-start="662" selection-end="662" vertical-scroll-proportion="0.0" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/examples/jms/reattach-node/server0/hornetq-configuration.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="47" column="82" selection-start="1880" selection-end="1880" vertical-scroll-proportion="0.0" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/examples/javaee/mdb-cmt-tx-required/src/org/hornetq/javaee/example/MDB_CMT_TxRequiredClientExample.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="49" column="83" selection-start="1895" selection-end="1895" vertical-scroll-proportion="0.0" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/examples/javaee/mdb-cmt-tx-required/src/org/hornetq/javaee/example/server/MDB_CMT_TxRequiredExample.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="59" column="69" selection-start="2484" selection-end="2484" vertical-scroll-proportion="0.0" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/build-maven.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
+        <state line="14" column="43" selection-start="722" selection-end="722" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/docs/user-manual/en/messaging-concepts.xml">
+    <entry file="file://$PROJECT_DIR$/examples/javaee/jca-remote/server0/hornetq-jms.xml">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="32" column="57" selection-start="2432" selection-end="2432" vertical-scroll-proportion="0.0">
+        <state line="17" column="29" selection-start="891" selection-end="908" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/examples/javaee/mdb-cmt-tx-required/server/hornetq-jms.xml">
+    <entry file="file://$PROJECT_DIR$/examples/javaee/jca-config/src/org/hornetq/javaee/example/server2/MDBQueueB.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/org/hornetq/ra/inflow/HornetQActivation.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="263" column="45" selection-start="6376" selection-end="6376" vertical-scroll-proportion="0.0">
+        <state line="36" column="13" selection-start="1596" selection-end="1596" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/org/hornetq/ra/inflow/HornetQMessageHandler.java">
+    <entry file="file://$PROJECT_DIR$/examples/javaee/jca-config/src/org/hornetq/javaee/example/server/MDBQueueA.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="67" column="25" selection-start="2177" selection-end="2177" vertical-scroll-proportion="0.0">
+        <state line="36" column="13" selection-start="1593" selection-end="1593" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/examples/javaee/mdb-cmt-tx-required/build.xml">
+    <entry file="file://$PROJECT_DIR$/examples/javaee/jca-config/readme.html">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="19" column="16" selection-start="846" selection-end="846" vertical-scroll-proportion="0.0">
+        <state line="149" column="19" selection-start="9467" selection-end="9815" vertical-scroll-proportion="-16.956522">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/examples/javaee/common/build.xml">
+    <entry file="file://$PROJECT_DIR$/examples/javaee/jca-remote/server/jms-ds.xml">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="175" column="16" selection-start="7194" selection-end="7311" vertical-scroll-proportion="0.0">
+        <state line="34" column="31" selection-start="960" selection-end="1628" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/docs/user-manual/en/architecture.xml">
+    <entry file="file://$PROJECT_DIR$/examples/javaee/jca-remote/server0/hornetq-configuration.xml">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="25" column="65" selection-start="1989" selection-end="1989" vertical-scroll-proportion="0.0">
+        <state line="46" column="49" selection-start="1976" selection-end="1976" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/docs/user-manual/en/using-server.xml">
+    <entry file="file://$PROJECT_DIR$/examples/javaee/jca-config/src/org/hornetq/javaee/example/server2/StatelessSenderService.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="174" column="11" selection-start="11694" selection-end="11694" vertical-scroll-proportion="0.74358976">
+        <state line="23" column="17" selection-start="806" selection-end="806" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/examples/javaee/jca-config/src/org/hornetq/javaee/example/server2/StatelessSender.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="50" column="59" selection-start="1556" selection-end="1609" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/examples/javaee/mdb-bmt/src/org/hornetq/javaee/example/MDB_BMTClientExample.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="71" column="32" selection-start="2239" selection-end="2468" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/examples/javaee/jca-remote/server/ra.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="61" column="27" selection-start="2184" selection-end="3025" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/examples/javaee/jca-remote/src/org/hornetq/javaee/example/MDBRemoteServerClientExample.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="95" column="17" selection-start="3054" selection-end="3226" vertical-scroll-proportion="0.0">
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/examples/javaee/jca-remote/src/org/hornetq/javaee/example/server/MDBQueue.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="46" column="25" selection-start="1849" selection-end="1865" vertical-scroll-proportion="0.0">
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/examples/javaee/jca-remote/readme.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="46" column="44" selection-start="2573" selection-end="3415" vertical-scroll-proportion="-16.304348">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/docs/user-manual/en/appserver-integration.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="836" column="101" selection-start="48141" selection-end="48141" vertical-scroll-proportion="-15.04">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/docs/user-manual/en/examples.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="534" column="124" selection-start="33920" selection-end="33920" vertical-scroll-proportion="0.4304762">
           <folding />
         </state>
       </provider>

@@ -19,6 +19,7 @@
       <sourceFolder url="file://$MODULE_DIR$/delayed-redelivery/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/divert/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/durable-subscription/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/embedded/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/expiry/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/http-transport/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/instantiate-connection-factory/src" isTestSource="false" />
@@ -61,7 +62,6 @@
       <sourceFolder url="file://$MODULE_DIR$/applet/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/clustered-grouping/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/clustered-standalone/src" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/embedded/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/jaas/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/jms-bridge/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/perf/src" isTestSource="false" />

@@ -18,6 +18,7 @@
       <sourceFolder url="file://$MODULE_DIR$/servlet-transport/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/xarecovery/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/servlet-ssl/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/jca-remote/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/mdb-bmt/build" />
       <excludeFolder url="file://$MODULE_DIR$/mdb-cmt-tx-required/build" />
       <excludeFolder url="file://$MODULE_DIR$/output" />
@@ -39,6 +40,8 @@
     <orderEntry type="library" name="jboss 5.1 client libs" level="application" />
     <orderEntry type="library" name="messaging-javaee-examples" level="project" />
     <orderEntry type="library" name="javaee" level="application" />
+    <orderEntry type="module" module-name="hornetq-jms-tests" scope="PROVIDED" />
+    <orderEntry type="module" module-name="hornetq-jms-examples" />
   </component>
 </module>
 

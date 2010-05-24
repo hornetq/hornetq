@@ -744,10 +744,7 @@
         <root url="jar://$PROJECT_DIR$/thirdparty/org/jboss/ejb3/lib/jboss-ejb3-ext-api.jar!/" />
       </CLASSES>
       <JAVADOC />
-      <SOURCES>
-        <root url="file://$PROJECT_DIR$/../JBOSSTS_4_6_1_GA/common/classes" />
-        <root url="jar://$PROJECT_DIR$/../../Download/netty-3.1.5.GA-sources.jar!/" />
-      </SOURCES>
+      <SOURCES />
     </library>
     <library name="messaging-tests">
       <CLASSES>
