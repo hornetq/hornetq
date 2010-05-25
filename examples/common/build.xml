@@ -205,7 +205,7 @@
          </fileset>
       </subant>
    	
-   	  <echo message="Do not forget to run jms/applet, jms/clustered-standalone &amp; jms-bridge examples manually!" />
+   	  <echo message="Do not forget to run jms/applet, jms/clustered-standalone, jms/stomp-websockets &amp; jms/jms-bridge examples manually!" />
    </target>
 
 </project>
