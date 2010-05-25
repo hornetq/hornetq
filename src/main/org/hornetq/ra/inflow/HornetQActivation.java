@@ -29,6 +29,7 @@ import javax.resource.spi.endpoint.MessageEndpointFactory;
 import javax.resource.spi.work.Work;
 import javax.resource.spi.work.WorkManager;
 
+import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.jms.client.HornetQConnectionFactory;
@@ -105,9 +106,9 @@ public class HornetQActivation
    // Whether we are in the failure recovery loop
    private AtomicBoolean inFailure = new AtomicBoolean(false);
 
-   private final int setupAttempts = 5;
-   
-   private final long setupInterval = 10 * 1000;
+   private final int setupAttempts = 10;
+
+   private final long setupInterval = 2 * 1000;
    
    static
    {
@@ -505,9 +506,15 @@ public class HornetQActivation
     */
    public void handleFailure(Throwable failure)
    {
-      log.warn("Failure in HornetQ activation " + spec, failure);
+      if(failure instanceof HornetQException && ((HornetQException)failure).getCode() == HornetQException.QUEUE_DOES_NOT_EXIST)
+      {
+         log.info("awaiting topic/queue creation " + getActivationSpec().getDestination());
+      }
+      else
+      {
+         log.warn("Failure in HornetQ activation " + spec, failure);
+      }
       int reconnectCount = 0;
-      
       // Only enter the failure loop once
       if (inFailure.getAndSet(true))
          return;
@@ -536,7 +543,14 @@ public class HornetQActivation
             }
             catch (Throwable t)
             {
-               log.error("Unable to reconnect " + spec, t);
+               if(failure instanceof HornetQException && ((HornetQException)failure).getCode() == HornetQException.QUEUE_DOES_NOT_EXIST)
+               {
+                  log.info("awaiting topic/queue creation " + getActivationSpec().getDestination());
+               }
+               else
+               {
+                  log.error("Unable to reconnect " + spec, t);
+               }
             }
             ++reconnectCount;
          }
