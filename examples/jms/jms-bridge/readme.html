@@ -49,7 +49,7 @@
      </ul>
      <h3>Source Server Configuration</h3>
      <p>On server #0, in <code>server0/hornetq-beans.xml</code>, setup the JNDI server network address by replacing
-        <code>@SOURCE_SERVER</code> by the source server address (e.g. <code>192.168.0.10</code>):</p>
+        <code>@SOURCE_SERVER@</code> by the source server address (e.g. <code>192.168.0.10</code>):</p>
      <pre class="prettyprint">
         &lt;bean name="JNDIServer" class="org.jnp.server.Main">
            ...
@@ -86,7 +86,7 @@
      </ul>
      <h3>Target Server Configuration</h3>
      <p>On server #1, in <code>server1/hornetq-beans.xml</code>, setup the JNDI server network address by replacing
-        <code>@TARGET_SERVER</code> by the target server address (e.g. <code>192.168.0.11</code>):</p>
+        <code>@TARGET_SERVER@</code> by the target server address (e.g. <code>192.168.0.11</code>):</p>
      <pre class="prettyprint">
         &lt;bean name="JNDIServer" class="org.jnp.server.Main">
            ...
