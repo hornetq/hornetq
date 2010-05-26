@@ -8,6 +8,7 @@
     <!-- Support files for build process. -->
     <property name="support.dir"           value="${support.basedir}/support"/>
     <property name="styles.dir"            value="${support.basedir}/styles"/>
+    <property name="config.dir"            value="${support.dir}/fop-conf"/>
 
     <!-- Set DocBook stylesheets. -->
     <property name="db.style.fopdf"        value="fopdf.xsl"/>
@@ -28,6 +29,10 @@
         </fileset>
     </path>
 
+    <taskdef name="fop" classname="org.apache.fop.tools.anttasks.Fop">
+        <classpath refid="lib.classpath"/>
+    </taskdef>
+   
     <!-- ################################################################## -->
 
     <target name="all.doc" depends="clean">
@@ -132,17 +137,13 @@
         </xslt>
 -->
         <!-- Create a PDF from the XSL/FO. -->
-        <java classname="org.apache.fop.apps.Fop" 
-	      maxmemory="${maxmem}"
-              fork="true" dir="${basedir}">
-            <classpath refid="lib.classpath"/>
-            <arg value="${build.dir}/${lang}/pdf/docbook_fop.tmp"/>
-            <arg value="${build.dir}/${lang}/pdf/${pdf.name}"/>
-        </java>
+        <fop format="application/pdf" 
+            userconfig="${config.dir}/fop.xconf"
+            fofile="${build.dir}/${lang}/pdf/docbook_fop.tmp"
+            basedir="${build.dir}/${lang}/pdf"
+            outfile="${build.dir}/${lang}/pdf/${pdf.name}" />
 
         <!-- Delete temporary files. -->
-        <delete file="${build.dir}/${lang}/pdf/docbook_fop.tmp"/>
-        <delete dir="${build.dir}/${lang}/pdf/images"/>
     </target>
 
     <target name="lang.dochtml">
