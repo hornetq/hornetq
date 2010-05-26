@@ -62,7 +62,7 @@
                     >hornetq-configuration.xml</literal> with the <literal
                     >thread-pool-max-size</literal> parameter.</para>
             <para>If a value of <literal>-1</literal> is used this signifies that the thread pool
-                has no upper bound and new threads will be created on demand if there are enough
+                has no upper bound and new threads will be created on demand if there are not enough
                 threads available to satisfy a request. If activity later subsides then threads are
                 timed-out and closed.</para>
             <para>If a value of <literal>n</literal> where <literal>n</literal>is a positive integer
@@ -93,7 +93,7 @@
                 HornetQ-AIO-poller-pool. HornetQ uses one thread per opened file on the journal
                 (there is usually one).</para>
             <para>There is also a single thread used to invoke writes on libaio. We do that to avoid
-                context switching on libaio what would cause performance issues. You will find this
+                context switching on libaio that would cause performance issues. You will find this
                 thread on a thread dump with the prefix HornetQ-AIO-writer-pool.</para>
         </section>
     </section>

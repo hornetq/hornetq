@@ -224,7 +224,7 @@
             of one or more of the servers. The degree of support for HA varies between various
             messaging systems.</para>
         <para>HornetQ provides automatic failover where your sessions are automatically reconnected
-            to the backup server on event of live serve failure.</para>
+            to the backup server on event of live server failure.</para>
         <para>For more information on HA, please see <xref linkend="ha"/>.</para>
     </section>
     <section>

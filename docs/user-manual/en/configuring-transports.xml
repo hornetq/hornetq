@@ -195,7 +195,7 @@ etc
             <itemizedlist>
                 <listitem>
                     <para><literal>use-nio</literal>. If this is <literal>true</literal> then Java
-                        non blocking NIO will be used. If set to <literal>false</literal> than old
+                        non blocking NIO will be used. If set to <literal>false</literal> then old
                         blocking Java IO will be used.</para>
                     <para>If you require the server to handle many concurrent connections, we highly
                         recommend that you use non blocking Java NIO. Java NIO does not maintain a
@@ -274,7 +274,7 @@ etc
                         switch required. If you want the lowest latency and the possible expense of
                         some reduction in throughput then you can make sure <literal
                             >direct-deliver</literal> to true. The default value for this parameter
-                        is <literal>true</literal>. If you are willingh to take some small extra hit
+                        is <literal>true</literal>. If you are willing to take some small extra hit
                         on latency but want the highest throughput set this parameter to <literal
                             >false</literal>.</para>
                 </listitem>
@@ -438,7 +438,7 @@ etc
             <itemizedlist>
                 <listitem>
                     <para>endpoint - This is the name of the netty acceptor that the servlet will
-                        forward its packets too. You can see it matches the name of the <literal
+                        forward its packets to. You can see it matches the name of the <literal
                             >host</literal> param.</para>
                 </listitem>
             </itemizedlist>

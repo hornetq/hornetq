@@ -903,7 +903,7 @@
                             <entry><link linkend="undelivered-messages.configuring"
                                     >address-settings.dead-letter-address</link></entry>
                             <entry>String</entry>
-                            <entry>the address to send dead messages too</entry>
+                            <entry>the address to send dead messages to</entry>
                             <entry/>
                         </row>
                         <row>
@@ -918,7 +918,7 @@
                             <entry><link linkend="message-expiry.configuring"
                                     >address-settings.expiry-address</link></entry>
                             <entry>String</entry>
-                            <entry>the address to send expired messages too</entry>
+                            <entry>the address to send expired messages to</entry>
                             <entry/>
                         </row>
                         <row>
@@ -1003,7 +1003,7 @@
                             <entry><link linkend="clusters.static.servers">connection-factory.connectors</link>
                             </entry>
                             <entry>String</entry>
-                            <entry>A list of connectors used bu the connection factory</entry>
+                            <entry>A list of connectors used by the connection factory</entry>
                             <entry />
                         </row>
                         <row>

@@ -219,7 +219,7 @@ public class MDBMessageSelectorExample implements MessageListener
             that the sending of the message will be done as part of the JTA transaction being used
             by the component.</para>
         <para>This means that if the sending of the message fails the overall transaction would
-            rollback and the message be redelivered. Heres an example of this from within an
+            rollback and the message be re-sent. Heres an example of this from within an
             MDB:</para>
         <programlisting>@MessageDriven(name = "MDBMessageSendTxExample",
                activationConfig =
@@ -459,7 +459,7 @@ public class MDBMessageSendTxExample implements MessageListener
                             <entry>
                                <link linkend="configuration.discovery-group.refresh-timeout">DiscoveryRefreshTimeout</link></entry>
                             <entry>Long</entry>
-                            <entry>The timeout, in milli seconds, to refresh.</entry>
+                            <entry>The timeout, in milliseconds, to refresh.</entry>
                         </row>
                         <row>
                             <entry>
@@ -816,7 +816,7 @@ private ConnectionFactory connectionFactory;</programlisting>
                  &lt;config-property-value&gt;host=127.0.0.1;port=5446&lt;/config-property-value&gt;
               &lt;/config-property>
           </programlisting>
-          <para>This configures the resource adapter to connect to a server running on localhosr listening on port 5446</para>
+          <para>This configures the resource adapter to connect to a server running on localhost listening on port 5446</para>
           <para>You will also need to configure any outbound connections to also connect to this server. This can be done
              by either configuring the jms-ds.xml file found under <literal>deploy/hornetq.sar</literal> or creating a
              new configuration file and making sure the filename ends in -ds.xml</para>
@@ -873,7 +873,7 @@ initialContext = new InitialContext(jndiParameters);</programlisting>
             (depending on the transaction outcome) when the server is restarted.</para>
         <section>
             <title>XA Recovery Configuration</title>
-            <para>To enable HornetQs XA Recovery, the Recovery Manager must be configured to connect
+            <para>To enable HornetQ's XA Recovery, the Recovery Manager must be configured to connect
                 to HornetQ to recover its resources. The following property must be added to the
                     <literal>jta</literal> section of <literal>conf/jbossts-properties.xml</literal>
                 of JBoss AS profiles:</para>

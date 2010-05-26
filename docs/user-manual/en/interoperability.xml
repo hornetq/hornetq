@@ -119,7 +119,7 @@ destination:jms.topic.stocks
          </programlisting>
          <para>With this configuration, HornetQ will accept Stomp connections over Web Sockets on 
             the port <literal>61614</literal> with the URL path <literal>/stomp</literal>.
-            Web browser can then connect to <literal>ws://&lt;server&gt;:61614/stomp</literal> usin a Web Socket to send and receive Stomp
+            Web browser can then connect to <literal>ws://&lt;server&gt;:61614/stomp</literal> using a Web Socket to send and receive Stomp
             messages.</para>
          <para>A companion JavaScript library to ease client-side development is available from 
             <ulink url="http://github.com/jmesnil/stomp-websocket">GitHub</ulink> (please see

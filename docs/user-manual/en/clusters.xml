@@ -254,8 +254,8 @@ Connection jmsConnection1 = jmsConnectionFactory.createConnection();
 
 Connection jmsConnection2 = jmsConnectionFactory.createConnection();</programlisting></para>
                 <para>The <literal>refresh-timeout</literal> can be set directly on the connection
-                    factory by using the setter method <literal>setDiscoveryRefreshTimeout() if you
-                        want to change the default value.</literal></para>
+                    factory by using the setter method <literal>setDiscoveryRefreshTimeout()</literal> if you
+                        want to change the default value.</para>
                 <para>There is also a further parameter settable on the connection factory using the
                     setter method <literal>setDiscoveryInitialWaitTimeout()</literal>. If the connection
                     factory is used immediately after creation then it may not have had enough time
@@ -279,8 +279,8 @@ Connection jmsConnection2 = jmsConnectionFactory.createConnection();</programlis
                 
                 </programlisting></para>
                 <para>The <literal>refresh-timeout</literal> can be set directly on the session
-                    factory by using the setter method <literal>setDiscoveryRefreshTimeout() if you
-                        want to change the default value.</literal></para>
+                    factory by using the setter method <literal>setDiscoveryRefreshTimeout()</literal> if you
+                        want to change the default value.</para>
                 <para>There is also a further parameter settable on the session factory using the
                     setter method <literal>setDiscoveryInitialWaitTimeout()</literal>. If the session factory
                     is used immediately after creation then it may not have had enough time to
@@ -354,7 +354,7 @@ Connection jmsConnection2 = jmsConnectionFactory.createConnection();</programlis
                         servers. By having multiple cluster connections on different addresses a
                         single HornetQ Server can effectively take part in multiple clusters
                         simultaneously.</para>
-                    <para>By careful not to have multiple cluster connections with overlapping
+                    <para>Be careful not to have multiple cluster connections with overlapping
                         values of <literal>address</literal>, e.g. "europe" and "europe.news" since
                         this could result in the same messages being distributed between more than
                         one cluster connection, possibly resulting in duplicate deliveries. </para>

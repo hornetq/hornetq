@@ -111,7 +111,7 @@
                         >listPreparedTransactions()</literal> method lists the transactions which
                      are in the prepared states (the transactions are represented as opaque Base64
                      Strings.) To commit or rollback a given prepared transaction, the <literal
-                        >commitPreparedTransaction</literal>() or <literal
+                        >commitPreparedTransaction()</literal> or <literal
                         >rollbackPreparedTransaction()</literal> method can be used to resolve
                      heuristic transactions. Heuristically completed transactions can be listed
                      using the <literal>listHeuristicCommittedTransactions()</literal> and <literal
@@ -143,7 +143,7 @@
                <listitem>
                   <para>Modifying roles and permissions for an address</para>
                   <para>You can add or remove roles associated to a queue using the <literal
-                        >addRole()</literal> or. <literal>removeRole()</literal> methods. You can
+                        >addRole()</literal> or <literal>removeRole()</literal> methods. You can
                      list all the roles associated to the queue with the <literal
                         >getRoles()</literal> method</para>
                </listitem>
@@ -164,7 +164,7 @@
                   <para>Expiring, sending to a dead letter address and moving messages</para>
                   <para>Messages can be expired from a queue by using the <literal
                         >expireMessages()</literal> method. If an expiry address is defined,
-                     messages will be be sent to it, otherwise they are discarded. The queue's
+                     messages will be sent to it, otherwise they are discarded. The queue's
                      expiry address can be set with the <literal>setExpiryAddress()</literal>
                      method.</para>
                   <para>Messages can also be sent to a dead letter address with the <literal
@@ -325,7 +325,7 @@
                         >destroyConnectionFactory()</literal> methods. These connection factories
                      are bound to JNDI so that JMS clients can look them up. If a graphical console
                      is used to create the connection factories, the transport parameters are
-                     specified in the text fied input as a comma-separated list of key=value (e.g.
+                     specified in the text field input as a comma-separated list of key=value (e.g.
                         <literal>key1=10, key2="value", key3=false</literal>). If there are multiple
                      transports defined, you need to enclose the key/value pairs between curly
                      braces. For example <literal>{key=10}, {key=20}</literal>. In that case, the
@@ -376,7 +376,7 @@
                   <para>The <literal>ConnectionFactoryControl</literal> exposes JMS
                      ConnectionFactory configuration through its attributes (e.g. <literal
                         >getConsumerWindowSize()</literal> to retrieve the consumer window size for
-                     flow control, <literal>isBlockOnNonDurableSend()</literal> to know wether the
+                     flow control, <literal>isBlockOnNonDurableSend()</literal> to know whether the
                      producers created from the connection factory will block or not when sending
                      non-durable messages, etc.)</para>
                </listitem>
@@ -395,7 +395,7 @@
                   <para>Expiring, sending to a dead letter address and moving messages</para>
                   <para>Messages can be expired from a queue by using the <literal
                         >expireMessages()</literal> method. If an expiry address is defined,
-                     messages will be be sent to it, otherwise they are discarded. The queue's
+                     messages will be sent to it, otherwise they are discarded. The queue's
                      expiry address can be set with the <literal>setExpiryAddress()</literal>
                      method.</para>
                   <para>Messages can also be sent to a dead letter address with the <literal
@@ -444,8 +444,8 @@
                <listitem>
                   <para>Retrieving the queue attributes</para>
                   <para>The <literal>JMSQueueControl</literal> exposes JMS queue settings through
-                     its attributes (e.g. <literal>isTemporary()</literal> to know wether the queue
-                     is temporary or not, <literal>isDurable()</literal> to know wether the queue is
+                     its attributes (e.g. <literal>isTemporary()</literal> to know whether the queue
+                     is temporary or not, <literal>isDurable()</literal> to know whether the queue is
                      durable or not, etc.)</para>
                </listitem>
                <listitem>
@@ -761,7 +761,7 @@
             notifications emitted by the server.</para>
          <section id="management.notifications.core.configuration">
             <title>Configuring The Core Management Notification Address</title>
-            <para>the management notification address to receive management notifications is
+            <para>The management notification address to receive management notifications is
                configured in <literal>hornetq-configuration.xml</literal>:</para>
             <programlisting>
                &lt;management-notification-address&gt;hornetq.notifications&lt;/management-notification-address&gt;
@@ -953,7 +953,7 @@ System.out.format("%s message(s) in the queue (since last sample: %s)\n",
       </section>
       <section>
          <title>JMS Connection Factories</title>
-         <para>The format for creating connection factories is the same as for JMS Queues and topics apart frm the configuration
+         <para>The format for creating connection factories is the same as for JMS Queues and topics apart from the configuration
          being different. For as list of all the connection factory settings see the configuration index </para>
       </section>
    </section>

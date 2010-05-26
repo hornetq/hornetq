@@ -57,7 +57,7 @@
     </section>
     <section>
         <title>Setting the limits</title>
-        <para>Any message large than a certain size is considered a large message. Large messages
+        <para>Any message larger than a certain size is considered a large message. Large messages
             will be split up and sent in fragments. This is determined by the parameter <literal
                 >min-large-message-size</literal></para>
         <para>The default value is 100KiB.</para>
@@ -249,7 +249,7 @@ for (int i = 0; i &lt; rm.getBodyLength(); i += 1024)
     </section>
     <section id="large-messages.cache.client">
         <title>Cache Large Messages on client</title>
-        <para>LargeMessages are transferred by streaming from server to client. The message is
+        <para>Large messages are transferred by streaming from server to client. The message is
             broken into smaller packets and as the message is read more packets will be received.
             Because of that the body of the large message can be read only once, and by consequence
             a received message can be sent to another producer only once. The JMS Bridge for

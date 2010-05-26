@@ -24,7 +24,7 @@
         some simple server configuration.</para>
     <para>Diverts allow you to transparently divert messages routed to one address to some other
         address, without making any changes to any client application logic.</para>
-    <para>Diverts can be <emphasis>exclusive</emphasis>, meaning that that the message is diverted
+    <para>Diverts can be <emphasis>exclusive</emphasis>, meaning that the message is diverted
         to the new address, and does not go to the old address at all, or they can be
             <emphasis>non-exclusive</emphasis> which means the message continues to go the old
         address, and a <emphasis>copy</emphasis> of it is also sent to the new address.
@@ -92,7 +92,7 @@
             the new address. The original message continues to the old address</para>
         <para>You can therefore think of non-exclusive diverts as <emphasis>splitting</emphasis> a
             message flow.</para>
-        <para>Non exclusive diverts can be configured in the same was as exclusive diverts with an
+        <para>Non exclusive diverts can be configured in the same way as exclusive diverts with an
             optional filter and transformer, here's an example non-exclusive divert, again from the
             divert example:</para>
         <programlisting>

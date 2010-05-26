@@ -38,7 +38,7 @@
             parameters and start the JBoss Microcontainer. The Microcontainer is a light weight
             container used to deploy the HornetQ POJO's</para>
         <para>To stop the server you'll also find a unix/linux script <literal>stop.sh</literal> and
-            a windows batch file <literal>run.bat</literal></para>
+            a windows batch file <literal>stop.bat</literal></para>
         <para>To run on Unix/Linux type <literal>./stop.sh</literal></para>
         <para>To run on Windows type <literal>stop.bat</literal></para>
         <para>Please note that HornetQ requires a Java 6 or later runtime to run.</para>

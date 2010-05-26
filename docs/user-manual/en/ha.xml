@@ -122,7 +122,7 @@
                         other purposes, it's necessary to copy the <literal>data</literal> directory
                         from the live server to the backup server. This means the backup server will
                         have an identical persistent store to the backup server.</para>
-                    <para>One a live server has failed over onto a backup server, the old live
+                    <para>Once a live server has failed over onto a backup server, the old live
                         server becomes invalid and cannot just be restarted. To resynchonize the
                         pair as a working live backup pair again, both servers need to be stopped,
                         the data copied from the live node to the backup node and restarted
@@ -273,7 +273,7 @@
                     linkend="examples.non-transaction-failover"/>.</para>
             <section id="ha.automatic.failover.noteonreplication">
                 <title>A Note on Server Replication</title>
-                <para>HornetQ does not replicate full server state betwen live and backup servers.
+                <para>HornetQ does not replicate full server state between live and backup servers.
                     When the new session is automatically recreated on the backup it won't have any
                     knowledge of messages already sent or acknowledged in that session. Any
                     in-flight sends or acknowledgements at the time of failover might also be
@@ -294,7 +294,7 @@
                 <para>Other techniques for multi-threaded active replication exist such as
                     replicating lock states or replicating thread scheduling but this is very hard
                     to achieve at a Java level.</para>
-                <para>Consequently it xas decided it was not worth massively reducing performance
+                <para>Consequently it has decided it was not worth massively reducing performance
                     and concurrency for the sake of 100% transparent failover. Even without 100%
                     transparent failover, it is simple to guarantee <emphasis role="italic">once and
                         only once</emphasis> delivery, even in the case of failure, by using a

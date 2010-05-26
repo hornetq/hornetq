@@ -88,7 +88,7 @@
             <para>This journal instance stores all JMS related data, This is basically any JMS Queues, Topics and Connection
                Factories and any JNDI bindings for these resources.</para>
             <para>Any JMS Resources created via the management API will be persisted to this journal. Any resources
-               configured via configuration files will not. The JMS Journal will only becreated if JMS is being used.</para>
+               configured via configuration files will not. The JMS Journal will only be created if JMS is being used.</para>
         </listitem>
         <listitem>
             <para>Message journal.</para>

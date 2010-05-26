@@ -77,6 +77,6 @@ Session session = connection.createSession(false, HornetQSession.PRE_ACKNOWLEDGE
    <section>
       <title>Example</title>
       <para>See <xref linkend="examples.pre-acknowledge"/> for an example which shows how to use
-         pre-acknowledgement mode with with JMS.</para>
+         pre-acknowledgement mode with JMS.</para>
    </section>
 </chapter>

@@ -458,7 +458,7 @@
         </section>
         <section>
             <title>Topic Selector 2</title>
-            <para>The <literal>topic-selector-example1</literal> example shows you how to
+            <para>The <literal>topic-selector-example2</literal> example shows you how to
                 selectively consume messages using message selectors with topic consumers.</para>
         </section>
         <section id="examples.transaction-failover">
@@ -513,7 +513,7 @@
     <section>
         <title>Java EE Examples</title>
         <para>Most of the Java EE examples can be run the following way. simply cd into the
-            appropriate example directory an type <literal>ant deploy</literal>. This will create a
+            appropriate example directory and type <literal>ant deploy</literal>. This will create a
             new JBoss AS profile and start the server. When the server is started from a different
             window type <literal>ant run</literal> to run the example. Some examples require further
             steps, please refer to the examples documentation for further instructions.</para>
