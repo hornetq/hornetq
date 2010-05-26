@@ -7,12 +7,17 @@
   <target name="all" depends="clean">
     <mkdir dir="en/images" />
     <antcall target="lang.all"><param name="lang" value="en"/></antcall>
-    <antcall target="lang.all"><param name="lang" value="zh"/></antcall>
+
+    <!-- by default we don't build Chinese pdf documents because we
+         don't provide any Chinese fonts in the repo. -->
+    <antcall target="lang.dochtml"><param name="lang" value="zh"/></antcall>
+    <antcall target="lang.dochtmlsingle"><param name="lang" value="zh"/></antcall>
   </target>
 
   <target name="html.doc" description="creates the html docs only and opens a browser">
     <mkdir dir="en/images" />
     <antcall target="lang.dochtml"><param name="lang" value="en"/></antcall>
+    <antcall target="lang.dochtml"><param name="lang" value="zh"/></antcall>
   </target>
 
 </project>
