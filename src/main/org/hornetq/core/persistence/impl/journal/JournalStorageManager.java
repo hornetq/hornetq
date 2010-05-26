@@ -871,17 +871,19 @@ public class JournalStorageManager implements StorageManager
 
                if (queueMessages == null)
                {
-                  throw new IllegalStateException("Cannot find queue messages " + encoding.queueID);
+                  log.warn("Cannot find queue "  + encoding.queueID + " to update delivery count");
                }
-
-               AddMessageRecord rec = queueMessages.get(messageID);
-
-               if (rec == null)
+               else
                {
-                  throw new IllegalStateException("Cannot find message " + messageID);
+                  AddMessageRecord rec = queueMessages.get(messageID);
+   
+                  if (rec == null)
+                  {
+                     throw new IllegalStateException("Cannot find message " + messageID);
+                  }
+   
+                  rec.deliveryCount = encoding.count;
                }
-
-               rec.deliveryCount = encoding.count;
 
                break;
             }
