@@ -879,10 +879,12 @@ public class JournalStorageManager implements StorageManager
    
                   if (rec == null)
                   {
-                     throw new IllegalStateException("Cannot find message " + messageID);
+                     log.warn("Cannot find message "  + messageID + " to update delivery count");
                   }
-   
-                  rec.deliveryCount = encoding.count;
+                  else
+                  {
+                     rec.deliveryCount = encoding.count;
+                  }
                }
 
                break;
