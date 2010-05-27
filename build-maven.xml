@@ -147,6 +147,8 @@
        <!-- install the jar -->
        <exec executable="mvn">
         <arg value="install:install-file"/>
+        <!-- uncomment the following line to deploy to the JBoss 5 repository -->
+        <!-- arg value="-Dmaven.repo.local=/work/eap-location/maven-repository"/ -->
         <arg value="-DgroupId=org.hornetq"/>
         <arg value="-DartifactId=${artifact.id}"/>
         <arg value="-Dversion=${hornetq.version}"/>
@@ -157,6 +159,8 @@
        <exec executable="mvn">
         <arg value="install:install-file"/>
         <arg value="-DgroupId=org.hornetq"/>
+        <!-- uncomment the following line to deploy to the JBoss 5 repository -->
+        <!-- arg value="-Dmaven.repo.local=/work/eap-location/maven-repository"/ -->
         <arg value="-DartifactId=${artifact.id}"/>
         <arg value="-Dversion=${hornetq.version}"/>
         <arg value="-Dpackaging=jar"/>
