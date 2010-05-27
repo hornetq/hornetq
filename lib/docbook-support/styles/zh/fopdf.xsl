@@ -27,10 +27,11 @@
          don't want that -->
     <xsl:param name="xref.with.number.and.title" select="0"/>
 
+<!--
     <xsl:param name="body.font.family">FangSong</xsl:param>
     <xsl:param name="title.font.family">FangSong</xsl:param>
     <xsl:param name="monospace.font.family">FangSong</xsl:param>
-    
+-->    
     <xsl:template match="processing-instruction('lb')">
         <fo:block>
             <xsl:text> </xsl:text>

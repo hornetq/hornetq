@@ -94,6 +94,7 @@ the location of this file.
           <font-triplet name="ArialMT" style="normal" weight="bold"/>
         </font>
         -->
+        <!--
         <font metrics-url="file:///home/howard/tmp/fop/fop-0.95/ttchdzb96.xml" kerning="yes"
              embed-url="file:///usr/share/fonts/truetype/wqy/wqy-zenhei.ttc">
             <font-triplet name="WenQuanYi Zen Hei" style="normal" weight="normal"/>
@@ -105,7 +106,7 @@ the location of this file.
             <font-triplet name="FangSong" style="italic" weight="normal"/>
             <font-triplet name="FangSong" style="oblique" weight="bold"/>
         </font>
-
+        -->
         <!-- automatically detect operating system installed fonts -->
         <!-- <auto-detect/>   -->
 
