@@ -460,6 +460,11 @@ public class ServerConsumerImpl implements ServerConsumer
          // No flow control
          availableCredits = null;
       }
+      else if(credits == 0)
+      {
+         //reset, used on slow consumers
+         availableCredits.set(0);
+      }
       else
       {
          int previous = availableCredits.getAndAdd(credits);

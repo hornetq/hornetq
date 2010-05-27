@@ -264,7 +264,11 @@ public class ClientConsumerImpl implements ClientConsumerInternal
                   if (seq >= forceDeliveryCount.longValue())
                   {
                      // forced delivery messages are discarded, nothing has been delivered by the queue
-                     return null;
+                     if (forcingDelivery)
+                     {
+                        resetIfSlowConsumer();
+                        return null;
+                     }
                   }
                   else
                   {
@@ -307,6 +311,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
             }
             else
             {
+               resetIfSlowConsumer();
                return null;
             }
          }
@@ -700,6 +705,15 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          }
          slowConsumerInitialCreditSent = true;
          sendCredits(1);
+      }
+   }
+
+   private void resetIfSlowConsumer()
+   {
+      if(clientWindowSize == 0)
+      {
+         slowConsumerInitialCreditSent = false;
+         sendCredits(0);
       }
    }
 

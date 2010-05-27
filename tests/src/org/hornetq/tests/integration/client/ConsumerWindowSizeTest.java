@@ -73,7 +73,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
 
    
    // https://jira.jboss.org/jira/browse/HORNETQ-385
-   public void disabled_testReceiveImmediateWithZeroWindow() throws Exception
+   public void testReceiveImmediateWithZeroWindow() throws Exception
    {
       HornetQServer server = createServer(false, isNetty());
       try
@@ -110,7 +110,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
 
          ClientMessage sent = senderSession.createMessage(true);
          sent.putStringProperty("hello", "world");
-
+         System.out.println("sending message");
          producer.send(sent);
 
          senderSession.commit();
@@ -137,7 +137,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
    }
    
    // https://jira.jboss.org/jira/browse/HORNETQ-385
-   public void disabled_testReceiveImmediateWithZeroWindow2() throws Exception
+   public void testReceiveImmediateWithZeroWindow2() throws Exception
    {
       HornetQServer server = createServer(true);
 
@@ -175,7 +175,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
          prod.send(msg);
          sessionProd.commit();
 
-         message = consumer.receive(1000);
+         message = consumer.receive(10000);
          assertNotNull(message);
          System.out.println(message.getStringProperty("hello"));
          message.acknowledge();
@@ -191,7 +191,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
    }
    
    // https://jira.jboss.org/jira/browse/HORNETQ-385
-   public void disabled_testReceiveImmediateWithZeroWindow3() throws Exception
+   public void testReceiveImmediateWithZeroWindow3() throws Exception
    {
       HornetQServer server = createServer(false, isNetty());
       try
@@ -254,7 +254,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
 
    }
    
-   public void disabled_testReceiveImmediateWithZeroWindow4() throws Exception
+   public void testReceiveImmediateWithZeroWindow4() throws Exception
    {
       HornetQServer server = createServer(false, isNetty());
       try
