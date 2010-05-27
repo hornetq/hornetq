@@ -67,7 +67,7 @@ class StompUtils
       {
          msg.putStringProperty(ClientMessageImpl.REPLYTO_HEADER_NAME, SimpleString.toSimpleString((String)replyTo));
       }
-      String expiration = (String)headers.remove(Stomp.Headers.Send.REPLY_TO);
+      String expiration = (String)headers.remove(Stomp.Headers.Send.EXPIRATION_TIME);
       if (expiration != null)
       {
          msg.setExpiration(Long.parseLong(expiration));
