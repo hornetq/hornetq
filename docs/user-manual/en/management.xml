@@ -927,7 +927,7 @@ System.out.format("%s message(s) in the queue (since last sample: %s)\n",
             on the queue in the admin console. The following section explains these in more detail</para>
          <para>After highlighting the configuration you will see the following screen</para>
          <para>
-            <graphic fileref="images/console1.png" align="center"/>
+            <graphic fileref="images/console1.png" scalefit="1" width="500" align="center"/>
         </para>
          <para>The name and JNDI name cant be changed, if you want to change these recreate the queue with the appropriate
          settings. The rest of the configuration options, apart from security roles, relate to address settings for a particular
