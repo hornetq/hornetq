@@ -500,6 +500,16 @@ public class MDBMessageSendTxExample implements MessageListener
                             <entry>the batch size (in bytes) between acknowledgements when using
                                  DUPS_OK_ACKNOWLEDGE mode</entry>
                         </row>
+                    </tbody>
+                </tgroup>
+            </table>
+            <para>Continued..</para>
+            <informaltable frame="topbot">
+                <tgroup cols="3">
+                    <colspec colname="c1" colnum="1"/>
+                    <colspec colname="c2" colnum="2"/>
+                    <colspec colname="c3" colnum="3"/>
+                    <tbody>
                         <row>
                             <entry>
                                <link linkend="configuration.connection-factory.transaction-batch-size">TransactionBatchSize</link>
@@ -647,7 +657,7 @@ public class MDBMessageSendTxExample implements MessageListener
                         </row>
                     </tbody>
                 </tgroup>
-            </table>
+            </informaltable>
         </section>
         <section>
             <title>Adapter Outbound Configuration</title>

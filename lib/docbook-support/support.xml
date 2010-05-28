@@ -144,6 +144,8 @@
             outfile="${build.dir}/${lang}/pdf/${pdf.name}" />
 
         <!-- Delete temporary files. -->
+        <delete file="${build.dir}/${lang}/pdf/docbook_fop.tmp"/>
+        <delete dir="${build.dir}/${lang}/pdf/images"/>
     </target>
 
     <target name="lang.dochtml">
@@ -204,6 +206,7 @@
         <!-- Copy images and CSS for HTML documentation, language specific. -->
         <copy todir="${build.dir}/${lang}/shared/images">
             <fileset dir="${basedir}/${lang}/images">
+
                 <include name="**/*.png"/>
                 <include name="**/*.gif"/>
             </fileset>

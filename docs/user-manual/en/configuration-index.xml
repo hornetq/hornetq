@@ -92,6 +92,19 @@
                             <entry>true means that the journal directory will be created</entry>
                             <entry>true</entry>
                         </row>
+                    </tbody>
+                </tgroup>
+            </table>
+            <para></para>
+            <para></para>
+            <para>Continued..</para>
+            <informaltable frame="topbot">
+                <tgroup cols="4">
+                    <colspec colname="c1" colnum="1"/>
+                    <colspec colname="c2" colnum="2"/>
+                    <colspec colname="c3" colnum="3"/>
+                    <colspec colname="c4" colnum="4"/>
+                    <tbody>
                         <row>
                             <entry><link linkend="using-server.configuration"
                                     >file-deployment-enabled</link></entry>
@@ -961,7 +974,7 @@
                         </row>
                     </tbody>
                 </tgroup>
-            </table>
+            </informaltable>
         </section>
         <section>
             <title>hornetq-jms.xml</title>
@@ -991,6 +1004,19 @@
                             <entry>a list of connection factories to create and add to JNDI</entry>
                             <entry/>
                         </row>
+                    </tbody>
+                </tgroup>
+            </table>
+            <para></para>
+            <para></para>
+            <para>Continued..</para>
+            <informaltable frame="topbot">
+                <tgroup cols="4">
+                    <colspec colname="c1" colnum="1"/>
+                    <colspec colname="c2" colnum="2"/>
+                    <colspec colname="c3" colnum="3"/>
+                    <colspec colname="c4" colnum="4"/>
+                    <tbody>
                         <row>
                             <entry id="configuration.connection-factory.auto-group">
                                <link linkend="message-grouping.jmsconfigure">connection-factory.auto-group</link>
@@ -1312,7 +1338,7 @@
                         </row>
                     </tbody>
                 </tgroup>
-            </table>
+            </informaltable>
         </section>
     </section>
 </chapter>
