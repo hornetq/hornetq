@@ -1453,7 +1453,6 @@ public class JournalImpl implements TestableJournal
       try
       {
          JournalImpl.trace("Starting compacting operation on journal");
-         JournalImpl.log.debug("Starting compacting operation on journal");
 
          // We need to guarantee that the journal is frozen for this short time
          // We don't freeze the journal as we compact, only for the short time where we replace records
@@ -1593,7 +1592,7 @@ public class JournalImpl implements TestableJournal
          renameFiles(dataFilesToProcess, newDatafiles);
          deleteControlFile(controlFile);
 
-         JournalImpl.log.debug("Finished compacting on journal");
+         JournalImpl.trace("Finished compacting on journal");
 
       }
       finally
@@ -2638,6 +2637,13 @@ public class JournalImpl implements TestableJournal
     */
    private void addFreeFile(final JournalFile file) throws Exception
    {
+      if (file.getFile().size() != this.getFileSize())
+      {
+         // This will happen during cleanup
+         log.debug("Deleting "  + file + ".. as it doesn't have the standard size", new Exception ("trace"));
+         file.getFile().delete();
+      }
+      else
       // FIXME - size() involves a scan!!!
       if (freeFiles.size() + dataFiles.size() + 1 + openedFiles.size() < minFiles)
       {
