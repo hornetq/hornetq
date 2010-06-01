@@ -336,7 +336,7 @@ public class NettyConnector implements Connector
          {
             List<ChannelHandler> handlers = new ArrayList<ChannelHandler>();
 
-            if (sslEnabled)
+            if (sslEnabled && !useServlet)
             {
                SSLEngine engine = context.createSSLEngine();
 
