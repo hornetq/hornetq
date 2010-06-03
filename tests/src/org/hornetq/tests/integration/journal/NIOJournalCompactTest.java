@@ -784,8 +784,6 @@ public class NIOJournalCompactTest extends JournalImplTestBase
       for (File file : files)
       {
          assertEquals("File "  + file + " doesn't have the expected number of bytes", fileSize, file.length());
-         
-         System.out.println("File " +  file);
       }
       
       super.tearDown();
