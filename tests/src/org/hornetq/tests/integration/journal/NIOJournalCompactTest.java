@@ -14,6 +14,7 @@
 package org.hornetq.tests.integration.journal;
 
 import java.io.File;
+import java.io.FilenameFilter;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -204,7 +205,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
          performNonTransactionalDelete = false;
       }
 
-      setup(50, 60 * 1024, false);
+      setup(2, 60 * 1024, false);
 
       ArrayList<Long> liveIDs = new ArrayList<Long>();
 
@@ -764,6 +765,30 @@ public class NIOJournalCompactTest extends JournalImplTestBase
       deleteDirectory(file);
 
       file.mkdir();
+   }
+   
+   protected void tearDown() throws Exception
+   {
+      
+      File testDir = new File(getTestDir());
+      
+      File files[] = testDir.listFiles(new FilenameFilter()
+      {
+         
+         public boolean accept(File dir, String name)
+         {
+            return name.startsWith(filePrefix) && name.endsWith(fileExtension);
+         }
+      });
+      
+      for (File file : files)
+      {
+         assertEquals("File "  + file + " doesn't have the expected number of bytes", fileSize, file.length());
+         
+         System.out.println("File " +  file);
+      }
+      
+      super.tearDown();
    }
 
    /* (non-Javadoc)
