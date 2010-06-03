@@ -378,7 +378,6 @@ public class ServerConsumerImpl implements ServerConsumer
                {
                   //We don't decrement delivery count if the client failed, since there's a possibility that refs were actually delivered but we just didn't get any acks for them
                   //before failure
-                  log.info("decrementing delivery count");
                   ref.decrementDeliveryCount();
                }
 
