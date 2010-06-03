@@ -766,26 +766,26 @@ public class NIOJournalCompactTest extends JournalImplTestBase
 
       file.mkdir();
    }
-   
+
    protected void tearDown() throws Exception
    {
-      
+
       File testDir = new File(getTestDir());
-      
+
       File files[] = testDir.listFiles(new FilenameFilter()
       {
-         
+
          public boolean accept(File dir, String name)
          {
             return name.startsWith(filePrefix) && name.endsWith(fileExtension);
          }
       });
-      
+
       for (File file : files)
       {
-         assertEquals("File "  + file + " doesn't have the expected number of bytes", fileSize, file.length());
+         assertEquals("File " + file + " doesn't have the expected number of bytes", fileSize, file.length());
       }
-      
+
       super.tearDown();
    }
 
