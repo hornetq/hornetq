@@ -283,6 +283,29 @@ public class MDBMessageSendTxExample implements MessageListener
             EJBs (including Session, Entity and Message-Driven Beans), Servlets (including jsps) and
             custom MBeans.</para>
     </section>
+   <section>
+      <title>MDB and Consumer pool size</title>
+      <para>Most application servers, including JBoss, allow you to configure how many MDB's there are in a pool. In
+         Jboss this is configured via the <literal>MaxPoolSize</literal> parameter in the ejb3-interceptors-aop.xml file. Configuring
+         this has no actual effect on how many sessions/consumers there actually are created. This is because the Resource
+      Adaptor implementation knows nothing about the application servers MDB implementation. So even if you set the MDB
+         pool size to 1, 15 sessions/consumers will be created (this is the default). If you want to limit how many
+         sessions/consumers are created then you need to set the <literal>maxSession</literal> parameter either on the
+      resource adapter itself or via an an Activation Config Property on the MDB itself</para>
+        <programlisting>@MessageDriven(name = "MDBMessageSendTxExample",
+               activationConfig =
+                     {
+                        @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
+                        @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/testQueue"),
+                        @ActivationConfigProperty(propertyName = "maxSession", propertyValue = "1")
+                     })
+@TransactionManagement(value= TransactionManagementType.CONTAINER)
+@TransactionAttribute(value= TransactionAttributeType.REQUIRED)
+@ResourceAdapter("hornetq-ra.rar")
+public class MyMDB implements MessageListener
+{ ....}
+      </programlisting>
+   </section>
     <section>
         <title>Configuring the JCA Adaptor</title>
         <para>The Java Connector Architecture (JCA) Adapter is what allows HornetQ to be integrated
