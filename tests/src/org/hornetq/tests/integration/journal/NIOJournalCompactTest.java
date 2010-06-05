@@ -23,6 +23,8 @@ import java.util.concurrent.CountDownLatch;
 import junit.framework.Assert;
 
 import org.hornetq.api.core.Pair;
+import org.hornetq.core.journal.PreparedTransactionInfo;
+import org.hornetq.core.journal.RecordInfo;
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.journal.impl.AbstractJournalUpdateTask;
@@ -180,6 +182,57 @@ public class NIOJournalCompactTest extends JournalImplTestBase
    public void testCompactWithConcurrentAppend() throws Exception
    {
       internalCompactTest(false, false, true, true, false, false, false, false, false, false, true, true, true);
+   }
+   
+   public void testCompactFirstFileReclaimed() throws Exception
+   {
+
+      setup(2, 60 * 1024, false);
+
+      final byte recordType = (byte)0;
+      
+      journal = new JournalImpl(fileSize, minFiles, 0, 0, fileFactory, filePrefix, fileExtension, maxAIO);
+      
+      journal.start();
+      
+      journal.loadInternalOnly();
+      
+      journal.appendAddRecord(1, recordType, "test".getBytes(), true);
+      
+      journal.forceMoveNextFile();
+      
+      
+      journal.appendUpdateRecord(1, recordType, "update".getBytes(), true);
+      
+      journal.appendDeleteRecord(1, true);
+      
+      journal.appendAddRecord(2, recordType, "finalRecord".getBytes(), true);
+
+      
+      for (int i = 10 ; i < 100; i++)
+      {
+         journal.appendAddRecord(i, recordType, ("tst" + i).getBytes(), true);
+         journal.forceMoveNextFile();
+         journal.appendUpdateRecord(i, recordType, ("uptst" + i).getBytes(), true);
+         journal.appendDeleteRecord(i, true);
+      }
+      
+      journal.compact();
+      
+      journal.stop();
+      
+      List<RecordInfo> records = new ArrayList<RecordInfo>();
+      
+      List<PreparedTransactionInfo> preparedRecords = new ArrayList<PreparedTransactionInfo>();
+      
+      journal.start();
+
+      journal.load(records, preparedRecords, null);
+      
+      assertEquals(1, records.size());
+         
+
+   
    }
 
    private void internalCompactTest(final boolean preXA, // prepare before compact

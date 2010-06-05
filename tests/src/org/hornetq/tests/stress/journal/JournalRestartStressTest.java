@@ -57,18 +57,16 @@ public class JournalRestartStressTest extends ServiceTestBase
       server2.getConfiguration().setJournalCompactMinFiles(3);
       server2.getConfiguration().setJournalCompactPercentage(50);
 
-      
-      for (int i = 0 ; i < 10; i++)
+      for (int i = 0; i < 10; i++)
       {
          server2.start();
-         
+
          ClientSessionFactory sf = createFactory(false);
          sf.setMinLargeMessageSize(1024 * 1024);
          sf.setBlockOnDurableSend(false);
-   
 
          ClientSession session = sf.createSession(true, true);
-         
+
          try
          {
             session.createQueue("slow-queue", "slow-queue");
@@ -79,8 +77,7 @@ public class JournalRestartStressTest extends ServiceTestBase
 
          session.start();
          ClientConsumer consumer = session.createConsumer("slow-queue");
-         
-         
+
          while (true)
          {
             System.out.println("Received message from previous");
@@ -91,15 +88,16 @@ public class JournalRestartStressTest extends ServiceTestBase
             }
             msg.acknowledge();
          }
-            
-          
-   
+
+         session.close();
+
          produceMessages(sf, 30000);
-         
+
          server2.stop();
       }
 
    }
+
    // Package protected ---------------------------------------------
 
    /**
@@ -110,19 +108,17 @@ public class JournalRestartStressTest extends ServiceTestBase
     * @throws Throwable
     */
    private void produceMessages(final ClientSessionFactory sf, final int NMSGS) throws HornetQException,
-                                                                   InterruptedException,
-                                                                   Throwable
+                                                                               InterruptedException,
+                                                                               Throwable
    {
- 
+
       final int TIMEOUT = 5000;
-      
+
       System.out.println("sending " + NMSGS + " messages");
 
-
       final ClientSession sessionSend = sf.createSession(true, true);
-      
+
       ClientProducer prod2 = sessionSend.createProducer("slow-queue");
-      
 
       try
       {
@@ -139,6 +135,7 @@ public class JournalRestartStressTest extends ServiceTestBase
 
       Thread tReceive = new Thread()
       {
+         @Override
          public void run()
          {
             try
@@ -149,8 +146,8 @@ public class JournalRestartStressTest extends ServiceTestBase
                {
                   if (i % 500 == 0)
                   {
-                     double percent = (double)i / (double) NMSGS;
-                     System.out.println("msgs " + i + " of "  + NMSGS +  ", " + (int)(percent * 100) + "%");
+                     double percent = (double)i / (double)NMSGS;
+                     System.out.println("msgs " + i + " of " + NMSGS + ", " + (int)(percent * 100) + "%");
                      Thread.sleep(100);
                   }
 
@@ -179,11 +176,14 @@ public class JournalRestartStressTest extends ServiceTestBase
       for (int i = 0; i < NMSGS; i++)
       {
          ClientMessage msg = sessionSend.createMessage(true);
-         
+
          int size = RandomUtil.randomPositiveInt() % 10024;
 
-         if (size == 0) size = 10 * 1024;
-         
+         if (size == 0)
+         {
+            size = 10 * 1024;
+         }
+
          byte[] buffer = new byte[size];
 
          random.nextBytes(buffer);
@@ -191,7 +191,7 @@ public class JournalRestartStressTest extends ServiceTestBase
          msg.getBodyBuffer().writeBytes(buffer);
 
          prod.send(msg);
-         
+
          if (i % 5000 == 0)
          {
             prod2.send(msg);
@@ -203,6 +203,7 @@ public class JournalRestartStressTest extends ServiceTestBase
 
       sessionReceive.close();
       sessionSend.close();
+      sf.close();
 
       for (Throwable e : errors)
       {

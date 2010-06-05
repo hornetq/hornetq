@@ -2277,6 +2277,11 @@ public class JournalImpl implements TestableJournal
          // compacting is disabled
          return;
       }
+      
+      if (state != JournalImpl.STATE_LOADED)
+      {
+         return;
+      }
 
       JournalFile[] dataFiles = getDataFiles();
 
@@ -2536,6 +2541,16 @@ public class JournalImpl implements TestableJournal
 
       try
       {
+
+         state = JournalImpl.STATE_STOPPED;
+         
+         compactorExecutor.shutdown();
+         
+         if (!compactorExecutor.awaitTermination(120, TimeUnit.SECONDS))
+         {
+            JournalImpl.log.warn("Couldn't stop compactor executor after 120 seconds");
+         }
+         
          filesExecutor.shutdown();
 
          if (!filesExecutor.awaitTermination(60, TimeUnit.SECONDS))
@@ -2564,8 +2579,6 @@ public class JournalImpl implements TestableJournal
          freeFiles.clear();
 
          openedFiles.clear();
-
-         state = JournalImpl.STATE_STOPPED;
       }
       finally
       {
