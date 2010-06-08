@@ -453,13 +453,16 @@ public class ServerConsumerImpl implements ServerConsumer
    }
 
    public void receiveCredits(final int credits) throws Exception
-   {
+   {      
       if (credits == -1)
       {
          // No flow control
          availableCredits = null;
+         
+         //There may be messages already in the queue
+         promptDelivery();
       }
-      else if(credits == 0)
+      else if (credits == 0)
       {
          //reset, used on slow consumers
          availableCredits.set(0);
