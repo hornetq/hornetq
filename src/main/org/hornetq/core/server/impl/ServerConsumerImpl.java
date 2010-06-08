@@ -85,7 +85,7 @@ public class ServerConsumerImpl implements ServerConsumer
 
    private final Object lock = new Object();
 
-   private AtomicInteger availableCredits = new AtomicInteger(0);
+   private volatile AtomicInteger availableCredits = new AtomicInteger(0);
 
    private boolean started;
 
