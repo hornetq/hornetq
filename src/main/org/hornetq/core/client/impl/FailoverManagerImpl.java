@@ -14,6 +14,8 @@
 package org.hornetq.core.client.impl;
 
 import java.lang.ref.WeakReference;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -34,6 +36,7 @@ import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.SessionFailureListener;
+import org.hornetq.api.core.client.loadbalance.ConnectionLoadBalancingPolicy;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.protocol.core.Channel;
 import org.hornetq.core.protocol.core.ChannelHandler;
@@ -486,7 +489,8 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
                else
                {
                   HornetQException me = new HornetQException(HornetQException.INTERNAL_ERROR,
-                                                             "Failed to create session", t);
+                                                             "Failed to create session",
+                                                             t);
 
                   throw me;
                }
@@ -1033,17 +1037,24 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
 
    private ConnectorFactory instantiateConnectorFactory(final String connectorFactoryClassName)
    {
-      ClassLoader loader = Thread.currentThread().getContextClassLoader();
-      try
+      return AccessController.doPrivileged(new PrivilegedAction<ConnectorFactory>()
       {
-         Class<?> clazz = loader.loadClass(connectorFactoryClassName);
-         return (ConnectorFactory)clazz.newInstance();
-      }
-      catch (Exception e)
-      {
-         throw new IllegalArgumentException("Error instantiating connector factory \"" + connectorFactoryClassName +
-                                            "\"", e);
-      }
+         public ConnectorFactory run()
+         {
+            ClassLoader loader = Thread.currentThread().getContextClassLoader();
+            try
+            {
+               Class<?> clazz = loader.loadClass(connectorFactoryClassName);
+               return (ConnectorFactory)clazz.newInstance();
+            }
+            catch (Exception e)
+            {
+               throw new IllegalArgumentException("Error instantiating connector factory \"" + connectorFactoryClassName +
+                                                  "\"", e);
+            }
+         }
+      });
+
    }
 
    private void lockChannel1()
