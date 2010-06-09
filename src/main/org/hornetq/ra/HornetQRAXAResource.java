@@ -101,7 +101,6 @@ public class HornetQRAXAResource implements XAResource
       }
       finally
       {
-         managedConnection.setInManagedTx(false);
          managedConnection.unlock();
       }
    }
