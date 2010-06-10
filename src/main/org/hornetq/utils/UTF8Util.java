@@ -36,7 +36,7 @@ public class UTF8Util
 
    private static final Logger log = Logger.getLogger(UTF8Util.class);
 
-   private static final boolean isDebug = UTF8Util.log.isDebugEnabled();
+   private static final boolean isTrace = UTF8Util.log.isTraceEnabled();
 
    private static ThreadLocal<SoftReference<StringUtilBuffer>> currenBuffer = new ThreadLocal<SoftReference<StringUtilBuffer>>();
 
@@ -73,9 +73,10 @@ public class UTF8Util
       }
       else
       {
-         if (UTF8Util.isDebug)
+         if (UTF8Util.isTrace)
          {
-            UTF8Util.log.debug("Saving string with utfSize=" + len + " stringSize=" + str.length());
+            // This message is too verbose for debug, that's why we are using trace here
+            UTF8Util.log.trace("Saving string with utfSize=" + len + " stringSize=" + str.length());
          }
 
          int stringLength = str.length();
@@ -122,9 +123,10 @@ public class UTF8Util
          buffer.resizeCharBuffer(size);
       }
 
-      if (UTF8Util.isDebug)
+      if (UTF8Util.isTrace)
       {
-         UTF8Util.log.debug("Reading string with utfSize=" + size);
+         // This message is too verbose for debug, that's why we are using trace here
+         UTF8Util.log.trace("Reading string with utfSize=" + size);
       }
 
       int count = 0;
