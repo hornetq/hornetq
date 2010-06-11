@@ -13,7 +13,9 @@
 
 package org.hornetq.integration.jboss.security;
 
+import java.security.AccessController;
 import java.security.Principal;
+import java.security.PrivilegedAction;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -88,9 +90,9 @@ public class JBossASSecurityManager implements HornetQSecurityManager, HornetQCo
                                       final Set<Role> roles,
                                       final CheckType checkType)
    {
-      if(allowClientLogin && SecurityContextAssociation.isClient())
+      if (allowClientLogin && SecurityContextAssociation.isClient())
       {
-         return authoriseOnClientLogin? useClientAuthentication(roles, checkType):true;
+         return authoriseOnClientLogin ? useClientAuthentication(roles, checkType) : true;
       }
       else
       {
@@ -98,63 +100,85 @@ public class JBossASSecurityManager implements HornetQSecurityManager, HornetQCo
       }
    }
 
-   private boolean useConnectionAuthentication(final String user, final String password, final Set<Role> roles, final CheckType checkType)
+   private boolean useConnectionAuthentication(final String user,
+                                               final String password,
+                                               final Set<Role> roles,
+                                               final CheckType checkType)
    {
-      SimplePrincipal principal = user == null ? null : new SimplePrincipal(user);
-
-      char[] passwordChars = null;
-
-      if (password != null)
+      return AccessController.doPrivileged(new PrivilegedAction<Boolean>()
       {
-         passwordChars = password.toCharArray();
-      }
-
-      Subject subject = new Subject();
-
-      boolean authenticated = authenticationManager.isValid(principal, passwordChars, subject);
-      // Authenticate. Successful authentication will place a new SubjectContext on thread local,
-      // which will be used in the authorization process. However, we need to make sure we clean up
-      // thread local immediately after we used the information, otherwise some other people
-      // security my be screwed up, on account of thread local security stack being corrupted.
-      if (authenticated)
-      {
-         pushSecurityContext(principal, passwordChars, subject);
-         Set<Principal> rolePrincipals = getRolePrincipals(checkType, roles);
-
-         authenticated = realmMapping.doesUserHaveRole(principal, rolePrincipals);
-
-         if (trace)
+         public Boolean run()
          {
-            JBossASSecurityManager.log.trace("user " + user + (authenticated ? " is " : " is NOT ") + "authorized");
+
+            SimplePrincipal principal = user == null ? null : new SimplePrincipal(user);
+
+            char[] passwordChars = null;
+
+            if (password != null)
+            {
+               passwordChars = password.toCharArray();
+            }
+
+            Subject subject = new Subject();
+
+            boolean authenticated = authenticationManager.isValid(principal, passwordChars, subject);
+            // Authenticate. Successful authentication will place a new SubjectContext on thread local,
+            // which will be used in the authorization process. However, we need to make sure we clean up
+            // thread local immediately after we used the information, otherwise some other people
+            // security my be screwed up, on account of thread local security stack being corrupted.
+            if (authenticated)
+            {
+               pushSecurityContext(principal, passwordChars, subject);
+               Set<Principal> rolePrincipals = getRolePrincipals(checkType, roles);
+
+               authenticated = realmMapping.doesUserHaveRole(principal, rolePrincipals);
+
+               if (trace)
+               {
+                  JBossASSecurityManager.log.trace("user " + user +
+                                                   (authenticated ? " is " : " is NOT ") +
+                                                   "authorized");
+               }
+               popSecurityContext();
+            }
+            return authenticated;
          }
-         popSecurityContext();
-      }
-      return authenticated;
+      });
    }
 
    private boolean useClientAuthentication(final Set<Role> roles, final CheckType checkType)
    {
-      SecurityContext sc = SecurityContextAssociation.getSecurityContext();
-      Principal principal = sc.getUtil().getUserPrincipal();
-
-      char[] passwordChars = (char[]) sc.getUtil().getCredential();
-
-      Subject subject = sc.getSubjectInfo().getAuthenticatedSubject();
-
-      boolean authenticated = authenticationManager.isValid(principal, passwordChars, subject);
-
-      if (authenticated)
+      return AccessController.doPrivileged(new PrivilegedAction<Boolean>()
       {
-         Set<Principal> rolePrincipals = getRolePrincipals(checkType, roles);
-
-         authenticated = realmMapping.doesUserHaveRole(principal, rolePrincipals);
-
-         if (trace)
+         public Boolean run()
          {
-            JBossASSecurityManager.log.trace("user " + principal.getName() + (authenticated ? " is " : " is NOT ") + "authorized");
+            SecurityContext sc = SecurityContextAssociation.getSecurityContext();
+            Principal principal = sc.getUtil().getUserPrincipal();
+
+            char[] passwordChars = (char[])sc.getUtil().getCredential();
+
+            Subject subject = sc.getSubjectInfo().getAuthenticatedSubject();
+
+            boolean authenticated = authenticationManager.isValid(principal, passwordChars, subject);
+
+            if (authenticated)
+            {
+               Set<Principal> rolePrincipals = getRolePrincipals(checkType, roles);
+
+               authenticated = realmMapping.doesUserHaveRole(principal, rolePrincipals);
+
+               if (trace)
+               {
+                  JBossASSecurityManager.log.trace("user " + principal.getName() +
+                                                   (authenticated ? " is " : " is NOT ") +
+                                                   "authorized");
+               }
+            }
+            return authenticated;
          }
-      }
-      return authenticated;
+
+      });
+
    }
 
    private void popSecurityContext()
