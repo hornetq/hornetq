@@ -522,6 +522,7 @@ public class ServerSessionPacketHandler implements ChannelHandler, CloseListener
          {
             if (requiresResponse)
             {
+               log.warn("Sending unexpected exception to the client", t);
                HornetQException hqe = new HornetQException(HornetQException.INTERNAL_ERROR);
                hqe.initCause(t);
                response = new HornetQExceptionMessage(hqe);
