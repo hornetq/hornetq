@@ -19,6 +19,7 @@ import java.security.PrivilegedAction;
 
 import javax.security.auth.Subject;
 
+import org.hornetq.core.logging.Logger;
 import org.jboss.security.SecurityContext;
 import org.jboss.security.SecurityContextAssociation;
 import org.jboss.security.SecurityContextFactory;
@@ -31,6 +32,8 @@ import org.jboss.security.SecurityContextFactory;
  */
 class SecurityActions
 {
+   private static final Logger log = Logger.getLogger(JBossASSecurityManager.class);
+   
    interface PrincipalInfoAction
    {
       PrincipalInfoAction PRIVILEGED = new PrincipalInfoAction()
@@ -44,23 +47,40 @@ class SecurityActions
             {
                public Object run()
                {
-                  // SecurityAssociation.pushSubjectContext(subject, principal, credential);
-                  SecurityContext sc = SecurityContextAssociation.getSecurityContext();
-                  if (sc == null)
+
+                  try
                   {
-                     try
+                     log.info("========================================================");
+                     log.info("Setting subject = " + subject);
+                     // SecurityAssociation.pushSubjectContext(subject, principal, credential);
+                     SecurityContext sc = SecurityContextAssociation.getSecurityContext();
+                     if (sc == null)
                      {
-                        sc = SecurityContextFactory.createSecurityContext(principal,
-                                                                          credential,
-                                                                          subject,
-                                                                          securityDomain);
+                        try
+                        {
+                           sc = SecurityContextFactory.createSecurityContext(principal,
+                                                                             credential,
+                                                                             subject,
+                                                                             securityDomain);
+                        }
+                        catch (Exception e)
+                        {
+                           throw new RuntimeException(e);
+                        }
                      }
-                     catch (Exception e)
+                     else
                      {
-                        throw new RuntimeException(e);
+                        sc.getUtil().createSubjectInfo(principal, credential, subject);
                      }
+                     
+                     SecurityContextAssociation.setSecurityContext(sc);
+                     log.info("========================================================");
                   }
-                  SecurityContextAssociation.setSecurityContext(sc);
+                  catch (Throwable t)
+                  {
+                     log.warn("An error happened while setting the context", t);
+                  }
+                  
                   return null;
                }
             });
