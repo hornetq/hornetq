@@ -89,10 +89,6 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
    /* use local tx instead of XA*/
    private Boolean localTx;
 
-   private String transactionManagerLocatorClass = "org.hornetq.integration.jboss.tm.JBoss5TransactionManagerLocator";
-
-   private String transactionManagerLocatorMethod = "getTm";
-   
    /**
     * Constructor
     */
@@ -537,22 +533,22 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
 
    public void setTransactionManagerLocatorClass(final String transactionManagerLocatorClass)
    {
-      this.transactionManagerLocatorClass = transactionManagerLocatorClass;
+      log.info("TransactionManagerLocatorClass property on the Activation Setup is deprecated and it has no use. Use the property on the HornetQ Resource Adapter if you need");
    }
 
    public String getTransactionManagerLocatorClass()
    {
-      return transactionManagerLocatorClass;
+      return null;
    }
 
    public String getTransactionManagerLocatorMethod()
    {
-      return transactionManagerLocatorMethod;
+      return null;
    }
 
    public void setTransactionManagerLocatorMethod(final String transactionManagerLocatorMethod)
    {
-      this.transactionManagerLocatorMethod = transactionManagerLocatorMethod;
+      log.info("setTransactionManagerLocatorMethod property on the Activation Setup is deprecated and it has no use. Use the property on the HornetQ Resource Adapter if you need");
    }
 
    /**

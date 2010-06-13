@@ -160,6 +160,7 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
 
       HornetQRAManagedConnection mc = new HornetQRAManagedConnection(this,
                                                                      cri,
+                                                                     ra.getTM(),
                                                                      credential.getUserName(),
                                                                      credential.getPassword());
 

@@ -291,7 +291,7 @@ public class HornetQActivation
          try
          {
             session = setupSession();
-            HornetQMessageHandler handler = new HornetQMessageHandler(this, session, i);
+            HornetQMessageHandler handler = new HornetQMessageHandler(this, ra.getTM(), session, i);
             handler.setup();
             session.start();
             handlers.add(handler);

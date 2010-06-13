@@ -44,6 +44,8 @@ import javax.resource.spi.ManagedConnection;
 import javax.resource.spi.ManagedConnectionMetaData;
 import javax.resource.spi.SecurityException;
 import javax.security.auth.Subject;
+import javax.transaction.SystemException;
+import javax.transaction.TransactionManager;
 import javax.transaction.xa.XAResource;
 
 import org.hornetq.core.logging.Logger;
@@ -98,6 +100,8 @@ public class HornetQRAManagedConnection implements ManagedConnection, ExceptionL
    private XASession xaSession;
 
    private XAResource xaResource;
+   
+   private final TransactionManager tm;
 
    private boolean inManagedTx;
 
@@ -110,6 +114,7 @@ public class HornetQRAManagedConnection implements ManagedConnection, ExceptionL
     */
    public HornetQRAManagedConnection(final HornetQRAManagedConnectionFactory mcf,
                                      final HornetQRAConnectionRequestInfo cri,
+                                     final TransactionManager tm,
                                      final String userName,
                                      final String password) throws ResourceException
    {
@@ -120,6 +125,7 @@ public class HornetQRAManagedConnection implements ManagedConnection, ExceptionL
 
       this.mcf = mcf;
       this.cri = cri;
+      this.tm = tm;
       this.userName = userName;
       this.password = password;
       eventListeners = Collections.synchronizedList(new ArrayList<ConnectionEventListener>());
@@ -560,7 +566,7 @@ public class HornetQRAManagedConnection implements ManagedConnection, ExceptionL
     */
    protected Session getSession() throws JMSException
    {
-      if (xaResource != null && inManagedTx)
+      if (xaResource != null && isManagedTx())
       {
          if (HornetQRAManagedConnection.trace)
          {
@@ -571,7 +577,7 @@ public class HornetQRAManagedConnection implements ManagedConnection, ExceptionL
       } 
       else
       {
-         if (inManagedTx)
+         if (isManagedTx())
          {
             if (HornetQRAManagedConnection.trace)
             {
@@ -799,6 +805,28 @@ public class HornetQRAManagedConnection implements ManagedConnection, ExceptionL
       catch (JMSException je)
       {
          throw new ResourceException(je.getMessage(), je);
+      }
+   }
+   
+   private boolean isManagedTx()
+   {
+      return inManagedTx || isXA();
+   }
+
+   /**
+    * @return
+    * @throws SystemException
+    */
+   private boolean isXA()
+   {
+      try
+      {
+         return (tm != null && tm.getTransaction() != null);
+      }
+      catch (Exception e)
+      {
+         log.warn(e.getMessage(), e);
+         return false;
       }
    }
 

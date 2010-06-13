@@ -12,10 +12,14 @@
  */
 package org.hornetq.ra;
 
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.naming.Context;
+import javax.transaction.TransactionManager;
+
+import org.hornetq.core.logging.Logger;
 
 /**
  * Various utility functions
@@ -26,6 +30,9 @@ import javax.naming.Context;
  */
 public class Util
 {
+   
+   private static final Logger log = Logger.getLogger(Util.class);
+
 
    /**
     * Private constructor
@@ -187,4 +194,26 @@ public class Util
 
       return result;
    }
+   
+
+   /** The Resource adapter can't depend on any provider's specific library. Because of that we use reflection to locate the
+    *  transaction manager during startup. */
+   public static TransactionManager locateTM(final String locatorClass, final String locatorMethod)
+   {
+      try
+      {
+         ClassLoader loader = Thread.currentThread().getContextClassLoader();
+         Class<?> aClass = loader.loadClass(locatorClass);
+         Object o = aClass.newInstance();
+         Method m = aClass.getMethod(locatorMethod);
+         return (TransactionManager)m.invoke(o);
+      }
+      catch (Throwable e)
+      {
+         log.debug(e.getMessage(), e);
+         return null;
+      }
+   }
+
+   
 }

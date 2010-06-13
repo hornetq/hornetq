@@ -43,6 +43,14 @@ public class HornetQRAProperties extends ConnectionFactoryProperties implements 
 
    /** Use Local TX instead of XA */
    private Boolean localTx = false;
+   
+   
+   /** Class used to locate the Transaction Manager.
+    *  Using JBoss5 as the default locator */
+   private String transactionManagerLocatorClass = "org.hornetq.integration.jboss.tm.JBoss5TransactionManagerLocator;org.hornetq.integration.jboss.tm.JBoss4TransactionManagerLocator";
+   
+   /** Method used to locate the TM */
+   private String transactionManagerLocatorMethod = "getTm;getTM";
 
    /**
     * Constructor
@@ -137,6 +145,27 @@ public class HornetQRAProperties extends ConnectionFactoryProperties implements 
       }
 
       this.localTx = localTx;
+   }
+
+
+   public void setTransactionManagerLocatorClass(final String transactionManagerLocatorClass)
+   {
+      this.transactionManagerLocatorClass = transactionManagerLocatorClass;
+   }
+
+   public String getTransactionManagerLocatorClass()
+   {
+      return transactionManagerLocatorClass;
+   }
+
+   public String getTransactionManagerLocatorMethod()
+   {
+      return transactionManagerLocatorMethod;
+   }
+
+   public void setTransactionManagerLocatorMethod(final String transactionManagerLocatorMethod)
+   {
+      this.transactionManagerLocatorMethod = transactionManagerLocatorMethod;
    }
 
 

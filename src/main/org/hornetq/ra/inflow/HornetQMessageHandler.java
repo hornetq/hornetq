@@ -12,7 +12,6 @@
  */
 package org.hornetq.ra.inflow;
 
-import java.lang.reflect.Method;
 import java.util.UUID;
 
 import javax.jms.InvalidClientIDException;
@@ -20,7 +19,6 @@ import javax.jms.MessageListener;
 import javax.resource.ResourceException;
 import javax.resource.spi.endpoint.MessageEndpoint;
 import javax.resource.spi.endpoint.MessageEndpointFactory;
-import javax.transaction.SystemException;
 import javax.transaction.TransactionManager;
 
 import org.hornetq.api.core.HornetQException;
@@ -72,13 +70,14 @@ public class HornetQMessageHandler implements MessageHandler
    
    private final int sessionNr;
 
-   private TransactionManager tm;
+   private final TransactionManager tm;
 
-   public HornetQMessageHandler(final HornetQActivation activation, final ClientSession session, final int sessionNr)
+   public HornetQMessageHandler(final HornetQActivation activation, final TransactionManager tm, final ClientSession session, final int sessionNr)
    {
       this.activation = activation;
       this.session = session;
       this.sessionNr = sessionNr;
+      this.tm = tm;
    }
 
    public void setup() throws Exception
@@ -247,9 +246,9 @@ public class HornetQMessageHandler implements MessageHandler
 
       try
       {
-         if(activation.getActivationSpec().getTransactionTimeout() > 0)
+         if(activation.getActivationSpec().getTransactionTimeout() > 0 && tm != null)
          {
-            getTm().setTransactionTimeout(activation.getActivationSpec().getTransactionTimeout());
+            tm.setTransactionTimeout(activation.getActivationSpec().getTransactionTimeout());
          }
          endpoint.beforeDelivery(HornetQActivation.ONMESSAGE);
          beforeDelivery = true;
@@ -298,35 +297,6 @@ public class HornetQMessageHandler implements MessageHandler
          }
       }
 
-   }
-
-   private TransactionManager getTm()
-   {
-      if (tm == null)
-      {
-         try
-         {
-            ClassLoader loader = Thread.currentThread().getContextClassLoader();
-            Class aClass = loader.loadClass(activation.getActivationSpec().getTransactionManagerLocatorClass());
-            Object o = aClass.newInstance();
-            Method m = aClass.getMethod(activation.getActivationSpec().getTransactionManagerLocatorMethod());
-            tm = (TransactionManager)m.invoke(o);
-         }
-         catch (Exception e)
-         {
-            throw new IllegalStateException("unable to create TransactionManager from " + activation.getActivationSpec().getTransactionManagerLocatorClass() +
-                                                     "." +
-                                                     activation.getActivationSpec().getTransactionManagerLocatorMethod(),
-                                            e);
-         }
-
-         if (tm == null)
-         {
-            throw new IllegalStateException("Cannot locate a transaction manager");
-         }
-      }
-
-      return tm;
    }
 
 }

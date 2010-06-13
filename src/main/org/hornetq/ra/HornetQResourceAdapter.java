@@ -26,6 +26,7 @@ import javax.resource.spi.ResourceAdapter;
 import javax.resource.spi.ResourceAdapterInternalException;
 import javax.resource.spi.endpoint.MessageEndpointFactory;
 import javax.resource.spi.work.WorkManager;
+import javax.transaction.TransactionManager;
 import javax.transaction.xa.XAResource;
 
 import org.hornetq.api.core.HornetQException;
@@ -95,6 +96,8 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
    private final Map<ActivationSpec, HornetQActivation> activations;
 
    private HornetQConnectionFactory defaultHornetQConnectionFactory;
+   
+   private TransactionManager tm;
 
    /**
     * Constructor
@@ -112,6 +115,10 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       activations = new ConcurrentHashMap<ActivationSpec, HornetQActivation>();
    }
 
+   public TransactionManager getTM()
+   {
+      return tm;
+   }
    /**
     * Endpoint activation
     *
@@ -192,6 +199,8 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       {
          HornetQResourceAdapter.log.trace("start(" + ctx + ")");
       }
+      
+      locateTM();
 
       this.ctx = ctx;
 
@@ -1330,9 +1339,12 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
     */
    protected void setup() throws HornetQException
    {
+
+
       defaultHornetQConnectionFactory = createHornetQConnectionFactory(raProperties);
       sessionFactory = defaultHornetQConnectionFactory.getCoreFactory();
    }
+
 
    public HornetQConnectionFactory getDefaultHornetQConnectionFactory() throws ResourceException
    {
@@ -1405,6 +1417,32 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       }
       return map;
    }
+   
+   private void locateTM()
+   {
+      String locatorClasses[] = raProperties.getTransactionManagerLocatorClass().split(";");
+      String locatorMethods[] = raProperties.getTransactionManagerLocatorMethod().split(";");
+      
+      for (int i = 0 ; i < locatorClasses.length; i++)
+      {
+         tm = Util.locateTM(locatorClasses[i], locatorMethods[i]);
+         if (tm != null)
+         {
+            break;
+         }
+      }
+      
+      if (tm == null)
+      {
+         log.warn("It wasn't possible to lookup for a Transaction Manager through the configured properties TransactionManagerLocatorClass and TransactionManagerLocatorMethod");
+         log.warn("HornetQ Resource Adapter won't be able to set and verify transaction timeouts in certain cases.");
+      }
+      else
+      {
+         log.debug("TM located = " + tm);
+      }
+   }
+   
 
    private void setParams(final HornetQConnectionFactory cf,
                           final ConnectionFactoryProperties overrideProperties)
