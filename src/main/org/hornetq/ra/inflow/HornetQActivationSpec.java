@@ -530,27 +530,6 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
       this.localTx = localTx;
    }
 
-
-   public void setTransactionManagerLocatorClass(final String transactionManagerLocatorClass)
-   {
-      log.info("TransactionManagerLocatorClass property on the Activation Setup is deprecated and it has no use. Use the property on the HornetQ Resource Adapter if you need");
-   }
-
-   public String getTransactionManagerLocatorClass()
-   {
-      return null;
-   }
-
-   public String getTransactionManagerLocatorMethod()
-   {
-      return null;
-   }
-
-   public void setTransactionManagerLocatorMethod(final String transactionManagerLocatorMethod)
-   {
-      log.info("setTransactionManagerLocatorMethod property on the Activation Setup is deprecated and it has no use. Use the property on the HornetQ Resource Adapter if you need");
-   }
-
    /**
     * Validate
     * @exception InvalidPropertyException Thrown if a validation exception occurs
