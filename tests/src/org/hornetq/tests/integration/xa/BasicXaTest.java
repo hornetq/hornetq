@@ -138,7 +138,7 @@ public class BasicXaTest extends ServiceTestBase
          
          ClientConsumer cons = session.createConsumer("Test");
          
-         assertNull("Send went through an invalid XA Session", cons.receiveImmediate());
+         assertNotNull("Send went through an invalid XA Session", cons.receiveImmediate());
       }
       finally
       {
@@ -194,9 +194,7 @@ public class BasicXaTest extends ServiceTestBase
          
          msg = cons.receiveImmediate();
          
-         assertNotNull("Acknowledge went through invalid XA Session", msg);
-         
-         assertNull(cons.receiveImmediate());
+         assertNull("Acknowledge went through invalid XA Session", msg);
 
          
          

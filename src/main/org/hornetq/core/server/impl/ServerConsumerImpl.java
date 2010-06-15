@@ -519,7 +519,7 @@ public class ServerConsumerImpl implements ServerConsumer
                                             closed);
          }
 
-         if (autoCommitAcks)
+         if (autoCommitAcks || tx == null)
          {
             ref.getQueue().acknowledge(ref);
          }

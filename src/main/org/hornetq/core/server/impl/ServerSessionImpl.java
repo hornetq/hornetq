@@ -510,11 +510,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    {
       ServerConsumer consumer = consumers.get(consumerID);
 
-      if (this.xa && tx == null)
-      {
-         throw new HornetQXAException(XAException.XAER_PROTO, "Invalid transaction state");
-      }
-
       consumer.acknowledge(autoCommitAcks, tx, messageID);
    }
 
@@ -1167,11 +1162,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener
             tx.markAsRollbackOnly(e);
          }
          throw e;
-      }
-
-      if (this.xa && tx == null)
-      {
-         throw new HornetQXAException(XAException.XAER_PROTO, "Invalid transaction state");
       }
 
       if (tx == null || autoCommitSends)

@@ -402,6 +402,7 @@ public class HornetQRAMessageProducer implements MessageProducer
     */
    void checkState() throws JMSException
    {
+      session.checkState();
    }
 
    /**

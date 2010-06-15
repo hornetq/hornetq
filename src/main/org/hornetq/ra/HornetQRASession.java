@@ -49,6 +49,8 @@ import javax.jms.XASession;
 import javax.jms.XATopicSession;
 import javax.resource.ResourceException;
 import javax.resource.spi.ConnectionEvent;
+import javax.transaction.RollbackException;
+import javax.transaction.SystemException;
 import javax.transaction.xa.XAResource;
 
 import org.hornetq.core.logging.Logger;
@@ -1611,5 +1613,15 @@ public class HornetQRASession implements Session, QueueSession, TopicSession, XA
          throw new InvalidDestinationException("Attempting to use TopicSession methods on: " + this);
       }
       return (TopicSession)s;
+   }
+
+   /**
+    * @throws SystemException 
+    * @throws RollbackException 
+    * 
+    */
+   public void checkState() throws JMSException
+   {
+      mc.checkTransactionActive();
    }
 }

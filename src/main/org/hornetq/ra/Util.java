@@ -197,7 +197,13 @@ public class Util
    
 
    /** The Resource adapter can't depend on any provider's specific library. Because of that we use reflection to locate the
-    *  transaction manager during startup. */
+    *  transaction manager during startup. 
+    *  
+    *  
+    *  TODO: https://jira.jboss.org/browse/HORNETQ-417 
+    *        We should use a proper SPI instead of reflection
+    *        We would need to define a proper SPI package for this.
+    *  */
    public static TransactionManager locateTM(final String locatorClass, final String locatorMethod)
    {
       try

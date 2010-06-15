@@ -26,10 +26,8 @@ import java.util.concurrent.locks.ReentrantLock;
 import javax.jms.Connection;
 import javax.jms.ExceptionListener;
 import javax.jms.JMSException;
-import javax.jms.QueueConnection;
 import javax.jms.ResourceAllocationException;
 import javax.jms.Session;
-import javax.jms.TopicConnection;
 import javax.jms.XAConnection;
 import javax.jms.XAQueueConnection;
 import javax.jms.XASession;
@@ -44,7 +42,9 @@ import javax.resource.spi.ManagedConnection;
 import javax.resource.spi.ManagedConnectionMetaData;
 import javax.resource.spi.SecurityException;
 import javax.security.auth.Subject;
+import javax.transaction.Status;
 import javax.transaction.SystemException;
+import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 import javax.transaction.xa.XAResource;
 
@@ -95,12 +95,10 @@ public class HornetQRAManagedConnection implements ManagedConnection, ExceptionL
    // auto-commit session, used outside XA or Local transaction
    private Session session;
 
-   private Session transactedSession;
-
    private XASession xaSession;
 
    private XAResource xaResource;
-   
+
    private final TransactionManager tm;
 
    private boolean inManagedTx;
@@ -133,7 +131,6 @@ public class HornetQRAManagedConnection implements ManagedConnection, ExceptionL
 
       connection = null;
       session = null;
-      transactedSession = null;
       xaSession = null;
       xaResource = null;
 
@@ -234,7 +231,7 @@ public class HornetQRAManagedConnection implements ManagedConnection, ExceptionL
          HornetQRAManagedConnection.log.trace("destroy()");
       }
 
-      if (isDestroyed.get() ||  connection == null)
+      if (isDestroyed.get() || connection == null)
       {
          return;
       }
@@ -259,11 +256,6 @@ public class HornetQRAManagedConnection implements ManagedConnection, ExceptionL
             if (session != null)
             {
                session.close();
-            }
-
-            if (transactedSession != null)
-            {
-               transactedSession.close();
             }
 
             if (xaSession != null)
@@ -306,7 +298,7 @@ public class HornetQRAManagedConnection implements ManagedConnection, ExceptionL
       destroyHandles();
 
       inManagedTx = false;
-      
+
       // I'm recreating the lock object when we return to the pool
       // because it looks too nasty to expect the connection handle
       // to unlock properly in certain race conditions
@@ -336,6 +328,35 @@ public class HornetQRAManagedConnection implements ManagedConnection, ExceptionL
       else
       {
          throw new IllegalStateException("ManagedConnection in an illegal state");
+      }
+   }
+
+   public void checkTransactionActive() throws JMSException
+   {
+      // don't bother looking at the transaction if there's an active XID
+      if (!inManagedTx && tm != null)
+      {
+         try
+         {
+            Transaction tx = tm.getTransaction();
+            if (tx != null)
+            {
+               int status = tx.getStatus();
+               // Only allow states that will actually succeed
+               if (status != Status.STATUS_ACTIVE && status != Status.STATUS_PREPARING &&
+                   status != Status.STATUS_PREPARED &&
+                   status != Status.STATUS_COMMITTING)
+               {
+                  throw new javax.jms.IllegalStateException("Transaction " + tx + " not active");
+               }
+            }
+         }
+         catch (SystemException e)
+         {
+            JMSException jmsE = new javax.jms.IllegalStateException("Unexpected exception on the Transaction ManagerTransaction");
+            jmsE.initCause(e);
+            throw jmsE;
+         }
       }
    }
 
@@ -441,7 +462,7 @@ public class HornetQRAManagedConnection implements ManagedConnection, ExceptionL
       //
       if (xaResource == null)
       {
-            xaResource = xaSession.getXAResource();
+         xaResource = xaSession.getXAResource();
       }
 
       if (HornetQRAManagedConnection.trace)
@@ -566,36 +587,7 @@ public class HornetQRAManagedConnection implements ManagedConnection, ExceptionL
     */
    protected Session getSession() throws JMSException
    {
-      if (xaResource != null && isManagedTx())
-      {
-         if (HornetQRAManagedConnection.trace)
-         {
-            HornetQRAManagedConnection.log.trace("getSession() -> XA session " + xaSession.getSession());
-         }
-
-         return xaSession.getSession();
-      } 
-      else
-      {
-         if (isManagedTx())
-         {
-            if (HornetQRAManagedConnection.trace)
-            {
-               HornetQRAManagedConnection.log.trace("getSession() -> transactedSession " + transactedSession);
-            }
-
-            return transactedSession;
-         }
-         else
-         {
-            if (HornetQRAManagedConnection.trace)
-            {
-               HornetQRAManagedConnection.log.trace("getSession() -> session " + session);
-            }
-
-            return session;
-         }
-      }
+      return session;
    }
 
    /**
@@ -748,8 +740,8 @@ public class HornetQRAManagedConnection implements ManagedConnection, ExceptionL
       try
       {
          boolean transacted = cri.isTransacted();
-         int acknowledgeMode =  Session.AUTO_ACKNOWLEDGE;
-         
+         int acknowledgeMode = Session.AUTO_ACKNOWLEDGE;
+
          if (cri.getType() == HornetQRAConnectionFactory.TOPIC_CONNECTION)
          {
             if (userName != null && password != null)
@@ -764,8 +756,7 @@ public class HornetQRAManagedConnection implements ManagedConnection, ExceptionL
             connection.setExceptionListener(this);
 
             xaSession = ((XATopicConnection)connection).createXATopicSession();
-            transactedSession = ((TopicConnection)connection).createTopicSession(transacted, acknowledgeMode);
-            session = ((TopicConnection)connection).createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
+            session = xaSession.getSession();
          }
          else if (cri.getType() == HornetQRAConnectionFactory.QUEUE_CONNECTION)
          {
@@ -781,8 +772,7 @@ public class HornetQRAManagedConnection implements ManagedConnection, ExceptionL
             connection.setExceptionListener(this);
 
             xaSession = ((XAQueueConnection)connection).createXAQueueSession();
-            transactedSession = ((QueueConnection)connection).createQueueSession(transacted, acknowledgeMode);
-            session = ((QueueConnection)connection).createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
+            session = xaSession.getSession();
          }
          else
          {
@@ -798,8 +788,7 @@ public class HornetQRAManagedConnection implements ManagedConnection, ExceptionL
             connection.setExceptionListener(this);
 
             xaSession = ((XAConnection)connection).createXASession();
-            transactedSession = connection.createSession(transacted, acknowledgeMode);
-            session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+            session = xaSession.getSession();
          }
       }
       catch (JMSException je)
@@ -807,7 +796,7 @@ public class HornetQRAManagedConnection implements ManagedConnection, ExceptionL
          throw new ResourceException(je.getMessage(), je);
       }
    }
-   
+
    private boolean isManagedTx()
    {
       return inManagedTx || isXA();

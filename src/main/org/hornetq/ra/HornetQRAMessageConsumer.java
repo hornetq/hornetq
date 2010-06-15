@@ -96,6 +96,7 @@ public class HornetQRAMessageConsumer implements MessageConsumer
       {
          HornetQRAMessageConsumer.log.trace("checkState()");
       }
+      session.checkState();
    }
 
    /**
