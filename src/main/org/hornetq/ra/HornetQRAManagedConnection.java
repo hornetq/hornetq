@@ -27,18 +27,13 @@ import javax.jms.Connection;
 import javax.jms.ExceptionListener;
 import javax.jms.JMSException;
 import javax.jms.QueueConnection;
-import javax.jms.QueueSession;
 import javax.jms.ResourceAllocationException;
 import javax.jms.Session;
 import javax.jms.TopicConnection;
-import javax.jms.TopicSession;
 import javax.jms.XAConnection;
 import javax.jms.XAQueueConnection;
-import javax.jms.XAQueueSession;
 import javax.jms.XASession;
 import javax.jms.XATopicConnection;
-import javax.jms.XATopicSession;
-import javax.resource.NotSupportedException;
 import javax.resource.ResourceException;
 import javax.resource.spi.ConnectionEvent;
 import javax.resource.spi.ConnectionEventListener;
@@ -99,19 +94,9 @@ public class HornetQRAManagedConnection implements ManagedConnection, ExceptionL
    // Physical JMS connection stuff
    private Connection connection;
 
-   private XAConnection xaConnection;
-
    private Session session;
 
-   private TopicSession topicSession;
-
-   private QueueSession queueSession;
-
    private XASession xaSession;
-
-   private XATopicSession xaTopicSession;
-
-   private XAQueueSession xaQueueSession;
 
    private XAResource xaResource;
 
@@ -146,13 +131,8 @@ public class HornetQRAManagedConnection implements ManagedConnection, ExceptionL
       handles = Collections.synchronizedSet(new HashSet<HornetQRASession>());
 
       connection = null;
-      xaConnection = null;
       session = null;
-      topicSession = null;
-      queueSession = null;
       xaSession = null;
-      xaTopicSession = null;
-      xaQueueSession = null;
       xaResource = null;
 
       try
@@ -223,11 +203,6 @@ public class HornetQRAManagedConnection implements ManagedConnection, ExceptionL
 
       try
       {
-         if (xaConnection != null)
-         {
-            xaConnection.stop();
-         }
-
          if (connection != null)
          {
             connection.stop();
@@ -257,7 +232,7 @@ public class HornetQRAManagedConnection implements ManagedConnection, ExceptionL
          HornetQRAManagedConnection.log.trace("destroy()");
       }
 
-      if (isDestroyed.get() || xaConnection == null && connection == null)
+      if (isDestroyed.get() ||  connection == null)
       {
          return;
       }
@@ -266,14 +241,7 @@ public class HornetQRAManagedConnection implements ManagedConnection, ExceptionL
 
       try
       {
-         if (xaConnection != null)
-         {
-            xaConnection.setExceptionListener(null);
-         }
-         else
-         {
-            connection.setExceptionListener(null);
-         }
+         connection.setExceptionListener(null);
       }
       catch (JMSException e)
       {
@@ -286,26 +254,6 @@ public class HornetQRAManagedConnection implements ManagedConnection, ExceptionL
       {
          try
          {
-            if (topicSession != null)
-            {
-               topicSession.close();
-            }
-
-            if (xaTopicSession != null)
-            {
-               xaTopicSession.close();
-            }
-
-            if (queueSession != null)
-            {
-               queueSession.close();
-            }
-
-            if (xaQueueSession != null)
-            {
-               xaQueueSession.close();
-            }
-
             if (session != null)
             {
                session.close();
@@ -324,11 +272,6 @@ public class HornetQRAManagedConnection implements ManagedConnection, ExceptionL
          if (connection != null)
          {
             connection.close();
-         }
-
-         if (xaConnection != null)
-         {
-            xaConnection.close();
          }
       }
       catch (Throwable e)
@@ -357,6 +300,8 @@ public class HornetQRAManagedConnection implements ManagedConnection, ExceptionL
 
       inManagedTx = false;
 
+      inManagedTx = false;
+      
       // I'm recreating the lock object when we return to the pool
       // because it looks too nasty to expect the connection handle
       // to unlock properly in certain race conditions
@@ -515,29 +460,13 @@ public class HornetQRAManagedConnection implements ManagedConnection, ExceptionL
          HornetQRAManagedConnection.log.trace("getXAResource()");
       }
 
-      if (xaConnection == null)
-      {
-         throw new NotSupportedException("Non XA transaction not supported");
-      }
-
       //
       // Spec says a mc must allways return the same XA resource,
       // so we cache it.
       //
       if (xaResource == null)
       {
-         if (xaTopicSession != null)
-         {
-            xaResource = xaTopicSession.getXAResource();
-         }
-         else if (xaQueueSession != null)
-         {
-            xaResource = xaQueueSession.getXAResource();
-         }
-         else
-         {
             xaResource = xaSession.getXAResource();
-         }
       }
 
       if (HornetQRAManagedConnection.trace)
@@ -644,14 +573,7 @@ public class HornetQRAManagedConnection implements ManagedConnection, ExceptionL
 
       try
       {
-         if (xaConnection != null)
-         {
-            xaConnection.setExceptionListener(null);
-         }
-         else
-         {
-            connection.setExceptionListener(null);
-         }
+         connection.setExceptionListener(null);
       }
       catch (JMSException e)
       {
@@ -663,72 +585,28 @@ public class HornetQRAManagedConnection implements ManagedConnection, ExceptionL
    }
 
    /**
-    * Is managed connection running in XA mode
-    * @return True if XA; otherwise false
-    */
-   protected boolean isXA()
-   {
-      if (HornetQRAManagedConnection.trace)
-      {
-         HornetQRAManagedConnection.log.trace("isXA()");
-      }
-
-      return xaConnection != null;
-   }
-
-   /**
-    * Get the XA session for this connection.
-    * @return The XA session
-    */
-   protected XASession getXASession()
-   {
-      if (HornetQRAManagedConnection.trace)
-      {
-         HornetQRAManagedConnection.log.trace("getXASession()");
-      }
-
-      if (isXA())
-      {
-         if (xaTopicSession != null)
-         {
-            return xaTopicSession;
-         }
-         else if (xaQueueSession != null)
-         {
-            return xaQueueSession;
-         }
-         else
-         {
-            return xaSession;
-         }
-      }
-      else
-      {
-         return null;
-      }
-   }
-
-   /**
     * Get the session for this connection.
     * @return The session
+    * @throws JMSException 
     */
-   protected Session getSession()
+   protected Session getSession() throws JMSException
    {
-      if (HornetQRAManagedConnection.trace)
+      if (xaResource != null && inManagedTx)
       {
-         HornetQRAManagedConnection.log.trace("getSession()");
-      }
+         if (HornetQRAManagedConnection.trace)
+         {
+            HornetQRAManagedConnection.log.trace("getSession() -> XA session " + xaSession.getSession());
+         }
 
-      if (topicSession != null)
-      {
-         return topicSession;
-      }
-      else if (queueSession != null)
-      {
-         return queueSession;
-      }
+         return xaSession.getSession();
+      } 
       else
       {
+         if (HornetQRAManagedConnection.trace)
+         {
+            HornetQRAManagedConnection.log.trace("getSession() -> session " + xaSession.getSession());
+         }
+
          return session;
       }
    }
@@ -836,11 +714,6 @@ public class HornetQRAManagedConnection implements ManagedConnection, ExceptionL
       {
          connection.start();
       }
-
-      if (xaConnection != null)
-      {
-         xaConnection.start();
-      }
    }
 
    /**
@@ -852,11 +725,6 @@ public class HornetQRAManagedConnection implements ManagedConnection, ExceptionL
       if (HornetQRAManagedConnection.trace)
       {
          HornetQRAManagedConnection.log.trace("stop()");
-      }
-
-      if (xaConnection != null)
-      {
-         xaConnection.stop();
       }
 
       if (connection != null)
@@ -893,109 +761,55 @@ public class HornetQRAManagedConnection implements ManagedConnection, ExceptionL
       try
       {
          boolean transacted = cri.isTransacted();
-         int acknowledgeMode = Session.AUTO_ACKNOWLEDGE;
-
+         int acknowledgeMode =  Session.AUTO_ACKNOWLEDGE;
+         
          if (cri.getType() == HornetQRAConnectionFactory.TOPIC_CONNECTION)
          {
-            if (cri.isUseXA())
+            if (userName != null && password != null)
             {
-               if (userName != null && password != null)
-               {
-                  xaConnection = mcf.getHornetQConnectionFactory().createXATopicConnection(userName, password);
-               }
-               else
-               {
-                  xaConnection = mcf.getHornetQConnectionFactory().createXATopicConnection();
-               }
-
-               xaConnection.setExceptionListener(this);
-
-               xaTopicSession = ((XATopicConnection)xaConnection).createXATopicSession();
-               topicSession = xaTopicSession.getTopicSession();
+               connection = mcf.getHornetQConnectionFactory().createXATopicConnection(userName, password);
             }
             else
             {
-               if (userName != null && password != null)
-               {
-                  connection = mcf.getHornetQConnectionFactory().createTopicConnection(userName, password);
-               }
-               else
-               {
-                  connection = mcf.getHornetQConnectionFactory().createTopicConnection();
-               }
-
-               connection.setExceptionListener(this);
-
-               topicSession = ((TopicConnection)connection).createTopicSession(transacted, acknowledgeMode);
+               connection = mcf.getHornetQConnectionFactory().createXATopicConnection();
             }
+
+            connection.setExceptionListener(this);
+
+            xaSession = ((XATopicConnection)connection).createXATopicSession();
+            session = ((TopicConnection)connection).createTopicSession(transacted, acknowledgeMode);
          }
          else if (cri.getType() == HornetQRAConnectionFactory.QUEUE_CONNECTION)
          {
-            if (cri.isUseXA())
+            if (userName != null && password != null)
             {
-               if (userName != null && password != null)
-               {
-                  xaConnection = mcf.getHornetQConnectionFactory().createXAQueueConnection(userName, password);
-               }
-               else
-               {
-                  xaConnection = mcf.getHornetQConnectionFactory().createXAQueueConnection();
-               }
-
-               xaConnection.setExceptionListener(this);
-
-               xaQueueSession = ((XAQueueConnection)xaConnection).createXAQueueSession();
-               queueSession = xaQueueSession.getQueueSession();
+               connection = mcf.getHornetQConnectionFactory().createXAQueueConnection(userName, password);
             }
             else
             {
-               if (userName != null && password != null)
-               {
-                  connection = mcf.getHornetQConnectionFactory().createQueueConnection(userName, password);
-               }
-               else
-               {
-                  connection = mcf.getHornetQConnectionFactory().createQueueConnection();
-               }
-
-               connection.setExceptionListener(this);
-
-               queueSession = ((QueueConnection)connection).createQueueSession(transacted, acknowledgeMode);
+               connection = mcf.getHornetQConnectionFactory().createXAQueueConnection();
             }
+
+            connection.setExceptionListener(this);
+
+            xaSession = ((XAQueueConnection)connection).createXAQueueSession();
+            session = ((QueueConnection)connection).createQueueSession(transacted, acknowledgeMode);
          }
          else
          {
-            if (cri.isUseXA())
+            if (userName != null && password != null)
             {
-               if (userName != null && password != null)
-               {
-                  xaConnection = mcf.getHornetQConnectionFactory().createXAConnection(userName, password);
-               }
-               else
-               {
-                  xaConnection = mcf.getHornetQConnectionFactory().createXAConnection();
-               }
-
-               xaConnection.setExceptionListener(this);
-
-               xaSession = xaConnection.createXASession();
-               session = xaSession.getSession();
+               connection = mcf.getHornetQConnectionFactory().createXAConnection(userName, password);
             }
             else
             {
-               if (userName != null && password != null)
-               {
-                  connection = mcf.getHornetQConnectionFactory().createConnection(userName, password);
-               }
-               else
-               {
-                  connection = mcf.getHornetQConnectionFactory().createConnection();
-               }
-
-               connection.setExceptionListener(this);
-
-               session = connection.createSession(transacted, acknowledgeMode);
+               connection = mcf.getHornetQConnectionFactory().createXAConnection();
             }
+
+            connection.setExceptionListener(this);
+
+            xaSession = ((XAConnection)connection).createXASession();
+            session = connection.createSession(transacted, acknowledgeMode);
          }
       }
       catch (JMSException je)
