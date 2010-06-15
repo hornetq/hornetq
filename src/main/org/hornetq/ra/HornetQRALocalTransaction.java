@@ -62,7 +62,7 @@ public class HornetQRALocalTransaction implements LocalTransaction
          HornetQRALocalTransaction.log.trace("begin()");
       }
       
-      mc.setInManagedTx(true);
+     // mc.setInManagedTx(true);
    }
 
    /**
@@ -90,7 +90,7 @@ public class HornetQRALocalTransaction implements LocalTransaction
       }
       finally
       {
-         mc.setInManagedTx(false);
+         //mc.setInManagedTx(false);
          mc.unlock();
       }
    }
@@ -120,7 +120,7 @@ public class HornetQRALocalTransaction implements LocalTransaction
       }
       finally
       {
-         mc.setInManagedTx(false);
+         //mc.setInManagedTx(false);
          mc.unlock();
       }
    }

@@ -41,6 +41,9 @@ public class HornetQRAProperties extends ConnectionFactoryProperties implements 
    /** The password */
    private String password;
 
+   /** Use XA */
+   private Boolean useXA;
+
    /** Use Local TX instead of XA */
    private Boolean localTx = false;
    
@@ -169,11 +172,53 @@ public class HornetQRAProperties extends ConnectionFactoryProperties implements 
    }
 
 
+
+   /**
+    * Get the use XA flag
+    * @return The value
+    */
+   public Boolean getUseXA()
+   {
+      if (HornetQRAProperties.trace)
+      {
+         HornetQRAProperties.log.trace("getUseXA()");
+      }
+
+      return useXA;
+   }
+
+   /**
+    * Set the use XA flag
+    * @param xa The value
+    */
+   public void setUseXA(final Boolean xa)
+   {
+      if (HornetQRAProperties.trace)
+      {
+         HornetQRAProperties.log.trace("setUseXA(" + xa + ")");
+      }
+
+      useXA = xa;
+   }
+
+   /**
+    * Use XA for communication
+    * @return The value
+    */
+   public boolean isUseXA()
+   {
+      if (HornetQRAProperties.trace)
+      {
+         HornetQRAProperties.log.trace("isUseXA()");
+      }
+
+      return useXA != null && useXA;
+   }
    
    @Override
    public String toString()
    {
-      return "HornetQRAProperties[localTx=" + localTx +
+      return "HornetQRAProperties[useXA=" + useXA + ", localTx=" + localTx +
          ", userName=" + userName + ", password=" + password + "]";
    }
 }
