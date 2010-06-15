@@ -1196,35 +1196,6 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       raProperties.setUseLocalTx(localTx);
    }
 
-   /**
-    * Get the use XA flag
-    *
-    * @return The value
-    */
-   public Boolean getUseXA()
-   {
-      if (HornetQResourceAdapter.trace)
-      {
-         HornetQResourceAdapter.log.trace("getUseXA()");
-      }
-
-      return raProperties.getUseXA();
-   }
-
-   /**
-    * Set the use XA flag
-    *
-    * @param xa The value
-    */
-   public void setUseXA(final Boolean xa)
-   {
-      if (HornetQResourceAdapter.trace)
-      {
-         HornetQResourceAdapter.log.trace("setUseXA(" + xa + ")");
-      }
-
-      raProperties.setUseXA(xa);
-   }
 
    /**
     * Indicates whether some other object is "equal to" this one.
@@ -1368,9 +1339,12 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
     */
    protected void setup() throws HornetQException
    {
+
+
       defaultHornetQConnectionFactory = createHornetQConnectionFactory(raProperties);
       sessionFactory = defaultHornetQConnectionFactory.getCoreFactory();
    }
+
 
    public HornetQConnectionFactory getDefaultHornetQConnectionFactory() throws ResourceException
    {
@@ -1410,13 +1384,13 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
                                                                          : new TransportConfiguration(backUpCOnnectorClassname,
                                                                                                       backupConnectionParams);
 
-         cf = (HornetQConnectionFactory) HornetQJMSClient.createConnectionFactory(transportConf, backup);
+         cf = HornetQJMSClient.createConnectionFactory(transportConf, backup);
       }
       else if (discoveryAddress != null)
       {
          Integer discoveryPort = overrideProperties.getDiscoveryPort() != null ? overrideProperties.getDiscoveryPort()
                                                                               : getDiscoveryPort();
-         cf = (HornetQConnectionFactory) HornetQJMSClient.createConnectionFactory(discoveryAddress, discoveryPort);
+         cf = HornetQJMSClient.createConnectionFactory(discoveryAddress, discoveryPort);
       }
       else
       {
@@ -1425,6 +1399,7 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       setParams(cf, overrideProperties);
       return cf;
    }
+
    public Map<String, Object> overrideConnectionParameters(final Map<String, Object> connectionParams,
                                                            final Map<String, Object> overrideConnectionParams)
    {
