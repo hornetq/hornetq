@@ -1622,6 +1622,9 @@ public class HornetQRASession implements Session, QueueSession, TopicSession, XA
     */
    public void checkState() throws JMSException
    {
-      mc.checkTransactionActive();
+      if (mc != null)
+      {
+         mc.checkTransactionActive();
+      }
    }
 }
