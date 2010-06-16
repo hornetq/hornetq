@@ -19,7 +19,7 @@ Copyright 2009 Red Hat, Inc.
    <groupId>org.hornetq</groupId>
    <artifactId>messaging</artifactId>
    <packaging>pom</packaging>
-   <version>2.1.0.Final</version>
+   <version>2.1.1.Final</version>
 
    <name>HornetQ</name>
    <url>http://hornetq.org</url>
