@@ -462,6 +462,8 @@ public class ManagementServiceImpl implements ManagementService
                Object result = getAttribute(resourceName, attribute);
 
                ManagementHelper.storeResult(reply, result);
+               
+               reply.putBooleanProperty(ManagementHelper.HDR_OPERATION_SUCCEEDED, true);
             }
             catch (Exception e)
             {

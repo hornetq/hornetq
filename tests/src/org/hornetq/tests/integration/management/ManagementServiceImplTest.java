@@ -114,7 +114,27 @@ public class ManagementServiceImplTest extends UnitTestCase
       server.stop();
    }
 
-   public void testHandleManagementMessageWithUnknowAttribute() throws Exception
+   public void testHandleManagementMessageWithUnknownAttribute() throws Exception
+   {
+      Configuration conf = new ConfigurationImpl();
+      conf.setJMXManagementEnabled(false);
+
+      HornetQServer server = HornetQServers.newHornetQServer(conf, false);
+      server.start();
+
+      // invoke attribute and operation on the server
+      ServerMessage message = new ServerMessageImpl(1, 100);
+
+      ManagementHelper.putAttribute(message, ResourceNames.CORE_SERVER, "started");
+
+      ServerMessage reply = server.getManagementService().handleMessage(message);
+
+      Assert.assertTrue(ManagementHelper.hasOperationSucceeded(reply));
+      Assert.assertTrue((Boolean)ManagementHelper.getResult(reply));
+      server.stop();
+   }
+   
+   public void testHandleManagementMessageWithKnownAttribute() throws Exception
    {
       Configuration conf = new ConfigurationImpl();
       conf.setJMXManagementEnabled(false);
