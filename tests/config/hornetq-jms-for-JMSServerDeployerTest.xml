@@ -26,7 +26,7 @@
       <block-on-acknowledge>true</block-on-acknowledge>
       <block-on-non-durable-send>false</block-on-non-durable-send>
       <block-on-durable-send>true</block-on-durable-send>
-      <auto-group-id>false</auto-group-id>
+      <auto-group>false</auto-group>
       <pre-acknowledge>true</pre-acknowledge>
       <connection-ttl>2345</connection-ttl>
       <discovery-initial-wait-timeout>678</discovery-initial-wait-timeout>
