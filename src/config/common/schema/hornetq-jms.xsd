@@ -94,7 +94,7 @@
             <xsd:element name="block-on-durable-send" type="xsd:boolean"
                 maxOccurs="1" minOccurs="0">
             </xsd:element>
-            <xsd:element name="auto-group-id" type="xsd:boolean"
+            <xsd:element name="auto-group" type="xsd:boolean"
                 maxOccurs="1" minOccurs="0">
             </xsd:element>
             <xsd:element name="pre-acknowledge" type="xsd:boolean"
