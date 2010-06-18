@@ -28,6 +28,10 @@
         outflow of messages sent from other JEE components, e.g. EJBs and Servlets.</para>
     <para>This section explains the basics behind configuring the different JEE components in the
         AS.</para>
+   <section>
+      <title>Dependencies for Application Server Integration</title>
+      <para></para>
+   </section>
     <section>
         <title>Configuring Message-Driven Beans</title>
         <para>The delivery of messages to an MDB using HornetQ is configured on the JCA Adapter via
@@ -828,46 +832,143 @@ private ConnectionFactory connectionFactory;</programlisting>
         </section>
        <section>
           <title>Configuring the adapter to use a standalone HornetQ Server</title>
-          <para>Sometime you may want your messaging server on a different machine or separate from the application server.</para>
-          <para>To do this you will need to configure both the incoming and outgoing adapter.</para>
-          <para>To configure MDB's to consume messages from a remote HornetQ server you need to configure the ra.xml file
-          which can be found under <literal>deploy/hornet-ra.rar/META-INF</literal>. Simply configure the transport to
-          use a netty connector (instead of the invm connector) and configure its transport params. Heres an example of
-         what this would look like:</para>
-          <programlisting>
-            &lt;resourceadapter-class&gt;org.hornetq.ra.HornetQResourceAdapter&lt;/resourceadapter-class&gt;
-              &lt;config-property&gt;
-                 &lt;description&gt;The transport type&lt;/description&gt;
-                 &lt;config-property-name&gt;ConnectorClassName&lt;/config-property-name&gt;
-                 &lt;config-property-type&gt;java.lang.String&lt;/config-property-type&gt;
-                 &lt;config-property-value&gt;org.hornetq.core.remoting.impl.netty.NettyConnectorFactory&lt;/config-property-value&gt;
-              &lt;/config-property&gt;
-              &lt;config-property&gt;
-                 &lt;description&gt;The transport configuration. These values must be in the form of key=val;key=val;&lt;/description&gt;
-                 &lt;config-property-name&gt;ConnectionParameters&lt;/config-property-name&gt;
-                 &lt;config-property-type&gt;java.lang.String&lt;/config-property-type&gt;
-                 &lt;config-property-value&gt;host=127.0.0.1;port=5446&lt;/config-property-value&gt;
-              &lt;/config-property>
-          </programlisting>
-          <para>This configures the resource adapter to connect to a server running on localhost listening on port 5446</para>
-          <para>You will also need to configure any outbound connections to also connect to this server. This can be done
-             by either configuring the jms-ds.xml file found under <literal>deploy/hornetq.sar</literal> or creating a
-             new configuration file and making sure the filename ends in -ds.xml</para>
-          <para>The following example shows a sample configuration</para>
-          <programlisting>
-             &lt;tx-connection-factory&gt;
-              &lt;jndi-name&gt;RemoteJmsXA&lt;/jndi-name&gt;
-              &lt;xa-transaction/&gt;
-              &lt;rar-name&gt;hornetq-ra.rar&lt;/rar-name&gt;
-              &lt;connection-definition&gt;org.hornetq.ra.HornetQRAConnectionFactory&lt;/connection-definition&gt;
-              &lt;config-property name="SessionDefaultType" type="java.lang.String"&gt;javax.jms.Topic&lt;/config-property&gt;
-              &lt;config-property name="ConnectorClassName" type="java.lang.String"&gt;org.hornetq.core.remoting.impl.netty.NettyConnectorFactory&lt;/config-property&gt;
-              &lt;config-property name="ConnectionParameters" type="java.lang.String"&gt;host=127.0.0.1;port=5446&lt;/config-property&gt;
-              &lt;max-pool-size&gt;20&lt;/max-pool-size&gt;
-           &lt;/tx-connection-factory&gt;
-          </programlisting>
-          <para>Again this will connect to the HornetQ server running on localhost and listening on port 5446. JEE components
-             can access this by using JNDI and looking up <literal>java:/RemoteJmsXA</literal></para>
+          <para>Sometime you may want your messaging server on a different machine or separate from the application server.
+          If this is the case you will only need the hornetq client libs installed. This section explains what config to create
+          and what jar dependencies are needed.</para>
+          <section>
+             <para>There are two configuration files needed to do this, one for the incoming adapter used for MDB's
+                and one for outgoing connections managed by the JCA managed connection pool used by outgoing JEE components
+             wanting outgoing connections.</para>
+             <section>
+                <title>Configuring the Incoming Adaptor</title>
+                <para>Firstly you will need to create directory under the
+                   <literal>deploy</literal>
+                   directory ending in
+                   <literal>.rar.
+                      For this example we will name the directory <literal>hornetq-ra.rar</literal>. This detail is
+                      important as
+                      the name of directory is referred to by the MDB's and the outgoing configuration.
+                   </literal>
+                </para>
+                <note>
+                   <para>The jboss default for this is <literal>jms-ra.rar</literal>, If you don't want to have to
+                      configure your
+                      MDB's you can use this but you may need to remove the generic adaptor that uses this.
+                   </para>
+                </note>
+                <para>Under the
+                   <literal>hornetq-ra.rar</literal>
+                   directory you will need to create a
+                   <literal>META-INF</literal>
+                   directory into which you should create an
+                   <literal>ra.xml</literal>
+                   configuration file. You can find a template
+                   for the
+                   <literal>ra.xml</literal>
+                   under the config directory of the HornetQ distribution.
+                </para>
+                <para>To configure MDB's to consume messages from a remote HornetQ server you need to edit the
+                   <literal>ra.xml</literal>
+                   file under
+                   <literal>deploy/hornet-ra.rar/META-INF</literal>
+                   and change the transport type to
+                   use a netty connector (instead of the invm connector that is defined) and configure its transport
+                   params.
+                   Heres an example of what this would look like:
+                </para>
+                <programlisting>
+                   &lt;resourceadapter-class&gt;org.hornetq.ra.HornetQResourceAdapter&lt;/resourceadapter-class&gt;
+                   &lt;config-property&gt;
+                   &lt;description&gt;The transport type&lt;/description&gt;
+                   &lt;config-property-name&gt;ConnectorClassName&lt;/config-property-name&gt;
+                   &lt;config-property-type&gt;java.lang.String&lt;/config-property-type&gt;
+                   &lt;config-property-value&gt;org.hornetq.core.remoting.impl.netty.NettyConnectorFactory&lt;/config-property-value&gt;
+                   &lt;/config-property&gt;
+                   &lt;config-property&gt;
+                   &lt;description&gt;The transport configuration. These values must be in the form of key=val;key=val;&lt;/description&gt;
+                   &lt;config-property-name&gt;ConnectionParameters&lt;/config-property-name&gt;
+                   &lt;config-property-type&gt;java.lang.String&lt;/config-property-type&gt;
+                   &lt;config-property-value&gt;host=127.0.0.1;port=5446&lt;/config-property-value&gt;
+                   &lt;/config-property>
+                </programlisting>
+                <para>This configures the resource adapter to connect to a server running on localhost listening on port
+                   5446
+                </para>
+             </section>
+
+             <section>
+                <title>Configuring the outgoing adaptor</title>
+                <para>You will also need to configure the outbound connection by creating a <literal>hornetq-ds.xml</literal>
+                   and placing it under any directory that will be deployed under the <literal>deploy</literal> directory.
+                   In a standard HornetQ jboss configuration this would be under <literal>horneq</literal> or <literal>hornetq.sar</literal>
+                   but you can place it where ever you like. Actually as long as it ends in <literal>-ds.xml</literal> you can
+                   call it anything you like. You can again find a template for this file under the config directory of the
+                   HornetQ distribution but called <literal>jms-ds.xml</literal> which is the jboss default.
+                </para>
+                <para>The following example shows a sample configuration</para>
+                <programlisting>
+                   &lt;tx-connection-factory&gt;
+                   &lt;jndi-name&gt;RemoteJmsXA&lt;/jndi-name&gt;
+                   &lt;xa-transaction/&gt;
+                   &lt;rar-name&gt;hornetq-ra.rar&lt;/rar-name&gt;
+                   &lt;connection-definition&gt;org.hornetq.ra.HornetQRAConnectionFactory&lt;/connection-definition&gt;
+                   &lt;config-property name="SessionDefaultType" type="java.lang.String"&gt;javax.jms.Topic&lt;/config-property&gt;
+                   &lt;config-property name="ConnectorClassName" type="java.lang.String"&gt;org.hornetq.core.remoting.impl.netty.NettyConnectorFactory&lt;/config-property&gt;
+                   &lt;config-property name="ConnectionParameters" type="java.lang.String"&gt;host=127.0.0.1;port=5446&lt;/config-property&gt;
+                   &lt;max-pool-size&gt;20&lt;/max-pool-size&gt;
+                   &lt;/tx-connection-factory&gt;
+                </programlisting>
+                <para>Again you will see that this uses the netty connector type and will connect to the HornetQ server
+                   running on localhost and listening on port 5446. JEE components can access this by using JNDI and looking
+                   up the connection factory using JNDI using <literal>java:/RemoteJmsXA</literal>, you can see that this
+                   is defined under the<literal>jndi-name</literal> attribute. You will also note that the outgoing connection
+                   will be created by the resource adaptor configured under the directory <literal>hornetq-ra.rar</literal> as explained in the last section.
+                </para>
+             </section>
+
+             <section>
+                <title>Jar dependencies</title>
+                <para>This is a list of the HornetQ and third party jars needed</para>
+                <table frame="topbot" border="2">
+                    <title>Jar Dependencies</title>
+                    <tgroup cols="3">
+                        <colspec colname="c1" colnum="1"/>
+                        <colspec colname="c2" colnum="2"/>
+                        <colspec colname="c3" colnum="3"/>
+                        <thead>
+                            <row>
+                                <entry>Jar Name</entry>
+                                <entry>Description</entry>
+                                <entry>Location</entry>
+                            </row>
+                        </thead>
+                        <tbody>
+                            <row>
+                                <entry>hornetq-ra.jar</entry>
+                                <entry>The HornetQ resource adaptor classes</entry>
+                                <entry>deploy/hornetq-ra.rar or equivelant</entry>
+                            </row>
+                            <row>
+                                <entry>hornetq-core-client.jar</entry>
+                                <entry>The HornetQ core client classes</entry>
+                                <entry>either in the config lib, i.e. default/lib or the common lib dir, i.e. $JBOSS_HOME/common lib </entry>
+                            </row>
+                            <row>
+                                <entry>hornetq-jms-client.jar</entry>
+                                <entry>The HornetQ JMS classes</entry>
+                                <entry>as above</entry>
+                            </row>
+                            <row>
+                                <entry>netty.jar</entry>
+                                <entry>The Netty transport classes</entry>
+                                <entry>as above</entry>
+                            </row>
+                        </tbody>
+                     </tgroup>
+                </table>
+             </section>
+
+          </section>
        </section>
     </section>
     <section>
